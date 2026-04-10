@@ -137,7 +137,19 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.Unknown, "发现已经定义过某某类2" + mmf.functionAllName);
+                string oldfunctiontoken = "";
+                string newfunctiontoken = "";
+
+                if( find2.fileMetaMemberFunction?.token != null )
+                {
+                    oldfunctiontoken = find2.fileMetaMemberFunction?.token.ToLexemeAllString();
+                }
+                if( mmf.fileMetaMemberFunction?.token != null )
+                {
+                    newfunctiontoken = mmf.fileMetaMemberFunction?.token.ToLexemeAllString();
+                }
+
+                Log.AddMetaCoreLog(LID.MetaCoreRepeatDefineFunction, "", oldfunctiontoken, newfunctiontoken );
             }
             return false;
         }

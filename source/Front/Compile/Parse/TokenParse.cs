@@ -543,6 +543,7 @@ namespace SimpleLanguage.Compile
                     }
                     break;
                 case ETokenType.Number:
+                case ETokenType.NumberReal:
                 case ETokenType.String:
                 case ETokenType.BoolValue:
                 case ETokenType.NumberArrayLink:

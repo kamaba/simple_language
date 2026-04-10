@@ -604,6 +604,59 @@ namespace SimpleLanguage.Core
 
             return false;
         }
+        public static EClassRelation ResolveAssignRelation(
+            MetaType targetMetaType,
+            MetaExpressNode expressNode,
+            bool useTemplateExactMatch,
+            bool allowEnumOwnerEqual,
+            out MetaType expressRetMetaDefineType,
+            out MetaClass curClass,
+            out MetaClass compareClass,
+            out bool isNullConstExpress)
+        {
+            expressRetMetaDefineType = null;
+            compareClass = null;
+            isNullConstExpress = false;
+            curClass = targetMetaType?.metaClass;
+
+            if (curClass == null)
+            {
+                return EClassRelation.CurClassError;
+            }
+            if (expressNode == null)
+            {
+                return EClassRelation.CompareClassError;
+            }
+
+            if (expressNode is MetaConstExpressNode constExpressNode && constExpressNode.eType == EType.Null)
+            {
+                isNullConstExpress = true;
+                return EClassRelation.Same;
+            }
+
+            expressRetMetaDefineType = expressNode.GetReturnMetaDefineType();
+            compareClass = expressRetMetaDefineType?.metaClass;
+            if (compareClass == null)
+            {
+                return EClassRelation.CompareClassError;
+            }
+
+            if (allowEnumOwnerEqual && curClass is MetaEnum me && expressNode is MetaCallLinkExpressNode mclen)
+            {
+                var mv = mclen.GetMetaVariable();
+                if (mv?.ownerMetaClass == me)
+                {
+                    return EClassRelation.Same;
+                }
+            }
+
+            if (useTemplateExactMatch && targetMetaType.isTemplate)
+            {
+                return curClass == compareClass ? EClassRelation.Same : EClassRelation.No;
+            }
+
+            return ValidateClassRelationByMetaClass(curClass, compareClass);
+        }
         public static EClassRelation ValidateClassRelationByMetaClass( MetaClass curClass, MetaClass compareClass )
         {
             // null can be assigned to any non-primitive/reference type parameter.
@@ -620,7 +673,6 @@ namespace SimpleLanguage.Core
                     return EClassRelation.Same;
                 return EClassRelation.Parent;
             }
-
             if ( curClass == CoreMetaClassManager.objectMetaClass )
             {
                 if (curClass == compareClass)
@@ -636,7 +688,15 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if(IsNumberClass(curClass) && IsNumberClass(compareClass ) )
+                if( curClass == CoreMetaClassManager.numMetaClass )
+                {
+                    if (IsNumberClass(compareClass))
+                    {
+                        return EClassRelation.Num;
+                    }
+                    else return EClassRelation.No;
+                }
+                else if(IsNumberClass(curClass) && IsNumberClass(compareClass ) )
                 {
                     //switch( curClass )
                     //{

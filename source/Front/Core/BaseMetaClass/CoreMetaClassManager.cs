@@ -227,6 +227,10 @@ namespace SimpleLanguage.Core
             {
                 return EType.Type;
             }
+            else if( mc == booleanMetaClass )
+            {
+                return EType.Boolean;
+            }
             else if (mc == arrayMetaClass )
             {
                 return EType.Array;

@@ -144,10 +144,10 @@ namespace SimpleLanguage
                             val = lexeme.ToString();
                         }
                         break;
-                    //case EType.Char:
-                    //    {
-                    //        val = '\'' + lexeme.ToString() + '\'';
-                    //    }
+                        //case EType.Char:
+                        //    {
+                        //        val = '\'' + lexeme.ToString() + '\'';
+                        //    }
                         break;
                     case EType.Int16:
                         {
@@ -206,6 +206,10 @@ namespace SimpleLanguage
                         break;
                 }
                 return val + types;
+            }
+            if (type == ETokenType.NumberReal )
+            {
+                return extend.ToString();
             }
             else if (type == ETokenType.String)
             {

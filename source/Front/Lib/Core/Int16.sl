@@ -1,9 +1,9 @@
 public class Int16 extends Num
 {
-    const int MaxValue = 0x7fff;
-    const int MinValue = -0x8000;
+    const Int16 MaxValue = 0x7fff;
+    const Int16 MinValue = 0x8000;
 
-    Int16 _value = 0i;
+    Int16 _value = 0;
     
 
     public static Int16 parse( string s )

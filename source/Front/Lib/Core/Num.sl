@@ -14,7 +14,7 @@ public abstract class Num extends Object
     public abstract Num ceil();
 
     #compare to another numeric value: -1,0,1
-    public abstract Int32 compareTo( Num other );
+    public abstract Byte compareTo( Num other );
 
     
     bool toBool()

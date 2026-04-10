@@ -12,7 +12,7 @@ public class Int64 extends Num
     override get int size() { ret 64 }
     override get int byteLength() { ret 8 }
     
-    public Int64? parse( string s )
+    public Int64 parse( string s )
     {
         ret SystemConvertInt64(s)
     }

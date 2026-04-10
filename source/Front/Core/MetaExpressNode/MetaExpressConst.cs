@@ -116,6 +116,7 @@ namespace SimpleLanguage.Core
         // helper to inspect pooled string during debugging
         public string PooledString => StringPool.GetString(stringRef);
         public EType eType { get; private set; } = EType.None;
+        public override Token token => m_FileMetaConstValueTerm?.token;
 
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
         private List<MetaExpressNode> m_StringParseExpressList = new List<MetaExpressNode>();

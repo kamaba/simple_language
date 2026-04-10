@@ -536,5 +536,10 @@
         FileFunctionDefineConflict = 11011,
         FileFunctionDefineNotHandle = 11012,
         FileFunctionDefineNotName = 11013,
+
+        FileExpressFormatError = 11014,
+        MetaCoreAbstractFunctionNeedInstance = 11015,
+        MetaCoreRepeatDefineFunction = 11016,
+        MetaCoreExpressTypeGEDefineType = 11017,
     }
 }

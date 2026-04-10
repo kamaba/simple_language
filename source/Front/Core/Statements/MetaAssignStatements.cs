@@ -113,18 +113,15 @@ namespace SimpleLanguage.Core
 
         public MetaAssignStatements( MetaBlockStatements mbs ):base( mbs )
         {
-
         }
         public MetaAssignStatements(MetaBlockStatements mbs, FileMetaOpAssignSyntax fmos) : base(mbs)
         {
             m_FileMetaOpAssignSyntax = fmos;
-
             Parse();
         }
         public MetaAssignStatements(MetaBlockStatements mbs, FileMetaDefineVariableSyntax fmos) : base(mbs)
         {
             m_FileMetaDefineVariableSyntax = fmos;
-
             this.m_MetaVariable = mbs.ownerMetaClass.GetMetaMemberVariableByName(m_FileMetaDefineVariableSyntax.name);
 
             Parse();
@@ -260,14 +257,14 @@ namespace SimpleLanguage.Core
                         //m_IsAssign = true;
                         m_OpSign = EOpSign.Plus;
                         m_AutoAddExpressOpSign = ELeftRightOpSign.Add;
-                        m_RightMetaExpress = new MetaConstExpressNode(EType.Int32, 1);
+                        m_RightMetaExpress = new MetaConstExpressNode(EType.SByte, 1);
                     }
                     break;
                 case ETokenType.DoubleMinus:
                     {
                         //m_IsAssign = true;
                         m_OpSign = EOpSign.Minus;
-                        m_RightMetaExpress = new MetaConstExpressNode(EType.Int32, 1);
+                        m_RightMetaExpress = new MetaConstExpressNode(EType.SByte, 1);
                         m_AutoAddExpressOpSign = ELeftRightOpSign.Minus;
                     }
                     break;
@@ -356,6 +353,14 @@ namespace SimpleLanguage.Core
             }
             m_RightMetaExpress.CalcReturnType();
 
+            if (m_MetaVariable != null && m_RightMetaExpress is MetaConstExpressNode rightConst && expressMdt != null)
+            {
+                if (MetaVariable.TryAdjustConstExpressByDefineMetaType(rightConst, expressMdt))
+                {
+                    m_RightMetaExpress.CalcReturnType();
+                }
+            }
+
             MetaType expressRetMetaDefineType = m_RightMetaExpress.GetReturnMetaDefineType();
             if (expressRetMetaDefineType == null)
             {
@@ -392,6 +397,8 @@ namespace SimpleLanguage.Core
         }
         void CheckLeftAndRightExpress()
         {
+            var token = m_RightMetaExpress.token;
+
             MetaType expressRetMetaDefineType = m_RightMetaExpress.GetReturnMetaDefineType();
             //Class1{  set name( string _n) { _name = _n } }
             // c1 = Class1()
@@ -409,36 +416,28 @@ namespace SimpleLanguage.Core
             //}
             //else
             //{
-            if (expressRetMetaDefineType.metaClass == CoreMetaClassManager.nullMetaClass)
+            if (expressRetMetaDefineType == null || expressRetMetaDefineType.metaClass == CoreMetaClassManager.nullMetaClass)
             {
 
             }
             else
             {
-                ClassManager.EClassRelation relation = ClassManager.EClassRelation.No;
-                MetaClass curClass = mdt.metaClass;
+                var relation = ClassManager.ResolveAssignRelation(
+                    mdt,
+                    m_RightMetaExpress,
+                    true,
+                    false,
+                    out expressRetMetaDefineType,
+                    out MetaClass curClass,
+                    out MetaClass compareClass,
+                    out _);
 
-                MetaClass compareClass = null;
-                MetaConstExpressNode constExpressNode = m_RightMetaExpress as MetaConstExpressNode;
-                if (constExpressNode != null && constExpressNode.eType == EType.Null)
+                if (relation == ClassManager.EClassRelation.CompareClassError)
                 {
-                    relation = ClassManager.EClassRelation.Same;
+                    Log.AddMetaCoreLog(LID.Unknown, "Error 赋值表达式返回定义类型为空");
+                    return;
                 }
-                else
-                {
-                    compareClass = expressRetMetaDefineType.metaClass;
-                    if (mdt.isTemplate)
-                    {
-                        if (curClass == compareClass)
-                        {
-                            relation = ClassManager.EClassRelation.Same;
-                        }
-                    }
-                    else
-                    {
-                        relation = ClassManager.ValidateClassRelationByMetaClass(curClass, compareClass);
-                    }
-                }
+
                 StringBuilder sb = new StringBuilder();
                 sb.Append("Warning 在类: " + m_OwnerMetaBlockStatements?.ownerMetaClass.allClassName + " 函数: " + m_OwnerMetaBlockStatements.ownerMetaFunction?.name + "中  ");
                 if (curClass != null)

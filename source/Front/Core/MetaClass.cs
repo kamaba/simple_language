@@ -443,7 +443,7 @@ namespace SimpleLanguage.Core
                         // If parent function is abstract and current class is concrete, require override
                         if (efun.isAbstract && !this.m_IsAbstractClass)
                         {
-                            Log.AddMetaCoreLog(LID.Unknown, "Error 类[" + this.m_AllName + "] 必须实现抽象函数: " + efun.name + " 或 将类声明为 abstract");
+                            Log.AddMetaCoreLog(LID.MetaCoreAbstractFunctionNeedInstance, this.pingToken, "", this.m_ExtendClass.allClassName, efun.name, this.allClassName );
                         }
                         m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
                     }

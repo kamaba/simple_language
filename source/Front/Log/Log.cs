@@ -155,6 +155,11 @@ namespace SimpleLanguage.Logging
         {
             return WriteCoreByToken(lid, EErrorType.ParseMeta, null, objs, msg);
         }
+        public static LogData AddMetaCoreLog(LID lid, Token token, string msg, params object[] objs)
+        {
+            //return WriteCore(lid, LogData.EErrorType.ParseMeta, null, null, msg, args);
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, objs, msg);
+        }
         public static LogData AddMetaCoreLog(LID lid, List<Token> tokens, params object[] objs)
         {
             //return WriteCore(lid, LogData.EErrorType.ParseMeta, null, null, msg, args);

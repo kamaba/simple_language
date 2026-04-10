@@ -329,32 +329,24 @@ namespace SimpleLanguage.Core
                 }
                 if( m_Express is MetaConstExpressNode mcen )
                 {
-                    var curEType = CoreMetaClassManager.GetETypeByMetaClass(m_DefineMetaType.metaClass);
-                    var expEType = mcen.eType;
-
-                    // Define 类型是 object 时，直接沿用表达式常量的真实类型。
-                    if (curEType == EType.Object)
+                    if (!MetaVariable.TryAdjustConstExpressByDefineMetaType(mcen, m_DefineMetaType))
                     {
-                        curEType = expEType;
-                    }
-
-                    if (mcen.eType != curEType )
-                    {
-                        // 数字类型优先走范围检查+强转；其它类型按可转换性处理。
-                        if (TryConvertConstValueByEType(curEType, mcen.value, out var convertedValue))
-                        {
-                            mcen.SetConstValue(curEType, convertedValue);
-                        }
-                        else
-                        {
-                            Log.AddMetaCoreLog(LID.Unknown,
-                                "Error 定义类型与表达式类型不匹配，且常量值超出目标类型范围: "
-                                + "define=" + curEType + ", express=" + expEType + ", value=" + (mcen.value?.ToString() ?? "null"));
-                        }
+                        // 类型不匹配时日志已在 TryAdjustConstExpressByDefineMetaType 内输出
                     }
                     else
                     {
-                        CalcDefineClassType();
+                        var curEType = CoreMetaClassManager.GetETypeByMetaClass(m_DefineMetaType.metaClass);
+                        if (curEType == EType.Object)
+                        {
+                            curEType = mcen.eType;
+                        }
+                        if (curEType == EType.Boolean || curEType == EType.String)
+                        {
+                        }
+                        else
+                        {
+                            CalcDefineClassType();
+                        }
                     }
                 }
                 else
@@ -380,80 +372,6 @@ namespace SimpleLanguage.Core
                 return 1;
             else
                 return -1;
-        }
-
-        private static bool IsNumericEType(EType t)
-        {
-            return t == EType.Byte
-                || t == EType.SByte
-                || t == EType.Int16
-                || t == EType.UInt16
-                || t == EType.Int32
-                || t == EType.UInt32
-                || t == EType.Int64
-                || t == EType.UInt64
-                || t == EType.Float16
-                || t == EType.Float32
-                || t == EType.Float64
-                || t == EType.Num;
-        }
-
-        private static bool TryConvertConstValueByEType(EType targetType, object input, out object converted)
-        {
-            converted = null;
-            try
-            {
-                switch (targetType)
-                {
-                    case EType.Boolean:
-                        converted = Convert.ToBoolean(input);
-                        return true;
-                    case EType.Byte:
-                        converted = Convert.ToByte(input);
-                        return true;
-                    case EType.SByte:
-                        converted = Convert.ToSByte(input);
-                        return true;
-                    case EType.Int16:
-                        converted = Convert.ToInt16(input);
-                        return true;
-                    case EType.UInt16:
-                        converted = Convert.ToUInt16(input);
-                        return true;
-                    case EType.Int32:
-                        converted = Convert.ToInt32(input);
-                        return true;
-                    case EType.UInt32:
-                        converted = Convert.ToUInt32(input);
-                        return true;
-                    case EType.Int64:
-                        converted = Convert.ToInt64(input);
-                        return true;
-                    case EType.UInt64:
-                        converted = Convert.ToUInt64(input);
-                        return true;
-                    case EType.Float16:
-                        converted = (Half)Convert.ToSingle(input);
-                        return true;
-                    case EType.Float32:
-                        converted = Convert.ToSingle(input);
-                        return true;
-                    case EType.Float64:
-                    case EType.Num:
-                        converted = Convert.ToDouble(input);
-                        return true;
-                    case EType.String:
-                        converted = Convert.ToString(input) ?? string.Empty;
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-            catch
-            {
-                converted = null;
-                return false;
-            }
         }
 
         void CalcDefineClassType()
@@ -507,27 +425,19 @@ namespace SimpleLanguage.Core
             {
                 if (m_Express != null)
                 {                    
-                    ClassManager.EClassRelation relation = ClassManager.EClassRelation.No;
-                    MetaConstExpressNode constExpressNode = m_Express as MetaConstExpressNode;
-                    MetaClass curClass = this.m_DefineMetaType.metaClass;
-
-                    MetaClass compareClass = null;
-                    MetaType expressRetMetaDefineType = null;
-                    if (constExpressNode != null && constExpressNode.eType == EType.Null)
+                    var relation = ClassManager.ResolveAssignRelation(
+                        m_DefineMetaType,
+                        m_Express,
+                        false,
+                        true,
+                        out MetaType expressRetMetaDefineType,
+                        out MetaClass curClass,
+                        out MetaClass compareClass,
+                        out bool isNullConstExpress);
+                    if (relation == ClassManager.EClassRelation.CompareClassError)
                     {
-                        relation = ClassManager.EClassRelation.Same;
-                    }
-                    else
-                    {
-                        expressRetMetaDefineType = m_Express.GetReturnMetaDefineType();
-                        if (expressRetMetaDefineType == null)
-                        {
-                            Log.AddMetaCoreLog(LID.Unknown, "Error 表达式中返回定义类型为空 " + m_Express.ToTokenString());
-                            return;
-                        }
-
-                        compareClass = expressRetMetaDefineType.metaClass;
-                        relation = ClassManager.ValidateClassRelationByMetaClass(curClass, compareClass);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 表达式中返回定义类型为空 " + m_Express.ToTokenString());
+                        return;
                     }
 
                     StringBuilder sb = new StringBuilder();
@@ -550,7 +460,7 @@ namespace SimpleLanguage.Core
                     }
                     else if (relation == ClassManager.EClassRelation.Same)
                     {
-                        if( !(constExpressNode != null && constExpressNode.eType == EType.Null ) )
+                        if( !isNullConstExpress )
                         {
                             if( TypeManager.IsCoreMetaType( expressRetMetaDefineType ) )
                             {
@@ -562,7 +472,7 @@ namespace SimpleLanguage.Core
                                 {
                                     if (expressRetMetaDefineType.metaClass == ownerMetaClass && (!m_IsStatic && !m_IsConst))
                                     {
-                                        Log.AddMetaCoreLog(LID.Unknown, "Error 自己类内部不允许包含 自己的实体2，必须赋值为null");
+                                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 自己类内部不允许包含 自己的实体2，必须赋值为null");
                                         return;
                                     }
                                 }
@@ -573,7 +483,12 @@ namespace SimpleLanguage.Core
                     else if (relation == ClassManager.EClassRelation.Parent)
                     {
                         sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                        Log.AddMetaCoreLog(LID.Unknown, sb.ToString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
+                    }
+                    else if( relation == ClassManager.EClassRelation.Num )
+                    {
+                        sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
+                        //Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                     }
                     else if (relation == ClassManager.EClassRelation.Child)
                     {
@@ -587,7 +502,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (expressRetMetaDefineType.metaClass == ownerMetaClass)
                                 {
-                                    Log.AddMetaCoreLog(LID.Unknown, "Error 自己类内部不允许包含 自己的实体3，必须赋值为null");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 自己类内部不允许包含 自己的实体3，必须赋值为null");
                                     return;
                                 }
                             }
@@ -614,7 +529,7 @@ namespace SimpleLanguage.Core
                     else
                     {
                         sb.Append("表达式错误，或者是定义类型错误");
-                        Log.AddMetaCoreLog( LID.Unknown, sb.ToString());
+                        Log.AddMetaCoreLog( LID.ShowExtendMessage, sb.ToString());
                     }
                 }
             }

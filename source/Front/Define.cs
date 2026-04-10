@@ -289,6 +289,8 @@ namespace SimpleLanguage
         BoolValue,
         /// <summary> number </summary>
         Number,
+        /// <summary> NumberReal </summary>
+        NumberReal,
         /// <summary> string </summary>
         String,
         /// <summary> null </summary>

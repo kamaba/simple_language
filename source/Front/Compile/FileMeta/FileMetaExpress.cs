@@ -1358,8 +1358,10 @@ namespace SimpleLanguage.Compile
                 m_Root = list[0];
                 return true;
             }
+            Token ctoken = null;
             int maxLevel = int.MaxValue;
             int index = -1;
+            string extendMessage = "";
             for (int i = 0; i < list.Count; i++)
             {
                 if (maxLevel > list[i].priority && list[i].isDirty == false )
@@ -1367,6 +1369,11 @@ namespace SimpleLanguage.Compile
                     maxLevel = list[i].priority;
                     index = i;
                 }
+                if(ctoken == null )
+                {
+                    ctoken = list[i].token;
+                }
+                extendMessage = extendMessage + "  " + list[i].ToTokenString();
             }
             if (index >= 0 && index < list.Count)
             {
@@ -1449,7 +1456,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddFileMetaLog(LID.Unknown, "选择已经超出来范围!!");
+                Log.AddFileMetaLog(LID.FileExpressFormatError, ctoken, extendMessage );
                 return false;
             }
             return BuildTst(list);

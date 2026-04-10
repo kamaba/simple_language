@@ -198,7 +198,12 @@ namespace SimpleLanguage.Core
                     }
                     else if( mdt.IsNum() )
                     {
-                        m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                        if (constExpressNode != null)
+                        {
+                            var defineEType = CoreMetaClassManager.GetETypeByMetaClass(mdt.metaClass);
+                            MetaVariable.TryAdjustConstExpressByDefineEType(constExpressNode, defineEType);
+                        }
+                        m_DefineVarMetaVariable.SetRealMetaType(new MetaType(mdt));
                     }
                     else
                     {

@@ -156,7 +156,78 @@ namespace SimpleLanguage.Compile
         private bool IsIdentifier(char ch)
         {
             return (ch == '_' || char.IsLetterOrDigit(ch));
-        }       
+        }
+        void AddNumberRealTokenByRange(ulong parsed, string x)
+        {
+            if (parsed <= (ulong)sbyte.MaxValue)
+            {
+                AddToken(ETokenType.NumberReal, (sbyte)parsed, x);
+            }
+            else if (parsed <= byte.MaxValue)
+            {
+                AddToken(ETokenType.NumberReal, (byte)parsed, x);
+            }
+            else if (parsed <= (ulong)short.MaxValue)
+            {
+                AddToken(ETokenType.NumberReal, (short)parsed, x);
+            }
+            else if (parsed <= ushort.MaxValue)
+            {
+                AddToken(ETokenType.NumberReal, (ushort)parsed, x);
+            }
+            else if (parsed <= (ulong)int.MaxValue)
+            {
+                AddToken(ETokenType.NumberReal, (int)parsed, x);
+            }
+            else if (parsed <= uint.MaxValue)
+            {
+                AddToken(ETokenType.NumberReal, (uint)parsed, x);
+            }
+            else if (parsed <= (ulong)long.MaxValue)
+            {
+                AddToken(ETokenType.NumberReal, (long)parsed, x);
+            }
+            else
+            {
+                AddToken(ETokenType.NumberReal, parsed, x);
+            }
+        }
+        void AddIntegerTokenByRange(ulong parsed)
+        {
+            if (parsed <= (ulong)sbyte.MaxValue)
+            {
+                AddToken(ETokenType.Number, (sbyte)parsed, EType.SByte);
+            }
+            else if (parsed <= byte.MaxValue)
+            {
+                AddToken(ETokenType.Number, (byte)parsed, EType.Byte);
+            }
+            else if (parsed <= (ulong)short.MaxValue)
+            {
+                AddToken(ETokenType.Number, (short)parsed, EType.Int16);
+            }
+            else if (parsed <= ushort.MaxValue)
+            {
+                AddToken(ETokenType.Number, (ushort)parsed, EType.UInt16);
+            }
+            else if (parsed <= (ulong)int.MaxValue)
+            {
+                AddToken(ETokenType.Number, (int)parsed, EType.Int32);
+            }
+            else if (parsed <= uint.MaxValue)
+            {
+                AddToken(ETokenType.Number, (uint)parsed, EType.UInt32);
+            }
+            else if (parsed <= (ulong)long.MaxValue)
+            {
+                AddToken(ETokenType.Number, (long)parsed, EType.Int64);
+            }
+            else
+            {
+                AddToken(ETokenType.Number, parsed, EType.UInt64);
+            }
+        }
+
         /// <summary> + </summary>
         void ReadPlus() 
         {
@@ -593,7 +664,18 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        AddToken(ETokenType.Number, int.Parse(m_Builder.ToString()), EType.Int32);
+                        try
+                        {
+                            ulong parsed = Convert.ToUInt64(m_Builder.ToString());
+                            AddIntegerTokenByRange(parsed);
+                        }
+                        catch
+                        {
+                            var ld = Log.AddTokenByString(LID.Unknown, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
+                                , $"Decimal number overflow ({m_Builder}), fallback to UInt64.MaxValue.");
+                            ld.demo = m_Builder.ToString();
+                            AddToken(ETokenType.Number, ulong.MaxValue, EType.UInt64);
+                        }
                         UndoChar();
                     }
                     break;
@@ -615,52 +697,35 @@ namespace SimpleLanguage.Compile
                 }
 
                 string raw = m_Builder.ToString();
-                int digitCount = raw.Length;
-
-                // 鎸夆€滄€讳綅缃€濇帹鏂被鍨嬶細1浣?>Byte, 2浣?>Int16, 3~4浣?>Int32, 瓒呰繃4浣?>Int64
-                EType targetType = EType.Int32;
-                if (digitCount <= 1)
-                {
-                    targetType = EType.Byte;
-                }
-                else if (digitCount <= 2)
-                {
-                    targetType = EType.Int16;
-                }
-                else if (digitCount <= 4)
-                {
-                    targetType = EType.Int32;
-                }
-                else
-                {
-                    targetType = EType.Int64;
-                }
 
                 try
                 {
-                    long parsed = Convert.ToInt64(raw, radix);
-                    switch (targetType)
+                    ulong parsed = Convert.ToUInt64(raw, radix);
+                    string input = raw;
+                    if( radix == 2 )
                     {
-                        case EType.Byte:
-                            AddToken(ETokenType.Number, (byte)parsed, EType.Byte);
-                            break;
-                        case EType.Int16:
-                            AddToken(ETokenType.Number, (short)parsed, EType.Int16);
-                            break;
-                        case EType.Int32:
-                            AddToken(ETokenType.Number, (int)parsed, EType.Int32);
-                            break;
-                        default:
-                            AddToken(ETokenType.Number, parsed, EType.Int64);
-                            break;
+                        input = "0b" + raw;
                     }
+                    else if( radix == 8 )
+                    {
+                        input = "0o" + raw;
+                    }
+                    else if( radix == 16 )
+                    {
+                        input = "0x" + raw;
+                    }
+                    else
+                    {
+                        input = "??" + raw;
+                    }
+                    AddNumberRealTokenByRange(parsed, input);
                 }
                 catch
                 {
                     var ld = Log.AddTokenByString(LID.Unknown, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
-                        ,$"Radix number overflow (0{(radix == 16 ? 'x' : radix == 8 ? 'o' : 'b')}{raw}), fallback to Int64.MaxValue.");
+                        ,$"Radix number overflow (0{(radix == 16 ? 'x' : radix == 8 ? 'o' : 'b')}{raw}), fallback to UInt64.MaxValue.");
                     ld.demo = raw;
-                    AddToken(ETokenType.Number, long.MaxValue, EType.Int64);
+                    AddToken(ETokenType.Number, ulong.MaxValue, EType.UInt64);
                 }
             }
 

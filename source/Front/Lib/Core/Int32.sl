@@ -31,7 +31,7 @@ public class Int32 extends Num
     {
         ret this
     }
-    public override int compareTo(Int32 value)
+    public override Byte compareTo(Num value)
     {
         if (value == null)
         {
