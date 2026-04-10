@@ -41,7 +41,7 @@ namespace SimpleLanguage.Project
         {
             if (string.IsNullOrEmpty(spFilePath))
             {
-                Log.AddProjectLog(LID.FilemetaAddMetaclassMetanodeDuplicateNode_10156, "", spFilePath );
+                Log.AddProjectLog(LID.ShowExtendMessage, "", spFilePath );
                 return;
             }
 
@@ -49,7 +49,7 @@ namespace SimpleLanguage.Project
             string projectDir = Path.GetDirectoryName(spFilePath) ?? string.Empty;
             if (string.IsNullOrEmpty(projectDir) || !Directory.Exists(projectDir))
             {
-                Log.AddProjectLog(LID.FilemetaAddMetaclassMetanodeDuplicateNode_10156, "项目加载路径不正确!!", spFilePath);
+                Log.AddProjectLog(LID.ShowExtendMessage, "项目加载路径不正确!!", spFilePath);
                 return;
             }
 
@@ -59,10 +59,10 @@ namespace SimpleLanguage.Project
             string projectName = Path.GetFileNameWithoutExtension(spFilePath);
             string jsoncFileName = projectName + ".jsonc";
             string jsoncPath = Path.Combine(projectDir, jsoncFileName);
-            Log.AddProjectLog(LID.FilemetaAddMetaclassMetanodeDuplicateNode_10156, $"[LoadProject] using config: {jsoncPath}");
+            Log.AddProjectLog(LID.ShowExtendMessage, $"[LoadProject] using config: {jsoncPath}");
             if (!File.Exists(jsoncPath))
             {
-                Log.AddProjectLog(LID.FilemetaAddMetaclassMetanodeDuplicateNode_10156, $"Error 项目加载路径没有找到 {jsoncFileName} 配置文件!!");
+                Log.AddProjectLog(LID.ShowExtendMessage, $"Error 项目加载路径没有找到 {jsoncFileName} 配置文件!!");
                 return;
             }
 

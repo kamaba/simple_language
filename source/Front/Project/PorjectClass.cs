@@ -185,7 +185,7 @@ namespace SimpleLanguage.Project
             var fileList = cfg.CompileFiles.Files;
             var filter = cfg.CompileFilter;
 
-            Log.AddProjectLog( LID.Unknown, $"[Project] compileFiles count in config = {fileList.Count}");
+            Log.AddProjectLog( LID.ShowExtendMessage, $"[Project] compileFiles count in config = {fileList.Count}");
  
             for (int i = 0; i < fileList.Count; i++)
             {

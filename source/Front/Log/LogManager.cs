@@ -24,6 +24,7 @@ namespace SimpleLanguage.Logging
         private static LogRuntimeOptions _options = new LogRuntimeOptions();
         private static int s_DebugListenerAttached = 0;
         private static ConcurrentDictionary<int, ErrorDefinition> _dict = new ConcurrentDictionary<int, ErrorDefinition>();
+        public static int LanguageIndex { get; set; } = 0;
 
         static LogManager()
         {
@@ -126,18 +127,27 @@ namespace SimpleLanguage.Logging
                 var def = new ErrorDefinition();
                 def.Id = id;
 
-                def.MessageTemplate = parts[1];
-                Enum.TryParse<LogType>(parts[2], true, out var sev);
+
+                Enum.TryParse<LogType>(parts[1], true, out var sev);
                 def.LogType = sev;
-                if (!int.TryParse(parts[3], out var pc)) pc = 0;
+
+
+                bool.TryParse(parts[2], out var ac);
+                def.EnableAssert = ac;
+                bool.TryParse(parts[3], out var al);
+                def.BlockOnErrorAssert = al;
+                if (!int.TryParse(parts[4], out var pc)) pc = 0;
                 def.ParamCount = pc;
-                bool.TryParse(parts[4], out var ac);
-                def.BlockOnErrorAssert = ac;
-                bool.TryParse(parts[5], out var al);
-                def.AbortCompilation = al;
-                Enum.TryParse<ErrorDisplayType>(parts[6], true, out var dtLegacy);
-                def.DisplayType = dtLegacy;
-                def.FixHint = parts[7];
+
+                def.Demo = parts[5];
+
+                def.MessageTemplateArray[0] = parts[6];
+                def.FixedTipArray[0] = parts[7];
+
+                def.MessageTemplateArray[1] = parts[8];
+                def.FixedTipArray[1] = parts[9];
+
+
                 _dict[def.Id] = def;
             }
         }
@@ -184,13 +194,12 @@ namespace SimpleLanguage.Logging
                     Id = (int)LID.Unknown,
                     //Module = LogModule.Project,
                     LogType = LogType.Error,
-                    EnableAssert = true,
+                    EnableAssert = false,
                     BlockOnErrorAssert = false,
                     AbortCompilation = false,
-                    DisplayType = ErrorDisplayType.Direct,
-                    ParamCount = 1,
-                    MessageTemplate = "{0}",
-                    FixHint = "查看调用栈并在对应模块补充明确的错误码定义。",
+                    ParamCount = 0,
+                    //MessageTemplateArray[0] = "{0}",
+                    //FixedTipArray[0] = "查看调用栈并在对应模块补充明确的错误码定义。",
                 });
             }
         }

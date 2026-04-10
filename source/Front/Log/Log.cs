@@ -85,16 +85,18 @@ namespace SimpleLanguage.Logging
         public static void AddLog( LogData data )
         {
             m_LogDataList.Enqueue(data);
+
+            Console.WriteLine(data.ToString());
         }
         //-------------------------------Project----------------------------------------------
         public static LogData AddProjectLog(LID lid, string msg, params object[] par)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, null, null, "", null); ;
+            return WriteCoreByToken(lid, EErrorType.Project, null, null, msg, par );
         }
 
         public static LogData AddProjectLog(LID lid, string msg, Token token, string extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "", null); ;
+            return WriteCoreByToken(lid, EErrorType.Project, token, null, "", null); ;
         }
         //--------------------------------Process----------------------------------------------
         public static LogData AddProcessLog(EProcess proc, LID lid, string msg)
@@ -129,7 +131,7 @@ namespace SimpleLanguage.Logging
         //--------------------------------FileMeta----------------------------------------------
         public static LogData AddFileMetaLog(LID lid, Token token)
         {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "", null );
+            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, new object[1] { token }, "", null );
         }
         public static LogData AddFileMetaLog(LID lid, string msg)
         {
@@ -179,7 +181,7 @@ namespace SimpleLanguage.Logging
             string extendMessage,
             object[] extendsObject )
         {
-            if( LogManager.TryGet( (int)lid, out var errorDefine ) )
+            if( !LogManager.TryGet( (int)lid, out var errorDefine ) )
             {
                 return null;
             }
@@ -200,22 +202,45 @@ namespace SimpleLanguage.Logging
             }
 
             ld.time = DateTime.Now;
-            ld.advan = errorDefine.FixHint;
+            ld.advan = errorDefine.FixedTipArray[LogManager.LanguageIndex];
             ld.demo = errorDefine.Demo;
-            if( errorDefine.ParamCount != objects.Length )
+            if( errorDefine.ParamCount  > 0 )
             {
-                extendMessage = extendMessage + "传入参数与要求参数不对应!";
+                if(objects != null )
+                {
+                    if(errorDefine.ParamCount != objects.Length )
+                    {
+                        extendMessage = extendMessage + "传入参数与要求参数不对应!";
+                    }
+                    else
+                    {
+                        string message = errorDefine.MessageTemplateArray[LogManager.LanguageIndex];
+                        if (!string.IsNullOrWhiteSpace(message))
+                        {
+                            ld.message = string.Format(message, objects);
+                        }
+                    }
+                }
+                else
+                {
+                    extendMessage = extendMessage + "传入参数与要求参数不对应!";
+                }
             }
             else
             {
-                if (!string.IsNullOrWhiteSpace(errorDefine.MessageTemplate))
-                {
-                    ld.message = string.Format(errorDefine.MessageTemplate, objects);
-                }
+                ld.message = errorDefine.MessageTemplateArray[LogManager.LanguageIndex];
             }
+
             if (!string.IsNullOrWhiteSpace(extendMessage))
             {
-                ld.extendMessage = string.Format(extendMessage, extendsObject );
+                if(extendsObject != null )
+                {
+                    ld.extendMessage = string.Format(extendMessage, extendsObject);
+                }
+                else
+                {
+                    ld.extendMessage = extendMessage;
+                }
             }
             AddLog(ld);
 
@@ -227,23 +252,6 @@ namespace SimpleLanguage.Logging
             }
             
             return ld;
-        }
-
-        private static string FormatMessage(ErrorDefinition def, object[] args)
-        {
-            string msg = def.MessageTemplate;
-            try
-            {
-                if (def.ParamCount > 0 && args != null)
-                {
-                    msg = string.Format(CultureInfo.InvariantCulture, def.MessageTemplate, args);
-                }
-            }
-            catch
-            {
-                msg = def.MessageTemplate + " [format error]";
-            }
-            return msg;
         }
         private static void HandleBlocking(ErrorDefinition def, string message)
         {

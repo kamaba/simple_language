@@ -387,7 +387,7 @@ namespace SimpleLanguage.Compile
                                 // local{} must be after imports and before any namespace/class definitions.
                                 if (hasNamespaceOrClass)
                                 {
-                                    Log.AddFileMetaLog(LID.Unknown, "Error local{} 只能写在 import 后、namespace/class/data/enum 前");
+                                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error local{} 只能写在 import 后、namespace/class/data/enum 前");
                                     pnode.parseIndex++;
                                     break;
                                 }
@@ -399,7 +399,7 @@ namespace SimpleLanguage.Compile
                         //    {
                         //        if (hasNamespaceOrClass)
                         //        {
-                        //            Log.AddFileMetaLog(LID.Unknown, "Error global{} 只能写在 import 后、namespace/class/data/enum 前");
+                        //            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error global{} 只能写在 import 后、namespace/class/data/enum 前");
                         //            Debug.Assert(false, "");
                         //            pnode.parseIndex++;
                         //            break;
@@ -407,7 +407,7 @@ namespace SimpleLanguage.Compile
 
                         //        if (!m_FileMeta.path.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase))
                         //        {
-                        //            Log.AddFileMetaLog(LID.Unknown, "Error global{} 只能出现在 .sp 文件中");
+                        //            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error global{} 只能出现在 .sp 文件中");
                         //            pnode.parseIndex++;
                         //            break;
                         //        }
@@ -453,7 +453,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddNodeLog(LID.Unknown, "Error 不允许 在File头级目录中出现2 : " + node.token?.lexeme.ToString());
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 不允许 在File头级目录中出现2 : " + node.token?.lexeme.ToString());
                 }
             }
 
@@ -465,13 +465,13 @@ namespace SimpleLanguage.Compile
                 m_FileMeta.SetDeep(0);
 #endif
 
-                Log.AddNodeLog( LID.Unknown, "解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了 \n " +
+                Log.AddNodeLog( LID.ShowExtendMessage, "解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了 \n " +
                     "生成FileMeta文件成功!!! 下一步，可以 进行混合了");
             }
             else
             {
 
-                Log.AddNodeLog( LID.Unknown, "解析出现错误 ParseFile : " + currentNodeInfo.parseType.ToString() );
+                Log.AddNodeLog( LID.ShowExtendMessage, "解析出现错误 ParseFile : " + currentNodeInfo.parseType.ToString() );
                 return;
             }
             return;

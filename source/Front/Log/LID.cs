@@ -521,5 +521,6 @@
 
 
         FileMetaExpressBeforeDefine = 11000,
+        ShowExtendMessage = 11001,
     }
 }
