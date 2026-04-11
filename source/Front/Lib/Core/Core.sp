@@ -42,6 +42,8 @@ Project
         #Call( BridgeKind.CLR )
         #global.println( "--------------------for enum-------------------" )
         #global.println( "Pi=$global.Pi }" )
+        global.println( "config data $global.var1 " )
+        #global.println( "config data $global.vardata2.a " )
 
         #a = [1,2,"222",1000L,[1,2,3,4]]
         #!
@@ -85,7 +87,7 @@ Project
         }
         !#
             
-
+        #!
         sum = 0
         for i in range(1,10)
         {
@@ -95,9 +97,9 @@ Project
             {
                 sum += n
             }
-            !#
         }
         println(sum)
+        !#
     }
     _test_()
     {

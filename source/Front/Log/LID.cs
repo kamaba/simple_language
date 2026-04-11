@@ -547,5 +547,6 @@
         MetaCoreParseCallLinkFailed = 11021,
         IRParseMetaTypeMetaClassIsNull = 11022,
         ProjectLoadFileFailed = 11023,
+        MetaCoreInterfaceNeedInstance = 11024,
     }
 }

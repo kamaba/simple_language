@@ -345,6 +345,7 @@ namespace SimpleLanguage.Core
         }
         bool CreateCallNode()
         {
+            m_Token = m_FileMetaCallNode?.token;
             int tokenLine = m_FileMetaCallNode?.token != null ? m_FileMetaCallNode.token.sourceBeginLine : -1;
             m_Name = m_FileMetaCallNode.name;
 

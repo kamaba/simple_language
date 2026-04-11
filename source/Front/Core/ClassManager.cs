@@ -152,6 +152,7 @@ namespace SimpleLanguage.Core
         public bool AddMetaData(MetaData dc)
         {
             m_AllDataDict.Add(dc.name, dc);
+            AddRuntimeMetaClass(dc);
             return true;
         }
         public bool CompareMetaClassMemberVariable(MetaClass curClass, MetaClass cpClass)
@@ -214,6 +215,7 @@ namespace SimpleLanguage.Core
         public MetaClass AddClass( FileMetaClass fmc )
         {
             bool isCanAddBind = false;
+            Token token = fmc.token;
             MetaNode finalTopMetaNode = ModuleManager.instance.selfModule.metaNode;
             if( ProjectManager.config?.Project?.Name == "Core" )
             {                

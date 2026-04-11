@@ -57,9 +57,6 @@ public class Range<T:Num> interface IIterable<T>, IIterator<T>
     {
         ret this._current
     }
-    override void release()
-    {
-    }
     override IIterator<T> iterator()
     {
         ret this

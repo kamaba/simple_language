@@ -311,10 +311,10 @@ namespace SimpleLanguage.Project
 
             if (element.ValueKind == JsonValueKind.Object)
             {
-                var dataClass = CreateMetaDataByJsonObject($"ProjectGlobalData_{name}", element, index);
+                var dataClass = CreateMetaDataByJsonObject($"___ProjectGlobalData_{name}___", element, index);
+                mmv.SetIsDefineMetaType(true);
                 mmv.SetMetaDefineType(new MetaType(dataClass));
                 mmv.SetRealMetaType(new MetaType(dataClass));
-                mmv.SetIsDefineMetaType(true);
                 projectMc.AddMetaMemberVariable(mmv);
                 return;
             }
@@ -335,6 +335,8 @@ namespace SimpleLanguage.Project
                 }
                 idx++;
             }
+
+            ClassManager.instance.AddMetaData(md);
             return md;
         }
 

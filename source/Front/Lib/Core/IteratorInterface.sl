@@ -4,7 +4,6 @@ public interface IIterator
     void reset()
     bool moveNext()
     get object current()
-    void release()
 }
 public interface IIterable
 {
@@ -16,7 +15,6 @@ public interface IIterator<T>
     void reset()
     bool moveNext()
     get T current()
-    void release()
 }
 public interface IIterable<T>
 {

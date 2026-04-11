@@ -57,9 +57,6 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         SystemArraySetValueThis(this, this._index, val)
         this._current = val
     }
-    override void release()
-    {
-    }
     override IIterator<T> iterator()
     {
         ret this

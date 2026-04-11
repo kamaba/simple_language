@@ -299,9 +299,13 @@ namespace SimpleLanguage.Core
         //}
         public MetaClass GetTemplateMetaClass()
         {
-            if (m_MetaClass is MetaGenTemplateClass mgtc)
+            if (this.m_MetaClass is MetaGenTemplateClass mgtc)
             {
                 return mgtc.metaTemplateClass;
+            }
+            if( isTemplate )
+            {
+                return m_MetaTemplate.extendsMetaClass;
             }
             return m_MetaClass;
         }

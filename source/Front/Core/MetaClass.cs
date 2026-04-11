@@ -598,7 +598,8 @@ namespace SimpleLanguage.Core
             foreach (var it in this.m_InterfaceMetaType )
             {
                 MetaClass interfaceMc = it.GetTemplateMetaClass();
-            
+
+                Token token = null;
                 foreach( var interfaceMMF in interfaceMc.m_FileCollectMetaMemberFunctionList )
                 {
                     bool certified = false;
@@ -619,7 +620,7 @@ namespace SimpleLanguage.Core
                     }
                     if (!certified)
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "严重错误，必须在接口类型中，要实现接口的函数");
+                        Log.AddMetaCoreLog(LID.MetaCoreInterfaceNeedInstance, token, "", interfaceMc.allClassName, interfaceMMF.name, this.allClassName );
                     }
                 }
             }
