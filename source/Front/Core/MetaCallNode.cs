@@ -90,6 +90,7 @@ namespace SimpleLanguage.Core
     public sealed class MetaCallNode
     {
         public string mame => m_Name;
+        public Token token => m_Token;
         public MetaCallNode frontCallNode => m_FrontCallNode;
         public MetaExpressNode inputExpressNode => m_InputExpressNode;
         public ECallNodeType callNodeType => m_CallNodeType;
@@ -1443,7 +1444,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Error !! 闈炲嚱鏁扮被鍨?!" + m_FileMetaCallNode.token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.MetaCoreParseCallNodeNotFoundContent, token, "" + m_FileMetaCallNode.token.ToLexemeAllString());
                 }
             }
             //if( this.m_MetaArrayCallNodeList.Count > 0 )

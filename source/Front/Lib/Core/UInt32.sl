@@ -8,9 +8,9 @@ public class UInt32 extends Num
     override get int size() { ret 32 }
     override get int byteLength() { ret 4 }
 
-    public static UInt32 parseString( string s )
+    public static UInt32 parse( string s )
     {
-        ret System.Convert.ToUInt32(s)
+        ret SystemConvertUInt32(s)
     }
     _init_( UInt32 _val )
     {

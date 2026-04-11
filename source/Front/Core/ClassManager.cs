@@ -652,7 +652,7 @@ namespace SimpleLanguage.Core
 
             if (useTemplateExactMatch && targetMetaType.isTemplate)
             {
-                return curClass == compareClass ? EClassRelation.Same : EClassRelation.No;
+                curClass = targetMetaType.metaClass;
             }
 
             return ValidateClassRelationByMetaClass(curClass, compareClass);

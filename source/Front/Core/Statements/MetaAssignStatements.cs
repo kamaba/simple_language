@@ -93,16 +93,13 @@ namespace SimpleLanguage.Core
         public MetaExpressNode rightMetaExpress => m_RightMetaExpress;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaCallLinkExpressNode leftMetaExpress => m_LeftMetaExpress;
-        public bool isNewStatements => false;
 
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
         private FileMetaDefineVariableSyntax m_FileMetaDefineVariableSyntax = null;
-
         private MetaVariable m_MetaVariable = null;
         private EOpSign m_OpSign;
         private ELeftRightOpSign m_AutoAddExpressOpSign;
         private Token m_SignToken = null;
-        //private bool m_IsAssign = false;
 
         private MetaCallLinkExpressNode m_LeftMetaExpress;
         private MetaMethodCall m_LeftMethodCall = null;
@@ -146,12 +143,12 @@ namespace SimpleLanguage.Core
 
             if (metaCallLink == null)
             {
-                Log.AddMetaCoreLog(LID.Unknown, "Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
                 return;
             }
             if(m_FileMetaOpAssignSyntax?.staticToken != null )
             {
-                Log.AddMetaCoreLog(LID.Unknown, "Error 不允许在语句中，出现static字段! " + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 不允许在语句中，出现static字段! " + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
             }
 
             m_LeftMetaExpress = new MetaCallLinkExpressNode(metaCallLink);
@@ -505,6 +502,10 @@ namespace SimpleLanguage.Core
                 }
                 else if (relation == ClassManager.EClassRelation.Same)
                 {
+                }
+                else if( relation == ClassManager.EClassRelation.Num )
+                {
+
                 }
                 else if (relation == ClassManager.EClassRelation.Parent)
                 {

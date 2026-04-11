@@ -541,5 +541,7 @@
         MetaCoreAbstractFunctionNeedInstance = 11015,
         MetaCoreRepeatDefineFunction = 11016,
         MetaCoreExpressTypeGEDefineType = 11017,
+        MetaCoreParseCallNodeFailed = 11018,
+        MetaCoreParseCallNodeNotFoundContent = 11019,
     }
 }
