@@ -197,7 +197,8 @@ namespace SimpleLanguage.Project
             //Debug.Write("currentTime: " + timeAdd.ToString());
         }
         public static void CompileFileAllEnd()
-        {           
+        {
+            Log.AddProcessLog(LID.ProcessCompileMetaStart, "");
             for ( int i = 0; i < fileParseList.Count; i++ )
             {
                 fileParseList[i].CreateNamespace();
@@ -252,11 +253,7 @@ namespace SimpleLanguage.Project
 
             ModuleManager.instance.selfModule.metaNode.SetDeep(0);
 
-
-            // Front layer print output is disabled.
-            // Debug/export content is written to DebugCode/*.txt by dedicated exporters.
-
-            // (reserved) Export steps are invoked explicitly by Export pipeline.
+            Log.AddProcessLog(LID.ProcessCompileMetaEnd, "");
         }
     }
 }

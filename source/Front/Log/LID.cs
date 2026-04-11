@@ -528,7 +528,7 @@
         ProjectShowConfigSuccessPath = 11005,
         ProjectParseConfigFailed = 11006,
         ProjectShowCompileFiles = 11007,
-        ProjectCompileFileStart = 11008,
+        ProcessCompileFileStart = 11008,
 
 
         MetaCoreExpressIsNull = 11009,
@@ -546,7 +546,10 @@
         MetaCoreParseCallNodeNotFoundInClass = 11020,
         MetaCoreParseCallLinkFailed = 11021,
         IRParseMetaTypeMetaClassIsNull = 11022,
-        ProjectLoadFileFailed = 11023,
+        ProcessLoadFileFailed = 11023,
         MetaCoreInterfaceNeedInstance = 11024,
+        ProcessCompileFileCompleted = 11025,
+        ProcessCompileMetaStart = 11026,
+        ProcessCompileMetaEnd = 11027,
     }
 }

@@ -14,17 +14,6 @@ using System.Text;
 
 namespace SimpleLanguage.Logging
 {
-    public enum EProcess
-    {
-        None,
-        ParseToken,
-        ParseNode,
-        StructFileMeta,
-        StructMeta,
-        HandleClass,
-        HandleMember,
-        HandleSyntax,
-    }
     public enum EErrorType
     {
         None,
@@ -102,9 +91,13 @@ namespace SimpleLanguage.Logging
             return WriteCoreByToken(lid, EErrorType.Project, token, null, ""); ;
         }
         //--------------------------------Process----------------------------------------------
-        public static LogData AddProcessLog(EProcess proc, LID lid, string msg)
+        public static LogData AddProcessLog(LID lid, string msg, params object[] par)
         {
-            return WriteCoreByToken(lid, EErrorType.Process, null, null, msg ); ;
+            return WriteCoreByToken(lid, EErrorType.Process, null, par, msg);
+        }
+        public static LogData AddProcessLog(LID lid, string msg, Token token, string extendMessage = null)
+        {
+            return WriteCoreByToken(lid, EErrorType.Process, token, null, ""); ;
         }
         //--------------------------------Token----------------------------------------------
         public static LogData AddTokenByString( LID lid, string path, int sLine, int sChar, int eLine, int eChar, string msg)

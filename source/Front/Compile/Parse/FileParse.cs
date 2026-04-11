@@ -59,7 +59,7 @@ namespace SimpleLanguage.Compile
         }
         public bool LoadFile()
         {
-            Log.AddProjectLog( LID.ProjectCompileFileStart, "", m_FilePath );
+            Log.AddProcessLog( LID.ProcessCompileFileStart, "", m_FilePath );
             m_FileCompileState.SetLoadState( FileCompileState.ELoadState.LoadStart );
             string realpath = Path.Combine(ProjectManager.projectPath, m_FilePath);
             using (var stream = File.OpenRead(realpath))
@@ -109,6 +109,8 @@ namespace SimpleLanguage.Compile
 
                 ExportFileMetaDebugData();
 
+                Log.AddProcessLog(LID.ProcessCompileFileCompleted, "", m_FilePath );
+
                 if (structParseComplete != null )
                 {
                     structParseComplete();
@@ -116,7 +118,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddProjectLog( LID.ProjectLoadFileFailed, "读取文件出错 FileParse Parse LoadFile !!!");
+                Log.AddProcessLog( LID.ProcessLoadFileFailed, "读取文件出错 FileParse Parse LoadFile !!!");
             }
         }
         public void CreateNamespace()
