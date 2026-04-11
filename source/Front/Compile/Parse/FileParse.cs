@@ -116,7 +116,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddFileMetaLog( LID.Unknown, "读取文件出错 FileParse Parse LoadFile !!!");
+                Log.AddProjectLog( LID.ProjectLoadFileFailed, "读取文件出错 FileParse Parse LoadFile !!!");
             }
         }
         public void CreateNamespace()
@@ -137,6 +137,10 @@ namespace SimpleLanguage.Compile
         }
         public void SaveCodeToFile()
         {
+            if (!Common.ShouldExportDebugText("Code.txt"))
+            {
+                return;
+            }
             string outPath = Common.GetDebugCodeFilePath(m_FilePath, "Code.txt");
             File.WriteAllText(outPath, new string(m_ContentBuffer));
         }
@@ -145,6 +149,10 @@ namespace SimpleLanguage.Compile
         {
             try
             {
+                if (!Common.ShouldExportDebugText("File.txt"))
+                {
+                    return;
+                }
                 string outPath = Common.GetDebugCodeFilePath(m_FilePath, "File.txt");
                 File.WriteAllText(outPath, m_File?.ToFormatString() ?? string.Empty);
             }
@@ -158,6 +166,10 @@ namespace SimpleLanguage.Compile
         {
             try
             {
+                if (!Common.ShouldExportDebugText("Meta.txt"))
+                {
+                    return;
+                }
                 string outPath = Common.GetDebugCodeFilePath(m_FilePath, "Meta.txt");
                 StringBuilder sb = new StringBuilder();
                 sb.AppendLine("-------------------Meta 文件显示 开始 : Path: " + m_FilePath + "-----------------------");

@@ -284,6 +284,7 @@ namespace SimpleLanguage.Core
                 m_VisitNodeList.Clear();
                 int i = 0;
                 MetaCallNode frontNode = null;
+                StringBuilder sb = new StringBuilder();
                 while (true)
                 {
                     if (i >= newList.Count)
@@ -297,6 +298,8 @@ namespace SimpleLanguage.Core
                     }
                     AddVisitNodeList(i, mcn, frontNode);
 
+                    sb.Append($"[Pos:{i} Name:{mcn.name} Status:{ "OK" }");
+
                     frontNode = mcn;
                 }
             }
@@ -306,8 +309,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.Unknown, "Parse execute call-link failed.");
-                Debug.Assert(false, "Parse execute call-link failed.");
+                Log.AddMetaCoreLog(LID.MetaCoreParseCallLinkFailed, "");
                 flag = false;
             }
 

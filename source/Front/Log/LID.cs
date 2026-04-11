@@ -543,5 +543,9 @@
         MetaCoreExpressTypeGEDefineType = 11017,
         MetaCoreParseCallNodeFailed = 11018,
         MetaCoreParseCallNodeNotFoundContent = 11019,
+        MetaCoreParseCallNodeNotFoundInClass = 11020,
+        MetaCoreParseCallLinkFailed = 11021,
+        IRParseMetaTypeMetaClassIsNull = 11022,
+        ProjectLoadFileFailed = 11023,
     }
 }

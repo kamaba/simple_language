@@ -157,6 +157,30 @@ namespace SimpleLanguage.Project
                 }
             }
 
+            if (TryGetObj(root, "export", out var exportObj))
+            {
+                cfg.Export.ModuleName = GetStr(exportObj, "moduleName", cfg.Export.ModuleName);
+                cfg.Export.OutputDir = GetStr(exportObj, "outputDir", cfg.Export.OutputDir);
+                cfg.Export.StringPoolAsBlob = GetBool(exportObj, "stringPoolAsBlob", cfg.Export.StringPoolAsBlob);
+                cfg.Export.ExportPublicOnly = GetBool(exportObj, "exportPublicOnly", cfg.Export.ExportPublicOnly);
+                cfg.Export.IncludeMetadata = GetBool(exportObj, "includeMetadata", cfg.Export.IncludeMetadata);
+
+                cfg.Export.VersionMain = GetInt(exportObj, "versionMain", cfg.Export.VersionMain);
+                cfg.Export.VersionSub = GetInt(exportObj, "versionSub", cfg.Export.VersionSub);
+                cfg.Export.VersionPatch = GetInt(exportObj, "versionPatch", cfg.Export.VersionPatch);
+
+                if (TryGetObj(exportObj, "debugText", out var debugTextObj))
+                {
+                    cfg.Export.DebugText.OutputDir = GetStr(debugTextObj, "outputDir", cfg.Export.DebugText.OutputDir);
+                    cfg.Export.DebugText.Code = GetBool(debugTextObj, "code", cfg.Export.DebugText.Code);
+                    cfg.Export.DebugText.Token = GetBool(debugTextObj, "token", cfg.Export.DebugText.Token);
+                    cfg.Export.DebugText.Node = GetBool(debugTextObj, "node", cfg.Export.DebugText.Node);
+                    cfg.Export.DebugText.File = GetBool(debugTextObj, "file", cfg.Export.DebugText.File);
+                    cfg.Export.DebugText.Meta = GetBool(debugTextObj, "meta", cfg.Export.DebugText.Meta);
+                    cfg.Export.DebugText.IR = GetBool(debugTextObj, "ir", cfg.Export.DebugText.IR);
+                }
+            }
+
             if (root.TryGetProperty("references", out var refs) && refs.ValueKind == JsonValueKind.Array)
             {
                 foreach (var r in refs.EnumerateArray())

@@ -192,6 +192,19 @@ namespace SimpleLanguage.Project
             public int VersionMain { get; set; } = 0;
             public int VersionSub { get; set; } = 1;
             public int VersionPatch { get; set; } = 0;
+
+            public DebugTextExportSection DebugText { get; set; } = new DebugTextExportSection();
+        }
+
+        public class DebugTextExportSection
+        {
+            public string OutputDir { get; set; } = "DebugCode";
+            public bool Code { get; set; } = true;
+            public bool Token { get; set; } = true;
+            public bool Node { get; set; } = true;
+            public bool File { get; set; } = true;
+            public bool Meta { get; set; } = true;
+            public bool IR { get; set; } = true;
         }
 
         public class ReferenceSection

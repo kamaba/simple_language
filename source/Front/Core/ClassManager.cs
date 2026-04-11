@@ -650,11 +650,6 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            if (useTemplateExactMatch && targetMetaType.isTemplate)
-            {
-                curClass = targetMetaType.metaClass;
-            }
-
             return ValidateClassRelationByMetaClass(curClass, compareClass);
         }
         public static EClassRelation ValidateClassRelationByMetaClass( MetaClass curClass, MetaClass compareClass )

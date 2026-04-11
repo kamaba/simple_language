@@ -38,7 +38,7 @@ public class Int32 extends Num
             ret 1;
         }
         if (this._value == value ){ ret 0; }
-        ret this._value > value._value ? 1 : -1
+        ret this._value > this._value ? 1 : -1
     }
     override bool toBool()
     {

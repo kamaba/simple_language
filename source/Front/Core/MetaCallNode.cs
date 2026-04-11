@@ -89,7 +89,7 @@ namespace SimpleLanguage.Core
     }
     public sealed class MetaCallNode
     {
-        public string mame => m_Name;
+        public string name => m_Name;
         public Token token => m_Token;
         public MetaCallNode frontCallNode => m_FrontCallNode;
         public MetaExpressNode inputExpressNode => m_InputExpressNode;
@@ -1913,7 +1913,7 @@ namespace SimpleLanguage.Core
                     }
                     catch { }
                 }
-                Log.AddMetaCoreLog(LID.Unknown, "Error 璁剧疆notStatic鏃讹紝娌℃湁鎵惧埌鐩稿簲鐨勫彉閲?" + m_Token?.ToLexemeAllString());
+                Log.AddMetaCoreLog(LID.MetaCoreParseCallNodeNotFoundInClass, m_Token, "", m_Token, mc.allClassName );
                 return false;
             }
 

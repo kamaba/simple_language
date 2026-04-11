@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Core;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.IR
 {
@@ -73,9 +74,13 @@ namespace SimpleLanguage.IR
             //{
             //    irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(type.genTemplateMetaTypeList[i], irmt.m_IROwnerMetaClass));
             //}
-            if (irmt.m_IRMetaClass == null || irmt.m_IROwnerMetaClass == null)
+            if (irmt.m_IRMetaClass == null )
             {
-                Debug.Assert(false, "这个不可以为空!");
+                Log.AddIRLog(LID.IRParseMetaTypeMetaClassIsNull, "IRMetaClass");
+            }
+            if(irmt.m_IROwnerMetaClass == null )
+            {
+                Log.AddIRLog(LID.IRParseMetaTypeMetaClassIsNull, "IROwnerMetaClass");
             }
             return irmt;
         }

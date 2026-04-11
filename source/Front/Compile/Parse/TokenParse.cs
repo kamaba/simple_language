@@ -697,6 +697,7 @@ namespace SimpleLanguage.Compile
                 if (m_RootNode == null) return;
                 if (isWriteFile)
                 {
+                    if (!Common.ShouldExportDebugText("Node.txt")) return;
                     var outFile = Common.GetDebugCodeFilePath(m_FileMeta.path, "Node.txt");
                     string content = m_RootNode.ToFormatString();
                     File.WriteAllText(outFile, content);

@@ -49,12 +49,12 @@ namespace SimpleLanguage.Project
 
             var spPath = Path.Combine(projectDir, projectName + ".sp");
             var jsoncPath = Path.Combine(projectDir, projectName + ".jsonc");
-            var mainSlPath = Path.Combine(projectDir, "Main.sl");
+            //var mainSlPath = Path.Combine(projectDir, "Main.sl");
 
             if (!File.Exists(spPath))
             {
                 File.WriteAllText(spPath,
-                    "Project\n{\n    _main_()\n    {\n    }\n\n    _test_()\n    {\n    }\n\n    CompileBefore()\n    {\n    }\n\n    CompileAfter()\n    {\n    }\n}\n",
+                    "Project\n{\n    _main_()\n    {\n    }\n\n    _test_()\n    {\n    }\n\n    _compile_before_()\n    {\n    }\n\n    _compile_after_()\n    {\n    }\n}\n",
                     new UTF8Encoding(true));
             }
 
@@ -98,12 +98,12 @@ namespace SimpleLanguage.Project
                     new UTF8Encoding(true));
             }
 
-            if (!File.Exists(mainSlPath))
-            {
-                File.WriteAllText(mainSlPath,
-                    "Main\n{\n    fun()\n    {\n    }\n}\n",
-                    new UTF8Encoding(true));
-            }
+            //if (!File.Exists(mainSlPath))
+            //{
+            //    File.WriteAllText(mainSlPath,
+            //        "Main\n{\n    fun()\n    {\n    }\n}\n",
+            //        new UTF8Encoding(true));
+            //}
 
             ProjectClass.ExportProjectGuideMarkdown(spPath, jsoncPath);
 

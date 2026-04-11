@@ -12,9 +12,9 @@ public class UInt16 extends Num
     override get int size() { ret 16 }
     override get int byteLength() { ret 2 }
 
-    public static UInt16 parseString(string s)
+    public static UInt16 parse(string s)
     {
-        ret System.Convert.ToUInt16(s)
+        ret SystemConvertUInt16(s)
     }
 
     public override Num abs()

@@ -81,6 +81,10 @@ namespace SimpleLanguage.IR
         {
             try
             {
+                if (!Common.ShouldExportDebugText("IR.txt"))
+                {
+                    return;
+                }
                 var fileClassMap = new Dictionary<string, List<IRMetaClass>>();
                 for (int i = 0; i < m_IRMetaClassList.Count; i++)
                 {

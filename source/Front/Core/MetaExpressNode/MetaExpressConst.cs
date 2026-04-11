@@ -210,6 +210,11 @@ namespace SimpleLanguage.Core
                         value = val.ToString() == "true";
                     }
                     break;
+                case EType.Null:
+                    {
+                        value = "null";
+                    }
+                    break;
                 default:
                     {
                         value = val;

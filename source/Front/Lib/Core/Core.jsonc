@@ -82,5 +82,22 @@
       { "namespace": "Std" },
       { "class": "Std.Console" }
     ]
+  },
+  "export": {
+    "moduleName": "Core",
+    "outputDir":"Export/SLVMCode",
+    "versionMain": 1,
+    "versionSub": 0,
+    "versionPatch": 0,
+    "includeMetadata": true,
+    "debugText":{
+      "outputDir":"",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
   }
 }
