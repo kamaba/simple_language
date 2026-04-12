@@ -329,7 +329,7 @@ namespace SimpleLanguage.VM
             isNull = false;
 
 
-            Log.AddVM(LID.Unknown, "SetStringValue" + val );
+            Log.AddRuntimeLog(LID.Unknown, "SetStringValue" + val );
         }
 
         public void SetValue(SObject val)

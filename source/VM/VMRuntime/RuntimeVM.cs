@@ -115,7 +115,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 for (int i = 0; i < m_ArgumentRuntimeObjectArray.Length; i++)
                 {
-                    Log.AddVM(LID.Unknown, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentRuntimeObjectArray[i]?.ToString() + "]");
+                    Log.AddProjectLog(LID.Unknown, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentRuntimeObjectArray[i]?.ToString() + "]");
                 }
 
                 //灞€閮ㄥ彉閲忓垪琛?local variable table
@@ -133,7 +133,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 for (int i = 0; i < m_LocalVariableRuntimeObjectArray.Length; i++)
                 {
-                    Log.AddVM(LID.Unknown, "Variable_" + i.ToString() + m_LocalVariableRuntimeObjectArray[i].ToString());
+                    Log.AddProjectLog(LID.Unknown, "Variable_" + i.ToString() + m_LocalVariableRuntimeObjectArray[i].ToString());
                 }
             }
 
@@ -330,7 +330,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ArgumentRuntimeObjectArray.Length)
             {
-                Log.AddVM(LID.Unknown, $"SVM Error FunctionName:{this.id} 鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
+                Log.AddProjectLog(LID.Unknown, $"SVM Error FunctionName:{this.id} 鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
                 return;
             }
             GetObjectByValue(0, index, ref svalue);
@@ -339,7 +339,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ArgumentRuntimeObjectArray.Length)
             {
-                Log.AddVM(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
+                Log.AddProjectLog(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
                 return;
             }
             SetObjectByValue(0, index, ref svalue);
@@ -348,7 +348,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_LocalVariableRuntimeObjectArray.Length)
             {
-                Log.AddVM(LID.Unknown, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
+                Log.AddProjectLog(LID.Unknown, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
                 return;
             }
             SetObjectByValue(1, index, ref svalue);
@@ -358,7 +358,7 @@ namespace SimpleLanguage.VM.Runtime
 
             if (index > m_LocalVariableRuntimeObjectArray.Length)
             {
-                Log.AddVM(LID.Unknown, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
+                Log.AddProjectLog(LID.Unknown, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
                 return;
             }
             GetObjectByValue(1, index, ref svalue);
@@ -367,7 +367,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ReturnRuntimeObjectArray.Length)
             {
-                Log.AddVM(LID.Unknown, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
+                Log.AddProjectLog(LID.Unknown, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
                 return;
             }
             SetObjectByValue(2, index, ref svalue);
@@ -410,7 +410,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 pushChar = '\t' + pushChar;
             }
-            Log.AddVM(LID.Unknown, pushChar + "[VMRuntime] [Push] Method: [" + funName + "]");
+            Log.AddProjectLog(LID.Unknown, pushChar + "[VMRuntime] [Push] Method: [" + funName + "]");
             level++;
 
             var topClrRuntime = CLRVM.topCLRRuntime;
@@ -445,7 +445,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 pushChar = '\t' + pushChar;
             }
-            Log.AddVM(LID.Unknown, pushChar + "[VMRuntime] [Pop] Method: [" + funName + "]");
+            Log.AddProjectLog(LID.Unknown, pushChar + "[VMRuntime] [Pop] Method: [" + funName + "]");
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private string MakeIndent(int count) { return new string(' ', count); }
@@ -1142,7 +1142,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Log.AddVM(LID.Unknown, "涓嶆槸鏁扮粍绫诲瀷!!");
+                            Log.AddProjectLog(LID.Unknown, "涓嶆槸鏁扮粍绫诲瀷!!");
                         }
                     }
                     break;
@@ -1177,7 +1177,7 @@ namespace SimpleLanguage.VM.Runtime
                         else
                         {
                             Debug.Assert(false, "涓嶆槸鏁扮粍绫诲瀷!!");
-                            Log.AddVM(LID.Unknown, "涓嶆槸鏁扮粍绫诲瀷!!");
+                            Log.AddProjectLog(LID.Unknown, "涓嶆槸鏁扮粍绫诲瀷!!");
                         }
                         m_ValueIndex -= 2;
                     }
@@ -1195,7 +1195,7 @@ namespace SimpleLanguage.VM.Runtime
                         else
                         {
                             Debug.Assert(false, "涓嶆槸鏁扮粍绫诲瀷!!");
-                            Log.AddVM(LID.Unknown, "涓嶆槸鏁扮粍绫诲瀷!!");
+                            Log.AddProjectLog(LID.Unknown, "涓嶆槸鏁扮粍绫诲瀷!!");
                         }
                         m_ValueIndex -= 1;
                     }
@@ -1214,7 +1214,7 @@ namespace SimpleLanguage.VM.Runtime
                         else
                         {
                             Debug.Assert(false, "涓嶆槸鏁扮粍绫诲瀷!!");
-                            Log.AddVM(LID.Unknown, "涓嶆槸鏁扮粍绫诲瀷!!");
+                            Log.AddProjectLog(LID.Unknown, "涓嶆槸鏁扮粍绫诲瀷!!");
                         }
                         m_ValueIndex -= 3;
                     }
@@ -1372,7 +1372,7 @@ namespace SimpleLanguage.VM.Runtime
                             var sval = m_ValueStack[m_ValueIndex - 1];
                             if (sval.eType != EVMType.Int32)
                             {
-                                Log.AddVM(LID.Unknown, "鍒涘缓鏁扮粍闀垮害涓嶆槸Int32绫诲瀷!!");
+                                Log.AddProjectLog(LID.Unknown, "鍒涘缓鏁扮粍闀垮害涓嶆槸Int32绫诲瀷!!");
                                 break;
                             }
 
@@ -1506,7 +1506,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 1 < 0)
                         {
-                            Log.AddVM(LID.Unknown, "Error Neg杩愮畻!!瓒呭嚭鐨勬爤鑼冨洿");
+                            Log.AddProjectLog(LID.Unknown, "Error Neg杩愮畻!!瓒呭嚭鐨勬爤鑼冨洿");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 1].NegSValue(false);
@@ -1516,7 +1516,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 1 < 0)
                         {
-                            Log.AddVM(LID.Unknown, "Error Not杩愮畻!!瓒呭嚭鐨勬爤鑼冨洿");
+                            Log.AddProjectLog(LID.Unknown, "Error Not杩愮畻!!瓒呭嚭鐨勬爤鑼冨洿");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 1].NotSValue();
@@ -1635,7 +1635,7 @@ namespace SimpleLanguage.VM.Runtime
                                 ObjectSystemMethodCall.ExecuteSystemArraySetValueThis(this, sysPkg);
                                 break;
                             default:
-                                Log.AddVM(LID.Unknown, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + (sysPkg.name ?? string.Empty));
+                                Log.AddProjectLog(LID.Unknown, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + (sysPkg.name ?? string.Empty));
                                 Debug.Assert(false, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
                                 break;
                         }
@@ -1747,7 +1747,7 @@ namespace SimpleLanguage.VM.Runtime
                             int stackIndex = m_ValueIndex - iri.index;
                             if (stackIndex < 0)
                             {
-                                Log.AddVM(LID.Unknown, "StackIndex 鏄礋鏁?");
+                                Log.AddProjectLog(LID.Unknown, "StackIndex 鏄礋鏁?");
                                 return;
                             }
                             var v = m_ValueStack[stackIndex];
@@ -1765,7 +1765,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             if (irc == null)
                             {
-                                Log.AddVM(LID.Unknown, "IRC鏄皟鐢ㄨ櫄鍑芥暟涓虹┖!!");
+                                Log.AddProjectLog(LID.Unknown, "IRC鏄皟鐢ㄨ櫄鍑芥暟涓虹┖!!");
                                 Debug.Assert(false, "");
                                 return;
                             }
@@ -1808,7 +1808,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Log.AddVM(LID.Unknown, "Dynamic function call from stack failed.");
+                            Log.AddProjectLog(LID.Unknown, "Dynamic function call from stack failed.");
                         }
                     }
                     break;
@@ -1829,7 +1829,7 @@ namespace SimpleLanguage.VM.Runtime
                         int stackIndex = m_ValueIndex - stackFrontIndex;
                         if (stackIndex < 0)
                         {
-                            Log.AddVM(LID.Unknown, "Stack index is negative.");
+                            Log.AddProjectLog(LID.Unknown, "Stack index is negative.");
                             return;
                         }
                         var v = m_ValueStack[stackIndex];
@@ -1873,7 +1873,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         if (irc == null)
                         {
-                            Log.AddVM(LID.Unknown, "Virtual call failed: runtime class is null.");
+                            Log.AddProjectLog(LID.Unknown, "Virtual call failed: runtime class is null.");
                             return;
                         }
                         RuntimeMethod cfc = irc.GetNonStaticMethodByIndex(iri.index);
@@ -1881,7 +1881,7 @@ namespace SimpleLanguage.VM.Runtime
 
                         if (cfc == null)
                         {
-                            Log.AddVM(LID.Unknown, "Virtual call failed: method not found by index.");
+                            Log.AddProjectLog(LID.Unknown, "Virtual call failed: method not found by index.");
                             Debug.Assert(false, "Method index not found: " + iri.index);
                             return;
                         }
@@ -1983,7 +1983,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 1 < 0)
                         {
-                            Log.AddVM(LID.Unknown, "Error 姣旇緝绗﹁秴鍑轰竴褰撳墠鐨勬暟鎹爤!!");
+                            Log.AddProjectLog(LID.Unknown, "Error 姣旇緝绗﹁秴鍑轰竴褰撳墠鐨勬暟鎹爤!!");
                             break;
                         }
                         var mt = TryGetInstructionRuntimeDefType(iri);

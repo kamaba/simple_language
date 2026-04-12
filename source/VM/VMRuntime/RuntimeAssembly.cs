@@ -41,7 +41,7 @@ namespace SimpleLanguage.VM
 
             if (!File.Exists(assemblyPath))
             {
-                Log.AddVM(LID.Unknown, $"LoadFromPath: assembly not found: {assemblyPath}");
+                Log.AddRuntimeLog(LID.Unknown, $"LoadFromPath: assembly not found: {assemblyPath}");
                 return null;
             }
 

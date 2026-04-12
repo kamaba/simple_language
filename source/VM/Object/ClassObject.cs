@@ -8,7 +8,6 @@
 
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.VM
@@ -122,12 +121,12 @@ namespace SimpleLanguage.VM
         {
             if (index < 0 )
             {
-                Log.AddVM(LID.Unknown, "执行的参数超出范围!! < 0 ");
+                Log.AddRuntimeLog(LID.Unknown, "执行的参数超出范围!! < 0 ");
                 return;
             }
             if (index > m_MemberRuntimeObjectArray.Length)
             {
-                Log.AddVM(LID.Unknown, "执行的参数超出范围!!");
+                Log.AddRuntimeLog(LID.Unknown, "执行的参数超出范围!!");
                 return;
             }
             m_MemberRuntimeObjectArray[index].SetSValueBySObjct(ref svalue);
@@ -136,7 +135,7 @@ namespace SimpleLanguage.VM
         {
             if (index > m_MemberRuntimeObjectArray.Length)
             {
-                Log.AddVM(LID.Unknown, "执行的参数超出范围!!");
+                Log.AddRuntimeLog(LID.Unknown, "执行的参数超出范围!!");
                 return;
             }
 

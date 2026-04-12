@@ -49,7 +49,7 @@ namespace SimpleLanguage.VM
             if (index >= m_NotStaticMethodList.Count || index < 0)
             {
                 Debug.Assert(false);
-                Log.AddVM(LID.Unknown, "GetIRMethodByIndex is null");
+                Log.AddRuntimeLog(LID.Unknown, "GetIRMethodByIndex is null");
                 return null;
             }
             return m_NotStaticMethodList[index];

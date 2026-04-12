@@ -279,7 +279,7 @@ namespace SimpleLanguage.VM
                 default:
                     {
                         Debug.Assert(false);
-                        Log.AddVM(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勫垱寤?!");
+                        Log.AddRuntimeLog(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勫垱寤?!");
                     }
                     break;
             }
@@ -289,13 +289,13 @@ namespace SimpleLanguage.VM
             if (index < 0)
             {
                 Debug.Assert(false);
-                Log.AddVM(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?! < 0 ");
+                Log.AddRuntimeLog(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?! < 0 ");
                 return;
             }
             if (index >= m_Length )
             {
                 Debug.Assert(false);
-                Log.AddVM(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
+                Log.AddRuntimeLog(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
                 return;
             }
 
@@ -499,7 +499,7 @@ namespace SimpleLanguage.VM
                     default:  
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勮鍙?!");
+                            Log.AddRuntimeLog(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勮鍙?!");
                         }
                         break;
                 }
@@ -510,12 +510,12 @@ namespace SimpleLanguage.VM
         {
             if (index < 0)
             {
-                Log.AddVM(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?! < 0 ");
+                Log.AddRuntimeLog(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?! < 0 ");
                 return null;
             }
             if (index > m_Length)
             {
-                Log.AddVM(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
+                Log.AddRuntimeLog(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
                 return null;
             }
 
@@ -936,7 +936,7 @@ namespace SimpleLanguage.VM
                 default:    
                     {
                         Debug.Assert(false);
-                        Log.AddVM(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勫瓨鍌?!");
+                        Log.AddRuntimeLog(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勫瓨鍌?!");
                     }
                     break;
             }
