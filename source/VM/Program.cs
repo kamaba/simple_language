@@ -6,6 +6,7 @@ using SimpleLanguage.VM;
 
 Console.WriteLine("---------------------------SimpleLanguage VM---------------------------");
 
+LogManager.Initialize("");
 Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", "E:\\project\\lang\\simple_language\\source\\Front\\bin\\Debug\\net8.0\\out\\export");
 
 try

@@ -7,9 +7,8 @@
 //****************************************************************************
 
 
+using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
-using System;
-using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
@@ -30,7 +29,7 @@ namespace SimpleLanguage.VM
         {
             if (m_MethodInfo == null)
             {
-                Debug.Write("error 执行时发现系统空函数");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "error 执行时发现系统空函数");
                 return;
             }
 
@@ -76,7 +75,7 @@ namespace SimpleLanguage.VM
             if (dll == IntPtr.Zero)
             {
                 //throw new Exception("LoadLibrary failed");
-                Debug.Assert(false, "LoadLibrary failed");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "LoadLibrary failed");
                 return;
             }
             
@@ -95,7 +94,7 @@ namespace SimpleLanguage.VM
                 func = GetProcAddress(dll, functionName );
                 if (func == IntPtr.Zero)
                 {
-                    Debug.Assert(false, "GetProcAddress failed");
+                    Log.AddRuntimeLog(LID.ShowMessageAssert, "GetProcAddress failed");
                     //throw new Exception("GetProcAddress failed");
                     return;
                 }
@@ -106,7 +105,7 @@ namespace SimpleLanguage.VM
             }
             catch (Exception e)
             {
-                Console.WriteLine("------" + e.Message);
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "Exception occurred: " + e.Message);
             }
         }
         public RuntimeNativeCall(RuntimeMethod _irMethod)

@@ -1,5 +1,4 @@
 ﻿using SimpleLanguage.Logging;
-using System.Diagnostics;
 
 namespace SimpleLanguage.VM
 {
@@ -48,8 +47,7 @@ namespace SimpleLanguage.VM
         {
             if (index >= m_NotStaticMethodList.Count || index < 0)
             {
-                Debug.Assert(false);
-                Log.AddRuntimeLog(LID.Unknown, "GetIRMethodByIndex is null");
+                Log.AddRuntimeLog(LID.ShowMessageAssert,"GetIRMethodByIndex is null");
                 return null;
             }
             return m_NotStaticMethodList[index];

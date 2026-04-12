@@ -9,7 +9,7 @@
 using SimpleLanguage.VM.Runtime;
 using SimpleLanguage.Parse;
 using System.Text;
-using System.Diagnostics;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.VM
 {
@@ -124,7 +124,7 @@ namespace SimpleLanguage.VM
             if (m_StaticMemberRuntimeObjectArray == null)
             {
                 svalue.SetNull();
-                Debug.Assert(false, $"Static member object list is not initialized for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object list is not initialized for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
                 return;
             }
             //var slotIndex = ResolveStaticSlotIndex(index);

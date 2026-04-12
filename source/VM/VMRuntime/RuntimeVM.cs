@@ -413,7 +413,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 pushChar = '\t' + pushChar;
             }
-            Log.AddProjectLog(LID.Unknown, pushChar + "[VMRuntime] [Push] Method: [" + funName + "]");
+            Log.AddProjectLog(LID.ShowMessageInfo, pushChar + "[VMRuntime] [Push] Method: [" + funName + "]");
             level++;
 
             var topClrRuntime = CLRVM.topCLRRuntime;
@@ -448,7 +448,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 pushChar = '\t' + pushChar;
             }
-            Log.AddRuntimeLog(LID.Unknown, pushChar + "[VMRuntime] [Pop] Method: [" + funName + "]");
+            Log.AddRuntimeLog(LID.ShowMessageInfo, pushChar + "[VMRuntime] [Pop] Method: [" + funName + "]");
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private string MakeIndent(int count) { return new string(' ', count); }

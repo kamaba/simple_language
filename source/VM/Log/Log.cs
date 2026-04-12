@@ -81,15 +81,15 @@ namespace SimpleLanguage.Logging
             {
                 case LogType.Info:
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine(data.ToString());
+                    Debug.WriteLine(data.ToString());
                     break;
                 case LogType.Warning:
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(data.ToString());
+                    Debug.WriteLine(data.ToString());
                     break;
                 case LogType.Error:
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine( data.ToString());
+                    Debug.WriteLine(data.ToString());
                     break;
                 case LogType.Assert:
                     Console.ForegroundColor = ConsoleColor.Magenta;

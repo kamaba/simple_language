@@ -29,3 +29,8 @@
 - Required troubleshooting chain: start from `IR.txt`, then verify `Meta.txt`, then `File.txt`, then `Node.txt`, then `Token.txt`, and finally `Code.txt`.
 - If one layer is incorrect, immediately trace to the previous upstream layer to find where the incorrect output was introduced.
 - In `MetaMemberEnum.CreateValuesArrayElementExpress`, do not use `MetaNewObjectExpressNode`; instead, use an expression similar to `MetaCallLink` to directly read enum member variables.
+
+## Logging System (High Priority)
+- Follow `.github/ai-log-system-guide.md` as mandatory guidance when adding or modifying logs.
+- For every new log entry, always update the corresponding project's `ErrorDefinitions.csv` and `LID.cs` together with code call sites.
+- Prefer typed log APIs under `SimpleLanguage.Logging.Log` (`AddProjectLog`/`AddMetaCoreLog`/`AddRuntimeLog` etc.); do not add direct `Debug.Write*` / `Console.WriteLine` as business log outputs.
