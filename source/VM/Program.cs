@@ -19,7 +19,7 @@ try
     {
         if (!pkgPath.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase))
         {
-            Log.AddProjectLog(LID.Unknown, $"Unsupported json slir input for runtime parse: {pkgPath}");
+            Log.AddProjectLog(LID.NotFoundRuntimeIRFile, pkgPath );
             return;
         }
 
@@ -27,7 +27,7 @@ try
         var parseResult = SLIRModuleParse.Parse(graph, args);
         if (parseResult == null)
         {
-            Log.AddProjectLog(LID.Unknown, "No valid module package loaded.");
+            Log.AddProjectLog(LID.RuntimeIRParseError, pkgPath );
             return;
         }
         SLIRModuleParse.EntryPoint( parseResult );
@@ -41,8 +41,8 @@ try
         var slTypeCount = asmList.Sum(a => a.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Count)));
         var slMethodCount = asmList.Sum(a => a.moduleList.Sum(m => m.namespaceList.Sum(n => n.typeList.Sum(t => t.methodList.Count))));
 
-        Log.AddProjectLog( LID.Unknown, $"SLAssembly: {slAsm?.id}");
-        Log.AddProjectLog(LID.Unknown, $"Modules: {moduleCount}, Namespaces: {nsCount}, Types: {slTypeCount}, Methods: {slMethodCount}");
+        Log.AddProjectLog( LID.ShowMessageInfo, $"SLAssembly: {slAsm?.id}");
+        Log.AddProjectLog(LID.ShowMessageInfo, $"Modules: {moduleCount}, Namespaces: {nsCount}, Types: {slTypeCount}, Methods: {slMethodCount}");
 
         var sampleMethod = slAsm?.moduleList
             .SelectMany(m => m.namespaceList)
@@ -52,22 +52,22 @@ try
 
         if (sampleMethod != null)
         {
-            Log.AddProjectLog(LID.Unknown, $"IR Sample (SLIR package instruction): {sampleMethod.id}");
+            Log.AddProjectLog(LID.ShowMessageInfo, $"IR Sample (SLIR package instruction): {sampleMethod.id}");
             foreach (var ins in sampleMethod.instructionList.Take(40))
             {
-                Log.AddProjectLog(LID.Unknown, $"{ins.id} {ins.opCode} payloadLen={ins.Payload?.Length ?? 0}");
+                Log.AddProjectLog(LID.ShowMessageInfo, $"{ins.id} {ins.opCode} payloadLen={ins.Payload?.Length ?? 0}");
             }
         }
 
-        Log.AddProjectLog(LID.Unknown, $"GlobalStaticVariableList: {parseResult.globalVariableCount}, GlobalInitInstructions: {parseResult.globalInitInstructionCount}");
+        Log.AddProjectLog(LID.ShowMessageInfo, $"GlobalStaticVariableList: {parseResult.globalVariableCount}, GlobalInitInstructions: {parseResult.globalInitInstructionCount}");
 
 
         return;
     }
 
-    Log.AddProjectLog(LID.Unknown, "No module package found. Pass a module package JSON or export one to out/export/module.package.json.");
+    Log.AddProjectLog(LID.ShowMessageInfo, "No module package found. Pass a module package JSON or export one to out/export/module.package.json.");
 }
 catch (Exception e)
 {
-    Log.AddProjectLog(LID.Unknown, e.ToString());
+    Log.AddProjectLog(LID.ShowMessageError, e.ToString());
 }

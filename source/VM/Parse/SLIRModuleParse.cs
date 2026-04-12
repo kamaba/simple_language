@@ -1,4 +1,5 @@
 
+using SimpleLanguage.Logging;
 using SimpleLanguage.Parse;
 using SimpleLanuageVM.Load;
 using System.Collections.Generic;
@@ -132,7 +133,7 @@ namespace SimpleLanguage.VM
                 var rm = SLRuntimeModuleRegistry.GetMethod(entryId);
                 if (rm == null)
                 {
-                    Console.WriteLine($"Runtime method not found: {entryId}");
+                    Log.AddProjectLog(LID.ShowMessageError, entryId );
                 }
                 else
                 {
@@ -142,7 +143,6 @@ namespace SimpleLanguage.VM
                 }
             }
         }
-
         private static (int globalVariableCount, int globalInitInstructionCount) InitializeGlobalVariables(List<SLAssembly> assemblyList)
         {
             SimpleLanguage.VM.Runtime.CLRVM.ResetGlobalVariableMapping();

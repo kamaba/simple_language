@@ -8,7 +8,6 @@
 
 using SimpleLanguage.Logging;
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Reflection;
 using SimpleLanuageVM.Load;
@@ -115,7 +114,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 for (int i = 0; i < m_ArgumentRuntimeObjectArray.Length; i++)
                 {
-                    Log.AddProjectLog(LID.Unknown, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentRuntimeObjectArray[i]?.ToString() + "]");
+                    Log.AddRuntimeLog(LID.Unknown, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentRuntimeObjectArray[i]?.ToString() + "]");
                 }
 
                 //灞€閮ㄥ彉閲忓垪琛?local variable table
@@ -133,7 +132,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 for (int i = 0; i < m_LocalVariableRuntimeObjectArray.Length; i++)
                 {
-                    Log.AddProjectLog(LID.Unknown, "Variable_" + i.ToString() + m_LocalVariableRuntimeObjectArray[i].ToString());
+                    Log.AddRuntimeLog(LID.Unknown, "Variable_" + i.ToString() + m_LocalVariableRuntimeObjectArray[i].ToString());
                 }
             }
 
@@ -315,7 +314,11 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     //GetObjectByValue(4, i, sobjs, ref m_ValueStack[m_ValueIndex++] );
                     var obj = sobjs[i];
-                    Debug.Assert(obj != null);
+                    if( obj == null )
+                    {
+                        Log.AddRuntimeLog(LID.ShowMessageAssert, "object is null");
+                        return;
+                    }
                     if (obj.eType == EVMType.Null )
                     {
                         m_ValueStack[m_ValueIndex++].SetNull();
@@ -330,7 +333,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ArgumentRuntimeObjectArray.Length)
             {
-                Log.AddProjectLog(LID.Unknown, $"SVM Error FunctionName:{this.id} 鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
+                Log.AddRuntimeLog(LID.ShowMessageError, $"SVM Error FunctionName:{this.id} 鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
                 return;
             }
             GetObjectByValue(0, index, ref svalue);
@@ -339,7 +342,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ArgumentRuntimeObjectArray.Length)
             {
-                Log.AddProjectLog(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
+                Log.AddRuntimeLog(LID.ShowMessageError, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
                 return;
             }
             SetObjectByValue(0, index, ref svalue);
@@ -348,7 +351,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_LocalVariableRuntimeObjectArray.Length)
             {
-                Log.AddProjectLog(LID.Unknown, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
+                Log.AddRuntimeLog(LID.ShowMessageError, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
                 return;
             }
             SetObjectByValue(1, index, ref svalue);
@@ -358,7 +361,7 @@ namespace SimpleLanguage.VM.Runtime
 
             if (index > m_LocalVariableRuntimeObjectArray.Length)
             {
-                Log.AddProjectLog(LID.Unknown, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
+                Log.AddRuntimeLog(LID.ShowMessageError, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
                 return;
             }
             GetObjectByValue(1, index, ref svalue);
@@ -367,7 +370,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ReturnRuntimeObjectArray.Length)
             {
-                Log.AddProjectLog(LID.Unknown, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
+                Log.AddRuntimeLog(LID.ShowMessageError, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
                 return;
             }
             SetObjectByValue(2, index, ref svalue);
@@ -445,7 +448,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 pushChar = '\t' + pushChar;
             }
-            Log.AddProjectLog(LID.Unknown, pushChar + "[VMRuntime] [Pop] Method: [" + funName + "]");
+            Log.AddRuntimeLog(LID.Unknown, pushChar + "[VMRuntime] [Pop] Method: [" + funName + "]");
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private string MakeIndent(int count) { return new string(' ', count); }
@@ -539,7 +542,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             else
             {
-                Debug.Assert(false);
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "array is index < 5");
                 return false;
             }
         }
@@ -770,14 +773,14 @@ namespace SimpleLanguage.VM.Runtime
             if (!CSharpBridgeRegistry.TryResolve(bridgeIndex, out var model)) return false;
             if (!CSharpBridgeRegistry.TryBindMethod(model, out var methodInfo))
             {
-                Debug.Assert(false, $"Bridge method bind failed, index={bridgeIndex}");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"Bridge method bind failed, index={bridgeIndex}");
                 return true;
             }
 
             var pars = methodInfo.GetParameters();
             if (m_ValueIndex < pars.Length)
             {
-                Debug.Assert(false, $"Bridge stack underflow, need={pars.Length}, has={m_ValueIndex}");
+                Log.AddRuntimeLog( LID.ShowMessageAssert, $"Bridge stack underflow, need={pars.Length}, has={m_ValueIndex}");
                 return true;
             }
 
@@ -791,7 +794,7 @@ namespace SimpleLanguage.VM.Runtime
 
             if (!methodInfo.IsStatic)
             {
-                Debug.Assert(false, "Bridge instance methods are not supported");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "Bridge instance methods are not supported");
                 return true;
             }
 
@@ -815,7 +818,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 if (m_ValueIndex == 0)
                 {
-                    Debug.Assert(false, $"{callName} stack underflow");
+                    Log.AddRuntimeLog(LID.ShowMessageAssert, $"{callName} stack underflow");
                     return true;
                 }
                 values[i] = m_ValueStack[--m_ValueIndex];
@@ -870,7 +873,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 if (t == null)
                 {
-                    Debug.Assert(false, $"{callName}: type not found " + typeFull);
+                    Log.AddRuntimeLog(LID.ShowMessageAssert, $"{callName}: type not found " + typeFull);
                     return true;
                 }
 
@@ -894,7 +897,7 @@ namespace SimpleLanguage.VM.Runtime
                 {                    
                     if (!miFound.IsStatic)
                     {
-                        Debug.Assert(false, $"{callName}: instance methods not supported in bridge");
+                        Log.AddRuntimeLog(LID.ShowMessageAssert, $"{callName}: instance methods not supported in bridge");
                         return true;
                     }
                     var ret2 = miFound.Invoke(null, bestInvokeArgs);
@@ -910,19 +913,19 @@ namespace SimpleLanguage.VM.Runtime
 
             if (miFound == null)
             {
-                Debug.Assert(false, $"{callName}: method not found " + methodName);
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"{callName}: method not found " + methodName);
                 return true;
             }
 
             if (!TryBuildInvokeArgsForMethod(miFound, argsClr, out var invokeArgs, out _))
             {
-                Debug.Assert(false, $"{callName}: method signature mismatch " + methodName);
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"{callName}: method signature mismatch " + methodName);
                 return true;
             }
 
             if (!miFound.IsStatic)
             {
-                Debug.Assert(false, $"{callName}: instance methods not supported in bridge");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"{callName}: instance methods not supported in bridge");
                 return true;
             }
 
@@ -1142,7 +1145,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Log.AddProjectLog(LID.Unknown, "涓嶆槸鏁扮粍绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "涓嶆槸鏁扮粍绫诲瀷!!");
                         }
                     }
                     break;
@@ -1176,8 +1179,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Debug.Assert(false, "涓嶆槸鏁扮粍绫诲瀷!!");
-                            Log.AddProjectLog(LID.Unknown, "涓嶆槸鏁扮粍绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "涓嶆槸鏁扮粍绫诲瀷!!");
                         }
                         m_ValueIndex -= 2;
                     }
@@ -1194,8 +1196,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Debug.Assert(false, "涓嶆槸鏁扮粍绫诲瀷!!");
-                            Log.AddProjectLog(LID.Unknown, "涓嶆槸鏁扮粍绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "涓嶆槸鏁扮粍绫诲瀷!!");
                         }
                         m_ValueIndex -= 1;
                     }
@@ -1213,8 +1214,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Debug.Assert(false, "涓嶆槸鏁扮粍绫诲瀷!!");
-                            Log.AddProjectLog(LID.Unknown, "涓嶆槸鏁扮粍绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "涓嶆槸鏁扮粍绫诲瀷!!");
                         }
                         m_ValueIndex -= 3;
                     }
@@ -1372,7 +1372,7 @@ namespace SimpleLanguage.VM.Runtime
                             var sval = m_ValueStack[m_ValueIndex - 1];
                             if (sval.eType != EVMType.Int32)
                             {
-                                Log.AddProjectLog(LID.Unknown, "鍒涘缓鏁扮粍闀垮害涓嶆槸Int32绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "鍒涘缓鏁扮粍闀垮害涓嶆槸Int32绫诲瀷!!");
                                 break;
                             }
 
@@ -1506,7 +1506,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 1 < 0)
                         {
-                            Log.AddProjectLog(LID.Unknown, "Error Neg杩愮畻!!瓒呭嚭鐨勬爤鑼冨洿");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "Error Neg杩愮畻!!瓒呭嚭鐨勬爤鑼冨洿");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 1].NegSValue(false);
@@ -1516,7 +1516,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 1 < 0)
                         {
-                            Log.AddProjectLog(LID.Unknown, "Error Not杩愮畻!!瓒呭嚭鐨勬爤鑼冨洿");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "Error Not杩愮畻!!瓒呭嚭鐨勬爤鑼冨洿");
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 1].NotSValue();
@@ -1551,7 +1551,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (!iri.TryGetSystemMethodCallPackage(out var sysPkg) || sysPkg == null)
                         {
-                            Debug.Assert(false, "CallSystemMethod: expected JSON payload with name/paramCount/systemMethodKind");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "CallSystemMethod: expected JSON payload with name/paramCount/systemMethodKind");
                             break;
                         }
 
@@ -1635,8 +1635,7 @@ namespace SimpleLanguage.VM.Runtime
                                 ObjectSystemMethodCall.ExecuteSystemArraySetValueThis(this, sysPkg);
                                 break;
                             default:
-                                Log.AddProjectLog(LID.Unknown, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + (sysPkg.name ?? string.Empty));
-                                Debug.Assert(false, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
                                 break;
                         }
 
@@ -1693,7 +1692,7 @@ namespace SimpleLanguage.VM.Runtime
                         RuntimeCall? runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);
                         if (runtimeCall == null)
                         {
-                            Debug.Assert(false, "鎵ц闈欐€佸嚱鏁帮紝娌℃湁鍙戠幇鐩稿叧鍑芥暟浣?");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "鎵ц闈欐€佸嚱鏁帮紝娌℃湁鍙戠幇鐩稿叧鍑芥暟浣?");
                             return;
                         }
 
@@ -1730,13 +1729,13 @@ namespace SimpleLanguage.VM.Runtime
                         SLRuntimeCallPackage callPkg = null;
                         if (!iri.TryGetRuntimeCallPackage(out callPkg))
                         {
-                            Debug.Assert(false, "");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "");
                             return;
                         }
                         RuntimeCall? mfc = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);                        
                         if (mfc == null)
                         {
-                            Debug.Assert(false, "鎵ц鍔ㄦ€佸嚱鏁帮紝娌℃湁鍙戠幇鐩稿叧鍑芥暟浣?");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "鎵ц鍔ㄦ€佸嚱鏁帮紝娌℃湁鍙戠幇鐩稿叧鍑芥暟浣?");
                             return;
                         }
 
@@ -1747,7 +1746,7 @@ namespace SimpleLanguage.VM.Runtime
                             int stackIndex = m_ValueIndex - iri.index;
                             if (stackIndex < 0)
                             {
-                                Log.AddProjectLog(LID.Unknown, "StackIndex 鏄礋鏁?");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "StackIndex 鏄礋鏁?");
                                 return;
                             }
                             var v = m_ValueStack[stackIndex];
@@ -1765,13 +1764,12 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             if (irc == null)
                             {
-                                Log.AddProjectLog(LID.Unknown, "IRC鏄皟鐢ㄨ櫄鍑芥暟涓虹┖!!");
-                                Debug.Assert(false, "");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "IRC鏄皟鐢ㄨ櫄鍑芥暟涓虹┖!!");
                                 return;
                             }
                             if (mfc.method == null)
                             {
-                                Debug.Assert(false, "娌℃湁鎵惧埌鍚堥€傜殑璋冪敤鏂瑰紡");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "娌℃湁鎵惧埌鍚堥€傜殑璋冪敤鏂瑰紡");
                                 return;
                             }
                             if (mfc.method.id == "type")
@@ -1797,7 +1795,7 @@ namespace SimpleLanguage.VM.Runtime
                                     }
                                     else
                                     {
-                                        Debug.Assert(false, "娌℃湁鎵惧埌鍚堥€傜殑璋冪敤鏂瑰紡");
+                                        Log.AddRuntimeLog(LID.ShowMessageAssert, "娌℃湁鎵惧埌鍚堥€傜殑璋冪敤鏂瑰紡");
                                     }
                                 }
                                 else
@@ -1808,7 +1806,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Log.AddProjectLog(LID.Unknown, "Dynamic function call from stack failed.");
+                            Log.AddRuntimeLog(LID.Unknown, "Dynamic function call from stack failed.");
                         }
                     }
                     break;
@@ -1820,7 +1818,7 @@ namespace SimpleLanguage.VM.Runtime
                         RuntimeCall? runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, 0 );
                         if (runtimeCall == null)
                         {
-                            Debug.Assert(false, "Virtual call failed: runtime call metadata not found.");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "Virtual call failed: runtime call metadata not found.");
                             return;
                         }
                         // attribute hooks are handled in Front/Core; VM does not reference Front.
@@ -1836,7 +1834,7 @@ namespace SimpleLanguage.VM.Runtime
 
                         if (v.isNull)
                         {
-                            Debug.Assert(false, "Current stack value is null.");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "Current stack value is null.");
                             return;
                         }
 
@@ -1853,7 +1851,11 @@ namespace SimpleLanguage.VM.Runtime
                             SObject co = (v.sobject) as SObject;
                             m_ValueStack[stackIndex].SetValue(co);
                             var nco = m_ValueStack[stackIndex].GetSObject();
-                            Debug.Assert(nco != null);
+                            if( nco == null )
+                            {
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "nco is null " );
+                                break;
+                            }
                             irc = nco.runtimeClass;
                             rt = nco.runtimeType;
                         }
@@ -1873,7 +1875,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         if (irc == null)
                         {
-                            Log.AddProjectLog(LID.Unknown, "Virtual call failed: runtime class is null.");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "Virtual call failed: runtime class is null.");
                             return;
                         }
                         RuntimeMethod cfc = irc.GetNonStaticMethodByIndex(iri.index);
@@ -1881,8 +1883,7 @@ namespace SimpleLanguage.VM.Runtime
 
                         if (cfc == null)
                         {
-                            Log.AddProjectLog(LID.Unknown, "Virtual call failed: method not found by index.");
-                            Debug.Assert(false, "Method index not found: " + iri.index);
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "Method index not found: " + iri.index);
                             return;
                         }
                         List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
@@ -1939,7 +1940,11 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 var val = m_ValueStack[--m_ValueIndex];
                                 var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(mt);
-                                Debug.Assert(rt != null, "");
+                                if( rt == null )
+                                {
+                                    Log.AddRuntimeLog(LID.ShowMessageAssert, "StoreStaticField failed to get runtime type for metadata type: ");
+                                    break;
+                                }
                                 rt?.SetStaticMemberVariableSValue(iri.index, val);
                             }
                         }
@@ -1990,7 +1995,11 @@ namespace SimpleLanguage.VM.Runtime
                         if (mt != null)
                         {
                             var rt = GetRuntimeTypeByDefType(mt, mt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList );
-                            Debug.Assert(rt != null);
+                            if( rt == null )
+                            {
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "CastClass failed to get runtime type for metadata type: " );
+                                break;
+                            }
                             if (rt.eType == EVMType.Object)
                             {
                                 break;
@@ -2038,7 +2047,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 default:
                     // unhandled op
-                    Debug.Assert(false, "Function" + this.id + "IRData" + iri.id + "  " + iri.opCode);
+                    Log.AddRuntimeLog(LID.ShowMessageAssert, "Function" + this.id + "IRData" + iri.id + "  " + iri.opCode);
                     break;
             }
         }
@@ -2057,7 +2066,11 @@ namespace SimpleLanguage.VM.Runtime
             {
                 robj = m_ReturnRuntimeObjectArray[index];
             }
-            Debug.Assert(robj != null);
+            if( robj == null)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageAssert, " runtime object is null for type " + type + " index " + index);
+                return;
+            }
             if (svalue.isNull)
             {
                 robj.SetNull();
@@ -2122,7 +2135,7 @@ namespace SimpleLanguage.VM.Runtime
                         BoolObject boolObj = obj as BoolObject;
                         if (boolObj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             return;
                         }
                         boolObj.SetValue(svalue.int8Value == 1);
@@ -2161,7 +2174,7 @@ namespace SimpleLanguage.VM.Runtime
                         Int8Object byteObj = obj as Int8Object;
                         if (byteObj == null)
                         {
-                            Debug.Assert( false, "璇ョ被鍨嬩笉鏄疊yte绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疊yte绫诲瀷!!");
                             return;
                         }
                         byteObj.SetValue(svalue.int8Value);
@@ -2198,7 +2211,7 @@ namespace SimpleLanguage.VM.Runtime
                         SInt8Object byteObj = obj as SInt8Object;
                         if (byteObj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疭Byte绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疭Byte绫诲瀷!!");
                             return;
                         }
                         byteObj.SetValue(svalue.sint8Value);
@@ -2235,7 +2248,7 @@ namespace SimpleLanguage.VM.Runtime
                         Int16Object int16Obj = obj as Int16Object;
                         if (int16Obj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         int16Obj.SetValue(svalue.int16Value);
@@ -2272,7 +2285,7 @@ namespace SimpleLanguage.VM.Runtime
                         UInt16Object uint16Obj = obj as UInt16Object;
                         if (uint16Obj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         uint16Obj.SetValue(svalue.uint16Value);
@@ -2289,7 +2302,7 @@ namespace SimpleLanguage.VM.Runtime
                 //        Int32Object int32Obj = obj as Int32Object;
                 //        if (int32Obj == null)
                 //        {
-                //            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                //             Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                 //            return;
                 //        }
                 //        int32Obj.SetValue(svalue.int32Value);
@@ -2311,7 +2324,7 @@ namespace SimpleLanguage.VM.Runtime
                         Int32Object int32Obj = obj as Int32Object;
                         if (int32Obj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         int32Obj.SetValue(svalue.int32Value);
@@ -2327,7 +2340,7 @@ namespace SimpleLanguage.VM.Runtime
                 //        UInt32Object uint32Obj = obj as UInt32Object;
                 //        if (uint32Obj == null)
                 //        {
-                //            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                //            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                 //            return;
                 //        }
                 //        uint32Obj.SetValue(svalue.uint32Value);
@@ -2348,7 +2361,7 @@ namespace SimpleLanguage.VM.Runtime
                         UInt32Object uint32Obj = obj as UInt32Object;
                         if (uint32Obj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         uint32Obj.SetValue(svalue.uint32Value);
@@ -2364,7 +2377,7 @@ namespace SimpleLanguage.VM.Runtime
                 //        Int64Object int64Obj = obj as Int64Object;
                 //        if (int64Obj == null)
                 //        {
-                //            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                //             Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                 //            return;
                 //        }
                 //        int64Obj.SetValue(svalue.int64Value);
@@ -2385,7 +2398,7 @@ namespace SimpleLanguage.VM.Runtime
                         Int64Object int64Obj = obj as Int64Object;
                         if (int64Obj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         int64Obj.SetValue(svalue.int64Value);
@@ -2422,7 +2435,7 @@ namespace SimpleLanguage.VM.Runtime
                         UInt64Object uint64Obj = obj as UInt64Object;
                         if (uint64Obj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         uint64Obj.SetValue(svalue.uint64Value);
@@ -2438,7 +2451,7 @@ namespace SimpleLanguage.VM.Runtime
                 //        Float32Object floatObj = obj as Float32Object;
                 //        if (floatObj == null)
                 //        {
-                //            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                //             Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                 //            return;
                 //        }
                 //        floatObj.SetValue(svalue.floatValue);
@@ -2459,7 +2472,7 @@ namespace SimpleLanguage.VM.Runtime
                         Float32Object floatObj = obj as Float32Object;
                         if (floatObj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         floatObj.SetValue(svalue.floatValue);
@@ -2496,7 +2509,7 @@ namespace SimpleLanguage.VM.Runtime
                         Float64Object doubleObj = obj as Float64Object;
                         if (doubleObj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         doubleObj.SetValue(svalue.doubleValue);
@@ -2513,7 +2526,7 @@ namespace SimpleLanguage.VM.Runtime
                 //        StringObject stringObj = obj as StringObject;
                 //        if (stringObj == null)
                 //        {
-                //            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                //             Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                 //            return;
                 //        }
                 //        stringObj.SetValue(svalue.stringValue);
@@ -2535,7 +2548,7 @@ namespace SimpleLanguage.VM.Runtime
                         StringObject stringObj = obj as StringObject;
                         if (stringObj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         stringObj.SetValue(svalue.stringValue);
@@ -2549,7 +2562,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Debug.Assert(false);
+                            Log.AddRuntimeLog(LID.ShowMessageError, "");
                         }
                     }
                     break;
@@ -2579,8 +2592,7 @@ namespace SimpleLanguage.VM.Runtime
                         TypeObject classObj = obj as TypeObject;
                         if (classObj == null)
                         {
-                            Debug.Assert(false);
-                            Debug.Write("璇ョ被鍨嬩笉鏄疌lass绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疌lass绫诲瀷!!");
                             return;
                         }
                         classObj.SetSValue(svalue.sobject as ClassObject);
@@ -2629,7 +2641,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 default:
                     {
-                        Debug.Assert(false);
+                        Log.AddRuntimeLog(LID.ShowMessageAssert, "");
                     }
                     break;
             }
@@ -2651,7 +2663,11 @@ namespace SimpleLanguage.VM.Runtime
             {
                 robj = m_ReturnRuntimeObjectArray[index];
             }
-            Debug.Assert(robj != null);
+            if( robj == null )
+            {
+                Log.AddRuntimeLog(LID.ShowMessageError, "");
+                return;
+            }
             if (robj.isNull)
             {
                 svalue.SetNull();
@@ -2686,7 +2702,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Debug.Assert(false, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             }
                             return;
                         }
@@ -2700,7 +2716,7 @@ namespace SimpleLanguage.VM.Runtime
                         BoolObject boolObj = obj as BoolObject;
                         if (boolObj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             return;
                         }
                         svalue.SetBoolValue(boolObj.value);
@@ -2716,7 +2732,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Debug.Assert(false, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             }
                             return;
                         }
@@ -2731,7 +2747,7 @@ namespace SimpleLanguage.VM.Runtime
                         Int8Object byteObj = obj as Int8Object;
                         if (byteObj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疊yte绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊yte绫诲瀷!!");
                             return;
                         }
                         svalue.SetInt8Value((Byte)byteObj.value);
@@ -2747,7 +2763,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Debug.Assert(false, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             }
                             return;
                         }
@@ -2761,7 +2777,7 @@ namespace SimpleLanguage.VM.Runtime
                         SInt8Object byteObj = obj as SInt8Object;
                         if (byteObj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疭Byte绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疭Byte绫诲瀷!!");
                             return;
                         }
                         svalue.SetSInt8Value((SByte)byteObj.value);
@@ -2777,7 +2793,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Debug.Assert(false, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             }
                             return;
                         }
@@ -2791,7 +2807,7 @@ namespace SimpleLanguage.VM.Runtime
                         Int16Object int16Obj = obj as Int16Object;
                         if (int16Obj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         svalue.SetInt16Value((short)int16Obj.value);
@@ -2807,7 +2823,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Debug.Assert(false, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             }
                             return;
                         }
@@ -2821,7 +2837,7 @@ namespace SimpleLanguage.VM.Runtime
                         UInt16Object uint16Obj = obj as UInt16Object;
                         if (uint16Obj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         svalue.SetUInt16Value((ushort)uint16Obj.value);
@@ -2837,7 +2853,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Debug.Assert(false, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             }
                             return;
                         }
@@ -2850,7 +2866,7 @@ namespace SimpleLanguage.VM.Runtime
                         Int32Object int32Obj = obj as Int32Object;
                         if (int32Obj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         svalue.SetInt32Value((int)int32Obj.value);
@@ -2866,7 +2882,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Debug.Assert(false, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             }
                             return;
                         }
@@ -2879,7 +2895,7 @@ namespace SimpleLanguage.VM.Runtime
                         UInt32Object uint32Obj = obj as UInt32Object;
                         if (uint32Obj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         svalue.SetUInt32Value((uint)uint32Obj.value);
@@ -2895,7 +2911,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Debug.Assert(false, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             }
                             return;
                         }
@@ -2908,7 +2924,7 @@ namespace SimpleLanguage.VM.Runtime
                         Int64Object int64Obj = obj as Int64Object;
                         if (int64Obj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疘nt64绫诲瀷!!");
                             return;
                         }
                         svalue.SetInt64Value((Int64)int64Obj.value);
@@ -2924,7 +2940,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Debug.Assert(false, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             }
                             return;
                         }
@@ -2938,7 +2954,7 @@ namespace SimpleLanguage.VM.Runtime
                         UInt64Object uint64Obj = obj as UInt64Object;
                         if (uint64Obj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         svalue.SetUInt64Value((UInt64)uint64Obj.value);
@@ -2954,7 +2970,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Debug.Assert(false, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             }
                             return;
                         }
@@ -2968,7 +2984,7 @@ namespace SimpleLanguage.VM.Runtime
                         Float32Object floatObj = obj as Float32Object;
                         if (floatObj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         svalue.SetFloatValue((float)floatObj.value);
@@ -2984,7 +3000,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Debug.Assert(false, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             }
                             return;
                         }
@@ -2998,7 +3014,7 @@ namespace SimpleLanguage.VM.Runtime
                         Float64Object doubleObj = obj as Float64Object;
                         if (doubleObj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疘nt64绫诲瀷!!");
                             return;
                         }
                         svalue.SetDoubleValue((double)doubleObj.value);
@@ -3014,7 +3030,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Debug.Assert(false, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊oolean绫诲瀷!!");
                             }
                             return;
                         }
@@ -3028,7 +3044,7 @@ namespace SimpleLanguage.VM.Runtime
                         StringObject stringObj = obj as StringObject;
                         if (stringObj == null)
                         {
-                            Debug.Write("璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         svalue.SetStringValue((string)stringObj.value);
@@ -3042,7 +3058,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Debug.Assert(false);
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "");
                         }
                     }
                     break;
@@ -3137,7 +3153,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Debug.Assert(false);
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "");
                         }
                     }
                     break;
@@ -3190,7 +3206,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Debug.Assert(false);
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "CastClass failed to get runtime type for metadata type: " );
                         }
                         //}
                         /*
@@ -3211,7 +3227,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 default:
                     {
-                        Debug.Assert(false);
+                        Log.AddRuntimeLog(LID.ShowMessageAssert, "");
                     }
                     break;
             }
