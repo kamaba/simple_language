@@ -1561,6 +1561,9 @@ namespace SimpleLanguage.VM.Runtime
                             case (int)ESystemMethodCall.SystemPrint:
                                 ConsoleSystemMethodCall.ExecuteSystemPrint(this, sysPkg);
                                 break;
+                            case (int)ESystemMethodCall.SystemPrintln:
+                                ConsoleSystemMethodCall.ExecuteSystemPrintln(this, sysPkg);
+                                break;
                             case (int)ESystemMethodCall.SystemCallCLRMethod:
                                 BridgeSystemMethodCall.ExecuteSystemCallCLRMethod(this, iri);
                                 break;

@@ -891,17 +891,18 @@ namespace SimpleLanguage.Core
                             m_MetaClass = m_MetaVariable.realMetaType.metaClass;
                             m_CallNodeType = ECallNodeType.MemberVariableName;
                         }
-                        else if (findMd.memberDataType == EMemberDataType.ConstValue)
-                        {
-                            m_CallNodeType = ECallNodeType.ConstValue;
-                        }
-                        else if (findMd.memberDataType == EMemberDataType.MemberArray)
-                        {
-                            m_MetaVariable = findMd;
-                            m_CallNodeType = ECallNodeType.MemberDataName;
-                        }
+                        //else if (findMd.memberDataType == EMemberDataType.ConstValue)
+                        //{
+                        //    m_CallNodeType = ECallNodeType.ConstValue;
+                        //}
+                        //else if (findMd.memberDataType == EMemberDataType.MemberArray)
+                        //{
+                        //    m_MetaVariable = findMd;
+                        //    m_CallNodeType = ECallNodeType.MemberDataName;
+                        //}
                         else
                         {
+                            m_MetaVariable = findMd;
                             m_CallNodeType = ECallNodeType.MemberDataName;
                         }
                     }
@@ -995,16 +996,18 @@ namespace SimpleLanguage.Core
                                     m_MetaVariable = retmmd;
                                     m_CallNodeType = ECallNodeType.MemberVariableName;
                                 }
-                                else if (retmmd.memberDataType == EMemberDataType.ConstValue)
-                                {
-                                    m_CallNodeType = ECallNodeType.ConstValue;
-                                }
-                                else if (retmmd.memberDataType == EMemberDataType.MemberArray)
-                                {
-                                    m_CallNodeType = ECallNodeType.MemberDataName;
-                                }
+                                //else if (retmmd.memberDataType == EMemberDataType.ConstValue)
+                                //{
+                                //    m_CallNodeType = ECallNodeType.ConstValue;
+                                //    m_ExpressNode = retmmd.expressNode as MetaConstExpressNode;
+                                //}
+                                //else if (retmmd.memberDataType == EMemberDataType.MemberArray)
+                                //{
+                                //    m_CallNodeType = ECallNodeType.MemberDataName;
+                                //}
                                 else
                                 {
+                                    m_MetaVariable = retmmd;
                                     m_CallNodeType = ECallNodeType.MemberDataName;
                                 }
                             }

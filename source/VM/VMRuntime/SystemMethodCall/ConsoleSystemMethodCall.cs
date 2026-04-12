@@ -25,6 +25,25 @@ namespace SimpleLanguage.VM.Runtime
             Console.Write(text);
         }
 
+        public static void ExecuteSystemPrintln(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            int paramCount = sysPkg.paramCount;
+            if (paramCount <= 0)
+            {
+                Console.WriteLine();
+                return;
+            }
+            if (!vm.TrySystemCallPopArgs(paramCount, out var args))
+            {
+                Debug.Assert(false, $"SystemPrintln stack underflow, need={paramCount}");
+                return;
+            }
+
+            var textObj = args[0].GetValueObject();
+            var text = textObj?.ToString() ?? string.Empty;
+            Console.WriteLine(text);
+        }
+
         public static void ExecuteSystemReadLine(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
         {
             int pc = sysPkg.paramCount;

@@ -1296,7 +1296,9 @@ namespace SimpleLanguage.Compile
                     }
                     else if(node.token?.type == ETokenType.This
                     || node.token?.type == ETokenType.Base
-                    || node.token?.type == ETokenType.New)
+                    || node.token?.type == ETokenType.New
+                    || node.token?.type == ETokenType.Global 
+                    || node.token?.type == ETokenType.Local )
                     {
                         fmbt = new FileMetaCallTerm(m_FileMeta, node);
                         fmbt.priority = int.MaxValue;

@@ -5,13 +5,11 @@ Project
     float Pi = 3.14f
     print( object str )
     {        
-        var pt = SystemConvertString(str)
-        SystemPrint(pt)
+        SystemPrint(str)
     }
     println( object str )
     {
-        string newstr = SystemConvertString(str) + "\n";
-        SystemPrint(newstr)
+        SystemPrintln(str)
     }
     printBridgeKind( BridgeKind v )
     {
@@ -43,7 +41,8 @@ Project
         #global.println( "--------------------for enum-------------------" )
         #global.println( "Pi=$global.Pi }" )
         global.println( "config data $global.var1 " )
-        #global.println( "config data $global.vardata2.a " )
+        aa = global.vardata2.a
+        global.println( "config data ${aa + global.vardata2.b} " )
 
         #a = [1,2,"222",1000L,[1,2,3,4]]
         #!

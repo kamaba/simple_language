@@ -11,6 +11,7 @@ namespace SimpleLanguage.VM.Runtime
         SystemCallNativeMethod,
         SystemCallJVMMethod,
         SystemPrint,
+        SystemPrintln,
         SystemReadLine,
         SystemReadKey,
         SystemConvertBool,

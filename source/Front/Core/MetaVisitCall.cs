@@ -674,9 +674,13 @@ namespace SimpleLanguage.Core
                     {
                         return this.m_CallMetaType;
                     }
+                //case EVisitType.ConstValue:
+                //    {
+                //        return this.constValueExpress.metaType;
+                //    }
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Error ---------" + visitType.ToString() );
+                        Log.AddMetaCoreLog(LID.MetaCoreVisitCallTypeError, visitType.ToString() );
                     }
                     break;
             }

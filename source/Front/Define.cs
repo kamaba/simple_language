@@ -392,6 +392,7 @@ namespace SimpleLanguage
         SystemCallNativeMethod,
         SystemCallJVMMethod,
         SystemPrint,
+        SystemPrintln,
         SystemReadLine,
         SystemReadKey,
         SystemConvertBool,
