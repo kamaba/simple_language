@@ -57,7 +57,7 @@ namespace SimpleLanguage.IR
                     }
                     index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
                 }
-                if ( mv.isConst )
+                if ( mv.isConst || mv.isStatic )
                 {
                     //if (mv.realMetaType.GenTemplateIsIncludeTemplate())
                     //{
@@ -80,6 +80,7 @@ namespace SimpleLanguage.IR
                         Log.AddIRLog(LID.IRMethodNotFoundVariable, "in const member index = -1", _irMethod.id, mv.name);
                         return null;
                     }
+                    irmt = new IRMetaType(irmc);
                     IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
                     return irVar;
                 }
@@ -193,6 +194,7 @@ namespace SimpleLanguage.IR
                 m_LoadVarData.opValue = irmt;
                 m_LoadVarData.opCode = EIROpCode.LoadStaticField;
                 m_LoadVarData.index = id;
+                m_LoadVarData.debugStaticOwnerIrName = _irMethod?.irOwnerMetaClass?.irName;
                 if(id < 0 )
                 {
                     Log.AddIRLog(LID.IRMethodNotFoundVariable, "in static id < 0", _irMethod.id, id);
@@ -315,6 +317,7 @@ namespace SimpleLanguage.IR
                 m_Data.opValue = irmt;
                 m_Data.opCode = EIROpCode.StoreStaticField;
                 m_Data.index = id;
+                m_Data.debugStaticOwnerIrName = _irMethod?.irOwnerMetaClass?.irName;
                 AddIRData(m_Data);
             }
             else if (irmvf == IRMetaVariableFrom.Member)

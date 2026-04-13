@@ -115,16 +115,19 @@ namespace SimpleLanguage.IR
             m_IsStatic = true;
             m_Permission = mme.permission;
         }
-        public IRMetaVariable(IRMetaClass irmc, MetaMemberData mmd)
+        public IRMetaVariable(IRMetaClass irmc, MetaMemberData mmd, int fieldIndex)
         {
-            //m_MetaVariable = mmd;
             m_Id = mmd.GetHashCode();
+            m_Index = fieldIndex;
             m_Name = mmd.ownerMetaClass.allClassName + "." + mmd.name;
             m_ExpressNode = mmd.expressNode;
             m_IRMetaVariableFrom = mmd.isStatic ? IRMetaVariableFrom.Static : IRMetaVariableFrom.Member;
             m_IsStatic = mmd.isStatic;
+            m_IsConst = mmd.isConst;
             m_Permission = mmd.permission;
-            //m_IRMetaClass = irmc;
+            MetaType mt = mmd.realMetaType ?? mmd.defineMetaType;
+            if (mt != null)
+                m_IRMetaType = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mt, irmc);
         }
         public IRMetaVariable( IRMetaClass irmc, MetaMemberVariable mmv, int index = -1 )
         {

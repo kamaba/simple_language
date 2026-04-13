@@ -37,6 +37,12 @@ namespace SimpleLanguage.IR
         public int       index;                  //索引
         public DebugInfo debugInfo;              //调试信息
 
+        /// <summary>
+        /// IR 文本导出用：静态字段所属类的 <see cref="IRMetaClass.irName"/>（如 <c>Core.Project</c>）。
+        /// 运行时时 <see cref="opValue"/> 仍为字段类型的 <see cref="IRMetaType"/>，不是声明类。
+        /// </summary>
+        public string debugStaticOwnerIrName { get; set; }
+
         public IRData()
         {
 
@@ -493,7 +499,15 @@ namespace SimpleLanguage.IR
                     }
                     else if (irmt != null)
                     {
-                        m_StringBuilder.Append(" val irmt:[" + irmt.ToString() + "] ");
+                        // Static field ops: opValue is the *field* type (e.g. Array<Int32>), not the declaring class.
+                        if (opCode == EIROpCode.LoadStaticField || opCode == EIROpCode.StoreStaticField)
+                        {
+                            m_StringBuilder.Append(" fieldTypeIrmt:[" + irmt.ToString() + "] ");
+                        }
+                        else
+                        {
+                            m_StringBuilder.Append(" val irmt:[" + irmt.ToString() + "] ");
+                        }
                     }
                     else if( irm != null )
                     {
@@ -507,9 +521,18 @@ namespace SimpleLanguage.IR
             }
             else if (TryGetRuntimeDefTypeDebugString(out var runtimeTypeText))
             {
-                m_StringBuilder.Append(" val irmt:[");
-                m_StringBuilder.Append(runtimeTypeText);
-                m_StringBuilder.Append("] ");
+                if (opCode == EIROpCode.LoadStaticField || opCode == EIROpCode.StoreStaticField)
+                {
+                    m_StringBuilder.Append(" fieldTypeIrmt:[");
+                    m_StringBuilder.Append(runtimeTypeText);
+                    m_StringBuilder.Append("] ");
+                }
+                else
+                {
+                    m_StringBuilder.Append(" val irmt:[");
+                    m_StringBuilder.Append(runtimeTypeText);
+                    m_StringBuilder.Append("] ");
+                }
             }
             else if (opCode == EIROpCode.LoadConstString)
             {
@@ -520,6 +543,11 @@ namespace SimpleLanguage.IR
                     m_StringBuilder.Append(EscapeForIRDebug(resolved));
                     m_StringBuilder.Append("] ");
                 }
+            }
+            if ((opCode == EIROpCode.LoadStaticField || opCode == EIROpCode.StoreStaticField)
+                && !string.IsNullOrEmpty(debugStaticOwnerIrName))
+            {
+                m_StringBuilder.Append("staticOwner:[" + debugStaticOwnerIrName + "] ");
             }
             return m_StringBuilder.ToString();
         }

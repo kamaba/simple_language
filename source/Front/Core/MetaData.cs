@@ -56,6 +56,7 @@ namespace SimpleLanguage.Core
                 return;
             }
             m_MetaMemberDataDict.Add(mmd.name, mmd);
+            MetaVariableManager.instance.AddMetaDataVariable(mmd);
         }
         public List<MetaMemberData> GetMetaMemberDataList()
         {

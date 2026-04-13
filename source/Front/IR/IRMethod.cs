@@ -244,11 +244,35 @@ namespace SimpleLanguage.IR
             for( int i = 0; i < IRDataList.Count; i++ )
             {
                 sb.Append(i.ToString() + " ");
-                sb.Append(IRDataList[i].ToString());
+                var d = IRDataList[i];
+                sb.Append(d.ToString());
+                sb.Append(FormatStaticFieldDebugSuffix(d));
                 sb.Append(Environment.NewLine);
             }
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// IRData.ToString() only prints the field type for static loads/stores; add the declaring class field name
+        /// (same index as <see cref="IRMetaClass.staticIRMetaVariableList"/>) so e.g. <c>global.arrvar1</c> reads clearly as Project static.
+        /// </summary>
+        string FormatStaticFieldDebugSuffix(IRData d)
+        {
+            if (d == null || m_IROwnerMetaClass == null)
+                return string.Empty;
+            if (d.opCode != EIROpCode.LoadStaticField && d.opCode != EIROpCode.StoreStaticField)
+                return string.Empty;
+            var list = m_IROwnerMetaClass.staticIRMetaVariableList;
+            if (list == null || list.Count == 0)
+                return string.Empty;
+            for (int j = 0; j < list.Count; j++)
+            {
+                var v = list[j];
+                if (v != null && v.index == d.index)
+                    return " field:[" + v.name + "]";
+            }
+            return string.Empty;
         }
 
         public override string ToString()

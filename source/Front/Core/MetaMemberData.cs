@@ -96,7 +96,8 @@ namespace SimpleLanguage.Core
             mmd.m_RealMetaType = new MetaType(mmd.m_DefineMetaType);
             mmd.m_IsDefineMetaType = true;
             mmd.SetOwnerMetaClass(owner);
-            mmd.m_IsConst = owner?.isConst ?? false;
+            mmd.m_IsConst = false;//owner?.isConst ?? false;
+            mmd.m_IsStatic = false;
             mmd.m_Express = constExpress;
             mmd.m_MemberDataType = EMemberDataType.ConstValue;
             return mmd;
@@ -112,7 +113,7 @@ namespace SimpleLanguage.Core
             mmd.m_RealMetaType = new MetaType(mmd.m_DefineMetaType);
             mmd.m_IsDefineMetaType = true;
             mmd.SetOwnerMetaClass(owner);
-            mmd.m_IsConst = owner?.isConst ?? false;
+            mmd.m_IsConst = false;// owner?.isConst ?? false;
             mmd.m_MemberDataType = EMemberDataType.MemberData;
             return mmd;
         }
@@ -132,11 +133,13 @@ namespace SimpleLanguage.Core
             mmd.m_RealMetaType = new MetaType(arrType);
             mmd.m_IsDefineMetaType = true;
             mmd.SetOwnerMetaClass(owner);
-            mmd.m_IsConst = owner?.isConst ?? false;
+            mmd.m_IsConst = false;// owner?.isConst ?? false;
             mmd.m_MemberDataType = EMemberDataType.MemberArray;
             return mmd;
         }
         public void SetIndex(int index) { m_Index = index; }
+        /// <summary>Source declaration order within the owning <see cref="MetaData"/> (used by IR field indices).</summary>
+        public int dataFieldOrderIndex => m_Index;
         public string GetString(string name, bool isInChildren = true)
         {
             var constExpress = (m_Express as MetaConstExpressNode);
@@ -308,6 +311,12 @@ namespace SimpleLanguage.Core
                             }
                     }
                 }
+            }
+            if (m_DefineMetaType != null)
+            {
+                m_IsDefineMetaType = true;
+                if (m_RealMetaType == null)
+                    m_RealMetaType = new MetaType(m_DefineMetaType);
             }
             return true;
         }

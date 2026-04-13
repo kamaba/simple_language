@@ -274,8 +274,8 @@ namespace SimpleLanguage.Project
             }
 
             var mmv = new MetaMemberVariable(projectMc, name);
-            mmv.SetIsStatic(false);
-            mmv.SetIsConst(true);
+            mmv.SetIsStatic(true);
+            mmv.SetIsConst(false);
 
             if (element.ValueKind == JsonValueKind.String)
             {

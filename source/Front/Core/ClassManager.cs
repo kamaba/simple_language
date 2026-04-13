@@ -423,11 +423,13 @@ namespace SimpleLanguage.Core
                 }
                 else if (fmc.isData)
                 {
-                    var newmd = new MetaData( fmc );
-                    finalTopMetaNode.AddMetaData(newmd);
-                    AddInitHandleMetaClassList(newmd);
+                    var newmd = new MetaData(fmc);
                     newmd.BindFileMetaClass(fmc);
+                    newmd.SetClassDefineType(EClassDefineType.CodeDefine);
+                    finalTopMetaNode.AddMetaData(newmd);
+                    newmd.UpdateClassAllName();
                     newmd.ParseFileMetaDataMemeberData(fmc);
+                    AddInitHandleMetaClassList(newmd);
 
                     return newmd;
                 }

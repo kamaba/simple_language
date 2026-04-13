@@ -212,7 +212,20 @@ namespace SimpleLanguage.IR
             }
             else if (m_MetaClass is MetaData md)
             {
-               var localMetaMemberDatas = md.GetMetaMemberDataList();
+                var dataMembers = md.GetMetaMemberDataList()
+                    .OrderBy(m => m.dataFieldOrderIndex)
+                    .ThenBy(m => m.name, System.StringComparer.Ordinal)
+                    .ToList();
+                for (int i = 0; i < dataMembers.Count; i++)
+                {
+                    var mmd = dataMembers[i];
+                    var irmv = new IRMetaVariable(this, mmd, i);
+                    if (mmd.isStatic)
+                        m_StaticIRMetaVariableList.Add(irmv);
+                    else
+                        m_LocalIRMetaVariableList.Add(irmv);
+                    AddMetaMemberVariableIndexBindHashCode(irmv.id, i);
+                }
             }
             else
             {
@@ -448,6 +461,7 @@ namespace SimpleLanguage.IR
                 irdata2.opValue = irmt;
                 irdata2.opCode = EIROpCode.StoreStaticField;
                 irdata2.index = v.index;
+                irdata2.debugStaticOwnerIrName = this.irName;
                 list.Add(irdata2);
             }
 
