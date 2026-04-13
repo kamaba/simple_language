@@ -1,4 +1,4 @@
-id,logType,enableAssert,blockOnErrorAssert,paramCount,domestic_tips,cn_message,,cn_fixed_tips,en_message,en_fixed_tips
+﻿id,logType,enableAssert,blockOnErrorAssert,paramCount,domestic_tips,cn_message,,cn_fixed_tips,en_message,en_fixed_tips
 10000,Error,TRUE,TRUE,,,"Error,上级类中的MetaClass没有绑定!!",,检查类定义关键字、继承/接口与成员声明顺序。,,
 10001,Error,TRUE,FALSE,,,已添加了空间命名节点，不允许有重复名称的类节点再次添加,,检查类定义关键字、继承/接口与成员声明顺序。,,
 10002,Error,TRUE,FALSE,,,Error 查到内部不是内部内，可能有相同成员,,根据错误位置检查语法与类型约束，必要时参考 DebugCode 输出链路定位。,,

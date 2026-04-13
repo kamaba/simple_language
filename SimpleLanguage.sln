@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleLanuageVM", "source\V
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CLangdll", "source\CLangdll\CLangdll.vcxproj", "{D5C62645-D6BC-42B4-BC6D-76F41F92F5AC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleLanguageTest", "source\Test\SimpleLanguageTest.csproj", "{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,18 @@ Global
 		{D5C62645-D6BC-42B4-BC6D-76F41F92F5AC}.Release|x64.Build.0 = Release|x64
 		{D5C62645-D6BC-42B4-BC6D-76F41F92F5AC}.Release|x86.ActiveCfg = Release|Win32
 		{D5C62645-D6BC-42B4-BC6D-76F41F92F5AC}.Release|x86.Build.0 = Release|Win32
+		{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}.Debug|x64.Build.0 = Debug|Any CPU
+		{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}.Debug|x86.Build.0 = Debug|Any CPU
+		{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}.Release|x64.ActiveCfg = Release|Any CPU
+		{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}.Release|x64.Build.0 = Release|Any CPU
+		{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}.Release|x86.ActiveCfg = Release|Any CPU
+		{4413C6BA-F1E7-EB5F-E231-B1CBF4ED716D}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

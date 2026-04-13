@@ -54,3 +54,5 @@
 /out
 /source/Front/out
 /source/Front/Lib/Core/DebugCode
+/source/Test/bin
+/source/Test/obj
