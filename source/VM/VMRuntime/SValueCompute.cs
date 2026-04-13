@@ -235,12 +235,8 @@ namespace SimpleLanguage.VM
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ComputeValueInlineRaw(ref RawSValue left, int sign, ref RawSValue right, bool isUnSign)
         {
-            bool leftIsFloat = (left.eType == EVMType.Float32 || left.eType == EVMType.Float64);
-            bool rightIsFloat = (right.eType == EVMType.Float32 || right.eType == EVMType.Float64);
-            // Treat Num as Float64 in raw computations
-            if (left.eType == EVMType.Num) leftIsFloat = true;
-            if (right.eType == EVMType.Num) rightIsFloat = true;
-            if (leftIsFloat || rightIsFloat)
+            var promoteType = GetRawBinaryPromotionType(left.eType, right.eType, sign, isUnSign);
+            if (promoteType == EVMType.Float64 || promoteType == EVMType.Num)
             {
                 double a = (left.eType == EVMType.Float64 || left.eType == EVMType.Num) ? left.Float64 : (left.eType == EVMType.Float32 ? left.Float32 : (double)left.Int64);
                 double b = (right.eType == EVMType.Float64 || right.eType == EVMType.Num) ? right.Float64 : (right.eType == EVMType.Float32 ? right.Float32 : (double)right.Int64);
@@ -256,11 +252,36 @@ namespace SimpleLanguage.VM
                         Debug.Write("Error 不支持浮点的位运算");
                         break;
                 }
-                if (left.eType == EVMType.Float64 || left.eType == EVMType.Num) left.Float64 = r; else left.Float32 = (float)r;
+                left.eType = EVMType.Float64;
+                left.Float64 = r;
+                return;
+            }
+            if (promoteType == EVMType.Float32)
+            {
+                float a = left.eType == EVMType.Float32
+                    ? left.Float32
+                    : (left.eType == EVMType.Float64 || left.eType == EVMType.Num ? (float)left.Float64 : (float)left.Int64);
+                float b = right.eType == EVMType.Float32
+                    ? right.Float32
+                    : (right.eType == EVMType.Float64 || right.eType == EVMType.Num ? (float)right.Float64 : (float)right.Int64);
+                float r = 0f;
+                switch (sign)
+                {
+                    case 0: r = a + b; break;
+                    case 1: r = a - b; break;
+                    case 2: r = a * b; break;
+                    case 3: r = (b == 0f) ? 0f : a / b; break;
+                    case 4: r = (b == 0f) ? 0f : a % b; break;
+                    default:
+                        Debug.Write("Error 不支持浮点的位运算");
+                        break;
+                }
+                left.eType = EVMType.Float32;
+                left.Float32 = r;
                 return;
             }
 
-            bool useUnsigned = isUnSign || (left.eType == EVMType.UInt16 || left.eType == EVMType.UInt32 || left.eType == EVMType.UInt64) || (right.eType == EVMType.UInt16 || right.eType == EVMType.UInt32 || right.eType == EVMType.UInt64);
+            bool useUnsigned = (promoteType == EVMType.UInt64 || promoteType == EVMType.UInt32 || promoteType == EVMType.UInt16 || promoteType == EVMType.Byte);
             if (useUnsigned)
             {
                 ulong a = left.UInt64;
@@ -279,7 +300,15 @@ namespace SimpleLanguage.VM
                     case 8: r = a << (int)b; break;
                     case 9: r = a >> (int)b; break;
                 }
-                left.UInt64 = r;
+                left.eType = promoteType;
+                switch (promoteType)
+                {
+                    case EVMType.UInt64: left.UInt64 = r; break;
+                    case EVMType.UInt32: left.UInt32 = (uint)r; break;
+                    case EVMType.UInt16: left.UInt16 = (ushort)r; break;
+                    case EVMType.Byte: left.Int8 = (byte)r; break;
+                    default: left.UInt64 = r; break;
+                }
                 return;
             }
 
@@ -299,7 +328,68 @@ namespace SimpleLanguage.VM
                 case 8: lr = la << (int)lb; break;
                 case 9: lr = la >> (int)lb; break;
             }
-            left.Int64 = lr;
+            left.eType = promoteType;
+            switch (promoteType)
+            {
+                case EVMType.Int64: left.Int64 = lr; break;
+                case EVMType.Int32: left.Int32 = (int)lr; break;
+                case EVMType.Int16: left.Int16 = (short)lr; break;
+                case EVMType.SByte: left.SInt8 = (sbyte)lr; break;
+                default: left.Int64 = lr; break;
+            }
+        }
+
+        private static bool IsRawUnsignedInt(EVMType t)
+        {
+            return t == EVMType.Byte || t == EVMType.UInt16 || t == EVMType.UInt32 || t == EVMType.UInt64;
+        }
+
+        private static bool IsRawSignedInt(EVMType t)
+        {
+            return t == EVMType.SByte || t == EVMType.Int16 || t == EVMType.Int32 || t == EVMType.Int64;
+        }
+
+        private static EVMType GetRawBinaryPromotionType(EVMType left, EVMType right, int sign, bool isUnSign)
+        {
+            // Mainstream numeric promotion (C-like/C#/JVM style with pragmatic VM fallback):
+            // 1) float64/num dominates, 2) float32 dominates over ints,
+            // 3) integer ops promote narrow ints to int32, then widen by signed/unsigned mix.
+            bool leftF64 = left == EVMType.Float64 || left == EVMType.Num;
+            bool rightF64 = right == EVMType.Float64 || right == EVMType.Num;
+            if (leftF64 || rightF64) return EVMType.Float64;
+            if (left == EVMType.Float32 || right == EVMType.Float32) return EVMType.Float32;
+
+            bool lUnsigned = IsRawUnsignedInt(left);
+            bool rUnsigned = IsRawUnsignedInt(right);
+            bool lSigned = IsRawSignedInt(left);
+            bool rSigned = IsRawSignedInt(right);
+
+            if (isUnSign)
+            {
+                if (left == EVMType.UInt64 || right == EVMType.UInt64) return EVMType.UInt64;
+                if (left == EVMType.UInt32 || right == EVMType.UInt32) return EVMType.UInt32;
+                return EVMType.Int32;
+            }
+
+            // Bitwise/shift on mixed sign types: keep 64-bit safety.
+            bool isBitOp = sign >= 5 && sign <= 9;
+
+            if (left == EVMType.UInt64 || right == EVMType.UInt64)
+            {
+                if (lSigned || rSigned || isBitOp) return EVMType.Int64;
+                return EVMType.UInt64;
+            }
+            if (left == EVMType.Int64 || right == EVMType.Int64) return EVMType.Int64;
+
+            if (left == EVMType.UInt32 || right == EVMType.UInt32)
+            {
+                if (left == EVMType.UInt32 && right == EVMType.UInt32) return EVMType.UInt32;
+                // int32 + uint32 => int64 (same as C# numeric promotion)
+                return EVMType.Int64;
+            }
+
+            // byte/sbyte/short/ushort/int32 -> int32
+            return EVMType.Int32;
         }
 
         public void AddSValue(ref SValue sval, bool isUnsign, out bool isMethodCall)
