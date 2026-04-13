@@ -41,10 +41,10 @@ Project
         #global.println( "--------------------for enum-------------------" )
         #global.println( "Pi=$global.Pi }" )
         #global.println( "config data $global.var1 " )
-        str = global.arrvar1.toString()
-        global.println( "global arr: $str "  )
-        #aa = global.vardata2.a
-        #global.println( "config data ${aa + global.vardata2.b} " )
+        #str = global.arrvar1.toString()
+        #global.println( "global arr: $str "  )
+        aa = global.vardata2.a
+        global.println( "config data ${aa + global.vardata2.b} " )
 
         #a = [1,2,"222",1000L,[1,2,3,4]]
         #!

@@ -312,6 +312,22 @@ namespace SimpleLanguage.Export.SLIR
                                 catch { }
                             }
                         }
+                        if (irBufLocal.Count == 0 && v.express != null)
+                        {
+                            try
+                            {
+                                var iexField = IRExpressManager.CreateExpress(null, v.express);
+                                if (iexField?.IRDataList != null)
+                                {
+                                    foreach (var d in iexField.IRDataList)
+                                    {
+                                        if (d == null) continue;
+                                        irBufLocal.Add(d);
+                                    }
+                                }
+                            }
+                            catch { }
+                        }
                     }
                     // Match IRMetaClass.CreateStaticMetaMetaVariableIRList: expr IR then StoreNotStaticField1 for instance fields.
                     if (irBufLocal.Count > 0)
@@ -390,9 +406,14 @@ namespace SimpleLanguage.Export.SLIR
                             }
                         }
                         // Match IRMetaClass.CreateStaticMetaMetaVariableIRList: expr IR then StoreStaticField for class statics.
+                        if (irBufStatic.Count == 0)
+                        {
+                            TryBuildDataStaticDefaultInitializer(v, irBufStatic, curirmt);
+                        }
                         if (irBufStatic.Count > 0)
                         {
                             AppendClassStaticFieldStoreIfNeeded(v, curirmt, irBufStatic);
+                            TryRewriteArrayStaticInitializer(v, irBufStatic, curirmt);
                         }
                         foreach (var d in irBufStatic)
                         {
@@ -684,6 +705,122 @@ namespace SimpleLanguage.Export.SLIR
             if (v.isStatic) flags |= 32;
 
             return flags;
+        }
+
+        private static void TryBuildDataStaticDefaultInitializer(IRMetaVariable v, List<IRData> irBuf, IRMetaType ownerType)
+        {
+            if (v?.irMetaType?.irMetaClass == null || irBuf == null || irBuf.Count > 0) return;
+            if (v.irMetaType.irMetaClass.metaClassKind != IRMetaClassKind.Data) return;
+
+            // global.data object field without explicit expression:
+            // construct data object first, then StoreStaticField by owner class+field index.
+            var irNew = new IRData
+            {
+                id = 0,
+                opCode = EIROpCode.NewObject,
+                opValue = v.irMetaType,
+                index = 0,
+            };
+            irBuf.Add(irNew);
+        }
+
+        private static void TryRewriteArrayStaticInitializer(IRMetaVariable v, List<IRData> irBuf, IRMetaType ownerType)
+        {
+            if (v?.irMetaType?.irMetaClass == null || irBuf == null || irBuf.Count == 0) return;
+            var typeName = v.irMetaType.irMetaClass.irName ?? string.Empty;
+            if (!typeName.StartsWith("Core.Array", StringComparison.Ordinal)) return;
+
+            bool hasArrayCtor = irBuf.Exists(d => d != null && (d.opCode == EIROpCode.NewArray || d.opCode == EIROpCode.NewTemplateObject));
+            if (hasArrayCtor) return;
+
+            // Pattern seen in broken export: [const..., StoreStaticField]
+            // Rebuild to: len -> NewArray -> (Dup, value, StoreArrayIndex)* -> StoreStaticField.
+            int tailStore = irBuf.Count - 1;
+            bool hasTailStore = tailStore >= 0 && irBuf[tailStore] != null && irBuf[tailStore].opCode == EIROpCode.StoreStaticField;
+            int valueCount = hasTailStore ? tailStore : irBuf.Count;
+            if (valueCount <= 0) return;
+
+            for (int i = 0; i < valueCount; i++)
+            {
+                var op = irBuf[i]?.opCode ?? EIROpCode.Nop;
+                bool isConst =
+                    op == EIROpCode.LoadConstNull
+                    || op == EIROpCode.LoadConstByte
+                    || op == EIROpCode.LoadConstSByte
+                    || op == EIROpCode.LoadConstInt16
+                    || op == EIROpCode.LoadConstUInt16
+                    || op == EIROpCode.LoadConstInt32
+                    || op == EIROpCode.LoadConstUInt32
+                    || op == EIROpCode.LoadConstInt64
+                    || op == EIROpCode.LoadConstUInt64
+                    || op == EIROpCode.LoadConstFloat32
+                    || op == EIROpCode.LoadConstFloat64
+                    || op == EIROpCode.LoadConstBoolean
+                    || op == EIROpCode.LoadConstString;
+                if (!isConst) return;
+            }
+
+            List<IRData> rebuilt = new List<IRData>();
+            rebuilt.Add(new IRData
+            {
+                id = rebuilt.Count,
+                opCode = EIROpCode.LoadConstInt32,
+                opValue = valueCount,
+                index = 0,
+            });
+            rebuilt.Add(new IRData
+            {
+                id = rebuilt.Count,
+                opCode = EIROpCode.NewArray,
+                opValue = v.irMetaType,
+                index = 0,
+            });
+
+            for (int i = 0; i < valueCount; i++)
+            {
+                rebuilt.Add(new IRData
+                {
+                    id = rebuilt.Count,
+                    opCode = EIROpCode.Dup,
+                    index = 0,
+                });
+                var src = irBuf[i];
+                var copied = new IRData
+                {
+                    id = rebuilt.Count,
+                    opCode = src.opCode,
+                    index = src.index,
+                    opValue = src.opValue,
+                };
+                if (src.Payload != null && src.Payload.Length > 0)
+                {
+                    copied.Payload = new byte[src.Payload.Length];
+                    Buffer.BlockCopy(src.Payload, 0, copied.Payload, 0, src.Payload.Length);
+                    copied.ByteLength = src.ByteLength;
+                }
+                rebuilt.Add(copied);
+                rebuilt.Add(new IRData
+                {
+                    id = rebuilt.Count,
+                    opCode = EIROpCode.StoreArrayIndex,
+                    opValue = true,
+                    index = i,
+                });
+            }
+
+            if (hasTailStore)
+            {
+                rebuilt.Add(new IRData
+                {
+                    id = rebuilt.Count,
+                    opCode = EIROpCode.StoreStaticField,
+                    opValue = ownerType,
+                    index = v.index,
+                });
+            }
+
+            irBuf.Clear();
+            irBuf.AddRange(rebuilt);
         }
 
         /// <summary>

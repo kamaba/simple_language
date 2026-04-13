@@ -283,7 +283,7 @@ namespace SimpleLanguage.Project
                 mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.stringMetaClass));
                 mmv.SetIsDefineMetaType(true);
                 mmv.SetExpress(new MetaConstExpressNode(EType.String, element.GetString() ?? string.Empty));
-                projectMc.AddMetaMemberVariable(mmv);
+                FinalizeInjectedProjectGlobalMember(projectMc, mmv);
                 return;
             }
 
@@ -295,7 +295,7 @@ namespace SimpleLanguage.Project
                     mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.int32MetaClass));
                     mmv.SetIsDefineMetaType(true);
                     mmv.SetExpress(new MetaConstExpressNode(EType.Int32, i32));
-                    projectMc.AddMetaMemberVariable(mmv);
+                    FinalizeInjectedProjectGlobalMember(projectMc, mmv);
                     return;
                 }
 
@@ -305,7 +305,7 @@ namespace SimpleLanguage.Project
                     mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.float64MetaClass));
                     mmv.SetIsDefineMetaType(true);
                     mmv.SetExpress(new MetaConstExpressNode(EType.Float64, f64));
-                    projectMc.AddMetaMemberVariable(mmv);
+                    FinalizeInjectedProjectGlobalMember(projectMc, mmv);
                     return;
                 }
             }
@@ -316,7 +316,7 @@ namespace SimpleLanguage.Project
                 mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.booleanMetaClass));
                 mmv.SetIsDefineMetaType(true);
                 mmv.SetExpress(new MetaConstExpressNode(EType.Boolean, element.GetBoolean()));
-                projectMc.AddMetaMemberVariable(mmv);
+                FinalizeInjectedProjectGlobalMember(projectMc, mmv);
                 return;
             }
 
@@ -326,7 +326,7 @@ namespace SimpleLanguage.Project
                 mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.objectMetaClass));
                 mmv.SetIsDefineMetaType(true);
                 mmv.SetExpress(new MetaConstExpressNode(EType.Null, "null"));
-                projectMc.AddMetaMemberVariable(mmv);
+                FinalizeInjectedProjectGlobalMember(projectMc, mmv);
                 return;
             }
 
@@ -336,7 +336,8 @@ namespace SimpleLanguage.Project
                 mmv.SetIsDefineMetaType(true);
                 mmv.SetMetaDefineType(new MetaType(dataClass));
                 mmv.SetRealMetaType(new MetaType(dataClass));
-                projectMc.AddMetaMemberVariable(mmv);
+                mmv.SetExpress(new MetaNewObjectExpressNode(new MetaType(dataClass), projectMc, null));
+                FinalizeInjectedProjectGlobalMember(projectMc, mmv);
                 return;
             }
 
@@ -347,8 +348,8 @@ namespace SimpleLanguage.Project
                     mmv.SetMetaDefineType(arrMetaType);
                     mmv.SetRealMetaType(new MetaType(arrMetaType));
                     mmv.SetIsDefineMetaType(true);
-                    mmv.SetExpress(arrExpress);
-                    projectMc.AddMetaMemberVariable(mmv);
+                    mmv.SetExpress(new MetaNewObjectExpressNode(arrExpress, projectMc, null, mmv));
+                    FinalizeInjectedProjectGlobalMember(projectMc, mmv);
                     return;
                 }
 
@@ -357,6 +358,18 @@ namespace SimpleLanguage.Project
             }
 
             Log.AddProjectLog(LID.ShowExtendMessage, $"Unsupported global.data value kind for '{name}': {element.ValueKind}");
+        }
+
+        static void FinalizeInjectedProjectGlobalMember(MetaClass projectMc, MetaMemberVariable mmv)
+        {
+            projectMc.AddMetaMemberVariable(mmv);
+
+            // Project global.data is injected after the normal ParseMetaClassMemberExpress pass.
+            // Re-run expression parse pipeline for injected members so array/data initializers
+            // are lowered to NewArray/NewObject IR instead of only carrying raw meta definitions.
+            mmv.ParseMetaExpress();
+            mmv.CalcReturnType();
+            mmv.ParseChildMemberData();
         }
 
         static MetaData CreateMetaDataByJsonObject(string dataName, JsonElement element, int seed)
