@@ -6,6 +6,11 @@ public class Range<T:Num> interface IIterable<T>, IIterator<T>
     T _iteratorValue = 0
     T _current = null
 
+
+    _init_( T _end )
+    {
+        this._init_(0, _end, 1)
+    }
     _init_( T _start, T _end )
     {
         this._init_(_start, _end, 1)

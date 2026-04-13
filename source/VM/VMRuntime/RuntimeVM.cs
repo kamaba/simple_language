@@ -202,7 +202,17 @@ namespace SimpleLanguage.VM.Runtime
 
         public bool IsNumericTypeLocal(EVMType t)
         {
-            return t == EVMType.Num || t == EVMType.Int32 || t == EVMType.Int64 || t == EVMType.Float32 || t == EVMType.Float64;
+            return t == EVMType.Num
+                || t == EVMType.SByte
+                || t == EVMType.Byte
+                || t == EVMType.Int16
+                || t == EVMType.UInt16
+                || t == EVMType.Int32
+                || t == EVMType.UInt32
+                || t == EVMType.Int64
+                || t == EVMType.UInt64
+                || t == EVMType.Float32 
+                || t == EVMType.Float64;
         }
         public void SyncRawFromSValue(int index)
         {
@@ -1486,6 +1496,18 @@ namespace SimpleLanguage.VM.Runtime
                             var left = m_ValueStack[--m_ValueIndex];
                             // compareSign 2 -> <
                             SValue.CompareSValue1AndValue2(ref left, ref right, 2);
+                            PushSValueSynced(left);
+                        }
+                    }
+                    break;
+                case EIROpCode.Cgt:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            // compareSign 0 -> >
+                            SValue.CompareSValue1AndValue2(ref left, ref right, 0);
                             PushSValueSynced(left);
                         }
                     }
@@ -3021,6 +3043,75 @@ namespace SimpleLanguage.VM.Runtime
                             return;
                         }
                         svalue.SetDoubleValue((double)doubleObj.value);
+                    }
+                    break;
+                case EVMType.Num:
+                    {
+                        //if (anyObj)
+                        //{
+                            // any/object slot can carry concrete numeric runtime types.
+                            if (obj != null && IsNumericTypeLocal(obj.eType))
+                            {
+                                switch (obj.eType)
+                                {
+                                    case EVMType.Byte: svalue.SetInt8Value((byte)obj.value); break;
+                                    case EVMType.SByte: svalue.SetSInt8Value((sbyte)obj.value); break;
+                                    case EVMType.Int16: svalue.SetInt16Value((short)obj.value); break;
+                                    case EVMType.UInt16: svalue.SetUInt16Value((ushort)obj.value); break;
+                                    case EVMType.Int32: svalue.SetInt32Value((int)obj.value); break;
+                                    case EVMType.UInt32: svalue.SetUInt32Value((uint)obj.value); break;
+                                    case EVMType.Int64: svalue.SetInt64Value((long)obj.value); break;
+                                    case EVMType.UInt64: svalue.SetUInt64Value((ulong)obj.value); break;
+                                    case EVMType.Float32: svalue.SetFloatValue((float)obj.value); break;
+                                    case EVMType.Float64:
+                                    case EVMType.Num:
+                                        svalue.eType = EVMType.Num;
+                                        svalue.doubleValue = Convert.ToDouble(obj.value);
+                                        svalue.isNull = false;
+                                        break;
+                                    default:
+                                        Log.AddRuntimeLog(LID.ShowMessageAssert, "Num(any) got unsupported numeric type.");
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "Num(any) requires numeric runtime object.");
+                            }
+                            return;
+                        //}
+
+                        //TemplateObject to = obj as TemplateObject;
+                        //if (to != null)
+                        //{
+                        //    if (!IsNumericTypeLocal(to.eType))
+                        //    {
+                        //        Log.AddRuntimeLog(LID.ShowMessageAssert, "Num target expects numeric template type.");
+                        //        return;
+                        //    }
+                        //    svalue.eType = EVMType.Num;
+                        //    svalue.doubleValue = Convert.ToDouble(to.value);
+                        //    svalue.isNull = false;
+                        //    return;
+                        //}
+
+                        //if (obj is NumObject numObj)
+                        //{
+                        //    svalue.eType = EVMType.Num;
+                        //    svalue.doubleValue = numObj.ToDouble();
+                        //    svalue.isNull = false;
+                        //    return;
+                        //}
+
+                        //if (IsNumericTypeLocal(obj.eType))
+                        //{
+                        //    svalue.eType = EVMType.Num;
+                        //    svalue.doubleValue = Convert.ToDouble(obj.value);
+                        //    svalue.isNull = false;
+                        //    return;
+                        //}
+
+                        //Log.AddRuntimeLog(LID.ShowMessageAssert, "Num value type mismatch.");
                     }
                     break;
                 case EVMType.String:

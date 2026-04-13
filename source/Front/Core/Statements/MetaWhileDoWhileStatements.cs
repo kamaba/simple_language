@@ -83,14 +83,10 @@ namespace SimpleLanguage.Core
                     m_ConditionExpress.Parse(new AllowUseSettings());
                     m_ConditionExpress.CalcReturnType();
 
-                    if (m_ConditionExpress is MetaArrayExpressNode maen)
-                    {
-                        //m_ForInContent = new MetaVariable("auto_" + this.GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, 
-                        //    ownerMetaClass, null);
-                        m_ConditionExpress = new MetaNewObjectExpressNode(maen, ownerMetaClass, m_OwnerMetaBlockStatements, null );
-                        m_ConditionExpress.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
-                        m_ConditionExpress.CalcReturnType();
-                    }
+                    // Keep for-in right-expression behavior consistent with assignments:
+                    // convert `range(...)` / class-call / array-literal into explicit MetaNewObjectExpressNode.
+                    var conditionMetaType = m_ConditionExpress.GetReturnMetaDefineType();
+                    m_ConditionExpress = ExpressManager.ConvertNewExpress(m_ConditionExpress, conditionMetaType, null);
                 }
 
                 var mcallEn = m_ConditionExpress as MetaCallLinkExpressNode;
