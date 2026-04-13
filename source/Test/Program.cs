@@ -21,7 +21,10 @@ internal static class Program
         string defaultProjectPath = Path.Combine(repoRoot, "source", "Front", "Lib", "Core", "Core");
         string projectPath = args.Length == 0 ? defaultProjectPath : args[0];
         bool runTestEntry = args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
-        bool start = TryGetBoolArg(args, "start", defaultValue: true);
+        // Default to subprocess mode so debug behavior matches manual "front then vm" execution.
+        bool start = TryGetBoolArg(args, "start", defaultValue: false);
+        string exportOutDir = Path.Combine(repoRoot, "out", "export");
+        Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", exportOutDir);
         string frontProject = Path.Combine(repoRoot, "source", "Front", "SimpleLanguageFront.csproj");
         string vmProject = Path.Combine(repoRoot, "source", "VM", "SimpleLanuageVM.csproj");
 
@@ -37,7 +40,7 @@ internal static class Program
             {
                 "run", "--project", Quote(frontProject), "--",
                 "c", "-e", "ir", "-p", projectPath
-            }, "Front compile");
+            }, "Front compile", repoRoot);
         if (frontExit != 0)
         {
             Console.WriteLine($"Front compile failed, exit code: {frontExit}");
@@ -56,7 +59,7 @@ internal static class Program
 
         int vmExit = start
             ? RunVmInProcess(packagePath, runTestEntry)
-            : RunVmViaProcess(vmProject, packagePath, runTestEntry);
+            : RunVmViaProcess(vmProject, packagePath, runTestEntry, repoRoot);
         if (vmExit != 0)
         {
             Console.WriteLine($"VM run failed, exit code: {vmExit}");
@@ -67,12 +70,13 @@ internal static class Program
         return 0;
     }
 
-    static int RunDotnet(List<string> args, string stepName)
+    static int RunDotnet(List<string> args, string stepName, string? workingDirectory = null)
     {
         var psi = new ProcessStartInfo
         {
             FileName = "dotnet",
             Arguments = string.Join(" ", args),
+            WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? Environment.CurrentDirectory : workingDirectory,
             UseShellExecute = false,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
@@ -108,7 +112,7 @@ internal static class Program
         return p.ExitCode;
     }
 
-    static int RunVmViaProcess(string vmProject, string packagePath, bool runTestEntry)
+    static int RunVmViaProcess(string vmProject, string packagePath, bool runTestEntry, string repoRoot)
     {
         var vmArgs = new List<string>
         {
@@ -118,7 +122,7 @@ internal static class Program
         {
             vmArgs.Add("-test");
         }
-        return RunDotnet(vmArgs, "VM run");
+        return RunDotnet(vmArgs, "VM run", repoRoot);
     }
 
     static int RunFrontInProcess(string projectPath)

@@ -87,16 +87,17 @@ Project
         !#
             
         sum = 0
-        for i in range(1,10)
+        for i in range(1,10, 2 )
         {
-            sum += i
-            #!
+            sum += 10
+            println( i )
             for n in range( 3, 6 )
             {
-                sum += n
+               sum += n
+               println( "n=$n" )
             }
         }
-        println(sum)
+        println("sum:"  + sum)
     }
     _test_()
     {
