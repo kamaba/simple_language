@@ -9,8 +9,6 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
-using System;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -30,7 +28,10 @@ namespace SimpleLanguage.IR
             {
                 int id = mv.GetHashCode();
                 irmv = _irMethod.GetIRArgumentById(id);
-                System.Diagnostics.Debug.Assert(irmv != null);
+                if(irmv == null )
+                {
+                    Log.AddIRLog(LID.IRMethodNotFoundVariable, "in argument", _irMethod.id, mv.name);
+                }
                 IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, irmv.index, IRMetaVariableFrom.Argument);
                 return irVar;
             }
@@ -76,7 +77,7 @@ namespace SimpleLanguage.IR
                     //
                     if (index == -1)
                     {
-                        Log.AddIRLog(LID.Unknown, "没有找到对应成员变量的Index");
+                        Log.AddIRLog(LID.IRMethodNotFoundVariable, "in const member index = -1", _irMethod.id, mv.name);
                         return null;
                     }
                     IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
@@ -86,8 +87,7 @@ namespace SimpleLanguage.IR
                 {
                     if (index == -1)
                     {
-                        Log.AddIRLog(LID.Unknown, "没有找到对应成员变量的Index");
-                        Debug.Assert(false);
+                        Log.AddIRLog(LID.IRMethodNotFoundVariable, "in member index = -1", _irMethod.id, mv.name);
                         return null;
                     }
                     IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Member);
@@ -108,7 +108,7 @@ namespace SimpleLanguage.IR
                         {
                             if( index < 0 )
                             {
-                                Debug.Assert(false, "取值下标不能为负数!");
+                                Log.AddIRLog(LID.IRMethodNotFoundVariable, "in array value index = -1", _irMethod.id, mv.name);
                             }
                         }
                         irdata.opValue = index;
@@ -134,13 +134,17 @@ namespace SimpleLanguage.IR
                 }
                 else
                 {
-                    Debug.Assert(false);
+                    Log.AddIRLog(LID.IRMethodNotFoundVariable, "in array value else branch", _irMethod.id, mv.name);
                 }
             }
             else
             {
                 irmv = _irMethod.GetIRLocalVariableById(mv.GetHashCode());
-                System.Diagnostics.Debug.Assert(irmv != null);
+                if(irmv == null )
+                {
+                    Log.AddIRLog(LID.IRMethodNotFoundVariable, "in array other from", _irMethod.id, mv.name);
+                    return null;
+                }
                 IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, irmv.index, IRMetaVariableFrom.LocalStatement);
                 return irVar;
             }
@@ -189,13 +193,15 @@ namespace SimpleLanguage.IR
                 m_LoadVarData.opValue = irmt;
                 m_LoadVarData.opCode = EIROpCode.LoadStaticField;
                 m_LoadVarData.index = id;
-                Debug.Assert(id >= 0 , "索引号应该>=0 ");
+                if(id < 0 )
+                {
+                    Log.AddIRLog(LID.IRMethodNotFoundVariable, "in static id < 0", _irMethod.id, id);
+                }
                 m_IRDataList.Add(m_LoadVarData);
             }
             else
             {
-                Debug.Assert(false);
-                Log.AddIRLog(LID.Unknown, $"SVM Error 没有找到加载变量的来源类型！");
+                Log.AddIRLog(LID.IRMethodNotFoundVariable, "in array other from", _irMethod.id, id );
             }
         }
         public override string ToIRString()

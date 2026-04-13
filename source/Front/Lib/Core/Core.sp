@@ -41,6 +41,7 @@ Project
         #global.println( "--------------------for enum-------------------" )
         #global.println( "Pi=$global.Pi }" )
         global.println( "config data $global.var1 " )
+        global.println( "global arr: $global.arrvar1.toString() "  )
         aa = global.vardata2.a
         global.println( "config data ${aa + global.vardata2.b} " )
 

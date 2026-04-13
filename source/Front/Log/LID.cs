@@ -552,5 +552,6 @@
         ProcessCompileMetaStart = 11026,
         ProcessCompileMetaEnd = 11027,
         MetaCoreVisitCallTypeError = 11028,
+        IRMethodNotFoundVariable = 11029,
     }
 }

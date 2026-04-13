@@ -168,15 +168,15 @@ namespace SimpleLanguage.Logging
             return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "" );
         }
 
-        //-------------------------------GenIR----------------------------------------------
-        public static LogData AddIRLog(LID lid, string msg)
+        //-------------------------------GenIR----------------------------------------------        
+        public static LogData AddIRLog(LID lid, string msg, params object[] objs)
         {
-            return WriteCoreByToken(lid, EErrorType.GenIR, null, null, ""); ;
+            return WriteCoreByToken(lid, EErrorType.GenIR, null, objs, msg);
         }
-
-        public static LogData AddIRLog(LID lid, string msg, Token token, string extendMessage = null)
+        public static LogData AddIRLog(LID lid, Token token, string msg, params object[] objs)
         {
-            return WriteCoreByToken(lid, EErrorType.GenIR, token, null, ""); ;
+            //return WriteCore(lid, LogData.EErrorType.ParseMeta, null, null, msg, args);
+            return WriteCoreByToken(lid, EErrorType.GenIR, token, objs, msg);
         }
 
         private static LogData WriteCoreByToken(
@@ -243,7 +243,7 @@ namespace SimpleLanguage.Logging
             }
             AddLog(ld);
 
-            HandleBlocking(errorDefine, ld.message);
+            //HandleBlocking(errorDefine, ld.message);
 
             if ( LogManager.Options.EnableAssertFeature && errorDefine.EnableAssert)
             {

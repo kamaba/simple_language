@@ -15,6 +15,7 @@ using SimpleLanguage.Logging;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Collections.Generic;
 
 namespace SimpleLanguage.Project
 {
@@ -273,7 +274,7 @@ namespace SimpleLanguage.Project
             }
 
             var mmv = new MetaMemberVariable(projectMc, name);
-            mmv.SetIsStatic(true);
+            mmv.SetIsStatic(false);
             mmv.SetIsConst(true);
 
             if (element.ValueKind == JsonValueKind.String)
@@ -309,6 +310,26 @@ namespace SimpleLanguage.Project
                 }
             }
 
+            if (element.ValueKind == JsonValueKind.True || element.ValueKind == JsonValueKind.False)
+            {
+                mmv.SetMetaDefineType(new MetaType(CoreMetaClassManager.booleanMetaClass));
+                mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.booleanMetaClass));
+                mmv.SetIsDefineMetaType(true);
+                mmv.SetExpress(new MetaConstExpressNode(EType.Boolean, element.GetBoolean()));
+                projectMc.AddMetaMemberVariable(mmv);
+                return;
+            }
+
+            if (element.ValueKind == JsonValueKind.Null)
+            {
+                mmv.SetMetaDefineType(new MetaType(CoreMetaClassManager.objectMetaClass));
+                mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.objectMetaClass));
+                mmv.SetIsDefineMetaType(true);
+                mmv.SetExpress(new MetaConstExpressNode(EType.Null, "null"));
+                projectMc.AddMetaMemberVariable(mmv);
+                return;
+            }
+
             if (element.ValueKind == JsonValueKind.Object)
             {
                 var dataClass = CreateMetaDataByJsonObject($"___ProjectGlobalData_{name}___", element, index);
@@ -319,12 +340,28 @@ namespace SimpleLanguage.Project
                 return;
             }
 
+            if (element.ValueKind == JsonValueKind.Array)
+            {
+                if (TryCreateArrayExpressNodeFromJsonArray(projectMc, element, out var arrExpress, out var arrMetaType))
+                {
+                    mmv.SetMetaDefineType(arrMetaType);
+                    mmv.SetRealMetaType(new MetaType(arrMetaType));
+                    mmv.SetIsDefineMetaType(true);
+                    mmv.SetExpress(arrExpress);
+                    projectMc.AddMetaMemberVariable(mmv);
+                    return;
+                }
+
+                Log.AddProjectLog(LID.ShowExtendMessage, $"global.data array '{name}' contains unsupported element types (only primitive/array supported).");
+                return;
+            }
+
             Log.AddProjectLog(LID.ShowExtendMessage, $"Unsupported global.data value kind for '{name}': {element.ValueKind}");
         }
 
         static MetaData CreateMetaDataByJsonObject(string dataName, JsonElement element, int seed)
         {
-            var md = new MetaData(dataName, true, true, true);
+            var md = new MetaData(dataName, false, false, true);
             int idx = 0;
             foreach (var kv in element.EnumerateObject())
             {
@@ -357,6 +394,14 @@ namespace SimpleLanguage.Project
                     return MetaMemberData.CreateConst(owner, name, index, new MetaConstExpressNode(EType.Float64, f64));
                 }
             }
+            if (element.ValueKind == JsonValueKind.True || element.ValueKind == JsonValueKind.False)
+            {
+                return MetaMemberData.CreateConst(owner, name, index, new MetaConstExpressNode(EType.Boolean, element.GetBoolean()));
+            }
+            if (element.ValueKind == JsonValueKind.Null)
+            {
+                return MetaMemberData.CreateConst(owner, name, index, new MetaConstExpressNode(EType.Null, "null"));
+            }
             if (element.ValueKind == JsonValueKind.Object)
             {
                 var objNode = MetaMemberData.CreateObject(owner, name, index);
@@ -372,7 +417,80 @@ namespace SimpleLanguage.Project
                 }
                 return objNode;
             }
+            if (element.ValueKind == JsonValueKind.Array)
+            {
+                var arrNode = MetaMemberData.CreateArray(owner, name, index, new MetaType(CoreMetaClassManager.objectMetaClass), element.GetArrayLength());
+                int childIndex = 0;
+                foreach (var item in element.EnumerateArray())
+                {
+                    var child = CreateMetaMemberDataByJson(owner, childIndex.ToString(), item, index * 1000 + childIndex);
+                    if (child != null)
+                    {
+                        arrNode.AddMetaMemberData(child);
+                    }
+                    childIndex++;
+                }
+                return arrNode;
+            }
             return null;
+        }
+
+        static bool TryCreateArrayExpressNodeFromJsonArray(MetaClass ownerMc, JsonElement arrayElement, out MetaArrayExpressNode arrayExpress, out MetaType arrayMetaType)
+        {
+            arrayExpress = new MetaArrayExpressNode(ownerMc, null, null, null);
+            arrayMetaType = null;
+
+            foreach (var item in arrayElement.EnumerateArray())
+            {
+                if (!TryCreateJsonPrimitiveOrArrayExpressNode(ownerMc, item, out var childExpress))
+                {
+                    return false;
+                }
+                arrayExpress.metaCallArray.Add(childExpress);
+            }
+
+            arrayMetaType = arrayExpress.GetReturnMetaDefineType();
+            return arrayMetaType != null;
+        }
+
+        static bool TryCreateJsonPrimitiveOrArrayExpressNode(MetaClass ownerMc, JsonElement element, out MetaExpressNode expressNode)
+        {
+            expressNode = null;
+
+            switch (element.ValueKind)
+            {
+                case JsonValueKind.String:
+                    expressNode = new MetaConstExpressNode(EType.String, element.GetString() ?? string.Empty);
+                    return true;
+                case JsonValueKind.Number:
+                    if (element.TryGetInt32(out var i32))
+                    {
+                        expressNode = new MetaConstExpressNode(EType.Int32, i32);
+                        return true;
+                    }
+                    if (element.TryGetDouble(out var f64))
+                    {
+                        expressNode = new MetaConstExpressNode(EType.Float64, f64);
+                        return true;
+                    }
+                    return false;
+                case JsonValueKind.True:
+                case JsonValueKind.False:
+                    expressNode = new MetaConstExpressNode(EType.Boolean, element.GetBoolean());
+                    return true;
+                case JsonValueKind.Null:
+                    expressNode = new MetaConstExpressNode(EType.Null, "null");
+                    return true;
+                case JsonValueKind.Array:
+                    if (TryCreateArrayExpressNodeFromJsonArray(ownerMc, element, out var nestedArray, out _))
+                    {
+                        expressNode = nestedArray;
+                        return true;
+                    }
+                    return false;
+                default:
+                    return false;
+            }
         }
 
         public static void ExportProjectGuideMarkdown(string spFilePath, string jsoncPath)
@@ -423,7 +541,8 @@ namespace SimpleLanguage.Project
                 sb.AppendLine();
                 sb.AppendLine("When `global.data` is configured in project JSONC:");
                 sb.AppendLine();
-                sb.AppendLine("- Primitive values (`int32`/`string`/`float`) are injected as direct static members on `Project` and can be accessed by `global.<name>`. ");
+                sb.AppendLine("- Primitive values (`int32`/`string`/`float`/`bool`/`null`) are injected as direct static members on `Project` and can be accessed by `global.<name>`. ");
+                sb.AppendLine("- Array values are supported (primitive and nested arrays), e.g. `global.arr[0]`, `global.arr2[1][0]`. ");
                 sb.AppendLine("- Object values are converted into `MetaData` trees, then injected into `Project` members, e.g. `global.vardata2.a`. ");
                 sb.AppendLine();
 
@@ -445,7 +564,9 @@ namespace SimpleLanguage.Project
                 sb.AppendLine("\"global\": {");
                 sb.AppendLine("  \"data\": {");
                 sb.AppendLine("    \"var1\": 12,");
-                sb.AppendLine("    \"vardata2\": { \"a\": 10, \"b\": 20 }");
+                sb.AppendLine("    \"arr\": [1,2,3],");
+                sb.AppendLine("    \"arr2\": [[1,2],[3,4]],");
+                sb.AppendLine("    \"vardata2\": { \"a\": 10, \"b\": 20, \"flags\": [true,false] }");
                 sb.AppendLine("  }");
                 sb.AppendLine("}");
                 sb.AppendLine("```");
@@ -453,6 +574,8 @@ namespace SimpleLanguage.Project
                 sb.AppendLine("Access:");
                 sb.AppendLine();
                 sb.AppendLine("- `global.var1`");
+                sb.AppendLine("- `global.arr[0]`");
+                sb.AppendLine("- `global.arr2[1][0]`");
                 sb.AppendLine("- `global.vardata2.a`");
                 sb.AppendLine("- `global.vardata2.b`");
 

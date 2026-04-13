@@ -91,7 +91,10 @@ namespace SimpleLanguage.Core
             mmd.m_Name = name;
             mmd.m_Index = index;
             mmd.m_IsWithName = true;
+            mmd.m_VariableFrom = EVariableFrom.Member;
             mmd.m_DefineMetaType = new MetaType(constExpress?.GetReturnMetaClass() ?? CoreMetaClassManager.objectMetaClass);
+            mmd.m_RealMetaType = new MetaType(mmd.m_DefineMetaType);
+            mmd.m_IsDefineMetaType = true;
             mmd.SetOwnerMetaClass(owner);
             mmd.m_IsConst = owner?.isConst ?? false;
             mmd.m_Express = constExpress;
@@ -106,9 +109,31 @@ namespace SimpleLanguage.Core
             mmd.m_Index = index;
             mmd.m_IsWithName = true;
             mmd.m_DefineMetaType = new MetaType(owner);
+            mmd.m_RealMetaType = new MetaType(mmd.m_DefineMetaType);
+            mmd.m_IsDefineMetaType = true;
             mmd.SetOwnerMetaClass(owner);
             mmd.m_IsConst = owner?.isConst ?? false;
             mmd.m_MemberDataType = EMemberDataType.MemberData;
+            return mmd;
+        }
+
+        public static MetaMemberData CreateArray(MetaData owner, string name, int index, MetaType elementType = null, int length = -1)
+        {
+            var mmd = new MetaMemberData();
+            mmd.m_Name = name;
+            mmd.m_Index = index;
+            mmd.m_IsWithName = true;
+
+            var et = elementType ?? new MetaType(CoreMetaClassManager.objectMetaClass);
+            var arrType = new MetaType(CoreMetaClassManager.arrayMetaClass, new List<MetaType>() { et });
+            arrType.SetArrayLength(length);
+
+            mmd.m_DefineMetaType = arrType;
+            mmd.m_RealMetaType = new MetaType(arrType);
+            mmd.m_IsDefineMetaType = true;
+            mmd.SetOwnerMetaClass(owner);
+            mmd.m_IsConst = owner?.isConst ?? false;
+            mmd.m_MemberDataType = EMemberDataType.MemberArray;
             return mmd;
         }
         public void SetIndex(int index) { m_Index = index; }
