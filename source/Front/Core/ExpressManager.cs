@@ -185,7 +185,7 @@ namespace SimpleLanguage.Core
 
                     case FileMetaSymbolTerm fmst:
                         {
-                            Log.AddMetaCoreLog(LID.Unknown, "Error CreateExpressNode 创建表达项不能为符号");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error CreateExpressNode 创建表达项不能为符号");
                         }
                         break;
                     case FileMetaAsOrIsTerm fmaoit:
