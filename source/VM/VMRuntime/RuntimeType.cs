@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.VM.Runtime;
+using SimpleLanguage.VM.MemoryManagement;
 using SimpleLanguage.Parse;
 using System.Text;
 using SimpleLanguage.Logging;
@@ -361,7 +362,11 @@ namespace SimpleLanguage.VM
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(m_RuntimeClass.name );
+            var name = m_RuntimeClass?.name;
+            if (string.IsNullOrEmpty(name))
+                sb.Append('<').Append(m_RuntimeClass?.id ?? 0).Append('>');
+            else
+                sb.Append(name);
             if( m_RuntimeTemplateList.Count > 0 )
             {
                 sb.Append("<");
@@ -531,24 +536,25 @@ namespace SimpleLanguage.VM
             }
         }
 
-        public static ClassObject CreateTypeObject(RuntimeType rt)
+        /// <summary>
+        /// Builds a <see cref="TypeObject"/> that <i>describes</i> <paramref name="rt"/> (for <c>GetType()</c> / <c>typeof</c>).
+        /// Previous implementation always returned null, so <c>type.toString()</c> was empty and type handles were broken.
+        /// </summary>
+        public static ClassObject? CreateTypeObject(RuntimeType? rt)
         {
             if (rt == null) return null;
-            // Use the ObjectClass.GetObjectType to obtain/cached TypeObject
             try
             {
-                // create a temporary object instance for this runtime type (no member init)
-                SObject obj = ObjectManager.CreateObjectByRuntimeType(rt, false);
-                if (obj == null) return null;
-                // ObjectClass moved under SimpleLanguage.Lib; use that implementation
-                //var typeObj = SimpleLanguage.Lib.ObjectClass.GetObjectType(obj);
-                //return typeObj as ClassObject;
+                var tobj = new TypeObject(rt);
+                if (tobj.refCount == 0)
+                    tobj.refCount = 1;
+                SlMemoryManager.Instance.RegisterAllocation(tobj);
+                return tobj;
             }
             catch
             {
                 return null;
             }
-            return null;
         }
 
         public static RuntimeType GetRuntimeTypeByRuntimeClass(RuntimeClass rmc)

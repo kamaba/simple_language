@@ -84,5 +84,10 @@ TypeTest
             }       
         }
         !#
+
+        t1 = obj.type
+        t3 = obj3.type
+        global.println("[9] type: obj.type -> " + t1.toString())
+        global.println("[10] type equality obj.type==obj3.type (same class) -> " + (t1 == t3).toString())
     }
 }

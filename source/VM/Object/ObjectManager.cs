@@ -188,6 +188,10 @@ namespace SimpleLanguage.VM
                 }
                 sobj = co;
             }
+            // Observable refCount for SystemObjectRefCount / Object.refCount: manual Retain adds on top.
+            if (sobj != null && sobj.refCount == 0
+                && (sobj is ClassObject || sobj is TypeObject || sobj is ArrayObject || sobj.eType == EVMType.Object))
+                sobj.refCount = 1;
             SlMemoryManager.Instance.RegisterAllocation(sobj);
             return sobj;
         }

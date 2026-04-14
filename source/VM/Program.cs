@@ -9,6 +9,13 @@ Console.WriteLine("---------------------------SimpleLanguage VM-----------------
 LogManager.Initialize("");
 Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", "E:\\project\\lang\\simple_language\\source\\Front\\bin\\Debug\\net8.0\\out\\export");
 
+VmRunResultSink.Initialize();
+if (!string.IsNullOrEmpty(VmRunResultSink.ResultFilePath))
+{
+    Console.WriteLine("[VM] Result.txt → " + VmRunResultSink.ResultFilePath);
+    Console.WriteLine("[VM] Override directory: env SIMPLELANG_VM_RESULT_DIR=<dir>  (default: %SIMPLELANG_EXPORT_OUTDIR%\\vm-results or .\\out\\vm-results)");
+}
+
 try
 {
     //CallMethodJsonExporter.Export("../../../../Front/bin/Debug/net8.0/ImportCSharpLang.json");
@@ -71,4 +78,8 @@ try
 catch (Exception e)
 {
     Log.AddProjectLog(LID.ShowMessageError, e.ToString());
+}
+finally
+{
+    VmRunResultSink.Shutdown();
 }

@@ -1,30 +1,52 @@
+
+# Tests for `Lib/Core/Object.sl` — every check prints a line so results are visible in the console.
 ObjectTest
 {
     static fun()
     {
-        #create instances
+        global.println("========== Object.sl tests (start) ==========")
+
         Object obj = new()
         Object obj2 = obj
         Object obj3 = new()
         Object obj4 = new()
 
-        bool obj_eq_obj2 = obj == obj2
-        global.println("obj_eq_obj2:" + obj_eq_obj2.toString() )
+        global.println("[1] new + alias: obj==obj2 (same reference) -> " + (obj == obj2).toString())
+        global.println("[2] equals alias: obj.equals(obj2) -> " + obj.equals(obj2).toString())
+        global.println("[3] static objectEquals alias: Object.objectEquals(obj, obj2) -> " + Object.objectEquals(obj, obj2).toString())
+        global.println("[4] static refEquals alias: Object.refEquals(obj, obj2) -> " + Object.refEquals(obj, obj2).toString())
 
-        bool eq2 = obj.equals( obj2 )
-        global.println("eq2:" + eq2.toString() )
+        global.println("[5] distinct instances: Object.objectEquals(obj3, obj4) -> " + Object.objectEquals(obj3, obj4).toString())
+        global.println("[6] distinct refEquals: Object.refEquals(obj3, obj4) -> " + Object.refEquals(obj3, obj4).toString())
+        global.println("[7] equals distinct: obj3.equals(obj4) -> " + obj3.equals(obj4).toString())
 
-        bool eq3 = Object.objectEquals( obj3, obj4 )
-        global.println("eq3:" + eq3.toString() )
+        int hc1 = obj.hashCode
+        int hc2 = obj3.hashCode
+        global.println("[8] hashCode: obj.hashCode -> " + hc1.toString() + " ; obj3.hashCode -> " + hc2.toString())
+        
 
-        bool refEq = Object.refEquals(obj3, obj4)
-        global.println("refEquals obj3,obj4:" + refEq.toString())
+        global.println("[11] toString: obj.toString() -> " + obj.toString())
+        global.println("[12] toString: obj3.toString() -> " + obj3.toString())
 
         int refc = obj2.refCount
-        global.println("Object refCount:" + refc.toString() )
+        global.println("[13] refCount (alias obj2): " + refc.toString())
 
-        #clone example
-        #Object cloned = obj.clone()
-        #System.Console.WriteLine("cloned != null:" + (cloned != null).toString())
+        global.println("[14] refEquals(null,null) -> " + Object.refEquals(null, null).toString())
+        global.println("[15] objectEquals(null,null) -> " + Object.objectEquals(null, null).toString())
+        global.println("[16] objectEquals(obj,null) / objectEquals(null,obj) -> " + Object.objectEquals(obj, null).toString() + " / " + Object.objectEquals(null, obj).toString())
+
+        rwA = obj.refWeak
+        rwB = obj3.refWeak
+        global.println("[17] refWeak: Object.refEquals(obj.refWeak, obj3.refWeak) -> " + Object.refEquals(rwA, rwB).toString())
+
+        global.println("[18] lifecycle smoke: call free() then release() on a throwaway Object")
+        Object tmp = new()
+        global.println("    tmp.hashCode before -> " + tmp.hashCode.toString())
+        tmp.free()
+        global.println("    called tmp.free()")
+        tmp.release()
+        global.println("    called tmp.release()")
+
+        global.println("========== Object.sl tests (end) ==========")
     }
 }

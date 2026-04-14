@@ -2559,13 +2559,9 @@ namespace SimpleLanguage.VM.Runtime
                             obj.SetValueByType(EVMType.Type, svalue.sobject);
                             return;
                         }
-                        TypeObject classObj = obj as TypeObject;
-                        if (classObj == null)
-                        {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疌lass绫诲瀷!!");
-                            return;
-                        }
-                        classObj.SetSValue(svalue.sobject as ClassObject);
+                        // Core.Type slot may be ClassObject (duplicate RuntimeType vs core registry) or empty; store the TypeObject handle on RuntimeObject.
+                        robj.SetSObject(svalue.GetSObject());
+                        return;
                     }
                     break;
                 case EVMType.Class:
@@ -3186,14 +3182,18 @@ namespace SimpleLanguage.VM.Runtime
                             svalue.SetSObject(to.value as SObject);
                             return;
                         }
-                        if (obj is TypeObject co)
+                        // Type handle lives on the SObject itself (TypeObject or ClassObject shell for Core.Type).
+                        if (obj is TypeObject tyo)
                         {
-                            svalue.SetSObject(co.value as SObject);
+                            svalue.SetSObject(tyo);
+                            return;
                         }
-                        else
+                        if (obj is ClassObject co)
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "");
+                            svalue.SetSObject(co);
+                            return;
                         }
+                        Log.AddRuntimeLog(LID.ShowMessageAssert, "Load EVMType.Type: unexpected slot object");
                     }
                     break;
                 case EVMType.Class:

@@ -80,7 +80,17 @@ namespace SimpleLanguage.VM
         }
         public override string ToFormatString()
         {
-            return "";
+            return ToString();
+        }
+
+        /// <summary>
+        /// Describe the <i>subject</i> type (<see cref="m_Rt"/>), not the <c>Type</c> class itself (base would use <see cref="RuntimeTypeManager.typeRuntimeType"/>).
+        /// </summary>
+        public override string ToString()
+        {
+            if (m_Rt != null)
+                return m_Rt.ToString();
+            return base.ToString();
         }
     }
 }

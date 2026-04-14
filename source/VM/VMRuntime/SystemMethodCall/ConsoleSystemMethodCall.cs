@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using SimpleLanuageVM.Load;
+using SimpleLanguage.VM;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -12,6 +13,7 @@ namespace SimpleLanguage.VM.Runtime
             if (paramCount <= 0)
             {
                 Console.Write(string.Empty);
+                VmRunResultSink.MirrorConsole(string.Empty, newLine: false);
                 return;
             }
             if (!vm.TrySystemCallPopArgs(paramCount, out var args))
@@ -23,6 +25,7 @@ namespace SimpleLanguage.VM.Runtime
             var textObj = args[0].GetValueObject();
             var text = textObj?.ToString() ?? string.Empty;
             Console.Write(text);
+            VmRunResultSink.MirrorConsole(text, newLine: false);
         }
 
         public static void ExecuteSystemPrintln(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
@@ -31,6 +34,7 @@ namespace SimpleLanguage.VM.Runtime
             if (paramCount <= 0)
             {
                 Console.WriteLine();
+                VmRunResultSink.MirrorConsole(null, newLine: true);
                 return;
             }
             if (!vm.TrySystemCallPopArgs(paramCount, out var args))
@@ -42,6 +46,7 @@ namespace SimpleLanguage.VM.Runtime
             var textObj = args[0].GetValueObject();
             var text = textObj?.ToString() ?? string.Empty;
             Console.WriteLine(text);
+            VmRunResultSink.MirrorConsole(text, newLine: true);
         }
 
         public static void ExecuteSystemReadLine(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
