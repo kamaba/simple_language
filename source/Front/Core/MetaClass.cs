@@ -26,10 +26,10 @@ namespace SimpleLanguage.Core
     public partial class MetaClass : MetaBase
     {
         public List<MetaAttribute> attributeList => m_AttributeList;
-        public virtual string allClassName=> this.m_AllName;
-
+        public string allClassName=> this.m_AllName;
         public EType eType => m_Type;
         public EClassDefineType classDefineType => m_ClassDefineType;
+        public bool isAbstractClass => m_IsAbstractClass;
         public bool allowExtendsClassWithTemplate => m_GenMetaClassTemplateList.Count > 0 ;             //允许继承类 是否可携带模板  像 ListInt : List<int>{} ListIntEx<T> : List<int> 这种情况不允许
         public MetaClass extendClass => m_ExtendClass;
         public MetaType extendClassMetaType => m_ExtendClassMetaType;
@@ -73,14 +73,6 @@ namespace SimpleLanguage.Core
         public Dictionary<Token, FileMetaClass> fileMetaClassDict => m_FileMetaClassDict;
         public bool isHandleExtendVariableDirty { get; set; } = false;
 
-        public MetaMemberVariable GetMetaMemberVariableByIndex(int index)
-        {
-            if (index < 0) return null;
-            var list = allMetaMemberVariableList;
-            if (index >= list.Count) return null;
-            return list[index];
-        }
-
 
         protected int m_ExtendLevel = 0;
         protected EType m_Type = EType.None;
@@ -105,8 +97,6 @@ namespace SimpleLanguage.Core
         protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
         protected bool m_IsInterfaceClass = false;
         protected bool m_IsAbstractClass = false;
-        public bool isAbstractClass => m_IsAbstractClass;
-        public void SetAbstractClass(bool v) { m_IsAbstractClass = v; }
 
         protected readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
 
@@ -184,6 +174,7 @@ namespace SimpleLanguage.Core
                 v.SetDeep(deep + 1);
             }
         }
+        public void SetAbstractClass(bool v) { m_IsAbstractClass = v; }
         public void UpdateClassAllName()
         {
             StringBuilder sb = new StringBuilder();
@@ -262,7 +253,7 @@ namespace SimpleLanguage.Core
             }
             if (this.m_ExtendClassMetaType != null)
             {
-                Log.AddMetaCoreLog(LID.Unknown, "已绑定过了继承类 : " + extendClass.name );
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "已绑定过了继承类 : " + extendClass.name );
                 return;
             }
             foreach( var v in m_FileMetaClassDict )
@@ -274,7 +265,7 @@ namespace SimpleLanguage.Core
                 }
                 if(this.m_ExtendClassMetaType != null )
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "已绑定过了继承类 : " + mc.metaClass.extendClass.name );
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "已绑定过了继承类 : " + mc.metaClass.extendClass.name );
                     continue;
                 }
 
@@ -285,7 +276,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "没有发现继承类的类型!!! " + mc.metaClass.extendClass.name );
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有发现继承类的类型!!! " + mc.metaClass.extendClass.name );
                 }
             }
 
@@ -317,7 +308,7 @@ namespace SimpleLanguage.Core
                     MetaType getmt = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(this, icd );
                     if (getmt == null )
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "没有找到接口相关的定义类!!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到接口相关的定义类!!");
                         continue;
                     }
                     this.m_FileCollectMetaInterfaceList.Add(getmt);
@@ -363,7 +354,7 @@ namespace SimpleLanguage.Core
                     var c = v.Value;
                     if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                     {
-                        var ld = Log.AddMetaCoreLog(LID.Unknown, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
+                        var ld = Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
                         //ld.valDict.Add(EMetaType.MetaClass, this);
                         //ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
                         //ld.valDict.Add(EMetaType.MetaMemberVariable, c);
@@ -376,7 +367,7 @@ namespace SimpleLanguage.Core
                     var c = v.Value;
                     if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                     {
-                        var ld = Log.AddMetaCoreLog(LID.Unknown, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
+                        var ld = Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
                         //ld.valDict.Add(EMetaType.MetaClass, this);
                         //ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
                         //ld.valDict.Add(EMetaType.MetaMemberVariable, c);
@@ -388,7 +379,7 @@ namespace SimpleLanguage.Core
                 {
                     if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
                         continue;
                     }
                     this.m_MetaMemberVariableDict.Add(c.name, c);
@@ -431,7 +422,7 @@ namespace SimpleLanguage.Core
                             // if parent is abstract, child must mark method with 'override'
                             if (efun.isAbstract && !v2.isOverrideFunction)
                             {
-                                Log.AddMetaCoreLog(LID.Unknown, "Error 子类[" + this.m_AllName + "] 方法: " + v2.name + " 实现了抽象父方法但未使用 override 标记");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 子类[" + this.m_AllName + "] 方法: " + v2.name + " 实现了抽象父方法但未使用 override 标记");
                             }
                             canAdd = false;
                             m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
@@ -995,6 +986,13 @@ namespace SimpleLanguage.Core
                     m_MetaExtendMemeberVariableDict.Add(v.Key,v.Value);
                 }
             }
+        }
+        public MetaMemberVariable GetMetaMemberVariableByIndex(int index)
+        {
+            if (index < 0) return null;
+            var list = allMetaMemberVariableList;
+            if (index >= list.Count) return null;
+            return list[index];
         }
         public virtual MetaMemberVariable GetMetaMemberVariableByName(string name)
         {

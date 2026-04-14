@@ -6,7 +6,6 @@
 //  Description:  Core MetaBase is a basement class, attribute value has name or tree's deepvalue or tree struct node!
 //****************************************************************************
 
-using SimpleLanguage.Compile;
 using System.Collections.Generic;
 
 namespace SimpleLanguage.Core

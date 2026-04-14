@@ -18,9 +18,7 @@ namespace SimpleLanguage.Core
         protected bool m_IsConst = false;
         protected bool m_IsStatic = false;
         protected bool m_IsDynamic = false;
-
         protected Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
-
 
         public MetaData( FileMetaClass md )
         {

@@ -44,11 +44,11 @@
       { "path": "Range.sl", "group": "core", "tag": "itertor", "ignore": false, "priority": 0 },
       { "path": "NativeBridge.sl", "group": "core", "tag": "bridge", "ignore": false, "priority": 0 },
       { "path": "Attribute.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "Test/ObjectTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Test/ObjectTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
       { "path": "Test/NumberTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
       { "path": "Test/GlobalTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
       { "path": "Test/BoolTets.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
-      { "path": "Test/TypeTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
+      { "path": "Test/TypeTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Test/ArrayTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 }
     ]
   },
@@ -92,7 +92,7 @@
   },
   "export": {
     "moduleName": "Core",
-    "outputDir":"Export/SLVMCode",
+    "outputDir":"../../../../out/export",
     "versionMain": 1,
     "versionSub": 0,
     "versionPatch": 0,

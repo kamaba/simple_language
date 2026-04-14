@@ -7,7 +7,6 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Compile;
 using SimpleLanguage.Project;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;

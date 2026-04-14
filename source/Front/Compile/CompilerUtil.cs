@@ -1,4 +1,3 @@
-using SimpleLanguage.Compile.Grammer;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -20,7 +19,7 @@ namespace SimpleLanguage.Compile
             }
             if (nsArr.Length == 1)
             {
-                bool isSuc = GrammerUtil.IdentifierCheck(nsArr[0]);
+                bool isSuc = FileMetatUtil.IdentifierCheck(nsArr[0]);
                 if (isSuc && list != null)
                 {
                     list.Add(nsArr[0]);
@@ -35,7 +34,7 @@ namespace SimpleLanguage.Compile
                     success = false;
                     break;
                 }
-                if (!GrammerUtil.IdentifierCheck(nsArr[i]))
+                if (!FileMetatUtil.IdentifierCheck(nsArr[i]))
                 {
                     success = false;
                     break;

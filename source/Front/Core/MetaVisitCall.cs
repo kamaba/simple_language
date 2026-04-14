@@ -308,6 +308,7 @@ namespace SimpleLanguage.Core
     {
         public enum EVisitType
         {
+            None,
             ConstValue,
             Variable,
             VisitVariable,
@@ -323,28 +324,32 @@ namespace SimpleLanguage.Core
             GetTypeValue,
             SystemCall,
         }
-        public MetaConstExpressNode constValueExpress { get; private set; } = null;
-        public MetaExpressNode express { get; set; } = null;
-        public EVisitType visitType { get; private set; }
-        public MetaVariable variable { get; private set; } = null;
-        public MetaVisitVariable visitVariable { get; private set; } = null;
-        public MetaMethodCall methodCall { get; private set; } = null;
-        //public MetaClass callerMetaClass => m_CallerMetaClass;
+        public MetaConstExpressNode constValueExpress => m_Express as MetaConstExpressNode;
+        public MetaExpressNode express => m_Express;
+        public EVisitType visitType => m_VisitType;
+        public MetaVariable variable => m_Variable;
+        public MetaVisitVariable visitVariable => m_VisitVariable;
+        public MetaMethodCall methodCall => m_MethodCall;
         public MetaType callMetaType => m_CallMetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaClass;
-        //public MetaBraceOrBracketStatementsContent metaBraceStatementsContent => m_MetaBraceStatementsContent;
 
-        //private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent = null;
-        protected MetaType m_ReturnMetaType = null;
-        protected MetaClass m_OwnerMetaClass = null;
-        protected MetaTemplate m_MetaTemplate = null;
-        protected MetaType m_CallMetaType = null; //璇ュ彉閲忥紝涓€鑸槸涓?T t = new() 杩欑鎯呭喌鍑嗗鐨?
+
+
+        private EVisitType m_VisitType = EVisitType.None;
+        private MetaMethodCall m_MethodCall = null;
+        private MetaVisitVariable m_VisitVariable = null;
+        private MetaVariable m_Variable  = null;
+        private MetaExpressNode m_Express  = null;
+        private MetaType m_ReturnMetaType = null;
+        private MetaClass m_OwnerMetaClass = null;
+        private MetaTemplate m_MetaTemplate = null;
+        private MetaType m_CallMetaType = null; //璇ュ彉閲忥紝涓€鑸槸涓?T t = new() 杩欑鎯呭喌鍑嗗鐨?
 
         public static MetaVisitNode CreateByVisitMetaClass(MetaType mt)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.visitType = EVisitType.MetaClass;
+            vn.m_VisitType = EVisitType.MetaClass;
             if (mt?.metaClass is MetaEnum me)
             {
                 me.CreateValues();
@@ -357,7 +362,7 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.visitType = EVisitType.MetaClass;
+            vn.m_VisitType = EVisitType.MetaClass;
             if (mt?.metaClass is MetaEnum me)
             {
                 me.CreateValues();
@@ -370,10 +375,10 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.visitType = EVisitType.Enum;
+            vn.m_VisitType = EVisitType.Enum;
             if (mt?.metaClass is MetaEnum me)
             {
-                vn.variable = me.GetOrCreateValuesVariable();
+                vn.m_Variable = me.GetOrCreateValuesVariable();
             }
             vn.m_ReturnMetaType = mt;
 
@@ -384,9 +389,9 @@ namespace SimpleLanguage.Core
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_CallMetaType = mt;
-            vn.visitType = EVisitType.New;
-            vn.variable = mv;
-            vn.methodCall = new MetaMethodCall(ownermc, mbs, mt.metaClass, null, mf, null, null, null, mv);
+            vn.m_VisitType = EVisitType.New;
+            vn.m_Variable = mv;
+            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt.metaClass, null, mf, null, null, null, mv);
             return vn;
         }
         public static MetaVisitNode CreateByNewConst(MetaClass ownermc, MetaBlockStatements mbs,
@@ -396,14 +401,14 @@ namespace SimpleLanguage.Core
 
             vn.m_CallMetaType = mt;
             //vn.m_MetaBraceStatementsContent = mb;
-            vn.visitType = EVisitType.NewConst;
-            vn.constValueExpress = mce;
-            vn.variable = mv;
+            vn.m_VisitType = EVisitType.NewConst;
+            vn.m_Express = mce;
+            vn.m_Variable = mv;
             if (mt.metaClass is MetaGenTemplateClass mgtc)
             {
                 vn.m_ReturnMetaType = new MetaType(mt);
             }
-            vn.methodCall = new MetaMethodCall(ownermc, mbs, mt.metaClass, null, mmf, null, mipc, null, mv);
+            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt.metaClass, null, mmf, null, mipc, null, mv);
 
             return vn;
         }
@@ -413,8 +418,8 @@ namespace SimpleLanguage.Core
 
             vn.m_CallMetaType = mt;
             //vn.m_MetaBraceStatementsContent = mb;
-            vn.visitType = EVisitType.New;
-            vn.variable = mv;
+            vn.m_VisitType = EVisitType.New;
+            vn.m_Variable = mv;
             if (mt.metaClass is MetaGenTemplateClass mgtc)
             {
                 vn.m_ReturnMetaType = new MetaType(mt);
@@ -460,9 +465,8 @@ namespace SimpleLanguage.Core
             MetaType newRMT = new MetaType(mt);
             newRMT = TypeManager.instance.AddArrayTemplate(newRMT, arrayLengthList);
             vn.m_CallMetaType = newRMT;
-            //vn.m_MetaBraceStatementsContent = mb;
-            vn.visitType = EVisitType.New;
-            vn.variable = mv;
+            vn.m_VisitType = EVisitType.New;
+            vn.m_Variable = mv;
             if (newRMT.metaClass is MetaGenTemplateClass mgtc)
             {
                 vn.m_ReturnMetaType = new MetaType(newRMT);
@@ -475,8 +479,7 @@ namespace SimpleLanguage.Core
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_CallMetaType = mt;
-            //vn.m_MetaBraceStatementsContent = mb;
-            vn.visitType = EVisitType.New;
+            vn.m_VisitType = EVisitType.New;
 
             return vn;
         }
@@ -485,7 +488,7 @@ namespace SimpleLanguage.Core
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_CallMetaType = mt;
-            vn.visitType = EVisitType.Enum;
+            vn.m_VisitType = EVisitType.Enum;
 
             return vn;
         }
@@ -493,9 +496,9 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.constValueExpress = constExpress;
-            vn.variable = _variable;
-            vn.visitType = EVisitType.ConstValue;
+            //vn.constValueExpress = constExpress;
+            vn.m_Variable = _variable;
+            vn.m_VisitType = EVisitType.ConstValue;
 
             return vn;
         }
@@ -503,8 +506,8 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.express = _express;
-            vn.visitType = EVisitType.Express;
+            vn.m_Express = _express;
+            vn.m_VisitType = EVisitType.Express;
 
             return vn;
         }
@@ -514,18 +517,18 @@ namespace SimpleLanguage.Core
 
             vn.m_CallMetaType = mt;
             vn.m_OwnerMetaClass = mc;
-            vn.visitType = EVisitType.GetTypeValue;
+            vn.m_VisitType = EVisitType.GetTypeValue;
 
             return vn;
         }
         public static MetaVisitNode CreateByEnumMember( MetaType mt, MetaVariable _variable )
         {
             MetaVisitNode vn = new MetaVisitNode();
-            vn.variable = _variable;
+            vn.m_Variable = _variable;
             // Important: the enum member argument must be treated as an enum value when
             // matching against a function parameter declared as enum.
             vn.m_CallMetaType = mt;
-            vn.visitType = EVisitType.EnumMember;
+            vn.m_VisitType = EVisitType.EnumMember;
 
             return vn;
         }
@@ -533,8 +536,8 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.visitType = EVisitType.MethodCall;
-            vn.methodCall = _methodCall;
+            vn.m_VisitType = EVisitType.MethodCall;
+            vn.m_MethodCall = _methodCall;
 
             return vn;
         }
@@ -542,8 +545,8 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.visitType = EVisitType.SystemCall;
-            vn.methodCall = _methodCall;
+            vn.m_VisitType = EVisitType.SystemCall;
+            vn.m_MethodCall = _methodCall;
 
             return vn;
         }
@@ -551,8 +554,8 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.visitType = EVisitType.VisitVariable;
-            vn.visitVariable = _variale;
+            vn.m_VisitType = EVisitType.VisitVariable;
+            vn.m_Variable = _variale;
 
             return vn;
         }
@@ -560,8 +563,8 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.visitType = EVisitType.Variable;
-            vn.variable = _variale;
+            vn.m_VisitType = EVisitType.Variable;
+            vn.m_Variable = _variale;
             vn.m_CallMetaType = callerMt;
 
             return vn;
@@ -570,8 +573,8 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.visitType = EVisitType.Variable;
-            vn.variable = _variale;
+            vn.m_VisitType = EVisitType.Variable;
+            vn.m_Variable = _variale;
             vn.m_CallMetaType = null;
 
             return vn;
@@ -580,8 +583,8 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.visitType = EVisitType.Variable;
-            vn.variable = _variale;
+            vn.m_VisitType = EVisitType.Variable;
+            vn.m_Variable = _variale;
             vn.m_CallMetaType = null;
 
             return vn;
@@ -590,14 +593,14 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.visitType = EVisitType.TemplateName;
+            vn.m_VisitType = EVisitType.TemplateName;
             vn.m_MetaTemplate = _metatemplate;
 
             return vn;
         }
         public void SetMethodCall( MetaMethodCall _methodCall)
         {
-            this.methodCall = _methodCall;
+            this.m_MethodCall = _methodCall;
         }
         public MetaVariable GetOrgTemplateMetaVariable()
         {
@@ -674,6 +677,10 @@ namespace SimpleLanguage.Core
                     {
                         return this.m_CallMetaType;
                     }
+                case EVisitType.GetTypeValue:
+                    {
+                        return new MetaType(CoreMetaClassManager.typeMetaClass);
+                    }
                 //case EVisitType.ConstValue:
                 //    {
                 //        return this.constValueExpress.metaType;
@@ -731,7 +738,7 @@ namespace SimpleLanguage.Core
                     }
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Error MetaVisiCall IsNull!");
+                        Log.AddMetaCoreLog(LID.MetaCoreVisitCallTypeError, "Error MetaVisiCall IsNull!");
                     }
                     break;
             }
@@ -811,6 +818,11 @@ namespace SimpleLanguage.Core
                         {
                             sb.Append(this.visitVariable.ToFormatString());
                         }
+                    }
+                    break;
+                case EVisitType.GetTypeValue:
+                    {
+                        sb.Append("type");
                     }
                     break;
                 default:

@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -40,6 +41,8 @@ namespace SimpleLanguage.IR
         private List<IRData>  m_IRDataList = new List<IRData>();
         public void TranslateIR()
         {
+            Log.AddIRLog(LID.ShowExtendMessage, "Start translating IR...");
+
             ParseClass();
 
             //代码定义的成员函数
@@ -75,6 +78,8 @@ namespace SimpleLanguage.IR
 
             ParseIRMethod();
             ExportIRDebugData();
+
+            Log.AddIRLog(LID.ShowExtendMessage, "End translating IR...");
         }
 
         public void ExportIRDebugData()
@@ -85,6 +90,9 @@ namespace SimpleLanguage.IR
                 {
                     return;
                 }
+
+                Log.AddIRLog(LID.ShowExtendMessage, "Start exporting IR debug data...");
+
                 var fileClassMap = new Dictionary<string, List<IRMetaClass>>();
                 for (int i = 0; i < m_IRMetaClassList.Count; i++)
                 {
@@ -201,6 +209,7 @@ namespace SimpleLanguage.IR
                     string outPath = Common.GetDebugCodeFilePath(filePath, "IR.txt");
                     File.WriteAllText(outPath, sb.ToString());
                 }
+                Log.AddIRLog(LID.ShowExtendMessage, "End exporting IR debug data...");
             }
             catch (Exception e)
             {
@@ -346,6 +355,7 @@ namespace SimpleLanguage.IR
         }
         void ParseClass()
         {
+            Log.AddIRLog(LID.ShowExtendMessage, "Start translating IRMetaClass...");
             //解析成员中的string类型
             //解析成员中的const类型
             var classList = ClassManager.instance.runtimeClassList;
@@ -438,6 +448,7 @@ namespace SimpleLanguage.IR
             {
                 v.CreateStaticMetaMetaVariableIRList();
             }
+            Log.AddIRLog(LID.ShowExtendMessage, "End translating IRMetaClass...");
         }
         //public void TranslateIRAutoAdd( MetaFunction mf )
         //{
@@ -533,10 +544,6 @@ namespace SimpleLanguage.IR
             }
             return null;
         }
-
-
-
-
         public static string GetIRNameByMetaClass(MetaClass mc)
         {
             StringBuilder sb = new StringBuilder();

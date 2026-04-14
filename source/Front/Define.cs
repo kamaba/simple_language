@@ -422,11 +422,6 @@ namespace SimpleLanguage
         SystemNumFloor,
         SystemStringFormat,
     }
-
-    class Define
-    {
-
-    }
     public class Global
     {
         public const string tabChar = "    ";

@@ -7,7 +7,6 @@ using SimpleLanguage.VM;
 Console.WriteLine("---------------------------SimpleLanguage VM---------------------------");
 
 LogManager.Initialize("");
-Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", "E:\\project\\lang\\simple_language\\source\\Front\\bin\\Debug\\net8.0\\out\\export");
 
 VmRunResultSink.Initialize();
 if (!string.IsNullOrEmpty(VmRunResultSink.ResultFilePath))
@@ -25,7 +24,8 @@ try
 
     if (!string.IsNullOrEmpty(pkgPath))
     {
-        if (!pkgPath.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase))
+        if (!pkgPath.EndsWith(".module.json", StringComparison.OrdinalIgnoreCase)
+            && !pkgPath.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase))
         {
             Log.AddProjectLog(LID.NotFoundRuntimeIRFile, pkgPath );
             return;
@@ -73,7 +73,7 @@ try
         return;
     }
 
-    Log.AddProjectLog(LID.ShowMessageInfo, "No module package found. Pass a module package JSON or export one to out/export/module.package.json.");
+    Log.AddProjectLog(LID.ShowMessageInfo, "No module package found. Pass a *.module.json path or export one to configured export.outputDir.");
 }
 catch (Exception e)
 {

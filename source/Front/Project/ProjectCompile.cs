@@ -81,6 +81,16 @@ namespace SimpleLanguage.Project
             ProjectClass.ExportProjectGuideMarkdown(spFilePath, jsoncPath);
             ProjectManager.SetConfig(config);
 
+            // Keep Front/VM default IO path consistent with project config export.outputDir.
+            var cfgOutDir = config?.Export?.OutputDir;
+            if (!string.IsNullOrWhiteSpace(cfgOutDir))
+            {
+                var resolvedOutDir = Path.IsPathRooted(cfgOutDir)
+                    ? cfgOutDir
+                    : Path.GetFullPath(Path.Combine(projectDir, cfgOutDir));
+                Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", resolvedOutDir);
+            }
+
             // 3. 后续逻辑仍然可以保留 m_ProjectFile，用于旧的基于 FileMeta 的流程
             if (m_ProjectFile == null)
             {

@@ -30,16 +30,16 @@ namespace SimpleLanguage.ExportLanguage
         // - SIMPLELANG_MLIR_LOWER=1 (optional; requires external toolchain)
         // - SIMPLELANG_MLIR_NATIVE_OUT=... (optional)
         public static void Export(ExportKind kink)
-        {            
-            var outDir = Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
-            if (string.IsNullOrWhiteSpace(outDir))
-            {
-                outDir = Path.Combine(Environment.CurrentDirectory, "out", "export");
-            }
+        {
+            var outDir = ResolveOutDir();
             Directory.CreateDirectory(outDir);
 
+            var filePrefix = ResolveProjectNamePrefix();
+            var moduleName = ResolveModuleName();
+
             // Unified JSON export (VM symmetric)
-            SLModulePackageWriter.Write(IRManager.instance, Path.Combine(outDir, "module.package.json"));
+            string exportIRPath = Path.Combine(outDir, filePrefix + ".module.json");
+            SLModulePackageWriter.Write(IRManager.instance, exportIRPath, moduleName);
 
             //// Optional: keep binary writer for debugging/back-compat
             //if (Environment.GetEnvironmentVariable("SIMPLELANG_SLIR_BINARY") == "1")
@@ -95,6 +95,66 @@ namespace SimpleLanguage.ExportLanguage
                 }
             }
             */
+        }
+
+        private static string ResolveOutDir()
+        {
+            // 1) explicit env override
+            var outDir = Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
+            if (!string.IsNullOrWhiteSpace(outDir))
+                return outDir;
+
+            // 2) project config export.outputDir (manual mode / no test harness)
+            var cfgOut = ProjectManager.config?.Export?.OutputDir;
+            if (!string.IsNullOrWhiteSpace(cfgOut))
+            {
+                var baseDir = !string.IsNullOrWhiteSpace(ProjectManager.projectPath)
+                    ? ProjectManager.projectPath
+                    : Environment.CurrentDirectory;
+                outDir = Path.IsPathRooted(cfgOut)
+                    ? cfgOut
+                    : Path.GetFullPath(Path.Combine(baseDir, cfgOut));
+                Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", outDir);
+                return outDir;
+            }
+
+            // 3) legacy fallback
+            outDir = Path.Combine(Environment.CurrentDirectory, "out", "export");
+            Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", outDir);
+            return outDir;
+        }
+
+        private static string ResolveProjectNamePrefix()
+        {
+            var name = ProjectManager.config?.Project?.Name;
+            if (string.IsNullOrWhiteSpace(name))
+                name = "module";
+            return SanitizeFileName(name);
+        }
+
+        private static string ResolveModuleName()
+        {
+            var exportModuleName = ProjectManager.config?.Export?.ModuleName;
+            if (!string.IsNullOrWhiteSpace(exportModuleName))
+                return exportModuleName;
+
+            var projectName = ProjectManager.config?.Project?.Name;
+            if (!string.IsNullOrWhiteSpace(projectName))
+                return projectName;
+
+            return "SimpleLanguage";
+        }
+
+        private static string SanitizeFileName(string value)
+        {
+            var invalid = Path.GetInvalidFileNameChars();
+            var chars = value.ToCharArray();
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (Array.IndexOf(invalid, chars[i]) >= 0)
+                    chars[i] = '_';
+            }
+            return new string(chars);
         }
     }
 }

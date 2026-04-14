@@ -5,16 +5,38 @@
 //  DateTime: 2022/5/12 12:00:00
 //  Description: 
 //****************************************************************************
-
-using SimpleLanguage.Compile.Grammer;
-
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.Compile
 {
     public class FileMetatUtil
     {
+        public static bool IdentifierCheck(string name)
+        {
+            if (name == null)
+            {
+                Debug.Write("自定义字符错误, 参数不可以为空!!");
+                return false;
+            }
+
+            if (name.Equals(string.Empty) || name.Length == 0)
+            {
+                Debug.Write("自定义字符错误, 不可以为空!!");
+                return false;
+            }
+            string pattern = @"^[A-Za-z0-9_]+$";
+
+            Match match = Regex.Match(name, pattern);
+
+            if (!match.Success)
+            {
+                return false;
+            }
+            return true;
+        }
         public static List<string> GetLinkStringMidPeriodList(List<Token> tokenList)
         {
             List<string> stringList = new List<string>();
@@ -28,7 +50,7 @@ namespace SimpleLanguage.Compile
                 }
                 if (token.type != ETokenType.Period)
                 {
-                    if (!GrammerUtil.IdentifierCheck(token.lexeme.ToString()))
+                    if (!IdentifierCheck(token.lexeme.ToString()))
                     {
                         Log.AddFileMetaLog(LID.Unknown, "检查到Import语句中，导入名称不合规!!");
                         return null;

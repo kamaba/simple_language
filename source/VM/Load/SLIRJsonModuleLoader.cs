@@ -331,7 +331,7 @@ namespace SimpleLanguage.VM
         public static SLPackageRootJson ReadPackage(string jsonPath)
         {
             if (string.IsNullOrWhiteSpace(jsonPath)) jsonPath = GetDefaultJsonPath();
-            if (!jsonPath.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("SLIRJsonModuleLoader.ReadPackage only supports module.package.json");
+            if (!jsonPath.EndsWith(".module.json", StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("SLIRJsonModuleLoader.ReadPackage only supports module.package.json");
             return LoadFromJson(jsonPath);
         }
 
@@ -393,12 +393,111 @@ namespace SimpleLanguage.VM
         }
         public static string GetDefaultJsonPath()
         {
+            string? configuredProjectName = null;
             var outDir = Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR");
             if (string.IsNullOrWhiteSpace(outDir))
+            {
+                outDir = TryResolveOutDirFromProjectConfig(out configuredProjectName);
+                if (!string.IsNullOrWhiteSpace(outDir))
+                    Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", outDir);
+            }
+            if (string.IsNullOrWhiteSpace(outDir))
                 outDir = Path.Combine(Environment.CurrentDirectory, "out", "export");
+
+            var nameFromEnv = Environment.GetEnvironmentVariable("SIMPLELANG_PROJECT_NAME");
+            var projectName = !string.IsNullOrWhiteSpace(nameFromEnv) ? nameFromEnv : configuredProjectName;
+            if (!string.IsNullOrWhiteSpace(projectName))
+            {
+                var preferred = Path.Combine(outDir, SanitizeFileName(projectName) + ".module.json");
+                if (File.Exists(preferred)) return preferred;
+            }
+
+            // Backward-compatible fallbacks
+            var moduleJson = Path.Combine(outDir, "module.module.json");
+            if (File.Exists(moduleJson)) return moduleJson;
             var packageJson = Path.Combine(outDir, "module.package.json");
             if (File.Exists(packageJson)) return packageJson;
             return Path.Combine(outDir, "module.slir.json");
+        }
+
+        private static string? TryResolveOutDirFromProjectConfig(out string? projectName)
+        {
+            projectName = null;
+            string? configPath = Environment.GetEnvironmentVariable("SIMPLELANG_PROJECT_CONFIG_JSONC");
+            if (!string.IsNullOrWhiteSpace(configPath))
+            {
+                var envResolved = TryReadOutDirFromConfigPath(configPath, out projectName);
+                if (!string.IsNullOrWhiteSpace(envResolved)) return envResolved;
+            }
+
+            // Default manual mode probe: source/VM/bin/Debug/net8.0 -> source/Front/Lib/Core/Core.jsonc
+            var defaultCoreConfig = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Front", "Lib", "Core", "Core.jsonc"));
+            var resolved = TryReadOutDirFromConfigPath(defaultCoreConfig, out projectName);
+            if (!string.IsNullOrWhiteSpace(resolved)) return resolved;
+
+            // Extra probe: scan Front/Lib/**/*.jsonc and pick the first config with a valid export.outputDir.
+            var frontLibDir = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "Front", "Lib"));
+            if (Directory.Exists(frontLibDir))
+            {
+                var jsoncFiles = Directory.GetFiles(frontLibDir, "*.jsonc", SearchOption.AllDirectories);
+                Array.Sort(jsoncFiles, StringComparer.OrdinalIgnoreCase);
+                for (int i = 0; i < jsoncFiles.Length; i++)
+                {
+                    resolved = TryReadOutDirFromConfigPath(jsoncFiles[i], out projectName);
+                    if (!string.IsNullOrWhiteSpace(resolved))
+                        return resolved;
+                }
+            }
+
+            return null;
+        }
+
+        private static string? TryReadOutDirFromConfigPath(string? configPath, out string? projectName)
+        {
+            projectName = null;
+            if (string.IsNullOrWhiteSpace(configPath) || !File.Exists(configPath)) return null;
+
+            try
+            {
+                var json = File.ReadAllText(configPath);
+                using var doc = JsonDocument.Parse(json, new JsonDocumentOptions
+                {
+                    AllowTrailingCommas = true,
+                    CommentHandling = JsonCommentHandling.Skip,
+                });
+
+                if (doc.RootElement.TryGetProperty("project", out var projectObj)
+                    && projectObj.TryGetProperty("name", out var nameNode))
+                {
+                    projectName = nameNode.GetString();
+                }
+
+                if (!doc.RootElement.TryGetProperty("export", out var exportObj)) return null;
+                if (!exportObj.TryGetProperty("outputDir", out var outDirNode)) return null;
+                var outDir = outDirNode.GetString();
+                if (string.IsNullOrWhiteSpace(outDir)) return null;
+
+                var cfgDir = Path.GetDirectoryName(configPath) ?? Environment.CurrentDirectory;
+                return Path.IsPathRooted(outDir)
+                    ? Path.GetFullPath(outDir)
+                    : Path.GetFullPath(Path.Combine(cfgDir, outDir));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static string SanitizeFileName(string value)
+        {
+            var invalid = Path.GetInvalidFileNameChars();
+            var chars = value.ToCharArray();
+            for (int i = 0; i < chars.Length; i++)
+            {
+                if (Array.IndexOf(invalid, chars[i]) >= 0)
+                    chars[i] = '_';
+            }
+            return new string(chars);
         }
 
         //public static void LoadIntoRuntime(string jsonPath)

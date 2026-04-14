@@ -935,6 +935,9 @@ namespace SimpleLanguage.VM.Runtime
         public void RunInstruction(Instruction iri)
         {
             if (iri == null) return;
+#if DEBUG
+            int opcode = (int)iri.opCode;
+#endif
             switch (iri.opCode)
             {
                 case EIROpCode.Nop: break;
@@ -1072,11 +1075,6 @@ namespace SimpleLanguage.VM.Runtime
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Float64);
                     }
                     break;
-                //case EIROpCode.LoadArgument:
-                //    {
-                //        GetArgumentValue(iri.index, ref m_ValueStack[m_ValueIndex++]);
-                //    }
-                //    break;
                 case EIROpCode.LoadArgument:
                     {
                         var data = iri.index;

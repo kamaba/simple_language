@@ -64,15 +64,8 @@ namespace SimpleLanguage.Project
                 {
                     rootPath = path.Substring(0, index);
                 }
-            }
-
-                // path 现在是 .sp 配置文件路径，ProjectCompile 会基于它加载 <ProjectName>.jsonc
+            }                // path 现在是 .sp 配置文件路径，ProjectCompile 会基于它加载 <ProjectName>.jsonc
             ProjectCompile.Compile(path);
-
-            if (!cinputArgs.isTest)
-                ProjectClass.RunMain();
-            else
-                ProjectClass.RunTest();
         }
     }
 }

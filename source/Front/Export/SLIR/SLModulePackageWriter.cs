@@ -7,10 +7,10 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Encodings.Web;
-using SimpleLanguage;
 using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Export.SLIR.Types;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Export.SLIR
 {
@@ -86,6 +86,8 @@ namespace SimpleLanguage.Export.SLIR
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? ".");
             File.WriteAllText(outputPath, JsonSerializer.Serialize(root, options));
+
+            Log.AddIRLog(LID.ShowExtendMessage, "export module success: " + outputPath );
         }
 
         internal static SLModulePackage Read(string inputPath)

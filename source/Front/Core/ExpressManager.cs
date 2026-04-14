@@ -7,13 +7,10 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
-using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Diagnostics;
-using System.Security.Cryptography;
 
 namespace SimpleLanguage.Core
 {
@@ -403,8 +400,6 @@ namespace SimpleLanguage.Core
 
                 return menNew;
         }
-
-
         /*
         public static void CreateNewOrCalllink( CreateExpressParam cep, out MetaNewObjectExpressNode mnoen, out MetaCallLinkExpressNode men2 )
         {

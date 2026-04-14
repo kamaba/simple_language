@@ -93,7 +93,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Log.AddMetaCoreLog(LID.Unknown, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
             //m_TemplateMetaClass = templatemc;
             m_MetaClass = mc;
@@ -105,7 +105,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Log.AddMetaCoreLog(LID.Unknown, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
             if ( mitc == null)
             {
@@ -287,16 +287,6 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        //public MetaClass GetTemplateMetaClass(out bool isGTC)
-        //{
-        //    isGTC = false;
-        //    if (m_MetaClass is MetaGenTemplateClass mgtc)
-        //    {
-        //        isGTC = true;
-        //        return mgtc.metaTemplateClass;
-        //    }
-        //    return m_MetaClass;
-        //}
         public MetaClass GetTemplateMetaClass()
         {
             if (this.m_MetaClass is MetaGenTemplateClass mgtc)
@@ -309,11 +299,6 @@ namespace SimpleLanguage.Core
             }
             return m_MetaClass;
         }
-        //public void SetEnumValue( MetaMemberVariable mmv )
-        //{
-        //    m_EnumValue = mmv;
-        //    m_MetaClass = mmv.ownerMetaClass;
-        //}
         public bool DefineTemplateIsIncludeTemplate()
         {
             for (int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++)
@@ -401,25 +386,6 @@ namespace SimpleLanguage.Core
             mt.m_ParentMetaType = this;
             m_DefineTemplateMetaTypeList.Add(mt);
         }
-        //public void AddGenTemplateMetaType(MetaType mt)
-        //{
-        //    m_GenTemplateMetaTypeList.Add(mt);
-        //}
-        //public void AddArrayMetaType( MetaType mt )
-        //{
-        //    m_ArrayMetaTypeList.Add(mt);
-        //}
-        //public void SetArrayMetaType( List<MetaType> list )
-        //{
-        //    m_ArrayMetaTypeList = list;
-        //    m_ArrayDimensionLengthList.Clear();
-        //    m_ArrayDimensionLengthList.Add(list.Count);
-        //    m_EType = EMetaTypeType.Array;
-        //}
-        //public void SetSourceMetaType( MetaType sourceMt )
-        //{
-        //    this.m_SourceMetaType = sourceMt;
-        //}
         public MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection input = null)
         {
             return m_MetaClass?.GetMetaMemberConstructFunction(input);
@@ -566,10 +532,6 @@ namespace SimpleLanguage.Core
                 m_EMetaTypeType = EMetaTypeType.Template;
             }
         }
-        //public void SetGenMetaTemplate(MetaGenTemplate mt)
-        //{
-        //    //this.m_MetaGenTemplate = mt;
-        //}        
         public void SetTemplateMetaClass( MetaClass mc )
         {
             //m_TemplateMetaClass = mc;

@@ -15,11 +15,6 @@ namespace SimpleLanguage.Core
 {
     public class MetaEnum : MetaClass
     {
-        public MetaVariable GetOrCreateValuesVariable()
-        {
-            CreateValues();
-            return m_ValuesMetaVariable;
-        }
 
         protected MetaMemberVariable m_ValuesMetaVariable = null;
         public MetaEnum(string _name) : base(_name)
@@ -33,6 +28,11 @@ namespace SimpleLanguage.Core
                 return m_MetaMemberVariableDict[name];
             }
             return null;
+        }
+        public MetaVariable GetOrCreateValuesVariable()
+        {
+            CreateValues();
+            return m_ValuesMetaVariable;
         }
         public void CreateValues()
         {

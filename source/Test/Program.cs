@@ -176,7 +176,7 @@ internal static class Program
         // Front export default is repoRoot/out/export/module.package.json
         // Keep projectPath parameter for future per-project routing.
         _ = projectPath;
-        return Path.Combine(repoRoot, "out", "export", "module.package.json");
+        return Path.Combine(repoRoot, "out", "export", "Core.module.json");
     }
 
     static string GetRepoRoot()

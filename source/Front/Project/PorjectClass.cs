@@ -7,15 +7,11 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
-using SimpleLanguage.IR;
-using System.Diagnostics;
-
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System.IO;
 using System.Text;
 using System.Text.Json;
-using System.Collections.Generic;
 
 namespace SimpleLanguage.Project
 {
@@ -53,51 +49,6 @@ namespace SimpleLanguage.Project
             s_CompileBeforeFunction = compile.GetMetaDefineGetSetMemberFunctionByName("_before_", mipc, false,false);
             s_CompileAfterFunction = compile.GetMetaDefineGetSetMemberFunctionByName("_after_", mipc, false, false);
 
-        }
-        public static void RunTest()
-        {
-            MetaClass project = ClassManager.instance.GetClassByName("Project");
-            if (project == null)
-            {
-                Log.AddProjectLog(LID.ShowExtendMessage, "Error project!!");
-                return;
-            }
-            MetaMemberFunction mmf = project.GetFirstMetaMemberFunctionByName("Test");
-            if (mmf == null)
-            {
-                mmf = project.GetFirstMetaMemberFunctionByName("_test_");
-            }
-            if (mmf == null)
-            {
-                Log.AddProjectLog(LID.ShowExtendMessage, "Error project._test_函数!!");
-                return;
-            }
-            //var irmethod = IRManager.instance.GetIRMethod(mmf.allName);
-            //InnerCLRRuntimeVM.Init();
-            //InnerCLRRuntimeVM.RunIRMethod(irmethod);
-        }
-        public static void RunMain()
-        {
-            MetaClass projectEnter = ClassManager.instance.GetClassByName("S.Project", 0);
-            if (projectEnter == null)
-            {
-                projectEnter = ClassManager.instance.GetClassByName("Core.Project", 0);
-
-                if( projectEnter == null )
-                {
-                    Debug.Write("Error 没有找到Project!!");
-                    return;
-                }
-            }
-            MetaMemberFunction mmf = projectEnter.GetFirstMetaMemberFunctionByName("_main_");
-            if (mmf == null)
-            {
-                Log.AddProjectLog( LID.ShowExtendMessage, "Error 没有找到Project._main_函数!!");
-                return;
-            }
-            //var irmethod = IRManager.instance.GetIRMethod(mmf.functionAllName);
-            //CLRVM.Init();
-            //CLRVM.RunIRMethod( null, irmethod);
         }
         // Build MetaNode / MetaNamespace tree from StructTreeNode description.
         // parentRoot: existing MetaNode root (通常是 ModuleManager.instance.selfModule.metaNode)
@@ -203,7 +154,6 @@ namespace SimpleLanguage.Project
                 //InnerCLRRuntimeVM.Init();
                 //InnerCLRRuntimeVM.RunIRMethod(s_CompileBeforeFunction.irMethod);
             }
-
         }
         public static bool IsCanAddFile(ProjectConfig.CompileFilterSection cfd, ProjectConfig.CompileFileItem fileData )
         {

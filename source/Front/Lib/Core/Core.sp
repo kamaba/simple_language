@@ -13,10 +13,10 @@ Project
     }
     _main_()
     {
-        ObjectTest.fun()
+        #ObjectTest.fun()
         #NumberTest.fun()
         #StringTest.fun()
-        #TypeTest.fun()       
+        TypeTest.fun()       
     }
     _test_()
     {

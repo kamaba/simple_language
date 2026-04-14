@@ -36,6 +36,8 @@ namespace SimpleLanguage.Core
 
             // console
             { ESystemMethodCall.SystemPrint, new SystemMethodCallDeclaration(ESystemMethodCall.SystemPrint, CoreMetaClassManager.voidMetaClass, true, CoreMetaClassManager.objectMetaClass) },
+            { ESystemMethodCall.SystemPrintln, new SystemMethodCallDeclaration(ESystemMethodCall.SystemPrintln, CoreMetaClassManager.voidMetaClass, true, CoreMetaClassManager.objectMetaClass) },
+
             { ESystemMethodCall.SystemReadLine, new SystemMethodCallDeclaration(ESystemMethodCall.SystemReadLine, CoreMetaClassManager.stringMetaClass, false) },
             { ESystemMethodCall.SystemReadKey, new SystemMethodCallDeclaration(ESystemMethodCall.SystemReadKey, CoreMetaClassManager.stringMetaClass, false) },
 
