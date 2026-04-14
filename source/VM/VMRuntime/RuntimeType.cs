@@ -545,7 +545,9 @@ namespace SimpleLanguage.VM
             if (rt == null) return null;
             try
             {
+                EnsureCoreRuntimeTypesRegistered();
                 var tobj = new TypeObject(rt);
+                tobj.CreateObject();
                 if (tobj.refCount == 0)
                     tobj.refCount = 1;
                 SlMemoryManager.Instance.RegisterAllocation(tobj);

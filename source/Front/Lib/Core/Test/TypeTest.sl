@@ -1,3 +1,4 @@
+import CSharp.System
 
 #Runtime tests for `type` operator
 TypeTest

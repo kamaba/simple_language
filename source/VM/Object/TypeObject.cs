@@ -28,55 +28,138 @@ namespace SimpleLanguage.VM
             m_Rt = rm;
             m_Type = EVMType.Type;
         }
-        public void CreateObject()
+        public override void CreateObject()
         {
-            eType =  m_MemberRuntimeObjectArray[0].sobject as Int8Object;
+            if (m_Rt == null || m_RuntimeType?.runtimeClass == null) return;
 
-            /*
-            IRMetaClass irmc = IRManager.instance.GetIRMetaClassByName("MetaClass");
-            RuntimeType rt = new RuntimeType(irmc, new List<RuntimeType>());
+            var typeRc = m_RuntimeType.runtimeClass;
 
-            ClassObject mco = new ClassObject(rt);
-            mco.CreateObject();
-            m_MemberObjectArray[1] = mco;
-            metaClassObject = m_MemberObjectArray[1] as ClassObject;
-
-            var sv = new SValue();
-            sv.SetStringValue( m_Rt.runtimeClass.name );
-            mco.SetMemberVariableSValue(0, sv );
-
-
-            var sv2 = new SValue();
-            sv2.SetStringValue( m_Rt.runtimeClass.name);
-            mco.SetMemberVariableSValue(1, sv2);
-
-            typeObjectsArray = new TypeObject[m_Rt.runtimeTemplateList.Count];
-            for ( int i = 0; i < m_Rt.runtimeTemplateList.Count; i++ )
+            var eTypeIndex = FindMemberIndex(typeRc, "_eType");
+            if (eTypeIndex >= 0)
             {
-                typeObjectsArray[i] = new TypeObject(m_Rt.runtimeTemplateList[i]);
-                typeObjectsArray[i].CreateObject();
+                var sv = default(SValue);
+                sv.SetInt8Value((byte)m_Rt.eType);
+                SetMemberVariableSValue(eTypeIndex, sv);
             }
-            IRMetaClass arrayIRClass = IRManager.instance.GetIRMetaClassByName("Array<T>");
 
-            List<RuntimeType> rtList = new List<RuntimeType>();
-            rtList.Add(RuntimeTypeManager.typeRuntimeType);
-            RuntimeType rtmain = new RuntimeType(arrayIRClass, rtList );
+            metaClassObject = CreateMetaClassObject();
+            var metaClassIndex = FindMemberIndex(typeRc, "_metaClass");
+            if (metaClassIndex >= 0)
+            {
+                var sv = default(SValue);
+                if (metaClassObject != null) sv.SetSObject(metaClassObject);
+                else sv.SetNull();
+                SetMemberVariableSValue(metaClassIndex, sv);
+            }
 
-            if(typeObjectsArray.Length > 0 )
+            var typeListIndex = FindMemberIndex(typeRc, "typelist");
+            if (typeListIndex >= 0)
             {
-                ArrayObject ao = new ArrayObject(rtmain, typeObjectsArray.Length);
-                ao.CreateObject();
-                for (int i = 0; i < ao.length; i++)
-                {
-                    ao.array.SetValue(typeObjectsArray[i], i);
-                }
-                m_MemberObjectArray[2] = ao;
+                var typeListObj = CreateTemplateTypeListObject();
+                var sv = default(SValue);
+                if (typeListObj != null) sv.SetSObject(typeListObj);
+                else sv.SetNull();
+                SetMemberVariableSValue(typeListIndex, sv);
             }
-            else
+        }
+
+        private ClassObject? CreateMetaClassObject()
+        {
+            var metaRc = TryGetRuntimeClassByNames("Core.MetaClass", "MetaClass");
+            if (metaRc == null) return null;
+
+            var metaRt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(metaRc, new List<RuntimeType>())
+                         ?? RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(metaRc, new List<RuntimeType>());
+            if (metaRt == null) return null;
+
+            var metaObj = ObjectManager.CreateObjectByRuntimeType(metaRt, true) as ClassObject;
+            if (metaObj == null) return null;
+
+            string fullName = m_Rt.runtimeClass?.name ?? string.Empty;
+            string ns = string.Empty;
+            string cls = fullName;
+            int dot = fullName.LastIndexOf('.');
+            if (dot >= 0)
             {
-                m_MemberObjectArray[2] = null;
+                ns = fullName.Substring(0, dot);
+                cls = fullName.Substring(dot + 1);
             }
-            */
+
+            int nsIndex = FindMemberIndex(metaRc, "_namespaceName");
+            if (nsIndex >= 0)
+            {
+                var svNs = default(SValue);
+                svNs.SetStringValue(ns);
+                metaObj.SetMemberVariableSValue(nsIndex, svNs);
+            }
+            int clsIndex = FindMemberIndex(metaRc, "_className");
+            if (clsIndex >= 0)
+            {
+                var svCls = default(SValue);
+                svCls.SetStringValue(cls);
+                metaObj.SetMemberVariableSValue(clsIndex, svCls);
+            }
+
+            return metaObj;
+        }
+
+        private ArrayObject? CreateTemplateTypeListObject()
+        {
+            var templates = m_Rt.runtimeTemplateList;
+            if (templates == null || templates.Count == 0) return null;
+
+            var typeRt = RuntimeTypeManager.typeRuntimeType;
+            if (typeRt == null) return null;
+
+            var arrayRc = TryGetRuntimeClassByNames("Core.Array<T>", "Core.Array", "Array");
+            if (arrayRc == null) return null;
+
+            var arrayRt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(arrayRc, new List<RuntimeType> { typeRt })
+                         ?? RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(arrayRc, new List<RuntimeType> { typeRt });
+            if (arrayRt == null) return null;
+
+            typeObjectsArray = new TypeObject[templates.Count];
+            var arr = new ArrayObject(arrayRt, templates.Count);
+            arr.CreateObject();
+            for (int i = 0; i < templates.Count; i++)
+            {
+                var child = RuntimeTypeManager.CreateTypeObject(templates[i]);
+                typeObjectsArray[i] = child as TypeObject;
+                var sv = default(SValue);
+                if (child != null) sv.SetSObject(child);
+                else sv.SetNull();
+                arr.StoreValue(i, sv);
+            }
+            return arr;
+        }
+
+        private static RuntimeClass? TryGetRuntimeClassByNames(params string[] names)
+        {
+            for (int i = 0; i < names.Length; i++)
+            {
+                var name = names[i];
+                if (string.IsNullOrWhiteSpace(name)) continue;
+                var rc = RuntimeClassManager.GetRuntimeClassByName(name);
+                if (rc != null) return rc;
+            }
+            return null;
+        }
+
+        private static int FindMemberIndex(RuntimeClass? rc, string target)
+        {
+            if (rc == null || string.IsNullOrEmpty(target)) return -1;
+            var list = rc.nonStaticIRMetaVariableList;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var rv = list[i];
+                if (rv == null) continue;
+                var n = rv.name ?? string.Empty;
+                if (string.Equals(n, target, StringComparison.Ordinal)
+                    || n.EndsWith(target, StringComparison.Ordinal)
+                    || n.Contains(target, StringComparison.Ordinal))
+                    return rv.index >= 0 ? rv.index : i;
+            }
+            return -1;
         }
         public override string ToFormatString()
         {
@@ -88,6 +171,8 @@ namespace SimpleLanguage.VM
         /// </summary>
         public override string ToString()
         {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("Type:");
             if (m_Rt != null)
                 return m_Rt.ToString();
             return base.ToString();

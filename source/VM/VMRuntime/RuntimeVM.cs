@@ -1075,6 +1075,11 @@ namespace SimpleLanguage.VM.Runtime
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Float64);
                     }
                     break;
+                case EIROpCode.Convert_ToString:
+                    {
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.String);
+                    }
+                    break;
                 case EIROpCode.LoadArgument:
                     {
                         var data = iri.index;
@@ -1224,7 +1229,7 @@ namespace SimpleLanguage.VM.Runtime
                         // expects instance on stack
                         if (m_ValueIndex > 0)
                         {
-                            var inst = m_ValueStack[m_ValueIndex];
+                            var inst = m_ValueStack[m_ValueIndex-1];
                             if (inst.eType == EVMType.Array || inst.eType == EVMType.Class || inst.eType == EVMType.Type || inst.eType == EVMType.Object)
                             {
                                 --m_ValueIndex;
