@@ -13,8 +13,6 @@ using System.Reflection;
 using SimpleLanuageVM.Load;
 using SimpleLanguage.Parse;
 using System.Globalization;
-using System.Collections.Generic;
-using SimpleLanguage.VM;
 using SimpleLanguage.VM.MemoryManagement;
 
 namespace SimpleLanguage.VM.Runtime
@@ -114,7 +112,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 for (int i = 0; i < m_ArgumentRuntimeObjectArray.Length; i++)
                 {
-                    Log.AddRuntimeLog(LID.Unknown, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentRuntimeObjectArray[i]?.ToString() + "]");
+                    Log.AddRuntimeLog(LID.ShowMessageInfo, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentRuntimeObjectArray[i]?.ToString() + "]");
                 }
 
                 //灞€閮ㄥ彉閲忓垪琛?local variable table
@@ -132,7 +130,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 for (int i = 0; i < m_LocalVariableRuntimeObjectArray.Length; i++)
                 {
-                    Log.AddRuntimeLog(LID.Unknown, "Variable_" + i.ToString() + m_LocalVariableRuntimeObjectArray[i].ToString());
+                    Log.AddRuntimeLog(LID.ShowMessageInfo, "Variable_" + i.ToString() + m_LocalVariableRuntimeObjectArray[i].ToString());
                 }
             }
 
@@ -214,14 +212,6 @@ namespace SimpleLanguage.VM.Runtime
                 || t == EVMType.Float32 
                 || t == EVMType.Float64;
         }
-        public void SyncRawFromSValue(int index)
-        {
-            // minimal noop for now
-        }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void SyncRawAtIndex(int index)
-        {
-        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PushSValueSynced(in SValue v)
         {
@@ -229,12 +219,6 @@ namespace SimpleLanguage.VM.Runtime
             if (m_ValueIndex >= m_ValueStack.Length) return;
             m_ValueStack[m_ValueIndex++] = v;
         }
-        /// <summary>Exported <c>metaClassKind</c> 1 = enum (see Front IRMetaClassKind.Enum).</summary>
-        private static bool IsEnumDeclaredParameterType(RuntimeDefType imt)
-        {
-            return imt?.runtimeClass != null && imt.runtimeClass.metaClassKind == 1;
-        }
-
         public static RuntimeType GetRuntimeTypeByDefType(RuntimeDefType irmt, RuntimeClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false)
         {
             if (irmt.templateIndex != -1)
@@ -343,7 +327,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ArgumentRuntimeObjectArray.Length)
             {
-                Log.AddRuntimeLog(LID.ShowMessageError, $"SVM Error FunctionName:{this.id} 鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
+                Log.AddRuntimeLog(LID.ShowMessageError, $"SVM Error FunctionName:{this.id}");
                 return;
             }
             GetObjectByValue(0, index, ref svalue);
@@ -352,7 +336,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ArgumentRuntimeObjectArray.Length)
             {
-                Log.AddRuntimeLog(LID.ShowMessageError, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
+                Log.AddRuntimeLog(LID.ShowMessageError, "SetArgumentValue", index );
                 return;
             }
             SetObjectByValue(0, index, ref svalue);
@@ -361,17 +345,16 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_LocalVariableRuntimeObjectArray.Length)
             {
-                Log.AddRuntimeLog(LID.ShowMessageError, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
+                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "SetLocalVariableSValue", index );
                 return;
             }
             SetObjectByValue(1, index, ref svalue);
         }
         public void GetLocalVariableSValue(int index, ref SValue svalue)
         {
-
             if (index > m_LocalVariableRuntimeObjectArray.Length)
             {
-                Log.AddRuntimeLog(LID.ShowMessageError, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
+                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "GetLocalVariableSValue", index );
                 return;
             }
             GetObjectByValue(1, index, ref svalue);
@@ -380,23 +363,10 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (index > m_ReturnRuntimeObjectArray.Length)
             {
-                Log.AddRuntimeLog(LID.ShowMessageError, "鎵ц鐨勬爤瓒呭嚭鑼冨洿!!");
+                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "SetReturnVariableSValue", index );
                 return;
             }
             SetObjectByValue(2, index, ref svalue);
-            /*
-            if (m_ReturnObjectArray == null)
-            {
-                if (m_IRMethod != null)
-                {
-                    m_ReturnObjectArray = new SObject[m_IRMethod.methodReturnVariableList.Count];
-                }
-            }
-            if (m_ReturnObjectArray != null && index >= 0 && index < m_ReturnObjectArray.Length)
-            {
-                m_ReturnObjectArray[index] = svalue.CreateSObject();
-            }
-            */
         }
         public SValue GetCurrentIndexValue(int index)
         {
@@ -475,13 +445,10 @@ namespace SimpleLanguage.VM.Runtime
             }
             Log.AddRuntimeLog(LID.ShowMessageInfo, pushChar + "[VMRuntime] [Pop] Method: [" + funName + "]");
         }
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private string MakeIndent(int count) { return new string(' ', count); }
         public static void SetValue(ref SValue sValue, ref SValue sStore, Instruction iri)
         {
             sStore = sValue;
         }
-
         private static object? ConvertInvokeArg(object? source, Type targetType)
         {
             if (source == null) return null;
@@ -1170,7 +1137,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageError, "涓嶆槸鏁扮粍绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndex", v.eType.ToString() );
                         }
                     }
                     break;
@@ -1204,7 +1171,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "涓嶆槸鏁扮粍绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", sStore.eType.ToString() );
                         }
                         m_ValueIndex -= 2;
                     }
@@ -1221,7 +1188,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "涓嶆槸鏁扮粍绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndexField", arrayref.eType.ToString() );
                         }
                         m_ValueIndex -= 1;
                     }
@@ -1239,7 +1206,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "涓嶆槸鏁扮粍绫诲瀷!!");
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndexField", arrayref.eType.ToString() );
                         }
                         m_ValueIndex -= 3;
                     }
