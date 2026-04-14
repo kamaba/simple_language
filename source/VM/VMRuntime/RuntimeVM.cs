@@ -447,7 +447,22 @@ namespace SimpleLanguage.VM.Runtime
             while (m_ExecuteIndex < m_ExecuteCount)
             {
                 var iri = m_InstructionList[m_ExecuteIndex];
-                RunInstruction(iri);
+                try
+                {
+                    RunInstruction(iri);
+                }
+                catch (Exception ex)
+                {
+                    var loc = iri?.debugInfo?.FormatDiagnosticLine();
+                    var detail = string.IsNullOrEmpty(loc)
+                        ? $"VM instruction fault: op={iri?.opCode} ip={m_ExecuteIndex} id={iri?.id} index={iri?.index}"
+                        : $"VM instruction fault: op={iri?.opCode} ip={m_ExecuteIndex} id={iri?.id} index={iri?.index} at {loc}";
+                    if (iri?.debugInfo != null)
+                        Log.AddRuntimeLog(LID.ShowMessageError, iri.debugInfo, detail + " — " + ex.Message);
+                    else
+                        Log.AddRuntimeLog(LID.ShowMessageError, detail + " — " + ex);
+                    throw;
+                }
                 m_ExecuteIndex++;
             }
 
@@ -1244,9 +1259,10 @@ namespace SimpleLanguage.VM.Runtime
                         // expects instance on stack
                         if (m_ValueIndex > 0)
                         {
-                            var inst = m_ValueStack[--m_ValueIndex];
+                            var inst = m_ValueStack[m_ValueIndex];
                             if (inst.eType == EVMType.Array || inst.eType == EVMType.Class || inst.eType == EVMType.Type || inst.eType == EVMType.Object)
                             {
+                                --m_ValueIndex;
                                 var v = default(SValue);
                                 if (inst.sobject is ClassObject co)
                                 {
@@ -1488,6 +1504,28 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
+                case EIROpCode.And:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            SValue.LogicalAnd(ref left, ref right);
+                            PushSValueSynced(left);
+                        }
+                    }
+                    break;
+                case EIROpCode.Or:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            SValue.LogicalOr(ref left, ref right);
+                            PushSValueSynced(left);
+                        }
+                    }
+                    break;
                 case EIROpCode.Clt:
                     {
                         if (m_ValueIndex >= 2)
@@ -1663,49 +1701,6 @@ namespace SimpleLanguage.VM.Runtime
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
                                 break;
                         }
-
-                        //string callName = string.Empty;
-                        //if (!iri.TryGetString(out callName) || string.IsNullOrWhiteSpace(callName))
-                        //{
-                        //    callName = iri.opValue?.ToString() ?? string.Empty;
-                        //}
-
-                        //if (string.IsNullOrWhiteSpace(callName))
-                        //{
-                        //    Debug.Assert(false, "CallSystemMethod missing function name");
-                        //    break;
-                        //}
-
-                        //// Each system function can have unique VM logic.
-                        //// Keep existing bridge handlers as the default implementation.
-                        //switch (callName)
-                        //{
-                        //    case "CallCLRMethod":
-                        //        {
-                        //            if (TryInvokeRegisteredBridgeByIndex(iri))
-                        //                break;
-                        //            TryInvokeLegacyBridgeSignature(iri, callName);
-                        //        }
-                        //        break;
-                        //    case "CallNativeMethod":
-                        //        {
-                        //            if (TryInvokeRegisteredBridgeByIndex(iri))
-                        //                break;
-                        //            TryInvokeLegacyBridgeSignature(iri, callName);
-                        //        }
-                        //        break;
-                        //    case "CallJVMMethod":
-                        //        {
-                        //            if (TryInvokeRegisteredBridgeByIndex(iri)) break; ;
-                        //            TryInvokeLegacyBridgeSignature(iri, callName);
-                        //        }
-                        //        break;
-                        //    default:
-                        //        {
-                        //            Debug.Assert(false, "Unknown system function: " + callName);
-                        //        }
-                        //        break;
-                        //}
                     }
                     break;
                 case EIROpCode.CallStatic:
@@ -1859,28 +1854,19 @@ namespace SimpleLanguage.VM.Runtime
 
                         if (v.isNull)
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "Current stack value is null.");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "Current stack value is null.", iri );
                             return;
                         }
 
                         RuntimeType? rt = null;
                         RuntimeClass? irc = null;
-                        if (v.eType == EVMType.Class || v.eType == EVMType.Array)
-                        {
-                            var co = (v.sobject as ClassObject);
-                            irc = co.runtimeClass;
-                            rt = co.runtimeType;
-                        }
-                        else if (v.eType == EVMType.Object)
+                        if (v.eType == EVMType.Class
+                            || v.eType == EVMType.Object
+                            || v.eType == EVMType.Array )
                         {
                             irc = v.sobject.runtimeClass;
                             rt = v.sobject.runtimeType;
                         }
-                        //else if( v.eType == EVMType.Array )
-                        //{
-                        //    irc = IRManager.instance.GetIRMetaClassByName("Array");
-                        //    rt = RuntimeTypeManager.GetRuntimeTypeByMTAndIRMetaClass(irc);
-                        //}
                         else
                         {
                             irc = RuntimeClassManager.GetRuntimeClassByName( "Core." + v.eType.ToString());
@@ -3214,7 +3200,7 @@ namespace SimpleLanguage.VM.Runtime
                                 break;
                             default:
                                 {
-                                    svalue.SetSObject(obj.value as SObject);
+                                    svalue.SetSObject(obj as SObject);
                                 }
                                 break;
                         }

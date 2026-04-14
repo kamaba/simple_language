@@ -30,6 +30,8 @@ namespace SimpleLanguage.Core
         private MetaExpressNode m_Value = null;             //左边值
         private Token m_TokeType = null;
 
+        public override Token token => m_TokeType;
+
         public MetaUnaryOpExpressNode(FileMetaSymbolTerm fme, MetaExpressNode _value )
         {
             m_Value = _value;
@@ -240,6 +242,7 @@ namespace SimpleLanguage.Core
         private ConvertType m_RightConvert = null;
         private ELeftRightOpSign m_OpLevelSign;
         private Token m_SignToken = null;
+        public override Token token => m_SignToken;
         private MetaType m_DefineMetaType = null;
         private MetaType m_RealMetaType = null;
 

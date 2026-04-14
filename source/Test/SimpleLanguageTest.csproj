@@ -9,7 +9,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Front\SimpleLanguageFront.csproj" />
-    <ProjectReference Include="..\VM\SimpleLanuageVM.csproj" />
+    <ProjectReference Include="..\VM\SimpleLanuageVM.csproj">
+      <Aliases>global,VMRuntime</Aliases>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>

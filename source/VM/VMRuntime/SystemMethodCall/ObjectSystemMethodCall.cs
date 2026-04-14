@@ -233,7 +233,10 @@ namespace SimpleLanguage.VM.Runtime
             if (a.isNull || b.isNull) return false;
 
             if (ReferenceEquals(a.sobject, b.sobject)) return true;
-            if (a.sobject != null && b.sobject != null) return false;
+            if (a.sobject != null && b.sobject != null)
+            {
+                return a.sobject == b.sobject;
+            }
 
             object? av = a.GetValueObject();
             object? bv = b.GetValueObject();

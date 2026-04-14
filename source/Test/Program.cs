@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿extern alias VMRuntime;
+
+using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Project;
 using SimpleLanguage.VM;
@@ -151,6 +153,7 @@ internal static class Program
                 ? new[] { packagePath, "-test" }
                 : new[] { packagePath };
 
+            VMRuntime::SimpleLanguage.Logging.LogManager.Initialize("");
             var graph = SLIRJsonModuleLoader.ReadPackagesInExecutionOrder(packagePath);
             var parseResult = SLIRModuleParse.Parse(graph, vmArgs);
             if (parseResult == null)

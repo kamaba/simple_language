@@ -54,7 +54,7 @@ namespace SimpleLanguage.IR
             {
                 irdata.SetOpValue(node.value);
             }
-            //irdata.SetDebugInfoByToken( mcn.GetToken() );
+            irdata.SetDebugInfoByToken(node.token);
             AddIRData(irdata);
         }
         public IRExpress( IRMethod irMethod, MetaExpressNode node ) : base( irMethod )
@@ -80,7 +80,7 @@ namespace SimpleLanguage.IR
                         {
                             irdata.SetOpValue(mcn.value);
                         }
-                        //irdata.SetDebugInfoByToken( mcn.GetToken() );
+                        irdata.SetDebugInfoByToken(mcn.token);
                         AddIRData(irdata);
                     }
                     break;
@@ -89,6 +89,7 @@ namespace SimpleLanguage.IR
                         MetaExpressNode valNode = muoen.value;
                         CreateIRDataOne(valNode);
                         var signData = CreateOneSignIRData(muoen.opSign);
+                        signData.SetDebugInfoByToken(muoen.token);
                         AddIRData(signData);
                     }
                     break;
@@ -109,7 +110,7 @@ namespace SimpleLanguage.IR
                             AddIRData(ircovn.data);
                         }
                         var signData = IRUtil.CreateLeftAndRightIRData(moen.opSign);
-                        //signData.SetDebugInfoByToken( moen.GetToken() );
+                        signData.SetDebugInfoByToken(moen.token);
                         AddIRData(signData);
                     }
                     break;

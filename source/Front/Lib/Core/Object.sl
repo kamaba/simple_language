@@ -13,15 +13,7 @@ public class Object
     #static helper: null-safe equality
     public static bool objectEquals(object objA, object objB)
     {
-        if (objA == null && objB == null)
-        {
-            ret true;
-        }
-        if (objA == null || objB == null)
-        {
-            ret false;
-        }
-        ret objA.equals(objB);
+        ret SystemEqualObject( objA, objB);
     }
 
     #reference equality
@@ -39,7 +31,6 @@ public class Object
     #equality: default delegates to runtime equality helper which may compare by reference
     public bool equals(object obj)
     {
-        if (obj == null){ ret false; }
         ret SystemEqualObject(this, obj)
     }
     #runtime internal reference (object identity)
@@ -65,7 +56,6 @@ public class Object
     {
         SystemObjectFree(this)
     }
-
     public void release()
     {
         SystemObjectRelease(this)

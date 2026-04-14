@@ -16,10 +16,26 @@ namespace SimpleLanguage.VM
     public class DebugInfo
     {
         [JsonInclude] public string path = "";
+        /// <summary>Source lexeme / symbol text (from Token), optional.</summary>
+        [JsonInclude] public string name = "";
         [JsonInclude] public int beginLine = 0;
         [JsonInclude] public int beginChar = 0;
         [JsonInclude] public int endLine = 0;
         [JsonInclude] public int endChar = 0;
+        /// <summary>Optional IR hint (e.g. opcode role), optional.</summary>
+        [JsonInclude] public string info = "";
+
+        /// <summary>Single-line location for logs (file:line:col and optional symbol).</summary>
+        public string FormatDiagnosticLine()
+        {
+            if (string.IsNullOrEmpty(path) && beginLine <= 0 && string.IsNullOrEmpty(name))
+                return "";
+            var namePart = string.IsNullOrEmpty(name) ? "" : " `" + name + "`";
+            var infoPart = string.IsNullOrEmpty(info) ? "" : " (" + info + ")";
+            if (string.IsNullOrEmpty(path) && beginLine <= 0)
+                return (name ?? string.Empty).Trim() + infoPart;
+            return path + "(" + beginLine + "," + beginChar + ")-(" + endLine + "," + endChar + ")" + namePart + infoPart;
+        }
     }
     public class Instruction
     {
@@ -437,7 +453,10 @@ namespace SimpleLanguage.VM
         public override string ToString()
         {
             StringBuilder m_StringBuilder = new StringBuilder();
-            m_StringBuilder.Append(id + "   [ " + debugInfo.path + ":" + debugInfo.beginLine.ToString() + "]" + " [" + opCode.ToString() + "] index:[" + index.ToString() + "]");
+            var di = debugInfo;
+            var path = di != null ? di.path : "";
+            var line = di != null ? di.beginLine : 0;
+            m_StringBuilder.Append(id + "   [ " + path + ":" + line.ToString() + "]" + " [" + opCode.ToString() + "] index:[" + index.ToString() + "]");
             if (opValue != null)
             {
                 //MetaType mt = opValue as MetaType;

@@ -30,6 +30,18 @@ namespace SimpleLanguage.Export.SLIR.Types
         public int systemMethodKind { get; set; } = -1;
     }
 
+    /// <summary>Optional debug snapshot (from <see cref="SimpleLanguage.IR.IRData.debugInfo"/> / token), deserialized into VM <see cref="SimpleLanguage.VM.DebugInfo"/>.</summary>
+    public sealed class SLInstructionDebugInfo
+    {
+        public string path { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        public int beginLine { get; set; }
+        public int beginChar { get; set; }
+        public int endLine { get; set; }
+        public int endChar { get; set; }
+        public string info { get; set; } = string.Empty;
+    }
+
     /// <summary>
     /// Wire shape for one <see cref="SimpleLanguage.IR.IRData"/> in JSON (same field contract VM deserializes into <c>Instruction</c>).
     /// </summary>
@@ -41,6 +53,7 @@ namespace SimpleLanguage.Export.SLIR.Types
         public int index { get; set; }
         public int byteLength { get; set; }
         public int offset { get; set; }
+        public SLInstructionDebugInfo? debugInfo { get; set; }
     }
     public sealed class SLVariablePackage 
     { 

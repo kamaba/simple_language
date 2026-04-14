@@ -831,6 +831,23 @@ namespace SimpleLanguage.Export.SLIR
             if (d == null) throw new ArgumentNullException(nameof(d));
             try { d.FinalizePack(); } catch { /* best-effort */ }
 
+            SLInstructionDebugInfo? dbg = null;
+            var src = d.debugInfo;
+            if (!string.IsNullOrEmpty(src.path) || !string.IsNullOrEmpty(src.name) || !string.IsNullOrEmpty(src.info)
+                || src.beginLine != 0 || src.beginChar != 0 || src.endLine != 0 || src.endChar != 0)
+            {
+                dbg = new SLInstructionDebugInfo
+                {
+                    path = src.path ?? string.Empty,
+                    name = src.name ?? string.Empty,
+                    beginLine = src.beginLine,
+                    beginChar = src.beginChar,
+                    endLine = src.endLine,
+                    endChar = src.endChar,
+                    info = src.info ?? string.Empty,
+                };
+            }
+
             return new SLIRInstructionPackage
             {
                 id = d.id,
@@ -839,6 +856,7 @@ namespace SimpleLanguage.Export.SLIR
                 offset = d.offset,
                 byteLength = d.ByteLength,
                 payload = d.Payload,
+                debugInfo = dbg,
             };
         }
 
