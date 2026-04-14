@@ -112,6 +112,44 @@ CallLinkTest
         #newcx1 = newc1.value;
         #result1 = newc1;
         System.Console.WriteLine("Class1 Value: " + newc1 )
+
+        
+        #dynamic d1 = {t1 = 2, t2 = 3 }
+        #!
+        a20 = 10000 + 20;
+        a21 = ClassT(10){t=1}
+        d2 = { ct = ClassT(20), childd1 = { a3 = { qx = 1024 } }, ch2 = [1,2,3,4],  ha=a21, ch3 = [ {a=20}, {a = {ax = 10241 } } ], y2 = "sss" }  # 相当于data d2 = {}
+        md2str = d2.y2;
+        r20 = d2.childd1.a3.qx;
+        r21 = d2.ch2.$2;
+        r22 = d2.ha.t
+        r23 = d2.ch3.$2.a.ax
+        !#
+        #ct111 = ClassT(100){ t = 1 }        
+        #vv1 = ClassT().t;      #不允许 newclass只允许 使用创建新的变量方式
+        #c1 = Class1(ClassT(), ct111 );    #传参的时候，如果是 ClassName(){} 不支持后边的{} 只支持ClassName(1,2,3) 的形式使用 
+        #c2 = Class2( 121,122,123,124 );
+        #c3 = Class1( 125, 126 ){ x1 = 127 };
+        #Class1 c4 = { x1 = 128, y1 = 129 };
+        #Class2 c5 = { x1 = 130, y1 = 131, x2 = 132, y2 = 133 };
+        #Class2 c6 = { ct1 = ClassT() };     # { ct1.t = 20; } 是不允许的
+
+        #c1.x1 = 250                                                  #测试调用对象+赋值对象
+
+        
+
+        #t2 = c1.ct3.GetT().t2;                                       #测试调用对象链
+        #t2  = c1.ct3.t;
+        
+        CSharp.System.Debug.Write("Class1 Value: " + vx );     
+
+        #CSharp.System.Debug.Write("Class1 Value: " + c1.ct3.t );     #测试调用对象链
+
+        #aynn = {name = "mypc", wodm = Class1(), womd2 = Class2() };    #测试匿名对象
+        #if aynn.name == "mypc"
+        #{
+             #CSharp.System.Debug.Write("aynn is mypc" );
+        #}        
     }
 }
 #!

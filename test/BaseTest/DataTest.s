@@ -62,6 +62,21 @@ Class1{
     public static Class1 zero = Class1(){ a = 0, b = 0 }
 }
 
+data QS.Data1
+{
+    ct = ClassT(20) 
+    x1 = 20
+    x2 = [-11.3f,2,3]
+    x3 = [{a = 10}, {a = 20} ]
+    x4 = {
+         a = 30
+    }
+    x41 = 
+    {
+        
+    }
+}
+
 DataTest
 {
     root()
@@ -94,6 +109,7 @@ DataTest
     }
     static Func()
     {
+        
         #println( RenBook );               #为直接数据
 
         Input( BookCatelogy );         #直接传参为数据，而非引用指针  直接传BookCatelogy

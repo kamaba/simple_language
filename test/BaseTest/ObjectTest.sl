@@ -1,11 +1,8 @@
-
-# Tests for `Lib/Core/Object.sl` — every check prints a line so results are visible in the console.
 ObjectTest
 {
     static fun()
-    {
+    {        
         global.println("========== Object.sl tests (start) ==========")
-
         Object obj = new()
         Object obj2 = obj
         Object obj3 = new()
@@ -46,7 +43,6 @@ ObjectTest
         global.println("    called tmp.free()")
         tmp.release()
         global.println("    called tmp.release()")
-
-        global.println("========== Object.sl tests (end) ==========")
+        global.println("========== Object.sl tests (end) ==========")     
     }
 }

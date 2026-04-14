@@ -1,100 +1,170 @@
-ICollection<T>
-{
-    interface get int Count()
-    {
-        return 0;
-    }
-    interface void Add( T ){}
-    interface void Clear(){}
-    interface void Contains( T ){ }
-    interface void Remove( T ){ }
-}
-IEnumerable<T>
-{
-    interface T NextIterator(){ ret T; }
-}
 
-List<T> extends Object interface ICollection<T>, IIterator<T>
+namespace Core
 {
-    Array _value = null;
-    List()
+    class Object
     {
-        this._Value = new( T.type, 4 )
+        public void _init_()
+        {
+
+        }
+
+        public string toString()
+        {
+            ret ""
+        }
     }
-    get T _value_(int index)
+    class Byte extends Object
     {
-        return m_Value[index];
     }
-    set _value_( int index, T value )
+    class Boolean
     {
-        this._Value[index] = value;
+
     }
-    get T value()
-    {
-        ret this._value.value();
-    }
-    set void value( T t )
+    class SByte
     {
         
     }
-    int get count()
+    class Int16
     {
-        return m_Value.Count;
+        
     }
-    set capity( int count )
+    class UInt16
     {
-        m_Value.SetCount( count );
+        
+    }
+    class Int32
+    {
+        _init_(Int32 val )
+        {
+            
+        }        
+    }
+    class UInt32
+    {
+        
+    }
+    class Int64
+    {
+        
+    }
+    class UInt64
+    {
+        
+    }
+    class Float32
+    {
+        
+    }
+    class Float64
+    {
+        _init_(Float64 f)
+        {
+
+        }
+    }
+    class String
+    {
+        _init_( String str )
+        {
+
+        }
+    }
+    public class Type
+    {
+        public int length = 4
+    }    
+    public class Array
+    {
+        int _length = 0
+        int _rank = 1
+
+        int _listPtr = 0
+
+        _init_(){
+            this._listPtr = 0
+        }
+        _init_( int length )
+        {
+            uint allSize = length * 4
+
+            this._listPtr = Lib.Array.CreateArray( length, 4 )
+
+        }
+        #!
+        public static Array CreateInstance(Type elementType, int length);
+        public static Array CreateInstance(Type elementType, int length1, int length2 );
+        public static Array CreateInstance(Type elementType, int length1, int length2, int lenght3 );;
+        !#
+        #!
+        _init_( uint length, Type type )
+        {        
+            uint allSize = length * type.length
+            this._listPtr = ArrayMetaClass.SetArrayLength( allSize )
+        }
+        _init_( uint length, Type type, int rank )
+        {
+            uint unitLength = type.length
+            this.length = length
+            this.rank = rank
+            uint allSize = length * type.length
+
+            this._listPtr = ArrayMetaClass.SetArrayLength( allSize )
+        }
+        !#
+    }
+
+    List extends Object
+    {
+
+    }
+
+    List<T> extends Object
+    {
+        T[] _items = new()
+
+        _init_( int capity )
+        {
+            this._items.setLength( capity )
+        }
+        add( object obj )
+        {
+
+        }
+        add( T t )
+        {
+
+        }
+        remove( T t )
+        {
+
+        }
+        removeIndex( int index )
+        {
+
+        }
+        clear()
+        {
+
+        }
+        set capity( int cap )
+        {
+        }
     }
 }
 
 ListTest
 {
-    static Fun()
+    static fun()
     {
-        List<int> a = List<int>();
-        var a2 = List<int>( range( 1, 100 ) )
-        var a3 = List<int>( [1,2,3,4,100,32] );
-        List<List<int>> b = List<List<int>>();
+        List<int> aalist = new(10)
 
         
-        # alist = List(2){ intvalue, 1 }
-
-        for i = 0, i < a.count
-        {
-            i++;
-        }
-        for it in a
-        {
-            indexa = it.index + 1;
-            val v1 = it.value           #读取当前遍历的value
-        }
-        a.add( 10 );
-        a.remove( 20 );
-        b.add( a2 )
-        b.add( a3 )
-        b.add( a );
-        av = a.@10; #相当于 a._value_( 10 );
-        a.@2 = va;  #相当于 a._value_( 20, va );
-        a[2] = 100
-
-        for it in a
-        {
-            a.value = 20;    #相当于 it = 20;
-        }
-        for it2 in b
-        {
-            for it3 in it2
-            {
-                var it3val = it3.value
-                Console.WriteLine("-----------" + it3val )
-            }
-        }
-
-        b.value.add( 1000 )
-        b.value.value = 20
-        b.index = 1
-        aavalue = b.value
-
-        b.value.@2
+        #!
+        a34 = List<int>[]{1,2,3,4}
+        aa = 3
+        a34.$aa = 111
+        var aaaa34v = a34.$3
+        System.Console.WriteLine("1111111111= " + aaaa34v )
+        !#
     }
 }

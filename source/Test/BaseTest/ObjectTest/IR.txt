@@ -1,0 +1,367 @@
+-------------------IR 文件显示 开始 : Path: ../../../../test/BaseTest/ObjectTest.sl-----------------------
+Class: Core.ObjectTest
+  TemplateCount: 0
+  TemplateParameterCount: 0
+  TemplateTypes: []
+  TemplateRelations:
+    RelatedClassId: 56680499
+      Mapping: []
+  ClassLocals: []
+  ClassStatics: []
+  GlobalBindings: []
+
+  Method: Core.ObjectTest.fun
+    VirtualName: fun_Core.Object_0
+    Name: fun
+    InterfaceMethod: False
+    Return:
+      - #0 id=40663130 idx=0 name=_local[Core.ObjectTest.fun.return] type=Core.Object
+    Arguments: []
+    Locals:
+      - #0 id=30423852 idx=0 name=fun_local[obj] type=Core.Object
+      - #1 id=5379216 idx=1 name=fun_local[obj2] type=Core.Object
+      - #2 id=48412952 idx=2 name=fun_local[obj3] type=Core.Object
+      - #3 id=33063388 idx=3 name=fun_local[obj4] type=Core.Object
+      - #4 id=29135036 idx=4 name=fun_local[hc1] type=Core.Int32
+      - #5 id=60888739 idx=5 name=fun_local[hc2] type=Core.Int32
+      - #6 id=11127745 idx=6 name=fun_local[refc] type=Core.Int32
+      - #7 id=33040847 idx=7 name=fun_local[rwA] type=Core.Object
+      - #8 id=28932175 idx=8 name=fun_local[rwB] type=Core.Object
+      - #9 id=59062984 idx=9 name=fun_local[tmp] type=Core.Object
+    Instructions:
+0 0   [ :0] [Nop] index:[0]
+1 1   [ ../../../../test/BaseTest/ObjectTest.sl:5] [LoadConstString] index:[19] val: string[========== Object.sl tests (start) ==========] 
+2 2   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+3 3   [ :0] [NewObject] index:[0] val: int32[56680499] 
+4 4   [ :0] [Dup] index:[0]
+5 5   [ :0] [CallVirt] index:[0] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object._init_, MethodRuntimeTypeList=[], ParamCount=0}] 
+6 6   [ :0] [StoreLocal] index:[0]
+7 7   [ :0] [LoadLocal] index:[0]
+8 8   [ :0] [StoreLocal] index:[1]
+9 9   [ :0] [NewObject] index:[0] val: int32[56680499] 
+10 10   [ :0] [Dup] index:[0]
+11 11   [ :0] [CallVirt] index:[0] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object._init_, MethodRuntimeTypeList=[], ParamCount=0}] 
+12 12   [ :0] [StoreLocal] index:[2]
+13 13   [ :0] [NewObject] index:[0] val: int32[56680499] 
+14 14   [ :0] [Dup] index:[0]
+15 15   [ :0] [CallVirt] index:[0] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object._init_, MethodRuntimeTypeList=[], ParamCount=0}] 
+16 16   [ :0] [StoreLocal] index:[3]
+17 17   [ ../../../../test/BaseTest/ObjectTest.sl:11] [LoadConstString] index:[20] val: string[[1] new + alias: obj==obj2 (same reference) -> ] 
+18 18   [ :0] [LoadLocal] index:[0]
+19 19   [ :0] [LoadLocal] index:[1]
+20 20   [ ../../../../test/BaseTest/ObjectTest.sl:11] [Ceq] index:[0]
+21 21   [ Boolean.sl:9] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Boolean, StaticRuntimeTypeList=[], Method=Core.Boolean.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+22 22   [ ../../../../test/BaseTest/ObjectTest.sl:11] [Add] index:[0]
+23 23   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+24 24   [ ../../../../test/BaseTest/ObjectTest.sl:12] [LoadConstString] index:[21] val: string[[2] equals alias: obj.equals(obj2) -> ] 
+25 25   [ :0] [LoadLocal] index:[0]
+26 26   [ :0] [LoadLocal] index:[1]
+27 27   [ Object.sl:32] [CallVirt] index:[3] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.equals_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+28 28   [ Boolean.sl:9] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Boolean, StaticRuntimeTypeList=[], Method=Core.Boolean.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+29 29   [ ../../../../test/BaseTest/ObjectTest.sl:12] [Add] index:[0]
+30 30   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+31 31   [ ../../../../test/BaseTest/ObjectTest.sl:13] [LoadConstString] index:[22] val: string[[3] static objectEquals alias: Object.objectEquals(obj, obj2) -> ] 
+32 32   [ :0] [LoadLocal] index:[0]
+33 33   [ :0] [LoadLocal] index:[1]
+34 34   [ Object.sl:14] [CallStatic] index:[2] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.objectEquals_2_Core.Object_Core.Object, MethodRuntimeTypeList=[], ParamCount=2}] 
+35 35   [ Boolean.sl:9] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Boolean, StaticRuntimeTypeList=[], Method=Core.Boolean.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+36 36   [ ../../../../test/BaseTest/ObjectTest.sl:13] [Add] index:[0]
+37 37   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+38 38   [ ../../../../test/BaseTest/ObjectTest.sl:14] [LoadConstString] index:[23] val: string[[4] static refEquals alias: Object.refEquals(obj, obj2) -> ] 
+39 39   [ :0] [LoadLocal] index:[0]
+40 40   [ :0] [LoadLocal] index:[1]
+41 41   [ Object.sl:20] [CallStatic] index:[2] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.refEquals_2_Core.Object_Core.Object, MethodRuntimeTypeList=[], ParamCount=2}] 
+42 42   [ Boolean.sl:9] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Boolean, StaticRuntimeTypeList=[], Method=Core.Boolean.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+43 43   [ ../../../../test/BaseTest/ObjectTest.sl:14] [Add] index:[0]
+44 44   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+45 45   [ ../../../../test/BaseTest/ObjectTest.sl:16] [LoadConstString] index:[24] val: string[[5] distinct instances: Object.objectEquals(obj3, obj4) -> ] 
+46 46   [ :0] [LoadLocal] index:[2]
+47 47   [ :0] [LoadLocal] index:[3]
+48 48   [ Object.sl:14] [CallStatic] index:[2] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.objectEquals_2_Core.Object_Core.Object, MethodRuntimeTypeList=[], ParamCount=2}] 
+49 49   [ Boolean.sl:9] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Boolean, StaticRuntimeTypeList=[], Method=Core.Boolean.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+50 50   [ ../../../../test/BaseTest/ObjectTest.sl:16] [Add] index:[0]
+51 51   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+52 52   [ ../../../../test/BaseTest/ObjectTest.sl:17] [LoadConstString] index:[25] val: string[[6] distinct refEquals: Object.refEquals(obj3, obj4) -> ] 
+53 53   [ :0] [LoadLocal] index:[2]
+54 54   [ :0] [LoadLocal] index:[3]
+55 55   [ Object.sl:20] [CallStatic] index:[2] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.refEquals_2_Core.Object_Core.Object, MethodRuntimeTypeList=[], ParamCount=2}] 
+56 56   [ Boolean.sl:9] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Boolean, StaticRuntimeTypeList=[], Method=Core.Boolean.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+57 57   [ ../../../../test/BaseTest/ObjectTest.sl:17] [Add] index:[0]
+58 58   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+59 59   [ ../../../../test/BaseTest/ObjectTest.sl:18] [LoadConstString] index:[26] val: string[[7] equals distinct: obj3.equals(obj4) -> ] 
+60 60   [ :0] [LoadLocal] index:[2]
+61 61   [ :0] [LoadLocal] index:[3]
+62 62   [ Object.sl:32] [CallVirt] index:[3] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.equals_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+63 63   [ Boolean.sl:9] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Boolean, StaticRuntimeTypeList=[], Method=Core.Boolean.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+64 64   [ ../../../../test/BaseTest/ObjectTest.sl:18] [Add] index:[0]
+65 65   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+66 66   [ :0] [LoadLocal] index:[0]
+67 67   [ Object.sl:26] [CallVirt] index:[2] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.hashCode, MethodRuntimeTypeList=[], ParamCount=0}] 
+68 68   [ :0] [StoreLocal] index:[4]
+69 69   [ :0] [LoadLocal] index:[2]
+70 70   [ Object.sl:26] [CallVirt] index:[2] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.hashCode, MethodRuntimeTypeList=[], ParamCount=0}] 
+71 71   [ :0] [StoreLocal] index:[5]
+72 72   [ ../../../../test/BaseTest/ObjectTest.sl:22] [LoadConstString] index:[27] val: string[[8] hashCode: obj.hashCode -> ] 
+73 73   [ :0] [LoadLocal] index:[4]
+74 74   [ Int32.sl:116] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Int32, StaticRuntimeTypeList=[], Method=Core.Int32.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+75 75   [ ../../../../test/BaseTest/ObjectTest.sl:22] [Add] index:[0]
+76 76   [ ../../../../test/BaseTest/ObjectTest.sl:22] [LoadConstString] index:[28] val: string[ ; obj3.hashCode -> ] 
+77 77   [ ../../../../test/BaseTest/ObjectTest.sl:22] [Add] index:[0]
+78 78   [ :0] [LoadLocal] index:[5]
+79 79   [ Int32.sl:116] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Int32, StaticRuntimeTypeList=[], Method=Core.Int32.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+80 80   [ ../../../../test/BaseTest/ObjectTest.sl:22] [Add] index:[0]
+81 81   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+82 82   [ ../../../../test/BaseTest/ObjectTest.sl:25] [LoadConstString] index:[29] val: string[[11] toString: obj.toString() -> ] 
+83 83   [ :0] [LoadLocal] index:[0]
+84 84   [ Object.sl:64] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+85 85   [ ../../../../test/BaseTest/ObjectTest.sl:25] [Add] index:[0]
+86 86   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+87 87   [ ../../../../test/BaseTest/ObjectTest.sl:26] [LoadConstString] index:[30] val: string[[12] toString: obj3.toString() -> ] 
+88 88   [ :0] [LoadLocal] index:[2]
+89 89   [ Object.sl:64] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+90 90   [ ../../../../test/BaseTest/ObjectTest.sl:26] [Add] index:[0]
+91 91   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+92 92   [ :0] [LoadLocal] index:[1]
+93 93   [ Object.sl:49] [CallVirt] index:[6] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.refCount, MethodRuntimeTypeList=[], ParamCount=0}] 
+94 94   [ :0] [StoreLocal] index:[6]
+95 95   [ ../../../../test/BaseTest/ObjectTest.sl:29] [LoadConstString] index:[31] val: string[[13] refCount (alias obj2): ] 
+96 96   [ :0] [LoadLocal] index:[6]
+97 97   [ Int32.sl:116] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Int32, StaticRuntimeTypeList=[], Method=Core.Int32.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+98 98   [ ../../../../test/BaseTest/ObjectTest.sl:29] [Add] index:[0]
+99 99   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+100 100   [ ../../../../test/BaseTest/ObjectTest.sl:31] [LoadConstString] index:[32] val: string[[14] refEquals(null,null) -> ] 
+101 101   [ ../../../../test/BaseTest/ObjectTest.sl:31] [LoadConstNull] index:[0] val:[null] 
+102 102   [ ../../../../test/BaseTest/ObjectTest.sl:31] [LoadConstNull] index:[0] val:[null] 
+103 103   [ Object.sl:20] [CallStatic] index:[2] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.refEquals_2_Core.Object_Core.Object, MethodRuntimeTypeList=[], ParamCount=2}] 
+104 104   [ Boolean.sl:9] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Boolean, StaticRuntimeTypeList=[], Method=Core.Boolean.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+105 105   [ ../../../../test/BaseTest/ObjectTest.sl:31] [Add] index:[0]
+106 106   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+107 107   [ ../../../../test/BaseTest/ObjectTest.sl:32] [LoadConstString] index:[33] val: string[[15] objectEquals(null,null) -> ] 
+108 108   [ ../../../../test/BaseTest/ObjectTest.sl:32] [LoadConstNull] index:[0] val:[null] 
+109 109   [ ../../../../test/BaseTest/ObjectTest.sl:32] [LoadConstNull] index:[0] val:[null] 
+110 110   [ Object.sl:14] [CallStatic] index:[2] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.objectEquals_2_Core.Object_Core.Object, MethodRuntimeTypeList=[], ParamCount=2}] 
+111 111   [ Boolean.sl:9] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Boolean, StaticRuntimeTypeList=[], Method=Core.Boolean.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+112 112   [ ../../../../test/BaseTest/ObjectTest.sl:32] [Add] index:[0]
+113 113   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+114 114   [ ../../../../test/BaseTest/ObjectTest.sl:33] [LoadConstString] index:[34] val: string[[16] objectEquals(obj,null) / objectEquals(null,obj) -> ] 
+115 115   [ :0] [LoadLocal] index:[0]
+116 116   [ ../../../../test/BaseTest/ObjectTest.sl:33] [LoadConstNull] index:[0] val:[null] 
+117 117   [ Object.sl:14] [CallStatic] index:[2] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.objectEquals_2_Core.Object_Core.Object, MethodRuntimeTypeList=[], ParamCount=2}] 
+118 118   [ Boolean.sl:9] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Boolean, StaticRuntimeTypeList=[], Method=Core.Boolean.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+119 119   [ ../../../../test/BaseTest/ObjectTest.sl:33] [Add] index:[0]
+120 120   [ ../../../../test/BaseTest/ObjectTest.sl:33] [LoadConstString] index:[35] val: string[ / ] 
+121 121   [ ../../../../test/BaseTest/ObjectTest.sl:33] [Add] index:[0]
+122 122   [ ../../../../test/BaseTest/ObjectTest.sl:33] [LoadConstNull] index:[0] val:[null] 
+123 123   [ :0] [LoadLocal] index:[0]
+124 124   [ Object.sl:14] [CallStatic] index:[2] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.objectEquals_2_Core.Object_Core.Object, MethodRuntimeTypeList=[], ParamCount=2}] 
+125 125   [ Boolean.sl:9] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Boolean, StaticRuntimeTypeList=[], Method=Core.Boolean.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+126 126   [ ../../../../test/BaseTest/ObjectTest.sl:33] [Add] index:[0]
+127 127   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+128 128   [ :0] [LoadLocal] index:[0]
+129 129   [ Object.sl:43] [CallVirt] index:[5] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.refWeak, MethodRuntimeTypeList=[], ParamCount=0}] 
+130 130   [ :0] [StoreLocal] index:[7]
+131 131   [ :0] [LoadLocal] index:[2]
+132 132   [ Object.sl:43] [CallVirt] index:[5] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.refWeak, MethodRuntimeTypeList=[], ParamCount=0}] 
+133 133   [ :0] [StoreLocal] index:[8]
+134 134   [ ../../../../test/BaseTest/ObjectTest.sl:37] [LoadConstString] index:[36] val: string[[17] refWeak: Object.refEquals(obj.refWeak, obj3.refWeak) -> ] 
+135 135   [ :0] [LoadLocal] index:[7]
+136 136   [ :0] [LoadLocal] index:[8]
+137 137   [ Object.sl:20] [CallStatic] index:[2] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.refEquals_2_Core.Object_Core.Object, MethodRuntimeTypeList=[], ParamCount=2}] 
+138 138   [ Boolean.sl:9] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Boolean, StaticRuntimeTypeList=[], Method=Core.Boolean.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+139 139   [ ../../../../test/BaseTest/ObjectTest.sl:37] [Add] index:[0]
+140 140   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+141 141   [ ../../../../test/BaseTest/ObjectTest.sl:39] [LoadConstString] index:[37] val: string[[18] lifecycle smoke: call free() then release() on a throwaway Object] 
+142 142   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+143 143   [ :0] [NewObject] index:[0] val: int32[56680499] 
+144 144   [ :0] [Dup] index:[0]
+145 145   [ :0] [CallVirt] index:[0] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object._init_, MethodRuntimeTypeList=[], ParamCount=0}] 
+146 146   [ :0] [StoreLocal] index:[9]
+147 147   [ ../../../../test/BaseTest/ObjectTest.sl:41] [LoadConstString] index:[38] val: string[    tmp.hashCode before -> ] 
+148 148   [ :0] [LoadLocal] index:[9]
+149 149   [ Object.sl:26] [CallVirt] index:[2] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.hashCode, MethodRuntimeTypeList=[], ParamCount=0}] 
+150 150   [ Int32.sl:116] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Int32, StaticRuntimeTypeList=[], Method=Core.Int32.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+151 151   [ ../../../../test/BaseTest/ObjectTest.sl:41] [Add] index:[0]
+152 152   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+153 153   [ :0] [LoadLocal] index:[9]
+154 154   [ Object.sl:55] [CallVirt] index:[7] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.free, MethodRuntimeTypeList=[], ParamCount=0}] 
+155 155   [ ../../../../test/BaseTest/ObjectTest.sl:43] [LoadConstString] index:[39] val: string[    called tmp.free()] 
+156 156   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+157 157   [ :0] [LoadLocal] index:[9]
+158 158   [ Object.sl:59] [CallVirt] index:[8] val:[RuntimeCall{StaticRuntimeType=Core.Object, StaticRuntimeTypeList=[], Method=Core.Object.release, MethodRuntimeTypeList=[], ParamCount=0}] 
+159 159   [ ../../../../test/BaseTest/ObjectTest.sl:45] [LoadConstString] index:[40] val: string[    called tmp.release()] 
+160 160   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+161 161   [ ../../../../test/BaseTest/ObjectTest.sl:46] [LoadConstString] index:[41] val: string[========== Object.sl tests (end) ==========] 
+162 162   [ Core.sp:10] [CallStatic] index:[1] val:[RuntimeCall{StaticRuntimeType=Core.Project, StaticRuntimeTypeList=[], Method=Core.Project.println_1_Core.Object, MethodRuntimeTypeList=[], ParamCount=1}] 
+163 163   [ :0] [Label] index:[0]
+
+  Method: Core.Object._init_
+    VirtualName: _init__Core.Void_0
+    Name: _init_
+    InterfaceMethod: False
+    Return:
+      - #0 id=11318680 idx=0 name=_local[Core.Object._init_.return] type=Core.Void
+    Arguments:
+      - #0 id=38540333 idx=0 name=_local[Core.Object._init_.this] type=Core.Object
+    Locals: []
+    Instructions:
+0 0   [ :0] [Nop] index:[0]
+1 1   [ :0] [Label] index:[0]
+
+  Method: Core.Object.type
+    VirtualName: type_Core.Type_0
+    Name: type
+    InterfaceMethod: False
+    Return:
+      - #0 id=44397891 idx=0 name=_local[Core.Object.type.return] type=Core.Type
+    Arguments:
+      - #0 id=34759260 idx=0 name=_local[Core.Object.type.this] type=Core.Object
+    Locals: []
+    Instructions:
+0 0   [ :0] [Nop] index:[0]
+1 1   [ :0] [LoadArgument] index:[0]
+2 2   [ :0] [CallSystemMethod] index:[1] val:[SimpleLanguage.Export.SLIR.Types.SLSystemMethodCallPackage] 
+3 3   [ :0] [StoreReturn] index:[0]
+4 4   [ :0] [BrLabel] index:[0] val:[5   [ :0] [Label] index:[0]] 
+5 5   [ :0] [Label] index:[0]
+
+  Method: Core.Object.hashCode
+    VirtualName: hashCode_Core.Int32_0
+    Name: hashCode
+    InterfaceMethod: False
+    Return:
+      - #0 id=39459394 idx=0 name=_local[Core.Object.hashCode.return] type=Core.Int32
+    Arguments:
+      - #0 id=64036700 idx=0 name=_local[Core.Object.hashCode.this] type=Core.Object
+    Locals: []
+    Instructions:
+0 0   [ :0] [Nop] index:[0]
+1 1   [ :0] [LoadArgument] index:[0]
+2 2   [ :0] [CallSystemMethod] index:[1] val:[SimpleLanguage.Export.SLIR.Types.SLSystemMethodCallPackage] 
+3 3   [ :0] [StoreReturn] index:[0]
+4 4   [ :0] [BrLabel] index:[0] val:[5   [ :0] [Label] index:[0]] 
+5 5   [ :0] [Label] index:[0]
+
+  Method: Core.Object.equals_1_Core.Object
+    VirtualName: equals_Core.Boolean_1_Core.Object
+    Name: equals
+    InterfaceMethod: False
+    Return:
+      - #0 id=42094334 idx=0 name=_local[Core.Object.equals.return] type=Core.Boolean
+    Arguments:
+      - #0 id=19590229 idx=0 name=_local[Core.Object.equals.this] type=Core.Object
+      - #1 id=43304686 idx=1 name=_local[obj] type=Core.Object
+    Locals: []
+    Instructions:
+0 0   [ :0] [Nop] index:[0]
+1 1   [ :0] [LoadArgument] index:[0]
+2 2   [ :0] [LoadArgument] index:[1]
+3 3   [ :0] [CallSystemMethod] index:[2] val:[SimpleLanguage.Export.SLIR.Types.SLSystemMethodCallPackage] 
+4 4   [ :0] [StoreReturn] index:[0]
+5 5   [ :0] [BrLabel] index:[0] val:[6   [ :0] [Label] index:[0]] 
+6 6   [ :0] [Label] index:[0]
+
+  Method: Core.Object.ref
+    VirtualName: ref_Core.Object_0
+    Name: ref
+    InterfaceMethod: False
+    Return:
+      - #0 id=18018639 idx=0 name=_local[Core.Object.ref.return] type=Core.Object
+    Arguments:
+      - #0 id=54197854 idx=0 name=_local[Core.Object.ref.this] type=Core.Object
+    Locals: []
+    Instructions:
+0 0   [ :0] [Nop] index:[0]
+1 1   [ :0] [LoadArgument] index:[0]
+2 2   [ :0] [CallSystemMethod] index:[1] val:[SimpleLanguage.Export.SLIR.Types.SLSystemMethodCallPackage] 
+3 3   [ :0] [StoreReturn] index:[0]
+4 4   [ :0] [BrLabel] index:[0] val:[5   [ :0] [Label] index:[0]] 
+5 5   [ :0] [Label] index:[0]
+
+  Method: Core.Object.refWeak
+    VirtualName: refWeak_Core.Object_0
+    Name: refWeak
+    InterfaceMethod: False
+    Return:
+      - #0 id=50223649 idx=0 name=_local[Core.Object.refWeak.return] type=Core.Object
+    Arguments:
+      - #0 id=27950026 idx=0 name=_local[Core.Object.refWeak.this] type=Core.Object
+    Locals: []
+    Instructions:
+0 0   [ :0] [Nop] index:[0]
+1 1   [ :0] [LoadArgument] index:[0]
+2 2   [ :0] [CallSystemMethod] index:[1] val:[SimpleLanguage.Export.SLIR.Types.SLSystemMethodCallPackage] 
+3 3   [ :0] [StoreReturn] index:[0]
+4 4   [ :0] [BrLabel] index:[0] val:[5   [ :0] [Label] index:[0]] 
+5 5   [ :0] [Label] index:[0]
+
+  Method: Core.Object.refCount
+    VirtualName: refCount_Core.Int32_0
+    Name: refCount
+    InterfaceMethod: False
+    Return:
+      - #0 id=41583755 idx=0 name=_local[Core.Object.refCount.return] type=Core.Int32
+    Arguments:
+      - #0 id=49359659 idx=0 name=_local[Core.Object.refCount.this] type=Core.Object
+    Locals: []
+    Instructions:
+0 0   [ :0] [Nop] index:[0]
+1 1   [ :0] [LoadArgument] index:[0]
+2 2   [ :0] [CallSystemMethod] index:[1] val:[SimpleLanguage.Export.SLIR.Types.SLSystemMethodCallPackage] 
+3 3   [ :0] [StoreReturn] index:[0]
+4 4   [ :0] [BrLabel] index:[0] val:[5   [ :0] [Label] index:[0]] 
+5 5   [ :0] [Label] index:[0]
+
+  Method: Core.Object.free
+    VirtualName: free_Core.Void_0
+    Name: free
+    InterfaceMethod: False
+    Return:
+      - #0 id=12841014 idx=0 name=_local[Core.Object.free.return] type=Core.Void
+    Arguments:
+      - #0 id=38709481 idx=0 name=_local[Core.Object.free.this] type=Core.Object
+    Locals: []
+    Instructions:
+0 0   [ :0] [Nop] index:[0]
+1 1   [ :0] [LoadArgument] index:[0]
+2 2   [ :0] [CallSystemMethod] index:[1] val:[SimpleLanguage.Export.SLIR.Types.SLSystemMethodCallPackage] 
+3 3   [ :0] [Label] index:[0]
+
+  Method: Core.Object.release
+    VirtualName: release_Core.Void_0
+    Name: release
+    InterfaceMethod: False
+    Return:
+      - #0 id=33489226 idx=0 name=_local[Core.Object.release.return] type=Core.Void
+    Arguments:
+      - #0 id=48460267 idx=0 name=_local[Core.Object.release.this] type=Core.Object
+    Locals: []
+    Instructions:
+0 0   [ :0] [Nop] index:[0]
+1 1   [ :0] [LoadArgument] index:[0]
+2 2   [ :0] [CallSystemMethod] index:[1] val:[SimpleLanguage.Export.SLIR.Types.SLSystemMethodCallPackage] 
+3 3   [ :0] [Label] index:[0]
+
+  Method: Core.Object.toString
+    VirtualName: toString_Core.String_0
+    Name: toString
+    InterfaceMethod: False
+    Return:
+      - #0 id=28272749 idx=0 name=_local[Core.Object.toString.return] type=Core.String
+    Arguments:
+      - #0 id=32967578 idx=0 name=_local[Core.Object.toString.this] type=Core.Object
+    Locals:
+      - #0 id=53128157 idx=0 name=toString_local[hc] type=Core.Object
+    Instructions:
+0 0   [ :0] [Nop] index:[0]
+1 1   [ :0] [LoadArgument] index:[0]
+2 2   [ :0] [CallSystemMethod] index:[1] val:[SimpleLanguage.Export.SLIR.Types.SLSystemMethodCallPackage] 
+3 3   [ :0] [StoreLocal] index:[0]
+4 4   [ Object.sl:67] [LoadConstString] index:[7] val: string[Object:] 
+5 5   [ :0] [LoadLocal] index:[0]
+6 6   [ Int32.sl:116] [CallVirt] index:[9] val:[RuntimeCall{StaticRuntimeType=Core.Int32, StaticRuntimeTypeList=[], Method=Core.Int32.toString, MethodRuntimeTypeList=[], ParamCount=0}] 
+7 7   [ Object.sl:67] [Add] index:[0]
+8 8   [ :0] [StoreReturn] index:[0]
+9 9   [ :0] [BrLabel] index:[0] val:[10   [ :0] [Label] index:[0]] 
+10 10   [ :0] [Label] index:[0]
+
+-------------------IR 文件显示 结束 : -----------------------

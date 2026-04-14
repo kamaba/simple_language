@@ -79,6 +79,32 @@ SwitchTest
         }
         Console.WriteLine("----------3333" + t.c3_val )
         # 可以对正常值进行匹配 
+
+        
+        a = 200;
+        switch kind
+        {
+            case BridgeKind.SELF
+            {
+                a = 1
+                next
+            }
+            case BridgeKind.CLR
+            {
+
+            }
+            case BridgeKind.JVM
+            {
+
+            }
+            case BridgeKind.NATIVE
+            {
+
+            }     
+            default{
+                a = 20;
+            }       
+        }        
         
     }
 }
