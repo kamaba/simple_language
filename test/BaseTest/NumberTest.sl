@@ -1,27 +1,9 @@
-import CSharp.SimpleLanguage.Core.SelfMeta
-import CSharp.System
-
 data XC
 {
     a = 2
     b = 10
 }
 
-public class Int32 
-{
-    public string toString()
-    {
-        string str = ""
-        str = Int32MetaClass.MetaToString( this )
-        ret str
-    }
-}
-public class Float
-{
-}
-public class String
-{
-}
 NumberTest
 {
     static num1Test()
