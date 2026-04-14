@@ -8,9 +8,7 @@
 
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
-using System;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using System.Globalization;
 namespace SimpleLanguage.VM
 {
@@ -329,7 +327,7 @@ namespace SimpleLanguage.VM
             isNull = false;
 
 
-            Log.AddRuntimeLog(LID.ShowMessageInfo, "SetStringValue" + val );
+            Log.AddRuntimeLog(LID.ShowMessageInfo, "SValue.SetStringValue" + val );
         }
         public void SetValue(SObject val)
         {

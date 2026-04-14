@@ -12,7 +12,7 @@ namespace SimpleLanguage.VM
         public EVMType eType => m_RuntimeType != null ? m_RuntimeType.eType : EVMType.Null;
         public SObject sobject => m_SObject;
         public RuntimeVariable runtimeVariable => m_RuntimeVariable;
-        public bool isNull => m_SObject == null;
+        public bool isNull => IsMemberDataDirectType(eType) && hasMemberDataSlice ? false : m_SObject == null;
 
         /// <summary>IR / Meta 渚ф垚鍛樺彉閲?id锛堜笌 <see cref="RuntimeVariable.id"/> 涓€鑷达級锛涙棤鍏宠仈鍙橀噺鏃朵负 0銆?/summary>
         public int memberVariableId => m_RuntimeVariable?.id ?? 0;
@@ -106,6 +106,85 @@ namespace SimpleLanguage.VM
             }
         }
 
+        private static bool IsMemberDataDirectType(EVMType evmType)
+        {
+            return evmType == EVMType.Boolean
+                || evmType == EVMType.Byte
+                || evmType == EVMType.SByte
+                || evmType == EVMType.Int16
+                || evmType == EVMType.UInt16
+                || evmType == EVMType.Int32
+                || evmType == EVMType.UInt32
+                || evmType == EVMType.Int64
+                || evmType == EVMType.UInt64
+                || evmType == EVMType.Float32
+                || evmType == EVMType.Float64;
+        }
+
+        private bool TryGetMemberDataSpan(out Span<byte> span)
+        {
+            span = default;
+            if (m_MemberDataBuffer == null || m_Length <= 0)
+                return false;
+            if (m_Start < 0 || m_Start + m_Length > m_MemberDataBuffer.Length)
+                return false;
+
+            span = m_MemberDataBuffer.AsSpan(m_Start, m_Length);
+            return true;
+        }
+
+        private static void WriteSValueToMemberDataSpan(Span<byte> span, EVMType evmType, ref SValue sval)
+        {
+            if (span.Length <= 0)
+                return;
+
+            switch (evmType)
+            {
+                case EVMType.Boolean:
+                    if (span.Length >= 4)
+                        BinaryPrimitives.WriteInt32LittleEndian(span, sval.int8Value == 1 ? 1 : 0);
+                    break;
+                case EVMType.Byte:
+                    span[0] = sval.int8Value;
+                    break;
+                case EVMType.SByte:
+                    span[0] = unchecked((byte)sval.sint8Value);
+                    break;
+                case EVMType.Int16:
+                    if (span.Length >= 2)
+                        BinaryPrimitives.WriteInt16LittleEndian(span, sval.int16Value);
+                    break;
+                case EVMType.UInt16:
+                    if (span.Length >= 2)
+                        BinaryPrimitives.WriteUInt16LittleEndian(span, sval.uint16Value);
+                    break;
+                case EVMType.Int32:
+                    if (span.Length >= 4)
+                        BinaryPrimitives.WriteInt32LittleEndian(span, sval.int32Value);
+                    break;
+                case EVMType.UInt32:
+                    if (span.Length >= 4)
+                        BinaryPrimitives.WriteUInt32LittleEndian(span, sval.uint32Value);
+                    break;
+                case EVMType.Int64:
+                    if (span.Length >= 8)
+                        BinaryPrimitives.WriteInt64LittleEndian(span, sval.int64Value);
+                    break;
+                case EVMType.UInt64:
+                    if (span.Length >= 8)
+                        BinaryPrimitives.WriteUInt64LittleEndian(span, sval.uint64Value);
+                    break;
+                case EVMType.Float32:
+                    if (span.Length >= 4)
+                        BinaryPrimitives.WriteSingleLittleEndian(span, sval.floatValue);
+                    break;
+                case EVMType.Float64:
+                    if (span.Length >= 8)
+                        BinaryPrimitives.WriteDoubleLittleEndian(span, sval.doubleValue);
+                    break;
+            }
+        }
+
         private void ClearMemberDataSlice()
         {
             if (m_MemberDataBuffer == null || m_Length <= 0)
@@ -193,6 +272,12 @@ namespace SimpleLanguage.VM
 
         public bool GetBoolean()
         {
+            if (m_RuntimeType != null && m_RuntimeType.eType == EVMType.Boolean)
+            {
+                var tmp = default(SValue);
+                if (TryReadMemberDataToSValue(ref tmp))
+                    return tmp.int8Value == 1;
+            }
             if( m_SObject is BoolObject bl )
             {
                 return bl.value;
@@ -685,6 +770,16 @@ namespace SimpleLanguage.VM
                 ClearMemberDataSlice();
                 return;
             }
+
+            if (m_RuntimeType != null
+                && IsMemberDataDirectType(m_RuntimeType.eType)
+                && TryGetMemberDataSpan(out var directSpan))
+            {
+                WriteSValueToMemberDataSpan(directSpan, m_RuntimeType.eType, ref sval);
+                m_SObject = null;
+                return;
+            }
+
             if (eType == EVMType.Object)
             {
                 if ( m_SObject == null)
@@ -835,6 +930,13 @@ namespace SimpleLanguage.VM
 
         public void SetSValueBySObjct(ref SValue svalue)
         {
+            if (m_RuntimeType != null
+                && IsMemberDataDirectType(m_RuntimeType.eType)
+                && TryReadMemberDataToSValue(ref svalue))
+            {
+                return;
+            }
+
             if ( m_SObject == null )
             {
                 svalue.SetNull();

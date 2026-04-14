@@ -219,6 +219,18 @@ namespace SimpleLanguage.VM.Runtime
             if (m_ValueIndex >= m_ValueStack.Length) return;
             m_ValueStack[m_ValueIndex++] = v;
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool TryPushStackSlot(out int slotIndex)
+        {
+            if (m_ValueStack == null) m_ValueStack = new SValue[1024];
+            if (m_ValueIndex >= m_ValueStack.Length)
+            {
+                slotIndex = -1;
+                return false;
+            }
+            slotIndex = m_ValueIndex++;
+            return true;
+        }
         public static RuntimeType GetRuntimeTypeByDefType(RuntimeDefType irmt, RuntimeClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false)
         {
             if (irmt.templateIndex != -1)
@@ -948,75 +960,84 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadConstBoolean:
                     {
-                        if (iri.TryGetBoolean(out bool b)) { var v = default(SValue); v.SetBoolValue(b); PushSValueSynced(v); }
+                        if (iri.TryGetBoolean(out bool b) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetBoolValue(b);
                     }
                     break;
                 case EIROpCode.LoadConstByte:
                     {
-                        if (iri.TryGetByte(out byte cb)) { var v = default(SValue); v.SetInt8Value(cb); PushSValueSynced(v); }
+                        if (iri.TryGetByte(out byte cb) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetInt8Value(cb);
                     }
                     break;
                 case EIROpCode.LoadConstSByte:
                     {
-                        if (iri.TryGetSByte(out sbyte sb)) { var v = default(SValue); v.SetSInt8Value(sb); PushSValueSynced(v); }
+                        if (iri.TryGetSByte(out sbyte sb) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetSInt8Value(sb);
                     }
                     break;
                 case EIROpCode.LoadConstInt16:
                     {
-                        if (iri.TryGetInt16(out short sv)) { var v = default(SValue); v.SetInt16Value(sv); PushSValueSynced(v); }
+                        if (iri.TryGetInt16(out short sv) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetInt16Value(sv);
                     }
                     break;
                 case EIROpCode.LoadConstUInt16:
                     {
-                        if (iri.TryGetUInt16(out ushort usv)) { var v = default(SValue); v.SetUInt16Value(usv); PushSValueSynced(v); }
+                        if (iri.TryGetUInt16(out ushort usv) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetUInt16Value(usv);
                     }
                     break;
                 case EIROpCode.LoadConstInt32:
                     {
-                        if (iri.TryGetInt32(out int i32)) { var v = default(SValue); v.SetInt32Value(i32); PushSValueSynced(v); }
+                        if (iri.TryGetInt32(out int i32) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetInt32Value(i32);
                     }
                     break;
                 case EIROpCode.LoadConstUInt32:
                     {
-                        if (iri.TryGetUInt32(out uint ui32)) { var v = default(SValue); v.SetUInt32Value(ui32); PushSValueSynced(v); }
+                        if (iri.TryGetUInt32(out uint ui32) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetUInt32Value(ui32);
                     }
                     break;
                 case EIROpCode.LoadConstInt64:
                     {
-                        if (iri.TryGetInt64(out long l)) { var v = default(SValue); v.SetInt64Value(l); PushSValueSynced(v); }
+                        if (iri.TryGetInt64(out long l) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetInt64Value(l);
                     }
                     break;
                 case EIROpCode.LoadConstUInt64:
                     {
-                        if (iri.TryGetUInt64(out ulong ul)) { var v = default(SValue); v.SetUInt64Value(ul); PushSValueSynced(v); }
+                        if (iri.TryGetUInt64(out ulong ul) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetUInt64Value(ul);
                     }
                     break;
                 case EIROpCode.LoadConstFloat32 :
                     {
-                        if (iri.TryGetSingle(out float f)) { var v = default(SValue); v.SetFloatValue(f); PushSValueSynced(v); }
+                        if (iri.TryGetSingle(out float f) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetFloatValue(f);
                     }
                     break;
                 case EIROpCode.LoadConstFloat64:
                     {
-                        if (iri.TryGetDouble(out double d)) { var v = default(SValue); v.SetDoubleValue(d); PushSValueSynced(v); }
+                        if (iri.TryGetDouble(out double d) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetDoubleValue(d);
                     }
                     break;
                 case EIROpCode.LoadConstString:
                     {
                         if (iri.TryGetString(out string s))
                         {
-                            var v = default(SValue);
-                            v.SetStringValue(s);
-                            PushSValueSynced(v);
+                            if (TryPushStackSlot(out int slot))
+                                m_ValueStack[slot].SetStringValue(s);
                         }
                         else
                         {
                             var resolved = SLAssembly.TryGetConstString(iri.index)
                                 ?? SLIRModuleLoader.TryGetConstString(iri.index)
                                 ?? string.Empty;
-                            var v = default(SValue);
-                            v.SetStringValue(resolved);
-                            PushSValueSynced(v);
+                            if (TryPushStackSlot(out int slot))
+                                m_ValueStack[slot].SetStringValue(resolved);
                         }
                     }
                     break;
@@ -1083,25 +1104,22 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadArgument:
                     {
                         var data = iri.index;
-                        var v = default(SValue);
-                        GetArgumentValue(data, ref v);
-                        PushSValueSynced(v);
+                        if (TryPushStackSlot(out int slot))
+                            GetArgumentValue(data, ref m_ValueStack[slot]);
                     }
                     break;
                 case EIROpCode.LoadLocal:
                     {
                         var data = iri.index;
-                        var v = default(SValue);
-                        GetLocalVariableSValue(data, ref v);
-                        PushSValueSynced(v);
+                        if (TryPushStackSlot(out int slot))
+                            GetLocalVariableSValue(data, ref m_ValueStack[slot]);
                     }
                     break;
                 case EIROpCode.LoadGlobal:
                     {
                         var data = iri.index;
-                        var v = default(SValue);
-                        CLRVM.LoadGlobalVariable(data, ref v);
-                        PushSValueSynced(v);
+                        if (TryPushStackSlot(out int slot))
+                            CLRVM.LoadGlobalVariable(data, ref m_ValueStack[slot]);
                     }
                     break;
                 case EIROpCode.StoreLocal:
@@ -1233,15 +1251,15 @@ namespace SimpleLanguage.VM.Runtime
                             if (inst.eType == EVMType.Array || inst.eType == EVMType.Class || inst.eType == EVMType.Type || inst.eType == EVMType.Object)
                             {
                                 --m_ValueIndex;
-                                var v = default(SValue);
                                 if (inst.sobject is ClassObject co)
                                 {
-                                    co.GetMemberVariableSValue(iri.index, ref v);
-                                    PushSValueSynced(v);
+                                    if (TryPushStackSlot(out int slot))
+                                        co.GetMemberVariableSValue(iri.index, ref m_ValueStack[slot]);
                                 }
                                 else
                                 {
-                                    PushSValueSynced(v);
+                                    if (TryPushStackSlot(out int slot))
+                                        m_ValueStack[slot].SetNull();
                                 }
                             }
 
@@ -1353,9 +1371,8 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 CLRVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
                             }
-                            var sv = default(SValue);
-                            sv.SetSObject(sobj);
-                            PushSValueSynced(sv);
+                            if (TryPushStackSlot(out int slot))
+                                m_ValueStack[slot].SetSObject(sobj);
                         }
                     }
                     break;
@@ -1879,9 +1896,8 @@ namespace SimpleLanguage.VM.Runtime
                            
                             var sobj = new TypeObject(rt);
                             sobj.CreateObject();
-                            var sv = default(SValue);
-                            sv.SetSObject(sobj);
-                            PushSValueSynced(sv);
+                            if (TryPushStackSlot(out int slot))
+                                m_ValueStack[slot].SetSObject(sobj);
                         }
                     }
                     break;
@@ -1895,11 +1911,10 @@ namespace SimpleLanguage.VM.Runtime
                         if (mt != null)
                         {
                             var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(mt);
-                            var v = default(SValue);
                             if (rt != null)
                             {
-                                rt.GetStaticMemberVariableSValue(iri.index, ref v);
-                                PushSValueSynced(v);
+                                if (TryPushStackSlot(out int slot))
+                                    rt.GetStaticMemberVariableSValue(iri.index, ref m_ValueStack[slot]);
                             }
                         }
                     }
