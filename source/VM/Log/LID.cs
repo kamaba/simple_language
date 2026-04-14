@@ -17,5 +17,10 @@
         RuntimeArrayIndexOutOfRange = 10013,
         RuntimeVMNotFoundHandleEVMType2 = 10014,
         RuntimeVMNotFoundHandleEVMType = 10015,
+        RuntimeVMStackIndexNotEnough = 10016,
+        RuntimeVMNotFoundRuntimeClass = 10017,
+        RuntimeVMNotFoundRuntimeMethod = 10018,
+        RuntimeVMNotFoundCurrentValue = 10019,
+        RuntimeVMNotShouldIsNull = 10020,
     }
 }

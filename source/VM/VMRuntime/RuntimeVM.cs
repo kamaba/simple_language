@@ -1533,7 +1533,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 1 < 0)
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "Error Neg杩愮畻!!瓒呭嚭鐨勬爤鑼冨洿");
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, "EIROpCode.Neg", 1, m_ValueIndex );
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 1].NegSValue(false);
@@ -1543,7 +1543,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 1 < 0)
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "Error Not杩愮畻!!瓒呭嚭鐨勬爤鑼冨洿");
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, "EIROpCode.Not", 1, m_ValueIndex );
                             break;
                         }
                         m_ValueStack[m_ValueIndex - 1].NotSValue();
@@ -1751,12 +1751,12 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             if (irc == null)
                             {
-                                Log.AddRuntimeLog(LID.ShowMessageAssert, "IRC鏄皟鐢ㄨ櫄鍑芥暟涓虹┖!!");
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundRuntimeClass, "");
                                 return;
                             }
                             if (mfc.method == null)
                             {
-                                Log.AddRuntimeLog(LID.ShowMessageAssert, "娌℃湁鎵惧埌鍚堥€傜殑璋冪敤鏂瑰紡");
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundRuntimeMethod, "mfc.method");
                                 return;
                             }
                             if (mfc.method.id == "type")
@@ -1782,7 +1782,7 @@ namespace SimpleLanguage.VM.Runtime
                                     }
                                     else
                                     {
-                                        Log.AddRuntimeLog(LID.ShowMessageAssert, "娌℃湁鎵惧埌鍚堥€傜殑璋冪敤鏂瑰紡");
+                                        Log.AddRuntimeLog(LID.RuntimeVMNotFoundRuntimeMethod, $"interfaceMethod:{mfc.methodName}");
                                     }
                                 }
                                 else
@@ -1793,7 +1793,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.Unknown, "Dynamic function call from stack failed.");
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundCurrentValue, "Dynamic function call from stack failed.", iri.index );
                         }
                     }
                     break;
@@ -1814,14 +1814,14 @@ namespace SimpleLanguage.VM.Runtime
                         int stackIndex = m_ValueIndex - stackFrontIndex;
                         if (stackIndex < 0)
                         {
-                            Log.AddProjectLog(LID.Unknown, "Stack index is negative.");
+                            Log.AddProjectLog(LID.RuntimeVMStackIndexNotEnough, "Stack index is negative.", stackFrontIndex, m_ValueIndex );
                             return;
                         }
                         var v = m_ValueStack[stackIndex];
 
                         if (v.isNull)
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "Current stack value is null.", iri );
+                            Log.AddRuntimeLog(LID.RuntimeVMNotShouldIsNull, "Current stack value is null." );
                             return;
                         }
 
@@ -1958,7 +1958,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex - 1 < 0)
                         {
-                            Log.AddProjectLog(LID.Unknown, "Error 姣旇緝绗﹁秴鍑轰竴褰撳墠鐨勬暟鎹爤!!");
+                            Log.AddProjectLog(LID.RuntimeVMStackIndexNotEnough, "CastClass", 1, m_ValueIndex );
                             break;
                         }
                         var mt = TryGetInstructionRuntimeDefType(iri);
