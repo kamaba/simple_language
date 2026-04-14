@@ -18,11 +18,7 @@ namespace SimpleLanguage.VM
         public MemberObject(string str) : base(EVMType.Member)
         {
             m_Reference = str;
-            m_RuntimeType = RuntimeTypeManager.stringRuntimeType;
-        }
-        public void SetValue(string _val)
-        {
-            m_Reference = _val;
+            m_RuntimeType = RuntimeTypeManager.memberRuntimeType;
         }
         public override string ToFormatString()
         {

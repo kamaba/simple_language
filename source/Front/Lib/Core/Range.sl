@@ -58,6 +58,24 @@ public class Range<T:Num> interface IIterable<T>, IIterator<T>
         }
         ret hasNext_var
     }
+    bool isContain( T t )
+    {
+        if( t > this._start )
+        {
+            if( t < this._end )
+            {
+                ret true
+            }
+        }
+        else
+        {
+            if t > this._end 
+            {
+                ret true
+            }
+            ret false
+        }
+    }
     override T current()
     {
         ret this._current

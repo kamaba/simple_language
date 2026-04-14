@@ -1873,16 +1873,8 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else if (v.eType == EVMType.Object)
                         {
-                            SObject co = (v.sobject) as SObject;
-                            m_ValueStack[stackIndex].SetValue(co);
-                            var nco = m_ValueStack[stackIndex].GetSObject();
-                            if( nco == null )
-                            {
-                                Log.AddRuntimeLog(LID.ShowMessageAssert, "nco is null " );
-                                break;
-                            }
-                            irc = nco.runtimeClass;
-                            rt = nco.runtimeType;
+                            irc = v.sobject.runtimeClass;
+                            rt = v.sobject.runtimeType;
                         }
                         //else if( v.eType == EVMType.Array )
                         //{

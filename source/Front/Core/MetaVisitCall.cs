@@ -678,6 +678,10 @@ namespace SimpleLanguage.Core
                 //    {
                 //        return this.constValueExpress.metaType;
                 //    }
+                case EVisitType.MetaClass:
+                    {
+                    }
+                    break;
                 default:
                     {
                         Log.AddMetaCoreLog(LID.MetaCoreVisitCallTypeError, visitType.ToString() );
@@ -762,7 +766,7 @@ namespace SimpleLanguage.Core
                     break;
                 case EVisitType.MetaClass:
                     {
-                        sb.Append(this.m_ReturnMetaType.ToString() );
+                        //sb.Append(this.m_CallMetaType.ToString() );
                     }
                     break;
                 case EVisitType.VisitVariable:

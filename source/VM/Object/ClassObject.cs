@@ -25,10 +25,9 @@ namespace SimpleLanguage.VM
 
         public ClassObject( RuntimeType irmt )
         {
+            m_Id = ++idCount;
             m_RuntimeType = irmt;
 
-            //int byteCount = m_RuntimeType.irClass.byteCount;
-            //m_Data = new byte[byteCount];
             typeId = (short)m_RuntimeType.runtimeClass.id;
             m_IRTemplateList = irmt.runtimeTemplateList;
 
@@ -39,10 +38,10 @@ namespace SimpleLanguage.VM
                 var rt = RuntimeVM.GetRuntimeTypeByDefType(metaVariableList[i].runtimeDefType, m_RuntimeType.runtimeClass, m_IRTemplateList, true);
                 m_MemberRuntimeObjectArray[i] = new RuntimeObject( rt, metaVariableList[i], null);
             }
-            CreateDefine();
             BuildMemberDataLayout();
             //m_Type = new short[m_IRMetaVariableList.Count];
         }
+        public virtual void CreateObject() { }
 
         /// <summary>实例成员与 IR 非静态字段顺序一致，使用与 <see cref="RuntimeClass.nonStaticIRMetaVariableList"/> 相同的下标。</summary>
         public RuntimeObject? GetMemberRuntimeObject(int memberIndex)
@@ -51,7 +50,6 @@ namespace SimpleLanguage.VM
                 return null;
             return m_MemberRuntimeObjectArray[memberIndex];
         }
-
         /// <summary>按成员下标从 <see cref="memberData"/> 解析到 <paramref name="svalue"/>（引用型槽位为 HashCode，见 RuntimeObject）。</summary>
         public bool TryReadMemberDataAsSValue(int memberIndex, ref SValue svalue)
         {
@@ -59,7 +57,6 @@ namespace SimpleLanguage.VM
                 return false;
             return m_MemberRuntimeObjectArray[memberIndex].TryReadMemberDataToSValue(ref svalue);
         }
-
         protected void BuildMemberDataLayout()
         {
             if (m_MemberRuntimeObjectArray == null || m_MemberRuntimeObjectArray.Length == 0)
@@ -84,32 +81,6 @@ namespace SimpleLanguage.VM
                 ro.AttachMemberDataSlice(m_MemberData, offset, len, i);
                 offset += len;
             }
-        }
-        public virtual void CreateDefine()
-        {
-            //for (int i = 0; i < m_MemberRuntimeObjectArray.Length; i++)
-            //{
-            //    var irmv = m_MemberRuntimeObjectArray[i].runtimeVariable.runtimeDefType;
-            //    var rt = RuntimeVM.GetRuntimeTypeByDefType(irmv, m_RuntimeType.runtimeClass, m_IRTemplateList, true);
-            //    m_MemberRuntimeObjectArray[i] = new RuntimeObject( rt, null );
-            //    //m_MemberRuntimeTypeArray[i] = m_RuntimeType.GetClassRuntimeType(irmv, true);
-            //}
-            
-        }
-        public virtual void CreateObject()
-        {
-            //for (int i = 0; i < m_MemberRuntimeObjectArray.Length; i++)
-            //{
-            //    SObject sobj = m_MemberRuntimeObjectArray[i].CreateObjectByRuntimeType();
-            //    if(sobj == null )
-            //    {
-            //        continue;
-            //    }
-            //    if( sobj is ClassObject co )
-            //    {
-            //        co.SetNull();
-            //    }
-            //}
         }
         public virtual void SetSValue(ClassObject val )
         {

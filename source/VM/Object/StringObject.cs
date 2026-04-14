@@ -26,12 +26,6 @@ namespace SimpleLanguage.VM
         {
             m_Reference = _val;
         }
-        //public static StringObject SetToString( Int32MetaClass mc )
-        //{
-        //    StringObject s = new StringObject("");
-
-        //    return s;
-        //}
         public override string ToFormatString()
         {
             return value ?? "";

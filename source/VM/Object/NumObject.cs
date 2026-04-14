@@ -15,13 +15,10 @@ namespace SimpleLanguage.VM
     {
         public NumObject() : base(EVMType.Num)
         {
-            m_RuntimeType = RuntimeTypeManager.numRuntimeType;
         }
-
         public NumObject(EVMType etype) : base(etype)
         {
         }
-
         // Convenient setters; payload lives in SObject.m_Numeric / SetValueByType.
         public virtual void SetValue(double v)
         {

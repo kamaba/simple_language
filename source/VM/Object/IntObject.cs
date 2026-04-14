@@ -12,7 +12,6 @@ namespace SimpleLanguage.VM
     public class BoolObject : SObject
     {
         public new bool value => m_Numeric.i8 != 0;
-
         public BoolObject(bool flag) : base(EVMType.Boolean)
         {
             m_Numeric.i8 = flag ? (byte)1 : (byte)0;

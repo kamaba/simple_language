@@ -279,12 +279,12 @@ namespace SimpleLanguage.Core
                 }
             }
 
+            StringBuilder sb = new StringBuilder();
             if (flag)
             {
                 m_VisitNodeList.Clear();
                 int i = 0;
                 MetaCallNode frontNode = null;
-                StringBuilder sb = new StringBuilder();
                 while (true)
                 {
                     if (i >= newList.Count)
@@ -309,7 +309,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.MetaCoreParseCallLinkFailed, "");
+                    Log.AddMetaCoreLog(LID.MetaCoreParseCallLinkFailed, sb.ToString() );
                 flag = false;
             }
 

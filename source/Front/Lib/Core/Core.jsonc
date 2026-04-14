@@ -4,9 +4,9 @@
   {
     "name": "Core",
     "desc": "Sample project",
-    "mainVersion": 1,
-    "subVersion": 0,
-    "buildVersion": 0,
+    "mainVersion": 0,
+    "subVersion": 1,
+    "buildVersion": 1,
     "buildSubVersion": 0
   },
   "source": {
@@ -43,7 +43,13 @@
       { "path": "Array.sl", "group": "core", "tag": "itertor", "ignore": false, "priority": 0 },
       { "path": "Range.sl", "group": "core", "tag": "itertor", "ignore": false, "priority": 0 },
       { "path": "NativeBridge.sl", "group": "core", "tag": "bridge", "ignore": false, "priority": 0 },
-      { "path": "Attribute.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "Attribute.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Test/ObjectTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Test/NumberTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
+      { "path": "Test/GlobalTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
+      { "path": "Test/BoolTets.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
+      { "path": "Test/TypeTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
+      { "path": "Test/ArrayTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 }
     ]
   },
   "importFiles": {

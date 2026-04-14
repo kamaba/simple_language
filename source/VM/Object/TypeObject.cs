@@ -28,10 +28,8 @@ namespace SimpleLanguage.VM
             m_Rt = rm;
             m_Type = EVMType.Type;
         }
-        public override void CreateObject()
+        public void CreateObject()
         {
-            base.CreateObject();
-
             eType =  m_MemberRuntimeObjectArray[0].sobject as Int8Object;
 
             /*

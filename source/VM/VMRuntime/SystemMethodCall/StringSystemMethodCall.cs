@@ -43,7 +43,9 @@ namespace SimpleLanguage.VM.Runtime
             {
                 int len = arrObj.length;
                 for (int i = 0; i < len; i++)
+                {
                     parts.Add(CoerceArrayItemToString(arrObj.GetValue(i)));
+                }
             }
             else
             {

@@ -193,17 +193,16 @@ namespace SimpleLanguage.VM.Runtime
             try { index = Convert.ToInt32(args[1].GetValueObject(), CultureInfo.InvariantCulture); }
             catch { index = 0; }
 
-            var got = arrObj.GetValue(index);
-            if (got is SObject so)
-            {
-                var sv = default(SValue);
-                vm.SetSValue(so, so.eType, ref sv);
-                vm.PushSValueSynced(sv);
-            }
-            else
-            {
-                vm.PushSValueSynced(SValue.FromClrObject(got));
-            }
+            var sv = default(SValue);
+            arrObj.LoadValue(index, ref sv );
+            vm.PushSValueSynced(sv);
+            //if (sv.isNull== false )
+            //{
+            //}
+            //else
+            //{
+            //    vm.PushSValueSynced(SValue.FromClrObject(got));
+            //}
         }
 
         public static void ExecuteSystemArraySetValueThis(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)

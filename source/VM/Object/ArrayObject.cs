@@ -7,7 +7,6 @@
 //****************************************************************************
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
-using System;
 using System.Diagnostics;
 namespace SimpleLanguage.VM
 {
@@ -18,19 +17,15 @@ namespace SimpleLanguage.VM
 
         private Array m_Array = null;
         private RuntimeType eArrayType = null;
+        private int m_Length = 0;
         public ArrayObject(RuntimeType rt, int length )
         {
             m_Type = EVMType.Array;
+            m_RuntimeType = rt;
             eArrayType = rt.runtimeTemplateList[0];
             m_Length = length;
 
-            m_RuntimeType = rt;
-
-            //int byteCount = irMetaClass.byteCount;
-            //m_Data = new byte[byteCount];
-            typeId = (short)runtimeClass.id;
             m_IRTemplateList = rt.runtimeTemplateList;
-
             var metaVariableList = m_RuntimeType.runtimeClass.nonStaticIRMetaVariableList;
             m_MemberRuntimeObjectArray = new RuntimeObject[metaVariableList.Count];
             for (int i = 0; i < m_MemberRuntimeObjectArray.Length; i++)
@@ -46,7 +41,6 @@ namespace SimpleLanguage.VM
                 m_MemberRuntimeObjectArray[i] = new RuntimeObject(rt2, metaVariableList[i], sobj );
             }
 
-            CreateDefine();
             BuildMemberDataLayout();
         }
         public override void CreateObject()
@@ -278,8 +272,7 @@ namespace SimpleLanguage.VM
                     break;
                 default:
                     {
-                        Debug.Assert(false);
-                        Log.AddRuntimeLog(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勫垱寤?!");
+                        Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "", eArrayType.eType.ToString() );
                     }
                     break;
             }
@@ -288,22 +281,18 @@ namespace SimpleLanguage.VM
         {
             if (index < 0)
             {
-                Debug.Assert(false);
-                Log.AddRuntimeLog(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?! < 0 ");
+                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "loadvalue index < 0 ", index );
                 return;
             }
             if (index >= m_Length )
             {
-                Debug.Assert(false);
-                Log.AddRuntimeLog(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
+                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "loadvalue index >= length ", index );
                 return;
             }
+            object? obj = m_Array.GetValue(index);
 
-            object obj = m_Array.GetValue(index);
-
-
-            SObject anyobj = null;
-            if (m_Array.GetValue(index) is SObject sobj)
+            SObject? anyobj = null;
+            if (obj is SObject sobj)
             {
                 if (sobj.eType == EVMType.Object)
                 {
@@ -311,211 +300,211 @@ namespace SimpleLanguage.VM
                     obj = sobj.value;
                 }
             }
+            sval.SetTypeValue(eArrayType.eType, obj);
 
-            if ( obj != null )
-            {
-                switch (eArrayType.eType)
-                {
-                    case EVMType.Boolean:
-                        {
-                            BoolObject val = obj as BoolObject;
-                            if (val != null)
-                            {
-                                sval.SetBoolValue(val.value);
-                            }
-                            else
-                            {
-                                sval.SetBoolValue((bool)obj);
-                            }
-                        }
-                        break;
-                    case EVMType.Byte:
-                        {
-                            Int8Object val = obj as Int8Object;
-                            if (val != null)
-                            {
-                                sval.SetInt8Value( (byte)val.value );
-                            }
-                            else
-                            {
-                                sval.SetInt8Value((Byte)obj);
-                            }
-                        }
-                        break;
-                    case EVMType.SByte:
-                        {
-                            SInt8Object val = obj as SInt8Object;
-                            if (val != null)
-                            {
-                                sval.SetSInt8Value(val.value);
-                            }
-                            else
-                            {
-                                sval.SetSInt8Value((SByte)obj);
-                            }
-                        }
-                        break;
-                    case EVMType.Int16:
-                        {
-                            Int16Object val = obj as Int16Object;
-                            if (val != null)
-                            {
-                                sval.SetInt32Value(val.value);
-                            }
-                            else
-                            {
-                                sval.SetInt32Value((int)obj);
-                            }
-                            sval.SetInt16Value(val.value);
-                        }
-                        break;
-                    case EVMType.UInt16:
-                        {
-                            UInt16Object val = obj as UInt16Object;
-                            if (val != null)
-                            {
-                                sval.SetInt32Value(val.value);
-                            }
-                            else
-                            {
-                                sval.SetInt32Value((int)obj);
-                            }
-                            sval.SetUInt16Value(val.value);
-                        }
-                        break;
-                    case EVMType.Int32:
-                        {
-                            Int32Object val = obj as Int32Object;
-                            if (val != null)
-                            {
-                                sval.SetInt32Value(val.value);
-                            }
-                            else
-                            {
-                                sval.SetInt32Value((int)obj);
-                            }
-                        }
-                        break;
-                    case EVMType.UInt32:
-                        {
-                            UInt32Object val = obj as UInt32Object;
-                            if (val != null)
-                            {
-                                sval.SetUInt32Value(val.value);
-                            }
-                            else
-                            {
-                                sval.SetUInt32Value((UInt32)obj);
-                            }
-                        }
-                        break;
-                    case EVMType.Int64:
-                        {
-                            Int64Object val = obj as Int64Object;
-                            if (val != null)
-                            {
-                                sval.SetInt64Value(val.value);
-                            }
-                            else
-                            {
-                                sval.SetInt64Value((long)obj);
-                            }
-                        }
-                        break;
-                    case EVMType.UInt64:
-                        {
-                            UInt64Object val = obj as UInt64Object;
-                            if (val != null)
-                            {
-                                sval.SetUInt64Value(val.value);
-                            }
-                            else
-                            {
-                                sval.SetUInt64Value((UInt64)obj);
-                            }
-                        }
-                        break;
-                    case EVMType.Float32:
-                        {
-                            Float32Object val = obj as Float32Object;
-                            if (val != null)
-                            {
-                                sval.SetFloatValue(val.value);
-                            }
-                            else
-                            {
-                                sval.SetFloatValue((float)obj);
-                            }
-                        }
-                        break;
-                    case EVMType.Float64:
-                        {
-                            Float64Object val = obj as Float64Object;
-                            if (val != null)
-                            {
-                                sval.SetDoubleValue(val.value);
-                            }
-                            else
-                            {
-                                sval.SetDoubleValue((double)obj);
-                            }
-                        }
-                        break;
-                    case EVMType.String:
-                        {
-                            StringObject val = obj as StringObject;
-                            if (val != null)
-                            {
-                                sval.SetStringValue(val.value);
-                            }
-                            else
-                            {
-                                sval.SetStringValue((string)obj);
-                            }
-                        }
-                        break;
-                    case EVMType.Array:
-                        {
-                            var arr = obj as ArrayObject;
-                            Debug.Assert(arr != null);
-                            sval.SetSObject(arr);
-                        }
-                        break;
-                    case EVMType.Type:
-                        {
-                            sval.SetSObject(obj as TypeObject);
-                        }
-                        break;
-                    case EVMType.Object:
-                        {
-                            sval.SetSObject(obj as SObject);
-                        }
-                        break;
-                    case EVMType.Class:
-                        {
-                            sval.SetSObject(obj as ClassObject);
-                        }
-                        break;
-                    default:  
-                        {
-                            Debug.Assert(false);
-                            Log.AddRuntimeLog(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勮鍙?!");
-                        }
-                        break;
-                }
-            }
+            //if ( obj != null )
+            //{
+            //    switch (eArrayType.eType)
+            //    {
+            //        case EVMType.Boolean:
+            //            {
+            //                //BoolObject? val = obj as BoolObject;
+            //                //if (val != null)
+            //                //{
+            //                //    sval.SetBoolValue(val.value);
+            //                //}
+            //                //else
+            //                //{
+            //                    sval.SetBoolValue((bool)obj);
+            //                //}
+            //            }
+            //            break;
+            //        case EVMType.Byte:
+            //            {
+            //                //Int8Object val = obj as Int8Object;
+            //                //if (val != null)
+            //                //{
+            //                //    sval.SetInt8Value( (byte)val.value );
+            //                //}
+            //                //else
+            //                //{
+            //                    sval.SetInt8Value((Byte)obj);
+            //                //}
+            //            }
+            //            break;
+            //        case EVMType.SByte:
+            //            {
+            //                //SInt8Object val = obj as SInt8Object;
+            //                //if (val != null)
+            //                //{
+            //                //    sval.SetSInt8Value(val.value);
+            //                //}
+            //                //else
+            //                //{
+            //                    sval.SetSInt8Value((SByte)obj);
+            //                //}
+            //            }
+            //            break;
+            //        case EVMType.Int16:
+            //            {
+            //                //Int16Object val = obj as Int16Object;
+            //                //if (val != null)
+            //                //{
+            //                //    sval.SetInt32Value(val.value);
+            //                //}
+            //                //else
+            //                //{
+            //                //    sval.SetInt32Value((int)obj);
+            //                //}
+            //                sval.SetInt16Value((short)obj);
+            //            }
+            //            break;
+            //        case EVMType.UInt16:
+            //            {
+            //                //UInt16Object val = obj as UInt16Object;
+            //                //if (val != null)
+            //                //{
+            //                //    sval.SetInt32Value(val.value);
+            //                //}
+            //                //else
+            //                //{
+            //                    sval.SetUInt16Value((UInt16)obj);
+            //                //}
+            //            }
+            //            break;
+            //        case EVMType.Int32:
+            //            {
+            //                //Int32Object val = obj as Int32Object;
+            //                //if (val != null)
+            //                //{
+            //                //    sval.SetInt32Value(val.value);
+            //                //}
+            //                //else
+            //                //{
+            //                    sval.SetInt32Value((int)obj);
+            //                //}
+            //            }
+            //            break;
+            //        case EVMType.UInt32:
+            //            {
+            //                UInt32Object val = obj as UInt32Object;
+            //                if (val != null)
+            //                {
+            //                    sval.SetUInt32Value(val.value);
+            //                }
+            //                else
+            //                {
+            //                    sval.SetUInt32Value((UInt32)obj);
+            //                }
+            //            }
+            //            break;
+            //        case EVMType.Int64:
+            //            {
+            //                Int64Object val = obj as Int64Object;
+            //                if (val != null)
+            //                {
+            //                    sval.SetInt64Value(val.value);
+            //                }
+            //                else
+            //                {
+            //                    sval.SetInt64Value((long)obj);
+            //                }
+            //            }
+            //            break;
+            //        case EVMType.UInt64:
+            //            {
+            //                UInt64Object val = obj as UInt64Object;
+            //                if (val != null)
+            //                {
+            //                    sval.SetUInt64Value(val.value);
+            //                }
+            //                else
+            //                {
+            //                    sval.SetUInt64Value((UInt64)obj);
+            //                }
+            //            }
+            //            break;
+            //        case EVMType.Float32:
+            //            {
+            //                Float32Object val = obj as Float32Object;
+            //                if (val != null)
+            //                {
+            //                    sval.SetFloatValue(val.value);
+            //                }
+            //                else
+            //                {
+            //                    sval.SetFloatValue((float)obj);
+            //                }
+            //            }
+            //            break;
+            //        case EVMType.Float64:
+            //            {
+            //                Float64Object val = obj as Float64Object;
+            //                if (val != null)
+            //                {
+            //                    sval.SetDoubleValue(val.value);
+            //                }
+            //                else
+            //                {
+            //                    sval.SetDoubleValue((double)obj);
+            //                }
+            //            }
+            //            break;
+            //        case EVMType.String:
+            //            {
+            //                StringObject val = obj as StringObject;
+            //                if (val != null)
+            //                {
+            //                    sval.SetStringValue(val.value);
+            //                }
+            //                else
+            //                {
+            //                    sval.SetStringValue((string)obj);
+            //                }
+            //            }
+            //            break;
+            //        case EVMType.Array:
+            //            {
+            //                var arr = obj as ArrayObject;
+            //                Debug.Assert(arr != null);
+            //                sval.SetSObject(arr);
+            //            }
+            //            break;
+            //        case EVMType.Type:
+            //            {
+            //                sval.SetSObject(obj as TypeObject);
+            //            }
+            //            break;
+            //        case EVMType.Object:
+            //            {
+            //                sval.SetSObject(obj as SObject);
+            //            }
+            //            break;
+            //        case EVMType.Class:
+            //            {
+            //                sval.SetSObject(obj as ClassObject);
+            //            }
+            //            break;
+            //        default:  
+            //            {
+            //                Debug.Assert(false);
+            //                Log.AddRuntimeLog(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勮鍙?!");
+            //            }
+            //            break;
+            //    }
+            //}
         }
 
         public object GetValue( int index )
         {
             if (index < 0)
             {
-                Log.AddRuntimeLog(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?! < 0 ");
+                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "getvalue index < 0 ", index);
                 return null;
             }
             if (index > m_Length)
             {
-                Log.AddRuntimeLog(LID.Unknown, "鎵ц鐨勫弬鏁拌秴鍑鸿寖鍥?!");
+                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "getvalue index > length ", index);
                 return null;
             }
 
@@ -848,102 +837,9 @@ namespace SimpleLanguage.VM
                     break;
             }
         }
-        public void StoreObject(int index, object svalue)
-        {
-            switch (eArrayType.eType)
-            {
-                case  EVMType.Boolean:
-                    {
-                        m_Array.SetValue( (byte)svalue == 1 ? true : false, index);
-                    }
-                    break;
-                case EVMType.Byte:
-                    {
-                        m_Array.SetValue((byte)svalue, index);
-                    }
-                    break;
-                case EVMType.SByte:
-                    {
-                        m_Array.SetValue((sbyte)svalue, index);
-                    }
-                    break;
-                case EVMType.Int16:
-                    {
-                        m_Array.SetValue((Int16)svalue, index);
-                    }
-                    break;
-                case EVMType.UInt16:
-                    {
-                        m_Array.SetValue((UInt16)svalue, index);
-                    }
-                    break;
-                case EVMType.Int32:
-                    {
-                        m_Array.SetValue((int)svalue, index);
-                    }
-                    break;
-                case EVMType.UInt32:
-                    {
-                        m_Array.SetValue((UInt32)svalue, index);
-                    }
-                    break;
-                case EVMType.Int64:
-                    {
-                        m_Array.SetValue((Int64)svalue, index);
-                    }
-                    break;
-                case EVMType.UInt64:
-                    {
-                        m_Array.SetValue((UInt64)svalue, index);
-                    }
-                    break;
-                case EVMType.Float32:
-                    {
-                        m_Array.SetValue((float)svalue, index);
-                    }
-                    break;
-                case EVMType.Float64:
-                    {
-                        m_Array.SetValue((double)svalue, index);
-                    }
-                    break;
-                case EVMType.String:
-                    {
-                        m_Array.SetValue( (string)svalue, index);
-                    }
-                    break;
-                case EVMType.Array:
-                    {
-                        ArrayObject ao = svalue as ArrayObject;
-                        Debug.Assert(ao != null);
-                        m_Array.SetValue(ao, index);
-                    }
-                    break;
-                case EVMType.Object:
-                    {
-                        SObject ao = svalue as SObject;
-                        Debug.Assert(ao != null);
-                        m_Array.SetValue(ao, index);
-                    }
-                    break;
-                case EVMType.Class:
-                    {
-                        ClassObject ao = svalue as ClassObject;
-                        Debug.Assert(ao != null);
-                        m_Array.SetValue(ao, index);
-                    }
-                    break;
-                default:    
-                    {
-                        Debug.Assert(false);
-                        Log.AddRuntimeLog(LID.Unknown, "涓嶆敮鎸佽绫诲瀷鐨勬暟缁勫瓨鍌?!");
-                    }
-                    break;
-            }
-        }
         public override string ToFormatString()
         {
-            return "";
+            return $"Array ID: { m_Id } ";
         }
     }
 }

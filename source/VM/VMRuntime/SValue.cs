@@ -18,8 +18,8 @@ namespace SimpleLanguage.VM
     {
         public EVMType eType;
         private NumericUnion nv;
-        public string stringValue;
-        public SObject sobject;
+        public string? stringValue;
+        public SObject? sobject;
         public bool isNull;
 
         public byte int8Value { get => nv.i8; set => nv.i8 = value; }
@@ -331,7 +331,6 @@ namespace SimpleLanguage.VM
 
             Log.AddRuntimeLog(LID.ShowMessageInfo, "SetStringValue" + val );
         }
-
         public void SetValue(SObject val)
         {
             eType = val.eType;
@@ -404,16 +403,36 @@ namespace SimpleLanguage.VM
                 case EVMType.String:
                     {
                         stringValue = tobj as String;
+                        isNull = stringValue == null;
+                    }
+                    break;
+                case EVMType.Array:
+                    {
+                        sobject = tobj as ArrayObject;
+                        isNull = sobject == null;
+                    }
+                    break;
+                case EVMType.Type:
+                    {
+                        sobject = tobj as TypeObject;
+                        isNull = sobject == null;
+                    }
+                    break;
+                case EVMType.Object:
+                    {
+                        sobject = tobj as SObject;
+                        isNull = sobject == null;
                     }
                     break;
                 case EVMType.Class:
                     {
-                        sobject = tobj as SObject;
+                        sobject = tobj as ClassObject;
+                        isNull = sobject == null;
                     }
                     break;
                 default:
                     {
-                        Debug.Assert(false);
+                        Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "SetTypeValue", eType.ToString());
                     }
                     break;
             }

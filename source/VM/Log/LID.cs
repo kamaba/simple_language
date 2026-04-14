@@ -13,5 +13,9 @@
 
         RuntimeIRParseError = 10010,
         NotFoundRuntimeIRFile = 10011,
+        NotFoundRuntimeEntry = 10012,
+        RuntimeArrayIndexOutOfRange = 10013,
+        RuntimeVMNotFoundHandleEVMType2 = 10014,
+        RuntimeVMNotFoundHandleEVMType = 10015,
     }
 }

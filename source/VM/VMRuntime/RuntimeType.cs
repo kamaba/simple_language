@@ -10,6 +10,7 @@ using SimpleLanguage.VM.Runtime;
 using SimpleLanguage.Parse;
 using System.Text;
 using SimpleLanguage.Logging;
+using System.Reflection.Metadata.Ecma335;
 
 namespace SimpleLanguage.VM
 {
@@ -41,6 +42,7 @@ namespace SimpleLanguage.VM
 
         public RuntimeType( RuntimeClass rc, List<RuntimeType> rtList)
         {
+            ++m_Id;
             m_RuntimeClass = rc;
             if (rtList != null)
             {
@@ -443,6 +445,30 @@ namespace SimpleLanguage.VM
                 return true;
             }
             return false;
+        }
+        public static RuntimeType GetRuntimeTypeByEVMType(EVMType vmtype)
+        {
+            var rt = vmtype switch
+            {
+                EVMType.Object => m_ObjectRuntimeType,
+                EVMType.Boolean => m_BoolRuntimeType,
+                EVMType.Byte => m_ByteRuntimeType,
+                EVMType.SByte => m_SByteRuntimeType,
+                EVMType.Int16 => m_Int16RuntimeType,
+                EVMType.UInt16 => m_UInt16RuntimeType,
+                EVMType.Int32 => m_Int32RuntimeType,
+                EVMType.UInt32 => m_UInt32RuntimeType,
+                EVMType.Int64 => m_Int64RuntimeType,
+                EVMType.UInt64 => m_UInt64RuntimeType,
+                EVMType.Float32 => m_Float32RuntimeType,
+                EVMType.Float64 => m_Float64RuntimeType,
+                EVMType.String => m_StringRuntimeType,
+                EVMType.Num => m_NumRuntimeType,
+                EVMType.Void => m_VoidRuntimeType,
+                EVMType.Type => m_TypeRuntimeType,
+                _ => null
+            };
+            return rt;
         }
         private static void EnsureByClassName(string runtimeClassName, ref RuntimeType targetField, bool isCore = false )
         {

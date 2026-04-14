@@ -7,48 +7,48 @@
 //****************************************************************************
 
 using SimpleLanguage.VM.Runtime;
-using System;
 
 namespace SimpleLanguage.VM
 {
     public class SObject
     {
+        public int id => m_Id;
         public EVMType eType => m_Type;
         public virtual object? value => GetBoxedValue();
-        public RuntimeClass? runtimeClass => m_RuntimeType?.runtimeClass;
-        public RuntimeType? runtimeType => m_RuntimeType;
+        public RuntimeClass runtimeClass => m_RuntimeType?.runtimeClass;
+        public RuntimeType runtimeType => m_RuntimeType;
         public short typeId { get; set; } = 0;
         public int refCount { get; set; } = 0;
-        public int id => m_Id;
-
         /// <summary>
         /// Dart-style generation: 0 = nursery (new space), 1 = old space.
         /// Updated by <see cref="T:SimpleLanguage.VM.MemoryManagement.SlMemoryManager"/> during SL GC.
         /// </summary>
         public byte SlMemoryGeneration { get; internal set; }
 
+
+        protected int m_Id = 0;
+        protected EVMType m_Type = EVMType.Class;
+        protected RuntimeType? m_RuntimeType = null;
         /// <summary>标量位型数据（布尔用 <see cref="NumericUnion.i8"/> 0/1，与 <see cref="SValue"/> 一致）。</summary>
         protected NumericUnion m_Numeric;
         /// <summary>引用型负载：字符串、类实例、MethodHandle 等。</summary>
         protected object? m_Reference;
 
-        protected EVMType m_Type = EVMType.Class;
-        protected RuntimeType? m_RuntimeType = null;
-        protected int m_Length = 0;
-        protected int m_Id = 0;
-
-        static int idCount = 10000;
+        protected static int idCount = 10000;
         protected SObject()
         {
             m_Id = ++idCount;
             m_Numeric = default;
             m_Reference = this;
+            m_RuntimeType = RuntimeTypeManager.objectRuntimeType;
         }
         public SObject(EVMType etype)
         {
+            m_Id = ++idCount;
             m_Type = etype;
             m_Numeric = default;
             m_Reference = null;
+            m_RuntimeType = RuntimeTypeManager.GetRuntimeTypeByEVMType(etype);
         }
 
         protected virtual object? GetBoxedValue()
@@ -196,7 +196,6 @@ namespace SimpleLanguage.VM
                     break;
             }
         }
-
         public void SetValueByType(EVMType vmType, object? val)
         {
             StoreValue(vmType, val);
@@ -205,7 +204,7 @@ namespace SimpleLanguage.VM
 
         public virtual string ToFormatString()
         {
-            return "";
+            return $"ID: {m_Id} value:" + m_Reference != null ? m_Reference.ToString() : m_Numeric.ToString();
         }
     }
 }

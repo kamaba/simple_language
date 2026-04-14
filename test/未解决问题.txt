@@ -12,20 +12,9 @@ int x1 = 10 + (1-20) * 33/20 + 10~/20 - 22 * 2/1; 有报错处理
 
 
 1. 优化vm层，类型的处理
-1. 在模板array 的 iteraror 的参数 argurment 需要 声明成templateObject
-
+2. 在模板array 的 iteraror 的参数 argurment 需要 声明成templateObject
 2.1. 统一创建runtimeClass的创建过程
 2.3 需要创建 更多的系统类 Int32ToString/Int8ToString/
 3. 需要导出类之间的关系的一个结构
 4. 模板类的导出 需要把模板关联也导出
 7. 调用nativeBridge的调用验证
-
-可挑着做
-
-
-公司:
-1. 许萧的固定话术流程
-2. OSS改造确定
-3. 改数据库相关事宜
-4. 改.netcore的拉起过程
-5. 上.netcore的过程

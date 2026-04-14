@@ -21,8 +21,8 @@ internal static class Program
         string defaultProjectPath = Path.Combine(repoRoot, "source", "Front", "Lib", "Core", "Core");
         string projectPath = args.Length == 0 ? defaultProjectPath : args[0];
         bool runTestEntry = args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
-        // Default to subprocess mode so debug behavior matches manual "front then vm" execution.
-        bool start = TryGetBoolArg(args, "start", defaultValue: false);
+        // Default to in-process mode for easier single-process debugging.
+        bool start = TryGetBoolArg(args, "start", defaultValue: true);
         string exportOutDir = Path.Combine(repoRoot, "out", "export");
         Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", exportOutDir);
         string frontProject = Path.Combine(repoRoot, "source", "Front", "SimpleLanguageFront.csproj");

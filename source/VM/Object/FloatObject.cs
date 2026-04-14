@@ -13,7 +13,6 @@ namespace SimpleLanguage.VM
     public class Float32Object : NumObject
     {
         public new float value => m_Numeric.f;
-
         public Float32Object(float _val) : base(EVMType.Float32)
         {
             m_Numeric.f = _val;
