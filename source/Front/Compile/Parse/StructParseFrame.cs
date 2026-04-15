@@ -9,6 +9,7 @@
 
 using SimpleLanguage.Project;
 using SimpleLanguage.Logging;
+using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using System.Diagnostics;
@@ -376,6 +377,27 @@ namespace SimpleLanguage.Compile
                 {
                     switch (node.token.type)
                     {
+                        case ETokenType.TypeAlias:
+                            {
+                                if (hasNamespaceOrClass)
+                                {
+                                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error typealias 只能写在 import/local 后、namespace/class/data/enum 前");
+                                    pnode.parseIndex++;
+                                    break;
+                                }
+                                if (m_FileMeta.path != null && m_FileMeta.path.EndsWith(".sp", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    Log.AddFileMetaLog(LID.Unknown, "Error .sp 中 typealias 只能写在 Project { } 类体内");
+                                    pnode.parseIndex++;
+                                    break;
+                                }
+                                int ni = ConsumeTypeAliasAt(m_RootNode, pnode.parseIndex, false);
+                                if (ni > pnode.parseIndex)
+                                    pnode.parseIndex = ni;
+                                else
+                                    pnode.parseIndex++;
+                            }
+                            break;
                         case ETokenType.Import:
                             {
                                 hasImport = true;
@@ -586,6 +608,88 @@ namespace SimpleLanguage.Compile
         private void ParseLocalContent(FileMetaLocalSyntax fls, Node blockNode)
         {
             ParseGlobalOrLocalContent(fls, blockNode, true);
+        }
+
+        /// <summary>
+        /// 从 parent.childList[startIndex] 为 typealias 起解析一行，登记到 FileMeta，返回下一未消费下标；失败返回 startIndex。
+        /// </summary>
+        private int ConsumeTypeAliasAt(Node parent, int startIndex, bool projectScope)
+        {
+            if (parent?.childList == null) return startIndex;
+            var ch = parent.childList;
+            if (startIndex >= ch.Count) return startIndex;
+            var n0 = ch[startIndex];
+            if (n0.nodeType != ENodeType.Key || n0.token?.type != ETokenType.TypeAlias)
+                return startIndex;
+
+            int i = startIndex + 1;
+            while (i < ch.Count && ch[i].nodeType == ENodeType.LineEnd) i++;
+
+            if (i >= ch.Count)
+            {
+                Log.AddFileMetaLog(LID.Unknown, "Error typealias 后缺少别名与类型");
+                return startIndex + 1;
+            }
+
+            string aliasName = null;
+            var nameNode = ch[i];
+            if (nameNode.nodeType == ENodeType.IdentifierLink && nameNode.linkTokenList != null && nameNode.linkTokenList.Count > 0)
+                aliasName = nameNode.linkTokenList[nameNode.linkTokenList.Count - 1].lexeme.ToString();
+            else if (nameNode.token != null && nameNode.token.type == ETokenType.Identifier)
+                aliasName = nameNode.token.lexeme.ToString();
+
+            if (string.IsNullOrEmpty(aliasName))
+            {
+                Log.AddFileMetaLog(LID.Unknown, "Error typealias 后应为单个标识符别名");
+                return i + 1;
+            }
+            i++;
+
+            while (i < ch.Count && ch[i].nodeType == ENodeType.LineEnd) i++;
+            if (i >= ch.Count || ch[i].nodeType != ENodeType.Assign)
+            {
+                Log.AddFileMetaLog(LID.Unknown, "Error typealias 缺少 = 与目标类型");
+                return i;
+            }
+            i++;
+
+            var typeNodes = new List<Node>();
+            while (i < ch.Count)
+            {
+                var tn = ch[i];
+                if (tn.nodeType == ENodeType.SemiColon)
+                {
+                    i++;
+                    break;
+                }
+                if (tn.nodeType == ENodeType.LineEnd)
+                {
+                    i++;
+                    break;
+                }
+                typeNodes.Add(tn);
+                i++;
+            }
+
+            var handled = HandleNodeSingleLine(typeNodes);
+            Node typeRoot = null;
+            for (int h = 0; h < handled.Count; h++)
+            {
+                if (handled[h]?.nodeType == ENodeType.IdentifierLink)
+                {
+                    typeRoot = handled[h];
+                    break;
+                }
+            }
+            if (typeRoot == null)
+            {
+                Log.AddFileMetaLog(LID.Unknown, "Error typealias 目标类型无法解析");
+                return i;
+            }
+
+            var fmcd = new FileMetaClassDefine(m_FileMeta, typeRoot);
+            m_FileMeta.AddTypeAliasDecl(new FileMetaTypeAliasDecl(aliasName, fmcd, projectScope));
+            return i;
         }
 
         private bool TryParseLocalFunction(Node ownerBlock, FileMetaLocalSyntax fls, List<Node> lineNodes, ref bool hasFunction)
@@ -1033,6 +1137,25 @@ namespace SimpleLanguage.Compile
                 if( index >= pnode.childList.Count )
                 {
                     break;
+                }
+
+                var peekNode = pnode.childList[index];
+                if (peekNode.nodeType == ENodeType.Key && peekNode.token?.type == ETokenType.TypeAlias)
+                {
+                    if (m_FileMeta.path == null || !m_FileMeta.path.EndsWith(".sp", StringComparison.OrdinalIgnoreCase)
+                        || currentNodeInfo?.codeClass == null
+                        || !string.Equals(currentNodeInfo.codeClass.name, "Project", StringComparison.Ordinal))
+                    {
+                        Log.AddFileMetaLog(LID.Unknown, "Error 类体内的 typealias 仅允许出现在 .sp 工程的 Project 类中");
+                        index++;
+                        continue;
+                    }
+                    int ni = ConsumeTypeAliasAt(pnode, index, true);
+                    if (ni > index)
+                        index = ni;
+                    else
+                        index++;
+                    continue;
                 }
 
                 var curNode = pnode.childList[index++];

@@ -127,6 +127,12 @@ namespace SimpleLanguage.Project
             public bool IsForceUseKeyClass { get; set; }
             // Support C-style ++/-- operators 支持++/--操作符
             public bool IsSupportDoublePlus { get; set; }
+
+            /// <summary>
+            /// 为 true 时：算术/位运算两侧必须是同一数字类型（如 byte+byte、Int32+Int32），禁止 byte+Int32 等混合。
+            /// 为 false（默认）：使用 <see cref="MetaTypeFactory.CalcETypeByLeftAndRight"/> 的数值升级规则。
+            /// </summary>
+            public bool RequireSameNumericTypes { get; set; } = false;
         }
 
         // mirror CompileFileData / CompileFileDataUnit

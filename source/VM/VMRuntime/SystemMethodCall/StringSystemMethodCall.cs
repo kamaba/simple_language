@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using SimpleLanuageVM.Load;
+using SimpleLanguage.VM;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -120,6 +121,152 @@ namespace SimpleLanguage.VM.Runtime
             }
 
             return result.ToString();
+        }
+
+        public static void ExecuteStringFront(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            int pc = sysPkg.paramCount;
+            if (pc < 2 || !vm.TrySystemCallPopArgs(pc, out var args))
+            {
+                Debug.Assert(false, $"SystemStringFront stack underflow, need={pc}");
+                return;
+            }
+
+            string s = ToInvariantString(ref args[0]);
+            int n = ToInt32Arg(ref args[1]);
+            int len = s?.Length ?? 0;
+            if (len == 0 || n <= 0)
+            {
+                PushEmptyString(vm);
+                return;
+            }
+            int take = n > len ? len : n;
+            var outv = default(SValue);
+            outv.SetStringValue(s.Substring(0, take));
+            vm.PushSValueSynced(outv);
+        }
+
+        public static void ExecuteStringEnd(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            int pc = sysPkg.paramCount;
+            if (pc < 2 || !vm.TrySystemCallPopArgs(pc, out var args))
+            {
+                Debug.Assert(false, $"SystemStringEnd stack underflow, need={pc}");
+                return;
+            }
+
+            string s = ToInvariantString(ref args[0]);
+            int n = ToInt32Arg(ref args[1]);
+            int len = s?.Length ?? 0;
+            if (len == 0 || n <= 0)
+            {
+                PushEmptyString(vm);
+                return;
+            }
+            int take = n > len ? len : n;
+            var outv = default(SValue);
+            outv.SetStringValue(s.Substring(len - take, take));
+            vm.PushSValueSynced(outv);
+        }
+
+        /// <summary>半开区间 [start, end)，与 C# <c>Substring(start, end - start)</c> 一致。</summary>
+        public static void ExecuteStringRange(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            int pc = sysPkg.paramCount;
+            if (pc < 3 || !vm.TrySystemCallPopArgs(pc, out var args))
+            {
+                Debug.Assert(false, $"SystemStringRange stack underflow, need={pc}");
+                return;
+            }
+
+            string s = ToInvariantString(ref args[0]);
+            int start = ToInt32Arg(ref args[1]);
+            int end = ToInt32Arg(ref args[2]);
+            int len = s?.Length ?? 0;
+            if (len == 0)
+            {
+                PushEmptyString(vm);
+                return;
+            }
+            if (start < 0) start = 0;
+            if (start > len) start = len;
+            if (end < start) end = start;
+            if (end > len) end = len;
+            var outv = default(SValue);
+            outv.SetStringValue(s.Substring(start, end - start));
+            vm.PushSValueSynced(outv);
+        }
+
+        /// <summary>UTF-8 编码的字节序列，装入 <c>Array&lt;Byte&gt;</c>。</summary>
+        public static void ExecuteStringToByteArray(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            int pc = sysPkg.paramCount;
+            if (pc < 1 || !vm.TrySystemCallPopArgs(pc, out var args))
+            {
+                Debug.Assert(false, $"SystemStringToByteArray stack underflow, need={pc}");
+                return;
+            }
+
+            string s = ToInvariantString(ref args[0]) ?? string.Empty;
+            byte[] raw = Encoding.UTF8.GetBytes(s);
+
+            RuntimeTypeManager.EnsureCoreRuntimeTypesRegistered();
+            var byteRt = RuntimeTypeManager.byteRuntimeType;
+            if (byteRt == null)
+            {
+                var nz = default(SValue);
+                nz.SetNull();
+                vm.PushSValueSynced(nz);
+                return;
+            }
+
+            RuntimeClass? arrayRc = RuntimeClassManager.GetRuntimeClassByName("Core.Array<T>")
+                ?? RuntimeClassManager.GetRuntimeClassByName("Core.Array")
+                ?? RuntimeClassManager.GetRuntimeClassByName("Array");
+            if (arrayRc == null)
+            {
+                var nz = default(SValue);
+                nz.SetNull();
+                vm.PushSValueSynced(nz);
+                return;
+            }
+
+            var arrRt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(arrayRc, new List<RuntimeType> { byteRt })
+                ?? RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(arrayRc, new List<RuntimeType> { byteRt });
+            if (arrRt == null)
+            {
+                var nz = default(SValue);
+                nz.SetNull();
+                vm.PushSValueSynced(nz);
+                return;
+            }
+
+            var arr = new ArrayObject(arrRt, raw.Length);
+            arr.CreateObject();
+            ObjectManager.AddClassObject(arr);
+            for (int i = 0; i < raw.Length; i++)
+            {
+                var sv = default(SValue);
+                sv.SetInt8Value(raw[i]);
+                arr.StoreValue(i, sv);
+            }
+
+            var outv = default(SValue);
+            outv.SetSObject(arr);
+            vm.PushSValueSynced(outv);
+        }
+
+        private static void PushEmptyString(RuntimeVM vm)
+        {
+            var outv = default(SValue);
+            outv.SetStringValue(string.Empty);
+            vm.PushSValueSynced(outv);
+        }
+
+        private static int ToInt32Arg(ref SValue v)
+        {
+            var iv = SystemMethodConvertHelper.ConvertValue(ref v, ESystemMethodCall.SystemConvertInt32);
+            return iv.int32Value;
         }
     }
 }

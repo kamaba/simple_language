@@ -5,6 +5,7 @@ public class Range<T:Num> interface IIterable<T>, IIterator<T>
     T _step = null
     T _iteratorValue = 0
     T _current = null
+    Array<T> _toArrayCache = null
 
 
     _init_( T _end )
@@ -20,6 +21,7 @@ public class Range<T:Num> interface IIterable<T>, IIterator<T>
         this._start = _start
         this._end = _end
         this._step = _step
+        this._toArrayCache = null
         this.reset()
     }
     #接口层
@@ -84,6 +86,34 @@ public class Range<T:Num> interface IIterable<T>, IIterator<T>
     {
         ret this
     }
+
+    # 将区间内所有值物化为 Array<T>：首次遍历写入缓存并复用，避免重复分配与迭代。
+    Array<T> toArray()
+    {
+        if this._toArrayCache != null
+        {
+            ret this._toArrayCache
+        }
+
+        this.reset()
+        int cnt = 0
+        while this.moveNext()
+        {
+            cnt++
+        }
+
+        this.reset()
+        Array<T> arr = Array<T>(cnt)
+        int idx = 0
+        while this.moveNext()
+        {
+            arr.setValue(idx, this.current())
+            idx++
+        }
+        this._toArrayCache = arr
+        ret arr
+    }
+
     override string toString()
     {
         ret "Range(" + this._start + "," + this._end + "," + this._step + ")"

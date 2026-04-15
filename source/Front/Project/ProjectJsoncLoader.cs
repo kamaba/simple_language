@@ -44,6 +44,7 @@ namespace SimpleLanguage.Project
                 cfg.Compile.IsUseForceSemiColonInLineEnd = GetBool(compile, "isUseForceSemiColonInLineEnd", cfg.Compile.IsUseForceSemiColonInLineEnd);
                 cfg.Compile.IsForceUseKeyClass = GetBool(compile, "isForceUseClassKey", cfg.Compile.IsForceUseKeyClass);
                 cfg.Compile.IsSupportDoublePlus = GetBool(compile, "isSupportDoublePlus", cfg.Compile.IsSupportDoublePlus);
+                cfg.Compile.RequireSameNumericTypes = GetBool(compile, "requireSameNumericTypes", cfg.Compile.RequireSameNumericTypes);
             }
 
             if (TryGetObj(root, "compileFiles", out var compileFiles)

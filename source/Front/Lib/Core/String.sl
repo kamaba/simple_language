@@ -57,4 +57,28 @@ public class String extends Object
     {
         ret SystemStringFormat(_format, _parmas)
     }
+
+    # 截取前 index 个字符；index<=0 为空串；大于长度则整串
+    string front( int index )
+    {
+        ret SystemStringFront( this, index )
+    }
+
+    # 截取末尾 index 个字符（从后往前数）
+    string end( int index )
+    {
+        ret SystemStringEnd( this, index )
+    }
+
+    # 半开区间 [start, end)，等价 Substring(start, end - start)
+    string range( int start, int end )
+    {
+        ret SystemStringRange( this, start, end )
+    }
+
+    # UTF-8 字节序列，Array<Byte>（ByteArray）
+    ByteArray toByteArray()
+    {
+        ret SystemStringToByteArray( this )
+    }
 }

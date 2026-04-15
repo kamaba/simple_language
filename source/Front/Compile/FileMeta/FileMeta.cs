@@ -38,6 +38,34 @@ namespace SimpleLanguage.Compile
 
         private List<MetaNamespace> m_ImportMetaNamespaceList = new List<MetaNamespace>();
 
+        private readonly List<FileMetaTypeAliasDecl> m_TypeAliasDeclList = new List<FileMetaTypeAliasDecl>();
+        private readonly Dictionary<string, MetaType> m_FileResolvedTypeAliasDict = new Dictionary<string, MetaType>();
+
+        public IReadOnlyList<FileMetaTypeAliasDecl> typeAliasDeclList => m_TypeAliasDeclList;
+
+        public void AddTypeAliasDecl(FileMetaTypeAliasDecl decl)
+        {
+            if (decl != null)
+                m_TypeAliasDeclList.Add(decl);
+        }
+
+        public void ClearResolvedFileTypeAliases()
+        {
+            m_FileResolvedTypeAliasDict.Clear();
+        }
+
+        public bool TryGetFileTypeAlias(string name, out MetaType targetType)
+        {
+            return m_FileResolvedTypeAliasDict.TryGetValue(name, out targetType);
+        }
+
+        internal void InternalSetFileTypeAlias(string name, MetaType targetType)
+        {
+            if (string.IsNullOrEmpty(name) || targetType == null)
+                return;
+            m_FileResolvedTypeAliasDict[name] = targetType;
+        }
+
         public FileMeta( string p )
         {
             m_Path = p;

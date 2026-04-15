@@ -40,5 +40,9 @@ namespace SimpleLanguage.VM.Runtime
         SystemNumAbs,
         SystemNumFloor,
         SystemStringFormat,
+        SystemStringFront,
+        SystemStringEnd,
+        SystemStringRange,
+        SystemStringToByteArray,
     }
 }

@@ -151,6 +151,8 @@ namespace SimpleLanguage.Core
                 v.UpdateClassAllName();
                 ClassManager.instance.AddRuntimeMetaClass(v);
             }
+
+            TypeManager.instance.EnsureBuiltinGlobalTypeAliases();
         }
         public static bool IsIncludeMetaClass( MetaClass metaclass )
         {

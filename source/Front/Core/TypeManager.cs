@@ -19,6 +19,8 @@ namespace SimpleLanguage.Core
         public static TypeManager instance = new TypeManager();
 
         private readonly Dictionary<string, MetaType> m_GlobalTypeAliasDict = new Dictionary<string, MetaType>();
+        /// <summary>当前编译工程中由 .sp 的 Project 类体内 typealias 注册的别名（每次编译清空后重建）。</summary>
+        private readonly Dictionary<string, MetaType> m_ProjectTypeAliasDict = new Dictionary<string, MetaType>();
 
         public bool AddGlobalTypeAlias(string aliasName, MetaType targetType)
         {
@@ -35,6 +37,125 @@ namespace SimpleLanguage.Core
         public bool TryGetGlobalTypeAlias(string aliasName, out MetaType targetType)
         {
             return m_GlobalTypeAliasDict.TryGetValue(aliasName, out targetType);
+        }
+
+        public void ClearProjectTypeAliases()
+        {
+            m_ProjectTypeAliasDict.Clear();
+        }
+
+        public bool AddProjectTypeAlias(string aliasName, MetaType targetType)
+        {
+            if (string.IsNullOrEmpty(aliasName) || targetType == null)
+                return false;
+            if (m_GlobalTypeAliasDict.ContainsKey(aliasName))
+                return false;
+            if (m_ProjectTypeAliasDict.ContainsKey(aliasName))
+                return false;
+            m_ProjectTypeAliasDict.Add(aliasName, targetType);
+            return true;
+        }
+
+        public bool TryGetProjectTypeAlias(string aliasName, out MetaType targetType)
+        {
+            return m_ProjectTypeAliasDict.TryGetValue(aliasName, out targetType);
+        }
+
+        /// <summary>
+        /// 解析简单类型名时的别名链：当前文件局部 typealias → 工程(.sp Project) typealias → 内置全局别名。
+        /// </summary>
+        public bool TryResolveTypeAlias(string aliasName, FileMeta fileMeta, out MetaType targetType)
+        {
+            targetType = null;
+            if (!string.IsNullOrEmpty(aliasName) && fileMeta != null && fileMeta.TryGetFileTypeAlias(aliasName, out targetType))
+                return true;
+            if (TryGetProjectTypeAlias(aliasName, out targetType))
+                return true;
+            return TryGetGlobalTypeAlias(aliasName, out targetType);
+        }
+
+        /// <summary>
+        /// 在 MetaClass 初始化完成后解析所有源文件中的 typealias 声明并注册。
+        /// </summary>
+        public void ResolveAllDeclaredTypeAliases(List<FileParse> fileParseList)
+        {
+            if (fileParseList == null) return;
+            ClearProjectTypeAliases();
+
+            // 工程级 typealias：多轮解析以支持别名之间的依赖
+            for (int round = 0; round < 64; round++)
+            {
+                int added = 0;
+                for (int fi = 0; fi < fileParseList.Count; fi++)
+                {
+                    var fm = fileParseList[fi]?.file;
+                    if (fm == null) continue;
+                    var list = fm.typeAliasDeclList;
+                    for (int j = 0; j < list.Count; j++)
+                    {
+                        var decl = list[j];
+                        if (!decl.IsProjectScope) continue;
+                        if (TryGetProjectTypeAlias(decl.AliasName, out _))
+                            continue;
+                        var mt = GetMetaTypeByTemplateFunction(null, null, decl.TargetDefine);
+                        if (mt == null)
+                            continue;
+                        if (AddProjectTypeAlias(decl.AliasName, mt))
+                            added++;
+                    }
+                }
+                if (added == 0)
+                    break;
+            }
+
+            for (int fi = 0; fi < fileParseList.Count; fi++)
+            {
+                var fm = fileParseList[fi]?.file;
+                if (fm == null) continue;
+                fm.ClearResolvedFileTypeAliases();
+                for (int round = 0; round < 64; round++)
+                {
+                    int added = 0;
+                    var list = fm.typeAliasDeclList;
+                    for (int j = 0; j < list.Count; j++)
+                    {
+                        var decl = list[j];
+                        if (decl.IsProjectScope) continue;
+                        if (fm.TryGetFileTypeAlias(decl.AliasName, out _))
+                            continue;
+                        var mt = GetMetaTypeByTemplateFunction(null, null, decl.TargetDefine);
+                        if (mt == null)
+                            continue;
+                        fm.InternalSetFileTypeAlias(decl.AliasName, new MetaType(mt));
+                        added++;
+                    }
+                    if (added == 0)
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 注册语言内置的全局类型别名（等价于在工程 Global 里写 typealias），任意编译单元可直接使用别名。
+        /// 已存在同名别名时不覆盖。
+        /// </summary>
+        public void EnsureBuiltinGlobalTypeAliases()
+        {
+            static MetaType ArrayOf(MetaClass elementClass)
+            {
+                var mt = new MetaType();
+                mt.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
+                mt.AddDefineTemplateMetaType(new MetaType(elementClass));
+                return CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(mt, true, out _);
+            }
+
+            AddGlobalTypeAlias("ByteArray", ArrayOf(CoreMetaClassManager.byteMetaClass));
+            AddGlobalTypeAlias("Int32Array", ArrayOf(CoreMetaClassManager.int32MetaClass));
+            AddGlobalTypeAlias("UInt32Array", ArrayOf(CoreMetaClassManager.uint32MetaClass));
+            AddGlobalTypeAlias("Int64Array", ArrayOf(CoreMetaClassManager.int64MetaClass));
+            AddGlobalTypeAlias("Float32Array", ArrayOf(CoreMetaClassManager.float32MetaClass));
+            AddGlobalTypeAlias("Float64Array", ArrayOf(CoreMetaClassManager.float64MetaClass));
+            AddGlobalTypeAlias("StringArray", ArrayOf(CoreMetaClassManager.stringMetaClass));
         }
 
         // 比较两个MetaType的内容， 主要通过 MetaClass 和里边的MetaType的遍历 都相同 
@@ -142,6 +263,19 @@ namespace SimpleLanguage.Core
         public MetaType GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(MetaClass curMc, FileMetaClassDefine fmcd)
         {
             if (fmcd == null) return null;
+
+            if (fmcd.stringList != null && fmcd.stringList.Count == 1)
+            {
+                if (TryResolveTypeAlias(fmcd.stringList[0], fmcd.fileMeta, out MetaType aliasTarget) && aliasTarget != null)
+                {
+                    var retAlias = new MetaType(aliasTarget);
+                    if (fmcd.isNullable)
+                        retAlias.SetNullable(true);
+                    if (fmcd.isArray)
+                        retAlias = AddArrayTemplate(retAlias, fmcd.arrayDimsionLengthList);
+                    return retAlias;
+                }
+            }
 
             MetaNode getmc = ClassManager.instance.GetMetaClassByRef(curMc, fmcd);
             if (getmc == null)
@@ -282,11 +416,10 @@ namespace SimpleLanguage.Core
         {
             if (fmcd == null) return null;
 
-            // Global typealias expansion (defined in .sp Project::Global()).
-            // Only applies to simple alias name (no namespace segments).
+            // typealias：文件局部 / 工程 / 内置
             if (fmcd.stringList != null && fmcd.stringList.Count == 1)
             {
-                if (TryGetGlobalTypeAlias(fmcd.stringList[0], out MetaType aliasTarget) && aliasTarget != null)
+                if (TryResolveTypeAlias(fmcd.stringList[0], fmcd.fileMeta, out MetaType aliasTarget) && aliasTarget != null)
                 {
                     var retAlias = new MetaType(aliasTarget);
                     if (fmcd.isNullable)

@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
+using SimpleLanguage.Project;
 
 
 namespace SimpleLanguage.Core
@@ -486,6 +487,14 @@ namespace SimpleLanguage.Core
                             case ELeftRightOpSign.Shr:
                                 {
                                     //都是数字类型
+                                    if (ProjectManager.config?.Compile?.RequireSameNumericTypes == true
+                                        && leftMc.eType != rightMc.eType)
+                                    {
+                                        AddMetaError("Error 已启用 compile.requireSameNumericTypes：算术/位运算两侧须为同一数字类型（如 byte+byte、Int32+Int32），禁止不同类型混合运算。");
+                                        m_RealMetaType = new MetaType(leftMc);
+                                        break;
+                                    }
+
                                     EType etype = MetaTypeFactory.CalcETypeByLeftAndRight(leftMc.eType, rightMc.eType, m_OpLevelSign, out int error);
                                     if (error == 0)
                                     {

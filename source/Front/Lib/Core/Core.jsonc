@@ -18,7 +18,8 @@
     "debug": true,
     "isUseForceSemiColonInLineEnd": true,
     "isForceUseClassKey": false,
-    "isSupportDoublePlus": false
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
   },
   "compileFiles": {
     "files": [

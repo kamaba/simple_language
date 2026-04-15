@@ -1654,6 +1654,18 @@ namespace SimpleLanguage.VM.Runtime
                             case (int)ESystemMethodCall.SystemStringFormat:
                                 StringSystemMethodCall.ExecuteStringFormat(this, sysPkg);
                                 break;
+                            case (int)ESystemMethodCall.SystemStringFront:
+                                StringSystemMethodCall.ExecuteStringFront(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemStringEnd:
+                                StringSystemMethodCall.ExecuteStringEnd(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemStringRange:
+                                StringSystemMethodCall.ExecuteStringRange(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemStringToByteArray:
+                                StringSystemMethodCall.ExecuteStringToByteArray(this, sysPkg);
+                                break;
                             case (int)ESystemMethodCall.SystemEqualObject:
                                 ObjectSystemMethodCall.ExecuteSystemEqualObject(this, sysPkg);
                                 break;

@@ -68,6 +68,12 @@ namespace SimpleLanguage.Core
             // array helpers
             { ESystemMethodCall.SystemArrayGetValueThis, new SystemMethodCallDeclaration(ESystemMethodCall.SystemArrayGetValueThis, CoreMetaClassManager.objectMetaClass, false, CoreMetaClassManager.arrayMetaClass, CoreMetaClassManager.int32MetaClass) },
             { ESystemMethodCall.SystemArraySetValueThis, new SystemMethodCallDeclaration(ESystemMethodCall.SystemArraySetValueThis, CoreMetaClassManager.voidMetaClass, false, CoreMetaClassManager.arrayMetaClass, CoreMetaClassManager.int32MetaClass, CoreMetaClassManager.objectMetaClass) },
+
+            // string slice / bytes (instance: this + args)
+            { ESystemMethodCall.SystemStringFront, new SystemMethodCallDeclaration(ESystemMethodCall.SystemStringFront, CoreMetaClassManager.stringMetaClass, false, CoreMetaClassManager.stringMetaClass, CoreMetaClassManager.int32MetaClass) },
+            { ESystemMethodCall.SystemStringEnd, new SystemMethodCallDeclaration(ESystemMethodCall.SystemStringEnd, CoreMetaClassManager.stringMetaClass, false, CoreMetaClassManager.stringMetaClass, CoreMetaClassManager.int32MetaClass) },
+            { ESystemMethodCall.SystemStringRange, new SystemMethodCallDeclaration(ESystemMethodCall.SystemStringRange, CoreMetaClassManager.stringMetaClass, false, CoreMetaClassManager.stringMetaClass, CoreMetaClassManager.int32MetaClass, CoreMetaClassManager.int32MetaClass) },
+            { ESystemMethodCall.SystemStringToByteArray, new SystemMethodCallDeclaration(ESystemMethodCall.SystemStringToByteArray, CoreMetaClassManager.arrayMetaClass, false, CoreMetaClassManager.stringMetaClass) },
         };
 
         public static bool TryGet(ESystemMethodCall call, out SystemMethodCallDeclaration decl)

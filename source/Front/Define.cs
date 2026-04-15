@@ -421,6 +421,10 @@ namespace SimpleLanguage
         SystemNumAbs,
         SystemNumFloor,
         SystemStringFormat,
+        SystemStringFront,
+        SystemStringEnd,
+        SystemStringRange,
+        SystemStringToByteArray,
     }
     public class Global
     {
