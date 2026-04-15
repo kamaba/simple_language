@@ -154,6 +154,7 @@ namespace SimpleLanguage.Core
             AddGlobalTypeAlias("Float32Array", SystemMethodCallTypes.ArrayOf(CoreMetaClassManager.float32MetaClass));
             AddGlobalTypeAlias("Float64Array", SystemMethodCallTypes.ArrayOf(CoreMetaClassManager.float64MetaClass));
             AddGlobalTypeAlias("StringArray", SystemMethodCallTypes.ArrayOf(CoreMetaClassManager.stringMetaClass));
+            AddGlobalTypeAlias("ObjectArray", SystemMethodCallTypes.ArrayOf(CoreMetaClassManager.objectMetaClass));
         }
 
         // 比较两个MetaType的内容， 主要通过 MetaClass 和里边的MetaType的遍历 都相同 

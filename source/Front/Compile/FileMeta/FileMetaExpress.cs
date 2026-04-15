@@ -371,9 +371,24 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                // 多节点类型（例如命名空间前缀），简单合成为一个临时 Node 再交给 FileMetaClassDefine
-                Node typeRoot = new Node(null);
-                typeRoot.SetChildList(typeNodes);
+                // 多节点类型（例如泛型 Array<Object> 或命名空间前缀）：
+                // 优先选择真实的类型根节点（IdentifierLink），避免使用临时节点导致 linkTokenList 为空。
+                Node typeRoot = null;
+                for (int i = 0; i < typeNodes.Count; i++)
+                {
+                    var tn = typeNodes[i];
+                    if (tn == null) continue;
+                    if (tn.nodeType == ENodeType.IdentifierLink
+                        || (tn.linkTokenList != null && tn.linkTokenList.Count > 0))
+                    {
+                        typeRoot = tn;
+                        break;
+                    }
+                }
+                if (typeRoot == null)
+                {
+                    typeRoot = typeNodes[0];
+                }
                 m_DefineType = new FileMetaClassDefine(fm, typeRoot, null);
             }
 

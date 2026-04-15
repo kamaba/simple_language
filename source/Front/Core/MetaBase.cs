@@ -19,7 +19,7 @@ namespace SimpleLanguage.Core
     public class MetaBase
     {
         public int deep => m_Deep;
-        public Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
+        public virtual Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
         public List<Token> pingTokenList => m_PintTokenList;
         public int realDeep
         {

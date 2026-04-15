@@ -31,7 +31,8 @@ namespace SimpleLanguage.Core
         public MetaDefineVarStatements(MetaBlockStatements mbs, FileMetaDefineVariableSyntax fmdvs ) : base( mbs )
         {
             m_FileMetaDefineVariableSyntax = fmdvs;
-            m_Name = fmdvs.name;            
+            m_Name = fmdvs.name;
+            m_Token = fmdvs.nameToken;
             m_OwnerMetaBlockStatements.AddOnlyNameMetaVariable(m_Name);
 
             Parse();
@@ -39,6 +40,7 @@ namespace SimpleLanguage.Core
         public MetaDefineVarStatements(MetaBlockStatements mbs, FileMetaOpAssignSyntax fmoas ): base( mbs )
         {
             m_FileMetaOpAssignSyntax = fmoas;
+            m_Token = fmoas.token;
             m_Name = m_FileMetaOpAssignSyntax.variableRef.name;
             m_OwnerMetaBlockStatements.AddOnlyNameMetaVariable(m_Name);
 
@@ -78,8 +80,9 @@ namespace SimpleLanguage.Core
             else if (m_FileMetaOpAssignSyntax != null)
             {
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
-                Token token = m_FileMetaOpAssignSyntax.assignToken;
-                if( m_FileMetaOpAssignSyntax.dynamicToken != null )
+                m_Token = m_FileMetaOpAssignSyntax.variableRef.callNodeList[0].token;
+                AddPingToken(m_Token);
+                if ( m_FileMetaOpAssignSyntax.dynamicToken != null )
                 {
                     isDynamicClass = true;
                     mdt = new MetaType(CoreMetaClassManager.dynamicMetaClass);
@@ -96,7 +99,7 @@ namespace SimpleLanguage.Core
                         m_DefineVarMetaVariable.AddPingToken(v.token);
                     }
                 }
-                m_DefineVarMetaVariable.AddPingToken(token);
+                m_DefineVarMetaVariable.AddPingToken(m_Token);
 
                 fileExpress = m_FileMetaOpAssignSyntax.express;
             }
@@ -107,7 +110,7 @@ namespace SimpleLanguage.Core
             }
             if(m_DefineVarMetaVariable == null )
             {
-                Log.AddMetaCoreLog( LID.ShowExtendMessage, "Error {0} MetaVariable is Null" +  defineName);
+                Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, "Error {0} MetaVariable is Null" +  defineName);
                 return;
             }
             m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_DefineVarMetaVariable);
@@ -125,7 +128,7 @@ namespace SimpleLanguage.Core
                 m_ExpressNode = ExpressManager.CreateExpressNodeByCEP(cep);
                 if (m_ExpressNode == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 解析新建变量语句时，表达式解析为空!!__1");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 解析新建变量语句时，表达式解析为空!!__1");
                     return;
                 }
                 m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
@@ -136,7 +139,7 @@ namespace SimpleLanguage.Core
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();               
                 if (expressRetMetaDefineType == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 解析新建变量语句时，表达式返回类型为空!!__2", defineName);
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 解析新建变量语句时，表达式返回类型为空!!__2", defineName);
                     return;
                 }
             }
@@ -186,14 +189,14 @@ namespace SimpleLanguage.Core
                             MetaCallLinkExpressNode expressMDT = m_ExpressNode as MetaCallLinkExpressNode;
                             if (expressMDT == null )
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum模式，只允许是调用模式[CallLinkExpress]");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum模式，只允许是调用模式[CallLinkExpress]");
                             }
                             else
                             {
                                 var varableEnum = expressMDT.metaCallLink.finalCallNode.variable.ownerMetaClass;
                                 if( mdt.metaClass != varableEnum )
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum与值不相等!!");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum与值不相等!!");
                                 }
                                 else
                                 {
@@ -258,7 +261,7 @@ namespace SimpleLanguage.Core
                         else if (relation == ClassManager.EClassRelation.Parent)
                         {
                             sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
                             m_IsNeedCastState = true;
                         }
                         else if (relation == ClassManager.EClassRelation.Child)
@@ -271,7 +274,7 @@ namespace SimpleLanguage.Core
                         else
                         {
                             sb.Append("表达式错误，或者是定义类型错误");
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
                         }
                     }
                 }

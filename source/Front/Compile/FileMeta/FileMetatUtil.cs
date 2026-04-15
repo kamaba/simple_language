@@ -276,7 +276,13 @@ namespace SimpleLanguage.Compile
                     List<Node> typeNodes = null;
                     Node optionalVarNode = null;
 
-                    if (rightCount == 1)
+                    if (asIsNode.token?.type == ETokenType.As)
+                    {
+                        // as 支持泛型类型写法（例如: arr as Array<Object>），
+                        // 右侧类型可能被拆成多个节点，需整体作为 typeNodes 处理。
+                        typeNodes = nodeList.GetRange(asIsIndex + 1, rightCount);
+                    }
+                    else if (rightCount == 1)
                     {
                         // var1 as Class1  或  var1 is Class1
                         typeNodes = new List<Node> { nodeList[asIsIndex + 1] };
@@ -284,12 +290,27 @@ namespace SimpleLanguage.Compile
                     else if (rightCount >= 2 && (asIsNode.token?.type == ETokenType.Is || asIsNode.token?.type == ETokenType.IsNot))
                     {
                         // var1 is Class1 var2
-                        typeNodes = nodeList.GetRange(asIsIndex + 1, rightCount - 1);
-                        optionalVarNode = nodeList[nodeList.Count - 1];
+                        // 兼容泛型类型：若末尾不是可作为变量名的节点，则整段都作为类型。
+                        var tailNode = nodeList[nodeList.Count - 1];
+                        bool tailCanBeVarName =
+                            tailNode?.nodeType == ENodeType.IdentifierLink
+                            || tailNode?.token?.type == ETokenType.Identifier;
+                        if (tailCanBeVarName)
+                        {
+                            typeNodes = nodeList.GetRange(asIsIndex + 1, rightCount - 1);
+                            optionalVarNode = tailNode;
+                        }
+                        else
+                        {
+                            typeNodes = nodeList.GetRange(asIsIndex + 1, rightCount);
+                        }
                     }
 
                     if (typeNodes != null)
                     {
+                        // 右侧类型可能是拆开的泛型节点（例如 Array < Object >），
+                        // 先做单行节点归并，确保 as/is 能拿到完整类型定义。
+                        typeNodes = StructParse.HandleNodeSingleLine(typeNodes);
                         fmbt = new FileMetaAsOrIsTerm(fm, leftNodes, asIsNode.token, typeNodes, optionalVarNode);
                     }
                 }

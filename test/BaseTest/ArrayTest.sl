@@ -1,7 +1,3 @@
-import Std
-import CSharp.SimpleLanguage
-import CSharp.System
-
 ArrayTest
 {
     ArrClass
@@ -29,24 +25,54 @@ ArrayTest
     static testArray( arr )
     {
         var iter = arr as Array<Object>
-        #iter = arr as IIterable<Object>
-        #iter = arr as IIterable
         if iter != null
         {
             for v in iter
             {
                 if v != null
                 {
-                 System.Console.WriteLine("1111111111= " + v.toString() )
+                    global.println("1111111111= " + v.toString() )
                 }
+            }
+        }
+    }
+    static arrayBasicApiTest()
+    {
+        global.println("========== Array.basic api ==========")
+        Int32[] nums = Array<Int32>.create(5)
+        nums.fill(7)
+        nums.setValue(2, 99)
+
+        global.println("nums.length -> " + nums.length.toString())
+        global.println("nums.getValue(0) -> " + nums.getValue(0).toString())
+        global.println("nums.getValue(2) -> " + nums.getValue(2).toString())
+
+        nums.index = 1
+        global.println("nums.current() @ index=1 -> " + nums.current().toString())
+        nums.current = 123
+        global.println("nums.getValue(1) after set current -> " + nums.getValue(1).toString())
+    }
+    static arrayGenericElementTest()
+    {
+        global.println("========== Array.generic element ==========")
+        Level<Int32>[] levels = new(3) { Level<Int32>(10), Level<Int32>(20), Level<Int32>(30) }
+        levels[1].t += 5
+        for v in levels
+        {
+            if v != null
+            {
+                global.println("level item -> " + v.toString())
             }
         }
     }
     static fun()
     { 
+        arrayBasicApiTest()
+        arrayGenericElementTest()
+
         int intvalue = 20
         var ac = ArrClass(){ i1 = intvalue, i2 = "okok" }
-        #System.Console.WriteLine("1111111111= " + ac.i1 + "    " + ac.i2 )
+        #global.println("1111111111= " + ac.i1 + "    " + ac.i2 )
 
          # arr22 = int[2][] { [1,2,3,4] }
         #li = Level<int>(100)
@@ -55,7 +81,7 @@ ArrayTest
 
         #a1 = object[4]{intvalue,null,3 };    #默认int array 没有任何定义时，看属性是否相同，如果相同则决定该数组类型  Array(5, int.type ){1,2,3,4,5}
         
-        #System.Console.WriteLine("1111111111= " + a1[1] )
+        #global.println("1111111111= " + a1[1] )
         
         #ax = [ Class2[3], Class2(2,10){ qx= 100, y = [1,2,3,4] } ]
 
@@ -70,12 +96,12 @@ ArrayTest
         a2.$1 += 100    
         a2[1] = a2.$1 + 200
         a2[1]--
-        System.Console.WriteLine("1111111111= " + a2[1] )
+        global.println("1111111111= " + a2[1] )
         
-        System.Console.WriteLine("1111111111= " + intvalue )
+        global.println("1111111111= " + intvalue )
         intvalue = 40
         intvalue -= 13
-        System.Console.WriteLine("1111111111= " + intvalue )
+        global.println("1111111111= " + intvalue )
         for i = 0, i < a2.length, i++
         {
             if i > 0 
@@ -86,11 +112,11 @@ ArrayTest
             {
                 a2[0] = 123
             }
-            System.Console.WriteLine("1111111111= " + a2.$i )
+            global.println("1111111111= " + a2.$i )
         }
         !#
         #a2[2] += 300    
-        #System.Console.WriteLine("1111111111= " + a2.$2 )
+        #global.println("1111111111= " + a2.$2 )
         
         #axxx = int[3]{1,2,3}
         #int[] axxx2 = new(4){ null,4,5 }
@@ -105,7 +131,7 @@ ArrayTest
         for v in axxx11
         {
             if v != null{
-                Console.print("level2---------value2: = " + v.toString() )
+                global.println("level2---------value2: = " + v.toString() )
             }
         }
         !#
@@ -114,7 +140,7 @@ ArrayTest
         for v in [1000,2000,3000,1005]
         {
             if v != null {
-                System.Console.WriteLine("level2---------value2: = " + v.toString() )
+                global.println("level2---------value2: = " + v.toString() )
             }
         } 
         !#
@@ -142,7 +168,7 @@ ArrayTest
         for v in a1
         {
             if v != null{
-                System.Console.WriteLine("level2=================value2: = " + v.toString() )
+                global.println("level2=================value2: = " + v.toString() )
             }
         }
         
@@ -153,23 +179,23 @@ ArrayTest
             {         
                 for v2 in v
                 {
-                    System.Console.WriteLine("level2---------value2: = " + v2.toString() )
+                    global.println("level2---------value2: = " + v2.toString() )
                     for i = 0, i < v2.length, i++
                     {
-                        System.Console.WriteLine("level3---------value3 :==" + v2[i].toString() )
+                        global.println("level3---------value3 :==" + v2[i].toString() )
                     }
                 }
-                #System.Console.WriteLine("------------value: " + v.toString() )
+                #global.println("------------value: " + v.toString() )
             }
             else
             {                
-                System.Console.WriteLine("============index: " + v )
+                global.println("============index: " + v )
             }
         }
         !#
 
 
-        #System.Console.WriteLine("1111111111= " + a1[0] )
+        #global.println("1111111111= " + a1[0] )
        
         #!
         object[][] a2 = int[2][4];
@@ -188,14 +214,14 @@ ArrayTest
         int[] a33 = {1,2,3,4};
         a33[3] = 123
         var aa333 =  a33[0];
-        System.Console.WriteLine("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
+        global.println("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
         !#
 
         #!
         int[4][] a335 = {[], int[3]{ 871,872,873 }, int[20] };
         a335[2][1] = 123
         var aa333 =  a335[0];
-        System.Console.WriteLine("1111111111= " + a335[2].toString() + "-----" + a335[0].toString() );# + "xxxxx=" + a335 )
+        global.println("1111111111= " + a335[2].toString() + "-----" + a335[0].toString() );# + "xxxxx=" + a335 )
         #testArray(a335)
         !# 
         #!
@@ -207,16 +233,16 @@ ArrayTest
         # a35[0] = [0,1,2,3,4] a35[1] = [[1,2,3],[2,3,4],[4,5,6],[7,8,9]]  a34[1][0][2] = 3  a35是个一维两值数组，访问a35[1] 是确定对象访问 再访问 是一个二维纯int数组，然后是a35[1][0][2] 后边两位是纯数组访问
         aa = 0
         #var aaaa35111 = a35.$aa.$1
-        #System.Console.WriteLine("1111111111= " + aaaa35111 )
+        #global.println("1111111111= " + aaaa35111 )
         a35.$1.$aa.$1 = 3000;  相当于  a35[1][3] = 3000        
-        System.Console.WriteLine("1111111111= " + a35.$1.$aa.$1 )
+        global.println("1111111111= " + a35.$1.$aa.$1 )
 
         var tt1 = a35.$aa.$3
         if tt1 is ArrClass tt2
         {
             tt2.i = 200
             var aa1111 = tt2.i;
-            System.Console.WriteLine("22222222= " +aa1111 )
+            global.println("22222222= " +aa1111 )
         }
         !#
         
