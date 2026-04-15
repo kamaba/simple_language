@@ -373,6 +373,15 @@ namespace SimpleLanguage.VM
 
             // Bitwise/shift on mixed sign types: keep 64-bit safety.
             bool isBitOp = sign >= 5 && sign <= 9;
+            if (isBitOp && lUnsigned && rUnsigned)
+            {
+                // For pure unsigned bit operations, keep minimal unsigned width
+                // instead of forcing int32 widening.
+                if (left == EVMType.UInt64 || right == EVMType.UInt64) return EVMType.UInt64;
+                if (left == EVMType.UInt32 || right == EVMType.UInt32) return EVMType.UInt32;
+                if (left == EVMType.UInt16 || right == EVMType.UInt16) return EVMType.UInt16;
+                return EVMType.UInt8;
+            }
 
             if (left == EVMType.UInt64 || right == EVMType.UInt64)
             {

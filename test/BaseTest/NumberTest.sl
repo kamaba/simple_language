@@ -60,6 +60,20 @@ NumberTest
         global.println("x << 2 = " + (x << 2).toString())
         global.println("y >> 1 = " + (y >> 1).toString())
     }
+    static compareTest()
+    {
+        global.println("----- compareTest -----")
+
+        Num a = 3.14
+        Num b = 2.5
+
+        global.println("a > b  = " + (a > b).toString())
+        global.println("a < b  = " + (a < b).toString())
+        global.println("a == b = " + (a == b).toString())
+        global.println("a != b = " + (a != b).toString())
+        global.println("a >= b = " + (a >= b).toString())
+        global.println("a <= b = " + (a <= b).toString())
+    }
     static convertAndTypeTest()
     {
         global.println("----- convertAndTypeTest -----")
@@ -141,6 +155,41 @@ NumberTest
         global.println("f = 5 / 2 -> " + f.toString() + " ; type=" + f.type.toString())
         global.println("g = 5 % 2 -> " + g.toString() + " ; type=" + g.type.toString())
     }
+    static dartStyleNumberApiTest()
+    {
+        global.println("----- dartStyleNumberApiTest -----")
+
+        Num n = 3.75
+        Num neg = -7
+        Int32 baseNum = 9
+
+        global.println("n = " + n.toString() + " ; type=" + n.type.toString())
+        global.println("neg = " + neg.toString() + " ; type=" + neg.type.toString())
+        global.println("neg.toBool() = " + neg.toBool().toString())
+
+        global.println("n.toInt32() = " + n.toInt32().toString() + " ; type=" + n.toInt32().type.toString())
+        global.println("baseNum.toFloat64() = " + baseNum.toFloat64().toString() + " ; type=" + baseNum.toFloat64().type.toString())
+
+        global.println("baseNum.isEven() = " + baseNum.isEven().toString())
+        global.println("baseNum.isOdd() = " + baseNum.isOdd().toString())
+        global.println("baseNum.sign() = " + baseNum.sign().toString())
+    }
+    static mixedNumericPromotionTest()
+    {
+        global.println("----- mixedNumericPromotionTest -----")
+
+        m1 = 250 + 10
+        m2 = 250 + 10.5
+        m3 = 1i + 2ui + 3L
+        m4 = (1 + 2) * (3 + 4) - 5
+        m5 = (0b1111 & 0b0101) | 0b1000
+
+        global.println("m1 = 250 + 10 -> " + m1.toString() + " ; type=" + m1.type.toString())
+        global.println("m2 = 250 + 10.5 -> " + m2.toString() + " ; type=" + m2.type.toString())
+        global.println("m3 = 1i + 2ui + 3L -> " + m3.toString() + " ; type=" + m3.type.toString())
+        global.println("m4 = (1 + 2) * (3 + 4) - 5 -> " + m4.toString() + " ; type=" + m4.type.toString())
+        global.println("m5 = (0b1111 & 0b0101) | 0b1000 -> " + m5.toString() + " ; type=" + m5.type.toString())
+    }
 
     static fun()
     {
@@ -148,10 +197,13 @@ NumberTest
         baseArithmeticTest()
         integerTypeTest()
         bitOpTest()
+        compareTest()
         convertAndTypeTest()
         suffixLiteralTest()
         radixLiteralTest()
         inferTypeByComputeTest()
+        dartStyleNumberApiTest()
+        mixedNumericPromotionTest()
         global.println("========== NumberTest (end) ==========")
     }
 }

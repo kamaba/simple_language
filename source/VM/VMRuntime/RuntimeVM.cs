@@ -1514,6 +1514,7 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.Clt:
+                case EIROpCode.Clt_Un:
                     {
                         if (m_ValueIndex >= 2)
                         {
@@ -1526,6 +1527,7 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.Cgt:
+                case EIROpCode.Cgt_Un:
                     {
                         if (m_ValueIndex >= 2)
                         {
@@ -1537,7 +1539,21 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
+                case EIROpCode.Cge:
+                case EIROpCode.Cge_Un:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            // compareSign 1 -> >=
+                            SValue.CompareSValue1AndValue2(ref left, ref right, 1);
+                            PushSValueSynced(left);
+                        }
+                    }
+                    break;
                 case EIROpCode.Cle:
+                case EIROpCode.Cle_Un:
                     {
                         if (m_ValueIndex >= 2)
                         {
