@@ -1574,6 +1574,11 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Multiply:
                 case EIROpCode.Divide:
                 case EIROpCode.Modulo:
+                case EIROpCode.Combine:
+                case EIROpCode.InclusiveOr:
+                case EIROpCode.XOR:
+                case EIROpCode.Shi:
+                case EIROpCode.Shr:
                     {
                         if (m_ValueIndex >= 2)
                         {
@@ -1588,6 +1593,11 @@ namespace SimpleLanguage.VM.Runtime
                                 case EIROpCode.Multiply: sign = 2; break;
                                 case EIROpCode.Divide: sign = 3; break;
                                 case EIROpCode.Modulo: sign = 4; break;
+                                case EIROpCode.Combine: sign = 5; break;
+                                case EIROpCode.InclusiveOr: sign = 6; break;
+                                case EIROpCode.XOR: sign = 7; break;
+                                case EIROpCode.Shi: sign = 8; break;
+                                case EIROpCode.Shr: sign = 9; break;
                             }
                             SValue.ComputeValueInline(ref left, sign, ref right, isUn);
                             PushSValueSynced(left);
@@ -2007,6 +2017,44 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             var v1 = m_ValueStack[m_ValueIndex - 1];
 
+                            // For primitive/builtin types, "as" should behave as numeric/string conversion,
+                            // not strict runtime-class identity check.
+                            bool targetIsPrimitiveLike =
+                                rt.eType == EVMType.Boolean
+                                || rt.eType == EVMType.UInt8
+                                || rt.eType == EVMType.Int8
+                                || rt.eType == EVMType.Int16
+                                || rt.eType == EVMType.UInt16
+                                || rt.eType == EVMType.Int32
+                                || rt.eType == EVMType.UInt32
+                                || rt.eType == EVMType.Int64
+                                || rt.eType == EVMType.UInt64
+                                || rt.eType == EVMType.Float32
+                                || rt.eType == EVMType.Float64
+                                || rt.eType == EVMType.Num
+                                || rt.eType == EVMType.String;
+                            if (targetIsPrimitiveLike)
+                            {
+                                if (v1.isNull)
+                                {
+                                    m_ValueStack[m_ValueIndex - 1].SetNull();
+                                }
+                                else
+                                {
+                                    var cv = v1;
+                                    try
+                                    {
+                                        cv.ConvertByEType(rt.eType);
+                                        m_ValueStack[m_ValueIndex - 1] = cv;
+                                    }
+                                    catch
+                                    {
+                                        m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    }
+                                }
+                                break;
+                            }
+
                             if (v1.isNull)
                             {
                                 m_ValueStack[m_ValueIndex - 1].SetNull();
@@ -2092,7 +2140,23 @@ namespace SimpleLanguage.VM.Runtime
             {
                 if (RuntimeTypeManager.IsCoreRuntimeType( robj.runtimeType ) && obj == null )
                 {
-                    robj.SetSObject( svalue.GetSObject() );
+                    // For typed core slots, initialize by target runtime type.
+                    // If source type differs, convert to target first to avoid
+                    // writing mismatched runtime objects (e.g. Int32Object into Int8 slot).
+                    var initValue = svalue;
+                    if (initValue.eType != robj.eType && initValue.eType != EVMType.Null)
+                    {
+                        try
+                        {
+                            initValue.ConvertByEType(robj.eType);
+                        }
+                        catch
+                        {
+                            // Keep old value on conversion failure; existing downstream
+                            // checks/logging will handle incompatibility.
+                        }
+                    }
+                    robj.SetSObject( initValue.GetSObject() );
                     return;
                 }
             }

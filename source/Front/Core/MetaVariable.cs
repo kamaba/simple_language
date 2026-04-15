@@ -218,13 +218,6 @@ namespace SimpleLanguage.Core
 
             var curEType = CoreMetaClassManager.GetETypeByMetaClass(defineMetaType.metaClass);
 
-            // 0b/0o/0x 常量必须在“已有前置定义类型”下才允许进入 constValue。
-            if (curEType == EType.Object && IsRadixNumberLiteral(mcen))
-            {
-                Log.AddMetaCoreLog(LID.Unknown, "Error 0b/0o/0x 常量必须配合前置定义类型使用，例如: byte v = 0b1010;");
-                return false;
-            }
-
             if (curEType == EType.Object)
             {
                 curEType = mcen.eType;
@@ -420,10 +413,9 @@ namespace SimpleLanguage.Core
                 return false;
             }
 
-            if (defineEType == EType.Object && IsRadixNumberLiteral(mcen))
+            if (defineEType == EType.Object)
             {
-                Log.AddMetaCoreLog(LID.Unknown, "Error 0b/0o/0x 常量必须配合前置定义类型使用，例如: uint v = 0xFF;");
-                return false;
+                return true;
             }
 
             var curEType = defineEType;

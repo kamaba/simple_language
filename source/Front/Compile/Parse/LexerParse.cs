@@ -227,6 +227,25 @@ namespace SimpleLanguage.Compile
                 AddToken(ETokenType.Number, parsed, EType.UInt64);
             }
         }
+        void AddUnsignedNumberRealTokenByRange(ulong parsed, string x)
+        {
+            if (parsed <= byte.MaxValue)
+            {
+                AddToken(ETokenType.NumberReal, (byte)parsed, x);
+            }
+            else if (parsed <= ushort.MaxValue)
+            {
+                AddToken(ETokenType.NumberReal, (ushort)parsed, x);
+            }
+            else if (parsed <= uint.MaxValue)
+            {
+                AddToken(ETokenType.NumberReal, (uint)parsed, x);
+            }
+            else
+            {
+                AddToken(ETokenType.NumberReal, parsed, x);
+            }
+        }
 
         /// <summary> + </summary>
         void ReadPlus() 
@@ -717,7 +736,10 @@ namespace SimpleLanguage.Compile
                     {
                         input = "??" + raw;
                     }
-                    AddNumberRealTokenByRange(parsed, input);
+                    // Radix literal defaults to the smallest unsigned integer type
+                    // that can hold the value (UInt8 -> UInt16 -> UInt32 -> UInt64),
+                    // while keeping token kind as NumberReal so downstream radix rules apply.
+                    AddUnsignedNumberRealTokenByRange(parsed, input);
                 }
                 catch
                 {

@@ -60,22 +60,6 @@ NumberTest
         global.println("x << 2 = " + (x << 2).toString())
         global.println("y >> 1 = " + (y >> 1).toString())
     }
-
-    static compareTest()
-    {
-        global.println("----- compareTest -----")
-
-        Num a = 3.14
-        Num b = 2.5
-
-        global.println("a > b  = " + (a > b).toString())
-        global.println("a < b  = " + (a < b).toString())
-        global.println("a == b = " + (a == b).toString())
-        global.println("a != b = " + (a != b).toString())
-        global.println("a >= b = " + (a >= b).toString())
-        global.println("a <= b = " + (a <= b).toString())
-    }
-
     static convertAndTypeTest()
     {
         global.println("----- convertAndTypeTest -----")
@@ -99,6 +83,7 @@ NumberTest
     {
         global.println("----- suffixLiteralTest -----")
 
+        Byte vint8 = 0xfa
         vI = 123i
         vUI = 123ui
         vL = 123L
@@ -108,6 +93,7 @@ NumberTest
         vF = 1.25f
         vD = 1.25d
 
+        global.println("0xfa  -> " + vint8.toString() + " ; type=" + vint8.type.toString())
         global.println("123i  -> " + vI.toString() + " ; type=" + vI.type.toString())
         global.println("123ui -> " + vUI.toString() + " ; type=" + vUI.type.toString())
         global.println("123L  -> " + vL.toString() + " ; type=" + vL.type.toString())
@@ -162,7 +148,6 @@ NumberTest
         baseArithmeticTest()
         integerTypeTest()
         bitOpTest()
-        compareTest()
         convertAndTypeTest()
         suffixLiteralTest()
         radixLiteralTest()

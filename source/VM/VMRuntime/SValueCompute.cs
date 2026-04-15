@@ -591,8 +591,8 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Int8:
                     {
-                        eType = EVMType.Int32;
-                        int32Value = -sint8Value;
+                        // Keep runtime type stable for unary minus.
+                        sint8Value = unchecked((sbyte)(-sint8Value));
                     }
                     break;
                 //case EVMType.Char:
@@ -603,7 +603,8 @@ namespace SimpleLanguage.VM
                 //    break;
                 case EVMType.Int16:
                     {
-                        int16Value = (short)(-int16Value);
+                        // Keep runtime type stable for unary minus.
+                        int16Value = unchecked((short)(-int16Value));
                     }
                     break;
                 case EVMType.UInt16:
@@ -614,7 +615,8 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Int32:
                     {
-                        int32Value = -int32Value;
+                        // Keep runtime type stable for unary minus.
+                        int32Value = unchecked(-int32Value);
                     }
                     break;
                 case EVMType.UInt32:
@@ -625,7 +627,8 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Int64:
                     {
-                        int64Value = -int64Value;
+                        // Keep runtime type stable for unary minus.
+                        int64Value = unchecked(-int64Value);
                     }
                     break;
                 case EVMType.UInt64:

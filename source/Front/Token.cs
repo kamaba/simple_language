@@ -99,7 +99,17 @@ namespace SimpleLanguage
                     break;
                 case ETokenType.NumberReal:
                     {
-                        etype = EType.Num;
+                        if (lexeme is sbyte) etype = EType.Int8;
+                        else if (lexeme is byte) etype = EType.UInt8;
+                        else if (lexeme is short) etype = EType.Int16;
+                        else if (lexeme is ushort) etype = EType.UInt16;
+                        else if (lexeme is int) etype = EType.Int32;
+                        else if (lexeme is uint) etype = EType.UInt32;
+                        else if (lexeme is long) etype = EType.Int64;
+                        else if (lexeme is ulong) etype = EType.UInt64;
+                        else if (lexeme is float) etype = EType.Float32;
+                        else if (lexeme is double) etype = EType.Float64;
+                        else etype = EType.Num;
                     }
                     break;
                 case ETokenType.Type:
