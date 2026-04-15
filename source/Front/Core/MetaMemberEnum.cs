@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaMemberEnum.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -38,8 +38,8 @@ namespace SimpleLanguage.Core
             m_RealMetaType = new MetaType(CoreMetaClassManager.memberMetaClass);
             SetIsDefineMetaType(true);
 
-            if (extendClass == CoreMetaClassManager.byteMetaClass
-                  || extendClass == CoreMetaClassManager.sbyteMetaClass
+            if (extendClass == CoreMetaClassManager.uint8MetaClass
+                  || extendClass == CoreMetaClassManager.int8MetaClass
                   || extendClass == CoreMetaClassManager.int16MetaClass
                   || extendClass == CoreMetaClassManager.uint16MetaClass
                   || extendClass == CoreMetaClassManager.int32MetaClass
@@ -60,8 +60,8 @@ namespace SimpleLanguage.Core
             }
             SetOwnerMetaClass(mc);
 
-            if (extendClass == CoreMetaClassManager.byteMetaClass
-                  || extendClass == CoreMetaClassManager.sbyteMetaClass
+            if (extendClass == CoreMetaClassManager.uint8MetaClass
+                  || extendClass == CoreMetaClassManager.int8MetaClass
                   || extendClass == CoreMetaClassManager.int16MetaClass
                   || extendClass == CoreMetaClassManager.uint16MetaClass
                   || extendClass == CoreMetaClassManager.int32MetaClass

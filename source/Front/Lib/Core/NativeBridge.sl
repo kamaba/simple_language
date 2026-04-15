@@ -1,5 +1,5 @@
 
-enum BridgeKind extends Byte
+enum BridgeKind extends UInt8
 {
    SELF = 0
    CLR

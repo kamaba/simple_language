@@ -1,4 +1,4 @@
-﻿
+
 using SimpleLanguage.CSharp;
 using System;
 using System.Diagnostics;
@@ -22,12 +22,12 @@ namespace SimpleLanguage.Core
                             st = typeof(bool);
                         }
                         break;
-                    case EType.Byte:
+                    case EType.UInt8:
                         {
                             st = typeof(Byte);
                         }
                         break;
-                    case EType.SByte:
+                    case EType.Int8:
                         {
                             st = typeof(SByte);
                         }
@@ -119,11 +119,11 @@ namespace SimpleLanguage.Core
             {
                 type = typeof(System.Boolean);
             }
-            else if (mc == CoreMetaClassManager.byteMetaClass)
+            else if (mc == CoreMetaClassManager.uint8MetaClass)
             {
                 type = typeof(System.Byte);
             }
-            else if (mc == CoreMetaClassManager.sbyteMetaClass)
+            else if (mc == CoreMetaClassManager.int8MetaClass)
             {
                 type = typeof(System.SByte);
             }

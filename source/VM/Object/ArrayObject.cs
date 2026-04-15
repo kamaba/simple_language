@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ArrayObject.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -76,28 +76,28 @@ namespace SimpleLanguage.VM
                         */
                     }
                     break;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     {
                         m_Array = new Byte?[length];
                         /*
-                        m_Array = new Int8Object[length];
+                        m_Array = new UInt8Object[length];
                         for (int i = 0; i < length; i++)
                         {
-                            var anyobj = new Int8Object(0);
+                            var anyobj = new UInt8Object(0);
                             anyobj.SetNull();
                             m_Array.SetValue(anyobj, i);
                         }
                         */
                     }
                     break;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     {
                         m_Array = new SByte?[length];
                         /*
-                        m_Array = new SInt8Object[length];
+                        m_Array = new Int8Object[length];
                         for (int i = 0; i < length; i++)
                         {
-                            var anyobj = new SInt8Object(0);
+                            var anyobj = new Int8Object(0);
                             anyobj.SetNull();
                             m_Array.SetValue(anyobj, i);
                         }
@@ -319,9 +319,9 @@ namespace SimpleLanguage.VM
             //                //}
             //            }
             //            break;
-            //        case EVMType.Byte:
+            //        case EVMType.UInt8:
             //            {
-            //                //Int8Object val = obj as Int8Object;
+            //                //UInt8Object val = obj as UInt8Object;
             //                //if (val != null)
             //                //{
             //                //    sval.SetInt8Value( (byte)val.value );
@@ -332,9 +332,9 @@ namespace SimpleLanguage.VM
             //                //}
             //            }
             //            break;
-            //        case EVMType.SByte:
+            //        case EVMType.Int8:
             //            {
-            //                //SInt8Object val = obj as SInt8Object;
+            //                //Int8Object val = obj as Int8Object;
             //                //if (val != null)
             //                //{
             //                //    sval.SetSInt8Value(val.value);
@@ -558,27 +558,27 @@ namespace SimpleLanguage.VM
                         m_Array.SetValue(svalue.int8Value == 1, index);
                     }
                     break;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     {
                         if (anyobj != null)
                         {
-                            anyobj.SetValueByType(EVMType.Byte, svalue.int8Value );
+                            anyobj.SetValueByType(EVMType.UInt8, svalue.int8Value );
                             return;
                         }
-                        //var i8obj = new Int8Object(svalue.int8Value);
-                        //anyobj.SetValue(EVMType.Byte, i8obj );
+                        //var i8obj = new UInt8Object(svalue.int8Value);
+                        //anyobj.SetValue(EVMType.UInt8, i8obj );
                         m_Array.SetValue(svalue.int8Value, index);
                     }
                     break;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     {
                         if (anyobj != null)
                         {
-                            anyobj.SetValueByType(EVMType.SByte, svalue.sint8Value );
+                            anyobj.SetValueByType(EVMType.Int8, svalue.sint8Value );
                             return;
                         }
-                        //var si8obj = new SInt8Object(svalue.sint8Value);
-                        //anyobj.SetValue(EVMType.SByte, si8obj );
+                        //var si8obj = new Int8Object(svalue.sint8Value);
+                        //anyobj.SetValue(EVMType.Int8, si8obj );
                         m_Array.SetValue(svalue.sint8Value, index);
                     }
                     break;
@@ -718,24 +718,24 @@ namespace SimpleLanguage.VM
                         }
                         m_Array.SetValue(svalue.sobject, index);
                         //var mva = m_MemberObjectArray[index];
-                        //if (mva.eType == EVMType.Byte)
+                        //if (mva.eType == EVMType.UInt8)
                         //{
 
-                        //    Int8Object byteObj = mva as Int8Object;
+                        //    UInt8Object byteObj = mva as UInt8Object;
                         //    if (byteObj == null)
                         //    {
-                        //        Log.AddVM(LID.Unknown, "Class Int8Object 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                        //        Log.AddVM(LID.Unknown, "Class UInt8Object 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                         //        return;
                         //    }
                         //    byteObj.SetValue(svalue.int8Value);
                         //}
-                        //else if (mva.eType == EVMType.SByte)
+                        //else if (mva.eType == EVMType.Int8)
                         //{
 
-                        //    SInt8Object sbyteObj = mva as SInt8Object;
+                        //    Int8Object sbyteObj = mva as Int8Object;
                         //    if (sbyteObj == null)
                         //    {
-                        //        Log.AddVM(LID.Unknown, "Class SInt8Object 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                        //        Log.AddVM(LID.Unknown, "Class Int8Object 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                         //        return;
                         //    }
                         //    sbyteObj.SetValue(svalue.sint8Value);

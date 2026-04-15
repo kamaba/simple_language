@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      RuntimeVM.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -201,8 +201,8 @@ namespace SimpleLanguage.VM.Runtime
         public bool IsNumericTypeLocal(EVMType t)
         {
             return t == EVMType.Num
-                || t == EVMType.SByte
-                || t == EVMType.Byte
+                || t == EVMType.Int8
+                || t == EVMType.UInt8
                 || t == EVMType.Int16
                 || t == EVMType.UInt16
                 || t == EVMType.Int32
@@ -964,13 +964,13 @@ namespace SimpleLanguage.VM.Runtime
                             m_ValueStack[slot].SetBoolValue(b);
                     }
                     break;
-                case EIROpCode.LoadConstByte:
+                case EIROpCode.LoadConstUInt8:
                     {
                         if (iri.TryGetByte(out byte cb) && TryPushStackSlot(out int slot))
                             m_ValueStack[slot].SetInt8Value(cb);
                     }
                     break;
-                case EIROpCode.LoadConstSByte:
+                case EIROpCode.LoadConstInt8:
                     {
                         if (iri.TryGetSByte(out sbyte sb) && TryPushStackSlot(out int slot))
                             m_ValueStack[slot].SetSInt8Value(sb);
@@ -1048,12 +1048,12 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_I8:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Byte);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt8);
                     }
                     break;
                 case EIROpCode.Convert_SI8:
                     {
-                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.SByte);
+                        m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int8);
                     }
                     break;
                 case EIROpCode.Convert_I16:
@@ -2146,10 +2146,10 @@ namespace SimpleLanguage.VM.Runtime
                 //        TemplateObject to = obj as TemplateObject;
                 //        if (to != null)
                 //        {
-                //            to.SetValue(EVMType.Byte, svalue.int8Value);
+                //            to.SetValue(EVMType.UInt8, svalue.int8Value);
                 //            return;
                 //        }
-                //        Int8Object byteObj = obj as Int8Object;
+                //        UInt8Object byteObj = obj as UInt8Object;
                 //        if (byteObj == null)
                 //        {
                 //            Debug.Write("璇ョ被鍨嬩笉鏄疊yte绫诲瀷!!");
@@ -2158,20 +2158,20 @@ namespace SimpleLanguage.VM.Runtime
                 //        byteObj.SetValue(svalue.int8Value);
                 //    }
                 //    break;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     {
                         if (anyObj)
                         {
-                            obj.SetValueByType(EVMType.Byte, svalue.int8Value);
+                            obj.SetValueByType(EVMType.UInt8, svalue.int8Value);
                             return;
                         }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            to.SetValue(EVMType.Byte, svalue.int8Value);
+                            to.SetValue(EVMType.UInt8, svalue.int8Value);
                             return;
                         }
-                        Int8Object byteObj = obj as Int8Object;
+                        UInt8Object byteObj = obj as UInt8Object;
                         if (byteObj == null)
                         {
                             Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疊yte绫诲瀷!!");
@@ -2185,9 +2185,9 @@ namespace SimpleLanguage.VM.Runtime
                 //        TemplateObject to = obj as TemplateObject;
                 //        if (to != null)
                 //        {
-                //            to.SetValue(EVMType.SByte, svalue.sint8Value);
+                //            to.SetValue(EVMType.Int8, svalue.sint8Value);
                 //        }
-                //        SInt8Object byteObj = obj as SInt8Object;
+                //        Int8Object byteObj = obj as Int8Object;
                 //        if (byteObj == null)
                 //        {
                 //            Debug.Write("璇ョ被鍨嬩笉鏄疭Byte绫诲瀷!!");
@@ -2196,19 +2196,19 @@ namespace SimpleLanguage.VM.Runtime
                 //        byteObj.SetValue(svalue.sint8Value);
                 //    }
                 //    break;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     {
                         if (anyObj)
                         {
-                            obj.SetValueByType(EVMType.SByte, svalue.sint8Value);
+                            obj.SetValueByType(EVMType.Int8, svalue.sint8Value);
                             return;
                         }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            to.SetValue(EVMType.SByte, svalue.sint8Value);
+                            to.SetValue(EVMType.Int8, svalue.sint8Value);
                         }
-                        SInt8Object byteObj = obj as SInt8Object;
+                        Int8Object byteObj = obj as Int8Object;
                         if (byteObj == null)
                         {
                             Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疭Byte绫诲瀷!!");
@@ -2718,11 +2718,11 @@ namespace SimpleLanguage.VM.Runtime
                         svalue.SetBoolValue(boolObj.value);
                     }
                     break;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     {
                         if (anyObj)
                         {
-                            if (obj.eType == EVMType.Byte)
+                            if (obj.eType == EVMType.UInt8)
                             {
                                 svalue.SetInt8Value((byte)obj.value);
                             }
@@ -2736,11 +2736,11 @@ namespace SimpleLanguage.VM.Runtime
                         if (to != null)
                         {
                             svalue.SetInt8Value((Byte)to.value);
-                            to.SetValue(EVMType.Byte, obj.value);
+                            to.SetValue(EVMType.UInt8, obj.value);
                             return;
                         }
 
-                        Int8Object byteObj = obj as Int8Object;
+                        UInt8Object byteObj = obj as UInt8Object;
                         if (byteObj == null)
                         {
                             Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊yte绫诲瀷!!");
@@ -2749,11 +2749,11 @@ namespace SimpleLanguage.VM.Runtime
                         svalue.SetInt8Value((Byte)byteObj.value);
                     }
                     break;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     {
                         if (anyObj)
                         {
-                            if (obj.eType == EVMType.SByte)
+                            if (obj.eType == EVMType.Int8)
                             {
                                 svalue.SetSInt8Value((sbyte)obj.value);
                             }
@@ -2770,7 +2770,7 @@ namespace SimpleLanguage.VM.Runtime
                             return;
                         }
 
-                        SInt8Object byteObj = obj as SInt8Object;
+                        Int8Object byteObj = obj as Int8Object;
                         if (byteObj == null)
                         {
                             Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疭Byte绫诲瀷!!");
@@ -3025,8 +3025,8 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 switch (obj.eType)
                                 {
-                                    case EVMType.Byte: svalue.SetInt8Value((byte)obj.value); break;
-                                    case EVMType.SByte: svalue.SetSInt8Value((sbyte)obj.value); break;
+                                    case EVMType.UInt8: svalue.SetInt8Value((byte)obj.value); break;
+                                    case EVMType.Int8: svalue.SetSInt8Value((sbyte)obj.value); break;
                                     case EVMType.Int16: svalue.SetInt16Value((short)obj.value); break;
                                     case EVMType.UInt16: svalue.SetUInt16Value((ushort)obj.value); break;
                                     case EVMType.Int32: svalue.SetInt32Value((int)obj.value); break;
@@ -3136,12 +3136,12 @@ namespace SimpleLanguage.VM.Runtime
                                     svalue.SetBoolValue((bool)obj.value);
                                 }
                                 break;
-                            case EVMType.Byte:
+                            case EVMType.UInt8:
                                 {
                                     svalue.SetInt8Value((byte)obj.value);
                                 }
                                 break;
-                            case EVMType.SByte:
+                            case EVMType.Int8:
                                 {
                                     svalue.SetSInt8Value((sbyte)obj.value);
                                 }

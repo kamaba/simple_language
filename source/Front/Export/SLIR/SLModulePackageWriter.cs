@@ -747,8 +747,8 @@ namespace SimpleLanguage.Export.SLIR
                 var op = irBuf[i]?.opCode ?? EIROpCode.Nop;
                 bool isConst =
                     op == EIROpCode.LoadConstNull
-                    || op == EIROpCode.LoadConstByte
-                    || op == EIROpCode.LoadConstSByte
+                    || op == EIROpCode.LoadConstUInt8
+                    || op == EIROpCode.LoadConstInt8
                     || op == EIROpCode.LoadConstInt16
                     || op == EIROpCode.LoadConstUInt16
                     || op == EIROpCode.LoadConstInt32

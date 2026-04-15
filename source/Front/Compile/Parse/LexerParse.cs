@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      LexerParse.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -196,11 +196,11 @@ namespace SimpleLanguage.Compile
         {
             if (parsed <= (ulong)sbyte.MaxValue)
             {
-                AddToken(ETokenType.Number, (sbyte)parsed, EType.SByte);
+                AddToken(ETokenType.Number, (sbyte)parsed, EType.Int8);
             }
             else if (parsed <= byte.MaxValue)
             {
-                AddToken(ETokenType.Number, (byte)parsed, EType.Byte);
+                AddToken(ETokenType.Number, (byte)parsed, EType.UInt8);
             }
             else if (parsed <= (ulong)short.MaxValue)
             {
@@ -1663,13 +1663,13 @@ namespace SimpleLanguage.Compile
                 case "byte":
                     {
                         tokenType = ETokenType.Type;
-                        extend = EType.Byte;
+                        extend = EType.UInt8;
                     }
                     break;
                 case "sbyte":
                     {
                         tokenType = ETokenType.Type;
-                        extend = EType.SByte;
+                        extend = EType.Int8;
                     }
                     break;
                 //case "char":

@@ -127,8 +127,8 @@ namespace SimpleLanguage.VM.Runtime
             switch (args[0].eType)
             {
                 case EVMType.Boolean:
-                case EVMType.Byte:
-                case EVMType.SByte:
+                case EVMType.UInt8:
+                case EVMType.Int8:
                 case EVMType.Int16:
                 case EVMType.UInt16:
                 case EVMType.Int32:
@@ -157,8 +157,8 @@ namespace SimpleLanguage.VM.Runtime
         {
             switch (arg.eType)
             {
-                case EVMType.Byte: return ESystemMethodCall.SystemConvertInt8;
-                case EVMType.SByte: return ESystemMethodCall.SystemConvertSInt8;
+                case EVMType.UInt8: return ESystemMethodCall.SystemConvertInt8;
+                case EVMType.Int8: return ESystemMethodCall.SystemConvertSInt8;
                 case EVMType.Int16: return ESystemMethodCall.SystemConvertInt16;
                 case EVMType.UInt16: return ESystemMethodCall.SystemConvertUInt16;
                 case EVMType.Int32: return ESystemMethodCall.SystemConvertInt32;
@@ -174,8 +174,8 @@ namespace SimpleLanguage.VM.Runtime
             {
                 switch (arg.sobject)
                 {
-                    case Int8Object: return ESystemMethodCall.SystemConvertInt8;
-                    case SInt8Object: return ESystemMethodCall.SystemConvertSInt8;
+                    case UInt8Object: return ESystemMethodCall.SystemConvertInt8;
+                    case Int8Object: return ESystemMethodCall.SystemConvertSInt8;
                     case Int16Object: return ESystemMethodCall.SystemConvertInt16;
                     case UInt16Object: return ESystemMethodCall.SystemConvertUInt16;
                     case Int32Object: return ESystemMethodCall.SystemConvertInt32;

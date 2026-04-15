@@ -1,4 +1,4 @@
-﻿using SimpleLanguage.VM.Runtime;
+using SimpleLanguage.VM.Runtime;
 using System;
 using System.Buffers.Binary;
 using System.Diagnostics;
@@ -70,10 +70,10 @@ namespace SimpleLanguage.VM
                 case EVMType.Boolean:
                     svalue.SetBoolValue(span.Length >= 4 && BinaryPrimitives.ReadInt32LittleEndian(span) != 0);
                     break;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     svalue.SetInt8Value(span.Length > 0 ? span[0] : (byte)0);
                     break;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     svalue.SetSInt8Value(span.Length > 0 ? unchecked((sbyte)span[0]) : (sbyte)0);
                     break;
                 case EVMType.Int16:
@@ -109,8 +109,8 @@ namespace SimpleLanguage.VM
         private static bool IsMemberDataDirectType(EVMType evmType)
         {
             return evmType == EVMType.Boolean
-                || evmType == EVMType.Byte
-                || evmType == EVMType.SByte
+                || evmType == EVMType.UInt8
+                || evmType == EVMType.Int8
                 || evmType == EVMType.Int16
                 || evmType == EVMType.UInt16
                 || evmType == EVMType.Int32
@@ -144,10 +144,10 @@ namespace SimpleLanguage.VM
                     if (span.Length >= 4)
                         BinaryPrimitives.WriteInt32LittleEndian(span, sval.int8Value == 1 ? 1 : 0);
                     break;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     span[0] = sval.int8Value;
                     break;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     span[0] = unchecked((byte)sval.sint8Value);
                     break;
                 case EVMType.Int16:
@@ -216,13 +216,13 @@ namespace SimpleLanguage.VM
                 case EVMType.Boolean:
                     BinaryPrimitives.WriteInt32LittleEndian(span, (m_SObject as BoolObject)?.value == true ? 1 : 0);
                     break;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     if (span.Length > 0)
-                        span[0] = (m_SObject as Int8Object)?.value ?? 0;
+                        span[0] = (m_SObject as UInt8Object)?.value ?? 0;
                     break;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     if (span.Length > 0)
-                        span[0] = unchecked((byte)((m_SObject as SInt8Object)?.value ?? 0));
+                        span[0] = unchecked((byte)((m_SObject as Int8Object)?.value ?? 0));
                     break;
                 case EVMType.Int16:
                     BinaryPrimitives.WriteInt16LittleEndian(span, (m_SObject as Int16Object)?.value ?? 0);
@@ -348,21 +348,21 @@ namespace SimpleLanguage.VM
 
                     }
                     break;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                 //case EVMType.RawByte:
                     {
-                        Int8Object byteObj = null;
+                        UInt8Object byteObj = null;
                         if (anyobj != null)
                         {
-                            //byteObj = new Int8Object(svalue.int8Value);
+                            //byteObj = new UInt8Object(svalue.int8Value);
                             //anyobj.SetValue(byteObj);
                             //m_MemberObjectArray[index] = byteObj;
-                            anyobj.SetValueByType(EVMType.Byte, svalue.int8Value );
+                            anyobj.SetValueByType(EVMType.UInt8, svalue.int8Value );
                             return;
                         }
 
 
-                        byteObj = mro.sobject as Int8Object;
+                        byteObj = mro.sobject as UInt8Object;
                         if (byteObj == null)
                         {
                             Debug.Assert(false);
@@ -372,20 +372,20 @@ namespace SimpleLanguage.VM
                         byteObj.SetValue(svalue.int8Value);
                     }
                     break;
-                case EVMType.SByte:
+                case EVMType.Int8:
                 //case EVMType.RawSByte:
                     {
-                        SInt8Object sbyteObj = null;
+                        Int8Object sbyteObj = null;
                         if (anyobj != null)
                         {
-                            //sbyteObj = new SInt8Object(svalue.sint8Value);
+                            //sbyteObj = new Int8Object(svalue.sint8Value);
                             //anyobj.SetValue(sbyteObj);
                             //m_MemberObjectArray[index] = sbyteObj;
-                            anyobj.SetValueByType(EVMType.SByte, svalue.sint8Value);
+                            anyobj.SetValueByType(EVMType.Int8, svalue.sint8Value);
                             return;
                         }
 
-                        sbyteObj = mro.sobject as SInt8Object;
+                        sbyteObj = mro.sobject as Int8Object;
                         if (sbyteObj == null)
                         {
                             Debug.Assert(false);
@@ -619,23 +619,23 @@ namespace SimpleLanguage.VM
                         var mva = mro;
 
                         
-                        //if (mva.eType == EVMType.Byte)
+                        //if (mva.eType == EVMType.UInt8)
                         //{
-                        //    Int8Object byteObj = mva as Int8Object;
+                        //    UInt8Object byteObj = mva as UInt8Object;
                         //    if (byteObj == null)
                         //    {
-                        //        Log.AddVM(LID.Unknown, "Class Int8Object 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                        //        Log.AddVM(LID.Unknown, "Class UInt8Object 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                         //        return;
                         //    }
                         //    byteObj.SetValue(svalue.int8Value);
                         //}
-                        //else if (mva.eType == EVMType.SByte)
+                        //else if (mva.eType == EVMType.Int8)
                         //{
 
-                        //    SInt8Object sbyteObj = mva as SInt8Object;
+                        //    Int8Object sbyteObj = mva as Int8Object;
                         //    if (sbyteObj == null)
                         //    {
-                        //        Log.AddVM(LID.Unknown, "Class SInt8Object 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                        //        Log.AddVM(LID.Unknown, "Class Int8Object 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                         //        return;
                         //    }
                         //    sbyteObj.SetValue(svalue.sint8Value);
@@ -804,14 +804,14 @@ namespace SimpleLanguage.VM
                         m_SObject.SetValueByType(EVMType.Boolean, sval.int8Value==1);
                     }
                     break;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     {
-                        m_SObject.SetValueByType(EVMType.Byte, sval.int8Value);
+                        m_SObject.SetValueByType(EVMType.UInt8, sval.int8Value);
                     }
                     break;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     {
-                        m_SObject.SetValueByType(EVMType.SByte, sval.sint8Value);
+                        m_SObject.SetValueByType(EVMType.Int8, sval.sint8Value);
                     }
                     break;
                 case EVMType.Int16:
@@ -954,12 +954,12 @@ namespace SimpleLanguage.VM
                         svalue.SetBoolValue(bo.value);
                     }
                     break;
-                case Int8Object byteob:
+                case UInt8Object byteob:
                     {
                         svalue.SetInt8Value(byteob.value);
                     }
                     break;
-                case SInt8Object sbyteobj:
+                case Int8Object sbyteobj:
                     {
                         svalue.SetSInt8Value(sbyteobj.value);
                     }

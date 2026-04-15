@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaExpressOperator.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -87,7 +87,7 @@ namespace SimpleLanguage.Core
                         {
                             switch (eType)
                             {
-                                case EType.Byte:
+                                case EType.UInt8:
                                     {
                                         mcen.value = -(byte)mcen.value;
                                         return mcen;
@@ -125,7 +125,7 @@ namespace SimpleLanguage.Core
                         {
                             switch (eType)
                             {
-                                case EType.Byte:
+                                case EType.UInt8:
                                     {
                                         mcen.value = (byte)mcen.value != 0;
                                         return mcen;
@@ -173,12 +173,12 @@ namespace SimpleLanguage.Core
                         {
                             switch (eType)
                             {
-                                case EType.Byte:
+                                case EType.UInt8:
                                     {
                                         mcen.value = ^(byte)mcen.value;
                                         return mcen;
                                     }
-                                case EType.SByte:
+                                case EType.Int8:
                                     {
                                         mcen.value = ^(sbyte)mcen.value;
                                         return mcen;

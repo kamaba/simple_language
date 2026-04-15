@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      SValue.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -35,12 +35,12 @@ namespace SimpleLanguage.VM
                     {
                         switch (sval.eType)
                         {
-                            case EVMType.Byte:
+                            case EVMType.UInt8:
                                 {
                                     stringValue += sval.int8Value.ToString();
                                 }
                                 break;
-                            case EVMType.SByte:
+                            case EVMType.Int8:
                                 {
                                     stringValue += sval.sint8Value.ToString();
                                 }
@@ -313,8 +313,8 @@ namespace SimpleLanguage.VM
                         }
                         return;
                     }
-                case EVMType.Byte:
-                case EVMType.SByte:
+                case EVMType.UInt8:
+                case EVMType.Int8:
                 case EVMType.Int16:
                 case EVMType.UInt16:
                 case EVMType.Int32:
@@ -587,8 +587,8 @@ namespace SimpleLanguage.VM
         {
             switch (t)
             {
-                case EVMType.Byte:
-                case EVMType.SByte:
+                case EVMType.UInt8:
+                case EVMType.Int8:
                 case EVMType.Int16:
                 case EVMType.UInt16:
                 case EVMType.Int32:
@@ -625,8 +625,8 @@ namespace SimpleLanguage.VM
                 case EVMType.String: return !string.IsNullOrEmpty(v.stringValue);
                 case EVMType.Float32: return v.floatValue != 0.0f;
                 case EVMType.Float64: return v.doubleValue != 0.0;
-                case EVMType.Byte: return v.int8Value != 0;
-                case EVMType.SByte: return v.sint8Value != 0;
+                case EVMType.UInt8: return v.int8Value != 0;
+                case EVMType.Int8: return v.sint8Value != 0;
                 case EVMType.Int16: return v.int16Value != 0;
                 case EVMType.UInt16: return v.uint16Value != 0;
                 case EVMType.Int32: return v.int32Value != 0;

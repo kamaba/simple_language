@@ -17,9 +17,9 @@ namespace SimpleLanguage.VM.Runtime
             {
                 case EVMType.Boolean:
                     return v.int8Value != 0 ? 1 : 0;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     return v.int8Value;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     return v.sint8Value;
                 case EVMType.Int16:
                     return v.int16Value;
@@ -205,11 +205,11 @@ namespace SimpleLanguage.VM.Runtime
                     bits = v.int8Value != 0 ? 1UL : 0UL;
                     bitWidth = 8;
                     return true;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     bits = v.int8Value;
                     bitWidth = 8;
                     return true;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     bits = unchecked((ulong)(byte)(uint)(int)v.sint8Value);
                     bitWidth = 8;
                     return true;
@@ -256,11 +256,11 @@ namespace SimpleLanguage.VM.Runtime
                         bits = o.value ? 1UL : 0UL;
                         bitWidth = 8;
                         return true;
-                    case Int8Object o:
+                    case UInt8Object o:
                         bits = o.value;
                         bitWidth = 8;
                         return true;
-                    case SInt8Object o:
+                    case Int8Object o:
                         bits = unchecked((ulong)(byte)(uint)(int)o.value);
                         bitWidth = 8;
                         return true;
@@ -350,8 +350,8 @@ namespace SimpleLanguage.VM.Runtime
             switch (v.eType)
             {
                 case EVMType.Boolean: return v.int8Value != 0;
-                case EVMType.Byte: return v.int8Value;
-                case EVMType.SByte: return v.sint8Value;
+                case EVMType.UInt8: return v.int8Value;
+                case EVMType.Int8: return v.sint8Value;
                 case EVMType.Int16: return v.int16Value;
                 case EVMType.UInt16: return v.uint16Value;
                 case EVMType.Int32: return v.int32Value;
@@ -369,8 +369,8 @@ namespace SimpleLanguage.VM.Runtime
                 switch (v.sobject)
                 {
                     case BoolObject o: return o.value;
+                    case UInt8Object o: return o.value;
                     case Int8Object o: return o.value;
-                    case SInt8Object o: return o.value;
                     case Int16Object o: return o.value;
                     case UInt16Object o: return o.value;
                     case Int32Object o: return o.value;

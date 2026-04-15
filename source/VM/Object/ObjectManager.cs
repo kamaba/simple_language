@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ObjectManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -97,16 +97,16 @@ namespace SimpleLanguage.VM
                 var ao = new SObject(EVMType.Object);
                 sobj = ao;
             }
-            else if (rt == RuntimeTypeManager.byteRuntimeType)
+            else if (rt == RuntimeTypeManager.uint8RuntimeType)
             //else if (name == "Core.Byte" || name == "Byte")
             {
-                sobj = new Int8Object(0);
+                sobj = new UInt8Object(0);
                 sobj.typeId = 3;
             }
-            else if (rt == RuntimeTypeManager.sbyteRuntimeType)
+            else if (rt == RuntimeTypeManager.int8RuntimeType)
             //else if (name == "Core.SByte" || name == "SByte")
             {
-                sobj = new SInt8Object(0);
+                sobj = new Int8Object(0);
                 sobj.typeId = 3;
             }
             else if (rt == RuntimeTypeManager.int16RuntimeType)

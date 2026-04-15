@@ -1,4 +1,4 @@
-﻿
+
 using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.VM.Runtime
@@ -182,8 +182,8 @@ namespace SimpleLanguage.VM.Runtime
             switch (sStore.eType)
             {
                 case EVMType.Boolean:
-                case EVMType.Byte: sStore.SetInt8Value(sValue.int8Value); break;
-                case EVMType.SByte: sStore.SetSInt8Value(sValue.sint8Value); break;
+                case EVMType.UInt8: sStore.SetInt8Value(sValue.int8Value); break;
+                case EVMType.Int8: sStore.SetSInt8Value(sValue.sint8Value); break;
                 case EVMType.Int16: sStore.SetInt16Value(sValue.int16Value); break;
                 case EVMType.UInt16: sStore.SetUInt16Value(sValue.uint16Value); break;
                 case EVMType.Int32: sStore.SetInt32Value(sValue.int32Value); break;

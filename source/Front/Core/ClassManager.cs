@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ClassManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -586,8 +586,8 @@ namespace SimpleLanguage.Core
             }
 
             if ( curClass == CoreMetaClassManager.numMetaClass
-                || curClass == CoreMetaClassManager.byteMetaClass
-                || curClass == CoreMetaClassManager.sbyteMetaClass
+                || curClass == CoreMetaClassManager.uint8MetaClass
+                || curClass == CoreMetaClassManager.int8MetaClass
                 || curClass == CoreMetaClassManager.int16MetaClass
                 || curClass == CoreMetaClassManager.uint16MetaClass
                 || curClass == CoreMetaClassManager.int32MetaClass

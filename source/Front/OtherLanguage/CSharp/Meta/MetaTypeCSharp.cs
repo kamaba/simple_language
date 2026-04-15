@@ -1,4 +1,4 @@
-﻿
+
 using SimpleLanguage.CSharp;
 using System;
 using System.Diagnostics;
@@ -40,13 +40,13 @@ namespace SimpleLanguage.Core
             {
                 case "Boolean":
                 case "BoolObject":
-                    return CoreMetaClassManager.byteMetaClass;
+                    return CoreMetaClassManager.booleanMetaClass;
                 case "Byte":
                 case "ByteObject":
-                    return CoreMetaClassManager.byteMetaClass;
+                    return CoreMetaClassManager.uint8MetaClass;
                 case "SByte":
                 case "SByteObject":
-                    return CoreMetaClassManager.sbyteMetaClass;
+                    return CoreMetaClassManager.int8MetaClass;
                 case "Int16":
                 case "Int16Object":
                     return CoreMetaClassManager.int16MetaClass;
@@ -99,9 +99,9 @@ namespace SimpleLanguage.Core
                 case "Boolean":
                     return "Boolean";
                 case "SByte":
-                    return "SByte";
+                    return "Int8";
                 case "Byte":
-                    return "Byte";
+                    return "UInt8";
                 case "Single":
                     return "Float";
                 case "Double":
@@ -121,11 +121,11 @@ namespace SimpleLanguage.Core
             {
                 type = typeof(System.Boolean);
             }
-            else if (mc == CoreMetaClassManager.byteMetaClass)
+            else if (mc == CoreMetaClassManager.uint8MetaClass)
             {
                 type = typeof(System.Byte);
             }
-            else if (mc == CoreMetaClassManager.sbyteMetaClass)
+            else if (mc == CoreMetaClassManager.int8MetaClass)
             {
                 type = typeof(System.SByte);
             }

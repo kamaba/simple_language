@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      SValue.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -93,8 +93,8 @@ namespace SimpleLanguage.VM
                             case EVMType.UInt32: tmp.SetValue(rightPrim.uint32Value); break;
                             case EVMType.Int16: tmp.SetValue(rightPrim.int16Value); break;
                             case EVMType.UInt16: tmp.SetValue(rightPrim.uint16Value); break;
-                            case EVMType.Byte: tmp.SetValue(rightPrim.int8Value); break;
-                            case EVMType.SByte: tmp.SetValue(rightPrim.sint8Value); break;
+                            case EVMType.UInt8: tmp.SetValue(rightPrim.int8Value); break;
+                            case EVMType.Int8: tmp.SetValue(rightPrim.sint8Value); break;
                             default: tmp.SetValue(rightPrim.doubleValue); break;
                         }
                         leftNum.Operate(sign, tmp, isUnSign);
@@ -125,8 +125,8 @@ namespace SimpleLanguage.VM
                         case EVMType.UInt32: tmpLeft.SetValue(leftPrim.uint32Value); break;
                         case EVMType.Int16: tmpLeft.SetValue(leftPrim.int16Value); break;
                         case EVMType.UInt16: tmpLeft.SetValue(leftPrim.uint16Value); break;
-                        case EVMType.Byte: tmpLeft.SetValue(leftPrim.int8Value); break;
-                        case EVMType.SByte: tmpLeft.SetValue(leftPrim.sint8Value); break;
+                        case EVMType.UInt8: tmpLeft.SetValue(leftPrim.int8Value); break;
+                        case EVMType.Int8: tmpLeft.SetValue(leftPrim.sint8Value); break;
                         default: tmpLeft.SetValue(leftPrim.doubleValue); break;
                     }
                     tmpLeft.Operate(sign, rightNum, isUnSign);
@@ -281,7 +281,7 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            bool useUnsigned = (promoteType == EVMType.UInt64 || promoteType == EVMType.UInt32 || promoteType == EVMType.UInt16 || promoteType == EVMType.Byte);
+            bool useUnsigned = (promoteType == EVMType.UInt64 || promoteType == EVMType.UInt32 || promoteType == EVMType.UInt16 || promoteType == EVMType.UInt8);
             if (useUnsigned)
             {
                 ulong a = left.UInt64;
@@ -306,7 +306,7 @@ namespace SimpleLanguage.VM
                     case EVMType.UInt64: left.UInt64 = r; break;
                     case EVMType.UInt32: left.UInt32 = (uint)r; break;
                     case EVMType.UInt16: left.UInt16 = (ushort)r; break;
-                    case EVMType.Byte: left.Int8 = (byte)r; break;
+                    case EVMType.UInt8: left.Int8 = (byte)r; break;
                     default: left.UInt64 = r; break;
                 }
                 return;
@@ -334,19 +334,19 @@ namespace SimpleLanguage.VM
                 case EVMType.Int64: left.Int64 = lr; break;
                 case EVMType.Int32: left.Int32 = (int)lr; break;
                 case EVMType.Int16: left.Int16 = (short)lr; break;
-                case EVMType.SByte: left.SInt8 = (sbyte)lr; break;
+                case EVMType.Int8: left.SInt8 = (sbyte)lr; break;
                 default: left.Int64 = lr; break;
             }
         }
 
         private static bool IsRawUnsignedInt(EVMType t)
         {
-            return t == EVMType.Byte || t == EVMType.UInt16 || t == EVMType.UInt32 || t == EVMType.UInt64;
+            return t == EVMType.UInt8 || t == EVMType.UInt16 || t == EVMType.UInt32 || t == EVMType.UInt64;
         }
 
         private static bool IsRawSignedInt(EVMType t)
         {
-            return t == EVMType.SByte || t == EVMType.Int16 || t == EVMType.Int32 || t == EVMType.Int64;
+            return t == EVMType.Int8 || t == EVMType.Int16 || t == EVMType.Int32 || t == EVMType.Int64;
         }
 
         private static EVMType GetRawBinaryPromotionType(EVMType left, EVMType right, int sign, bool isUnSign)
@@ -518,13 +518,13 @@ namespace SimpleLanguage.VM
         {
             switch (eType)
             {
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     {
                         eType = EVMType.Boolean;
                         int8Value = (int8Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     {
                         eType = EVMType.Boolean;
                         int8Value = (sint8Value == 0) ? (byte)1 : (byte)0;
@@ -583,13 +583,13 @@ namespace SimpleLanguage.VM
         {
             switch (eType)
             {
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     {
                         eType = EVMType.Int32;
                         int32Value = -int8Value;
                     }
                     break;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     {
                         eType = EVMType.Int32;
                         int32Value = -sint8Value;

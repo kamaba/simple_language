@@ -43,11 +43,11 @@ namespace SimpleLanguage.Core
             {
                 return (int)EMetaClassLevel.Num;
             }
-            else if (mt.metaClass == CoreMetaClassManager.sbyteMetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.int8MetaClass)
             {
                 return (int)EMetaClassLevel.SByte;
             }
-            else if (mt.metaClass == CoreMetaClassManager.byteMetaClass)
+            else if (mt.metaClass == CoreMetaClassManager.uint8MetaClass)
             {
                 return (int)EMetaClassLevel.Byte;
             }
@@ -102,15 +102,15 @@ namespace SimpleLanguage.Core
                     {
                         return EType.Num;
                     }
-                case EType.Byte:
+                case EType.UInt8:
                     {
                         switch( etype2 )
                         {
-                            case EType.Byte:
+                            case EType.UInt8:
                                 {
-                                    return EType.Byte;
+                                    return EType.UInt8;
                                 }
-                            case EType.SByte:
+                            case EType.Int8:
                                 {
                                     return EType.Int16;
                                 }
@@ -154,17 +154,17 @@ namespace SimpleLanguage.Core
                         }
                     }
                     break;
-                case EType.SByte:
+                case EType.Int8:
                     {
                         switch( etype2 )
                         {
-                            case EType.Byte:
+                            case EType.UInt8:
                                 {
                                     return EType.Int16;
                                 }
-                            case EType.SByte:
+                            case EType.Int8:
                                 {
-                                    return EType.SByte;
+                                    return EType.Int8;
                                 }
                             case EType.Int16:
                                 {
@@ -210,8 +210,8 @@ namespace SimpleLanguage.Core
                     {
                         switch( etype2 )
                         {
-                            case EType.Byte:
-                            case EType.SByte:
+                            case EType.UInt8:
+                            case EType.Int8:
                             case EType.Int16:
                                 {
                                     return EType.Int16;
@@ -256,8 +256,8 @@ namespace SimpleLanguage.Core
                     {
                         switch( etype2 )
                         {
-                            case EType.Byte:
-                            case EType.SByte:
+                            case EType.UInt8:
+                            case EType.Int8:
                             case EType.Int16:
                                 {
                                     return EType.Int32;    
@@ -302,8 +302,8 @@ namespace SimpleLanguage.Core
                     {
                         switch (etype2)
                         {
-                            case EType.Byte:
-                            case EType.SByte:
+                            case EType.UInt8:
+                            case EType.Int8:
                             case EType.Int16:
                             case EType.UInt16:
                             case EType.Int32:
@@ -342,8 +342,8 @@ namespace SimpleLanguage.Core
                     {
                         switch (etype2)
                         {
-                            case EType.Byte:
-                            case EType.SByte:
+                            case EType.UInt8:
+                            case EType.Int8:
                             case EType.Int16:
                             case EType.UInt16:
                                 {
@@ -385,8 +385,8 @@ namespace SimpleLanguage.Core
                     {
                         switch (etype2)
                         {
-                            case EType.Byte:
-                            case EType.SByte:
+                            case EType.UInt8:
+                            case EType.Int8:
                             case EType.Int16:
                             case EType.UInt16:
                             case EType.Int32:
@@ -420,8 +420,8 @@ namespace SimpleLanguage.Core
                     {
                         switch (etype2)
                         {
-                            case EType.Byte:
-                            case EType.SByte:
+                            case EType.UInt8:
+                            case EType.Int8:
                             case EType.Int16:
                             case EType.UInt16:
                             case EType.Int32:
@@ -458,8 +458,8 @@ namespace SimpleLanguage.Core
                     {
                         switch (etype2)
                         {
-                            case EType.Byte:
-                            case EType.SByte:
+                            case EType.UInt8:
+                            case EType.Int8:
                             case EType.Int16:
                             case EType.UInt16:
                             case EType.Int32:
@@ -486,8 +486,8 @@ namespace SimpleLanguage.Core
                     {
                         switch (etype2)
                         {
-                            case EType.Byte:
-                            case EType.SByte:
+                            case EType.UInt8:
+                            case EType.Int8:
                             case EType.Int16:
                             case EType.UInt16:
                             case EType.Int32:
@@ -595,14 +595,14 @@ namespace SimpleLanguage.Core
                     break;
                 case "byte":
                     {
-                        //etype = etype.byte;
-                        className = "Byte";
+                        //etype = EType.UInt8;
+                        className = "UInt8";
                     }
                     break;
                 case "sbyte":
                     {
-                        //etype = etype.sbyte;
-                        className = "SByte";
+                        //etype = EType.Int8;
+                        className = "Int8";
                     }
                     break;
                 case "string":

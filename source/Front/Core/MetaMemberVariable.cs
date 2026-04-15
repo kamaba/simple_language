@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaMemberVariable.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -539,8 +539,8 @@ namespace SimpleLanguage.Core
             if( mc1 == CoreMetaClassManager.int64MetaClass
                 || mc1 == CoreMetaClassManager.uint64MetaClass )
             {
-                if( mc2 == CoreMetaClassManager.byteMetaClass
-                    || mc2 == CoreMetaClassManager.sbyteMetaClass
+                if( mc2 == CoreMetaClassManager.uint8MetaClass
+                    || mc2 == CoreMetaClassManager.int8MetaClass
                     || mc2 == CoreMetaClassManager.int16MetaClass
                     || mc2 == CoreMetaClassManager.uint16MetaClass 
                     || mc2 == CoreMetaClassManager.int32MetaClass 
@@ -552,8 +552,8 @@ namespace SimpleLanguage.Core
             else if (mc1 == CoreMetaClassManager.int32MetaClass
                 || mc1 == CoreMetaClassManager.uint32MetaClass)
             {
-                if (mc2 == CoreMetaClassManager.byteMetaClass
-                    || mc2 == CoreMetaClassManager.sbyteMetaClass
+                if (mc2 == CoreMetaClassManager.uint8MetaClass
+                    || mc2 == CoreMetaClassManager.int8MetaClass
                     || mc2 == CoreMetaClassManager.int16MetaClass
                     || mc2 == CoreMetaClassManager.uint16MetaClass)
                 {
@@ -563,8 +563,8 @@ namespace SimpleLanguage.Core
             else if (mc1 == CoreMetaClassManager.int16MetaClass
                 || mc1 == CoreMetaClassManager.uint16MetaClass)
             {
-                if (mc2 == CoreMetaClassManager.byteMetaClass
-                    || mc2 == CoreMetaClassManager.sbyteMetaClass )
+                if (mc2 == CoreMetaClassManager.uint8MetaClass
+                    || mc2 == CoreMetaClassManager.int8MetaClass )
                 {
                     return true;
                 }

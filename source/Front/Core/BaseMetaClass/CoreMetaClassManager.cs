@@ -21,8 +21,8 @@ namespace SimpleLanguage.Core
         Object,
         Boolean,
         Num,
-        Byte,
-        SByte,
+        UInt8,
+        Int8,
         Char,
         Int16,
         UInt16,
@@ -66,8 +66,8 @@ namespace SimpleLanguage.Core
         public static MetaClass typeMetaClass { get; set; } = null;
         public static MetaClass booleanMetaClass { get; private set; } = null;
         //public static MetaClass charMetaClass { get; private set; } = null;
-        public static MetaClass byteMetaClass { get; private set; } = null;
-        public static MetaClass sbyteMetaClass { get; private set; } = null;
+        public static MetaClass uint8MetaClass { get; private set; } = null;
+        public static MetaClass int8MetaClass { get; private set; } = null;
         public static MetaClass int16MetaClass { get; private set; } = null;
         public static MetaClass uint16MetaClass { get; private set; } = null;
         public static MetaClass int32MetaClass { get; private set; } = null;
@@ -95,8 +95,8 @@ namespace SimpleLanguage.Core
             numMetaClass = NumMetaClass.CreateMetaClass();
             voidMetaClass = VoidMetaClass.CreateMetaClass();
             booleanMetaClass = BooleanMetaClass.CreateMetaClass();
-            byteMetaClass = ByteMetaClass.CreateMetaClass();
-            sbyteMetaClass = SByteMetaClass.CreateMetaClass();
+            uint8MetaClass = UInt8MetaClass.CreateMetaClass();
+            int8MetaClass = Int8MetaClass.CreateMetaClass();
             //charMetaClass = CharMetaClass.CreateMetaClass();
             int16MetaClass = Int16MetaClass.CreateMetaClass();
             uint16MetaClass = UInt16MetaClass.CreateMetaClass();
@@ -120,8 +120,8 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(voidMetaClass);
             s_InnerDefineMetaClassList.Add(numMetaClass);
             s_InnerDefineMetaClassList.Add(booleanMetaClass);
-            s_InnerDefineMetaClassList.Add(byteMetaClass);
-            s_InnerDefineMetaClassList.Add(sbyteMetaClass);
+            s_InnerDefineMetaClassList.Add(uint8MetaClass);
+            s_InnerDefineMetaClassList.Add(int8MetaClass);
             //s_InnerDefineMetaClassList.Add(charMetaClass);
             s_InnerDefineMetaClassList.Add(int16MetaClass);
             s_InnerDefineMetaClassList.Add(uint16MetaClass);
@@ -173,17 +173,17 @@ namespace SimpleLanguage.Core
             {
                 return EType.Null;
             }
-            else if (mc == byteMetaClass)
+            else if (mc == uint8MetaClass)
             {
-                return EType.Byte;
+                return EType.UInt8;
             }
             else if (mc == numMetaClass)
             {
                 return EType.Num;
             }
-            else if (mc == sbyteMetaClass)
+            else if (mc == int8MetaClass)
             {
-                return EType.SByte;
+                return EType.Int8;
             }
             else if (mc == int16MetaClass)
             {
@@ -258,10 +258,10 @@ namespace SimpleLanguage.Core
                     return booleanMetaClass;
                 case EType.Num:
                     return numMetaClass;
-                case EType.Byte:
-                    return byteMetaClass;
-                case EType.SByte:
-                    return sbyteMetaClass;
+                case EType.UInt8:
+                    return uint8MetaClass;
+                case EType.Int8:
+                    return int8MetaClass;
                 //case EType.Char:
                 //    return charMetaClass;
                 case EType.Int16:
@@ -310,9 +310,11 @@ namespace SimpleLanguage.Core
                 case "bool":
                     return DefaultObject.Boolean.ToString();
                 case "byte":
-                    return DefaultObject.Byte.ToString();
+                case "UInt8":
+                    return DefaultObject.UInt8.ToString();
                 case "sbyte":
-                    return DefaultObject.Byte.ToString();
+                case "Int8":
+                    return DefaultObject.Int8.ToString();
                 case "long":
                 case "Int64":
                     return DefaultObject.Int64.ToString();
@@ -337,6 +339,10 @@ namespace SimpleLanguage.Core
                 case "string":
                 case "String":
                     return DefaultObject.String.ToString();
+                case "Byte":
+                    return DefaultObject.UInt8.ToString();
+                case "SByte":
+                    return DefaultObject.Int8.ToString();
                 case "half":
                     return null;
                 case "float":

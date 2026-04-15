@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRConvert.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -19,10 +19,10 @@ namespace SimpleLanguage.IR
             EIROpCode irop = EIROpCode.Nop;
             switch ( target )
             {
-                case EType.Byte:
+                case EType.UInt8:
                     irop = EIROpCode.Convert_I8;
                     break;
-                case EType.SByte:
+                case EType.Int8:
                     irop = EIROpCode.Convert_SI8;
                     break;
                 case EType.Int16:

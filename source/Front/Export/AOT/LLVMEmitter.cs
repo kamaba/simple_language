@@ -28,8 +28,8 @@ namespace SimpleLanguage.Export.AOT
         //        case SimpleLanguage.VM.Runtime.EVMType.Num:
         //            return "double";
         //        case SimpleLanguage.VM.Runtime.EVMType.Boolean:
-        //        case SimpleLanguage.VM.Runtime.EVMType.Byte:
-        //        case SimpleLanguage.VM.Runtime.EVMType.SByte:
+        //        case SimpleLanguage.VM.Runtime.EVMType.UInt8:
+        //        case SimpleLanguage.VM.Runtime.EVMType.Int8:
         //        case SimpleLanguage.VM.Runtime.EVMType.Int16:
         //        case SimpleLanguage.VM.Runtime.EVMType.UInt16:
         //            return "i32"; // promote small ints to i32 for simplicity

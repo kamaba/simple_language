@@ -197,8 +197,10 @@ namespace SimpleLanguage.Lib
                 case "void": return EType.Void;
                 case "float": case "float32": return EType.Float32;
                 case "double": case "float64": return EType.Float64;
-                case "byte": return EType.Byte;
-                case "sbyte": return EType.SByte;
+                case "byte":
+                case "uint8": return EType.UInt8;
+                case "sbyte":
+                case "int8": return EType.Int8;
                 case "int16": case "short": return EType.Int16;
                 case "uint16": return EType.UInt16;
                 case "int64": case "long": return EType.Int64;

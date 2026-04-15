@@ -20,7 +20,7 @@ namespace SimpleLanguage
         Private
     }
     //前置类型
-    public enum EType : Byte
+    public enum EType : byte
     {
         None,
         Null,
@@ -31,8 +31,8 @@ namespace SimpleLanguage
         Boolean,
         Num,
         Bit,
-        Byte,
-        SByte,
+        UInt8,
+        Int8,
         Int16,
         UInt16,
         Int32,

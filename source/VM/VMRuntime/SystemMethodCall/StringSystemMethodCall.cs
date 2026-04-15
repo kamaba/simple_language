@@ -211,7 +211,7 @@ namespace SimpleLanguage.VM.Runtime
             byte[] raw = Encoding.UTF8.GetBytes(s);
 
             RuntimeTypeManager.EnsureCoreRuntimeTypesRegistered();
-            var byteRt = RuntimeTypeManager.byteRuntimeType;
+            var byteRt = RuntimeTypeManager.uint8RuntimeType;
             if (byteRt == null)
             {
                 var nz = default(SValue);

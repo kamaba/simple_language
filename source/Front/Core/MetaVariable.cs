@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaVariable.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -341,8 +341,8 @@ namespace SimpleLanguage.Core
 
         public static bool IsNumericEType(EType t)
         {
-            return t == EType.Byte
-                || t == EType.SByte
+            return t == EType.UInt8
+                || t == EType.Int8
                 || t == EType.Int16
                 || t == EType.UInt16
                 || t == EType.Int32
@@ -365,10 +365,10 @@ namespace SimpleLanguage.Core
                     case EType.Boolean:
                         converted = Convert.ToBoolean(input);
                         return true;
-                    case EType.Byte:
+                    case EType.UInt8:
                         converted = Convert.ToByte(input);
                         return true;
-                    case EType.SByte:
+                    case EType.Int8:
                         converted = Convert.ToSByte(input);
                         return true;
                     case EType.Int16:
@@ -450,19 +450,19 @@ namespace SimpleLanguage.Core
                 bool canConvert = false;
                 switch (curEType)
                 {
-                    case EType.SByte:
-                    case EType.Byte:
-                        canConvert = (expEType == EType.Byte || expEType == EType.SByte);
+                    case EType.Int8:
+                    case EType.UInt8:
+                        canConvert = (expEType == EType.UInt8 || expEType == EType.Int8);
                         break;
                     case EType.Int16:
                     case EType.UInt16:
-                        canConvert = expEType == EType.Byte || expEType == EType.SByte
+                        canConvert = expEType == EType.UInt8 || expEType == EType.Int8
                             || expEType == EType.UInt16 || expEType == EType.Int16;
                         break;
                     case EType.Int32:
                     case EType.UInt32:
                     case EType.Float32:
-                        canConvert = expEType == EType.Byte || expEType == EType.SByte
+                        canConvert = expEType == EType.UInt8 || expEType == EType.Int8
                             || expEType == EType.UInt16 || expEType == EType.Int16
                             || expEType == EType.Int32 || expEType == EType.UInt32;
                         break;
@@ -570,7 +570,7 @@ namespace SimpleLanguage.Core
                 ulong u = Convert.ToUInt64(input);
                 switch (targetType)
                 {
-                    case EType.SByte:
+                    case EType.Int8:
                         if (u <= byte.MaxValue)
                         {
                             converted = unchecked((sbyte)(byte)u);

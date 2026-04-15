@@ -25,31 +25,31 @@ namespace SimpleLanguage.Core
             return mc;
         }
     }
-    public class ByteMetaClass : MetaClass
+    public class UInt8MetaClass : MetaClass
     {
-        public ByteMetaClass() : base(DefaultObject.Byte.ToString())
+        public UInt8MetaClass() : base(DefaultObject.UInt8.ToString())
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
-            m_Type = EType.Byte;
+            m_Type = EType.UInt8;
             m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public static MetaClass CreateMetaClass()
         {
-            MetaClass mc = new ByteMetaClass();
+            MetaClass mc = new UInt8MetaClass();
             return mc;
         }
     }
-    public class SByteMetaClass : MetaClass
+    public class Int8MetaClass : MetaClass
     {
-        public SByteMetaClass() : base(DefaultObject.SByte.ToString())
+        public Int8MetaClass() : base(DefaultObject.Int8.ToString())
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
-            m_Type = EType.SByte;
+            m_Type = EType.Int8;
             m_ClassDefineType = EClassDefineType.InnerDefine;
         }
         public static MetaClass CreateMetaClass()
         {
-            MetaClass mc = new SByteMetaClass();
+            MetaClass mc = new Int8MetaClass();
             return mc;
         }
     }

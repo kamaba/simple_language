@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRUtil.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -17,8 +17,8 @@ namespace SimpleLanguage.IR
         {
             switch (etype)
             {
-                case EType.Byte: return EIROpCode.LoadConstByte;
-                case EType.SByte: return EIROpCode.LoadConstSByte;
+                case EType.UInt8: return EIROpCode.LoadConstUInt8;
+                case EType.Int8: return EIROpCode.LoadConstInt8;
                 case EType.Boolean: return EIROpCode.LoadConstBoolean;
                 //case EType.Char: return EIROpCode.LoadConstChar;
                 case EType.Int16: return EIROpCode.LoadConstInt16;
@@ -149,7 +149,7 @@ namespace SimpleLanguage.IR
             {
                 case EType.Bit:
                     return 1;
-                case EType.Byte:
+                case EType.UInt8:
                 case EType.Boolean:
                     return 1;
                 //case EType.Char:

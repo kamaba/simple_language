@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRCall.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -351,12 +351,12 @@ namespace SimpleLanguage.VM
                     //case EVMType.RawByte:
                     //    {
                     //        return sval.int8Value;
-                    //        //return new Int8Object(sval.int8Value);
+                    //        //return new UInt8Object(sval.int8Value);
                     //    }
                     //case EVMType.RawSByte:
                     //    {
                     //        return sval.sint8Value;
-                    //        //return new SInt8Object(sval.sint8Value);
+                    //        //return new Int8Object(sval.sint8Value);
                     //    }
                     ////case EVMType.Char:
                     ////    {
@@ -411,13 +411,13 @@ namespace SimpleLanguage.VM
                         {
                             return new BoolObject(sval.int8Value == 1);
                         }
-                    case EVMType.Byte:
+                    case EVMType.UInt8:
                         {
-                            return new Int8Object(sval.int8Value);
+                            return new UInt8Object(sval.int8Value);
                         }
-                    case EVMType.SByte:
+                    case EVMType.Int8:
                         {
-                            return new SInt8Object(sval.sint8Value);
+                            return new Int8Object(sval.sint8Value);
                         }
                     //case EVMType.Char:
                     //    {

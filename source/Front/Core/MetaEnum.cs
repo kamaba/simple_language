@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaEnum.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -154,8 +154,8 @@ namespace SimpleLanguage.Core
                 return;
             }
 
-            if (m_ExtendClass == CoreMetaClassManager.byteMetaClass
-               || m_ExtendClass == CoreMetaClassManager.sbyteMetaClass
+            if (m_ExtendClass == CoreMetaClassManager.uint8MetaClass
+               || m_ExtendClass == CoreMetaClassManager.int8MetaClass
                || m_ExtendClass == CoreMetaClassManager.int16MetaClass
                || m_ExtendClass == CoreMetaClassManager.uint16MetaClass
                || m_ExtendClass == CoreMetaClassManager.int32MetaClass
@@ -192,8 +192,8 @@ namespace SimpleLanguage.Core
                 return;
             }
 
-            if (m_ExtendClass == CoreMetaClassManager.byteMetaClass
-               || m_ExtendClass == CoreMetaClassManager.sbyteMetaClass
+            if (m_ExtendClass == CoreMetaClassManager.uint8MetaClass
+               || m_ExtendClass == CoreMetaClassManager.int8MetaClass
                || m_ExtendClass == CoreMetaClassManager.int16MetaClass
                || m_ExtendClass == CoreMetaClassManager.uint16MetaClass
                || m_ExtendClass == CoreMetaClassManager.int32MetaClass
@@ -230,7 +230,7 @@ namespace SimpleLanguage.Core
                         }
 
                         dynamic explicitValue = 0;
-                        if (m_ExtendClass == CoreMetaClassManager.byteMetaClass)
+                        if (m_ExtendClass == CoreMetaClassManager.uint8MetaClass)
                         {
                             try
                             {
@@ -243,7 +243,7 @@ namespace SimpleLanguage.Core
                             }
                         }
                         else
-                        if (m_ExtendClass == CoreMetaClassManager.sbyteMetaClass)
+                        if (m_ExtendClass == CoreMetaClassManager.int8MetaClass)
                         {
                             try
                             {

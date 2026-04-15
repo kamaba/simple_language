@@ -14,8 +14,8 @@ namespace SimpleLanguage.VM
 
         LoadBegin = 1,
         LoadConstNull,
-        LoadConstByte,
-        LoadConstSByte,
+        LoadConstUInt8,
+        LoadConstInt8,
         //LoadConstChar,
         LoadConstInt16,
         LoadConstUInt16,

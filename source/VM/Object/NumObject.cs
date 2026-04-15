@@ -61,12 +61,12 @@ namespace SimpleLanguage.VM
         }
         public virtual void SetValue(byte v)
         {
-            SetValueByType(EVMType.Byte, v);
+            SetValueByType(EVMType.UInt8, v);
         }
 
         public virtual void SetValue(sbyte v)
         {
-            SetValueByType(EVMType.SByte, v);
+            SetValueByType(EVMType.Int8, v);
         }
 
 
@@ -83,8 +83,8 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt32: return Convert.ToDouble((uint)value);
                 case EVMType.Int16: return Convert.ToDouble((short)value);
                 case EVMType.UInt16: return Convert.ToDouble((ushort)value);
-                case EVMType.Byte: return Convert.ToDouble((byte)value);
-                case EVMType.SByte: return Convert.ToDouble((sbyte)value);
+                case EVMType.UInt8: return Convert.ToDouble((byte)value);
+                case EVMType.Int8: return Convert.ToDouble((sbyte)value);
                 default: return Convert.ToDouble(value);
             }
         }
@@ -102,8 +102,8 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt32: return Convert.ToInt64((uint)value);
                 case EVMType.Int16: return Convert.ToInt64((short)value);
                 case EVMType.UInt16: return Convert.ToInt64((ushort)value);
-                case EVMType.Byte: return Convert.ToInt64((byte)value);
-                case EVMType.SByte: return Convert.ToInt64((sbyte)value);
+                case EVMType.UInt8: return Convert.ToInt64((byte)value);
+                case EVMType.Int8: return Convert.ToInt64((sbyte)value);
                 default: return Convert.ToInt64(value);
             }
         }

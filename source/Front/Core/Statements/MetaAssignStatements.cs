@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaAssignStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -254,14 +254,14 @@ namespace SimpleLanguage.Core
                         //m_IsAssign = true;
                         m_OpSign = EOpSign.Plus;
                         m_AutoAddExpressOpSign = ELeftRightOpSign.Add;
-                        m_RightMetaExpress = new MetaConstExpressNode(EType.SByte, 1);
+                        m_RightMetaExpress = new MetaConstExpressNode(EType.Int8, 1);
                     }
                     break;
                 case ETokenType.DoubleMinus:
                     {
                         //m_IsAssign = true;
                         m_OpSign = EOpSign.Minus;
-                        m_RightMetaExpress = new MetaConstExpressNode(EType.SByte, 1);
+                        m_RightMetaExpress = new MetaConstExpressNode(EType.Int8, 1);
                         m_AutoAddExpressOpSign = ELeftRightOpSign.Minus;
                     }
                     break;
@@ -460,8 +460,8 @@ namespace SimpleLanguage.Core
                     {
                         switch (compareClass.eType)
                         {
-                            case EType.Byte:
-                            case EType.SByte:
+                            case EType.UInt8:
+                            case EType.Int8:
                             case EType.Int16:
                             case EType.UInt16:
                             case EType.Int32:

@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      StringObject.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -19,7 +19,7 @@ namespace SimpleLanguage.VM
 
         RuntimeType m_Rt = null;
 
-        Int8Object eType = null;
+        UInt8Object eType = null;
         ClassObject metaClassObject = null;
 
         TypeObject[] typeObjectsArray = null;

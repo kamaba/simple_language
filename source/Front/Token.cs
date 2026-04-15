@@ -134,12 +134,12 @@ namespace SimpleLanguage
 
                 switch (etype)
                 {
-                    case EType.Byte:
+                    case EType.UInt8:
                         {
                             val = lexeme.ToString();
                         }
                         break;
-                    case EType.SByte:
+                    case EType.Int8:
                         {
                             val = lexeme.ToString();
                         }

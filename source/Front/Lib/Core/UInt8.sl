@@ -1,11 +1,11 @@
 
-public class Byte extends Num
+public class UInt8 extends Num
 {
-    const Byte MaxValue = 0b11111111;
-    const Byte MinValue = 0b00000000;
-    Byte _value = 0;
+    const UInt8 MaxValue = 0b11111111;
+    const UInt8 MinValue = 0b00000000;
+    UInt8 _value = 0;
 
-    _init_(Byte _val)
+    _init_(UInt8 _val)
     {
         this._value = _val
     }
@@ -13,7 +13,7 @@ public class Byte extends Num
     override get int size() { ret 8 }
     override get int byteLength() { ret 1 }
 
-    public static Byte parse(string s)
+    public static UInt8 parse(string s)
     {
         ret SystemConvertInt8(s, -1)
     }
@@ -32,7 +32,7 @@ public class Byte extends Num
     public override Int32 compareTo(Num other)
     {
         if (other == null) { ret 1 }
-        Byte ov = SystemConvertInt8(other, -1)
+        UInt8 ov = SystemConvertInt8(other, -1)
         if (this._value == ov) { ret 0 }
         ret this._value > ov ? 1 : -1
     }

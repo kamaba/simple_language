@@ -386,8 +386,8 @@ namespace SimpleLanguage.VM
         public static RuntimeType voidRuntimeType { get => m_VoidRuntimeType; }
         public static RuntimeType objectRuntimeType { get => m_ObjectRuntimeType; }
         public static RuntimeType boolRuntimeType { get => m_BoolRuntimeType; }
-        public static RuntimeType byteRuntimeType { get => m_ByteRuntimeType; }
-        public static RuntimeType sbyteRuntimeType { get => m_SByteRuntimeType; }
+        public static RuntimeType uint8RuntimeType { get => m_UInt8RuntimeType; }
+        public static RuntimeType int8RuntimeType { get => m_Int8RuntimeType; }
         public static RuntimeType int16RuntimeType { get => m_Int16RuntimeType; }
         public static RuntimeType uint16RuntimeType { get => m_UInt16RuntimeType; }
         public static RuntimeType int32RuntimeType { get => m_Int32RuntimeType; }
@@ -408,8 +408,8 @@ namespace SimpleLanguage.VM
         private static RuntimeType m_VoidRuntimeType = null;
         private static RuntimeType m_BoolRuntimeType = null;
         private static RuntimeType m_NumRuntimeType = null;
-        private static RuntimeType m_ByteRuntimeType = null;
-        private static RuntimeType m_SByteRuntimeType = null;
+        private static RuntimeType m_UInt8RuntimeType = null;
+        private static RuntimeType m_Int8RuntimeType = null;
         private static RuntimeType m_Int16RuntimeType = null;
         private static RuntimeType m_UInt16RuntimeType = null;
         private static RuntimeType m_Int32RuntimeType = null;
@@ -430,8 +430,8 @@ namespace SimpleLanguage.VM
             EnsureByClassName("Core.Type", ref m_TypeRuntimeType, true);
             EnsureByClassName("Core.Boolean", ref m_BoolRuntimeType, true);
             EnsureByClassName("Core.Num", ref m_NumRuntimeType, true);
-            EnsureByClassName("Core.Byte", ref m_ByteRuntimeType, true);
-            EnsureByClassName("Core.SByte", ref m_SByteRuntimeType, true);
+            EnsureByClassName("Core.UInt8", ref m_UInt8RuntimeType, true);
+            EnsureByClassName("Core.Int8", ref m_Int8RuntimeType, true);
             EnsureByClassName("Core.Int16", ref m_Int16RuntimeType, true);
             EnsureByClassName("Core.UInt16", ref m_UInt16RuntimeType, true);
             EnsureByClassName("Core.Int32", ref m_Int32RuntimeType, true);
@@ -457,8 +457,8 @@ namespace SimpleLanguage.VM
             {
                 EVMType.Object => m_ObjectRuntimeType,
                 EVMType.Boolean => m_BoolRuntimeType,
-                EVMType.Byte => m_ByteRuntimeType,
-                EVMType.SByte => m_SByteRuntimeType,
+                EVMType.UInt8 => m_UInt8RuntimeType,
+                EVMType.Int8 => m_Int8RuntimeType,
                 EVMType.Int16 => m_Int16RuntimeType,
                 EVMType.UInt16 => m_UInt16RuntimeType,
                 EVMType.Int32 => m_Int32RuntimeType,
@@ -686,15 +686,15 @@ namespace SimpleLanguage.VM
                 m_NumRuntimeType = rt;
                 m_NumRuntimeType.SetEVMType(EVMType.Num);
             }
-            else if (name == "Byte" || name == "Core.Byte")
+            else if (name == "UInt8" || name == "Core.UInt8")
             {
-                m_ByteRuntimeType = rt;
-                m_ByteRuntimeType.SetEVMType(EVMType.Byte);
+                m_UInt8RuntimeType = rt;
+                m_UInt8RuntimeType.SetEVMType(EVMType.UInt8);
             }
-            else if (name == "SByte" || name == "Core.SByte")
+            else if (name == "Int8" || name == "Core.Int8")
             {
-                m_SByteRuntimeType = rt;
-                m_SByteRuntimeType.SetEVMType(EVMType.SByte);
+                m_Int8RuntimeType = rt;
+                m_Int8RuntimeType.SetEVMType(EVMType.Int8);
             }
             else if (name == "Int16" || name == "Core.Int16")
             {

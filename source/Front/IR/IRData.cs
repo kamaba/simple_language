@@ -268,10 +268,10 @@ namespace SimpleLanguage.IR
                 case EIROpCode.LoadConstBoolean:
                     if (TryGetBoolean(out var bv)) { _opValue = bv; return; }
                     break;
-                case EIROpCode.LoadConstByte:
+                case EIROpCode.LoadConstUInt8:
                     if (TryGetByte(out var bb)) { _opValue = bb; return; }
                     break;
-                case EIROpCode.LoadConstSByte:
+                case EIROpCode.LoadConstInt8:
                     if (TryGetSByte(out var sb)) { _opValue = sb; return; }
                     break;
                 case EIROpCode.LoadConstInt16:

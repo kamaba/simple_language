@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaExpressConst.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -237,14 +237,14 @@ namespace SimpleLanguage.Core
                     eType = EType.Boolean;
                     value = Convert.ToBoolean(value);
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.byteMetaClass)
+                else if (m_MetaType.metaClass == CoreMetaClassManager.uint8MetaClass)
                 {
-                    eType = EType.Byte;
+                    eType = EType.UInt8;
                     value = Convert.ToByte(value);
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.sbyteMetaClass)
+                else if (m_MetaType.metaClass == CoreMetaClassManager.int8MetaClass)
                 {
-                    eType = EType.SByte;
+                    eType = EType.Int8;
                     value = Convert.ToSByte(value);
                 }
                 else if (m_MetaType.metaClass == CoreMetaClassManager.int16MetaClass)
@@ -331,7 +331,7 @@ namespace SimpleLanguage.Core
         {
             switch (right.eType)
             {
-                case EType.Byte:
+                case EType.UInt8:
                     value = (byte)value + (byte)right.value;
                     break;
                 case EType.Int16:
@@ -370,7 +370,7 @@ namespace SimpleLanguage.Core
         {
             switch (right.eType)
             {
-                case EType.Byte:
+                case EType.UInt8:
                     value = (byte)value - (byte)right.value;
                     break;
                 case EType.Int16:
@@ -404,7 +404,7 @@ namespace SimpleLanguage.Core
         {
             switch (right.eType)
             {
-                case EType.Byte:
+                case EType.UInt8:
                     value = (byte)value * (byte)right.value;
                     break;
                 case EType.Int16:
@@ -438,7 +438,7 @@ namespace SimpleLanguage.Core
         {
             switch (right.eType)
             {
-                case EType.Byte:
+                case EType.UInt8:
                     value = (byte)value / (byte)right.value;
                     break;
                 case EType.Int16:
@@ -472,7 +472,7 @@ namespace SimpleLanguage.Core
         {
             switch (right.eType)
             {
-                case EType.Byte:
+                case EType.UInt8:
                     value = (byte)value % (byte)right.value;
                     break;
                 case EType.Int16:
@@ -506,7 +506,7 @@ namespace SimpleLanguage.Core
         {
             switch (right.eType)
             {
-                case EType.Byte:
+                case EType.UInt8:
                     switch (opSign)
                     {
                         case ELeftRightOpSign.Equal:

@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      Int32Object.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -27,24 +27,24 @@ namespace SimpleLanguage.VM
             return value.ToString();
         }
     }
-    public class Int8Object : NumObject
+    public class UInt8Object : NumObject
     {
         public new byte value => m_Numeric.i8;
 
-        public Int8Object(byte _val) : base(EVMType.Byte)
+        public UInt8Object(byte _val) : base(EVMType.UInt8)
         {
             m_Numeric.i8 = _val;
-            m_RuntimeType = RuntimeTypeManager.byteRuntimeType;
+            m_RuntimeType = RuntimeTypeManager.uint8RuntimeType;
         }
     }
-    public class SInt8Object : NumObject
+    public class Int8Object : NumObject
     {
         public new sbyte value => m_Numeric.si8;
 
-        public SInt8Object(sbyte _val) : base(EVMType.SByte)
+        public Int8Object(sbyte _val) : base(EVMType.Int8)
         {
             m_Numeric.si8 = _val;
-            m_RuntimeType = RuntimeTypeManager.sbyteRuntimeType;
+            m_RuntimeType = RuntimeTypeManager.int8RuntimeType;
         }
     }
     class Int16Object : NumObject

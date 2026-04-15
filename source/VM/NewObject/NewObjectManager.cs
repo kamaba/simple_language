@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      SObject.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -46,12 +46,12 @@ namespace SimpleLanguage.VM
             //}
             //else if (name == "Core.Byte" || name == "Byte")
             //{
-            //    sobj = new Int8Object(0);
+            //    sobj = new UInt8Object(0);
             //    sobj.typeId = 3;
             //}
             //else if (name == "Core.SByte" || name == "SByte")
             //{
-            //    sobj = new SInt8Object(0);
+            //    sobj = new Int8Object(0);
             //    sobj.typeId = 3;
             //}
             //else if (name == "Core.Int16" || name == "Int16")
@@ -162,21 +162,21 @@ namespace SimpleLanguage.VM
                         boolObj.SetValue(svalue.int8Value == 1);
                     }
                     break;
-                case EType.Byte:
+                case EType.UInt8:
                     {
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            to.SetValue(EType.Byte, svalue.int8Value);
+                            to.SetValue(EType.UInt8, svalue.int8Value);
                             return;
                         }
                         AnyObject anyObject = obj as AnyObject;
                         if (anyObject != null)
                         {
-                            anyObject.SetValue(EType.Byte, svalue.int8Value);
+                            anyObject.SetValue(EType.UInt8, svalue.int8Value);
                             return;
                         }
-                        Int8Object byteObj = obj as Int8Object;
+                        UInt8Object byteObj = obj as UInt8Object;
                         if (byteObj == null)
                         {
                             Debug.Write("该类型不是Byte类型!!");
@@ -185,20 +185,20 @@ namespace SimpleLanguage.VM
                         byteObj.SetValue(svalue.int8Value);
                     }
                     break;
-                case EType.SByte:
+                case EType.Int8:
                     {
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            to.SetValue(EType.SByte, svalue.sint8Value);
+                            to.SetValue(EType.Int8, svalue.sint8Value);
                         }
                         AnyObject anyObject = obj as AnyObject;
                         if (anyObject != null)
                         {
-                            anyObject.SetValue(EType.SByte, svalue.sint8Value);
+                            anyObject.SetValue(EType.Int8, svalue.sint8Value);
                             return;
                         }
-                        SInt8Object byteObj = obj as SInt8Object;
+                        Int8Object byteObj = obj as Int8Object;
                         if (byteObj == null)
                         {
                             Debug.Write("该类型不是SByte类型!!");

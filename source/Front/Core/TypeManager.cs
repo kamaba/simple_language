@@ -149,7 +149,9 @@ namespace SimpleLanguage.Core
                 return CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(mt, true, out _);
             }
 
-            AddGlobalTypeAlias("ByteArray", ArrayOf(CoreMetaClassManager.byteMetaClass));
+            AddGlobalTypeAlias("Byte", new MetaType(CoreMetaClassManager.uint8MetaClass));
+            AddGlobalTypeAlias("SByte", new MetaType(CoreMetaClassManager.int8MetaClass));
+            AddGlobalTypeAlias("ByteArray", ArrayOf(CoreMetaClassManager.uint8MetaClass));
             AddGlobalTypeAlias("Int32Array", ArrayOf(CoreMetaClassManager.int32MetaClass));
             AddGlobalTypeAlias("UInt32Array", ArrayOf(CoreMetaClassManager.uint32MetaClass));
             AddGlobalTypeAlias("Int64Array", ArrayOf(CoreMetaClassManager.int64MetaClass));
@@ -165,8 +167,8 @@ namespace SimpleLanguage.Core
             if( mt.eMetaTypeType == EMetaTypeType.MetaClass )
             {
                 var curClass = mt.metaClass;
-                if (curClass == CoreMetaClassManager.byteMetaClass
-                    || curClass == CoreMetaClassManager.sbyteMetaClass
+                if (curClass == CoreMetaClassManager.uint8MetaClass
+                    || curClass == CoreMetaClassManager.int8MetaClass
                     //|| curClass == CoreMetaClassManager.charMetaClass
                     || curClass == CoreMetaClassManager.int16MetaClass
                     || curClass == CoreMetaClassManager.uint16MetaClass

@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      SObject.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -57,9 +57,9 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.Boolean:
                     return m_Numeric.i8 != 0;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     return m_Numeric.i8;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     return m_Numeric.si8;
                 case EVMType.Int16:
                     return m_Numeric.i16;
@@ -102,10 +102,10 @@ namespace SimpleLanguage.VM
                     else
                         m_Numeric.i8 = Convert.ToBoolean(val) ? (byte)1 : (byte)0;
                     break;
-                case EVMType.Byte:
+                case EVMType.UInt8:
                     m_Numeric.i8 = Convert.ToByte(val);
                     break;
-                case EVMType.SByte:
+                case EVMType.Int8:
                     m_Numeric.si8 = Convert.ToSByte(val);
                     break;
                 case EVMType.Int16:
@@ -159,10 +159,10 @@ namespace SimpleLanguage.VM
                     StoreValue(EVMType.Boolean, b);
                     return;
                 case byte b8:
-                    StoreValue(EVMType.Byte, b8);
+                    StoreValue(EVMType.UInt8, b8);
                     return;
                 case sbyte sb:
-                    StoreValue(EVMType.SByte, sb);
+                    StoreValue(EVMType.Int8, sb);
                     return;
                 case short s16:
                     StoreValue(EVMType.Int16, s16);
