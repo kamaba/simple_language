@@ -1,25 +1,36 @@
 import Std
 import CSharp.System
-import CSharpLang.SimpleLanguage
 
 GlobalTest
 {
     static fun()
     {
         global.println("========== GlobalTest (start) ==========")
-        #global.print(a.toString())
-        #SystemPrint(a.toString())
-        #Call( BridgeKind.CLR )
-        #global.println( "--------------------for enum-------------------" )
-        #global.println( "Pi=$global.Pi }" )
-        #global.println( "config data $global.var1 " )
-        #str = global.arrvar1.toString()
-        #global.println( "global arr: $str "  )
+        # .sp Project{} static function call chain
+        global.print("project static function print -> ok")
+        global.println("")
+
+        # global.data: primitive
+        Int32 gv1 = global.var1
         aa = global.vardata2.a
-        global.println("config data (vardata2.a+b) -> " + (aa + global.vardata2.b).toString())
+        global.println("jsonc global.var1 -> " + gv1.toString())
+        global.println("jsonc global.vardata2.a -> " + aa.toString())
+
+        # global.data: array
+        arrRef = global.arrvar1
+        global.println("global.arrvar1 != null -> " + arrRef.toString())
+
+        # global.data: object
+        bb = global.vardata2.b
+        global.println("global.vardata2.a -> " + aa.toString())
+        global.println("global.vardata2.b -> " + bb.toString())
+        global.println("config data (vardata2.a+b) -> " + (aa + bb).toString())
+
         global.println("========== GlobalTest (end) ==========")
     }
 }
 
-# 测试说明：依赖 ProjectConfig 中 globalVariable（如 vardata2）的集成用例；其余 global 访问保留为注释便于按需启用。
-# 预期：若 vardata2 存在且含数值成员 a、b，则打印二者之和；缺少配置时编译或运行失败属预期，可改回注释行做离线语法检查。
+# 测试说明：
+# 1) 依赖 Core.jsonc -> global.data 的 var1 / arrvar1 / vardata2
+# 2) 依赖 Core.sp -> Project 的静态字段 Pi 和函数 print/println
+# 3) 覆盖 global 在 jsonc 配置注入 + .sp 工程成员调用 两条链路

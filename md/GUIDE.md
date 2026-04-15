@@ -65,6 +65,8 @@
   - 说明：语言语法说明与示例文档。
 - [function](./syntax/function.md)
   - 说明：语言语法说明与示例文档。
+- [global](./syntax/global.md)
+  - 说明：`global` 关键字、`global.data` 与 `.sp Project{}` 联动说明。
 - [if](./syntax/if.md)
   - 说明：语言语法说明与示例文档。
 - [interface](./syntax/interface.md)

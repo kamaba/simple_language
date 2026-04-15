@@ -59,6 +59,16 @@ namespace SimpleLanguage.IR
                 }
                 if ( mv.isConst || mv.isStatic )
                 {
+                    // For const member variables (including injected project global.data primitive fields),
+                    // prefer direct const load IR instead of runtime static field load.
+                    if (mv is MetaMemberVariable mmv && mmv.isConst && mmv.constExpressNode != null)
+                    {
+                        IRLoadVariable constLoadVar = new IRLoadVariable();
+                        var irexp = new IRExpress(_irMethod, mmv.constExpressNode);
+                        constLoadVar.m_IRDataList.AddRange(irexp.IRDataList);
+                        return constLoadVar;
+                    }
+
                     //if (mv.realMetaType.GenTemplateIsIncludeTemplate())
                     //{
                     //    if (index == -1)

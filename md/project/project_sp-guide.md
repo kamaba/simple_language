@@ -65,3 +65,10 @@
 - 工程入口逻辑放在 `_main_`
 - 测试逻辑放在 `_test_`
 - 配置常量与结构化数据优先放在 `Core.jsonc -> global.data`
+
+## 5. 对应用例
+
+- 语法/集成用例：`test/BaseTest/GlobalTest.sl`
+- 覆盖范围：
+  - `global.Pi`、`global.print(...)`、`global.println(...)`（来自 `.sp` 的 `Project{}`）
+  - `global.var1`、`global.arrvar1[i]`、`global.vardata2.a/b`（来自 `jsonc` 的 `global.data`）

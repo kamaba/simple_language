@@ -229,6 +229,7 @@ namespace SimpleLanguage.Project
 
             if (element.ValueKind == JsonValueKind.String)
             {
+                mmv.SetIsConst(true);
                 mmv.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
                 mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.stringMetaClass));
                 mmv.SetIsDefineMetaType(true);
@@ -241,6 +242,7 @@ namespace SimpleLanguage.Project
             {
                 if (element.TryGetInt32(out var i32))
                 {
+                    mmv.SetIsConst(true);
                     mmv.SetMetaDefineType(new MetaType(CoreMetaClassManager.int32MetaClass));
                     mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.int32MetaClass));
                     mmv.SetIsDefineMetaType(true);
@@ -251,6 +253,7 @@ namespace SimpleLanguage.Project
 
                 if (element.TryGetDouble(out var f64))
                 {
+                    mmv.SetIsConst(true);
                     mmv.SetMetaDefineType(new MetaType(CoreMetaClassManager.float64MetaClass));
                     mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.float64MetaClass));
                     mmv.SetIsDefineMetaType(true);
@@ -262,6 +265,7 @@ namespace SimpleLanguage.Project
 
             if (element.ValueKind == JsonValueKind.True || element.ValueKind == JsonValueKind.False)
             {
+                mmv.SetIsConst(true);
                 mmv.SetMetaDefineType(new MetaType(CoreMetaClassManager.booleanMetaClass));
                 mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.booleanMetaClass));
                 mmv.SetIsDefineMetaType(true);
@@ -272,6 +276,7 @@ namespace SimpleLanguage.Project
 
             if (element.ValueKind == JsonValueKind.Null)
             {
+                mmv.SetIsConst(true);
                 mmv.SetMetaDefineType(new MetaType(CoreMetaClassManager.objectMetaClass));
                 mmv.SetRealMetaType(new MetaType(CoreMetaClassManager.objectMetaClass));
                 mmv.SetIsDefineMetaType(true);

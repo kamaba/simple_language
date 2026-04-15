@@ -14,7 +14,8 @@ Project
     _main_()
     {
         #ObjectTest.fun()
-        NumberTest.fun()
+        #NumberTest.fun()
+        GlobalTest.fun()
         #StringTest.fun()
         #TypeTest.fun()       
     }
