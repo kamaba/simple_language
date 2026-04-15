@@ -129,6 +129,7 @@ namespace SimpleLanguage.Compile
         {
             fmn.SetFileMeta(m_FileMeta);
             m_FileMetaExpressList.Add(fmn);
+            isDirty = true;
         }
         public virtual void AddRangeFileMetaTerm(List<FileMetaBaseTerm> fmn)
         {
@@ -137,6 +138,7 @@ namespace SimpleLanguage.Compile
                 fmn[i].SetFileMeta(m_FileMeta);
             }
             m_FileMetaExpressList.AddRange(fmn);
+            isDirty = true;
         }
         public virtual List<Token> GetTokens()
         {
@@ -1313,7 +1315,7 @@ namespace SimpleLanguage.Compile
                 {
                     if(fmbt != null )
                     {
-                        Log.AddFileMetaLog( LID.FileMetaExpressBeforeDefine, fmbt.token );
+                        Log.AddFileMetaLog( LID.FileMetaExpressBeforeDefine, fmbt.token, "" );
                     }
                     fmbt = new FileMetaCallTerm(m_FileMeta, node);
                     fmbt.priority = int.MaxValue;
@@ -1395,7 +1397,7 @@ namespace SimpleLanguage.Compile
                     ETokenType ett = currentTerm.token.type;
                     if (!m_CanUseDoublePlusOrMinus && (ett == ETokenType.DoubleMinus || ett == ETokenType.DoublePlus) )
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error 只有在语句中，可以使用i++ 等语法，变量与传参是禁止使用i++" +
+                        Log.AddFileMetaLog(LID.Unknown, extendMessage + "Error 只有在语句中，可以使用i++ 等语法，变量与传参是禁止使用i++" +
                             "Token 位置:" + currentTerm.token.ToAllString());
                         return false;
                     }
@@ -1414,7 +1416,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (listNextTerm == null)
                         {
-                            Log.AddFileMetaLog(LID.Unknown, "Error 表达式解析错误!! FileMetaExpress 575");
+                            Log.AddFileMetaLog(LID.Unknown, "Error 表达式解析错误!! FileMetaExpress 575" + extendMessage );
                             return false;
                         }
                         currentTerm.right = listNextTerm;
@@ -1425,7 +1427,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error 不能使用错误符号 !! FileMetaExpress 698" + currentTerm.token.ToLexemeAllString());
+                        Log.AddFileMetaLog(LID.Unknown, extendMessage + "Error 不能使用错误符号 !! FileMetaExpress 698" + currentTerm.token.ToLexemeAllString());
                         return false;
                     }
                 }
@@ -1446,7 +1448,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error BuildTst 表达式解析错误!! 604");
+                        Log.AddFileMetaLog(LID.Unknown, extendMessage + "Error BuildTst 表达式解析错误!! 604");
                         return false;
                     }
                 }
@@ -1465,6 +1467,13 @@ namespace SimpleLanguage.Compile
         }
         public override bool BuildAST()
         {
+            // BuildAST 在语法流程中可能会被重复调用；
+            // 若当前表达式树未发生变更且已有根节点，则直接复用。
+            if (!isDirty && m_Root != null)
+            {
+                return true;
+            }
+
             List<FileMetaBaseTerm> buildASTList = new List<FileMetaBaseTerm>(m_FileMetaExpressList);
 
             // Check length
@@ -1492,11 +1501,19 @@ namespace SimpleLanguage.Compile
                         }
                     }
                 }
-                buildASTList[i].BuildAST();
+                if (buildASTList[i].isDirty || buildASTList[i].root == null)
+                {
+                    buildASTList[i].BuildAST();
+                }
 
             }
             m_Root = null;
-            return BuildTst(buildASTList);
+            var flag = BuildTst(buildASTList);
+            if (flag)
+            {
+                ClearDirty();
+            }
+            return flag;
         }
         public override void SetDeep(int _deep)
         {

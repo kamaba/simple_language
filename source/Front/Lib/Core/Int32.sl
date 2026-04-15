@@ -44,13 +44,13 @@ public class Int32 extends Num
     {
         ret SystemConvertBool(this)
     }
-    override Byte toByte( byte index = 0 )
+    override Int8 toInt8( byte index = 0 )
     {
         ret SystemConvertInt8(this, index)
     }
-    override Byte toSByte( byte index = 0 )
+    override UInt8 toUInt8( byte index = 0 )
     {
-        ret SystemConvertSInt8(this, index)
+        ret SystemConvertUInt8(this, index)
     }
     override Int16 toInt16()
     {

@@ -86,8 +86,8 @@ namespace SimpleLanguage.Core
 
             // convert
             { ESystemMethodCall.SystemConvertBool, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertBool, Bool, false, Obj) },
-            { ESystemMethodCall.SystemConvertInt8, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertInt8, U8, false, Obj, I32) },
-            { ESystemMethodCall.SystemConvertSInt8, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertSInt8, I8, false, Obj, I32) },
+            { ESystemMethodCall.SystemConvertInt8, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertInt8, I8, false, Obj, I32) },
+            { ESystemMethodCall.SystemConvertUInt8, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertUInt8, U8, false, Obj, I32) },
             { ESystemMethodCall.SystemConvertInt16, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertInt16, I16, false, Obj) },
             { ESystemMethodCall.SystemConvertUInt16, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertUInt16, U16, false, Obj) },
             { ESystemMethodCall.SystemConvertInt32, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertInt32, I32, false, Obj) },

@@ -10,7 +10,7 @@
 using System;
 using System.Text;
 using SimpleLanguage.Compile;
-using System.Diagnostics;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Core
 {
@@ -107,7 +107,7 @@ namespace SimpleLanguage.Core
             }
             if(m_DefineVarMetaVariable == null )
             {
-                Debug.Write("Error {0} MetaVariable is Null", defineName);
+                Log.AddMetaCoreLog( LID.ShowExtendMessage, "Error {0} MetaVariable is Null" +  defineName);
                 return;
             }
             m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_DefineVarMetaVariable);
@@ -125,7 +125,7 @@ namespace SimpleLanguage.Core
                 m_ExpressNode = ExpressManager.CreateExpressNodeByCEP(cep);
                 if (m_ExpressNode == null)
                 {
-                    Debug.WriteLine("Error 解析新建变量语句时，表达式解析为空!!__1");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 解析新建变量语句时，表达式解析为空!!__1");
                     return;
                 }
                 m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
@@ -136,7 +136,7 @@ namespace SimpleLanguage.Core
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();               
                 if (expressRetMetaDefineType == null)
                 {
-                    Debug.WriteLine("Error 解析新建变量语句时，表达式返回类型为空!!__2", defineName);
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 解析新建变量语句时，表达式返回类型为空!!__2", defineName);
                     return;
                 }
             }
@@ -144,6 +144,13 @@ namespace SimpleLanguage.Core
             if (!m_DefineVarMetaVariable.isDefineMetaType )
             {
                 MetaConstExpressNode constExpressNode = m_ExpressNode as MetaConstExpressNode;
+                if (constExpressNode != null)
+                {
+                    if (!MetaVariable.TryAdjustConstExpressByDefineMetaType(constExpressNode, expressRetMetaDefineType))
+                    {
+                        return;
+                    }
+                }
                 bool isCheckReturnType = true;
                 if (constExpressNode != null)
                 {
@@ -164,6 +171,13 @@ namespace SimpleLanguage.Core
                 {
                     ClassManager.EClassRelation relation = ClassManager.EClassRelation.No;
                     MetaConstExpressNode constExpressNode = m_ExpressNode as MetaConstExpressNode;
+                    if (constExpressNode != null)
+                    {
+                        if (!MetaVariable.TryAdjustConstExpressByDefineMetaType(constExpressNode, mdt))
+                        {
+                            return;
+                        }
+                    }
                     MetaClass curClass = mdt.metaClass;
                     if( mdt.isEnum )
                     {
@@ -172,14 +186,14 @@ namespace SimpleLanguage.Core
                             MetaCallLinkExpressNode expressMDT = m_ExpressNode as MetaCallLinkExpressNode;
                             if (expressMDT == null )
                             {
-                                Debug.WriteLine("Error Enum模式，只允许是调用模式[CallLinkExpress]");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum模式，只允许是调用模式[CallLinkExpress]");
                             }
                             else
                             {
                                 var varableEnum = expressMDT.metaCallLink.finalCallNode.variable.ownerMetaClass;
                                 if( mdt.metaClass != varableEnum )
                                 {
-                                    Debug.Write("Error Enum与值不相等!!");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum与值不相等!!");
                                 }
                                 else
                                 {
@@ -234,7 +248,7 @@ namespace SimpleLanguage.Core
                         if (relation == ClassManager.EClassRelation.No)
                         {
                             sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                            Debug.Write(sb.ToString());
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                             m_IsNeedCastState = true;
                         }
                         else if (relation == ClassManager.EClassRelation.Same)
@@ -244,7 +258,7 @@ namespace SimpleLanguage.Core
                         else if (relation == ClassManager.EClassRelation.Parent)
                         {
                             sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                            Debug.Write(sb.ToString());
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                             m_IsNeedCastState = true;
                         }
                         else if (relation == ClassManager.EClassRelation.Child)
@@ -257,7 +271,7 @@ namespace SimpleLanguage.Core
                         else
                         {
                             sb.Append("表达式错误，或者是定义类型错误");
-                            Debug.Write(sb.ToString());
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                         }
                     }
                 }

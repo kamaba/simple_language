@@ -147,7 +147,15 @@ namespace SimpleLanguage.Core
         }
         public override void Parse(AllowUseSettings auc)
         {
-            if (m_FileMetaConstValueTerm?.token?.type == ETokenType.String)
+            ETokenType tt = ETokenType.None;
+            if( m_FileMetaConstValueTerm?.token != null )
+            {
+                tt = m_FileMetaConstValueTerm.token.type;
+            }
+            if (tt == ETokenType.NumberReal)
+            { 
+            }
+            else if (tt == ETokenType.String)
             {
                 var cdlist = m_FileMetaConstValueTerm.token.childrenTokensList;
                 if( cdlist.Count == 1 && (cdlist[0].Count == 1 && cdlist[0][0].type == ETokenType.String ) )
@@ -286,6 +294,10 @@ namespace SimpleLanguage.Core
                 {
                     eType = EType.Float64;
                     value = Convert.ToDouble(value);
+                }
+                else if( m_MetaType.metaClass == CoreMetaClassManager.numMetaClass )
+                {
+                    eType = EType.Num;
                 }
                 else if (m_MetaType.metaClass == CoreMetaClassManager.stringMetaClass)
                 {

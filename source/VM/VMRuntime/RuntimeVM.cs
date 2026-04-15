@@ -1627,6 +1627,7 @@ namespace SimpleLanguage.VM.Runtime
                                 ConsoleSystemMethodCall.ExecuteSystemReadKey(this, sysPkg);
                                 break;
                             case (int)ESystemMethodCall.SystemConvertInt8:
+                            case (int)ESystemMethodCall.SystemConvertUInt8:
                             case (int)ESystemMethodCall.SystemConvertBool:
                             case (int)ESystemMethodCall.SystemConvertSInt8:
                             case (int)ESystemMethodCall.SystemConvertInt16:

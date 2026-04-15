@@ -16,7 +16,7 @@ namespace SimpleLanguage.VM.Runtime
         SystemReadKey,
         SystemConvertBool,
         SystemConvertInt8,
-        SystemConvertSInt8,
+        SystemConvertUInt8,
         SystemConvertInt16,
         SystemConvertUInt16,
         SystemConvertInt32,
@@ -44,5 +44,7 @@ namespace SimpleLanguage.VM.Runtime
         SystemStringEnd,
         SystemStringRange,
         SystemStringToByteArray,
+        /// <summary>Convert to signed byte; must match <see cref="SimpleLanguage.ESystemMethodCall.SystemConvertSInt8"/> ordinal.</summary>
+        SystemConvertSInt8,
     }
 }

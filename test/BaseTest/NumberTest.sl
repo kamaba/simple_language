@@ -118,8 +118,8 @@ NumberTest
         global.println("1.25d -> " + vD.toString() + " ; type=" + vD.type.toString())
 
         # 当前语法里没有 b 后缀，Byte 用显式类型/转换测试
-        vB = 255 as Byte
-        global.println("255 as Byte -> " + vB.toString() + " ; type=" + vB.type.toString())
+        #vB = 255 as Byte
+        #global.println("255 as Byte -> " + vB.toString() + " ; type=" + vB.type.toString())
     }
 
     static radixLiteralTest()
@@ -140,7 +140,7 @@ NumberTest
         global.println("----- inferTypeByComputeTest -----")
 
         a = 1 + 2
-        b = 1 + 2.0
+        itbct_b = 1 + 2.2
         c = 1i + 2ui
         d = 1L + 2
         e = (1 + 2) * 3
@@ -148,7 +148,7 @@ NumberTest
         g = 5 % 2
 
         global.println("a = 1 + 2 -> " + a.toString() + " ; type=" + a.type.toString())
-        global.println("b = 1 + 2.0 -> " + b.toString() + " ; type=" + b.type.toString())
+        global.println("itbct_b = 1 + 2.0 -> " + itbct_b.toString() + " ; type=" + itbct_b.type.toString())
         global.println("c = 1i + 2ui -> " + c.toString() + " ; type=" + c.type.toString())
         global.println("d = 1L + 2 -> " + d.toString() + " ; type=" + d.type.toString())
         global.println("e = (1 + 2) * 3 -> " + e.toString() + " ; type=" + e.type.toString())

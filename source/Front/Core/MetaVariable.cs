@@ -447,32 +447,37 @@ namespace SimpleLanguage.Core
                     return true;
                 }
 
-                bool canConvert = false;
-                switch (curEType)
+                bool canConvert = expEType == EType.Num;
+                if( !canConvert )
                 {
-                    case EType.Int8:
-                    case EType.UInt8:
-                        canConvert = (expEType == EType.UInt8 || expEType == EType.Int8);
-                        break;
-                    case EType.Int16:
-                    case EType.UInt16:
-                        canConvert = expEType == EType.UInt8 || expEType == EType.Int8
-                            || expEType == EType.UInt16 || expEType == EType.Int16;
-                        break;
-                    case EType.Int32:
-                    case EType.UInt32:
-                    case EType.Float32:
-                        canConvert = expEType == EType.UInt8 || expEType == EType.Int8
-                            || expEType == EType.UInt16 || expEType == EType.Int16
-                            || expEType == EType.Int32 || expEType == EType.UInt32;
-                        break;
-                    case EType.Int64:
-                    case EType.UInt64:
-                    case EType.Float64:
-                        canConvert = true;
-                        break;
+                    switch (curEType)
+                    {
+                        case EType.Int8:
+                        case EType.UInt8:
+                            canConvert = (expEType == EType.UInt8 || expEType == EType.Int8);
+                            break;
+                        case EType.Int16:
+                        case EType.UInt16:
+                            canConvert = expEType == EType.UInt8 || expEType == EType.Int8
+                                || expEType == EType.UInt16 || expEType == EType.Int16;
+                            break;
+                        case EType.Int32:
+                        case EType.UInt32:
+                        case EType.Float32:
+                            canConvert = expEType == EType.UInt8 || expEType == EType.Int8
+                                || expEType == EType.UInt16 || expEType == EType.Int16
+                                || expEType == EType.Int32 || expEType == EType.UInt32;
+                            break;
+                        case EType.Int64:
+                        case EType.UInt64:
+                        case EType.Float64:
+                            canConvert = true;
+                            break;
+                        case EType.Num:
+                            canConvert = true;
+                            break;
+                    }
                 }
-
                 if (canConvert && TryConvertConstValueByEType(curEType, mcen.value, out var convertedValue))
                 {
                     mcen.SetConstValue(curEType, convertedValue);

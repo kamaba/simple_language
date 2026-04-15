@@ -97,6 +97,11 @@ namespace SimpleLanguage
                         etype = Enum.Parse<EType>( extend.ToString());
                     }
                     break;
+                case ETokenType.NumberReal:
+                    {
+                        etype = EType.Num;
+                    }
+                    break;
                 case ETokenType.Type:
                     {
                         etype = Enum.Parse<EType>(extend.ToString()); ;

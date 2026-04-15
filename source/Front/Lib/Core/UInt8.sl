@@ -15,7 +15,7 @@ public class UInt8 extends Num
 
     public static UInt8 parse(string s)
     {
-        ret SystemConvertUInt8(s, 0-1)
+        ret SystemConvertUInt8(s)
     }
     public override Num abs()
     {
@@ -32,8 +32,8 @@ public class UInt8 extends Num
     public override Num compareTo(Num other)
     {
         if (other == null) { ret 1 }
-        UInt8 ov = SystemConvertInt8(other, 0-1)
-        if (this._value == ov) { ret 0 }
+        UInt8 ov = SystemConvertUInt8(other)
+        if this._value == ov { ret 0 }
         ret this._value > ov ? 1 : 0-1
     }
     override Int32 toInt32()

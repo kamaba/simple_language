@@ -17,7 +17,7 @@ namespace SimpleLanguage.VM.Runtime
                 return;
             }
 
-            if (kind == ESystemMethodCall.SystemConvertInt8)
+            if (kind == ESystemMethodCall.SystemConvertInt8 || kind == ESystemMethodCall.SystemConvertUInt8)
             {
                 SValue outv;
                 if (pc == 1)
@@ -26,7 +26,7 @@ namespace SimpleLanguage.VM.Runtime
                     outv = SystemMethodConvertHelper.ConvertInt8(ref args[0], SystemMethodConvertHelper.ReadInt32ArgLoose(ref args[1]));
                 else
                 {
-                    Debug.Assert(false, $"SystemConvertInt8 expects 1 or 2 args, got {pc}");
+                    Debug.Assert(false, $"SystemConvertInt8/SystemConvertUInt8 expects 1 or 2 args, got {pc}");
                     var z = default(SValue);
                     z.SetNull();
                     outv = z;
@@ -157,7 +157,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             switch (arg.eType)
             {
-                case EVMType.UInt8: return ESystemMethodCall.SystemConvertInt8;
+                case EVMType.UInt8: return ESystemMethodCall.SystemConvertUInt8;
                 case EVMType.Int8: return ESystemMethodCall.SystemConvertSInt8;
                 case EVMType.Int16: return ESystemMethodCall.SystemConvertInt16;
                 case EVMType.UInt16: return ESystemMethodCall.SystemConvertUInt16;
@@ -174,7 +174,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 switch (arg.sobject)
                 {
-                    case UInt8Object: return ESystemMethodCall.SystemConvertInt8;
+                    case UInt8Object: return ESystemMethodCall.SystemConvertUInt8;
                     case Int8Object: return ESystemMethodCall.SystemConvertSInt8;
                     case Int16Object: return ESystemMethodCall.SystemConvertInt16;
                     case UInt16Object: return ESystemMethodCall.SystemConvertUInt16;

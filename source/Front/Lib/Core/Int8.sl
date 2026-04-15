@@ -15,12 +15,12 @@ public class Int8 extends Num
     
     public static Int8 parse( string s )
     {
-        ret SystemConvertSInt8(s, 0-1)
+        ret SystemConvertInt8(s, 0-1)
     }    
 
     public override Num abs()
     {
-        ret SystemConvertSInt8(SystemNumAbs(this), 0-1)
+        ret SystemConvertInt8(SystemNumAbs(this), 0-1)
     } 
     public override Num floor()
     {
@@ -33,7 +33,7 @@ public class Int8 extends Num
     public override Num compareTo(Num other)
     {
         if (other == null) { ret 1 }
-        Int8 ov = SystemConvertSInt8(other, 0-1)
+        Int8 ov = SystemConvertInt8(other, -1)
         if (this._value == ov) { ret 0 }
         ret this._value > ov ? 1 : 0-1
     }

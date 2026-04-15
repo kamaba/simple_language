@@ -144,6 +144,7 @@ namespace SimpleLanguage.Core
         public Float32MetaClass() : base(DefaultObject.Float32.ToString())
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
+            m_Type = EType.Float32;
             m_ClassDefineType = EClassDefineType.InnerDefine;
             MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float32, 0.0f);
             SetDefaultExpressNode(mcen);
