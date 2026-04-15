@@ -1,76 +1,6 @@
 import Std
 import CSharp.System
 
-namespace Core
-{
-    class Object
-    {
-        public void _init_()
-        {
-
-        }
-
-        public string toString()
-        {
-            ret ""
-        }
-    }
-    class Byte
-    {
-        
-    }
-    class Boolean
-    {
-
-    }
-    class SByte
-    {
-        
-    }
-    class Int16
-    {
-        
-    }
-    class UInt16
-    {
-        
-    }
-    class Int32
-    {
-        
-    }
-    class UInt32
-    {
-        
-    }
-    class Int64
-    {
-        
-    }
-    class UInt64
-    {
-        
-    }
-    class Float32
-    {
-        
-    }
-    class Float64
-    {
-        _init_(Float64 f)
-        {
-
-        }
-    }
-    class String
-    {
-        _init_( String str )
-        {
-
-        }
-    }
-
-}
 Map<MapT1,MapT2>
 {
     MapT1 m1 = null
@@ -182,3 +112,6 @@ GenClass
 2. 可以从当前类定义位置查找类
 3. 查找到类后，进行模板匹配，匹配的类，是真实的类
 !#
+
+# GenClass static fun 测试面向：Map<,> 辅助、Level1<T> 静态/实例成员、嵌套 Level1<Level1<int>> 与 Level1Fun/Level1SF 泛型方法。
+# 预期：Console 中含 LevelMemValue、LevelStaticValue、内层 300 等；含「静态模板成员尚未生成」类已知限制的打印。

@@ -57,3 +57,5 @@
 /source/Test/bin
 /source/Test/obj
 /source/Front/Lib/Core/Export/SLVMCode/module.json
+/source/Test/BaseTest/NumberTest
+/source/Test/BaseTest/ObjectTest

@@ -6,25 +6,32 @@ Level1
 {
 }
 
-GenClass2{
+GenClass2
+{
     static fun()
     {
+        global.println("========== Ref / GenClass2 (start) ==========")
         Level1 l1 = new()
         #l1.mm();                    #纯手动管理对象，不加入自动管理
-        Mem.Maunul( l1 );           #手动管理 
+        Mem.Maunul(l1)
 
         var refl1 = l1
-        refl11 = l1.ref            # 自带get ref()方式 引用计数加1
+        refl11 = l1.ref
 
-        l1.release()                #自带 release() 方法，引用计数-1
+        l1.release()
 
-        ref12 = l1.refWeak          # get refWeak 方式，引用计数不增加
-        l1.free()                   #自己释放内存 并且当前l1为空
-        l1.freeDefer()                # 在函数结束时再会调用
+        ref12 = l1.refWeak
+        l1.free()
+        l1.freeDefer()
 
-        var cl1 = l1.clone()        #克隆当前的数据，生成一个新的数据结构
+        var cl1 = l1.clone()
+        global.println("clone non-null -> " + (cl1 != null).toString())
+        global.println("========== Ref / GenClass2 (end) ==========")
     }
 }
+
+# 测试说明：引用计数 ref、release、refWeak、free、freeDefer、clone 等对象生命周期 API 的 smoke。
+# 预期：无异常结束；clone 非空为 true；具体计数值依赖运行时 Mem/Manual 实现，用于回归对比输出。
 
 #!
 生成模板原则

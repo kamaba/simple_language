@@ -1,4 +1,5 @@
-import CSharp.System;
+import Std
+import CSharp.System
 
 class XC
 {
@@ -39,7 +40,8 @@ enum EErr extends int
 {
     None = 1
     First
-    Second;Thrill;
+    Second
+    Thrill
     Four = 5
     Six
 }
@@ -143,48 +145,48 @@ enum Res
 
 EnumTest
 {
-    static func()
+    static printBridgeKind(BridgeKind v)
     {
-        
-    printBridgeKind( BridgeKind v )
-    {
-
-            if v == BridgeKind.SELF 
-            {
-                println( "BridgeKind--------------SELF " )
-            }
-            elif v == BridgeKind.JVM
-            {
-                println( "BridgeKind--------------JVM " )
-            }
-            else
-            {
-                println( "BridgeKind--------------NATIVE " )
-            }
+        if v == BridgeKind.SELF
+        {
+            global.println("BridgeKind--------------SELF")
+        }
+        elif v == BridgeKind.JVM
+        {
+            global.println("BridgeKind--------------JVM")
+        }
+        else
+        {
+            global.println("BridgeKind--------------OTHER")
+        }
     }
-    
-        EShape shape = EShape.r1;
 
+    static fun()
+    {
+        global.println("========== EnumTest (start) ==========")
+
+        printBridgeKind(BridgeKind.SELF)
+        printBridgeKind(BridgeKind.JVM)
+
+        EShape shape = EShape.r1
         if shape == EShape.r1
         {
-
+            global.println("EShape default branch: r1")
         }
         elif shape == EShape.cd
         {
             EShape.cd = CircleShape(){ x = 100, y = 100, r = 1000 }
-            #这里变了，则shape也会变  不能直接使用shape复制
-            #r = shape.cast<CircleShape>().r  # r=1000
         }
 
-        
         for b3 in reson.values
         {
-            Debug.Write("Book3: " + b3 );
+            global.println("reson value: " + b3)
         }
-        #这里要进行重写values 要解析完GameState后， 调用values时，需要进行重建 array<GameState extends> 然后存一个变量
-        
 
-        
+        global.println("EErr.First ordinal smoke -> " + EErr.First.toString())
+        global.println("GameState values count check (manual): Init/Begin/End defined")
+
+        global.println("========== EnumTest (end) ==========")
     }
 }
 
@@ -197,6 +199,14 @@ EnumTest
 6. 如果使用上边的某种类形，则必须使用该类型，如果使用byte-ulong之间的类型，则里边可以不使用=号，然后自增
 7. 如果使用了data,则内部必须都使用定义过的data类型
 8. 使用for in 可以遍历 enum内部
-9. 
+9.
 
 !#
+
+# 本文件 static fun() 测试说明（与上表进度区分）：
+# - printBridgeKind：覆盖 BridgeKind 多分支字符串输出。
+# - EShape 与 reson.values：枚举相等与 for-in 遍历。
+# - EErr.First.toString()：整型继承枚举项的字符串化（行为随实现而定，用于回归打印）。
+#
+# 预期结果：
+# - 依次看到 SELF、JVM 的 BridgeKind 行；reson 每个字符串一行；无嵌套函数/未声明符号错误。

@@ -2,20 +2,6 @@ import Std;
 import CSharp.SimpleLanguage
 import CSharp.System
 
-namespace Core
-{
-    class Object
-    {
-        public void _init_()
-        {
-
-        }
-        public string toString()
-        {
-            ret ""
-        }
-    }
-}
 namespace N1
 {
     Class1
@@ -40,10 +26,12 @@ namespace N1
     {
         static fun()
         {
-            dynamic c1 = {a = 10, c1 = Class1(), Class1_2 c2 = Class1_2( Class1() ){ c2 = Class2() } };
+            global.println("========== DynamicClassTest (start) ==========")
+            dynamic c1 = { a = 10, c1 = Class1(), Class1_2 c2 = Class1_2(Class1()){ c2 = Class2() } }
             #data c2 = {a=2,b="ace",N1.Class1 c1 = (){ a2 = 10}, arr1 = [1,2,3,4,5] }
             re1 = c1.c1.a2
-            System.Console.WriteLine("ret=" + re1 );
+            global.println("dynamic nested Class1.a2 -> " + re1.toString())
+            global.println("========== DynamicClassTest (end) ==========")
         }
     }
 }

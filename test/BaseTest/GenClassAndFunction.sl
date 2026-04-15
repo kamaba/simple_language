@@ -1,77 +1,3 @@
-import Std
-import CSharp.System
-
-namespace Core
-{
-    class Object
-    {
-        public void _init_()
-        {
-
-        }
-
-        public string toString()
-        {
-            ret ""
-        }
-    }
-    class Byte
-    {
-        
-    }
-    class Boolean
-    {
-
-    }
-    class SByte
-    {
-        
-    }
-    class Int16
-    {
-        
-    }
-    class UInt16
-    {
-        
-    }
-    class Int32
-    {
-        
-    }
-    class UInt32
-    {
-        
-    }
-    class Int64
-    {
-        
-    }
-    class UInt64
-    {
-        
-    }
-    class Float32
-    {
-        
-    }
-    class Float64
-    {
-        _init_(Float64 f)
-        {
-
-        }
-    }
-    class String
-    {
-        _init_( String str )
-        {
-
-        }
-    }
-
-}
-
 public class Class1
 {
     public int a = 20
@@ -399,3 +325,6 @@ GenClass
 2. 可以从当前类定义位置查找类
 3. 查找到类后，进行模板匹配，匹配的类，是真实的类
 !#
+
+# GenClassAndFunction 测试面向：类模板与函数模板组合、GenClass_x 与 static fun 内 Level1<int>.add/GetComponent/min。
+# 预期：三段 Console 输出对应 add 结果、GetComponent<string>、min<Float32>；与 GenFunction 场景互补。

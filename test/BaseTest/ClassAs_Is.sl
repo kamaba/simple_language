@@ -1,77 +1,6 @@
 import Std
 import CSharp.System
 
-namespace Core
-{
-    class Object
-    {
-        public void _init_()
-        {
-
-        }
-
-        public string toString()
-        {
-            ret ""
-        }
-    }
-    class Byte
-    {
-        
-    }
-    class Boolean
-    {
-
-    }
-    class SByte
-    {
-        
-    }
-    class Int16
-    {
-        
-    }
-    class UInt16
-    {
-        
-    }
-    class Int32
-    {
-        
-    }
-    class UInt32
-    {
-        
-    }
-    class Int64
-    {
-        
-    }
-    class UInt64
-    {
-        
-    }
-    class Float32
-    {
-        
-    }
-    class Float64
-    {
-        _init_(Float64 f)
-        {
-
-        }
-    }
-    class String
-    {
-        _init_( String str )
-        {
-
-        }
-    }
-
-}
-
 Level1
 {
     Level1_var1 = 20
@@ -108,6 +37,7 @@ LevelT3<T31,T32> extends LevelT2<T32,T31>
 ClassAs_Is{
     static fun()
     {
+        global.println("========== ClassAs_Is (start) ==========")
         int a = 100
         b = "abc"
         if a is int str 
@@ -186,6 +116,7 @@ ClassAs_Is{
             Console.WriteLine("yes l1cast l1castl3=" );
         }
         !#
+        global.println("========== ClassAs_Is (end) ==========")
     }
 }
 
@@ -205,3 +136,6 @@ ClassAs_Is{
 1. 如果前置定义过类型，在编译阶段，需要先检查定义类型里边的方法，而不是实际的方法
 2. 在括号内的语句没有执行
 !#
+
+# static fun() 测试说明：is 带模式变量、as 向下转型、泛型 LevelT* 的 as/is、继承链上 Level3->Level2 的 as。
+# 预期：各分支 Write 打印与 null 判断一致；错误语法示例保留在 #! !# 块内注释。

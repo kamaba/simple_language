@@ -177,6 +177,11 @@ namespace SimpleLanguage.Core
             }
             MetaClass ownerClass = cep.ownerMetaClass;
             var root = cep.fme.root;
+            if( root == null )
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreParseFileExpressFailed, cep.fme.token, "root is Null", cep.fme.token );
+                return null;
+            }
             if (root.left == null && root.right == null)
             {
                 MetaExpressNode men = null;

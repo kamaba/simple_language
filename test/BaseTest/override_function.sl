@@ -52,17 +52,14 @@ OClass extends VClass
     {
         System.Console.WriteLine("oclass fun" )
     }
-    #!
     override get int hashCode()
     {
         ret 1001
     }
-    #!
     override string toString()
     {
         ret "OClass.toString()"
     }
-    !#
     fun2(){
 
     }
@@ -84,9 +81,15 @@ OverrideFunction
 {
     static fun()
     {
-        VClass oclass = OClass()
+        global.println("========== override_function (start) ==========")
+        VClass oclass = OClass(0)
         oclass.fun()
-        oc2 = OClass()
-        System.Console.WriteLine(oc2.toString() + oc2.hashCode )
+        oc2 = OClass(0)
+        global.println("oc2.toString -> " + oc2.toString())
+        global.println("oc2.hashCode -> " + oc2.hashCode.toString())
+        global.println("========== override_function (end) ==========")
     }
 }
+
+# 与 MemberStaticFunction.sl 场景相同：子类重写实例方法与 Object 相关成员。
+# 预期：fun 输出 oclass 分支；toString 为 OClass.toString()；hashCode 为 1001。

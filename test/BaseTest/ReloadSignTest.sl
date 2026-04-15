@@ -2,39 +2,6 @@ import Std
 import CSharp.SimpleLanguage
 import CSharp.System
 
-namespace Core
-{
-    class Object
-    {
-        public void _init_()
-        {
-
-        }
-        get int hashCode()
-        {
-            ret SimpleLanguage.Lib.ObjectClass.GetHashCodeBySObject( this )
-        }
-        public string toString()
-        {
-            ret ""
-        }
-    }
-    class Void
-    {
-        
-    }
-    class Int32
-    {
-        _init_(Int32 val )
-        {
-            
-        }        
-        override string toString()
-        {
-            ret SimpleLanguage.Lib.Int32Class.GetValueToString( this )
-        }
-    }
-}
 public class Class1
 {
     public int a = 20
@@ -165,11 +132,13 @@ ReloadSignTest
 {
     static fun()
     {
+        global.println("========== ReloadSignTest (start) ==========")
         Class1 c1 = new(){ a = 100}
         Class1 c2 = new(){ a = 300, b = 2000 }
         var c3 = c1 + c2
 
-        System.Console.WriteLine("ccccc3" + c3 );           #相当于c3.toString()
+        global.println("c1 + c2 -> " + c3.toString())
+        global.println("========== ReloadSignTest (end) ==========")
     }
 }
 
@@ -179,3 +148,6 @@ ReloadSignTest
 # 重载行为是动态的行为，所以在重载传参，必须定义为Object类型，如果需要，要在代码里边进行类型判断后，再进行操作
 # 重载函数，需要进行语句解析时，进行多维函数生成
 # Array类型，可能比较特殊，因为有些代码要在底层操作，所以需要单独出来处理
+
+# static fun() 测试说明：Class1 上 _add_ 合并两个实例字段；toString 输出 a+b 之和。
+# 预期：c3.a 为 400（100+300），toString 为 "400" 或实现定义格式；无未实现运算符路径。

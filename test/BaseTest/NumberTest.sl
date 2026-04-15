@@ -170,3 +170,16 @@ NumberTest
         global.println("========== NumberTest (end) ==========")
     }
 }
+
+# 测试用例说明：
+# - baseArithmeticTest：Int32 四则与取模；Num 浮点运算与一元负号。
+# - integerTypeTest：各固定宽度整数类型的字面量与 toString。
+# - bitOpTest：整型位与、位或、左移、右移。
+# - compareTest：Num 上比较运算符。
+# - convertAndTypeTest：Num 与 Int32 的 as、toString、.type 与类型相等。
+# - suffixLiteralTest：整型/浮点字面量后缀与显式 as Byte。
+# - radixLiteralTest：十六进制、八进制、二进制与下划线分组。
+# - inferTypeByComputeTest：无显式类型声明时由表达式推断类型。
+#
+# 预期结果：各段横幅下打印值与手算一致；整除/取模、进制转换、类型名字符串可用于回归快照。
+

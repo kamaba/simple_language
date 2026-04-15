@@ -1,78 +1,3 @@
-import Std
-import CSharp.System
-
-namespace Core
-{
-    class Object
-    {
-        public void _init_()
-        {
-
-        }
-
-        public string toString()
-        {
-            ret ""
-        }
-    }
-    class Byte extends Object
-    {
-    }
-    class Boolean
-    {
-
-    }
-    class SByte
-    {
-        
-    }
-    class Int16
-    {
-        
-    }
-    class UInt16
-    {
-        
-    }
-    class Int32
-    {
-        _init_(Int32 val )
-        {
-            
-        }        
-    }
-    class UInt32
-    {
-        
-    }
-    class Int64
-    {
-        
-    }
-    class UInt64
-    {
-        
-    }
-    class Float32
-    {
-        
-    }
-    class Float64
-    {
-        _init_(Float64 f)
-        {
-
-        }
-    }
-    class String
-    {
-        _init_( String str )
-        {
-
-        }
-    }
-
-}
 LT
 {
     private _init_()
@@ -155,3 +80,6 @@ GenClass{
 5. 如果aot方式，需要编译时，需要先编译引入的dll生成模板相关的内容，然后再编译本地的实例，最终在llvm里边直接使用编译完的代码，然后执行。
 6. 本地虚拟机中，增加模板概念，如果传入来的是模板，需要进行替换后，进行执行。
 !#
+
+# GenClass3 static fun 测试面向：LT 占位类型、多参数模板继承（Level4→Level3→Level2）、接口 Interface1 实现与 static getTest。
+# 预期：Level4<string,int> 经 new(300) 与 add/getTest 赋值后，多行 Console 输出与字段一致；依赖 LT 与模板替换实现。

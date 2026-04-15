@@ -18,3 +18,10 @@ int x1 = 10 + (1-20) * 33/20 + 10~/20 - 22 * 2/1; 有报错处理
 3. 需要导出类之间的关系的一个结构
 4. 模板类的导出 需要把模板关联也导出
 7. 调用nativeBridge的调用验证
+1. range->array 并且可以带缓存和dirty标记，如果重设置过某个值后，缓存清空
+2. string.front(3) -> ByteArray 字符前3个字符
+3. string.end(3)->byteArray 后边3个字符
+4. 对 typealias ByteArray Array<Byte> 全局使用 的使用 IntArray的使用
+5. string.range( 2, 4 ) ->byteArray 中间5个字符的使用
+6. 
+

@@ -1,19 +1,4 @@
 
-Range<T:number>
-{
-    _init_( T _start, T _end, T _step )
-    {
-        this._start = _start;
-        this._end = _end;
-        this._step = _step;
-    }
-}
-
-Range extends Range<int>
-{
-    
-}
-
 RangeTest
 {
     ArrClass

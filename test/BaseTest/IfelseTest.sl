@@ -2,230 +2,157 @@ import Std
 import CSharp.SimpleLanguage
 import CSharp.System
 
-
-namespace Core
-{
-    class Object
-    {
-        public void _init_()
-        {
-
-        }
-        public string toString()
-        {
-            ret ""
-        }
-    }
-    class Byte extends Object
-    {
-    }
-    class Boolean
-    {
-
-    }
-    class SByte
-    {
-        
-    }
-    class Int16
-    {
-        
-    }
-    class UInt16
-    {
-        
-    }
-    class Int32
-    {
-        _init_(Int32 val )
-        {
-            
-        }
-
-        override string toString()
-        {
-            ret SimpleLanguage.Lib.Int32Class.GetValueToString( this )
-        }
-    }
-    class UInt32
-    {
-        
-    }
-    class Int64
-    {
-        
-    }
-    class UInt64
-    {
-        
-    }
-    class Float32
-    {
-        
-    }
-    class Float64
-    {
-        _init_(Float64 f)
-        {
-
-        }
-    }
-    class String
-    {
-        _init_( String str )
-        {
-
-        }
-    }
-}
-
 IfelseTest
 {
     Class1
-    {}
+    {
+    }
+
     Class2
     {
         i = 0
     }
-    static string GetTest1()
+
+    static string getWhenInstance()
     {
-        a = new()
-        if a != null 
+        Class2 a = Class2()
+        if a != null
         {
-            ret "Test"
+            ret "non-null"
         }
         ret ""
     }
-    static fun()
-    {
-        aa = GetTest1()
-        System.Console.WriteLine("ififififif-----------------ifififiififif----: " + aa )
-        #!
-        m = 0;
-        if m >= 0 && m < 100 && m != 50
-        { 
-            m = 20; 
-            {
-                if m == 14{ m = 10 }
-                if m== 20 { m = 20}
-                else{ m = 30 } 
-            }
-        } 
-        else
-        { m = 20 }
-        
-        if true 
-        {
-            int x1 = 200;
-            next
-        }
-        elif 2 == 120 && false 
-        {
-            x2 = 300;
-        } 
-               
-        a = 30
 
-        if a==25 
-        { 
+    static int chainWithNext()
+    {
+        m = 0
+        if m >= 0 && m < 100 && m != 50
+        {
+            m = 20
+            if m == 14
+            {
+                m = 10
+            }
+            if m == 20
             {
                 m = 20
             }
-        } 
-        elif a==30 && a < 35 
-        {  
-            next
-        } 
-        elif a==31
-        { 
-            m = 100
+            else
+            {
+                m = 30
+            }
         }
-        
+        else
+        {
+            m = 20
+        }
+
         if true
         {
-            int ax = 2000;
+            int x1 = 200
+            next
         }
-        
-        
-        if false 
+        elif 2 == 120 && false
         {
-            int xxx = 100;
+            m = 300
         }
-        ab = 1;
-        if  ( true )
+
+        a = 30
+        if a == 25
         {
-            a = 20;
-        } 
+            m = 20
+        }
+        elif a == 30 && a < 35
+        {
+            next
+        }
+        elif a == 31
+        {
+            m = 100
+        }
+
+        if false
+        {
+            int xxx = 100
+        }
+
+        ab = 1
+        if true
+        {
+            a = 20
+        }
         else
         {
-            b = 30;
-        }   
-        a = 10;
-        if( true )
+            a = 30
+        }
+
+        a = 10
+        if true
         {
-            a = 20;
-        }    
-        elif( a == 20 )
+            a = 20
+        }
+        elif a == 20
         {
-            if( a/10 == 2 )
+            if a / 10 == 2
             {
-                a = 30;
+                a = 30
             }
-        }    
-        elif( a == 40 )
+        }
+        elif a == 40
         {
-            a = 300;
-        }    
+            a = 300
+        }
         else
         {
-            a = 10;
+            a = 10
         }
-        !#
 
-        #enum的对比
-
-        #data数据类的对比
-
-        #class的对比         
-        
+        ret m
     }
+
+    static fun()
+    {
+        global.println("========== IfelseTest (start) ==========")
+
+        aa = getWhenInstance()
+        global.println("getWhenInstance -> " + aa)
+
+        mFinal = chainWithNext()
+        global.println("chainWithNext m -> " + mFinal.toString())
+
+        global.println("========== IfelseTest (end) ==========")
+
+        FunIfCondition()
+    }
+
     static FunIfCondition()
     {
-        #这部分还没有实现
-        #!
-        a = null;
-        if a       #等于 if a != null
-        { 
-        }
-        if !a    #等于 if a == null
-        {
-            a = Class1();
-        }
-        c1 = Class1();
-        Class2 c2 = c1;
-        if c2
-        {
-            c2.i = 10;
-        }
-        if c2.i    #相当于 c2 != null && c2.i != 0
-        {
+        global.println("----- FunIfCondition (planned syntax, mostly commented) -----")
 
-        }
-        int ai = 0;
-        if ai    #如果数字型 则判断是否为int/short/long != 0 float/double = 0.0 string = ""  先判断是否有对象 ai != null 确定int后查看 0
-        {
+        # 以下为计划或部分实现的条件语法说明，当前以注释保留，避免未实现特性破坏编译：
+        # if a       # 计划：等价 if a != null
+        # if !a      # 计划：等价 if a == null
+        # if c2      # 计划：引用非空
+        # if c2.i    # 计划：相当于 c2 != null && c2.i != 0
+        # if ai      # 计划：数值非零、字符串非空等truthiness
+        # int a = if true { tr 20 } else { tr 10 }   # 计划：条件表达式内局部返回 tr
+        # a = cond ? b : c   # 计划：三元运算符
 
-        }
-        var a = Claas1();
-
-        int a = if true
-        { tr 20 }
-        else
+        Class2 c2 = Class2()
+        c2.i = 7
+        if c2 != null && c2.i != 0
         {
-             tr 10
-        }    #局部返回 tr  像 if/switch/while/dowhile/for/for in/
-        !#
-        #a = 100 ? a == 10 : -100;
+            global.println("FunIfCondition: c2.i -> " + c2.i.toString())
+        }
     }
 }
-       
+
+# 测试用例说明：
+# - getWhenInstance：非空实例走 if 分支，返回固定字符串。
+# - chainWithNext：保留原草稿中的嵌套 if/elif/else 与 next 组合，返回值 m 用于观察控制流是否按预期汇合。
+# - FunIfCondition：用已支持语法演示对可空/成员判断；其余 truthiness、tr、三元等仅在注释中列出设计意图。
+#
+# 预期结果：
+# - getWhenInstance 输出 "non-null"。
+# - chainWithNext 的 m 与实现细节相关，用于回归时对比历史输出。
+# - FunIfCondition 打印 c2.i 为 7；不因未实现语法产生编译错误。

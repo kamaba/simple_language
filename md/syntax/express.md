@@ -21,3 +21,10 @@ if (x > 10) {
 ```
 
 算术与逻辑运算符遵循常见优先级；表达式会在 `ExpressManager` 中构建为 `MetaExpressNode`，并经过类型检查与简单优化（常量折叠）。
+
+## 类型值表达式（`.type`）
+
+- **类型本体**：对类型名使用 `.type` 可得到表示该类型的元对象，例如 `int.type()`、`float.type()`、`Array<int>.type`（语法随泛型声明略有差异，见模板章节）。
+- **实例上的 `.type`**：若 `x` 为某类的实例，则 `x.type` 表示该对象运行时的类（与声明类型可能不同，例如多态场景）。
+
+`test/BaseTest/TypeTest.sl` 中对 `int.type()` 与整型字面量实例的 `.type` 做了对照打印，可用于回归。

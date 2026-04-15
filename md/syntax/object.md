@@ -36,3 +36,16 @@ var p = Point(10, 20);
 var p2 = Point(0,0){ x = 5 }; // 先创建后赋值
 ```
 
+## 根类型 `Object` 上的常用操作（测试用例摘要）
+
+与 `test/BaseTest/ObjectTest.sl`、`ConstructionClass.sl` 等用例对应，运行时通常提供以下能力（具体以标准库/Core 导出为准）：
+
+- **创建实例**：`Object obj = new()` 或 `Object obj = Object()`（等价性以实现为准），得到新引用。
+- **引用相等**：`obj1 == obj2` 在对象为同一引用时为真；静态方法 `Object.refEquals(a, b)` 用于显式比较引用（含 `null` 对）。
+- **值/逻辑相等**：实例方法 `equals(other)`；静态方法 `Object.objectEquals(a, b)` 在二者均为 `null` 时可约定为真，一方为 `null` 时为假。
+- **哈希与字符串**：`hashCode`（常见为属性/get）、`toString()`。
+- **引用计数与弱引用**：`refCount`、`refWeak` 等用于与托管/引用计数模型交互的 API。
+- **生命周期**：`free()`、`release()` 等用于释放或调整引用（行为依赖 VM/宿主，测试仅做 smoke）。
+
+编写新用例时，将「引用相等」与「逻辑相等」分开断言，避免混用。
+

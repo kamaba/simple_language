@@ -4,7 +4,8 @@
 # 2) local{} 执行顺序在 LocalTest1 之后
 # 3) local.xxx 绑定的是当前文件自己的 local instance
 
-import Core.Debug;
+import Core.Debug
+import Std
 
 local
 {
@@ -38,4 +39,15 @@ class LocalTest2
 
         local.PrintLocal()
     }
+
+    static fun()
+    {
+        global.println("========== LocalTest2 (start) ==========")
+        LocalTest2.Test()
+        global.println("========== LocalTest2 (end) ==========")
+    }
 }
+
+# 运行入口：与 LocalTest1 成对，验证同名 local.a / Add 互不污染。
+# 预期：本文件 a 从 100 递增；v=local.Add(5) 使用本文件 a；order 标记为 L2。
+

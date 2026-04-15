@@ -1,89 +1,80 @@
+import Std
+import CSharp.System
+
 TypeTest
 {
     ArrClass
     {
-        int i = 0;
+        int i = 0
     }
-    Level<T> 
+
+    static bool IsIntType(Type t)
     {
-        static fun()
-        {
-            type1 = Level<T>.type
-            type2 = Level<int>.type
-            Console.WriteLine("levelT.type" + type1.toString() );
-        }
+        ret t == int.type
     }
-    static bool IsNType( Type t )
-    {
-        return t == int.type;
-    }
+
     static fun()
-    {  
-        t = int.type()
+    {
+        global.println("========== TypeTest (start) ==========")
+
+        tPrim = int.type()
         int i2 = 20
-        t2 = i2.type
+        tInst = i2.type
+        global.println("primitive int.type() -> " + tPrim.toString())
+        global.println("instance i2.type -> " + tInst.toString())
 
-        if t == t2 
+        if tPrim == tInst
         {
-            System.Console.WriteLine("22222222= " t2.toString() )
-        }
-
-        #!
-        bool a = IsNType( ArrClass.type )
-        var t = List<int>.type
-        ArrayClass.type()
-        var mcname mmi = t.metaClass.name
-
-        System.Console.WriteLine("22222222= " t2.toString() )
-        !#
-
-        
-        #primitive type via function
-        t = float.type()
-        global.println("int.type() -> " + t.toString())
-
-
-        #instance .type
-        int i2 = 20
-        t2 = i2.type
-         global.println("i2.type -> " + t2.toString())
-
-        
-        if t == t2
-        {
-            global.println("int.type == i2.type : true")
+            global.println("int.type() == 20.type : true")
         }
         else
         {
-            global.println("int.type == i2.type : false")
+            global.println("int.type() == 20.type : false")
         }
 
-        #generic type
-        tg = Array<int>.type
-        global.println("Array<int>.type -> " + tg.toString())
+        tFloat = float.type()
+        global.println("float.type() -> " + tFloat.toString())
 
-        #compare with different instantiation
-        #tg2 = Array<Array<int>>.type
-        #global.println("Array<Array<int>>.type -> " + tg2.toString())
+        if tFloat == tInst
+        {
+            global.println("float.type == int instance.type : true")
+        }
+        else
+        {
+            global.println("float.type == int instance.type : false (expected)")
+        }
 
-        #!
-        if tg == tg2
+        tgArrInt = Array<int>.type
+        global.println("Array<int>.type -> " + tgArrInt.toString())
+
+        tgArrStr = Array<string>.type
+        if tgArrInt == tgArrStr
         {
             global.println("Array<int>.type == Array<string>.type : true")
         }
         else
         {
-            global.println("Array<int>.type == Array<string>.type : false")
+            global.println("Array<int>.type == Array<string>.type : false (expected)")
         }
-        !#
-        
-        #!
-        obj = Object()
+
+        bool arrIsInt = IsIntType(ArrClass.type)
+        global.println("IsIntType(ArrClass.type) -> " + arrIsInt.toString())
+
         Object obj3 = new()
-        t1 = obj.type
-        t3 = obj3.type
-        global.println("[9] type: obj.type -> " + t1.toString())
-        global.println("[10] type equality obj.type==obj3.type (same class) -> " + (t1 == t3).toString())
-        !#
+        tObj = obj3.type
+        global.println("new() instance .type -> " + tObj.toString())
+
+        global.println("========== TypeTest (end) ==========")
     }
 }
+
+# 测试用例说明：
+# - int.type() 与整型字面量实例的 .type：原始类型与实例反射应指向同一逻辑类型。
+# - float.type() 与 int 实例 .type：不同类型，比较应为 false。
+# - Array<int>.type 与 Array<string>.type：不同元素类型的数组类型元数据应不相等。
+# - ArrClass.type 传给 IsIntType：自定义类类型不是 int，应为 false。
+# - Object 实例的 .type：应为 Object（或运行时映射名），用于对象与元类型 smoke。
+#
+# 预期结果（人工对照输出）：
+# - 多处 “true/false” 与上表一致；不应出现未定义变量或重复声明错误。
+# - 泛型开放/闭合类型元数据（如 Level<T>.type）可在单独模板测试文件中覆盖。

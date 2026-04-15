@@ -1,5 +1,5 @@
-import Application.Core;
-
+import Application.Core
+import Std
 
 # 这是一行注释
 
@@ -35,6 +35,13 @@ Commit   #注释类
 
     static fun()
     {
-        
+        global.println("========== CommitTest (start) ==========")
+        global.println("Commit.test 默认参数演示（空体，仅编译/链接 smoke）")
+        Commit c = Commit()
+        c.test()
+        global.println("========== CommitTest (end) ==========")
     }
 }
+
+# 测试说明：验证块注释 #! !#、#!md !#md、##! 嵌套及参数行内 #! !# 注释不影响解析。
+# 预期：可编译；static fun 输出三段横幅；Commit.test() 无输出但调用成功。

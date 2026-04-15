@@ -1,76 +1,3 @@
-import Std
-
-namespace Core
-{
-    class Object
-    {
-        public void _init_()
-        {
-
-        }
-
-        public string toString()
-        {
-            ret ""
-        }
-    }
-    class Byte
-    {
-        
-    }
-    class Boolean
-    {
-
-    }
-    class SByte
-    {
-        
-    }
-    class Int16
-    {
-        
-    }
-    class UInt16
-    {
-        
-    }
-    class Int32
-    {
-        
-    }
-    class UInt32
-    {
-        
-    }
-    class Int64
-    {
-        
-    }
-    class UInt64
-    {
-        
-    }
-    class Float32
-    {
-        
-    }
-    class Float64
-    {
-        _init_(Float64 f)
-        {
-
-        }
-    }
-    class String
-    {
-        _init_( String str )
-        {
-
-        }
-    }
-
-}
-
 public class Class1
 {
     public int a = 20
@@ -397,3 +324,6 @@ GenClass
 2. 可以从当前类定义位置查找类
 3. 查找到类后，进行模板匹配，匹配的类，是真实的类
 !#
+
+# GenFunction 测试面向：模板函数与模板类协同（Level1<T>、Level2 等）、比较表达式中 `<` 与泛型尖括号消歧、static 成员与 GenClass_fun。
+# 预期：以 static fun / GenClass_fun 为入口的运行路径覆盖 min、GetComponent、add 等；具体依赖 Level1 在 Core 中的实现。

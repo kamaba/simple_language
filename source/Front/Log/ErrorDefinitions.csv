@@ -542,3 +542,4 @@
 11027,Info,FALSE,FALSE,0,,编译Meta层结束,,,
 11028,Assert,TRUE,FALSE,1,,没有这种类型的处理逻辑[{0}],,,
 11029,Assert,TRUE,FALSE,2,,没有找到在函数[{0}]处理时的[{1}]的声明变量,,,
+11030,Error,TRUE,FALSE,1,,解析表达式[{0}]失败 ,,,

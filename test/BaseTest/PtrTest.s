@@ -1,46 +1,3 @@
-import Application.Core;
-
-#namespace Application.MFC;
-
-public class Ptr<T>
-{
-    T classT
-
-    Byte pointter8
-    UShort pointer16
-    UInt32 pointer32
-    UInt64 pointer64
-
-    int pointerLength = 4
-
-    UInt32 currentMovePoint;
-
-    public Ptr<T> readPtr<T>( int offset = -1 )
-    {
-        if offset = -1 
-        {
-            offset = currentMovePoint;
-        }
-
-        int newpoint = pointer32 + pointerLength * offset
-
-        length = T.length
-
-        byte[] bytes = GetPtr( newpoint, length )
-
-        
-
-        ret null
-    }
-
-    #使用C里边的内置函数
-    byte[] GetPtr( int point, int len )
-    {
-        ret null
-    }
-}
-
-
 !if Windows
 
 WindowApi
@@ -56,13 +13,6 @@ WindowApi
 
     @WindowApi.LoadLabirary("Win32Api")
     Ptr<HWNL> LoadLabirary( string name, )
-}
-
-Node
-{
-    value = null
-    Ptr<Node> prevNode
-    Ptr<Node> nextNode
 }
 class A{
     int a = 20

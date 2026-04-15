@@ -192,3 +192,10 @@ ConstructionTest
 #!
 111
 !#
+
+# ConstructionClass.sl 中 static Fun() 测试说明（与上文 #! 长文互补）：
+# - 前半段与 ObjectTest 类似：new、equals、refCount、refWeak、free/release 等 Object 语义 smoke。
+# - 中段依赖 Application.Core 中 Data1、ClassT 等类型：匿名 data 字面量、成员链 d2.childd1.a3.qx、索引 d2.ch2.$2 等。
+# - 大量 # 行保留历史负例与计划语法，请勿随意删除；新增行为以 global.println 与可编译片段为准。
+#
+# 预期结果：在完整工程与 Core 依赖就绪时，Object 段与 d1/d2 段打印无异常；单独抽离本文件可能因缺少 ClassT/Data1 编译失败，属依赖问题。

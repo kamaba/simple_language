@@ -46,3 +46,7 @@ ObjectTest
         global.println("========== Object.sl tests (end) ==========")     
     }
 }
+
+# 测试用例说明：Object 引用相等（==）、equals、静态 objectEquals/refEquals、hashCode、toString、refCount、refWeak、null 对、free/release 生命周期。
+# 预期：别名对 [1]–[4] 为 true；不同实例 objectEquals 一般为 false、refEquals 为 false；refEquals(null,null) 等语义以运行时为准；free/release 后不崩溃。
+
