@@ -1405,6 +1405,8 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Br:
                 case EIROpCode.BrLabel:
+                case EIROpCode.Break:
+                case EIROpCode.Jmp:
                     {
                         m_ExecuteIndex = (ushort)iri.index;
                     }
@@ -1468,6 +1470,7 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.Ceq:
+                case EIROpCode.Ceq_Un:
                     {
                         if (m_ValueIndex >= 2)
                         {
@@ -1480,6 +1483,7 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.Cne:
+                case EIROpCode.Cne_Un:
                     {
                         if (m_ValueIndex >= 2)
                         {
@@ -1586,34 +1590,63 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.Add:
+                case EIROpCode.Add_Un:
                 case EIROpCode.Minus:
+                case EIROpCode.Minus_Un:
                 case EIROpCode.Multiply:
+                case EIROpCode.Multiply_Un:
                 case EIROpCode.Divide:
+                case EIROpCode.Divide_Un:
                 case EIROpCode.Modulo:
+                case EIROpCode.Module_Un:
                 case EIROpCode.Combine:
+                case EIROpCode.Combine_Un:
                 case EIROpCode.InclusiveOr:
+                case EIROpCode.InclusiveOr_Un:
                 case EIROpCode.XOR:
+                case EIROpCode.XOR_Un:
                 case EIROpCode.Shi:
+                case EIROpCode.Shi_Un:
                 case EIROpCode.Shr:
+                case EIROpCode.Shr_Un:
                     {
                         if (m_ValueIndex >= 2)
                         {
                             var right = m_ValueStack[--m_ValueIndex];
                             var left = m_ValueStack[--m_ValueIndex];
                             int sign = 0;
-                            bool isUn = false;
+                            bool isUn = iri.opCode == EIROpCode.Add_Un
+                                || iri.opCode == EIROpCode.Minus_Un
+                                || iri.opCode == EIROpCode.Multiply_Un
+                                || iri.opCode == EIROpCode.Divide_Un
+                                || iri.opCode == EIROpCode.Module_Un
+                                || iri.opCode == EIROpCode.Combine_Un
+                                || iri.opCode == EIROpCode.InclusiveOr_Un
+                                || iri.opCode == EIROpCode.XOR_Un
+                                || iri.opCode == EIROpCode.Shi_Un
+                                || iri.opCode == EIROpCode.Shr_Un;
                             switch (iri.opCode)
                             {
                                 case EIROpCode.Add: sign = 0; break;
+                                case EIROpCode.Add_Un: sign = 0; break;
                                 case EIROpCode.Minus: sign = 1; break;
+                                case EIROpCode.Minus_Un: sign = 1; break;
                                 case EIROpCode.Multiply: sign = 2; break;
+                                case EIROpCode.Multiply_Un: sign = 2; break;
                                 case EIROpCode.Divide: sign = 3; break;
+                                case EIROpCode.Divide_Un: sign = 3; break;
                                 case EIROpCode.Modulo: sign = 4; break;
+                                case EIROpCode.Module_Un: sign = 4; break;
                                 case EIROpCode.Combine: sign = 5; break;
+                                case EIROpCode.Combine_Un: sign = 5; break;
                                 case EIROpCode.InclusiveOr: sign = 6; break;
+                                case EIROpCode.InclusiveOr_Un: sign = 6; break;
                                 case EIROpCode.XOR: sign = 7; break;
+                                case EIROpCode.XOR_Un: sign = 7; break;
                                 case EIROpCode.Shi: sign = 8; break;
+                                case EIROpCode.Shi_Un: sign = 8; break;
                                 case EIROpCode.Shr: sign = 9; break;
+                                case EIROpCode.Shr_Un: sign = 9; break;
                             }
                             SValue.ComputeValueInline(ref left, sign, ref right, isUn);
                             PushSValueSynced(left);
@@ -2002,6 +2035,71 @@ namespace SimpleLanguage.VM.Runtime
                             var left = m_ValueStack[--m_ValueIndex];
                             bool methodCall = false;
                             SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
+                            bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
+                            if (isTrue)
+                            {
+                                m_ExecuteIndex = (ushort)(iri.index - 1);
+                            }
+                        }
+                    }
+                    break;
+                case EIROpCode.Bne:
+                case EIROpCode.Bne_Un:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            bool methodCall = false;
+                            SValue.CompareEuqalSValue1AndValue2(ref left, ref right, false, out methodCall);
+                            bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
+                            if (isTrue)
+                            {
+                                m_ExecuteIndex = (ushort)(iri.index - 1);
+                            }
+                        }
+                    }
+                    break;
+                case EIROpCode.Bge:
+                case EIROpCode.Bge_un:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            SValue.CompareSValue1AndValue2(ref left, ref right, 1);
+                            bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
+                            if (isTrue)
+                            {
+                                m_ExecuteIndex = (ushort)(iri.index - 1);
+                            }
+                        }
+                    }
+                    break;
+                case EIROpCode.Bgt:
+                case EIROpCode.Bgt_Un:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            SValue.CompareSValue1AndValue2(ref left, ref right, 0);
+                            bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
+                            if (isTrue)
+                            {
+                                m_ExecuteIndex = (ushort)(iri.index - 1);
+                            }
+                        }
+                    }
+                    break;
+                case EIROpCode.Ble:
+                case EIROpCode.Ble_Un:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            var right = m_ValueStack[--m_ValueIndex];
+                            var left = m_ValueStack[--m_ValueIndex];
+                            SValue.CompareSValue1AndValue2(ref left, ref right, 3);
                             bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
                             if (isTrue)
                             {
