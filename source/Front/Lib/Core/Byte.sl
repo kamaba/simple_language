@@ -15,7 +15,7 @@ public class Byte extends Num
 
     public static Byte parse(string s)
     {
-        ret SystemConvertInt8(s)
+        ret SystemConvertInt8(s, -1)
     }
     public override Num abs()
     {
@@ -32,7 +32,7 @@ public class Byte extends Num
     public override Int32 compareTo(Num other)
     {
         if (other == null) { ret 1 }
-        Byte ov = SystemConvertInt8(other)
+        Byte ov = SystemConvertInt8(other, -1)
         if (this._value == ov) { ret 0 }
         ret this._value > ov ? 1 : -1
     }

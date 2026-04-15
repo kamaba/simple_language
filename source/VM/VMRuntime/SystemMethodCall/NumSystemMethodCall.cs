@@ -16,8 +16,47 @@ namespace SimpleLanguage.VM.Runtime
                 Debug.Assert(false, $"SystemConvert stack underflow, need={pc}");
                 return;
             }
-            var outv = SystemMethodConvertHelper.ConvertValue(ref args[0], kind);
-            vm.PushSValueSynced(outv);
+
+            if (kind == ESystemMethodCall.SystemConvertInt8)
+            {
+                SValue outv;
+                if (pc == 1)
+                    outv = SystemMethodConvertHelper.ConvertInt8(ref args[0], -1);
+                else if (pc == 2)
+                    outv = SystemMethodConvertHelper.ConvertInt8(ref args[0], SystemMethodConvertHelper.ReadInt32ArgLoose(ref args[1]));
+                else
+                {
+                    Debug.Assert(false, $"SystemConvertInt8 expects 1 or 2 args, got {pc}");
+                    var z = default(SValue);
+                    z.SetNull();
+                    outv = z;
+                }
+
+                vm.PushSValueSynced(outv);
+                return;
+            }
+
+            if (kind == ESystemMethodCall.SystemConvertSInt8)
+            {
+                SValue outv;
+                if (pc == 1)
+                    outv = SystemMethodConvertHelper.ConvertSInt8(ref args[0], -1);
+                else if (pc == 2)
+                    outv = SystemMethodConvertHelper.ConvertSInt8(ref args[0], SystemMethodConvertHelper.ReadInt32ArgLoose(ref args[1]));
+                else
+                {
+                    Debug.Assert(false, $"SystemConvertSInt8 expects 1 or 2 args, got {pc}");
+                    var z = default(SValue);
+                    z.SetNull();
+                    outv = z;
+                }
+
+                vm.PushSValueSynced(outv);
+                return;
+            }
+
+            var outv2 = SystemMethodConvertHelper.ConvertValue(ref args[0], kind);
+            vm.PushSValueSynced(outv2);
         }
 
         public static void ExecuteSystemInt32Parse(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)

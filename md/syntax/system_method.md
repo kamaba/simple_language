@@ -28,12 +28,14 @@ VM 通过 `EIROpCode.CallSystemMethod` 调用；`systemMethodKind` 与 Front 中
 
 从当前栈顶按调用约定弹出操作数（通常为 **1 个**：待转换的值），在 VM 内先**解包**为 CLR 可用的对象（数值、`SObject` 包装类型、字符串等），再按 **BCL `Convert`** 与 `CultureInfo.InvariantCulture` 转为目标类型，最后把结果 **压回栈**。
 
+`SystemConvertInt8` 例外：可带 **第二个 `int32` 参数**（从栈上先于第一个值压入，与实例方法其它双参系统调用一致）。`index == -1` 时与原先单参行为相同（`Convert.ToByte`，含字符串解析）；`index >= 0` 时在数值的**无符号位模式**上，从**最低位**起取连续 **4 位**：`index` 为窗口最低位下标（例如 `0` 取最低 4 位，`4` 取第 4–7 位，`2` 取第 2–5 位）。须满足 `index + 4 <=` 该类型的存储位宽；字符串在 `index >= 0` 时结果为 null。兼容旧 IR 仍可出现 **仅 1 个参数**，等价于 `index == -1`。
+
 若转换失败或输入为 null，结果可为 null 值（`SValue` 置空）。
 
 | 名称 | 目标类型 |
 |------|----------|
-| `SystemConvertInt8` | `byte` |
-| `SystemConvertSInt8` | `sbyte` |
+| `SystemConvertInt8` | `byte`（可选第二参 `int32`：`index`，见上文） |
+| `SystemConvertSInt8` | `sbyte`（第二参 `index` 与 `SystemConvertInt8` 相同：`-1` 为 `Convert.ToSByte` / 含字符串；`≥0` 为低起算 4 位窗口） |
 | `SystemConvertInt16` | `short` |
 | `SystemConvertUInt16` | `ushort` |
 | `SystemConvertInt32` | `int` |

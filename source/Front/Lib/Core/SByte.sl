@@ -15,7 +15,7 @@ public class SByte extends Num
 
     public override Num abs()
     {
-        ret SystemConvertSInt8(SystemNumAbs(this))
+        ret SystemConvertSInt8(SystemNumAbs(this), -1)
     } 
     public override Num floor()
     {
@@ -28,13 +28,13 @@ public class SByte extends Num
     public override Int32 compareTo(Num other)
     {
         if (other == null) { ret 1 }
-        SByte ov = SystemConvertSInt8(other)
+        SByte ov = SystemConvertSInt8(other, -1)
         if (this._value == ov) { ret 0 }
         ret this._value > ov ? 1 : -1
     }
     public static SByte parse( string s )
     {
-        ret SystemConvertSInt8(s)
+        ret SystemConvertSInt8(s, -1)
     }
     override Int32 toInt32()
     {

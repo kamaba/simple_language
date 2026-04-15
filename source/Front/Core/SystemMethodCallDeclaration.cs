@@ -43,8 +43,8 @@ namespace SimpleLanguage.Core
 
             // convert
             { ESystemMethodCall.SystemConvertBool, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertBool, CoreMetaClassManager.booleanMetaClass, false, CoreMetaClassManager.objectMetaClass) },
-            { ESystemMethodCall.SystemConvertInt8, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertInt8, CoreMetaClassManager.byteMetaClass, false, CoreMetaClassManager.objectMetaClass) },
-            { ESystemMethodCall.SystemConvertSInt8, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertSInt8, CoreMetaClassManager.sbyteMetaClass, false, CoreMetaClassManager.objectMetaClass) },
+            { ESystemMethodCall.SystemConvertInt8, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertInt8, CoreMetaClassManager.byteMetaClass, false, CoreMetaClassManager.objectMetaClass, CoreMetaClassManager.int32MetaClass) },
+            { ESystemMethodCall.SystemConvertSInt8, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertSInt8, CoreMetaClassManager.sbyteMetaClass, false, CoreMetaClassManager.objectMetaClass, CoreMetaClassManager.int32MetaClass) },
             { ESystemMethodCall.SystemConvertInt16, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertInt16, CoreMetaClassManager.int16MetaClass, false, CoreMetaClassManager.objectMetaClass) },
             { ESystemMethodCall.SystemConvertUInt16, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertUInt16, CoreMetaClassManager.uint16MetaClass, false, CoreMetaClassManager.objectMetaClass) },
             { ESystemMethodCall.SystemConvertInt32, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertInt32, CoreMetaClassManager.int32MetaClass, false, CoreMetaClassManager.objectMetaClass) },

@@ -46,11 +46,11 @@ public class Int32 extends Num
     }
     override Byte toByte( byte index = 0 )
     {
-        ret SystemConvertInt8(this)
+        ret SystemConvertInt8(this, index)
     }
     override Byte toSByte( byte index = 0 )
     {
-        ret SystemConvertSInt8(this)
+        ret SystemConvertSInt8(this, index)
     }
     override Int16 toInt16()
     {
