@@ -10,6 +10,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Text;
 
 namespace SimpleLanguage.Logging
@@ -72,13 +73,54 @@ namespace SimpleLanguage.Logging
     }
     public class Log
     {
+        /// <summary>Front 编译器文本日志固定路径（排查/工具从此处读取）。</summary>
+        public const string FrontLogFilePath = @"E:\project\lang\simple_language\out\logs\FrontLog.txt";
+
         static ConcurrentQueue<LogData> m_LogDataList = new ConcurrentQueue<LogData>();
+        static readonly object m_FileLock = new object();
+        static bool m_LogFilePathPrinted = false;
+        static bool m_ResetFileBeforeNextWrite = true;
+
+        /// <summary>在每次完整 Front 编译开始前调用，清空 <see cref="FrontLogFilePath"/> 并重新记录本会话。</summary>
+        public static void ResetFixedLogFileForNewSession()
+        {
+            lock (m_FileLock)
+            {
+                m_ResetFileBeforeNextWrite = true;
+                m_LogFilePathPrinted = false;
+            }
+        }
+
+        static void WriteLineToFile(string line)
+        {
+            lock (m_FileLock)
+            {
+                var path = FrontLogFilePath;
+                var dir = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(dir))
+                    Directory.CreateDirectory(dir);
+
+                if (m_ResetFileBeforeNextWrite)
+                {
+                    File.WriteAllText(path, string.Empty, Encoding.UTF8);
+                    m_ResetFileBeforeNextWrite = false;
+                }
+
+                File.AppendAllText(path, line + Environment.NewLine, Encoding.UTF8);
+                if (!m_LogFilePathPrinted)
+                {
+                    Console.WriteLine($"[FrontLog] OutputPath: {path}");
+                    m_LogFilePathPrinted = true;
+                }
+            }
+        }
 
         public static void AddLog( LogData data )
         {
             m_LogDataList.Enqueue(data);
-
-            Console.WriteLine(data.ToString());
+            var line = data.ToString();
+            Console.WriteLine(line);
+            WriteLineToFile(line);
         }
         //-------------------------------Project----------------------------------------------
         public static LogData AddProjectLog(LID lid, string msg, params object[] par)
@@ -278,12 +320,18 @@ namespace SimpleLanguage.Logging
         public static void PrintLog()
         {
             Console.WriteLine("----------错误收集 开始---------------------");
+            WriteLineToFile("----------错误收集 开始---------------------");
 
             foreach ( var  ld in m_LogDataList.ToArray() )
             {
-                Console.WriteLine(ld.ToString());
+                var line = ld.ToString();
+                Console.WriteLine(line);
+                WriteLineToFile(line);
             }
             Console.WriteLine("----------错误收集 结束---------------------");
+            WriteLineToFile("----------错误收集 结束---------------------");
+
+            Console.WriteLine($"[FrontLog] OutputPath: {FrontLogFilePath}");
         }
     }
 }

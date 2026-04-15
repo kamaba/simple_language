@@ -33,7 +33,7 @@ public class Int64 extends Num
         if (other == null) { ret 1 }
         Int64 ov = SystemConvertInt64(other)
         if (this._value == ov) { ret 0 }
-        ret this._value > ov ? 1 : -1
+        ret this._value > ov ? 1 : 0-1
     }
     override bool toBool()
     {
@@ -81,7 +81,7 @@ public class Int64 extends Num
     }
     public Int32 sign()
     {
-        ret this._value > 0 ? 1 : -1
+        ret this._value > 0 ? 1 : 0-1
     }
     public bool isEven()
     {

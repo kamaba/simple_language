@@ -21,7 +21,7 @@ public class UInt32 extends Num
         if (other == null) { ret 1 }
         UInt32 ov = SystemConvertUInt32(other)
         if (this._value == ov) { ret 0 }
-        ret this._value > ov ? 1 : -1
+        ret this._value > ov ? 1 : 0-1
     }
 
     override String toString()

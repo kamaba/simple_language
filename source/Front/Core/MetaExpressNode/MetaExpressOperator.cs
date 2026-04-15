@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      MetaExpressOperator.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -765,8 +765,8 @@ namespace SimpleLanguage.Core
                 case ELeftRightOpSign.Multiply: { return "*"; }
                 case ELeftRightOpSign.Divide: { return "/"; }
                 case ELeftRightOpSign.Modulo: { return "%"; }
-                case ELeftRightOpSign.Shi: { return ">>"; }
-                case ELeftRightOpSign.Shr: { return "<<"; }
+                case ELeftRightOpSign.Shi: { return "<<"; }
+                case ELeftRightOpSign.Shr: { return ">>"; }
 
                 case ELeftRightOpSign.Equal: { return "=="; }
                 case ELeftRightOpSign.NotEqual: { return "!="; }

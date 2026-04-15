@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      ClassManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -482,7 +482,11 @@ namespace SimpleLanguage.Core
             m_AllClassDict.Add(acn, mc);
 
         }
-        public void ParseInitMetaClassList()
+        /// <summary>
+        /// 模板约束、extends/implements、运行时注册，以及按继承深度排序（尚未收集成员上的定义类型）。
+        /// 之后应调用 <see cref="TypeManager.ResolveAllDeclaredTypeAliases"/>，再调用 <see cref="ParseInitMetaClassListCollectMemberDefineMetaTypes"/>。
+        /// </summary>
+        public void ParseInitMetaClassListThroughInheritance()
         {
             foreach (var it in m_InitHandleMetaClassList)
             {
@@ -497,7 +501,11 @@ namespace SimpleLanguage.Core
                 it.CalcExtendLevel();
             }
             m_InitHandleMetaClassList.Sort((x, y) => x.extendLevel - y.extendLevel);
+        }
 
+        /// <summary>在 typealias 注册之后，从源文件收集成员变量/函数声明上的定义类型并处理继承侧实例化。</summary>
+        public void ParseInitMetaClassListCollectMemberDefineMetaTypes()
+        {
             foreach (var it in m_InitHandleMetaClassList)
             {
                 it.ParseFileCollectMemberVariableDefineMetaType();
@@ -508,6 +516,13 @@ namespace SimpleLanguage.Core
             //{
             //    it.ParseGenTemplateClassMetaType();
             //}
+        }
+
+        /// <summary>等价于先 <see cref="ParseInitMetaClassListThroughInheritance"/> 再 <see cref="ParseInitMetaClassListCollectMemberDefineMetaTypes"/>（中间无 typealias 解析；管线请用分步 API）。</summary>
+        public void ParseInitMetaClassList()
+        {
+            ParseInitMetaClassListThroughInheritance();
+            ParseInitMetaClassListCollectMemberDefineMetaTypes();
         }
         public void UpdateMetaGenTemplateClassHandle()
         {
@@ -809,9 +824,6 @@ namespace SimpleLanguage.Core
         //        //Debug.Write("");
         //    }
         //}
-        public void HandleInterface( FileMetaClass mc )
-        {
-        }
         public MetaNode GetMetaClassByRef( MetaClass mc, FileMetaClassDefine fmcv )
         {
             if (fmcv == null) return null;
@@ -963,17 +975,5 @@ namespace SimpleLanguage.Core
         }
         #endregion
         
-        public void PrintAlllClassContent()
-        {
-            foreach( var v in m_AllClassDict )
-            {
-
-            }
-
-            foreach( var v in m_RuntimeClassList )
-            {
-
-            }
-        }
     }
 }

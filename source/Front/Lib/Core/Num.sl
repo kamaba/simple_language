@@ -21,13 +21,13 @@ public abstract class Num extends Object
     {
         ret SystemConvertBool(this)
     }
-    Byte toByte( byte index = 0 )
+    Int8 toSByte( byte index = 0 )
     {
         ret SystemConvertInt8(this, index)
     }
-    Byte toSByte( byte index = 0 )
+    UInt8 toByte( byte index = 0 )
     {
-        ret SystemConvertSInt8(this, index)
+        ret SystemConvertUInt8(this, index)
     }
     Int16 toInt16()
     {

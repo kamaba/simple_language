@@ -36,7 +36,7 @@ public class Int16 extends Num
         if (other == null) { ret 1 }
         Int16 ov = SystemConvertInt16(other)
         if (this._value == ov) { ret 0 }
-        ret this._value > ov ? 1 : -1
+        ret this._value > ov ? 1 : 0-1
     }
     override Int32 toInt32()
     {

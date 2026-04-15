@@ -75,11 +75,15 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 在 MetaClass 初始化完成后解析所有源文件中的 typealias 声明并注册。
+        /// 在所有源文件已通过 <see cref="FileMeta.CombineFileMeta"/> 创建类结构，且
+        /// <see cref="ClassManager.ParseInitMetaClassListThroughInheritance"/> 已处理模板约束、extends/implements 与 extend 排序之后，
+        /// 再解析并注册 typealias（工程级 + 文件级）；须在
+        /// <see cref="ClassManager.ParseInitMetaClassListCollectMemberDefineMetaTypes"/> 之前调用。
         /// </summary>
         public void ResolveAllDeclaredTypeAliases(List<FileParse> fileParseList)
         {
             if (fileParseList == null) return;
+            EnsureBuiltinGlobalTypeAliases();
             ClearProjectTypeAliases();
 
             // 工程级 typealias：多轮解析以支持别名之间的依赖
@@ -141,23 +145,15 @@ namespace SimpleLanguage.Core
         /// </summary>
         public void EnsureBuiltinGlobalTypeAliases()
         {
-            static MetaType ArrayOf(MetaClass elementClass)
-            {
-                var mt = new MetaType();
-                mt.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
-                mt.AddDefineTemplateMetaType(new MetaType(elementClass));
-                return CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(mt, true, out _);
-            }
-
             AddGlobalTypeAlias("Byte", new MetaType(CoreMetaClassManager.uint8MetaClass));
             AddGlobalTypeAlias("SByte", new MetaType(CoreMetaClassManager.int8MetaClass));
-            AddGlobalTypeAlias("ByteArray", ArrayOf(CoreMetaClassManager.uint8MetaClass));
-            AddGlobalTypeAlias("Int32Array", ArrayOf(CoreMetaClassManager.int32MetaClass));
-            AddGlobalTypeAlias("UInt32Array", ArrayOf(CoreMetaClassManager.uint32MetaClass));
-            AddGlobalTypeAlias("Int64Array", ArrayOf(CoreMetaClassManager.int64MetaClass));
-            AddGlobalTypeAlias("Float32Array", ArrayOf(CoreMetaClassManager.float32MetaClass));
-            AddGlobalTypeAlias("Float64Array", ArrayOf(CoreMetaClassManager.float64MetaClass));
-            AddGlobalTypeAlias("StringArray", ArrayOf(CoreMetaClassManager.stringMetaClass));
+            AddGlobalTypeAlias("UInt8Array", SystemMethodCallTypes.ArrayOf(CoreMetaClassManager.uint8MetaClass));
+            AddGlobalTypeAlias("Int32Array", SystemMethodCallTypes.ArrayOf(CoreMetaClassManager.int32MetaClass));
+            AddGlobalTypeAlias("UInt32Array", SystemMethodCallTypes.ArrayOf(CoreMetaClassManager.uint32MetaClass));
+            AddGlobalTypeAlias("Int64Array", SystemMethodCallTypes.ArrayOf(CoreMetaClassManager.int64MetaClass));
+            AddGlobalTypeAlias("Float32Array", SystemMethodCallTypes.ArrayOf(CoreMetaClassManager.float32MetaClass));
+            AddGlobalTypeAlias("Float64Array", SystemMethodCallTypes.ArrayOf(CoreMetaClassManager.float64MetaClass));
+            AddGlobalTypeAlias("StringArray", SystemMethodCallTypes.ArrayOf(CoreMetaClassManager.stringMetaClass));
         }
 
         // 比较两个MetaType的内容， 主要通过 MetaClass 和里边的MetaType的遍历 都相同 

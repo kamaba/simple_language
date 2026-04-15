@@ -7,6 +7,7 @@ using SimpleLanguage.VM;
 Console.WriteLine("---------------------------SimpleLanguage VM---------------------------");
 
 LogManager.Initialize("");
+Log.ResetFixedLogFileForNewSession();
 
 VmRunResultSink.Initialize();
 if (!string.IsNullOrEmpty(VmRunResultSink.ResultFilePath))

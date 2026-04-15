@@ -457,38 +457,38 @@ namespace SimpleLanguage.Compile
                         AddSingleSign(token);
                     }
                     break;
-                //case ETokenType.Shi:               //  <<
-                //    {
-                //        AddBitMoveOperatorSymbol(token);
-                //    }
-                //    break;
-                //case ETokenType.Shr:               //  >>
-                //    {
-                //        // In nested generics like Map<List<int>,string>> the lexer produces Shr.
-                //        // If we're currently inside an unclosed generic angle sequence, treat this
-                //        // as two closing '>' tokens.
-                //        if (IsInsideGenericAngleContext())
-                //        {
-                //            var t1 = new Token(token);
-                //            t1.SetType(ETokenType.Greater);
-                //            t1.SetLexeme(">");
-                //            var n1 = new Node(t1) { nodeType = ENodeType.RightAngle };
-                //            currentNode.AddChild(n1);
+                case ETokenType.Shi:               //  <<
+                    {
+                        AddBitMoveOperatorSymbol(token);
+                    }
+                    break;
+                case ETokenType.Shr:               //  >>
+                    {
+                        // In nested generics like Map<List<int>,string>> the lexer produces Shr.
+                        // If we're currently inside an unclosed generic angle sequence, treat this
+                        // as two closing '>' tokens.
+                        if (IsInsideGenericAngleContext())
+                        {
+                            var t1 = new Token(token);
+                            t1.SetType(ETokenType.Greater);
+                            t1.SetLexeme(">");
+                            var n1 = new Node(t1) { nodeType = ENodeType.RightAngle };
+                            currentNode.AddChild(n1);
 
-                //            var t2 = new Token(token);
-                //            t2.SetType(ETokenType.Greater);
-                //            t2.SetLexeme(">");
-                //            var n2 = new Node(t2) { nodeType = ENodeType.RightAngle };
-                //            currentNode.AddChild(n2);
+                            var t2 = new Token(token);
+                            t2.SetType(ETokenType.Greater);
+                            t2.SetLexeme(">");
+                            var n2 = new Node(t2) { nodeType = ENodeType.RightAngle };
+                            currentNode.AddChild(n2);
 
-                //            m_TokenIndex++;
-                //        }
-                //        else
-                //        {
-                //            AddBitMoveOperatorSymbol(token);
-                //        }
-                //    }
-                //    break;
+                            m_TokenIndex++;
+                        }
+                        else
+                        {
+                            AddBitMoveOperatorSymbol(token);
+                        }
+                    }
+                    break;
                 case ETokenType.GreaterOrEqual:  // >=
                 case ETokenType.LessOrEqual:     // <=
                     {

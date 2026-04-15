@@ -268,14 +268,14 @@ namespace SimpleLanguage.Core
                     && decl != null)
                 {
                     m_MetaMemberParamCollection.Clear();
-                    for (int i = 0; i < decl.paramMetaClassList.Count; i++)
+                    for (int i = 0; i < decl.paramMetaTypeList.Count; i++)
                     {
                         var p = new MetaDefineParam("p" + i.ToString(), this);
-                        p.SetMetaType(new MetaType(decl.paramMetaClassList[i]));
+                        p.SetMetaType(new MetaType(decl.paramMetaTypeList[i]));
                         m_MetaMemberParamCollection.AddMetaDefineParam(p);
                     }
 
-                    var ret = new MetaType(decl.returnMetaClass);
+                    var ret = new MetaType(decl.returnMetaType);
                     m_IsDefineMetaType = true;
                     m_DefineMetaType = ret;
                     m_RealMetaType = new MetaType(ret);

@@ -16,8 +16,14 @@
   - 常用入口：`AddProjectLog` / `AddProcessLog` / `AddTokenLog` / `AddNodeLog` / `AddFileMetaLog` / `AddMetaCoreLog` / `AddIRLog`
   - 错误类型分层：Project / Process / ParseToken / ParseNode / ParseFile / ParseMeta / GenIR
 - VM 使用：`source/VM/Log/*`
-  - 常用入口：`AddProjectLog` / `AddProcessLog` / `AddParseIRLog` / `AddRuntimeLog` / `AddOtherLog`
+  - 常用入口：`AddProjectLog` / `AddProcessLog` / `AddParseIRLog` / `AddRuntimeLog` / `AddOtherLog`；遗留调用 `AddVM` 等价于 `AddOtherLog`
   - 错误类型分层：Project / Process / ParseIR / Runtime / Other
+
+### 2.1) 固定文本日志路径（排查时从此读取）
+- Front：`E:\project\lang\simple_language\out\logs\FrontLog.txt`（代码常量 `Log.FrontLogFilePath`）；每次进入 `ProjectCompile.FileListStructParse` 会清空并重写本会话。
+- VM：`E:\project\lang\simple_language\out\logs\VMLog.txt`（代码常量 `Log.VmLogFilePath`）；进程启动时在 `Program.cs` 清空并重写本会话。
+- AI 或工具复核编译/运行问题时，应优先 `Read` 上述文件，而不是在 `bin/Debug/.../DebugCode/Logs` 下按时间戳查找旧日志。
+- 从 `FrontLog.txt` 的 **Error** 反查源码与修复流程的完整步骤见仓库内 `md/ai/故障排查流程.md` **§1.0**。
 
 ## 3) CSV 驱动规则
 `ErrorDefinitions.csv` 列结构：

@@ -38,7 +38,7 @@ public class Int32 extends Num
             ret 1;
         }
         if (this._value == value ){ ret 0; }
-        ret this._value > this._value ? 1 : -1
+        ret this._value > this._value ? 1 : 0-1
     }
     override bool toBool()
     {
@@ -87,7 +87,7 @@ public class Int32 extends Num
     
     public Int32 sign()
     {
-        ret this._value > 0 ? 1 : -1
+        ret this._value > 0 ? 1 : 0-1
     }
     public bool isEven()
     {

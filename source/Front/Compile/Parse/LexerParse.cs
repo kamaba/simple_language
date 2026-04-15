@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      LexerParse.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -398,10 +398,10 @@ namespace SimpleLanguage.Compile
             {
                 AddToken(ETokenType.GreaterOrEqual, ">=");
             }
-            //else if (m_TempChar == '>')
-            //{
-            //    AddToken(ETokenType.Shr, ">>");
-            //}
+            else if (m_TempChar == '>')
+            {
+                AddToken(ETokenType.Shr, ">>");
+            }
             else 
             {
                 AddToken(ETokenType.Greater, ">");
@@ -416,11 +416,10 @@ namespace SimpleLanguage.Compile
             {
                 AddToken(ETokenType.LessOrEqual, "<=");
             }
-            //else if (m_TempChar == '<')
-            //{
-            //    // double '<' form '<<' (shift left) 鈥?consume both chars and emit single token
-            //    AddToken(ETokenType.Less, "<");
-            //}
+            else if (m_TempChar == '<')
+            {
+                AddToken(ETokenType.Shi, "<<");
+            }
             else
             {
                 AddToken(ETokenType.Less, "<");

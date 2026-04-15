@@ -424,7 +424,7 @@ namespace SimpleLanguage
         SystemStringFront,
         SystemStringEnd,
         SystemStringRange,
-        SystemStringToByteArray,
+        SystemStringToUInt8Array,
     }
     public class Global
     {

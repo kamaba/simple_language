@@ -33,7 +33,7 @@ public class Float64 extends Num
         if (other == null) { ret 1 }
         Float64 ov = other.toFloat64()
         if (this._value == ov) { ret 0 }
-        ret this._value > ov ? 1 : -1
+        ret this._value > ov ? 1 : 0-1
     }
 
     public static bool isFinite( Float64 f )

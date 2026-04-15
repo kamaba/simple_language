@@ -7,8 +7,10 @@
 //****************************************************************************
 
 using SimpleLanguage.VM;
+using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace SimpleLanguage.Logging
@@ -71,43 +73,88 @@ namespace SimpleLanguage.Logging
     }
     public class Log
     {
+        /// <summary>VM 文本日志固定路径（排查/工具从此处读取）。</summary>
+        public const string VmLogFilePath = @"E:\project\lang\simple_language\out\logs\VMLog.txt";
+
         static ConcurrentQueue<LogData> m_LogDataList = new ConcurrentQueue<LogData>();
+        static readonly object s_FileLock = new object();
+        static bool s_LogPathPrinted = false;
+        static bool s_ResetFileBeforeNextWrite = true;
+
+        /// <summary>在每次 VM 进程会话开始时调用，清空 <see cref="VmLogFilePath"/>。</summary>
+        public static void ResetFixedLogFileForNewSession()
+        {
+            lock (s_FileLock)
+            {
+                s_ResetFileBeforeNextWrite = true;
+                s_LogPathPrinted = false;
+            }
+        }
+
+        static void WriteLineToFile(string line)
+        {
+            lock (s_FileLock)
+            {
+                var path = VmLogFilePath;
+                var dir = Path.GetDirectoryName(path);
+                if (!string.IsNullOrEmpty(dir))
+                    Directory.CreateDirectory(dir);
+
+                if (s_ResetFileBeforeNextWrite)
+                {
+                    File.WriteAllText(path, string.Empty, Encoding.UTF8);
+                    s_ResetFileBeforeNextWrite = false;
+                }
+
+                File.AppendAllText(path, line + Environment.NewLine, Encoding.UTF8);
+                if (!s_LogPathPrinted)
+                {
+                    Console.WriteLine($"[VMLog] OutputPath: {path}");
+                    s_LogPathPrinted = true;
+                }
+            }
+        }
 
         public static void AddLog( LogData data )
         {
             m_LogDataList.Enqueue(data);
+            var line = data.ToString();
+            WriteLineToFile(line);
 
             switch( data.logType )
             {
                 case LogType.Info:
                     Console.ForegroundColor = ConsoleColor.White;
-                    Debug.WriteLine(data.ToString());
+                    Debug.WriteLine(line);
                     break;
                 case LogType.Warning:
                     Console.ForegroundColor = ConsoleColor.Yellow;
-                    Debug.WriteLine(data.ToString());
+                    Debug.WriteLine(line);
                     break;
                 case LogType.Error:
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Debug.WriteLine(data.ToString());
+                    Debug.WriteLine(line);
                     break;
                 case LogType.Assert:
                     Console.ForegroundColor = ConsoleColor.Magenta;
                     if( LogManager.Options.EnableAssertFeature && data.enableAssert )
                     {
-                        Debug.Assert(false, data.ToString() );
+                        Debug.Assert(false, line );
                     }
                     else
                     {
-                        Debug.Assert(true, data.ToString());
+                        Debug.Assert(true, line);
                     }
                     break;
                 default:
                     Console.ForegroundColor = ConsoleColor.White;
-                    Console.WriteLine(data.ToString());
+                    Console.WriteLine(line);
                     break;
             }
         }
+
+        /// <summary>兼容旧 VM 代码路径；消息走 Other 通道并写入 <see cref="VmLogFilePath"/>。</summary>
+        public static LogData AddVM(LID lid, string msg) => AddOtherLog(lid, msg);
         //-------------------------------Project----------------------------------------------
         public static LogData AddProjectLog(LID lid, string msg, params object[] par)
         {
@@ -248,12 +295,17 @@ namespace SimpleLanguage.Logging
         public static void PrintLog()
         {
             Console.WriteLine("----------错误收集 开始---------------------");
+            WriteLineToFile("----------错误收集 开始---------------------");
 
             foreach ( var  ld in m_LogDataList.ToArray() )
             {
-                Console.WriteLine(ld.ToString());
+                var line = ld.ToString();
+                Console.WriteLine(line);
+                WriteLineToFile(line);
             }
             Console.WriteLine("----------错误收集 结束---------------------");
+            WriteLineToFile("----------错误收集 结束---------------------");
+            Console.WriteLine($"[VMLog] OutputPath: {VmLogFilePath}");
         }
     }
 }

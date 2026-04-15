@@ -163,6 +163,7 @@ namespace SimpleLanguage.Project
         }
         public static void FileListStructParse()
         {
+            Log.ResetFixedLogFileForNewSession();
             if (!CheckFileList()) return;
             // Pre-FileMeta stage: process each source file in parallel.
             //Parallel.ForEach(fileParseList, fp =>
@@ -213,27 +214,16 @@ namespace SimpleLanguage.Project
             {
                 fileParseList[i].CreateNamespace();
             }
-            //NamespaceManager.instance.PrintAllNamespace();
+
             for (int i = 0; i < fileParseList.Count; i++)
             {
                 fileParseList[i].CombineFileMeta();
             }
 
-            //for (int i = 0; i < m_ProjectFile.fileMetaClassList.Count; i++)
-            //{
-            //    var fns = m_ProjectFile.fileMetaClassList[i];
-
-            //    if (fns.name == "ProJectConfig"
-            //        || fns.name == "Compile")
-            //    {
-            //        continue;
-            //    }
-            //    ClassManager.instance.AddClass(fns);
-            //}
-
-            ClassManager.instance.ParseInitMetaClassList();
-
+            // 类结构 + 继承/接口与 extend 序就绪后注册 typealias，再收集成员定义类型（见 ClassManager 分步注释）
+            ClassManager.instance.ParseInitMetaClassListThroughInheritance();
             TypeManager.instance.ResolveAllDeclaredTypeAliases(fileParseList);
+            ClassManager.instance.ParseInitMetaClassListCollectMemberDefineMetaTypes();
 
             ClassManager.instance.CheckInterfaces();
             ClassManager.instance.ParseDefineComplete();
