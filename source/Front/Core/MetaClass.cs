@@ -1066,47 +1066,24 @@ namespace SimpleLanguage.Core
             }
             var tfunctionNode = tnode.metaTemplateFunctionNodeDict[0];
 
-            if(isSet )
-            {
-                var list = tfunctionNode.GetMetaMemberFunctionByParamCount(1);
-                if (list == null || list?.Count != 1 )
-                {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "list is null");
-                    return null;
-                }
-                return list[0];
-            }
-            else if( isGet )
-            {
-                var list = tfunctionNode.GetMetaMemberFunctionByParamCount(0);
-                if (list == null || list?.Count != 1)
-                {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "list is null");
-                    return null;
-                }
-                return list[0];
-            }
-            else
-            {
-                var inputparamcount = inputParam != null ? inputParam.count : 0;
+            var inputparamcount = inputParam != null ? inputParam.count : 0;
 
-                var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputparamcount);
-                if (list == null) return null;
+            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputparamcount);
+            if (list == null) return null;
 
-                for (int i = 0; i < list.Count; i++)
+            for (int i = 0; i < list.Count; i++)
+            {
+                var fun = list[i];
+                if (fun.isTemplateFunction)
                 {
-                    var fun = list[i];
-                    if (fun.isTemplateFunction)
-                    {
+                    return fun;
+                }
+                else
+                {
+                    if (fun.IsEqualMetaInputParamCollection(inputParam))
                         return fun;
-                    }
-                    else
-                    {
-                        if (fun.IsEqualMetaInputParamCollection(inputParam))
-                            return fun;
-                    }
                 }
-            }
+            }            
             return null;
         }
         public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(string name, int templateParamCount, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )

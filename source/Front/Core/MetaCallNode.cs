@@ -70,6 +70,7 @@ namespace SimpleLanguage.Core
         public bool callConstructFunction = true;
         public bool setterFunction = false;
         public bool getterFunction = true;
+        public List<MetaExpressNode> expressNodeList = new List<MetaExpressNode>();
         public EParseFrom parseFrom { get; set; }
 
         public AllowUseSettings()
@@ -85,6 +86,7 @@ namespace SimpleLanguage.Core
             callConstructFunction = clone.callConstructFunction;
             setterFunction = clone.setterFunction;
             getterFunction = clone.getterFunction;
+            expressNodeList = clone.expressNodeList;
         }
     }
     public sealed class MetaCallNode
@@ -1804,8 +1806,30 @@ namespace SimpleLanguage.Core
             else
             {
                 mmv = mc.GetMetaMemberVariableByName(inputname);
-                if (mmv == null)
+                if (mmv == null && m_AllowUseSettings.setterFunction || m_AllowUseSettings.getterFunction )
                 {
+                    if( m_AllowUseSettings.setterFunction )
+                    {
+                        if (m_MetaInputParamCollection == null )
+                        {
+                            m_MetaInputParamCollection = new MetaInputParamCollection(m_OwnerMetaClass, m_OwnerMetaFunctionBlock);
+                        }
+                        if( m_MetaInputParamCollection.metaInputParamList.Count > 0 )
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "set 的方法  不应该有参数，而是通过外部传入");
+                            m_MetaInputParamCollection.Clear();
+                        }
+                        MetaInputParam mip = new MetaInputParam(m_AllowUseSettings.expressNodeList[0]);
+                        m_MetaInputParamCollection.AddMetaInputParam(mip);
+                    }
+                    if( m_AllowUseSettings.getterFunction )
+                    {
+                        if (m_MetaInputParamCollection?.metaInputParamList.Count > 0)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "get 的方法  不应该有参数");
+                            m_MetaInputParamCollection.Clear();
+                        }
+                    }
                     mmf = mc.GetMetaDefineGetSetMemberFunctionByName(inputname, m_MetaInputParamCollection,
                         m_AllowUseSettings.getterFunction,
                         m_AllowUseSettings.setterFunction);

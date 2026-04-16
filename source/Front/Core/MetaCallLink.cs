@@ -223,6 +223,7 @@ namespace SimpleLanguage.Core
                     {
                         allowUseSettings.setterFunction = _useConst.setterFunction;
                         allowUseSettings.getterFunction = _useConst.getterFunction;
+                        allowUseSettings.expressNodeList = _useConst.expressNodeList;
                     }
                     flag = m_CallNodeList[i].ParseNode(allowUseSettings);
 

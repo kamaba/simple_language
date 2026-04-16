@@ -151,6 +151,49 @@ namespace SimpleLanguage.Core
 
             }
 
+            MetaType expressMdt = new MetaType(CoreMetaClassManager.objectMetaClass);
+            if (m_FileMetaOpAssignSyntax.express != null)
+            {
+                CreateExpressParam cep = new CreateExpressParam()
+                {
+                    ownerMBS = m_OwnerMetaBlockStatements,
+                    metaType = expressMdt,
+                    ownerMetaClass = ownerMetaClass,
+                    fme = m_FileMetaOpAssignSyntax.express,
+                    isStatic = false,
+                    isConst = false,
+                    parsefrom = EParseFrom.StatementRightExpress,
+                    equalMetaVariable = m_MetaVariable,
+                    allowNewVariable = true,
+                };
+                m_RightMetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
+                m_RightMetaExpress.Parse(new AllowUseSettings());
+                if (m_RightMetaExpress == null)
+                {
+                    Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL355, m_Token, "Error 解析新建变量语句时，表达式解析为空!!");
+                    return;
+                }
+
+                m_RightMetaExpress = ExpressManager.ConvertNewExpress(m_RightMetaExpress, expressMdt, m_MetaVariable);
+            }
+            else
+            {
+                if (m_RightMetaExpress == null)
+                {
+                    Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL365, m_Token, "Error 解析新建变量语句时，表达式为空!!__2");
+                    return;
+                }
+            }
+            m_RightMetaExpress.CalcReturnType();
+
+            if (m_RightMetaExpress is MetaConstExpressNode rightConst && expressMdt != null)
+            {
+                if (MetaVariable.TryAdjustConstExpressByDefineMetaType(rightConst, expressMdt))
+                {
+                    m_RightMetaExpress.CalcReturnType();
+                }
+            }
+
             if (metaCallLink == null)
             {
                 Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
@@ -167,6 +210,7 @@ namespace SimpleLanguage.Core
             auc.useNotConst = m_FileMetaOpAssignSyntax?.constToken == null ? false : true;
             auc.setterFunction = true;
             auc.getterFunction = false;
+            auc.expressNodeList.Add(m_RightMetaExpress);
             m_LeftMetaExpress.Parse(auc);
             m_LeftMetaExpress.CalcReturnType();
 
@@ -192,6 +236,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_SignToken?.type == ETokenType.Assign)
                 {
+                    m_RightMetaExpress = null;
                 }
                 else
                 {
@@ -305,7 +350,6 @@ namespace SimpleLanguage.Core
             }
 
 
-            MetaType expressMdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             // When left side is a setter (a.prop = x => a.prop(x)),
             // parse RHS using the setter parameter type.
             if (m_LeftMethodCall != null)
@@ -360,47 +404,6 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            if (m_FileMetaOpAssignSyntax.express != null)
-            {
-                CreateExpressParam cep = new CreateExpressParam()
-                {
-                    ownerMBS = m_OwnerMetaBlockStatements,
-                    metaType = expressMdt,
-                    ownerMetaClass = ownerMetaClass,
-                    fme = m_FileMetaOpAssignSyntax.express,
-                    isStatic = false,
-                    isConst = false,
-                    parsefrom = EParseFrom.StatementRightExpress,
-                    equalMetaVariable = m_MetaVariable,
-                    allowNewVariable = true,
-                };
-                m_RightMetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
-                m_RightMetaExpress.Parse(new AllowUseSettings());
-                if (m_RightMetaExpress == null)
-                {
-                    Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL355, m_Token, "Error 解析新建变量语句时，表达式解析为空!!");
-                    return;
-                }
-
-                m_RightMetaExpress = ExpressManager.ConvertNewExpress(m_RightMetaExpress, expressMdt, m_MetaVariable );
-            }
-            else
-            {
-                if(m_RightMetaExpress == null)
-                {
-                    Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL365, m_Token, "Error 解析新建变量语句时，表达式为空!!__2");
-                    return;
-                }
-            }
-            m_RightMetaExpress.CalcReturnType();
-
-            if (m_RightMetaExpress is MetaConstExpressNode rightConst && expressMdt != null)
-            {
-                if (MetaVariable.TryAdjustConstExpressByDefineMetaType(rightConst, expressMdt))
-                {
-                    m_RightMetaExpress.CalcReturnType();
-                }
-            }
 
             MetaType expressRetMetaDefineType = m_RightMetaExpress.GetReturnMetaDefineType();
             if (expressRetMetaDefineType == null)
@@ -428,45 +431,6 @@ namespace SimpleLanguage.Core
             if(m_LeftMethodCall == null )
             {
                 CheckLeftAndRightExpress();
-            }
-            else
-            {
-                // Setter assignment form: `a.prop = rhs` should become `a.setProp(rhs)`.
-                // The underlying MetaMethodCall may already have parameter slots filled with `null`
-                // (because there is no explicit `( ... )` in the source syntax).
-                // We must *fill/override existing slots* instead of appending, otherwise IR will
-                // push an extra argument and break argument order/count.
-                var paramList = m_LeftMethodCall.metaInputParamList;
-                if (paramList == null || paramList.Count == 0)
-                {
-                    m_LeftMethodCall.AddMetaInputParamList(m_RightMetaExpress);
-                }
-                else
-                {
-                    bool replaced = false;
-                    for (int i = 0; i < paramList.Count; i++)
-                    {
-                        if (paramList[i] == null)
-                        {
-                            paramList[i] = m_RightMetaExpress;
-                            replaced = true;
-                            break;
-                        }
-                    }
-
-                    if (!replaced)
-                    {
-                        // No null slot found: override the first parameter.
-                        // Setter assignment always supplies the first (and usually only) argument.
-                        paramList[0] = m_RightMetaExpress;
-                    }
-                    m_RightMetaExpress = null;
-                }
-                if(!m_LeftMethodCall.ValidateInputParamAndDefineParam() )
-                {
-                    Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL407, m_Token, "Error 输入参数与定义参数不正确");
-                    return;
-                }
             }
             return;
         }
