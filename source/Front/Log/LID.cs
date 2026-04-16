@@ -289,5 +289,8 @@
         AutoStructParseFrameL52 = 12244,
         AutoProcessControllerL87 = 12245,
         AutoProcessControllerL128 = 12246,
+
+        NodeNotFoundNameToken = 12247,
+        NodeAssetFrontListNodeIsZero = 12248,
     }
 }

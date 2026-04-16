@@ -179,9 +179,9 @@ namespace SimpleLanguage.Logging
             return WriteCoreByToken(lid, EErrorType.ParseNode, null, null, msg);
         }
 
-        public static LogData AddNodeLog(LID lid, string msg, Token token, string extendMessage = null)
+        public static LogData AddNodeLog(LID lid, string msg, Token token, params object[] objs )
         {
-            return WriteCoreByToken(lid, EErrorType.ParseNode, token, null, "");
+            return WriteCoreByToken(lid, EErrorType.ParseNode, token, objs, msg);
         }
         //--------------------------------FileMeta----------------------------------------------
         public static LogData AddFileMetaLog(LID lid, Token token, string msg = "" )

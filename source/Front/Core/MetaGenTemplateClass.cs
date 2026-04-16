@@ -6,9 +6,9 @@
 //  Description: Generator Template Class's entity by Template Class
 //****************************************************************************
 
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -164,7 +164,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.Assert(false);
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, " assert 模板类的父类只能是普通类或者是带模板参数的类!");
                 }
             }
 

@@ -440,7 +440,7 @@ namespace SimpleLanguage.Compile
             }
             if (beforeNodeList.Count == 0)
             {
-                Log.AddNodeLog(LID.ShowExtendMessage, "Error 发生错误，有符号的情况，必须有前置变量");
+                Log.AddNodeLog(LID.NodeAssetFrontListNodeIsZero, "", opAssignNode?.token );
                 return null;
             }
 
@@ -598,7 +598,7 @@ namespace SimpleLanguage.Compile
             {
                 if (nameToken == null)
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 当为定义变量时，名称不能为空!!");
+                    Log.AddNodeLog(LID.NodeNotFoundNameToken, "", assignNode.token );
                     return null;
                 }
                 if (classRef != null)
@@ -627,7 +627,7 @@ namespace SimpleLanguage.Compile
             {
                 if (nameToken == null)
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 当为定义变量时，名称不能为空!!");
+                    Log.AddNodeLog(LID.NodeNotFoundNameToken, "", assignNode.token);
                     return null;
                 }
                 if (classRef != null)

@@ -793,3 +793,5 @@
 12244,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/Front/Compile/Parse/StructParseFrame.cs:52,,Auto-generated LID mapping,,
 12245,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/Front/Compile/Process/ProcessController.cs:87,,Auto-generated LID mapping,,
 12246,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/Front/Compile/Process/ProcessController.cs:128,,Auto-generated LID mapping,,
+12247,Error,TRUE,FALSE,0,," 定义变量NameToken没有发现",,Auto-generated LID mapping,,
+12248,Error,TRUE,FALSE,0,," 定义变在等号前部分的数字为0，语法不允许",,Auto-generated LID mapping,,

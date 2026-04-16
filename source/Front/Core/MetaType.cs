@@ -9,7 +9,6 @@
 
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -663,7 +662,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.Assert(false);
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "meta type is m_MetaClass is null");
                 }
             }
             else if (eMetaTypeType == EMetaTypeType.MetaGenClass )
@@ -693,7 +692,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.Assert(false);
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "eMetaTypeType is null ");
                 }
             }
             else
