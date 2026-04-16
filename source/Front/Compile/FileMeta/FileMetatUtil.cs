@@ -7,7 +7,6 @@
 //****************************************************************************
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.Compile
@@ -18,13 +17,13 @@ namespace SimpleLanguage.Compile
         {
             if (name == null)
             {
-                Debug.Write("自定义字符错误, 参数不可以为空!!");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "自定义字符错误, 参数不可以为空!!");
                 return false;
             }
 
             if (name.Equals(string.Empty) || name.Length == 0)
             {
-                Debug.Write("自定义字符错误, 不可以为空!!");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "自定义字符错误, 不可以为空!!");
                 return false;
             }
             string pattern = @"^[A-Za-z0-9_]+$";

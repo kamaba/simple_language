@@ -11,10 +11,7 @@ using SimpleLanguage.Logging;
 using System.IO;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
-using System.ComponentModel.Design;
-using System.Collections.Generic;
 
 namespace SimpleLanguage.Compile
 {
@@ -661,7 +658,7 @@ namespace SimpleLanguage.Compile
                 {
                     if( endPoint > 2 )
                     {
-                        Debug.Write("Error ReadNumber ... !!!");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error ReadNumber ... !!!");
                     }
                     //else if( endPoint == 3 )
                     //{
@@ -680,7 +677,8 @@ namespace SimpleLanguage.Compile
                             if( frontChar == '.' )
                             {
                                 //LexelLogData lld = new LexelLogData() { m_}
-                                Debug.Write("Error 涓嶅厑璁哥洿鎺ヤ娇鐢? number.function鐨勬柟寮忥紝鑰屾槸蹇呴』浣跨敤鏁版嵁璇嗗埆绗︽墠鍙互浣跨敤锛屼緥: 2.0f.ToString()");
+
+                                Log.AddTokenLog(LID.ShowExtendMessage, "char. logic is float format call inner functionname");
                                 //m_Buffer.Remove(m_Buffer.Length - 1, 1);
                                 AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Int32);
                                 AddToken(ETokenType.Period, frontChar );
@@ -879,7 +877,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Debug.Write("Error 涓嶅厑璁窣鍚庤竟鍔犲叾瀹冪鍙?!");
+                Log.AddTokenLog(LID.ShowExtendMessage, "@ _ token ");
             }
         }
         /// <summary> 璇诲彇 }  </summary>
@@ -922,7 +920,7 @@ namespace SimpleLanguage.Compile
                 }
                 else if (m_TempChar == END_CHAR)
                 {
-                    Debug.Write("Error 鍗曞紩鍙峰瓧绗︿覆娌℃湁鎵惧埌缁撴潫绗﹀彿 '\'' ");
+                    Log.AddTokenLog(LID.ShowExtendMessage, "end char reached before closing quote in string literal");
                     AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
                     break;
                 }
@@ -1005,7 +1003,7 @@ namespace SimpleLanguage.Compile
                 m_TempChar = ReadChar();
                 if (m_TempChar == END_CHAR)
                 {
-                    Debug.Write("Error f\"\"\" 瀛楃涓叉病鏈夋壘鍒扮粨鏉熺殑 \"\"\" ");
+                    Log.AddTokenLog(LID.ShowExtendMessage, "end char reached before closing quote in string literal");
                     break;
                 }
 
@@ -1180,7 +1178,7 @@ namespace SimpleLanguage.Compile
                 m_TempChar = ReadChar();
                 if( m_TempChar == END_CHAR)
                 {
-                    Debug.Write("Error 瀛楃涓叉病鏈夋壘鍒扮粨鏉熺殑 \" ");
+                    Log.AddTokenLog( LID.ShowExtendMessage, "end char reached before closing quote in string literal");
                     break;
                 }
                 if (m_TempChar == '\\')
@@ -1215,13 +1213,13 @@ namespace SimpleLanguage.Compile
                                 break;
                             }
                         default:
-                            Debug.Write("Error 璇诲瓧绗︾殑鏃跺€欙紝涓嶆敮鎸佸綋鍓嶇殑绗﹀彿!! : |" + m_CurChar);
+                            Log.AddTokenLog(LID.ShowExtendMessage, "other char need handle" + m_CurChar);
                             break;
                     }
                 }
                 else if (this.m_TempChar == '\n')
                 {
-                    Debug.Write("Error NotInterrupt 璇诲瓧绗︾殑鏃跺€欙紝涓嶅厑璁告崲琛岋紝璇蜂娇鐢?r/t 涓€绫荤殑鎹㈣绗?!");
+                    Log.AddTokenLog(LID.ShowExtendMessage, "other char need handleError NotInterrup " + m_CurChar);
                     m_Builder.Append(m_TempChar);
                 }
                 else if (m_TempChar == '"')
@@ -1461,7 +1459,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Debug.Write("璇诲彇Sharp涓璠]鍐呭鍑洪敊!!!");
+                    Log.AddTokenLog(LID.ShowExtendMessage, "# 。。。 level" );
                     break;
                 }
 
@@ -1499,7 +1497,7 @@ namespace SimpleLanguage.Compile
             {
                 if( offset >= m_Length)
                 {
-                    Debug.Write("娉ㄩ噴娌℃湁缁撳熬!!");
+                    Log.AddTokenLog(LID.ShowExtendMessage, "offset >= length" );
                     break;
                 }
                 
@@ -1590,7 +1588,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Debug.Write("Error 涓嶅厑璁?鍚庤竟鍔犲叾瀹冪鍙?!");
+                Log.AddTokenLog(LID.ShowExtendMessage, "read $");
             }
         }
         void ReadSharp()
@@ -2235,7 +2233,7 @@ namespace SimpleLanguage.Compile
                     int extend = 0;
                     if (!int.TryParse(t.extend.ToString(), out extend))
                     {
-                        Debug.Assert(false, "");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, "");
                     }
                     if (extend == 0)
                     {
@@ -2307,7 +2305,7 @@ namespace SimpleLanguage.Compile
             catch( Exception e )
             {
                 // swallow exceptions in debug dump
-                Debug.Assert(false, "File:" + outFile + "DumpFile: " + e.Message );
+                Log.AddTokenLog(LID.ShowExtendMessage, "DumpTokensToFile exception: " + e.Message );
             }
         }
     }

@@ -54,6 +54,8 @@ namespace SimpleLanguage.Core
         }
         private void Parse()
         {
+            m_Token = m_FileMetaKeyForSyntax.token;
+
             m_IsForIn = m_FileMetaKeyForSyntax.isInFor;
 
             m_ThenMetaStatements = new MetaBlockStatements(m_OwnerMetaBlockStatements, m_FileMetaKeyForSyntax.executeBlockSyntax);
@@ -109,7 +111,7 @@ namespace SimpleLanguage.Core
                 MetaType mdt = m_ForInContent.GetFinalMetaType();
                 if ( !m_ForInContent.GetIsCanCanIterate() )
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Error For in 必须是支持迭代器iterate");
+                    Log.AddMetaCoreLog(LID.MetaCoreParseForNotSuppoertIterator, m_Token, "", m_ForInContent.name );
                     return;
                 }
                 MetaClass iterMT = ClassManager.instance.GetClassByName("Core.IIterator<T>", 1);

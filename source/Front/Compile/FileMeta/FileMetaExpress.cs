@@ -10,7 +10,6 @@
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile
@@ -605,8 +604,7 @@ namespace SimpleLanguage.Compile
                 var nodeList = nodeListList[i];
                 if( nodeList.Count == 0 )
                 {
-                    Log.AddFileMetaLog(LID.Unknown, "Error nodeList.Count == 0 ");
-                    Debug.Assert(false, "");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error nodeList.Count == 0 ");
                     continue;
                 }
                 else if( nodeList.Count == 1 )
@@ -848,8 +846,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Debug.Assert(false, "");
-                        Log.AddFileMetaLog(LID.Unknown, "Error 在解析为{}中，数组形式 解析有问题!!");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在解析为{}中，数组形式 解析有问题!!");
                         continue;
                     }
                 }
@@ -857,8 +854,8 @@ namespace SimpleLanguage.Compile
                 {
                     if ( (defineNodeList.Count != 1 && defineNodeList.Count != 2 ) || valueNodeList.Count < 1)
                     {
-                        Debug.Assert(false, "");
-                        Log.AddFileMetaLog(LID.Unknown, "Error 在解析为{}中，赋值= 解析有问题!!");
+                        //Debug.Assert(false, "");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在解析为{}中，赋值= 解析有问题!!");
                         continue;
                     }
                     if( defineNodeList.Count == 2 )
@@ -1363,8 +1360,8 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Debug.Assert(false);
-                    Log.AddFileMetaLog(LID.Unknown, "没有找到该类型: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
+                    //Debug.Assert(false);
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, "没有找到该类型: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
                 }
             }
         }

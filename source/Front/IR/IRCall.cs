@@ -72,7 +72,7 @@ namespace SimpleLanguage.IR
             datacall2.SetOpValue(sysPkg);
             if (mf != null)
             {
-                datacall2.SetDebugInfoByToken(mf.pingToken);
+                datacall2.SetDebugInfoByToken(mf.token);
             }
             AddIRData(datacall2);
         }
@@ -198,7 +198,7 @@ namespace SimpleLanguage.IR
                     // Keep arg count in index for loader/runtime fallback paths
                     // when RuntimeCall metadata is missing or downgraded.
                     datacall.index = paramCount;
-                    datacall.SetDebugInfoByToken(mf.pingToken);
+                    datacall.SetDebugInfoByToken(mf.token);
                     AddIRData(datacall);
                 }
                 else
@@ -207,7 +207,7 @@ namespace SimpleLanguage.IR
                     datacall.opCode = EIROpCode.CallDynamic;
                     datacall.SetOpValue(irmethodcall);
                     datacall.index = paramCount + 1;
-                    datacall.SetDebugInfoByToken(mf.pingToken);
+                    datacall.SetDebugInfoByToken(mf.token);
                     AddIRData(datacall);
                 }
             }
@@ -219,7 +219,7 @@ namespace SimpleLanguage.IR
                     datacall.opCode = EIROpCode.CallDynamic;
                     datacall.SetOpValue(irmethodcall);
                     datacall.index = paramCount + 1;
-                    datacall.SetDebugInfoByToken(mf.pingToken);
+                    datacall.SetDebugInfoByToken(mf.token);
                     AddIRData(datacall);
                 }
                 else
@@ -228,7 +228,7 @@ namespace SimpleLanguage.IR
                     datacall.opCode = EIROpCode.CallVirt;
                     datacall.index = callMethodIndex;
                     datacall.SetOpValue(irmethodcall);
-                    datacall.SetDebugInfoByToken(mf.pingToken);
+                    datacall.SetDebugInfoByToken(mf.token);
                     AddIRData(datacall);
                 }
 

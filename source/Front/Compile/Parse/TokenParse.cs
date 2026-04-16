@@ -7,11 +7,11 @@
 //****************************************************************************
 
 
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.Compile
 {
@@ -117,7 +117,7 @@ namespace SimpleLanguage.Compile
                 if (token.type == ETokenType.At)
                 {
                     // `.@` is no longer supported; reserve '@' for attribute syntax.
-                    Debug.Assert(false, "不再支持 a.@b 语法，请使用 a.$b / a.$0 形式");
+                    Log.AddTokenLog(LID.ShowExtendMessage, "不再支持 a.@b 语法，请使用 a.$b / a.$0 形式");
                     currentNode.linkToken = null;
                     m_TokenIndex++;
                     return null;
@@ -157,7 +157,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Debug.Assert(false, "现在$符必须使用.$方式!!");
+                Log.AddTokenLog(LID.ShowExtendMessage, "现在$符必须使用.$方式!!");
             }
             m_TokenIndex++;
 
@@ -252,7 +252,7 @@ namespace SimpleLanguage.Compile
         {
             if (currentNode == null)
             {
-                Debug.Assert( false, "Error CurrentNode is NULL!!" + token?.ToLexemeAllString());
+                Log.AddTokenLog(LID.ShowExtendMessage, "Error CurrentNode is NULL!!" + token?.ToLexemeAllString());
                 return;
             }
             switch (token.type)
@@ -291,7 +291,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Debug.Write("Error 不对称{}");
+                            Log.AddTokenLog(LID.ShowExtendMessage, "Error 不对称{}");
                         }
                     }
                     break;
@@ -334,7 +334,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Debug.Assert(false, "Error 不对称()");
+                            Log.AddTokenLog(LID.ShowExtendMessage, "Error 不对称()");
                         }
                     }
                     break;
@@ -360,7 +360,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Debug.Assert( false, "Error 不对称[]");
+                            Log.AddTokenLog(LID.ShowExtendMessage, "Error 不对称[]");
                         }
                     }
                     break;
@@ -665,7 +665,7 @@ namespace SimpleLanguage.Compile
                     break;
                 default:
                     {
-                        Debug.Assert( false, string.Format("Line:{0} Source: {1}", token.sourceBeginLine, 
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, string.Format("Line:{0} Source: {1}", token.sourceBeginLine, 
                             token.sourceBeginChar) );
                         throw new Exception( "不支持的语法 " );
                     }
@@ -714,7 +714,7 @@ namespace SimpleLanguage.Compile
             }
             catch (Exception e)
             {
-                Debug.Assert(false, "" + e.Message);
+                Log.AddTokenLog(LID.ShowExtendMessage, "" + e.Message);
                 // ignore debug dump errors
             }
         }

@@ -5,10 +5,8 @@
 //****************************************************************************
 
 using SimpleLanguage.Logging;
-using SimpleLanguage.Project;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile
@@ -37,7 +35,8 @@ namespace SimpleLanguage.Compile
             var right = blockNode.endToken;
             if (left == null || right == null)
             {
-                Debug.Assert(false, "local block token missing");
+                //Debug.Assert(false, "local block token missing");
+                Log.AddFileMetaLog(LID.Unknown, "local block token missing");
                 return;
             }
 

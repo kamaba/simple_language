@@ -554,5 +554,8 @@
         MetaCoreVisitCallTypeError = 11028,
         IRMethodNotFoundVariable = 11029,
         MetaCoreParseFileExpressFailed = 11030,
+        MetaCoreParseForNotSuppoertIterator = 11031,
+        MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass = 11032,
+        MetaCoreMetaMemberShouldNameEqualExpressFormat = 11033,
     }
 }

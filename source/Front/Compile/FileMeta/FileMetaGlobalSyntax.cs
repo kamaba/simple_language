@@ -9,7 +9,6 @@ using SimpleLanguage.CSharp;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.Compile
@@ -86,7 +85,7 @@ namespace SimpleLanguage.Compile
                     {
                         mb = mb.GetChildrenMetaNodeByName(name);
                     }
-                    Debug.Assert(mb != null, "查找失败" + name);
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, "查找失败");// mb != null, "查找失败" + name);
                 }
                 else
                 {
@@ -99,7 +98,8 @@ namespace SimpleLanguage.Compile
                         var findmb = mb.GetChildrenMetaNodeByName(name);
                         if (findmb == null)
                         {
-                            Debug.Assert(false, $"文件:{m_NamespaceStatement.tokenList[i].path } 没有找到:{mb.allName} 下的:{name}");
+                            //Debug.Assert(false, $"文件:{m_NamespaceStatement.tokenList[i].path } 没有找到:{mb.allName} 下的:{name}");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, $"文件:{m_NamespaceStatement.tokenList[i].path} 没有找到:{mb.allName} 下的:{name}");
                             break;
                         }
                         mb = findmb;

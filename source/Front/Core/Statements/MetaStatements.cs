@@ -11,7 +11,6 @@ namespace SimpleLanguage.Core
 {
     public class MetaStatements : MetaBase
     {
-        public override Token pingToken => m_Token != null ? m_Token : (m_PintTokenList.Count> 0 ? m_PintTokenList[0] : null);
         public MetaStatements nextMetaStatements => m_NextMetaStatements;
         public MetaBlockStatements parentBlockStatements => m_OwnerMetaBlockStatements;
         public MetaVariable trMetaVariable => m_TrMetaVariable;
@@ -35,7 +34,6 @@ namespace SimpleLanguage.Core
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
         protected MetaStatements m_NextMetaStatements = null;
         protected bool m_IsNeedCastState = false;
-        protected Token m_Token = null;
         protected MetaStatements()
         {  }
         protected MetaStatements(MetaBlockStatements mf )

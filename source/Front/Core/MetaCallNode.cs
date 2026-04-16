@@ -963,14 +963,8 @@ namespace SimpleLanguage.Core
                         {
                             //濡傛灉宸茬粡瀹氫箟杩囨潵鍨嬬殑锛屽垯浼樺寲浣跨敤瀹氫箟绫诲瀷锛岃繘琛岃绠?
                             MetaClass mc = null;
-                            if (mv.isDefineMetaType)
-                            {
-                                mc = mv.defineMetaType.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate ? mv.defineMetaType.metaClass : mv.defineMetaType.metaClass;
-                            }
-                            else
-                            {
-                                mc = mv.realMetaType.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate ? mv.realMetaType.metaClass : mv.realMetaType.metaClass;
-                            }
+                            var mtt = mv.GetFinalMetaType();
+                            mc = mtt.GetTemplateMetaClass();
                             if (mc is MetaData)
                             {
                                 MetaData md = mc as MetaData;
@@ -1843,7 +1837,7 @@ namespace SimpleLanguage.Core
             if (mmv != null)
             {
                 m_MetaVariable = mmv;
-                m_MetaType = mmv.realMetaType;
+                m_MetaType = mmv.isDefineMetaType ? mmv.defineMetaType : mmv.realMetaType;
                 m_CallMetaType = new MetaType(mmv.ownerMetaClass);
                 m_CallNodeType = ECallNodeType.MemberVariableName;
                 //var gmmv3 = (mv as MetaIteratorVariable);

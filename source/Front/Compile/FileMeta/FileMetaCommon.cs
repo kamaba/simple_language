@@ -10,7 +10,6 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -277,7 +276,7 @@ namespace SimpleLanguage.Compile
             }
             if (_node.parNode != null)      //  Func( a, (b+20.0f) )
             {
-                Debug.Assert(m_FileMetaParTerm == null, "已经有解析()" );
+                Log.AddFileMetaLog( LID.ShowExtendMessage, m_FileMetaParTerm?.name + "已经有解析()" );
 
                 m_IsCallFunction = true;
                 m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, _node.parNode, FileMetaTermExpress.EExpressType.Common);

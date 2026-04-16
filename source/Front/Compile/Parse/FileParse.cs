@@ -9,20 +9,11 @@
 using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 
 namespace SimpleLanguage.Compile
 {
-    public enum ECodeFileParseState
-    {
-        Null,
-        Init,
-        LoadBegin,
-        LoadEnd,
-    }
-
     public struct ParseFileParam
     {
 
@@ -118,7 +109,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddProcessLog( LID.ProcessLoadFileFailed, "读取文件出错 FileParse Parse LoadFile !!!");
+                Log.AddProcessLog( LID.ProcessLoadFileFailed, "", m_FilePath );
             }
         }
         public void CreateNamespace()
@@ -160,7 +151,7 @@ namespace SimpleLanguage.Compile
             }
             catch (Exception e)
             {
-                Debug.Assert(false, "Export FileMeta debug data failed: " + e.Message);
+                Log.AddFileMetaLog(LID.ShowExtendMessage,  "Export FileMeta debug data failed: " + e.Message);
             }
         }
 
@@ -192,7 +183,7 @@ namespace SimpleLanguage.Compile
             }
             catch (Exception e)
             {
-                Debug.Assert(false, "Export Meta debug data failed: " + e.Message);
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Export Meta debug data failed: " + e.Message);
             }
         }
     }

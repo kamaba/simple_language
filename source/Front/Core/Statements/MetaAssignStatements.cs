@@ -466,7 +466,7 @@ namespace SimpleLanguage.Core
                 if (relation == ClassManager.EClassRelation.No)
                 {
                     sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                    Log.AddMetaCoreLog(LID.Unknown, sb.ToString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                     m_IsNeedCastState = true;
                 }
                 else if (relation == ClassManager.EClassRelation.Similar)
@@ -474,7 +474,7 @@ namespace SimpleLanguage.Core
                     // Numeric similar conversion is now allowed by default:
                     // expression side can be promoted, and assignment side narrows/casts to declared type.
                     sb.Append("数字类型相似，已按目标变量类型执行强转；可能会有精度丢失。");
-                    Log.AddMetaCoreLog(LID.Unknown, sb.ToString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                     m_IsNeedCastState = true;
                 }
                 else if (relation == ClassManager.EClassRelation.Same)
@@ -487,7 +487,7 @@ namespace SimpleLanguage.Core
                 else if (relation == ClassManager.EClassRelation.Parent)
                 {
                     sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                    Log.AddMetaCoreLog(LID.Unknown, sb.ToString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                     m_IsNeedCastState = true;
                 }
                 else if (relation == ClassManager.EClassRelation.Child)
@@ -500,7 +500,7 @@ namespace SimpleLanguage.Core
                 else
                 {
                     sb.Append("表达式错误，或者是定义类型错误");
-                    Log.AddMetaCoreLog(LID.Unknown, sb.ToString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                 }
             }
             //}

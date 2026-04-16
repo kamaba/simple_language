@@ -19,8 +19,8 @@ namespace SimpleLanguage.Core
     public class MetaBase
     {
         public int deep => m_Deep;
-        public virtual Token pingToken => m_PintTokenList.Count > 0 ? m_PintTokenList[0] : null;
-        public List<Token> pingTokenList => m_PintTokenList;
+        public virtual Token token => m_Token;
+        public virtual List<Token> pingTokenList => m_PintTokenList;
         public int realDeep
         {
             get
@@ -42,6 +42,7 @@ namespace SimpleLanguage.Core
         protected int m_Deep = 0;
         protected int m_AnchorDeep = 0;
         protected List<Token> m_PintTokenList = new List<Token>();
+        protected Token m_Token = null;
 
         public MetaBase()
         {

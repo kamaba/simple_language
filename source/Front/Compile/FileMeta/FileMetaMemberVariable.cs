@@ -8,7 +8,6 @@
 
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Logging;
 
@@ -161,13 +160,14 @@ namespace SimpleLanguage.Compile
             Node typeNode = null;
             if (!GetNameAndTypeToken(defineNodeList, out typeNode ))
             {
-                Log.AddFileMetaLog(LID.Unknown, "Error 没有找到该定义名称 必须使用例: X = 103; 的格式");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 没有找到该定义名称 必须使用例: X = 103; 的格式");
                 return false;
             }
 
             if( m_Token == null )
             {
-                Debug.Assert(false);
+                //Debug.Assert(false);
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "token is null");
                 return false;
             }
 
@@ -465,8 +465,8 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Debug.Assert(false);
-                        Log.AddFileMetaLog(LID.Unknown, "Error 解析变量中，不允许的类型存在!!" + token.ToLexemeAllString() );
+                        //Debug.Assert(false);
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析变量中，不允许的类型存在!!" + token.ToLexemeAllString() );
                     }
                 }
             }
@@ -482,7 +482,8 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Debug.Assert(false);
+                //Debug.Assert(false);
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "node List count > 2  ");
             }
 
             return !isError;

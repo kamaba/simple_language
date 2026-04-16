@@ -94,6 +94,7 @@ namespace SimpleLanguage.Core
             m_FileMetaMemeberVariable = fmmv;
             m_Name = fmmv.name;
             AddPingToken( fmmv.nameToken );
+            m_Token = fmmv.nameToken;
             m_Index = mc.metaMemberVariableDict.Count;
             m_FromType = EFromType.Code;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
@@ -241,17 +242,15 @@ namespace SimpleLanguage.Core
         {
             // Auto-filled const is not considered an explicit '=' from source, but it is a valid express for later stages.
             m_Express = mcen;
-            if (m_RealMetaType == null)
-            {
-                m_RealMetaType = new MetaType(m_DefineMetaType?.metaClass ?? CoreMetaClassManager.objectMetaClass);
-            }
         }
         public override bool ParseMetaExpress()
         {
             if (m_Express != null)
             {
-                m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_RealMetaType, this );
+                this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType, this );
+                m_Express.CalcReturnType();
+                m_RealMetaType = new MetaType( m_Express.GetReturnMetaDefineType() );
             }
             return true;
         }
@@ -456,7 +455,7 @@ namespace SimpleLanguage.Core
                     if (relation == ClassManager.EClassRelation.No)
                     {
                         sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                        Log.AddMetaCoreLog(LID.Unknown, sb.ToString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                     }
                     else if (relation == ClassManager.EClassRelation.Same)
                     {
@@ -472,7 +471,8 @@ namespace SimpleLanguage.Core
                                 {
                                     if (expressRetMetaDefineType.metaClass == ownerMetaClass && (!m_IsStatic && !m_IsConst))
                                     {
-                                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 自己类内部不允许包含 自己的实体2，必须赋值为null");
+                                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass, m_Token, 
+                                            "in member variable", m_OwnerMetaClass.allClassName, m_Name );
                                         return;
                                     }
                                 }
@@ -500,10 +500,14 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                if (expressRetMetaDefineType.metaClass == ownerMetaClass)
+                                if( !this.isStatic && !this.isConst )
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 自己类内部不允许包含 自己的实体3，必须赋值为null");
-                                    return;
+                                    if (expressRetMetaDefineType.metaClass == ownerMetaClass)
+                                    {
+                                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass, m_Token,
+                                            "in member variable", m_OwnerMetaClass.allClassName, m_Name);
+                                        return;
+                                    }
                                 }
                             }
                             SetRealMetaType(expressRetMetaDefineType);

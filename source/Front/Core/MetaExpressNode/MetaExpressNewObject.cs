@@ -341,6 +341,7 @@ namespace SimpleLanguage.Core
         private EStatementsContentType m_ContentType = EStatementsContentType.None;
 
         private FileMetaBaseTerm m_FileMetaBaseTerm = null;
+        private Token m_Token = null;
 
         public MetaNewObjectStatementsContent( MetaClass mc, MetaBlockStatements mbs )
         {
@@ -366,6 +367,7 @@ namespace SimpleLanguage.Core
         public MetaNewObjectStatementsContent( FileMetaBaseTerm fmbt, MetaClass mc, MetaBlockStatements mbs, MetaVariable parentMt)
         {
             m_FileMetaBaseTerm = fmbt;
+            m_Token = fmbt?.token;
             m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaClass = mc;
             m_EqualMetaVariable = parentMt;
@@ -383,7 +385,7 @@ namespace SimpleLanguage.Core
             }
             if (m_FileMetaBaseTerm?.fileMetaExpressList.Count > 0)
             {
-                Log.AddMetaCoreLog(LID.Unknown, "解析大括号里边的内容");
+                //Log.AddMetaCoreLog(LID.Unknown, "解析大括号里边的内容");
                 for (int i = 0; i < m_FileMetaBaseTerm.fileMetaExpressList.Count; i++)
                 {
                     var fas = m_FileMetaBaseTerm.fileMetaExpressList[i];
@@ -419,9 +421,9 @@ namespace SimpleLanguage.Core
                     }
 
                     m_NewTempMetaData = new MetaData(anname, false, false, true);
-                    if (m_EqualMetaVariable?.pingToken != null)
+                    if (m_EqualMetaVariable?.token != null)
                     {
-                        m_NewTempMetaData.AddPingToken(m_EqualMetaVariable.pingToken);
+                        m_NewTempMetaData.AddPingToken(m_EqualMetaVariable.token );
                     }
                     m_NewTempMetaData.AddPingToken(m_FileMetaBaseTerm.token);
                     m_DefineMetaType = new MetaType(m_NewTempMetaData);
@@ -434,7 +436,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "构造动态数据实例的时候，需要 使用 命名=内容 的格式");
+                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "symbolterm in data ", m_EqualMetaVariable?.name, "");
                         return;
                     }
 
@@ -472,7 +474,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "构造动态数据实例的时候，需要 使用 命名=内容 的格式");
+                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "symbolterm", m_EqualMetaVariable?.name, "");
                         return;
                     }
                     m_ContentType = EStatementsContentType.DataValueAssign;
@@ -562,7 +564,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "构造动态数据实例的时候，需要 使用 命名=内容 的格式");
+                    Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "isMap", m_EqualMetaVariable?.name, "");
                     return;
                 }
             }
@@ -581,7 +583,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "构造动态数据实例的时候，需要 使用 命名=内容 的格式");
+                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "symbol term in dynamic class", m_EqualMetaVariable?.name, "");
                         return;
                     }
                     /*
@@ -642,9 +644,13 @@ namespace SimpleLanguage.Core
                         mas.CalcReturnType();
                         assignStatementsList.Add(mas);
                     }
+                    else if( fmbt is FileMetaTermExpress fmte )
+                    {
+                        Debug.Assert(false);
+                    }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "构造动态数据实例的时候，需要 使用 命名=内容 的格式");
+                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "symbol term in common class", m_EqualMetaVariable?.name, "" );
                         return;
                     }
                     m_ContentType = EStatementsContentType.ClassValueAssign;
@@ -1354,14 +1360,14 @@ namespace SimpleLanguage.Core
                     
                     if (!cmt.metaClass.IsContainMetaClass(mt2.metaClass))
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "里边的元素与边的数据类型不对应，不对应，需要调整数据，或者是定义的结构 ");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "里边的元素与边的数据类型不对应，不对应，需要调整数据，或者是定义的结构 ");
                     }
                 }
                 else
                 {
                     if (!m_MetaType.metaClass.IsContainMetaClass(mt2.metaClass))
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "里边的元素与外边定义的类11，不对应，需要调整数据，或者是定义的结构 ");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "里边的元素与外边定义的类11，不对应，需要调整数据，或者是定义的结构 ");
                     }
                 }
 

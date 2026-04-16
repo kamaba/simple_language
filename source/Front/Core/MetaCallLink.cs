@@ -250,7 +250,8 @@ namespace SimpleLanguage.Core
                                 if (cnt.metaVariable.isArray)
                                 {
                                     //arryobject.@i arrayobject.@1
-                                    if (cnt.bracketExpressList.Count <= cnt.metaVariable.realMetaType.ArrayDimension())
+                                    MetaType mtt = cnt.metaVariable.GetFinalMetaType();
+                                    if (cnt.bracketExpressList.Count <= mtt.ArrayDimension() )
                                     {
                                         for (int j = 0; j < cnt.bracketExpressList.Count; j++)
                                         {

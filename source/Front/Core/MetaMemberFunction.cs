@@ -295,6 +295,7 @@ namespace SimpleLanguage.Core
             m_FileMetaMemberFunction = fmmf;
             this.m_Name = fmmf.name;
             AddPingToken(fmmf?.token);
+            m_Token = fmmf?.token;
 
             m_IsStatic = fmmf.staticToken != null;
             bool isProjectSpecialClass = string.Equals(mc?.name, "Project", StringComparison.OrdinalIgnoreCase)
@@ -464,7 +465,7 @@ namespace SimpleLanguage.Core
             {
                 return m_FileMetaMemberFunction.finalToken;
             }
-            return this.pingToken;
+            return this.token;
         }
         public bool IsEqualWithMMFByNameAndParam( MetaMemberFunction mmf )
         {

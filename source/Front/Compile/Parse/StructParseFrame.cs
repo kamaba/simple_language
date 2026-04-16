@@ -12,7 +12,6 @@ using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
-using System.Diagnostics;
 
 namespace SimpleLanguage.Compile
 {
@@ -207,7 +206,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddFileMetaLog(LID.Unknown, "错误 !!1 AddParseClassNodeInfo");
+                Log.AddNodeLog(LID.ShowExtendMessage, "错误 !!1 AddParseClassNodeInfo");
                 return;
             }
 
@@ -225,7 +224,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddFileMetaLog(LID.Unknown, "错误 !!1 AddParseVariableInfo");
+                Log.AddNodeLog(LID.ShowExtendMessage, "错误 !!1 AddParseVariableInfo");
                 return;
             }
         }
@@ -241,7 +240,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddFileMetaLog(LID.Unknown, "错误 !!1 AddParseFunctionNodeInfo");
+                Log.AddNodeLog(LID.ShowExtendMessage, "错误 !!1 AddParseFunctionNodeInfo");
                 return;
             }
 
@@ -257,7 +256,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddFileMetaLog(LID.Unknown, "错误 !!1 AddParseFunctionNodeInfo");
+                Log.AddNodeLog(LID.ShowExtendMessage, "错误 !!1 AddParseFunctionNodeInfo");
                 return;
             }
 
@@ -280,7 +279,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddFileMetaLog(LID.Unknown, "错误 !!1 AddParseFunctionNodeInfo");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "错误 !!1 AddParseFunctionNodeInfo");
                 return;
             }
 
@@ -381,13 +380,13 @@ namespace SimpleLanguage.Compile
                             {
                                 if (hasNamespaceOrClass)
                                 {
-                                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error typealias 只能写在 import/local 后、namespace/class/data/enum 前");
+                                    Log.AddNodeLog(LID.ShowExtendMessage, "Error typealias 只能写在 import/local 后、namespace/class/data/enum 前");
                                     pnode.parseIndex++;
                                     break;
                                 }
                                 if (m_FileMeta.path != null && m_FileMeta.path.EndsWith(".sp", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    Log.AddFileMetaLog(LID.Unknown, "Error .sp 中 typealias 只能写在 Project { } 类体内");
+                                    Log.AddNodeLog(LID.ShowExtendMessage, "Error .sp 中 typealias 只能写在 Project { } 类体内");
                                     pnode.parseIndex++;
                                     break;
                                 }
@@ -459,7 +458,7 @@ namespace SimpleLanguage.Compile
                             break;
                         default:
                             {
-                                Log.AddFileMetaLog( LID.Unknown, "Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
+                                Log.AddNodeLog( LID.ShowExtendMessage, "Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
                             }
                             break;
                     }
@@ -560,13 +559,13 @@ namespace SimpleLanguage.Compile
             Node localNode = pnode.GetParseNode(); // consume 'local'
             if (localNode == null || localNode.token?.type != ETokenType.Local)
             {
-                Log.AddFileMetaLog(LID.Unknown, "Error local 解析失败");
+                Log.AddNodeLog(LID.ShowExtendMessage, "Error local 解析失败");
                 return;
             }
 
             if (m_FileMeta.GetFileMetaLocalSyntax() != null)
             {
-                Log.AddFileMetaLog(LID.Unknown, "Error local{} 在同一文件中只允许定义一次");
+                Log.AddNodeLog(LID.ShowExtendMessage, "Error local{} 在同一文件中只允许定义一次");
                 return;
             }
 
@@ -595,7 +594,7 @@ namespace SimpleLanguage.Compile
 
             if (blockNode == null)
             {
-                Log.AddFileMetaLog(LID.Unknown, "Error local 后必须跟 {} 块");
+                Log.AddNodeLog(LID.ShowExtendMessage, "Error local 后必须跟 {} 块");
                 return;
             }
 
@@ -627,7 +626,7 @@ namespace SimpleLanguage.Compile
 
             if (i >= ch.Count)
             {
-                Log.AddFileMetaLog(LID.Unknown, "Error typealias 后缺少别名与类型");
+                Log.AddNodeLog(LID.ShowExtendMessage, "Error typealias 后缺少别名与类型");
                 return startIndex + 1;
             }
 
@@ -640,7 +639,7 @@ namespace SimpleLanguage.Compile
 
             if (string.IsNullOrEmpty(aliasName))
             {
-                Log.AddFileMetaLog(LID.Unknown, "Error typealias 后应为单个标识符别名");
+                Log.AddNodeLog(LID.ShowExtendMessage, "Error typealias 后应为单个标识符别名");
                 return i + 1;
             }
             i++;
@@ -648,7 +647,7 @@ namespace SimpleLanguage.Compile
             while (i < ch.Count && ch[i].nodeType == ENodeType.LineEnd) i++;
             if (i >= ch.Count || ch[i].nodeType != ENodeType.Assign)
             {
-                Log.AddFileMetaLog(LID.Unknown, "Error typealias 缺少 = 与目标类型");
+                Log.AddNodeLog(LID.ShowExtendMessage, "Error typealias 缺少 = 与目标类型");
                 return i;
             }
             i++;
@@ -683,7 +682,7 @@ namespace SimpleLanguage.Compile
             }
             if (typeRoot == null)
             {
-                Log.AddFileMetaLog(LID.Unknown, "Error typealias 目标类型无法解析");
+                Log.AddNodeLog(LID.ShowExtendMessage, "Error typealias 目标类型无法解析");
                 return i;
             }
 
@@ -696,58 +695,6 @@ namespace SimpleLanguage.Compile
         {
             int dummy = -1;
             return TryParseGlobalOrLocalFunction(ownerBlock, fls, lineNodes, ref hasFunction, ref dummy, true);
-        }
-
-        //public void ParseGlobal(Node pnode)
-        //{
-        //    Node globalNode = pnode.GetParseNode(); // consume 'global'
-        //    if (globalNode == null || globalNode.token?.type != ETokenType.Global)
-        //    {
-        //        Log.AddFileMetaLog(LID.Unknown, "Error global 解析失败");
-        //        return;
-        //    }
-
-        //    if (m_FileMeta.GetFileMetaGlobalSyntax() != null)
-        //    {
-        //        Log.AddFileMetaLog(LID.Unknown, "Error global{} 在同一文件中只允许定义一次");
-        //        return;
-        //    }
-
-        //    Node blockNode = null;
-        //    if (pnode.parseIndex < pnode.childList.Count)
-        //    {
-        //        var next = pnode.childList[pnode.parseIndex];
-        //        if (next != null && next.nodeType == ENodeType.Brace)
-        //        {
-        //            blockNode = next;
-        //            pnode.parseIndex++;
-        //        }
-        //        else if (next != null && next.nodeType == ENodeType.LineEnd)
-        //        {
-        //            if (pnode.parseIndex + 1 < pnode.childList.Count)
-        //            {
-        //                var next2 = pnode.childList[pnode.parseIndex + 1];
-        //                if (next2 != null && next2.nodeType == ENodeType.Brace)
-        //                {
-        //                    blockNode = next2;
-        //                    pnode.parseIndex += 2;
-        //                }
-        //            }
-        //        }
-        //    }
-
-        //    if (blockNode == null)
-        //    {
-        //        Log.AddFileMetaLog(LID.Unknown, "Info global{} 解析已禁用");
-        //        return;
-        //    }
-
-        //    Log.AddFileMetaLog(LID.Unknown, "Info global{} 解析已禁用，已跳过该块");
-        //}
-        private bool TryParseGlobalFunction(Node ownerBlock, FileMetaLocalSyntax fgs, List<Node> lineNodes, ref bool hasFunction)
-        {
-            int dummy = -1;
-            return TryParseGlobalOrLocalFunction(ownerBlock, fgs, lineNodes, ref hasFunction, ref dummy, false);
         }
 
         private void ParseGlobalOrLocalContent(FileMetaLocalSyntax syntax, Node blockNode, bool isLocal)
@@ -774,7 +721,7 @@ namespace SimpleLanguage.Compile
 
                     if (hasFunction)
                     {
-                        Log.AddFileMetaLog(LID.Unknown, isLocal
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, isLocal
                             ? "Error local{} 中出现函数定义后，后边只允许继续定义函数"
                             : "Error global{} 中出现函数定义后，后边只允许继续定义函数");
                         lineNodes.Clear();
@@ -806,7 +753,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddFileMetaLog(LID.Unknown, isLocal
+                    Log.AddNodeLog(LID.ShowExtendMessage, isLocal
                         ? "Error local{} 中出现函数定义后，后边只允许继续定义函数"
                         : "Error global{} 中出现函数定义后，后边只允许继续定义函数");
                 }
@@ -866,7 +813,7 @@ namespace SimpleLanguage.Compile
 
             if (funcBlock == null)
             {
-                Log.AddFileMetaLog(LID.Unknown, isLocal
+                Log.AddNodeLog(LID.ShowExtendMessage, isLocal
                     ? "Error local{} 函数定义缺少函数体 {}"
                     : "Error global{} 函数定义缺少函数体 {}");
                 return true;
@@ -876,7 +823,7 @@ namespace SimpleLanguage.Compile
             {
                 if (normalizedNodes[i]?.nodeType == ENodeType.Key && normalizedNodes[i].token?.type == ETokenType.Static)
                 {
-                    Log.AddFileMetaLog(LID.Unknown, isLocal
+                    Log.AddNodeLog(LID.ShowExtendMessage, isLocal
                         ? "Error local{} 中定义的函数不允许使用 static"
                         : "Error global{} 中定义的函数不允许使用 static");
                     return true;
@@ -912,7 +859,7 @@ namespace SimpleLanguage.Compile
                 {
                     if (namespaceNode != null)
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error 在解析namespace 中，后边跟着参数多于正常语法!!");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 在解析namespace 中，后边跟着参数多于正常语法!!");
                     }
                     namespaceNode = nextNode;
 
@@ -946,7 +893,7 @@ namespace SimpleLanguage.Compile
                 {
                     if (ProjectManager.isUseForceSemiColonInLineEnd)
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error 在解析namespace 中，需要强制;号结束");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 在解析namespace 中，需要强制;号结束");
                         break;
                     }
                     else
@@ -997,7 +944,7 @@ namespace SimpleLanguage.Compile
                 if (curNode.token?.type == ETokenType.At)
                 {
                     // attributes at file root are not allowed
-                    Log.AddFileMetaLog(LID.Unknown, "Error @Attribute 不允许出现在文件头级(只能在 namespace{} / class{} 内)");
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error @Attribute 不允许出现在文件头级(只能在 namespace{} / class{} 内)");
                     continue;
                 }
 
@@ -1073,7 +1020,7 @@ namespace SimpleLanguage.Compile
                 }    
                 else
                 {
-                    Log.AddFileMetaLog(LID.Unknown, "Error 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
                 }
             }
             pnode.parseIndex = index;
@@ -1105,12 +1052,12 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error 对于 namespace A.B{}的格式 多了一个参数!1");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 对于 namespace A.B{}的格式 多了一个参数!1");
                     }
                 }
                 else
                 {
-                    Log.AddFileMetaLog(LID.Unknown, "Error 没有发现是Class还是Namespace的关键字!");
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 没有发现是Class还是Namespace的关键字!");
                 }
             }
         }
@@ -1146,7 +1093,7 @@ namespace SimpleLanguage.Compile
                         || currentNodeInfo?.codeClass == null
                         || !string.Equals(currentNodeInfo.codeClass.name, "Project", StringComparison.Ordinal))
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error 类体内的 typealias 仅允许出现在 .sp 工程的 Project 类中");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 类体内的 typealias 仅允许出现在 .sp 工程的 Project 类中");
                         index++;
                         continue;
                     }
@@ -1216,8 +1163,8 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error StructParseFrame.ParseClassNode 解析的类后边不用使用;号结尾!! ");
-                        Log.AddFileMetaLog(LID.Unknown, "一般是只定义了类变量，没有赋值，正常后边应该可以使用=null赋值");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error StructParseFrame.ParseClassNode 解析的类后边不用使用;号结尾!! "
+                            + "一般是只定义了类变量，没有赋值，正常后边应该可以使用=null赋值");
                         break;
                     }
                 }
@@ -1265,8 +1212,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Debug.Assert(false, "");
-                    Log.AddFileMetaLog(LID.Unknown, "Error ParseClassNode 不允许2在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error ParseClassNode 不允许2在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
                 }
             }
             pnode.parseIndex = index;
@@ -1324,7 +1270,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddFileMetaLog(LID.Unknown, "Error 未111111111111123123123");
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 未111111111111123123123");
                 }
             }
             ParseClassNode(pnode);
@@ -1364,7 +1310,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddFileMetaLog(LID.Unknown, "Error 在+-符前边不允许有其它非const类型存在!");
+                            Log.AddNodeLog(LID.ShowExtendMessage, "Error 在+-符前边不允许有其它非const类型存在!");
                             continue;
                         }
                     }
@@ -1401,7 +1347,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddFileMetaLog(LID.Unknown, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                     continue;
                 }
             }
@@ -1514,7 +1460,7 @@ namespace SimpleLanguage.Compile
                                 }
                                 else
                                 {
-                                    Log.AddFileMetaLog(LID.Unknown, "Error Data数据中，不允许使用除自定义以后的字段!!" + curNode?.token?.ToLexemeAllString());
+                                    Log.AddNodeLog(LID.ShowExtendMessage, "Error Data数据中，不允许使用除自定义以后的字段!!" + curNode?.token?.ToLexemeAllString());
                                 }
                             }
                         }
@@ -1550,7 +1496,7 @@ namespace SimpleLanguage.Compile
 
                     if( nextNode == null )
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error 后边必须有延伸位...");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 后边必须有延伸位...");
                         continue;
                     }
 
@@ -1579,12 +1525,12 @@ namespace SimpleLanguage.Compile
                             }
                             else
                             {
-                                Log.AddFileMetaLog(LID.Unknown, "Error 如果是 x=-??的形式，在符号后边");
+                                Log.AddNodeLog(LID.ShowExtendMessage, "Error 如果是 x=-??的形式，在符号后边");
                             }
                         }
                         else
                         {
-                            Log.AddFileMetaLog(LID.Unknown, "Error 如果是 x=-??的形式，在符号后边");
+                            Log.AddNodeLog(LID.ShowExtendMessage, "Error 如果是 x=-??的形式，在符号后边");
                         }
                     }
                     else if(nextNode.nodeType == ENodeType.Brace )
@@ -1618,12 +1564,12 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddFileMetaLog(LID.Unknown, "Error 在定义Data数据的时候，如果有折行，只允许 =\n{} =\n[] 两种形式! ");
+                            Log.AddNodeLog(LID.ShowExtendMessage, "Error 在定义Data数据的时候，如果有折行，只允许 =\n{} =\n[] 两种形式! ");
                         }
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error 在定义Data数据的时候，不允许=号后边有其它形式的存在");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 在定义Data数据的时候，不允许=号后边有其它形式的存在");
                     }
 
                     if( parseType > 0 )
@@ -1656,7 +1602,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddFileMetaLog(LID.Unknown, "Error 报错，不允许 解析Data有其它的类型出现!" + curNode.token.ToLexemeAllString() );
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 报错，不允许 解析Data有其它的类型出现!" + curNode.token.ToLexemeAllString() );
                 }
 
                 if (isParseEnd)
@@ -1688,7 +1634,7 @@ namespace SimpleLanguage.Compile
                     if (curNodexxx.nodeType == ENodeType.Key
                         && curNodexxx.token.type == ETokenType.Enum)
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "error 不允许在enum 内容里边再嵌套enum");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "error 不允许在enum 内容里边再嵌套enum");
                         return;
                     }
                 }
@@ -1773,7 +1719,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddFileMetaLog(LID.Unknown, "在解析enum member 中 成员变量 如果是identifier格式，则后边不允许跟当前格式");
+                            Log.AddNodeLog(LID.ShowExtendMessage, "在解析enum member 中 成员变量 如果是identifier格式，则后边不允许跟当前格式");
                         }
                     }
                     else
@@ -1812,7 +1758,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddFileMetaLog(LID.Unknown, "Error 解析Enum memeber 时，不允许有其它形式的存在!");
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 解析Enum memeber 时，不允许有其它形式的存在!");
                 }
 
                 if(isParse )

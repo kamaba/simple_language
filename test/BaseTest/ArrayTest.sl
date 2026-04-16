@@ -7,7 +7,7 @@ ArrayTest
 
         override string toString()
         {
-            ret "ArrClass(){ i1= " + this.i1.toString() + "  i2= " + this.i2 + "}"
+            ret "ArrClass(){ i1=" + this.i1.toString() + " this.i2= " +  this.i2.toString();
         }
     }
     Level<T>

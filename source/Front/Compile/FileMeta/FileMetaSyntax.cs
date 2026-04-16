@@ -7,7 +7,6 @@
 //****************************************************************************
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 using SimpleLanguage.Logging;
@@ -75,7 +74,8 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Debug.Assert(false, "");
+                    //Debug.Assert(false, "");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, "FileMetaConditionExpressSyntax init");
                 }
             }
             else

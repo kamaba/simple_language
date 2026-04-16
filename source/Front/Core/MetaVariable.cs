@@ -677,6 +677,9 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
+            m_IsDefineMetaType = lmv.isDefineMetaType;
+            m_DefineMetaType = lmv.defineMetaType;
+            m_RealMetaType = lmv.realMetaType;
         }
         public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaOpExpressNode moe )
         {

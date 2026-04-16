@@ -434,7 +434,7 @@ namespace SimpleLanguage.Core
                         // If parent function is abstract and current class is concrete, require override
                         if (efun.isAbstract && !this.m_IsAbstractClass)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAbstractFunctionNeedInstance, this.pingToken, "", this.m_ExtendClass.allClassName, efun.name, this.allClassName );
+                            Log.AddMetaCoreLog(LID.MetaCoreAbstractFunctionNeedInstance, this.token, "", this.m_ExtendClass.allClassName, efun.name, this.allClassName );
                         }
                         m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
                     }
@@ -757,6 +757,8 @@ namespace SimpleLanguage.Core
                 {
                     if(cmmv != null && cmmv.isInnerDefine )
                     {
+                        m_FileCollectMetaMemberVariable.Add(cmmv);
+                        MetaVariableManager.instance.AddMetaMemberVariable(cmmv);
                         break;
                     }
                     else
