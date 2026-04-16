@@ -104,16 +104,15 @@ namespace SimpleLanguage.ExportLanguage
             if (!string.IsNullOrWhiteSpace(outDir))
                 return outDir;
 
-            // 2) project config export.outputDir (manual mode / no test harness)
-            var cfgOut = ProjectManager.config?.Export?.OutputDir;
-            if (!string.IsNullOrWhiteSpace(cfgOut))
+            // 2) project config export.outputDir + export.moduleName (when env not preset)
+            var fromCfg = ProjectOutputEnvironment.ResolveExportDirectoryFromConfig(
+                ProjectManager.config,
+                !string.IsNullOrWhiteSpace(ProjectManager.projectPath) ? ProjectManager.projectPath : Environment.CurrentDirectory,
+                Path.GetFileNameWithoutExtension(ProjectManager.projectPath) ?? "module");
+            if (!string.IsNullOrWhiteSpace(fromCfg))
             {
-                var baseDir = !string.IsNullOrWhiteSpace(ProjectManager.projectPath)
-                    ? ProjectManager.projectPath
-                    : Environment.CurrentDirectory;
-                outDir = Path.IsPathRooted(cfgOut)
-                    ? cfgOut
-                    : Path.GetFullPath(Path.Combine(baseDir, cfgOut));
+                outDir = fromCfg;
+                Directory.CreateDirectory(outDir);
                 Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", outDir);
                 return outDir;
             }

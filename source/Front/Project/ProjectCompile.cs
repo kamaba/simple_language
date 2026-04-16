@@ -59,7 +59,6 @@ namespace SimpleLanguage.Project
             string projectName = Path.GetFileNameWithoutExtension(spFilePath);
             string jsoncFileName = projectName + ".jsonc";
             string jsoncPath = Path.Combine(projectDir, jsoncFileName);
-            Log.AddProjectLog(LID.ProjectShowConfigPath, "", jsoncPath );
             if (!File.Exists(jsoncPath))
             {
                 Log.AddProjectLog(LID.ProjectShowConfigSuccessPath,"", jsoncPath);
@@ -81,15 +80,9 @@ namespace SimpleLanguage.Project
             ProjectClass.ExportProjectGuideMarkdown(spFilePath, jsoncPath);
             ProjectManager.SetConfig(config);
 
-            // Keep Front/VM default IO path consistent with project config export.outputDir.
-            var cfgOutDir = config?.Export?.OutputDir;
-            if (!string.IsNullOrWhiteSpace(cfgOutDir))
-            {
-                var resolvedOutDir = Path.IsPathRooted(cfgOutDir)
-                    ? cfgOutDir
-                    : Path.GetFullPath(Path.Combine(projectDir, cfgOutDir));
-                Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", resolvedOutDir);
-            }
+            // Logs / DebugCode / *.module.json 均在 {export.outputDir}/{moduleName}/（见 ProjectOutputEnvironment）。
+            ProjectOutputEnvironment.ApplyFromConfig(config, projectDir, projectName);
+            Log.AddProjectLog(LID.ProjectShowConfigPath, "", jsoncPath);
 
             // 3. 后续逻辑仍然可以保留 m_ProjectFile，用于旧的基于 FileMeta 的流程
             if (m_ProjectFile == null)

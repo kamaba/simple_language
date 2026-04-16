@@ -1,6 +1,7 @@
 ﻿extern alias VMRuntime;
 
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using SimpleLanguage.Project;
 using SimpleLanguage.VM;
@@ -25,8 +26,6 @@ internal static class Program
         bool runTestEntry = args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
         // Default to in-process mode for easier single-process debugging.
         bool start = TryGetBoolArg(args, "start", defaultValue: true);
-        string exportOutDir = Path.Combine(repoRoot, "out", "export");
-        Environment.SetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR", exportOutDir);
         string frontProject = Path.Combine(repoRoot, "source", "Front", "SimpleLanguageFront.csproj");
         string vmProject = Path.Combine(repoRoot, "source", "VM", "SimpleLanuageVM.csproj");
 
@@ -154,6 +153,9 @@ internal static class Program
                 : new[] { packagePath };
 
             VMRuntime::SimpleLanguage.Logging.LogManager.Initialize("");
+            VMRuntime::SimpleLanguage.Logging.Log.ResetFixedLogFileForNewSession();
+            VmRunResultSink.Initialize();
+
             var graph = SLIRJsonModuleLoader.ReadPackagesInExecutionOrder(packagePath);
             var parseResult = SLIRModuleParse.Parse(graph, vmArgs);
             if (parseResult == null)
@@ -169,14 +171,30 @@ internal static class Program
             Console.WriteLine(ex);
             return 1;
         }
+        finally
+        {
+            VmRunResultSink.Shutdown();
+        }
     }
 
     static string ResolveModulePackagePath(string repoRoot, string projectPath)
     {
-        // Front export default is repoRoot/out/export/module.package.json
-        // Keep projectPath parameter for future per-project routing.
         _ = projectPath;
-        return Path.Combine(repoRoot, "out", "export", "Core.module.json");
+        var exportDir = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.ExportOutDirEnv);
+        if (!string.IsNullOrWhiteSpace(exportDir))
+        {
+            var d = Path.GetFullPath(exportDir.Trim());
+            if (Directory.Exists(d))
+            {
+                var found = Directory.GetFiles(d, "*.module.json");
+                if (found.Length == 1)
+                    return found[0];
+                if (found.Length > 1)
+                    return found.OrderByDescending(File.GetLastWriteTimeUtc).First();
+            }
+        }
+
+        return Path.Combine(repoRoot, "out", "export", "Core", "Core.module.json");
     }
 
     static string GetRepoRoot()

@@ -2,6 +2,8 @@
 
 本文件用于约束 AI 在本仓库中编写日志代码的统一规则，优先级高。
 
+**排查时目录与各 txt 含义、推荐阅读顺序**：必须先读仓库 **`md/ai/DEBUG_WORKFLOW.md`**（项目规则 `.cursor/rules/simplelang-debug-artifacts.mdc` 与之同步）。
+
 ## 1) 总体原则（必须遵守）
 - 任何新增日志都必须走 `SimpleLanguage.Logging.Log`，禁止直接使用 `Debug.Write*` / `Console.WriteLine` 作为业务日志通道。
 - 日志定义以 `ErrorDefinitions.csv` 为准，代码只通过 `LID` 引用。
@@ -20,10 +22,11 @@
   - 错误类型分层：Project / Process / ParseIR / Runtime / Other
 
 ### 2.1) 固定文本日志路径（排查时从此读取）
-- Front：`E:\project\lang\simple_language\out\logs\FrontLog.txt`（代码常量 `Log.FrontLogFilePath`）；每次进入 `ProjectCompile.FileListStructParse` 会清空并重写本会话。
-- VM：`E:\project\lang\simple_language\out\logs\VMLog.txt`（代码常量 `Log.VmLogFilePath`）；进程启动时在 `Program.cs` 清空并重写本会话。
-- AI 或工具复核编译/运行问题时，应优先 `Read` 上述文件，而不是在 `bin/Debug/.../DebugCode/Logs` 下按时间戳查找旧日志。
-- 从 `FrontLog.txt` 的 **Error** 反查源码与修复流程的完整步骤见仓库内 `md/ai/故障排查流程.md` **§1.0**。
+- 模块输出树：`{export.outputDir}/{export.moduleName}/`，其下 **`Logs/Front.txt`**、**`Logs/VM.txt`**、**`Logs/Result.txt`**，以及 **`DebugCode/`**（Front 阶段 dump）、**`*.module.json`**（VM 包）。环境变量由 `ProjectOutputEnvironment.ApplyFromConfig` 设置（见 `ProjectOutputEnvironment`）。
+- Front：`SIMPLELANG_LOGS_DIR/Front.txt`；未加载配置时回退 `Log.FrontLogDefaultPath`。每次进入 `ProjectCompile.FileListStructParse` 会清空并重写本会话。
+- VM：`SIMPLELANG_LOGS_DIR/VM.txt`（与 Front 同 `Logs` 目录）；未加载配置时回退 `Log.VmLogDefaultPath`；进程启动时在 `Program.cs` 清空并重写本会话。
+- AI 或工具复核编译/运行问题时，应优先 `Read` 上述文件，而不是在 `bin/Debug/...` 下按时间戳查找旧日志。
+- 从 **`Front.txt`** 的 **Error** 反查源码与修复流程的完整步骤见仓库内 `md/ai/故障排查流程.md` 第 **1.0** 小节。
 
 ## 3) CSV 驱动规则
 `ErrorDefinitions.csv` 列结构：

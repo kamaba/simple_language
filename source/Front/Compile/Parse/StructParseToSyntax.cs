@@ -420,6 +420,8 @@ namespace SimpleLanguage.Compile
                         || tet == ETokenType.InclusiveOrAssign
                         || tet == ETokenType.CombineAssign
                         || tet == ETokenType.XORAssign
+                        || tet == ETokenType.ShiAssign
+                        || tet == ETokenType.ShrAssign
                         || tet == ETokenType.DoublePlus
                         || tet == ETokenType.DoubleMinus)
                     {

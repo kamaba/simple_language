@@ -232,14 +232,37 @@ namespace SimpleLanguage.VM
             ComputeValueInline(ref this, sign, ref svalue, isUnSign);
         }
 
+        /// <summary>
+        /// Integer values in <see cref="RawSValue"/> may occupy only the low bits of <c>u64</c> (e.g. Int32).
+        /// The <see cref="RawSValue.Int64"/> getter reinterpret-casts the whole <c>u64</c> as long, which breaks
+        /// negative Int32 (e.g. -16) and thus signed shifts. Use this for signed arithmetic / comparisons.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static long RawSValueIntegerBitsToSignedLong(ref RawSValue r)
+        {
+            switch (r.eType)
+            {
+                case EVMType.Int8: return r.SInt8;
+                case EVMType.Int16: return r.Int16;
+                case EVMType.Int32: return r.Int32;
+                case EVMType.Int64: return unchecked((long)r.UInt64);
+                case EVMType.UInt8: return r.Int8;
+                case EVMType.UInt16: return r.UInt16;
+                case EVMType.UInt32: return (long)(uint)r.UInt32;
+                case EVMType.UInt64: return unchecked((long)r.UInt64);
+                default:
+                    return unchecked((long)r.UInt64);
+            }
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ComputeValueInlineRaw(ref RawSValue left, int sign, ref RawSValue right, bool isUnSign)
         {
             var promoteType = GetRawBinaryPromotionType(left.eType, right.eType, sign, isUnSign);
             if (promoteType == EVMType.Float64 || promoteType == EVMType.Num)
             {
-                double a = (left.eType == EVMType.Float64 || left.eType == EVMType.Num) ? left.Float64 : (left.eType == EVMType.Float32 ? left.Float32 : (double)left.Int64);
-                double b = (right.eType == EVMType.Float64 || right.eType == EVMType.Num) ? right.Float64 : (right.eType == EVMType.Float32 ? right.Float32 : (double)right.Int64);
+                double a = (left.eType == EVMType.Float64 || left.eType == EVMType.Num) ? left.Float64 : (left.eType == EVMType.Float32 ? left.Float32 : (double)RawSValueIntegerBitsToSignedLong(ref left));
+                double b = (right.eType == EVMType.Float64 || right.eType == EVMType.Num) ? right.Float64 : (right.eType == EVMType.Float32 ? right.Float32 : (double)RawSValueIntegerBitsToSignedLong(ref right));
                 double r = 0;
                 switch (sign)
                 {
@@ -260,10 +283,10 @@ namespace SimpleLanguage.VM
             {
                 float a = left.eType == EVMType.Float32
                     ? left.Float32
-                    : (left.eType == EVMType.Float64 || left.eType == EVMType.Num ? (float)left.Float64 : (float)left.Int64);
+                    : (left.eType == EVMType.Float64 || left.eType == EVMType.Num ? (float)left.Float64 : (float)RawSValueIntegerBitsToSignedLong(ref left));
                 float b = right.eType == EVMType.Float32
                     ? right.Float32
-                    : (right.eType == EVMType.Float64 || right.eType == EVMType.Num ? (float)right.Float64 : (float)right.Int64);
+                    : (right.eType == EVMType.Float64 || right.eType == EVMType.Num ? (float)right.Float64 : (float)RawSValueIntegerBitsToSignedLong(ref right));
                 float r = 0f;
                 switch (sign)
                 {
@@ -312,8 +335,8 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            long la = left.Int64;
-            long lb = right.Int64;
+            long la = RawSValueIntegerBitsToSignedLong(ref left);
+            long lb = RawSValueIntegerBitsToSignedLong(ref right);
             long lr = 0;
             switch (sign)
             {

@@ -12,6 +12,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
+using SimpleLanguage.Project;
 
 namespace SimpleLanguage.Logging
 {
@@ -73,21 +74,36 @@ namespace SimpleLanguage.Logging
     }
     public class Log
     {
-        /// <summary>Front 编译器文本日志固定路径（排查/工具从此处读取）。</summary>
-        public const string FrontLogFilePath = @"E:\project\lang\simple_language\out\logs\FrontLog.txt";
+        /// <summary>未设置 <c>SIMPLELANG_LOGS_DIR</c> 时的 Front 日志路径（与 Core 默认导出树一致）。</summary>
+        public const string FrontLogDefaultPath = @"E:\project\lang\simple_language\out\export\Core\Logs\Front.txt";
+
+        /// <summary>Front 编译器文本日志路径；加载 jsonc 后为 <c>{export.outputDir}/{moduleName}/Logs/Front.txt</c>。</summary>
+        public static string FrontLogFilePath =>
+            ResolveUnderLogsDir(ProjectOutputEnvironment.FrontLogFileName);
+
+        static string ResolveUnderLogsDir(string fileName)
+        {
+            var dir = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.LogsDirEnv);
+            if (!string.IsNullOrWhiteSpace(dir))
+                return Path.Combine(Path.GetFullPath(dir.Trim()), fileName);
+            return FrontLogDefaultPath;
+        }
 
         static ConcurrentQueue<LogData> m_LogDataList = new ConcurrentQueue<LogData>();
         static readonly object m_FileLock = new object();
         static bool m_LogFilePathPrinted = false;
         static bool m_ResetFileBeforeNextWrite = true;
+        static string s_LastResolvedFrontLogPath = string.Empty;
 
-        /// <summary>在每次完整 Front 编译开始前调用，清空 <see cref="FrontLogFilePath"/> 并重新记录本会话。</summary>
+        /// <summary>在每次完整 Front 编译开始前调用，清空当前 <see cref="FrontLogFilePath"/> 并重新记录本会话。</summary>
         public static void ResetFixedLogFileForNewSession()
         {
             lock (m_FileLock)
             {
                 m_ResetFileBeforeNextWrite = true;
-                m_LogFilePathPrinted = false;
+                var p = FrontLogFilePath;
+                if (!string.Equals(p, s_LastResolvedFrontLogPath, StringComparison.OrdinalIgnoreCase))
+                    m_LogFilePathPrinted = false;
             }
         }
 
@@ -112,6 +128,7 @@ namespace SimpleLanguage.Logging
                     Console.WriteLine($"[FrontLog] OutputPath: {path}");
                     m_LogFilePathPrinted = true;
                 }
+                s_LastResolvedFrontLogPath = path;
             }
         }
 

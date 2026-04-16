@@ -419,7 +419,16 @@ namespace SimpleLanguage.Compile
             }
             else if (m_TempChar == '>')
             {
-                AddToken(ETokenType.Shr, ">>");
+                m_TempChar = ReadChar();
+                if (m_TempChar == '=')
+                {
+                    AddToken(ETokenType.ShrAssign, ">>=");
+                }
+                else
+                {
+                    AddToken(ETokenType.Shr, ">>");
+                    UndoChar();
+                }
             }
             else 
             {
@@ -437,7 +446,16 @@ namespace SimpleLanguage.Compile
             }
             else if (m_TempChar == '<')
             {
-                AddToken(ETokenType.Shi, "<<");
+                m_TempChar = ReadChar();
+                if (m_TempChar == '=')
+                {
+                    AddToken(ETokenType.ShiAssign, "<<=");
+                }
+                else
+                {
+                    AddToken(ETokenType.Shi, "<<");
+                    UndoChar();
+                }
             }
             else
             {

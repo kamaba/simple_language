@@ -91,8 +91,11 @@ namespace SimpleLanguage.Compile
                 case ETokenType.MultiplyAssign:         // *=
                 case ETokenType.DivideAssign:           // /=
                 case ETokenType.ModuloAssign:           // %=
+                case ETokenType.CombineAssign:          // &=
                 case ETokenType.InclusiveOrAssign:      // |=
                 case ETokenType.XORAssign:              // ^=
+                case ETokenType.ShiAssign:              // <<=
+                case ETokenType.ShrAssign:              // >>=
                     {
                         return true;
                     }

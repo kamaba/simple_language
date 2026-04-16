@@ -280,8 +280,8 @@ namespace SimpleLanguage.Compile
                 case ETokenType.ModuloAssign:           // %=
                 case ETokenType.InclusiveOrAssign:      // |=
                 case ETokenType.XORAssign:              // ^=
-                //case ETokenType.ShiAssign:              // <<=
-                //case ETokenType.ShrAssign:              // >>=
+                case ETokenType.ShiAssign:              // <<=
+                case ETokenType.ShrAssign:              // >>=
                     {
                         priority = SignComputePriority.Level3_Hight_Compute;
                     }

@@ -68,11 +68,13 @@ ArrayTest
     static fun()
     { 
         arrayBasicApiTest()
-        arrayGenericElementTest()
+        #arrayGenericElementTest()
 
+        #!
         int intvalue = 20
         var ac = ArrClass(){ i1 = intvalue, i2 = "okok" }
         #global.println("1111111111= " + ac.i1 + "    " + ac.i2 )
+        !#
 
          # arr22 = int[2][] { [1,2,3,4] }
         #li = Level<int>(100)

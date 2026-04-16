@@ -145,6 +145,10 @@ namespace SimpleLanguage
         Shi,
         /// <summary> >> 右移 </summary>
         Shr,
+        /// <summary> <<= 左移赋值 </summary>
+        ShiAssign,
+        /// <summary> >>= 右移赋值 </summary>
+        ShrAssign,
         /// <summary> # </summary>
         Sharp,
         /// <summary> ! </summary>

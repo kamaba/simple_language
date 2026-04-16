@@ -73,8 +73,27 @@ namespace SimpleLanguage.Logging
     }
     public class Log
     {
-        /// <summary>VM 文本日志固定路径（排查/工具从此处读取）。</summary>
-        public const string VmLogFilePath = @"E:\project\lang\simple_language\out\logs\VMLog.txt";
+        const string LogsDirEnv = "SIMPLELANG_LOGS_DIR";
+
+        /// <summary>未设置 <see cref="LogsDirEnv"/> 时的 VM 日志路径（与 Core 默认导出树一致）。</summary>
+        public const string VmLogDefaultPath = @"E:\project\lang\simple_language\out\export\Core\Logs\VM.txt";
+
+        /// <summary>VM 文本日志路径；加载 jsonc 后为 <c>{export.outputDir}/{moduleName}/Logs/VM.txt</c>。</summary>
+        public static string VmLogFilePath => ResolveUnderLogsDir("VM.txt");
+
+        /// <summary>未设置 <see cref="LogsDirEnv"/> 时的 print 镜像路径。</summary>
+        public const string VmRunResultDefaultPath = @"E:\project\lang\simple_language\out\export\Core\Logs\Result.txt";
+
+        /// <summary>VM <c>print</c>/<c>println</c> 镜像路径（与 <see cref="VmLogFilePath"/> 同 <c>Logs</c> 目录）。</summary>
+        public static string VmRunResultFilePath => ResolveUnderLogsDir("Result.txt");
+
+        static string ResolveUnderLogsDir(string fileName)
+        {
+            var dir = Environment.GetEnvironmentVariable(LogsDirEnv);
+            if (!string.IsNullOrWhiteSpace(dir))
+                return Path.Combine(Path.GetFullPath(dir.Trim()), fileName);
+            return string.Equals(fileName, "VM.txt", StringComparison.OrdinalIgnoreCase) ? VmLogDefaultPath : VmRunResultDefaultPath;
+        }
 
         static ConcurrentQueue<LogData> m_LogDataList = new ConcurrentQueue<LogData>();
         static readonly object s_FileLock = new object();

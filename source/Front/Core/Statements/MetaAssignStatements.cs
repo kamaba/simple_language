@@ -228,6 +228,12 @@ namespace SimpleLanguage.Core
                         m_AutoAddExpressOpSign = ELeftRightOpSign.Multiply;
                     }
                     break;
+                case ETokenType.ModuloAssign:
+                    {
+                        m_OpSign = EOpSign.Modulo;
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.Modulo;
+                    }
+                    break;
                 case ETokenType.InclusiveOrAssign:
                     {
                         //m_IsAssign = true;
@@ -247,6 +253,18 @@ namespace SimpleLanguage.Core
                         //m_IsAssign = true;
                         m_OpSign = EOpSign.XOR;
                         m_AutoAddExpressOpSign = ELeftRightOpSign.XOR;
+                    }
+                    break;
+                case ETokenType.ShiAssign:
+                    {
+                        m_OpSign = EOpSign.Shi;
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.Shi;
+                    }
+                    break;
+                case ETokenType.ShrAssign:
+                    {
+                        m_OpSign = EOpSign.Shr;
+                        m_AutoAddExpressOpSign = ELeftRightOpSign.Shr;
                     }
                     break;
                 case ETokenType.DoublePlus:

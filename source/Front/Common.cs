@@ -29,6 +29,32 @@ namespace SimpleLanguage
 
         public static string GetDebugCodeRootDir()
         {
+            var envRoot = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.DebugCodeRootEnv);
+            if (!string.IsNullOrWhiteSpace(envRoot))
+            {
+                var full = Path.GetFullPath(envRoot.Trim());
+                if (!Directory.Exists(full))
+                    Directory.CreateDirectory(full);
+                return full;
+            }
+
+            // Same tree as LoadProject: {export.outputDir}/{moduleName}/DebugCode/ when export is configured.
+            var spPath = ProjectManager.projectPath;
+            if (!string.IsNullOrEmpty(spPath) &&
+                spPath.EndsWith(".sp", StringComparison.OrdinalIgnoreCase))
+            {
+                var projectDir = Path.GetDirectoryName(spPath) ?? "";
+                var stem = Path.GetFileNameWithoutExtension(spPath);
+                var exportMod = ProjectOutputEnvironment.ResolveExportDirectoryFromConfig(ProjectManager.config, projectDir, stem);
+                if (exportMod != null)
+                {
+                    var dc = Path.Combine(exportMod, ProjectOutputEnvironment.DebugCodeDirectoryName);
+                    if (!Directory.Exists(dc))
+                        Directory.CreateDirectory(dc);
+                    return dc;
+                }
+            }
+
             var configured = ProjectManager.config?.Export?.DebugText?.OutputDir;
             if (string.IsNullOrWhiteSpace(configured))
             {

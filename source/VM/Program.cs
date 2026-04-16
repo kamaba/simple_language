@@ -10,11 +10,6 @@ LogManager.Initialize("");
 Log.ResetFixedLogFileForNewSession();
 
 VmRunResultSink.Initialize();
-if (!string.IsNullOrEmpty(VmRunResultSink.ResultFilePath))
-{
-    Console.WriteLine("[VM] Result.txt → " + VmRunResultSink.ResultFilePath);
-    Console.WriteLine("[VM] Override directory: env SIMPLELANG_VM_RESULT_DIR=<dir>  (default: %SIMPLELANG_EXPORT_OUTDIR%\\vm-results or .\\out\\vm-results)");
-}
 
 try
 {
