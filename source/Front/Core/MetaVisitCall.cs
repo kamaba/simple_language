@@ -555,7 +555,7 @@ namespace SimpleLanguage.Core
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_VisitType = EVisitType.VisitVariable;
-            vn.m_Variable = _variale;
+            vn.m_VisitVariable = _variale;
 
             return vn;
         }

@@ -1120,7 +1120,8 @@ namespace SimpleLanguage.Core
                     {
                         if (m_MetaInputParamList[0] is MetaConstExpressNode mcen )
                         {
-                            m_NewMetaType.SetArrayLength( (int)mcen.value);
+                            int len = Convert.ToInt32(mcen.value);
+                            m_NewMetaType.SetArrayLength(len );
                         }
                     }
                     else
@@ -1358,7 +1359,7 @@ namespace SimpleLanguage.Core
                 {
                     var cmt = m_MetaType.GetMetaTypeByIndex(0);
                     
-                    if (!cmt.metaClass.IsContainMetaClass(mt2.metaClass))
+                    if (!mt2.metaClass.IsContainMetaClass(cmt.metaClass))
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, "里边的元素与边的数据类型不对应，不对应，需要调整数据，或者是定义的结构 ");
                     }

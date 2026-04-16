@@ -106,9 +106,13 @@ namespace SimpleLanguage.IR
             {
                 irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(type.defineTemplateMetaTypeList[i], irmt.m_IROwnerMetaClass));
             }
-            if (irmt.m_IRMetaClass == null || irmt.m_IROwnerMetaClass == null)
+            if (irmt.m_IRMetaClass == null )
             {
-                Debug.Assert(false, "这个不可以为空!");
+                Log.AddIRLog(LID.IRParseMetaTypeMetaClassIsNull, "irMetaClass");
+            }
+            if (irmt.m_IROwnerMetaClass == null)
+            {
+                Log.AddIRLog(LID.IRParseMetaTypeMetaClassIsNull, "irOwnerMetaClass");
             }
             return irmt;
         }

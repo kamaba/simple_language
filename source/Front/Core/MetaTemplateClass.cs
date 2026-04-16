@@ -114,6 +114,10 @@ namespace SimpleLanguage.Core
         }
         public bool IsContainMetaClass( MetaClass mc )
         {
+            if( mc == CoreMetaClassManager.objectMetaClass )
+            {
+                return true;
+            }
             if( mc == this )
             {
                 return true;

@@ -292,5 +292,6 @@
 
         NodeNotFoundNameToken = 12247,
         NodeAssetFrontListNodeIsZero = 12248,
+        IRVisitNodeNotHandleType = 12249,
     }
 }

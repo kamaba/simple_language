@@ -145,7 +145,7 @@ namespace SimpleLanguage.IR
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Member;
 
             IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mmv.GetOwnerClassTemplateClass().GetHashCode());
-            m_IRMetaType = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mmv.realMetaType, owirmc);
+            m_IRMetaType = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mmv.GetFinalMetaType(), owirmc);
         }
         public override string ToString()
         {

@@ -8,7 +8,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
-using System.Diagnostics;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.IR
 {
@@ -25,7 +25,7 @@ namespace SimpleLanguage.IR
             var clist = ms.leftMetaExpress.metaCallLink.visitNodeList;
             if( clist.Count == 0 )
             {
-                Debug.Assert(false, "AssignStatement 没有可生成的表达式");
+                Log.AddIRLog(LID.ShowExtendMessage, ms.leftMetaExpress.token, "AssignStatement 没有可生成的表达式");
                 return;
             }
             if( ms.leftMethodCall != null )
@@ -53,8 +53,6 @@ namespace SimpleLanguage.IR
                     lastCL = clist[i];
                 }
             }
-            Debug.Assert(lastCL != null, "");
-
             if (lastCL.visitType == MetaVisitNode.EVisitType.VisitVariable)
             {
                 MetaVisitVariable mvv = lastCL.visitVariable;
@@ -69,12 +67,19 @@ namespace SimpleLanguage.IR
                     //IRMetaClass owirmc1 = IRManager.instance.GetIRMetaClassById(mvv.GetOwnerClassTemplateClass().GetHashCode());
                     if (mvv.isStatic)
                     {
-                        Debug.Assert(false);
+                        Log.AddIRLog(LID.ShowExtendMessage, ms.token, "visit variable is Static");
                     }
                     IRLoadVariable irVar = new IRLoadVariable(null, this.irMethod, 0, IRMetaVariableFrom.Array);
                     m_IRStatements.Add(irVar);
                 }
             }
+            //else if( lastCL.visitType == MetaVisitNode.EVisitType.MethodCall )
+            //{
+            //    var mfc = lastCL.methodCall;
+            //    IRCallFunction irCallFun = new IRCallFunction(this.irMethod);
+            //    irCallFun.Parse(mfc);
+            //    m_IRStatements.Add(irCallFun);
+            //}
             else if (lastCL.visitType == MetaVisitNode.EVisitType.Variable)
             {
                 /*
@@ -117,7 +122,7 @@ namespace SimpleLanguage.IR
 
                     if (lastCL.variable.isStatic)
                     {
-                        Debug.Assert(false);
+                        Log.AddIRLog(LID.ShowExtendMessage, lastCL.variable.token, "visit variable is Static");
                     }
 
                     var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, lastCL);
@@ -127,7 +132,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Debug.Assert(false);
+                Log.AddIRLog(LID.IRVisitNodeNotHandleType, "visit variable is Static");
             }
 
             //如果不是 a.setValue(xxx)这种方式，那么就执行右边的表达式
@@ -135,10 +140,6 @@ namespace SimpleLanguage.IR
             {
                 m_IRExpress = IRExpressManager.CreateExpress(irMethod, ms.rightMetaExpress);
                 m_IRStatements.Add(m_IRExpress);
-            }
-            else
-            {
-                Debug.Assert(false);
             }
 
             IRData irsign = IRUtil.CreateLeftAndRightIRData(ms.autoAddExpressOpSign);

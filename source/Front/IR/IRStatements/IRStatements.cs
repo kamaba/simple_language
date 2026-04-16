@@ -16,5 +16,7 @@ namespace SimpleLanguage.IR
         public List<IRBase> irStatements => m_IRStatements;
 
         protected List<IRBase> m_IRStatements = new List<IRBase>();
+
+        protected Token m_Token = null;
     }
 }

@@ -2035,15 +2035,19 @@ namespace SimpleLanguage.Compile
                         angleDepth--;
                         if (angleDepth >= 0)
                         {
+                            var closedAngleOwner = pendingAngleOwner;
                             // end of tentative generic segment; validate content
-                            var angleNode = pendingAngleOwner.angleNode;
+                            var angleNode = closedAngleOwner.angleNode;
                             angleNode.endToken = v.token;
-                            pendingAngleOwner.SetLinkNode(v.extendLinkNodeList);
+                            closedAngleOwner.SetLinkNode(v.extendLinkNodeList);
                             bool valid = IsValidGenericContent(angleNode);
                             if (valid)
                             {
+                                // Keep the last attach target on the closed generic owner itself,
+                                // so trailing () / [] bind to `Level<T>` instead of the last type arg.
+                                lastAttachable = closedAngleOwner;
                                 isGenericMode = true;
-                                pendingAngleOwner = pendingAngleOwner.angleOwnerNode;  
+                                pendingAngleOwner = closedAngleOwner.angleOwnerNode;  
                             }
                             else
                             {
@@ -2058,9 +2062,10 @@ namespace SimpleLanguage.Compile
                                 // and finally this '>'
                                 handleBeforeList.Add(v);
 
-                                pendingAngleOwner.SetAngleNode(null);
+                                closedAngleOwner.SetAngleNode(null);
                                 isGenericMode = false;
                                 pendingAngleOwner = null;
+                                lastAttachable = null;
                             }
                         }
                         continue;

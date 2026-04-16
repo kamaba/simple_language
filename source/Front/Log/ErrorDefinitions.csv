@@ -559,7 +559,7 @@
 12010,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/Front/Core/ClassManager.cs:478,,Auto-generated LID mapping,,
 12011,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/Front/Core/ClassManager.cs:926,,Auto-generated LID mapping,,
 12012,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/Front/Core/ClassManager.cs:965,,Auto-generated LID mapping,,
-12013,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/Front/Core/ExpressManager.cs:102,,Auto-generated LID mapping,,
+12013,Error,FALSE,FALSE,0,,CreateExpressNode FileMetaBaseTerm 为空 !!,,Auto-generated LID mapping,,
 12014,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/Front/Core/ExpressManager.cs:131,,Auto-generated LID mapping,,
 12015,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/Front/Core/ExpressManager.cs:149,,Auto-generated LID mapping,,
 12016,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/Front/Core/ExpressManager.cs:265,,Auto-generated LID mapping,,
@@ -795,3 +795,4 @@
 12246,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/Front/Compile/Process/ProcessController.cs:128,,Auto-generated LID mapping,,
 12247,Error,TRUE,FALSE,0,," 定义变量NameToken没有发现",,Auto-generated LID mapping,,
 12248,Error,TRUE,FALSE,0,," 定义变在等号前部分的数字为0，语法不允许",,Auto-generated LID mapping,,
+12249,Error,TRUE,FALSE,0,," 不支持VisitNode的类型[{0}]的处理",,Auto-generated LID mapping,,

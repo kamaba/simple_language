@@ -99,7 +99,7 @@ namespace SimpleLanguage.Core
 
             if (fmte == null)
             {
-                Log.AddMetaCoreLog(LID.AutoExpressManagerL102, "CreateExpressNode FileMetaBaseTerm 为空 !!");
+                Log.AddMetaCoreLog(LID.AutoExpressManagerL102, "", equalMetaVariable?.token );
                 return null;
             }
 

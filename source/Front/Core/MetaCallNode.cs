@@ -1485,7 +1485,7 @@ namespace SimpleLanguage.Core
                     }
                     else if (m_ExpressNode is MetaConstExpressNode mcen)
                     {
-                        var index = (int)mcen.value;
+                        var index = Convert.ToInt32(mcen.value);
                         var list = variable.realMetaType.ArrayDimensionLengthList();
                         if (variable.realMetaType.IsArray() && list.Count >= 0)
                         {
