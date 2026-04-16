@@ -4,7 +4,6 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.Intrinsics.X86;
 using System.Text;
 

@@ -366,7 +366,7 @@ namespace SimpleLanguage.Core
         {
             if( m_IsExtendParams )
             {
-                Log.AddMetaCoreLog(LID.Unknown, "Error Params 妯″紡涓嬶紝鍙厑璁?浣跨敤涓€涓弬鏁帮紝澶氫綑鍙傛暟涓烘棤鏁堟ā寮");
+                Log.AddMetaCoreLog(LID.AutoMetaParamL369, "Error Params 妯″紡涓嬶紝鍙厑璁?浣跨敤涓€涓弬鏁帮紝澶氫綑鍙傛暟涓烘棤鏁堟ā寮");
                 return;
             }
 
@@ -380,7 +380,7 @@ namespace SimpleLanguage.Core
             {
                 if (metaMemberParam.expressNode == null)
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Error AddMetaDefineParam 鍙傛暟鍓嶈竟宸插畾涔夎〃杈惧紡锛屽悗杈瑰繀椤昏窡杩涢粯璁ゅ€艰〃杈惧紡!!");
+                    Log.AddMetaCoreLog(LID.AutoMetaParamL383, "Error AddMetaDefineParam 鍙傛暟鍓嶈竟宸插畾涔夎〃杈惧紡锛屽悗杈瑰繀椤昏窡杩涢粯璁ゅ€艰〃杈惧紡!!");
                 }
             }
             else
@@ -671,7 +671,7 @@ namespace SimpleLanguage.Core
             }
             if(isAllSame )
             {
-                Log.AddMetaCoreLog(LID.Unknown, "鍏ㄩ兘鐩镐技");
+                Log.AddMetaCoreLog(LID.AutoMetaParamL674, "鍏ㄩ兘鐩镐技");
             }
             return mc;
         }

@@ -530,7 +530,7 @@ namespace SimpleLanguage.Compile
                 {
                     if( endPoint == 0 )     // 2f
                     {
-                        var ld = Log.AddTokenByString(LID.Unknown, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "" );
+                        var ld = Log.AddTokenByString(LID.AutoLexerParseL533, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "" );
                         ld.demo = "2f";
                         ld.advan = "2.0f";
                         AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
@@ -705,7 +705,7 @@ namespace SimpleLanguage.Compile
                         }
                         catch
                         {
-                            var ld = Log.AddTokenByString(LID.Unknown, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
+                            var ld = Log.AddTokenByString(LID.AutoLexerParseL708, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
                                 , $"Decimal number overflow ({m_Builder}), fallback to UInt64.MaxValue.");
                             ld.demo = m_Builder.ToString();
                             AddToken(ETokenType.Number, ulong.MaxValue, EType.UInt64);
@@ -759,7 +759,7 @@ namespace SimpleLanguage.Compile
                 }
                 catch
                 {
-                    var ld = Log.AddTokenByString(LID.Unknown, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
+                    var ld = Log.AddTokenByString(LID.AutoLexerParseL762, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
                         ,$"Radix number overflow (0{(radix == 16 ? 'x' : radix == 8 ? 'o' : 'b')}{raw}), fallback to UInt64.MaxValue.");
                     ld.demo = raw;
                     AddToken(ETokenType.Number, ulong.MaxValue, EType.UInt64);
@@ -2196,7 +2196,7 @@ namespace SimpleLanguage.Compile
                             }
                             else
                             {
-                                Log.AddTokenByString(LID.Unknown, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "");                                
+                                Log.AddTokenByString(LID.AutoLexerParseL2199, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "");                                
                             }
                             break;
                     }

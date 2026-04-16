@@ -13,7 +13,6 @@ using SimpleLanguage.Export.SLIR.Types;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Reflection;
 
 namespace SimpleLanguage.IR
@@ -186,7 +185,7 @@ namespace SimpleLanguage.IR
             {
                 if( m_IRRuntimeMethod == null )
                 {
-                    Log.AddIRLog(LID.Unknown, "------------娌℃湁鎵惧埌璋冪敤鐨勬柟娉曚綋!!");
+                    Log.AddIRLog(LID.AutoIRCallL189, "------------娌℃湁鎵惧埌璋冪敤鐨勬柟娉曚綋!!");
                     return;
                 }
 

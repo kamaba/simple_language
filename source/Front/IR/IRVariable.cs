@@ -357,7 +357,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Log.AddIRLog(LID.Unknown, $"SVM Error 没有找到加载变量的来源类型！");
+                Log.AddIRLog(LID.AutoIRVariableL360, $"SVM Error 没有找到加载变量的来源类型！");
             }
         }
 

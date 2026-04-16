@@ -55,7 +55,7 @@ namespace SimpleLanguage.Core
 
             if (string.IsNullOrEmpty(m_Name))
             {
-                Log.AddMetaCoreLog(LID.Unknown, "没有找到定义变量名称!");
+                Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL58, "没有找到定义变量名称!");
                 m_Name = "Error_" + GetHashCode().ToString();
             }
             SetOwnerMetaClass(mc);
@@ -88,26 +88,26 @@ namespace SimpleLanguage.Core
             {
                 if (parentIsConst)
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Warning Enum 中声明为 const 时，成员不能使用 mut，成员仍视为 const");
+                    Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL91, "Warning Enum 中声明为 const 时，成员不能使用 mut，成员仍视为 const");
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Warning Enum 成员使用 mut，枚举成员语义仍由枚举定义决定（默认为 static）");
+                    Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL95, "Warning Enum 成员使用 mut，枚举成员语义仍由枚举定义决定（默认为 static）");
                 }
             }
             if (fmmv.staticToken != null)
             {
-                Log.AddMetaCoreLog(LID.Unknown, "Error Enum 中不允许使用 static 关键字，枚举值的静态语义由系统处理!!");
+                Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL100, "Error Enum 中不允许使用 static 关键字，枚举值的静态语义由系统处理!!");
             }
 
             if (string.IsNullOrEmpty(m_Name))
             {
-                Log.AddMetaCoreLog(LID.Unknown, "没有找到定义变量名称!");
+                Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL105, "没有找到定义变量名称!");
                 m_Name = "Error_" + GetHashCode().ToString();
             }
             if (m_FileMetaMemeberVariable.permissionToken?.type != null)
             {
-                Log.AddMetaCoreLog(LID.Unknown, "Error Enum中，不允许使用public/private等权限关键字!!");
+                Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL110, "Error Enum中，不允许使用public/private等权限关键字!!");
                 var permission = CompilerUtil.GetPerMissionByType(m_FileMetaMemeberVariable.permissionToken.type);
                 if( permission == EPermission.Private || permission == EPermission.Protected )
                 {
@@ -137,7 +137,7 @@ namespace SimpleLanguage.Core
 
                     if (m_Express == null)
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
+                        Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL140, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
                     }
                 else
                 {
@@ -239,7 +239,7 @@ namespace SimpleLanguage.Core
             var indexMv = memberClass.GetMetaMemberVariableByName("index");
             if (nameMv == null || valueMv == null || indexMv == null)
             {
-                Log.AddMetaCoreLog(LID.Unknown, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
+                Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL242, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
                 return;
             }
 

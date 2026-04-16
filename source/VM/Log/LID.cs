@@ -3,8 +3,6 @@
     public enum LID
     {
         None = 0,
-        Unknown = 99999,
-
         ShowMessageTrace = 10001,
         ShowMessageInfo = 10002,
         ShowMessageWarning = 10003,
@@ -22,5 +20,30 @@
         RuntimeVMNotFoundRuntimeMethod = 10018,
         RuntimeVMNotFoundCurrentValue = 10019,
         RuntimeVMNotShouldIsNull = 10020,
+
+        AutoLogManagerL190 = 13000,
+        AutoLogManagerL194 = 13001,
+        AutoClassObjectL95 = 13002,
+        AutoClassObjectL100 = 13003,
+        AutoClassObjectL109 = 13004,
+        AutoCLRRRuntimeVML171 = 13005,
+        AutoCLRRRuntimeVML176 = 13006,
+        AutoCLRRRuntimeVML208 = 13007,
+        AutoCLRRRuntimeVML226 = 13008,
+        AutoCLRRRuntimeVML231 = 13009,
+        AutoRuntimeAssemblyL41 = 13010,
+        AutoRuntimeCLRCallL225 = 13011,
+        AutoRuntimeObjectL344 = 13012,
+        AutoRuntimeObjectL369 = 13013,
+        AutoRuntimeObjectL392 = 13014,
+        AutoRuntimeObjectL415 = 13015,
+        AutoRuntimeObjectL438 = 13016,
+        AutoRuntimeObjectL460 = 13017,
+        AutoRuntimeObjectL483 = 13018,
+        AutoRuntimeObjectL506 = 13019,
+        AutoRuntimeObjectL529 = 13020,
+        AutoRuntimeObjectL552 = 13021,
+        AutoRuntimeObjectL575 = 13022,
+        AutoRuntimeObjectL598 = 13023,
     }
 }

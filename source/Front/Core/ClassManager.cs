@@ -226,7 +226,7 @@ namespace SimpleLanguage.Core
             {                
                 if( topLevelClass?.metaClass?.metaNode == null )
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Error 涓婄骇绫讳腑鐨凪etaClass娌℃湁缁戝畾!!");
+                    Log.AddMetaCoreLog(LID.AutoClassManagerL229, "Error 涓婄骇绫讳腑鐨凪etaClass娌℃湁缁戝畾!!");
                     return null;
                 }
 
@@ -235,7 +235,7 @@ namespace SimpleLanguage.Core
                 {
                     if(findmc.isMetaNamespace || findmc.isMetaData || findmc.isMetaEnum )
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Namespace/data/enum node already exists, duplicate class node is not allowed.");
+                        Log.AddMetaCoreLog(LID.AutoClassManagerL238, "Namespace/data/enum node already exists, duplicate class node is not allowed.");
                         return null;
                     }
 
@@ -252,12 +252,12 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.Unknown, "Found existing class node with incompatible define type.");
+                            Log.AddMetaCoreLog(LID.AutoClassManagerL255, "Found existing class node with incompatible define type.");
                         }
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Found existing class node with incompatible define type.");
+                        Log.AddMetaCoreLog(LID.AutoClassManagerL260, "Found existing class node with incompatible define type.");
                         return null;
                     }
                 }
@@ -290,7 +290,7 @@ namespace SimpleLanguage.Core
                    
                     if (finalTopMetaNode == null )
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "鍛藉悕绌洪棿涓紝宸插畾涔夊叾瀹冮潪鍛藉悕绌洪棿鐨勭被鍨?!!");
+                        Log.AddMetaCoreLog(LID.AutoClassManagerL293, "鍛藉悕绌洪棿涓紝宸插畾涔夊叾瀹冮潪鍛藉悕绌洪棿鐨勭被鍨?!!");
                         return null;
                     }
                 }
@@ -375,7 +375,7 @@ namespace SimpleLanguage.Core
                         }
                         if (!fmc.isPartial)
                         {
-                            Log.AddMetaCoreLog(LID.Unknown, "Class " + fmc.name + " at " + fmc.token.ToAllString() + " does not support parallel file definitions.");
+                            Log.AddMetaCoreLog(LID.AutoClassManagerL378, "Class " + fmc.name + " at " + fmc.token.ToAllString() + " does not support parallel file definitions.");
                             return null;
                         }
                         bool isPartial = true;
@@ -384,7 +384,7 @@ namespace SimpleLanguage.Core
                             if (v.Value.isPartial == false)
                             {
                                 isPartial = false;
-                                Log.AddMetaCoreLog(LID.Unknown, "Class " + findamc.name + " at " + v.Value.token.ToAllString() + " does not support parallel file definitions.");
+                                Log.AddMetaCoreLog(LID.AutoClassManagerL387, "Class " + findamc.name + " at " + v.Value.token.ToAllString() + " does not support parallel file definitions.");
                                 break;
                             }
                         }
@@ -406,7 +406,7 @@ namespace SimpleLanguage.Core
             {
                 if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Error 浣跨敤鐨勫己瀹氬埗绫昏妭鐐圭殑鏂瑰紡涓紝娌℃湁鏌ユ壘鍒扮浉鍏崇殑绫伙紝鎵€浠ヤ笉鍏佽瀹氫箟璇ョ被锛岃鍏堝湪宸ョ▼涓畾涔夌被");
+                    Log.AddMetaCoreLog(LID.AutoClassManagerL409, "Error 浣跨敤鐨勫己瀹氬埗绫昏妭鐐圭殑鏂瑰紡涓紝娌℃湁鏌ユ壘鍒扮浉鍏崇殑绫伙紝鎵€浠ヤ笉鍏佽瀹氫箟璇ョ被锛岃鍏堝湪宸ョ▼涓畾涔夌被");
                 }
                 if (fmc.isEnum)
                 {
@@ -437,7 +437,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmc.isConst)
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Class 涓紝浣跨敤鍏抽敭瀛楋紝涓嶅厑璁镐娇鐢–onst");
+                        Log.AddMetaCoreLog(LID.AutoClassManagerL440, "Class 涓紝浣跨敤鍏抽敭瀛楋紝涓嶅厑璁镐娇鐢–onst");
                         return null;
                     }
                     var newmc = new MetaClass(fmc.name);
@@ -475,7 +475,7 @@ namespace SimpleLanguage.Core
             {
                 if( v.Value == mc )
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, $"宸插寘鍚被:{mc.allClassName} 鍙堣繘琛屼簡閲嶈繘娣诲姞!");
+                    Log.AddMetaCoreLog(LID.AutoClassManagerL478, $"宸插寘鍚被:{mc.allClassName} 鍙堣繘琛屼簡閲嶈繘娣诲姞!");
                     return;
                 }
             }
@@ -923,7 +923,7 @@ namespace SimpleLanguage.Core
                 {
                     if (mb.isMetaNamespace )
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "鎵惧埌浜嗗凡鏈夊懡鍚嶇┖闂磋€屼笉鏄缁ф壙鐨勭被!!");
+                        Log.AddMetaCoreLog(LID.AutoClassManagerL926, "鎵惧埌浜嗗凡鏈夊懡鍚嶇┖闂磋€屼笉鏄缁ф壙鐨勭被!!");
                         return null;
                     }
                     else if (mb.IsMetaClass())
@@ -962,7 +962,7 @@ namespace SimpleLanguage.Core
             MetaNode getmc = GetMetaClassByRef(curMc, fmcd );
             if (getmc == null)
             {
-                Log.AddMetaCoreLog(LID.Unknown, "CheckExtendAndInterface failed, class not found: " + fmcd.allName);
+                Log.AddMetaCoreLog(LID.AutoClassManagerL965, "CheckExtendAndInterface failed, class not found: " + fmcd.allName);
                 //    + "浣嶇疆琛? " + m_ExtendClass.token.sourceBeginLine.ToString() );
 
             }

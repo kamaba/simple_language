@@ -172,7 +172,7 @@ namespace SimpleLanguage.Core
             {
                 if( cn2.fileMetaBracketTermList.Count > 3 )
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Error 鏁扮粍涓嶈兘瓒呰繃涓夌淮!!");
+                    Log.AddMetaCoreLog(LID.AutoMetaCallLinkL175, "Error 鏁扮粍涓嶈兘瓒呰繃涓夌淮!!");
                 }
 
                 for (int j = 0; j < cn2.fileMetaBracketTermList.Count; j++)

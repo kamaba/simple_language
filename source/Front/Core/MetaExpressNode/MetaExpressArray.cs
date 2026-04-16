@@ -33,7 +33,7 @@ namespace SimpleLanguage.Core
                 if (!defineMT.IsArray() || defineMT.defineTemplateMetaTypeList.Count != 1)
                 {
                     Debug.Assert(false);
-                    Log.AddMetaCoreLog(LID.Unknown, "如果是表达式创建数组对象，必须最后一位知道是多少的长度!");
+                    Log.AddMetaCoreLog(LID.AutoMetaExpressArrayL36, "如果是表达式创建数组对象，必须最后一位知道是多少的长度!");
                     return;
                 }
                 this.m_MetaType = defineMT;

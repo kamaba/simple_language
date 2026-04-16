@@ -341,7 +341,7 @@ namespace SimpleLanguage.VM
                         if (boolObj == null)
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "Boolean 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddVM(LID.AutoRuntimeObjectL344, "Boolean 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         boolObj.SetValue(svalue.int8Value == 1);
@@ -366,7 +366,7 @@ namespace SimpleLanguage.VM
                         if (byteObj == null)
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "Byte 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddVM(LID.AutoRuntimeObjectL369, "Byte 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         byteObj.SetValue(svalue.int8Value);
@@ -389,7 +389,7 @@ namespace SimpleLanguage.VM
                         if (sbyteObj == null)
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "Sbyte 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddVM(LID.AutoRuntimeObjectL392, "Sbyte 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         sbyteObj.SetValue(svalue.sint8Value);
@@ -412,7 +412,7 @@ namespace SimpleLanguage.VM
                         if (int16Obj == null)
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "Int16 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddVM(LID.AutoRuntimeObjectL415, "Int16 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         int16Obj.SetValue(svalue.int16Value);
@@ -435,7 +435,7 @@ namespace SimpleLanguage.VM
                         if (uint16Obj == null)
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "UInt16 璇ョ被鍨嬩笉鏄疘nt16绫诲瀷!!");
+                            Log.AddVM(LID.AutoRuntimeObjectL438, "UInt16 璇ョ被鍨嬩笉鏄疘nt16绫诲瀷!!");
                             return;
                         }
                         uint16Obj.SetValue(svalue.uint16Value);
@@ -457,7 +457,7 @@ namespace SimpleLanguage.VM
                         if (int32Obj == null)
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "Int32 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddVM(LID.AutoRuntimeObjectL460, "Int32 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         int32Obj.SetValue(svalue.int32Value);
@@ -480,7 +480,7 @@ namespace SimpleLanguage.VM
                         if (uint32Obj == null)
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "UInt32 璇ョ被鍨嬩笉鏄疷Int32绫诲瀷!!");
+                            Log.AddVM(LID.AutoRuntimeObjectL483, "UInt32 璇ョ被鍨嬩笉鏄疷Int32绫诲瀷!!");
                             return;
                         }
                         uint32Obj.SetValue(svalue.uint32Value);
@@ -503,7 +503,7 @@ namespace SimpleLanguage.VM
                         if (int64Obj == null)
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "Int64 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddVM(LID.AutoRuntimeObjectL506, "Int64 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         int64Obj.SetValue(svalue.int64Value);
@@ -526,7 +526,7 @@ namespace SimpleLanguage.VM
                         if (uint64Obj == null)
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "UInt64 璇ョ被鍨嬩笉鏄疘nt64绫诲瀷!!");
+                            Log.AddVM(LID.AutoRuntimeObjectL529, "UInt64 璇ョ被鍨嬩笉鏄疘nt64绫诲瀷!!");
                             return;
                         }
                         uint64Obj.SetValue(svalue.uint64Value);
@@ -549,7 +549,7 @@ namespace SimpleLanguage.VM
                         if (floatObj == null)
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "Float 璇ョ被鍨嬩笉鏄痜loat绫诲瀷!!");
+                            Log.AddVM(LID.AutoRuntimeObjectL552, "Float 璇ョ被鍨嬩笉鏄痜loat绫诲瀷!!");
                             return;
                         }
                         floatObj.SetValue(svalue.floatValue);
@@ -572,7 +572,7 @@ namespace SimpleLanguage.VM
                         if (doubleObj == null)
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "Double 璇ョ被鍨嬩笉鏄疍ouble绫诲瀷!!");
+                            Log.AddVM(LID.AutoRuntimeObjectL575, "Double 璇ョ被鍨嬩笉鏄疍ouble绫诲瀷!!");
                             return;
                         }
                         doubleObj.SetValue(svalue.doubleValue);
@@ -595,7 +595,7 @@ namespace SimpleLanguage.VM
                         if (stringObj == null)
                         {
                             Debug.Assert(false);
-                            Log.AddVM(LID.Unknown, "String 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
+                            Log.AddVM(LID.AutoRuntimeObjectL598, "String 璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
                         stringObj.SetValue(svalue.stringValue);

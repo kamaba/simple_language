@@ -323,7 +323,7 @@ namespace SimpleLanguage.IR
                     var runtimeMethod = irmc.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
                     if (callMethodIndex == -1)
                     {
-                        Log.AddIRLog(LID.Unknown, "娌℃湁鎵惧埌鏋勫缓瀵硅薄鍑芥暟!");
+                        Log.AddIRLog(LID.AutoIRExpressL326, "娌℃湁鎵惧埌鏋勫缓瀵硅薄鍑芥暟!");
                     }
                     List<IRMetaType> functionMtList = new List<IRMetaType>();
                     var irmethodcall = new IRMethodCall(newObjectIRMT, functionMtList, runtimeMethod, paramCount);
@@ -448,7 +448,7 @@ namespace SimpleLanguage.IR
                     var runtimeMethod = irmc.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
                     if (callMethodIndex == -1)
                     {
-                        Log.AddIRLog(LID.Unknown, "娌℃湁鎵惧埌鏋勫缓瀵硅薄鍑芥暟!");
+                        Log.AddIRLog(LID.AutoIRExpressL451, "娌℃湁鎵惧埌鏋勫缓瀵硅薄鍑芥暟!");
                     }
                     List<IRMetaType> functionMtList = new List<IRMetaType>();
                     var irmethodcall = new IRMethodCall(newObjectIRMT, functionMtList, runtimeMethod, paramCount);

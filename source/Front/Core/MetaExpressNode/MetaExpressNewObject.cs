@@ -93,7 +93,7 @@ namespace SimpleLanguage.Core
             {
                 if( fmst.symBolType != ETokenType.Colon )
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "在Map里边，必须使用:个符号");
+                    Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL96, "在Map里边，必须使用:个符号");
                     return;
                 }
             }
@@ -101,13 +101,13 @@ namespace SimpleLanguage.Core
             {
                 if (fmst.symBolType != ETokenType.Assign )
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "在class或者是data里边，必须使用=个符号");
+                    Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL104, "在class或者是data里边，必须使用=个符号");
                     return;
                 }
             }
             if (fmst.left is not FileMetaCallTerm fmct1)
             {
-                Log.AddMetaCoreLog(LID.Unknown, "在class或者是data里边，前值应该使用filemetaCallTerm");
+                Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL110, "在class或者是data里边，前值应该使用filemetaCallTerm");
                 return;
             }
 
@@ -530,7 +530,7 @@ namespace SimpleLanguage.Core
                 {
                     if( fmst2.symBolType != ETokenType.Comma )
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "间隔符号不对,应该使用,");
+                        Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL533, "间隔符号不对,应该使用,");
                     }
                 }
                 else if( fmbt is FileMetaTermExpress termexpress )
@@ -550,7 +550,7 @@ namespace SimpleLanguage.Core
                 else
                 {
                     Debug.Assert(false);
-                    Log.AddMetaCoreLog(LID.Unknown, "Error 在数组里边应该是FileMetaBracketTerm 类型!");
+                    Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL553, "Error 在数组里边应该是FileMetaBracketTerm 类型!");
                 }
             }
             else if (mt.isMap)   // 映射类型的处理 使用   a:10, b:20  20:"aa" 这样的形式
@@ -1023,7 +1023,7 @@ namespace SimpleLanguage.Core
                     var metaClass = m_NewMetaType?.metaClass;
                     if (metaClass != null && metaClass.isAbstractClass)
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Error: cannot instantiate abstract class: " + metaClass.name);
+                        Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1026, "Error: cannot instantiate abstract class: " + metaClass.name);
                         m_RealMetaType = null;
                     }
                     else
@@ -1165,7 +1165,7 @@ namespace SimpleLanguage.Core
                     {
                         if (m_DefineMetaType.IsArray() == false)
                         {
-                            Log.AddMetaCoreLog(LID.Unknown, "如果定义了，结构，必须与new对象的类型一样才可以");
+                            Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1168, "如果定义了，结构，必须与new对象的类型一样才可以");
                             return;
                         }
                         else
@@ -1208,7 +1208,7 @@ namespace SimpleLanguage.Core
                                             if (list1[i] != list2[i])
                                             {
                                                 Debug.Assert(false, "最后一位数组定义，不能为实体值!");
-                                                Log.AddMetaCoreLog(LID.Unknown, "如果前边定义了长度，new的时候必须和前边的长度一样!");
+                                                Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1211, "如果前边定义了长度，new的时候必须和前边的长度一样!");
                                                 return;
                                             }
                                         }
@@ -1219,7 +1219,7 @@ namespace SimpleLanguage.Core
                             else
                             {
                                 Debug.Assert(false);
-                                Log.AddMetaCoreLog(LID.Unknown, "定义数组与new数组 的维度不同");
+                                Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1222, "定义数组与new数组 的维度不同");
                                 return;
                             }
                         }
@@ -1233,7 +1233,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_DefineMetaType.IsArray() )
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "如果定义了，结构，必须与new对象的类型一样才可以");
+                        Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1236, "如果定义了，结构，必须与new对象的类型一样才可以");
                         return;
                     }
                     else
@@ -1244,7 +1244,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.Unknown, "定义类型与new的类型不对应 ");
+                            Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1247, "定义类型与new的类型不对应 ");
                             return;
                         }
                     }
@@ -1263,7 +1263,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.Unknown, "没有找到没有各种定义类型的方法");
+                Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1266, "没有找到没有各种定义类型的方法");
             }
 
             if(m_RealMetaType != null )
@@ -1285,7 +1285,7 @@ namespace SimpleLanguage.Core
                             if( m_MetaType.arrayLength < m_RealMetaType.arrayLength )
                             {
                                 //这也还是写具体的数组类型对比，和多维长度对比，暂留以后写
-                                Log.AddMetaCoreLog(LID.Unknown, "数组赋值内容给出的长度超出了定义长度!");
+                                Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1288, "数组赋值内容给出的长度超出了定义长度!");
                                 Debug.Assert(false);
                                 return;
                             }

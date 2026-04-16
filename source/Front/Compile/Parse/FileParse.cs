@@ -126,7 +126,7 @@ namespace SimpleLanguage.Compile
         }
         public void PrintFormatString()
         {
-            Log.AddFileMetaLog(LID.Unknown, m_File.ToFormatString());
+            Log.AddFileMetaLog(LID.AutoFileParseL129, m_File.ToFormatString());
         }
         public void SaveCodeToFile()
         {

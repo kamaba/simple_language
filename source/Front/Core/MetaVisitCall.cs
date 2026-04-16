@@ -702,7 +702,7 @@ namespace SimpleLanguage.Core
             var mt = GetMetaType();
             if( mt == null )
             {
-                Log.AddMetaCoreLog(LID.Unknown, "Error");
+                Log.AddMetaCoreLog(LID.AutoMetaVisitCallL705, "Error");
                 return null;
             }
             return mt.metaClass;

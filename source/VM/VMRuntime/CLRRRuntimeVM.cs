@@ -168,12 +168,12 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 else
                 {
-                    Log.AddProjectLog(LID.Unknown, $"娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鎵€灞炵殑RuntimeType鏄犲皠! globalId={id}");
+                    Log.AddProjectLog(LID.AutoCLRRRuntimeVML171, $"娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鎵€灞炵殑RuntimeType鏄犲皠! globalId={id}");
                 }
             }
             else
             {
-                Log.AddProjectLog(LID.Unknown, "娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鐨勬槧灏勫叧绯?");
+                Log.AddProjectLog(LID.AutoCLRRRuntimeVML176, "娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鐨勬槧灏勫叧绯?");
             }
 
         }
@@ -205,7 +205,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 default:
                     {
-                        Log.AddProjectLog(LID.Unknown, "Error StoreNotStaticField Path:" );
+                        Log.AddProjectLog(LID.AutoCLRRRuntimeVML208, "Error StoreNotStaticField Path:" );
                     }
                     break;
             }
@@ -223,12 +223,12 @@ namespace SimpleLanguage.VM.Runtime
                 else
                 {
                     sval.SetNull();
-                    Log.AddProjectLog(LID.Unknown, $"娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鎵€灞炵殑RuntimeType鏄犲皠! globalId={id} ");
+                    Log.AddProjectLog(LID.AutoCLRRRuntimeVML226, $"娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鎵€灞炵殑RuntimeType鏄犲皠! globalId={id} ");
                 }
             }
             else
             {
-                Log.AddProjectLog(LID.Unknown, "娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鐨勬槧灏勫叧绯?");
+                Log.AddProjectLog(LID.AutoCLRRRuntimeVML231, "娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鐨勬槧灏勫叧绯?");
             }
         }
         public static void RunIRMethod( List<RuntimeType> irmtList, RuntimeMethod _irMethod, bool isDisCountStackCount = true )

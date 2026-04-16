@@ -559,31 +559,35 @@ namespace SimpleLanguage.Compile
                 if(afterNodeList[0].nodeType == ENodeType.Key
                     && afterNodeList[0].token?.type != ETokenType.This
                     && afterNodeList[0].token?.type != ETokenType.Base
+                    && afterNodeList[0].token?.type != ETokenType.Local
+                    && afterNodeList[0].token?.type != ETokenType.Global
                     && afterNodeList[0].token?.type != ETokenType.New )
+                {
                     Log.AddNodeLog(LID.ShowExtendMessage, "Error 暂不支持 a = if/switch{}语法");
-                //var fme22 = HandleCreateFileMetaSyntaxByPNode(afterNodeList);
-                //if ((afterNodeList[0].token.type == ETokenType.If
-                //    || afterNodeList[0].token.type == ETokenType.Switch)
-                //    )
-                //{
-                //    if (fme22 is FileMetaKeyIfSyntax)
-                //    {
-                //        fme = new FileMetaIfSyntaxTerm(m_FileMeta, fme22 as FileMetaKeyIfSyntax);
+                    //var fme22 = HandleCreateFileMetaSyntaxByPNode(afterNodeList);
+                    //if ((afterNodeList[0].token.type == ETokenType.If
+                    //    || afterNodeList[0].token.type == ETokenType.Switch)
+                    //    )
+                    //{
+                    //    if (fme22 is FileMetaKeyIfSyntax)
+                    //    {
+                    //        fme = new FileMetaIfSyntaxTerm(m_FileMeta, fme22 as FileMetaKeyIfSyntax);
 
-                //    }
-                //    else if (fme22 is FileMetaKeySwitchSyntax)
-                //    {
-                //        fme = new FileMetaSwitchSyntaxTerm(m_FileMeta, fme22 as FileMetaKeySwitchSyntax);
-                //    }
-                //    else
-                //    {
-                //        Debug.Write("Error 生成if/switch语句失败!!");
-                //    }
-                //}
-                //else
-                //{
-                //    Debug.Write("Error 不允许嵌套除if/switch以外的语句!!");
-                //}
+                    //    }
+                    //    else if (fme22 is FileMetaKeySwitchSyntax)
+                    //    {
+                    //        fme = new FileMetaSwitchSyntaxTerm(m_FileMeta, fme22 as FileMetaKeySwitchSyntax);
+                    //    }
+                    //    else
+                    //    {
+                    //        Debug.Write("Error 生成if/switch语句失败!!");
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    Debug.Write("Error 不允许嵌套除if/switch以外的语句!!");
+                    //}
+                }
             }
             if (fme == null && afterNodeList.Count > 0 )
             {

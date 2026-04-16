@@ -7,7 +7,6 @@
 //****************************************************************************
 
 using System;
-using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
@@ -664,15 +663,15 @@ namespace SimpleLanguage.Core
         {
             if (m_SignToken != null)
             {
-                Log.AddMetaCoreLog(LID.Unknown, msg, m_SignToken);
+                Log.AddMetaCoreLog(LID.AutoMetaExpressOperatorL667, msg, m_SignToken);
                 return;
             }
             if (m_FileMetaBaseTerm?.token != null)
             {
-                Log.AddMetaCoreLog(LID.Unknown, msg, m_FileMetaBaseTerm.token);
+                Log.AddMetaCoreLog(LID.AutoMetaExpressOperatorL672, msg, m_FileMetaBaseTerm.token);
                 return;
             }
-            Log.AddMetaCoreLog(LID.Unknown, msg);
+            Log.AddMetaCoreLog(LID.AutoMetaExpressOperatorL675, msg);
         }
         public MetaExpressNode SimulateCompute(ExpressOptimizeConfig config)
         {

@@ -76,7 +76,7 @@ namespace SimpleLanguage.Core
                     {
                         if(classDefineType == EClassDefineType.InnerDefine )
                         {
-                            Log.AddMetaCoreLog(LID.Unknown, "Error 定义模式名称重复!!");
+                            Log.AddMetaCoreLog(LID.AutoMetaTemplateClassL79, "Error 定义模式名称重复!!");
                             Debug.Assert(false);
                         }
                     }
@@ -178,12 +178,12 @@ namespace SimpleLanguage.Core
                                     }
                                     else
                                     {
-                                        Log.AddMetaCoreLog(LID.Unknown, "没有找到父级别自己模板生成时的数据!!");
+                                        Log.AddMetaCoreLog(LID.AutoMetaTemplateClassL181, "没有找到父级别自己模板生成时的数据!!");
                                     }
                                 }
                                 else
                                 {
-                                    Log.AddMetaCoreLog(LID.Unknown, "没有找到父级别自己模板生成时的数据!!");
+                                    Log.AddMetaCoreLog(LID.AutoMetaTemplateClassL186, "没有找到父级别自己模板生成时的数据!!");
                                 }
                             }
                         }

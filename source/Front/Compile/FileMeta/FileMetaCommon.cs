@@ -119,7 +119,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
+                        Log.AddFileMetaLog(LID.AutoFileMetaCommonL122, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
                         return null;
                     }
                 }
@@ -127,7 +127,7 @@ namespace SimpleLanguage.Compile
                 {
                     if( token[i].type != ETokenType.Period )
                     {
-                        Log.AddFileMetaLog(LID.Unknown, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
+                        Log.AddFileMetaLog(LID.AutoFileMetaCommonL130, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
                         return null;
                     }
                     isIdentifier = true;
@@ -276,7 +276,7 @@ namespace SimpleLanguage.Compile
             }
             if (_node.parNode != null)      //  Func( a, (b+20.0f) )
             {
-                Log.AddFileMetaLog( LID.ShowExtendMessage, m_FileMetaParTerm?.name + "已经有解析()" );
+                //Log.AddFileMetaLog( LID.ShowExtendMessage, m_FileMetaParTerm?.name + "已经有解析()" );
 
                 m_IsCallFunction = true;
                 m_FileMetaParTerm = new FileMetaParTerm(m_FileMeta, _node.parNode, FileMetaTermExpress.EExpressType.Common);
@@ -688,7 +688,7 @@ namespace SimpleLanguage.Compile
             }
             if(m_ArrayDimsionLengthList.Count != m_FileMetaBracketTermList.Count )
             {
-                Log.AddFileMetaLog(LID.Unknown, "数组获取长度文件的时候，有异常!");
+                Log.AddFileMetaLog(LID.AutoFileMetaCommonL691, "数组获取长度文件的时候，有异常!");
             }
         }
         public override string ToString()
@@ -744,7 +744,7 @@ namespace SimpleLanguage.Compile
                 + m_ClassNameToken.sourceBeginChar.ToString();
             str = str + " \n 在代码中文件:" + pfile + "   函数:" + pfunction + "行号: " + line.ToString();
             //Trace.WriteLine( "" )
-            Log.AddFileMetaLog(LID.Unknown, str);
+            Log.AddFileMetaLog(LID.AutoFileMetaCommonL747, str);
         }
     }
     public class FileMetaTemplateDefine : FileMetaBase
@@ -780,7 +780,7 @@ namespace SimpleLanguage.Compile
             m_FileMeta = fm;
             if ( nodeList.Count == 0 )
             {
-                Log.AddFileMetaLog(LID.Unknown, "Error 在<>中没有发现元素!!");
+                Log.AddFileMetaLog(LID.AutoFileMetaCommonL783, "Error 在<>中没有发现元素!!");
                 return;
             }
             m_Token = nodeList[0].token;
@@ -791,7 +791,7 @@ namespace SimpleLanguage.Compile
             }
             else if( nodeList.Count == 2 )
             {
-                Log.AddFileMetaLog(LID.Unknown, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
+                Log.AddFileMetaLog(LID.AutoFileMetaCommonL794, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
             }
         }
         public void Parse()

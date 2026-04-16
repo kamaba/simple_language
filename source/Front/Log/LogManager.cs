@@ -187,21 +187,7 @@ namespace SimpleLanguage.Logging
 
         private static void EnsureBuiltinDefinitions()
         {
-            if (!TryGet((int)LID.Unknown, out _))
-            {
-                Register(new ErrorDefinition()
-                {
-                    Id = (int)LID.Unknown,
-                    //Module = LogModule.Project,
-                    LogType = LogType.Error,
-                    EnableAssert = false,
-                    BlockOnErrorAssert = false,
-                    AbortCompilation = false,
-                    ParamCount = 0,
-                    //MessageTemplateArray[0] = "{0}",
-                    //FixedTipArray[0] = "查看调用栈并在对应模块补充明确的错误码定义。",
-                });
-            }
+            // Unknown fallback has been removed; all logs should use explicit LIDs.
         }
 
         //private static void AttachDebugTraceBridge()

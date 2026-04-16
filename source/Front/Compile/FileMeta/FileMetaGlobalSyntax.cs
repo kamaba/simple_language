@@ -42,7 +42,7 @@ namespace SimpleLanguage.Compile
         {
             if (m_NodeList.Count < 2)
             {
-                Log.AddFileMetaLog(LID.Unknown, "Error import必须有2个节点!!");
+                Log.AddFileMetaLog(LID.AutoFileMetaGlobalSyntaxL45, "Error import必须有2个节点!!");
                 return false;
             }
             var namespaceNode = m_NodeList[0];
@@ -85,7 +85,7 @@ namespace SimpleLanguage.Compile
                     {
                         mb = mb.GetChildrenMetaNodeByName(name);
                     }
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "查找失败");// mb != null, "查找失败" + name);
+                    //Log.AddFileMetaLog(LID.ShowExtendMessage, "查找失败" + name );// mb != null, "查找失败" + name);
                 }
                 else
                 {
@@ -105,7 +105,7 @@ namespace SimpleLanguage.Compile
                         mb = findmb;
                         if (!mb.isMetaNamespace)
                         {
-                            Log.AddFileMetaLog(LID.Unknown, "解析Import语句发生错误，没有找到对应的命名空间路径: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()
+                            Log.AddFileMetaLog(LID.AutoFileMetaGlobalSyntaxL108, "解析Import语句发生错误，没有找到对应的命名空间路径: " + m_NamespaceStatement.tokenList[i].lexeme.ToString()
                                     + "Token: " + m_NamespaceStatement.tokenList[i].sourceBeginLine.ToString());
                             break;
                         }
@@ -121,7 +121,7 @@ namespace SimpleLanguage.Compile
             {
                 if (tokenList.Count < 1)
                 {
-                    Log.AddFileMetaLog(LID.Unknown, "Error 在使用import引用CSharp库时，至少需要一个命名空间");
+                    Log.AddFileMetaLog(LID.AutoFileMetaGlobalSyntaxL124, "Error 在使用import引用CSharp库时，至少需要一个命名空间");
                     return;
                 }
 
@@ -152,7 +152,7 @@ namespace SimpleLanguage.Compile
                             }
                             else
                             {
-                                Log.AddFileMetaLog(LID.Unknown, "解析Import语句发生错误，没有找到对应的命名空间路径: " + allname
+                                Log.AddFileMetaLog(LID.AutoFileMetaGlobalSyntaxL155, "解析Import语句发生错误，没有找到对应的命名空间路径: " + allname
                                     + "Token: " + tokenList[i].sourceBeginLine.ToString());
                                 break;
                             }

@@ -660,7 +660,7 @@ namespace SimpleLanguage.Core
             {
                 if (mvv == null && string.IsNullOrEmpty(m_AtName))
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    Log.AddMetaCoreLog(LID.AutoMetaVariableL663, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
                 m_VisitExpressNode = new MetaCallLinkExpressNode(mvv);
@@ -694,7 +694,7 @@ namespace SimpleLanguage.Core
             {
                 if (moe == null && string.IsNullOrEmpty(m_AtName))
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    Log.AddMetaCoreLog(LID.AutoMetaVariableL697, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
                 m_VisitExpressNode = moe;

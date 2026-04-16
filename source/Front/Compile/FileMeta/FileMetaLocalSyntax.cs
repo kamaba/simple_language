@@ -27,7 +27,7 @@ namespace SimpleLanguage.Compile
 
             if (blockNode == null || blockNode.nodeType != ENodeType.Brace)
             {
-                Log.AddFileMetaLog(LID.Unknown, "Error local 后必须跟 {} 块");
+                Log.AddFileMetaLog(LID.AutoFileMetaLocalSyntaxL30, "Error local 后必须跟 {} 块");
                 return;
             }
 
@@ -36,7 +36,7 @@ namespace SimpleLanguage.Compile
             if (left == null || right == null)
             {
                 //Debug.Assert(false, "local block token missing");
-                Log.AddFileMetaLog(LID.Unknown, "local block token missing");
+                Log.AddFileMetaLog(LID.AutoFileMetaLocalSyntaxL39, "local block token missing");
                 return;
             }
 
@@ -48,7 +48,7 @@ namespace SimpleLanguage.Compile
         {
             if (!isLocal)
             {
-                Log.AddFileMetaLog(LID.Unknown, "Info global{} 解析已禁用，当前仅保留 local{} 逻辑");
+                Log.AddFileMetaLog(LID.AutoFileMetaLocalSyntaxL51, "Info global{} 解析已禁用，当前仅保留 local{} 逻辑");
             }
         }
 

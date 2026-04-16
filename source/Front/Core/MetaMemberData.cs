@@ -269,7 +269,7 @@ namespace SimpleLanguage.Core
                     m_Express = ExpressManager.CreateExpressNode(cep);
                     if (m_Express == null)
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
+                        Log.AddMetaCoreLog(LID.AutoMetaMemberDataL272, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
                     }
                 }
             }
@@ -283,7 +283,7 @@ namespace SimpleLanguage.Core
                 m_DefineMetaType = m_Express.GetReturnMetaDefineType();
                 if (m_DefineMetaType == null)
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Error 在生成Data时，没有找到." + m_FileMetaMemeberData.fileMetaCallTermValue.ToTokenString());
+                    Log.AddMetaCoreLog(LID.AutoMetaMemberDataL286, "Error 在生成Data时，没有找到." + m_FileMetaMemeberData.fileMetaCallTermValue.ToTokenString());
                     return false;
                 }
                 if (m_DefineMetaType.isData)
@@ -346,7 +346,7 @@ namespace SimpleLanguage.Core
             {
                 if (v.Value.IsIncludeMetaData(curMD))
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Error 当前有循环引用数量现象，请查正!!" + md.allClassName );
+                    Log.AddMetaCoreLog(LID.AutoMetaMemberDataL349, "Error 当前有循环引用数量现象，请查正!!" + md.allClassName );
                     continue;
                 }
                 var newMMD = v.Value.Copy();
@@ -389,7 +389,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Error ParseChildMemberData 命名有重名!!" + mmd.name );
+                        Log.AddMetaCoreLog(LID.AutoMetaMemberDataL392, "Error ParseChildMemberData 命名有重名!!" + mmd.name );
                     }
                 }
             }
@@ -430,7 +430,7 @@ namespace SimpleLanguage.Core
 
                         if (m_MetaMemberDataDict.ContainsKey(addMmd.name))
                         {
-                            Log.AddMetaCoreLog(LID.Unknown, "Error 重复的MetaMemberData的名称 在484");
+                            Log.AddMetaCoreLog(LID.AutoMetaMemberDataL433, "Error 重复的MetaMemberData的名称 在484");
                             continue;
                         }
                         m_MetaMemberDataDict.Add(addMmd.name, addMmd);
@@ -441,7 +441,7 @@ namespace SimpleLanguage.Core
                     MetaMemberData addMmd = new MetaMemberData( this, name, 0, cne );
                     if (m_MetaMemberDataDict.ContainsKey(addMmd.name))
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Error 重复的MetaMemberData的名称 在410");
+                        Log.AddMetaCoreLog(LID.AutoMetaMemberDataL444, "Error 重复的MetaMemberData的名称 在410");
                     }
                     m_MetaMemberDataDict.Add(addMmd.name, addMmd);
                 }
@@ -549,7 +549,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "error 暂不支持其它类型 1");
+                        Log.AddMetaCoreLog(LID.AutoMetaMemberDataL552, "error 暂不支持其它类型 1");
                     }
                     break;
             }
@@ -602,7 +602,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "error 暂不支持其它类型 1");
+                        Log.AddMetaCoreLog(LID.AutoMetaMemberDataL605, "error 暂不支持其它类型 1");
                     }
                     break;
             }

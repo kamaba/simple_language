@@ -95,7 +95,7 @@ namespace SimpleLanguage.IR
         {
             if( index >= m_IRNotStaticMethodList.Count || index < 0 )
             {
-                Log.AddIRLog(LID.Unknown, "GetIRMethodByIndex is null");
+                Log.AddIRLog(LID.AutoIRMetaClassL98, "GetIRMethodByIndex is null");
                 return null;
             }
             return m_IRNotStaticMethodList[index];

@@ -144,7 +144,7 @@ namespace SimpleLanguage.Core
                     if (ProjectManager.useDefineNamespaceType != EUseDefineType.LimitUseProjectConfigNamespaceAndClass )
                     {
                         mn.isNotAllowCreateName = true;
-                        Log.AddMetaCoreLog(LID.Unknown, "Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.AutoNamespaceManagerL147, "Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
                     }
                     parentNode = parentNode.AddMetaNamespace(mn);
                 }
@@ -245,7 +245,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.Unknown, "NamespaceManager::AddNamespaceString 命名空间:" + nsString + "解析错误!!");
+                Log.AddMetaCoreLog(LID.AutoNamespaceManagerL248, "NamespaceManager::AddNamespaceString 命名空间:" + nsString + "解析错误!!");
                 return;
             }
         }

@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using SimpleLanguage.IR;
-using System.Diagnostics;
 
 namespace SimpleLanguage.Export
 {

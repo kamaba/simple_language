@@ -49,13 +49,13 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog( LID.Unknown, "Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
+                            Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL52, "Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
                         }
                     }
                     break;
                 case MetaConstExpressNode mconen:
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Error -------------------------------------------");
+                        Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL58, "Error -------------------------------------------");
                     }
                     break;
                 case MetaOpExpressNode moen:
@@ -72,7 +72,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Error -------------------------------------------");
+                        Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL75, "Error -------------------------------------------");
                     }
                     break;
             }
@@ -186,7 +186,7 @@ namespace SimpleLanguage.Core
                 else
                 {
                     //这里只能使用等号进行赋值操作  a.A += 10;  是不允许的
-                    Log.AddMetaCoreLog(LID.Unknown, "Error set语句只能使用=号进行赋值操作!!");
+                    Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL189, "Error set语句只能使用=号进行赋值操作!!");
                     return;
                 }
             }
@@ -285,7 +285,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.Unknown, "Error 赋值语句解析符号暂不支持: " + ett.ToString());
+                        Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL288, "Error 赋值语句解析符号暂不支持: " + ett.ToString());
                     }
                     break;
             }
@@ -301,12 +301,12 @@ namespace SimpleLanguage.Core
                 m_MetaVariable = m_LeftMetaExpress.GetMetaVariable();
                 if (m_MetaVariable == null)
                 {
-                    Log.AddMetaCoreLog( LID.Unknown, "Error 变量没有发现" + m_LeftMetaExpress.ToTokenString());
+                    Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL304, "Error 变量没有发现" + m_LeftMetaExpress.ToTokenString());
                     return;
                 }
                 if(m_MetaVariable.isConst )
                 {
-                    Log.AddMetaCoreLog( LID.Unknown, "Error 类型为Const类型，不允许使用赋值!!");
+                    Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL309, "Error 类型为Const类型，不允许使用赋值!!");
                     return;
                 }
 
@@ -319,7 +319,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog( LID.Unknown, "Error 只能在Project工程下的函数中，给全局变量赋值!!");
+                        Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL322, "Error 只能在Project工程下的函数中，给全局变量赋值!!");
                         return;
                     }
                 }
@@ -352,7 +352,7 @@ namespace SimpleLanguage.Core
                 if (m_RightMetaExpress == null)
                 {
                     Debug.Assert(false, "");
-                    Log.AddMetaCoreLog( LID.Unknown, "Error 解析新建变量语句时，表达式解析为空!!");
+                    Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL355, "Error 解析新建变量语句时，表达式解析为空!!");
                     return;
                 }
 
@@ -362,7 +362,7 @@ namespace SimpleLanguage.Core
             {
                 if(m_RightMetaExpress == null)
                 {
-                    Log.AddMetaCoreLog( LID.Unknown, "Error 解析新建变量语句时，表达式为空!!__2");
+                    Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL365, "Error 解析新建变量语句时，表达式为空!!__2");
                     return;
                 }
             }
@@ -379,7 +379,7 @@ namespace SimpleLanguage.Core
             MetaType expressRetMetaDefineType = m_RightMetaExpress.GetReturnMetaDefineType();
             if (expressRetMetaDefineType == null)
             {
-                Log.AddMetaCoreLog( LID.Unknown, "Error 解析新建变量语句时，表达式返回类型为空!!__3");
+                Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL382, "Error 解析新建变量语句时，表达式返回类型为空!!__3");
                 return;
             }
             else
@@ -404,7 +404,7 @@ namespace SimpleLanguage.Core
                 m_LeftMethodCall.AddMetaInputParamList(m_RightMetaExpress);
                 if(!m_LeftMethodCall.ValidateInputParamAndDefineParam() )
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Error 输入参数与定义参数不正确");
+                    Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL407, "Error 输入参数与定义参数不正确");
                     return;
                 }
             }
@@ -449,7 +449,7 @@ namespace SimpleLanguage.Core
 
                 if (relation == ClassManager.EClassRelation.CompareClassError)
                 {
-                    Log.AddMetaCoreLog(LID.Unknown, "Error 赋值表达式返回定义类型为空");
+                    Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL452, "Error 赋值表达式返回定义类型为空");
                     return;
                 }
 
