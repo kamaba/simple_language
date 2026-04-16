@@ -48,7 +48,7 @@ ArrayTest
         global.println("nums.getValue(2) -> " + nums.getValue(2).toString())
 
         nums.index = 1
-        global.println("nums.current() @ index=1 -> " + nums.current().toString())
+        global.println("nums.current() $ index=1 -> " + nums.current().toString())
         nums.current = 123
         global.println("nums.getValue(1) after set current -> " + nums.getValue(1).toString())
     }

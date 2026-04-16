@@ -310,7 +310,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                System.Diagnostics.Debug.Assert(false);
+                Log.AddIRLog(LID.IRVariableFromNotHandle, mv.token, "",  mv.name );
             }
             return null;
         }

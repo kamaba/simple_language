@@ -30,7 +30,9 @@ namespace SimpleLanguage.IR
             }
             if( ms.leftMethodCall != null )
             {
-                //如果是 a.setValue(xxx)这种方式，那么就直接执行左边的表达式
+                // Setter assignment form: `a.prop = x` already got x into MetaMethodCall's
+                // input parameter list by MetaAssignStatements. So just execute the whole
+                // call-link on the left side and return.
                 for (int i = 0; i < clist.Count; i++)
                 {
                     var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, clist[i]);
@@ -73,13 +75,13 @@ namespace SimpleLanguage.IR
                     m_IRStatements.Add(irVar);
                 }
             }
-            //else if( lastCL.visitType == MetaVisitNode.EVisitType.MethodCall )
-            //{
-            //    var mfc = lastCL.methodCall;
-            //    IRCallFunction irCallFun = new IRCallFunction(this.irMethod);
-            //    irCallFun.Parse(mfc);
-            //    m_IRStatements.Add(irCallFun);
-            //}
+            else if (lastCL.visitType == MetaVisitNode.EVisitType.MethodCall)
+            {
+                var mfc = lastCL.methodCall;
+                IRCallFunction irCallFun = new IRCallFunction(this.irMethod);
+                irCallFun.Parse(mfc);
+                m_IRStatements.Add(irCallFun);
+            }
             else if (lastCL.visitType == MetaVisitNode.EVisitType.Variable)
             {
                 /*

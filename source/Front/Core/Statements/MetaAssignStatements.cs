@@ -306,6 +306,23 @@ namespace SimpleLanguage.Core
 
 
             MetaType expressMdt = new MetaType(CoreMetaClassManager.objectMetaClass);
+            // When left side is a setter (a.prop = x => a.prop(x)),
+            // parse RHS using the setter parameter type.
+            if (m_LeftMethodCall != null)
+            {
+                var mmf = m_LeftMethodCall.function as MetaMemberFunction;
+                if (mmf?.metaMemberParamCollection != null
+                    && mmf.metaMemberParamCollection.metaDefineParamList.Count > 0)
+                {
+                    var firstParam = mmf.metaMemberParamCollection.metaDefineParamList[0];
+                    if (firstParam?.metaVariable != null)
+                    {
+                        expressMdt = firstParam.metaVariable.isDefineMetaType
+                            ? firstParam.metaVariable.defineMetaType
+                            : (firstParam.metaVariable.realMetaType ?? firstParam.metaVariable.defineMetaType);
+                    }
+                }
+            }
             if (m_LeftMethodCall == null)
             {
                 m_MetaVariable = m_LeftMetaExpress.GetMetaVariable();
@@ -377,7 +394,7 @@ namespace SimpleLanguage.Core
             }
             m_RightMetaExpress.CalcReturnType();
 
-            if (m_MetaVariable != null && m_RightMetaExpress is MetaConstExpressNode rightConst && expressMdt != null)
+            if (m_RightMetaExpress is MetaConstExpressNode rightConst && expressMdt != null)
             {
                 if (MetaVariable.TryAdjustConstExpressByDefineMetaType(rightConst, expressMdt))
                 {
@@ -393,14 +410,18 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if( m_MetaVariable is MetaMemberVariable mmv )
+                // Setter-call form doesn't always populate m_MetaVariable, so avoid NRE here.
+                if (m_MetaVariable != null)
                 {
+                    if( m_MetaVariable is MetaMemberVariable mmv )
+                    {
 
-                }
-                else
-                {
-                    if( !expressRetMetaDefineType.isNull )
-                        m_MetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                    }
+                    else
+                    {
+                        if( !expressRetMetaDefineType.isNull )
+                            m_MetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                    }
                 }
             }
 
@@ -410,7 +431,37 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                m_LeftMethodCall.AddMetaInputParamList(m_RightMetaExpress);
+                // Setter assignment form: `a.prop = rhs` should become `a.setProp(rhs)`.
+                // The underlying MetaMethodCall may already have parameter slots filled with `null`
+                // (because there is no explicit `( ... )` in the source syntax).
+                // We must *fill/override existing slots* instead of appending, otherwise IR will
+                // push an extra argument and break argument order/count.
+                var paramList = m_LeftMethodCall.metaInputParamList;
+                if (paramList == null || paramList.Count == 0)
+                {
+                    m_LeftMethodCall.AddMetaInputParamList(m_RightMetaExpress);
+                }
+                else
+                {
+                    bool replaced = false;
+                    for (int i = 0; i < paramList.Count; i++)
+                    {
+                        if (paramList[i] == null)
+                        {
+                            paramList[i] = m_RightMetaExpress;
+                            replaced = true;
+                            break;
+                        }
+                    }
+
+                    if (!replaced)
+                    {
+                        // No null slot found: override the first parameter.
+                        // Setter assignment always supplies the first (and usually only) argument.
+                        paramList[0] = m_RightMetaExpress;
+                    }
+                    m_RightMetaExpress = null;
+                }
                 if(!m_LeftMethodCall.ValidateInputParamAndDefineParam() )
                 {
                     Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL407, m_Token, "Error 输入参数与定义参数不正确");
