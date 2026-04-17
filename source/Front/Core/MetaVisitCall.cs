@@ -332,6 +332,7 @@ namespace SimpleLanguage.Core
         public MetaMethodCall methodCall => m_MethodCall;
         public MetaType callMetaType => m_CallMetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaClass;
+        public Token token => m_Token;
 
 
 
@@ -344,6 +345,7 @@ namespace SimpleLanguage.Core
         private MetaClass m_OwnerMetaClass = null;
         private MetaTemplate m_MetaTemplate = null;
         private MetaType m_CallMetaType = null; //璇ュ彉閲忥紝涓€鑸槸涓?T t = new() 杩欑鎯呭喌鍑嗗鐨?
+        private Token m_Token = null;
 
         public static MetaVisitNode CreateByVisitMetaClass(MetaType mt)
         {
@@ -391,6 +393,7 @@ namespace SimpleLanguage.Core
             vn.m_CallMetaType = mt;
             vn.m_VisitType = EVisitType.New;
             vn.m_Variable = mv;
+            vn.m_Token = mv.token;
             vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt.metaClass, null, mf, null, null, null, mv);
             return vn;
         }
@@ -404,6 +407,7 @@ namespace SimpleLanguage.Core
             vn.m_VisitType = EVisitType.NewConst;
             vn.m_Express = mce;
             vn.m_Variable = mv;
+            vn.m_Token = mv.token;
             if (mt.metaClass is MetaGenTemplateClass mgtc)
             {
                 vn.m_ReturnMetaType = new MetaType(mt);
@@ -420,6 +424,7 @@ namespace SimpleLanguage.Core
             //vn.m_MetaBraceStatementsContent = mb;
             vn.m_VisitType = EVisitType.New;
             vn.m_Variable = mv;
+            vn.m_Token = mv.token;
             if (mt.metaClass is MetaGenTemplateClass mgtc)
             {
                 vn.m_ReturnMetaType = new MetaType(mt);

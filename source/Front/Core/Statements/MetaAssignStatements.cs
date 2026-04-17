@@ -106,7 +106,7 @@ namespace SimpleLanguage.Core
         private MetaVisitVariable m_LeftLastVisitVariable = null;
 
         private MetaExpressNode m_RightMetaExpress;
-        private bool m_IsNeedCastStatements = false;
+        private bool m_IsSettings = false;
 
         public MetaAssignStatements( MetaBlockStatements mbs ):base( mbs )
         {
@@ -118,6 +118,7 @@ namespace SimpleLanguage.Core
         }
         public MetaAssignStatements(MetaBlockStatements mbs, FileMetaDefineVariableSyntax fmos) : base(mbs)
         {
+            System.Diagnostics.Debug.Assert(false);
             m_FileMetaDefineVariableSyntax = fmos;
             this.m_MetaVariable = mbs.ownerMetaClass.GetMetaMemberVariableByName(m_FileMetaDefineVariableSyntax.name);
 
@@ -141,10 +142,14 @@ namespace SimpleLanguage.Core
                 {
                     m_Token = m_SignToken;
                 }
+                if (m_FileMetaOpAssignSyntax?.staticToken != null)
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 不允许在语句中，出现static字段! " + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
+                }
             }
             else if( m_FileMetaDefineVariableSyntax != null)
             {
-                //metaCallLink = new MetaCallLink(m_FileMetaDefineVariableSyntax.fileMetaClassDefine,
+                //metaCallLink = new MetaCallLink(m_FileMetaDefineVariableSyntax.,
                 //m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements, null, null);
                 m_SignToken = m_FileMetaDefineVariableSyntax?.assignToken;
                 m_Token = m_FileMetaDefineVariableSyntax?.nameToken;
@@ -170,47 +175,36 @@ namespace SimpleLanguage.Core
                 m_RightMetaExpress.Parse(new AllowUseSettings());
                 if (m_RightMetaExpress == null)
                 {
-                    Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL355, m_Token, "Error 解析新建变量语句时，表达式解析为空!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreShouldHaveRightExpress, m_Token, "MetaAssignStatements", m_FileMetaOpAssignSyntax.express.token );
                     return;
                 }
-
                 m_RightMetaExpress = ExpressManager.ConvertNewExpress(m_RightMetaExpress, expressMdt, m_MetaVariable);
-            }
-            else
-            {
-                if (m_RightMetaExpress == null)
+                m_RightMetaExpress.CalcReturnType();
+
+                if (m_RightMetaExpress is MetaConstExpressNode rightConst && expressMdt != null)
                 {
-                    Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL365, m_Token, "Error 解析新建变量语句时，表达式为空!!__2");
-                    return;
+                    if (MetaVariable.TryAdjustConstExpressByDefineMetaType(rightConst, expressMdt))
+                    {
+                        m_RightMetaExpress.CalcReturnType();
+                    }
                 }
             }
-            m_RightMetaExpress.CalcReturnType();
-
-            if (m_RightMetaExpress is MetaConstExpressNode rightConst && expressMdt != null)
-            {
-                if (MetaVariable.TryAdjustConstExpressByDefineMetaType(rightConst, expressMdt))
-                {
-                    m_RightMetaExpress.CalcReturnType();
-                }
-            }
-
             if (metaCallLink == null)
             {
                 Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
                 return;
             }
-            if(m_FileMetaOpAssignSyntax?.staticToken != null )
-            {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 不允许在语句中，出现static字段! " + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
-            }
 
             m_LeftMetaExpress = new MetaCallLinkExpressNode(metaCallLink);
             AllowUseSettings auc = new AllowUseSettings();
             auc.useNotStatic = false;
-            auc.useNotConst = m_FileMetaOpAssignSyntax?.constToken == null ? false : true;
-            auc.setterFunction = true;
+            auc.useNotConst = m_FileMetaOpAssignSyntax?.constToken == null ? false : true;            
             auc.getterFunction = false;
-            auc.expressNodeList.Add(m_RightMetaExpress);
+            if(m_RightMetaExpress != null )
+            {
+                auc.setterFunction = true;
+                auc.expressNodeList.Add(m_RightMetaExpress);
+            }
             m_LeftMetaExpress.Parse(auc);
             m_LeftMetaExpress.CalcReturnType();
 
@@ -222,7 +216,17 @@ namespace SimpleLanguage.Core
                     MetaMemberFunction mmf = fun as MetaMemberFunction;
                     if (mmf.isSet)
                     {
+                        m_IsSettings = true;
                         m_LeftMethodCall = m_LeftMetaExpress.metaCallLink.finalCallNode.methodCall;
+                        m_RightMetaExpress = null;
+
+                        var firstParam = mmf.metaMemberParamCollection.metaDefineParamList[0];
+                        if (firstParam?.metaVariable != null)
+                        {
+                            expressMdt = firstParam.metaVariable.isDefineMetaType
+                                ? firstParam.metaVariable.defineMetaType
+                                : (firstParam.metaVariable.realMetaType ?? firstParam.metaVariable.defineMetaType);
+                        }
                     }
                 }
             }
@@ -232,19 +236,19 @@ namespace SimpleLanguage.Core
             }
 
             // setStatements    Class1{ set void A(int value) { } }  a.A = 10;  => a.A(10);
-            if (m_LeftMethodCall != null)
-            {
-                if (m_SignToken?.type == ETokenType.Assign)
-                {
-                    m_RightMetaExpress = null;
-                }
-                else
-                {
-                    //这里只能使用等号进行赋值操作  a.A += 10;  是不允许的
-                    Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL189, m_Token, "Error set语句只能使用=号进行赋值操作!!");
-                    return;
-                }
-            }
+            //if (m_LeftMethodCall != null)
+            //{
+            //    if (m_SignToken?.type == ETokenType.Assign)
+            //    {
+            //        m_RightMetaExpress = null;
+            //    }
+            //    else
+            //    {
+            //        //这里只能使用等号进行赋值操作  a.A += 10;  是不允许的
+            //        Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL189, m_Token, "Error set语句只能使用=号进行赋值操作!!");
+            //        return;
+            //    }
+            //}
 
             ETokenType ett = m_SignToken.type;
             switch( ett )
@@ -350,23 +354,6 @@ namespace SimpleLanguage.Core
             }
 
 
-            // When left side is a setter (a.prop = x => a.prop(x)),
-            // parse RHS using the setter parameter type.
-            if (m_LeftMethodCall != null)
-            {
-                var mmf = m_LeftMethodCall.function as MetaMemberFunction;
-                if (mmf?.metaMemberParamCollection != null
-                    && mmf.metaMemberParamCollection.metaDefineParamList.Count > 0)
-                {
-                    var firstParam = mmf.metaMemberParamCollection.metaDefineParamList[0];
-                    if (firstParam?.metaVariable != null)
-                    {
-                        expressMdt = firstParam.metaVariable.isDefineMetaType
-                            ? firstParam.metaVariable.defineMetaType
-                            : (firstParam.metaVariable.realMetaType ?? firstParam.metaVariable.defineMetaType);
-                    }
-                }
-            }
             if (m_LeftMethodCall == null)
             {
                 m_MetaVariable = m_LeftMetaExpress.GetMetaVariable();
@@ -390,48 +377,26 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL322, m_Token, "Error 只能在Project工程下的函数中，给全局变量赋值!!");
-                        return;
+                        Log.AddMetaCoreLog( LID.MetaCoreGlobalSettingNeedInProject, m_Token, "in" + ownerMetaClass.name );
                     }
                 }
-                if( m_MetaVariable.isDefineMetaType )
-                {
-                    expressMdt = m_MetaVariable.defineMetaType;
-                }
-                else
-                {
-                    expressMdt = m_MetaVariable.realMetaType;
-                }
+                //expressMdt = m_MetaVariable.GetFinalMetaType();
             }
 
 
-            MetaType expressRetMetaDefineType = m_RightMetaExpress.GetReturnMetaDefineType();
-            if (expressRetMetaDefineType == null)
+            if( !m_IsSettings )
             {
-                Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL382, m_Token, "Error 解析新建变量语句时，表达式返回类型为空!!__3");
-                return;
-            }
-            else
-            {
-                // Setter-call form doesn't always populate m_MetaVariable, so avoid NRE here.
-                if (m_MetaVariable != null)
+                if (m_RightMetaExpress == null)
                 {
-                    if( m_MetaVariable is MetaMemberVariable mmv )
-                    {
-
-                    }
-                    else
-                    {
-                        if( !expressRetMetaDefineType.isNull )
-                            m_MetaVariable.SetRealMetaType(expressRetMetaDefineType);
-                    }
+                    Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL365, m_Token, "Error 解析新建变量语句时，表达式为空!!__2");
+                    return;
+                }
+                if (m_LeftMethodCall == null)
+                {
+                    CheckLeftAndRightExpress();
                 }
             }
 
-            if(m_LeftMethodCall == null )
-            {
-                CheckLeftAndRightExpress();
-            }
             return;
         }
         void CheckLeftAndRightExpress()
@@ -518,7 +483,7 @@ namespace SimpleLanguage.Core
                 {
                     if (compareClass != null)
                     {
-                        m_MetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                        m_MetaVariable.SetRealMetaType(expressRetMetaDefineType);
                     }
                 }
                 else
@@ -554,7 +519,7 @@ namespace SimpleLanguage.Core
                 sb.Append(Global.tabChar);
             
             
-            if(m_LeftMethodCall != null)
+            if(this.m_LeftMethodCall != null)
             {
                 sb.Append(m_LeftMetaExpress.metaCallLink.ToFormatString());
             }
