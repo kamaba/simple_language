@@ -45,8 +45,7 @@
 
 | 文档 | 说明 |
 |------|------|
-| [syntax/number.md](./syntax/number.md) | 数字 |
-| [syntax/num.md](./syntax/num.md) | 数值相关补充 |
+| [syntax/number.md](./syntax/number.md) | 数值类型：字面量、内置类型词法、`Num` 语义 |
 | [syntax/string.md](./syntax/string.md) | 字符串 |
 | [syntax/data.md](./syntax/data.md) | 数据类型 |
 | [syntax/type.md](./syntax/type.md) | 类型 |
@@ -153,4 +152,4 @@
 
 ---
 
-**维护提示**：新增语法章节时请在本文件对应小节补链；避免使用已不存在的文件名（旧索引中的 `Num.md` / `ranage.md` / `module.md` 等已按实际文件修正）。
+**维护提示**：新增语法章节时请在本文件对应小节补链；避免使用已不存在的文件名（旧索引中的 `ranage.md` / `module.md` 等已按实际文件修正；`num.md` 已并入 `number.md`）。
