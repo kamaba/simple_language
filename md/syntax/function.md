@@ -44,7 +44,7 @@ public Int32 sum(Int32 x, Int32 y) {
 
 ```s
 fun greet(String name = "Guest") {
-    Debug.Write("Hello " + name);
+    Console.print("Hello " + name);
 }
 
 fun sum(params Int32 nums) {
@@ -170,7 +170,7 @@ class Child extends Base {
 class Example {
     static void Run() {
         var c = Child();
-        Debug.Write(c.value());
+        Console.print(c.value());
     }
 }
 ```

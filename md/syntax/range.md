@@ -8,7 +8,7 @@
 范围定义，可以有几种方式，可以使用 ** Range\<T>** 的方式，也可以使用 **range()** 的方式，也可以1..100的方式确定为范围的形式，一但确定范围后，就可以进行范围相关的操作。
 
 ```ruby 
-import CSharp.System;
+import Std;
 ProjectEnter
 {
    static Main()
@@ -22,7 +22,7 @@ ProjectEnter
       r4.step = 2       #设置r4的步进 与SetStep方法一样
       for v in r1   
       {
-         CSharp.System.Debug.Write("value=$v");
+         Console.print("value=$v");
       }
 
       a1 = r1.Cast<Array<int>>();   #转化成数组，并且申请成数组的内存空间 相当于遍历，然后给数组赋值

@@ -110,7 +110,7 @@ namespace SimpleLanguage.Core
             }
             if(m_DefineVarMetaVariable == null )
             {
-                Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, "Error {0} MetaVariable is Null" +  defineName);
+                Log.AddMetaCoreLog( LID.MetaCoreDefineVariableParseIsNull, m_Token, "" +  defineName);
                 return;
             }
             m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_DefineVarMetaVariable);

@@ -11,6 +11,6 @@ API：`add(x)`, `remove(x)`, `contains(x)`, `clear()`, `length`, `isEmpty`
 ```s
 var s = Set<int>();
 s.add(1);
-if (s.contains(1)) { Debug.Write("has 1"); }
+if (s.contains(1)) { Console.print("has 1"); }
 ```
 

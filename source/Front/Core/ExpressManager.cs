@@ -371,7 +371,11 @@ namespace SimpleLanguage.Core
             if (oldmen.convertNewExpressNode == true)
             {
                 var mcen = oldmen as MetaCallLinkExpressNode;
-                Debug.Assert(mcen != null, "");
+                if( mcen == null )
+                {
+                    Debug.Assert(false, "老类型不是CallLinkExpressNode");
+                    return null;
+                }
                 menNew = new MetaNewObjectExpressNode(mdt, mcen);
                 menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
 

@@ -49,8 +49,8 @@ ProjectConfigBegin{
     "desc":"这是一个测试用例",
     globalReplace #全局宏替换
     {
-        print = "Debug.Write";
-        println = "Debug.Write";
+        print = "Console.print";
+        println = "Console.print";
         "new (x)" = "(x)";
         love = "if";  #关键字进行替换 关键字替换的新字，不能与现有的关键字相同
         "循环" = "while";

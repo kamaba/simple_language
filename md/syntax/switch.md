@@ -34,13 +34,13 @@ switch expression
 let day = 3;
 switch day
 {
-    case 1 { Debug.Write("星期一"); }
-    case 2 { Debug.Write("星期二"); }
-    case 3 { Debug.Write("星期三"); }
-    case 4 { Debug.Write("星期四"); }
-    case 5 { Debug.Write("星期五"); }
-    case 6, 7 { Debug.Write("周末"); }  # 多个值可以用逗号分隔
-    default { Debug.Write("无效的日期"); }
+    case 1 { Console.print("星期一"); }
+    case 2 { Console.print("星期二"); }
+    case 3 { Console.print("星期三"); }
+    case 4 { Console.print("星期四"); }
+    case 5 { Console.print("星期五"); }
+    case 6, 7 { Console.print("周末"); }  # 多个值可以用逗号分隔
+    default { Console.print("无效的日期"); }
 }
 ```
 
@@ -53,10 +53,10 @@ switch day
 ```ruby
 switch score
 {
-    case 1, 2, 3 { Debug.Write("低分"); }
-    case 4, 5, 6 { Debug.Write("中分"); }
-    case 7, 8, 9, 10 { Debug.Write("高分"); }
-    default { Debug.Write("无效分数"); }
+    case 1, 2, 3 { Console.print("低分"); }
+    case 4, 5, 6 { Console.print("中分"); }
+    case 7, 8, 9, 10 { Console.print("高分"); }
+    default { Console.print("无效分数"); }
 }
 ```
 
@@ -101,7 +101,7 @@ switch classObject
     }
     default 
     {
-        Debug.Write("未知类型");
+        Console.print("未知类型");
     }
 }
 ```
@@ -126,10 +126,10 @@ enum Status
 var currentStatus = Status.processing;
 switch currentStatus
 {
-    case Status.pending { Debug.Write("等待中"); }
-    case Status.processing { Debug.Write("处理中"); }
-    case Status.completed { Debug.Write("已完成"); }
-    case Status.failed { Debug.Write("失败"); }
+    case Status.pending { Console.print("等待中"); }
+    case Status.processing { Console.print("处理中"); }
+    case Status.completed { Console.print("已完成"); }
+    case Status.failed { Console.print("失败"); }
 }
 ```
 
@@ -146,10 +146,10 @@ let book = Book.price;
 switch book
 {
     case Book.name n {
-        Debug.Write("书名: @n");
+        Console.print("书名: $n.toString()");
     }
     case Book.price p {
-        Debug.Write("价格: @p");
+        Console.print("价格: $p ");
     }
 }
 ```
@@ -182,7 +182,7 @@ let level = switch grade
     case 60..69 { tr "及格"; }
     default { tr "不及格"; }
 }
-Debug.Write("等级: @level");
+Console.print("等级: $level");
 ```
 
 ---
@@ -204,17 +204,17 @@ switch value
     case 1 
     { 
         x = 1; 
-        Debug.Write("匹配 1");
+        Console.print("匹配 1");
         next;  # 继续执行下一个 case
     }
     case 2 
     { 
         x = 2; 
-        Debug.Write("匹配 2");
+        Console.print("匹配 2");
     }
     default 
     { 
-        Debug.Write("默认");
+        Console.print("默认");
     }
 }
 ```
@@ -228,20 +228,20 @@ switch classObject
 {
     case BaseClass base
     {
-        Debug.Write("这是基类");
+        Console.print("这是基类");
         next;  # 继续检查是否是子类
     }
     case ChildClass1 child1
     {
-        Debug.Write("这是子类1: @child1.name");
+        Console.print("这是子类1: $child1.name");
     }
     case ChildClass2 child2
     {
-        Debug.Write("这是子类2: @child2.name");
+        Console.print("这是子类2: $child2.name");
     }
     default
     {
-        Debug.Write("未知类型");
+        Console.print("未知类型");
     }
 }
 ```
@@ -329,7 +329,7 @@ ProjectEnter
                 tr -1; 
             }
         }
-        Debug.Write("x = @x, ok = @ok");
+        Console.print("x = $x, ok = $ok");
         
         
         # 示例 2: 类型匹配与值绑定
@@ -337,17 +337,17 @@ ProjectEnter
         switch cb
         {
             case ClassBase base {
-                Debug.Write("匹配到基类: @base.name");
+                Console.print("匹配到基类: $base.name");
                 next;  # 继续检查是否是更具体的子类
             }
             case ClassChild1 c1 {
-                Debug.Write("匹配到子类1: @c1.name");
+                Console.print("匹配到子类1: $c1.name");
             }
             case ClassChild2 c2 {
-                Debug.Write("匹配到子类2: @c2.name");
+                Console.print("匹配到子类2: $c2.name");
             }
             default {
-                Debug.Write("未知类型");
+                Console.print("未知类型");
             }
         }
         
@@ -357,10 +357,10 @@ ProjectEnter
         switch b
         {
             case Book.name n {
-                Debug.Write("书名: @n");
+                Console.print("书名: $n");
             }
             case Book.price p {
-                Debug.Write("书的价格: @p");
+                Console.print("书的价格: $p");
             }
         }
         
@@ -385,7 +385,7 @@ ProjectEnter
                 tr "F"; 
             }
         }
-        Debug.Write("成绩等级: @grade");
+        Console.print("成绩等级: $grade");
     }
 }
 ```
@@ -393,7 +393,7 @@ ProjectEnter
 ### 输出结果
 
 ```
-$ projectrun 3
+@ projectrun 3
 x = 10, ok = 1000
 匹配到基类: Base
 匹配到子类1: Child1

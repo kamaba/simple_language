@@ -23,7 +23,7 @@
 var lst = [1,2,3];
 lst.add(4);
 lst.insert(0, 0);
-for v in lst { Debug.Write(v); }
+for v in lst { Console.print(v); }
 var even = lst.where(x => x % 2 == 0);
 ```
 

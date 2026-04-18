@@ -15,8 +15,8 @@
 
 ```s
 var m = { "x": 1, "y": 2 };
-if (m.containsKey("x")) { Debug.Write(m["x"]); }
-for e in m.entries { Debug.Write("${e.key}=${e.value}"); }
+if (m.containsKey("x")) { Console.print(m["x"]); }
+for e in m.entries { Console.print("${e.key}=${e.value}"); }
 ```
 
 注意：

@@ -1,0 +1,1 @@
+      { "path": "../../../../test/MDExample/03_GlobalJsonc/Doc03_GlobalJsonc.sl", "group": "mdex", "tag": "all", "ignore": false, "priority": 0 },

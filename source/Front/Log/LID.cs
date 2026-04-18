@@ -293,5 +293,6 @@
         NodeAssetFrontListNodeIsZero = 12248,
         IRVisitNodeNotHandleType = 12249,
         IRVariableFromNotHandle = 12250,
+        MetaCoreDefineVariableParseIsNull = 12251,
     }
 }

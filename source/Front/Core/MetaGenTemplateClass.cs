@@ -147,6 +147,8 @@ namespace SimpleLanguage.Core
             m_MetaMemberVariableDict.Clear();
             m_MetaMemberFunctionTemplateNodeDict.Clear();
             m_MetaExtendMemeberVariableDict.Clear();
+            m_ExtendClass = null;
+            m_ExtendClassMetaType = null;
 
             var ecmt = this.m_MetaTemplateClass.extendClassMetaType;
             if (ecmt != null )
@@ -168,7 +170,10 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            m_ExtendClass.ParseGenTemplateClass(m_ExtendClass as MetaGenTemplateClass);
+            if (m_ExtendClass != null)
+            {
+                m_ExtendClass.ParseGenTemplateClass(m_ExtendClass as MetaGenTemplateClass);
+            }
 
             m_GenTemplateFlag = true;
         }

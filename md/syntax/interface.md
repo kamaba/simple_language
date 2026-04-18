@@ -11,7 +11,7 @@ interface IPrintable {
 
 class Document implements IPrintable {
     override void print() {
-        Debug.Write("Document print");
+        Console.print("Document print");
     }
 }
 ```

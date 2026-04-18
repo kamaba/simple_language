@@ -27,7 +27,7 @@
 正确：
 
 ```sl
-import Core.Debug;
+import Std;
 
 local { a = 1 }
 
@@ -48,7 +48,7 @@ local { a = 1 }  # 不允许
 ### 基本语法
 
 ```sl
-import Core.Debug;
+import Std;
 
 local
 {
@@ -107,7 +107,7 @@ local
 ### `LocalTest1.sl`
 
 ```sl
-import Core.Debug;
+import Std;
 
 local
 {
@@ -121,8 +121,8 @@ local
 
     PrintLocal()
     {
-        Debug.Write("LocalTest1 local.a=" + local.a)
-        Debug.Write("LocalTest1 local.order=" + local.order)
+        Console.print("LocalTest1 local.a=" + local.a)
+        Console.print("LocalTest1 local.order=" + local.order)
     }
 }
 
@@ -132,7 +132,7 @@ class LocalTest1
     {
         local.a = local.a + 10
         v = local.Add(5)
-        Debug.Write("LocalTest1 v=" + v)
+        Console.print("LocalTest1 v=" + v)
         local.PrintLocal()
     }
 }
@@ -141,7 +141,7 @@ class LocalTest1
 ### `LocalTest2.sl`
 
 ```sl
-import Core.Debug;
+import Std;
 
 local
 {
@@ -156,8 +156,8 @@ local
 
     PrintLocal()
     {
-        Debug.Write("LocalTest2 local.a=" + local.a)
-        Debug.Write("LocalTest2 local.order=" + local.order)
+        Console.print("LocalTest2 local.a=" + local.a)
+        Console.print("LocalTest2 local.order=" + local.order)
     }
 }
 
@@ -167,7 +167,7 @@ class LocalTest2
     {
         local.a = local.a + 1
         v = local.Add(5)
-        Debug.Write("LocalTest2 v=" + v)
+        Console.print("LocalTest2 v=" + v)
         local.PrintLocal()
     }
 }

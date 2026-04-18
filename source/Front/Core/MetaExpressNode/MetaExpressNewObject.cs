@@ -6,12 +6,13 @@
 //  Description:   meta new object express!
 //****************************************************************************
 
+using SimpleLanguage.Compile;
+using SimpleLanguage.IR;
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using SimpleLanguage.Compile;
-using SimpleLanguage.Logging;
 
 
 namespace SimpleLanguage.Core
@@ -373,7 +374,7 @@ namespace SimpleLanguage.Core
             m_EqualMetaVariable = parentMt;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
         }
-        public void SetMetaType( MetaType mt )
+        public void SetDefineMetaType( MetaType mt )
         {
             m_DefineMetaType = mt;
         }
@@ -543,6 +544,7 @@ namespace SimpleLanguage.Core
                     cep.equalMetaVariable = m_EqualMetaVariable;
                     MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());
+                    men = ExpressManager.ConvertNewExpress(men, cep.metaType, m_EqualMetaVariable);
                     var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
@@ -819,7 +821,7 @@ namespace SimpleLanguage.Core
 
                     var fma = lastNode.fileMetaBraceTerm;
                     m_MetaContent = new MetaNewObjectStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
-                    m_MetaContent.SetMetaType(m_NewMetaType);
+                    m_MetaContent.SetDefineMetaType(m_NewMetaType);
                 }
             }
             else
@@ -832,7 +834,7 @@ namespace SimpleLanguage.Core
 
                     var fma = lastNode.fileMetaBraceTerm;
                     m_MetaContent = new MetaNewObjectStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
-                    m_MetaContent.SetMetaType(m_NewMetaType);
+                    m_MetaContent.SetDefineMetaType(m_NewMetaType);
                 }
             }
         }
@@ -922,7 +924,7 @@ namespace SimpleLanguage.Core
                 m_NewType = ENewType.CommomClass;
             }
             m_MetaContent = new MetaNewObjectStatementsContent( ownerMC, mbs );
-            m_MetaContent.SetMetaType(m_NewMetaType);
+            m_MetaContent.SetDefineMetaType(m_NewMetaType);
             //m_MetaConstructFunctionCall = new MetaMethodCall(mt.metaClass, mt.defineTemplateMetaTypeList, m_OwnerMetaBlockStatements.ownerMetaFunction,
             //    null, null, null, null );
         }
@@ -962,7 +964,7 @@ namespace SimpleLanguage.Core
                 m_NewType = ENewType.CommomClass;
             }
             m_MetaContent = new MetaNewObjectStatementsContent(fmbt, ownerMC, mbs, equalMV);
-            m_MetaContent.SetMetaType(m_DefineMetaType);
+            m_MetaContent.SetDefineMetaType(m_DefineMetaType);
         }
         // Array arr = [1,2,3]   [Class1(), Class2(), variable1.a.b(),100]
         public MetaNewObjectExpressNode( FileMetaBracketTerm fmbt, MetaType mt, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
@@ -973,7 +975,7 @@ namespace SimpleLanguage.Core
 
             m_NewMetaType = new MetaType(mt);
             m_NewType = ENewType.ArrayClass;
-            m_MetaContent.SetMetaType(m_NewMetaType);
+            m_MetaContent.SetDefineMetaType(m_NewMetaType);
         }
         public override void Parse(AllowUseSettings auc)
         {

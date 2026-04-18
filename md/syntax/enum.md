@@ -296,14 +296,14 @@ EnumTest
         # 遍历 string 枚举
         for s in Season.values
         {
-            Debug.Write("季节: " + s)
+            Console.print("季节: " + s)
         }
 
         # 类型为 data 的枚举，mut 字段动态修改
         EShape shape = EShape.r1
         if shape == EShape.r1
         {
-            Debug.Write("当前是 r1")
+            Console.print("当前是 r1")
         }
         elif shape == EShape.cd
         {
@@ -314,9 +314,9 @@ EnumTest
         GameState gs = GameState.Begin
         switch gs
         {
-            case GameState.Init  { Debug.Write("初始化"); }
-            case GameState.Begin { Debug.Write("游戏开始"); }
-            case GameState.End   { Debug.Write("游戏结束"); }
+            case GameState.Init  { Console.print("初始化"); }
+            case GameState.Begin { Console.print("游戏开始"); }
+            case GameState.End   { Console.print("游戏结束"); }
         }
     }
 }

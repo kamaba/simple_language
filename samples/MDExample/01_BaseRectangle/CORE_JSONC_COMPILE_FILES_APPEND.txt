@@ -1,0 +1,1 @@
+      { "path": "../../../../test/MDExample/01_BaseRectangle/Doc01_BaseRectangle.sl", "group": "mdex", "tag": "all", "ignore": false, "priority": 0 },

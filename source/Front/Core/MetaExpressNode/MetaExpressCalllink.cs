@@ -24,6 +24,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_EqualMetaVariable = mv;
+            
             if (fmcl != null )
             {
                 m_MetaCallLink = new MetaCallLink( fmcl, mc, mbs, mv?.defineMetaType, mv );

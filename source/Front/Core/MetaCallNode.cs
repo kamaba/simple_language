@@ -1931,6 +1931,10 @@ namespace SimpleLanguage.Core
                 {
                     sb.Append(m_MetaClass.ToFormatString());
                 }
+                else if (m_CallNodeType == ECallNodeType.NewTemplate)
+                {
+                    sb.Append(m_MetaClass.ToFormatString());
+                }
                 else if (m_CallNodeType == ECallNodeType.MetaNode)
                 {
                     sb.Append(m_MetaNode?.name);
