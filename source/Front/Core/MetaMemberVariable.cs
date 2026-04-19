@@ -422,7 +422,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_Express != null)
                 {                    
-                    var relation = ClassManager.ResolveAssignRelation(
+                    var relation = TypeManager.ResolveAssignRelation(
                         m_DefineMetaType,
                         m_Express,
                         false,
@@ -432,7 +432,7 @@ namespace SimpleLanguage.Core
                         out MetaClass compareClass,
                         out bool isNullConstExpress,
                         this);
-                    if (relation == ClassManager.EClassRelation.CompareClassError)
+                    if (relation == EClassRelation.CompareClassError)
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 表达式中返回定义类型为空 " + m_Express.ToTokenString());
                         return;
@@ -451,12 +451,12 @@ namespace SimpleLanguage.Core
                     sb.Append("与后边赋值语句中 ");
                     if (compareClass != null)
                         sb.Append("表达式类为: " + compareClass.allClassName );
-                    if (relation == ClassManager.EClassRelation.No)
+                    if (relation == EClassRelation.No)
                     {
                         sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                     }
-                    else if (relation == ClassManager.EClassRelation.Same)
+                    else if (relation == EClassRelation.Same)
                     {
                         //if( !isNullConstExpress )
                         {
@@ -479,17 +479,17 @@ namespace SimpleLanguage.Core
                             SetRealMetaType(expressRetMetaDefineType);
                         }
                     }
-                    else if (relation == ClassManager.EClassRelation.Parent)
+                    else if (relation == EClassRelation.Parent)
                     {
                         sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                     }
-                    else if( relation == ClassManager.EClassRelation.Num )
+                    else if( relation == EClassRelation.Num )
                     {
                         sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
                         //Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                     }
-                    else if (relation == ClassManager.EClassRelation.Child)
+                    else if (relation == EClassRelation.Child)
                     {
                         if (compareClass != null)
                         {
@@ -512,7 +512,7 @@ namespace SimpleLanguage.Core
                             SetRealMetaType(expressRetMetaDefineType);
                         }
                     }
-                    else if(relation == ClassManager.EClassRelation.Similar )
+                    else if(relation == EClassRelation.Similar )
                     {
                         if( compareClass != null )
                         {

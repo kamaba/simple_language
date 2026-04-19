@@ -72,7 +72,7 @@ namespace SimpleLanguage.Core
             m_MetaTemplate = mt;
             m_MetaClass = mt.extendsMetaClass;
         }
-        public MetaType( MetaGenTemplateClass mgtc, List<MetaType> defineMTList, List<MetaType> genMTList )
+        public MetaType( MetaGenTemplateClass mgtc, List<MetaType> defineMTList )
         {
             m_EMetaTypeType = EMetaTypeType.MetaGenClass;
             m_MetaClass = mgtc;
@@ -471,56 +471,7 @@ namespace SimpleLanguage.Core
                 {
                     var lv = mdtL.m_DefineTemplateMetaTypeList[i];
                     var rv = mdtR.m_DefineTemplateMetaTypeList[i];
-                    if (EqualMetaDefineType(lv, rv) == false)
-                    {
-                        return false;
-                    }
-                }
-                return true;
-            }
-
-            return false;
-        }
-        public static bool EqualMetaDefineType(MetaType mdtL, MetaType mdtR)
-        {
-            if (mdtL == null || mdtR == null)
-                return false;
-
-            if( mdtL.eMetaTypeType != mdtR.eMetaTypeType )
-            {
-                return false;
-            }
-
-            if( mdtL.eMetaTypeType == EMetaTypeType.Template )
-            {
-                //if( mdtL.metaTemplate ==  mdtR.metaTemplate )
-                {
-                    return true;
-                }
-            }
-            else if( mdtL.eMetaTypeType == EMetaTypeType.MetaClass )
-            {
-                if( mdtL.metaClass == mdtR.metaClass )
-                {
-                    return true;
-                }
-            }
-            else
-            {
-                //if( mdtL.templateMetaClass != mdtR.templateMetaClass )
-                if (mdtL.m_MetaClass != mdtR.m_MetaClass)
-                {
-                    return false;
-                }
-                if( mdtL.m_DefineTemplateMetaTypeList.Count != mdtR.m_DefineTemplateMetaTypeList.Count )
-                {
-                    return false;
-                }
-                for( int i = 0; i <  mdtL.m_DefineTemplateMetaTypeList.Count; i++ )
-                {
-                    var lv = mdtL.m_DefineTemplateMetaTypeList[i];
-                    var rv = mdtR.m_DefineTemplateMetaTypeList[i];
-                    if(EqualMetaDefineType(lv, rv ) == false )
+                    if (TypeManager.CompareMetaType(lv, rv) == false)
                     {
                         return false;
                     }

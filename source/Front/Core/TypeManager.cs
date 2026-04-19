@@ -14,6 +14,21 @@ using System.Diagnostics;
 
 namespace SimpleLanguage.Core
 {
+    public enum EClassRelation
+    {
+        None,
+        CurClassError,
+        CompareClassError,
+        No,
+        Same,
+        Child,
+        Parent,
+        Similar,
+        Interface,
+        Num,
+        SameClassNotSameInputTemplate,
+        SameClassAndSameInputTemplate,
+    }
     public class TypeManager
     {
         public static TypeManager instance = new TypeManager();
@@ -182,10 +197,6 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
-        public bool CompareMetaType( MetaType mt1, MetaType mt2 )
-        {
-            return MetaType.EqualMetaDefineType( mt1, mt2 );
-        }
         public bool UpdateMetaTypeByGenClassAndFunction(MetaType mt, MetaGenTemplateClass mgtc, MetaGenTemplateFunction mgtf )
         {
             bool isNeedReg = false;
@@ -258,6 +269,108 @@ namespace SimpleLanguage.Core
 
             return true;
         }
+        public static bool CompareMetaType(MetaType mdtL, MetaType mdtR)
+        {
+            if (mdtL == null || mdtR == null)
+                return false;
+
+            MetaClass leftBaseClass = mdtL.GetTemplateMetaClass();
+            MetaClass rightBaseClass = mdtR.GetTemplateMetaClass();
+
+            if (leftBaseClass != rightBaseClass)
+            {
+                return false;
+            }
+
+            List<MetaType> leftTemplateList = mdtL.GetGenTemplateMetaTypeList();
+            List<MetaType> rightTemplateList = mdtR.GetGenTemplateMetaTypeList();
+
+            if (leftTemplateList.Count != rightTemplateList.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < leftTemplateList.Count; i++)
+            {
+                var lv = leftTemplateList[i];
+                var rv = rightTemplateList[i];
+                if (!CompareMetaType(lv, rv))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        public static EClassRelation ResolveAssignRelation(
+            MetaType targetMetaType,
+            MetaExpressNode expressNode,
+            bool useTemplateExactMatch,
+            bool allowEnumOwnerEqual,
+            out MetaType expressRetMetaDefineType,
+            out MetaClass curClass,
+            out MetaClass compareClass,
+            out bool isNullConstExpress,
+            MetaVariable targetVariable = null)
+        {
+            expressRetMetaDefineType = null;
+            compareClass = null;
+            isNullConstExpress = false;
+            curClass = targetMetaType?.metaClass;
+
+            if (curClass == null)
+            {
+                return EClassRelation.CurClassError;
+            }
+            if (expressNode == null)
+            {
+                return EClassRelation.CompareClassError;
+            }
+
+            if (expressNode is MetaConstExpressNode constExpressNode && constExpressNode.eType == EType.Null)
+            {
+                isNullConstExpress = true;
+                expressRetMetaDefineType = new MetaType(CoreMetaClassManager.nullMetaClass);
+                return EClassRelation.Same;
+            }
+
+            expressRetMetaDefineType = expressNode.GetReturnMetaDefineType();
+            compareClass = expressRetMetaDefineType?.metaClass;
+            if (compareClass == null)
+            {
+                return EClassRelation.CompareClassError;
+            }
+
+            if (allowEnumOwnerEqual && curClass is MetaEnum me && expressNode is MetaCallLinkExpressNode mclen)
+            {
+                var mv = mclen.GetMetaVariable();
+                if (mv?.ownerMetaClass == me)
+                {
+                    return EClassRelation.Same;
+                }
+            }
+
+            // Iterator<Number> <- Array<具体数值>：仅遍历/访问语义，允许协变
+            if (targetMetaType.IsIterator() && expressRetMetaDefineType.IsArray())
+            {
+                if (ClassManager.TryIteratorNumberFromConcreteNumericArray(targetMetaType, expressRetMetaDefineType))
+                    return EClassRelation.Same;
+            }
+
+            // 数组：默认须整型一致；例外 const Array<Number> <- Array<具体数值> 与 Number 抽象元素协变
+            if (targetMetaType.IsArray() && expressRetMetaDefineType.IsArray())
+            {
+                if (TypeManager.CompareMetaType(targetMetaType, expressRetMetaDefineType))
+                    return EClassRelation.Same;
+                if (ClassManager.TryConstArrayNumberFromConcreteNumericArray(targetMetaType, expressRetMetaDefineType, targetVariable))
+                    return EClassRelation.Same;
+                return EClassRelation.No;
+            }
+
+            return ClassManager.ValidateClassRelationByMetaClass(curClass, compareClass);
+        }
+
         #region 模板类定义处理区
         public MetaType GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(MetaClass curMc, FileMetaClassDefine fmcd)
         {

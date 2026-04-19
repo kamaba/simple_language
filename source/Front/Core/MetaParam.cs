@@ -175,7 +175,7 @@ namespace SimpleLanguage.Core
             {
                 MetaType md = param.metaVariable.defineMetaType;
                 // exact match
-                if (MetaType.EqualMetaDefineType(md, metaVariable.defineMetaType))
+                if (TypeManager.CompareMetaType(md, metaVariable.defineMetaType))
                 {
                     return true;
                 }
@@ -193,10 +193,10 @@ namespace SimpleLanguage.Core
                 if (thisClass != null && otherClass != null)
                 {
                     var relation = ClassManager.ValidateClassRelationByMetaClass(thisClass, otherClass);
-                    if (relation == ClassManager.EClassRelation.Same
-                        || relation == ClassManager.EClassRelation.Child
-                        || relation == ClassManager.EClassRelation.Parent
-                        || relation == ClassManager.EClassRelation.Interface )
+                    if (relation == EClassRelation.Same
+                        || relation == EClassRelation.Child
+                        || relation == EClassRelation.Parent
+                        || relation == EClassRelation.Interface )
                     {
                         return true;
                     }
@@ -222,7 +222,7 @@ namespace SimpleLanguage.Core
                         return true;
                     if (declaredMt.IsArray() && argMt.IsArray())
                     {
-                        if (MetaType.EqualMetaDefineType(declaredMt, argMt))
+                        if (TypeManager.CompareMetaType(declaredMt, argMt))
                             return true;
                         return ClassManager.TryConstArrayNumberFromConcreteNumericArray(declaredMt, argMt, m_MetaVariable);
                     }
@@ -255,11 +255,11 @@ namespace SimpleLanguage.Core
 
                 var relation = ClassManager.ValidateClassRelationByMetaClass(declaredMC, retMC);
 
-                if (relation == ClassManager.EClassRelation.Same
-                    || relation == ClassManager.EClassRelation.Child
-                    || relation == ClassManager.EClassRelation.Interface
-                    || relation == ClassManager.EClassRelation.Parent
-                    || relation == ClassManager.EClassRelation.Num
+                if (relation == EClassRelation.Same
+                    || relation == EClassRelation.Child
+                    || relation == EClassRelation.Interface
+                    || relation == EClassRelation.Parent
+                    || relation == EClassRelation.Num
                     )
                 {
                     return true;
@@ -657,12 +657,12 @@ namespace SimpleLanguage.Core
                         var cur = cmc.GetRetMetaClass();
                         var next = nmc.GetRetMetaClass();
                         var relation = ClassManager.ValidateClassRelationByMetaClass(cur, next);
-                        if( relation == ClassManager.EClassRelation.Same 
-                            || relation == ClassManager.EClassRelation.Child )
+                        if( relation == EClassRelation.Same 
+                            || relation == EClassRelation.Child )
                         {
                             mc = next;
                         }
-                        else if( relation == ClassManager.EClassRelation.Parent )
+                        else if( relation == EClassRelation.Parent )
                         {
                             mc = cur;
                         }

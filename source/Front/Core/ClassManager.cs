@@ -15,21 +15,6 @@ namespace SimpleLanguage.Core
 {
     public class ClassManager
     {
-        public enum EClassRelation
-        {
-            None,
-            CurClassError,
-            CompareClassError,
-            No,
-            Same,
-            Child,
-            Parent,
-            Similar,
-            Interface,
-            Num,
-            SameClassNotSameInputTemplate,
-            SameClassAndSameInputTemplate,
-        }
         public static ClassManager s_Instance = null;
         public static ClassManager instance
         {
@@ -679,73 +664,6 @@ namespace SimpleLanguage.Core
             return false;
         }
 
-        public static EClassRelation ResolveAssignRelation(
-            MetaType targetMetaType,
-            MetaExpressNode expressNode,
-            bool useTemplateExactMatch,
-            bool allowEnumOwnerEqual,
-            out MetaType expressRetMetaDefineType,
-            out MetaClass curClass,
-            out MetaClass compareClass,
-            out bool isNullConstExpress,
-            MetaVariable targetVariable = null)
-        {
-            expressRetMetaDefineType = null;
-            compareClass = null;
-            isNullConstExpress = false;
-            curClass = targetMetaType?.metaClass;
-
-            if (curClass == null)
-            {
-                return EClassRelation.CurClassError;
-            }
-            if (expressNode == null)
-            {
-                return EClassRelation.CompareClassError;
-            }
-
-            if (expressNode is MetaConstExpressNode constExpressNode && constExpressNode.eType == EType.Null)
-            {
-                isNullConstExpress = true;
-                expressRetMetaDefineType = new MetaType(CoreMetaClassManager.nullMetaClass);
-                return EClassRelation.Same;
-            }
-
-            expressRetMetaDefineType = expressNode.GetReturnMetaDefineType();
-            compareClass = expressRetMetaDefineType?.metaClass;
-            if (compareClass == null)
-            {
-                return EClassRelation.CompareClassError;
-            }
-
-            if (allowEnumOwnerEqual && curClass is MetaEnum me && expressNode is MetaCallLinkExpressNode mclen)
-            {
-                var mv = mclen.GetMetaVariable();
-                if (mv?.ownerMetaClass == me)
-                {
-                    return EClassRelation.Same;
-                }
-            }
-
-            // Iterator<Number> <- Array<具体数值>：仅遍历/访问语义，允许协变
-            if (targetMetaType.IsIterator() && expressRetMetaDefineType.IsArray())
-            {
-                if (TryIteratorNumberFromConcreteNumericArray(targetMetaType, expressRetMetaDefineType))
-                    return EClassRelation.Same;
-            }
-
-            // 数组：默认须整型一致；例外 const Array<Number> <- Array<具体数值> 与 Number 抽象元素协变
-            if (targetMetaType.IsArray() && expressRetMetaDefineType.IsArray())
-            {
-                if (MetaType.EqualMetaDefineType(targetMetaType, expressRetMetaDefineType))
-                    return EClassRelation.Same;
-                if (TryConstArrayNumberFromConcreteNumericArray(targetMetaType, expressRetMetaDefineType, targetVariable))
-                    return EClassRelation.Same;
-                return EClassRelation.No;
-            }
-
-            return ValidateClassRelationByMetaClass(curClass, compareClass);
-        }
         public static EClassRelation ValidateClassRelationByMetaClass( MetaClass curClass, MetaClass compareClass )
         {
             // null can be assigned to any non-primitive/reference type parameter.

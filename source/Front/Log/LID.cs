@@ -295,5 +295,6 @@
         IRVariableFromNotHandle = 12250,
         MetaCoreDefineVariableParseIsNull = 12251,
         MetaCoreVisitTypeShouldIsArray = 12252,
+        MetaCoreArrayNotSupportInConvert = 12253,
     }
 }

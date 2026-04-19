@@ -1202,7 +1202,7 @@ namespace SimpleLanguage.Core
                         {
                             listmt2.Add(new MetaType(mgtc.metaTemplateClass.metaTemplateList[i]));
                         }
-                        m_MetaType = new MetaType(mgtc, listmt2, m_MetaTemplateParamsList);
+                        m_MetaType = new MetaType(mgtc, listmt2 );
                     }
                     else
                     {

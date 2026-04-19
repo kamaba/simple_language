@@ -426,7 +426,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                var relation = ClassManager.ResolveAssignRelation(
+                var relation = TypeManager.ResolveAssignRelation(
                     mdt,
                     m_RightMetaExpress,
                     true,
@@ -437,7 +437,7 @@ namespace SimpleLanguage.Core
                     out _,
                     m_MetaVariable);
 
-                if (relation == ClassManager.EClassRelation.CompareClassError)
+                if (relation == EClassRelation.CompareClassError)
                 {
                     Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL452, m_Token, "Error 赋值表达式返回定义类型为空");
                     return;
@@ -453,13 +453,13 @@ namespace SimpleLanguage.Core
                 sb.Append("与后边赋值语句中 ");
                 if (compareClass != null)
                     sb.Append("表达式类为: " + compareClass.allClassName);
-                if (relation == ClassManager.EClassRelation.No)
+                if (relation == EClassRelation.No)
                 {
                     sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
                     m_IsNeedCastState = true;
                 }
-                else if (relation == ClassManager.EClassRelation.Similar)
+                else if (relation == EClassRelation.Similar)
                 {
                     // Numeric similar conversion is now allowed by default:
                     // expression side can be promoted, and assignment side narrows/casts to declared type.
@@ -467,20 +467,20 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
                     m_IsNeedCastState = true;
                 }
-                else if (relation == ClassManager.EClassRelation.Same)
+                else if (relation == EClassRelation.Same)
                 {
                 }
-                else if( relation == ClassManager.EClassRelation.Num )
+                else if( relation == EClassRelation.Num )
                 {
 
                 }
-                else if (relation == ClassManager.EClassRelation.Parent)
+                else if (relation == EClassRelation.Parent)
                 {
                     sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
                     m_IsNeedCastState = true;
                 }
-                else if (relation == ClassManager.EClassRelation.Child)
+                else if (relation == EClassRelation.Child)
                 {
                     if (compareClass != null)
                     {

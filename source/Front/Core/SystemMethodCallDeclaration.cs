@@ -13,7 +13,7 @@ namespace SimpleLanguage.Core
             var mt = new MetaType();
             mt.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
             mt.AddDefineTemplateMetaType(new MetaType(elementClass));
-            return CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(mt, true, out _);
+            return CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(mt, false, out _);
         }
 
         /// <summary>Builds <c>Array&lt;T&gt;</c> where <paramref name="elementType"/> may include templates/nullability (copied into the array signature).</summary>

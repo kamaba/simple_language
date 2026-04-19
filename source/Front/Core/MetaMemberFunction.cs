@@ -764,7 +764,7 @@ namespace SimpleLanguage.Core
         {
             foreach (var v in m_BindStructTemplateFunctionMtList)
             {
-                if (MetaType.EqualMetaDefineType(v, mt))
+                if (TypeManager.CompareMetaType(v, mt))
                 {
                     return v;
                 }
@@ -775,7 +775,7 @@ namespace SimpleLanguage.Core
         {
             foreach (var v in m_BindStructTemplateFunctionAndClassMtList)
             {
-                if (MetaType.EqualMetaDefineType(v, mt))
+                if (TypeManager.CompareMetaType(v, mt))
                 {
                     return v;
                 }

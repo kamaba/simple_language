@@ -153,7 +153,63 @@ namespace SimpleLanguage.Core
                 tt = m_FileMetaConstValueTerm.token.type;
             }
             if (tt == ETokenType.NumberReal)
-            { 
+            {
+                var lexeme = m_FileMetaConstValueTerm.token.lexeme;
+                if (lexeme is sbyte sbVal)
+                {
+                    eType = EType.Int8;
+                    value = sbVal;
+                }
+                else if (lexeme is byte bVal)
+                {
+                    eType = EType.UInt8;
+                    value = bVal;
+                }
+                else if (lexeme is short sVal)
+                {
+                    eType = EType.Int16;
+                    value = sVal;
+                }
+                else if (lexeme is ushort usVal)
+                {
+                    eType = EType.UInt16;
+                    value = usVal;
+                }
+                else if (lexeme is int iVal)
+                {
+                    eType = EType.Int32;
+                    value = iVal;
+                }
+                else if (lexeme is uint uiVal)
+                {
+                    eType = EType.UInt32;
+                    value = uiVal;
+                }
+                else if (lexeme is long lVal)
+                {
+                    eType = EType.Int64;
+                    value = lVal;
+                }
+                else if (lexeme is ulong ulVal)
+                {
+                    eType = EType.UInt64;
+                    value = ulVal;
+                }
+                else if (lexeme is float fVal)
+                {
+                    eType = EType.Float32;
+                    value = fVal;
+                }
+                else if (lexeme is double dVal)
+                {
+                    eType = EType.Float64;
+                    value = dVal;
+                }
+                else
+                {
+                    eType = EType.Num;
+                    value = lexeme;
+                }
             }
             else if (tt == ETokenType.String)
             {

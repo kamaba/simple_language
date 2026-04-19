@@ -619,7 +619,7 @@ namespace SimpleLanguage.Core
         {
             foreach( var v in m_InterfaceMetaType )
             {
-                if( TypeManager.instance.CompareMetaType( v, mc ) )
+                if( TypeManager.CompareMetaType( v, mc ) )
                 {
                     return true;
                 }
@@ -628,6 +628,10 @@ namespace SimpleLanguage.Core
         }
         public bool GetInterfaceByMetaClass(MetaClass mc )
         {
+            if( this == mc )
+            {
+                return true;
+            }
             if( this == mc )
             {
                 return true;
@@ -675,7 +679,7 @@ namespace SimpleLanguage.Core
                     mgtc.ParseGenTemplateClass(mgtc);
                     mgtc.ParseGenMemberVarible();
                 }
-                return new MetaType(mgtc, mt.defineTemplateMetaTypeList, mt.defineTemplateMetaTypeList );
+                return new MetaType(mgtc, mt.defineTemplateMetaTypeList );
             }
 
             var find = BindStructTemplateMetaClassList( mt );
@@ -708,7 +712,7 @@ namespace SimpleLanguage.Core
         {
             foreach( var v in m_BindStructTemplateMetaClassList )
             {
-                if(MetaType.EqualMetaDefineType(v,mt ) )
+                if(TypeManager.CompareMetaType(v,mt ) )
                 {
                     return v;
                 }

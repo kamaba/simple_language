@@ -699,13 +699,13 @@ namespace SimpleLanguage.Core
                         var cur = cutmt.metaClass;
                         var next = nextmt.metaClass;
                         var relation = ClassManager.ValidateClassRelationByMetaClass(cur, next);
-                        if (relation == ClassManager.EClassRelation.Same
-                            || relation == ClassManager.EClassRelation.Child)
+                        if (relation == EClassRelation.Same
+                            || relation == EClassRelation.Child)
                         {
                             mt = nextmt;
                             frontOpLevel = cmc.opLevel;
                         }
-                        else if (relation == ClassManager.EClassRelation.Parent)
+                        else if (relation == EClassRelation.Parent)
                         {
                             mt = cutmt;
                         }
@@ -1190,7 +1190,7 @@ namespace SimpleLanguage.Core
                                         var cmt1 = m_DefineMetaType.GetMetaTypeByIndex(0);
                                         var cmt2 = m_NewMetaType.GetMetaTypeByIndex(0);
 
-                                        if( !MetaType.EqualMetaDefineType( cmt1, cmt2 ) )
+                                        if( !TypeManager.CompareMetaType( cmt1, cmt2 ) )
                                         {
                                             if (!ClassManager.TryConstArrayNumberFromConcreteNumericArray(m_DefineMetaType, m_NewMetaType, m_StoreMetaVariable))
                                             {

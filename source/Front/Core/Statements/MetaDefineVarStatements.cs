@@ -172,7 +172,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_ExpressNode != null)
                 {
-                    ClassManager.EClassRelation relation = ClassManager.EClassRelation.No;
+                    EClassRelation relation = EClassRelation.No;
                     MetaConstExpressNode constExpressNode = m_ExpressNode as MetaConstExpressNode;
                     if (constExpressNode != null)
                     {
@@ -211,18 +211,17 @@ namespace SimpleLanguage.Core
                     //}
                     else if( mdt.IsArray() )
                     {
-                        if (!MetaType.EqualMetaDefineType(mdt, expressRetMetaDefineType)
+                        if (!TypeManager.CompareMetaType(mdt, expressRetMetaDefineType)
                             && !ClassManager.TryConstArrayNumberFromConcreteNumericArray(mdt, expressRetMetaDefineType, m_DefineVarMetaVariable))
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                                "数组声明类型与右侧表达式类型须完全一致，不允许数组协变（元素类型不可用子类型数组代替父类型数组）。");
+                            Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token,"DefineStatement", mdt.ToString(), expressRetMetaDefineType.ToString() );
                             return;
                         }
                         m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                     }
                     else if (mdt.IsIterator())
                     {
-                        if (!MetaType.EqualMetaDefineType(mdt, expressRetMetaDefineType)
+                        if (!TypeManager.CompareMetaType(mdt, expressRetMetaDefineType)
                             && !ClassManager.TryIteratorNumberFromConcreteNumericArray(mdt, expressRetMetaDefineType))
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
@@ -245,7 +244,7 @@ namespace SimpleLanguage.Core
                         MetaClass compareClass = null;
                         if (constExpressNode != null && constExpressNode.eType == EType.Null)
                         {
-                            relation = ClassManager.EClassRelation.Same;
+                            relation = EClassRelation.Same;
                         }
                         else
                         {
@@ -266,23 +265,23 @@ namespace SimpleLanguage.Core
                         sb.Append("与后边赋值语句中 ");
                         if (compareClass != null)
                             sb.Append("表达式类为: " + compareClass.allClassName);
-                        if (relation == ClassManager.EClassRelation.No)
+                        if (relation == EClassRelation.No)
                         {
                             sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                             m_IsNeedCastState = true;
                         }
-                        else if (relation == ClassManager.EClassRelation.Same)
+                        else if (relation == EClassRelation.Same)
                         {
                             m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                         }
-                        else if (relation == ClassManager.EClassRelation.Parent)
+                        else if (relation == EClassRelation.Parent)
                         {
                             sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
                             m_IsNeedCastState = true;
                         }
-                        else if (relation == ClassManager.EClassRelation.Child)
+                        else if (relation == EClassRelation.Child)
                         {
                             if (compareClass != null)
                             {

@@ -24,8 +24,9 @@ ArrayTest
     }
 
     # 统一：可迭代序列上的 for-in + println（合并多处相同模式）
-    static forInPrintNullable( ObjectArray arr )
+    static forIIterator( obj )
     {
+        arr = obj as IIterable<object>
         for v in arr
         {
             if v != null
@@ -35,7 +36,7 @@ ArrayTest
         }
     }
 
-    static testArray( arr )
+    static forObject( arr )
     {
         var iter = arr as Array<Object>
         if iter != null
@@ -118,8 +119,11 @@ ArrayTest
         ObjectArray boxed = object[2]
         boxed[0] = 5
         boxed[1] = 6
-        forInPrintNullable(boxed)
-        forInPrintNullable([1000,2000,3000,1005])
+        forIIterator(boxed)
+        testArray(boxed) #这句不报错
+        arr2  = [1000,2000,3000,1005]
+        forIIterator(arr2)
+        testArray(arr2) #这句应该是报错，不支持协变
     }
 
     # IIterator<Num> <- 具体数值数组：Meta 层仅允许「遍历语义」的 Number 抽象协变（见 array.md）
@@ -127,9 +131,10 @@ ArrayTest
     {
         global.println("========== IIterator<Num> <- Int32[]（只读遍历） ==========")
         Int32[] concrete = Int32[2]
+        int[] concrete2 = Int64[2] #这句报错
         concrete[0] = 11
         concrete[1] = 22
-        IIterator<Num> it = concrete
+        IIterator<Num> it = concrete  #允许
         it.reset()
         while it.moveNext()
         {
@@ -142,7 +147,7 @@ ArrayTest
     static arrayNestedObjectTreeTest()
     {
         global.println("========== nested Array<Object> / testArray / deep walk ==========")
-        int[] aaaxx12 = Array<int>.createInstance(2)
+        int[] aaaxx12 = Array<int>.create(2)
         aaaxx12[0] = 5
         aaaxx12[1] = 6
         int[] axxx12 = [ 7,8,9,5 ]
@@ -151,7 +156,7 @@ ArrayTest
         int[] axx22 = int[1]{100}
         object[] axx23 = object[1]{ axx22 }
         a1 = Array<Object>(3){ 1, axxx13, axx23 }
-        testArray(a1)
+        forIIterator(a1)
 
         for v in a1
         {
@@ -187,14 +192,15 @@ ArrayTest
         jagged2.$0.$3 = 996
         jagged2[1] = [1,100,1000]
         jagged2[1].setValue( 0, 2222 );
-        testArray(jagged2)
+        forIIterator(jagged2)
     }
 
     # int[] 字面量与下标读取
     static arrayIntLiteralReadTest()
     {
         global.println("========== int[] literal read ==========")
-        int[] a33 = {1,2,3,4};
+        int[] a33 = {1,2,3,4};  #不支持这种写法
+        #int[] a33 = new(4){1,2,3,4} 支持这样的写法
         a33[3] = 123
         var aa333 =  a33[0];
         global.println("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
@@ -215,7 +221,7 @@ ArrayTest
         global.println("========== mixed literal / `$` / is ArrClass ==========")
         var ac = ArrClass(){ i1 = 20, i2 = "mix" }
         mixedNest = [[0,1,2,ac,4],[[11,12],[13,14]]];
-        testArray(mixedNest)
+        forIIterator(mixedNest)
 
         int aa = 0
         mixedNest.$1.$aa.$1 = 3000;
@@ -235,14 +241,14 @@ ArrayTest
         global.println("========== Level<int>[][] matrix ==========")
         levelvar = Level<int>(100);
         Level<int>[][] levelGrid = { [ levelvar, levelvar ], [ levelvar, levelvar ] };
-        testArray(levelGrid)
+        forIIterator(levelGrid) #不支持这种方式，需要是接口的才可以
     }
 
     static arrayStringAndLevelVectorTest()
     {
         global.println("========== string[] + Level<int>[] vector ==========")
         strarr = string[]{"abbc", "cccc", "a100"}
-        testArray(strarr)
+        forIIterator(strarr)   #不支持这种方式，需要是接口的才可以
 
         Level<int>[] a44 = new(15) { Level<int>(200) }
         a44[1] = Level<int>(10000)
@@ -255,7 +261,7 @@ ArrayTest
             a44[i].t += 135
         }
 
-        testArray(a44)
+        forIIterator(a44)
     }
 
     # 异构 object[][]（float 行 + int 行）
@@ -263,7 +269,7 @@ ArrayTest
     {
         global.println("========== heterogeneous object[][] ==========")
         object[][] a42 = { [1.2,1.3,1.4,1.5],[3,4,5] };
-        testArray(a42)
+        forIIterator(a42)
     }
 
     # 多种 Array 构造、多维 int[][][]、float[]、ArrClass[] 大数组与 index/current/for 变体（原 `#!` 块）

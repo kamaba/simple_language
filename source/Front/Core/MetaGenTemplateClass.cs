@@ -385,7 +385,7 @@ namespace SimpleLanguage.Core
                     if (!(mgmf.returnMetaVariable.defineMetaType.eMetaTypeType == EMetaTypeType.MetaClass
                         && mgmf.returnMetaVariable.defineMetaType.metaClass.isTemplateClass == false))
                     {
-                        TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmf.returnMetaVariable.realMetaType, this, null);
+                        TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmf.returnMetaVariable.defineMetaType, this, null);
                     }
                 }
                 for (int i = 0; i < mgmf.metaMemberParamCollection.metaDefineParamList.Count; i++)
@@ -396,7 +396,7 @@ namespace SimpleLanguage.Core
                     {
                         var realMetaType = new MetaType(mdp.metaVariable.defineMetaType);
                         TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(realMetaType, this, null);
-                        mdp.metaVariable.SetRealMetaType(realMetaType);
+                        mdp.metaVariable.SetMetaDefineType(realMetaType);
                     }
                 }
             }
