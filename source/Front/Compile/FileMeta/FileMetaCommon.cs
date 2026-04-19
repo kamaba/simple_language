@@ -678,7 +678,10 @@ namespace SimpleLanguage.Compile
                     if( fmbtc.fileMetaExpressList[0] is FileMetaConstValueTerm fmcvt )
                     {
                         if (fmcvt.token?.type == ETokenType.Number)
-                            m_ArrayDimsionLengthList.Add((int)fmcvt.token.lexeme);
+                        {
+                            int len = Convert.ToInt32(fmcvt.token.lexeme);
+                            m_ArrayDimsionLengthList.Add(len);
+                        }
                     }
                 }
                 else

@@ -8,6 +8,7 @@
 
 
 using SimpleLanguage.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -449,7 +450,8 @@ namespace SimpleLanguage.Core
                     {
                         if( maen.metaCallArray[0] is MetaConstExpressNode mcen2 )
                         {
-                            arrayLengthList.Add((int)mcen2.value);
+                            int val = Convert.ToInt32(mcen2.value);
+                            arrayLengthList.Add(val);
                         }
                         else
                         {

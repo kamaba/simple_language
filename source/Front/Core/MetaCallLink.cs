@@ -449,7 +449,9 @@ namespace SimpleLanguage.Core
 
                 var debugParTermText = mcn.fileMetaParTerm?.ToFormatString();
                 if (string.IsNullOrEmpty(debugParTermText))
+                {
                     debugParTermText = frontNode?.fileMetaParTerm?.ToFormatString();
+                }
                 if (frontNode?.callNodeType == ECallNodeType.ConstValue)
                 {
                     MetaVisitNode fvn = m_VisitNodeList[m_VisitNodeList.Count - 1];

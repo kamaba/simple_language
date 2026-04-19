@@ -1488,8 +1488,9 @@ namespace SimpleLanguage.Core
                     else if (m_ExpressNode is MetaConstExpressNode mcen)
                     {
                         var index = Convert.ToInt32(mcen.value);
-                        var list = variable.realMetaType.ArrayDimensionLengthList();
-                        if (variable.realMetaType.IsArray() && list.Count >= 0)
+                        var fmt = variable.GetFinalMetaType();
+                        var list = fmt.ArrayDimensionLengthList();
+                        if (fmt.IsArray() && list.Count >= 0)
                         {
                             if (list[0] != -1)
                             {
@@ -1502,7 +1503,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Visit operation requires array type.");
+                            Log.AddMetaCoreLog(LID.MetaCoreVisitTypeShouldIsArray, mcen.token, variable.realMetaType.ToString(), variable.name);
                             return;
                         }
 
@@ -1529,7 +1530,7 @@ namespace SimpleLanguage.Core
 
                     m_MetaVariable.ParseDefineMetaType();
                     m_MetaVariable.ParseRealMetaType();
-                    m_MetaType = m_MetaVariable.realMetaType;
+                    m_MetaType = m_MetaVariable.GetFinalMetaType();
 
                 }
             }

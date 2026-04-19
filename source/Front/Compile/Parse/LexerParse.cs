@@ -39,6 +39,8 @@ namespace SimpleLanguage.Compile
         private int m_SourceChar = 0;                  //瑙ｆ瀽鍒板綋鍓嶈涓殑浣嶇疆
         private int m_Index = 0;                       
         private string m_Path;
+        /// <summary> true：当前缓冲为字符串插值中的表达式片段，未知符号按字面 String token 输出，不当作全文法错误 </summary>
+        private bool m_InterpolationExpression;
         public LexerParse( string path, char[] buffer )
         {
             m_Path = path;
@@ -1108,7 +1110,7 @@ namespace SimpleLanguage.Compile
                         {
                             LexerParse lp = new LexerParse(m_Path, exprBuilder.ToString().ToCharArray() );
                             lp.SetSourcePosition(startLine, startChar);
-                            lp.ParseToTokenList();
+                            lp.ParseInterpolationExpressionToTokenList();
                             if (m_CurrentToken != null)
                                 m_CurrentToken.AddChildrenTokens(lp.listTokens);
                             // include original expression into lexeme
@@ -1168,7 +1170,8 @@ namespace SimpleLanguage.Compile
         }
 
 
-        void ReadString()
+        /// <param name="isDollarQuoted">true 表示形如 C# 的 $"..." 插值字符串，词法含 $ 与引号 </param>
+        void ReadString(bool isDollarQuoted = false)
         {
             var stringBuilder = new StringBuilder();
             stringBuilder.Append(m_Builder.ToString());
@@ -1236,7 +1239,10 @@ namespace SimpleLanguage.Compile
                         m_Builder.Clear();
                     }
 
-                    m_CurrentToken.SetLexeme(stringBuilder.ToString());
+                    if (isDollarQuoted)
+                        m_CurrentToken.SetLexeme("$" + "\"" + stringBuilder.ToString() + "\"");
+                    else
+                        m_CurrentToken.SetLexeme(stringBuilder.ToString());
                     m_Index++;
                     m_SourceChar++;
                     break;
@@ -1300,7 +1306,7 @@ namespace SimpleLanguage.Compile
                         {
                             LexerParse lp = new LexerParse(m_Path, exprBuilder.ToString().ToCharArray() );
                             lp.SetSourcePosition(startLine, startChar);
-                            lp.ParseToTokenList();
+                            lp.ParseInterpolationExpressionToTokenList();
 
                             // add parsed expression token list as one parameter entry
                             if (m_CurrentToken != null)
@@ -1391,7 +1397,7 @@ namespace SimpleLanguage.Compile
                                 // parse the identifier expression (may include dots) and add resulting tokens as one parameter entry
                                 LexerParse lp = new LexerParse(m_Path, identBuilder.ToString().ToCharArray() );
                                 lp.SetSourcePosition(startLine, startChar);
-                                lp.ParseToTokenList();
+                                lp.ParseInterpolationExpressionToTokenList();
                                 if (m_CurrentToken != null)
                                     m_CurrentToken.AddChildrenTokens(lp.listTokens);
                                 // include the original $ident text into the token lexeme
@@ -1417,7 +1423,7 @@ namespace SimpleLanguage.Compile
                             {
                                 LexerParse lp = new LexerParse(m_Path, identBuilder.ToString().ToCharArray() );
                                 lp.SetSourcePosition(startLine, startChar);
-                                lp.ParseToTokenList();
+                                lp.ParseInterpolationExpressionToTokenList();
                                 if (m_CurrentToken != null)
                                     m_CurrentToken.AddChildrenTokens(lp.listTokens);
                                 // include the original $... fallback text into the token lexeme
@@ -1557,18 +1563,16 @@ namespace SimpleLanguage.Compile
         }
         void ReadDollar()
         {
+            int dollarLine = m_SourceLine;
+            int dollarChar = m_SourceChar;
             var ch = ReadChar();
-            //if (ch == '\"')
-            //{
-            //    ReadString(true);
-            //}
-            //else if (ch == '{')
-            //{
-            //    ReadChar();
-            //    AddToken( ETokenType.LeftBrace);
-            //}
-            //else 
-            if (Char.IsNumber(ch) || Char.IsLetter(ch))
+            if (ch == '"')
+            {
+                // $"..." 与 C# 类似：$ 已由 ReadChar 跳过，当前在 opening "，交给 ReadString 解析串体与插值
+                ReadString(isDollarQuoted: true);
+                return;
+            }
+            if (Char.IsNumber(ch) || Char.IsLetter(ch) )
             {
                 StringBuilder sb = new StringBuilder();
                 sb.Append(ch);
@@ -1588,7 +1592,14 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddTokenLog(LID.ShowExtendMessage, "read $");
+                if (m_InterpolationExpression)
+                {
+                    AddToken(ETokenType.String, "$", EType.String, dollarLine, dollarChar);
+                }
+                else
+                {
+                    Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "read $");
+                }
             }
         }
         void ReadSharp()
@@ -1957,8 +1968,22 @@ namespace SimpleLanguage.Compile
                 AddToken(tokenType, m_Builder.ToString(), extend, m_SourceLine, m_SourceChar );
             }
         }
-        /// <summary> 瑙ｆ瀽瀛楃涓?</summary>
-        public void ParseToTokenList() 
+        /// <summary> 解析字符串插值内嵌的表达式片段为 token（` / 未在全文法中单独列出的符号等按字面 String 处理）。</summary>
+        public void ParseInterpolationExpressionToTokenList()
+        {
+            m_InterpolationExpression = true;
+            ParseToTokenListCore();
+            m_InterpolationExpression = false;
+        }
+
+        /// <summary> 解析字符流为 token（完整词法）。</summary>
+        public void ParseToTokenList()
+        {
+            m_InterpolationExpression = false;
+            ParseToTokenListCore();
+        }
+
+        void ParseToTokenListCore()
         {    
             m_CurChar = END_CHAR;
             m_Builder.Clear();
@@ -2196,7 +2221,17 @@ namespace SimpleLanguage.Compile
                             }
                             else
                             {
-                                Log.AddTokenByString(LID.AutoLexerParseL2199, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "");                                
+                                if (m_InterpolationExpression)
+                                {
+                                    AddToken(ETokenType.String, m_CurChar.ToString(), EType.String, m_SourceLine, m_SourceChar);
+                                    m_Index++;
+                                    m_SourceChar++;
+                                }
+                                else
+                                {
+                                    m_Index++;
+                                    Log.AddTokenByString(LID.AutoLexerParseL2199, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, m_CurChar.ToString() );                                
+                                }
                             }
                             break;
                     }

@@ -294,5 +294,6 @@
         IRVisitNodeNotHandleType = 12249,
         IRVariableFromNotHandle = 12250,
         MetaCoreDefineVariableParseIsNull = 12251,
+        MetaCoreVisitTypeShouldIsArray = 12252,
     }
 }

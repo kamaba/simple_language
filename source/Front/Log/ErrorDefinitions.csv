@@ -797,3 +797,4 @@
 12249,Error,TRUE,FALSE,0,," 不支持VisitNode的类型[{0}]的处理",,Auto-generated LID mapping,,
 12250,Error,TRUE,FALSE,1,,处理variableFrom[{0}]没有找到相关类型的处理,,Auto-generated LID mapping,,
 12251,Error,FALSE,FALSE,1,,在处理定义变量语句时，没有发现[{0}],,Auto-generated LID mapping,,
+12252,Error,TRUE,FALSE,1,,[{0}]在解析使用[]或者是$x的方式的时候，它的主体应该是一个数组类型,,Auto-generated LID mapping,,

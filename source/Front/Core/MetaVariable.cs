@@ -697,6 +697,7 @@ namespace SimpleLanguage.Core
                 }
                 m_VisitExpressNode = moe;
             }
+            m_IsDefineMetaType = lmv.isDefineMetaType;
         }
         public override void ParseDefineMetaType()
         {

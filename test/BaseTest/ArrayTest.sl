@@ -24,7 +24,7 @@ ArrayTest
     }
 
     # 统一：可迭代序列上的 for-in + println（合并多处相同模式）
-    static forInPrintNullable( arr )
+    static forInPrintNullable( ObjectArray arr )
     {
         for v in arr
         {
@@ -86,7 +86,7 @@ ArrayTest
     {
         global.println("========== createInstance / index / for-i ==========")
         int intvalue = 20
-        Int32[] a2 = Array<Int32>.createInstance(intvalue)
+        Int32[] a2 = Array<Int32>.create(intvalue)
         a2[1] = 50
         a2.$1 += 100
         a2[1] = a2.$1 + 200
@@ -115,7 +115,7 @@ ArrayTest
     static arrayCovariantAndLiteralForInTest()
     {
         global.println("========== covariant slice + literal for-in ==========")
-        object[] covariantInts = int[2]
+        object[] covariantInts = int[2]  #不支持协变会有报错 
         covariantInts[0] = 5
         covariantInts[1] = 6
         forInPrintNullable(covariantInts)
@@ -296,7 +296,7 @@ ArrayTest
             }
             a.i1 = 200
         }
-        for( a in [1,2,3,4] )
+        for a in [1,2,3,4] 
         {
             var forInIdx = a.index + 1
         }

@@ -98,7 +98,7 @@
   },
   "export": {
     "moduleName": "Core",
-    "outputDir": "E:\\project\\lang\\simple_language\\out\\export",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
     "versionMain": 1,
     "versionSub": 0,
     "versionPatch": 0,
