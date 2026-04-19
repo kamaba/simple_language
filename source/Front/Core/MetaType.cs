@@ -188,6 +188,23 @@ namespace SimpleLanguage.Core
             }
                 return false;
         }
+        /// <summary> 是否为 Core.Iterator&lt;T&gt; 的实例类型（与 <see cref="IsArray"/> 对称）。 </summary>
+        public bool IsIterator()
+        {
+            if (m_EMetaTypeType == EMetaTypeType.MetaGenClass && m_MetaClass is MetaGenTemplateClass mgtc)
+            {
+                return mgtc.metaTemplateClass == CoreMetaClassManager.iteratorMetaClass;
+            }
+            if (m_EMetaTypeType == EMetaTypeType.MetaClass && m_MetaClass is MetaGenTemplateClass mgtc2)
+            {
+                return mgtc2.metaTemplateClass == CoreMetaClassManager.iteratorMetaClass;
+            }
+            if (m_EMetaTypeType == EMetaTypeType.TemplateClassWithTemplate && m_MetaClass == CoreMetaClassManager.iteratorMetaClass)
+            {
+                return true;
+            }
+            return false;
+        }
         public void SetNullable(bool v) { m_IsNullable = v; }
         public bool IsNum()
         {

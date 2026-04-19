@@ -111,15 +111,31 @@ ArrayTest
         }
     }
 
-    # object[] 协变 int[] + 字面量数组 for-in（原两处循环合并为 helper）
+    # ObjectArray（即 Array<Object>）须显式构造，不能把 int[] 直接赋给 object[]（数组引用类型不再协变）
     static arrayCovariantAndLiteralForInTest()
     {
-        global.println("========== covariant slice + literal for-in ==========")
-        object[] covariantInts = int[2]  #不支持协变会有报错 
-        covariantInts[0] = 5
-        covariantInts[1] = 6
-        forInPrintNullable(covariantInts)
+        global.println("========== ObjectArray 装箱 + literal for-in ==========")
+        ObjectArray boxed = object[2]
+        boxed[0] = 5
+        boxed[1] = 6
+        forInPrintNullable(boxed)
         forInPrintNullable([1000,2000,3000,1005])
+    }
+
+    # IIterator<Num> <- 具体数值数组：Meta 层仅允许「遍历语义」的 Number 抽象协变（见 array.md）
+    static arrayNumberIteratorFromConcreteArrayTest()
+    {
+        global.println("========== IIterator<Num> <- Int32[]（只读遍历） ==========")
+        Int32[] concrete = Int32[2]
+        concrete[0] = 11
+        concrete[1] = 22
+        IIterator<Num> it = concrete
+        it.reset()
+        while it.moveNext()
+        {
+            Num n = it.current()
+            global.println("IIterator<Num> current -> " + n.toString())
+        }
     }
 
     # 嵌套 Array<Object>、testArray、单层 + 多层遍历合并为一次深度 walk
@@ -158,11 +174,11 @@ ArrayTest
         }
     }
 
-    # object[][] 锯齿赋值、setValue、testArray
+    # object[][] 锯齿：不能整表用 int[][] 赋给 object[][]，逐行赋 object 可接受的行数组
     static arrayJagged2DAssignTest()
     {
         global.println("========== jagged object[][] assign ==========")
-        object[][] jagged2 = int[2][4];
+        object[][] jagged2 = object[2][]
         jagged2[0] = int[4]
         jagged2[1] = Array<int>(10)
         jagged2[0][0] = 999
@@ -322,6 +338,7 @@ ArrayTest
         arrayGenericElementTest()
         arrayCreateInstanceIndexLoopTest()
         arrayCovariantAndLiteralForInTest()
+        arrayNumberIteratorFromConcreteArrayTest()
         arrayNestedObjectTreeTest()
         arrayJagged2DAssignTest()
         arrayIntLiteralReadTest()
@@ -341,7 +358,7 @@ ArrayTest
 3. 生成数组还可以使用直接赋值的方式 比如 val = [1,2,3,4]  这种情况，会自动计算数组的初始长度
 4. 如果定义了前边的类型，可以直接使用{}的方式 比如 int[] val = {1,2,3,4}, 这种情况，会自动计算数组的初始长度
 5. 如果使用了生成函数方式 比如  int[] val = int[5]{1,2,3,4} 当然也可以省略掉前边的 val = int[5]{1,2,3} 在使用函数生成时，必须要给数组的最后一维增加长度
-6. 数组可以进行协变，比如 object[][] val = int[20][] 这种的子类向父类协变
+6. 数组引用类型默认不协变（不能把 int[] 赋给 object[] 等）；数值抽象例外见 array.md（IIterator<Num>、const Array<Num>）
 7. 数组如果继承了IIterator, IIterable, 相关内容后，即可进行for的遍历
 8. 数组的访问，可以通过 val[1][2] 这种方式访问，也可以使用 val.$1.$2 这种方式访问，`$1` = `[1]` 是相同的，语法上，没有差别
 
@@ -351,4 +368,4 @@ ArrayTest
 3. 
 !#
 
-# ArrayTest：按 `arrayXxxTest` 分类；`forInPrintNullable` 合并原多处相同 for-in；`arrayNestedObjectTreeTest` 合并对 a1 的重复遍历；原 `a35`/`a4` 重名拆为 `mixedNest`/`levelGrid` 与 `nestedObjRows`/`floatsFromLiteral`；`ArrClass` 字段统一为 `i1`；`ArrClass[] arr1` 显式 `new(1001)`。
+# ArrayTest：按 `arrayXxxTest` 分类；`forInPrintNullable` 合并原多处相同 for-in；`arrayNestedObjectTreeTest` 合并对 a1 的重复遍历；原 `a35`/`a4` 重名拆为 `mixedNest`/`levelGrid` 与 `nestedObjRows`/`floatsFromLiteral`；`ArrClass` 字段统一为 `i1`；`ArrClass[] arr1` 显式 `new(1001)`。`arrayCovariantAndLiteralForInTest` 使用显式 `ObjectArray` 装箱（不再 `object[] = int[]`）；`arrayNumberIteratorFromConcreteArrayTest` 演示 `IIterator<Num> <- Int32[]`；`arrayJagged2DAssignTest` 用 `object[2][]` 逐行赋行数组。

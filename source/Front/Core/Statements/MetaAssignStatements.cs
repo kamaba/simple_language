@@ -434,7 +434,8 @@ namespace SimpleLanguage.Core
                     out expressRetMetaDefineType,
                     out MetaClass curClass,
                     out MetaClass compareClass,
-                    out _);
+                    out _,
+                    m_MetaVariable);
 
                 if (relation == ClassManager.EClassRelation.CompareClassError)
                 {

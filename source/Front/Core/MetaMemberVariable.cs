@@ -430,7 +430,8 @@ namespace SimpleLanguage.Core
                         out MetaType expressRetMetaDefineType,
                         out MetaClass curClass,
                         out MetaClass compareClass,
-                        out bool isNullConstExpress);
+                        out bool isNullConstExpress,
+                        this);
                     if (relation == ClassManager.EClassRelation.CompareClassError)
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 表达式中返回定义类型为空 " + m_Express.ToTokenString());
@@ -457,7 +458,7 @@ namespace SimpleLanguage.Core
                     }
                     else if (relation == ClassManager.EClassRelation.Same)
                     {
-                        if( !isNullConstExpress )
+                        //if( !isNullConstExpress )
                         {
                             if( TypeManager.IsCoreMetaType( expressRetMetaDefineType ) )
                             {

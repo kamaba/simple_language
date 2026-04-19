@@ -211,6 +211,24 @@ namespace SimpleLanguage.Core
                     //}
                     else if( mdt.IsArray() )
                     {
+                        if (!MetaType.EqualMetaDefineType(mdt, expressRetMetaDefineType)
+                            && !ClassManager.TryConstArrayNumberFromConcreteNumericArray(mdt, expressRetMetaDefineType, m_DefineVarMetaVariable))
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                                "数组声明类型与右侧表达式类型须完全一致，不允许数组协变（元素类型不可用子类型数组代替父类型数组）。");
+                            return;
+                        }
+                        m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                    }
+                    else if (mdt.IsIterator())
+                    {
+                        if (!MetaType.EqualMetaDefineType(mdt, expressRetMetaDefineType)
+                            && !ClassManager.TryIteratorNumberFromConcreteNumericArray(mdt, expressRetMetaDefineType))
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                                "Iterator 声明类型与右侧须一致，或对 Iterator<Number> 使用元素为具体数值类型的 Array 表达式。");
+                            return;
+                        }
                         m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                     }
                     else if( mdt.IsNum() )

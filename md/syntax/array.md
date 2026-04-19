@@ -113,3 +113,19 @@ ProjectEnter
 - 数组的参数，只有一个，就是数组的长度，正常情况，使用[1,2,3,4]的方式，给其传默认值  当然也可以写作 int[1,2,3,4,5]
 - 数组一般可以和range可以互转，使用Cast就能实现。
 
+## 数组赋值与协变（Meta 语义）
+
+自 Meta 层收紧规则后，**引用类型数组默认不协变**：不能把 `Int32[]` 直接赋给 `Object[]`（`ObjectArray` / `Array<Object>`），也不能把 `Int32[][]` 整表赋给 `Object[][]`，否则会按类型不一致处理。需要时请**显式构造** `Object[]` 再装箱元素，或对锯齿数组逐行赋值。
+
+**数值类型（`Num` 抽象）的受控例外**（实现见 `ClassManager` / `MetaType.IsIterator`）：
+
+1. **`IIterator<Num> ← Array<具体数值>`**  
+   左值为抽象数值迭代器、右值为元素为具体数值类型（`Int32`、`Float32`、`Int64` 等，且非抽象 `Num` 本身）的数组时，允许赋值。语义是**只读遍历**（通过迭代器访问），不表示可把右值当作 `Array<Num>` 随意改写元素类型。
+
+2. **`const Array<Num> ← Array<具体数值>`**  
+   仅当**目标变量为 const**（例如类成员带 `const`）且左侧元素类型为抽象 `Num` 时，允许用具体数值数组初始化；用于从 `Object` 等位置解包后的通用数值缓冲等场景。
+
+其他泛型数组（如 `Array<某类>` 与 `Array<子类>`）仍要求**类型结构完全一致**（不变性），不可用继承关系放宽。
+
+详见测试：`test/BaseTest/ArrayTest.sl` 中 `arrayCovariantAndLiteralForInTest`、`arrayNumberIteratorFromConcreteArrayTest`、`arrayJagged2DAssignTest`。
+

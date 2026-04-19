@@ -623,6 +623,62 @@ namespace SimpleLanguage.Core
 
             return false;
         }
+
+        /// <summary> 单模板参数，如 Array&lt;T&gt;、Iterator&lt;T&gt; 的第一维元素类型。 </summary>
+        public static MetaType GetSingleTemplateArgMetaType(MetaType mt)
+        {
+            if (mt == null) return null;
+            var gen = mt.GetGenTemplateMetaTypeList();
+            if (gen != null && gen.Count == 1)
+                return gen[0];
+            if (mt.defineTemplateMetaTypeList != null && mt.defineTemplateMetaTypeList.Count == 1)
+                return mt.defineTemplateMetaTypeList[0];
+            return mt.GetMetaTypeByIndex(0);
+        }
+
+        public static bool IsAbstractNumberMetaType(MetaType mt)
+        {
+            return mt != null && mt.metaClass == CoreMetaClassManager.numMetaClass;
+        }
+
+        /// <summary> 具体数值类型（Int32、Float32 等），不含抽象 Num 本身。 </summary>
+        public static bool IsConcreteNumericElementType(MetaType elem)
+        {
+            if (elem?.metaClass == null) return false;
+            if (elem.metaClass == CoreMetaClassManager.numMetaClass) return false;
+            return IsNumberClass(elem.metaClass);
+        }
+
+        /// <summary> Iterator&lt;Number&gt; &lt;- 元素为具体数值类型的 Array（只读遍历视角，允许协变）。 </summary>
+        public static bool TryIteratorNumberFromConcreteNumericArray(MetaType targetIterator, MetaType exprArray)
+        {
+            if (targetIterator == null || exprArray == null) return false;
+            if (!targetIterator.IsIterator() || !exprArray.IsArray()) return false;
+            var tArg = GetSingleTemplateArgMetaType(targetIterator);
+            var eArg = GetSingleTemplateArgMetaType(exprArray);
+            return IsAbstractNumberMetaType(tArg) && IsConcreteNumericElementType(eArg);
+        }
+
+        /// <summary> const Array&lt;Number&gt; &lt;- Array&lt;具体数值&gt;：仅 const 目标允许元素抽象协变。 </summary>
+        public static bool TryConstArrayNumberFromConcreteNumericArray(MetaType targetArray, MetaType exprArray, MetaVariable targetVar)
+        {
+            if (targetVar == null || !targetVar.isConst) return false;
+            if (targetArray == null || exprArray == null) return false;
+            if (!targetArray.IsArray() || !exprArray.IsArray()) return false;
+            var tArg = GetSingleTemplateArgMetaType(targetArray);
+            var eArg = GetSingleTemplateArgMetaType(exprArray);
+            return IsAbstractNumberMetaType(tArg) && IsConcreteNumericElementType(eArg);
+        }
+
+        /// <summary> Iterator&lt;Num&gt; 或 const Array&lt;Num&gt; 与具体数值 Array 的协变总开关（赋值/参数匹配用）。 </summary>
+        public static bool TryNumberArrayCovarianceAllow(MetaType target, MetaType expr, MetaVariable targetVar)
+        {
+            if (target == null || expr == null) return false;
+            if (TryIteratorNumberFromConcreteNumericArray(target, expr)) return true;
+            if (TryConstArrayNumberFromConcreteNumericArray(target, expr, targetVar)) return true;
+            return false;
+        }
+
         public static EClassRelation ResolveAssignRelation(
             MetaType targetMetaType,
             MetaExpressNode expressNode,
@@ -631,7 +687,8 @@ namespace SimpleLanguage.Core
             out MetaType expressRetMetaDefineType,
             out MetaClass curClass,
             out MetaClass compareClass,
-            out bool isNullConstExpress)
+            out bool isNullConstExpress,
+            MetaVariable targetVariable = null)
         {
             expressRetMetaDefineType = null;
             compareClass = null;
@@ -650,6 +707,7 @@ namespace SimpleLanguage.Core
             if (expressNode is MetaConstExpressNode constExpressNode && constExpressNode.eType == EType.Null)
             {
                 isNullConstExpress = true;
+                expressRetMetaDefineType = new MetaType(CoreMetaClassManager.nullMetaClass);
                 return EClassRelation.Same;
             }
 
@@ -667,6 +725,23 @@ namespace SimpleLanguage.Core
                 {
                     return EClassRelation.Same;
                 }
+            }
+
+            // Iterator<Number> <- Array<具体数值>：仅遍历/访问语义，允许协变
+            if (targetMetaType.IsIterator() && expressRetMetaDefineType.IsArray())
+            {
+                if (TryIteratorNumberFromConcreteNumericArray(targetMetaType, expressRetMetaDefineType))
+                    return EClassRelation.Same;
+            }
+
+            // 数组：默认须整型一致；例外 const Array<Number> <- Array<具体数值> 与 Number 抽象元素协变
+            if (targetMetaType.IsArray() && expressRetMetaDefineType.IsArray())
+            {
+                if (MetaType.EqualMetaDefineType(targetMetaType, expressRetMetaDefineType))
+                    return EClassRelation.Same;
+                if (TryConstArrayNumberFromConcreteNumericArray(targetMetaType, expressRetMetaDefineType, targetVariable))
+                    return EClassRelation.Same;
+                return EClassRelation.No;
             }
 
             return ValidateClassRelationByMetaClass(curClass, compareClass);

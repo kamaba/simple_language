@@ -1190,10 +1190,13 @@ namespace SimpleLanguage.Core
                                         var cmt1 = m_DefineMetaType.GetMetaTypeByIndex(0);
                                         var cmt2 = m_NewMetaType.GetMetaTypeByIndex(0);
 
-                                        if( !MetaType.ExtendRelateionMetaType( cmt1, cmt2 ) )
+                                        if( !MetaType.EqualMetaDefineType( cmt1, cmt2 ) )
                                         {
-                                            Debug.Assert(false, "定义数组，没有子类的关联");
-                                            return;
+                                            if (!ClassManager.TryConstArrayNumberFromConcreteNumericArray(m_DefineMetaType, m_NewMetaType, m_StoreMetaVariable))
+                                            {
+                                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "数组元素类型须与定义完全一致，不允许协变（const Array<Number> 可对具体数值数组放宽）。");
+                                                return;
+                                            }
                                         }
                                     }
                                     else

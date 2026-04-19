@@ -180,6 +180,13 @@ namespace SimpleLanguage.Core
                     return true;
                 }
 
+                if (ClassManager.TryNumberArrayCovarianceAllow(md, metaVariable.defineMetaType, metaVariable))
+                    return true;
+
+                // 数组仅允许完全一致，不走下方继承放宽
+                if (md.IsArray() && metaVariable.defineMetaType.IsArray())
+                    return false;
+
                 // allow match when types are in inheritance relationship (e.g., defined: Num, concrete: SByte)
                 MetaClass thisClass = metaVariable.defineMetaType?.GetTemplateMetaClass();
                 MetaClass otherClass = md?.GetTemplateMetaClass();
@@ -206,6 +213,21 @@ namespace SimpleLanguage.Core
             }
             if( mip != null)
             {
+                var declaredMt = m_MetaVariable.defineMetaType;
+                var argMt = mip.express != null ? mip.express.GetReturnMetaDefineType() : null;
+                if (declaredMt != null && argMt != null)
+                {
+                    if (declaredMt.IsIterator() && argMt.IsArray()
+                        && ClassManager.TryIteratorNumberFromConcreteNumericArray(declaredMt, argMt))
+                        return true;
+                    if (declaredMt.IsArray() && argMt.IsArray())
+                    {
+                        if (MetaType.EqualMetaDefineType(declaredMt, argMt))
+                            return true;
+                        return ClassManager.TryConstArrayNumberFromConcreteNumericArray(declaredMt, argMt, m_MetaVariable);
+                    }
+                }
+
                 var retMC = mip.GetRetMetaClass();
                 if( retMC is MetaGenTemplateClass mgtc )
                 {
