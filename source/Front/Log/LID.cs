@@ -42,7 +42,6 @@
         MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass = 11032,
         MetaCoreMetaMemberShouldNameEqualExpressFormat = 11033,
 
-        AutoAttributeManagerL59 = 12000,
         AutoClassManagerL229 = 12001,
         AutoClassManagerL238 = 12002,
         AutoClassManagerL255 = 12003,
@@ -173,7 +172,6 @@
         AutoPorjectClassL554 = 12128,
         AutoIRMetaClassL98 = 12129,
         AutoIRMetaVariableL96 = 12130,
-        AutoMetaExpressArrayL36 = 12131,
         AutoMetaExpressAsIsL61 = 12132,
         AutoMetaExpressAsIsL69 = 12133,
         AutoMetaExpressNewObjectL96 = 12134,
@@ -296,5 +294,11 @@
         MetaCoreDefineVariableParseIsNull = 12251,
         MetaCoreVisitTypeShouldIsArray = 12252,
         MetaCoreArrayNotSupportInConvert = 12253,
+        MetaCoreFindMetaClassByTemplateNum = 12254,
+        MetaCoreArrayDiamondShould = 12255,
+        MetaCoreNotFoundMetaTypeByFMClassDefine = 12256,
+        MetaCoreArrayNotFoundSetLength = 12257,
+        MetaCoreArrayMustIsArray = 12258,
+        MetaCoreAssertShowMessage = 12259,
     }
 }

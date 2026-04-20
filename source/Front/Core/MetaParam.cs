@@ -220,11 +220,18 @@ namespace SimpleLanguage.Core
                     if (declaredMt.IsIterator() && argMt.IsArray()
                         && ClassManager.TryIteratorNumberFromConcreteNumericArray(declaredMt, argMt))
                         return true;
+                    if (declaredMt.IsIterator() && argMt.IsIterator()
+                        && ClassManager.TryIteratorNumberFromConcreteNumericIterator(declaredMt, argMt))
+                        return true;
+                    if (declaredMt.IsIterator()
+                        && ClassManager.TryIteratorNumberFromArrayIteratorSource(declaredMt, mip.express))
+                        return true;
+                    if (declaredMt.IsIterable() && argMt.IsArray()
+                        && ClassManager.TryIterableFromArrayElementAssignable(declaredMt, argMt))
+                        return true;
                     if (declaredMt.IsArray() && argMt.IsArray())
                     {
-                        if (TypeManager.CompareMetaType(declaredMt, argMt))
-                            return true;
-                        return ClassManager.TryConstArrayNumberFromConcreteNumericArray(declaredMt, argMt, m_MetaVariable);
+                        return TypeManager.CompareMetaType(declaredMt, argMt);
                     }
                 }
 

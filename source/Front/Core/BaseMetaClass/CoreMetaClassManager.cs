@@ -85,6 +85,7 @@ namespace SimpleLanguage.Core
         public static MetaClass dynamicMetaData { get; private set; } = null;
         public static MetaClass enumMetaData { get; private set; } = null;
         public static MetaClass iteratorMetaClass { get; set; } = null;
+        public static MetaClass iterableMetaClass { get; set; } = null;
 
         public static List<MetaClass> s_InnerDefineMetaClassList = new List<MetaClass>();
 
@@ -108,6 +109,7 @@ namespace SimpleLanguage.Core
             float64MetaClass = Float64MetaClass.CreateMetaClass();
             stringMetaClass = StringMetaClass.CreateMetaClass();
             iteratorMetaClass = IteratorMetaClass.CreateMetaClass();
+            iterableMetaClass = IterableMetaClass.CreateMetaClass();
             arrayMetaClass = ArrayMetaClass.CreateMetaClass();
             rangeMetaClass = RangeMetaClass.CreateMetaClass();
             dynamicMetaClass = DynamicMetaClass.CreateMetaClass();
@@ -132,7 +134,8 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(float32MetaClass);
             s_InnerDefineMetaClassList.Add(float64MetaClass);
             s_InnerDefineMetaClassList.Add(stringMetaClass);
-            //s_InnerDefineMetaClassList.Add(iteratorMetaClass);
+            s_InnerDefineMetaClassList.Add(iteratorMetaClass);
+            s_InnerDefineMetaClassList.Add(iterableMetaClass);
             s_InnerDefineMetaClassList.Add(arrayMetaClass);
             s_InnerDefineMetaClassList.Add(rangeMetaClass);
             s_InnerDefineMetaClassList.Add(dynamicMetaClass);

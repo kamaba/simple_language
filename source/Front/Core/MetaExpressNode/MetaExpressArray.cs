@@ -22,41 +22,41 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
         }
-        public MetaArrayExpressNode( List<FileMetaBaseTerm> fmcl, MetaClass mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv  )
+        public MetaArrayExpressNode(FileMetaBracketTerm fmbt, MetaClass mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv  )
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
+            m_FileMetaBaseTermList = fmbt.fileMetaExpressList;
+            Token token = fmbt.token;
+            if ( m_FileMetaBaseTermList == null )
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "m_FileMetaBaseTermList need not null");
+                return;
+            }
 
             MetaType cmt = null;
             if (defineMT != null )
             {
                 if (!defineMT.IsArray() || defineMT.defineTemplateMetaTypeList.Count != 1)
                 {
-                    Debug.Assert(false);
-                    Log.AddMetaCoreLog(LID.AutoMetaExpressArrayL36, "如果是表达式创建数组对象，必须最后一位知道是多少的长度!");
+                    Log.AddMetaCoreLog(LID.MetaCoreArrayMustIsArray, token, "MetaArrayExpressNode", mv?.name );
                     return;
                 }
                 this.m_MetaType = defineMT;
                 cmt = m_MetaType.defineTemplateMetaTypeList[0];
             }
-
-            m_FileMetaBaseTermList = fmcl;
-
-            if (m_FileMetaBaseTermList != null)
+            for (int i = 0; i < m_FileMetaBaseTermList.Count; i++)
             {
-                for( int i = 0; i < m_FileMetaBaseTermList.Count; i++ )
-                {
-                    var cterm = m_FileMetaBaseTermList[i];
-                    CreateExpressParam cep = new CreateExpressParam();
-                    cep.fme = cterm;
-                    cep.equalMetaVariable = null;
-                    cep.metaType = cmt;
-                    cep.ownerMBS = m_OwnerMetaBlockStatements;
-                    cep.ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass;
+                var cterm = m_FileMetaBaseTermList[i];
+                CreateExpressParam cep = new CreateExpressParam();
+                cep.fme = cterm;
+                cep.equalMetaVariable = null;
+                cep.metaType = cmt;
+                cep.ownerMBS = m_OwnerMetaBlockStatements;
+                cep.ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass;
 
-                    var en = ExpressManager.CreateExpressNodeByCEP(cep);
-                    m_MetaCallArray.Add(en);
-                }
+                var en = ExpressManager.CreateExpressNodeByCEP(cep);
+                m_MetaCallArray.Add(en);
             }
         }
         public override void Parse(AllowUseSettings auc)

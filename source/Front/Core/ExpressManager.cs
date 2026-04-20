@@ -252,14 +252,12 @@ namespace SimpleLanguage.Core
                     case FileMetaBracketTerm fmbt:
                         {
                             //解析成这样是因为 在[] 中允许多个值的像 [1,2,3] 这种的
-                            MetaArrayExpressNode maen = new MetaArrayExpressNode(fmbt.fileMetaExpressList, cep.ownerMetaClass, cep.ownerMBS, cep.metaType, cep.equalMetaVariable);
-
-                            if( cep.allowNewVariable )
+                            MetaArrayExpressNode maen = new MetaArrayExpressNode(fmbt, cep.ownerMetaClass, cep.ownerMBS, cep.metaType, cep.equalMetaVariable);
+                            if (cep.allowNewVariable)
                             {
-                                var newob = new MetaNewObjectExpressNode(maen, cep.ownerMetaClass, cep.ownerMBS, cep.equalMetaVariable );
+                                var newob = new MetaNewObjectExpressNode(maen, cep.ownerMetaClass, cep.ownerMBS, cep.equalMetaVariable);
                                 return newob;
                             }
-
                             return maen;
                         }
                     default:

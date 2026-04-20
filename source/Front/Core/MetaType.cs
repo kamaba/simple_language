@@ -188,22 +188,43 @@ namespace SimpleLanguage.Core
             }
                 return false;
         }
-        /// <summary> 是否为 Core.Iterator&lt;T&gt; 的实例类型（与 <see cref="IsArray"/> 对称）。 </summary>
+        private static bool IsSameTemplateClassByIdentityOrName(MetaClass candidate, MetaClass expected, string expectedClassName)
+        {
+            if (candidate == null) return false;
+            if (expected != null && candidate == expected) return true;
+            var n = candidate.allClassName;
+            return n == expectedClassName;
+        }
+
+        private bool IsTemplateTypeByNameOrIdentity(MetaClass expectedMetaClass, string expectedClassName)
+        {
+            if (m_MetaClass == null) return false;
+
+            if (m_EMetaTypeType == EMetaTypeType.MetaGenClass || m_EMetaTypeType == EMetaTypeType.MetaClass)
+            {
+                if (m_MetaClass is MetaGenTemplateClass mgtc)
+                {
+                    return IsSameTemplateClassByIdentityOrName(mgtc.metaTemplateClass, expectedMetaClass, expectedClassName);
+                }
+            }
+
+            if (m_EMetaTypeType == EMetaTypeType.TemplateClassWithTemplate)
+            {
+                return IsSameTemplateClassByIdentityOrName(m_MetaClass, expectedMetaClass, expectedClassName);
+            }
+
+            return false;
+        }
+
+        /// <summary> 是否为 Core.IIterator&lt;T&gt; 的实例类型（与 <see cref="IsArray"/> 对称）。 </summary>
         public bool IsIterator()
         {
-            if (m_EMetaTypeType == EMetaTypeType.MetaGenClass && m_MetaClass is MetaGenTemplateClass mgtc)
-            {
-                return mgtc.metaTemplateClass == CoreMetaClassManager.iteratorMetaClass;
-            }
-            if (m_EMetaTypeType == EMetaTypeType.MetaClass && m_MetaClass is MetaGenTemplateClass mgtc2)
-            {
-                return mgtc2.metaTemplateClass == CoreMetaClassManager.iteratorMetaClass;
-            }
-            if (m_EMetaTypeType == EMetaTypeType.TemplateClassWithTemplate && m_MetaClass == CoreMetaClassManager.iteratorMetaClass)
-            {
-                return true;
-            }
-            return false;
+            return IsTemplateTypeByNameOrIdentity(CoreMetaClassManager.iteratorMetaClass, "Core.IIterator<T>");
+        }
+        /// <summary> 是否为 Core.IIterable&lt;T&gt; 的实例类型（与 <see cref="IsArray"/> 对称）。 </summary>
+        public bool IsIterable()
+        {
+            return IsTemplateTypeByNameOrIdentity(CoreMetaClassManager.iterableMetaClass, "Core.IIterable<T>");
         }
         public void SetNullable(bool v) { m_IsNullable = v; }
         public bool IsNum()

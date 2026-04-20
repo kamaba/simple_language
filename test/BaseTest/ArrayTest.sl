@@ -134,7 +134,8 @@ ArrayTest
         #int[] concrete2 = Int64[2] #这句报错
         concrete[0] = 11
         concrete[1] = 22
-        IIterator<Num> it = concrete  #允许
+        IIterator<Num> it = concrete.iterator  #允许 要使用iterator 调用函数，支持变成IIerator<Num> 的方式 
+        IIterable<Object> it2 = concrete;
         it.reset()
         while it.moveNext()
         {
@@ -183,7 +184,7 @@ ArrayTest
     static arrayJagged2DAssignTest()
     {
         global.println("========== jagged object[][] assign ==========")
-        object[][] jagged2 = object[2][]
+        int[][] jagged2 = int[2][]
         jagged2[0] = int[4]
         jagged2[1] = Array<int>(10)
         jagged2[0][0] = 999
@@ -272,43 +273,68 @@ ArrayTest
         forIIterator(a42)
     }
 
-    # 多种 Array 构造、多维 int[][][]、float[]、ArrClass[] 大数组与 index/current/for 变体（原 `#!` 块）
-    static arrayConstructorsMultidimAndArrClassBulkTest()
+    static arrayCtorPrimitiveAndAliasTest()
     {
-        global.println("========== constructors / multidim / ArrClass[] bulk ==========")
-        a2 = Array<int>(5){1,2,3,4,5.0f};
-        a3 = Array( 20 );
-        nestedObjRows = Array( 3 ){ Array(0), Array(0), Array(0) }
+        global.println("========== ctor: primitive + alias ==========")
+        intsByCtor = Array<int>(5){1,2,3,4,5}
+        objsByAlias = ObjectArray(20)
+        objectRows = Array<Object>(3){ ObjectArray(0), ObjectArray(0), ObjectArray(0) }
+    }
 
-        int[][][] cube = { { {1,2,3},{1,2,3,4} }, { {1,2,3},{5,6,7,8} } }
+    static arrayCtorMultidimClassShapeTest()
+    {
+        global.println("========== ctor: multidim class shape ==========")
+        int[][][] cube = { [[1,2,3],[1,2,3,4]], [[1,2,3],[5,6,7,8]] }
         cube[1][1][1] = 12
-        ArrClass[][] arrclass1 = new(10,10);
-        arrClass2 = ArrClass[10][10][];
-        avalue222 = cube[1][1][1]
+        cubeValue = cube[1][1][1]
+        ArrClass[][] arrclass1 = new(10)  #不支持这种方式
+        arrClass2 = ArrClass[10][10][]
+    }
 
-        float[] floatsFromLiteral = {1.2,1.3,1.5};
-        a5 = object[]{"aa", 1, "232", 1.0f };
+    static arrayCtorLiteralMixTypeTest()
+    {
+        global.println("========== ctor: literal mix ==========")
+        float[] floatsFromLiteral = {1.2,1.3,1.5}
+        mixedObj = object[8]{"aa", 1, "232", 1.0f}
+    }
 
-        ArrClass2[] a6 = Array(4, ArrClass2.type );
+    static arrayCtorTypedClassArrayTest()
+    {
+        global.println("========== ctor: typed class array ==========")
+        ArrClass[] a6 = Array<ArrClass>(4)
+    }
 
-        float[] a7 = Array<float>(){ 1.2, 2.2, 3.4 };
+    static arrayCtorFloatOverloadTest()
+    {
+        global.println("========== ctor: float overload ==========")
+        float[] a7 = Array<float>(10){ 1.2, 2.2, 3.4 }
+        float[] a8 = Array<float>(20){1,2,3,5,3.3}
+    }
 
-        float[] a8 = Array<float>( 20 ){1,2,3,5,3.3};
+    static arrayArrClassIndexAndCurrentTest()
+    {
+        global.println("========== ArrClass[]: index/current ==========")
+        ArrClass[] arr1 = new(3)
+        int i11 = 2
+        arr1[0] = ArrClass()
+        arr1[1] = ArrClass()
+        arr1[i11] = ArrClass()
+        arr1.$i11.i1 = 10
+        arr1[1] = { i1 = 20 }
+        arr1[1].i1 = 10000
+        arr1.$0.i1 = 10
+        #arr1.$"aa".i1 = 20; #报错
+        arr1.index = 2
+        arr1.current.i1 = 10
+    }
 
-        ArrClass[] arr1 = new(1001)
-
-        int i11 = 11;
-        arr1.$i11.i1 = 10;
-
-        arr1[1] = { i1 = 20 };
-
-        arr1[1000].i1 = 10000;
-
-        arr1.$0.i1 = 10;
-        arr1.$"aa".i1 = 20;
-
-        arr1.index = 2;
-        arr1.current.i1 = 10;
+    static arrayArrClassForInAssignTest()
+    {
+        global.println("========== ArrClass[]: for-in assign ==========")
+        ArrClass[] arr1 = new(3)
+        arr1[0] = ArrClass()
+        arr1[1] = ArrClass()
+        arr1[2] = ArrClass()
         for a in arr1
         {
             if a.index == 20
@@ -318,24 +344,49 @@ ArrayTest
             }
             a.i1 = 200
         }
-        for a in [1,2,3,4] 
+    }
+
+    static arrayForInLiteralIndexTest()
+    {
+        global.println("========== for-in literal index ==========")
+        for a in [1,2,3,4]
         {
             var forInIdx = a.index + 1
         }
+    }
+
+    static arrayArrClassCountLoopWriteTest()
+    {
+        global.println("========== ArrClass[]: count loop write ==========")
+        ArrClass[] arr1 = new(60)
         for i = 0, i < arr1.count()
         {
             i++
             if i < 40
             {
-                continue;
+                continue
             }
 
-            arr1[i] = ArrClass();
-            arr1[i].i1 = 100;
-            arr1.$i.i1 = 100;
-
+            arr1[i] = ArrClass()
+            arr1[i].i1 = 100
+            arr1.$i.i1 = 100
             i += 2
         }
+    }
+
+    # 多种 Array 构造、多维 int[][][]、ArrClass[] 大数组访问与遍历（拆分版）
+    static arrayConstructorsMultidimAndArrClassBulkTest()
+    {
+        global.println("========== constructors / multidim / ArrClass[] bulk(split) ==========")
+        arrayCtorPrimitiveAndAliasTest()
+        arrayCtorMultidimClassShapeTest()
+        arrayCtorLiteralMixTypeTest()
+        arrayCtorTypedClassArrayTest()
+        arrayCtorFloatOverloadTest()
+        arrayArrClassIndexAndCurrentTest()
+        arrayArrClassForInAssignTest()
+        arrayForInLiteralIndexTest()
+        arrayArrClassCountLoopWriteTest()
     }
 
     static fun()

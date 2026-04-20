@@ -277,7 +277,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreParseCallNodeFailed, m_CallNodeList[i].token, "", m_CallNodeList[i].token);
+                        Log.AddMetaCoreLog(LID.MetaCoreParseCallNodeFailed, m_CallNodeList[i].token, "callLink", m_CallNodeList[i].token);
                     }
                 }
             }

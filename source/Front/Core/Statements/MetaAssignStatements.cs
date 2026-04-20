@@ -162,7 +162,7 @@ namespace SimpleLanguage.Core
                 CreateExpressParam cep = new CreateExpressParam()
                 {
                     ownerMBS = m_OwnerMetaBlockStatements,
-                    metaType = expressMdt,
+                    metaType = null,
                     ownerMetaClass = ownerMetaClass,
                     fme = m_FileMetaOpAssignSyntax.express,
                     isStatic = false,
@@ -410,6 +410,10 @@ namespace SimpleLanguage.Core
             // 相当于 给 set 函数传参数
 
             MetaType mdt = m_MetaVariable.GetFinalMetaType();
+            if (!TryForceConvertRightExpressByLeftMetaType(mdt, ref expressRetMetaDefineType))
+            {
+                return;
+            }
 
             //if( mdt.metaTemplate != null )
             //{
@@ -472,7 +476,9 @@ namespace SimpleLanguage.Core
                 }
                 else if( relation == EClassRelation.Num )
                 {
-
+                    sb.Append("数值类型赋值，已按左值目标类型做强制转换；如发生窄化可能丢失精度。");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
+                    m_IsNeedCastState = true;
                 }
                 else if (relation == EClassRelation.Parent)
                 {
@@ -494,6 +500,92 @@ namespace SimpleLanguage.Core
                 }
             }
             //}
+        }
+
+        private bool TryForceConvertRightExpressByLeftMetaType(MetaType leftMetaType, ref MetaType rightMetaType)
+        {
+            if (leftMetaType == null || m_RightMetaExpress == null)
+            {
+                return true;
+            }
+
+            if (m_RightMetaExpress is MetaConstExpressNode rightConst)
+            {
+                if (!MetaVariable.TryAdjustConstExpressByDefineMetaType(rightConst, leftMetaType))
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                        "赋值强制转换失败：右值常量无法转换到左值类型 " + leftMetaType.ToString());
+                    return false;
+                }
+                m_RightMetaExpress.CalcReturnType();
+                rightMetaType = m_RightMetaExpress.GetReturnMetaDefineType();
+                return true;
+            }
+
+            if (leftMetaType.IsArray() && rightMetaType != null && rightMetaType.IsArray())
+            {
+                var leftElemType = ClassManager.GetSingleTemplateArgMetaType(leftMetaType);
+                var rightElemType = ClassManager.GetSingleTemplateArgMetaType(rightMetaType);
+                if (leftElemType == null || rightElemType == null)
+                {
+                    return true;
+                }
+
+                if (leftElemType.IsNum() && rightElemType.IsNum())
+                {
+                    if (m_RightMetaExpress is MetaNewObjectExpressNode mnoe)
+                    {
+                        if (!TryForceConvertArrayLiteralElements(mnoe, leftElemType))
+                        {
+                            return false;
+                        }
+                        m_RightMetaExpress.CalcReturnType();
+                        rightMetaType = m_RightMetaExpress.GetReturnMetaDefineType();
+                    }
+                    m_IsNeedCastState = true;
+                }
+            }
+
+            return true;
+        }
+
+        private bool TryForceConvertArrayLiteralElements(MetaNewObjectExpressNode arrayNode, MetaType targetElemType)
+        {
+            if (arrayNode == null || targetElemType == null || arrayNode.metaContent == null)
+            {
+                return true;
+            }
+
+            var list = arrayNode.metaContent.assignStatementsList;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var item = list[i];
+                var expr = item?.expressNode;
+                if (expr == null) continue;
+
+                if (expr is MetaConstExpressNode c)
+                {
+                    if (!MetaVariable.TryAdjustConstExpressByDefineMetaType(c, targetElemType))
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                            "数组元素强制转换失败（可能溢出或类型不匹配）: 目标类型 " + targetElemType.ToString());
+                        return false;
+                    }
+                    c.CalcReturnType();
+                    continue;
+                }
+
+                if (expr is MetaNewObjectExpressNode childArrayNode && targetElemType.IsArray())
+                {
+                    var nextElemType = ClassManager.GetSingleTemplateArgMetaType(targetElemType);
+                    if (nextElemType != null && !TryForceConvertArrayLiteralElements(childArrayNode, nextElemType))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
         public override void UpdateOwnerMetaClass(MetaClass ownerclass)
         {

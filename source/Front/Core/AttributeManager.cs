@@ -56,7 +56,7 @@ namespace SimpleLanguage.Core
 
                 // Placeholder: for now, attributes only participate in tracing.
                 // Future: map attribute name -> handler function/class and execute with params.
-                Log.AddMetaCoreLog(LID.AutoAttributeManagerL59, $"AttributeHook {hook} owner:{owner} attr:{a.name}");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, $"AttributeHook {hook} owner:{owner} attr:{a.name}");
             }
             return true;
         }

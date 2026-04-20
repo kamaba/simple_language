@@ -485,7 +485,8 @@ namespace SimpleLanguage.Core
                 var genList = m_DefineMetaType.GetGenTemplateMetaTypeList();
                 if (genList.Count != 1 )
                 {
-                    System.Diagnostics.Debug.Assert(false);
+                    Log.AddMetaCoreLog(LID.MetaCoreArrayDiamondShould, "", m_Token);
+                    return;
                 }
                 MetaType cmt = genList[0];
                 if (fmbt is FileMetaBracketTerm fmst)
@@ -495,6 +496,16 @@ namespace SimpleLanguage.Core
                     mnoe.CalcReturnType();
                     var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, mnoe, m_EqualMetaVariable as MetaMemberVariable);
                     m_AssignStatementsList.Add(mas);                    
+                }
+                else if (fmbt is FileMetaBraceTerm fmbrt)
+                {
+                    // 兼容多层数组字面量中使用大括号嵌套的写法：
+                    // int[][][] a = { { {1,2}, {3,4} }, { {5,6}, {7,8} } };
+                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmbrt, cmt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_EqualMetaVariable);
+                    mnoe.Parse(aws);
+                    mnoe.CalcReturnType();
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, mnoe, m_EqualMetaVariable as MetaMemberVariable);
+                    m_AssignStatementsList.Add(mas);
                 }
                 else if( fmbt is FileMetaCallTerm fmct )
                 {
@@ -520,7 +531,18 @@ namespace SimpleLanguage.Core
                     cep.fme = fmcvt;
                     cep.equalMetaVariable = m_EqualMetaVariable;
                     MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
-                    men.Parse(new AllowUseSettings());      
+                    men.Parse(new AllowUseSettings());
+                    // If array element type is explicitly declared (and not object),
+                    // force const literal conversion to target element type instead of numeric promotion.
+                    if (cmt != null
+                        && cmt.metaClass != CoreMetaClassManager.objectMetaClass
+                        && men is MetaConstExpressNode constExpressNode)
+                    {
+                        if (!MetaVariable.TryAdjustConstExpressByDefineMetaType(constExpressNode, cmt))
+                        {
+                            return;
+                        }
+                    }
                     var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
@@ -543,6 +565,15 @@ namespace SimpleLanguage.Core
                     MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());
                     men = ExpressManager.ConvertNewExpress(men, cep.metaType, m_EqualMetaVariable);
+                    if (cmt != null
+                        && cmt.metaClass != CoreMetaClassManager.objectMetaClass
+                        && men is MetaConstExpressNode constExpressNode)
+                    {
+                        if (!MetaVariable.TryAdjustConstExpressByDefineMetaType(constExpressNode, cmt))
+                        {
+                            return;
+                        }
+                    }
                     var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
@@ -1164,7 +1195,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    System.Diagnostics.Debug.Assert(false);
+                    Log.AddMetaCoreLog(LID.MetaCoreArrayNotFoundSetLength, m_Token, "", m_Token.lexeme.ToString() );
                 }
             }
         }
@@ -1219,11 +1250,8 @@ namespace SimpleLanguage.Core
 
                                         if( !TypeManager.CompareMetaType( cmt1, cmt2 ) )
                                         {
-                                            if (!ClassManager.TryConstArrayNumberFromConcreteNumericArray(m_DefineMetaType, m_NewMetaType, m_StoreMetaVariable))
-                                            {
-                                                Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", cmt1.ToString(), cmt2.ToString() );
-                                                return;
-                                            }
+                                            Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", cmt1.ToString(), cmt2.ToString() );
+                                            return;
                                         }
                                     }
                                     else

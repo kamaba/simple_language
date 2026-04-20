@@ -644,6 +644,60 @@ namespace SimpleLanguage.Core
             return IsAbstractNumberMetaType(tArg) && IsConcreteNumericElementType(eArg);
         }
 
+        /// <summary> Iterator&lt;Number&gt; &lt;- Iterator&lt;具体数值&gt;：仅遍历语义，允许 Number 抽象协变。 </summary>
+        public static bool TryIteratorNumberFromConcreteNumericIterator(MetaType targetIterator, MetaType exprIterator)
+        {
+            if (targetIterator == null || exprIterator == null) return false;
+            if (!targetIterator.IsIterator() || !exprIterator.IsIterator()) return false;
+            var tArg = GetSingleTemplateArgMetaType(targetIterator);
+            var eArg = GetSingleTemplateArgMetaType(exprIterator);
+            return IsAbstractNumberMetaType(tArg) && IsConcreteNumericElementType(eArg);
+        }
+
+        /// <summary>
+        /// Iterator&lt;Number&gt; <- arr.iterator 场景兜底：
+        /// 某些链式表达式上，iterator 返回的接口模板参数在当前阶段可能未具体化；
+        /// 此时改为从调用链首节点推断 Array 元素类型来判断 Number 协变。
+        /// </summary>
+        public static bool TryIteratorNumberFromArrayIteratorSource(MetaType targetIterator, MetaExpressNode expressNode)
+        {
+            if (targetIterator == null || expressNode == null) return false;
+            if (!targetIterator.IsIterator()) return false;
+
+            var mcle = expressNode as MetaCallLinkExpressNode;
+            var list = mcle?.metaCallLink?.callNodeList;
+            if (list == null || list.Count == 0) return false;
+
+            var sourceVar = list[0]?.metaVariable;
+            var sourceArrayMt = sourceVar?.GetFinalMetaType();
+            return TryIteratorNumberFromConcreteNumericArray(targetIterator, sourceArrayMt);
+        }
+
+        /// <summary>
+        /// IIterable&lt;TTarget&gt; &lt;- Array&lt;TExpr&gt;：当元素可赋值（同型、子类、接口实现、数值族）时允许。
+        /// 典型场景：IIterable&lt;Object&gt; &lt;- Int32[]。
+        /// </summary>
+        public static bool TryIterableFromArrayElementAssignable(MetaType targetIterable, MetaType exprArray)
+        {
+            if (targetIterable == null || exprArray == null) return false;
+            if (!targetIterable.IsIterable() || !exprArray.IsArray()) return false;
+
+            var tArg = GetSingleTemplateArgMetaType(targetIterable);
+            var eArg = GetSingleTemplateArgMetaType(exprArray);
+            if (tArg == null || eArg == null) return false;
+            if (TypeManager.CompareMetaType(tArg, eArg)) return true;
+
+            var tClass = tArg.GetTemplateMetaClass();
+            var eClass = eArg.GetTemplateMetaClass();
+            if (tClass == null || eClass == null) return false;
+
+            var relation = ValidateClassRelationByMetaClass(tClass, eClass);
+            return relation == EClassRelation.Same
+                || relation == EClassRelation.Child
+                || relation == EClassRelation.Interface
+                || relation == EClassRelation.Num;
+        }
+
         /// <summary> const Array&lt;Number&gt; &lt;- Array&lt;具体数值&gt;：仅 const 目标允许元素抽象协变。 </summary>
         public static bool TryConstArrayNumberFromConcreteNumericArray(MetaType targetArray, MetaType exprArray, MetaVariable targetVar)
         {
@@ -662,6 +716,52 @@ namespace SimpleLanguage.Core
             if (TryIteratorNumberFromConcreteNumericArray(target, expr)) return true;
             if (TryConstArrayNumberFromConcreteNumericArray(target, expr, targetVar)) return true;
             return false;
+        }
+
+        /// <summary>
+        /// Array 声明与右侧表达式：模板须与 Array 泛型结构一致；元素类型须 <see cref="TypeManager.CompareMetaType"/> 一致，
+        /// 或（在仍同为 Array 时递归）右侧元素实现左侧元素接口（<see cref="EClassRelation.Interface"/>）。
+        /// </summary>
+        public static bool TryArrayElementInterfaceAssignable(MetaType targetArray, MetaType exprArray)
+        {
+            if (targetArray == null || exprArray == null) return false;
+            if (!targetArray.IsArray() || !exprArray.IsArray()) return false;
+            if (targetArray.GetTemplateMetaClass() != exprArray.GetTemplateMetaClass()) return false;
+            var tl = targetArray.GetGenTemplateMetaTypeList();
+            var tr = exprArray.GetGenTemplateMetaTypeList();
+            if (tl == null || tr == null || tl.Count != tr.Count || tl.Count == 0) return false;
+            for (int i = 0; i < tl.Count; i++)
+            {
+                var tArg = tl[i];
+                var eArg = tr[i];
+                if (TypeManager.CompareMetaType(tArg, eArg)) continue;
+                if (tArg.IsArray() && eArg.IsArray())
+                {
+                    if (TryArrayElementInterfaceAssignable(tArg, eArg)) continue;
+                    return false;
+                }
+                MetaClass cur = tArg.GetTemplateMetaClass();
+                MetaClass cmp = eArg.GetTemplateMetaClass();
+                if (cur == null || cmp == null) return false;
+                if (ValidateClassRelationByMetaClass(cur, cmp) == EClassRelation.Interface) continue;
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// 在 <see cref="TypeManager.CompareMetaType"/> 已为 false 时，判断是否为「右侧实现左侧接口」等非 Array 元素赋值。
+        /// </summary>
+        public static bool TryMetaTypeAssignableByInterfaceAfterCompareFails(MetaType target, MetaType expr)
+        {
+            if (target == null || expr == null) return false;
+            if (target.IsArray() && expr.IsArray()
+                && target.GetTemplateMetaClass() == expr.GetTemplateMetaClass())
+                return TryArrayElementInterfaceAssignable(target, expr);
+            MetaClass cur = target.GetTemplateMetaClass();
+            MetaClass cmp = expr.GetTemplateMetaClass();
+            if (cur == null || cmp == null) return false;
+            return ValidateClassRelationByMetaClass(cur, cmp) == EClassRelation.Interface;
         }
 
         public static EClassRelation ValidateClassRelationByMetaClass( MetaClass curClass, MetaClass compareClass )

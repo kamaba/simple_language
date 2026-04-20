@@ -358,12 +358,30 @@ namespace SimpleLanguage.Core
                     return EClassRelation.Same;
             }
 
-            // 数组：默认须整型一致；例外 const Array<Number> <- Array<具体数值> 与 Number 抽象元素协变
+            // Iterator<Number> <- Iterator<具体数值>：仅遍历/访问语义，允许协变
+            if (targetMetaType.IsIterator() && expressRetMetaDefineType.IsIterator())
+            {
+                if (ClassManager.TryIteratorNumberFromConcreteNumericIterator(targetMetaType, expressRetMetaDefineType))
+                    return EClassRelation.Same;
+            }
+
+            if (targetMetaType.IsIterator())
+            {
+                if (ClassManager.TryIteratorNumberFromArrayIteratorSource(targetMetaType, expressNode))
+                    return EClassRelation.Same;
+            }
+
+            // IIterable<Object> <- Int32[]：数组到可迭代接口按元素可赋值放宽
+            if (targetMetaType.IsIterable() && expressRetMetaDefineType.IsArray())
+            {
+                if (ClassManager.TryIterableFromArrayElementAssignable(targetMetaType, expressRetMetaDefineType))
+                    return EClassRelation.Same;
+            }
+
+            // 数组实体：不支持协变，必须完整类型一致（与 Dart 风格一致，仅接口侧放宽）。
             if (targetMetaType.IsArray() && expressRetMetaDefineType.IsArray())
             {
                 if (TypeManager.CompareMetaType(targetMetaType, expressRetMetaDefineType))
-                    return EClassRelation.Same;
-                if (ClassManager.TryConstArrayNumberFromConcreteNumericArray(targetMetaType, expressRetMetaDefineType, targetVariable))
                     return EClassRelation.Same;
                 return EClassRelation.No;
             }

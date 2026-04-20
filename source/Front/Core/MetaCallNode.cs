@@ -760,7 +760,11 @@ namespace SimpleLanguage.Core
                         }
                         if (tmb == null)
                         {
-                            if (GetFunctionOrVariableByOwnerClass(m_FrontCallNode.m_MetaClass, m_Name) == false)
+                            MetaClass ownerForMemberLookup = m_FrontCallNode.m_MetaClass;
+                            if (frontCNT == ECallNodeType.MetaType && m_FrontCallNode.m_MetaType != null)
+                                ownerForMemberLookup = m_FrontCallNode.m_MetaType.metaClass;
+                            if (ownerForMemberLookup == null
+                                || GetFunctionOrVariableByOwnerClass(ownerForMemberLookup, m_Name) == false)
                             {
                                 return false;
                             }
@@ -778,7 +782,12 @@ namespace SimpleLanguage.Core
                                     return false;
                                 }
                                 if (m_FrontCallNode != null)
-                                    this.m_CallMetaType = new MetaType(m_FrontCallNode.m_MetaClass, this.m_FrontCallNode.m_MetaTemplateParamsList);
+                                {
+                                    if (frontCNT == ECallNodeType.MetaType && m_FrontCallNode.m_MetaType != null)
+                                        this.m_CallMetaType = new MetaType(m_FrontCallNode.m_MetaType);
+                                    else
+                                        this.m_CallMetaType = new MetaType(m_FrontCallNode.m_MetaClass, this.m_FrontCallNode.m_MetaTemplateParamsList);
+                                }
                                 else
                                 {
                                     this.m_CallMetaType = new MetaType(mmf.ownerMetaClass);
@@ -1659,13 +1668,16 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        m_MetaClass = retMC.GetMetaClassByTemplateCount(count);
-                        m_MetaType = new MetaType(m_MetaClass);
-                        m_CallNodeType = ECallNodeType.ClassName;
+                        m_MetaClass = retMC.GetMetaClassByTemplateCount(count);                        
                         if (m_MetaClass == null)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Template class count mismatch: found {retMC.allName}, templateCount={count}.");
+                            Log.AddMetaCoreLog(LID.MetaCoreFindMetaClassByTemplateNum, m_Token, "" ,retMC.allName, count.ToString() );
                             return false;
+                        }
+                        else
+                        {
+                            m_MetaType = new MetaType(m_MetaClass);
+                            m_CallNodeType = ECallNodeType.ClassName;
                         }
                     }
 
@@ -1677,6 +1689,18 @@ namespace SimpleLanguage.Core
             }
             else
             {
+                // 内置/工程/文件 typealias（含 TypeManager.m_GlobalTypeAliasDict，如 ObjectArray -> Array<Object>）
+                var fmAlias = m_FileMetaCallNode?.fileMeta;
+                if (fmAlias != null
+                    && TypeManager.instance.TryResolveTypeAlias(inputname, fmAlias, out var aliasMt)
+                    && aliasMt != null)
+                {
+                    m_MetaType = new MetaType(aliasMt);
+                    m_MetaClass = m_MetaType.metaClass;
+                    m_CallNodeType = ECallNodeType.MetaType;
+                    return true;
+                }
+
                 var mmv = mc.GetMetaMemberVariableByName(inputname);
                 if (mmv != null)
                 {

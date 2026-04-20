@@ -66,6 +66,12 @@ namespace SimpleLanguage.Core
             {
                 var fmcd = m_FileMetaDefineVariableSyntax.fileMetaClassDefine;
                 mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, m_OwnerMetaBlockStatements.ownerMetaFunction as MetaMemberFunction, fmcd);
+                if( mdt == null )
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreNotFoundMetaTypeByFMClassDefine, fmcd.classNameToken, "DefineStatements", fmcd.name );
+                    return;
+                }
+
                 if( mdt.metaClass is MetaGenTemplateClass mgtc )
                 {
                     mgtc.ParseGenTemplateClass(mgtc);
@@ -211,8 +217,7 @@ namespace SimpleLanguage.Core
                     //}
                     else if( mdt.IsArray() )
                     {
-                        if (!TypeManager.CompareMetaType(mdt, expressRetMetaDefineType)
-                            && !ClassManager.TryConstArrayNumberFromConcreteNumericArray(mdt, expressRetMetaDefineType, m_DefineVarMetaVariable))
+                        if (!TypeManager.CompareMetaType(mdt, expressRetMetaDefineType))
                         {
                             Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token,"DefineStatement", mdt.ToString(), expressRetMetaDefineType.ToString() );
                             return;
@@ -222,10 +227,23 @@ namespace SimpleLanguage.Core
                     else if (mdt.IsIterator())
                     {
                         if (!TypeManager.CompareMetaType(mdt, expressRetMetaDefineType)
-                            && !ClassManager.TryIteratorNumberFromConcreteNumericArray(mdt, expressRetMetaDefineType))
+                            && !ClassManager.TryIteratorNumberFromConcreteNumericArray(mdt, expressRetMetaDefineType)
+                            && !ClassManager.TryIteratorNumberFromConcreteNumericIterator(mdt, expressRetMetaDefineType)
+                            && !ClassManager.TryIteratorNumberFromArrayIteratorSource(mdt, m_ExpressNode))
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                                "Iterator 声明类型与右侧须一致，或对 Iterator<Number> 使用元素为具体数值类型的 Array 表达式。");
+                                "Iterator 声明类型与右侧须一致，或对 Iterator<Number> 使用具体数值元素来源（Array/Iterator）。");
+                            return;
+                        }
+                        m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                    }
+                    else if (mdt.IsIterable())
+                    {
+                        if (!TypeManager.CompareMetaType(mdt, expressRetMetaDefineType)
+                            && !ClassManager.TryIterableFromArrayElementAssignable(mdt, expressRetMetaDefineType))
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                                "IIterable 声明类型与右侧须一致，或允许 Array 元素类型到 IIterable 元素类型的可赋值协变。");
                             return;
                         }
                         m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
