@@ -43,7 +43,7 @@ namespace SimpleLanguage.Core
         }
         public bool convertNewExpressNode => m_ConvertNewExpressNode;
         public bool convertCallExpressNode => m_ConvertCallExpressNode;
-        public virtual Token token => null;
+        public virtual Token token => m_Token;
         public MetaType metaType => m_MetaType;
         public MetaClass ownerMetaClass => m_OwnerMetaClass;
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
@@ -53,6 +53,7 @@ namespace SimpleLanguage.Core
         protected MetaType m_MetaType = null;
         protected bool m_ConvertNewExpressNode = false;
         protected bool m_ConvertCallExpressNode = false;
+        protected Token m_Token = null;
 
 
         public virtual int CalcParseLevel(int level) { return level; }

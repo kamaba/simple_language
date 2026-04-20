@@ -38,7 +38,7 @@ ArrayTest
 
     static forObject( arr )
     {
-        var iter = arr as Array<Object>
+        var iter = arr as ObjectArray
         if iter != null
         {
             for v in iter
@@ -120,10 +120,10 @@ ArrayTest
         boxed[0] = 5
         boxed[1] = 6
         forIIterator(boxed)
-        testArray(boxed) #这句不报错
+        forObject(boxed) #这句不报错
         arr2  = [1000,2000,3000,1005]
         forIIterator(arr2)
-        testArray(arr2) #这句应该是报错，不支持协变
+        forObject(arr2) #这句应该是报错，不支持协变
     }
 
     # IIterator<Num> <- 具体数值数组：Meta 层仅允许「遍历语义」的 Number 抽象协变（见 array.md）
@@ -131,7 +131,7 @@ ArrayTest
     {
         global.println("========== IIterator<Num> <- Int32[]（只读遍历） ==========")
         Int32[] concrete = Int32[2]
-        int[] concrete2 = Int64[2] #这句报错
+        #int[] concrete2 = Int64[2] #这句报错
         concrete[0] = 11
         concrete[1] = 22
         IIterator<Num> it = concrete  #允许

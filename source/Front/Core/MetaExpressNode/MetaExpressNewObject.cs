@@ -7,11 +7,9 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 
 
@@ -139,21 +137,21 @@ namespace SimpleLanguage.Core
                     m_MetaMemberData = (mt.metaClass as MetaData).GetMemberDataByName(m_DefineName);
                     if (m_MetaMemberData == null)
                     {
-                        Debug.Write("Error 在类" + mt.metaClass?.allClassName + "函数: " + mbs?.ownerMetaFunction.name
+                        System.Diagnostics.Debug.Write("Error 在类" + mt.metaClass?.allClassName + "函数: " + mbs?.ownerMetaFunction.name
                             + " 没有找到: 类" + mt.metaClass?.allClassName + " 变量:" + m_DefineName);
                     }
                     //m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberData, m_OwnerMetaBlockStatements, m_FileMetaOpAssignSyntax?.express);
                 }
                 else if (mt.isEnum)
                 {
-                    Debug.Write("-----------------------------------Enum-------------------------");
+                    System.Diagnostics.Debug.Write("-----------------------------------Enum-------------------------");
                 }
                 else
                 {
                     m_MetaMemberVariable = mt.metaClass.GetMetaMemberVariableByName(m_DefineName);
                     if (m_MetaMemberVariable == null)
                     {
-                        Debug.Write("Error 在类" + mt.metaClass?.allClassName + "函数: " + mbs?.ownerMetaFunction.name
+                        System.Diagnostics.Debug.Write("Error 在类" + mt.metaClass?.allClassName + "函数: " + mbs?.ownerMetaFunction.name
                             + " 没有找到: 类" + mt.metaClass?.allClassName + " 变量:" + m_DefineName);
                     }
                     //m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberVariable, m_OwnerMetaBlockStatements, m_FileMetaOpAssignSyntax?.express);
@@ -225,8 +223,8 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Debug.Assert(false);
-                Debug.Write("使用{}赋值，表达式不允许为空!!");
+                System.Diagnostics.Debug.Assert(false);
+                System.Diagnostics.Debug.Write("使用{}赋值，表达式不允许为空!!");
             }
         }
         // 创建NewObject 即 Class c = Class(){ var1 = 1; } 的方式使用 1即生成的表达式
@@ -487,7 +485,7 @@ namespace SimpleLanguage.Core
                 var genList = m_DefineMetaType.GetGenTemplateMetaTypeList();
                 if (genList.Count != 1 )
                 {
-                    Debug.Assert(false);
+                    System.Diagnostics.Debug.Assert(false);
                 }
                 MetaType cmt = genList[0];
                 if (fmbt is FileMetaBracketTerm fmst)
@@ -551,7 +549,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.Assert(false);
+                    System.Diagnostics.Debug.Assert(false);
                     Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL553, "Error 在数组里边应该是FileMetaBracketTerm 类型!");
                 }
             }
@@ -648,7 +646,7 @@ namespace SimpleLanguage.Core
                     }
                     else if( fmbt is FileMetaTermExpress fmte )
                     {
-                        Debug.Assert(false);
+                        System.Diagnostics.Debug.Assert(false);
                     }
                     else
                     {
@@ -817,7 +815,32 @@ namespace SimpleLanguage.Core
                 if (mcen.metaCallLink.callNodeList.Count > 0)
                 {
                     var lastNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
-                    SetInputParams(lastNode.metaInputParamCollection);
+
+                    m_Token = lastNode.token;
+                    if ( lastNode.metaInputParamCollection != null )
+                    {
+                        SetInputParams(lastNode.metaInputParamCollection);
+                    }
+                    else
+                    {
+                        if( lastNode.bracketExpressList?.Count > 0 )
+                        {
+                            MetaArrayExpressNode mean = lastNode.bracketExpressList[0] as MetaArrayExpressNode;
+                            
+                            if( mean.metaCallArray.Count == 1 )
+                            {
+                                m_MetaInputParamList.Add(mean.metaCallArray[0]);
+                            }
+                            else
+                            {
+                                System.Diagnostics.Debug.Assert(false, "在定义数组的时候，只允许是一个维度 ");
+                            }
+                        }
+                        else
+                        {
+                            System.Diagnostics.Debug.Assert(false, "");
+                        }
+                    }
 
                     var fma = lastNode.fileMetaBraceTerm;
                     m_MetaContent = new MetaNewObjectStatementsContent(fma, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
@@ -830,6 +853,7 @@ namespace SimpleLanguage.Core
                 if (mcen.metaCallLink.callNodeList.Count > 0)
                 {
                     var lastNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
+                    m_Token = lastNode.token;
                     SetInputParams(lastNode.metaInputParamCollection);
 
                     var fma = lastNode.fileMetaBraceTerm;
@@ -871,6 +895,7 @@ namespace SimpleLanguage.Core
 
             MetaInputParamCollection mdpc = new MetaInputParamCollection( ownerMC, mbs );
             String[] arr = m_FileMetaConstValueTerm.name.Split("..");
+            m_Token = m_FileMetaConstValueTerm.token;
             if (arr.Length == 2)
             {
                 int arr0 = 0;
@@ -963,6 +988,7 @@ namespace SimpleLanguage.Core
             {
                 m_NewType = ENewType.CommomClass;
             }
+            m_Token = fmbt.token;
             m_MetaContent = new MetaNewObjectStatementsContent(fmbt, ownerMC, mbs, equalMV);
             m_MetaContent.SetDefineMetaType(m_DefineMetaType);
         }
@@ -971,6 +997,7 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
+            m_Token = fmbt.token;
             m_MetaContent = new MetaNewObjectStatementsContent(fmbt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, equalMV);
 
             m_NewMetaType = new MetaType(mt);
@@ -1025,7 +1052,7 @@ namespace SimpleLanguage.Core
                     var metaClass = m_NewMetaType?.metaClass;
                     if (metaClass != null && metaClass.isAbstractClass)
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1026, "Error: cannot instantiate abstract class: " + metaClass.name);
+                        Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1026, m_Token, "Error: cannot instantiate abstract class: " + metaClass.name);
                         m_RealMetaType = null;
                     }
                     else
@@ -1137,7 +1164,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.Assert(false);
+                    System.Diagnostics.Debug.Assert(false);
                 }
             }
         }
@@ -1184,7 +1211,7 @@ namespace SimpleLanguage.Core
                                     {
                                         if(list1[i] != -1 )
                                         {
-                                            Debug.Assert(false, "最后一位数组定义，不能为实体值!");
+                                            System.Diagnostics.Debug.Assert(false, "最后一位数组定义，不能为实体值!");
                                             return;
                                         }
                                         var cmt1 = m_DefineMetaType.GetMetaTypeByIndex(0);
@@ -1194,7 +1221,7 @@ namespace SimpleLanguage.Core
                                         {
                                             if (!ClassManager.TryConstArrayNumberFromConcreteNumericArray(m_DefineMetaType, m_NewMetaType, m_StoreMetaVariable))
                                             {
-                                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "数组元素类型须与定义完全一致，不允许协变（const Array<Number> 可对具体数值数组放宽）。");
+                                                Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", cmt1.ToString(), cmt2.ToString() );
                                                 return;
                                             }
                                         }
@@ -1205,7 +1232,7 @@ namespace SimpleLanguage.Core
                                         {
                                             if (list2[i] == -1)
                                             {
-                                                Debug.Assert(false, "不是最后一位 生成的数组，需要定义数组长度");
+                                                System.Diagnostics.Debug.Assert(false, "不是最后一位 生成的数组，需要定义数组长度");
                                                 return;
                                             }
                                         }
@@ -1213,7 +1240,7 @@ namespace SimpleLanguage.Core
                                         {
                                             if (list1[i] != list2[i])
                                             {
-                                                Debug.Assert(false, "最后一位数组定义，不能为实体值!");
+                                                System.Diagnostics.Debug.Assert(false, "最后一位数组定义，不能为实体值!");
                                                 Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1211, "如果前边定义了长度，new的时候必须和前边的长度一样!");
                                                 return;
                                             }
@@ -1224,7 +1251,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Debug.Assert(false);
+                                System.Diagnostics.Debug.Assert(false);
                                 Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1222, "定义数组与new数组 的维度不同");
                                 return;
                             }
@@ -1292,7 +1319,7 @@ namespace SimpleLanguage.Core
                             {
                                 //这也还是写具体的数组类型对比，和多维长度对比，暂留以后写
                                 Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1288, "数组赋值内容给出的长度超出了定义长度!");
-                                Debug.Assert(false);
+                                System.Diagnostics.Debug.Assert(false);
                                 return;
                             }
                         }
@@ -1331,7 +1358,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.Assert(false);
+                    System.Diagnostics.Debug.Assert(false);
                 }
                 m_ArrayLengthExpress = m_MetaInputParamList[0];
                 m_MetaMemberFunction = null;

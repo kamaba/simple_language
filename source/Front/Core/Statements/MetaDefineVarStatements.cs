@@ -268,7 +268,7 @@ namespace SimpleLanguage.Core
                         if (relation == EClassRelation.No)
                         {
                             sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
                             m_IsNeedCastState = true;
                         }
                         else if (relation == EClassRelation.Same)
