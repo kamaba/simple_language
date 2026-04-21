@@ -215,6 +215,7 @@ namespace SimpleLanguage.Core
             allowUseSettings.getterFunction = true;
             bool flag = true;
             List<MetaCallNode> newList = new List<MetaCallNode>();
+            StringBuilder sb = new StringBuilder();
             for (int i = 0; i < m_CallNodeList.Count; i++)
             {
                 if (flag)
@@ -224,6 +225,10 @@ namespace SimpleLanguage.Core
                         allowUseSettings.setterFunction = _useConst.setterFunction;
                         allowUseSettings.getterFunction = _useConst.getterFunction;
                         allowUseSettings.expressNodeList = _useConst.expressNodeList;
+                    }
+                    else
+                    {
+                        allowUseSettings.getterFunction = true;
                     }
                     flag = m_CallNodeList[i].ParseNode(allowUseSettings);
 
@@ -240,6 +245,8 @@ namespace SimpleLanguage.Core
                     {
                         newList.Add(m_CallNodeList[i]);
                         var cnt = m_CallNodeList[i];
+                        sb.Append(m_CallNodeList[i].name);
+                        sb.Append(".");
                         if ((cnt.callNodeType == ECallNodeType.MemberVariableName
                             || cnt.callNodeType == ECallNodeType.FunctionInnerVariableName
                             || cnt.callNodeType == ECallNodeType.ClassName)
@@ -277,12 +284,12 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreParseCallNodeFailed, m_CallNodeList[i].token, "callLink", m_CallNodeList[i].token);
+                        Log.AddMetaCoreLog(LID.MetaCoreParseCallNodeLinkFailed, m_CallNodeList[i].token, "callLink", sb.ToString(), m_CallNodeList[i].token.ToLexemeAllString() );
                     }
                 }
             }
 
-            StringBuilder sb = new StringBuilder();
+            sb.Clear();
             if (flag)
             {
                 m_VisitNodeList.Clear();
@@ -312,7 +319,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                    Log.AddMetaCoreLog(LID.MetaCoreParseCallLinkFailed, sb.ToString() );
+                Log.AddMetaCoreLog(LID.MetaCoreParseCallLinkFailed, sb.ToString() );
                 flag = false;
             }
 
@@ -660,13 +667,6 @@ namespace SimpleLanguage.Core
                 level = m_VisitNodeList[i].CalcParseLevel(level);
             }
             return level;
-        }
-        public void CalcReturnType()
-        {
-            for (int i = 0; i < m_VisitNodeList.Count; i++)
-            {
-                m_VisitNodeList[i].CalcReturnType();
-            }
         }
         public MetaVariable ExecuteGetMetaVariable()
         {

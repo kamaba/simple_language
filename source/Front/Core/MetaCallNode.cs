@@ -975,7 +975,7 @@ namespace SimpleLanguage.Core
                             //濡傛灉宸茬粡瀹氫箟杩囨潵鍨嬬殑锛屽垯浼樺寲浣跨敤瀹氫箟绫诲瀷锛岃繘琛岃绠?
                             MetaClass mc = null;
                             var mtt = mv.GetFinalMetaType();
-                            mc = mtt.GetTemplateMetaClass();
+                            mc = mtt.metaClass == null ? mv.GetTemplateMetaClass() : mtt.metaClass;
                             if (mc is MetaData)
                             {
                                 MetaData md = mc as MetaData;
@@ -1831,7 +1831,7 @@ namespace SimpleLanguage.Core
             else
             {
                 mmv = mc.GetMetaMemberVariableByName(inputname);
-                if (mmv == null && m_AllowUseSettings.setterFunction || m_AllowUseSettings.getterFunction )
+                if (mmv == null &&  (m_AllowUseSettings.setterFunction ||m_AllowUseSettings.getterFunction ) )
                 {
                     if( m_AllowUseSettings.setterFunction )
                     {
@@ -1847,7 +1847,7 @@ namespace SimpleLanguage.Core
                         MetaInputParam mip = new MetaInputParam(m_AllowUseSettings.expressNodeList[0]);
                         m_MetaInputParamCollection.AddMetaInputParam(mip);
                     }
-                    if( m_AllowUseSettings.getterFunction )
+                    if( !m_AllowUseSettings.setterFunction && m_AllowUseSettings.getterFunction)
                     {
                         if (m_MetaInputParamCollection?.metaInputParamList.Count > 0)
                         {
@@ -1902,7 +1902,7 @@ namespace SimpleLanguage.Core
             else if (mmf != null)
             {
                 m_MetaFunction = mmf;
-                m_MetaType = mmf.returnMetaVariable.realMetaType;
+                m_MetaType = mmf.returnMetaVariable.GetFinalMetaType();
                 m_CallMetaType = new MetaType(mmf.ownerMetaClass);
                 m_CallNodeType = ECallNodeType.MemberFunctionName;
                 //this.m_GenMetaClass = m_FrontCallNode.m_GenMetaClass;

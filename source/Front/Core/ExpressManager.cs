@@ -258,6 +258,10 @@ namespace SimpleLanguage.Core
                                 var newob = new MetaNewObjectExpressNode(maen, cep.ownerMetaClass, cep.ownerMBS, cep.equalMetaVariable);
                                 return newob;
                             }
+                            else
+                            {
+
+                            }
                             return maen;
                         }
                     default:
@@ -383,6 +387,10 @@ namespace SimpleLanguage.Core
             else if (oldmen is MetaArrayExpressNode maen)
             {
                 menNew = new MetaNewObjectExpressNode(maen, oldmen.ownerMetaClass, oldmen.ownerMetaBlockStatements, mv);
+                if (mdt != null && mdt.IsArray() && mdt.metaClass != CoreMetaClassManager.objectMetaClass)
+                {
+                    (menNew as MetaNewObjectExpressNode)?.SetAssignmentTargetArrayMetaType(mdt);
+                }
                 menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                 menNew.CalcReturnType();
             }

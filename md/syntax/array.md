@@ -1,7 +1,7 @@
 # SLang Array 语法与安全实践（按当前实现）
 
 本文档按当前 Front 行为整理，目标是：**写法清楚、边界清楚、容易排错**。  
-核心参考：`MetaExpressNewObject`、`MetaCallNode`、`TypeManager` 与 `test/BaseTest/ArrayTest.sl`。
+核心参考：`MetaExpressNewObject`、`MetaAssignStatements`（赋值第二轮数组字面量纠正）、`MetaCallNode`、`TypeManager` 与 `test/BaseTest/ArrayTest.sl`。
 
 ## 1) Array 的定义方式
 
@@ -139,4 +139,38 @@ for-in 需要对象满足可迭代接口语义（`IIterable` / `IIterator` 路�
 - `arrayNumberIteratorFromConcreteArrayTest`
 - `arrayJagged2DAssignTest`
 - `arrayConstructorsMultidimAndArrClassBulkTest`
+
+## 9) 赋值解析顺序与数组字面量类型纠正（编译期）
+
+### 9.1 为什么要「先右后左」
+
+常见赋值形如 `a = expr` 或 `obj.prop = expr`。若左值是 **setter / 方法调用**（`set void f(T v)`），编译器需要先把 **右值表达式** 放进参数列表，再解析 **左值调用链** 才能拿到 **参数/成员** 的精确定义类型。因此 **右值往往先于左值完成第一轮 Parse/CalcReturnType**，此时 `CreateExpressNode` 侧拿不到左值数组的 `Array<Int32>` 等模板，字面量 `[1,2,100]` 只能按字面量自身做数值升阶推断（例如 `Array<Int16>`），与左侧已声明的 `Int32[]` 可能不一致。
+
+### 9.2 纠正时机（第二轮）
+
+在 `MetaAssignStatements.Parse` 中，当 **左值变量** 已解析并得到 `GetFinalMetaType()` 后，在 `CheckLeftAndRightExpress` 之前会调用 **`TryCoerceRightArrayLiteralToLeftArrayTypeAfterLeftResolved()`**（见 `MetaAssignStatements.cs`）。其意图是：在左值类型已确定的前提下，对 **「模糊」右值数组字面量** 做一次类型对齐。
+
+### 9.3 何时纠正、何时不纠正
+
+**会纠正**（满足全部条件时）：
+
+- 非 setter 赋值（`m_IsSettings` 为假，且不是仅左值 method call 而无普通赋值右值）；
+- 右值是 **`MetaNewObjectExpressNode` 且为数组字面量**（`newType == ArrayClass`）；
+- 右值 **未** 在语法上使用显式元素类型构造（即 **不是** `Array<Int16>(n){ ... }` 那种由调用链标明的模板；此类由 `usesExplicitArrayElementTypeSyntax` 标记，**不由左值覆盖**，避免与程序员显式选择冲突）；
+- 左值 `GetFinalMetaType()` 为 **数组**，且元素类型 **不是** `Object`（避免把任意字面量强行绑到过宽语义）；
+- 右值当前推断的 **元素类型** 与左值 **不一致**（已一致则不再调用 `CalcReturnType`，减少重复工作）。
+
+**不纠正**：
+
+- Setter / 仅设置调用、右值为 null；
+- 右值已 **显式** `Array<T>(...){ ... }`；
+- 左值非数组、或元素为 `Object`；
+- 左右元素类型已相同。
+
+纠正动作为：对右值节点 **`SetAssignmentTargetArrayMetaType(左值数组 MetaType)`** 后 **`CalcReturnType()`**，内部与 **`MetaExpressNewObject.CalcReturnType`**、**`NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType`** 等配合，完成 **define/real 合并、字面量常量强转到左值元素类型** 等（详见源码注释）。
+
+### 9.4 与文档其它条的关系
+
+- 与 **§5.1「数组实体不协变」** 不矛盾：这里针对的是 **字面量** 在编译期 **重写推断与常量表示**，不是把 `Array<Int16>` 变量引用当成 `Array<Int32>` 使用。
+- 仍建议 **§6 建议 1**：能写清左值类型时，右值也尽量显式，减少仅靠第二轮纠正的路径。
 

@@ -403,6 +403,12 @@ namespace SimpleLanguage.Core
             m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
             m_GenTempalteFunctionList = mmf.m_GenTempalteFunctionList;
             m_SourceMetaMemberFunction = mmf.sourceMetaMemberFunction;
+            m_IsSet = mmf.m_IsSet;
+            m_IsGet = mmf.m_IsGet;
+            m_IsOverrideFunction = mmf.m_IsOverrideFunction;
+            m_IsOverrideInterface = mmf.isOverrideInterface;
+            m_IsAbstract = mmf.isAbstract;
+            m_IsFinal = mmf.isFinal;                 
         }
         protected void Init()
         {

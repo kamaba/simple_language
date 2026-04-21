@@ -93,6 +93,7 @@ namespace SimpleLanguage.Core
             }
             return 100;
         }
+
         public static EType CalcETypeByLeftAndRight(EType etype1, EType etype2, ELeftRightOpSign op, out int error )
         {
             error = 0;

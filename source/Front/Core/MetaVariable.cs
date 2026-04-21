@@ -12,7 +12,6 @@ using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -332,79 +331,10 @@ namespace SimpleLanguage.Core
             return sb.ToString();
         }
 
-        public static bool IsNumericEType(EType t)
-        {
-            return t == EType.UInt8
-                || t == EType.Int8
-                || t == EType.Int16
-                || t == EType.UInt16
-                || t == EType.Int32
-                || t == EType.UInt32
-                || t == EType.Int64
-                || t == EType.UInt64
-                || t == EType.Float16
-                || t == EType.Float32
-                || t == EType.Float64
-                || t == EType.Num;
-        }
+        public static bool IsNumericEType(EType t) => NumberManager.IsNumericEType(t);
 
         public static bool TryConvertConstValueByEType(EType targetType, object input, out object converted)
-        {
-            converted = null;
-            try
-            {
-                switch (targetType)
-                {
-                    case EType.Boolean:
-                        converted = Convert.ToBoolean(input);
-                        return true;
-                    case EType.UInt8:
-                        converted = Convert.ToByte(input);
-                        return true;
-                    case EType.Int8:
-                        converted = Convert.ToSByte(input);
-                        return true;
-                    case EType.Int16:
-                        converted = Convert.ToInt16(input);
-                        return true;
-                    case EType.UInt16:
-                        converted = Convert.ToUInt16(input);
-                        return true;
-                    case EType.Int32:
-                        converted = Convert.ToInt32(input);
-                        return true;
-                    case EType.UInt32:
-                        converted = Convert.ToUInt32(input);
-                        return true;
-                    case EType.Int64:
-                        converted = Convert.ToInt64(input);
-                        return true;
-                    case EType.UInt64:
-                        converted = Convert.ToUInt64(input);
-                        return true;
-                    case EType.Float16:
-                        converted = (Half)Convert.ToSingle(input);
-                        return true;
-                    case EType.Float32:
-                        converted = Convert.ToSingle(input);
-                        return true;
-                    case EType.Float64:
-                    case EType.Num:
-                        converted = Convert.ToDouble(input);
-                        return true;
-                    case EType.String:
-                        converted = Convert.ToString(input) ?? string.Empty;
-                        return true;
-                    default:
-                        return false;
-                }
-            }
-            catch
-            {
-                converted = null;
-                return false;
-            }
-        }
+            => NumberManager.TryConvertConstValueByEType(targetType, input, out converted);
 
         public static bool TryAdjustConstExpressByDefineEType(MetaConstExpressNode mcen, EType defineEType)
         {
@@ -429,62 +359,7 @@ namespace SimpleLanguage.Core
 
             if (IsNumericEType(curEType) && IsNumericEType(expEType))
             {
-                if (curEType == expEType)
-                {
-                    return true;
-                }
-
-                if(curEType == EType.Num )
-                {
-                    return true;
-                }
-
-                bool canConvert = expEType == EType.Num;
-                if( !canConvert )
-                {
-                    switch (curEType)
-                    {
-                        case EType.Int8:
-                        case EType.UInt8:
-                            canConvert = (expEType == EType.UInt8 || expEType == EType.Int8);
-                            break;
-                        case EType.Int16:
-                        case EType.UInt16:
-                            canConvert = expEType == EType.UInt8 || expEType == EType.Int8
-                                || expEType == EType.UInt16 || expEType == EType.Int16;
-                            break;
-                        case EType.Int32:
-                        case EType.UInt32:
-                        case EType.Float32:
-                            canConvert = expEType == EType.UInt8 || expEType == EType.Int8
-                                || expEType == EType.UInt16 || expEType == EType.Int16
-                                || expEType == EType.Int32 || expEType == EType.UInt32;
-                            break;
-                        case EType.Int64:
-                        case EType.UInt64:
-                        case EType.Float64:
-                            canConvert = true;
-                            break;
-                        case EType.Num:
-                            canConvert = true;
-                            break;
-                    }
-                }
-                if (canConvert && TryConvertConstValueByEType(curEType, mcen.value, out var convertedValue))
-                {
-                    mcen.SetConstValue(curEType, convertedValue);
-                    return true;
-                }
-
-                if (canConvert && IsRadixNumberLiteral(mcen)
-                    && TryConvertRadixUnsignedToSignedByEType(curEType, mcen.value, out var radixConvertedValue))
-                {
-                    mcen.SetConstValue(curEType, radixConvertedValue);
-                    return true;
-                }
-
-                Log.AddMetaCoreLog(LID.MetaCoreExpressTypeGEDefineType, token, (mcen.value?.ToString() ?? "null"), curEType.ToString(), expEType.ToString());
-                return false;
+                return NumberManager.TryAdjustConstExpressToNumericTarget(mcen, curEType, expEType, token);
             }
 
             if (expEType != curEType)
@@ -495,8 +370,8 @@ namespace SimpleLanguage.Core
                     return true;
                 }
 
-                if (IsRadixNumberLiteral(mcen)
-                    && TryConvertRadixUnsignedToSignedByEType(curEType, mcen.value, out var radixConvertedValue))
+                if (NumberManager.IsRadixNumberLiteral(mcen)
+                    && NumberManager.TryConvertRadixUnsignedToSignedByEType(curEType, mcen.value, out var radixConvertedValue))
                 {
                     mcen.SetConstValue(curEType, radixConvertedValue);
                     return true;
@@ -509,96 +384,6 @@ namespace SimpleLanguage.Core
             return true;
         }
 
-        private static bool IsRadixNumberLiteral(MetaConstExpressNode mcen)
-        {
-            var token = mcen?.token;
-            if (token == null)
-            {
-                return false;
-            }
-
-            if (token.type == ETokenType.NumberReal)
-            {
-                return true;
-            }
-
-            if (token.type != ETokenType.Number)
-            {
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(token.path) || !File.Exists(token.path))
-            {
-                return false;
-            }
-
-            try
-            {
-                var lines = File.ReadAllLines(token.path);
-                int lineIndex = token.sourceBeginLine - 1;
-                if (lineIndex < 0 || lineIndex >= lines.Length)
-                {
-                    return false;
-                }
-
-                var line = lines[lineIndex];
-                int start = token.sourceBeginChar;
-                if (start < 0 || start + 1 >= line.Length)
-                {
-                    return false;
-                }
-
-                return line[start] == '0' &&
-                       (line[start + 1] == 'x' || line[start + 1] == 'X'
-                        || line[start + 1] == 'o' || line[start + 1] == 'O'
-                        || line[start + 1] == 'b' || line[start + 1] == 'B');
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        private static bool TryConvertRadixUnsignedToSignedByEType(EType targetType, object input, out object converted)
-        {
-            converted = null;
-            try
-            {
-                ulong u = Convert.ToUInt64(input);
-                switch (targetType)
-                {
-                    case EType.Int8:
-                        if (u <= byte.MaxValue)
-                        {
-                            converted = unchecked((sbyte)(byte)u);
-                            return true;
-                        }
-                        break;
-                    case EType.Int16:
-                        if (u <= ushort.MaxValue)
-                        {
-                            converted = unchecked((short)(ushort)u);
-                            return true;
-                        }
-                        break;
-                    case EType.Int32:
-                        if (u <= uint.MaxValue)
-                        {
-                            converted = unchecked((int)(uint)u);
-                            return true;
-                        }
-                        break;
-                    case EType.Int64:
-                        converted = unchecked((long)u);
-                        return true;
-                }
-            }
-            catch
-            {
-            }
-
-            return false;
-        }
     }
 
 

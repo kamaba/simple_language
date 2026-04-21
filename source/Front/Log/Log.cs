@@ -69,6 +69,15 @@ namespace SimpleLanguage.Logging
             {
                 m_SB.Append($" Extend:[" + extendMessage + "]");
             }
+            if (!string.IsNullOrEmpty(this.advan))
+            {
+                m_SB.Append($" Tips:[" + advan + "] \n");
+            }
+            if (!string.IsNullOrEmpty(this.demo))
+            {
+                m_SB.Append($" Demo:[" + demo + "] \n");
+            }
+
             return m_SB.ToString();
         }
     }

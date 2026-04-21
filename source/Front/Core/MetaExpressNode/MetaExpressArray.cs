@@ -4,8 +4,6 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -15,8 +13,8 @@ namespace SimpleLanguage.Core
         public List<MetaExpressNode> metaCallArray => m_MetaCallArray;
 
 
-        List<FileMetaBaseTerm>  m_FileMetaBaseTermList = new List<FileMetaBaseTerm>();
-        List<MetaExpressNode>   m_MetaCallArray = new List<MetaExpressNode>();
+        private List<FileMetaBaseTerm>  m_FileMetaBaseTermList = null;
+        private List<MetaExpressNode>   m_MetaCallArray = new List<MetaExpressNode>();
         public MetaArrayExpressNode(MetaClass mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv)
         {
             m_OwnerMetaClass = mc;
@@ -27,7 +25,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_FileMetaBaseTermList = fmbt.fileMetaExpressList;
-            Token token = fmbt.token;
+            m_Token = fmbt.token;
             if ( m_FileMetaBaseTermList == null )
             {
                 Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "m_FileMetaBaseTermList need not null");
@@ -39,6 +37,11 @@ namespace SimpleLanguage.Core
             {
                 if (!defineMT.IsArray() || defineMT.defineTemplateMetaTypeList.Count != 1)
                 {
+                    Token token = m_Token;
+                    if( mv?.token != null )
+                    {
+                        token = mv?.token;
+                    }
                     Log.AddMetaCoreLog(LID.MetaCoreArrayMustIsArray, token, "MetaArrayExpressNode", mv?.name );
                     return;
                 }
@@ -132,7 +135,6 @@ namespace SimpleLanguage.Core
                     }
                 }
                 m_MetaType.AddDefineTemplateMetaType(cmt);
-                //m_MetaType.AddGenTemplateMetaType(cmt);
 
                 var newmt = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(m_MetaType, true, out bool isgmc);
                 newmt.SetArrayLength(m_MetaCallArray.Count);
@@ -143,22 +145,26 @@ namespace SimpleLanguage.Core
         }
         public override string ToFormatString()
         {
-            //if (m_MetaCallLink != null)
-            //{
-            //    StringBuilder sb = new StringBuilder();
-            //    sb.Append(m_MetaCallLink.ToFormatString());
-            //    return sb.ToString();
-            //}
-            return "ExpressCallLink Error!!";
+            if (m_MetaCallArray != null)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("[");
+                for( int i = 0; i < m_MetaCallArray.Count; i++ )
+                {
+                    sb.Append(m_MetaCallArray[i].ToFormatString());
+                    if( m_MetaCallArray.Count - 1 != i )
+                    {
+                        sb.Append(",");
+                    }
+                }
+                sb.Append("]");
+                return sb.ToString();
+            }
+            return "MetaExpressArray.ToFormatString()";
         }
-        public override string ToTokenString()
+        public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
-            //if (m_MetaCallLink != null)
-            //{
-            //    sb.Append(m_MetaCallLink.ToTokenString());
-            //}
-            return sb.ToString();
+            return ToFormatString();
         }
     }
 }

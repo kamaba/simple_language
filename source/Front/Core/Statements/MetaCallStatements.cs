@@ -30,7 +30,6 @@ namespace SimpleLanguage.Core
 
             m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaClass, mbs, null, null );
             m_MetaCallLink.Parse(m_AllowUseSettings);
-            m_MetaCallLink.CalcReturnType();
         }
         public override void UpdateOwnerMetaClass(MetaClass ownerclass)
         {

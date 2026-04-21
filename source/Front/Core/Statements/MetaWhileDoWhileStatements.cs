@@ -82,7 +82,7 @@ namespace SimpleLanguage.Core
                         parsefrom = EParseFrom.StatementRightExpress
                     };
                     m_ConditionExpress = ExpressManager.CreateExpressNode(cep2);
-                    m_ConditionExpress.Parse(new AllowUseSettings());
+                    m_ConditionExpress.Parse(new AllowUseSettings() );
                     m_ConditionExpress.CalcReturnType();
 
                     // Keep for-in right-expression behavior consistent with assignments:

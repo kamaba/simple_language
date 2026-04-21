@@ -164,7 +164,7 @@ ArrayTest
             if v != null
             {
                 global.println("nested level1 -> " + v.toString() )
-                for v2 in v
+                #!for v2 in v
                 {
                     global.println("nested level2 -> " + v2.toString() )
                     for i = 0, i < v2.length, i++
@@ -172,6 +172,7 @@ ArrayTest
                         global.println("nested level3 -> " + v2[i].toString() )
                     }
                 }
+                !#
             }
             else
             {
@@ -200,10 +201,10 @@ ArrayTest
     static arrayIntLiteralReadTest()
     {
         global.println("========== int[] literal read ==========")
-        int[] a33 = {1,2,3,4};  #不支持这种写法
-        #int[] a33 = new(4){1,2,3,4} 支持这样的写法
+        int[] a33 = {1,2,3,4};  #支持这种写法 因为可以理解为 Array<int> a33 = Array<Int32>(4){ 1,2,3,4 } 仅支持 ClassName<T>(param){ ClassName.valurable }的写法
+        int[] a332 = new(4){21,22,23,24} 支持这样的写法
         a33[3] = 123
-        var aa333 =  a33[0];
+        var aa333 =  a332[0];
         global.println("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
     }
 
@@ -248,7 +249,7 @@ ArrayTest
     static arrayStringAndLevelVectorTest()
     {
         global.println("========== string[] + Level<int>[] vector ==========")
-        strarr = string[]{"abbc", "cccc", "a100"}
+        strarr = string[6]{"abbc", "cccc", "a100"}
         forIIterator(strarr)   #不支持这种方式，需要是接口的才可以
 
         Level<int>[] a44 = new(15) { Level<int>(200) }
@@ -337,9 +338,9 @@ ArrayTest
         arr1[2] = ArrClass()
         for a in arr1
         {
-            if a.index == 20
+            if arr1.index == 20
             {
-                a.current = ArrClass(){ i1 = 100 }
+                arr1.current = ArrClass(){ i1 = 100 }
                 continue
             }
             a.i1 = 200
@@ -349,17 +350,24 @@ ArrayTest
     static arrayForInLiteralIndexTest()
     {
         global.println("========== for-in literal index ==========")
+        arr = [1,2,3,4]
+        for a in arr
+        {
+            var forInIdx = arr.index + 1
+        }
+        #!
         for a in [1,2,3,4]
         {
-            var forInIdx = a.index + 1
+            #这里只允许使用a 像访问数组下标，只能通过变量获取
         }
+        !#
     }
 
     static arrayArrClassCountLoopWriteTest()
     {
         global.println("========== ArrClass[]: count loop write ==========")
         ArrClass[] arr1 = new(60)
-        for i = 0, i < arr1.count()
+        for i = 0, i < arr1.length
         {
             i++
             if i < 40

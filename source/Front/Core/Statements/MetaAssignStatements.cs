@@ -127,6 +127,7 @@ namespace SimpleLanguage.Core
         private void Parse()
         {
             MetaCallLink metaCallLink = null;
+            bool isRightDirectBraceLiteral = IsRightDirectBraceLiteral(m_FileMetaOpAssignSyntax?.express);
 
             if (m_FileMetaOpAssignSyntax != null)
             {
@@ -157,36 +158,11 @@ namespace SimpleLanguage.Core
             }
 
             MetaType expressMdt = new MetaType(CoreMetaClassManager.objectMetaClass);
-            if (m_FileMetaOpAssignSyntax.express != null)
+            if (!isRightDirectBraceLiteral && m_FileMetaOpAssignSyntax.express != null)
             {
-                CreateExpressParam cep = new CreateExpressParam()
+                if (!TryParseRightExpress(null))
                 {
-                    ownerMBS = m_OwnerMetaBlockStatements,
-                    metaType = null,
-                    ownerMetaClass = ownerMetaClass,
-                    fme = m_FileMetaOpAssignSyntax.express,
-                    isStatic = false,
-                    isConst = false,
-                    parsefrom = EParseFrom.StatementRightExpress,
-                    equalMetaVariable = m_MetaVariable,
-                    allowNewVariable = true,
-                };
-                m_RightMetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
-                m_RightMetaExpress.Parse(new AllowUseSettings());
-                if (m_RightMetaExpress == null)
-                {
-                    Log.AddMetaCoreLog(LID.MetaCoreShouldHaveRightExpress, m_Token, "MetaAssignStatements", m_FileMetaOpAssignSyntax.express.token );
                     return;
-                }
-                m_RightMetaExpress = ExpressManager.ConvertNewExpress(m_RightMetaExpress, expressMdt, m_MetaVariable);
-                m_RightMetaExpress.CalcReturnType();
-
-                if (m_RightMetaExpress is MetaConstExpressNode rightConst && expressMdt != null)
-                {
-                    if (MetaVariable.TryAdjustConstExpressByDefineMetaType(rightConst, expressMdt))
-                    {
-                        m_RightMetaExpress.CalcReturnType();
-                    }
                 }
             }
             if (metaCallLink == null)
@@ -199,8 +175,8 @@ namespace SimpleLanguage.Core
             AllowUseSettings auc = new AllowUseSettings();
             auc.useNotStatic = false;
             auc.useNotConst = m_FileMetaOpAssignSyntax?.constToken == null ? false : true;            
-            auc.getterFunction = false;
-            if(m_RightMetaExpress != null )
+            auc.getterFunction = true;
+            if (m_RightMetaExpress != null )
             {
                 auc.setterFunction = true;
                 auc.expressNodeList.Add(m_RightMetaExpress);
@@ -380,9 +356,26 @@ namespace SimpleLanguage.Core
                         Log.AddMetaCoreLog( LID.MetaCoreGlobalSettingNeedInProject, m_Token, "in" + ownerMetaClass.name );
                     }
                 }
-                //expressMdt = m_MetaVariable.GetFinalMetaType();
+                expressMdt = m_MetaVariable.GetFinalMetaType();
             }
 
+            if (!m_IsSettings && isRightDirectBraceLiteral && m_RightMetaExpress == null && m_FileMetaOpAssignSyntax?.express != null)
+            {
+                var rightPreferredMetaType = ResolveRightPreferredMetaTypeForDirectBraceLiteral(expressMdt);
+                if (rightPreferredMetaType == null 
+                    || (rightPreferredMetaType?.eMetaTypeType != EMetaTypeType.MetaClass 
+                    && rightPreferredMetaType?.eMetaTypeType != EMetaTypeType.MetaGenClass ) )
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                        "右值为 {} 初始化时，左值类型必须是 class/data/array/map，当前类型不支持该写法。");
+                    return;
+                }
+
+                if (!TryParseRightExpress(rightPreferredMetaType))
+                {
+                    return;
+                }
+            }
 
             if( !m_IsSettings )
             {
@@ -393,12 +386,126 @@ namespace SimpleLanguage.Core
                 }
                 if (m_LeftMethodCall == null)
                 {
+                    TryCoerceRightArrayLiteralToLeftArrayTypeAfterLeftResolved();
                     CheckLeftAndRightExpress();
                 }
             }
 
             return;
         }
+
+        private bool TryParseRightExpress(MetaType rightMetaTypeHint)
+        {
+            if (m_FileMetaOpAssignSyntax?.express == null)
+            {
+                return true;
+            }
+
+            CreateExpressParam cep = new CreateExpressParam()
+            {
+                ownerMBS = m_OwnerMetaBlockStatements,
+                metaType = rightMetaTypeHint,
+                ownerMetaClass = ownerMetaClass,
+                fme = m_FileMetaOpAssignSyntax.express,
+                isStatic = false,
+                isConst = false,
+                parsefrom = EParseFrom.StatementRightExpress,
+                equalMetaVariable = m_MetaVariable,
+                allowNewVariable = true,
+            };
+            m_RightMetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
+            if (m_RightMetaExpress == null)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreShouldHaveRightExpress, m_Token, "MetaAssignStatements", m_FileMetaOpAssignSyntax.express.token);
+                return false;
+            }
+
+            m_RightMetaExpress.Parse(new AllowUseSettings() { setterFunction = false, getterFunction = true } );
+            m_RightMetaExpress = ExpressManager.ConvertNewExpress(m_RightMetaExpress, rightMetaTypeHint, m_MetaVariable);
+            if (m_RightMetaExpress == null)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreShouldHaveRightExpress, m_Token, "MetaAssignStatements.ConvertNewExpress", m_FileMetaOpAssignSyntax.express.token);
+                return false;
+            }
+            m_RightMetaExpress.CalcReturnType();
+            return true;
+        }
+
+        private static bool IsRightDirectBraceLiteral(FileMetaBaseTerm rightExpress)
+        {
+            if (rightExpress == null)
+            {
+                return false;
+            }
+
+            if (rightExpress is FileMetaBraceTerm)
+            {
+                return true;
+            }
+
+            return rightExpress.root is FileMetaBraceTerm;
+        }
+
+        private MetaType ResolveRightPreferredMetaTypeForDirectBraceLiteral(MetaType setterParamMetaType)
+        {
+            if (m_LeftMethodCall != null)
+            {
+                return setterParamMetaType;
+            }
+            return m_MetaVariable?.GetFinalMetaType();
+        }
+
+        /// <summary>
+        /// 赋值常先解析右值再解析左值（例如 setter 需先把右值放入参数再解析左值），故 <c>[1,2,100]</c> 首次推断无左值元素类型。
+        /// 左值最终类型可用后：若左为具元素模板的数组（非 object 元素）、右为未显式 Array-T-构造调用的数组字面量、且左右元素类型不一致，
+        /// 则 <see cref="MetaNewObjectExpressNode.SetAssignmentTargetArrayMetaType"/> + <see cref="MetaNewObjectExpressNode.CalcReturnType"/> 纠正（详见 MetaExpressNewObject / NumberManager）。
+        /// <see cref="m_IsSettings"/> 或左值非变量访问时跳过。
+        /// </summary>
+        private void TryCoerceRightArrayLiteralToLeftArrayTypeAfterLeftResolved()
+        {
+            if (m_IsSettings || m_LeftMethodCall != null || m_RightMetaExpress == null || m_MetaVariable == null)
+            {
+                return;
+            }
+
+            if (m_RightMetaExpress is not MetaNewObjectExpressNode mnoe || mnoe.newType != MetaNewObjectExpressNode.ENewType.ArrayClass)
+            {
+                return;
+            }
+
+            if (mnoe.usesExplicitArrayElementTypeSyntax)
+            {
+                return;
+            }
+
+            var leftMt = m_MetaVariable.GetFinalMetaType();
+            if (leftMt == null || !leftMt.IsArray())
+            {
+                return;
+            }
+
+            var leftElem = ClassManager.GetSingleTemplateArgMetaType(leftMt);
+            if (leftElem?.metaClass == null || leftElem.metaClass == CoreMetaClassManager.objectMetaClass)
+            {
+                return;
+            }
+
+            var rightMt = m_RightMetaExpress.GetReturnMetaDefineType();
+            if (rightMt == null || !rightMt.IsArray())
+            {
+                return;
+            }
+
+            var rightElem = ClassManager.GetSingleTemplateArgMetaType(rightMt);
+            if (rightElem != null && TypeManager.CompareMetaType(leftElem, rightElem))
+            {
+                return;
+            }
+
+            mnoe.SetAssignmentTargetArrayMetaType(leftMt);
+            mnoe.CalcReturnType();
+        }
+
         void CheckLeftAndRightExpress()
         {
             var token = m_RightMetaExpress.token;
@@ -460,15 +567,12 @@ namespace SimpleLanguage.Core
                 if (relation == EClassRelation.No)
                 {
                     sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, sb.ToString());
                     m_IsNeedCastState = true;
                 }
                 else if (relation == EClassRelation.Similar)
                 {
-                    // Numeric similar conversion is now allowed by default:
-                    // expression side can be promoted, and assignment side narrows/casts to declared type.
-                    sb.Append("数字类型相似，已按目标变量类型执行强转；可能会有精度丢失。");
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
+                    // 数字相似/升阶赋值（如具体数值赋给 Num 或变窄变宽）为正常语义，不记 ShowExtendMessage，避免误判为告警
                     m_IsNeedCastState = true;
                 }
                 else if (relation == EClassRelation.Same)
@@ -476,8 +580,7 @@ namespace SimpleLanguage.Core
                 }
                 else if( relation == EClassRelation.Num )
                 {
-                    sb.Append("数值类型赋值，已按左值目标类型做强制转换；如发生窄化可能丢失精度。");
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
+                    // 左值为 Num（如迭代器 _iteratorValue）右值为具体 Int8 等：编译期已强转，属预期行为，不输出扩展告警
                     m_IsNeedCastState = true;
                 }
                 else if (relation == EClassRelation.Parent)
@@ -535,14 +638,29 @@ namespace SimpleLanguage.Core
                 {
                     if (m_RightMetaExpress is MetaNewObjectExpressNode mnoe)
                     {
-                        if (!TryForceConvertArrayLiteralElements(mnoe, leftElemType))
+                        // [1,2,1000] 等仅推断元素类型时，允许按左值元素类型强转常量；
+                        // Array<Int16>(n){ ... } 等已在语法中指定元素类型时，元素类型与左值不一致则报错，不自动改字面量类型。
+                        if (mnoe.usesExplicitArrayElementTypeSyntax)
                         {
-                            return false;
+                            if (!TypeManager.CompareMetaType(leftElemType, rightElemType))
+                            {
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                                    "右值数组已在创建表达式中指定元素类型（例如 Array<Int16>(...)），与左值元素类型 "
+                                    + leftElemType.ToString() + " 不一致，不能自动强转。请使用与左值一致的元素类型，或使用未标注类型的字面量 [...]。");
+                                return false;
+                            }
                         }
-                        m_RightMetaExpress.CalcReturnType();
-                        rightMetaType = m_RightMetaExpress.GetReturnMetaDefineType();
+                        else
+                        {
+                            if (!TryForceConvertArrayLiteralElements(mnoe, leftElemType))
+                            {
+                                return false;
+                            }
+                            m_RightMetaExpress.CalcReturnType();
+                            rightMetaType = m_RightMetaExpress.GetReturnMetaDefineType();
+                            m_IsNeedCastState = true;
+                        }
                     }
-                    m_IsNeedCastState = true;
                 }
             }
 
@@ -565,7 +683,7 @@ namespace SimpleLanguage.Core
 
                 if (expr is MetaConstExpressNode c)
                 {
-                    if (!MetaVariable.TryAdjustConstExpressByDefineMetaType(c, targetElemType))
+                    if (!NumberManager.TryForceAdjustConstExpressByMetaType(c, targetElemType, m_Token))
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
                             "数组元素强制转换失败（可能溢出或类型不匹配）: 目标类型 " + targetElemType.ToString());

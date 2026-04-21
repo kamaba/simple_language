@@ -25,7 +25,7 @@
         MetaCoreAbstractFunctionNeedInstance = 11015,
         MetaCoreRepeatDefineFunction = 11016,
         MetaCoreExpressTypeGEDefineType = 11017,
-        MetaCoreParseCallNodeFailed = 11018,
+        MetaCoreParseCallNodeLinkFailed = 11018,
         MetaCoreParseCallNodeNotFoundContent = 11019,
         MetaCoreParseCallNodeNotFoundInClass = 11020,
         MetaCoreParseCallLinkFailed = 11021,

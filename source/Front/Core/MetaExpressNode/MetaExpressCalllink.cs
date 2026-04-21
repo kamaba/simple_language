@@ -54,11 +54,10 @@ namespace SimpleLanguage.Core
         }
         public override void CalcReturnType()
         {
-            if(m_MetaCallLink != null )
-            {
-                m_MetaCallLink.CalcReturnType();
-            }
-
+            //if(m_MetaCallLink != null )
+            //{
+            //    m_MetaCallLink.CalcReturnType();
+            //}
             m_MetaType = GetReturnMetaDefineType();
         }
         public MetaVariable GetMetaVariable()
