@@ -879,27 +879,9 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
-            var leftClass = leftElement.GetTemplateMetaClass();
-            var rightClass = rightElement.GetTemplateMetaClass();
-            if (leftClass == null || rightClass == null)
-            {
-                return false;
-            }
-
-            var relation = ClassManager.ValidateClassRelationByMetaClass(leftClass, rightClass);
-            if (relation == EClassRelation.Same
-                || relation == EClassRelation.Child
-                || relation == EClassRelation.Interface
-                || relation == EClassRelation.Num)
-            {
-                result = new MetaType(leftArray);
-                return true;
-            }
-            if (relation == EClassRelation.Parent)
-            {
-                result = new MetaType(rightArray);
-                return true;
-            }
+            // Array<T> 兼容仅允许 T 相同（或递归数组元素同构）。
+            // 只要 T 不同（如 Array<Object> vs Array<Int32>），不尝试父子类/接口推导，
+            // 调用方将回退为 Object。
             return false;
         }
         public string ToFormatString()
@@ -1382,21 +1364,7 @@ namespace SimpleLanguage.Core
                     return false;
                 }
 
-                MetaClass cur = tArg.GetTemplateMetaClass();
-                MetaClass cmp = eArg.GetTemplateMetaClass();
-                if (cur == null || cmp == null)
-                {
-                    return false;
-                }
-
-                var relation = ClassManager.ValidateClassRelationByMetaClass(cur, cmp);
-                if (relation == EClassRelation.Same
-                    || relation == EClassRelation.Child
-                    || relation == EClassRelation.Interface
-                    || relation == EClassRelation.Num)
-                {
-                    continue;
-                }
+                // 数组元素类型在 new object 初始化场景必须严格一致，不允许父子类/接口等转换。
                 return false;
             }
 
@@ -1744,24 +1712,20 @@ namespace SimpleLanguage.Core
                 {
                     var cmt = m_MetaType.GetMetaTypeByIndex(0);
 
-                    bool isMatch = TypeManager.CompareMetaType(cmt, mt2);
-                    if (!isMatch)
+                    bool isMatch = false;
+                    if (cmt?.GetTemplateMetaClass() == CoreMetaClassManager.objectMetaClass)
                     {
-                        if (cmt != null && mt2 != null && cmt.IsArray() && mt2.IsArray())
+                        // Array<Object> 允许任意元素类型。
+                        isMatch = true;
+                    }
+                    else
+                    {
+                        isMatch = TypeManager.CompareMetaType(cmt, mt2);
+                        if (!isMatch)
                         {
-                            isMatch = TryArrayElementAssignableForNewObject(cmt, mt2);
-                        }
-                        else
-                        {
-                            var cur = cmt?.GetTemplateMetaClass();
-                            var cmp = mt2?.GetTemplateMetaClass();
-                            if (cur != null && cmp != null)
+                            if (cmt != null && mt2 != null && cmt.IsArray() && mt2.IsArray())
                             {
-                                var relation = ClassManager.ValidateClassRelationByMetaClass(cur, cmp);
-                                isMatch = relation == EClassRelation.Same
-                                    || relation == EClassRelation.Child
-                                    || relation == EClassRelation.Interface
-                                    || relation == EClassRelation.Num;
+                                isMatch = TryArrayElementAssignableForNewObject(cmt, mt2);
                             }
                         }
                     }

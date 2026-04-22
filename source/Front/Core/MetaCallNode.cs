@@ -1107,7 +1107,7 @@ namespace SimpleLanguage.Core
                     else if (frontCNT == ECallNodeType.MemberFunctionName)
                     {
                         MetaFunction mf = m_FrontCallNode.m_MetaFunction;
-                        MetaType retMT = mf.returnMetaVariable.realMetaType;
+                        MetaType retMT = mf.returnMetaVariable.GetFinalMetaType();
                         if (retMT != null && retMT.metaClass != null)
                         {
                             if (GetFunctionOrVariableByOwnerClass(retMT.metaClass, m_Name) == false)

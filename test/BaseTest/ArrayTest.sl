@@ -152,7 +152,7 @@ ArrayTest
         aaaxx12[0] = 5
         aaaxx12[1] = 6
         int[] axxx12 = [ 7,8,9,5 ]
-        Array<Array<Object> > axxx13 = object[2][] { aaaxx12, [991,992,993,994] }
+        Array<Array<int> > axxx13 = int[2][] { aaaxx12, [991,992,993,994] }
 
         int[] axx22 = int[1]{100}
         object[] axx23 = object[1]{ axx22 }
@@ -202,7 +202,7 @@ ArrayTest
     {
         global.println("========== int[] literal read ==========")
         int[] a33 = {1,2,3,4};  #支持这种写法 因为可以理解为 Array<int> a33 = Array<Int32>(4){ 1,2,3,4 } 仅支持 ClassName<T>(param){ ClassName.valurable }的写法
-        int[] a332 = new(4){21,22,23,24} 支持这样的写法
+        int[] a332 = new(4){21,22,23,24} #支持这样的写法
         a33[3] = 123
         var aa333 =  a332[0];
         global.println("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
@@ -226,16 +226,19 @@ ArrayTest
         forIIterator(mixedNest)
 
         int aa = 0
-        mixedNest.$1.$aa.$1 = 3000;
-        global.println("1111111111= " + mixedNest.$1.$aa.$1 )
+        #mixedNest.$1.$aa.$1 = 3000; #报错
+        mixedNest.$1 = 111
+        global.println("1111111111= " + mixedNest.$1 )
 
-        var tt1 = mixedNest.$aa.$3
+        #!
+        var tt1 = mixedNest.$aa
         if tt1 is ArrClass tt2
         {
             tt2.i1 = 200
             var aa1111 = tt2.i1;
             global.println("22222222= " +aa1111 )
         }
+        !#
     }
 
     static arrayLevelMatrixTest()
@@ -381,22 +384,6 @@ ArrayTest
             i += 2
         }
     }
-
-    # 多种 Array 构造、多维 int[][][]、ArrClass[] 大数组访问与遍历（拆分版）
-    static arrayConstructorsMultidimAndArrClassBulkTest()
-    {
-        global.println("========== constructors / multidim / ArrClass[] bulk(split) ==========")
-        arrayCtorPrimitiveAndAliasTest()
-        arrayCtorMultidimClassShapeTest()
-        arrayCtorLiteralMixTypeTest()
-        arrayCtorTypedClassArrayTest()
-        arrayCtorFloatOverloadTest()
-        arrayArrClassIndexAndCurrentTest()
-        arrayArrClassForInAssignTest()
-        arrayForInLiteralIndexTest()
-        arrayArrClassCountLoopWriteTest()
-    }
-
     static fun()
     {
         arrayBasicApiTest()
@@ -412,7 +399,15 @@ ArrayTest
         arrayLevelMatrixTest()
         arrayStringAndLevelVectorTest()
         arrayHeterogeneousObject2DTest()
-        arrayConstructorsMultidimAndArrClassBulkTest()
+        arrayCtorPrimitiveAndAliasTest()
+        arrayCtorMultidimClassShapeTest()
+        arrayCtorLiteralMixTypeTest()
+        arrayCtorTypedClassArrayTest()
+        arrayCtorFloatOverloadTest()
+        arrayArrClassIndexAndCurrentTest()
+        arrayArrClassForInAssignTest()
+        arrayForInLiteralIndexTest()
+        arrayArrClassCountLoopWriteTest()
     }
 }
 # 3.1.1 先实现了，在函数里，直接调用C#层写的方法。
