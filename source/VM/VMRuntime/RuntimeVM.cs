@@ -435,10 +435,12 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 catch (Exception ex)
                 {
-                    var loc = iri?.debugInfo?.FormatDiagnosticLine();
-                    var detail = string.IsNullOrEmpty(loc)
+                    // SvmNullNumericArithmeticException：LID.VMOperatorNotShouldHaveNull 已在 SValue（比较/算术）中输出，这里不再打日志
+                    if (ex is SvmNullNumericArithmeticException) throw;
+                    var loc2 = iri?.debugInfo?.FormatDiagnosticLine();
+                    var detail = string.IsNullOrEmpty(loc2)
                         ? $"VM instruction fault: op={iri?.opCode} ip={m_ExecuteIndex} id={iri?.id} index={iri?.index}"
-                        : $"VM instruction fault: op={iri?.opCode} ip={m_ExecuteIndex} id={iri?.id} index={iri?.index} at {loc}";
+                        : $"VM instruction fault: op={iri?.opCode} ip={m_ExecuteIndex} id={iri?.id} index={iri?.index} at {loc2}";
                     if (iri?.debugInfo != null)
                         Log.AddRuntimeLog(LID.ShowMessageError, iri.debugInfo, detail + " — " + ex.Message);
                     else
@@ -1372,8 +1374,8 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 CLRVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
                             }
-                            if (TryPushStackSlot(out int slot))
-                                m_ValueStack[slot].SetSObject(sobj);
+                            //if (TryPushStackSlot(out int slot))
+                            //    m_ValueStack[slot].SetSObject(sobj);
                         }
                     }
                     break;
@@ -1384,12 +1386,12 @@ namespace SimpleLanguage.VM.Runtime
                         if (m_ValueIndex > 0 && rdt != null)
                         {
                             var sval = m_ValueStack[m_ValueIndex - 1];
-                            if (sval.eType == EVMType.Int8
-                                || sval.eType != EVMType.UInt8
-                                || sval.eType != EVMType.Int16
-                                || sval.eType != EVMType.UInt16
-                                || sval.eType != EVMType.Int32
-                                || sval.eType != EVMType.UInt32 )
+                            if ( !(sval.eType == EVMType.Int8
+                                || sval.eType == EVMType.UInt8
+                                || sval.eType == EVMType.Int16
+                                || sval.eType == EVMType.UInt16
+                                || sval.eType == EVMType.Int32
+                                || sval.eType == EVMType.UInt32 ) )
                             {
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, "鍒涘缓鏁扮粍闀垮害涓嶆槸Int32绫诲瀷!!");
                                 break;

@@ -6,6 +6,7 @@
 //  Description:  compute left and right value's method example: +-*/%&|^>><<
 //****************************************************************************
 
+using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,6 +16,58 @@ namespace SimpleLanguage.VM
 {
     public partial struct SValue
     {
+        /// <summary>True if the value is a null reference or the VM <see cref="EVMType.Null"/> token.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsNullLikeForArithmetic(ref SValue v)
+        {
+            if (v.isNull || v.eType == EVMType.Null) return true;
+            if (v.eType == EVMType.Object || v.eType == EVMType.Class) return v.sobject == null;
+            return false;
+        }
+
+        /// <summary>Primitive / Num not carrying null; excludes null-like references.</summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static bool IsStrictNumericNotNullLike(ref SValue v)
+        {
+            if (v.isNull || v.eType == EVMType.Null) return false;
+            return IsNumericType(v.eType) || v.eType == EVMType.Num;
+        }
+
+        /// <summary>Maps <see cref="sign"/> in <see cref="ComputeValueInline"/> to a log display symbol.</summary>
+        private static string SignToOperatorForLog(int sign) =>
+            sign switch
+            {
+                0 => "+",
+                1 => "-",
+                2 => "*",
+                3 => "/",
+                4 => "%",
+                5 => "&",
+                6 => "|",
+                7 => "^",
+                8 => "<<",
+                9 => ">>",
+                _ => "?"
+            };
+
+        /// <summary>Throws if one operand is null-like and the other is numeric (e.g. null + 3, 3 + null).</summary>
+        private static void ThrowIfNullMixedWithNumericOperand(ref SValue left, ref SValue right, int sign)
+        {
+            bool lNull = IsNullLikeForArithmetic(ref left);
+            bool rNull = IsNullLikeForArithmetic(ref right);
+            if (!lNull && !rNull) return;
+            bool lNum = IsStrictNumericNotNullLike(ref left);
+            bool rNum = IsStrictNumericNotNullLike(ref right);
+            if ((lNull && rNum) || (rNull && lNum))
+            {
+                var op = SignToOperatorForLog(sign);
+                var nullSide = lNull && rNum ? "左操作数" : "右操作数";
+                // 日志在抛出前完成（不依赖 Run 的 catch）；模板见 ErrorDefinitions.csv
+                Log.AddRuntimeLog(LID.VMOperatorNotShouldHaveNull, string.Empty, op, nullSide);
+                throw new SvmNullNumericArithmeticException(op, nullSide);
+            }
+        }
+
         // sign 0:+ 1:- 2:* 3:/ 4:% 5:& 6:| 7:^  8:<< 9:>>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ComputeValueInline(ref SValue left, int sign, ref SValue right, bool isUnSign)
@@ -69,6 +122,11 @@ namespace SimpleLanguage.VM
                     return;
                 }
             }
+
+            // Reject null / null-like reference mixed with a numeric operand for arithmetic
+            // (avoid treating null as 0 — e.g. null + 5 and 5 + null must error).
+            ThrowIfNullMixedWithNumericOperand(ref leftPrim, ref rightPrim, sign);
+
             // If either side is a class-wrapped NumObject, prefer NumObject operation methods
             bool leftIsNumObj = left.eType == EVMType.Class && left.sobject is NumObject;
             bool rightIsNumObj = right.eType == EVMType.Class && right.sobject is NumObject;

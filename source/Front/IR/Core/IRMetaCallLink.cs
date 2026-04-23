@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.IR;
+using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -79,7 +80,12 @@ namespace SimpleLanguage.Core.IR
                     irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                 }
                 IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
-                irList.Add(irVar);
+                if (irVar == null)
+                {
+                    Log.AddIRLog(LID.IRMethodNotFoundVariable, cnode.token, $"load variable failed (null IR): {mv?.name}");
+                }
+                else
+                    irList.Add(irVar);
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.EnumMember)
             {
@@ -114,7 +120,12 @@ namespace SimpleLanguage.Core.IR
                 }
 
                 IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
-                irList.Add(irVar);
+                if (irVar == null)
+                {
+                    Log.AddIRLog(LID.IRMethodNotFoundVariable, cnode.token, $"load enum/variable failed (null IR): {mv?.name}");
+                }
+                else
+                    irList.Add(irVar);
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.VisitVariable)
             {
@@ -124,7 +135,12 @@ namespace SimpleLanguage.Core.IR
                 IRMetaType irmt = new IRMetaType(irmc);
 
                 IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
-                irList.Add(irVar);
+                if (irVar == null)
+                {
+                    Log.AddIRLog(LID.IRMethodNotFoundVariable, cnode.token, $"load visit target failed (null IR): {mv?.name}");
+                }
+                else
+                    irList.Add(irVar);
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
             {

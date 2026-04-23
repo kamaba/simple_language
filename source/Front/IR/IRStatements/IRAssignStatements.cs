@@ -115,11 +115,16 @@ namespace SimpleLanguage.IR
                 if (ms.autoAddExpressOpSign != ELeftRightOpSign.None)
                 {
                     MetaVariable mvtt = lastCL.GetOrgTemplateMetaVariable();
-                    if (mvtt.variableFrom == MetaVariable.EVariableFrom.Member
-                        || mvtt.variableFrom == MetaVariable.EVariableFrom.Global)
+                    // read-modify-write: keep one instance for StoreNotStaticField2 after the load.
+                    // template-specialized / copied members are still MetaMemberVariable; require dup even if
+                    // variableFrom was not normalized to Member|Global.
+                    bool needInstanceDup = mvtt != null && !mvtt.isStatic
+                        && (mvtt.variableFrom == MetaVariable.EVariableFrom.Member
+                            || mvtt.variableFrom == MetaVariable.EVariableFrom.Global
+                            || mvtt is MetaMemberVariable);
+                    if (needInstanceDup)
                     {
-                        IRDup irdup = new IRDup(this.irMethod);
-                        m_IRStatements.Add(irdup);
+                        m_IRStatements.Add(new IRDup(this.irMethod));
                     }
 
                     if (lastCL.variable.isStatic)
@@ -128,7 +133,22 @@ namespace SimpleLanguage.IR
                     }
 
                     var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, lastCL);
-                    m_IRStatements.AddRange(list);
+                    if (list == null)
+                    {
+                        Log.AddIRLog(LID.IRMethodNotFoundVariable, ms.leftMetaExpress?.token, "compound assign: lvalue load list is null");
+                    }
+                    else
+                    {
+                        for (int li = 0; li < list.Count; li++)
+                        {
+                            if (list[li] == null)
+                            {
+                                Log.AddIRLog(LID.IRMethodNotFoundVariable, ms.leftMetaExpress?.token, "compound assign: lvalue load IR is null (LoadNotStaticField / load not emitted).");
+                                break;
+                            }
+                        }
+                        m_IRStatements.AddRange(list);
+                    }
                 }
 
             }

@@ -235,10 +235,35 @@ namespace SimpleLanguage.VM
                 }
             }
         }
+
+        /// <summary>与 SValueCompute 中算术 null 检测一致，用于 ==/!= 与数字混合时打 VMOperator 日志。</summary>
+        private static bool IsNullLikeForOperatorVmLog(ref SValue v)
+        {
+            if (v.isNull || v.eType == EVMType.Null) return true;
+            if (v.eType == EVMType.Object || v.eType == EVMType.Class) return v.sobject == null;
+            return false;
+        }
+
+        private static bool IsStrictNumericForOperatorVmLog(ref SValue v)
+        {
+            if (v.isNull || v.eType == EVMType.Null) return false;
+            return IsNumericType(v.eType) || v.eType == EVMType.Num;
+        }
+
         // compareSign 0:== 1:!= 
         public static void CompareEuqalSValue1AndValue2( ref SValue sval1, ref SValue sval2, bool isEqual, out bool methodCall )
         {
             methodCall = false;
+
+            // == / !=：一侧为 null 类、另一侧为纯数字时与算术一致，先打 VMOperator 模板日志再抛（不依赖 Run 的 catch）
+            if ((IsNullLikeForOperatorVmLog(ref sval1) && IsStrictNumericForOperatorVmLog(ref sval2))
+                || (IsNullLikeForOperatorVmLog(ref sval2) && IsStrictNumericForOperatorVmLog(ref sval1)))
+            {
+                var op = isEqual ? "==" : "!=";
+                var nullSide = IsNullLikeForOperatorVmLog(ref sval1) && IsStrictNumericForOperatorVmLog(ref sval2) ? "左操作数" : "右操作数";
+                Log.AddRuntimeLog(LID.VMOperatorNotShouldHaveNull, string.Empty, op, nullSide);
+                throw new SvmNullNumericArithmeticException(op, nullSide);
+            }
 
             if (sval1.isNull)
             {

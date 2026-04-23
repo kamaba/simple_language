@@ -72,7 +72,7 @@ ArrayTest
     {
         global.println("========== Array.generic element ==========")
         Level<Int32>[] levels = new(3) { Level<Int32>(10), null, Level<Int32>(30) }
-        levels[1].t += 5
+        levels[1].t += 5    #如果下标是应该报空指针错误
         for v in levels
         {
             if v != null
