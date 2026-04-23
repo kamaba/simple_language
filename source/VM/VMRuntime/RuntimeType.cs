@@ -139,7 +139,7 @@ namespace SimpleLanguage.VM
                 return;
             }
             // 与 ClassObject.GetMemberVariableSValue 一致：优先 m_MemberData 紧凑布局
-            ro.SetSValueBySObjct(ref svalue);
+            ro.SetSValueByRuntimeObjct(ref svalue);
         }
         public void SetStaticMemberVariableSValue(int index, SValue svalue)
         {

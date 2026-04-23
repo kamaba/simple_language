@@ -137,6 +137,7 @@ namespace SimpleLanguage.IR
 
                         IRData irdata = new IRData();
                         irdata.opCode = EIROpCode.LoadArrayIndexField;
+                        irdata.SetDebugInfoByToken(mvv.token ?? mvv.visitExpressNode?.token);
                         IRBase irbase = new IRBase();
                         irbase.AddIRData(irdata);
                         irVar.m_IRDataList.AddRange(irbase.IRDataList);

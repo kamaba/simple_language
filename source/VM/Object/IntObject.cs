@@ -11,16 +11,16 @@ namespace SimpleLanguage.VM
 {
     public class BoolObject : SObject
     {
-        public new bool value => m_Numeric.ui8 != 0;
+        public new bool value => m_Numeric.u8 != 0;
         public BoolObject(bool flag) : base(EVMType.Boolean)
         {
-            m_Numeric.ui8 = flag ? (byte)1 : (byte)0;
+            m_Numeric.u8 = flag ? (byte)1 : (byte)0;
             m_RuntimeType = RuntimeTypeManager.boolRuntimeType;
         }
 
         public void SetValue(bool _val)
         {
-            m_Numeric.ui8 = _val ? (byte)1 : (byte)0;
+            m_Numeric.u8 = _val ? (byte)1 : (byte)0;
         }
         public override string ToFormatString()
         {
@@ -29,21 +29,21 @@ namespace SimpleLanguage.VM
     }
     public class UInt8Object : NumObject
     {
-        public new byte value => m_Numeric.ui8;
+        public new byte value => m_Numeric.u8;
 
         public UInt8Object(byte _val) : base(EVMType.UInt8)
         {
-            m_Numeric.ui8 = _val;
+            m_Numeric.u8 = _val;
             m_RuntimeType = RuntimeTypeManager.uint8RuntimeType;
         }
     }
     public class Int8Object : NumObject
     {
-        public new sbyte value => m_Numeric.si8;
+        public new sbyte value => m_Numeric.i8;
 
         public Int8Object(sbyte _val) : base(EVMType.Int8)
         {
-            m_Numeric.si8 = _val;
+            m_Numeric.i8 = _val;
             m_RuntimeType = RuntimeTypeManager.int8RuntimeType;
         }
     }
@@ -59,11 +59,11 @@ namespace SimpleLanguage.VM
     }
     public class UInt16Object : NumObject
     {
-        public new ushort value => m_Numeric.ui16;
+        public new ushort value => m_Numeric.u16;
 
         public UInt16Object(ushort val) : base(EVMType.UInt16)
         {
-            m_Numeric.ui16 = val;
+            m_Numeric.u16 = val;
             m_RuntimeType = RuntimeTypeManager.uint16RuntimeType;
         }
     }

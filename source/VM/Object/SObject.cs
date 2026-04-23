@@ -56,15 +56,15 @@ namespace SimpleLanguage.VM
             switch (m_Type)
             {
                 case EVMType.Boolean:
-                    return m_Numeric.ui8 != 0;
+                    return m_Numeric.u8 != 0;
                 case EVMType.UInt8:
-                    return m_Numeric.ui8;
+                    return m_Numeric.u8;
                 case EVMType.Int8:
-                    return m_Numeric.si8;
+                    return m_Numeric.i8;
                 case EVMType.Int16:
                     return m_Numeric.i16;
                 case EVMType.UInt16:
-                    return m_Numeric.ui16;
+                    return m_Numeric.u16;
                 case EVMType.Int32:
                     return m_Numeric.i32;
                 case EVMType.UInt32:
@@ -74,10 +74,10 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt64:
                     return m_Numeric.u64;
                 case EVMType.Float32:
-                    return m_Numeric.f;
+                    return m_Numeric.f32;
                 case EVMType.Float64:
                 case EVMType.Num:
-                    return m_Numeric.d;
+                    return m_Numeric.f64;
                 default:
                     return m_Reference;
             }
@@ -96,23 +96,23 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.Boolean:
                     if (val is bool bb)
-                        m_Numeric.ui8 = bb ? (byte)1 : (byte)0;
+                        m_Numeric.u8 = bb ? (byte)1 : (byte)0;
                     else if (val is byte b8)
-                        m_Numeric.ui8 = b8;
+                        m_Numeric.u8 = b8;
                     else
-                        m_Numeric.ui8 = Convert.ToBoolean(val) ? (byte)1 : (byte)0;
+                        m_Numeric.u8 = Convert.ToBoolean(val) ? (byte)1 : (byte)0;
                     break;
                 case EVMType.UInt8:
-                    m_Numeric.ui8 = Convert.ToByte(val);
+                    m_Numeric.u8 = Convert.ToByte(val);
                     break;
                 case EVMType.Int8:
-                    m_Numeric.si8 = Convert.ToSByte(val);
+                    m_Numeric.i8 = Convert.ToSByte(val);
                     break;
                 case EVMType.Int16:
                     m_Numeric.i16 = Convert.ToInt16(val);
                     break;
                 case EVMType.UInt16:
-                    m_Numeric.ui16 = Convert.ToUInt16(val);
+                    m_Numeric.u16 = Convert.ToUInt16(val);
                     break;
                 case EVMType.Int32:
                     m_Numeric.i32 = Convert.ToInt32(val);
@@ -127,11 +127,11 @@ namespace SimpleLanguage.VM
                     m_Numeric.u64 = Convert.ToUInt64(val);
                     break;
                 case EVMType.Float32:
-                    m_Numeric.f = Convert.ToSingle(val);
+                    m_Numeric.f32 = Convert.ToSingle(val);
                     break;
                 case EVMType.Float64:
                 case EVMType.Num:
-                    m_Numeric.d = Convert.ToDouble(val);
+                    m_Numeric.f64 = Convert.ToDouble(val);
                     break;
                 case EVMType.String:
                 case EVMType.Member:

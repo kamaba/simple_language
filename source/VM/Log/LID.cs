@@ -25,8 +25,8 @@
         /// <summary>操作符运算中出现 null 与数字混合，模板: 在操作符[{0}]的运算中，出现了null的在[{1}]</summary>
         VMOperatorNotShouldHaveNull = 10022,
 
-        RuntimeVMInstructPayLoadGetValueError = 11021,
-        RuntimeVMRuntimeTypeIsNull = 11022,
+        RuntimeVMInstructPayLoadGetValueError = 10021,
+        RuntimeVMRuntimeTypeIsNull = 10022,
 
         AutoLogManagerL190 = 13000,
         AutoLogManagerL194 = 13001,

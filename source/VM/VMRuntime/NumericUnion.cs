@@ -12,13 +12,13 @@ namespace SimpleLanguage.VM
     {
         [FieldOffset(0)] public long i64;
         [FieldOffset(0)] public ulong u64;
-        [FieldOffset(0)] public double d;
-        [FieldOffset(0)] public float f;
+        [FieldOffset(0)] public double f64;
+        [FieldOffset(0)] public float f32;
         [FieldOffset(0)] public int i32;
         [FieldOffset(0)] public uint u32;
         [FieldOffset(0)] public short i16;
-        [FieldOffset(0)] public ushort ui16;
-        [FieldOffset(0)] public byte ui8;
-        [FieldOffset(0)] public sbyte si8;
+        [FieldOffset(0)] public ushort u16;
+        [FieldOffset(0)] public byte u8;
+        [FieldOffset(0)] public sbyte i8;
     }
 }

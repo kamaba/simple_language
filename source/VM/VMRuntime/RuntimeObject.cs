@@ -13,15 +13,7 @@ namespace SimpleLanguage.VM
         public EVMType eType => m_RuntimeType != null ? m_RuntimeType.eType : EVMType.Null;
         public SObject sobject => ResolveSObject();
         public RuntimeVariable runtimeVariable => m_RuntimeVariable;
-        public bool isNull
-        {
-            get
-            {
-                if (RuntimeTypeManager.IsMemberDataDirectType(eType) && hasMemberDataSlice)
-                    return false;
-                return ResolveSObject() == null;
-            }
-        }
+        public bool isNull => m_IsNull;
 
         /// <summary>IR / Meta 渚ф垚鍛樺彉閲?id锛堜笌 <see cref="RuntimeVariable.id"/> 涓€鑷达級锛涙棤鍏宠仈鍙橀噺鏃朵负 0銆?/summary>
         public int memberVariableId => m_RuntimeVariable?.id ?? 0;
@@ -37,6 +29,7 @@ namespace SimpleLanguage.VM
         private RuntimeVariable m_RuntimeVariable = null;
         private RuntimeType m_RuntimeType = null;
         private int m_ObjectPointerId = 0;
+        private bool m_IsNull = true;
 #if DEBUG
         private SObject m_SObject = null;
 #endif
@@ -44,16 +37,56 @@ namespace SimpleLanguage.VM
         private int m_Start = 0;
         private int m_Length = 0;
         private byte[]? m_MemberDataBuffer = null;
+        private EVMType m_ObjectActualType = EVMType.Null;
 
         public RuntimeObject( RuntimeType rt, RuntimeVariable rv, SObject sobj )
         {
             m_RuntimeVariable = rv;
             m_RuntimeType = rt;
-            SetObjectPointer(sobj);
             if( rt == null )
             {
                 Log.AddRuntimeLog(LID.RuntimeVMRuntimeTypeIsNull, "", m_RuntimeVariable.name );
+                return;
             }
+
+            EnsureStandaloneMemberDataSlice();
+            SetObjectPointer(sobj);
+            WriteCurrentValueToMemberData(sobj);
+            RefreshIsNull();
+        }
+
+        private void RefreshIsNull()
+        {
+            if (RuntimeTypeManager.IsMemberDataDirectType(eType) && hasMemberDataSlice)
+            {
+                m_IsNull = false;
+                return;
+            }
+
+            if (eType == EVMType.Object && IsObjectScalarType(m_ObjectActualType))
+            {
+                m_IsNull = false;
+                return;
+            }
+
+            m_IsNull = ResolveSObject() == null;
+        }
+
+        private void EnsureStandaloneMemberDataSlice()
+        {
+            if (m_RuntimeType == null)
+                return;
+            if (m_MemberDataBuffer != null && m_Length > 0)
+                return;
+
+            int slotLen = MemberDataLayout.GetSlotByteLength(m_RuntimeType);
+            if (slotLen <= 0)
+                slotLen = sizeof(int);
+
+            m_MemberDataBuffer = new byte[slotLen];
+            m_Start = 0;
+            m_Length = slotLen;
+            m_Index = 0;
         }
 
         internal void AttachMemberDataSlice(byte[]? classMemberData, int start, int length, int memberIndex)
@@ -67,6 +100,8 @@ namespace SimpleLanguage.VM
         private bool IsPointerStoredInMemberData()
         {
             if (m_RuntimeType == null)
+                return false;
+            if (m_RuntimeType.eType == EVMType.Object && IsObjectScalarType(m_ObjectActualType))
                 return false;
             return hasMemberDataSlice && !RuntimeTypeManager.IsMemberDataDirectType(m_RuntimeType.eType);
         }
@@ -116,6 +151,106 @@ namespace SimpleLanguage.VM
 #if DEBUG
             m_SObject = sobj;
 #endif
+        }
+
+        private static bool IsObjectScalarType(EVMType t)
+        {
+            return t == EVMType.Boolean
+                || t == EVMType.UInt8
+                || t == EVMType.Int8
+                || t == EVMType.Int16
+                || t == EVMType.UInt16
+                || t == EVMType.Int32
+                || t == EVMType.UInt32
+                || t == EVMType.Int64
+                || t == EVMType.UInt64
+                || t == EVMType.Float32
+                || t == EVMType.Float64
+                || t == EVMType.Num;
+        }
+
+        private void ClearObjectScalarValue()
+        {
+            m_ObjectActualType = EVMType.Null;
+        }
+
+        private static int GetObjectScalarTypeByteLength(EVMType t)
+        {
+            return t switch
+            {
+                EVMType.Boolean => 4,
+                EVMType.UInt8 or EVMType.Int8 => 1,
+                EVMType.Int16 or EVMType.UInt16 => 2,
+                EVMType.Int32 or EVMType.UInt32 or EVMType.Float32 => 4,
+                EVMType.Int64 or EVMType.UInt64 or EVMType.Float64 or EVMType.Num => 8,
+                _ => 0,
+            };
+        }
+
+        private void EnsureObjectScalarMemberDataSlice(int length)
+        {
+            if (length <= 0)
+                length = sizeof(int);
+
+            if (m_MemberDataBuffer != null
+                && m_Start >= 0
+                && m_Length >= length
+                && m_Start + m_Length <= m_MemberDataBuffer.Length)
+            {
+                return;
+            }
+
+            m_MemberDataBuffer = new byte[length];
+            m_Start = 0;
+            m_Length = length;
+            m_Index = 0;
+        }
+
+        private bool TryGetObjectScalarDataSpan(out Span<byte> span)
+        {
+            span = default;
+            if (!IsObjectScalarType(m_ObjectActualType))
+                return false;
+
+            int length = GetObjectScalarTypeByteLength(m_ObjectActualType);
+            if (length <= 0)
+                return false;
+
+            EnsureObjectScalarMemberDataSlice(length);
+            if (m_MemberDataBuffer == null || m_Start < 0 || m_Start + length > m_MemberDataBuffer.Length)
+                return false;
+
+            span = m_MemberDataBuffer.AsSpan(m_Start, length);
+            return true;
+        }
+
+        private bool TryStoreObjectScalarValue(ref SValue sval)
+        {
+            if (!IsObjectScalarType(sval.eType))
+                return false;
+
+            m_ObjectActualType = sval.eType;
+
+            if (!TryGetObjectScalarDataSpan(out var scalarSpan))
+                return false;
+
+            scalarSpan.Clear();
+            WriteSValueToMemberDataSpan(scalarSpan, m_ObjectActualType, ref sval);
+            SetObjectPointer(null);
+            m_IsNull = false;
+            return true;
+        }
+
+        private bool TryReadObjectScalarValue(ref SValue sval)
+        {
+            if (!IsObjectScalarType(m_ObjectActualType))
+                return false;
+
+            if (!TryGetObjectScalarDataSpan(out var scalarSpan))
+                return false;
+
+            ReadSpanToSValue(scalarSpan, m_ObjectActualType, ref sval);
+            return true;
         }
 
         public bool TryReadMemberDataToSValue(ref SValue svalue)
@@ -345,20 +480,19 @@ namespace SimpleLanguage.VM
         }
         public void SetNull()
         {
+            ClearObjectScalarValue();
             SetObjectPointer(null);
             ClearMemberDataSlice();
-        }
-        public void SetSObject( SObject sobj )
-        {
-            SetObjectPointer(sobj);
-            WriteCurrentValueToMemberData(sobj);
+            m_IsNull = true;
         }
         public void SetSObjectBySValue( ref SValue sval )
         {
             if (sval.isNull)
             {
+                ClearObjectScalarValue();
                 SetObjectPointer(null);
                 ClearMemberDataSlice();
+                m_IsNull = true;
                 return;
             }
 
@@ -371,6 +505,7 @@ namespace SimpleLanguage.VM
             {
                 WriteSValueToMemberDataSpan(directSpan, m_RuntimeType.eType, ref sval);
                 SetObjectPointer(null);
+                m_IsNull = false;
                 return;
             }
 
@@ -381,19 +516,16 @@ namespace SimpleLanguage.VM
                 var incomingRef = sval.GetReferenceSObject(createStringRef: true);
                 if (incomingRef != null)
                 {
+                    ClearObjectScalarValue();
                     SetObjectPointer(incomingRef);
                     WriteCurrentValueToMemberData(incomingRef);
                     return;
                 }
 
-                if (curObj == null)
-                {
-                    curObj = ObjectManager.CreateObjectByRuntimeType(RuntimeTypeManager.objectRuntimeType, false);
-                    SetObjectPointer(curObj);
-                }
+                if (TryStoreObjectScalarValue(ref sval))
+                    return;
 
-                curObj.SetValueByType(sval.eType, sval.GetValueObject());
-                WriteCurrentValueToMemberData(curObj);
+                SetNull();
                 return;
             }
             else
@@ -491,13 +623,19 @@ namespace SimpleLanguage.VM
                     break;
             }
             WriteCurrentValueToMemberData(curObj);
+            RefreshIsNull();
         }
 
-        public void SetSValueBySObjct(ref SValue svalue)
+        public void SetSValueByRuntimeObjct(ref SValue svalue)
         {
             if (m_RuntimeType != null
                 && RuntimeTypeManager.IsMemberDataDirectType(m_RuntimeType.eType)
                 && TryReadMemberDataToSValue(ref svalue))
+            {
+                return;
+            }
+
+            if (eType == EVMType.Object && TryReadObjectScalarValue(ref svalue))
             {
                 return;
             }

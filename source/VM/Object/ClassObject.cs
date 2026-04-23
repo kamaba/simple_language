@@ -101,7 +101,7 @@ namespace SimpleLanguage.VM
                 Log.AddRuntimeLog(LID.AutoClassObjectL100, "执行的参数超出范围!!");
                 return;
             }
-            m_MemberRuntimeObjectArray[index].SetSValueBySObjct(ref svalue);
+            m_MemberRuntimeObjectArray[index].SetSValueByRuntimeObjct(ref svalue);
         }
         /// <summary>实例成员写统一入口，同步 <see cref="m_MemberData"/>（同 <see cref="RuntimeType.SetStaticMemberVariableSValue"/> 静态侧）。</summary>
         public void SetMemberVariableSValue( int index, SValue svalue)

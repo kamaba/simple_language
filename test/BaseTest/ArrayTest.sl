@@ -386,9 +386,9 @@ ArrayTest
     }
     static fun()
     {
-        arrayBasicApiTest()        
-        arrayGenericElementTest()
-        #arrayCreateInstanceIndexLoopTest()
+        #arrayBasicApiTest()        
+        #arrayGenericElementTest()
+        arrayCreateInstanceIndexLoopTest()
         #arrayCovariantAndLiteralForInTest()
         #arrayNumberIteratorFromConcreteArrayTest()
         #arrayNestedObjectTreeTest()

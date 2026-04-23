@@ -20,17 +20,17 @@ namespace SimpleLanguage.VM
         public SObject? sobject;
         public bool isNull;
 
-        public byte uint8Value { get => nv.ui8; set => nv.ui8 = value; }
-        public sbyte int8Value { get => nv.si8; set => nv.si8 = value; }
+        public byte uint8Value { get => nv.u8; set => nv.u8 = value; }
+        public sbyte int8Value { get => nv.i8; set => nv.i8 = value; }
         //public char charValue;
         public short int16Value { get => nv.i16; set => nv.i16 = value; }
-        public ushort uint16Value { get => nv.ui16; set => nv.ui16 = value; }
+        public ushort uint16Value { get => nv.u16; set => nv.u16 = value; }
         public int int32Value { get => nv.i32; set => nv.i32 = value; }
         public uint uint32Value { get => nv.u32; set => nv.u32 = value; }
         public long int64Value { get => nv.i64; set => nv.i64 = value; }
         public ulong uint64Value { get => nv.u64; set => nv.u64 = value; }
-        public float float32Value { get => nv.f; set => nv.f = value; }
-        public double float64Value { get => nv.d; set => nv.d = value; }
+        public float float32Value { get => nv.f32; set => nv.f32 = value; }
+        public double float64Value { get => nv.f64; set => nv.f64 = value; }
         public object? ToClrObject(Type targetType)
         {
             if (isNull) return null;
@@ -650,6 +650,11 @@ namespace SimpleLanguage.VM
             try
             {
                 ConvertByEType(targetEvm);
+            }
+            catch (OverflowException)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageWarning,
+                    $"数值赋值发生溢出，保持原值: source={eType}, target={targetEvm}, value={GetValueObject()}");
             }
             catch
             {
