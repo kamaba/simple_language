@@ -771,6 +771,9 @@ namespace SimpleLanguage.VM
                 return;
             }
 
+            if (m_RuntimeType != null)
+                sval.TryCoerceScalarForAssignment(m_RuntimeType.eType);
+
             if (m_RuntimeType != null
                 && IsMemberDataDirectType(m_RuntimeType.eType)
                 && TryGetMemberDataSpan(out var directSpan))

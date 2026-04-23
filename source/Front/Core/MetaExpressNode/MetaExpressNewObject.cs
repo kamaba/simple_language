@@ -327,7 +327,8 @@ namespace SimpleLanguage.Core
         public int count => m_AssignStatementsList.Count;
         public List<MetaBraceAssignStatements> assignStatementsList => m_AssignStatementsList;
         public MetaType defineMetaType => m_DefineMetaType;
-
+        /// <summary>数组/大括号字面值左侧被赋值的变量（如 <c>var x = [..]</c> 中的 <c>x</c>），用于可空等上下文。</summary>
+        public MetaVariable? equalMetaVariable => m_EqualMetaVariable;
 
         private List<MetaBraceAssignStatements> m_AssignStatementsList = new List<MetaBraceAssignStatements>();
         private MetaArrayExpressNode m_MetaArrayExpressNode = null;
@@ -1703,6 +1704,36 @@ namespace SimpleLanguage.Core
                 if (mbc == null) continue;
 
                 MetaType mt2 = mbc.GetRetMetaType();
+                if( m_MetaType.IsArray() )
+                {
+                    var cmt = m_MetaType.GetMetaTypeByIndex(0);
+                    var equalMv = m_MetaContent.equalMetaVariable;
+                    bool isNumLike =
+                        cmt != null
+                        && (ClassManager.IsNumberClass(cmt.metaClass) || ClassManager.IsAbstractNumberMetaType(cmt));
+                    // 与左值 equalMetaVariable 的 Array<元素> 上可空一致：元素类型带 ? 或左值侧声明的模板实参为可空
+                    bool allowNullableForNumericElement =
+                        (cmt?.isNullable == true)
+                        || (equalMv?.defineMetaType != null
+                            && equalMv.defineMetaType.IsArray()
+                            && equalMv.defineMetaType.GetMetaTypeByIndex(0)?.isNullable == true);
+                    bool isOmittedExpression = mbc.expressNode == null;
+                    bool isNullLiteral = mt2 != null && mt2.isNull;
+                    if (isNumLike && (isOmittedExpression || isNullLiteral))
+                    {
+                        if (!allowNullableForNumericElement)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                                "数组元素为数值/Num 类型时，仅当元素类型可空（?）或左值声明为 Array<可空类型> 时才允许空位或 null 字面量。");
+                        }
+                        continue;
+                    }
+                    if (!isNumLike && (isOmittedExpression || isNullLiteral))
+                    {
+                        // 非数值/Num：空位与 null 字面量均不在这里做强类型对撞
+                        continue;
+                    }
+                }
                 if (mt2 == null)
                 {
                     continue;

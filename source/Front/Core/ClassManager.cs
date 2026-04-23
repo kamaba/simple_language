@@ -634,6 +634,65 @@ namespace SimpleLanguage.Core
             return IsNumberClass(elem.metaClass);
         }
 
+        /// <summary>
+        /// 仅 Int8…Float64 等核心原语；用于传参阶比较。非核心原语返回 false。
+        /// </summary>
+        public static bool TryGetCorePrimitiveScalarStorage(MetaClass mc, out int widthBytes, out bool isFloat)
+        {
+            widthBytes = 0;
+            isFloat = false;
+            if (mc == null) return false;
+            if (mc == CoreMetaClassManager.int8MetaClass || mc == CoreMetaClassManager.uint8MetaClass)
+            {
+                widthBytes = 1;
+                return true;
+            }
+            if (mc == CoreMetaClassManager.int16MetaClass || mc == CoreMetaClassManager.uint16MetaClass)
+            {
+                widthBytes = 2;
+                return true;
+            }
+            if (mc == CoreMetaClassManager.int32MetaClass || mc == CoreMetaClassManager.uint32MetaClass)
+            {
+                widthBytes = 4;
+                return true;
+            }
+            if (mc == CoreMetaClassManager.float32MetaClass)
+            {
+                widthBytes = 4;
+                isFloat = true;
+                return true;
+            }
+            if (mc == CoreMetaClassManager.int64MetaClass || mc == CoreMetaClassManager.uint64MetaClass)
+            {
+                widthBytes = 8;
+                return true;
+            }
+            if (mc == CoreMetaClassManager.float64MetaClass)
+            {
+                widthBytes = 8;
+                isFloat = true;
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 调用点实参匹配形参：在 <see cref="ValidateClassRelationByMetaClass"/> 已给出 <see cref="EClassRelation.Num"/> 时，
+        /// 对「双核心原语」收紧为仅允许更窄实参隐式拓宽到更宽形参（如 Int8→UInt32、Float32→Float64）；
+        /// 同阶不同号类（如 Int32 与 UInt32）或 int 与 float 混用则 false；任一方非核心原语则 true（保持旧 Num 宽松语义）。
+        /// </summary>
+        public static bool IsNarrowerCorePrimitiveWideningOkForCallSite(MetaClass argClass, MetaClass paramClass)
+        {
+            if (!TryGetCorePrimitiveScalarStorage(argClass, out int aw, out bool af))
+                return true;
+            if (!TryGetCorePrimitiveScalarStorage(paramClass, out int pw, out bool pf))
+                return true;
+            if (af != pf)
+                return false;
+            return aw < pw;
+        }
+
         /// <summary> Iterator&lt;Number&gt; &lt;- 元素为具体数值类型的 Array（只读遍历视角，允许协变）。 </summary>
         public static bool TryIteratorNumberFromConcreteNumericArray(MetaType targetIterator, MetaType exprArray)
         {

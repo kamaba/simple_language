@@ -667,6 +667,31 @@ namespace SimpleLanguage.VM
 
             return sobj;
         }
+        /// <summary>
+        /// 赋值/槽位写入前：在标量/布尔之间做与 <see cref="ConvertByEType"/> 一致的阶兼容（如 Int32 → Int8），
+        /// 行为接近 Dart 中 num 的宽松窄化/拓宽（由 CLR <see cref="Convert"/> 与截断完成）。
+        /// </summary>
+        public void TryCoerceScalarForAssignment(EVMType targetEvm)
+        {
+            if (isNull) return;
+            if (eType == targetEvm) return;
+            if (!IsScalarOrNumSlotEvm(targetEvm)) return;
+            if (!IsScalarOrNumSlotEvm(eType) && eType != EVMType.Boolean) return;
+            try
+            {
+                ConvertByEType(targetEvm);
+            }
+            catch
+            {
+                // 保持原值，由后续分支决定失败表现
+            }
+        }
+
+        private static bool IsScalarOrNumSlotEvm(EVMType t)
+        {
+            return t is >= EVMType.Boolean and <= EVMType.Num;
+        }
+
         public void ConvertByEType(EVMType neType )
         {
             object cur = GetValueObject();
@@ -676,7 +701,7 @@ namespace SimpleLanguage.VM
                 case EVMType.Boolean:
                     {
                         eType = EVMType.Boolean;
-                        int8Value = Convert.ToByte(cur);
+                        int8Value = (byte)(Convert.ToInt32(cur, CultureInfo.InvariantCulture) != 0 ? 1 : 0);
                     }
                     break;
                 case EVMType.UInt8:
@@ -699,8 +724,8 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.UInt16:
                     {
-                        eType = EVMType.Float64;
-                        doubleValue = Convert.ToUInt16(cur);
+                        eType = EVMType.UInt16;
+                        uint16Value = Convert.ToUInt16(cur);
                     }
                     break;
                 case EVMType.Int32:
@@ -736,6 +761,12 @@ namespace SimpleLanguage.VM
                 case EVMType.Float64:
                     {
                         eType = EVMType.Float64;
+                        doubleValue = Convert.ToDouble(cur);
+                    }
+                    break;
+                case EVMType.Num:
+                    {
+                        eType = EVMType.Num;
                         doubleValue = Convert.ToDouble(cur);
                     }
                     break;

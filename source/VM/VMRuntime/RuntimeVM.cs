@@ -1384,7 +1384,12 @@ namespace SimpleLanguage.VM.Runtime
                         if (m_ValueIndex > 0 && rdt != null)
                         {
                             var sval = m_ValueStack[m_ValueIndex - 1];
-                            if (sval.eType != EVMType.Int32)
+                            if (sval.eType == EVMType.Int8
+                                || sval.eType != EVMType.UInt8
+                                || sval.eType != EVMType.Int16
+                                || sval.eType != EVMType.UInt16
+                                || sval.eType != EVMType.Int32
+                                || sval.eType != EVMType.UInt32 )
                             {
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, "鍒涘缓鏁扮粍闀垮害涓嶆槸Int32绫诲瀷!!");
                                 break;
@@ -2240,6 +2245,8 @@ namespace SimpleLanguage.VM.Runtime
                 robj.SetNull();
                 return;
             }
+
+            svalue.TryCoerceScalarForAssignment(robj.eType);
 
             var obj = robj.sobject;
             if (robj.eType == EVMType.Object)

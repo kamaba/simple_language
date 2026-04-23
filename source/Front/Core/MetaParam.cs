@@ -266,9 +266,15 @@ namespace SimpleLanguage.Core
                     || relation == EClassRelation.Child
                     || relation == EClassRelation.Interface
                     || relation == EClassRelation.Parent
-                    || relation == EClassRelation.Num
                     )
                 {
+                    return true;
+                }
+                if (relation == EClassRelation.Num)
+                {
+                    // 原 Num 对任意两数值过宽；传参时仅允许「更窄原语实参」→「更宽形参」，同阶或 int/float 互斥则否。
+                    if (!ClassManager.IsNarrowerCorePrimitiveWideningOkForCallSite(retMC, declaredMC))
+                        return false;
                     return true;
                 }
             }
