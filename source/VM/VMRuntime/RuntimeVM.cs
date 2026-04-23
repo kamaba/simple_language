@@ -2231,7 +2231,7 @@ namespace SimpleLanguage.VM.Runtime
                             // checks/logging will handle incompatibility.
                         }
                     }
-                    robj.SetSObject( initValue.GetSObject() );
+                    robj.SetSObjectBySValue(ref initValue);
                     return;
                 }
             }
@@ -2730,7 +2730,7 @@ namespace SimpleLanguage.VM.Runtime
                             return;
                         }
                         // Core.Type slot may be ClassObject (duplicate RuntimeType vs core registry) or empty; store the TypeObject handle on RuntimeObject.
-                        robj.SetSObject(svalue.GetSObject());
+                        robj.SetSObjectBySValue(ref svalue);
                         return;
                     }
                     break;

@@ -394,13 +394,23 @@ namespace SimpleLanguage.VM
 
             if (eType == EVMType.Object)
             {
-                if (curObj == null)
+                var incomingRef = sval.GetReferenceSObject(createStringRef: true);
+                if (incomingRef != null)
                 {
-                    var objRef = sval.GetSObject();
-                    SetObjectPointer(objRef);
-                    WriteCurrentValueToMemberData(objRef);
+                    SetObjectPointer(incomingRef);
+                    WriteCurrentValueToMemberData(incomingRef);
                     return;
                 }
+
+                if (curObj == null)
+                {
+                    curObj = ObjectManager.CreateObjectByRuntimeType(RuntimeTypeManager.objectRuntimeType, false);
+                    SetObjectPointer(curObj);
+                }
+
+                curObj.SetValueByType(sval.eType, sval.GetValueObject());
+                WriteCurrentValueToMemberData(curObj);
+                return;
             }
             else
             {

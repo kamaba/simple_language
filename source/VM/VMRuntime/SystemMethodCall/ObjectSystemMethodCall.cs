@@ -18,8 +18,8 @@ namespace SimpleLanguage.VM.Runtime
             }
 
             var a = args[0];
-            SObject? sobj = a.sobject ?? a.GetSObject();
-            RuntimeType? rt = sobj?.runtimeType ?? RuntimeTypeManager.objectRuntimeType;
+            SObject? sobj = a.GetReferenceSObject(createStringRef: true);
+            RuntimeType? rt = sobj?.runtimeType ?? RuntimeTypeManager.GetRuntimeTypeByEVMType(a.eType) ?? RuntimeTypeManager.objectRuntimeType;
             var tobj = RuntimeTypeManager.CreateTypeObject(rt);
             var sv = default(SValue);
             sv.SetSObject(tobj);
@@ -88,7 +88,7 @@ namespace SimpleLanguage.VM.Runtime
             }
 
             var sv = default(SValue);
-            var sobj = a.sobject ?? a.GetSObject();
+            var sobj = a.GetReferenceSObject(createStringRef: true);
             if (sobj == null)
             {
                 sv.SetNull();
@@ -221,7 +221,7 @@ namespace SimpleLanguage.VM.Runtime
             try { index = Convert.ToInt32(args[1].GetValueObject(), CultureInfo.InvariantCulture); }
             catch { index = 0; }
 
-            SObject? newRef = args[2].isNull ? null : (args[2].sobject ?? args[2].GetSObject());
+            SObject? newRef = args[2].isNull ? null : args[2].GetReferenceSObject(createStringRef: true);
             WriteBarrier.NotifyReferenceStore(arrObj, newRef);
             arrObj.StoreValue(index, args[2]);
         }

@@ -326,6 +326,17 @@ namespace SimpleLanguage.VM
             stringValue = val;
             isNull = false;
 
+            if (sobject is StringObject strObj)
+            {
+                strObj.SetValue(val);
+            }
+            else
+            {
+                var strRef = new StringObject(val);
+                ObjectManager.RegisterObject(strRef);
+                sobject = strRef;
+            }
+
 
             Log.AddRuntimeLog(LID.ShowMessageInfo, "SValue.SetStringValue" + val );
         }
@@ -402,6 +413,23 @@ namespace SimpleLanguage.VM
                     {
                         stringValue = tobj as String;
                         isNull = stringValue == null;
+                        if (!isNull)
+                        {
+                            if (sobject is StringObject strObj)
+                            {
+                                strObj.SetValue(stringValue);
+                            }
+                            else
+                            {
+                                var strRef = new StringObject(stringValue);
+                                ObjectManager.RegisterObject(strRef);
+                                sobject = strRef;
+                            }
+                        }
+                        else
+                        {
+                            sobject = null;
+                        }
                     }
                     break;
                 case EVMType.Array:
@@ -531,6 +559,7 @@ namespace SimpleLanguage.VM
                     {
                         eType = EVMType.String;
                         stringValue = stringobj.value;
+                        sobject = stringobj;
                     }
                     break;
                 case ArrayObject arrayobj:
@@ -576,96 +605,37 @@ namespace SimpleLanguage.VM
                     break;
             }
         }
-        public SObject GetSObject()
-        {        
+        public SObject? GetReferenceSObject(bool createStringRef = true)
+        {
             if (isNull)
-            {
                 return null;
-            }
-            SObject sobj = null;
+
             switch (eType)
             {
-                //case EVMType.RawBoolean:
-                case EVMType.Boolean:
-                    {
-                        sobj = new BoolObject(this.uint8Value == 1);
-                    }
-                    break;
-                //case EVMType.RawByte:
-                case EVMType.UInt8:
-                    {
-                        sobj = new UInt8Object(this.uint8Value );
-                    }
-                    break;
-                //case EVMType.RawSByte:
-                case EVMType.Int8:
-                    {
-                        sobj = new Int8Object(this.int8Value);
-                    }
-                    break;
-                //case EVMType.RawInt16:
-                case EVMType.Int16:
-                    {
-                        sobj = new Int16Object(this.int16Value);
-                    }
-                    break;
-                //case EVMType.RawUInt16:
-                case EVMType.UInt16:
-                    {
-                        sobj = new UInt16Object(this.uint16Value);
-                    }
-                    break;
-                //case EVMType.RawInt32:
-                case EVMType.Int32:
-                    {
-                        sobj = new Int32Object(this.int32Value);
-                    }
-                    break;
-                //case EVMType.RawUInt32:
-                case EVMType.UInt32:
-                    {
-                        sobj = new UInt32Object(this.uint32Value);
-                    }
-                    break;
-                //case EVMType.RawInt64:
-                case EVMType.Int64:
-                    {
-                        sobj = new Int64Object(this.int64Value);
-                    }
-                    break;
-                //case EVMType.RawUInt64:
-                case EVMType.UInt64:
-                    {
-                        sobj = new UInt64Object(this.uint64Value );
-                    }
-                    break;
-                //case EVMType.RawFloat32:
-                case EVMType.Float32:
-                    {
-                        sobj = new Float32Object(this.floatValue);
-                    }
-                    break;
-                //case EVMType.RawFloat64:
-                case EVMType.Float64:
-                    {
-                        sobj = new Float64Object(this.doubleValue);
-                    }
-                    break;
-                //case EVMType.RawString:
                 case EVMType.String:
                     {
-                        sobj = new StringObject(this.stringValue);
+                        if (sobject is StringObject strObj)
+                        {
+                            if (strObj.value != stringValue)
+                                strObj.SetValue(stringValue ?? string.Empty);
+                            return strObj;
+                        }
+                        if (!createStringRef)
+                            return null;
+                        var strRef = new StringObject(stringValue ?? string.Empty);
+                        ObjectManager.RegisterObject(strRef);
+                        sobject = strRef;
+                        return strRef;
                     }
-                    break;
+                case EVMType.Array:
+                case EVMType.Object:
+                case EVMType.Class:
+                case EVMType.Type:
+                case EVMType.Member:
+                    return sobject;
                 default:
-                    {
-                        sobj = this.sobject;
-                        Debug.Assert(sobj != null);
-                    }
-                    break;
+                    return null;
             }
-
-            return sobj;
         }
         /// <summary>
         /// 赋值/槽位写入前：在标量/布尔之间做与 <see cref="ConvertByEType"/> 一致的阶兼容（如 Int32 → Int8），
