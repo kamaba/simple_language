@@ -18,6 +18,7 @@ id,logType,enableAssert,blockOnErrorAssert,paramCount,domestic_tips,cn_message,,
 11019,Assert,TRUE,FALSE,0,,解析的[{0}]不太正确,,,
 11020,Assert,TRUE,FALSE,0,,该位置的值，不应该为空值,,,
 11021,Assert,TRUE,FALSE,1,,没有从结构体[{0}]取出对应的值,,,
+11022,Assert,TRUE,FALSE,1,,在[{0}]没有定义对应的RuntimeType的值,,,
 
 
 

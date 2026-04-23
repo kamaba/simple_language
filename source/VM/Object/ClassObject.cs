@@ -50,7 +50,7 @@ namespace SimpleLanguage.VM
                 return null;
             return m_MemberRuntimeObjectArray[memberIndex];
         }
-        /// <summary>按成员下标从 <see cref="memberData"/> 解析到 <paramref name="svalue"/>（引用型槽位为 HashCode，见 RuntimeObject）。</summary>
+        /// <summary>按成员下标从 <see cref="memberData"/> 解析到 <paramref name="svalue"/>（引用型槽位为对象指针 Id，见 RuntimeObject）。</summary>
         public bool TryReadMemberDataAsSValue(int memberIndex, ref SValue svalue)
         {
             if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)

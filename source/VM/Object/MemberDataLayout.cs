@@ -1,7 +1,7 @@
 //****************************************************************************
 //  File:      MemberDataLayout.cs
 //  Description: 类实例 / 类型静态成员在 ClassObject.m_MemberData 与 RuntimeType.m_MemberData
-//               中的紧凑布局：标量按原生宽度，其余类型固定 4 字节存 HashCode。
+//               中的紧凑布局：标量按原生宽度，其余类型固定 4 字节存对象指针 Id。
 //****************************************************************************
 
 using SimpleLanguage.VM.Runtime;

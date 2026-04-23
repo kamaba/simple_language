@@ -16,6 +16,8 @@ namespace SimpleLanguage.VM
     {
         //public static Dictionary<int, DataObject> dataObjectDict = new Dictionarny<int, DataObject>();
         public static Dictionary<int, ClassObject> classObjectDict = new Dictionary<int, ClassObject>();
+        private static readonly Dictionary<int, SObject> s_ObjectById = new Dictionary<int, SObject>();
+        private static readonly object s_ObjectByIdGate = new object();
         //public static Dictionary<int, ArrayObject> arrayObjectDict = new Dictionary<int, ArrayObject>();
 
         public static void AddClassObject(ClassObject cl)
@@ -23,6 +25,34 @@ namespace SimpleLanguage.VM
             if (!classObjectDict.ContainsKey(cl.GetHashCode()))
             {
                 classObjectDict.Add(cl.GetHashCode(), cl);
+            }
+            RegisterObject(cl);
+        }
+
+        public static void RegisterObject(SObject obj)
+        {
+            if (obj == null) return;
+            lock (s_ObjectByIdGate)
+            {
+                s_ObjectById[obj.id] = obj;
+            }
+        }
+
+        public static SObject? GetObjectById(int id)
+        {
+            if (id <= 0) return null;
+            lock (s_ObjectByIdGate)
+            {
+                return s_ObjectById.TryGetValue(id, out var obj) ? obj : null;
+            }
+        }
+
+        public static void UnregisterObjectById(int id)
+        {
+            if (id <= 0) return;
+            lock (s_ObjectByIdGate)
+            {
+                s_ObjectById.Remove(id);
             }
         }
 
@@ -58,6 +88,7 @@ namespace SimpleLanguage.VM
             if (sobj is not ClassObject co) return;
             try
             {
+                UnregisterObjectById(co.id);
                 int key = co.GetHashCode();
                 if (classObjectDict.ContainsKey(key))
                     classObjectDict.Remove(key);
@@ -192,6 +223,7 @@ namespace SimpleLanguage.VM
             if (sobj != null && sobj.refCount == 0
                 && (sobj is ClassObject || sobj is TypeObject || sobj is ArrayObject || sobj.eType == EVMType.Object))
                 sobj.refCount = 1;
+            RegisterObject(sobj);
             SlMemoryManager.Instance.RegisterAllocation(sobj);
             return sobj;
         }

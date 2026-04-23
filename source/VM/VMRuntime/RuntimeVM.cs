@@ -197,21 +197,6 @@ namespace SimpleLanguage.VM.Runtime
                     roots.Add(ro.sobject);
             }
         }
-
-        public bool IsNumericTypeLocal(EVMType t)
-        {
-            return t == EVMType.Num
-                || t == EVMType.Int8
-                || t == EVMType.UInt8
-                || t == EVMType.Int16
-                || t == EVMType.UInt16
-                || t == EVMType.Int32
-                || t == EVMType.UInt32
-                || t == EVMType.Int64
-                || t == EVMType.UInt64
-                || t == EVMType.Float32 
-                || t == EVMType.Float64;
-        }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PushSValueSynced(in SValue v)
         {
@@ -267,44 +252,6 @@ namespace SimpleLanguage.VM.Runtime
                 return rt;
             }
         }
-        //public RuntimeType GetRuntimeTypeByDefType(RuntimeDefType irmt, RuntimeClass curIrMc, bool isAdd = false)
-        //{
-        //    RuntimeClass rc = null;
-        //    RuntimeType curMT = null;
-        //    if (irmt.isTemplate)
-        //    {
-        //        if (irmt.templateIndex != -1)
-        //        {
-        //            if (irmt.ownerRuntimeClass == curIrMc || curIrMc.name == "Core.Object")
-        //            {
-        //                curMT = m_InputTemplateRuntimeTypeList[irmt.templateIndex];
-        //                return curMT;
-        //            }
-        //            else
-        //            {
-        //                Debug.Assert(false);
-        //                //var mt = curIrMc.GetRuntimeDefTypeByTemplateAndClassRelation(irmt.ownerRuntimeClass, irmt.templateIndex);
-        //                //if (mt == null) return new SObject(EVMType.Object);
-
-        //                //return CreateObjectByIRMetaType(mt, curIrMc, isAdd);
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        if(irmt.runtimeDefTypeList.Count == 0 )
-        //        {
-        //            return RuntimeTypeManager.GetRuntimeTypeByDefType(irmt);
-        //        }
-        //        rc = irmt.runtimeClass;
-        //    }
-        //    List<RuntimeType> rtList = new List<RuntimeType>();
-        //    for (int i = 0; i < irmt.runtimeDefTypeList.Count; i++)
-        //    {
-        //        rtList.Add(GetRuntimeTypeByDefType(irmt.runtimeDefTypeList[i], curIrMc, m_InputTemplateRuntimeTypeList, isAdd));
-        //    }
-        //    return RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(rc, rtList);
-        //}
         public SObject CreateObjectByIRMetaType(RuntimeDefType irmt, RuntimeClass curIrMc, bool isAdd = false)
         {
             if (irmt == null) return new SObject(EVMType.Object);
@@ -2323,7 +2270,7 @@ namespace SimpleLanguage.VM.Runtime
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            to.SetValue(EVMType.Boolean, svalue.int8Value);
+                            to.SetValue(EVMType.Boolean, svalue.int8Value==1);
                         }
                         BoolObject boolObj = obj as BoolObject;
                         if (boolObj == null)
@@ -3214,7 +3161,7 @@ namespace SimpleLanguage.VM.Runtime
                         //if (anyObj)
                         //{
                             // any/object slot can carry concrete numeric runtime types.
-                            if (obj != null && IsNumericTypeLocal(obj.eType))
+                            if (obj != null && RuntimeTypeManager.IsNumericTypeLocal(obj.eType))
                             {
                                 switch (obj.eType)
                                 {

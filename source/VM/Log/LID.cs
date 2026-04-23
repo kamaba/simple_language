@@ -26,6 +26,7 @@
         VMOperatorNotShouldHaveNull = 10022,
 
         RuntimeVMInstructPayLoadGetValueError = 11021,
+        RuntimeVMRuntimeTypeIsNull = 11022,
 
         AutoLogManagerL190 = 13000,
         AutoLogManagerL194 = 13001,
