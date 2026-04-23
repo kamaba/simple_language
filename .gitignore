@@ -60,3 +60,9 @@
 /source/Test/BaseTest/NumberTest
 /source/Test/BaseTest/ObjectTest
 /source/Test/BaseTest
+/test/BaseTest/ObjectTest
+/test/BaseTest/ArrayTest
+/test/BaseTest/GlobalTest
+/test/BaseTest/NumberTest
+/tools/ExtractLogs/obj
+/tools/ExtractLogs/bin

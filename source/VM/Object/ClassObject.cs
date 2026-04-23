@@ -88,6 +88,7 @@ namespace SimpleLanguage.VM
             //m_IsNull = m_Object == null;
             val.refCount++;
         }
+        /// <summary>从实例成员读取到 <paramref name="svalue"/>；与 <see cref="m_MemberData"/> 一致（同 <see cref="RuntimeType.GetStaticMemberVariableSValue"/> 静态侧）。</summary>
         public void GetMemberVariableSValue( int index, ref SValue svalue )
         {
             if (index < 0 )
@@ -95,16 +96,17 @@ namespace SimpleLanguage.VM
                 Log.AddRuntimeLog(LID.AutoClassObjectL95, "执行的参数超出范围!! < 0 ");
                 return;
             }
-            if (index > m_MemberRuntimeObjectArray.Length)
+            if (m_MemberRuntimeObjectArray == null || index >= m_MemberRuntimeObjectArray.Length)
             {
                 Log.AddRuntimeLog(LID.AutoClassObjectL100, "执行的参数超出范围!!");
                 return;
             }
             m_MemberRuntimeObjectArray[index].SetSValueBySObjct(ref svalue);
         }
+        /// <summary>实例成员写统一入口，同步 <see cref="m_MemberData"/>（同 <see cref="RuntimeType.SetStaticMemberVariableSValue"/> 静态侧）。</summary>
         public void SetMemberVariableSValue( int index, SValue svalue)
         {
-            if (index > m_MemberRuntimeObjectArray.Length)
+            if (m_MemberRuntimeObjectArray == null || index < 0 || index >= m_MemberRuntimeObjectArray.Length)
             {
                 Log.AddRuntimeLog(LID.AutoClassObjectL109, "执行的参数超出范围!!");
                 return;

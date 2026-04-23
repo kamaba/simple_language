@@ -19,10 +19,8 @@ namespace SimpleLanguage.VM
 
         RuntimeType m_Rt = null;
 
-        UInt8Object eType = null;
         ClassObject metaClassObject = null;
 
-        TypeObject[] typeObjectsArray = null;
         public TypeObject(RuntimeType rm ) : base(RuntimeTypeManager.typeRuntimeType)
         {
             m_Rt = rm;
@@ -118,13 +116,11 @@ namespace SimpleLanguage.VM
                          ?? RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(arrayRc, new List<RuntimeType> { typeRt });
             if (arrayRt == null) return null;
 
-            typeObjectsArray = new TypeObject[templates.Count];
             var arr = new ArrayObject(arrayRt, templates.Count);
             arr.CreateObject();
             for (int i = 0; i < templates.Count; i++)
             {
                 var child = RuntimeTypeManager.CreateTypeObject(templates[i]);
-                typeObjectsArray[i] = child as TypeObject;
                 var sv = default(SValue);
                 if (child != null) sv.SetSObject(child);
                 else sv.SetNull();

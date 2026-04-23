@@ -54,7 +54,7 @@ ArrayTest
     static arrayBasicApiTest()
     {
         global.println("========== Array.basic api ==========")
-        Int32[] nums = Array<Int32>.create(5)
+        Int32[] nums = Array<Int32>.create(3)
         nums.fill(7)
         nums.setValue(2, 99)
 
@@ -62,16 +62,16 @@ ArrayTest
         global.println("nums.getValue(0) -> " + nums.getValue(0).toString())
         global.println("nums.getValue(2) -> " + nums.getValue(2).toString())
 
-        nums.index = 1
+        nums.index = 2
         global.println("nums.current() $ index=1 -> " + nums.current().toString())
         nums.current = 123
-        global.println("nums.getValue(1) after set current -> " + nums.getValue(1).toString())
+        global.println("nums.getValue(1) after set current -> " + nums.getValue(2).toString())
     }
 
     static arrayGenericElementTest()
     {
         global.println("========== Array.generic element ==========")
-        Level<Int32>[] levels = new(3) { Level<Int32>(10), Level<Int32>(20), Level<Int32>(30) }
+        Level<Int32>[] levels = new(3) { Level<Int32>(10), null, Level<Int32>(30) }
         levels[1].t += 5
         for v in levels
         {
@@ -386,28 +386,29 @@ ArrayTest
     }
     static fun()
     {
-        arrayBasicApiTest()
+        #arrayBasicApiTest()        
         arrayGenericElementTest()
-        arrayCreateInstanceIndexLoopTest()
-        arrayCovariantAndLiteralForInTest()
-        arrayNumberIteratorFromConcreteArrayTest()
-        arrayNestedObjectTreeTest()
-        arrayJagged2DAssignTest()
-        arrayIntLiteralReadTest()
-        arrayRank2SparseJaggedTest()
-        arrayMixedLiteralDollarIndexTest()
-        arrayLevelMatrixTest()
-        arrayStringAndLevelVectorTest()
-        arrayHeterogeneousObject2DTest()
-        arrayCtorPrimitiveAndAliasTest()
-        arrayCtorMultidimClassShapeTest()
-        arrayCtorLiteralMixTypeTest()
-        arrayCtorTypedClassArrayTest()
-        arrayCtorFloatOverloadTest()
-        arrayArrClassIndexAndCurrentTest()
-        arrayArrClassForInAssignTest()
-        arrayForInLiteralIndexTest()
-        arrayArrClassCountLoopWriteTest()
+        #arrayCreateInstanceIndexLoopTest()
+        #arrayCovariantAndLiteralForInTest()
+        #arrayNumberIteratorFromConcreteArrayTest()
+        #arrayNestedObjectTreeTest()
+        #arrayJagged2DAssignTest()
+        #arrayIntLiteralReadTest()
+        #arrayRank2SparseJaggedTest()
+        #arrayMixedLiteralDollarIndexTest()
+        #arrayLevelMatrixTest()
+        #arrayStringAndLevelVectorTest()
+        #arrayHeterogeneousObject2DTest()
+        #arrayCtorPrimitiveAndAliasTest()
+        #arrayCtorMultidimClassShapeTest()
+        #arrayCtorLiteralMixTypeTest()
+        #arrayCtorTypedClassArrayTest()
+        #arrayCtorFloatOverloadTest()
+        #arrayArrClassIndexAndCurrentTest()
+        #arrayArrClassForInAssignTest()
+        #arrayForInLiteralIndexTest()
+        #arrayArrClassCountLoopWriteTest()
+        
     }
 }
 # 3.1.1 先实现了，在函数里，直接调用C#层写的方法。

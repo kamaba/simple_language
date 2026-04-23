@@ -130,26 +130,24 @@ namespace SimpleLanguage.VM
                 Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object list is not initialized for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
                 return;
             }
-            //var slotIndex = ResolveStaticSlotIndex(index);
-            //if (slotIndex < 0 || slotIndex >= m_StaticMemObjectList.Length)
-            //{
-            //    svalue.SetNull();
-            //    return;
-            //}
-            //EnsureStaticMemberObjectAt(index);
-            var sobj = m_StaticMemberRuntimeObjectArray[index];
-            if (sobj == null || sobj.isNull )
+            if (index < 0 || index >= m_StaticMemberRuntimeObjectArray.Length)
             {
                 svalue.SetNull();
                 return;
             }
-            svalue.SetSObject(sobj.sobject);
+            var ro = m_StaticMemberRuntimeObjectArray[index];
+            if (ro == null)
+            {
+                svalue.SetNull();
+                return;
+            }
+            // 与 ClassObject.GetMemberVariableSValue 一致：优先 m_MemberData 紧凑布局
+            ro.SetSValueBySObjct(ref svalue);
         }
         public void SetStaticMemberVariableSValue(int index, SValue svalue)
         {
             if (m_StaticMemberRuntimeObjectArray == null) return;
-            //var slotIndex = ResolveStaticSlotIndex(index);
-            //if (slotIndex < 0 || slotIndex >= m_StaticMemObjectList.Length) return;
+            if (index < 0 || index >= m_StaticMemberRuntimeObjectArray.Length) return;
             var target = m_StaticMemberRuntimeObjectArray[index];
             //if (target == null)
             //{

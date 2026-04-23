@@ -949,6 +949,7 @@ namespace SimpleLanguage.VM.Runtime
             if (iri == null) return;
 #if DEBUG
             int opcode = (int)iri.opCode;
+            var idd = this.id;
 #endif
             switch (iri.opCode)
             {
