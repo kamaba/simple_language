@@ -20,8 +20,8 @@ namespace SimpleLanguage.VM
         public SObject? sobject;
         public bool isNull;
 
-        public byte int8Value { get => nv.i8; set => nv.i8 = value; }
-        public sbyte sint8Value { get => nv.si8; set => nv.si8 = value; }
+        public byte uint8Value { get => nv.ui8; set => nv.ui8 = value; }
+        public sbyte int8Value { get => nv.si8; set => nv.si8 = value; }
         //public char charValue;
         public short int16Value { get => nv.i16; set => nv.i16 = value; }
         public ushort uint16Value { get => nv.ui16; set => nv.ui16 = value; }
@@ -134,8 +134,8 @@ namespace SimpleLanguage.VM
             switch (o)
             {
                 case bool b: v.SetBoolValue(b); break;
-                case byte b8: v.SetInt8Value(b8); break;
-                case sbyte sb8: v.SetSInt8Value(sb8); break;
+                case byte b8: v.SetUInt8Value(b8); break;
+                case sbyte sb8: v.SetInt8Value(sb8); break;
                 case short i16: v.SetInt16Value(i16); break;
                 case ushort u16: v.SetUInt16Value(u16); break;
                 case int i32: v.SetInt32Value(i32); break;
@@ -158,7 +158,7 @@ namespace SimpleLanguage.VM
         {
             isNull = true;
             int8Value = 0;
-            sint8Value = 0;
+            uint8Value = 0;
             int16Value = 0;
             uint16Value = 0;
             int32Value = 0;
@@ -174,18 +174,18 @@ namespace SimpleLanguage.VM
         {
             isNull = false;
             eType = EVMType.Boolean;
-            int8Value = val ? (byte)1 : (byte)0;
+            uint8Value = val ? (byte)1 : (byte)0;
         }
-        public void SetInt8Value(byte val)
+        public void SetUInt8Value(byte val)
         {
             eType = EVMType.UInt8;
-            int8Value = val;
+            uint8Value = val;
             isNull = false;
         }
-        public void SetSInt8Value(sbyte val)
+        public void SetInt8Value(sbyte val)
         {
             eType = EVMType.Int8;
-            sint8Value = val;
+            int8Value = val;
             isNull = false;
         }
         //public void SetCharValue(char val)
@@ -237,8 +237,8 @@ namespace SimpleLanguage.VM
         {
             switch (eType)
             {
-                case EVMType.UInt8: return int8Value;
-                case EVMType.Int8: return sint8Value;
+                case EVMType.UInt8: return uint8Value;
+                case EVMType.Int8: return int8Value;
                 case EVMType.Int16: return int16Value;
                 case EVMType.UInt16: return uint16Value;
                 case EVMType.Int32: return int32Value;
@@ -252,8 +252,8 @@ namespace SimpleLanguage.VM
         {
             switch (eType)
             {
-                case EVMType.UInt8: return int8Value;
-                case EVMType.Int8: return (byte)sint8Value;
+                case EVMType.UInt8: return uint8Value;
+                case EVMType.Int8: return (byte)int8Value;
                 case EVMType.Int16: return (ushort)int16Value;
                 case EVMType.UInt16: return uint16Value;
                 case EVMType.Int32: return (uint)int32Value;
@@ -267,8 +267,8 @@ namespace SimpleLanguage.VM
         {
             switch (eType)
             {
-                case EVMType.UInt8: return int8Value;
-                case EVMType.Int8: return sint8Value;
+                case EVMType.UInt8: return uint8Value;
+                case EVMType.Int8: return int8Value;
                 case EVMType.Int16: return int16Value;
                 case EVMType.UInt16: return uint16Value;
                 case EVMType.Int32: return int32Value;
@@ -288,8 +288,8 @@ namespace SimpleLanguage.VM
                 case EVMType.Int32: int32Value = (int)v; break;
                 case EVMType.UInt16: uint16Value = (ushort)v; break;
                 case EVMType.Int16: int16Value = (short)v; break;
-                case EVMType.UInt8: int8Value = (byte)v; break;
-                case EVMType.Int8: sint8Value = (sbyte)v; break;
+                case EVMType.UInt8: uint8Value = (byte)v; break;
+                case EVMType.Int8: int8Value = (sbyte)v; break;
                 default: break;
             }
         }
@@ -303,8 +303,8 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt32: uint32Value = (uint)v; break;
                 case EVMType.Int16: int16Value = (short)v; break;
                 case EVMType.UInt16: uint16Value = (ushort)v; break;
-                case EVMType.UInt8: int8Value = (byte)v; break;
-                case EVMType.Int8: sint8Value = (sbyte)v; break;
+                case EVMType.UInt8: uint8Value = (byte)v; break;
+                case EVMType.Int8: int8Value = (sbyte)v; break;
                 default: break;
             }
         }
@@ -340,17 +340,17 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.UInt8:
                     {
-                        int8Value = (byte)(tobj);
+                        uint8Value = (byte)(tobj);
                     }
                     break;
                 case EVMType.Boolean:
                     {
-                        int8Value = int.Parse(tobj.ToString()) == 1 ? (byte)1 : (byte)0;
+                        uint8Value = int.Parse(tobj.ToString()) == 1 ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.Int8:
                     {
-                        sint8Value = (sbyte)(tobj);
+                        int8Value = (sbyte)(tobj);
                     }
                     break;
                 //case EVMType.Char:
@@ -458,19 +458,19 @@ namespace SimpleLanguage.VM
                 case BoolObject boolobj:
                     {
                         eType = EVMType.Boolean;
-                        int8Value = boolobj.value ? (byte)1 : (byte)0;
+                        uint8Value = boolobj.value ? (byte)1 : (byte)0;
                     }
                     break;
                 case UInt8Object int8obj:
                     {
                         eType = EVMType.UInt8;
-                        int8Value = (byte)int8obj.value;
+                        uint8Value = (byte)int8obj.value;
                     }
                     break;
                 case Int8Object sint8obj:
                     {
                         eType = EVMType.Int8;
-                        sint8Value = sint8obj.value;
+                        int8Value = sint8obj.value;
                     }
                     break;
                 //case CharObject charObj:
@@ -588,19 +588,19 @@ namespace SimpleLanguage.VM
                 //case EVMType.RawBoolean:
                 case EVMType.Boolean:
                     {
-                        sobj = new BoolObject(this.int8Value == 1);
+                        sobj = new BoolObject(this.uint8Value == 1);
                     }
                     break;
                 //case EVMType.RawByte:
                 case EVMType.UInt8:
                     {
-                        sobj = new UInt8Object(this.int8Value );
+                        sobj = new UInt8Object(this.uint8Value );
                     }
                     break;
                 //case EVMType.RawSByte:
                 case EVMType.Int8:
                     {
-                        sobj = new Int8Object(this.sint8Value);
+                        sobj = new Int8Object(this.int8Value);
                     }
                     break;
                 //case EVMType.RawInt16:
@@ -701,19 +701,19 @@ namespace SimpleLanguage.VM
                 case EVMType.Boolean:
                     {
                         eType = EVMType.Boolean;
-                        int8Value = (byte)(Convert.ToInt32(cur, CultureInfo.InvariantCulture) != 0 ? 1 : 0);
+                        uint8Value = (byte)(Convert.ToInt32(cur, CultureInfo.InvariantCulture) != 0 ? 1 : 0);
                     }
                     break;
                 case EVMType.UInt8:
                     {
                         eType = EVMType.UInt8;
-                        int8Value = Convert.ToByte(cur);
+                        uint8Value = Convert.ToByte(cur);
                     }
                     break;
                 case EVMType.Int8:
                     {
                         eType = EVMType.Int8;
-                        sint8Value = Convert.ToSByte(cur);
+                        int8Value = Convert.ToSByte(cur);
                     }
                     break;
                 case EVMType.Int16:
@@ -794,11 +794,11 @@ namespace SimpleLanguage.VM
                     }
                 case EVMType.UInt8:
                     {
-                        return int8Value;
+                        return uint8Value;
                     }
                 case EVMType.Int8:
                     {
-                        return sint8Value;
+                        return int8Value;
                     }
                 //case EVMType.Char:
                 //    {
@@ -854,15 +854,15 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.UInt8:
                     {
-                        return new UInt8Object(int8Value);
+                        return new UInt8Object(uint8Value);
                     }
                 case EVMType.Boolean:
                     {
-                        return new BoolObject(int8Value == 1);
+                        return new BoolObject(uint8Value == 1);
                     }
                 case EVMType.Int8:
                     {
-                        return new Int8Object(sint8Value);
+                        return new Int8Object(int8Value);
                     }
                 //case EVMType.Char:
                 //    {

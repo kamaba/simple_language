@@ -71,10 +71,10 @@ namespace SimpleLanguage.VM
                     svalue.SetBoolValue(span.Length >= 4 && BinaryPrimitives.ReadInt32LittleEndian(span) != 0);
                     break;
                 case EVMType.UInt8:
-                    svalue.SetInt8Value(span.Length > 0 ? span[0] : (byte)0);
+                    svalue.SetUInt8Value(span.Length > 0 ? span[0] : (byte)0);
                     break;
                 case EVMType.Int8:
-                    svalue.SetSInt8Value(span.Length > 0 ? unchecked((sbyte)span[0]) : (sbyte)0);
+                    svalue.SetInt8Value(span.Length > 0 ? unchecked((sbyte)span[0]) : (sbyte)0);
                     break;
                 case EVMType.Int16:
                     svalue.SetInt16Value(span.Length >= 2 ? BinaryPrimitives.ReadInt16LittleEndian(span) : (short)0);
@@ -145,10 +145,10 @@ namespace SimpleLanguage.VM
                         BinaryPrimitives.WriteInt32LittleEndian(span, sval.int8Value == 1 ? 1 : 0);
                     break;
                 case EVMType.UInt8:
-                    span[0] = sval.int8Value;
+                    span[0] = sval.uint8Value;
                     break;
                 case EVMType.Int8:
-                    span[0] = unchecked((byte)sval.sint8Value);
+                    span[0] = unchecked((byte)sval.int8Value);
                     break;
                 case EVMType.Int16:
                     if (span.Length >= 2)
@@ -804,17 +804,17 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.Boolean:
                     {
-                        m_SObject.SetValueByType(EVMType.Boolean, sval.int8Value==1);
+                        m_SObject.SetValueByType(EVMType.Boolean, sval.uint8Value == 1);
                     }
                     break;
                 case EVMType.UInt8:
                     {
-                        m_SObject.SetValueByType(EVMType.UInt8, sval.int8Value);
+                        m_SObject.SetValueByType(EVMType.UInt8, sval.uint8Value);
                     }
                     break;
                 case EVMType.Int8:
                     {
-                        m_SObject.SetValueByType(EVMType.Int8, sval.sint8Value);
+                        m_SObject.SetValueByType(EVMType.Int8, sval.int8Value);
                     }
                     break;
                 case EVMType.Int16:
@@ -959,12 +959,12 @@ namespace SimpleLanguage.VM
                     break;
                 case UInt8Object byteob:
                     {
-                        svalue.SetInt8Value(byteob.value);
+                        svalue.SetUInt8Value(byteob.value);
                     }
                     break;
                 case Int8Object sbyteobj:
                     {
-                        svalue.SetSInt8Value(sbyteobj.value);
+                        svalue.SetInt8Value(sbyteobj.value);
                     }
                     break;
                 case Int16Object int16Obj:

@@ -141,8 +141,8 @@ namespace SimpleLanguage.VM
             var w = _data.AsSpan(oi + 1);
             switch (arrayEvm)
             {
-                case EVMType.UInt8: sval.SetInt8Value(w[0]); break;
-                case EVMType.Int8: sval.SetSInt8Value(unchecked((sbyte)w[0])); break;
+                case EVMType.UInt8: sval.SetUInt8Value(w[0]); break;
+                case EVMType.Int8: sval.SetInt8Value(unchecked((sbyte)w[0])); break;
                 case EVMType.Int16: sval.SetInt16Value(BinaryPrimitives.ReadInt16LittleEndian(w)); break;
                 case EVMType.UInt16: sval.SetUInt16Value(BinaryPrimitives.ReadUInt16LittleEndian(w)); break;
                 case EVMType.Int32: sval.SetInt32Value(BinaryPrimitives.ReadInt32LittleEndian(w)); break;

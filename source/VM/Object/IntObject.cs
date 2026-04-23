@@ -11,16 +11,16 @@ namespace SimpleLanguage.VM
 {
     public class BoolObject : SObject
     {
-        public new bool value => m_Numeric.i8 != 0;
+        public new bool value => m_Numeric.ui8 != 0;
         public BoolObject(bool flag) : base(EVMType.Boolean)
         {
-            m_Numeric.i8 = flag ? (byte)1 : (byte)0;
+            m_Numeric.ui8 = flag ? (byte)1 : (byte)0;
             m_RuntimeType = RuntimeTypeManager.boolRuntimeType;
         }
 
         public void SetValue(bool _val)
         {
-            m_Numeric.i8 = _val ? (byte)1 : (byte)0;
+            m_Numeric.ui8 = _val ? (byte)1 : (byte)0;
         }
         public override string ToFormatString()
         {
@@ -29,11 +29,11 @@ namespace SimpleLanguage.VM
     }
     public class UInt8Object : NumObject
     {
-        public new byte value => m_Numeric.i8;
+        public new byte value => m_Numeric.ui8;
 
         public UInt8Object(byte _val) : base(EVMType.UInt8)
         {
-            m_Numeric.i8 = _val;
+            m_Numeric.ui8 = _val;
             m_RuntimeType = RuntimeTypeManager.uint8RuntimeType;
         }
     }

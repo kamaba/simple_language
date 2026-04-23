@@ -36,7 +36,7 @@ namespace SimpleLanguage.VM
             if (eTypeIndex >= 0)
             {
                 var sv = default(SValue);
-                sv.SetInt8Value((byte)m_Rt.eType);
+                sv.SetUInt8Value((byte)m_Rt.eType);
                 SetMemberVariableSValue(eTypeIndex, sv);
             }
 

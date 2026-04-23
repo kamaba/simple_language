@@ -294,15 +294,15 @@ namespace SimpleLanguage.VM
            
             if( type == typeof(bool) )
             {
-                return sval.int8Value == 1;
+                return sval.uint8Value == 1;
             }
             else if (type == typeof(Byte))
             {
-                return sval.int8Value;
+                return sval.uint8Value;
             }
             else if (type == typeof(SByte))
             {
-                return sval.sint8Value;
+                return sval.int8Value;
             }
             else if (type == typeof(Int16))
             {
@@ -409,15 +409,15 @@ namespace SimpleLanguage.VM
                     //    }
                     case EVMType.Boolean:
                         {
-                            return new BoolObject(sval.int8Value == 1);
+                            return new BoolObject(sval.uint8Value == 1);
                         }
                     case EVMType.UInt8:
                         {
-                            return new UInt8Object(sval.int8Value);
+                            return new UInt8Object(sval.uint8Value);
                         }
                     case EVMType.Int8:
                         {
-                            return new Int8Object(sval.sint8Value);
+                            return new Int8Object(sval.int8Value);
                         }
                     //case EVMType.Char:
                     //    {
@@ -477,12 +477,12 @@ namespace SimpleLanguage.VM
                     break;
                 case Byte b:
                     {
-                        sva.SetInt8Value((Byte)obj);
+                        sva.SetUInt8Value((Byte)obj);
                     }
                     break;
                 case SByte sb:
                     {
-                        sva.SetSInt8Value((SByte)obj);
+                        sva.SetInt8Value((SByte)obj);
                     }
                     break;
                 case Char ch:

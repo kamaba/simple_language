@@ -9,6 +9,7 @@
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using SimpleLanguage.Logging;
 using SimpleLanuageVM.Load;
 
 namespace SimpleLanguage.VM
@@ -224,11 +225,14 @@ namespace SimpleLanguage.VM
                 v = BitConverter.ToBoolean(Payload, 0);
                 return true;
             }
-            if (opValue is bool b)
-            {
-                v = b; return true;
-            }
-            v = default; return false;
+            v = false;
+            //if (opValue is bool b)
+            //{
+            //    v = b; return true;
+            //}
+            //v = default; 
+            Log.AddRuntimeLog(LID.RuntimeVMInstructPayLoadGetValueError, debugInfo, "get boolean", debugInfo.name );
+            return false;
         }
         public bool TryGetInt32(out int v)
         {
@@ -236,8 +240,10 @@ namespace SimpleLanguage.VM
             {
                 v = BitConverter.ToInt32(Payload, 0); return true;
             }
-            if (opValue is int i) { v = i; return true; }
-            v = default; return false;
+            //if (opValue is int i) { v = i; return true; }
+            v = default;
+            Log.AddRuntimeLog(LID.RuntimeVMInstructPayLoadGetValueError, debugInfo, "get int32", debugInfo.name);
+            return false;
         }
         public bool TryGetUInt32(out uint v)
         {
@@ -245,8 +251,10 @@ namespace SimpleLanguage.VM
             {
                 v = BitConverter.ToUInt32(Payload, 0); return true;
             }
-            if (opValue is uint ui) { v = ui; return true; }
-            v = default; return false;
+            //if (opValue is uint ui) { v = ui; return true; }
+            v = default;
+            Log.AddRuntimeLog(LID.RuntimeVMInstructPayLoadGetValueError, debugInfo, "get uint32", debugInfo.name);
+            return false;
         }
         public bool TryGetInt64(out long v)
         {
@@ -254,8 +262,10 @@ namespace SimpleLanguage.VM
             {
                 v = BitConverter.ToInt64(Payload, 0); return true;
             }
-            if (opValue is long l) { v = l; return true; }
-            v = default; return false;
+            //if (opValue is long l) { v = l; return true; }
+            v = default;
+            Log.AddRuntimeLog(LID.RuntimeVMInstructPayLoadGetValueError, debugInfo, "get int64", debugInfo.name);
+            return false;
         }
         public bool TryGetUInt64(out ulong v)
         {
@@ -263,8 +273,10 @@ namespace SimpleLanguage.VM
             {
                 v = BitConverter.ToUInt64(Payload, 0); return true;
             }
-            if (opValue is ulong ul) { v = ul; return true; }
-            v = default; return false;
+            //if (opValue is ulong ul) { v = ul; return true; }
+            v = default;
+            Log.AddRuntimeLog(LID.RuntimeVMInstructPayLoadGetValueError, debugInfo, "get uint64", debugInfo.name); 
+            return false;
         }
         public bool TryGetInt16(out short v)
         {
@@ -272,8 +284,10 @@ namespace SimpleLanguage.VM
             {
                 v = BitConverter.ToInt16(Payload, 0); return true;
             }
-            if (opValue is short s) { v = s; return true; }
-            v = default; return false;
+            //if (opValue is short s) { v = s; return true; }
+            v = default;
+            Log.AddRuntimeLog(LID.RuntimeVMInstructPayLoadGetValueError, debugInfo, "get int16", debugInfo.name);
+            return false;
         }
         public bool TryGetUInt16(out ushort v)
         {
@@ -281,44 +295,54 @@ namespace SimpleLanguage.VM
             {
                 v = BitConverter.ToUInt16(Payload, 0); return true;
             }
-            if (opValue is ushort us) { v = us; return true; }
-            v = default; return false;
+            //if (opValue is ushort us) { v = us; return true; }
+            v = default;
+            Log.AddRuntimeLog(LID.RuntimeVMInstructPayLoadGetValueError, debugInfo, "get uint16", debugInfo.name); 
+            return false;
         }
-        public bool TryGetByte(out byte v)
+        public bool TryGetUInt8(out byte v)
         {
             if (Payload != null && Payload.Length >= 1)
             {
                 v = Payload[0]; return true;
             }
-            if (opValue is byte by) { v = by; return true; }
-            v = default; return false;
+            //if (opValue is byte by) { v = by; return true; }
+            v = default;
+            Log.AddRuntimeLog(LID.RuntimeVMInstructPayLoadGetValueError, debugInfo, "get uint8", debugInfo.name); 
+            return false;
         }
-        public bool TryGetSByte(out sbyte v)
+        public bool TryGetInt8(out sbyte v)
         {
             if (Payload != null && Payload.Length >= 1)
             {
                 v = (sbyte)Payload[0]; return true;
             }
-            if (opValue is sbyte sb) { v = sb; return true; }
-            v = default; return false;
+            //if (opValue is sbyte sb) { v = sb; return true; }
+            v = default;
+            Log.AddRuntimeLog(LID.RuntimeVMInstructPayLoadGetValueError, debugInfo, "get int8", debugInfo.name);
+            return false;
         }
-        public bool TryGetSingle(out float v)
+        public bool TryGetFloat32(out float v)
         {
             if (Payload != null && Payload.Length >= 4)
             {
                 v = BitConverter.ToSingle(Payload, 0); return true;
             }
-            if (opValue is float f) { v = f; return true; }
-            v = default; return false;
+            //if (opValue is float f) { v = f; return true; }
+            v = default;
+            Log.AddRuntimeLog(LID.RuntimeVMInstructPayLoadGetValueError, debugInfo, "get float32", debugInfo.name);
+            return false;
         }
-        public bool TryGetDouble(out double v)
+        public bool TryGetFloat64(out double v)
         {
             if (Payload != null && Payload.Length >= 8)
             {
                 v = BitConverter.ToDouble(Payload, 0); return true;
             }
-            if (opValue is double d) { v = d; return true; }
-            v = default; return false;
+            //if (opValue is double d) { v = d; return true; }
+            v = default;
+            Log.AddRuntimeLog(LID.RuntimeVMInstructPayLoadGetValueError, debugInfo, "get float64", debugInfo.name);
+            return false;
         }
         public bool TryGetString(out string s)
         {
@@ -326,10 +350,11 @@ namespace SimpleLanguage.VM
             {
                 s = Encoding.UTF8.GetString(Payload); return true;
             }
-            if (opValue is string ss) { s = ss; return true; }
-            s = null; return false;
+            //if (opValue is string ss) { s = ss; return true; }
+            s = "";
+            Log.AddRuntimeLog(LID.RuntimeVMInstructPayLoadGetValueError, debugInfo, "get float64", debugInfo.name);
+            return false;
         }
-
         public bool TryGetRuntimeCallPackage(out SLRuntimeCallPackage pkg)
         {
             return TryGetJsonObject(out pkg);

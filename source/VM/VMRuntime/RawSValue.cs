@@ -12,8 +12,8 @@ namespace SimpleLanguage.VM
         public ulong u64; // union storage
 
         // Accessors
-        public byte Int8 { get => (byte)u64; set => u64 = (u64 & ~0xFFUL) | value; }
-        public sbyte SInt8 { get => (sbyte)(u64 & 0xFF); set => u64 = (u64 & ~0xFFUL) | (ulong)(byte)value; }
+        public byte UInt8 { get => (byte)u64; set => u64 = (u64 & ~0xFFUL) | value; }
+        public sbyte Int8 { get => (sbyte)(u64 & 0xFF); set => u64 = (u64 & ~0xFFUL) | (ulong)(byte)value; }
         public short Int16 { get => (short)(u64 & 0xFFFF); set => u64 = (u64 & ~0xFFFFUL) | (ulong)(ushort)value; }
         public ushort UInt16 { get => (ushort)(u64 & 0xFFFF); set => u64 = (u64 & ~0xFFFFUL) | value; }
         public int Int32 { get => (int)(u64 & 0xFFFFFFFF); set => u64 = (u64 & ~0xFFFFFFFFUL) | (uint)value; }
@@ -41,8 +41,8 @@ namespace SimpleLanguage.VM
             r.eType = v.eType;
             switch (v.eType)
             {
-                case EVMType.UInt8: r.Int8 = v.int8Value; break;
-                case EVMType.Int8: r.SInt8 = v.sint8Value; break;
+                case EVMType.Int8: r.Int8 = v.int8Value; break;
+                case EVMType.UInt8: r.UInt8 = v.uint8Value; break;
                 case EVMType.Int16: r.Int16 = v.int16Value; break;
                 case EVMType.UInt16: r.UInt16 = v.uint16Value; break;
                 case EVMType.Int32: r.Int32 = v.int32Value; break;
@@ -64,8 +64,8 @@ namespace SimpleLanguage.VM
             v.eType = eType;
             switch (eType)
             {
-                case EVMType.UInt8: v.int8Value = Int8; break;
-                case EVMType.Int8: v.sint8Value = SInt8; break;
+                case EVMType.UInt8: v.uint8Value = UInt8; break;
+                case EVMType.Int8: v.int8Value = Int8; break;
                 case EVMType.Int16: v.int16Value = Int16; break;
                 case EVMType.UInt16: v.uint16Value = UInt16; break;
                 case EVMType.Int32: v.int32Value = Int32; break;

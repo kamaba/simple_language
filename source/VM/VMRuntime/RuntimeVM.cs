@@ -226,6 +226,7 @@ namespace SimpleLanguage.VM.Runtime
             if (m_ValueIndex >= m_ValueStack.Length)
             {
                 slotIndex = -1;
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"SVM Error: Value stack overflow, current index={m_ValueIndex}, stack length={m_ValueStack.Length}");
                 return false;
             }
             slotIndex = m_ValueIndex++;
@@ -960,7 +961,8 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Nop: break;
                 case EIROpCode.LoadConstNull:
                     {
-                        m_ValueStack[m_ValueIndex++].SetNull();
+                        TryPushStackSlot(out int slot);
+                        m_ValueStack[slot].SetNull();
                     }
                     break;
                 case EIROpCode.LoadConstBoolean:
@@ -971,14 +973,14 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadConstUInt8:
                     {
-                        if (iri.TryGetByte(out byte cb) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetInt8Value(cb);
+                        if (iri.TryGetUInt8(out byte cb) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetUInt8Value(cb);
                     }
                     break;
                 case EIROpCode.LoadConstInt8:
                     {
-                        if (iri.TryGetSByte(out sbyte sb) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetSInt8Value(sb);
+                        if (iri.TryGetInt8(out sbyte sb) && TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetInt8Value(sb);
                     }
                     break;
                 case EIROpCode.LoadConstInt16:
@@ -1019,31 +1021,31 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadConstFloat32 :
                     {
-                        if (iri.TryGetSingle(out float f) && TryPushStackSlot(out int slot))
+                        if (iri.TryGetFloat32(out float f) && TryPushStackSlot(out int slot))
                             m_ValueStack[slot].SetFloatValue(f);
                     }
                     break;
                 case EIROpCode.LoadConstFloat64:
                     {
-                        if (iri.TryGetDouble(out double d) && TryPushStackSlot(out int slot))
+                        if (iri.TryGetFloat64(out double d) && TryPushStackSlot(out int slot))
                             m_ValueStack[slot].SetDoubleValue(d);
                     }
                     break;
                 case EIROpCode.LoadConstString:
                     {
-                        if (iri.TryGetString(out string s))
-                        {
-                            if (TryPushStackSlot(out int slot))
-                                m_ValueStack[slot].SetStringValue(s);
-                        }
-                        else
-                        {
+                        //if (iri.TryGetString(out string s))
+                        //{
+                        //    if (TryPushStackSlot(out int slot))
+                        //        m_ValueStack[slot].SetStringValue(s);
+                        //}
+                        //else
+                        //{
                             var resolved = SLAssembly.TryGetConstString(iri.index)
                                 ?? SLIRModuleLoader.TryGetConstString(iri.index)
                                 ?? string.Empty;
                             if (TryPushStackSlot(out int slot))
                                 m_ValueStack[slot].SetStringValue(resolved);
-                        }
+                        //}
                     }
                     break;
                 case EIROpCode.LoadConstType:
@@ -1171,7 +1173,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         int int1 = 1, int2 = 2;
                         byte flagByte = (byte)EStoreArrayIndexFlag.StoreTopMinus1_ValueTopMinus2;
-                        if (iri.TryGetByte(out var bflag))
+                        if (iri.TryGetUInt8(out var bflag))
                         {
                             flagByte = bflag;
                         }
@@ -1225,10 +1227,10 @@ namespace SimpleLanguage.VM.Runtime
                         SValue loadindex = m_ValueStack[m_ValueIndex - 2];
                         SValue storevalue = m_ValueStack[m_ValueIndex - 1];
 
-                        if (arrayref.eType == EVMType.Array)
+                        if (arrayref.eType == EVMType.Array && arrayref.sobject is ArrayObject ao)
                         {
-                            int index = (int)loadindex.GetValueObject();
-                            (arrayref.sobject as ArrayObject).StoreValue(index, storevalue);
+                            int index = Convert.ToInt32( loadindex.GetValueObject() );
+                            ao.StoreValue(index, storevalue);
                         }
                         else
                         {
@@ -2391,13 +2393,13 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            obj.SetValueByType(EVMType.Int8, svalue.sint8Value);
+                            obj.SetValueByType(EVMType.Int8, svalue.int8Value);
                             return;
                         }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            to.SetValue(EVMType.Int8, svalue.sint8Value);
+                            to.SetValue(EVMType.Int8, svalue.int8Value);
                         }
                         Int8Object byteObj = obj as Int8Object;
                         if (byteObj == null)
@@ -2405,7 +2407,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疭Byte绫诲瀷!!");
                             return;
                         }
-                        byteObj.SetValue(svalue.sint8Value);
+                        byteObj.SetValue(svalue.int8Value);
                     }
                     break;
                 //case EVMType.RawInt16:
@@ -2915,7 +2917,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             if (obj.eType == EVMType.UInt8)
                             {
-                                svalue.SetInt8Value((byte)obj.value);
+                                svalue.SetUInt8Value((byte)obj.value);
                             }
                             else
                             {
@@ -2926,7 +2928,7 @@ namespace SimpleLanguage.VM.Runtime
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            svalue.SetInt8Value((Byte)to.value);
+                            svalue.SetUInt8Value((Byte)to.value);
                             to.SetValue(EVMType.UInt8, obj.value);
                             return;
                         }
@@ -2937,7 +2939,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疊yte绫诲瀷!!");
                             return;
                         }
-                        svalue.SetInt8Value((Byte)byteObj.value);
+                        svalue.SetUInt8Value((Byte)byteObj.value);
                     }
                     break;
                 case EVMType.Int8:
@@ -2946,7 +2948,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             if (obj.eType == EVMType.Int8)
                             {
-                                svalue.SetSInt8Value((sbyte)obj.value);
+                                svalue.SetInt8Value((sbyte)obj.value);
                             }
                             else
                             {
@@ -2957,7 +2959,7 @@ namespace SimpleLanguage.VM.Runtime
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            svalue.SetSInt8Value((SByte)to.value);
+                            svalue.SetInt8Value((SByte)to.value);
                             return;
                         }
 
@@ -2967,7 +2969,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddRuntimeLog(LID.ShowMessageAssert, "璇ョ被鍨嬩笉鏄疭Byte绫诲瀷!!");
                             return;
                         }
-                        svalue.SetSInt8Value((SByte)byteObj.value);
+                        svalue.SetInt8Value((SByte)byteObj.value);
                     }
                     break;
                 case EVMType.Int16:
@@ -3216,8 +3218,8 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 switch (obj.eType)
                                 {
-                                    case EVMType.UInt8: svalue.SetInt8Value((byte)obj.value); break;
-                                    case EVMType.Int8: svalue.SetSInt8Value((sbyte)obj.value); break;
+                                    case EVMType.UInt8: svalue.SetUInt8Value((byte)obj.value); break;
+                                    case EVMType.Int8: svalue.SetInt8Value((sbyte)obj.value); break;
                                     case EVMType.Int16: svalue.SetInt16Value((short)obj.value); break;
                                     case EVMType.UInt16: svalue.SetUInt16Value((ushort)obj.value); break;
                                     case EVMType.Int32: svalue.SetInt32Value((int)obj.value); break;
@@ -3329,12 +3331,12 @@ namespace SimpleLanguage.VM.Runtime
                                 break;
                             case EVMType.UInt8:
                                 {
-                                    svalue.SetInt8Value((byte)obj.value);
+                                    svalue.SetUInt8Value((byte)obj.value);
                                 }
                                 break;
                             case EVMType.Int8:
                                 {
-                                    svalue.SetSInt8Value((sbyte)obj.value);
+                                    svalue.SetInt8Value((sbyte)obj.value);
                                 }
                                 break;
                             case EVMType.Int16:

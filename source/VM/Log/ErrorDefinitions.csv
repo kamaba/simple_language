@@ -17,6 +17,10 @@ id,logType,enableAssert,blockOnErrorAssert,paramCount,domestic_tips,cn_message,,
 11018,Assert,TRUE,FALSE,0,,没有找到相关方法,,,
 11019,Assert,TRUE,FALSE,0,,解析的[{0}]不太正确,,,
 11020,Assert,TRUE,FALSE,0,,该位置的值，不应该为空值,,,
+11021,Assert,TRUE,FALSE,1,,没有从结构体[{0}]取出对应的值,,,
+
+
+
 13000,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/VM/Log/LogManager.cs:190,,Auto-generated LID mapping,,
 13001,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/VM/Log/LogManager.cs:194,,Auto-generated LID mapping,,
 13002,Error,FALSE,FALSE,0,,Auto generated from E:/project/lang/simple_language/source/VM/Object/ClassObject.cs:95,,Auto-generated LID mapping,,

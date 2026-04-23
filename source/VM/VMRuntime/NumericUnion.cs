@@ -18,7 +18,7 @@ namespace SimpleLanguage.VM
         [FieldOffset(0)] public uint u32;
         [FieldOffset(0)] public short i16;
         [FieldOffset(0)] public ushort ui16;
-        [FieldOffset(0)] public byte i8;
+        [FieldOffset(0)] public byte ui8;
         [FieldOffset(0)] public sbyte si8;
     }
 }

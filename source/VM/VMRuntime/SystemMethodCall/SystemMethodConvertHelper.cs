@@ -16,11 +16,11 @@ namespace SimpleLanguage.VM.Runtime
             switch (v.eType)
             {
                 case EVMType.Boolean:
-                    return v.int8Value != 0 ? 1 : 0;
+                    return v.uint8Value != 0 ? 1 : 0;
                 case EVMType.UInt8:
-                    return v.int8Value;
+                    return v.uint8Value;
                 case EVMType.Int8:
-                    return v.sint8Value;
+                    return v.int8Value;
                 case EVMType.Int16:
                     return v.int16Value;
                 case EVMType.UInt16:
@@ -112,7 +112,7 @@ namespace SimpleLanguage.VM.Runtime
 
             byte nibble = (byte)((bits >> index) & 0xFUL);
             var outv = default(SValue);
-            outv.SetInt8Value(nibble);
+            outv.SetUInt8Value(nibble);
             return outv;
         }
 
@@ -175,7 +175,7 @@ namespace SimpleLanguage.VM.Runtime
 
             sbyte nib = unchecked((sbyte)(byte)((bits >> index) & 0xFUL));
             var outv = default(SValue);
-            outv.SetSInt8Value(nib);
+            outv.SetInt8Value(nib);
             return outv;
         }
 
@@ -202,15 +202,15 @@ namespace SimpleLanguage.VM.Runtime
             switch (v.eType)
             {
                 case EVMType.Boolean:
-                    bits = v.int8Value != 0 ? 1UL : 0UL;
+                    bits = v.uint8Value != 0 ? 1UL : 0UL;
                     bitWidth = 8;
                     return true;
                 case EVMType.UInt8:
-                    bits = v.int8Value;
+                    bits = v.uint8Value;
                     bitWidth = 8;
                     return true;
                 case EVMType.Int8:
-                    bits = unchecked((ulong)(byte)(uint)(int)v.sint8Value);
+                    bits = unchecked((ulong)(byte)(uint)(int)v.int8Value);
                     bitWidth = 8;
                     return true;
                 case EVMType.Int16:
@@ -350,9 +350,9 @@ namespace SimpleLanguage.VM.Runtime
             if (v.isNull) return 0;
             switch (v.eType)
             {
-                case EVMType.Boolean: return v.int8Value != 0;
-                case EVMType.UInt8: return v.int8Value;
-                case EVMType.Int8: return v.sint8Value;
+                case EVMType.Boolean: return v.uint8Value != 0;
+                case EVMType.UInt8: return v.uint8Value;
+                case EVMType.Int8: return v.int8Value;
                 case EVMType.Int16: return v.int16Value;
                 case EVMType.UInt16: return v.uint16Value;
                 case EVMType.Int32: return v.int32Value;

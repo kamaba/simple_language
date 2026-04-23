@@ -56,9 +56,9 @@ namespace SimpleLanguage.VM
             switch (m_Type)
             {
                 case EVMType.Boolean:
-                    return m_Numeric.i8 != 0;
+                    return m_Numeric.ui8 != 0;
                 case EVMType.UInt8:
-                    return m_Numeric.i8;
+                    return m_Numeric.ui8;
                 case EVMType.Int8:
                     return m_Numeric.si8;
                 case EVMType.Int16:
@@ -96,14 +96,14 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.Boolean:
                     if (val is bool bb)
-                        m_Numeric.i8 = bb ? (byte)1 : (byte)0;
+                        m_Numeric.ui8 = bb ? (byte)1 : (byte)0;
                     else if (val is byte b8)
-                        m_Numeric.i8 = b8;
+                        m_Numeric.ui8 = b8;
                     else
-                        m_Numeric.i8 = Convert.ToBoolean(val) ? (byte)1 : (byte)0;
+                        m_Numeric.ui8 = Convert.ToBoolean(val) ? (byte)1 : (byte)0;
                     break;
                 case EVMType.UInt8:
-                    m_Numeric.i8 = Convert.ToByte(val);
+                    m_Numeric.ui8 = Convert.ToByte(val);
                     break;
                 case EVMType.Int8:
                     m_Numeric.si8 = Convert.ToSByte(val);

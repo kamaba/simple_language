@@ -247,7 +247,7 @@ namespace SimpleLanguage.VM.Runtime
             for (int i = 0; i < raw.Length; i++)
             {
                 var sv = default(SValue);
-                sv.SetInt8Value(raw[i]);
+                sv.SetUInt8Value(raw[i]);
                 arr.StoreValue(i, sv);
             }
 

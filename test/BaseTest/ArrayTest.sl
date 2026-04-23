@@ -86,7 +86,7 @@ ArrayTest
     static arrayCreateInstanceIndexLoopTest()
     {
         global.println("========== createInstance / index / for-i ==========")
-        int intvalue = 20
+        intvalue = 16us
         Int32[] a2 = Array<Int32>.create(intvalue)
         a2[1] = 50
         a2.$1 += 100
@@ -387,8 +387,8 @@ ArrayTest
     static fun()
     {
         #arrayBasicApiTest()        
-        arrayGenericElementTest()
-        #arrayCreateInstanceIndexLoopTest()
+        #arrayGenericElementTest()
+        arrayCreateInstanceIndexLoopTest()
         #arrayCovariantAndLiteralForInTest()
         #arrayNumberIteratorFromConcreteArrayTest()
         #arrayNestedObjectTreeTest()
