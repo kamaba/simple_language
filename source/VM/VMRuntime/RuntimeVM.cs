@@ -7,7 +7,6 @@
 //****************************************************************************
 
 using SimpleLanguage.Logging;
-using System;
 using System.Runtime.CompilerServices;
 using System.Reflection;
 using SimpleLanuageVM.Load;

@@ -343,22 +343,6 @@ namespace SimpleLanguage.VM
                     break;
             }
         }
-
-        public bool GetBoolean()
-        {
-            if (m_RuntimeType != null && m_RuntimeType.eType == EVMType.Boolean)
-            {
-                var tmp = default(SValue);
-                if (TryReadMemberDataToSValue(ref tmp))
-                    return tmp.int8Value == 1;
-            }
-            var sobj = ResolveSObject();
-            if( sobj is BoolObject bl )
-            {
-                return bl.value;
-            }
-            return false;
-        }
         public void SetNull()
         {
             SetObjectPointer(null);
@@ -455,77 +439,27 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.UInt32:
                     {
-                        if (curObj == null)
-                        {
-                            var byteObj = ObjectManager.CreateObjectByRuntimeType(m_RuntimeType) as Int32Object;
-                            curObj = byteObj;
-                            SetObjectPointer(curObj);
-                            byteObj.SetValue(sval.uint32Value);
-                        }
-                        else
-                        {
-                            curObj.SetValueByType(EVMType.UInt32, sval.uint32Value);
-                        }
+                        curObj.SetValueByType(EVMType.UInt32, sval.uint32Value);
                     }
                     break;
                 case EVMType.Int64:
-                    {
-                        if (curObj == null)
-                        {
-                            var byteObj = ObjectManager.CreateObjectByRuntimeType(m_RuntimeType) as Int64Object;
-                            curObj = byteObj;
-                            SetObjectPointer(curObj);
-                            byteObj.SetValue(sval.int64Value);
-                        }
-                        else
-                        {
-                            curObj.SetValueByType(EVMType.Int64, sval.int64Value);
-                        }
+                    {                        
+                        curObj.SetValueByType(EVMType.Int64, sval.int64Value);
                     }
                     break;
                 case EVMType.UInt64:
                     {
-                        if (curObj == null)
-                        {
-                            var byteObj = ObjectManager.CreateObjectByRuntimeType(m_RuntimeType) as Int64Object;
-                            curObj = byteObj;
-                            SetObjectPointer(curObj);
-                            byteObj.SetValue(sval.uint64Value);
-                        }
-                        else
-                        {
-                            curObj.SetValueByType(EVMType.UInt64, sval.uint64Value);
-                        }
+                        curObj.SetValueByType(EVMType.UInt64, sval.uint64Value);
                     }
                     break;
                 case EVMType.Float32:
                     {
-                        if (curObj == null)
-                        {
-                            var byteObj = ObjectManager.CreateObjectByRuntimeType(m_RuntimeType) as Float32Object;
-                            curObj = byteObj;
-                            SetObjectPointer(curObj);
-                            byteObj.SetValue(sval.floatValue);
-                        }
-                        else
-                        {
-                            curObj.SetValueByType(EVMType.Float32, sval.floatValue);
-                        }
+                        curObj.SetValueByType(EVMType.Float32, sval.floatValue);
                     }
                     break;
                 case EVMType.Float64:
                     {
-                        if (curObj == null)
-                        {
-                            var byteObj = ObjectManager.CreateObjectByRuntimeType(m_RuntimeType) as Float64Object;
-                            curObj = byteObj;
-                            SetObjectPointer(curObj);
-                            byteObj.SetValue(sval.doubleValue);
-                        }
-                        else
-                        {
-                            curObj.SetValueByType(EVMType.Float64, sval.doubleValue);
-                        }
+                        curObj.SetValueByType(EVMType.Float64, sval.doubleValue);
                     }
                     break;
                 case EVMType.String:

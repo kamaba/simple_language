@@ -29,8 +29,8 @@ namespace SimpleLanguage.VM
         public uint uint32Value { get => nv.u32; set => nv.u32 = value; }
         public long int64Value { get => nv.i64; set => nv.i64 = value; }
         public ulong uint64Value { get => nv.u64; set => nv.u64 = value; }
-        public float floatValue { get => nv.f; set => nv.f = value; }
-        public double doubleValue { get => nv.d; set => nv.d = value; }
+        public float float32Value { get => nv.f; set => nv.f = value; }
+        public double float64Value { get => nv.d; set => nv.d = value; }
         public object? ToClrObject(Type targetType)
         {
             if (isNull) return null;
@@ -81,8 +81,8 @@ namespace SimpleLanguage.VM
             if (targetType == typeof(bool)) return eType == EVMType.Boolean ? (int8Value == 1) : Convert.ToBoolean(GetValueObject());
             if (targetType == typeof(int)) return eType == EVMType.Int32 ? int32Value : Convert.ToInt32(GetValueObject());
             if (targetType == typeof(long)) return eType == EVMType.Int64 ? int64Value : Convert.ToInt64(GetValueObject());
-            if (targetType == typeof(float)) return eType == EVMType.Float32 ? floatValue : Convert.ToSingle(GetValueObject());
-            if (targetType == typeof(double)) return eType == EVMType.Float64 ? doubleValue : Convert.ToDouble(GetValueObject());
+            if (targetType == typeof(float)) return eType == EVMType.Float32 ? float32Value : Convert.ToSingle(GetValueObject());
+            if (targetType == typeof(double)) return eType == EVMType.Float64 ? float64Value : Convert.ToDouble(GetValueObject());
             return Convert.ChangeType(GetValueObject(), targetType);
         }
 
@@ -165,8 +165,8 @@ namespace SimpleLanguage.VM
             uint32Value = 0;
             int64Value = 0;
             uint64Value = 0;
-            floatValue = 0;
-            doubleValue = 0;
+            float32Value = 0;
+            float64Value = 0;
             stringValue = null;
             sobject = null;
         }
@@ -311,13 +311,13 @@ namespace SimpleLanguage.VM
         public void SetFloatValue(Single val)
         {
             eType = EVMType.Float32;
-            floatValue = val;
+            float32Value = val;
             isNull = false;
         }
         public void SetDoubleValue(Double val)
         {
             eType = EVMType.Float64;
-            doubleValue = val;
+            float64Value = val;
             isNull = false;
         }
         public void SetStringValue(string val)
@@ -356,7 +356,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Boolean:
                     {
-                        uint8Value = int.Parse(tobj.ToString()) == 1 ? (byte)1 : (byte)0;
+                        uint8Value = (byte)tobj ==1  ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.Int8:
@@ -401,12 +401,12 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Float32:
                     {
-                        floatValue = (float)(tobj);
+                        float32Value = (float)(tobj);
                     }
                     break;
                 case EVMType.Float64:
                     {
-                        doubleValue = (double)(tobj);
+                        float64Value = (double)(tobj);
                     }
                     break;
                 case EVMType.String:
@@ -546,13 +546,13 @@ namespace SimpleLanguage.VM
                 case Float32Object floatobj:
                     {
                         eType = EVMType.Float32;
-                        floatValue = floatobj.value;
+                        float32Value = floatobj.value;
                     }
                     break;
                 case Float64Object doubleobj:
                     {
                         eType = EVMType.Float64;
-                        doubleValue = doubleobj.value;
+                        float64Value = doubleobj.value;
                     }
                     break;
                 case StringObject stringobj:
@@ -725,19 +725,19 @@ namespace SimpleLanguage.VM
                 case EVMType.Float32:
                     {
                         eType = EVMType.Float32;
-                        floatValue = Convert.ToSingle(cur);
+                        float32Value = Convert.ToSingle(cur);
                     }
                     break;
                 case EVMType.Float64:
                     {
                         eType = EVMType.Float64;
-                        doubleValue = Convert.ToDouble(cur);
+                        float64Value = Convert.ToDouble(cur);
                     }
                     break;
                 case EVMType.Num:
                     {
                         eType = EVMType.Num;
-                        doubleValue = Convert.ToDouble(cur);
+                        float64Value = Convert.ToDouble(cur);
                     }
                     break;
                 case EVMType.String:
@@ -801,15 +801,15 @@ namespace SimpleLanguage.VM
                     }
                 case EVMType.Float32:
                     {
-                        return floatValue;
+                        return float32Value;
                     }
                 case EVMType.Float64:
                     {
-                        return doubleValue;
+                        return float64Value;
                     }
                 case EVMType.Num:
                     {
-                        return doubleValue;
+                        return float64Value;
                     }
                 case EVMType.String:
                     {
@@ -818,60 +818,60 @@ namespace SimpleLanguage.VM
                 default:return sobject;
             }
         }
-        public SObject CreateSObject()
-        {
-            switch( eType )
-            {
-                case EVMType.UInt8:
-                    {
-                        return new UInt8Object(uint8Value);
-                    }
-                case EVMType.Boolean:
-                    {
-                        return new BoolObject(uint8Value == 1);
-                    }
-                case EVMType.Int8:
-                    {
-                        return new Int8Object(int8Value);
-                    }
-                //case EVMType.Char:
-                //    {
-                //        return new CharObject(charValue);
-                //    }
-                case EVMType.Int16:
-                    {
-                        return new Int16Object(int16Value);
-                    }
-                case EVMType.UInt16:
-                    {
-                        return new UInt16Object(uint16Value);
-                    }
-                case EVMType.Int32:
-                    {
-                        return new Int32Object(int32Value);
-                    }
-                case EVMType.UInt32:
-                    {
-                        return new UInt32Object(uint32Value);
-                    }
-                case EVMType.Int64:
-                    {
-                        return new Int64Object(int64Value);
-                    }
-                case EVMType.UInt64:
-                    {
-                        return new UInt64Object(uint64Value);
-                    }
-                case EVMType.String:
-                    {
-                        return new StringObject(stringValue);
-                    }
-                default:
-                    {
-                        return sobject;
-                    }
-            }
-            //return sobject;
-        }       
+        //public SObject CreateSObject()
+        //{
+        //    switch( eType )
+        //    {
+        //        case EVMType.UInt8:
+        //            {
+        //                return new UInt8Object(uint8Value);
+        //            }
+        //        case EVMType.Boolean:
+        //            {
+        //                return new BoolObject(uint8Value == 1);
+        //            }
+        //        case EVMType.Int8:
+        //            {
+        //                return new Int8Object(int8Value);
+        //            }
+        //        //case EVMType.Char:
+        //        //    {
+        //        //        return new CharObject(charValue);
+        //        //    }
+        //        case EVMType.Int16:
+        //            {
+        //                return new Int16Object(int16Value);
+        //            }
+        //        case EVMType.UInt16:
+        //            {
+        //                return new UInt16Object(uint16Value);
+        //            }
+        //        case EVMType.Int32:
+        //            {
+        //                return new Int32Object(int32Value);
+        //            }
+        //        case EVMType.UInt32:
+        //            {
+        //                return new UInt32Object(uint32Value);
+        //            }
+        //        case EVMType.Int64:
+        //            {
+        //                return new Int64Object(int64Value);
+        //            }
+        //        case EVMType.UInt64:
+        //            {
+        //                return new UInt64Object(uint64Value);
+        //            }
+        //        case EVMType.String:
+        //            {
+        //                return new StringObject(stringValue);
+        //            }
+        //        default:
+        //            {
+        //                return sobject;
+        //            }
+        //    }
+        //    //return sobject;
+        //}       
     }
 }
