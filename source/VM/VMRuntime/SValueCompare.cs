@@ -428,8 +428,8 @@ namespace SimpleLanguage.VM
                 bool rightFloat = (sval2.eType == EVMType.Float32 || sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num);
                 if (leftFloat || rightFloat)
                 {
-                    double a = (sval1.eType == EVMType.Float64 || sval1.eType == EVMType.Num) ? sval1.doubleValue : (sval1.eType == EVMType.Float32 ? sval1.floatValue : sval1.ConvertToDoubleFromIntTypes());
-                    double b = (sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num) ? sval2.doubleValue : (sval2.eType == EVMType.Float32 ? sval2.floatValue : sval2.ConvertToDoubleFromIntTypes());
+                    double a = (sval1.eType == EVMType.Float64 || sval1.eType == EVMType.Num) ? sval1.float64Value : (sval1.eType == EVMType.Float32 ? sval1.float32Value : sval1.ConvertToDoubleFromIntTypes());
+                    double b = (sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num) ? sval2.float64Value : (sval2.eType == EVMType.Float32 ? sval2.float32Value : sval2.ConvertToDoubleFromIntTypes());
                     if (isEqual) sval1.SetBoolValue(a == b); else sval1.SetBoolValue(a != b);
                     return;
                 }
@@ -567,8 +567,8 @@ namespace SimpleLanguage.VM
                 bool rightFloat = (sval2.eType == EVMType.Float32 || sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num);
                 if (leftFloat || rightFloat)
                 {
-                    double a = (sval1.eType == EVMType.Float64 || sval1.eType == EVMType.Num) ? sval1.doubleValue : (sval1.eType == EVMType.Float32 ? sval1.floatValue : sval1.ConvertToDoubleFromIntTypes());
-                    double b = (sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num) ? sval2.doubleValue : (sval2.eType == EVMType.Float32 ? sval2.floatValue : sval2.ConvertToDoubleFromIntTypes());
+                    double a = (sval1.eType == EVMType.Float64 || sval1.eType == EVMType.Num) ? sval1.float64Value : (sval1.eType == EVMType.Float32 ? sval1.float32Value : sval1.ConvertToDoubleFromIntTypes());
+                    double b = (sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num) ? sval2.float64Value : (sval2.eType == EVMType.Float32 ? sval2.float32Value : sval2.ConvertToDoubleFromIntTypes());
                     switch (compareSign)
                     {
                         case 0: sval1.SetBoolValue(a > b); break;
@@ -648,8 +648,8 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.Boolean: return v.int8Value != 0;
                 case EVMType.String: return !string.IsNullOrEmpty(v.stringValue);
-                case EVMType.Float32: return v.floatValue != 0.0f;
-                case EVMType.Float64: return v.doubleValue != 0.0;
+                case EVMType.Float32: return v.float32Value != 0.0f;
+                case EVMType.Float64: return v.float64Value != 0.0;
                 case EVMType.UInt8: return v.uint8Value != 0;
                 case EVMType.Int8: return v.int8Value != 0;
                 case EVMType.Int16: return v.int16Value != 0;

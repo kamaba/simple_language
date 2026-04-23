@@ -149,8 +149,8 @@ namespace SimpleLanguage.VM
                         var tmp = new NumObject(EVMType.Float64);
                         switch (rightPrim.eType)
                         {
-                            case EVMType.Float64: tmp.SetValue(rightPrim.doubleValue); break;
-                            case EVMType.Float32: tmp.SetValue(rightPrim.floatValue); break;
+                            case EVMType.Float64: tmp.SetValue(rightPrim.float64Value); break;
+                            case EVMType.Float32: tmp.SetValue(rightPrim.float32Value); break;
                             case EVMType.Int64: tmp.SetValue(rightPrim.int64Value); break;
                             case EVMType.UInt64: tmp.SetValue(rightPrim.uint64Value); break;
                             case EVMType.Int32: tmp.SetValue(rightPrim.int32Value); break;
@@ -159,7 +159,7 @@ namespace SimpleLanguage.VM
                             case EVMType.UInt16: tmp.SetValue(rightPrim.uint16Value); break;
                             case EVMType.UInt8: tmp.SetValue(rightPrim.uint8Value); break;
                             case EVMType.Int8: tmp.SetValue(rightPrim.int8Value); break;
-                            default: tmp.SetValue(rightPrim.doubleValue); break;
+                            default: tmp.SetValue(rightPrim.float64Value); break;
                         }
                         leftNum.Operate(sign, tmp, isUnSign);
                         return;
@@ -181,8 +181,8 @@ namespace SimpleLanguage.VM
                     var tmpLeft = new NumObject(EVMType.Float64);
                     switch (leftPrim.eType)
                     {
-                        case EVMType.Float64: tmpLeft.SetValue(leftPrim.doubleValue); break;
-                        case EVMType.Float32: tmpLeft.SetValue(leftPrim.floatValue); break;
+                        case EVMType.Float64: tmpLeft.SetValue(leftPrim.float64Value); break;
+                        case EVMType.Float32: tmpLeft.SetValue(leftPrim.float32Value); break;
                         case EVMType.Int64: tmpLeft.SetValue(leftPrim.int64Value); break;
                         case EVMType.UInt64: tmpLeft.SetValue(leftPrim.uint64Value); break;
                         case EVMType.Int32: tmpLeft.SetValue(leftPrim.int32Value); break;
@@ -191,7 +191,7 @@ namespace SimpleLanguage.VM
                         case EVMType.UInt16: tmpLeft.SetValue(leftPrim.uint16Value); break;
                         case EVMType.UInt8: tmpLeft.SetValue(leftPrim.uint8Value); break;
                         case EVMType.Int8: tmpLeft.SetValue(leftPrim.int8Value); break;
-                        default: tmpLeft.SetValue(leftPrim.doubleValue); break;
+                        default: tmpLeft.SetValue(leftPrim.float64Value); break;
                     }
                     tmpLeft.Operate(sign, rightNum, isUnSign);
                     // write back as double into leftPrim
@@ -222,8 +222,8 @@ namespace SimpleLanguage.VM
             // If any side is float -> use double precision
             if (leftIsFloat || rightIsFloat)
             {
-                double a = (leftPrim.eType == EVMType.Float64 || leftPrim.eType == EVMType.Num) ? leftPrim.doubleValue : (leftPrim.eType == EVMType.Float32 ? (double)leftPrim.floatValue : leftPrim.ConvertToDoubleFromIntTypes());
-                double b = (rightPrim.eType == EVMType.Float64 || rightPrim.eType == EVMType.Num) ? rightPrim.doubleValue : (rightPrim.eType == EVMType.Float32 ? (double)rightPrim.floatValue : rightPrim.ConvertToDoubleFromIntTypes());
+                double a = (leftPrim.eType == EVMType.Float64 || leftPrim.eType == EVMType.Num) ? leftPrim.float64Value : (leftPrim.eType == EVMType.Float32 ? (double)leftPrim.float32Value : leftPrim.ConvertToDoubleFromIntTypes());
+                double b = (rightPrim.eType == EVMType.Float64 || rightPrim.eType == EVMType.Num) ? rightPrim.float64Value : (rightPrim.eType == EVMType.Float32 ? (double)rightPrim.float32Value : rightPrim.ConvertToDoubleFromIntTypes());
                 double r = 0;
                 switch (sign)
                 {
@@ -237,9 +237,9 @@ namespace SimpleLanguage.VM
                         break;
                 }
                 if (leftPrim.eType == EVMType.Float64 || leftPrim.eType == EVMType.Num)
-                    leftPrim.doubleValue = r;
+                    leftPrim.float64Value = r;
                 else
-                    leftPrim.floatValue = (float)r;
+                    leftPrim.float32Value = (float)r;
                 left = leftPrim;
                 return;
             }
@@ -734,18 +734,18 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Float32:
                     {
-                        floatValue = -floatValue;
+                        float32Value = -float32Value;
                     }
                     break;
                 case EVMType.Float64:
                     {
-                        doubleValue = -doubleValue;
+                        float64Value = -float64Value;
                     }
                     break;
                 case EVMType.Num:
                     {
                         // treat Num as double
-                        doubleValue = -doubleValue;
+                        float64Value = -float64Value;
                     }
                     break;
                 case EVMType.Class:

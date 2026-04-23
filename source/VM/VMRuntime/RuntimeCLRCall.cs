@@ -330,11 +330,11 @@ namespace SimpleLanguage.VM
             }
             else if (type == typeof(Single))
             {
-                return sval.floatValue;
+                return sval.float32Value;
             }
             else if (type == typeof(Double))
             {
-                return sval.doubleValue;
+                return sval.float64Value;
             }
             else if (type == typeof(String))
             {
@@ -449,11 +449,11 @@ namespace SimpleLanguage.VM
                         }
                     case EVMType.Float32:
                         {
-                            return new Float32Object(sval.floatValue);
+                            return new Float32Object(sval.float32Value);
                         }
                     case EVMType.Float64:
                         {
-                            return new Float64Object(sval.doubleValue);
+                            return new Float64Object(sval.float64Value);
                         }
                     case EVMType.String:
                         {

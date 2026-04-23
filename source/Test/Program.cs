@@ -156,8 +156,8 @@ internal static class Program
             VMRuntime::SimpleLanguage.Logging.Log.ResetFixedLogFileForNewSession();
             VmRunResultSink.Initialize();
 
-            var graph = SLIRJsonModuleLoader.ReadPackagesInExecutionOrder(packagePath);
-            var parseResult = SLIRModuleParse.Parse(graph, vmArgs);
+            var loadModel = SLIRRuntimeLoader.LoadInExecutionOrder(packagePath);
+            var parseResult = SLIRModuleParse.Parse(loadModel, vmArgs);
             if (parseResult == null)
             {
                 return 2;

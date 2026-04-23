@@ -31,16 +31,16 @@ namespace SimpleLanguage.VM
         //    return Parse(graph, args);
         //}
 
-        public static SLIRModuleParseResult? Parse(SLPackageGraph graph, string[] args)
+        public static SLIRModuleParseResult? Parse(SLIRRuntimeLoadModel loadModel, string[] args)
         {
-            if (graph == null) return null;
-
-            var packageList = graph.packageList;
-            if (packageList.Count == 0) return null;
+            if (loadModel == null) return null;
+            var packageList = loadModel.packageList;
+            var asmList = loadModel.assemblyList;
+            if (packageList.Count == 0 || asmList.Count == 0) return null;
 
             IntegrateConstStringDict(packageList);
 
-            var currentPkg = packageList[packageList.Count - 1];
+            var currentPkg = loadModel.currentPackage ?? packageList[packageList.Count - 1];
 
             SLRuntimeModuleRegistry.LoadFromPackages(packageList);
 
@@ -48,8 +48,7 @@ namespace SimpleLanguage.VM
             // before any global initializer instructions can create objects.
             RuntimeTypeManager.EnsureCoreRuntimeTypesRegistered();
 
-            var asmList = packageList.Select(p => SLIRJsonModuleLoader.BuildRuntimeModel(p)).ToList();
-            var slAsm = asmList[asmList.Count - 1];
+            var slAsm = loadModel.currentAssembly ?? asmList[asmList.Count - 1];
 
             //LoadBridgeMetadata(graph.rootDirectory);
 

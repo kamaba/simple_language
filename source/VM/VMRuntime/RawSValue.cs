@@ -49,10 +49,10 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt32: r.UInt32 = v.uint32Value; break;
                 case EVMType.Int64: r.Int64 = v.int64Value; break;
                 case EVMType.UInt64: r.UInt64 = v.uint64Value; break;
-                case EVMType.Float32: r.Float32 = v.floatValue; break;
+                case EVMType.Float32: r.Float32 = v.float32Value; break;
                 case EVMType.Num:
                 case EVMType.Float64: 
-                    r.Float64 = v.doubleValue; break;
+                    r.Float64 = v.float64Value; break;
                 default:
                     r.u64 = 0;
                     break;
@@ -72,9 +72,9 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt32: v.uint32Value = UInt32; break;
                 case EVMType.Int64: v.int64Value = Int64; break;
                 case EVMType.UInt64: v.uint64Value = UInt64; break;
-                case EVMType.Float32: v.floatValue = Float32; break;
-                case EVMType.Float64: v.doubleValue = Float64; break;
-                case EVMType.Num: v.doubleValue = Float64; break;
+                case EVMType.Float32: v.float32Value = Float32; break;
+                case EVMType.Float64: v.float64Value = Float64; break;
+                case EVMType.Num: v.float64Value = Float64; break;
                 default:
                     break;
             }

@@ -256,8 +256,8 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt32: BinaryPrimitives.WriteUInt32LittleEndian(w, s.uint32Value); break;
                 case EVMType.Int64: BinaryPrimitives.WriteInt64LittleEndian(w, s.int64Value); break;
                 case EVMType.UInt64: BinaryPrimitives.WriteUInt64LittleEndian(w, s.uint64Value); break;
-                case EVMType.Float32: BinaryPrimitives.WriteSingleLittleEndian(w, s.floatValue); break;
-                case EVMType.Float64: BinaryPrimitives.WriteDoubleLittleEndian(w, s.doubleValue); break;
+                case EVMType.Float32: BinaryPrimitives.WriteSingleLittleEndian(w, s.float32Value); break;
+                case EVMType.Float64: BinaryPrimitives.WriteDoubleLittleEndian(w, s.float64Value); break;
             }
         }
 
@@ -277,8 +277,8 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt32: tmp.eType = EVMType.UInt32; tmp.uint32Value = (uint)Convert.ToUInt32(d); break;
                 case EVMType.Int64: tmp.eType = EVMType.Int64; tmp.int64Value = (long)Convert.ToInt64(d); break;
                 case EVMType.UInt64: tmp.eType = EVMType.UInt64; tmp.uint64Value = (ulong)Convert.ToUInt64(d); break;
-                case EVMType.Float32: tmp.eType = EVMType.Float32; tmp.floatValue = (float)Convert.ToSingle(d); break;
-                case EVMType.Float64: tmp.eType = EVMType.Float64; tmp.doubleValue = d; break;
+                case EVMType.Float32: tmp.eType = EVMType.Float32; tmp.float32Value = (float)Convert.ToSingle(d); break;
+                case EVMType.Float64: tmp.eType = EVMType.Float64; tmp.float64Value = d; break;
                 case EVMType.Boolean: tmp.eType = EVMType.Boolean; tmp.uint8Value = (byte)(d != 0 ? 1 : 0); break;
                 default: return false;
             }

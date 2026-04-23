@@ -250,11 +250,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Float32:
                     if (span.Length >= 4)
-                        BinaryPrimitives.WriteSingleLittleEndian(span, sval.floatValue);
+                        BinaryPrimitives.WriteSingleLittleEndian(span, sval.float32Value);
                     break;
                 case EVMType.Float64:
                     if (span.Length >= 8)
-                        BinaryPrimitives.WriteDoubleLittleEndian(span, sval.doubleValue);
+                        BinaryPrimitives.WriteDoubleLittleEndian(span, sval.float64Value);
                     break;
             }
         }
@@ -454,12 +454,12 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Float32:
                     {
-                        curObj.SetValueByType(EVMType.Float32, sval.floatValue);
+                        curObj.SetValueByType(EVMType.Float32, sval.float32Value);
                     }
                     break;
                 case EVMType.Float64:
                     {
-                        curObj.SetValueByType(EVMType.Float64, sval.doubleValue);
+                        curObj.SetValueByType(EVMType.Float64, sval.float64Value);
                     }
                     break;
                 case EVMType.String:

@@ -15,20 +15,13 @@ try
 {
     //CallMethodJsonExporter.Export("../../../../Front/bin/Debug/net8.0/ImportCSharpLang.json");
 
-    // If first arg is a JSON module package, load it. Otherwise try default exported path.
-    string? pkgPath = SLIRJsonModuleLoader.ResolveJsonPath(args);
+    // Resolve SLIR input path by loader abstraction (json now, binary later).
+    string? pkgPath = SLIRRuntimeLoader.ResolveInputPath(args);
 
     if (!string.IsNullOrEmpty(pkgPath))
     {
-        if (!pkgPath.EndsWith(".module.json", StringComparison.OrdinalIgnoreCase)
-            && !pkgPath.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase))
-        {
-            Log.AddProjectLog(LID.NotFoundRuntimeIRFile, pkgPath );
-            return;
-        }
-
-        var graph = SLIRJsonModuleLoader.ReadPackagesInExecutionOrder(pkgPath);
-        var parseResult = SLIRModuleParse.Parse(graph, args);
+        var loadModel = SLIRRuntimeLoader.LoadInExecutionOrder(pkgPath);
+        var parseResult = SLIRModuleParse.Parse(loadModel, args);
         if (parseResult == null)
         {
             Log.AddProjectLog(LID.RuntimeIRParseError, pkgPath );
@@ -69,7 +62,7 @@ try
         return;
     }
 
-    Log.AddProjectLog(LID.ShowMessageInfo, "No module package found. Pass a *.module.json path or export one to configured export.outputDir.");
+    Log.AddProjectLog(LID.ShowMessageInfo, "No SLIR input found. Pass a *.module.json/*.package.json (binary loader can be plugged in later).");
 }
 catch (CompilationAbortException)
 {

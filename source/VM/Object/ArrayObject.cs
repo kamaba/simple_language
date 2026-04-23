@@ -301,7 +301,7 @@ namespace SimpleLanguage.VM
                     {
                         if (anyobj != null)
                         {
-                            anyobj.SetValueByType(EVMType.Float32, svalue.floatValue );
+                            anyobj.SetValueByType(EVMType.Float32, svalue.float32Value );
 #if DEBUG
                             DebugSyncIndex(index);
 #endif
@@ -314,7 +314,7 @@ namespace SimpleLanguage.VM
                     {
                         if (anyobj != null)
                         {
-                            anyobj.SetValueByType(EVMType.Float64, svalue.doubleValue );
+                            anyobj.SetValueByType(EVMType.Float64, svalue.float64Value );
 #if DEBUG
                             DebugSyncIndex(index);
 #endif
@@ -398,10 +398,10 @@ namespace SimpleLanguage.VM
                     value = svalue.uint64Value;
                     return true;
                 case EVMType.Float32:
-                    value = svalue.floatValue;
+                    value = svalue.float32Value;
                     return true;
                 case EVMType.Float64:
-                    value = svalue.doubleValue;
+                    value = svalue.float64Value;
                     return true;
                 default:
                     return false;

@@ -190,8 +190,8 @@ namespace SimpleLanguage.VM.Runtime
                 case EVMType.UInt32: sStore.SetUInt32Value(sValue.uint32Value); break;
                 case EVMType.Int64: sStore.SetInt64Value(sValue.int64Value); break;
                 case EVMType.UInt64: sStore.SetUInt64Value(sValue.uint64Value); break;
-                case EVMType.Float32: sStore.SetFloatValue(sValue.floatValue); break;
-                case EVMType.Float64: sStore.SetDoubleValue(sValue.doubleValue); break;
+                case EVMType.Float32: sStore.SetFloatValue(sValue.float32Value); break;
+                case EVMType.Float64: sStore.SetDoubleValue(sValue.float64Value); break;
                 case EVMType.String: sStore.SetStringValue(sValue.stringValue); break;
                 case EVMType.Null:
                     {

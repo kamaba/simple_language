@@ -34,10 +34,10 @@ namespace SimpleLanguage.VM.Runtime
                 case EVMType.UInt64:
                     return unchecked((int)v.uint64Value);
                 case EVMType.Float32:
-                    return unchecked((int)BitConverter.SingleToInt32Bits(v.floatValue));
+                    return unchecked((int)BitConverter.SingleToInt32Bits(v.float32Value));
                 case EVMType.Float64:
                 case EVMType.Num:
-                    return unchecked((int)BitConverter.DoubleToInt64Bits(v.doubleValue));
+                    return unchecked((int)BitConverter.DoubleToInt64Bits(v.float64Value));
                 case EVMType.String:
                     if (int.TryParse(v.stringValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var si))
                         return si;
@@ -238,12 +238,12 @@ namespace SimpleLanguage.VM.Runtime
                     bitWidth = 64;
                     return true;
                 case EVMType.Float32:
-                    bits = unchecked((ulong)(uint)BitConverter.SingleToInt32Bits(v.floatValue));
+                    bits = unchecked((ulong)(uint)BitConverter.SingleToInt32Bits(v.float32Value));
                     bitWidth = 32;
                     return true;
                 case EVMType.Float64:
                 case EVMType.Num:
-                    bits = unchecked((ulong)BitConverter.DoubleToInt64Bits(v.doubleValue));
+                    bits = unchecked((ulong)BitConverter.DoubleToInt64Bits(v.float64Value));
                     bitWidth = 64;
                     return true;
             }
@@ -359,9 +359,9 @@ namespace SimpleLanguage.VM.Runtime
                 case EVMType.UInt32: return v.uint32Value;
                 case EVMType.Int64: return v.int64Value;
                 case EVMType.UInt64: return v.uint64Value;
-                case EVMType.Float32: return v.floatValue;
-                case EVMType.Float64: return v.doubleValue;
-                case EVMType.Num: return v.doubleValue;
+                case EVMType.Float32: return v.float32Value;
+                case EVMType.Float64: return v.float64Value;
+                case EVMType.Num: return v.float64Value;
                 case EVMType.String: return v.stringValue ?? string.Empty;
                 default: break;
             }

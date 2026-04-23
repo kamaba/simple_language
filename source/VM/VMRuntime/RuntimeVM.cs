@@ -987,7 +987,6 @@ namespace SimpleLanguage.VM.Runtime
                         //else
                         //{
                             var resolved = SLAssembly.TryGetConstString(iri.index)
-                                ?? SLIRModuleLoader.TryGetConstString(iri.index)
                                 ?? string.Empty;
                             if (TryPushStackSlot(out int slot))
                                 m_ValueStack[slot].SetStringValue(resolved);
@@ -2600,13 +2599,13 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            obj.SetValueByType(EVMType.Float32, svalue.floatValue);
+                            obj.SetValueByType(EVMType.Float32, svalue.float32Value);
                             return;
                         }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            to.SetValue(EVMType.Float32, svalue.floatValue);
+                            to.SetValue(EVMType.Float32, svalue.float32Value);
                         }
                         Float32Object floatObj = obj as Float32Object;
                         if (floatObj == null)
@@ -2614,7 +2613,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
-                        floatObj.SetValue(svalue.floatValue);
+                        floatObj.SetValue(svalue.float32Value);
                     }
                     break;
                 //case EVMType.RawFloat64:
@@ -2637,13 +2636,13 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (anyObj)
                         {
-                            obj.SetValueByType(EVMType.Float64, svalue.doubleValue);
+                            obj.SetValueByType(EVMType.Float64, svalue.float64Value);
                             return;
                         }
                         TemplateObject to = obj as TemplateObject;
                         if (to != null)
                         {
-                            to.SetValue(EVMType.Float64, svalue.doubleValue);
+                            to.SetValue(EVMType.Float64, svalue.float64Value);
                         }
                         Float64Object doubleObj = obj as Float64Object;
                         if (doubleObj == null)
@@ -2651,7 +2650,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddRuntimeLog(LID.ShowMessageError, "璇ョ被鍨嬩笉鏄疘nt32绫诲瀷!!");
                             return;
                         }
-                        doubleObj.SetValue(svalue.doubleValue);
+                        doubleObj.SetValue(svalue.float64Value);
                     }
                     break;
                 //case EVMType.RawString:
@@ -3176,7 +3175,7 @@ namespace SimpleLanguage.VM.Runtime
                                     case EVMType.Float64:
                                     case EVMType.Num:
                                         svalue.eType = EVMType.Num;
-                                        svalue.doubleValue = Convert.ToDouble(obj.value);
+                                        svalue.float64Value = Convert.ToDouble(obj.value);
                                         svalue.isNull = false;
                                         break;
                                     default:
