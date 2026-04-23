@@ -50,22 +50,24 @@ namespace SimpleLanguage.VM
                 _ => "?"
             };
 
-        /// <summary>Throws if one operand is null-like and the other is numeric (e.g. null + 3, 3 + null).</summary>
-        private static void ThrowIfNullMixedWithNumericOperand(ref SValue left, ref SValue right, int sign)
+        /// <summary>Logs and marks result null if one operand is null-like and the other is numeric (e.g. null + 3, 3 + null).</summary>
+        private static bool HandleNullMixedWithNumericOperand(ref SValue left, ref SValue right, int sign)
         {
             bool lNull = IsNullLikeForArithmetic(ref left);
             bool rNull = IsNullLikeForArithmetic(ref right);
-            if (!lNull && !rNull) return;
+            if (!lNull && !rNull) return false;
             bool lNum = IsStrictNumericNotNullLike(ref left);
             bool rNum = IsStrictNumericNotNullLike(ref right);
             if ((lNull && rNum) || (rNull && lNum))
             {
                 var op = SignToOperatorForLog(sign);
                 var nullSide = lNull && rNum ? "左操作数" : "右操作数";
-                // 日志在抛出前完成（不依赖 Run 的 catch）；模板见 ErrorDefinitions.csv
+                // 在 ComputeValueInline 内直接记 VM 日志，不依赖异常链路。
                 Log.AddRuntimeLog(LID.VMOperatorNotShouldHaveNull, string.Empty, op, nullSide);
-                throw new SvmNullNumericArithmeticException(op, nullSide);
+                left.SetNull();
+                return true;
             }
+            return false;
         }
 
         // sign 0:+ 1:- 2:* 3:/ 4:% 5:& 6:| 7:^  8:<< 9:>>
@@ -125,7 +127,11 @@ namespace SimpleLanguage.VM
 
             // Reject null / null-like reference mixed with a numeric operand for arithmetic
             // (avoid treating null as 0 — e.g. null + 5 and 5 + null must error).
-            ThrowIfNullMixedWithNumericOperand(ref leftPrim, ref rightPrim, sign);
+            if (HandleNullMixedWithNumericOperand(ref leftPrim, ref rightPrim, sign))
+            {
+                left = leftPrim;
+                return;
+            }
 
             // If either side is a class-wrapped NumObject, prefer NumObject operation methods
             bool leftIsNumObj = left.eType == EVMType.Class && left.sobject is NumObject;

@@ -308,9 +308,36 @@ namespace SimpleLanguage.Logging
                 ld.extendMessage = extendMessage;
             }
             AddLog(ld);
+
+            HandleBlocking(errorDefine, ld.message ?? ld.extendMessage ?? string.Empty);
             
             return ld;
         }
+
+        private static void HandleBlocking(ErrorDefinition def, string message)
+        {
+            bool isAssert = def.LogType == LogType.Assert;
+            bool isError = def.LogType == LogType.Error;
+
+            if (isAssert && (!LogManager.Options.EnableAssertFeature || !def.EnableAssert))
+            {
+                return;
+            }
+
+            bool shouldBlockCurrent = def.BlockOnErrorAssert
+                || (isAssert && LogManager.Options.BlockOnAssert)
+                || (isError && LogManager.Options.BlockOnError);
+
+            bool shouldAbortExecution = def.AbortCompilation
+                || (isAssert && LogManager.Options.AbortCompilationOnAssert)
+                || (isError && LogManager.Options.AbortCompilationOnError);
+
+            if (shouldBlockCurrent || shouldAbortExecution)
+            {
+                throw new CompilationAbortException(def.Id, message, shouldAbortExecution);
+            }
+        }
+
         public static void PrintLog()
         {
             Console.WriteLine("----------错误收集 开始---------------------");

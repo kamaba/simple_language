@@ -437,6 +437,8 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     // SvmNullNumericArithmeticException：LID.VMOperatorNotShouldHaveNull 已在 SValue（比较/算术）中输出，这里不再打日志
                     if (ex is SvmNullNumericArithmeticException) throw;
+                    // CompilationAbortException：由 Log 系统统一决定“阻断/取消执行”，此处不重复包装日志。
+                    if (ex is CompilationAbortException) throw;
                     var loc2 = iri?.debugInfo?.FormatDiagnosticLine();
                     var detail = string.IsNullOrEmpty(loc2)
                         ? $"VM instruction fault: op={iri?.opCode} ip={m_ExecuteIndex} id={iri?.id} index={iri?.index}"

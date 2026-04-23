@@ -71,6 +71,10 @@ try
 
     Log.AddProjectLog(LID.ShowMessageInfo, "No module package found. Pass a *.module.json path or export one to configured export.outputDir.");
 }
+catch (CompilationAbortException)
+{
+    // 取消执行由 Log 系统触发并已记录对应日志，这里直接结束。
+}
 catch (Exception e)
 {
     Log.AddProjectLog(LID.ShowMessageError, e.ToString());
