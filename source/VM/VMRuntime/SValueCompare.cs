@@ -37,12 +37,12 @@ namespace SimpleLanguage.VM
                         {
                             case EVMType.UInt8:
                                 {
-                                    stringValue += sval.int8Value.ToString();
+                                    stringValue += sval.uint8Value.ToString();
                                 }
                                 break;
                             case EVMType.Int8:
                                 {
-                                    stringValue += sval.sint8Value.ToString();
+                                    stringValue += sval.int8Value.ToString();
                                 }
                                 break;
                             //case EVMType.Char:
@@ -650,8 +650,8 @@ namespace SimpleLanguage.VM
                 case EVMType.String: return !string.IsNullOrEmpty(v.stringValue);
                 case EVMType.Float32: return v.floatValue != 0.0f;
                 case EVMType.Float64: return v.doubleValue != 0.0;
-                case EVMType.UInt8: return v.int8Value != 0;
-                case EVMType.Int8: return v.sint8Value != 0;
+                case EVMType.UInt8: return v.uint8Value != 0;
+                case EVMType.Int8: return v.int8Value != 0;
                 case EVMType.Int16: return v.int16Value != 0;
                 case EVMType.UInt16: return v.uint16Value != 0;
                 case EVMType.Int32: return v.int32Value != 0;

@@ -134,7 +134,7 @@ namespace SimpleLanguage.VM
             if (arrayEvm == EVMType.Boolean)
             {
                 sval.eType = EVMType.Boolean;
-                sval.int8Value = (byte)(spanT[0] == 2 ? 1 : 0);
+                sval.uint8Value = (byte)(spanT[0] == 2 ? 1 : 0);
                 return;
             }
             // tag [0] == 1, payload 从 [1] 起
@@ -248,8 +248,8 @@ namespace SimpleLanguage.VM
             var w = _data.AsSpan(o + 1);
             switch (t)
             {
-                case EVMType.UInt8: w[0] = s.int8Value; break;
-                case EVMType.Int8: w[0] = unchecked((byte)s.sint8Value); break;
+                case EVMType.UInt8: w[0] = s.uint8Value; break;
+                case EVMType.Int8: w[0] = unchecked((byte)s.int8Value); break;
                 case EVMType.Int16: BinaryPrimitives.WriteInt16LittleEndian(w, s.int16Value); break;
                 case EVMType.UInt16: BinaryPrimitives.WriteUInt16LittleEndian(w, s.uint16Value); break;
                 case EVMType.Int32: BinaryPrimitives.WriteInt32LittleEndian(w, s.int32Value); break;
@@ -269,8 +269,8 @@ namespace SimpleLanguage.VM
             var tmp = default(SValue);
             switch (arrayEvm)
             {
-                case EVMType.UInt8: tmp.eType = EVMType.UInt8; tmp.int8Value = (byte)Convert.ToByte(d); break;
-                case EVMType.Int8: tmp.eType = EVMType.Int8; tmp.sint8Value = (sbyte)Convert.ToSByte(d); break;
+                case EVMType.UInt8: tmp.eType = EVMType.UInt8; tmp.uint8Value = (byte)Convert.ToByte(d); break;
+                case EVMType.Int8: tmp.eType = EVMType.Int8; tmp.int8Value = (sbyte)Convert.ToSByte(d); break;
                 case EVMType.Int16: tmp.eType = EVMType.Int16; tmp.int16Value = (short)Convert.ToInt16(d); break;
                 case EVMType.UInt16: tmp.eType = EVMType.UInt16; tmp.uint16Value = (ushort)Convert.ToUInt16(d); break;
                 case EVMType.Int32: tmp.eType = EVMType.Int32; tmp.int32Value = (int)Convert.ToInt32(d); break;
@@ -279,7 +279,7 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt64: tmp.eType = EVMType.UInt64; tmp.uint64Value = (ulong)Convert.ToUInt64(d); break;
                 case EVMType.Float32: tmp.eType = EVMType.Float32; tmp.floatValue = (float)Convert.ToSingle(d); break;
                 case EVMType.Float64: tmp.eType = EVMType.Float64; tmp.doubleValue = d; break;
-                case EVMType.Boolean: tmp.eType = EVMType.Boolean; tmp.int8Value = (byte)(d != 0 ? 1 : 0); break;
+                case EVMType.Boolean: tmp.eType = EVMType.Boolean; tmp.uint8Value = (byte)(d != 0 ? 1 : 0); break;
                 default: return false;
             }
             tmp.isNull = false;

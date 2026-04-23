@@ -210,7 +210,7 @@ namespace SimpleLanguage.VM
                     {
                         if (anyobj != null)
                         {
-                            anyobj.SetValueByType(EVMType.Int8, svalue.sint8Value );
+                            anyobj.SetValueByType(EVMType.Int8, svalue.int8Value );
 #if DEBUG
                             DebugSyncIndex(index);
 #endif
@@ -374,10 +374,10 @@ namespace SimpleLanguage.VM
             switch (svalue.eType)
             {
                 case EVMType.UInt8:
-                    value = svalue.int8Value;
+                    value = svalue.uint8Value;
                     return true;
                 case EVMType.Int8:
-                    value = svalue.sint8Value;
+                    value = svalue.int8Value;
                     return true;
                 case EVMType.Int16:
                     value = svalue.int16Value;

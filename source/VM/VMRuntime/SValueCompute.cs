@@ -157,8 +157,8 @@ namespace SimpleLanguage.VM
                             case EVMType.UInt32: tmp.SetValue(rightPrim.uint32Value); break;
                             case EVMType.Int16: tmp.SetValue(rightPrim.int16Value); break;
                             case EVMType.UInt16: tmp.SetValue(rightPrim.uint16Value); break;
-                            case EVMType.UInt8: tmp.SetValue(rightPrim.int8Value); break;
-                            case EVMType.Int8: tmp.SetValue(rightPrim.sint8Value); break;
+                            case EVMType.UInt8: tmp.SetValue(rightPrim.uint8Value); break;
+                            case EVMType.Int8: tmp.SetValue(rightPrim.int8Value); break;
                             default: tmp.SetValue(rightPrim.doubleValue); break;
                         }
                         leftNum.Operate(sign, tmp, isUnSign);
@@ -189,8 +189,8 @@ namespace SimpleLanguage.VM
                         case EVMType.UInt32: tmpLeft.SetValue(leftPrim.uint32Value); break;
                         case EVMType.Int16: tmpLeft.SetValue(leftPrim.int16Value); break;
                         case EVMType.UInt16: tmpLeft.SetValue(leftPrim.uint16Value); break;
-                        case EVMType.UInt8: tmpLeft.SetValue(leftPrim.int8Value); break;
-                        case EVMType.Int8: tmpLeft.SetValue(leftPrim.sint8Value); break;
+                        case EVMType.UInt8: tmpLeft.SetValue(leftPrim.uint8Value); break;
+                        case EVMType.Int8: tmpLeft.SetValue(leftPrim.int8Value); break;
                         default: tmpLeft.SetValue(leftPrim.doubleValue); break;
                     }
                     tmpLeft.Operate(sign, rightNum, isUnSign);
@@ -306,11 +306,11 @@ namespace SimpleLanguage.VM
         {
             switch (r.eType)
             {
-                case EVMType.Int8: return r.SInt8;
+                case EVMType.Int8: return r.Int8;
                 case EVMType.Int16: return r.Int16;
                 case EVMType.Int32: return r.Int32;
                 case EVMType.Int64: return unchecked((long)r.UInt64);
-                case EVMType.UInt8: return r.Int8;
+                case EVMType.UInt8: return r.UInt8;
                 case EVMType.UInt16: return r.UInt16;
                 case EVMType.UInt32: return (long)(uint)r.UInt32;
                 case EVMType.UInt64: return unchecked((long)r.UInt64);
@@ -393,7 +393,7 @@ namespace SimpleLanguage.VM
                     case EVMType.UInt64: left.UInt64 = r; break;
                     case EVMType.UInt32: left.UInt32 = (uint)r; break;
                     case EVMType.UInt16: left.UInt16 = (ushort)r; break;
-                    case EVMType.UInt8: left.Int8 = (byte)r; break;
+                    case EVMType.UInt8: left.UInt8 = (byte)r; break;
                     default: left.UInt64 = r; break;
                 }
                 return;
@@ -421,7 +421,7 @@ namespace SimpleLanguage.VM
                 case EVMType.Int64: left.Int64 = lr; break;
                 case EVMType.Int32: left.Int32 = (int)lr; break;
                 case EVMType.Int16: left.Int16 = (short)lr; break;
-                case EVMType.Int8: left.SInt8 = (sbyte)lr; break;
+                case EVMType.Int8: left.Int8 = (sbyte)lr; break;
                 default: left.Int64 = lr; break;
             }
         }
@@ -617,18 +617,18 @@ namespace SimpleLanguage.VM
                 case EVMType.UInt8:
                     {
                         eType = EVMType.Boolean;
-                        int8Value = (int8Value == 0) ? (byte)1 : (byte)0;
+                        uint8Value = (int8Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.Int8:
                     {
                         eType = EVMType.Boolean;
-                        int8Value = (sint8Value == 0) ? (byte)1 : (byte)0;
+                        uint8Value = (int8Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.Boolean:
                     {
-                        int8Value = (int8Value == 0) ? (byte)1 : (byte)0;
+                        uint8Value = (int8Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 //case EVMType.Char:
@@ -640,37 +640,37 @@ namespace SimpleLanguage.VM
                 case EVMType.Int16:
                     {
                         eType = EVMType.Boolean;
-                        int8Value = (int16Value == 0) ? (byte)1 : (byte)0;
+                        uint8Value = (int16Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.UInt16:
                     {
                         eType = EVMType.Boolean;
-                        int8Value = (uint16Value == 0) ? (byte)1 : (byte)0;
+                        uint8Value = (uint16Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.Int32:
                     {
                         eType = EVMType.Boolean;
-                        int8Value = (int32Value == 0) ? (byte)1 : (byte)0;
+                        uint8Value = (int32Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.UInt32:
                     {
                         eType = EVMType.Boolean;
-                        int8Value = (uint32Value == 0) ? (byte)1 : (byte)0;
+                        uint8Value = (uint32Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.Int64:
                     {
                         eType = EVMType.Boolean;
-                        int8Value = (int64Value == 0) ? (byte)1 : (byte)0;
+                        uint8Value = (int64Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.UInt64:
                     {
                         eType = EVMType.Boolean;
-                        int8Value = (uint64Value == 0) ? (byte)1 : (byte)0;
+                        uint8Value = (uint64Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
             }
@@ -688,7 +688,7 @@ namespace SimpleLanguage.VM
                 case EVMType.Int8:
                     {
                         // Keep runtime type stable for unary minus.
-                        sint8Value = unchecked((sbyte)(-sint8Value));
+                        int8Value = unchecked((sbyte)(-int8Value));
                     }
                     break;
                 //case EVMType.Char:
