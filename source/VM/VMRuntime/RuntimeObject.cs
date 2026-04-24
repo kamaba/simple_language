@@ -147,7 +147,6 @@ namespace SimpleLanguage.VM
         {
             if (sobj != null)
                 ObjectManager.RegisterObject(sobj);
-            WritePointerIdToMemberData(sobj?.id ?? 0);
 #if DEBUG
             m_SObject = sobj;
 #endif
@@ -252,15 +251,12 @@ namespace SimpleLanguage.VM
             if (!IsObjectScalarType(m_ObjectActualType))
                 return false;
 
-            int length = GetObjectScalarTypeByteLength(m_ObjectActualType);
-            if (length <= 0)
+
+            EnsureObjectScalarMemberDataSlice(m_Length);
+            if (m_MemberDataBuffer == null || m_Start < 0 || m_Start + m_Length > m_MemberDataBuffer.Length)
                 return false;
 
-            EnsureObjectScalarMemberDataSlice(length);
-            if (m_MemberDataBuffer == null || m_Start < 0 || m_Start + length > m_MemberDataBuffer.Length)
-                return false;
-
-            span = m_MemberDataBuffer.AsSpan(m_Start, length);
+            span = m_MemberDataBuffer.AsSpan(m_Start, m_Length);
             return true;
         }
 
@@ -289,8 +285,86 @@ namespace SimpleLanguage.VM
             if (!TryGetObjectScalarDataSpan(out var scalarSpan))
                 return false;
 
+            // 兼容路径：优先把 4 字节内容当作对象 id 尝试解析实体对象，
+            // 然后按实体子类型给 SValue 赋值（与 Object 主路径一致）。
+            if (scalarSpan.Length >= 4)
+            {
+                int pointerId = BinaryPrimitives.ReadInt32LittleEndian(scalarSpan);
+                if (pointerId > 0)
+                {
+                    var objById = ObjectManager.GetObjectById(pointerId);
+                    if (objById != null)
+                    {
+                        AssignObjectValueBySubtype(objById, ref sval);
+                        return true;
+                    }
+                }
+            }
+
             ReadSpanToSValue(scalarSpan, m_ObjectActualType, ref sval);
             return true;
+        }
+
+        private static void AssignObjectValueBySubtype(SObject sobj, ref SValue svalue)
+        {
+            if (sobj == null)
+            {
+                svalue.SetNull();
+                return;
+            }
+
+            if (sobj.GetType() == typeof(SObject))
+            {
+                var inner = sobj.value as SObject;
+                if (inner != null)
+                {
+                    sobj = inner;
+                }
+            }
+
+            switch (sobj.eType)
+            {
+                case EVMType.Boolean:
+                    svalue.SetBoolValue(Convert.ToBoolean(sobj.value));
+                    return;
+                case EVMType.UInt8:
+                    svalue.SetUInt8Value(Convert.ToByte(sobj.value));
+                    return;
+                case EVMType.Int8:
+                    svalue.SetInt8Value(Convert.ToSByte(sobj.value));
+                    return;
+                case EVMType.Int16:
+                    svalue.SetInt16Value(Convert.ToInt16(sobj.value));
+                    return;
+                case EVMType.UInt16:
+                    svalue.SetUInt16Value(Convert.ToUInt16(sobj.value));
+                    return;
+                case EVMType.Int32:
+                    svalue.SetInt32Value(Convert.ToInt32(sobj.value));
+                    return;
+                case EVMType.UInt32:
+                    svalue.SetUInt32Value(Convert.ToUInt32(sobj.value));
+                    return;
+                case EVMType.Int64:
+                    svalue.SetInt64Value(Convert.ToInt64(sobj.value));
+                    return;
+                case EVMType.UInt64:
+                    svalue.SetUInt64Value(Convert.ToUInt64(sobj.value));
+                    return;
+                case EVMType.Float32:
+                    svalue.SetFloatValue(Convert.ToSingle(sobj.value));
+                    return;
+                case EVMType.Float64:
+                case EVMType.Num:
+                    svalue.SetDoubleValue(Convert.ToDouble(sobj.value));
+                    return;
+                case EVMType.String:
+                    svalue.SetStringValue(sobj.value?.ToString() ?? string.Empty);
+                    return;
+                default:
+                    svalue.SetSObject(sobj);
+                    return;
+            }
         }
 
         public bool TryReadMemberDataToSValue(ref SValue svalue)
@@ -686,30 +760,22 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            if (eType == EVMType.Object && TryReadObjectScalarValue(ref svalue))
-            {
-                return;
-            }
-
             var sobj = ResolveSObject();
             if ( sobj == null )
             {
+                // Object 槽：先按 id 取实体；如果历史数据没有 id，再回退读旧的标量缓存。
+                if (eType == EVMType.Object && TryReadObjectScalarValue(ref svalue))
+                {
+                    return;
+                }
                 svalue.SetNull();
                 return;
             }
             if( eType == EVMType.Object )
             {
-                // 写入时经 Core.Object 基类 SObject+SetValueByType 装箱的，运行时指针为基类 SObject，负载在 value / m_Reference
-                if (sobj.GetType() == typeof(SObject))
-                {
-                    var inner = sobj.value as SObject;
-                    if (inner != null)
-                    {
-                        svalue.SetSObject(inner);
-                        return;
-                    }
-                }
-                svalue.SetSObject(sobj);
+                // Object 主类型：先按 id 拿到实体对象，再按子类型赋值到 SValue。
+                // 子类型用于转换/校验，不改变“主类型按 id 存取”的规则。
+                AssignObjectValueBySubtype(sobj, ref svalue);
                 return;
             }
             switch (sobj)
