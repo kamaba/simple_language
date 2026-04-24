@@ -450,31 +450,6 @@ namespace SimpleLanguage.VM
 
             return false;
         }
-
-        /// <summary>JSON 只写入 Payload 时，将常量等从 Payload 还原到 opValue（与 IRData.UnpackOpValueFromPayload 对称）。</summary>
-        //public static void UnpackPayloadsFromJson(IEnumerable<Instruction?>? list)
-        //{
-        //    if (list == null) return;
-        //    foreach (var ins in list)
-        //        ins?.UnpackOpValueFromPayload();
-        //}
-
-        //public void SetDebugInfoByValue(DebugInfo info)
-        //{
-        //    debugInfo = info;
-        //}
-        //public void SetDebugInfoByToken(Token token)
-        //{
-        //    if (token != null)
-        //    {
-        //        debugInfo.path = token.path;
-        //        debugInfo.name = token.lexeme?.ToString();
-        //        debugInfo.beginLine = token.sourceBeginLine;
-        //        debugInfo.beginChar = token.sourceBeginChar;
-        //        debugInfo.endLine = token.sourceEndLine;
-        //        debugInfo.endChar = token.sourceEndChar;
-        //    }
-        //}
         public override string ToString()
         {
             StringBuilder m_StringBuilder = new StringBuilder();

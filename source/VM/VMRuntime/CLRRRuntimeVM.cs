@@ -43,14 +43,13 @@ namespace SimpleLanguage.VM.Runtime
             //else
             {
                 RuntimeVM clrRuntime = new RuntimeVM( irmtList, method);
-                clrRuntime.id = method.id;
                 m_ClrRuntimeStack.Push(clrRuntime);
                 return clrRuntime;
             }
         }
-        public static RuntimeVM CreateExeSplite(List<RuntimeType> irmtList, List<Instruction> irlist )
+        public static RuntimeVM CreateExeSplite( string id, List<RuntimeType> irmtList, List<Instruction> irlist )
         {
-            RuntimeVM clrRuntime = new RuntimeVM( irmtList, irlist );
+            RuntimeVM clrRuntime = new RuntimeVM( id, irmtList, irlist );
             m_ClrRuntimeStack.Push(clrRuntime);
             return clrRuntime;
         }
@@ -106,17 +105,15 @@ namespace SimpleLanguage.VM.Runtime
             m_IsGlobalInitApplying = true;
             if (m_ClrRuntimeStack.Count == 0)
             {
-                var root = new RuntimeVM(new List<Instruction>());
-                root.id = "__global_init_root__";
+                var root = new RuntimeVM("__global_init_root__",new List<Instruction>());
                 PushCLRRuntime(root);
                 pushedRoot = true;
             }
 
             try
             {
-                var clrRuntime = CreateExeSplite(new List<RuntimeType>(), new List<Instruction>(m_GlobalInitInstructionList));
-                clrRuntime.id = "__global_init__";
-                clrRuntime.isPersistent = true;
+                var clrRuntime = CreateExeSplite("__global_init__", new List<RuntimeType>(), new List<Instruction>(m_GlobalInitInstructionList));               
+                //clrRuntime.isPersistent = true;
                 clrRuntime.Run(true);
                 PopCLRRuntime();
                 m_IsGlobalInitApplied = true;
@@ -168,47 +165,14 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 else
                 {
-                    Log.AddProjectLog(LID.AutoCLRRRuntimeVML171, $"娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鎵€灞炵殑RuntimeType鏄犲皠! globalId={id}");
+                    Log.AddRuntimeLog(LID.ShowMessageAssert, $"global is null globalId={id}");
                 }
             }
             else
             {
-                Log.AddProjectLog(LID.AutoCLRRRuntimeVML176, "娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鐨勬槧灏勫叧绯?");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"global is nullglobalId={id}");
             }
 
-        }
-        public static void SetValue(ref SValue sValue, ref SValue sStore )
-        {
-            switch (sStore.eType)
-            {
-                case EVMType.Boolean:
-                case EVMType.UInt8: sStore.SetUInt8Value(sValue.uint8Value); break;
-                case EVMType.Int8: sStore.SetInt8Value(sValue.int8Value); break;
-                case EVMType.Int16: sStore.SetInt16Value(sValue.int16Value); break;
-                case EVMType.UInt16: sStore.SetUInt16Value(sValue.uint16Value); break;
-                case EVMType.Int32: sStore.SetInt32Value(sValue.int32Value); break;
-                case EVMType.UInt32: sStore.SetUInt32Value(sValue.uint32Value); break;
-                case EVMType.Int64: sStore.SetInt64Value(sValue.int64Value); break;
-                case EVMType.UInt64: sStore.SetUInt64Value(sValue.uint64Value); break;
-                case EVMType.Float32: sStore.SetFloatValue(sValue.float32Value); break;
-                case EVMType.Float64: sStore.SetDoubleValue(sValue.float64Value); break;
-                case EVMType.String: sStore.SetStringValue(sValue.stringValue); break;
-                case EVMType.Null:
-                    {
-                        sStore.SetNull();
-                    }
-                    break;
-                case EVMType.Class:
-                    {
-                        sStore.SetSObject(sValue.sobject);
-                    }
-                    break;
-                default:
-                    {
-                        Log.AddProjectLog(LID.AutoCLRRRuntimeVML208, "Error StoreNotStaticField Path:" );
-                    }
-                    break;
-            }
         }
         public static void LoadGlobalVariable( uint id, ref SValue sval )
         {
@@ -223,12 +187,12 @@ namespace SimpleLanguage.VM.Runtime
                 else
                 {
                     sval.SetNull();
-                    Log.AddProjectLog(LID.AutoCLRRRuntimeVML226, $"娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鎵€灞炵殑RuntimeType鏄犲皠! globalId={id} ");
+                    Log.AddRuntimeLog(LID.ShowMessageAssert, $"global is null globalId={id} ");
                 }
             }
             else
             {
-                Log.AddProjectLog(LID.AutoCLRRRuntimeVML231, "娌℃湁鎵惧埌鍏ㄥ眬鍙橀噺鐨勬槧灏勫叧绯?");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"global is nullglobalId={id} ");
             }
         }
         public static void RunIRMethod( List<RuntimeType> irmtList, RuntimeMethod _irMethod, bool isDisCountStackCount = true )
@@ -243,10 +207,10 @@ namespace SimpleLanguage.VM.Runtime
             {
             }
         }
-        public static void RunIRNewMethod( List<RuntimeType> irmtList, List<Instruction> irlist )
+        public static void RunIRNewMethod( string id, List<RuntimeType> irmtList, List<Instruction> irlist )
         {
             topCLRRuntime = m_ClrRuntimeStack.Peek();
-            RuntimeVM clrRuntime = CreateExeSplite(irmtList, irlist );
+            RuntimeVM clrRuntime = CreateExeSplite(id, irmtList, irlist );
             clrRuntime.SetNewObject();
             clrRuntime.Run(true);
             clrRuntime.ClearNewObject();

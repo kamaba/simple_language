@@ -31,9 +31,6 @@ namespace SimpleLanguage.VM
         private RuntimeObject[] m_StaticMemberRuntimeObjectArray = null;
         /// <summary>静态字段紧凑布局缓冲区，与 <see cref="m_StaticMemberRuntimeObjectArray"/> 下标一一对应（空槽不占字节）。</summary>
         private byte[] m_MemberData = null;
-        //private Dictionary<int, int> m_StaticFieldIndexToSlot = new Dictionary<int, int>();
-        //private bool m_IsStaticMemInitializing = false;
-        //private bool m_IsStaticExprBatchApplied = false;
         private bool m_IsStaticExprBatchApplying = false;
         private int m_Id = 0;
         public EVMType eType { get; protected set; } = EVMType.Void;
@@ -129,6 +126,7 @@ namespace SimpleLanguage.VM
             }
             if ( index >= m_StaticMemberRuntimeObjectArray.Length)
             {
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object at index {index} is null for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
                 svalue.SetNull();
                 return;
             }
@@ -146,34 +144,18 @@ namespace SimpleLanguage.VM
             if (m_StaticMemberRuntimeObjectArray == null) return;
             if ( index >= m_StaticMemberRuntimeObjectArray.Length) return;
             var target = m_StaticMemberRuntimeObjectArray[index];
-            //if (target == null)
-            //{
-            //    m_StaticMemberRuntimeObjectArray[index].SetSObject( svalue.GetSObject() );
-            //    return;
-            //}
+            if (target == null)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object at index {index} is null for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
+                return;
+            }
             if (svalue.isNull)
             {
                 target.SetNull();
                 return;
             }
-            // attempt to set by type-aware method on SObject
-            //target.SetValueByType(svalue.eType == EVMType.Class ? EVMType.Class : svalue.eType, svalue.eType == EVMType.Class ? (object)svalue.sobject : svalue.GetValueObject());
-            m_StaticMemberRuntimeObjectArray[index].SetSObjectBySValue(ref svalue);
+            target.SetSObjectBySValue(ref svalue);
         }
-
-        /// <summary>按静态成员下标从 <see cref="memberData"/> 解析（引用槽为对象指针 Id，与 <see cref="RuntimeObject"/> 约定一致）。</summary>
-        public bool TryReadStaticMemberDataAsSValue(int staticMemberIndex, ref SValue svalue)
-        {
-            if (m_StaticMemberRuntimeObjectArray == null
-                || staticMemberIndex < 0
-                || staticMemberIndex >= m_StaticMemberRuntimeObjectArray.Length)
-                return false;
-            var ro = m_StaticMemberRuntimeObjectArray[staticMemberIndex];
-            if (ro == null)
-                return false;
-            return ro.TryReadMemberDataToSValue(ref svalue);
-        }
-
         public void EnsureStaticMemberObjectsInitialized()
         {
             //if (m_IsStaticMemInitializing) return;
@@ -290,17 +272,15 @@ namespace SimpleLanguage.VM
                 bool pushedRoot = false;
                 if (CLRVM.clrRuntimeStack.Count == 0)
                 {
-                    var root = new RuntimeVM(new List<Instruction>());
-                    root.id = "__static_field_init_root__";
+                    var root = new RuntimeVM("__static_field_init_root__", new List<Instruction>());
                     CLRVM.PushCLRRuntime(root);
                     pushedRoot = true;
                 }
 
                 try
                 {
-                    var vm = CLRVM.CreateExeSplite(new List<RuntimeType>(), initIR);
-                    vm.id = $"__static_field_init__{m_RuntimeClass.name}";
-                    vm.isPersistent = true;
+                    var vm = CLRVM.CreateExeSplite($"__static_field_init__{m_RuntimeClass.name}", new List<RuntimeType>(), initIR);
+                    //vm.isPersistent = true;
                     vm.Run(true);
                     CLRVM.PopCLRRuntime();
                 }
@@ -335,11 +315,6 @@ namespace SimpleLanguage.VM
                 }
             }
             return sb.ToString();
-        }
-        public static bool SameRuntimeType(RuntimeType rt1, RuntimeType rt2)
-        {
-            if (rt1 == null || rt2 == null) return false;
-            return rt1.m_RuntimeClass.id == rt2.m_RuntimeClass.id;
         }
         public bool IsExtendsRelation(RuntimeType rt)
         {

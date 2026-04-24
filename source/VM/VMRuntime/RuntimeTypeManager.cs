@@ -135,6 +135,11 @@ namespace SimpleLanguage.VM
             };
             return rt;
         }
+        public static bool SameRuntimeType(RuntimeType rt1, RuntimeType rt2)
+        {
+            if (rt1 == null || rt2 == null) return false;
+            return rt1.runtimeClass.id == rt2.runtimeClass.id;
+        }
         private static void EnsureByClassName(string runtimeClassName, ref RuntimeType targetField, bool isCore = false )
         {
             if (targetField != null) return;
@@ -256,25 +261,8 @@ namespace SimpleLanguage.VM
                     continue;
                 }
 
-                if (v.runtimeTemplateList.Count == irmt.runtimeDefTypeList.Count )
-                {
-                    if (v.runtimeTemplateList.Count == 0)
-                    {
-                        return v;
-                    }
-                    bool flag = true;
-                    for (int i = 0; i < irmt.runtimeDefTypeList.Count; i++)
-                    {
-                        var ft = GetRuntimeTypeByDefType(irmt.runtimeDefTypeList[i]);
-                        if (!RuntimeType.SameRuntimeType(ft, v.runtimeTemplateList[i]))
-                        {
-                            flag = false;
-                            break;
-                        }
-                    }
-                    if (flag)
-                        return v;
-                }
+                if (IsSameTemplateRuntimeTypeList(v.runtimeTemplateList, irmt.runtimeDefTypeList))
+                    return v;
             }
             return null;
         }
@@ -287,24 +275,8 @@ namespace SimpleLanguage.VM
                     continue;
                 }
 
-                if (v.runtimeTemplateList.Count == inputTemplateTypeList.Count)
-                {
-                    if (v.runtimeTemplateList.Count == 0)
-                    {
-                        return v;
-                    }
-                    bool flag = true;
-                    for (int i = 0; i < inputTemplateTypeList.Count; i++)
-                    {
-                        if (!RuntimeType.SameRuntimeType(inputTemplateTypeList[i], v.runtimeTemplateList[i]))
-                        {
-                            flag = false;
-                            break;
-                        }
-                    }
-                    if (flag)
-                        return v;
-                }
+                if (IsSameTemplateRuntimeTypeList(v.runtimeTemplateList, inputTemplateTypeList))
+                    return v;
             }
             return null;
         }
@@ -321,86 +293,7 @@ namespace SimpleLanguage.VM
             RuntimeType rt = new RuntimeType(rmc, null);
 
             string name = rmc.name;
-            if( name == "Object" || name == "Core.Object" )
-            {
-                m_ObjectRuntimeType = rt;
-                m_ObjectRuntimeType.SetEVMType(EVMType.Object);
-            }
-            if (name == "Void" || name == "Core.Void")
-            {
-                m_VoidRuntimeType = rt;
-                m_VoidRuntimeType.SetEVMType(EVMType.Void);
-            }
-            else if (name == "Type" || name == "Core.Type")
-            {
-                m_TypeRuntimeType = rt;
-                m_TypeRuntimeType.SetEVMType(EVMType.Type);
-            }
-            else if (name == "Boolean" || name == "Core.Boolean")
-            {
-                m_BoolRuntimeType = rt;
-                m_BoolRuntimeType.SetEVMType(EVMType.Boolean);
-            }
-            else if (name == "Num" || name == "Core.Num")
-            {
-                m_NumRuntimeType = rt;
-                m_NumRuntimeType.SetEVMType(EVMType.Num);
-            }
-            else if (name == "UInt8" || name == "Core.UInt8")
-            {
-                m_UInt8RuntimeType = rt;
-                m_UInt8RuntimeType.SetEVMType(EVMType.UInt8);
-            }
-            else if (name == "Int8" || name == "Core.Int8")
-            {
-                m_Int8RuntimeType = rt;
-                m_Int8RuntimeType.SetEVMType(EVMType.Int8);
-            }
-            else if (name == "Int16" || name == "Core.Int16")
-            {
-                m_Int16RuntimeType = rt;
-                m_Int16RuntimeType.SetEVMType(EVMType.Int16);
-            }
-            else if (name == "UInt16" || name == "Core.UInt16")
-            {
-                m_UInt16RuntimeType = rt;
-                m_UInt16RuntimeType.SetEVMType(EVMType.UInt16);
-            }
-            else if (name == "Int32" || name == "Core.Int32")
-            {
-                m_Int32RuntimeType = rt;
-                m_Int32RuntimeType.SetEVMType(EVMType.Int32);
-            }
-            else if (name == "UInt32" || name == "Core.UInt32")
-            {
-                m_UInt32RuntimeType = rt;
-                m_UInt32RuntimeType.SetEVMType(EVMType.UInt32);
-            }
-            else if (name == "Int64" || name == "Core.Int64")
-            {
-                m_Int64RuntimeType = rt;
-                m_Int64RuntimeType.SetEVMType(EVMType.Int64);
-            }
-            else if (name == "UInt64" || name == "Core.UInt64")
-            {
-                m_UInt64RuntimeType = rt;
-                m_UInt64RuntimeType.SetEVMType(EVMType.UInt64);
-            }
-            else if (name == "Float32" || name == "Core.Float32")
-            {
-                m_Float32RuntimeType = rt;
-                m_Float32RuntimeType.SetEVMType(EVMType.Float32);
-            }
-            else if (name == "Float64" || name == "Core.Float64")
-            {
-                m_Float64RuntimeType = rt;
-                m_Float64RuntimeType.SetEVMType(EVMType.Float64);
-            }
-            else if (name == "String" || name == "Core.String")
-            {
-                m_StringRuntimeType = rt;
-                m_StringRuntimeType.SetEVMType(EVMType.String);
-            }
+            BindCoreRuntimeTypeByName(name, rt);
             s_RuntimeTypeList.Add(rt);
             s_CoreRuntimeTypeList.Add(rt);
             rt.EnsureStaticMemberObjectsInitialized();
@@ -415,6 +308,116 @@ namespace SimpleLanguage.VM
             s_RuntimeTypeList.Add(rt);
 
             return rt;
+        }
+
+        private static bool IsSameTemplateRuntimeTypeList(List<RuntimeType> runtimeTemplateList, List<RuntimeDefType> runtimeDefTypeList)
+        {
+            if (runtimeTemplateList.Count != runtimeDefTypeList.Count)
+                return false;
+
+            if (runtimeTemplateList.Count == 0)
+                return true;
+
+            for (int i = 0; i < runtimeDefTypeList.Count; i++)
+            {
+                var ft = GetRuntimeTypeByDefType(runtimeDefTypeList[i]);
+                if (!SameRuntimeType(ft, runtimeTemplateList[i]))
+                    return false;
+            }
+            return true;
+        }
+
+        private static bool IsSameTemplateRuntimeTypeList(List<RuntimeType> runtimeTemplateList, List<RuntimeType> inputTemplateTypeList)
+        {
+            if (runtimeTemplateList.Count != inputTemplateTypeList.Count)
+                return false;
+
+            if (runtimeTemplateList.Count == 0)
+                return true;
+
+            for (int i = 0; i < inputTemplateTypeList.Count; i++)
+            {
+                if (!SameRuntimeType(inputTemplateTypeList[i], runtimeTemplateList[i]))
+                    return false;
+            }
+            return true;
+        }
+
+        private static void BindCoreRuntimeType(RuntimeType rt, EVMType evmType, ref RuntimeType targetField)
+        {
+            targetField = rt;
+            targetField.SetEVMType(evmType);
+        }
+
+        private static void BindCoreRuntimeTypeByName(string name, RuntimeType rt)
+        {
+            switch (name)
+            {
+                case "Object":
+                case "Core.Object":
+                    BindCoreRuntimeType(rt, EVMType.Object, ref m_ObjectRuntimeType);
+                    break;
+                case "Void":
+                case "Core.Void":
+                    BindCoreRuntimeType(rt, EVMType.Void, ref m_VoidRuntimeType);
+                    break;
+                case "Type":
+                case "Core.Type":
+                    BindCoreRuntimeType(rt, EVMType.Type, ref m_TypeRuntimeType);
+                    break;
+                case "Boolean":
+                case "Core.Boolean":
+                    BindCoreRuntimeType(rt, EVMType.Boolean, ref m_BoolRuntimeType);
+                    break;
+                case "Num":
+                case "Core.Num":
+                    BindCoreRuntimeType(rt, EVMType.Num, ref m_NumRuntimeType);
+                    break;
+                case "UInt8":
+                case "Core.UInt8":
+                    BindCoreRuntimeType(rt, EVMType.UInt8, ref m_UInt8RuntimeType);
+                    break;
+                case "Int8":
+                case "Core.Int8":
+                    BindCoreRuntimeType(rt, EVMType.Int8, ref m_Int8RuntimeType);
+                    break;
+                case "Int16":
+                case "Core.Int16":
+                    BindCoreRuntimeType(rt, EVMType.Int16, ref m_Int16RuntimeType);
+                    break;
+                case "UInt16":
+                case "Core.UInt16":
+                    BindCoreRuntimeType(rt, EVMType.UInt16, ref m_UInt16RuntimeType);
+                    break;
+                case "Int32":
+                case "Core.Int32":
+                    BindCoreRuntimeType(rt, EVMType.Int32, ref m_Int32RuntimeType);
+                    break;
+                case "UInt32":
+                case "Core.UInt32":
+                    BindCoreRuntimeType(rt, EVMType.UInt32, ref m_UInt32RuntimeType);
+                    break;
+                case "Int64":
+                case "Core.Int64":
+                    BindCoreRuntimeType(rt, EVMType.Int64, ref m_Int64RuntimeType);
+                    break;
+                case "UInt64":
+                case "Core.UInt64":
+                    BindCoreRuntimeType(rt, EVMType.UInt64, ref m_UInt64RuntimeType);
+                    break;
+                case "Float32":
+                case "Core.Float32":
+                    BindCoreRuntimeType(rt, EVMType.Float32, ref m_Float32RuntimeType);
+                    break;
+                case "Float64":
+                case "Core.Float64":
+                    BindCoreRuntimeType(rt, EVMType.Float64, ref m_Float64RuntimeType);
+                    break;
+                case "String":
+                case "Core.String":
+                    BindCoreRuntimeType(rt, EVMType.String, ref m_StringRuntimeType);
+                    break;
+            }
         }
     }
 }

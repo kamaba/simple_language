@@ -169,6 +169,46 @@ namespace SimpleLanguage.VM
                 || t == EVMType.Num;
         }
 
+        private static EVMType DetectObjectActualType(SObject? sobj)
+        {
+            if (sobj == null)
+                return EVMType.Null;
+
+            if (sobj.eType != EVMType.Object)
+                return sobj.eType;
+
+            // Core.Object 装箱壳：优先从 payload 反推实体类型。
+            var payload = sobj.value;
+            if (payload is SObject inner)
+                return inner.eType;
+            if (payload is bool)
+                return EVMType.Boolean;
+            if (payload is byte)
+                return EVMType.UInt8;
+            if (payload is sbyte)
+                return EVMType.Int8;
+            if (payload is short)
+                return EVMType.Int16;
+            if (payload is ushort)
+                return EVMType.UInt16;
+            if (payload is int)
+                return EVMType.Int32;
+            if (payload is uint)
+                return EVMType.UInt32;
+            if (payload is long)
+                return EVMType.Int64;
+            if (payload is ulong)
+                return EVMType.UInt64;
+            if (payload is float)
+                return EVMType.Float32;
+            if (payload is double)
+                return EVMType.Float64;
+            if (payload is string)
+                return EVMType.String;
+
+            return EVMType.Object;
+        }
+
         private void ClearObjectScalarValue()
         {
             m_ObjectActualType = EVMType.Null;
@@ -517,8 +557,19 @@ namespace SimpleLanguage.VM
                 if (incomingRef != null)
                 {
                     ClearObjectScalarValue();
-                    SetObjectPointer(incomingRef);
-                    WriteCurrentValueToMemberData(incomingRef);
+                    m_ObjectActualType = DetectObjectActualType(incomingRef);
+                    // 与 object[] 元素槽一致：引用型（Array/Class/Type）经 Core.Object 外壳写入，再落指针，保证与读取/解包路径统一。
+                    SObject toStore = incomingRef;
+                    if (incomingRef.eType == EVMType.Array
+                        || incomingRef.eType == EVMType.Class
+                        || incomingRef.eType == EVMType.Type)
+                    {
+                        toStore = ObjectManager.CreateObjectByRuntimeType(RuntimeTypeManager.objectRuntimeType, true);
+                        toStore.SetValueByType(incomingRef.eType, incomingRef);
+                    }
+                    SetObjectPointer(toStore);
+                    WriteCurrentValueToMemberData(toStore);
+                    RefreshIsNull();
                     return;
                 }
 
@@ -648,6 +699,16 @@ namespace SimpleLanguage.VM
             }
             if( eType == EVMType.Object )
             {
+                // 写入时经 Core.Object 基类 SObject+SetValueByType 装箱的，运行时指针为基类 SObject，负载在 value / m_Reference
+                if (sobj.GetType() == typeof(SObject))
+                {
+                    var inner = sobj.value as SObject;
+                    if (inner != null)
+                    {
+                        svalue.SetSObject(inner);
+                        return;
+                    }
+                }
                 svalue.SetSObject(sobj);
                 return;
             }

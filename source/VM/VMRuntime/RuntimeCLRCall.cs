@@ -39,7 +39,7 @@ namespace SimpleLanguage.VM
             {
                 //paramsObj[i] = GetObjectByValue(rvm.m_ValueStack[rvm.m_ValueIndex - paramsObj.Length + i], pis[i].ParameterType);
             }
-            rvm.m_ValueIndex -= (ushort)(paramsObj.Length - 1);
+            rvm.SetValueIndex(rvm.valueIndex - (ushort)(paramsObj.Length - 1));
 
             var retobj = m_MethodInfo.Invoke(target, paramsObj);
             if (retobj != null)
@@ -69,7 +69,7 @@ namespace SimpleLanguage.VM
 
         public void InvokeNativeMethod(RuntimeVM rvm)
         {
-            rvm.m_ValueIndex -= (ushort)(2);
+            rvm.SetValueIndex( rvm.valueIndex - 2 );
 
             var dll = LoadLibrary(dllPath);
             if (dll == IntPtr.Zero)

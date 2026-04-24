@@ -19,17 +19,14 @@ namespace SimpleLanguage.VM.Runtime
     public unsafe class RuntimeVM
     {
         public RuntimeObject[] returnRuntimeObjectArray { get => m_ReturnRuntimeObjectArray; }
+        public ushort valueIndex => m_ValueIndex;
+        public string id => m_Id;
+        public int level => m_Level;
+        public bool isPersistent => m_IsPersistent;
 
-
-        public SValue[] m_ValueStack;
-        public IntPtr m_RawBuffer;
-        public RawSValue* m_RawPtr;
-        public int m_RawCapacity;
-        public ushort m_ValueIndex;
 
 
         private List<RuntimeType> m_InputTemplateRuntimeTypeList;
-
         private RuntimeObject[] m_LocalVariableRuntimeObjectArray;
         private RuntimeObject[] m_ArgumentRuntimeObjectArray;
         private RuntimeObject[] m_ReturnRuntimeObjectArray;
@@ -39,36 +36,45 @@ namespace SimpleLanguage.VM.Runtime
         private ushort m_ExecuteIndex;
         private ushort m_ExecuteCount;
         private RuntimeClass m_CurrentRuntimeClass;
-        public string id { get; set; }
-        public int level { get; set; }
-        public bool isPersistent { get; set; }
+        private SValue[] m_ValueStack;
+        private ushort m_ValueIndex;
+        //public IntPtr m_RawBuffer;
+        //public RawSValue* m_RawPtr;
+        //public int m_RawCapacity;
 
-        public RuntimeVM(List<Instruction> irlist)
+
+        private string m_Id = "";
+        private int m_Level = 0;
+        private bool m_IsPersistent = false;
+        public RuntimeVM( string id, List<Instruction> irlist)
         {
+            m_Id = id;
             m_InstructionList = irlist?.ToArray();
             m_ValueStack = new SValue[1024];
             m_ValueIndex = 0;
-            m_RawCapacity = 1024;
+            //m_RawCapacity = 1024;
 
             Init();
         }
-        public RuntimeVM(List<RuntimeType> rtList, RuntimeMethod rm )
+        public RuntimeVM( List<RuntimeType> rtList, RuntimeMethod rm )
         {
             m_InputTemplateRuntimeTypeList = rtList ?? new List<RuntimeType>();
             m_Method = rm;
+            m_Id = rm.id;
             m_ValueStack = new SValue[1024];
             m_ValueIndex = 0;
-            m_RawCapacity = 1024;
+            //m_RawCapacity = 1024;
             m_InstructionList = rm.InstructionList.ToArray();
             Init();
         }
-        public RuntimeVM(List<RuntimeType> rtList, List<Instruction> irlist)
+        public RuntimeVM( string id, List<RuntimeType> rtList, List<Instruction> irlist)
         {
+            m_Id = id;
             m_InputTemplateRuntimeTypeList = rtList ?? new List<RuntimeType>();
             m_InstructionList = irlist?.ToArray();
             m_ValueStack = new SValue[1024];
             m_ValueIndex = 0;
-            m_RawCapacity = 1024;
+            //m_RawCapacity = 1024;
 
             Init();
         }
@@ -168,6 +174,7 @@ namespace SimpleLanguage.VM.Runtime
             SlMemoryManager.Instance.RegisterVmForRootCollection(this);
         }
 
+        public void SetValueIndex( int vindex ) => m_ValueIndex = (ushort)vindex;
         /// <summary>GC roots: value stack and argument/local/return runtime object slots.</summary>
         internal void AppendSlMemoryRoots(HashSet<SObject> roots)
         {
@@ -393,7 +400,7 @@ namespace SimpleLanguage.VM.Runtime
                 pushChar = '\t' + pushChar;
             }
             Log.AddProjectLog(LID.ShowMessageInfo, pushChar + "[VMRuntime] [Push] Method: [" + funName + "]");
-            level++;
+            m_Level++;
 
             var topClrRuntime = CLRVM.topCLRRuntime;
             for (int i = 0; i < m_ArgumentRuntimeObjectArray.Length; i++)
@@ -440,9 +447,9 @@ namespace SimpleLanguage.VM.Runtime
             }
 
 
-            level--;
+            m_Level--;
             pushChar = "";
-            for (int i = 0; i < level; i++)
+            for (int i = 0; i < m_Level; i++)
             {
                 pushChar = '\t' + pushChar;
             }
@@ -1015,18 +1022,9 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadConstString:
                     {
-                        //if (iri.TryGetString(out string s))
-                        //{
-                        //    if (TryPushStackSlot(out int slot))
-                        //        m_ValueStack[slot].SetStringValue(s);
-                        //}
-                        //else
-                        //{
-                            var resolved = SLAssembly.TryGetConstString(iri.index)
-                                ?? string.Empty;
-                            if (TryPushStackSlot(out int slot))
-                                m_ValueStack[slot].SetStringValue(resolved);
-                        //}
+                        var resolved = SLAssembly.TryGetConstString(iri.index) ?? string.Empty;
+                        if (TryPushStackSlot(out int slot))
+                            m_ValueStack[slot].SetStringValue(resolved);
                     }
                     break;
                 case EIROpCode.LoadConstType:
@@ -1172,51 +1170,72 @@ namespace SimpleLanguage.VM.Runtime
                             int1 = 2;
                             int2 = 1;
                         }
-                        SValue sStore = m_ValueStack[m_ValueIndex - int1];
-                        SValue sValue = m_ValueStack[m_ValueIndex - int2];
 
-                        if (sStore.eType == EVMType.Array && sStore.sobject is ArrayObject ao )
+                        if (m_ValueIndex - int1 >= 0 && m_ValueIndex - int2 >= 0 )
                         {
-                            ao.StoreValue(iri.index, sValue);
+                            ref SValue sStore = ref m_ValueStack[m_ValueIndex - int1];
+                            ref SValue sValue = ref m_ValueStack[m_ValueIndex - int2];
+                            if (sStore.eType == EVMType.Array && sStore.sobject is ArrayObject ao)
+                            {
+                                ao.StoreValue(iri.index, sValue);
+                            }
+                            else
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", sStore.eType.ToString());
+                            }
+                            m_ValueIndex -= 2;
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", sStore.eType.ToString() );
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndex", "");
                         }
-                        m_ValueIndex -= 2;
                     }
                     break;
                 case EIROpCode.LoadArrayIndexField:
                     {
-                        SValue arrayref = m_ValueStack[m_ValueIndex - 2];
-                        SValue loadindex = m_ValueStack[m_ValueIndex - 1];
-
-                        if (arrayref.eType == EVMType.Array && arrayref.sobject is ArrayObject ao)
+                        if (m_ValueIndex > 1 )
                         {
-                            ao.LoadValue(loadindex.int32Value, ref m_ValueStack[m_ValueIndex - 2]);
+                            ref SValue arrayref = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue loadindex = ref m_ValueStack[m_ValueIndex - 1];
+
+                            if (arrayref.eType == EVMType.Array && arrayref.sobject is ArrayObject ao)
+                            {
+                                ao.LoadValue(loadindex.int32Value, ref arrayref );
+                            }
+                            else
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndexField", arrayref.eType.ToString());
+                            }
+                            m_ValueIndex -= 1;
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndexField", arrayref.eType.ToString() );
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndex", "");
                         }
-                        m_ValueIndex -= 1;
                     }
                     break;
                 case EIROpCode.StoreArrayIndexField:
                     {
-                        SValue arrayref = m_ValueStack[m_ValueIndex - 3];
-                        SValue loadindex = m_ValueStack[m_ValueIndex - 2];
-                        SValue storevalue = m_ValueStack[m_ValueIndex - 1];
-
-                        if (arrayref.eType == EVMType.Array && arrayref.sobject is ArrayObject ao)
+                        if (m_ValueIndex > 2)
                         {
-                            ao.StoreValue(loadindex.int32Value, storevalue);
+                            SValue arrayref = m_ValueStack[m_ValueIndex - 3];
+                            SValue loadindex = m_ValueStack[m_ValueIndex - 2];
+                            SValue storevalue = m_ValueStack[m_ValueIndex - 1];
+
+                            if (arrayref.eType == EVMType.Array && arrayref.sobject is ArrayObject ao)
+                            {
+                                ao.StoreValue(loadindex.int32Value, storevalue);
+                            }
+                            else
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndexField", arrayref.eType.ToString());
+                            }
+                            m_ValueIndex -= 3;
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndexField", arrayref.eType.ToString() );
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndex", "");
                         }
-                        m_ValueIndex -= 3;
                     }
                     break;
                 case EIROpCode.Dup:
@@ -1357,7 +1376,7 @@ namespace SimpleLanguage.VM.Runtime
                             var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                             if (irList.Count > 0)
                             {
-                                CLRVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
+                                CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt.runtimeTemplateList, irList);
                             }
                             //var sv = default(SValue);
                             //sv.SetSObject(sobj);
@@ -1383,10 +1402,15 @@ namespace SimpleLanguage.VM.Runtime
                             var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                             if (irList.Count > 0)
                             {
-                                CLRVM.RunIRNewMethod(rt.runtimeTemplateList, irList);
+                                CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt.runtimeTemplateList, irList);
                             }
                             //if (TryPushStackSlot(out int slot))
                             //    m_ValueStack[slot].SetSObject(sobj);
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            break;
                         }
                     }
                     break;
@@ -1434,6 +1458,11 @@ namespace SimpleLanguage.VM.Runtime
                             //sv.SetSObject(arr);
                             //PushSValueSynced(sv);
                         }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            break;
+                        }
                     }
                     break;
                 case EIROpCode.Br:
@@ -1456,6 +1485,11 @@ namespace SimpleLanguage.VM.Runtime
                                 m_ExecuteIndex = (ushort)(iri.index - 1);
                             }
                         }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            break;
+                        }
                     }
                     break;
                 case EIROpCode.BrTrue:
@@ -1468,6 +1502,11 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 m_ExecuteIndex = (ushort)(iri.index - 1);
                             }
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            break;
                         }
                     }
                     break;
@@ -1500,6 +1539,11 @@ namespace SimpleLanguage.VM.Runtime
                                 }
                             }
                         }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            break;
+                        }
                     }
                     break;
                 case EIROpCode.Ceq:
@@ -1507,11 +1551,16 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex >= 2)
                         {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
+                            ref var right = ref m_ValueStack[--m_ValueIndex];
+                            ref var left = ref m_ValueStack[--m_ValueIndex];
                             bool methodCall = false;
                             SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
                             PushSValueSynced(left);
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            break;
                         }
                     }
                     break;
@@ -1520,11 +1569,16 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex >= 2)
                         {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
+                            ref var right = ref m_ValueStack[--m_ValueIndex];
+                            ref var left = ref m_ValueStack[--m_ValueIndex];
                             bool methodCall = false;
                             SValue.CompareEuqalSValue1AndValue2(ref left, ref right, false, out methodCall);
                             PushSValueSynced(left);
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            break;
                         }
                     }
                     break;
@@ -1532,10 +1586,15 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex >= 2)
                         {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
+                            ref var right = ref m_ValueStack[--m_ValueIndex];
+                            ref var left = ref m_ValueStack[--m_ValueIndex];
                             SValue.LogicalAnd(ref left, ref right);
                             PushSValueSynced(left);
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            break;
                         }
                     }
                     break;
@@ -1543,10 +1602,15 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex >= 2)
                         {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
+                            ref var right = ref m_ValueStack[--m_ValueIndex];
+                            ref var left = ref m_ValueStack[--m_ValueIndex];
                             SValue.LogicalOr(ref left, ref right);
                             PushSValueSynced(left);
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            break;
                         }
                     }
                     break;

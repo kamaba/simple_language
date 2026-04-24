@@ -196,6 +196,24 @@ namespace SimpleLanguage.VM
         public void SetObjectSlotToNull(int index)
         {
             if ((uint)index >= (uint)Length || _objectRefs == null) return;
+            // object[] 槽位在构造时已放入 SObject(EVMType.Object) 外壳；只清空负载，不置 _objectRefs 为 null，
+            // 否则与 StoreValue 中 anyobj 路径及 Load/写入约定不一致。
+            if (ElementEvmType == EVMType.Object)
+            {
+                var o = _objectRefs[index];
+                if (o != null && o.eType == EVMType.Object)
+                {
+                    o.SetValue(null);
+                }
+                else
+                {
+                    var fresh = new SObject(EVMType.Object);
+                    ObjectManager.RegisterObject(fresh);
+                    _objectRefs[index] = fresh;
+                    WriteInt32At(index, fresh.GetHashCode());
+                }
+                return;
+            }
             _objectRefs[index] = null;
             WriteInt32At(index, 0);
         }

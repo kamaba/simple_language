@@ -9,13 +9,13 @@ namespace SimpleLanguage.VM
         public RuntimeClass ownerRuntimeClass => m_OwnerRuntimeClass;
         public List<RuntimeDefType> runtimeDefTypeList => m_RuntimeDefTypeList;
         public int templateIndex => m_TemplateIndex;
-        public bool isTemplate => m_IsTemplate;
+        //public bool isTemplate => m_IsTemplate;
 
         private RuntimeClass m_RuntimeClass = null;
         private RuntimeClass m_OwnerRuntimeClass = null;
         private List<RuntimeDefType> m_RuntimeDefTypeList = new List<RuntimeDefType>();
         private int m_TemplateIndex = -1;
-        private bool m_IsTemplate = false;
+        //private bool m_IsTemplate = false;
 
         public RuntimeDefType()
         {
@@ -34,13 +34,13 @@ namespace SimpleLanguage.VM
         /// <summary>
         /// Full wire shape from <see cref="SimpleLanuageVM.Load.SLRuntimeDefTypePackage"/> (owner + template slot + nested args).
         /// </summary>
-        public RuntimeDefType(RuntimeClass runtimeClass, List<RuntimeDefType> irlist, RuntimeClass? ownerRuntimeClass, int templateIndex, bool isTemplate)
+        public RuntimeDefType(RuntimeClass runtimeClass, List<RuntimeDefType> irlist, RuntimeClass? ownerRuntimeClass, int templateIndex )
         {
             m_RuntimeClass = runtimeClass;
             m_RuntimeDefTypeList = irlist ?? new List<RuntimeDefType>();
             m_OwnerRuntimeClass = ownerRuntimeClass;
             m_TemplateIndex = templateIndex;
-            m_IsTemplate = isTemplate;
+            //m_IsTemplate = isTemplate;
         }
         //public static RuntimeDefType CreateIRMetaTypeByGenTemplateMetaTypeList( RuntimeDefType type, RuntimeClass ownerIRMc)
         //{

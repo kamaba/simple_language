@@ -504,7 +504,7 @@ namespace SimpleLanguage.VM
                         {
                             CLRVM.RunIRMethod(null, method, false);
                             var clrvm = CLRVM.clrRuntimeStack.Peek();
-                            SValue curval = clrvm.GetCurrentIndexValue(clrvm.m_ValueIndex - 1);
+                            SValue curval = clrvm.GetCurrentIndexValue(clrvm.valueIndex - 1);
                             str = curval.stringValue;
                         }
                     }
@@ -533,9 +533,9 @@ namespace SimpleLanguage.VM
                         {
                             CLRVM.RunIRMethod(null, method, false);
                             var clrvm = CLRVM.clrRuntimeStack.Peek();
-                            SValue curval = clrvm.GetCurrentIndexValue(clrvm.m_ValueIndex - 1);
+                            SValue curval = clrvm.GetCurrentIndexValue(clrvm.valueIndex - 1);
                             str = curval.stringValue;
-                            clrvm.m_ValueIndex--;
+                            clrvm.SetValueIndex( clrvm.valueIndex-1 );
                         }
                     }
                     else

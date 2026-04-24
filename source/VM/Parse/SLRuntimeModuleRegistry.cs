@@ -48,8 +48,7 @@ namespace SimpleLanguage.Parse
                 if (pkg.ownerClassId != 0 || !string.IsNullOrWhiteSpace(pkg.ownerClassName))
                     ownerRc = ResolveOrCreateRuntimeClassByIdOrName(pkg.ownerClassId, pkg.ownerClassName);
 
-                bool isTemplate = pkg.isTemplate || pkg.templateIndex >= 0;
-                return new RuntimeDefType(rc, args, ownerRc, pkg.templateIndex, isTemplate);
+                return new RuntimeDefType(rc, args, ownerRc, pkg.templateIndex);
             }
 
             return new RuntimeDefType(rc, args);

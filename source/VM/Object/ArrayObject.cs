@@ -350,11 +350,23 @@ namespace SimpleLanguage.VM
                     }
                     break;
                 case EVMType.Type:
+                    {
+                        if (anyobj != null)
+                        {
+                            anyobj.SetValueByType(EVMType.Type, svalue.sobject);
+#if DEBUG
+                            DebugSyncIndex(index);
+#endif
+                            return;
+                        }
+                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
+                    }
+                    break;
                 case EVMType.Class:
                     {
                         if (anyobj != null)
                         {
-                            m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
+                            anyobj.SetValueByType(EVMType.Class, svalue.sobject);
 #if DEBUG
                             DebugSyncIndex(index);
 #endif
