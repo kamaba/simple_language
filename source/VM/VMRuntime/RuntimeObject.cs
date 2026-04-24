@@ -367,6 +367,59 @@ namespace SimpleLanguage.VM
             }
         }
 
+        private static void AssignRuntimeObjectToSValue(SObject sobj, ref SValue svalue)
+        {
+            switch (sobj)
+            {
+                case BoolObject bo:
+                    svalue.SetBoolValue(bo.value);
+                    return;
+                case UInt8Object byteob:
+                    svalue.SetUInt8Value(byteob.value);
+                    return;
+                case Int8Object sbyteobj:
+                    svalue.SetInt8Value(sbyteobj.value);
+                    return;
+                case Int16Object int16Obj:
+                    svalue.SetInt16Value(int16Obj.value);
+                    return;
+                case UInt16Object uint16Obj:
+                    svalue.SetUInt16Value(uint16Obj.value);
+                    return;
+                case Int32Object int32Obj:
+                    svalue.SetInt32Value(int32Obj.value);
+                    return;
+                case UInt32Object uint32Obj:
+                    svalue.SetUInt32Value(uint32Obj.value);
+                    return;
+                case Int64Object int64Obj:
+                    svalue.SetInt64Value(int64Obj.value);
+                    return;
+                case UInt64Object uint64Obj:
+                    svalue.SetUInt64Value(uint64Obj.value);
+                    return;
+                case Float32Object floatobj:
+                    svalue.SetFloatValue(floatobj.value);
+                    return;
+                case Float64Object doubleobj:
+                    svalue.SetDoubleValue(doubleobj.value);
+                    return;
+                case StringObject stringObj:
+                    svalue.SetStringValue(stringObj.value);
+                    return;
+                case ClassObject classObj:
+                    svalue.SetSObject(classObj);
+                    return;
+                case TemplateObject templateObj:
+                    svalue.SetSObject(templateObj.instnceObject);
+                    Debug.Assert(false);
+                    return;
+                default:
+                    Debug.Assert(false);
+                    return;
+            }
+        }
+
         public bool TryReadMemberDataToSValue(ref SValue svalue)
         {
             if (m_MemberDataBuffer == null || m_Length <= 0 || m_RuntimeType == null)
@@ -778,85 +831,7 @@ namespace SimpleLanguage.VM
                 AssignObjectValueBySubtype(sobj, ref svalue);
                 return;
             }
-            switch (sobj)
-            {
-                case BoolObject bo:
-                    {
-                        svalue.SetBoolValue(bo.value);
-                    }
-                    break;
-                case UInt8Object byteob:
-                    {
-                        svalue.SetUInt8Value(byteob.value);
-                    }
-                    break;
-                case Int8Object sbyteobj:
-                    {
-                        svalue.SetInt8Value(sbyteobj.value);
-                    }
-                    break;
-                case Int16Object int16Obj:
-                    {
-                        svalue.SetInt16Value(int16Obj.value);
-                    }
-                    break;
-                case UInt16Object uint16Obj:
-                    {
-                        svalue.SetUInt16Value(uint16Obj.value);
-                    }
-                    break;
-                case Int32Object int32Obj:
-                    {
-                        svalue.SetInt32Value(int32Obj.value);
-                    }
-                    break;
-                case UInt32Object uint32Obj:
-                    {
-                        svalue.SetUInt32Value(uint32Obj.value);
-                    }
-                    break;
-                case Int64Object int64Obj:
-                    {
-                        svalue.SetInt64Value(int64Obj.value);
-                    }
-                    break;
-                case UInt64Object uint64Obj:
-                    {
-                        svalue.SetUInt64Value(uint64Obj.value);
-                    }
-                    break;
-                case Float32Object floatobj:
-                    {
-                        svalue.SetFloatValue(floatobj.value);
-                    }
-                    break;
-                case Float64Object doubleobj:
-                    {
-                        svalue.SetDoubleValue(doubleobj.value);
-                    }
-                    break;
-                case StringObject stringObj:
-                    {
-                        svalue.SetStringValue(stringObj.value);
-                    }
-                    break;
-                case ClassObject classObj:
-                    {
-                        svalue.SetSObject(classObj);
-                    }
-                    break;
-                case TemplateObject templateObj:
-                    {
-                        svalue.SetSObject(templateObj.instnceObject);
-                        Debug.Assert(false);
-                    }
-                    break;
-                default:
-                    {
-                        Debug.Assert(false);
-                    }
-                    break;
-            }
+            AssignRuntimeObjectToSValue(sobj, ref svalue);
         }
         public SObject CreateObjectByRuntimeType()
         {

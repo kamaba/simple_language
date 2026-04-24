@@ -122,8 +122,10 @@ ArrayTest
     {
         global.println("========== ObjectArray 装箱 + literal for-in ==========")
         ObjectArray boxed = object[2]
-        boxed[0] = 5
-        boxed[1] = 6
+        #boxed[0] = 5
+        #boxed[1] = 20 + 3.2f
+        boxed[0] = [1,2,3]
+        boxed.$1 = Level<Int32>(10)
         forIIterator(boxed)
         forObject(boxed) #这句不报错
         arr2  = [1000,2000,3000,1005]
