@@ -99,14 +99,9 @@ namespace SimpleLanguage.IR
                 Log.AddIRLog(LID.AutoIRMetaVariableL96, "IRMetaVariable 没有找到对应的from ");
             }
             IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
-            //if( mv.isDefineMetaType )
-            //{
-                m_IRMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mv.defineMetaType, owirmc);
-            //}
-            //else
-            //{
-            //    m_IRMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mv.realMetaType, owirmc);
-            //}
+            // 与 MetaMemberVariable 一致：显式左值类型用 define，var / 首赋局部推断用 real（define 常见为 object 占位）
+            MetaType exportMt = mv.GetFinalMetaType() ?? mv.defineMetaType;
+            m_IRMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(exportMt, owirmc);
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
         {
