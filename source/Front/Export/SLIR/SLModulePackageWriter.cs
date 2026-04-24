@@ -176,6 +176,12 @@ namespace SimpleLanguage.Export.SLIR
                     sourcePath = c.sourcePath ?? string.Empty,
                     metaClassKind = (int)c.metaClassKind,
                 };
+                var implIds = c.GetImplementsInterfaceClassIds();
+                if (implIds != null && implIds.Count > 0)
+                {
+                    for (int ii = 0; ii < implIds.Count; ii++)
+                        cm.implementsInterfaceIdList.Add(implIds[ii]);
+                }
                 // export template count
                 cm.templateCount = c.templateCount;
                 cm.templateParameterCount = c.templateParameterCount;
@@ -504,6 +510,7 @@ namespace SimpleLanguage.Export.SLIR
                             index = v.index,
                             name = NormalizeVariableName(v.name ?? string.Empty),
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
+                            debugInfo = CreateVariableDebugInfo(v),
                         });
                     }
                 }
@@ -520,6 +527,7 @@ namespace SimpleLanguage.Export.SLIR
                             index = v.index,
                             name = NormalizeVariableName(v.name ?? string.Empty),
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
+                            debugInfo = CreateVariableDebugInfo(v),
                         });
                     }
                 }
@@ -536,6 +544,7 @@ namespace SimpleLanguage.Export.SLIR
                             index = v.index,
                             name = NormalizeVariableName(v.name ?? string.Empty),
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
+                            debugInfo = CreateVariableDebugInfo(v),
                         });
                     }
                 }
@@ -859,6 +868,30 @@ namespace SimpleLanguage.Export.SLIR
                 byteLength = d.ByteLength,
                 payload = d.Payload,
                 debugInfo = dbg,
+            };
+        }
+
+        private static SLInstructionDebugInfo? CreateVariableDebugInfo(IRMetaVariable? v)
+        {
+            if (v == null) return null;
+
+            var src = v.debugInfo;
+            var hasData = !string.IsNullOrEmpty(src.path)
+                || !string.IsNullOrEmpty(src.name)
+                || !string.IsNullOrEmpty(src.info)
+                || src.beginLine != 0 || src.beginChar != 0 || src.endLine != 0 || src.endChar != 0;
+
+            if (!hasData) return null;
+
+            return new SLInstructionDebugInfo
+            {
+                path = src.path ?? string.Empty,
+                name = src.name ?? string.Empty,
+                beginLine = src.beginLine,
+                beginChar = src.beginChar,
+                endLine = src.endLine,
+                endChar = src.endChar,
+                info = src.info ?? string.Empty,
             };
         }
 

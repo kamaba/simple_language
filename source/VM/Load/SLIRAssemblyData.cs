@@ -102,8 +102,10 @@ namespace SimpleLanuageVM.Load
         public string name { get; set; } = string.Empty;
         public string fullName { get; set; } = string.Empty;
         public string sourcePath { get; set; } = string.Empty;
-        /// <summary>0=Class, 1=Enum, 2=Data — matches Front <c>IRMetaClassKind</c>.</summary>
+        /// <summary>0=Class, 1=Enum, 2=Data, 3=Interface — matches Front <c>IRMetaClassKind</c>.</summary>
         public int metaClassKind { get; set; }
+        /// <summary>IR class ids of implemented interfaces; matches Front <c>SLClassPackage.implementsInterfaceIdList</c>.</summary>
+        public List<int> implementsInterfaceIdList { get; set; } = new();
         /// <summary>Declared template arity in source; matches Front <c>SLClassPackage.templateParameterCount</c>.</summary>
         public int templateParameterCount { get; set; }
         /// <summary>IR generated template meta type count; matches Front <c>SLClassPackage.templateCount</c>.</summary>
@@ -168,6 +170,7 @@ namespace SimpleLanuageVM.Load
         public int index { get; set; }
         public string name { get; set; } = string.Empty;
         public SLRuntimeDefTypePackage? typeDef { get; set; }
+        public DebugInfo? debugInfo { get; set; }
     }
 
     public sealed class SLRuntimeCallPackage

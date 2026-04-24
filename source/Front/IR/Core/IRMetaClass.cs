@@ -69,6 +69,7 @@ namespace SimpleLanguage.IR
             m_MetaClass = mc;
             m_MetaClassKind = mc is MetaEnum ? IRMetaClassKind.Enum
                 : mc is MetaData ? IRMetaClassKind.Data
+                : mc.isInterfaceClass ? IRMetaClassKind.Interface
                 : IRMetaClassKind.Class;
             m_IRName = IRManager.GetIRNameByMetaClass(mc);
             id = mc.GetHashCode();
@@ -91,6 +92,24 @@ namespace SimpleLanguage.IR
                 m_SourcePath = "";
             }
         }        
+        /// <summary>Ids of interface types this class is declared to implement (stable hash = IR class id), including those merged from the base class.</summary>
+        public IReadOnlyList<int> GetImplementsInterfaceClassIds()
+        {
+            if (m_MetaClass == null) return System.Array.Empty<int>();
+            var icl = m_MetaClass.interfaceClass;
+            if (icl == null || icl.Count == 0) return System.Array.Empty<int>();
+            var list = new List<int>(icl.Count);
+            for (int i = 0; i < icl.Count; i++)
+            {
+                var ic = icl[i];
+                if (ic == null) continue;
+                int iid = ic.GetHashCode();
+                if (iid == 0) continue;
+                if (!list.Contains(iid)) list.Add(iid);
+            }
+            return list;
+        }
+
         public IRMethod GetIRNonStaticMethodByIndex( int index )
         {
             if( index >= m_IRNotStaticMethodList.Count || index < 0 )

@@ -32,6 +32,7 @@ namespace SimpleLanguage.VM
         private List<RuntimeMethod> m_NotStaticMethodList = new List<RuntimeMethod>();
         private List<RuntimeMethod> m_OperatorMethodList = new List<RuntimeMethod>();
         private Dictionary<int, Dictionary<int, RuntimeDefType>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, RuntimeDefType>>();
+        private readonly List<int> m_ImplementsInterfaceIdList = new List<int>();
 
         internal void AddNonStaticMethod(RuntimeMethod m)
         {
@@ -109,6 +110,29 @@ namespace SimpleLanguage.VM
             map[templateIndex] = binding;
         }
 
+        /// <summary>True when <see cref="metaClassKind"/> is <c>3</c> (interface) from the SLIR package.</summary>
+        public bool isInterfaceClass => metaClassKind == 3;
+
+        public bool ImplementsInterfaceId(int interfaceClassId)
+        {
+            if (interfaceClassId == 0) return false;
+            for (int i = 0; i < m_ImplementsInterfaceIdList.Count; i++)
+            {
+                if (m_ImplementsInterfaceIdList[i] == interfaceClassId) return true;
+            }
+            return false;
+        }
+
+        internal void AddImplementsInterfaceId(int interfaceClassId)
+        {
+            if (interfaceClassId == 0) return;
+            for (int i = 0; i < m_ImplementsInterfaceIdList.Count; i++)
+            {
+                if (m_ImplementsInterfaceIdList[i] == interfaceClassId) return;
+            }
+            m_ImplementsInterfaceIdList.Add(interfaceClassId);
+        }
+
         public bool IsExtendsRelation(RuntimeClass rc)
         {
             if (this == rc )
@@ -116,6 +140,10 @@ namespace SimpleLanguage.VM
                 return true;
             }
             if (m_IRMetaClassMapTemplateDict.ContainsKey(rc.id))
+            {
+                return true;
+            }
+            if (rc != null && rc.isInterfaceClass && ImplementsInterfaceId(rc.id))
             {
                 return true;
             }

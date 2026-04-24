@@ -94,6 +94,7 @@ ArrayTest
         a2[1]--
         global.println("1111111111= " + a2[1] )
 
+
         global.println("1111111111= " + intvalue )
         intvalue = 40
         intvalue -= 13
@@ -388,8 +389,8 @@ ArrayTest
     {
         #arrayBasicApiTest()        
         #arrayGenericElementTest()
-        arrayCreateInstanceIndexLoopTest()
-        #arrayCovariantAndLiteralForInTest()
+        #arrayCreateInstanceIndexLoopTest()
+        arrayCovariantAndLiteralForInTest()
         #arrayNumberIteratorFromConcreteArrayTest()
         #arrayNestedObjectTreeTest()
         #arrayJagged2DAssignTest()

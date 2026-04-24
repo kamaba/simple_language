@@ -466,9 +466,11 @@ namespace SimpleLanguage.IR
         {
             debugInfo = info;
         }
-        public void SetDebugInfoByToken( Token token )
+        /// <param name="token">Source location (e.g. keyword, call name, operator).</param>
+        /// <param name="info">Extra context for export/VM debug (opcode role, synthetic lowering label).</param>
+        public void SetDebugInfoByToken(Token token, string info = null)
         {
-            if(token != null )
+            if (token != null)
             {
                 debugInfo.path = token.path;
                 debugInfo.name = token.lexeme?.ToString();
@@ -477,11 +479,19 @@ namespace SimpleLanguage.IR
                 debugInfo.endLine = token.sourceEndLine;
                 debugInfo.endChar = token.sourceEndChar;
             }
+            if (!string.IsNullOrEmpty(info))
+                debugInfo.info = info;
         }
         public override string ToString()
         {
             StringBuilder m_StringBuilder = new StringBuilder();
             m_StringBuilder.Append( id + "   [ " + debugInfo.path + ":" + debugInfo.beginLine.ToString() + "]" + " [" + opCode.ToString() + "] index:[" + index.ToString() + "]");
+            if (!string.IsNullOrEmpty(debugInfo.info))
+            {
+                m_StringBuilder.Append(" info:[");
+                m_StringBuilder.Append(debugInfo.info);
+                m_StringBuilder.Append("]");
+            }
             if (opValue != null)
             {
                 MetaType mt = opValue as MetaType;

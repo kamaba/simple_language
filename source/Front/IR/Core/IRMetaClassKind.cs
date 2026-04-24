@@ -13,5 +13,7 @@ namespace SimpleLanguage.IR
         Class = 0,
         Enum = 1,
         Data = 2,
+        /// <summary>Declared <c>interface</c> type (not an inheritable class).</summary>
+        Interface = 3,
     }
 }

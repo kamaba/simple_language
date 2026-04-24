@@ -198,6 +198,51 @@ namespace SimpleLanguage.Core
                 }
             }
         }
+        public void HandleInterfaceClassTemplateMapRelation()
+        {
+            if (m_InterfaceMetaType == null || m_InterfaceMetaType.Count == 0)
+            {
+                return;
+            }
+
+            for (int i = 0; i < m_InterfaceMetaType.Count; i++)
+            {
+                var interfaceMetaType = m_InterfaceMetaType[i];
+                var interfaceMetaClass = interfaceMetaType?.metaClass;
+                if (interfaceMetaClass == null)
+                {
+                    continue;
+                }
+
+                var sourceInterfaceClass = GetSourceMetaClass(interfaceMetaClass);
+                if (sourceInterfaceClass == null)
+                {
+                    continue;
+                }
+
+                if (m_MetaTemplateMapDict.ContainsKey(sourceInterfaceClass))
+                {
+                    continue;
+                }
+
+                ClassLevelRelationData clrd = new ClassLevelRelationData();
+                if (sourceInterfaceClass.metaTemplateList.Count > 0
+                    && interfaceMetaType.defineTemplateMetaTypeList.Count == sourceInterfaceClass.metaTemplateList.Count)
+                {
+                    for (int ti = 0; ti < sourceInterfaceClass.metaTemplateList.Count; ti++)
+                    {
+                        var sourceTemplate = sourceInterfaceClass.metaTemplateList[ti];
+                        var targetMetaType = interfaceMetaType.defineTemplateMetaTypeList[ti];
+                        if (sourceTemplate != null && targetMetaType != null)
+                        {
+                            clrd.AddBindData(sourceTemplate, targetMetaType);
+                        }
+                    }
+                }
+
+                m_MetaTemplateMapDict[sourceInterfaceClass] = clrd;
+            }
+        }
         public void ReplaceMetaTypeTemplateMeta( MetaType mt, ClassLevelRelationData clrd )
         {
             Debug.Assert(false, "");

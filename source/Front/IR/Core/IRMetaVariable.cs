@@ -31,6 +31,7 @@ namespace SimpleLanguage.IR
         public int id => m_Id;
         public string name => m_Name;
         public int index => m_Index;
+        public DebugInfo debugInfo => m_DebugInfo;
         public bool isConst => m_IsConst;
         public bool isStatic => m_IsStatic;
         public EPermission permission => m_Permission;
@@ -45,6 +46,7 @@ namespace SimpleLanguage.IR
         private int m_Id = -1;
         private int m_Index = -1;
         private string m_Name = "";
+        private DebugInfo m_DebugInfo;
         private bool m_IsConst = false;
         private bool m_IsStatic = false;
         private EPermission m_Permission = EPermission.Public;
@@ -56,6 +58,7 @@ namespace SimpleLanguage.IR
             m_Id = mv.GetHashCode();
             m_Index = index;
             m_Name = mv.ownerMetaBlockStatements?.ownerMetaFunction.name + (mv.isStatic?"_static":"_local") + "[" + mv.name + "]";
+            FillDebugInfo(mv, mv.name, "IRMetaVariable");
             m_IsConst = mv.isConst;
             m_IsStatic = mv.isStatic;
             m_Permission = mv.permission;
@@ -110,6 +113,7 @@ namespace SimpleLanguage.IR
             //m_MetaVariable = mme;
             m_Id = mme.GetHashCode();
             m_Name = mme.ownerMetaClass.allClassName + "." + mme.name;
+            FillDebugInfo(mme, mme.name, "IRMetaMemberEnum");
             m_ExpressNode = mme.express;
             m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             m_IsStatic = true;
@@ -120,6 +124,7 @@ namespace SimpleLanguage.IR
             m_Id = mmd.GetHashCode();
             m_Index = fieldIndex;
             m_Name = mmd.ownerMetaClass.allClassName + "." + mmd.name;
+            FillDebugInfo(mmd, mmd.name, "IRMetaMemberData");
             m_ExpressNode = mmd.expressNode;
             m_IRMetaVariableFrom = mmd.isStatic ? IRMetaVariableFrom.Static : IRMetaVariableFrom.Member;
             m_IsStatic = mmd.isStatic;
@@ -135,6 +140,7 @@ namespace SimpleLanguage.IR
             m_Id = mmv.GetHashCode();
             m_Index = index;
             m_Name = mmv.ownerMetaClass.allClassName + "." + mmv.name;
+            FillDebugInfo(mmv, mmv.name, "IRMetaMemberVariable");
             m_ExpressNode = mmv.express;
             m_IsConst = mmv.isConst;
             m_IsStatic = mmv.isStatic;
@@ -146,6 +152,41 @@ namespace SimpleLanguage.IR
 
             IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mmv.GetOwnerClassTemplateClass().GetHashCode());
             m_IRMetaType = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mmv.GetFinalMetaType(), owirmc);
+        }
+
+        private void FillDebugInfo(MetaBase mb, string fallbackName, string info)
+        {
+            m_DebugInfo = new DebugInfo
+            {
+                name = fallbackName ?? string.Empty,
+                info = info ?? string.Empty,
+            };
+
+            if (mb == null)
+            {
+                return;
+            }
+
+            var tk = mb.token;
+            if (tk == null && mb.pingTokenList != null && mb.pingTokenList.Count > 0)
+            {
+                tk = mb.pingTokenList[0];
+            }
+
+            if (tk == null)
+            {
+                return;
+            }
+
+            m_DebugInfo.path = tk.path ?? string.Empty;
+            m_DebugInfo.beginLine = tk.sourceBeginLine;
+            m_DebugInfo.beginChar = tk.sourceBeginChar;
+            m_DebugInfo.endLine = tk.sourceEndLine;
+            m_DebugInfo.endChar = tk.sourceEndChar;
+            if (string.IsNullOrEmpty(m_DebugInfo.name))
+            {
+                m_DebugInfo.name = tk.lexeme?.ToString() ?? string.Empty;
+            }
         }
         public override string ToString()
         {

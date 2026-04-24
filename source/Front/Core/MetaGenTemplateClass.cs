@@ -228,6 +228,8 @@ namespace SimpleLanguage.Core
                 TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(this.m_InterfaceMetaType[i], this, null);
                 this.m_InterfaceClass.Add(this.m_InterfaceMetaType[i].metaClass);
             }
+
+            HandleInterfaceClassTemplateMapRelation();
         }
         public void ParseMemberVariableDefineMetaType()
         {

@@ -177,7 +177,7 @@ namespace SimpleLanguage.Parse
                         {
                             if (v == null) continue;
                             var rdt = v.typeDef != null ? ResolveRuntimeDefType(v.typeDef) : null;
-                            rm.methodReturnVariableList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name));
+                            rm.methodReturnVariableList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name, v.debugInfo));
                         }
                     }
                     if (m.argumentList != null)
@@ -186,7 +186,7 @@ namespace SimpleLanguage.Parse
                         {
                             if (v == null) continue;
                             var rdt = v.typeDef != null ? ResolveRuntimeDefType(v.typeDef) : null;
-                            rm.methodArgumentList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name));
+                            rm.methodArgumentList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name, v.debugInfo));
                         }
                     }
                     if (m.localList != null)
@@ -195,7 +195,7 @@ namespace SimpleLanguage.Parse
                         {
                             if (v == null) continue;
                             var rdt = v.typeDef != null ? ResolveRuntimeDefType(v.typeDef) : null;
-                            rm.methodLocalVariableList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name));
+                            rm.methodLocalVariableList.Add(new RuntimeVariable(rdt, v.id, v.index, v.name, v.debugInfo));
                         }
                     }
 
@@ -236,6 +236,11 @@ namespace SimpleLanguage.Parse
                 metaClassKind = pkg.metaClassKind,
                 fieldsFromPackageApplied = false,
             };
+            if (pkg.implementsInterfaceIdList != null)
+            {
+                for (int i = 0; i < pkg.implementsInterfaceIdList.Count; i++)
+                    rc.AddImplementsInterfaceId(pkg.implementsInterfaceIdList[i]);
+            }
             RuntimeClassManager.AddRuntimeClass(rc);
 
             if (!s_ClassPackageById.ContainsKey(pkg.id))
@@ -249,6 +254,12 @@ namespace SimpleLanguage.Parse
         {
             if (pkg == null || rc == null) return;
             if (rc.fieldsFromPackageApplied) return;
+
+            if (pkg.implementsInterfaceIdList != null)
+            {
+                for (int i = 0; i < pkg.implementsInterfaceIdList.Count; i++)
+                    rc.AddImplementsInterfaceId(pkg.implementsInterfaceIdList[i]);
+            }
 
             // class-level template metadata
             rc.templateCount = pkg.templateCount;

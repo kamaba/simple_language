@@ -28,6 +28,18 @@ namespace SimpleLanguage.IR
         public IRCallFunction(IRMethod _irMethod) : base(_irMethod)
         {
         }
+
+        /// <summary>Prefer member <see cref="MetaFunction.token"/>; fallback to call site from <see cref="MetaMethodCall.token"/>.</summary>
+        private void ApplyCallInstructionDebug(IRData datacall, MetaFunction mf, MetaMethodCall mfc)
+        {
+            var site = mf?.token ?? mfc?.metaMemberFunction?.token;
+            string name = m_IRRuntimeMethod?.onlyFunctionName ?? mf?.name ?? "";
+            string detail = string.IsNullOrEmpty(name)
+                ? datacall.opCode.ToString()
+                : $"{datacall.opCode} {name}";
+            datacall.SetDebugInfoByToken(site, detail);
+        }
+
         public void ParseSystemCall(MetaMethodCall mfc)
         {
             // Keep the same argument emission pipeline as regular calls.
@@ -69,10 +81,8 @@ namespace SimpleLanguage.IR
             // Legacy bridge pops this many stack slots (args only); payload carries full metadata.
             datacall2.index = paramCount;
             datacall2.SetOpValue(sysPkg);
-            if (mf != null)
-            {
-                datacall2.SetDebugInfoByToken(mf.token);
-            }
+            datacall2.SetDebugInfoByToken(mf?.token ?? mfc?.metaMemberFunction?.token,
+                string.IsNullOrEmpty(systemName) ? "CallSystemMethod" : $"CallSystemMethod {systemName}");
             AddIRData(datacall2);
         }
         public void Parse(MetaMethodCall mfc)
@@ -197,7 +207,7 @@ namespace SimpleLanguage.IR
                     // Keep arg count in index for loader/runtime fallback paths
                     // when RuntimeCall metadata is missing or downgraded.
                     datacall.index = paramCount;
-                    datacall.SetDebugInfoByToken(mf.token);
+                    ApplyCallInstructionDebug(datacall, mf, mfc);
                     AddIRData(datacall);
                 }
                 else
@@ -206,7 +216,7 @@ namespace SimpleLanguage.IR
                     datacall.opCode = EIROpCode.CallDynamic;
                     datacall.SetOpValue(irmethodcall);
                     datacall.index = paramCount + 1;
-                    datacall.SetDebugInfoByToken(mf.token);
+                    ApplyCallInstructionDebug(datacall, mf, mfc);
                     AddIRData(datacall);
                 }
             }
@@ -218,7 +228,7 @@ namespace SimpleLanguage.IR
                     datacall.opCode = EIROpCode.CallDynamic;
                     datacall.SetOpValue(irmethodcall);
                     datacall.index = paramCount + 1;
-                    datacall.SetDebugInfoByToken(mf.token);
+                    ApplyCallInstructionDebug(datacall, mf, mfc);
                     AddIRData(datacall);
                 }
                 else
@@ -227,7 +237,7 @@ namespace SimpleLanguage.IR
                     datacall.opCode = EIROpCode.CallVirt;
                     datacall.index = callMethodIndex;
                     datacall.SetOpValue(irmethodcall);
-                    datacall.SetDebugInfoByToken(mf.token);
+                    ApplyCallInstructionDebug(datacall, mf, mfc);
                     AddIRData(datacall);
                 }
 

@@ -51,7 +51,7 @@ namespace SimpleLanguage.Core.IR
                 IRData irdata = new IRData();
                 irdata.opCode = EIROpCode.Ldc;
                 irdata.SetOpValue(irmt);
-                //irdata.SetDebugInfoByToken( mcn.GetToken() );
+                irdata.SetDebugInfoByToken(cnode.token, "Ldc type literal");
 
                 IRBase irbase = new IRBase(irdata);
                 irList.Add(irbase);

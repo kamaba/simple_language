@@ -61,6 +61,7 @@ namespace SimpleLanguage.Export.SLIR.Types
         public int index { get; set; } 
         public string name { get; set; } = string.Empty; 
         public SLRuntimeDefTypePackage? typeDef { get; set; }
+        public SLInstructionDebugInfo? debugInfo { get; set; }
     }
     public sealed class SLMethodPackage 
     {
@@ -87,8 +88,10 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string name { get; set; } = string.Empty;
         public string fullName { get; set; } = string.Empty;
         public string sourcePath { get; set; } = string.Empty;
-        /// <summary>Matches <see cref="SimpleLanguage.IR.IRMetaClassKind"/> (0=Class, 1=Enum, 2=Data).</summary>
+        /// <summary>Matches <see cref="SimpleLanguage.IR.IRMetaClassKind"/> (0=Class, 1=Enum, 2=Data, 3=Interface).</summary>
         public int metaClassKind { get; set; }
+        /// <summary>IR class ids of interfaces this type implements (same id scheme as <see cref="id"/>), including from the base class chain in Meta.</summary>
+        public List<int> implementsInterfaceIdList { get; set; } = new();
         public List<SLFieldPackage> fieldList { get; set; } = new();
         public List<SLMethodMeta> nonStaticMethodList { get; set; } = new();
         public List<SLMethodMeta> operatorMethodList { get; set; } = new();

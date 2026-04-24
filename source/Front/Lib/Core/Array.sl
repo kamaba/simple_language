@@ -45,7 +45,7 @@ public class Array<T> interface IIterable<T>, IIterator<T>
             this._current = null
         }
         this._index++;
-        global.println(" Array.moveNext-----" + this._index )
+        #global.println(" Array.moveNext-----" + this._index )
         ret hasNext_var
     }
     override get T current()

@@ -184,6 +184,9 @@ namespace SimpleLanguage.IR
                             IRData irdata = new IRData();
                             irdata.opCode = EIROpCode.CastClass;
                             irdata.SetOpValue(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(maien.convertTargetMetaType, owirmc));
+                            var asTok = maien.fileMetaKeyAsIsSyntax?.asOrIsToken;
+                            var tstr = maien.convertTargetMetaType?.ToFormatString() ?? "";
+                            irdata.SetDebugInfoByToken(asTok, string.IsNullOrEmpty(tstr) ? "CastClass as" : $"CastClass as {tstr}");
 
                             m_IRDataList.Add(irdata);
                         }
@@ -192,6 +195,9 @@ namespace SimpleLanguage.IR
                             IRData irdata = new IRData();
                             irdata.opCode = EIROpCode.CastClass;
                             irdata.SetOpValue(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(maien.convertTargetMetaType, owirmc));
+                            var isTok = maien.fileMetaKeyAsIsSyntax?.asOrIsToken;
+                            var tstr2 = maien.convertTargetMetaType?.ToFormatString() ?? "";
+                            irdata.SetDebugInfoByToken(isTok, string.IsNullOrEmpty(tstr2) ? "CastClass is" : $"CastClass is {tstr2}");
                             m_IRDataList.Add(irdata);
 
                             var owirmc2 = IRManager.instance.GetIRMetaClassById(maien.convertTargetMetaVariable.GetOwnerClassTemplateClass().GetHashCode());
@@ -205,16 +211,19 @@ namespace SimpleLanguage.IR
                             IRData irdata4 = new IRData();
                             irdata4.opCode = IRUtil.GetConstIROpCode( EType.Null );
                             irdata4.SetOpValue("null");
+                            irdata4.SetDebugInfoByToken(maien.fileMetaKeyAsIsSyntax?.asOrIsToken, "is: null literal");
                             AddIRData(irdata4);
 
                             IRData irdata5 = new IRData();
                             irdata5.opCode = EIROpCode.Cne;
+                            irdata5.SetDebugInfoByToken(maien.fileMetaKeyAsIsSyntax?.asOrIsToken, "is: Cne (compare to null)");
                             AddIRData(irdata5);
                             if (isNot)
                             {
                                 // invert result: Cne gives boolean; to invert, use Not
                                 IRData notData = new IRData();
                                 notData.opCode = EIROpCode.Not;
+                                notData.SetDebugInfoByToken(maien.fileMetaKeyAsIsSyntax?.asOrIsToken, "isNot: Not");
                                 AddIRData(notData);
                             }
                         }

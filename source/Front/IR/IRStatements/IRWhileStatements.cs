@@ -16,6 +16,13 @@ namespace SimpleLanguage.IR
 {
     public class IRForStatements : IRStatements
     {
+        /// <summary>for-in  lowering uses <c>ms.token</c> (typically the <c>for</c> keyword) as the anchor; <paramref name="info"/> describes the synthetic op.</summary>
+        private static void SetForInLoopDebug(IRData d, MetaForStatements ms, string info)
+        {
+            if (d == null) return;
+            d.SetDebugInfoByToken(ms?.token, info);
+        }
+
         public IRForStatements(IRMethod method)
         {
             this.irMethod = method;
@@ -75,34 +82,40 @@ namespace SimpleLanguage.IR
                     }
                 }
 
-                // 1. 创建迭代器对象，并赋值给循环变量
+                // 1. 与 Core.IterateVariable 一致：先 IIterable.iterator()，再对 IIterator 调用 reset()。
+                // 不能在 IIterable 上查 reset（接口无此方法）；仅 IIterator 有 reset/moveNext/current。
 
                 IRLoadVariable loadContentVar = IRLoadVariable.CreateLoadVariable(content_irmt, itv_irmt.irMetaClass, irMethod, ms.forInContent );
                 m_IRStatements.Add(loadContentVar);
 
-                var resetMethodInst = content_irmt.irMetaClass.GetIRNonStaticMethodIndexByName("reset", out int restIndex);
-                var restCall = new IRMethodCall(content_irmt, new List<IRMetaType>(), resetMethodInst, 0);
-                IRData restCallData = new IRData();
-                restCallData.opCode = EIROpCode.CallDynamic;
-                restCallData.opValue = restCall;
-                restCallData.index = 1;
-                IRBase restCallBase = new IRBase(restCallData);
-                m_IRStatements.Add(restCallBase);
-
-                m_IRStatements.Add(loadContentVar);
                 var iteratorMethodInst = content_irmt.irMetaClass.GetIRNonStaticMethodIndexByName("iterator", out int iteratorIndex);
                 var iteratorCall = new IRMethodCall(content_irmt, new List<IRMetaType>(), iteratorMethodInst, 0);
                 IRData iteratorCallData = new IRData();
                 iteratorCallData.opCode = EIROpCode.CallDynamic;
                 iteratorCallData.opValue = iteratorCall;
                 iteratorCallData.index = 1;
+                SetForInLoopDebug(iteratorCallData, ms, "for-in: CallDynamic iterator()");
                 IRBase iteratorCallBase = new IRBase(iteratorCallData);
                 m_IRStatements.Add(iteratorCallBase);
 
                 IRStoreVariable storeIterator = IRStoreVariable.CreateIRStoreVariable(iterator_irmt, null, irMethod, ms.forInContentIterator );
                 m_IRStatements.Add(storeIterator);
 
+                IRLoadVariable loadIteratorForReset = IRLoadVariable.CreateLoadVariable(iterator_irmt, null, irMethod, ms.forInContentIterator );
+                m_IRStatements.Add(loadIteratorForReset);
+
+                var resetMethodInst = iterator_irmt.irMetaClass.GetIRNonStaticMethodIndexByName("reset", out int restIndex);
+                var restCall = new IRMethodCall(iterator_irmt, new List<IRMetaType>(), resetMethodInst, 0);
+                IRData restCallData = new IRData();
+                restCallData.opCode = EIROpCode.CallDynamic;
+                restCallData.opValue = restCall;
+                restCallData.index = 1;
+                SetForInLoopDebug(restCallData, ms, "for-in: CallDynamic reset() on IIterator");
+                IRBase restCallBase = new IRBase(restCallData);
+                m_IRStatements.Add(restCallBase);
+
                 // 2. 循环起点
+                SetForInLoopDebug(startIRData.data, ms, "for-in: Nop loop head");
                 m_IRStatements.Add(startIRData);
 
                 // 3. 加载迭代器对象，调用 moveNext()
@@ -115,11 +128,13 @@ namespace SimpleLanguage.IR
                 moveNextCallData.opCode = EIROpCode.CallDynamic;
                 moveNextCallData.opValue = moveNextCall;
                 moveNextCallData.index = 1;
+                SetForInLoopDebug(moveNextCallData, ms, "for-in: CallDynamic moveNext()");
                 IRBase moveNextCallBase = new IRBase(moveNextCallData);
                 m_IRStatements.Add(moveNextCallBase);
 
                 // 4. 判断 moveNext() 返回值，false 跳出循环
                 ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
+                ifIRData.SetDebugInfoByToken(ms?.token, "for-in: BrFalse exit when !moveNext()");
                 m_IRStatements.Add(ifIRData);
 
                 //// 5. 加载迭代器对象，调用 current()，并赋值给变量
@@ -132,6 +147,7 @@ namespace SimpleLanguage.IR
                 currentCallData.opCode = EIROpCode.CallDynamic;
                 currentCallData.opValue = currentCall;
                 currentCallData.index = 1;
+                SetForInLoopDebug(currentCallData, ms, "for-in: CallDynamic get current()");
                 IRBase currentCallBase = new IRBase(currentCallData);
                 m_IRStatements.Add(currentCallBase);
 
@@ -146,9 +162,11 @@ namespace SimpleLanguage.IR
 
                 // 8. 跳回循环起点
                 brIRData = new IRBranch(irMethod, EIROpCode.Br, startIRData.data);
+                brIRData.SetDebugInfoByToken(ms?.token, "for-in: Br to loop head");
                 m_IRStatements.Add(brIRData);
 
                 // 9. 循环结束标记
+                SetForInLoopDebug(endIRData.data, ms, "for-in: Nop end");
                 m_IRStatements.Add(endIRData);
                 }
                 finally

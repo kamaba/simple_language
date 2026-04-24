@@ -24,9 +24,9 @@ namespace SimpleLanguage.IR
         {
             data.opValue = opValue;
         }
-        public void SetDebugInfoByToken(Token token)
+        public void SetDebugInfoByToken(Token token, string info = null)
         {
-            data.SetDebugInfoByToken(token);
+            data.SetDebugInfoByToken(token, info);
         }
         public override string ToIRString()
         {

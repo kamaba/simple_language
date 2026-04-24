@@ -334,6 +334,8 @@ namespace SimpleLanguage.Core
                 {
                     this.m_InterfaceClass.Add(v.metaClass);
                 }
+
+                HandleInterfaceClassTemplateMapRelation();
             }
         }
         public virtual void HandleExtendMemberVariable()

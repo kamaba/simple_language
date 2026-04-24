@@ -2140,7 +2140,7 @@ namespace SimpleLanguage.VM.Runtime
                         var mt = TryGetInstructionRuntimeDefType(iri);
                         if (mt != null)
                         {
-                            var rt = GetRuntimeTypeByDefType(mt, mt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList );
+                            var rt = GetRuntimeTypeByDefType(mt, mt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true );
                             if( rt == null )
                             {
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, "CastClass failed to get runtime type for metadata type: " );
@@ -2196,23 +2196,10 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                if (v1.eType == EVMType.Class)
+                                if (v1.eType == EVMType.Class
+                                    || v1.eType == EVMType.Array )
                                 {
                                     if (!v1.sobject.runtimeType.IsExtendsRelation(rt))
-                                    {
-                                        m_ValueStack[m_ValueIndex - 1].SetNull();
-                                    }
-                                }
-                                else if (v1.eType == EVMType.Array)
-                                {
-                                    if (rt.eType == EVMType.Array || rt.eType == EVMType.Class)
-                                    {
-
-                                    }
-                                    else if (rt.eType == EVMType.Object)
-                                    {
-                                    }
-                                    else
                                     {
                                         m_ValueStack[m_ValueIndex - 1].SetNull();
                                     }
