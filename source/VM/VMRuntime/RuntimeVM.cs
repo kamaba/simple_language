@@ -283,7 +283,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
             }
         }
-        public void GetArgumentValue(int index, ref SValue svalue)
+        public void GetArgumentValue(uint index, ref SValue svalue)
         {
             if (index > m_ArgumentRuntimeObjectArray.Length)
             {
@@ -292,7 +292,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             GetObjectByValue(0, index, ref svalue);
         }
-        public void SetArgumentValue(int index, SValue svalue)
+        public void SetArgumentValue(uint index, SValue svalue)
         {
             if (index > m_ArgumentRuntimeObjectArray.Length)
             {
@@ -301,7 +301,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             SetObjectByValue(0, index, ref svalue);
         }
-        public void SetLocalVariableSValue(int index, SValue svalue)
+        public void SetLocalVariableSValue(uint index, ref SValue svalue)
         {
             if (index > m_LocalVariableRuntimeObjectArray.Length)
             {
@@ -310,16 +310,16 @@ namespace SimpleLanguage.VM.Runtime
             }
             SetObjectByValue(1, index, ref svalue);
         }
-        public void GetLocalVariableSValue(int index, ref SValue svalue)
+        public void GetLocalVariableSValue(uint index, ref SValue svalue)
         {
-            if (index > m_LocalVariableRuntimeObjectArray.Length)
+            if (index > m_LocalVariableRuntimeObjectArray.Length )
             {
                 Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "GetLocalVariableSValue", index );
                 return;
             }
             GetObjectByValue(1, index, ref svalue);
         }
-        public void SetReturnVariableSValue(int index, SValue svalue)
+        public void SetReturnVariableSValue( uint index, SValue svalue)
         {
             if (index > m_ReturnRuntimeObjectArray.Length)
             {
@@ -352,7 +352,7 @@ namespace SimpleLanguage.VM.Runtime
             return targetArray[index];
         }
 
-        private void GetObjectByValue(int type, int index, ref SValue svalue)
+        private void GetObjectByValue(int type, uint index, ref SValue svalue)
         {
             RuntimeObject[]? targetArray = type switch
             {
@@ -362,7 +362,7 @@ namespace SimpleLanguage.VM.Runtime
                 _ => null,
             };
 
-            if (targetArray == null || index < 0 || index >= targetArray.Length)
+            if (targetArray == null || index >= targetArray.Length)
             {
                 Log.AddRuntimeLog(LID.ShowMessageAssert, " runtime object is null for type " + type + " index " + index);
                 return;
@@ -408,7 +408,7 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     sval = topClrRuntime.GetCurrentIndexValue(topClrRuntime.m_ValueIndex - 1 - i);
                 }
-                SetArgumentValue(m_ArgumentRuntimeObjectArray.Length - i - 1, sval);
+                SetArgumentValue((uint)(m_ArgumentRuntimeObjectArray.Length - i - 1), sval);
             }
 
             m_ExecuteIndex = 0;
@@ -1091,52 +1091,49 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadArgument:
                     {
-                        var data = iri.index;
                         if (TryPushStackSlot(out int slot))
-                            GetArgumentValue(data, ref m_ValueStack[slot]);
+                            GetArgumentValue((uint)iri.index, ref m_ValueStack[slot]);
                     }
                     break;
                 case EIROpCode.LoadLocal:
                     {
-                        var data = iri.index;
                         if (TryPushStackSlot(out int slot))
-                            GetLocalVariableSValue(data, ref m_ValueStack[slot]);
+                            GetLocalVariableSValue((uint)iri.index, ref m_ValueStack[slot]);
                     }
                     break;
                 case EIROpCode.LoadGlobal:
                     {
-                        var data = iri.index;
                         if (TryPushStackSlot(out int slot))
-                            CLRVM.LoadGlobalVariable(data, ref m_ValueStack[slot]);
+                            CLRVM.LoadGlobalVariable((uint)iri.index, ref m_ValueStack[slot]);
                     }
                     break;
                 case EIROpCode.StoreLocal:
                     {
-                        var idx = iri.index;
                         if (m_ValueIndex > 0)
                         {
-                            var val = m_ValueStack[--m_ValueIndex];
-                            SetLocalVariableSValue(idx, val);
+                            SetLocalVariableSValue( (uint)iri.index, ref m_ValueStack[--m_ValueIndex]);
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, $"StoreLocal stack underflow at index {idx}");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, $"StoreLocal stack underflow at index {iri.index}");
                         }
                     }
                     break;
                 case EIROpCode.StoreReturn:
                     {
-                        SetReturnVariableSValue(iri.index, m_ValueStack[--m_ValueIndex]);
+                        SetReturnVariableSValue( (uint)iri.index, m_ValueStack[--m_ValueIndex]);
                         m_ExecuteIndex = m_ExecuteCount;
                     }
                     break;
                 case EIROpCode.StoreGlobal:
                     {
-                        var id = iri.index;
                         if (m_ValueIndex > 0)
                         {
-                            var val = m_ValueStack[--m_ValueIndex];
-                            CLRVM.StoreGlobalVariable(id, ref val);
+                            CLRVM.StoreGlobalVariable( (uint)iri.index, ref m_ValueStack[--m_ValueIndex]);
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndex", "" );
                         }
                     }
                     break;
@@ -1144,9 +1141,9 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadArrayIndex:
                     {
                         var v = m_ValueStack[m_ValueIndex - 1];
-                        if (v.eType == EVMType.Array)
+                        if (v.eType == EVMType.Array && v.sobject is ArrayObject ao)
                         {
-                            (v.sobject as ArrayObject).LoadValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
+                            ao.LoadValue(iri.index, ref v );
                         }
                         else
                         {
@@ -1178,9 +1175,9 @@ namespace SimpleLanguage.VM.Runtime
                         SValue sStore = m_ValueStack[m_ValueIndex - int1];
                         SValue sValue = m_ValueStack[m_ValueIndex - int2];
 
-                        if (sStore.eType == EVMType.Array)
+                        if (sStore.eType == EVMType.Array && sStore.sobject is ArrayObject ao )
                         {
-                            (sStore.sobject as ArrayObject).StoreValue(iri.index, sValue);
+                            ao.StoreValue(iri.index, sValue);
                         }
                         else
                         {
@@ -1264,7 +1261,14 @@ namespace SimpleLanguage.VM.Runtime
                                         m_ValueStack[slot].SetNull();
                                 }
                             }
-
+                            else
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
+                            }
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", "" );
                         }
                     }
                     break;
@@ -1279,8 +1283,16 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 if (inst.sobject is ClassObject co)
                                 {
-                                    co.SetMemberVariableSValue(iri.index, val);
+                                    co.SetMemberVariableSValue( iri.index, val);
                                 }
+                                else
+                                {
+                                    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
+                                }
+                            }
+                            else
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
                             }
                         }
                     }
@@ -2007,7 +2019,7 @@ namespace SimpleLanguage.VM.Runtime
                             if (rt != null)
                             {
                                 if (TryPushStackSlot(out int slot))
-                                    rt.GetStaticMemberVariableSValue(iri.index, ref m_ValueStack[slot]);
+                                    rt.GetStaticMemberVariableSValue((uint)iri.index, ref m_ValueStack[slot]);
                             }
                         }
                     }
@@ -2026,107 +2038,44 @@ namespace SimpleLanguage.VM.Runtime
                                     Log.AddRuntimeLog(LID.ShowMessageAssert, "StoreStaticField failed to get runtime type for metadata type: ");
                                     break;
                                 }
-                                rt?.SetStaticMemberVariableSValue(iri.index, val);
+                                rt?.SetStaticMemberVariableSValue((uint)iri.index, val);
                             }
                         }
                     }
                     break;
                 case EIROpCode.Beq:
                     {
-                        if (m_ValueIndex >= 2)
-                        {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
-                            bool methodCall = false;
-                            SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
-                            bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
-                            if (isTrue)
-                            {
-                                m_ExecuteIndex = (ushort)(iri.index - 1);
-                            }
-                        }
+                        ExecuteEqualityBranch(iri, true, false);
                     }
                     break;
                 case EIROpCode.Beq_Un:
                     {
                         // TODO: implement unsigned compare; for now follow Beq semantics.
-                        if (m_ValueIndex >= 2)
-                        {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
-                            bool methodCall = false;
-                            SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
-                            bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
-                            if (isTrue)
-                            {
-                                m_ExecuteIndex = (ushort)(iri.index - 1);
-                            }
-                        }
+                        ExecuteEqualityBranch(iri, true, false);
                     }
                     break;
                 case EIROpCode.Bne:
                 case EIROpCode.Bne_Un:
                     {
-                        if (m_ValueIndex >= 2)
-                        {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
-                            bool methodCall = false;
-                            SValue.CompareEuqalSValue1AndValue2(ref left, ref right, false, out methodCall);
-                            bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
-                            if (isTrue)
-                            {
-                                m_ExecuteIndex = (ushort)(iri.index - 1);
-                            }
-                        }
+                        ExecuteEqualityBranch(iri, false, false);
                     }
                     break;
                 case EIROpCode.Bge:
                 case EIROpCode.Bge_un:
                     {
-                        if (m_ValueIndex >= 2)
-                        {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
-                            SValue.CompareSValue1AndValue2(ref left, ref right, 1);
-                            bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
-                            if (isTrue)
-                            {
-                                m_ExecuteIndex = (ushort)(iri.index - 1);
-                            }
-                        }
+                        ExecuteRelationalBranch(iri, 1, true);
                     }
                     break;
                 case EIROpCode.Bgt:
                 case EIROpCode.Bgt_Un:
                     {
-                        if (m_ValueIndex >= 2)
-                        {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
-                            SValue.CompareSValue1AndValue2(ref left, ref right, 0);
-                            bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
-                            if (isTrue)
-                            {
-                                m_ExecuteIndex = (ushort)(iri.index - 1);
-                            }
-                        }
+                        ExecuteRelationalBranch(iri, 0, true);
                     }
                     break;
                 case EIROpCode.Ble:
                 case EIROpCode.Ble_Un:
                     {
-                        if (m_ValueIndex >= 2)
-                        {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
-                            SValue.CompareSValue1AndValue2(ref left, ref right, 3);
-                            bool isTrue = left.eType == EVMType.Boolean ? left.int8Value == 1 : left.GetValueObject() != null;
-                            if (isTrue)
-                            {
-                                m_ExecuteIndex = (ushort)(iri.index - 1);
-                            }
-                        }
+                        ExecuteRelationalBranch(iri, 3, true);
                     }
                     break;
 
@@ -2138,82 +2087,69 @@ namespace SimpleLanguage.VM.Runtime
                             break;
                         }
                         var mt = TryGetInstructionRuntimeDefType(iri);
-                        if (mt != null)
+                        if (mt == null)
                         {
-                            var rt = GetRuntimeTypeByDefType(mt, mt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true );
-                            if( rt == null )
-                            {
-                                Log.AddRuntimeLog(LID.ShowMessageAssert, "CastClass failed to get runtime type for metadata type: " );
-                                break;
-                            }
-                            if (rt.eType == EVMType.Object)
-                            {
-                                break;
-                            }
-                            var v1 = m_ValueStack[m_ValueIndex - 1];
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "StoreStaticField failed to get runtime type for metadata type: ");
+                            break;
+                        }
+                        var rt = GetRuntimeTypeByDefType(mt, mt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true );
+                        if( rt == null )
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "CastClass failed to get runtime type for metadata type: " );
+                            break;
+                        }
+                        if (rt.eType == EVMType.Object)
+                        {
+                            break;
+                        }
+                        ref var v1 = ref m_ValueStack[m_ValueIndex - 1];
+                        if (v1.isNull)
+                        {
+                            break;
+                        }
 
-                            // For primitive/builtin types, "as" should behave as numeric/string conversion,
-                            // not strict runtime-class identity check.
-                            bool targetIsPrimitiveLike =
-                                rt.eType == EVMType.Boolean
-                                || rt.eType == EVMType.UInt8
-                                || rt.eType == EVMType.Int8
-                                || rt.eType == EVMType.Int16
-                                || rt.eType == EVMType.UInt16
-                                || rt.eType == EVMType.Int32
-                                || rt.eType == EVMType.UInt32
-                                || rt.eType == EVMType.Int64
-                                || rt.eType == EVMType.UInt64
-                                || rt.eType == EVMType.Float32
-                                || rt.eType == EVMType.Float64
-                                || rt.eType == EVMType.Num
-                                || rt.eType == EVMType.String;
-                            if (targetIsPrimitiveLike)
+                        // For primitive/builtin types, "as" should behave as numeric/string conversion,
+                        // not strict runtime-class identity check.
+                        bool targetIsPrimitiveLike =
+                            rt.eType == EVMType.Boolean
+                            || rt.eType == EVMType.UInt8
+                            || rt.eType == EVMType.Int8
+                            || rt.eType == EVMType.Int16
+                            || rt.eType == EVMType.UInt16
+                            || rt.eType == EVMType.Int32
+                            || rt.eType == EVMType.UInt32
+                            || rt.eType == EVMType.Int64
+                            || rt.eType == EVMType.UInt64
+                            || rt.eType == EVMType.Float32
+                            || rt.eType == EVMType.Float64
+                            || rt.eType == EVMType.Num
+                            || rt.eType == EVMType.String;
+                        if (targetIsPrimitiveLike)
+                        {
+                            try
                             {
-                                if (v1.isNull)
-                                {
-                                    m_ValueStack[m_ValueIndex - 1].SetNull();
-                                }
-                                else
-                                {
-                                    var cv = v1;
-                                    try
-                                    {
-                                        cv.ConvertByEType(rt.eType);
-                                        m_ValueStack[m_ValueIndex - 1] = cv;
-                                    }
-                                    catch
-                                    {
-                                        m_ValueStack[m_ValueIndex - 1].SetNull();
-                                    }
-                                }
-                                break;
+                                v1.ConvertByEType(rt.eType);
                             }
-
-                            if (v1.isNull)
+                            catch
                             {
-                                m_ValueStack[m_ValueIndex - 1].SetNull();
+                                v1.SetNull();
+                            }                            
+                            break;
+                        }
+                        else
+                        {
+                            if( v1.sobject == null )
+                            {
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "CastClass failed to get runtime type for metadata type: ");
                             }
                             else
                             {
-                                if (v1.eType == EVMType.Class
-                                    || v1.eType == EVMType.Array )
+                                if (!v1.sobject.runtimeType.IsExtendsRelation(rt))
                                 {
-                                    if (!v1.sobject.runtimeType.IsExtendsRelation(rt))
-                                    {
-                                        m_ValueStack[m_ValueIndex - 1].SetNull();
-                                    }
-                                }
-                                else
-                                {
-                                    if (v1.eType != rt.eType)
-                                    {
-                                        m_ValueStack[m_ValueIndex - 1].SetNull();
-                                    }
+                                    m_ValueStack[m_ValueIndex - 1].SetNull();
                                 }
                             }
-                        }
-
+                        }   
                     }
                     break;
                 default:
@@ -2222,7 +2158,65 @@ namespace SimpleLanguage.VM.Runtime
                     break;
             }
         }
-        public void SetObjectByValue(int type, int index, ref SValue svalue)
+
+        private void ExecuteEqualityBranch(Instruction iri, bool equalCompare, bool logStackNotEnough)
+        {
+            if (!TryPopBranchOperands(out var left, out var right, iri, logStackNotEnough))
+            {
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "Function" + this.id + "IRData" + iri.id + "  " + iri.opCode);
+                return;
+            }
+
+            bool methodCall = false;
+            SValue.CompareEuqalSValue1AndValue2(ref left, ref right, equalCompare, out methodCall);
+
+            bool isTrue = left.eType == EVMType.Boolean
+                ? left.int8Value == 1
+                : left.GetValueObject() != null;
+            if (isTrue)
+            {
+                m_ExecuteIndex = (ushort)(iri.index - 1);
+            }
+        }
+
+        private void ExecuteRelationalBranch(Instruction iri, int compareSign, bool logStackNotEnough)
+        {
+            if (!TryPopBranchOperands(out var left, out var right, iri, logStackNotEnough))
+            {
+                return;
+            }
+
+            SValue.CompareSValue1AndValue2(ref left, ref right, compareSign);
+            
+
+
+            bool isTrue = left.eType == EVMType.Boolean
+                ? left.int8Value == 1
+                : left.GetValueObject() != null;
+            if (isTrue)
+            {
+                m_ExecuteIndex = (ushort)(iri.index - 1);
+            }
+        }
+
+        private bool TryPopBranchOperands(out SValue left, out SValue right, Instruction iri, bool logStackNotEnough)
+        {
+            left = default;
+            right = default;
+            if (m_ValueIndex < 2)
+            {
+                if (logStackNotEnough)
+                {
+                    Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri?.opCode.ToString() ?? "Branch", 2, m_ValueIndex);
+                }
+                return false;
+            }
+
+            right = m_ValueStack[--m_ValueIndex];
+            left = m_ValueStack[--m_ValueIndex];
+            return true;
+        }
+        public void SetObjectByValue(int type, uint index, ref SValue svalue)
         {
 
             RuntimeObject[]? targetArray = type switch
@@ -2233,7 +2227,7 @@ namespace SimpleLanguage.VM.Runtime
                 _ => null,
             };
 
-            if (targetArray == null || index < 0 || index >= targetArray.Length)
+            if (targetArray == null || index >= targetArray.Length)
             {
                 Log.AddRuntimeLog(LID.ShowMessageAssert, " runtime object is null for type " + type + " index " + index);
                 return;

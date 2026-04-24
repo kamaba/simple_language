@@ -12,7 +12,7 @@ namespace SimpleLanguage.VM.Runtime
         // Fast lookup list for global ids. It only stores slot mapping metadata,
         // actual values are always stored on RuntimeType static fields.
         private static List<Instruction> m_GlobalInitInstructionList = new List<Instruction>();
-        private static Dictionary<int, RuntimeVariable> m_GlobalVariableDict = new Dictionary<int, RuntimeVariable>();
+        private static Dictionary<uint, RuntimeVariable> m_GlobalVariableDict = new Dictionary<uint, RuntimeVariable>();
         private static bool m_IsGlobalInitApplied = false;
         private static bool m_IsGlobalInitApplying = false;
         public static Stack<RuntimeVM> clrRuntimeStack => m_ClrRuntimeStack;
@@ -142,7 +142,7 @@ namespace SimpleLanguage.VM.Runtime
             m_IsGlobalInitApplied = false;
             m_IsGlobalInitApplying = false;
         }
-        public static void RegisterGlobalVariable(int id, RuntimeVariable rv )
+        public static void RegisterGlobalVariable(uint id, RuntimeVariable rv )
         {
             if (m_GlobalVariableDict.ContainsKey(id))
             {
@@ -156,7 +156,7 @@ namespace SimpleLanguage.VM.Runtime
             m_GlobalInitInstructionList = instructionList ?? new List<Instruction>();
             m_IsGlobalInitApplied = false;
         }
-        public static void StoreGlobalVariable( int id, ref SValue savl )
+        public static void StoreGlobalVariable( uint id, ref SValue savl )
         {
             if (m_GlobalVariableDict.ContainsKey(id))
             {
@@ -210,7 +210,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
             }
         }
-        public static void LoadGlobalVariable( int id, ref SValue sval )
+        public static void LoadGlobalVariable( uint id, ref SValue sval )
         {
             if (m_GlobalVariableDict.ContainsKey(id))
             {
@@ -218,7 +218,7 @@ namespace SimpleLanguage.VM.Runtime
                 var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(slot.runtimeDefType);
                 if (rt != null)
                 {
-                    rt.GetStaticMemberVariableSValue( id, ref sval);
+                    rt.GetStaticMemberVariableSValue( (uint)id, ref sval);
                 }
                 else
                 {

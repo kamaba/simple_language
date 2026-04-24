@@ -255,16 +255,6 @@ namespace SimpleLanguage.VM
         {
             methodCall = false;
 
-            // == / !=：一侧为 null 类、另一侧为纯数字时与算术一致，先打 VMOperator 模板日志再抛（不依赖 Run 的 catch）
-            if ((IsNullLikeForOperatorVmLog(ref sval1) && IsStrictNumericForOperatorVmLog(ref sval2))
-                || (IsNullLikeForOperatorVmLog(ref sval2) && IsStrictNumericForOperatorVmLog(ref sval1)))
-            {
-                var op = isEqual ? "==" : "!=";
-                var nullSide = IsNullLikeForOperatorVmLog(ref sval1) && IsStrictNumericForOperatorVmLog(ref sval2) ? "左操作数" : "右操作数";
-                Log.AddRuntimeLog(LID.VMOperatorNotShouldHaveNull, string.Empty, op, nullSide);
-                throw new SvmNullNumericArithmeticException(op, nullSide);
-            }
-
             if (sval1.isNull)
             {
                 if (isEqual)

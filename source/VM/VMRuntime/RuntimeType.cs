@@ -119,7 +119,7 @@ namespace SimpleLanguage.VM
                 return rt;
             }
         }
-        public void GetStaticMemberVariableSValue(int index, ref SValue svalue)
+        public void GetStaticMemberVariableSValue(uint index, ref SValue svalue)
         {
             if (m_StaticMemberRuntimeObjectArray == null)
             {
@@ -127,7 +127,7 @@ namespace SimpleLanguage.VM
                 Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object list is not initialized for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
                 return;
             }
-            if (index < 0 || index >= m_StaticMemberRuntimeObjectArray.Length)
+            if ( index >= m_StaticMemberRuntimeObjectArray.Length)
             {
                 svalue.SetNull();
                 return;
@@ -141,10 +141,10 @@ namespace SimpleLanguage.VM
             // 与 ClassObject.GetMemberVariableSValue 一致：优先 m_MemberData 紧凑布局
             ro.SetSValueByRuntimeObjct(ref svalue);
         }
-        public void SetStaticMemberVariableSValue(int index, SValue svalue)
+        public void SetStaticMemberVariableSValue(uint index, SValue svalue)
         {
             if (m_StaticMemberRuntimeObjectArray == null) return;
-            if (index < 0 || index >= m_StaticMemberRuntimeObjectArray.Length) return;
+            if ( index >= m_StaticMemberRuntimeObjectArray.Length) return;
             var target = m_StaticMemberRuntimeObjectArray[index];
             //if (target == null)
             //{

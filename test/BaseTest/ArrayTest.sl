@@ -26,6 +26,8 @@ ArrayTest
     # 统一：可迭代序列上的 for-in + println（合并多处相同模式）
     static forIIterator( obj )
     {
+        global.println("==========forIIterator ==========")
+
         arr = obj as IIterable<object>
         for v in arr
         {
@@ -38,6 +40,8 @@ ArrayTest
 
     static forObject( arr )
     {
+        global.println("==========forObject ==========")
+
         var iter = arr as ObjectArray
         if iter != null
         {
