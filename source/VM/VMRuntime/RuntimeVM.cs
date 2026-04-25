@@ -1298,21 +1298,15 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             var val = m_ValueStack[--m_ValueIndex];
                             var inst = m_ValueStack[--m_ValueIndex];
-                            if (inst.eType == EVMType.Class || inst.eType == EVMType.Array  || inst.eType == EVMType.Object)
+                            if ((inst.eType == EVMType.Class || inst.eType == EVMType.Array || inst.eType == EVMType.Object)
+                                && (inst.sobject is ClassObject co ) )
                             {
-                                if (inst.sobject is ClassObject co)
-                                {
-                                    co.SetMemberVariableSValue( iri.index, val);
-                                }
-                                else
-                                {
-                                    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
-                                }
+                                co.SetMemberVariableSValue( iri.index, val);
                             }
-                            else
-                            {
-                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
-                            }
+                            //else
+                            //{
+                            //    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
+                            //}
                         }
                     }
                     break;
@@ -1325,13 +1319,15 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             SValue val = m_ValueStack[m_ValueIndex - 1];
                             SValue inst = m_ValueStack[m_ValueIndex - 2];
-                            if (inst.eType == EVMType.Class || inst.eType == EVMType.Array || inst.eType == EVMType.Object)
+                            if ((inst.eType == EVMType.Class || inst.eType == EVMType.Array || inst.eType == EVMType.Object)
+                                && inst.sobject is ClassObject co)
                             {
-                                if (inst.sobject is ClassObject co)
-                                {
-                                    co.SetMemberVariableSValue(iri.index, val);
-                                }
+                                co.SetMemberVariableSValue(iri.index, val);
                             }
+                            //else
+                            //{
+                            //    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
+                            //}
                             m_ValueIndex -= 1;
                         }
                     }
@@ -1367,11 +1363,8 @@ namespace SimpleLanguage.VM.Runtime
                                 }
                             }
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
-                            if (sobj is ClassObject co)
-                            {
-                                ObjectManager.AddClassObject(co);
-                            }
-                            m_ValueStack[m_ValueIndex++].SetSObject(sobj);
+                            ObjectManager.RegisterObject(sobj);
+                            m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
 
                             var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                             if (irList.Count > 0)
@@ -1391,11 +1384,8 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             var rt = GetRuntimeTypeByDefType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
-                            if (sobj is ClassObject co)
-                            {
-                                ObjectManager.AddClassObject(co);
-                            }
-                            m_ValueStack[m_ValueIndex++].SetSObject(sobj);
+                            ObjectManager.RegisterObject(sobj);
+                            m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
                             var irc = rt.runtimeClass;
 
 
@@ -1452,7 +1442,7 @@ namespace SimpleLanguage.VM.Runtime
                             // Full CreateObject() may require runtime member types that are not guaranteed ready.
                             arr.CreateObject();
                             ObjectManager.AddClassObject(arr);
-                            m_ValueStack[m_ValueIndex - 1].SetSObject(arr);
+                            m_ValueStack[m_ValueIndex - 1].SetArrayObject(arr);
 
                             //var sv = default(SValue);
                             //sv.SetSObject(arr);
@@ -1887,7 +1877,7 @@ namespace SimpleLanguage.VM.Runtime
                         if (runtimeCall.method.id == "type")
                         {
                             var sobj = RuntimeTypeManager.CreateTypeObject(rt);
-                            m_ValueStack[m_ValueIndex++].SetSObject(sobj);
+                            m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
                         }
                         else
                         {
@@ -1951,7 +1941,7 @@ namespace SimpleLanguage.VM.Runtime
                             if (mfc.method.id == "type")
                             {
                                 var sobj = RuntimeTypeManager.CreateTypeObject(rt);
-                                m_ValueStack[m_ValueIndex++].SetSObject(sobj);
+                                m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
                             }
                             else
                             {
@@ -2066,7 +2056,7 @@ namespace SimpleLanguage.VM.Runtime
                             var sobj = new TypeObject(rt);
                             sobj.CreateObject();
                             if (TryPushStackSlot(out int slot))
-                                m_ValueStack[slot].SetSObject(sobj);
+                                m_ValueStack[slot].SetValueBySObject(sobj);
                         }
                     }
                     break;

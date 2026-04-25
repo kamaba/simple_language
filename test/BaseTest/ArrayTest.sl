@@ -124,13 +124,14 @@ ArrayTest
         ObjectArray boxed = object[2]
         #boxed[0] = 5
         #boxed[1] = 20 + 3.2f
-        boxed[0] = [1,2,3]
+        boxed[0] = [111,2222,3333]
         boxed.$1 = Level<Int32>(10)
         forIIterator(boxed)
         forObject(boxed) #这句不报错
         arr2  = [1000,2000,3000,1005]
         forIIterator(arr2)
         forObject(arr2) #这句应该是报错，不支持协变
+        #ObjectArray oaa = arr2 #这句也报错
     }
 
     # IIterator<Num> <- 具体数值数组：Meta 层仅允许「遍历语义」的 Number 抽象协变（见 array.md）

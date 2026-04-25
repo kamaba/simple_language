@@ -83,13 +83,13 @@ namespace SimpleLanguage.VM
             {
                 leftWasClass = true;
                 leftPrim = default;
-                leftPrim.SetSObject(left.sobject);
+                leftPrim.SetValueBySObject(left.sobject);
             }
             if (right.eType == EVMType.Class && right.sobject != null)
             {
                 rightWasClass = true;
                 rightPrim = default;
-                rightPrim.SetSObject(right.sobject);
+                rightPrim.SetValueBySObject(right.sobject);
             }
 
             if (sign == 0)

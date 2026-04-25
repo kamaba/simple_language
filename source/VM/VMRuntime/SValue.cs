@@ -170,7 +170,7 @@ namespace SimpleLanguage.VM
             stringValue = null;
             sobject = null;
         }
-        public void SetBoolValue( bool val )
+        public void SetBoolValue(bool val)
         {
             isNull = false;
             eType = EVMType.Boolean;
@@ -336,16 +336,35 @@ namespace SimpleLanguage.VM
                 ObjectManager.RegisterObject(strRef);
                 sobject = strRef;
             }
-
-
-            Log.AddRuntimeLog(LID.ShowMessageInfo, "SValue.SetStringValue" + val );
+            Log.AddRuntimeLog(LID.ShowMessageInfo, "SValue.SetStringValue" + val);
+        }
+        public void SetStringValueByStrinbObject( StringObject so )
+        {
+            eType = EVMType.String;
+            stringValue = so.value;
+            isNull = false;
+            sobject = so;
+        }
+        public void SetArrayObject( ArrayObject ao )
+        {
+            eType = EVMType.Array;
+            sobject = ao;
+            isNull = false;
+            Log.AddRuntimeLog(LID.ShowMessageInfo, "SValue.SetArrayValue" + ao );
+        }
+        public void SetTypeObject( TypeObject to )
+        {
+            eType = EVMType.Type;
+            sobject = to;
+            isNull = false;
+            Log.AddRuntimeLog(LID.ShowMessageInfo, "SValue.SetTypeValue" + to);
         }
         public void SetValue(SObject val)
         {
             eType = val.eType;
-            SetTypeValue(eType, val.value );
+            SetTypeValue(eType, val.value);
         }
-        public void SetTypeValue( EVMType etype, object tobj )
+        public void SetTypeValue(EVMType etype, object tobj)
         {
             switch (eType)
             {
@@ -356,7 +375,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Boolean:
                     {
-                        uint8Value = (byte)tobj ==1  ? (byte)1 : (byte)0;
+                        uint8Value = (byte)tobj == 1 ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.Int8:
@@ -463,9 +482,20 @@ namespace SimpleLanguage.VM
                     break;
             }
         }
-        public void SetSObject(SObject val)
+        public void SetRawSObject( SObject val )
         {
-            if( val == null )
+            if (val == null)
+            {
+                isNull = true;
+                return;
+            }
+            isNull = false;
+            eType = val.eType;
+            sobject = val;
+        }
+        public void SetValueBySObject(SObject val)
+        {
+            if (val == null)
             {
                 isNull = true;
                 return;
@@ -570,13 +600,13 @@ namespace SimpleLanguage.VM
                     break;
                 case TemplateObject templateobj:
                     {
-                        if (templateobj == null )
+                        if (templateobj == null)
                         {
                             this.SetNull();
                             return;
                         }
                         eType = templateobj.eType;
-                        SetTypeValue(eType, templateobj.value );
+                        SetTypeValue(eType, templateobj.value);
                     }
                     break;
                 default:
@@ -586,20 +616,24 @@ namespace SimpleLanguage.VM
                             eType = EVMType.Object;
                             sobject = val;
                         }
-                        else if (val.eType == EVMType.Array
-                            || val.eType == EVMType.Class )
+                        else if (val.eType == EVMType.Class)
                         {
                             eType = EVMType.Class;
                             sobject = val;
                         }
-                        else if( val.eType == EVMType.Type )
+                        else if (val.eType == EVMType.Array)
+                        {
+                            eType = EVMType.Array;
+                            sobject = val;
+                        }
+                        else if (val.eType == EVMType.Type)
                         {
                             eType = EVMType.Type;
                             sobject = val;
                         }
                         else
                         {
-                            SetSObject(val.value as SObject);
+                            SetRawSObject(val.value as SObject);
                         }
                     }
                     break;
@@ -633,6 +667,46 @@ namespace SimpleLanguage.VM
                 case EVMType.Type:
                 case EVMType.Member:
                     return sobject;
+                case EVMType.UInt8:
+                    {
+                        return new UInt8Object(uint8Value);
+                    }
+                case EVMType.Boolean:
+                    {
+                        return new BoolObject(uint8Value == 1);
+                    }
+                case EVMType.Int8:
+                    {
+                        return new Int8Object(int8Value);
+                    }
+                //case EVMType.Char:
+                //    {
+                //        return new CharObject(charValue);
+                //    }
+                case EVMType.Int16:
+                    {
+                        return new Int16Object(int16Value);
+                    }
+                case EVMType.UInt16:
+                    {
+                        return new UInt16Object(uint16Value);
+                    }
+                case EVMType.Int32:
+                    {
+                        return new Int32Object(int32Value);
+                    }
+                case EVMType.UInt32:
+                    {
+                        return new UInt32Object(uint32Value);
+                    }
+                case EVMType.Int64:
+                    {
+                        return new Int64Object(int64Value);
+                    }
+                case EVMType.UInt64:
+                    {
+                        return new UInt64Object(uint64Value);
+                    }
                 default:
                     return null;
             }
@@ -667,10 +741,10 @@ namespace SimpleLanguage.VM
             return t is >= EVMType.Boolean and <= EVMType.Num;
         }
 
-        public void ConvertByEType(EVMType neType )
+        public void ConvertByEType(EVMType neType)
         {
             object cur = GetValueObject();
-            
+
             switch (neType)
             {
                 case EVMType.Boolean:
@@ -800,7 +874,7 @@ namespace SimpleLanguage.VM
                         return int64Value;
                     }
                 case EVMType.UInt64:
-                //case EVMType.RawUInt64:
+                    //case EVMType.RawUInt64:
                     {
                         return uint64Value;
                     }
@@ -820,63 +894,8 @@ namespace SimpleLanguage.VM
                     {
                         return stringValue;
                     }
-                default:return sobject;
+                default: return sobject;
             }
         }
-        //public SObject CreateSObject()
-        //{
-        //    switch( eType )
-        //    {
-        //        case EVMType.UInt8:
-        //            {
-        //                return new UInt8Object(uint8Value);
-        //            }
-        //        case EVMType.Boolean:
-        //            {
-        //                return new BoolObject(uint8Value == 1);
-        //            }
-        //        case EVMType.Int8:
-        //            {
-        //                return new Int8Object(int8Value);
-        //            }
-        //        //case EVMType.Char:
-        //        //    {
-        //        //        return new CharObject(charValue);
-        //        //    }
-        //        case EVMType.Int16:
-        //            {
-        //                return new Int16Object(int16Value);
-        //            }
-        //        case EVMType.UInt16:
-        //            {
-        //                return new UInt16Object(uint16Value);
-        //            }
-        //        case EVMType.Int32:
-        //            {
-        //                return new Int32Object(int32Value);
-        //            }
-        //        case EVMType.UInt32:
-        //            {
-        //                return new UInt32Object(uint32Value);
-        //            }
-        //        case EVMType.Int64:
-        //            {
-        //                return new Int64Object(int64Value);
-        //            }
-        //        case EVMType.UInt64:
-        //            {
-        //                return new UInt64Object(uint64Value);
-        //            }
-        //        case EVMType.String:
-        //            {
-        //                return new StringObject(stringValue);
-        //            }
-        //        default:
-        //            {
-        //                return sobject;
-        //            }
-        //    }
-        //    //return sobject;
-        //}       
     }
 }

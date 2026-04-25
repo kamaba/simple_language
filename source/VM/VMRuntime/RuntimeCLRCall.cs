@@ -537,7 +537,7 @@ namespace SimpleLanguage.VM
                     break;
                 default:
                     {
-                        sva.SetSObject(obj as SObject);
+                        sva.SetValueBySObject(obj as SObject);
                     }
                     break;
             }

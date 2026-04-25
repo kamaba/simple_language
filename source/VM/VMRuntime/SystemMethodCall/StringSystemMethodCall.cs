@@ -252,7 +252,7 @@ namespace SimpleLanguage.VM.Runtime
             }
 
             var outv = default(SValue);
-            outv.SetSObject(arr);
+            outv.SetValueBySObject(arr);
             vm.PushSValueSynced(outv);
         }
 

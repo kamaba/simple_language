@@ -3,11 +3,12 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime:  2022/11/22 12:00:00
-//  Description: 元素数据由 <see cref="ArrayObjectElementStore"/>（byte[] 紧凑块）管理；
+//  Description: 数组元素使用 byte[] 紧凑存储；
 //                 DEBUG 下额外保留 <see cref="m_DebugArray"/> 便于对照，与存储同步写入；读取走 byte 路径。
 //****************************************************************************
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
+using System.Buffers.Binary;
 namespace SimpleLanguage.VM
 {
     public class ArrayObject : ClassObject
@@ -19,7 +20,8 @@ namespace SimpleLanguage.VM
         public Array? array => m_DebugArray;
         private Array? m_DebugArray;
 #endif
-        private ArrayObjectElementStore? m_Store;
+        private byte[]? m_Data;
+        private int m_UnitLength;
         private RuntimeType eArrayType = null;
         private int m_Length = 0;
         public ArrayObject(RuntimeType rt, int length )
@@ -63,10 +65,28 @@ namespace SimpleLanguage.VM
             {
                 return;
             }
-            m_Store = new ArrayObjectElementStore(eArrayType, m_Length);
+            if (IsRefKind(eArrayType.eType, out var _))
+            {
+                m_UnitLength = 4;
+                m_Data = new byte[checked(m_Length * 4)];
+                if (eArrayType.eType == EVMType.Object)
+                {
+                    for (int i = 0; i < m_Length; i++)
+                    {
+                        var s = new SObject(EVMType.Object);
+                        ObjectManager.RegisterObject(s);
+                        WriteInt32At(i, s.id);
+                    }
+                }
+            }
+            else
+            {
+                m_UnitLength = EVMTypeUtils.GetScalarUnitLength(eArrayType.eType);
+                m_Data = m_Length == 0 ? System.Array.Empty<byte>() : new byte[checked(m_Length * m_UnitLength)];
+            }
 #if DEBUG
             m_DebugArray = AllocateDebugArray();
-            if (m_DebugArray != null && m_Store != null)
+            if (m_DebugArray != null && m_Data != null)
             {
                 for (int i = 0; i < m_Length; i++)
                     DebugSyncIndex(i);
@@ -103,8 +123,8 @@ namespace SimpleLanguage.VM
 
         private void DebugSyncIndex(int index)
         {
-            if (m_DebugArray == null || m_Store == null) return;
-            m_DebugArray.SetValue(m_Store.GetBoxedValue(index), index);
+            if (m_DebugArray == null || m_Data == null) return;
+            m_DebugArray.SetValue(GetBoxedValueInternal(index), index);
         }
 #endif
 
@@ -120,7 +140,53 @@ namespace SimpleLanguage.VM
                 Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "loadvalue index >= length ", index );
                 return;
             }
-            m_Store?.LoadSValue(index, ref sval, eArrayType.eType);
+            if (m_Data == null) return;
+
+            var arrayEvm = eArrayType.eType;
+            if (IsRefKind(arrayEvm, out var strKind))
+            {
+                int id = ReadInt32At(index);
+                var obj = ObjectManager.GetObjectById(id);
+                if (obj == null)
+                {
+                    sval.SetNull();
+                    sval.eType = arrayEvm;
+                    return;
+                }
+
+                if (strKind)
+                {
+                    sval.eType = EVMType.String;
+                    if (obj is StringObject so)
+                        sval.SetStringValue(so.value);
+                    else
+                        sval.SetStringValue(obj.value?.ToString() ?? string.Empty);
+                    return;
+                }
+                sval.SetRawSObject(obj);
+                return;
+            }
+
+            sval.eType = arrayEvm;
+            sval.isNull = false;
+            int oi = index * m_UnitLength;
+            var w = m_Data.AsSpan(oi);
+            switch (arrayEvm)
+            {
+                case EVMType.Boolean: sval.SetBoolValue(w[0] != 0); break;
+                case EVMType.UInt8: sval.SetUInt8Value(w[0]); break;
+                case EVMType.Int8: sval.SetInt8Value(unchecked((sbyte)w[0])); break;
+                case EVMType.Int16: sval.SetInt16Value(BinaryPrimitives.ReadInt16LittleEndian(w)); break;
+                case EVMType.UInt16: sval.SetUInt16Value(BinaryPrimitives.ReadUInt16LittleEndian(w)); break;
+                case EVMType.Int32: sval.SetInt32Value(BinaryPrimitives.ReadInt32LittleEndian(w)); break;
+                case EVMType.UInt32: sval.SetUInt32Value(BinaryPrimitives.ReadUInt32LittleEndian(w)); break;
+                case EVMType.Int64: sval.SetInt64Value(BinaryPrimitives.ReadInt64LittleEndian(w)); break;
+                case EVMType.UInt64: sval.SetUInt64Value(BinaryPrimitives.ReadUInt64LittleEndian(w)); break;
+                case EVMType.Float32: sval.SetFloatValue(BinaryPrimitives.ReadSingleLittleEndian(w)); break;
+                case EVMType.Float64: sval.SetDoubleValue(BinaryPrimitives.ReadDoubleLittleEndian(w)); break;
+                case EVMType.Num: sval.SetDoubleValue(BinaryPrimitives.ReadDoubleLittleEndian(w)); break;
+                default: sval.isNull = true; break;
+            }
         }
 
         public object? GetValue( int index )
@@ -135,250 +201,215 @@ namespace SimpleLanguage.VM
                 Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "getvalue index >= length ", index);
                 return null;
             }
-            return m_Store?.GetBoxedValue(index);
+            return GetBoxedValueInternal(index);
         }
         public void StoreValue(int index, SValue svalue)
         {
-            if (m_Store == null) return;
-            SObject? anyobj = m_Store.GetSObjectAt(index) is SObject sobj && sobj.eType == EVMType.Object
-                ? sobj
-                : null;
-            if( anyobj != null )
-            {
-                if( svalue.isNull )
-                {
-                    m_Store.SetObjectSlotToNull(index);
-#if DEBUG
-                    DebugSyncIndex(index);
-#endif
-                    return;
-                }
-            }
-            if (m_Store.TryStoreCoercedNumber(index, svalue, eArrayType.eType))
+            if (m_Data == null) return;
+
+            if (TryStoreCoercedNumber(index, svalue, eArrayType.eType))
             {
 #if DEBUG
                 DebugSyncIndex(index);
 #endif
                 return;
             }
+
             if (svalue.eType == EVMType.Null)
             {
-                if (anyobj != null)
-                {
-                    m_Store.SetObjectSlotToNull(index);
-                }
-                else
-                {
-                    var nv = default(SValue);
-                    nv.isNull = true;
-                    m_Store.StoreFromSValue(index, nv, eArrayType.eType);
-                }
+                WriteNullScalar(index, eArrayType.eType);
 #if DEBUG
                 DebugSyncIndex(index);
 #endif
                 return;
             }
-            switch (svalue.eType)
-            {
-                case EVMType.Boolean:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.Boolean, svalue.int8Value == 1);
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.UInt8:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.UInt8, svalue.int8Value );
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.Int8:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.Int8, svalue.int8Value );
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.Int16:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.Int16, svalue.int16Value);
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.UInt16:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.UInt16, svalue.uint16Value );
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.Int32:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.Int32, svalue.int32Value);
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.UInt32:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.UInt32, svalue.int32Value );
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.Int64:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.Int64, svalue.int64Value );
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.UInt64:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.UInt64, svalue.uint64Value );
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.Float32:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.Float32, svalue.float32Value );
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.Float64:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.Float64, svalue.float64Value );
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.String:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.String, svalue.stringValue );
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.Array:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.Array, svalue.sobject);
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.Type:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.Type, svalue.sobject);
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-                case EVMType.Class:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValueByType(EVMType.Class, svalue.sobject);
-#if DEBUG
-                            DebugSyncIndex(index);
-#endif
-                            return;
-                        }
-                        m_Store.StoreFromSValue(index, svalue, eArrayType.eType);
-                    }
-                    break;
-            }
+
+            // 对对象类型存储不再走 anyobj 包装写入，统一按普通对象写入路径处理。
+            StoreFromSValueRaw(index, svalue, eArrayType.eType);
 #if DEBUG
             DebugSyncIndex(index);
 #endif
+        }
+
+        private static bool IsRefKind(EVMType t, out bool isString)
+        {
+            isString = t == EVMType.String;
+            return t is EVMType.String or EVMType.Object or EVMType.Type or EVMType.Class or EVMType.Array;
+        }
+
+
+        private int ReadInt32At(int index)
+        {
+            if (m_Data == null || (uint)index >= (uint)m_Length) return 0;
+            return BinaryPrimitives.ReadInt32LittleEndian(m_Data.AsSpan(index * 4, 4));
+        }
+
+        private void WriteInt32At(int index, int value)
+        {
+            if (m_Data == null || (uint)index >= (uint)m_Length) return;
+            BinaryPrimitives.WriteInt32LittleEndian(m_Data.AsSpan(index * 4, 4), value);
+        }
+
+        private object? GetBoxedValueInternal(int index)
+        {
+            if (m_Data == null || (uint)index >= (uint)m_Length) return null;
+            if (IsRefKind(eArrayType.eType, out var strKind))
+            {
+                int id = ReadInt32At(index);
+                var obj = ObjectManager.GetObjectById(id);
+                if (obj == null) return null;
+                if (strKind)
+                    return obj is StringObject so ? so.value : obj.value?.ToString();
+                return obj;
+            }
+
+            int o = index * m_UnitLength;
+            return eArrayType.eType switch
+            {
+                EVMType.Boolean => m_Data[o] != 0,
+                EVMType.UInt8 => m_Data[o],
+                EVMType.Int8 => unchecked((sbyte)m_Data[o]),
+                EVMType.Int16 => BinaryPrimitives.ReadInt16LittleEndian(m_Data.AsSpan(o, 2)),
+                EVMType.UInt16 => BinaryPrimitives.ReadUInt16LittleEndian(m_Data.AsSpan(o, 2)),
+                EVMType.Int32 => BinaryPrimitives.ReadInt32LittleEndian(m_Data.AsSpan(o, 4)),
+                EVMType.UInt32 => BinaryPrimitives.ReadUInt32LittleEndian(m_Data.AsSpan(o, 4)),
+                EVMType.Int64 => BinaryPrimitives.ReadInt64LittleEndian(m_Data.AsSpan(o, 8)),
+                EVMType.UInt64 => BinaryPrimitives.ReadUInt64LittleEndian(m_Data.AsSpan(o, 8)),
+                EVMType.Float32 => BinaryPrimitives.ReadSingleLittleEndian(m_Data.AsSpan(o, 4)),
+                EVMType.Float64 => BinaryPrimitives.ReadDoubleLittleEndian(m_Data.AsSpan(o, 8)),
+                EVMType.Num => BinaryPrimitives.ReadDoubleLittleEndian(m_Data.AsSpan(o, 8)),
+                _ => null,
+            };
+        }
+
+        private SObject? GetSObjectAt(int index)
+        {
+            if (m_Data == null || (uint)index >= (uint)m_Length) return null;
+            if (!IsRefKind(eArrayType.eType, out _)) return null;
+            return ObjectManager.GetObjectById(ReadInt32At(index));
+        }
+
+        private void SetObjectSlotToNull(int index)
+        {
+            if (m_Data == null || (uint)index >= (uint)m_Length || !IsRefKind(eArrayType.eType, out _)) return;
+            if (eArrayType.eType == EVMType.Object)
+            {
+                var o = GetSObjectAt(index);
+                if (o != null && o.eType == EVMType.Object)
+                {
+                    o.SetValue(null);
+                }
+                else
+                {
+                    var fresh = new SObject(EVMType.Object);
+                    ObjectManager.RegisterObject(fresh);
+                    WriteInt32At(index, fresh.id);
+                }
+                return;
+            }
+            WriteInt32At(index, 0);
+        }
+
+        private void StoreFromSValueRaw(int index, SValue svalue, EVMType arrayEvm)
+        {
+            if (m_Data == null || (uint)index >= (uint)m_Length) return;
+            if (IsRefKind(arrayEvm, out var strKind))
+            {
+                if (svalue.isNull)
+                {
+                    WriteInt32At(index, 0);
+                    return;
+                }
+                if (strKind)
+                {
+                    var str = svalue.stringValue;
+                    if (str == null)
+                    {
+                        WriteInt32At(index, 0);
+                    }
+                    else
+                    {
+                        var strObj = new StringObject(str);
+                        ObjectManager.RegisterObject(strObj);
+                        WriteInt32At(index, strObj.id);
+                    }
+                }
+                else
+                {
+                    var so = svalue.sobject;
+                    if (so != null)
+                    {
+                        ObjectManager.RegisterObject(so);
+                        WriteInt32At(index, so.id);
+                    }
+                    else WriteInt32At(index, 0);
+                }
+                return;
+            }
+
+            if (svalue.isNull)
+            {
+                WriteNullScalar(index, arrayEvm);
+                return;
+            }
+
+            WriteNonNullScalarRaw(index, svalue, arrayEvm);
+        }
+
+        private void WriteNullScalar(int index, EVMType t)
+        {
+            if (m_Data == null) return;
+            int o = index * m_UnitLength;
+            for (int i = 0; i < m_UnitLength && o + i < m_Data.Length; i++) m_Data[o + i] = 0;
+        }
+
+        private void WriteNonNullScalarRaw(int index, SValue s, EVMType t)
+        {
+            if (m_Data == null) return;
+            int o = index * m_UnitLength;
+            var w = m_Data.AsSpan(o);
+            switch (t)
+            {
+                case EVMType.Boolean: w[0] = (byte)(s.int8Value == 1 ? 1 : 0); break;
+                case EVMType.UInt8: w[0] = s.uint8Value; break;
+                case EVMType.Int8: w[0] = unchecked((byte)s.int8Value); break;
+                case EVMType.Int16: BinaryPrimitives.WriteInt16LittleEndian(w, s.int16Value); break;
+                case EVMType.UInt16: BinaryPrimitives.WriteUInt16LittleEndian(w, s.uint16Value); break;
+                case EVMType.Int32: BinaryPrimitives.WriteInt32LittleEndian(w, s.int32Value); break;
+                case EVMType.UInt32: BinaryPrimitives.WriteUInt32LittleEndian(w, s.uint32Value); break;
+                case EVMType.Int64: BinaryPrimitives.WriteInt64LittleEndian(w, s.int64Value); break;
+                case EVMType.UInt64: BinaryPrimitives.WriteUInt64LittleEndian(w, s.uint64Value); break;
+                case EVMType.Float32: BinaryPrimitives.WriteSingleLittleEndian(w, s.float32Value); break;
+                case EVMType.Float64: BinaryPrimitives.WriteDoubleLittleEndian(w, s.float64Value); break;
+                case EVMType.Num: BinaryPrimitives.WriteDoubleLittleEndian(w, s.float64Value); break;
+            }
+        }
+
+        private bool TryStoreCoercedNumber(int index, SValue svalue, EVMType arrayEvm)
+        {
+            if (IsRefKind(arrayEvm, out _) || svalue.isNull) return false;
+            if (svalue.eType == EVMType.Null) { WriteNullScalar(index, arrayEvm); return true; }
+            if (!TryGetNumericAsDouble(svalue, out var d)) return false;
+            var tmp = default(SValue);
+            switch (arrayEvm)
+            {
+                case EVMType.UInt8: tmp.eType = EVMType.UInt8; tmp.uint8Value = (byte)Convert.ToByte(d); break;
+                case EVMType.Int8: tmp.eType = EVMType.Int8; tmp.int8Value = (sbyte)Convert.ToSByte(d); break;
+                case EVMType.Int16: tmp.eType = EVMType.Int16; tmp.int16Value = (short)Convert.ToInt16(d); break;
+                case EVMType.UInt16: tmp.eType = EVMType.UInt16; tmp.uint16Value = (ushort)Convert.ToUInt16(d); break;
+                case EVMType.Int32: tmp.eType = EVMType.Int32; tmp.int32Value = (int)Convert.ToInt32(d); break;
+                case EVMType.UInt32: tmp.eType = EVMType.UInt32; tmp.uint32Value = (uint)Convert.ToUInt32(d); break;
+                case EVMType.Int64: tmp.eType = EVMType.Int64; tmp.int64Value = (long)Convert.ToInt64(d); break;
+                case EVMType.UInt64: tmp.eType = EVMType.UInt64; tmp.uint64Value = (ulong)Convert.ToUInt64(d); break;
+                case EVMType.Float32: tmp.eType = EVMType.Float32; tmp.float32Value = (float)Convert.ToSingle(d); break;
+                case EVMType.Float64: tmp.eType = EVMType.Float64; tmp.float64Value = d; break;
+                case EVMType.Num: tmp.eType = EVMType.Num; tmp.float64Value = d; break;
+                case EVMType.Boolean: tmp.eType = EVMType.Boolean; tmp.uint8Value = (byte)(d != 0 ? 1 : 0); break;
+                default: return false;
+            }
+            tmp.isNull = false;
+            WriteNonNullScalarRaw(index, tmp, arrayEvm);
+            return true;
         }
         internal static bool TryGetNumericAsDouble(SValue svalue, out double value)
         {

@@ -11,7 +11,7 @@ namespace SimpleLanguage.VM
     {
         public RuntimeType runtimeType => m_RuntimeType;
         public EVMType eType => m_RuntimeType != null ? m_RuntimeType.eType : EVMType.Null;
-        public SObject sobject => ResolveSObject();
+        public SObject sobject => GetSObject();
         public RuntimeVariable runtimeVariable => m_RuntimeVariable;
         public bool isNull => m_IsNull;
 
@@ -28,7 +28,6 @@ namespace SimpleLanguage.VM
 
         private RuntimeVariable m_RuntimeVariable = null;
         private RuntimeType m_RuntimeType = null;
-        private int m_ObjectPointerId = 0;
         private bool m_IsNull = true;
 #if DEBUG
         private SObject m_SObject = null;
@@ -51,7 +50,6 @@ namespace SimpleLanguage.VM
 
             EnsureStandaloneMemberDataSlice();
             SetObjectPointer(sobj);
-            WriteCurrentValueToMemberData(sobj);
             RefreshIsNull();
         }
 
@@ -63,13 +61,13 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            if (eType == EVMType.Object && IsObjectScalarType(m_ObjectActualType))
+            if (eType == EVMType.Object && RuntimeTypeManager.IsObjectScalarType(m_ObjectActualType))
             {
                 m_IsNull = false;
                 return;
             }
 
-            m_IsNull = ResolveSObject() == null;
+            m_IsNull = GetSObject() == null;
         }
 
         private void EnsureStandaloneMemberDataSlice()
@@ -96,38 +94,16 @@ namespace SimpleLanguage.VM
             m_Length = length;
             m_Index = memberIndex;
         }
-
-        private bool IsPointerStoredInMemberData()
+        private SObject GetSObject()
         {
-            if (m_RuntimeType == null)
-                return false;
-            if (m_RuntimeType.eType == EVMType.Object && IsObjectScalarType(m_ObjectActualType))
-                return false;
-            return hasMemberDataSlice && !RuntimeTypeManager.IsMemberDataDirectType(m_RuntimeType.eType);
-        }
-
-        private int ReadPointerIdFromMemberData()
-        {
-            if (!IsPointerStoredInMemberData())
-                return m_ObjectPointerId;
             if (m_MemberDataBuffer == null || m_Start < 0 || m_Start + 4 > m_MemberDataBuffer.Length)
-                return 0;
-            return BinaryPrimitives.ReadInt32LittleEndian(m_MemberDataBuffer.AsSpan(m_Start, 4));
-        }
-
-        private void WritePointerIdToMemberData(int pointerId)
-        {
-            m_ObjectPointerId = pointerId;
-            if (!IsPointerStoredInMemberData())
-                return;
-            if (m_MemberDataBuffer == null || m_Start < 0 || m_Start + 4 > m_MemberDataBuffer.Length)
-                return;
-            BinaryPrimitives.WriteInt32LittleEndian(m_MemberDataBuffer.AsSpan(m_Start, 4), pointerId);
-        }
-
-        private SObject ResolveSObject()
-        {
-            int pointerId = ReadPointerIdFromMemberData();
+            {
+#if DEBUG
+                m_SObject = null;
+#endif
+                return null;
+            }
+            int pointerId = BinaryPrimitives.ReadInt32LittleEndian(m_MemberDataBuffer.AsSpan(m_Start, 4));
             if (pointerId <= 0)
             {
 #if DEBUG
@@ -136,36 +112,36 @@ namespace SimpleLanguage.VM
                 return null;
             }
 
-            var resolved = ObjectManager.GetObjectById(pointerId);
+            var realObject = ObjectManager.GetObjectById(pointerId);
 #if DEBUG
-            m_SObject = resolved;
+            m_SObject = realObject;
 #endif
-            return resolved;
+            return realObject;
         }
 
-        private void SetObjectPointer(SObject sobj)
+        private void SetObjectPointer(SObject sobj, bool isWriteMemberDataSpan = false )
         {
             if (sobj != null)
+            {
                 ObjectManager.RegisterObject(sobj);
 #if DEBUG
-            m_SObject = sobj;
+                m_SObject = sobj;
 #endif
-        }
+            }
+            else
+            {
+#if DEBUG
+                m_SObject = null;
+#endif
+            }
 
-        private static bool IsObjectScalarType(EVMType t)
-        {
-            return t == EVMType.Boolean
-                || t == EVMType.UInt8
-                || t == EVMType.Int8
-                || t == EVMType.Int16
-                || t == EVMType.UInt16
-                || t == EVMType.Int32
-                || t == EVMType.UInt32
-                || t == EVMType.Int64
-                || t == EVMType.UInt64
-                || t == EVMType.Float32
-                || t == EVMType.Float64
-                || t == EVMType.Num;
+            if(isWriteMemberDataSpan )
+            {
+                if (TryGetMemberDataSpan(out Span<byte> span))
+                {
+                    BinaryPrimitives.WriteInt32LittleEndian(span, sobj?.id ?? 0);
+                }
+            }
         }
 
         private static EVMType DetectObjectActualType(SObject? sobj)
@@ -248,7 +224,7 @@ namespace SimpleLanguage.VM
         private bool TryGetObjectScalarDataSpan(out Span<byte> span)
         {
             span = default;
-            if (!IsObjectScalarType(m_ObjectActualType))
+            if (!RuntimeTypeManager.IsObjectScalarType(m_ObjectActualType))
                 return false;
 
 
@@ -258,166 +234,6 @@ namespace SimpleLanguage.VM
 
             span = m_MemberDataBuffer.AsSpan(m_Start, m_Length);
             return true;
-        }
-
-        private bool TryStoreObjectScalarValue(ref SValue sval)
-        {
-            if (!IsObjectScalarType(sval.eType))
-                return false;
-
-            m_ObjectActualType = sval.eType;
-
-            if (!TryGetObjectScalarDataSpan(out var scalarSpan))
-                return false;
-
-            scalarSpan.Clear();
-            WriteSValueToMemberDataSpan(scalarSpan, m_ObjectActualType, ref sval);
-            SetObjectPointer(null);
-            m_IsNull = false;
-            return true;
-        }
-
-        private bool TryReadObjectScalarValue(ref SValue sval)
-        {
-            if (!IsObjectScalarType(m_ObjectActualType))
-                return false;
-
-            if (!TryGetObjectScalarDataSpan(out var scalarSpan))
-                return false;
-
-            // 兼容路径：优先把 4 字节内容当作对象 id 尝试解析实体对象，
-            // 然后按实体子类型给 SValue 赋值（与 Object 主路径一致）。
-            if (scalarSpan.Length >= 4)
-            {
-                int pointerId = BinaryPrimitives.ReadInt32LittleEndian(scalarSpan);
-                if (pointerId > 0)
-                {
-                    var objById = ObjectManager.GetObjectById(pointerId);
-                    if (objById != null)
-                    {
-                        AssignObjectValueBySubtype(objById, ref sval);
-                        return true;
-                    }
-                }
-            }
-
-            ReadSpanToSValue(scalarSpan, m_ObjectActualType, ref sval);
-            return true;
-        }
-
-        private static void AssignObjectValueBySubtype(SObject sobj, ref SValue svalue)
-        {
-            if (sobj == null)
-            {
-                svalue.SetNull();
-                return;
-            }
-
-            if (sobj.GetType() == typeof(SObject))
-            {
-                var inner = sobj.value as SObject;
-                if (inner != null)
-                {
-                    sobj = inner;
-                }
-            }
-
-            switch (sobj.eType)
-            {
-                case EVMType.Boolean:
-                    svalue.SetBoolValue(Convert.ToBoolean(sobj.value));
-                    return;
-                case EVMType.UInt8:
-                    svalue.SetUInt8Value(Convert.ToByte(sobj.value));
-                    return;
-                case EVMType.Int8:
-                    svalue.SetInt8Value(Convert.ToSByte(sobj.value));
-                    return;
-                case EVMType.Int16:
-                    svalue.SetInt16Value(Convert.ToInt16(sobj.value));
-                    return;
-                case EVMType.UInt16:
-                    svalue.SetUInt16Value(Convert.ToUInt16(sobj.value));
-                    return;
-                case EVMType.Int32:
-                    svalue.SetInt32Value(Convert.ToInt32(sobj.value));
-                    return;
-                case EVMType.UInt32:
-                    svalue.SetUInt32Value(Convert.ToUInt32(sobj.value));
-                    return;
-                case EVMType.Int64:
-                    svalue.SetInt64Value(Convert.ToInt64(sobj.value));
-                    return;
-                case EVMType.UInt64:
-                    svalue.SetUInt64Value(Convert.ToUInt64(sobj.value));
-                    return;
-                case EVMType.Float32:
-                    svalue.SetFloatValue(Convert.ToSingle(sobj.value));
-                    return;
-                case EVMType.Float64:
-                case EVMType.Num:
-                    svalue.SetDoubleValue(Convert.ToDouble(sobj.value));
-                    return;
-                case EVMType.String:
-                    svalue.SetStringValue(sobj.value?.ToString() ?? string.Empty);
-                    return;
-                default:
-                    svalue.SetSObject(sobj);
-                    return;
-            }
-        }
-
-        private static void AssignRuntimeObjectToSValue(SObject sobj, ref SValue svalue)
-        {
-            switch (sobj)
-            {
-                case BoolObject bo:
-                    svalue.SetBoolValue(bo.value);
-                    return;
-                case UInt8Object byteob:
-                    svalue.SetUInt8Value(byteob.value);
-                    return;
-                case Int8Object sbyteobj:
-                    svalue.SetInt8Value(sbyteobj.value);
-                    return;
-                case Int16Object int16Obj:
-                    svalue.SetInt16Value(int16Obj.value);
-                    return;
-                case UInt16Object uint16Obj:
-                    svalue.SetUInt16Value(uint16Obj.value);
-                    return;
-                case Int32Object int32Obj:
-                    svalue.SetInt32Value(int32Obj.value);
-                    return;
-                case UInt32Object uint32Obj:
-                    svalue.SetUInt32Value(uint32Obj.value);
-                    return;
-                case Int64Object int64Obj:
-                    svalue.SetInt64Value(int64Obj.value);
-                    return;
-                case UInt64Object uint64Obj:
-                    svalue.SetUInt64Value(uint64Obj.value);
-                    return;
-                case Float32Object floatobj:
-                    svalue.SetFloatValue(floatobj.value);
-                    return;
-                case Float64Object doubleobj:
-                    svalue.SetDoubleValue(doubleobj.value);
-                    return;
-                case StringObject stringObj:
-                    svalue.SetStringValue(stringObj.value);
-                    return;
-                case ClassObject classObj:
-                    svalue.SetSObject(classObj);
-                    return;
-                case TemplateObject templateObj:
-                    svalue.SetSObject(templateObj.instnceObject);
-                    Debug.Assert(false);
-                    return;
-                default:
-                    Debug.Assert(false);
-                    return;
-            }
         }
 
         public bool TryReadMemberDataToSValue(ref SValue svalue)
@@ -487,7 +303,7 @@ namespace SimpleLanguage.VM
                         }
                         else
                         {
-                            svalue.SetSObject(sobj);
+                            svalue.SetValueBySObject(sobj);
                         }
                     }
                     break;
@@ -517,8 +333,7 @@ namespace SimpleLanguage.VM
             switch (evmType)
             {
                 case EVMType.Boolean:
-                    if (span.Length >= 4)
-                        BinaryPrimitives.WriteInt32LittleEndian(span, sval.int8Value == 1 ? 1 : 0);
+                    span[0] = (byte)(sval.uint8Value==1?1:0);
                     break;
                 case EVMType.UInt8:
                     span[0] = sval.uint8Value;
@@ -568,83 +383,6 @@ namespace SimpleLanguage.VM
             if (m_Start + m_Length <= m_MemberDataBuffer.Length)
                 m_MemberDataBuffer.AsSpan(m_Start, m_Length).Clear();
         }
-
-        private void WriteCurrentValueToMemberData(SObject sobj)
-        {
-            if (m_MemberDataBuffer == null || m_Length <= 0 || m_RuntimeType == null)
-                return;
-            if (m_Start + m_Length > m_MemberDataBuffer.Length)
-                return;
-
-            Span<byte> span = m_MemberDataBuffer.AsSpan(m_Start, m_Length);
-            var evm = m_RuntimeType.eType;
-
-            if (sobj == null)
-            {
-                span.Clear();
-                if (span.Length >= 4)
-                    BinaryPrimitives.WriteInt32LittleEndian(span, 0);
-                return;
-            }
-
-            switch (evm)
-            {
-                case EVMType.Boolean:
-                    BinaryPrimitives.WriteInt32LittleEndian(span, (sobj as BoolObject)?.value == true ? 1 : 0);
-                    break;
-                case EVMType.UInt8:
-                    if (span.Length > 0)
-                        span[0] = (sobj as UInt8Object)?.value ?? 0;
-                    break;
-                case EVMType.Int8:
-                    if (span.Length > 0)
-                        span[0] = unchecked((byte)((sobj as Int8Object)?.value ?? 0));
-                    break;
-                case EVMType.Int16:
-                    BinaryPrimitives.WriteInt16LittleEndian(span, (sobj as Int16Object)?.value ?? 0);
-                    break;
-                case EVMType.UInt16:
-                    BinaryPrimitives.WriteUInt16LittleEndian(span, (sobj as UInt16Object)?.value ?? 0);
-                    break;
-                case EVMType.Int32:
-                    BinaryPrimitives.WriteInt32LittleEndian(span, (sobj as Int32Object)?.value ?? 0);
-                    break;
-                case EVMType.UInt32:
-                    if (sobj is UInt32Object u32o)
-                        BinaryPrimitives.WriteUInt32LittleEndian(span, u32o.value);
-                    else if (sobj is Int32Object i32u)
-                        BinaryPrimitives.WriteUInt32LittleEndian(span, unchecked((uint)i32u.value));
-                    else
-                        BinaryPrimitives.WriteUInt32LittleEndian(span, 0u);
-                    break;
-                case EVMType.Int64:
-                    BinaryPrimitives.WriteInt64LittleEndian(span, (sobj as Int64Object)?.value ?? 0L);
-                    break;
-                case EVMType.UInt64:
-                    if (sobj is UInt64Object u64o)
-                        BinaryPrimitives.WriteUInt64LittleEndian(span, u64o.value);
-                    else if (sobj is Int64Object i64u)
-                        BinaryPrimitives.WriteUInt64LittleEndian(span, unchecked((ulong)i64u.value));
-                    else
-                        BinaryPrimitives.WriteUInt64LittleEndian(span, 0uL);
-                    break;
-                case EVMType.Float32:
-                    BinaryPrimitives.WriteSingleLittleEndian(span, (sobj as Float32Object)?.value ?? 0f);
-                    break;
-                case EVMType.Float64:
-                    BinaryPrimitives.WriteDoubleLittleEndian(span, (sobj as Float64Object)?.value ?? 0d);
-                    break;
-                case EVMType.String:
-                case EVMType.Class:
-                case EVMType.Array:
-                case EVMType.Object:
-                case EVMType.Type:
-                case EVMType.Member:
-                default:
-                    BinaryPrimitives.WriteInt32LittleEndian(span, sobj.id);
-                    break;
-            }
-        }
         public void SetNull()
         {
             ClearObjectScalarValue();
@@ -654,6 +392,7 @@ namespace SimpleLanguage.VM
         }
         public void SetSObjectBySValue( ref SValue sval )
         {
+            if (m_RuntimeType == null) return;
             if (sval.isNull)
             {
                 ClearObjectScalarValue();
@@ -663,179 +402,90 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            if (m_RuntimeType != null)
-                sval.TryCoerceScalarForAssignment(m_RuntimeType.eType);
+            sval.TryCoerceScalarForAssignment(m_RuntimeType.eType);
 
-            if (m_RuntimeType != null
-                && RuntimeTypeManager.IsMemberDataDirectType(m_RuntimeType.eType)
-                && TryGetMemberDataSpan(out var directSpan))
+            if ( RuntimeTypeManager.IsMemberDataDirectType(m_RuntimeType.eType) )
             {
-                WriteSValueToMemberDataSpan(directSpan, m_RuntimeType.eType, ref sval);
-                SetObjectPointer(null);
-                m_IsNull = false;
+                if( TryGetMemberDataSpan(out var directSpan) )
+                {
+                    SetObjectPointer(null);
+                    WriteSValueToMemberDataSpan(directSpan, m_RuntimeType.eType, ref sval);
+                    m_IsNull = false;
+                    return;
+
+                }
+            }
+            else
+            {
+                var curObj = GetSObject();
+                if (curObj == null)
+                {
+                    var incomingRef = sval.GetReferenceSObject(createStringRef: true);
+                    if (incomingRef != null)
+                    {
+                        m_ObjectActualType = DetectObjectActualType(incomingRef);                        
+                        SetObjectPointer(incomingRef, true);
+                        m_IsNull = false;
+                        return;
+                    }
+                    else
+                    {
+                        Log.AddRuntimeLog(LID.ShowMessageAssert, "create svalue object failed");
+                    }
+                }
+                else
+                {
+                    switch (m_ObjectActualType)
+                    {
+                        case EVMType.Boolean: curObj.SetValueByType(EVMType.Boolean, sval.uint8Value == 1); return;
+                        case EVMType.Int8: curObj.SetValueByType(EVMType.Int8, sval.int8Value); return;
+                        case EVMType.UInt8: curObj.SetValueByType(EVMType.UInt8, sval.uint8Value); return;
+                        case EVMType.Int16: curObj.SetValueByType(EVMType.Int16, sval.int16Value); return;
+                        case EVMType.UInt16: curObj.SetValueByType(EVMType.UInt16, sval.uint16Value); return;
+                        case EVMType.Int32: curObj.SetValueByType(EVMType.Int32, sval.int32Value); return;
+                        case EVMType.UInt32: curObj.SetValueByType(EVMType.UInt32, sval.uint32Value); return;
+                        case EVMType.Int64: curObj.SetValueByType(EVMType.Int64, sval.int64Value); return;
+                        case EVMType.UInt64: curObj.SetValueByType(EVMType.UInt64, sval.uint64Value); return;
+                        case EVMType.Float32: curObj.SetValueByType(EVMType.Float32, sval.float32Value); return;
+                        case EVMType.Float64: curObj.SetValueByType(EVMType.Float64, sval.float64Value); return;
+                        default:SetObjectPointer(sval.sobject);break;
+                    }
+                }
                 return;
             }
-
-            var curObj = ResolveSObject();
-
-            if (eType == EVMType.Object)
+        }
+        public void SetSValueByRuntimeObjct(ref SValue svalue)
+        {
+            var etype = m_RuntimeType.eType;
+            if ( RuntimeTypeManager.IsMemberDataDirectType(etype) )
             {
-                var incomingRef = sval.GetReferenceSObject(createStringRef: true);
-                if (incomingRef != null)
-                {
-                    ClearObjectScalarValue();
-                    m_ObjectActualType = DetectObjectActualType(incomingRef);
-                    // 与 object[] 元素槽一致：引用型（Array/Class/Type）经 Core.Object 外壳写入，再落指针，保证与读取/解包路径统一。
-                    SObject toStore = incomingRef;
-                    if (incomingRef.eType == EVMType.Array
-                        || incomingRef.eType == EVMType.Class
-                        || incomingRef.eType == EVMType.Type)
-                    {
-                        toStore = ObjectManager.CreateObjectByRuntimeType(RuntimeTypeManager.objectRuntimeType, true);
-                        toStore.SetValueByType(incomingRef.eType, incomingRef);
-                    }
-                    SetObjectPointer(toStore);
-                    WriteCurrentValueToMemberData(toStore);
-                    RefreshIsNull();
-                    return;
-                }
-
-                if (TryStoreObjectScalarValue(ref sval))
-                    return;
-
-                SetNull();
+                TryReadMemberDataToSValue(ref svalue);
                 return;
             }
             else
             {
-                if (curObj == null && RuntimeTypeManager.IsCoreRuntimeType( m_RuntimeType ) )
+                var sobj = this.GetSObject();
+                if (sobj == null)
                 {
-                    curObj = ObjectManager.CreateObjectByRuntimeType(runtimeType, true);
-                    SetObjectPointer(curObj);
-                }
-            }
-
-            switch(m_RuntimeType.eType)
-            {
-                case EVMType.Boolean:
-                    {
-                        curObj.SetValueByType(EVMType.Boolean, sval.uint8Value == 1);
-                    }
-                    break;
-                case EVMType.UInt8:
-                    {
-                        curObj.SetValueByType(EVMType.UInt8, sval.uint8Value);
-                    }
-                    break;
-                case EVMType.Int8:
-                    {
-                        curObj.SetValueByType(EVMType.Int8, sval.int8Value);
-                    }
-                    break;
-                case EVMType.Int16:
-                    {
-                        curObj.SetValueByType(EVMType.Int16, sval.int16Value);
-                    }
-                    break;
-                case EVMType.UInt16:
-                    {
-                        curObj.SetValueByType(EVMType.UInt16, sval.uint16Value);
-                    }
-                    break;
-                case EVMType.Int32:
-                    {
-                        curObj.SetValueByType(EVMType.Int32, sval.int32Value);
-                    }
-                    break;
-                case EVMType.UInt32:
-                    {
-                        curObj.SetValueByType(EVMType.UInt32, sval.uint32Value);
-                    }
-                    break;
-                case EVMType.Int64:
-                    {                        
-                        curObj.SetValueByType(EVMType.Int64, sval.int64Value);
-                    }
-                    break;
-                case EVMType.UInt64:
-                    {
-                        curObj.SetValueByType(EVMType.UInt64, sval.uint64Value);
-                    }
-                    break;
-                case EVMType.Float32:
-                    {
-                        curObj.SetValueByType(EVMType.Float32, sval.float32Value);
-                    }
-                    break;
-                case EVMType.Float64:
-                    {
-                        curObj.SetValueByType(EVMType.Float64, sval.float64Value);
-                    }
-                    break;
-                case EVMType.String:
-                    {
-                        if (curObj == null)
-                        {
-                            var byteObj = ObjectManager.CreateObjectByRuntimeType(m_RuntimeType) as StringObject;
-                            curObj = byteObj;
-                            SetObjectPointer(curObj);
-                            byteObj.SetValue(sval.stringValue);
-                        }
-                        else
-                        {
-                            curObj.SetValueByType(EVMType.String, sval.stringValue);
-                        }
-                    }
-                    break;
-                case EVMType.Class:
-                case EVMType.Array:
-                    {
-                        curObj = sval.sobject;
-                        SetObjectPointer(curObj);
-                    }
-                    break;
-                default:
-                    {
-                        Debug.Assert(false);
-                    }
-                    break;
-            }
-            WriteCurrentValueToMemberData(curObj);
-            RefreshIsNull();
-        }
-
-        public void SetSValueByRuntimeObjct(ref SValue svalue)
-        {
-            if (m_RuntimeType != null
-                && RuntimeTypeManager.IsMemberDataDirectType(m_RuntimeType.eType)
-                && TryReadMemberDataToSValue(ref svalue))
-            {
-                return;
-            }
-
-            var sobj = ResolveSObject();
-            if ( sobj == null )
-            {
-                // Object 槽：先按 id 取实体；如果历史数据没有 id，再回退读旧的标量缓存。
-                if (eType == EVMType.Object && TryReadObjectScalarValue(ref svalue))
-                {
+                    svalue.SetNull();
                     return;
                 }
-                svalue.SetNull();
-                return;
+                else
+                {
+                    switch (sobj)
+                    {
+                        case StringObject so:svalue.SetStringValueByStrinbObject(so);
+                                break;
+                        default:
+                            svalue.SetRawSObject(sobj);
+                            break;
+                    }
+                }
             }
-            if( eType == EVMType.Object )
-            {
-                // Object 主类型：先按 id 拿到实体对象，再按子类型赋值到 SValue。
-                // 子类型用于转换/校验，不改变“主类型按 id 存取”的规则。
-                AssignObjectValueBySubtype(sobj, ref svalue);
-                return;
-            }
-            AssignRuntimeObjectToSValue(sobj, ref svalue);
         }
         public SObject CreateObjectByRuntimeType()
         {
-            var sobj = ResolveSObject();
+            var sobj = GetSObject();
             if (sobj == null)
             {
                 sobj = ObjectManager.CreateObjectByRuntimeType(m_RuntimeType, true);
@@ -851,7 +501,7 @@ namespace SimpleLanguage.VM
             {
                 sb.Append(m_RuntimeType.ToString());
             }
-            var sobj = ResolveSObject();
+            var sobj = GetSObject();
             if( sobj != null )
             {
                 sb.Append(sobj.ToString());

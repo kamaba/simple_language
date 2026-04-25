@@ -22,7 +22,7 @@ namespace SimpleLanguage.VM.Runtime
             RuntimeType? rt = sobj?.runtimeType ?? RuntimeTypeManager.GetRuntimeTypeByEVMType(a.eType) ?? RuntimeTypeManager.objectRuntimeType;
             var tobj = RuntimeTypeManager.CreateTypeObject(rt);
             var sv = default(SValue);
-            sv.SetSObject(tobj);
+            sv.SetValueBySObject(tobj);
             vm.PushSValueSynced(sv);
         }
 
@@ -95,7 +95,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             else
             {
-                sv.SetSObject(sobj);
+                sv.SetValueBySObject(sobj);
                 if (retainForStrongRef)
                     ObjectManager.RetainObject(sobj);
             }

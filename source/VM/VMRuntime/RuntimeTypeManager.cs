@@ -97,6 +97,21 @@ namespace SimpleLanguage.VM
                 || evmType == EVMType.Float32
                 || evmType == EVMType.Float64;
         }
+        public static bool IsObjectScalarType(EVMType t)
+        {
+            return t == EVMType.Boolean
+                || t == EVMType.UInt8
+                || t == EVMType.Int8
+                || t == EVMType.Int16
+                || t == EVMType.UInt16
+                || t == EVMType.Int32
+                || t == EVMType.UInt32
+                || t == EVMType.Int64
+                || t == EVMType.UInt64
+                || t == EVMType.Float32
+                || t == EVMType.Float64
+                || t == EVMType.Num;
+        }
         public static bool IsNumericTypeLocal(EVMType t)
         {
             return t == EVMType.Num
