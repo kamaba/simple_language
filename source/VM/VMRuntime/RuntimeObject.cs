@@ -404,7 +404,7 @@ namespace SimpleLanguage.VM
 
             sval.TryCoerceScalarForAssignment(m_RuntimeType.eType);
 
-            if ( RuntimeTypeManager.IsMemberDataDirectType(m_RuntimeType.eType) )
+            if ( RuntimeTypeManager.IsMemberDataDirectType(this.m_RuntimeType.eType) )
             {
                 if( TryGetMemberDataSpan(out var directSpan) )
                 {
