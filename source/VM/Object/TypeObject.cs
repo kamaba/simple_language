@@ -13,7 +13,7 @@ using System.Text;
 
 namespace SimpleLanguage.VM
 {
-    class TypeObject : ClassObject
+    public class TypeObject : ClassObject
     {
         public RuntimeType currentRT => m_Rt;
 
@@ -45,7 +45,7 @@ namespace SimpleLanguage.VM
             if (metaClassIndex >= 0)
             {
                 var sv = default(SValue);
-                if (metaClassObject != null) sv.SetSObject(metaClassObject);
+                if (metaClassObject != null) sv.SetValueBySObject(metaClassObject);
                 else sv.SetNull();
                 SetMemberVariableSValue(metaClassIndex, sv);
             }
@@ -55,7 +55,7 @@ namespace SimpleLanguage.VM
             {
                 var typeListObj = CreateTemplateTypeListObject();
                 var sv = default(SValue);
-                if (typeListObj != null) sv.SetSObject(typeListObj);
+                if (typeListObj != null) sv.SetValueBySObject(typeListObj);
                 else sv.SetNull();
                 SetMemberVariableSValue(typeListIndex, sv);
             }
@@ -122,7 +122,7 @@ namespace SimpleLanguage.VM
             {
                 var child = RuntimeTypeManager.CreateTypeObject(templates[i]);
                 var sv = default(SValue);
-                if (child != null) sv.SetSObject(child);
+                if (child != null) sv.SetValueBySObject(child);
                 else sv.SetNull();
                 arr.StoreValue(i, sv);
             }

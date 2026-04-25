@@ -7,13 +7,10 @@
 //****************************************************************************
 
 using SimpleLanguage.VM.Runtime;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleLanguage.VM
 {
-    class StringObject : SObject
+    public class StringObject : SObject
     {
         public new string? value => m_Reference as string;
 
