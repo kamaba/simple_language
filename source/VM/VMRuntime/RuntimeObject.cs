@@ -423,7 +423,7 @@ namespace SimpleLanguage.VM
                     var incomingRef = sval.GetReferenceSObject(createStringRef: true);
                     if (incomingRef != null)
                     {
-                        m_ObjectActualType = DetectObjectActualType(incomingRef);                        
+                        m_ObjectActualType = sval.eType;                        
                         SetObjectPointer(incomingRef, true);
                         m_IsNull = false;
                         return;
@@ -478,6 +478,7 @@ namespace SimpleLanguage.VM
                                 break;
                         default:
                             svalue.SetRawSObject(sobj);
+                            svalue.eType = etype;
                             break;
                     }
                 }
