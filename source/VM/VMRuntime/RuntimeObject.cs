@@ -448,7 +448,7 @@ namespace SimpleLanguage.VM
                         case EVMType.UInt64: curObj.SetValueByType(EVMType.UInt64, sval.uint64Value); return;
                         case EVMType.Float32: curObj.SetValueByType(EVMType.Float32, sval.float32Value); return;
                         case EVMType.Float64: curObj.SetValueByType(EVMType.Float64, sval.float64Value); return;
-                        default:SetObjectPointer(sval.sobject);break;
+                        default:SetObjectPointer(sval.sobject, true);break;
                     }
                 }
                 return;

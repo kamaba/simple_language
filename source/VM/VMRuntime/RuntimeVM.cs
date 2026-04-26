@@ -326,7 +326,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             GetObjectByValue(1, index, ref svalue);
         }
-        public void SetReturnVariableSValue( uint index, SValue svalue)
+        public void SetReturnVariableSValue( uint index, ref SValue svalue)
         {
             if (index > m_ReturnRuntimeObjectArray.Length)
             {
@@ -1119,7 +1119,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.StoreReturn:
                     {
-                        SetReturnVariableSValue( (uint)iri.index, m_ValueStack[--m_ValueIndex]);
+                        SetReturnVariableSValue( (uint)iri.index, ref m_ValueStack[--m_ValueIndex]);
                         m_ExecuteIndex = m_ExecuteCount;
                     }
                     break;
@@ -1222,7 +1222,7 @@ namespace SimpleLanguage.VM.Runtime
                             SValue loadindex = m_ValueStack[m_ValueIndex - 2];
                             SValue storevalue = m_ValueStack[m_ValueIndex - 1];
 
-                            if (arrayref.eType == EVMType.Array && arrayref.sobject is ArrayObject ao)
+                            if (arrayref.sobject is ArrayObject ao)
                             {
                                 ao.StoreValue(loadindex.int32Value, storevalue);
                             }
@@ -2200,7 +2200,18 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 if (!v1.sobject.runtimeType.IsExtendsRelation(rt))
                                 {
-                                    m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    bool interfaceMatched = false;
+                                    var targetClass = rt.runtimeClass;
+                                    var sourceClass = v1.sobject.runtimeType?.runtimeClass;
+                                    if (targetClass != null && targetClass.isInterfaceClass && sourceClass != null)
+                                    {
+                                        interfaceMatched = sourceClass.ImplementsInterface(targetClass);
+                                    }
+
+                                    if (!interfaceMatched)
+                                    {
+                                        m_ValueStack[m_ValueIndex - 1].SetNull();
+                                    }
                                 }
                             }
                         }   
@@ -2300,41 +2311,31 @@ namespace SimpleLanguage.VM.Runtime
                 return;
             }
 
-            var valueToSet = svalue;
-            valueToSet.TryCoerceScalarForAssignment(robj.eType);
+            //var valueToSet = svalue;
+            svalue.TryCoerceScalarForAssignment(robj.eType);
 
             bool targetUnsigned32OrLess = robj.eType == EVMType.UInt8
                 || robj.eType == EVMType.UInt16
                 || robj.eType == EVMType.UInt32;
             if (targetUnsigned32OrLess)
             {
-                bool sourceIsNegativeSigned = (valueToSet.eType == EVMType.Int8 && valueToSet.int8Value < 0)
-                    || (valueToSet.eType == EVMType.Int16 && valueToSet.int16Value < 0)
-                    || (valueToSet.eType == EVMType.Int32 && valueToSet.int32Value < 0);
+                bool sourceIsNegativeSigned = (svalue.eType == EVMType.Int8 && svalue.int8Value < 0)
+                    || (svalue.eType == EVMType.Int16 && svalue.int16Value < 0)
+                    || (svalue.eType == EVMType.Int32 && svalue.int32Value < 0);
                 if (sourceIsNegativeSigned)
                 {
                     Log.AddRuntimeLog(LID.ShowMessageAssert,
-                        $"不能将负值写入无符号类型: target={robj.eType}, source={valueToSet.eType}");
+                        $"不能将负值写入无符号类型: target={robj.eType}, source={svalue.eType}");
                     return;
                 }
             }
 
-            if (RuntimeTypeManager.IsCoreRuntimeType(robj.runtimeType)
-                && robj.eType != EVMType.Object
-                && robj.sobject == null
-                && valueToSet.eType != robj.eType
-                && valueToSet.eType != EVMType.Null)
+            if( svalue.eType == EVMType.Object )
             {
-                try
-                {
-                    valueToSet.ConvertByEType(robj.eType);
-                }
-                catch
-                {
-                }
+                svalue.ConvertValueByTargetTypeAndObject(robj.eType);
             }
 
-            robj.SetSObjectBySValue(ref valueToSet);
+            robj.SetSObjectBySValue(ref svalue);
         }
 
     }

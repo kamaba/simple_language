@@ -741,97 +741,261 @@ namespace SimpleLanguage.VM
             return t is >= EVMType.Boolean and <= EVMType.Num;
         }
 
-        public void ConvertByEType(EVMType neType)
+        public void ConvertValueByTargetTypeAndObject( EVMType etype )
         {
-            object cur = GetValueObject();
+            eType = etype;
+            if (sobject == null)
+            {
+                SetNull();
+                eType = etype;
+                return;
+            }
 
-            switch (neType)
+            object? raw = sobject.value;
+            isNull = false;
+
+            switch (etype)
             {
                 case EVMType.Boolean:
                     {
-                        eType = EVMType.Boolean;
-                        uint8Value = (byte)(Convert.ToInt32(cur, CultureInfo.InvariantCulture) != 0 ? 1 : 0);
+                        if (sobject is BoolObject bo)
+                        {
+                            uint8Value = (byte)(bo.value ? 1 : 0);
+                        }
+                        else
+                        {
+                            uint8Value = Convert.ToBoolean(raw, CultureInfo.InvariantCulture) ? (byte)1 : (byte)0;
+                        }
                     }
                     break;
                 case EVMType.UInt8:
                     {
-                        eType = EVMType.UInt8;
-                        uint8Value = Convert.ToByte(cur);
+                        if (sobject is UInt8Object uo)
+                            uint8Value = uo.value;
+                        else
+                            uint8Value = Convert.ToByte(raw, CultureInfo.InvariantCulture);
                     }
                     break;
                 case EVMType.Int8:
                     {
-                        eType = EVMType.Int8;
-                        int8Value = Convert.ToSByte(cur);
-                    }
-                    break;
-                case EVMType.Int16:
-                    {
-                        eType = EVMType.Int16;
-                        int16Value = Convert.ToInt16(cur);
-                    }
-                    break;
-                case EVMType.UInt16:
-                    {
-                        eType = EVMType.UInt16;
-                        uint16Value = Convert.ToUInt16(cur);
-                    }
-                    break;
-                case EVMType.Int32:
-                    {
-                        eType = EVMType.Int32;
-                        int32Value = Convert.ToInt32(cur);
-                    }
-                    break;
-                case EVMType.UInt32:
-                    {
-                        eType = EVMType.UInt32;
-                        uint32Value = Convert.ToUInt32(cur);
-                    }
-                    break;
-                case EVMType.Int64:
-                    {
-                        eType = EVMType.Int64;
-                        int64Value = Convert.ToInt64(cur);
-                    }
-                    break;
-                case EVMType.UInt64:
-                    {
-                        eType = EVMType.UInt64;
-                        uint64Value = Convert.ToUInt64(cur);
-                    }
-                    break;
-                case EVMType.Float32:
-                    {
-                        eType = EVMType.Float32;
-                        float32Value = Convert.ToSingle(cur);
-                    }
-                    break;
-                case EVMType.Float64:
-                    {
-                        eType = EVMType.Float64;
-                        float64Value = Convert.ToDouble(cur);
+                        if (sobject is Int8Object io)
+                            int8Value = io.value;
+                        else
+                            int8Value = Convert.ToSByte(raw, CultureInfo.InvariantCulture);
                     }
                     break;
                 case EVMType.Num:
                     {
-                        eType = EVMType.Num;
-                        float64Value = Convert.ToDouble(cur);
+                        if (sobject is NumObject no)
+                        {
+                            float64Value = Convert.ToDouble(no.value);
+                        }
+                        else
+                        {
+                            float64Value = Convert.ToDouble(raw, CultureInfo.InvariantCulture);
+                        }
+                    }
+                    break;
+                case EVMType.Int16:
+                    {
+                        if (sobject is Int16Object io)
+                        {
+                            int16Value = io.value;
+                        }
+                        else
+                        {
+                            int16Value = Convert.ToInt16(raw, CultureInfo.InvariantCulture);
+                        }
+                    }
+                    break;
+                case EVMType.UInt16:
+                    {
+                        if (sobject is UInt16Object uo)
+                            uint16Value = uo.value;
+                        else
+                            uint16Value = Convert.ToUInt16(raw, CultureInfo.InvariantCulture);
+                    }
+                    break;
+                case EVMType.Int32:
+                    {
+                        if (sobject is Int32Object io)
+                            int32Value = io.value;
+                        else
+                            int32Value = Convert.ToInt32(raw, CultureInfo.InvariantCulture);
+                    }
+                    break;
+                case EVMType.UInt32:
+                    {
+                        if (sobject is UInt32Object uo)
+                            uint32Value = uo.value;
+                        else
+                            uint32Value = Convert.ToUInt32(raw, CultureInfo.InvariantCulture);
+                    }
+                    break;
+                case EVMType.Int64:
+                    {
+                        if (sobject is Int64Object io)
+                            int64Value = io.value;
+                        else
+                            int64Value = Convert.ToInt64(raw, CultureInfo.InvariantCulture);
+                    }
+                    break;
+                case EVMType.UInt64:
+                    {
+                        if (sobject is UInt64Object uo)
+                            uint64Value = uo.value;
+                        else
+                            uint64Value = Convert.ToUInt64(raw, CultureInfo.InvariantCulture);
+                    }
+                    break;
+                case EVMType.Float32:
+                    {
+                        if (sobject is Float32Object fo)
+                            float32Value = fo.value;
+                        else
+                            float32Value = Convert.ToSingle(raw, CultureInfo.InvariantCulture);
+                    }
+                    break;
+                case EVMType.Float64:
+                    {
+                        if (sobject is Float64Object fo)
+                            float64Value = fo.value;
+                        else
+                            float64Value = Convert.ToDouble(raw, CultureInfo.InvariantCulture);
                     }
                     break;
                 case EVMType.String:
                     {
-                        eType = EVMType.String;
-                        stringValue = cur.ToString();
+                        if (sobject is StringObject so)
+                        {
+                            stringValue = so.value;
+                        }
+                        else
+                        {
+                            stringValue = raw?.ToString() ?? string.Empty;
+                        }
                     }
                     break;
-                default:
-                    {
-                        Debug.Write("Error 寮傚父绫诲瀷鍦–onvertByEType涓");
-                    }
+                case EVMType.Array:
+                case EVMType.Type:
+                case EVMType.Object:
+                case EVMType.Class:
+                    // 引用类型保持 sobject 引用，具体约束由上层类型系统处理。
+                    //Log.AddRuntimeLog(LID.ShowMessageAssert, "");
                     break;
             }
-            isNull = false;
+        }
+
+        public void ConvertByEType(EVMType neType)
+        {
+            object? cur = GetValueObject();
+            var oldType = eType;
+
+            try
+            {
+                switch (neType)
+                {
+                    case EVMType.Boolean:
+                        SetBoolValue(Convert.ToBoolean(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.UInt8:
+                        SetUInt8Value(Convert.ToByte(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.Int8:
+                        SetInt8Value(Convert.ToSByte(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.Int16:
+                        SetInt16Value(Convert.ToInt16(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.UInt16:
+                        SetUInt16Value(Convert.ToUInt16(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.Int32:
+                        SetInt32Value(Convert.ToInt32(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.UInt32:
+                        SetUInt32Value(Convert.ToUInt32(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.Int64:
+                        SetInt64Value(Convert.ToInt64(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.UInt64:
+                        SetUInt64Value(Convert.ToUInt64(cur, CultureInfo.InvariantCulture));
+                        isNull = false;
+                        break;
+                    case EVMType.Float32:
+                        SetFloatValue(Convert.ToSingle(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.Float64:
+                    case EVMType.Num:
+                        float64Value = Convert.ToDouble(cur, CultureInfo.InvariantCulture);
+                        eType = neType;
+                        isNull = false;
+                        break;
+                    case EVMType.String:
+                        SetStringValue(Convert.ToString(cur, CultureInfo.InvariantCulture) ?? string.Empty);
+                        break;
+                    default:
+                        Log.AddRuntimeLog(LID.ShowMessageAssert, "Error 异常类型在ConvertByEType中");
+                        return;
+                }
+
+                if (IsNarrowingConversion(oldType, neType))
+                {
+                    Log.AddRuntimeLog(LID.ShowMessageWarning,
+                        $"数值降阶转换: {oldType} -> {neType}, value={cur}");
+                }
+            }
+            catch (OverflowException)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageWarning,
+                    $"数值转换溢出: {oldType} -> {neType}, value={cur}");
+                throw;
+            }
+        }
+
+        private static bool IsNarrowingConversion(EVMType source, EVMType target)
+        {
+            if (source == target) return false;
+            if (!IsNumericEType(source) || !IsNumericEType(target)) return false;
+
+            int srcBits = GetNumericBits(source);
+            int dstBits = GetNumericBits(target);
+
+            if (srcBits > dstBits) return true;
+
+            bool srcFloat = source is EVMType.Float32 or EVMType.Float64 or EVMType.Num;
+            bool dstFloat = target is EVMType.Float32 or EVMType.Float64 or EVMType.Num;
+            if (srcFloat && !dstFloat) return true;
+
+            bool srcUnsigned = source is EVMType.UInt8 or EVMType.UInt16 or EVMType.UInt32 or EVMType.UInt64;
+            bool dstSigned = target is EVMType.Int8 or EVMType.Int16 or EVMType.Int32 or EVMType.Int64;
+            if (srcUnsigned && dstSigned && srcBits >= dstBits) return true;
+
+            return false;
+        }
+
+        private static bool IsNumericEType(EVMType t)
+        {
+            return t is EVMType.Boolean
+                or EVMType.UInt8 or EVMType.Int8
+                or EVMType.Int16 or EVMType.UInt16
+                or EVMType.Int32 or EVMType.UInt32
+                or EVMType.Int64 or EVMType.UInt64
+                or EVMType.Float32 or EVMType.Float64 or EVMType.Num;
+        }
+
+        private static int GetNumericBits(EVMType t)
+        {
+            return t switch
+            {
+                EVMType.Boolean => 1,
+                EVMType.UInt8 or EVMType.Int8 => 8,
+                EVMType.Int16 or EVMType.UInt16 => 16,
+                EVMType.Int32 or EVMType.UInt32 or EVMType.Float32 => 32,
+                EVMType.Int64 or EVMType.UInt64 or EVMType.Float64 or EVMType.Num => 64,
+                _ => 0,
+            };
         }
         public Object GetValueObject()
         {

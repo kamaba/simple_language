@@ -319,7 +319,74 @@ namespace SimpleLanguage.VM
         public bool IsExtendsRelation(RuntimeType rt)
         {
             if (rt == null) return false;
-            return m_RuntimeClass.IsExtendsRelation(rt.m_RuntimeClass);
+            if (!m_RuntimeClass.IsExtendsRelation(rt.m_RuntimeClass))
+                return false;
+
+            if (rt.m_RuntimeTemplateList == null || rt.m_RuntimeTemplateList.Count == 0)
+                return true;
+
+            RuntimeType selfAsTarget = TryBuildRelationRuntimeType(rt.m_RuntimeClass);
+            if (selfAsTarget == null)
+                return false;
+
+            if (selfAsTarget.m_RuntimeTemplateList.Count != rt.m_RuntimeTemplateList.Count)
+                return false;
+
+            for (int i = 0; i < rt.m_RuntimeTemplateList.Count; i++)
+            {
+                if (!IsExactRuntimeType(selfAsTarget.m_RuntimeTemplateList[i], rt.m_RuntimeTemplateList[i]))
+                    return false;
+            }
+            return true;
+        }
+
+        private RuntimeType TryBuildRelationRuntimeType(RuntimeClass targetClass)
+        {
+            if (targetClass == null)
+                return null;
+
+            if (m_RuntimeClass == targetClass)
+                return this;
+
+            var targetTemplateDefList = targetClass.templateDefTypeList;
+            if (targetTemplateDefList == null || targetTemplateDefList.Count == 0)
+            {
+                return RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(targetClass, new List<RuntimeType>());
+            }
+
+            List<RuntimeType> relationTemplateList = new List<RuntimeType>();
+            for (int i = 0; i < targetTemplateDefList.Count; i++)
+            {
+                var relationDef = m_RuntimeClass.GetRuntimeDefTypeByTemplateAndClassRelation(targetClass, i);
+                if (relationDef == null)
+                    return null;
+
+                var relationType = RuntimeVM.GetRuntimeTypeByDefType(relationDef, m_RuntimeClass, m_RuntimeTemplateList, false);
+                if (relationType == null)
+                    return null;
+
+                relationTemplateList.Add(relationType);
+            }
+
+            return RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(targetClass, relationTemplateList);
+        }
+
+        private static bool IsExactRuntimeType(RuntimeType rt1, RuntimeType rt2)
+        {
+            if (rt1 == null || rt2 == null)
+                return false;
+            if (rt1.m_RuntimeClass != rt2.m_RuntimeClass)
+                return false;
+
+            if (rt1.m_RuntimeTemplateList.Count != rt2.m_RuntimeTemplateList.Count)
+                return false;
+
+            for (int i = 0; i < rt1.m_RuntimeTemplateList.Count; i++)
+            {
+                if (!IsExactRuntimeType(rt1.m_RuntimeTemplateList[i], rt2.m_RuntimeTemplateList[i]))
+                    return false;
+            }
+            return true;
         }
         public static bool IsNumericEType(EVMType t)
         {

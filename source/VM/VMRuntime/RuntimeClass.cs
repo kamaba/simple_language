@@ -123,6 +123,36 @@ namespace SimpleLanguage.VM
             return false;
         }
 
+        public bool ImplementsInterface(RuntimeClass interfaceClass)
+        {
+            if (interfaceClass == null || !interfaceClass.isInterfaceClass)
+                return false;
+
+            if (ImplementsInterfaceId(interfaceClass.id))
+                return true;
+
+            string targetName = GetGenericDefinitionName(interfaceClass.name);
+            for (int i = 0; i < m_ImplementsInterfaceIdList.Count; i++)
+            {
+                var implClass = RuntimeClassManager.GetRuntimeClassById(m_ImplementsInterfaceIdList[i]);
+                if (implClass == null) continue;
+                if (!implClass.isInterfaceClass) continue;
+
+                string implName = GetGenericDefinitionName(implClass.name);
+                if (string.Equals(implName, targetName, StringComparison.Ordinal))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static string GetGenericDefinitionName(string className)
+        {
+            if (string.IsNullOrEmpty(className)) return string.Empty;
+            int index = className.IndexOf('<');
+            return index >= 0 ? className.Substring(0, index) : className;
+        }
+
         internal void AddImplementsInterfaceId(int interfaceClassId)
         {
             if (interfaceClassId == 0) return;
