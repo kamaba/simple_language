@@ -252,7 +252,8 @@ namespace SimpleLanguage.VM
             switch (evmType)
             {
                 case EVMType.Boolean:
-                    svalue.SetBoolValue(span.Length >= 4 && BinaryPrimitives.ReadInt32LittleEndian(span) != 0);
+                    byte bv = span.Length > 0 ? unchecked((byte)span[0]) : (byte)0;
+                    svalue.SetBoolValue(bv ==1);
                     break;
                 case EVMType.UInt8:
                     svalue.SetUInt8Value(span.Length > 0 ? span[0] : (byte)0);

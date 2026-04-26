@@ -20,7 +20,7 @@ namespace SimpleLanguage.VM
 
             return rt.eType switch
             {
-                EVMType.UInt8 or EVMType.Int8 => 1,
+                EVMType.UInt8 or EVMType.Int8 or EVMType.Boolean => 1,
                 EVMType.Int16 or EVMType.UInt16 => 2,
                 EVMType.Int32 or EVMType.UInt32 or EVMType.Float32 => 4,
                 EVMType.Int64 or EVMType.UInt64 or EVMType.Float64 => 8,

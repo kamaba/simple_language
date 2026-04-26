@@ -1139,7 +1139,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadArrayIndex:
                     {
                         var v = m_ValueStack[m_ValueIndex - 1];
-                        if (v.eType == EVMType.Array && v.sobject is ArrayObject ao)
+                        if (v.sobject is ArrayObject ao)
                         {
                             ao.LoadValue(iri.index, ref v );
                         }
@@ -1941,7 +1941,7 @@ namespace SimpleLanguage.VM.Runtime
                             if (mfc.method.id == "type")
                             {
                                 var sobj = RuntimeTypeManager.CreateTypeObject(rt);
-                                m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
+                                this.m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
                             }
                             else
                             {
