@@ -1219,7 +1219,7 @@ namespace SimpleLanguage.VM.Runtime
                             ref SValue arrayref = ref m_ValueStack[m_ValueIndex - 2];
                             ref SValue loadindex = ref m_ValueStack[m_ValueIndex - 1];
 
-                            if (arrayref.eType == EVMType.Array && arrayref.sobject is ArrayObject ao)
+                            if (arrayref.sobject is ArrayObject ao)
                             {
                                 if (TryGetInt32FromSValue(loadindex, out var idx))
                                 {

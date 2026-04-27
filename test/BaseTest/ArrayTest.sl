@@ -398,10 +398,10 @@ ArrayTest
     }
     static fun()
     {
-        #arrayBasicApiTest()        
+        arrayBasicApiTest()        
         arrayGenericElementTest()
-        #arrayCreateInstanceIndexLoopTest()
-        #arrayCovariantAndLiteralForInTest()
+        arrayCreateInstanceIndexLoopTest()
+        arrayCovariantAndLiteralForInTest()
         #arrayNumberIteratorFromConcreteArrayTest()
         #arrayNestedObjectTreeTest()
         #arrayJagged2DAssignTest()

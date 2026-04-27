@@ -218,12 +218,21 @@ namespace SimpleLanguage.VM.Runtime
             if (arrObj == null) return;
 
             int index = 0;
-            try { index = Convert.ToInt32(args[1].GetValueObject(), CultureInfo.InvariantCulture); }
+            var idxArg = args[1];
+            idxArg.TryNormalizeObjectScalarInPlace();
+            try { index = Convert.ToInt32(idxArg.GetValueObject(), CultureInfo.InvariantCulture); }
             catch { index = 0; }
 
-            SObject? newRef = args[2].isNull ? null : args[2].GetReferenceSObject(createStringRef: true);
-            WriteBarrier.NotifyReferenceStore(arrObj, newRef);
-            arrObj.StoreValue(index, args[2]);
+            var value = args[2];
+            var elementRt = arrObj.runtimeType?.runtimeTemplateList;
+            if (elementRt != null && elementRt.Count > 0)
+            {
+                var targetEvm = elementRt[0].eType;
+                value.TryNormalizeObjectScalarInPlace();
+                value.TryCoerceScalarForAssignment(targetEvm);
+            }
+
+            arrObj.StoreValue(index, value);
         }
 
         /// <summary>Fast object equality for system builtin <see cref="ESystemMethodCall.SystemEqualObject"/>.</summary>
