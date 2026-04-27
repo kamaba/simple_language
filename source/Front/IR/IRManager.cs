@@ -255,7 +255,16 @@ namespace SimpleLanguage.IR
             }
 
             var sb = new StringBuilder();
-            sb.Append(irType.irMetaClass?.irName ?? "<null>");
+            if (irType.templateIndex >= 0)
+            {
+                sb.Append("T[");
+                sb.Append(irType.templateIndex);
+                sb.Append("]");
+            }
+            else
+            {
+                sb.Append(irType.irMetaClass?.irName ?? "<null>");
+            }
 
             var genericList = irType.irMetaTypeList;
             if (genericList != null && genericList.Count > 0)
@@ -267,13 +276,6 @@ namespace SimpleLanguage.IR
                     sb.Append(FormatIRMetaType(genericList[i]));
                 }
                 sb.Append(">");
-            }
-
-            if (irType.templateIndex >= 0)
-            {
-                sb.Append("[T:");
-                sb.Append(irType.templateIndex);
-                sb.Append("]");
             }
 
             return sb.ToString();

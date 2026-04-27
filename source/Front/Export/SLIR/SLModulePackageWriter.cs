@@ -899,14 +899,15 @@ namespace SimpleLanguage.Export.SLIR
         {
             if (mt == null) return null;
 
+            bool isTemplateSlot = mt.templateIndex >= 0;
             var ret = new SLRuntimeDefTypePackage
             {
-                classId = mt.irMetaClass?.id ?? 0,
-                className = NormalizeTypeName(mt.irMetaClass?.irName ?? string.Empty),
+                classId = isTemplateSlot ? 0 : (mt.irMetaClass?.id ?? 0),
+                className = isTemplateSlot ? ("T[" + mt.templateIndex + "]") : NormalizeTypeName(mt.irMetaClass?.irName ?? string.Empty),
                 ownerClassId = mt.irOwnerMetaClass?.id ?? 0,
                 ownerClassName = NormalizeTypeName(mt.irOwnerMetaClass?.irName ?? string.Empty),
                 templateIndex = mt.templateIndex,
-                isTemplate = mt.templateIndex >= 0,
+                isTemplate = isTemplateSlot,
             };
 
             if (mt.irMetaTypeList != null)

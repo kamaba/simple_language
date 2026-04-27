@@ -91,7 +91,7 @@ namespace SimpleLanguage.VM.Runtime
                     //SObject sobj = imt != null
                     //    ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
                     //    : new SObject(EVMType.Object);
-                    RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(imt);
+                    RuntimeType rt = ResolveRuntimeTypeForInit(imt);
                     m_ReturnRuntimeObjectArray[i] = new RuntimeObject(rt, m_Method.methodReturnVariableList[i], null);
                 }
 
@@ -112,7 +112,7 @@ namespace SimpleLanguage.VM.Runtime
                     //        ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
                     //        : new SObject(EVMType.Object);
                     //}
-                    RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(imt);
+                    RuntimeType rt = ResolveRuntimeTypeForInit(imt);
                     m_ArgumentRuntimeObjectArray[i] = new RuntimeObject(rt, m_Method.methodArgumentList[i], null);
                 }
                 for (int i = 0; i < m_ArgumentRuntimeObjectArray.Length; i++)
@@ -130,7 +130,7 @@ namespace SimpleLanguage.VM.Runtime
                     //SObject sobj = imt != null
                     //    ? CreateObjectByIRMetaType(imt, m_Method.ownerMetaClass, true)
                     //    : new SObject(EVMType.Object);
-                    RuntimeType rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(imt);
+                    RuntimeType rt = ResolveRuntimeTypeForInit(imt);
                     m_LocalVariableRuntimeObjectArray[i] = new RuntimeObject(rt, m_Method.methodLocalVariableList[i], null); ;
                 }
                 for (int i = 0; i < m_LocalVariableRuntimeObjectArray.Length; i++)
@@ -172,6 +172,26 @@ namespace SimpleLanguage.VM.Runtime
             }
 
             SlMemoryManager.Instance.RegisterVmForRootCollection(this);
+        }
+
+        private RuntimeType ResolveRuntimeTypeForInit(RuntimeDefType? defType)
+        {
+            if (defType == null)
+            {
+                return RuntimeTypeManager.objectRuntimeType;
+            }
+
+            var ownerClass = m_Method?.ownerMetaClass ?? defType.ownerRuntimeClass;
+            if (ownerClass != null && m_InputTemplateRuntimeTypeList != null && m_InputTemplateRuntimeTypeList.Count > 0)
+            {
+                var templateRt = GetRuntimeTypeByDefType(defType, ownerClass, m_InputTemplateRuntimeTypeList, true);
+                if (templateRt != null)
+                {
+                    return templateRt;
+                }
+            }
+
+            return RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(defType);
         }
 
         public void SetValueIndex( int vindex ) => m_ValueIndex = (ushort)vindex;

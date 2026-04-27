@@ -222,13 +222,70 @@ namespace SimpleLanguage.VM
             if (!targetIsGeneric)
                 return true;
 
-            bool targetIsInterfaceGeneric = targetType.runtimeClass?.isInterfaceClass == true;
-            if (targetIsInterfaceGeneric)
+            bool targetIsInterface = targetType.runtimeClass?.isInterfaceClass == true;
+            if (targetIsInterface)
             {
-                return sourceType.IsExtendsRelation(targetType);
+                if (!sourceType.runtimeClass.IsExtendsRelation(targetType.runtimeClass))
+                    return false;
+
+                return ValidateInterfaceTemplateCovariance(sourceType, targetType);
             }
 
             return IsExactRuntimeType(sourceType, targetType);
+        }
+
+        private static bool ValidateInterfaceTemplateCovariance(RuntimeType sourceType, RuntimeType targetType)
+        {
+            var targetTemplateList = targetType.runtimeTemplateList;
+            if (targetTemplateList == null || targetTemplateList.Count == 0)
+                return true;
+
+            var sourceAsTargetTemplateList = ResolveSourceInterfaceTemplateList(sourceType, targetType.runtimeClass, targetTemplateList.Count);
+            if (sourceAsTargetTemplateList == null || sourceAsTargetTemplateList.Count != targetTemplateList.Count)
+                return false;
+
+            for (int i = 0; i < targetTemplateList.Count; i++)
+            {
+                var targetArg = targetTemplateList[i];
+                var sourceArg = sourceAsTargetTemplateList[i];
+                if (targetArg == null || sourceArg == null)
+                    return false;
+
+                if (!sourceArg.IsExtendsRelation(targetArg))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static List<RuntimeType>? ResolveSourceInterfaceTemplateList(RuntimeType sourceType, RuntimeClass targetInterfaceClass, int expectedCount)
+        {
+            if (sourceType == null || targetInterfaceClass == null)
+                return null;
+
+            if (sourceType.runtimeClass == targetInterfaceClass)
+            {
+                var direct = sourceType.runtimeTemplateList;
+                if (direct != null && direct.Count == expectedCount)
+                    return direct;
+                return null;
+            }
+
+            var resolved = new List<RuntimeType>(expectedCount);
+            for (int i = 0; i < expectedCount; i++)
+            {
+                var relationDef = sourceType.runtimeClass.GetRuntimeDefTypeByTemplateAndClassRelation(targetInterfaceClass, i);
+                if (relationDef == null)
+                    return null;
+
+                var relationType = RuntimeVM.GetRuntimeTypeByDefType(relationDef, sourceType.runtimeClass, sourceType.runtimeTemplateList, false);
+                if (relationType == null)
+                    return null;
+
+                resolved.Add(relationType);
+            }
+
+            return resolved;
         }
 
         private void ClearObjectScalarValue()
@@ -480,7 +537,7 @@ namespace SimpleLanguage.VM
                     {
                         if (!ValidateGenericReferenceAssignment(incomingRef))
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, m_RuntimeVariable.debugInfo,
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, this.m_RuntimeVariable.debugInfo,
                                 $"Generic assignment is only supported for interface generic targets. target={m_RuntimeType}, source={incomingRef.runtimeType}");
                             m_IsNull = true;
                             return;
