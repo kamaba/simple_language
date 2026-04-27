@@ -69,15 +69,15 @@ namespace SimpleLanguage.VM
             {
                 m_UnitLength = 4;
                 m_Data = new byte[checked(m_Length * 4)];
-                if (eArrayType.eType == EVMType.Object)
-                {
-                    for (int i = 0; i < m_Length; i++)
-                    {
-                        var s = new SObject(EVMType.Object);
-                        ObjectManager.RegisterObject(s);
-                        WriteInt32At(i, s.id);
-                    }
-                }
+                //if (eArrayType.eType == EVMType.Object)
+                //{
+                //    for (int i = 0; i < m_Length; i++)
+                //    {
+                //        var s = new SObject(EVMType.Object);
+                //        ObjectManager.RegisterObject(s);
+                //        WriteInt32At(i, s.id);
+                //    }
+                //}
             }
             else
             {

@@ -762,6 +762,27 @@ namespace SimpleLanguage.VM.Runtime
             return true;
         }
 
+        private static bool TryGetInt32FromSValue(in SValue source, out int value)
+        {
+            value = 0;
+            if (source.isNull)
+                return false;
+
+            var temp = source;
+            try
+            {
+                if (temp.eType != EVMType.Int32)
+                    temp.ConvertByEType(EVMType.Int32);
+
+                value = temp.int32Value;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         internal bool TryInvokeRegisteredBridgeByIndex(Instruction iri)
         {
             int bridgeIndex;
@@ -1138,7 +1159,7 @@ namespace SimpleLanguage.VM.Runtime
 
                 case EIROpCode.LoadArrayIndex:
                     {
-                        var v = m_ValueStack[m_ValueIndex - 1];
+                        ref var v = ref m_ValueStack[m_ValueIndex - 1];
                         if (v.sobject is ArrayObject ao)
                         {
                             ao.LoadValue(iri.index, ref v );
@@ -1175,7 +1196,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref SValue sStore = ref m_ValueStack[m_ValueIndex - int1];
                             ref SValue sValue = ref m_ValueStack[m_ValueIndex - int2];
-                            if (sStore.eType == EVMType.Array && sStore.sobject is ArrayObject ao)
+                            if (sStore.sobject is ArrayObject ao)
                             {
                                 ao.StoreValue(iri.index, sValue);
                             }
@@ -1200,7 +1221,14 @@ namespace SimpleLanguage.VM.Runtime
 
                             if (arrayref.eType == EVMType.Array && arrayref.sobject is ArrayObject ao)
                             {
-                                ao.LoadValue(loadindex.int32Value, ref arrayref );
+                                if (TryGetInt32FromSValue(loadindex, out var idx))
+                                {
+                                    ao.LoadValue(idx, ref arrayref );
+                                }
+                                else
+                                {
+                                    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndexField", loadindex.eType.ToString());
+                                }
                             }
                             else
                             {
@@ -1218,13 +1246,20 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex > 2)
                         {
-                            SValue arrayref = m_ValueStack[m_ValueIndex - 3];
-                            SValue loadindex = m_ValueStack[m_ValueIndex - 2];
-                            SValue storevalue = m_ValueStack[m_ValueIndex - 1];
+                            ref SValue arrayref = ref m_ValueStack[m_ValueIndex - 3];
+                            ref SValue loadindex = ref m_ValueStack[m_ValueIndex - 2];
+                            ref SValue storevalue = ref m_ValueStack[m_ValueIndex - 1];
 
                             if (arrayref.sobject is ArrayObject ao)
                             {
-                                ao.StoreValue(loadindex.int32Value, storevalue);
+                                if (TryGetInt32FromSValue(loadindex, out var idx))
+                                {
+                                    ao.StoreValue(idx, storevalue);
+                                }
+                                else
+                                {
+                                    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndexField", loadindex.eType.ToString());
+                                }
                             }
                             else
                             {
@@ -1251,8 +1286,7 @@ namespace SimpleLanguage.VM.Runtime
                             int baseIndex = m_ValueIndex - dupCount;
                             for (int i = 0; i < dupCount; i++)
                             {
-                                var v = m_ValueStack[baseIndex + i];
-                                PushSValueSynced(v);
+                                PushSValueSynced(m_ValueStack[baseIndex + i]);
                             }
                         }
                     }
@@ -1296,8 +1330,8 @@ namespace SimpleLanguage.VM.Runtime
                         // expect value then instance on stack (value pushed last)
                         if (m_ValueIndex >= 2)
                         {
-                            var val = m_ValueStack[--m_ValueIndex];
-                            var inst = m_ValueStack[--m_ValueIndex];
+                            ref var val = ref m_ValueStack[--m_ValueIndex];
+                            ref var inst = ref m_ValueStack[--m_ValueIndex];
                             if ((inst.eType == EVMType.Class || inst.eType == EVMType.Array || inst.eType == EVMType.Object)
                                 && (inst.sobject is ClassObject co ) )
                             {
@@ -1317,8 +1351,8 @@ namespace SimpleLanguage.VM.Runtime
                         // expect value then instance on stack (value pushed last)
                         if (m_ValueIndex >= 2)
                         {
-                            SValue val = m_ValueStack[m_ValueIndex - 1];
-                            SValue inst = m_ValueStack[m_ValueIndex - 2];
+                            ref SValue val = ref m_ValueStack[m_ValueIndex - 1];
+                            ref SValue inst = ref m_ValueStack[m_ValueIndex - 2];
                             if ((inst.eType == EVMType.Class || inst.eType == EVMType.Array || inst.eType == EVMType.Object)
                                 && inst.sobject is ClassObject co)
                             {
@@ -1411,33 +1445,21 @@ namespace SimpleLanguage.VM.Runtime
                         if (m_ValueIndex > 0 && rdt != null)
                         {
                             var sval = m_ValueStack[m_ValueIndex - 1];
-                            EVMType evmt = sval.eType;
-                            
-                            bool sourceIsNegativeSigned = (evmt == EVMType.Int8 && sval.int8Value < 0)
-                                    || (evmt == EVMType.Int16 && sval.int16Value < 0)
-                                    || (evmt == EVMType.Int32 && sval.int32Value < 0);
-                            if (sourceIsNegativeSigned)
+                            if (!TryGetInt32FromSValue(sval, out var arrLength))
+                            {
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                                break;
+                            }
+
+                            if (arrLength < 0)
                             {
                                 Log.AddRuntimeLog(LID.ShowMessageAssert,
                                     $"不能将负值写入无符号类型: target= int32, source={sval.eType}");
                                 return;
                             }
-                            else
-                            {
-                                if(!(evmt == EVMType.Int8
-                                || evmt == EVMType.Int16
-                                || evmt == EVMType.Int32
-                                || evmt == EVMType.UInt16
-                                || evmt == EVMType.UInt8
-                                || evmt == EVMType.UInt32))
-                                {
-                                    Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
-                                    break;
-                                }
-                            }
 
                             var rt = GetRuntimeTypeByDefType(rdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : rdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
-                            ArrayObject arr = new ArrayObject(rt, sval.int32Value);
+                            ArrayObject arr = new ArrayObject(rt, arrLength);
                             // NewArray opcode path should initialize only the backing storage.
                             // Full CreateObject() may require runtime member types that are not guaranteed ready.
                             arr.CreateObject();
@@ -1504,14 +1526,13 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex >= 2)
                         {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[m_ValueIndex];
+                            ref var right = ref  m_ValueStack[--m_ValueIndex];
+                            ref var left = ref m_ValueStack[m_ValueIndex];
                             //bool methodCall = false;
                             //SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
                             //PushSValueSynced(left);
-                            if (left.eType == EVMType.Int32 && right.eType == EVMType.Int32)
+                            if (TryGetInt32FromSValue(left, out var switchValue) && TryGetInt32FromSValue(right, out _))
                             {
-                                int switchValue = left.int32Value;
                                 int caseCount = iri.opValue is int[] arr ? arr.Length : 0;
                                 bool matched = false;
                                 for (int i = 0; i < caseCount; i++)
@@ -1609,8 +1630,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex >= 2)
                         {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
+                            ref var right = ref m_ValueStack[--m_ValueIndex];
+                            ref var left = ref m_ValueStack[--m_ValueIndex];
                             // compareSign 2 -> <
                             SValue.CompareSValue1AndValue2(ref left, ref right, 2);
                             PushSValueSynced(left);
@@ -1622,8 +1643,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex >= 2)
                         {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
+                            ref var right = ref m_ValueStack[--m_ValueIndex];
+                            ref var left = ref m_ValueStack[--m_ValueIndex];
                             // compareSign 0 -> >
                             SValue.CompareSValue1AndValue2(ref left, ref right, 0);
                             PushSValueSynced(left);
@@ -1635,8 +1656,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex >= 2)
                         {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
+                            ref var right = ref m_ValueStack[--m_ValueIndex];
+                            ref var left = ref m_ValueStack[--m_ValueIndex];
                             // compareSign 1 -> >=
                             SValue.CompareSValue1AndValue2(ref left, ref right, 1);
                             PushSValueSynced(left);
@@ -1648,8 +1669,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex >= 2)
                         {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
+                            ref var right = ref m_ValueStack[--m_ValueIndex];
+                            ref var left = ref m_ValueStack[--m_ValueIndex];
                             // compareSign 3 -> <=
                             SValue.CompareSValue1AndValue2(ref left, ref right, 3);
                             PushSValueSynced(left);
@@ -1699,8 +1720,8 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         if (m_ValueIndex >= 2)
                         {
-                            var right = m_ValueStack[--m_ValueIndex];
-                            var left = m_ValueStack[--m_ValueIndex];
+                            ref var right = ref m_ValueStack[--m_ValueIndex];
+                            ref var left = ref m_ValueStack[--m_ValueIndex];
                             int sign = 0;
                             bool isUn = iri.opCode == EIROpCode.Add_Un
                                 || iri.opCode == EIROpCode.Minus_Un

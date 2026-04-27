@@ -74,23 +74,10 @@ namespace SimpleLanguage.VM
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void ComputeValueInline(ref SValue left, int sign, ref SValue right, bool isUnSign)
         {
-            // support class-wrapped numeric objects: unbox them to primitive temporaries
-            bool leftWasClass = false;
-            bool rightWasClass = false;
             SValue leftPrim = left;
             SValue rightPrim = right;
-            if (left.eType == EVMType.Class && left.sobject != null)
-            {
-                leftWasClass = true;
-                leftPrim = default;
-                leftPrim.SetValueBySObject(left.sobject);
-            }
-            if (right.eType == EVMType.Class && right.sobject != null)
-            {
-                rightWasClass = true;
-                rightPrim = default;
-                rightPrim.SetValueBySObject(right.sobject);
-            }
+            leftPrim.TryNormalizeObjectScalarInPlace();
+            rightPrim.TryNormalizeObjectScalarInPlace();
 
             if (sign == 0)
             {
@@ -134,8 +121,8 @@ namespace SimpleLanguage.VM
             }
 
             // If either side is a class-wrapped NumObject, prefer NumObject operation methods
-            bool leftIsNumObj = left.eType == EVMType.Class && left.sobject is NumObject;
-            bool rightIsNumObj = right.eType == EVMType.Class && right.sobject is NumObject;
+            bool leftIsNumObj = (left.eType == EVMType.Class || left.eType == EVMType.Object) && left.sobject is NumObject;
+            bool rightIsNumObj = (right.eType == EVMType.Class || right.eType == EVMType.Object) && right.sobject is NumObject;
             if (leftIsNumObj || rightIsNumObj)
             {
                 NumObject leftNum = leftIsNumObj ? (NumObject)left.sobject : null;

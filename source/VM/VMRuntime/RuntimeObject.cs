@@ -48,7 +48,6 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            EnsureStandaloneMemberDataSlice();
             SetObjectPointer(sobj);
             RefreshIsNull();
         }
@@ -317,6 +316,13 @@ namespace SimpleLanguage.VM
         private bool TryGetMemberDataSpan(out Span<byte> span)
         {
             span = default;
+
+            // 延迟分配：优先复用外部 Attach 进来的共享 memberData；仅在未附着时才创建独立槽位。
+            if ((m_MemberDataBuffer == null || m_Length <= 0) && m_RuntimeType != null)
+            {
+                EnsureStandaloneMemberDataSlice();
+            }
+
             if (m_MemberDataBuffer == null || m_Length <= 0)
                 return false;
             if (m_Start < 0 || m_Start + m_Length > m_MemberDataBuffer.Length)

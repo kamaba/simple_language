@@ -741,8 +741,84 @@ namespace SimpleLanguage.VM
             return t is >= EVMType.Boolean and <= EVMType.Num;
         }
 
+        private static bool IsValueLikeEvm(EVMType t)
+        {
+            return t == EVMType.Boolean
+                || t == EVMType.UInt8
+                || t == EVMType.Int8
+                || t == EVMType.Int16
+                || t == EVMType.UInt16
+                || t == EVMType.Int32
+                || t == EVMType.UInt32
+                || t == EVMType.Int64
+                || t == EVMType.UInt64
+                || t == EVMType.Float32
+                || t == EVMType.Float64
+                || t == EVMType.Num;
+        }
+
+        private static bool TryUnboxObjectLikeScalar(ref SValue source, out SValue unboxed)
+        {
+            unboxed = source;
+            if (source.isNull || source.sobject == null)
+                return false;
+            if (source.eType != EVMType.Object && source.eType != EVMType.Class)
+                return false;
+
+            var temp = default(SValue);
+            temp.SetValueBySObject(source.sobject);
+            if (temp.isNull)
+                return false;
+
+            // Keep true reference-like values untouched; only unbox scalar wrappers.
+            if (temp.eType == EVMType.Object
+                || temp.eType == EVMType.Class
+                || temp.eType == EVMType.Array
+                || temp.eType == EVMType.Type
+                || temp.eType == EVMType.Member)
+                return false;
+
+            unboxed = temp;
+            return true;
+        }
+
+        public bool TryNormalizeObjectScalarInPlace()
+        {
+            var self = this;
+            if (TryUnboxObjectLikeScalar(ref self, out var unboxed))
+            {
+                this = unboxed;
+                return true;
+            }
+            return false;
+        }
+
         public void ConvertValueByTargetTypeAndObject( EVMType etype )
         {
+            // 统一值类型路径：Object/Class 中若封装了 Int8Object/UInt8Object/Int16Object/... 等，
+            // 先解包，再按 ConvertByEType 执行升阶/降阶与溢出处理。
+            if (IsValueLikeEvm(etype))
+            {
+                TryNormalizeObjectScalarInPlace();
+                if (!isNull && IsValueLikeEvm(eType))
+                {
+                    if (eType != etype)
+                    {
+                        try
+                        {
+                            ConvertByEType(etype);
+                        }
+                        catch (OverflowException)
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageWarning,
+                                $"值类型转换溢出: {eType} -> {etype}, value={GetValueObject()}");
+                            throw;
+                        }
+                    }
+                    return;
+                }
+            }
+
             eType = etype;
             if (sobject == null)
             {
@@ -888,8 +964,13 @@ namespace SimpleLanguage.VM
 
         public void ConvertByEType(EVMType neType)
         {
-            object? cur = GetValueObject();
+            // Object/Class slots may carry scalar wrappers (Int32Object/UInt64Object...).
+            // Normalize first so Convert.* paths can work consistently.
+            TryNormalizeObjectScalarInPlace();
+
             var oldType = eType;
+
+            object? cur = GetValueObject();
 
             try
             {

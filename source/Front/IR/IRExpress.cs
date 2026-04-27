@@ -320,16 +320,30 @@ namespace SimpleLanguage.IR
                     int callMethodIndex = -1;
                     string fname = "";
 
-                    MetaClass mc2 = null;
-                    if (mnoen.metaMemberFunction.sourceMetaMemberFunction != null)
-                        mc2 = mnoen.metaMemberFunction.sourceMetaMemberFunction.ownerMetaClass;
-                    else
+                    MetaClass mc2 = mnoen.metaType?.GetTemplateMetaClass();
+                    if (mc2 == null)
                         mc2 = mnoen.metaMemberFunction.ownerMetaClass;
+                    if (mc2 == null)
+                        mc2 = mnoen.metaMemberFunction.sourceMetaMemberFunction?.ownerMetaClass;
 
                     fname = mnoen.metaMemberFunction.virtualFunctionName;
-                    irmc = IRManager.instance.GetIRMetaClassById(mc2.GetHashCode());
+                    irmc = mc2 != null ? IRManager.instance.GetIRMetaClassById(mc2.GetHashCode()) : null;
 
-                    var runtimeMethod = irmc.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
+                    var runtimeMethod = irmc?.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
+                    if (callMethodIndex == -1 && mnoen.metaMemberFunction.sourceMetaMemberFunction != null)
+                    {
+                        var sourceMc = mnoen.metaMemberFunction.sourceMetaMemberFunction.ownerMetaClass;
+                        var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.GetHashCode()) : null;
+                        if (sourceIrmc != null)
+                        {
+                            var sourceMethod = sourceIrmc.GetIRNonStaticMethodIndexByMethod(fname, out var sourceIndex);
+                            if (sourceIndex >= 0)
+                            {
+                                runtimeMethod = sourceMethod;
+                                callMethodIndex = sourceIndex;
+                            }
+                        }
+                    }
                     if (callMethodIndex == -1)
                     {
                         Log.AddIRLog(LID.AutoIRExpressL326, "娌℃湁鎵惧埌鏋勫缓瀵硅薄鍑芥暟!");
@@ -445,16 +459,30 @@ namespace SimpleLanguage.IR
                     int callMethodIndex = -1;
                     string fname = "";
 
-                    MetaClass mc2 = null;
-                    if (mnoen.metaMemberFunction.sourceMetaMemberFunction != null)
-                        mc2 = mnoen.metaMemberFunction.sourceMetaMemberFunction.ownerMetaClass;
-                    else
+                    MetaClass mc2 = mnoen.metaType?.GetTemplateMetaClass();
+                    if (mc2 == null)
                         mc2 = mnoen.metaMemberFunction.ownerMetaClass;
+                    if (mc2 == null)
+                        mc2 = mnoen.metaMemberFunction.sourceMetaMemberFunction?.ownerMetaClass;
 
                     fname = mnoen.metaMemberFunction.virtualFunctionName;
-                    irmc = IRManager.instance.GetIRMetaClassById(mc2.GetHashCode());
+                    irmc = mc2 != null ? IRManager.instance.GetIRMetaClassById(mc2.GetHashCode()) : null;
 
-                    var runtimeMethod = irmc.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
+                    var runtimeMethod = irmc?.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
+                    if (callMethodIndex == -1 && mnoen.metaMemberFunction.sourceMetaMemberFunction != null)
+                    {
+                        var sourceMc = mnoen.metaMemberFunction.sourceMetaMemberFunction.ownerMetaClass;
+                        var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.GetHashCode()) : null;
+                        if (sourceIrmc != null)
+                        {
+                            var sourceMethod = sourceIrmc.GetIRNonStaticMethodIndexByMethod(fname, out var sourceIndex);
+                            if (sourceIndex >= 0)
+                            {
+                                runtimeMethod = sourceMethod;
+                                callMethodIndex = sourceIndex;
+                            }
+                        }
+                    }
                     if (callMethodIndex == -1)
                     {
                         Log.AddIRLog(LID.AutoIRExpressL451, "娌℃湁鎵惧埌鏋勫缓瀵硅薄鍑芥暟!");

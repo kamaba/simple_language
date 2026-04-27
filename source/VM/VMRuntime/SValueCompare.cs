@@ -255,6 +255,9 @@ namespace SimpleLanguage.VM
         {
             methodCall = false;
 
+            sval1.TryNormalizeObjectScalarInPlace();
+            sval2.TryNormalizeObjectScalarInPlace();
+
             if (sval1.isNull)
             {
                 if (isEqual)
@@ -531,6 +534,9 @@ namespace SimpleLanguage.VM
         //0> 1:>= 2:< 3:<= 
         public static void CompareSValue1AndValue2(ref SValue sval1, ref SValue sval2, int compareSign)
         {
+            sval1.TryNormalizeObjectScalarInPlace();
+            sval2.TryNormalizeObjectScalarInPlace();
+
             // logical operators (used by VM OpCode And/Or)
             if (compareSign == 4)
             {
@@ -633,6 +639,8 @@ namespace SimpleLanguage.VM
         }
         public static bool IsTruthy(ref SValue v)
         {
+            v.TryNormalizeObjectScalarInPlace();
+
             if (v.isNull) return false;
             switch (v.eType)
             {
