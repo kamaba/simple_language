@@ -6,6 +6,7 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Compile;
+using SimpleLanguage.Logging;
 
 using System;
 using System.Diagnostics;
@@ -23,6 +24,7 @@ namespace SimpleLanguage.Core
         public MetaBreakStatements(MetaBlockStatements mbs, FileMetaKeyOnlySyntax fmkos) : base(mbs)
         {
             m_FileMetaKeyOnlySyntax = fmkos;
+            AddPingToken(fmkos?.token);
 
             var fwd = mbs.FindNearestMetaForStatementsOrMetaWhileOrDoWhileStatements();
             if (fwd is MetaForStatements)
@@ -32,6 +34,11 @@ namespace SimpleLanguage.Core
             else if (fwd is MetaWhileDoWhileStatements)
             {
                 m_WhileStatements = fwd as MetaWhileDoWhileStatements;
+            }
+
+            if (m_ForStatements == null && m_WhileStatements == null)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, fmkos?.token, "Error break 只能出现在 for/while/dowhile 循环体内");
             }
         }
         public override string ToFormatString()
@@ -55,6 +62,7 @@ namespace SimpleLanguage.Core
         public MetaNextStatements(MetaBlockStatements mbs, FileMetaKeyOnlySyntax fmkos) : base(mbs)
         {
             m_FileMetaKeyOnlySyntax = fmkos;
+            AddPingToken(fmkos?.token);
 
             var fwd = mbs.FindNearestMetaForStatementsOrMetaWhileOrDoWhileStatements();
             if (fwd is MetaForStatements)
@@ -65,6 +73,11 @@ namespace SimpleLanguage.Core
             {
                 m_WhileStatements = fwd as MetaWhileDoWhileStatements;
             }
+
+            if (m_ForStatements == null && m_WhileStatements == null)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, fmkos?.token, "Error next 只能出现在 for/while/dowhile 循环体内");
+            }
         }
         public override string ToFormatString()
         {
@@ -73,7 +86,7 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(Global.tabChar);
             }
-            sb.Append("break;");
+            sb.Append("next;");
             return sb.ToString();
         }
     }
@@ -86,6 +99,7 @@ namespace SimpleLanguage.Core
         public MetaContinueStatements(MetaBlockStatements mbs, FileMetaKeyOnlySyntax fmkos) : base(mbs)
         {
             m_FileMetaKeyOnlySyntax = fmkos;
+            AddPingToken(fmkos?.token);
 
             var fwd = mbs.FindNearestMetaForStatementsOrMetaWhileOrDoWhileStatements();
             if (fwd is MetaForStatements)
@@ -95,6 +109,11 @@ namespace SimpleLanguage.Core
             else if (fwd is MetaWhileDoWhileStatements)
             {
                 m_WhileStatements = fwd as MetaWhileDoWhileStatements;
+            }
+
+            if (m_ForStatements == null && m_WhileStatements == null)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, fmkos?.token, "Error continue 只能出现在 for/while/dowhile 循环体内");
             }
         }
         public override string ToFormatString()

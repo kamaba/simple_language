@@ -196,13 +196,6 @@ namespace SimpleLanguage.VM.Runtime
             var sv = default(SValue);
             arrObj.LoadValue(index, ref sv );
             vm.PushSValueSynced(sv);
-            //if (sv.isNull== false )
-            //{
-            //}
-            //else
-            //{
-            //    vm.PushSValueSynced(SValue.FromClrObject(got));
-            //}
         }
 
         public static void ExecuteSystemArraySetValueThis(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)

@@ -245,7 +245,7 @@ namespace SimpleLanguage.Core
                 // Special rule for enum parameters:
                 // If function parameter is declared as `enum`, the argument must be an enum value
                 // (MetaEnum) of the same enum type, not the underlying primitive type.
-                if (declaredMC is MetaEnum declaredEnum && mip.express is MetaCallLinkExpressNode mcle)
+                if (m_MetaVariable.GetFinalTemplateMetaClass() is MetaEnum && mip.express is MetaCallLinkExpressNode mcle)
                 {
                     var v = mcle.metaCallLink.finalCallNode.variable;
 
@@ -260,7 +260,16 @@ namespace SimpleLanguage.Core
                     return false;
                 }
 
-                var relation = ClassManager.ValidateClassRelationByMetaClass(declaredMC, retMC);
+                var relation = TypeManager.ResolveAssignRelation(
+                    declaredMt,
+                    mip.express,
+                    true,
+                    false,
+                    out _,
+                    out MetaClass declaredMC,
+                    out MetaClass argMC,
+                    out _,
+                    m_MetaVariable);
 
                 if (relation == EClassRelation.Same
                     || relation == EClassRelation.Child
@@ -273,7 +282,7 @@ namespace SimpleLanguage.Core
                 if (relation == EClassRelation.Num)
                 {
                     // 原 Num 对任意两数值过宽；传参时仅允许「更窄原语实参」→「更宽形参」，同阶或 int/float 互斥则否。
-                    if (!ClassManager.IsNarrowerCorePrimitiveWideningOkForCallSite(retMC, declaredMC))
+                    if (!ClassManager.IsNarrowerCorePrimitiveWideningOkForCallSite(argMC, declaredMC))
                         return false;
                     return true;
                 }

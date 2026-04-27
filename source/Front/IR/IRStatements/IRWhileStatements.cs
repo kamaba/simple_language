@@ -343,65 +343,64 @@ namespace SimpleLanguage.IR
         public IRBranch brIRData = null;            //while结束点返回起点语句
         public IRNop endIRData = null;           //while语句点
 
-        private IRExpress m_IRConditionExpress = null;
+        private IRExpressBase m_IRConditionExpress = null;
         public void ParseIRStatements(MetaWhileDoWhileStatements ms)
         {
             startIRData = new IRNop(irMethod);
-            endIRData = new IRNop(irMethod);
-            m_IRStatements.Add(startIRData);
-
             whileStartIRData = new IRNop(irMethod);
-            m_IRStatements.Add(whileStartIRData);
+            endIRData = new IRNop(irMethod);
 
+            irMethod.PushBreakTarget(endIRData.data);
+            irMethod.PushContinueTarget(whileStartIRData.data);
+            try
+            {
+                if (ms.isWhile)
+                {
+                    // while: condition -> body -> back to condition
+                    m_IRStatements.Add(whileStartIRData);
 
-            //if (m_IsWhile)
-            //{
-            //    if (m_ConditionExpress != null)
-            //    {
-            //        m_IRConditionExpress = new IRExpress(irMethod, m_ConditionExpress);
-            //        m_IRStatements.Add(m_IRConditionExpress);
+                    if (ms.conditionExpress != null)
+                    {
+                        m_IRConditionExpress = IRExpressManager.CreateExpress(irMethod, ms.conditionExpress);
+                        m_IRStatements.Add(m_IRConditionExpress);
+                        ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
+                        m_IRStatements.Add(ifIRData);
+                    }
 
-            //        ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
-            //        m_IRStatements.Add(ifIRData);
-            //    }
-            //    m_ThenMetaStatements.ParseAllIRStatements();
-            //    m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
-            //}
-            //else
-            //{
-            //    m_ThenMetaStatements.ParseAllIRStatements();
-            //    m_IRStatements.AddRange(m_ThenMetaStatements.irStatements);
+                    m_IRStatements.Add(startIRData);
+                    IRBlockStatements loopBody = new IRBlockStatements(irMethod);
+                    loopBody.ParseAllIRStatements(ms.thenMetaStatements);
+                    m_IRStatements.AddRange(loopBody.irStatements);
 
-            //    if (m_ConditionExpress != null)
-            //    {
-            //        m_IRConditionExpress = new IRExpress(irMethod, m_ConditionExpress);
-            //        m_IRStatements.Add(m_IRConditionExpress);
+                    brIRData = new IRBranch(irMethod, EIROpCode.Br, whileStartIRData.data);
+                    m_IRStatements.Add(brIRData);
+                    m_IRStatements.Add(endIRData);
+                }
+                else
+                {
+                    // dowhile: body -> condition -> if true back to body
+                    m_IRStatements.Add(startIRData);
+                    IRBlockStatements loopBody = new IRBlockStatements(irMethod);
+                    loopBody.ParseAllIRStatements(ms.thenMetaStatements);
+                    m_IRStatements.AddRange(loopBody.irStatements);
 
-            //        ifIRData = new IRBranch(irMethod, EIROpCode.BrFalse, endIRData.data);
-            //        m_IRStatements.Add(ifIRData);
-            //    }
-            //}
+                    m_IRStatements.Add(whileStartIRData);
+                    if (ms.conditionExpress != null)
+                    {
+                        m_IRConditionExpress = IRExpressManager.CreateExpress(irMethod, ms.conditionExpress);
+                        m_IRStatements.Add(m_IRConditionExpress);
+                        ifIRData = new IRBranch(irMethod, EIROpCode.BrTrue, startIRData.data);
+                        m_IRStatements.Add(ifIRData);
+                    }
 
-            //brIRData = new IRBranch(irMethod, EIROpCode.Br, whileStartIRData.data);
-            //m_IRStatements.Add(brIRData);
-            //m_IRStatements.Add(endIRData);
-
-            //if (m_ConditionExpress != null)
-            //{
-            //    ifIRData.data.SetDebugInfoByToken(m_ConditionExpress.GetToken());
-            //}
-            //if (m_FileMetaKeyWhileSyntax != null)
-            //{
-            //    brIRData.data.SetDebugInfoByToken(m_FileMetaKeyWhileSyntax.executeBlockSyntax.endBlock);
-            //    startIRData.data.SetDebugInfoByToken(m_FileMetaKeyWhileSyntax.token);
-            //    whileStartIRData.data.SetDebugInfoByToken(m_FileMetaKeyWhileSyntax.executeBlockSyntax.beginBlock);
-            //    endIRData.data.SetDebugInfoByToken(m_FileMetaKeyWhileSyntax.executeBlockSyntax.endBlock);
-            //}
-
-            //if (m_NextMetaStatements != null)
-            //{
-            //    m_NextMetaStatements.ParseIRStatements();
-            //}
+                    m_IRStatements.Add(endIRData);
+                }
+            }
+            finally
+            {
+                irMethod.PopContinueTarget();
+                irMethod.PopBreakTarget();
+            }
         }
 
         //public override string ToIRString()

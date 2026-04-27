@@ -12,6 +12,7 @@ namespace SimpleLanguage.VM
         public RuntimeType runtimeType => m_RuntimeType;
         public EVMType eType => m_RuntimeType != null ? m_RuntimeType.eType : EVMType.Null;
         public SObject sobject => GetSObject();
+        public DebugInfo debugInfo => m_RuntimeVariable != null ? m_RuntimeVariable.debugInfo : null;
         public RuntimeVariable runtimeVariable => m_RuntimeVariable;
         public bool isNull => m_IsNull;
 
@@ -181,6 +182,53 @@ namespace SimpleLanguage.VM
                 return EVMType.String;
 
             return EVMType.Object;
+        }
+
+        private static bool IsExactRuntimeType(RuntimeType? left, RuntimeType? right)
+        {
+            if (left == null || right == null)
+                return false;
+
+            if (!ReferenceEquals(left.runtimeClass, right.runtimeClass))
+                return false;
+
+            var leftTemplates = left.runtimeTemplateList;
+            var rightTemplates = right.runtimeTemplateList;
+            if (leftTemplates == null || rightTemplates == null)
+                return leftTemplates == rightTemplates;
+            if (leftTemplates.Count != rightTemplates.Count)
+                return false;
+
+            for (int i = 0; i < leftTemplates.Count; i++)
+            {
+                if (!IsExactRuntimeType(leftTemplates[i], rightTemplates[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private bool ValidateGenericReferenceAssignment(SObject incomingRef)
+        {
+            if (incomingRef == null || m_RuntimeType == null)
+                return false;
+
+            var targetType = m_RuntimeType;
+            var sourceType = incomingRef.runtimeType;
+            if (sourceType == null)
+                return false;
+
+            bool targetIsGeneric = targetType.runtimeTemplateList != null && targetType.runtimeTemplateList.Count > 0;
+            if (!targetIsGeneric)
+                return true;
+
+            bool targetIsInterfaceGeneric = targetType.runtimeClass?.isInterfaceClass == true;
+            if (targetIsInterfaceGeneric)
+            {
+                return sourceType.IsExtendsRelation(targetType);
+            }
+
+            return IsExactRuntimeType(sourceType, targetType);
         }
 
         private void ClearObjectScalarValue()
@@ -430,6 +478,14 @@ namespace SimpleLanguage.VM
                     var incomingRef = sval.GetReferenceSObject(createStringRef: true);
                     if (incomingRef != null)
                     {
+                        if (!ValidateGenericReferenceAssignment(incomingRef))
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, m_RuntimeVariable.debugInfo,
+                                $"Generic assignment is only supported for interface generic targets. target={m_RuntimeType}, source={incomingRef.runtimeType}");
+                            m_IsNull = true;
+                            return;
+                        }
+
                         m_ObjectActualType = sval.eType;                        
                         SetObjectPointer(incomingRef, true);
                         m_IsNull = false;
@@ -437,7 +493,7 @@ namespace SimpleLanguage.VM
                     }
                     else
                     {
-                        Log.AddRuntimeLog(LID.ShowMessageAssert, "create svalue object failed");
+                        Log.AddRuntimeLog(LID.ShowMessageAssert, m_RuntimeVariable.debugInfo, "create svalue object failed");
                     }
                 }
                 else
@@ -455,7 +511,24 @@ namespace SimpleLanguage.VM
                         case EVMType.UInt64: curObj.SetValueByType(EVMType.UInt64, sval.uint64Value); return;
                         case EVMType.Float32: curObj.SetValueByType(EVMType.Float32, sval.float32Value); return;
                         case EVMType.Float64: curObj.SetValueByType(EVMType.Float64, sval.float64Value); return;
-                        default:SetObjectPointer(sval.sobject, true);break;
+                        default:
+                            {
+                                var incomingRef = sval.GetReferenceSObject(createStringRef: true);
+                                if (incomingRef == null)
+                                {
+                                    Log.AddRuntimeLog(LID.ShowMessageAssert, m_RuntimeVariable.debugInfo, "create svalue object failed");
+                                    return;
+                                }
+                                if (!ValidateGenericReferenceAssignment(incomingRef))
+                                {
+                                    Log.AddRuntimeLog(LID.ShowMessageAssert, m_RuntimeVariable.debugInfo,
+                                        $"Generic assignment is only supported for interface generic targets. target={m_RuntimeType}, source={incomingRef.runtimeType}");
+                                    return;
+                                }
+
+                                SetObjectPointer(incomingRef, true);
+                                break;
+                            }
                     }
                 }
                 return;

@@ -707,6 +707,15 @@ namespace SimpleLanguage.VM
                     {
                         return new UInt64Object(uint64Value);
                     }
+                case EVMType.Float32:
+                    {
+                        return new Float32Object(float32Value);
+                    }
+                case EVMType.Float64:
+                case EVMType.Num:
+                    {
+                        return new Float64Object(float64Value);
+                    }
                 default:
                     return null;
             }

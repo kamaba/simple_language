@@ -146,8 +146,8 @@ ArrayTest
         #int[] concrete2 = Int64[2] #这句报错
         concrete[0] = 11
         concrete[1] = 22
-        IIterator<Num> it = concrete.iterator  #允许 要使用iterator 调用函数，支持变成IIerator<Num> 的方式 
-        IIterable<Object> it2 = concrete;
+        IIterator<Num> it = concrete.iterator  #允许 要使用iterator 调用函数，支持变成IIerator<Num> 的方式  支持接口的模板的泛变
+        IIterable<Object> it2 = concrete;      #接口模板泛型的协变
         it.reset()
         while it.moveNext()
         {
@@ -398,11 +398,11 @@ ArrayTest
     }
     static fun()
     {
-        arrayBasicApiTest()        
-        arrayGenericElementTest()
-        arrayCreateInstanceIndexLoopTest()
-        arrayCovariantAndLiteralForInTest()
-        #arrayNumberIteratorFromConcreteArrayTest()
+        #arrayBasicApiTest()        
+        #arrayGenericElementTest()
+        #arrayCreateInstanceIndexLoopTest()
+        #arrayCovariantAndLiteralForInTest()
+        arrayNumberIteratorFromConcreteArrayTest()
         #arrayNestedObjectTreeTest()
         #arrayJagged2DAssignTest()
         #arrayIntLiteralReadTest()

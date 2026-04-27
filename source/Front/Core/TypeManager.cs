@@ -386,7 +386,179 @@ namespace SimpleLanguage.Core
                 return EClassRelation.No;
             }
 
+            if (TryGenericTemplateAssignRelation(targetMetaType, expressRetMetaDefineType, out var genericRelation))
+            {
+                return genericRelation;
+            }
+
             return ClassManager.ValidateClassRelationByMetaClass(curClass, compareClass);
+        }
+
+        private static bool HasTemplateArgs(MetaType mt)
+        {
+            if (mt == null) return false;
+            var list = mt.GetGenTemplateMetaTypeList();
+            return list != null && list.Count > 0;
+        }
+
+        private static bool IsCovariantTemplateArgAssignable(MetaType targetArg, MetaType exprArg)
+        {
+            if (targetArg == null || exprArg == null)
+                return false;
+
+            if (CompareMetaType(targetArg, exprArg))
+                return true;
+
+            var tClass = targetArg.GetTemplateMetaClass();
+            var eClass = exprArg.GetTemplateMetaClass();
+            if (tClass == null || eClass == null)
+                return false;
+
+            var relation = ClassManager.ValidateClassRelationByMetaClass(tClass, eClass);
+            return relation == EClassRelation.Same
+                || relation == EClassRelation.Child
+                || relation == EClassRelation.Interface
+                || relation == EClassRelation.Num;
+        }
+
+        private static bool IsSameTemplateBase(MetaType mt, MetaClass expected)
+        {
+            if (mt == null || expected == null)
+                return false;
+
+            var baseClass = mt.GetTemplateMetaClass();
+            return baseClass == expected;
+        }
+
+        private static bool TryFindImplementedInterfaceMetaType(MetaType exprMetaType, MetaClass targetInterfaceClass, out MetaType implementedInterfaceMetaType)
+        {
+            implementedInterfaceMetaType = null;
+            if (exprMetaType == null || targetInterfaceClass == null)
+                return false;
+
+            var queue = new Queue<MetaClass>();
+            var visited = new HashSet<MetaClass>();
+            if (exprMetaType.metaClass != null)
+            {
+                queue.Enqueue(exprMetaType.metaClass);
+            }
+
+            while (queue.Count > 0)
+            {
+                var current = queue.Dequeue();
+                if (current == null || !visited.Add(current))
+                    continue;
+
+                var interfaces = current.interfaceMetaType;
+                if (interfaces != null)
+                {
+                    for (int i = 0; i < interfaces.Count; i++)
+                    {
+                        var imt = interfaces[i];
+                        if (IsSameTemplateBase(imt, targetInterfaceClass))
+                        {
+                            implementedInterfaceMetaType = imt;
+                            return true;
+                        }
+                    }
+                }
+
+                if (current.extendClass != null)
+                {
+                    queue.Enqueue(current.extendClass);
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// 泛型赋值规则（Front 侧）：
+        /// 1) 非接口泛型：必须完整模板一致；
+        /// 2) 接口泛型：允许按模板参数协变（targetArg 可接收 exprArg）。
+        /// </summary>
+        private static bool TryGenericTemplateAssignRelation(MetaType targetMetaType, MetaType exprMetaType, out EClassRelation relation)
+        {
+            relation = EClassRelation.None;
+            if (targetMetaType == null || exprMetaType == null)
+                return false;
+
+            bool targetHasTemplate = HasTemplateArgs(targetMetaType);
+            bool exprHasTemplate = HasTemplateArgs(exprMetaType);
+            if (!targetHasTemplate && !exprHasTemplate)
+                return false;
+
+            if (CompareMetaType(targetMetaType, exprMetaType))
+            {
+                relation = EClassRelation.Same;
+                return true;
+            }
+
+            var targetClass = targetMetaType.GetTemplateMetaClass();
+            var exprClass = exprMetaType.GetTemplateMetaClass();
+            if (targetClass == null || exprClass == null)
+            {
+                relation = EClassRelation.No;
+                return true;
+            }
+
+            bool targetIsInterface = targetClass.isInterfaceClass;
+            if (!targetIsInterface)
+            {
+                relation = EClassRelation.No;
+                return true;
+            }
+
+            var targetArgs = targetMetaType.GetGenTemplateMetaTypeList();
+
+            // 场景A：同一个接口定义（如 IIterator<Num> <- IIterator<Int32>）
+            if (targetClass == exprClass)
+            {
+                var exprArgsSameInterface = exprMetaType.GetGenTemplateMetaTypeList();
+                if (targetArgs.Count != exprArgsSameInterface.Count)
+                {
+                    relation = EClassRelation.No;
+                    return true;
+                }
+
+                for (int i = 0; i < targetArgs.Count; i++)
+                {
+                    if (!IsCovariantTemplateArgAssignable(targetArgs[i], exprArgsSameInterface[i]))
+                    {
+                        relation = EClassRelation.No;
+                        return true;
+                    }
+                }
+
+                relation = EClassRelation.Same;
+                return true;
+            }
+
+            // 场景B：模板类实例实现了目标接口（如 IIterable<Object> <- Array<Int32>）
+            if (TryFindImplementedInterfaceMetaType(exprMetaType, targetClass, out var implementedInterfaceMt))
+            {
+                var exprArgsFromInterface = implementedInterfaceMt.GetGenTemplateMetaTypeList();
+                if (targetArgs.Count != exprArgsFromInterface.Count)
+                {
+                    relation = EClassRelation.No;
+                    return true;
+                }
+
+                for (int i = 0; i < targetArgs.Count; i++)
+                {
+                    if (!IsCovariantTemplateArgAssignable(targetArgs[i], exprArgsFromInterface[i]))
+                    {
+                        relation = EClassRelation.No;
+                        return true;
+                    }
+                }
+
+                relation = EClassRelation.Same;
+                return true;
+            }
+
+            relation = EClassRelation.No;
+            return true;
         }
 
         #region 模板类定义处理区

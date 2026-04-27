@@ -2021,7 +2021,7 @@ namespace SimpleLanguage.VM.Runtime
 
                         if (v.isNull)
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMNotShouldIsNull, "Current stack value is null." );
+                            Log.AddRuntimeLog(LID.RuntimeVMNotShouldIsNull, iri.debugInfo,  "Current stack value is null." );
                             return;
                         }
 

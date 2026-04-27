@@ -342,6 +342,11 @@ namespace SimpleLanguage.Core
     }
     public sealed class MetaWhileDoWhileStatements : MetaStatements
     {
+        public FileMetaConditionExpressSyntax fileMetaKeyWhileSyntax => m_FileMetaKeyWhileSyntax;
+        public MetaExpressNode conditionExpress => m_ConditionExpress;
+        public MetaBlockStatements thenMetaStatements => m_ThenMetaStatements;
+        public bool isWhile => m_IsWhile;
+
         private FileMetaConditionExpressSyntax m_FileMetaKeyWhileSyntax = null;
         private MetaExpressNode m_ConditionExpress = null;
         private MetaBlockStatements m_ThenMetaStatements = null;
@@ -365,12 +370,15 @@ namespace SimpleLanguage.Core
         }
         private void Parse()
         {
+            m_Token = m_FileMetaKeyWhileSyntax?.token;
+            AddPingToken(m_Token);
+
             m_ThenMetaStatements = new MetaBlockStatements(m_OwnerMetaBlockStatements, m_FileMetaKeyWhileSyntax.executeBlockSyntax);
             m_ThenMetaStatements.SetOwnerMetaStatements(this);
 
             if (m_FileMetaKeyWhileSyntax.conditionExpress != null)
             {
-                MetaType mdt = new MetaType(m_OwnerMetaBlockStatements.ownerMetaClass);
+                MetaType mdt = new MetaType(CoreMetaClassManager.booleanMetaClass);
 
                 CreateExpressParam cep2 = new CreateExpressParam()
                 {
@@ -384,6 +392,11 @@ namespace SimpleLanguage.Core
                 };
                 m_ConditionExpress = ExpressManager.CreateExpressNode(cep2);
             }
+            else
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error while/dowhile 缺少条件表达式");
+            }
+
             MetaMemberFunction.CreateMetaSyntax(m_FileMetaKeyWhileSyntax.executeBlockSyntax, m_ThenMetaStatements );
 
             if (m_ConditionExpress != null)
@@ -393,9 +406,8 @@ namespace SimpleLanguage.Core
                 m_ConditionExpress.CalcReturnType();
             }
         }
-        public void SetDeep(int dp)
+        public override void SetDeep(int dp)
         {
-            //m_Deep = dp;
             m_ThenMetaStatements?.SetDeep(dp);
             nextMetaStatements?.SetDeep(dp);
         }
@@ -403,59 +415,19 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            StringBuilder sb2 = new StringBuilder();
-            //if (m_ConditionExpress != null)
-            //{
-            //    for (int i = 0; i < deep + 1; i++)
-            //    {
-            //        sb2.Append(Global.tabChar);
-            //    }
-            //    sb2.Append("if ");
-            //    sb2.Append(m_ConditionExpress.ToFormatString());
-            //    sb2.Append("{break;}");
-            //}
-
-            //for (int i = 0; i < deep; i++)
-            //{
-            //    sb.Append(Global.tabChar);
-            //}
-            //sb.Append( m_IsWhile ? "while " : "dowhile ");           
-            //sb.Append(Environment.NewLine);
-            //for (int i = 0; i < deep; i++)
-            //{
-            //    sb.Append(Global.tabChar);
-            //}
-            sb.Append("{");
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
+            sb.Append(m_IsWhile ? "while " : "dowhile ");
+            sb.Append(m_ConditionExpress?.ToFormatString());
             sb.Append(Environment.NewLine);
 
-            if( m_IsWhile )
+            if (m_ThenMetaStatements != null)
             {
-                if( !string.IsNullOrEmpty( sb2.ToString() ) )
-                {
-                    sb.Append(sb2.ToString());
-                }
-            }
-            if(m_ThenMetaStatements?.nextMetaStatements != null )
-            {
-                sb.Append(m_ThenMetaStatements?.nextMetaStatements.ToFormatString());
+                sb.Append(m_ThenMetaStatements.ToFormatString());
                 sb.Append(Environment.NewLine);
             }
-
-            if ( !m_IsWhile )
-            {
-                if (!string.IsNullOrEmpty(sb2.ToString()))
-                {
-                    sb.Append(sb2.ToString());
-                    sb.Append(Environment.NewLine);
-                }
-            }
-
-            //for (int i = 0; i < deep; i++)
-            //{
-            //    sb.Append(Global.tabChar);
-            //}
-            sb.Append("}");
-            sb.Append(Environment.NewLine);
 
             sb.Append(nextMetaStatements?.ToFormatString());
             sb.Append(Environment.NewLine);
