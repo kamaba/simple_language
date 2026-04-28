@@ -226,24 +226,40 @@ namespace SimpleLanguage.Core
                     }
                     else if (mdt.IsIterator())
                     {
-                        if (!TypeManager.CompareMetaType(mdt, expressRetMetaDefineType)
-                            && !ClassManager.TryIteratorNumberFromConcreteNumericArray(mdt, expressRetMetaDefineType)
-                            && !ClassManager.TryIteratorNumberFromConcreteNumericIterator(mdt, expressRetMetaDefineType)
-                            && !ClassManager.TryIteratorNumberFromArrayIteratorSource(mdt, m_ExpressNode))
+                        var iteratorRelation = TypeManager.ResolveAssignRelation(
+                            mdt,
+                            m_ExpressNode,
+                            true,
+                            false,
+                            out _,
+                            out _,
+                            out _,
+                            out _,
+                            m_DefineVarMetaVariable);
+                        if (iteratorRelation == EClassRelation.No || iteratorRelation == EClassRelation.CurClassError || iteratorRelation == EClassRelation.CompareClassError)
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                                "Iterator 声明类型与右侧须一致，或对 Iterator<Number> 使用具体数值元素来源（Array/Iterator）。");
+                                "Iterator 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
                             return;
                         }
                         m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                     }
                     else if (mdt.IsIterable())
                     {
-                        if (!TypeManager.CompareMetaType(mdt, expressRetMetaDefineType)
-                            && !ClassManager.TryIterableFromArrayElementAssignable(mdt, expressRetMetaDefineType))
+                        var iterableRelation = TypeManager.ResolveAssignRelation(
+                            mdt,
+                            m_ExpressNode,
+                            true,
+                            false,
+                            out _,
+                            out _,
+                            out _,
+                            out _,
+                            m_DefineVarMetaVariable);
+                        if (iterableRelation == EClassRelation.No || iterableRelation == EClassRelation.CurClassError || iterableRelation == EClassRelation.CompareClassError)
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                                "IIterable 声明类型与右侧须一致，或允许 Array 元素类型到 IIterable 元素类型的可赋值协变。");
+                                "IIterable 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
                             return;
                         }
                         m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
@@ -266,8 +282,16 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            compareClass = expressRetMetaDefineType.metaClass;
-                            relation = ClassManager.ValidateClassRelationByMetaClass(curClass, compareClass);
+                            relation = TypeManager.ResolveAssignRelation(
+                                mdt,
+                                m_ExpressNode,
+                                true,
+                                false,
+                                out _,
+                                out _,
+                                out compareClass,
+                                out _,
+                                m_DefineVarMetaVariable);
                         }
 
                         StringBuilder sb = new StringBuilder();
@@ -305,6 +329,10 @@ namespace SimpleLanguage.Core
                             {
                                 m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                             }
+                        }
+                        else if (relation == EClassRelation.Interface || relation == EClassRelation.Num)
+                        {
+                            m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                         }
                         else
                         {

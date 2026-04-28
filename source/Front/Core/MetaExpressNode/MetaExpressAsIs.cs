@@ -88,6 +88,24 @@ namespace SimpleLanguage.Core
             {
                 m_ConvertTargetMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, m_OwnerMetaBlockStatements.ownerMetaFunction as MetaMemberFunction, m_FileMetaKeyAsIsSyntax.defineType );
 
+                var sourceMetaType = m_CurrentVariableLink?.GetMetaDefineType();
+                if (sourceMetaType == null)
+                {
+                    var sourceMv = m_CurrentVariableLink?.ExecuteGetMetaVariable();
+                    sourceMetaType = sourceMv?.GetFinalMetaType();
+                }
+
+                if (sourceMetaType != null && m_ConvertTargetMetaType != null)
+                {
+                    var forward = TypeManager.ResolveAssignRelationByMetaTypes(m_ConvertTargetMetaType, sourceMetaType, out _, out _);
+                    var backward = TypeManager.ResolveAssignRelationByMetaTypes(sourceMetaType, m_ConvertTargetMetaType, out _, out _);
+                    if (!IsAcceptableAsIsRelation(forward) && !IsAcceptableAsIsRelation(backward))
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaKeyAsIsSyntax.asOrIsToken,
+                            "as/is 两侧类型不存在可转换关系（支持类继承/接口关系及接口模板协变）。");
+                    }
+                }
+
                 if (m_ConvertTargetMetaVariable == null && isAs == false )                    
                 {
                     string nametoken = this.GetHashCode() + "_auto_cast_target_mv";
@@ -100,6 +118,15 @@ namespace SimpleLanguage.Core
                     m_OwnerMetaBlockStatements.AddMetaVariable(m_ConvertTargetMetaVariable);
                 }
             }
+        }
+
+        private static bool IsAcceptableAsIsRelation(EClassRelation relation)
+        {
+            return relation == EClassRelation.Same
+                || relation == EClassRelation.Child
+                || relation == EClassRelation.Parent
+                || relation == EClassRelation.Interface
+                || relation == EClassRelation.Num;
         }
         public override int CalcParseLevel(int level)
         {

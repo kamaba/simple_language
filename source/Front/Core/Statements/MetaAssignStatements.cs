@@ -566,6 +566,17 @@ namespace SimpleLanguage.Core
                     sb.Append("表达式类为: " + compareClass.allClassName);
                 if (relation == EClassRelation.No)
                 {
+                    var targetTemplateList = mdt?.GetGenTemplateMetaTypeList();
+                    var exprTemplateList = expressRetMetaDefineType?.GetGenTemplateMetaTypeList();
+                    bool hasTemplateInEither = (targetTemplateList != null && targetTemplateList.Count > 0)
+                        || (exprTemplateList != null && exprTemplateList.Count > 0);
+                    if (hasTemplateInEither)
+                    {
+                        sb.Append("模板类型不匹配（接口模板位置仅在可协变标记下允许协变），请检查模板参数或接口变型规则。");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
+                        return;
+                    }
+
                     sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, sb.ToString());
                     m_IsNeedCastState = true;

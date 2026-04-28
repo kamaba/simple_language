@@ -378,6 +378,23 @@ namespace SimpleLanguage.Core
                     return EClassRelation.Same;
             }
 
+            return ResolveAssignRelationByMetaTypes(targetMetaType, expressRetMetaDefineType, out _, out _);
+        }
+
+        public static EClassRelation ResolveAssignRelationByMetaTypes(
+            MetaType targetMetaType,
+            MetaType expressRetMetaDefineType,
+            out MetaClass curClass,
+            out MetaClass compareClass)
+        {
+            curClass = targetMetaType?.metaClass;
+            compareClass = expressRetMetaDefineType?.metaClass;
+
+            if (curClass == null)
+                return EClassRelation.CurClassError;
+            if (compareClass == null)
+                return EClassRelation.CompareClassError;
+
             // 数组实体：不支持协变，必须完整类型一致（与 Dart 风格一致，仅接口侧放宽）。
             if (targetMetaType.IsArray() && expressRetMetaDefineType.IsArray())
             {
@@ -419,6 +436,90 @@ namespace SimpleLanguage.Core
                 || relation == EClassRelation.Child
                 || relation == EClassRelation.Interface
                 || relation == EClassRelation.Num;
+        }
+
+        private static bool MetaTypeContainsTemplate(MetaType mt, MetaTemplate template)
+        {
+            if (mt == null || template == null)
+                return false;
+
+            if (mt.isTemplate && mt.metaTemplate == template)
+                return true;
+
+            var childList = mt.GetGenTemplateMetaTypeList();
+            if (childList == null || childList.Count == 0)
+                return false;
+
+            for (int i = 0; i < childList.Count; i++)
+            {
+                if (MetaTypeContainsTemplate(childList[i], template))
+                    return true;
+            }
+            return false;
+        }
+
+        private static void CollectInterfaceTemplateUsage(MetaClass interfaceClass, MetaTemplate template, HashSet<MetaClass> visited, ref bool usedInInput)
+        {
+            if (interfaceClass == null || template == null || visited == null)
+                return;
+            if (!visited.Add(interfaceClass))
+                return;
+
+            var methods = interfaceClass.fileCollectMetaMemberFunctionList;
+            if (methods != null)
+            {
+                for (int i = 0; i < methods.Count; i++)
+                {
+                    var mmf = methods[i];
+                    if (mmf == null)
+                        continue;
+
+                    var paramList = mmf.metaMemberParamCollection?.metaDefineParamList;
+                    if (paramList == null)
+                        continue;
+
+                    for (int pi = 0; pi < paramList.Count; pi++)
+                    {
+                        var pm = paramList[pi];
+                        var pmt = pm?.metaVariable?.defineMetaType;
+                        if (MetaTypeContainsTemplate(pmt, template))
+                        {
+                            usedInInput = true;
+                            return;
+                        }
+                    }
+                }
+            }
+
+            var inheritedInterfaceList = interfaceClass.interfaceMetaType;
+            if (inheritedInterfaceList == null)
+                return;
+            for (int i = 0; i < inheritedInterfaceList.Count; i++)
+            {
+                var inherited = inheritedInterfaceList[i]?.GetTemplateMetaClass();
+                if (inherited != null && inherited.isInterfaceClass)
+                {
+                    CollectInterfaceTemplateUsage(inherited, template, visited, ref usedInInput);
+                    if (usedInInput)
+                        return;
+                }
+            }
+        }
+
+        private static bool IsInterfaceTemplateArgCovariant(MetaClass interfaceClass, int argIndex)
+        {
+            if (interfaceClass == null || !interfaceClass.isInterfaceClass)
+                return false;
+            if (argIndex < 0 || argIndex >= interfaceClass.metaTemplateList.Count)
+                return false;
+
+            var template = interfaceClass.metaTemplateList[argIndex];
+            if (template == null)
+                return false;
+
+            bool usedInInput = false;
+            CollectInterfaceTemplateUsage(interfaceClass, template, new HashSet<MetaClass>(), ref usedInInput);
+            return !usedInInput;
         }
 
         private static bool IsSameTemplateBase(MetaType mt, MetaClass expected)
@@ -523,7 +624,11 @@ namespace SimpleLanguage.Core
 
                 for (int i = 0; i < targetArgs.Count; i++)
                 {
-                    if (!IsCovariantTemplateArgAssignable(targetArgs[i], exprArgsSameInterface[i]))
+                    bool allowCovariant = IsInterfaceTemplateArgCovariant(targetClass, i);
+                    bool ok = allowCovariant
+                        ? IsCovariantTemplateArgAssignable(targetArgs[i], exprArgsSameInterface[i])
+                        : CompareMetaType(targetArgs[i], exprArgsSameInterface[i]);
+                    if (!ok)
                     {
                         relation = EClassRelation.No;
                         return true;
@@ -546,7 +651,11 @@ namespace SimpleLanguage.Core
 
                 for (int i = 0; i < targetArgs.Count; i++)
                 {
-                    if (!IsCovariantTemplateArgAssignable(targetArgs[i], exprArgsFromInterface[i]))
+                    bool allowCovariant = IsInterfaceTemplateArgCovariant(targetClass, i);
+                    bool ok = allowCovariant
+                        ? IsCovariantTemplateArgAssignable(targetArgs[i], exprArgsFromInterface[i])
+                        : CompareMetaType(targetArgs[i], exprArgsFromInterface[i]);
+                    if (!ok)
                     {
                         relation = EClassRelation.No;
                         return true;

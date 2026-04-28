@@ -99,6 +99,15 @@ namespace SimpleLanguage.VM
         /// <summary>
         /// Installs template bindings from exported <c>templateRelationList</c> (related class 鈫?template index 鈫?bound type).
         /// </summary>
+        public void EnsureTemplateRelationClass(int relatedClassId)
+        {
+            if (relatedClassId == 0) return;
+            if (!m_IRMetaClassMapTemplateDict.ContainsKey(relatedClassId))
+            {
+                m_IRMetaClassMapTemplateDict[relatedClassId] = new Dictionary<int, RuntimeDefType>();
+            }
+        }
+
         public void SetTemplateRelation(int relatedClassId, int templateIndex, RuntimeDefType? binding)
         {
             if (binding == null) return;
@@ -165,18 +174,37 @@ namespace SimpleLanguage.VM
 
         public bool IsExtendsRelation(RuntimeClass rc)
         {
-            if (this == rc )
-            {
+            if (rc == null)
+                return false;
+
+            var visited = new HashSet<int>();
+            return IsExtendsRelationInternal(rc, visited);
+        }
+
+        private bool IsExtendsRelationInternal(RuntimeClass rc, HashSet<int> visited)
+        {
+            if (rc == null)
+                return false;
+            if (this == rc)
                 return true;
-            }
+            if (!visited.Add(this.id))
+                return false;
+
             if (m_IRMetaClassMapTemplateDict.ContainsKey(rc.id))
-            {
                 return true;
-            }
-            if (rc != null && rc.isInterfaceClass && ImplementsInterfaceId(rc.id))
-            {
+
+            if (rc.isInterfaceClass && ImplementsInterfaceId(rc.id))
                 return true;
+
+            foreach (var rel in m_IRMetaClassMapTemplateDict)
+            {
+                var directBase = RuntimeClassManager.GetRuntimeClassById(rel.Key);
+                if (directBase == null || directBase == this)
+                    continue;
+                if (directBase.IsExtendsRelationInternal(rc, visited))
+                    return true;
             }
+
             return false;
         }
     }

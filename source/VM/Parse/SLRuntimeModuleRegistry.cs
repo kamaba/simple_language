@@ -119,17 +119,24 @@ namespace SimpleLanguage.Parse
                 foreach (var c in module.classList)
                 {
                     if (c?.templateRelationList == null || c.templateRelationList.Count == 0) continue;
-                    var rc = RuntimeClassManager.GetRuntimeClassById(c.id);
-                    if (rc == null) continue;
+                    var classCandidates = GetRuntimeClassCandidates(c);
+                    if (classCandidates.Count == 0) continue;
                     foreach (var rel in c.templateRelationList)
                     {
-                        if (rel?.mapping == null) continue;
-                        foreach (var ent in rel.mapping)
+                        if (rel == null) continue;
+                        for (int ci = 0; ci < classCandidates.Count; ci++)
                         {
-                            if (ent == null) continue;
-                            var rdt = ResolveRuntimeDefType(ent.type);
-                            if (rdt != null)
-                                rc.SetTemplateRelation(rel.relatedClassId, ent.index, rdt);
+                            var rc = classCandidates[ci];
+                            // Keep direct inheritance/interface relation even when mapping is empty (non-generic relation).
+                            rc.EnsureTemplateRelationClass(rel.relatedClassId);
+                            if (rel.mapping == null) continue;
+                            foreach (var ent in rel.mapping)
+                            {
+                                if (ent == null) continue;
+                                var rdt = ResolveRuntimeDefType(ent.type);
+                                if (rdt != null)
+                                    rc.SetTemplateRelation(rel.relatedClassId, ent.index, rdt);
+                            }
                         }
                     }
                 }
@@ -228,10 +235,55 @@ namespace SimpleLanguage.Parse
             if (existed != null)
                 return existed;
 
+            var fullName = string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName;
+            var existedByName = RuntimeClassManager.GetRuntimeClassByName(fullName);
+            if (existedByName != null)
+            {
+                // Core types may already be pre-created by name before package load.
+                // Rebind to exported class id so templateRelationList can attach to the same RuntimeClass instance.
+                existedByName.id = pkg.id;
+                existedByName.name = fullName;
+                existedByName.metaClassKind = pkg.metaClassKind;
+                existedByName.fieldsFromPackageApplied = false;
+                if (pkg.implementsInterfaceIdList != null)
+                {
+                    for (int i = 0; i < pkg.implementsInterfaceIdList.Count; i++)
+                        existedByName.AddImplementsInterfaceId(pkg.implementsInterfaceIdList[i]);
+                }
+
+                if (!s_ClassPackageById.ContainsKey(pkg.id))
+                    s_ClassPackageById[pkg.id] = pkg;
+
+                return existedByName;
+            }
+
+            var shortName = GetShortName(fullName);
+            if (!string.IsNullOrWhiteSpace(shortName))
+            {
+                var existedByShortName = RuntimeClassManager.GetRuntimeClassByName(shortName);
+                if (existedByShortName != null)
+                {
+                    existedByShortName.id = pkg.id;
+                    existedByShortName.name = fullName;
+                    existedByShortName.metaClassKind = pkg.metaClassKind;
+                    existedByShortName.fieldsFromPackageApplied = false;
+                    if (pkg.implementsInterfaceIdList != null)
+                    {
+                        for (int i = 0; i < pkg.implementsInterfaceIdList.Count; i++)
+                            existedByShortName.AddImplementsInterfaceId(pkg.implementsInterfaceIdList[i]);
+                    }
+
+                    if (!s_ClassPackageById.ContainsKey(pkg.id))
+                        s_ClassPackageById[pkg.id] = pkg;
+
+                    return existedByShortName;
+                }
+            }
+
             var rc = new RuntimeClass
             {
                 id = pkg.id,
-                name = string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName,
+                name = fullName,
                 metaClassKind = pkg.metaClassKind,
                 fieldsFromPackageApplied = false,
             };
@@ -246,6 +298,34 @@ namespace SimpleLanguage.Parse
                 s_ClassPackageById[pkg.id] = pkg;
 
             return rc;
+        }
+
+        private static List<RuntimeClass> GetRuntimeClassCandidates(SLClassPackage c)
+        {
+            var list = new List<RuntimeClass>();
+            if (c == null) return list;
+
+            void AddUnique(RuntimeClass? rc)
+            {
+                if (rc == null) return;
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (ReferenceEquals(list[i], rc))
+                        return;
+                }
+                list.Add(rc);
+            }
+
+            AddUnique(RuntimeClassManager.GetRuntimeClassById(c.id));
+
+            var fullName = string.IsNullOrWhiteSpace(c.fullName) ? c.name : c.fullName;
+            AddUnique(RuntimeClassManager.GetRuntimeClassByName(fullName));
+
+            var shortName = GetShortName(fullName);
+            if (!string.IsNullOrWhiteSpace(shortName))
+                AddUnique(RuntimeClassManager.GetRuntimeClassByName(shortName));
+
+            return list;
         }
 
         /// <summary>Fills <paramref name="rc"/> from <paramref name="pkg"/>.<c>fieldList</c> once per class.</summary>
@@ -611,6 +691,11 @@ namespace SimpleLanguage.Parse
             if (rc == null && !string.IsNullOrWhiteSpace(className))
             {
                 rc = ResolveOrCreateRuntimeClass(className);
+                if (rc != null && classId != 0 && rc.id != classId)
+                {
+                    // Keep one RuntimeClass instance per logical class; align id to exported package id.
+                    rc.id = classId;
+                }
             }
 
             if (rc == null && classId != 0)
