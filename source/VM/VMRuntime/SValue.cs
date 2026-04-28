@@ -326,16 +326,16 @@ namespace SimpleLanguage.VM
             stringValue = val;
             isNull = false;
 
-            if (sobject is StringObject strObj)
-            {
-                strObj.SetValue(val);
-            }
-            else
-            {
-                var strRef = new StringObject(val);
-                ObjectManager.RegisterObject(strRef);
-                sobject = strRef;
-            }
+            //if (sobject is StringObject strObj)
+            //{
+            //    strObj.SetValue(val);
+            //}
+            //else
+            //{
+            //    var strRef = new StringObject(val);
+            //    ObjectManager.RegisterObject(strRef);
+            //    sobject = strRef;
+            //}
             Log.AddRuntimeLog(LID.ShowMessageInfo, "SValue.SetStringValue" + val);
         }
         public void SetStringValueByStrinbObject( StringObject so )

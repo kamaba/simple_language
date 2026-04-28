@@ -347,7 +347,26 @@ namespace SimpleLanguage.VM
             if (m_Start + m_Length > m_MemberDataBuffer.Length)
                 return false;
 
-            ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), m_RuntimeType.eType, ref svalue);
+            if( RuntimeTypeManager.IsPureNumericTypeLocal( m_RuntimeType.eType ) )
+            {
+                ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), this.m_RuntimeType.eType, ref svalue);
+            }
+            else if( m_RuntimeType.eType == EVMType.Num )
+            {
+                if( RuntimeTypeManager.IsPureNumericTypeLocal(svalue.eType ) )
+                {
+                    ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), svalue.eType, ref svalue);
+                }
+                else if( svalue.eType == EVMType.Null )
+                {
+                    m_IsNull = true;
+                }
+            }
+            else
+            {
+                ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), EVMType.Object, ref svalue);
+            }
+
             return true;
         }
 

@@ -95,7 +95,8 @@ namespace SimpleLanguage.VM
                 || evmType == EVMType.Int64
                 || evmType == EVMType.UInt64
                 || evmType == EVMType.Float32
-                || evmType == EVMType.Float64;
+                || evmType == EVMType.Float64
+                || evmType == EVMType.Num;
         }
         public static bool IsObjectScalarType(EVMType t)
         {
@@ -116,6 +117,19 @@ namespace SimpleLanguage.VM
         {
             return t == EVMType.Num
                 || t == EVMType.Int8
+                || t == EVMType.UInt8
+                || t == EVMType.Int16
+                || t == EVMType.UInt16
+                || t == EVMType.Int32
+                || t == EVMType.UInt32
+                || t == EVMType.Int64
+                || t == EVMType.UInt64
+                || t == EVMType.Float32
+                || t == EVMType.Float64;
+        }
+        public static bool IsPureNumericTypeLocal(EVMType t)
+        {
+            return t == EVMType.Int8
                 || t == EVMType.UInt8
                 || t == EVMType.Int16
                 || t == EVMType.UInt16

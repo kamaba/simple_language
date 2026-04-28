@@ -310,51 +310,6 @@ namespace SimpleLanguage.VM.Runtime
                 }
             }
         }
-        public void GetArgumentValue(uint index, ref SValue svalue)
-        {
-            if (index > m_ArgumentRuntimeObjectArray.Length)
-            {
-                Log.AddRuntimeLog(LID.ShowMessageError, $"SVM Error FunctionName:{this.id}");
-                return;
-            }
-            GetObjectByValue(0, index, ref svalue);
-        }
-        public void SetArgumentValue(uint index, SValue svalue)
-        {
-            if (index > m_ArgumentRuntimeObjectArray.Length)
-            {
-                Log.AddRuntimeLog(LID.ShowMessageError, "SetArgumentValue", index );
-                return;
-            }
-            SetObjectByValue(0, index, ref svalue);
-        }
-        public void SetLocalVariableSValue(uint index, ref SValue svalue)
-        {
-            if (index > m_LocalVariableRuntimeObjectArray.Length)
-            {
-                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "SetLocalVariableSValue", index );
-                return;
-            }
-            SetObjectByValue(1, index, ref svalue);
-        }
-        public void GetLocalVariableSValue(uint index, ref SValue svalue)
-        {
-            if (index > m_LocalVariableRuntimeObjectArray.Length )
-            {
-                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "GetLocalVariableSValue", index );
-                return;
-            }
-            GetObjectByValue(1, index, ref svalue);
-        }
-        public void SetReturnVariableSValue( uint index, ref SValue svalue)
-        {
-            if (index > m_ReturnRuntimeObjectArray.Length)
-            {
-                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "SetReturnVariableSValue", index );
-                return;
-            }
-            SetObjectByValue(2, index, ref svalue);
-        }
         public SValue GetCurrentIndexValue(int index)
         {
             return m_ValueStack[index];
@@ -435,7 +390,8 @@ namespace SimpleLanguage.VM.Runtime
                 {
                     sval = topClrRuntime.GetCurrentIndexValue(topClrRuntime.m_ValueIndex - 1 - i);
                 }
-                SetArgumentValue((uint)(m_ArgumentRuntimeObjectArray.Length - i - 1), sval);
+                uint index = (uint)(m_ArgumentRuntimeObjectArray.Length - i - 1);
+                m_ArgumentRuntimeObjectArray[i].SetSObjectBySValue(ref sval);
             }
 
             m_ExecuteIndex = 0;
@@ -1131,26 +1087,47 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadArgument:
                     {
                         if (TryPushStackSlot(out int slot))
-                            GetArgumentValue((uint)iri.index, ref m_ValueStack[slot]);
+                        {
+                            if ((uint)iri.index > m_ArgumentRuntimeObjectArray.Length)
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "LoadArgument", iri.index);
+                                return;
+                            }
+                            m_ArgumentRuntimeObjectArray[(uint)iri.index].SetSValueByRuntimeObjct(ref m_ValueStack[slot]);
+                        }
                     }
                     break;
                 case EIROpCode.LoadLocal:
                     {
                         if (TryPushStackSlot(out int slot))
-                            GetLocalVariableSValue((uint)iri.index, ref m_ValueStack[slot]);
+                        {
+                            if ((uint)iri.index > m_LocalVariableRuntimeObjectArray.Length)
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "LoadLocal", iri.index );
+                                return;
+                            }
+                            m_LocalVariableRuntimeObjectArray[(uint)iri.index].SetSValueByRuntimeObjct(ref m_ValueStack[slot] );
+                        }
                     }
                     break;
                 case EIROpCode.LoadGlobal:
                     {
                         if (TryPushStackSlot(out int slot))
+                        {
                             CLRVM.LoadGlobalVariable((uint)iri.index, ref m_ValueStack[slot]);
+                        }
                     }
                     break;
                 case EIROpCode.StoreLocal:
                     {
                         if (m_ValueIndex > 0)
                         {
-                            SetLocalVariableSValue( (uint)iri.index, ref m_ValueStack[--m_ValueIndex]);
+                            if ((uint)iri.index > m_LocalVariableRuntimeObjectArray.Length)
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "SetLocalVariableSValue", (uint)iri.index );
+                                return;
+                            }
+                            m_LocalVariableRuntimeObjectArray[(uint)iri.index].SetSObjectBySValue(ref m_ValueStack[--m_ValueIndex]);
                         }
                         else
                         {
@@ -1160,7 +1137,19 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.StoreReturn:
                     {
-                        SetReturnVariableSValue( (uint)iri.index, ref m_ValueStack[--m_ValueIndex]);
+                        if (m_ValueIndex > 0)
+                        {
+                            if ((uint)iri.index > m_ReturnRuntimeObjectArray.Length)
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "StoreReturn", (uint)iri.index);
+                                return;
+                            }
+                            m_ReturnRuntimeObjectArray[(uint)iri.index].SetSObjectBySValue(ref m_ValueStack[--m_ValueIndex]);
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, $"StoreReturn stack underflow at index {iri.index}");
+                        }
                         m_ExecuteIndex = m_ExecuteCount;
                     }
                     break;
