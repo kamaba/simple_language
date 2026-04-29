@@ -539,7 +539,7 @@ namespace SimpleLanguage.VM
 
             sval.TryCoerceScalarForAssignment(m_RuntimeType.eType);
 
-            var evmType = m_RuntimeType.eType;
+            var evmType = this.m_RuntimeType.eType;
             if (evmType == EVMType.Boolean
                 || evmType == EVMType.UInt8
                 || evmType == EVMType.Int8

@@ -25,17 +25,45 @@ namespace SimpleLanguage.VM
 
             switch (source.eType)
             {
-                case EVMType.Int32:
                 case EVMType.Int8:
+                    {
+                        value = source.int8Value;
+                    }
+                    break;
                 case EVMType.UInt8:
+                    {
+                        value = source.uint8Value;
+                    }
+                    break;
                 case EVMType.Int16:
+                    {
+                        value = source.int16Value;
+                    }
+                    break;
                 case EVMType.UInt16:
+                    {
+                        value = source.uint16Value;
+                    }
+                    break;
+                case EVMType.Int32:
                     {
                         value = source.int32Value;
                     }
                     break;
                 case EVMType.UInt32:
+                    {
+                        value = source.int16Value;
+                    }
+                    break;
                 case EVMType.Int64:
+                    {
+                        if (source.int64Value > (long)int.MaxValue)
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "parse ");
+                        }
+                        value = (int)source.int64Value;
+                    }
+                    break;
                 case EVMType.UInt64:
                     {
                         if (source.uint64Value > (ulong)int.MaxValue)

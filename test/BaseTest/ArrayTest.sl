@@ -92,6 +92,7 @@ ArrayTest
         global.println("========== createInstance / index / for-i ==========")
         intvalue = 16us
         Int32[] a2 = Array<Int32>.create(intvalue)
+        
         a2[1] = 50
         a2.$1 += 100
         a2[1] = a2.$1 + 200
@@ -103,6 +104,7 @@ ArrayTest
         intvalue = 40
         intvalue -= 13
         global.println("1111111111= " + intvalue )
+        
         for i = 0, i < a2.length, i++
         {
             if i > 0
@@ -398,13 +400,15 @@ ArrayTest
     }
     static fun()
     {
-        #arrayBasicApiTest()        
-        #arrayGenericElementTest()
-        #arrayCreateInstanceIndexLoopTest()
-        #arrayCovariantAndLiteralForInTest()
+        #!
+        arrayBasicApiTest()        
+        arrayGenericElementTest()
+        arrayCreateInstanceIndexLoopTest()
+        arrayCovariantAndLiteralForInTest()
         arrayNumberIteratorFromConcreteArrayTest()
+        !#
         #arrayNestedObjectTreeTest()
-        #arrayJagged2DAssignTest()
+        arrayJagged2DAssignTest()
         #arrayIntLiteralReadTest()
         #arrayRank2SparseJaggedTest()
         #arrayMixedLiteralDollarIndexTest()

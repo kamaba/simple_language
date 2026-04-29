@@ -391,7 +391,7 @@ namespace SimpleLanguage.VM.Runtime
                     sval = topClrRuntime.GetCurrentIndexValue(topClrRuntime.m_ValueIndex - 1 - i);
                 }
                 uint index = (uint)(m_ArgumentRuntimeObjectArray.Length - i - 1);
-                m_ArgumentRuntimeObjectArray[i].SetSObjectBySValue(ref sval);
+                m_ArgumentRuntimeObjectArray[index].SetSObjectBySValue(ref sval);
             }
 
             m_ExecuteIndex = 0;
