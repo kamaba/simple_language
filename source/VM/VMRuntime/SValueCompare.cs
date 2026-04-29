@@ -374,6 +374,11 @@ namespace SimpleLanguage.VM
                 case EVMType.Class:
                     {
                         ClassObject co = (sval1.sobject as ClassObject);
+                        if (co == null)
+                        {
+                            sval1.SetBoolValue(false);
+                            return;
+                        }
                         RuntimeType rt = co.runtimeType;
                         RuntimeClass irc = co.runtimeClass;                        
                         if (irc == null)
@@ -381,11 +386,22 @@ namespace SimpleLanguage.VM
                             Log.AddRuntimeLog(LID.ShowMessageError, "IRC是调用虚函数为空!!");
                             return;
                         }
+                        bool needInvert = false;
                         RuntimeMethod cfc = irc.GetOperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
+                        if (cfc == null && !isEqual)
+                        {
+                            cfc = irc.GetOperatorMethodIndexByMethod("_eq_", out index);
+                            if (cfc != null)
+                                needInvert = true;
+                        }
                         if (cfc != null)
                         {
                             List<RuntimeType> irmtList = new List<RuntimeType>();
                             CLRVM.RunIRMethod(irmtList, cfc, false );
+                            if (needInvert)
+                            {
+                                TryInvertTopMethodBoolResult();
+                            }
                             methodCall = true;
                         }
                         else
@@ -487,6 +503,11 @@ namespace SimpleLanguage.VM
                 case EVMType.Class:
                     {
                         ClassObject co = (sval2.sobject as ClassObject);
+                        if (co == null)
+                        {
+                            sval1.SetBoolValue(false);
+                            return;
+                        }
                         RuntimeType rt = co.runtimeType;
                         RuntimeClass irc = co.runtimeClass;                        
                         if (irc == null)
@@ -494,11 +515,22 @@ namespace SimpleLanguage.VM
                             Log.AddRuntimeLog(LID.ShowMessageError, "IRC是调用虚函数为空!!");
                             return;
                         }
+                        bool needInvert = false;
                         RuntimeMethod cfc = irc.GetOperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
+                        if (cfc == null && !isEqual)
+                        {
+                            cfc = irc.GetOperatorMethodIndexByMethod("_eq_", out index);
+                            if (cfc != null)
+                                needInvert = true;
+                        }
                         if (cfc != null)
                         {
                             List<RuntimeType> irmtList = new List<RuntimeType>();
                             CLRVM.RunIRMethod(irmtList, cfc);
+                            if (needInvert)
+                            {
+                                TryInvertTopMethodBoolResult();
+                            }
                             methodCall = true;
                         }
                         else
@@ -528,6 +560,29 @@ namespace SimpleLanguage.VM
             // fallback: already handled objects/classes earlier; default false
             sval1.SetBoolValue(false);
             Log.AddRuntimeLog(LID.ShowMessageError, "VM Compare SVAlue 比较的低码还没有完善!!");
+        }
+
+        private static void TryInvertTopMethodBoolResult()
+        {
+            if (CLRVM.clrRuntimeStack == null || CLRVM.clrRuntimeStack.Count == 0)
+                return;
+            var vm = CLRVM.clrRuntimeStack.Peek();
+            if (vm == null || vm.valueIndex == 0)
+                return;
+
+            var topIndex = vm.valueIndex - 1;
+            var cur = vm.GetCurrentIndexValue(topIndex);
+            if (cur.eType == EVMType.Boolean)
+            {
+                cur.NotSValue();
+            }
+            else
+            {
+                bool b = IsTruthy(ref cur);
+                cur.SetBoolValue(!b);
+            }
+            vm.SetValueIndex(topIndex);
+            vm.PushSValueSynced(cur);
         }
 
 
@@ -625,17 +680,49 @@ namespace SimpleLanguage.VM
         }
 
         // logical && and || on truthiness
-        public static void LogicalAnd(ref SValue left, ref SValue right)
+        private static bool TryRunClassLogicalOperator(ref SValue left, ref SValue right, string opName)
         {
+            if (left.eType != EVMType.Class || left.sobject is not ClassObject co)
+                return false;
+
+            var method = co.runtimeType?.runtimeClass?.GetOperatorMethodIndexByMethod(opName, out _);
+            if (method == null)
+                return false;
+
+            CLRVM.RunIRMethod(new List<RuntimeType>(), method, false);
+            return true;
+        }
+
+        public static void LogicalAnd(ref SValue left, ref SValue right, out bool methodCall)
+        {
+            methodCall = TryRunClassLogicalOperator(ref left, ref right, "_and_");
+            if (methodCall)
+                return;
+
             bool a = IsTruthy(ref left);
             bool b = IsTruthy(ref right);
             left.SetBoolValue(a && b);
         }
-        public static void LogicalOr(ref SValue left, ref SValue right)
+
+        public static void LogicalAnd(ref SValue left, ref SValue right)
         {
+            LogicalAnd(ref left, ref right, out _);
+        }
+
+        public static void LogicalOr(ref SValue left, ref SValue right, out bool methodCall)
+        {
+            methodCall = TryRunClassLogicalOperator(ref left, ref right, "_or_");
+            if (methodCall)
+                return;
+
             bool a = IsTruthy(ref left);
             bool b = IsTruthy(ref right);
             left.SetBoolValue(a || b);
+        }
+
+        public static void LogicalOr(ref SValue left, ref SValue right)
+        {
+            LogicalOr(ref left, ref right, out _);
         }
         public static bool IsTruthy(ref SValue v)
         {

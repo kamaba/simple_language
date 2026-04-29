@@ -1489,6 +1489,13 @@ namespace SimpleLanguage.VM.Runtime
                                     m_ExecuteIndex = (ushort)(iri.index - 1);
                                 }
                             }
+                            else if( cond.sobject is BoolObject bl )
+                            {
+                                if ( !bl.value )
+                                {
+                                    m_ExecuteIndex = (ushort)(iri.index - 1);
+                                }
+                            }
                             else
                             {
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, "BrFalse");
@@ -1510,6 +1517,13 @@ namespace SimpleLanguage.VM.Runtime
                             if (cond.eType == EVMType.Boolean)
                             {
                                 if (cond.int8Value != 1)
+                                {
+                                    m_ExecuteIndex = (ushort)(iri.index - 1);
+                                }
+                            }
+                            else if (cond.sobject is BoolObject bl)
+                            {
+                                if (bl.value)
                                 {
                                     m_ExecuteIndex = (ushort)(iri.index - 1);
                                 }
@@ -1598,7 +1612,31 @@ namespace SimpleLanguage.VM.Runtime
                             ref var left = ref m_ValueStack[--m_ValueIndex];
                             bool methodCall = false;
                             SValue.CompareEuqalSValue1AndValue2(ref left, ref right, false, out methodCall);
-                            PushSValueSynced(left);
+                            if (methodCall)
+                            {
+                                if (m_ValueIndex > 0)
+                                {
+                                    var top = m_ValueStack[m_ValueIndex - 1];
+                                    if (top.eType == EVMType.Boolean)
+                                    {
+                                        PushSValueSynced(top);
+                                    }
+                                    else
+                                    {
+                                        bool b = SValue.IsTruthy(ref top);
+                                        top.SetBoolValue(b);
+                                        PushSValueSynced(top);
+                                    }
+                                }
+                                else
+                                {
+                                    PushSValueSynced(left);
+                                }
+                            }
+                            else
+                            {
+                                PushSValueSynced(left);
+                            }
                         }
                         else
                         {
@@ -1613,8 +1651,33 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref var right = ref m_ValueStack[--m_ValueIndex];
                             ref var left = ref m_ValueStack[--m_ValueIndex];
-                            SValue.LogicalAnd(ref left, ref right);
-                            PushSValueSynced(left);
+                            bool methodCall = false;
+                            SValue.LogicalAnd(ref left, ref right, out methodCall);
+                            if (methodCall)
+                            {
+                                if (m_ValueIndex > 0)
+                                {
+                                    var top = m_ValueStack[m_ValueIndex - 1];
+                                    if (top.eType == EVMType.Boolean)
+                                    {
+                                        PushSValueSynced(top);
+                                    }
+                                    else
+                                    {
+                                        bool b = SValue.IsTruthy(ref top);
+                                        top.SetBoolValue(b);
+                                        PushSValueSynced(top);
+                                    }
+                                }
+                                else
+                                {
+                                    PushSValueSynced(left);
+                                }
+                            }
+                            else
+                            {
+                                PushSValueSynced(left);
+                            }
                         }
                         else
                         {
@@ -1629,8 +1692,33 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref var right = ref m_ValueStack[--m_ValueIndex];
                             ref var left = ref m_ValueStack[--m_ValueIndex];
-                            SValue.LogicalOr(ref left, ref right);
-                            PushSValueSynced(left);
+                            bool methodCall = false;
+                            SValue.LogicalOr(ref left, ref right, out methodCall);
+                            if (methodCall)
+                            {
+                                if (m_ValueIndex > 0)
+                                {
+                                    var top = m_ValueStack[m_ValueIndex - 1];
+                                    if (top.eType == EVMType.Boolean)
+                                    {
+                                        PushSValueSynced(top);
+                                    }
+                                    else
+                                    {
+                                        bool b = SValue.IsTruthy(ref top);
+                                        top.SetBoolValue(b);
+                                        PushSValueSynced(top);
+                                    }
+                                }
+                                else
+                                {
+                                    PushSValueSynced(left);
+                                }
+                            }
+                            else
+                            {
+                                PushSValueSynced(left);
+                            }
                         }
                         else
                         {
@@ -1951,17 +2039,18 @@ namespace SimpleLanguage.VM.Runtime
                                 return;
                             }
                             var v = m_ValueStack[stackIndex];
-                            if (v.eType == EVMType.Class
-                                || v.eType == EVMType.Array)
+                            if (v.sobject != null )
                             {
-                                var co = (v.sobject as ClassObject);
-                                irc = co.runtimeClass;
                                 rt = v.sobject.runtimeType;
+                                irc = rt.runtimeClass;
                             }
                             else
                             {
                                 irc = RuntimeClassManager.GetRuntimeClassByName(v.eType.ToString());
-                                rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClass(irc);
+                                if( irc != null )
+                                {
+                                    rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClass(irc);
+                                }
                             }
                             if (irc == null)
                             {
@@ -2108,7 +2197,7 @@ namespace SimpleLanguage.VM.Runtime
                             if (rt != null)
                             {
                                 if (TryPushStackSlot(out int slot))
-                                    rt.GetStaticMemberVariableSValue((uint)iri.index, ref m_ValueStack[slot]);
+                                    rt.GetStaticMemberVariableSValue(iri.index, ref m_ValueStack[slot]);
                             }
                         }
                     }
@@ -2127,7 +2216,7 @@ namespace SimpleLanguage.VM.Runtime
                                     Log.AddRuntimeLog(LID.ShowMessageAssert, "StoreStaticField failed to get runtime type for metadata type: ");
                                     break;
                                 }
-                                rt?.SetStaticMemberVariableSValue((uint)iri.index, val);
+                                rt?.SetStaticMemberVariableSValue(iri.index, val);
                             }
                         }
                     }

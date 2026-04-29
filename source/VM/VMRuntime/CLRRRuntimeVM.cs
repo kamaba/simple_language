@@ -161,7 +161,7 @@ namespace SimpleLanguage.VM.Runtime
                 var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(slot.runtimeDefType);
                 if (rt != null)
                 {
-                    rt.SetStaticMemberVariableSValue(id, savl);
+                    rt.SetStaticMemberVariableSValue((int)id, savl);
                 }
                 else
                 {
@@ -182,7 +182,7 @@ namespace SimpleLanguage.VM.Runtime
                 var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(slot.runtimeDefType);
                 if (rt != null)
                 {
-                    rt.GetStaticMemberVariableSValue( (uint)id, ref sval);
+                    rt.GetStaticMemberVariableSValue((int)id, ref sval);
                 }
                 else
                 {

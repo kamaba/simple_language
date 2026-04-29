@@ -351,11 +351,15 @@ namespace SimpleLanguage.VM
             {
                 ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), this.m_RuntimeType.eType, ref svalue);
             }
+            else if(m_RuntimeType.eType == EVMType.Boolean )
+            {
+                ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), this.m_RuntimeType.eType, ref svalue);
+            }
             else if( m_RuntimeType.eType == EVMType.Num )
             {
                 if( RuntimeTypeManager.IsPureNumericTypeLocal(svalue.eType ) )
                 {
-                    ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), svalue.eType, ref svalue);
+                    ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), EVMType.Float64, ref svalue);
                 }
                 else if( svalue.eType == EVMType.Null )
                 {
@@ -535,7 +539,18 @@ namespace SimpleLanguage.VM
 
             sval.TryCoerceScalarForAssignment(m_RuntimeType.eType);
 
-            if ( RuntimeTypeManager.IsMemberDataDirectType(this.m_RuntimeType.eType) )
+            var evmType = m_RuntimeType.eType;
+            if (evmType == EVMType.Boolean
+                || evmType == EVMType.UInt8
+                || evmType == EVMType.Int8
+                || evmType == EVMType.Int16
+                || evmType == EVMType.UInt16
+                || evmType == EVMType.Int32
+                || evmType == EVMType.UInt32
+                || evmType == EVMType.Int64
+                || evmType == EVMType.UInt64
+                || evmType == EVMType.Float32
+                || evmType == EVMType.Float64 )
             {
                 if( TryGetMemberDataSpan(out var directSpan) )
                 {
@@ -544,6 +559,25 @@ namespace SimpleLanguage.VM
                     m_IsNull = false;
                     return;
 
+                }
+            }
+            else if(evmType == EVMType.Num )
+            {
+                if( RuntimeTypeManager.IsNumericTypeLocal( sval.eType ) )
+                {
+                    if (TryGetMemberDataSpan(out var directSpan))
+                    {
+                        SetObjectPointer(null);
+                        WriteSValueToMemberDataSpan(directSpan, EVMType.Float64, ref sval);
+                        m_IsNull = false;
+                        return;
+
+                    }
+                }
+                else
+                {
+                    Log.AddRuntimeLog(LID.ShowMessageAssert, this.m_RuntimeVariable.debugInfo,
+                        $"Generic assignment is only supported for interface generic targets. target={m_RuntimeType}, source=)" );
                 }
             }
             else

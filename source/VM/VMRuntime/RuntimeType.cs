@@ -116,12 +116,17 @@ namespace SimpleLanguage.VM
                 return rt;
             }
         }
-        public void GetStaticMemberVariableSValue(uint index, ref SValue svalue)
+        public void GetStaticMemberVariableSValue(int index, ref SValue svalue)
         {
             if (m_StaticMemberRuntimeObjectArray == null)
             {
                 svalue.SetNull();
                 Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object list is not initialized for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
+                return;
+            }
+            if (index < 0)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object at index {index} is null for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
                 return;
             }
             if ( index >= m_StaticMemberRuntimeObjectArray.Length)
@@ -139,10 +144,23 @@ namespace SimpleLanguage.VM
             // 与 ClassObject.GetMemberVariableSValue 一致：优先 m_MemberData 紧凑布局
             ro.SetSValueByRuntimeObjct(ref svalue);
         }
-        public void SetStaticMemberVariableSValue(uint index, SValue svalue)
+        public void SetStaticMemberVariableSValue(int index, SValue svalue)
         {
-            if (m_StaticMemberRuntimeObjectArray == null) return;
-            if ( index >= m_StaticMemberRuntimeObjectArray.Length) return;
+            if (m_StaticMemberRuntimeObjectArray == null)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object at index {index} is null for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
+                return;
+            }
+            if (index < 0)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object at index {index} is null for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
+                return;
+            }
+            if (index >= m_StaticMemberRuntimeObjectArray.Length)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object at index {index} is null for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
+                return;
+            }
             var target = m_StaticMemberRuntimeObjectArray[index];
             if (target == null)
             {
