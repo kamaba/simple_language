@@ -738,26 +738,6 @@ namespace SimpleLanguage.VM.Runtime
             return true;
         }
 
-        private static bool TryGetInt32FromSValue(in SValue source, out int value)
-        {
-            value = 0;
-            if (source.isNull)
-                return false;
-
-            var temp = source;
-            try
-            {
-                if (temp.eType != EVMType.Int32)
-                    temp.ConvertByEType(EVMType.Int32);
-
-                value = temp.int32Value;
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-        }
 
         internal bool TryInvokeRegisteredBridgeByIndex(Instruction iri)
         {
@@ -1230,7 +1210,7 @@ namespace SimpleLanguage.VM.Runtime
 
                             if (arrayref.sobject is ArrayObject ao)
                             {
-                                if (TryGetInt32FromSValue(loadindex, out var idx))
+                                if (SValue.TryGetInt32FromSValue(loadindex, out var idx))
                                 {
                                     ao.LoadValue(idx, ref arrayref );
                                 }
@@ -1261,7 +1241,7 @@ namespace SimpleLanguage.VM.Runtime
 
                             if (arrayref.sobject is ArrayObject ao)
                             {
-                                if (TryGetInt32FromSValue(loadindex, out var idx))
+                                if (SValue.TryGetInt32FromSValue(loadindex, out var idx))
                                 {
                                     ao.StoreValue(idx, storevalue);
                                 }
@@ -1309,7 +1289,11 @@ namespace SimpleLanguage.VM.Runtime
                         if (m_ValueIndex > 0)
                         {
                             var inst = m_ValueStack[m_ValueIndex-1];
-                            if (inst.eType == EVMType.Array || inst.eType == EVMType.Class || inst.eType == EVMType.Type || inst.eType == EVMType.Object)
+                            if (inst.eType == EVMType.Array
+                                || inst.eType == EVMType.Class
+                                || inst.eType == EVMType.Type
+                                || inst.eType == EVMType.Object
+                                || inst.eType == EVMType.Member )
                             {
                                 --m_ValueIndex;
                                 if (inst.sobject is ClassObject co)
@@ -1341,8 +1325,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref var val = ref m_ValueStack[--m_ValueIndex];
                             ref var inst = ref m_ValueStack[--m_ValueIndex];
-                            if ((inst.eType == EVMType.Class || inst.eType == EVMType.Array || inst.eType == EVMType.Object)
-                                && (inst.sobject is ClassObject co ) )
+                            if (inst.sobject is ClassObject co )
                             {
                                 co.SetMemberVariableSValue( iri.index, val);
                             }
@@ -1362,8 +1345,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ref SValue val = ref m_ValueStack[m_ValueIndex - 1];
                             ref SValue inst = ref m_ValueStack[m_ValueIndex - 2];
-                            if ((inst.eType == EVMType.Class || inst.eType == EVMType.Array || inst.eType == EVMType.Object)
-                                && inst.sobject is ClassObject co)
+                            if (inst.sobject is ClassObject co)
                             {
                                 co.SetMemberVariableSValue(iri.index, val);
                             }
@@ -1407,7 +1389,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
                             ObjectManager.RegisterObject(sobj);
-                            m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
+                            m_ValueStack[m_ValueIndex++].SetRawSObject(sobj);
 
                             var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                             if (irList.Count > 0)
@@ -1454,7 +1436,7 @@ namespace SimpleLanguage.VM.Runtime
                         if (m_ValueIndex > 0 && rdt != null)
                         {
                             var sval = m_ValueStack[m_ValueIndex - 1];
-                            if (!TryGetInt32FromSValue(sval, out var arrLength))
+                            if (!SValue.TryGetInt32FromSValue(sval, out var arrLength))
                             {
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
                                 break;
@@ -1500,15 +1482,22 @@ namespace SimpleLanguage.VM.Runtime
                         if (m_ValueIndex > 0)
                         {
                             var cond = m_ValueStack[--m_ValueIndex];
-                            bool isTrue = cond.eType == EVMType.Boolean ? cond.int8Value == 1 : cond.GetValueObject() != null;
-                            if (!isTrue)
+                            if(cond.eType == EVMType.Boolean )
                             {
-                                m_ExecuteIndex = (ushort)(iri.index - 1);
+                                if (cond.int8Value != 1)
+                                {
+                                    m_ExecuteIndex = (ushort)(iri.index - 1);
+                                }
+                            }
+                            else
+                            {
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "BrFalse");
+                                break;
                             }
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "BrFalse");
                             break;
                         }
                     }
@@ -1518,10 +1507,17 @@ namespace SimpleLanguage.VM.Runtime
                         if (m_ValueIndex > 0)
                         {
                             var cond = m_ValueStack[--m_ValueIndex];
-                            bool isTrue = cond.eType == EVMType.Boolean ? cond.int8Value == 1 : cond.GetValueObject() != null;
-                            if (isTrue)
+                            if (cond.eType == EVMType.Boolean)
                             {
-                                m_ExecuteIndex = (ushort)(iri.index - 1);
+                                if (cond.int8Value != 1)
+                                {
+                                    m_ExecuteIndex = (ushort)(iri.index - 1);
+                                }
+                            }
+                            else
+                            {
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "BrTrue");
+                                break;
                             }
                         }
                         else
@@ -1540,7 +1536,7 @@ namespace SimpleLanguage.VM.Runtime
                             //bool methodCall = false;
                             //SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
                             //PushSValueSynced(left);
-                            if (TryGetInt32FromSValue(left, out var switchValue) && TryGetInt32FromSValue(right, out _))
+                            if (SValue.TryGetInt32FromSValue(left, out var switchValue) && SValue.TryGetInt32FromSValue(right, out _))
                             {
                                 int caseCount = iri.opValue is int[] arr ? arr.Length : 0;
                                 bool matched = false;
@@ -1575,7 +1571,16 @@ namespace SimpleLanguage.VM.Runtime
                             ref var left = ref m_ValueStack[--m_ValueIndex];
                             bool methodCall = false;
                             SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
-                            PushSValueSynced(left);
+                            if (methodCall)
+                            {
+                                m_ValueStack[m_ValueIndex - 3] = left;
+                                m_ValueIndex -= 2;
+                            }
+                            else
+                            {
+                                m_ValueStack[m_ValueIndex - 3] = left;
+                                m_ValueIndex--;
+                            }
                         }
                         else
                         {
