@@ -468,7 +468,7 @@ namespace SimpleLanguage.VM
             switch (evmType)
             {
                 case EVMType.Boolean:
-                    span[0] = (byte)(sval.uint8Value==1?1:0);
+                    span[0] = (byte)(sval.uint8Value == 1 ? 1 : 0);
                     break;
                 case EVMType.UInt8:
                     span[0] = sval.uint8Value;
@@ -507,6 +507,56 @@ namespace SimpleLanguage.VM
                 case EVMType.Float64:
                     if (span.Length >= 8)
                         BinaryPrimitives.WriteDoubleLittleEndian(span, sval.float64Value);
+                    break;
+            }
+        }
+        private static void WriteSValueToMemberDataSpanByObject(Span<byte> span, EVMType evmType, object obj )
+        {
+            if (span.Length <= 0)
+                return;
+
+            switch (evmType)
+            {
+                case EVMType.Boolean:
+                    span[0] = (byte)((Convert.ToByte(obj) == 1) ? 1 : 0);
+                    break;
+                case EVMType.UInt8:
+                    span[0] = Convert.ToByte(obj);
+                    break;
+                case EVMType.Int8:
+                    span[0] = unchecked((byte)Convert.ToByte(obj));
+                    break;
+                case EVMType.Int16:
+                    if (span.Length >= 2)
+                        BinaryPrimitives.WriteInt16LittleEndian(span, Convert.ToInt16(obj));
+                    break;
+                case EVMType.UInt16:
+                    if (span.Length >= 2)
+                        BinaryPrimitives.WriteUInt16LittleEndian(span, Convert.ToUInt16(obj) );
+                    break;
+                case EVMType.Int32:
+                    if (span.Length >= 4)
+                        BinaryPrimitives.WriteInt32LittleEndian(span, Convert.ToInt32(obj) );
+                    break;
+                case EVMType.UInt32:
+                    if (span.Length >= 4)
+                        BinaryPrimitives.WriteUInt32LittleEndian(span, Convert.ToUInt32(obj) );
+                    break;
+                case EVMType.Int64:
+                    if (span.Length >= 8)
+                        BinaryPrimitives.WriteInt64LittleEndian(span, Convert.ToInt64(obj) );
+                    break;
+                case EVMType.UInt64:
+                    if (span.Length >= 8)
+                        BinaryPrimitives.WriteUInt64LittleEndian(span, Convert.ToUInt64(obj) );
+                    break;
+                case EVMType.Float32:
+                    if (span.Length >= 4)
+                        BinaryPrimitives.WriteSingleLittleEndian(span, Convert.ToSingle(obj) );
+                    break;
+                case EVMType.Float64:
+                    if (span.Length >= 8)
+                        BinaryPrimitives.WriteDoubleLittleEndian(span, Convert.ToDouble(obj) );
                     break;
             }
         }
@@ -552,14 +602,29 @@ namespace SimpleLanguage.VM
                 || evmType == EVMType.Float32
                 || evmType == EVMType.Float64 )
             {
-                if( TryGetMemberDataSpan(out var directSpan) )
+                if( sval.eType == EVMType.Object )
                 {
-                    SetObjectPointer(null);
-                    WriteSValueToMemberDataSpan(directSpan, m_RuntimeType.eType, ref sval);
-                    m_IsNull = false;
-                    return;
+                    if (TryGetMemberDataSpan(out var directSpan))
+                    {
+                        SetObjectPointer(null);
+                        WriteSValueToMemberDataSpanByObject(directSpan, m_RuntimeType.eType, sval.sobject.value);
+                        m_IsNull = false;
+                        return;
 
+                    }
                 }
+                else
+                {
+                    if (TryGetMemberDataSpan(out var directSpan))
+                    {
+                        SetObjectPointer(null);
+                        WriteSValueToMemberDataSpan(directSpan, m_RuntimeType.eType, ref sval);
+                        m_IsNull = false;
+                        return;
+
+                    }
+                }
+
             }
             else if(evmType == EVMType.Num )
             {
