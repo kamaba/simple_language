@@ -628,7 +628,18 @@ namespace SimpleLanguage.VM
             }
             else if(evmType == EVMType.Num )
             {
-                if( RuntimeTypeManager.IsNumericTypeLocal( sval.eType ) )
+                if (sval.eType == EVMType.Object)
+                {
+                    if (TryGetMemberDataSpan(out var directSpan))
+                    {
+                        SetObjectPointer(null);
+                        WriteSValueToMemberDataSpanByObject(directSpan, m_RuntimeType.eType, sval.sobject.value);
+                        m_IsNull = false;
+                        return;
+
+                    }
+                }
+                else if ( RuntimeTypeManager.IsNumericTypeLocal( sval.eType ) )
                 {
                     if (TryGetMemberDataSpan(out var directSpan))
                     {

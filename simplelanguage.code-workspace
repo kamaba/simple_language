@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "D:/project/csplatform/server"
+		},
+		{
+			"path": ".."
 		}
 	],
 	"settings": {}
