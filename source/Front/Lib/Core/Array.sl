@@ -98,7 +98,14 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         for i = 0, i < this._length, i++
         {
             var cur = SystemArrayGetValueThis(this, i)
-            showstr = showstr + cur.toString()
+            if cur == null
+            {
+                showstr = showstr + "null"
+            }
+            else
+            {
+                showstr = showstr + cur.toString()
+            }
             if( i < this._length - 1 )
             {
                 showstr += ","

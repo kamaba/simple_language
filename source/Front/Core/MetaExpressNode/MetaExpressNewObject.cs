@@ -585,6 +585,85 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL553, "Error 在数组里边应该是FileMetaBracketTerm 类型!");
                 }
             }
+            // Array<Object>(n){ ... } 中嵌套 [1,2] 时，子字面量节点的 defineMetaType 为元素类型 object（非 Array），
+            // 不可走「普通类 { 成员= }」分支，须与数组槽一致地接纳常量/调用/[]/表达式。
+            else if (mt != null && mt.metaClass == CoreMetaClassManager.objectMetaClass && !mt.IsArray())
+            {
+                m_ContentType = EStatementsContentType.ArrayValue;
+                MetaType cmt = mt;
+                if (fmbt is FileMetaBracketTerm fmstOb)
+                {
+                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmstOb, cmt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_EqualMetaVariable);
+                    mnoe.Parse(aws);
+                    mnoe.CalcReturnType();
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, mnoe, m_EqualMetaVariable as MetaMemberVariable);
+                    m_AssignStatementsList.Add(mas);
+                }
+                else if (fmbt is FileMetaBraceTerm fmbrtOb)
+                {
+                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmbrtOb, cmt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, m_EqualMetaVariable);
+                    mnoe.Parse(aws);
+                    mnoe.CalcReturnType();
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, mnoe, m_EqualMetaVariable as MetaMemberVariable);
+                    m_AssignStatementsList.Add(mas);
+                }
+                else if (fmbt is FileMetaCallTerm fmctOb)
+                {
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.ownerMetaClass = m_OwnerMetaClass;
+                    cep.ownerMBS = m_OwnerMetaBlockStatements;
+                    cep.metaType = new MetaType(cmt);
+                    cep.fme = fmctOb;
+                    cep.equalMetaVariable = m_EqualMetaVariable;
+                    MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
+                    men.Parse(new AllowUseSettings());
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    mas.Parse(new AllowUseSettings());
+                    mas.CalcReturnType();
+                    m_AssignStatementsList.Add(mas);
+                }
+                else if (fmbt is FileMetaConstValueTerm fmcvtOb)
+                {
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.ownerMetaClass = m_OwnerMetaClass;
+                    cep.ownerMBS = m_OwnerMetaBlockStatements;
+                    cep.metaType = new MetaType(cmt);
+                    cep.fme = fmcvtOb;
+                    cep.equalMetaVariable = m_EqualMetaVariable;
+                    MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
+                    men.Parse(new AllowUseSettings());
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    mas.CalcReturnType();
+                    m_AssignStatementsList.Add(mas);
+                }
+                else if (fmbt is FileMetaSymbolTerm fmstOb2)
+                {
+                    if (fmstOb2.symBolType != ETokenType.Comma)
+                    {
+                        Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL533, "间隔符号不对,应该使用,");
+                    }
+                }
+                else if (fmbt is FileMetaTermExpress termexpressOb)
+                {
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.ownerMetaClass = m_OwnerMetaClass;
+                    cep.ownerMBS = m_OwnerMetaBlockStatements;
+                    cep.metaType = new MetaType(cmt);
+                    cep.fme = termexpressOb;
+                    cep.equalMetaVariable = m_EqualMetaVariable;
+                    MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
+                    men.Parse(new AllowUseSettings());
+                    men = ExpressManager.ConvertNewExpress(men, cep.metaType, m_EqualMetaVariable);
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    mas.CalcReturnType();
+                    m_AssignStatementsList.Add(mas);
+                }
+                else
+                {
+                    System.Diagnostics.Debug.Assert(false);
+                    Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL553, "Error Array<Object> 元素槽不支持该语法节点!");
+                }
+            }
             else if (mt.isMap)   // 映射类型的处理 使用   a:10, b:20  20:"aa" 这样的形式
             {
                 if (fmbt is FileMetaSymbolTerm fmst)

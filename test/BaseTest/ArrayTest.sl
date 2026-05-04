@@ -219,14 +219,14 @@ ArrayTest
         int[] a332 = new(4){21,22,23,24} #支持这样的写法
         a33[3] = 123
         var aa333 =  a332[0];
-        global.println("1111111111= " + a33[3] + "-----" + a33[0] + "xxxxx=" + aa333 )
+        global.println("1111111111= " + a33[3] + "-----" + a33[0] + "  xxxxx=" + aa333 )
     }
 
     # int[4][] 不规则第二维
     static arrayRank2SparseJaggedTest()
     {
         global.println("========== int[4][] sparse jagged ==========")
-        int[4][] a335 = {[], int[3]{ 871,872,873 }, int[20] };
+        int[4][] a335 = {[11,22,33], int[3]{ 871,872,873 }, int[20] };
         a335[2][1] = 123
         global.println("1111111111= " + a335[2].toString() + "-----" + a335[0].toString() );
     }
@@ -236,9 +236,11 @@ ArrayTest
     {
         global.println("========== mixed literal / `$` / is ArrClass ==========")
         var ac = ArrClass(){ i1 = 20, i2 = "mix" }
-        mixedNest = [[0,1,2,ac,4],[[11,12],[13,14]]];
+        mixedNest = [[0,1,2,ac,4],[[11],[13,14,15]]];        
+        #mixedNest = ObjectArray(2){ ObjectArray(5){0,1,2,ac,4}, ObjectArray(2){ [11], [13,14,15] } }
         forIIterator(mixedNest)
 
+        #!
         int aa = 0
         #mixedNest.$1.$aa.$1 = 3000; #报错
         mixedNest.$1 = 111
@@ -406,12 +408,12 @@ ArrayTest
         arrayCreateInstanceIndexLoopTest()
         arrayCovariantAndLiteralForInTest()
         arrayNumberIteratorFromConcreteArrayTest()
+        arrayNestedObjectTreeTest()
+        arrayJagged2DAssignTest()        
+        arrayIntLiteralReadTest()
+        arrayRank2SparseJaggedTest()
         !#
-        #arrayNestedObjectTreeTest()
-        arrayJagged2DAssignTest()
-        #arrayIntLiteralReadTest()
-        #arrayRank2SparseJaggedTest()
-        #arrayMixedLiteralDollarIndexTest()
+        arrayMixedLiteralDollarIndexTest()
         #arrayLevelMatrixTest()
         #arrayStringAndLevelVectorTest()
         #arrayHeterogeneousObject2DTest()

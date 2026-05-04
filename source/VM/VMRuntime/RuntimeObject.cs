@@ -561,6 +561,28 @@ namespace SimpleLanguage.VM
             }
         }
 
+        private static bool TryUnwrapScalarAssignmentValue(SObject? sobj, out object? value)
+        {
+            value = null;
+            if (sobj == null)
+                return false;
+
+            var current = sobj;
+            while (current != null)
+            {
+                if (current.eType == EVMType.Object && current.value is SObject inner)
+                {
+                    current = inner;
+                    continue;
+                }
+
+                value = current.value;
+                return value != null;
+            }
+
+            return false;
+        }
+
         private void ClearMemberDataSlice()
         {
             if (m_MemberDataBuffer == null || m_Length <= 0)
@@ -587,9 +609,26 @@ namespace SimpleLanguage.VM
                 return;
             }
 
+            var evmType = this.m_RuntimeType.eType;
+            if (sval.eType == EVMType.Object
+                && (evmType == EVMType.Boolean
+                    || evmType == EVMType.UInt8
+                    || evmType == EVMType.Int8
+                    || evmType == EVMType.Int16
+                    || evmType == EVMType.UInt16
+                    || evmType == EVMType.Int32
+                    || evmType == EVMType.UInt32
+                    || evmType == EVMType.Int64
+                    || evmType == EVMType.UInt64
+                    || evmType == EVMType.Float32
+                    || evmType == EVMType.Float64
+                    || evmType == EVMType.Num))
+            {
+                sval.ConvertValueByTargetTypeAndObject(evmType);
+            }
+
             sval.TryCoerceScalarForAssignment(m_RuntimeType.eType);
 
-            var evmType = this.m_RuntimeType.eType;
             if (evmType == EVMType.Boolean
                 || evmType == EVMType.UInt8
                 || evmType == EVMType.Int8
@@ -604,10 +643,11 @@ namespace SimpleLanguage.VM
             {
                 if( sval.eType == EVMType.Object )
                 {
-                    if (TryGetMemberDataSpan(out var directSpan))
+                    if (TryGetMemberDataSpan(out var directSpan)
+                        && TryUnwrapScalarAssignmentValue(sval.sobject, out var scalarValue))
                     {
                         SetObjectPointer(null);
-                        WriteSValueToMemberDataSpanByObject(directSpan, m_RuntimeType.eType, sval.sobject.value);
+                        WriteSValueToMemberDataSpanByObject(directSpan, m_RuntimeType.eType, scalarValue);
                         m_IsNull = false;
                         return;
 
@@ -630,10 +670,11 @@ namespace SimpleLanguage.VM
             {
                 if (sval.eType == EVMType.Object)
                 {
-                    if (TryGetMemberDataSpan(out var directSpan))
+                    if (TryGetMemberDataSpan(out var directSpan)
+                        && TryUnwrapScalarAssignmentValue(sval.sobject, out var scalarValue))
                     {
                         SetObjectPointer(null);
-                        WriteSValueToMemberDataSpanByObject(directSpan, m_RuntimeType.eType, sval.sobject.value);
+                        WriteSValueToMemberDataSpanByObject(directSpan, m_RuntimeType.eType, scalarValue);
                         m_IsNull = false;
                         return;
 

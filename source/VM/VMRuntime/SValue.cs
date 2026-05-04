@@ -175,18 +175,27 @@ namespace SimpleLanguage.VM
             isNull = false;
             eType = EVMType.Boolean;
             uint8Value = val ? (byte)1 : (byte)0;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const Boolean: " + val);
+#endif
         }
         public void SetUInt8Value(byte val)
         {
             eType = EVMType.UInt8;
             uint8Value = val;
             isNull = false;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const UInt8: " + val);
+#endif
         }
         public void SetInt8Value(sbyte val)
         {
             eType = EVMType.Int8;
             int8Value = val;
             isNull = false;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const Int16: " + val);
+#endif
         }
         //public void SetCharValue(char val)
         //{
@@ -198,35 +207,91 @@ namespace SimpleLanguage.VM
             eType = EVMType.Int16;
             int16Value = val;
             isNull = false;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const UInt16: " + val);
+#endif
         }
         public void SetUInt16Value(UInt16 val)
         {
             eType = EVMType.UInt16;
             uint16Value = val;
             isNull = false;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const Int8: " + val);
+#endif
         }
         public void SetInt32Value(Int32 val)
         {
             eType = EVMType.Int32;
             int32Value = val;
             isNull = false;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const Int32: " + val);
+#endif
         }
         public void SetUInt32Value(UInt32 val)
         {
             eType = EVMType.UInt32;
             uint32Value = val;
             isNull = false;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const UInt32: " + val);
+#endif
         }
         public void SetInt64Value(Int64 val)
         {
             eType = EVMType.Int64;
             int64Value = val;
             isNull = false;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const Int64: " + val);
+#endif
         }
         public void SetUInt64Value(UInt64 val)
         {
             eType = EVMType.UInt64;
             uint64Value = val;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const UInt64: " + val);
+#endif
+        }
+        public void SetFloatValue(Single val)
+        {
+            eType = EVMType.Float32;
+            float32Value = val;
+            isNull = false;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const Float32: " + val);
+#endif
+        }
+        public void SetDoubleValue(Double val)
+        {
+            eType = EVMType.Float64;
+            float64Value = val;
+            isNull = false;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const Float64: " + val);
+#endif
+        }
+        public void SetStringValue(string val)
+        {
+            eType = EVMType.String;
+            stringValue = val;
+            isNull = false;
+
+            //if (sobject is StringObject strObj)
+            //{
+            //    strObj.SetValue(val);
+            //}
+            //else
+            //{
+            //    var strRef = new StringObject(val);
+            //    ObjectManager.RegisterObject(strRef);
+            //    sobject = strRef;
+            //}
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const SetStringValue: " + val);
+#endif
         }
         // helper conversions used by ComputeSVAlue
         bool IsUnsignedType(EVMType t)
@@ -308,49 +373,24 @@ namespace SimpleLanguage.VM
                 default: break;
             }
         }
-        public void SetFloatValue(Single val)
-        {
-            eType = EVMType.Float32;
-            float32Value = val;
-            isNull = false;
-        }
-        public void SetDoubleValue(Double val)
-        {
-            eType = EVMType.Float64;
-            float64Value = val;
-            isNull = false;
-        }
-        public void SetStringValue(string val)
-        {
-            eType = EVMType.String;
-            stringValue = val;
-            isNull = false;
-
-            //if (sobject is StringObject strObj)
-            //{
-            //    strObj.SetValue(val);
-            //}
-            //else
-            //{
-            //    var strRef = new StringObject(val);
-            //    ObjectManager.RegisterObject(strRef);
-            //    sobject = strRef;
-            //}
-            Log.AddRuntimeLog(LID.ShowMessageInfo, "SValue.SetStringValue" + val);
-        }
         public void SetStringValueByStrinbObject( StringObject so )
         {
             eType = EVMType.String;
             stringValue = so.value;
             isNull = false;
             sobject = so;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "Load Const SetStringValueByStrinbObject: " + so.value );
+#endif
         }
         public void SetArrayObject( ArrayObject ao )
         {
             eType = EVMType.Array;
             sobject = ao;
             isNull = false;
+#if DEBUG
             Log.AddRuntimeLog(LID.ShowMessageInfo, "SValue.SetArrayValue" + ao );
+#endif
         }
         public void SetTypeObject( TypeObject to )
         {
@@ -492,6 +532,9 @@ namespace SimpleLanguage.VM
             isNull = false;
             eType = val.eType;
             sobject = val;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "SetRawSObject: " + sobject?.id );
+#endif
         }
         public void SetValueBySObject(SObject val)
         {

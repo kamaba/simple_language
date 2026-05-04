@@ -135,9 +135,15 @@ namespace SimpleLanguage.IR
                     {
                         foreach( var v in maen.metaCallArray )
                         {
-                            var exp1 = new IRExpress(this.m_IRMethod, v);
+                            var exp1 = IRExpressManager.CreateExpress(this.m_IRMethod, v);
                             m_IRDataList.AddRange(exp1.IRDataList);
                         }
+                    }
+                    break;
+                case MetaNewObjectExpressNode mnoeNest:
+                    {
+                        var ireNest = IRExpressManager.CreateExpress(m_IRMethod, mnoeNest);
+                        m_IRDataList.AddRange(ireNest.IRDataList);
                     }
                     break;
                 case MetaThreeItemExpressNode mtien:
@@ -298,7 +304,21 @@ namespace SimpleLanguage.IR
 
             if( mnoen.newType == MetaNewObjectExpressNode.ENewType.ArrayClass )
             {
-                IRExpressBase ire = IRExpressManager.CreateExpress(irMethod, mnoen.arrayLengthExpress );
+                MetaExpressNode lenNode = mnoen.arrayLengthExpress;
+                if (lenNode == null)
+                {
+                    int inferredLen = mnoen.metaType != null ? mnoen.metaType.arrayLength : -1;
+                    if (inferredLen < 0 && mnoen.metaContent?.assignStatementsList != null)
+                    {
+                        inferredLen = mnoen.metaContent.assignStatementsList.Count;
+                    }
+                    if (inferredLen < 0)
+                    {
+                        inferredLen = 0;
+                    }
+                    lenNode = new MetaConstExpressNode(EType.Int32, inferredLen);
+                }
+                IRExpressBase ire = IRExpressManager.CreateExpress(irMethod, lenNode);
                 m_IRDataList.AddRange(ire.IRDataList);
 
                 var irMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaType, owirmc);

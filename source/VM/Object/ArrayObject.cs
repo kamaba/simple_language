@@ -336,13 +336,15 @@ namespace SimpleLanguage.VM
                 }
                 else
                 {
-                    var so = svalue.sobject;
-                    if (so != null)
+                    // Object / Class / Array / Type 等引用槽：标量须先装箱（与 RuntimeObject.SetSObjectBySValue 一致）。
+                    var refObj = svalue.GetReferenceSObject(createStringRef: true);
+                    if (refObj != null)
                     {
-                        ObjectManager.RegisterObject(so);
-                        WriteInt32At(index, so.id);
+                        ObjectManager.RegisterObject(refObj);
+                        WriteInt32At(index, refObj.id);
                     }
-                    else WriteInt32At(index, 0);
+                    else
+                        WriteInt32At(index, 0);
                 }
                 return;
             }

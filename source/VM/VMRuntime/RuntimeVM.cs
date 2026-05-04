@@ -314,45 +314,6 @@ namespace SimpleLanguage.VM.Runtime
         {
             return m_ValueStack[index];
         }
-
-        private RuntimeObject? ResolveRuntimeObjectSlot(int type, int index)
-        {
-            RuntimeObject[]? targetArray = type switch
-            {
-                0 => m_ArgumentRuntimeObjectArray,
-                1 => m_LocalVariableRuntimeObjectArray,
-                2 => m_ReturnRuntimeObjectArray,
-                _ => null,
-            };
-
-            if (targetArray == null || index < 0 || index >= targetArray.Length)
-            {
-                Log.AddRuntimeLog(LID.ShowMessageAssert, " runtime object is null for type " + type + " index " + index);
-                return null;
-            }
-
-            return targetArray[index];
-        }
-
-        private void GetObjectByValue(int type, uint index, ref SValue svalue)
-        {
-            RuntimeObject[]? targetArray = type switch
-            {
-                0 => m_ArgumentRuntimeObjectArray,
-                1 => m_LocalVariableRuntimeObjectArray,
-                2 => m_ReturnRuntimeObjectArray,
-                _ => null,
-            };
-
-            if (targetArray == null || index >= targetArray.Length)
-            {
-                Log.AddRuntimeLog(LID.ShowMessageAssert, " runtime object is null for type " + type + " index " + index);
-                return;
-            }
-
-            targetArray[index].SetSValueByRuntimeObjct(ref svalue);
-        }
-
         public void SetNewObject()
         {
             SValue sval = CLRVM.topCLRRuntime.GetCurrentIndexValue(CLRVM.topCLRRuntime.m_ValueIndex - 1);
@@ -1012,56 +973,89 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Convert_I8:
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt8);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "Convert to UInt8");
+#endif
                     }
                     break;
                 case EIROpCode.Convert_SI8:
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int8);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "Convert to Int8");
+#endif
                     }
                     break;
                 case EIROpCode.Convert_I16:
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int16);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "Convert to Int16");
+#endif
                     }
                     break;
                 case EIROpCode.Convert_UI16:
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt16);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "Convert to UInt16");
+#endif
                     }
                     break;
                 case EIROpCode.Convert_I32:
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int32);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "Convert to Int32");
+#endif
                     }
                     break;
                 case EIROpCode.Convert_UI32:
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt32);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "Convert to UInt32");
+#endif
                     }
                     break;
                 case EIROpCode.Convert_I64:
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int64);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "Convert to Int64");
+#endif
                     }
                     break;
                 case EIROpCode.Convert_UI64:
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt64);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "Convert to UInt64");
+#endif
                     }
                     break;
                 case EIROpCode.Convert_R4:
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Float32);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "Convert to Float32");
+#endif
                     }
                     break;
                 case EIROpCode.Convert_R8:
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Float64);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "Convert to Float64");
+#endif
                     }
                     break;
                 case EIROpCode.Convert_ToString:
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.String);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "Convert to String");
+#endif
                     }
                     break;
                 case EIROpCode.LoadArgument:
@@ -1074,6 +1068,9 @@ namespace SimpleLanguage.VM.Runtime
                                 return;
                             }
                             m_ArgumentRuntimeObjectArray[(uint)iri.index].SetSValueByRuntimeObjct(ref m_ValueStack[slot]);
+#if DEBUG
+                            Log.AddVM(LID.ShowMessageInfo, "LoadArgument: index=" + iri.index);
+#endif
                         }
                     }
                     break;
@@ -1087,6 +1084,9 @@ namespace SimpleLanguage.VM.Runtime
                                 return;
                             }
                             m_LocalVariableRuntimeObjectArray[(uint)iri.index].SetSValueByRuntimeObjct(ref m_ValueStack[slot] );
+#if DEBUG
+                            Log.AddVM(LID.ShowMessageInfo, "LoadLocal: index=" + iri.index);
+#endif
                         }
                     }
                     break;
@@ -1095,6 +1095,9 @@ namespace SimpleLanguage.VM.Runtime
                         if (TryPushStackSlot(out int slot))
                         {
                             CLRVM.LoadGlobalVariable((uint)iri.index, ref m_ValueStack[slot]);
+#if DEBUG
+                            Log.AddVM(LID.ShowMessageInfo, "LoadGlobal: index=" + iri.index);
+#endif
                         }
                     }
                     break;
@@ -1108,6 +1111,9 @@ namespace SimpleLanguage.VM.Runtime
                                 return;
                             }
                             m_LocalVariableRuntimeObjectArray[(uint)iri.index].SetSObjectBySValue(ref m_ValueStack[--m_ValueIndex]);
+#if DEBUG
+                            Log.AddVM(LID.ShowMessageInfo, "StoreLocal: index=" + iri.index);
+#endif
                         }
                         else
                         {
@@ -1125,6 +1131,9 @@ namespace SimpleLanguage.VM.Runtime
                                 return;
                             }
                             m_ReturnRuntimeObjectArray[(uint)iri.index].SetSObjectBySValue(ref m_ValueStack[--m_ValueIndex]);
+#if DEBUG
+                            Log.AddVM(LID.ShowMessageInfo, "StoreReturn: index=" + iri.index);
+#endif
                         }
                         else
                         {
@@ -1138,6 +1147,9 @@ namespace SimpleLanguage.VM.Runtime
                         if (m_ValueIndex > 0)
                         {
                             CLRVM.StoreGlobalVariable( (uint)iri.index, ref m_ValueStack[--m_ValueIndex]);
+#if DEBUG
+                            Log.AddVM(LID.ShowMessageInfo, "StoreGlobal: index=" + iri.index);
+#endif
                         }
                         else
                         {
@@ -1152,6 +1164,9 @@ namespace SimpleLanguage.VM.Runtime
                         if (v.sobject is ArrayObject ao)
                         {
                             ao.LoadValue(iri.index, ref v );
+#if DEBUG
+                            Log.AddVM(LID.ShowMessageInfo, "LoadArrayIndex: index=" + iri.index);
+#endif
                         }
                         else
                         {
@@ -1188,6 +1203,9 @@ namespace SimpleLanguage.VM.Runtime
                             if (sStore.sobject is ArrayObject ao)
                             {
                                 ao.StoreValue(iri.index, sValue);
+#if DEBUG
+                                Log.AddVM(LID.ShowMessageInfo, "StoreArrayIndex: index=" + iri.index);
+#endif
                             }
                             else
                             {
@@ -1213,6 +1231,9 @@ namespace SimpleLanguage.VM.Runtime
                                 if (SValue.TryGetInt32FromSValue(loadindex, out var idx))
                                 {
                                     ao.LoadValue(idx, ref arrayref );
+#if DEBUG
+                                    Log.AddVM(LID.ShowMessageInfo, "LoadArrayIndexField: idx=" + idx);
+#endif
                                 }
                                 else
                                 {
@@ -1244,6 +1265,9 @@ namespace SimpleLanguage.VM.Runtime
                                 if (SValue.TryGetInt32FromSValue(loadindex, out var idx))
                                 {
                                     ao.StoreValue(idx, storevalue);
+#if DEBUG
+                                    Log.AddVM(LID.ShowMessageInfo, "StoreArrayIndexField: idx=" + idx);
+#endif
                                 }
                                 else
                                 {
@@ -1299,7 +1323,12 @@ namespace SimpleLanguage.VM.Runtime
                                 if (inst.sobject is ClassObject co)
                                 {
                                     if (TryPushStackSlot(out int slot))
+                                    {
                                         co.GetMemberVariableSValue(iri.index, ref m_ValueStack[slot]);
+#if DEBUG
+                                        Log.AddVM(LID.ShowMessageInfo, "LoadNotStaticField: index=" + iri.index);
+#endif
+                                    }
                                 }
                                 else
                                 {
@@ -1328,6 +1357,9 @@ namespace SimpleLanguage.VM.Runtime
                             if (inst.sobject is ClassObject co )
                             {
                                 co.SetMemberVariableSValue( iri.index, val);
+#if DEBUG
+                                Log.AddVM(LID.ShowMessageInfo, "StoreNotStaticField2: index=" + iri.index);
+#endif
                             }
                             //else
                             //{
@@ -1348,6 +1380,9 @@ namespace SimpleLanguage.VM.Runtime
                             if (inst.sobject is ClassObject co)
                             {
                                 co.SetMemberVariableSValue(iri.index, val);
+#if DEBUG
+                                Log.AddVM(LID.ShowMessageInfo, "StoreNotStaticField1: index=" + iri.index);
+#endif
                             }
                             //else
                             //{
@@ -1587,13 +1622,28 @@ namespace SimpleLanguage.VM.Runtime
                             SValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
                             if (methodCall)
                             {
-                                m_ValueStack[m_ValueIndex - 3] = left;
-                                m_ValueIndex -= 2;
+                                if (m_ValueIndex > 0)
+                                {
+                                    var top = m_ValueStack[m_ValueIndex - 1];
+                                    if (top.eType == EVMType.Boolean)
+                                    {
+                                        PushSValueSynced(top);
+                                    }
+                                    else
+                                    {
+                                        bool b = SValue.IsTruthy(ref top);
+                                        top.SetBoolValue(b);
+                                        PushSValueSynced(top);
+                                    }
+                                }
+                                else
+                                {
+                                    PushSValueSynced(left);
+                                }
                             }
                             else
                             {
-                                m_ValueStack[m_ValueIndex - 3] = left;
-                                m_ValueIndex--;
+                                PushSValueSynced(left);
                             }
                         }
                         else

@@ -536,6 +536,33 @@ namespace SimpleLanguage.Core
                     m_VisitNodeList.Add(mvn);
                 }
             }
+            // typealias（如 ObjectArray -> Array<Object>）解析为 MetaType；须生成与 ClassName/NewClass 一致的 visit，否则嵌套 ObjectArray(n){} 无 New 语义、后续 Meta 失败
+            else if (mcn.callNodeType == ECallNodeType.MetaType)
+            {
+                if (mcn.metaType != null && mcn.metaType.IsArray())
+                {
+                    if (mcn.bracketExpressList.Count > 0)
+                    {
+                        MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mcn.bracketExpressList, mcn.storeMetaVariable);
+                        m_VisitNodeList.Add(mvn);
+                    }
+                    else if (index == m_CallNodeList.Count)
+                    {
+                        MetaVisitNode mvn = MetaVisitNode.CreateByNewClass(mcn.metaType, mcn.metaVariable);
+                        m_VisitNodeList.Add(mvn);
+                        if (mcn.metaFunction != null)
+                        {
+                            MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType.metaClass, null, mcn.metaFunction, null, mcn.metaInputParamCollection, null, mcn.storeMetaVariable);
+                            mvn.SetMethodCall(mmc);
+                        }
+                    }
+                }
+                else if (mcn.metaType != null)
+                {
+                    MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaClass(mcn.metaType);
+                    m_VisitNodeList.Add(mvn);
+                }
+            }
             else if (mcn.callNodeType == ECallNodeType.DataName)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaData(mcn.metaType);

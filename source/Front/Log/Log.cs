@@ -122,8 +122,10 @@ namespace SimpleLanguage.Logging
             {
                 var path = FrontLogFilePath;
                 var dir = Path.GetDirectoryName(path);
-                if (!string.IsNullOrEmpty(dir))
+                if (!string.IsNullOrEmpty(dir) && Directory.Exists( dir ) )
+                {
                     Directory.CreateDirectory(dir);
+                }
 
                 if (m_ResetFileBeforeNextWrite)
                 {
