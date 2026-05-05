@@ -778,6 +778,26 @@ namespace SimpleLanguage.Core
             {
                 return objmt;
             }
+
+            if (TryGetPreferredElementMetaTypeFromDefine(out var preferredElementMetaType))
+            {
+                bool allAssignableToPreferred = true;
+                for (int i = 0; i < m_AssignStatementsList.Count; i++)
+                {
+                    var itemType = m_AssignStatementsList[i].GetRetMetaType();
+                    if (!IsArrayLiteralElementAssignableToTarget(preferredElementMetaType, itemType))
+                    {
+                        allAssignableToPreferred = false;
+                        break;
+                    }
+                }
+
+                if (allAssignableToPreferred)
+                {
+                    return new MetaType(preferredElementMetaType);
+                }
+            }
+
             if (m_AssignStatementsList.Count == 1)
             {
                 var only = m_AssignStatementsList[0].GetRetMetaType();
@@ -885,14 +905,39 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        mt = cmc.GetRetMetaType();
-                        frontOpLevel = cmc.opLevel;
-                        isAllSame = true;
+                        var currentType = cmc.GetRetMetaType();
+                        var nextType = nmc.GetRetMetaType();
+                        if (currentType != null && nextType != null
+                            && currentType.IsArray() && nextType.IsArray()
+                            && TryGetCompatibleArrayMetaType(currentType, nextType, out var compatibleArrayMetaType2))
+                        {
+                            mt = compatibleArrayMetaType2;
+                            frontOpLevel = cmc.opLevel;
+                            isAllSame = true;
+                        }
+                        else
+                        {
+                            mt = currentType;
+                            frontOpLevel = cmc.opLevel;
+                            isAllSame = true;
+                        }
                     }
 
                 }
                 else
                 {
+                    var currentType = cmc.GetRetMetaType();
+                    var nextType = nmc.GetRetMetaType();
+                    if (currentType != null && nextType != null
+                        && currentType.IsArray() && nextType.IsArray()
+                        && TryGetCompatibleArrayMetaType(currentType, nextType, out var compatibleArrayMetaType3))
+                    {
+                        mt = compatibleArrayMetaType3;
+                        frontOpLevel = Math.Max(cmc.opLevel, nmc.opLevel);
+                        isAllSame = true;
+                        continue;
+                    }
+
                     if (nmc.opLevel > frontOpLevel)
                     {
                         if (cmc.opLevel > nmc.opLevel)
@@ -910,6 +955,64 @@ namespace SimpleLanguage.Core
             }
             return mt;
         }
+
+
+
+        private bool TryGetPreferredElementMetaTypeFromDefine(out MetaType preferredElementMetaType)
+        {
+            preferredElementMetaType = null;
+            if (m_DefineMetaType == null || !m_DefineMetaType.IsArray())
+            {
+                return false;
+            }
+
+            var defineTemplateList = m_DefineMetaType.GetGenTemplateMetaTypeList();
+            if (defineTemplateList == null || defineTemplateList.Count != 1)
+            {
+                return false;
+            }
+
+            preferredElementMetaType = defineTemplateList[0];
+            return preferredElementMetaType != null;
+        }
+
+        private static bool IsArrayLiteralElementAssignableToTarget(MetaType targetMetaType, MetaType sourceMetaType)
+        {
+            if (targetMetaType == null || sourceMetaType == null)
+            {
+                return false;
+            }
+
+            if (TypeManager.CompareMetaType(targetMetaType, sourceMetaType))
+            {
+                return true;
+            }
+
+            if (targetMetaType.metaClass == CoreMetaClassManager.objectMetaClass)
+            {
+                return true;
+            }
+
+            if (targetMetaType.IsArray() && sourceMetaType.IsArray())
+            {
+                var targetArgs = targetMetaType.GetGenTemplateMetaTypeList();
+                var sourceArgs = sourceMetaType.GetGenTemplateMetaTypeList();
+                if (targetArgs == null || sourceArgs == null || targetArgs.Count != 1 || sourceArgs.Count != 1)
+                {
+                    return false;
+                }
+
+                return IsArrayLiteralElementAssignableToTarget(targetArgs[0], sourceArgs[0]);
+            }
+
+            if (targetMetaType.IsArray() && sourceMetaType.metaClass == CoreMetaClassManager.objectMetaClass)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         private static bool TryGetCompatibleArrayMetaType(MetaType leftArray, MetaType rightArray, out MetaType result)
         {
             result = null;
@@ -1028,6 +1131,58 @@ namespace SimpleLanguage.Core
         protected MetaVariable m_StoreMetaVariable = null; //模板或者是调用时的函数        
         protected MetaMemberFunction m_MetaMemberFunction = null;
         protected List<MetaExpressNode> m_MetaInputParamList = new List<MetaExpressNode>();
+
+        private static bool TryGetCompatibleArrayMetaType(MetaType leftArray, MetaType rightArray, out MetaType result)
+        {
+            result = null;
+            if (leftArray == null || rightArray == null) return false;
+            if (!leftArray.IsArray() || !rightArray.IsArray()) return false;
+
+            var leftTemplate = leftArray.GetTemplateMetaClass();
+            var rightTemplate = rightArray.GetTemplateMetaClass();
+            if (leftTemplate != rightTemplate) return false;
+
+            var leftArgs = leftArray.GetGenTemplateMetaTypeList();
+            var rightArgs = rightArray.GetGenTemplateMetaTypeList();
+            if (leftArgs == null || rightArgs == null || leftArgs.Count != rightArgs.Count || leftArgs.Count == 0)
+            {
+                return false;
+            }
+
+            var leftElement = leftArgs[0];
+            var rightElement = rightArgs[0];
+
+            if (TypeManager.CompareMetaType(leftElement, rightElement))
+            {
+                result = new MetaType(leftArray);
+                return true;
+            }
+
+            if (leftElement.IsArray() && rightElement.IsArray())
+            {
+                if (!TryGetCompatibleArrayMetaType(leftElement, rightElement, out var nestedCompatible))
+                {
+                    return false;
+                }
+
+                MetaType build = new MetaType();
+                build.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
+                build.AddDefineTemplateMetaType(nestedCompatible);
+                result = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(build, true, out bool _);
+
+                if (leftArray.arrayLength != -1)
+                {
+                    result.SetArrayLength(leftArray.arrayLength);
+                }
+                else if (rightArray.arrayLength != -1)
+                {
+                    result.SetArrayLength(rightArray.arrayLength);
+                }
+                return true;
+            }
+
+            return false;
+        }
 
         // Class1(10){ c1 = 20, c2 = 30 }  int[2][]{ [1,2,3], [3,4,5] }
         public MetaNewObjectExpressNode( MetaType defineMt, MetaCallLinkExpressNode mcen )
@@ -1234,8 +1389,9 @@ namespace SimpleLanguage.Core
             m_MetaContent = new MetaNewObjectStatementsContent(fmbt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, equalMV);
 
             m_NewMetaType = new MetaType(mt);
+            m_DefineMetaType = new MetaType(mt);
             m_NewType = ENewType.ArrayClass;
-            m_MetaContent.SetDefineMetaType(m_NewMetaType);
+            m_MetaContent.SetDefineMetaType(m_DefineMetaType);
         }
         public override void Parse(AllowUseSettings auc)
         {
@@ -1261,6 +1417,13 @@ namespace SimpleLanguage.Core
                     //newRMT.AddGenTemplateMetaType(m_RealMetaType);
                     m_RealMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
                     m_RealMetaType.SetArrayLength(m_MetaContent.assignStatementsList.Count);
+
+                    if (m_DefineMetaType != null
+                        && m_DefineMetaType.IsArray()
+                        && TryGetCompatibleArrayMetaType(m_DefineMetaType, m_RealMetaType, out var compatibleWithDefine))
+                    {
+                        m_RealMetaType = compatibleWithDefine;
+                    }
 
                     if(m_NewMetaType == null )
                     {
@@ -1672,6 +1835,8 @@ namespace SimpleLanguage.Core
                 }
             }
 
+            SyncArrayLiteralLengthFromContent();
+
             if (m_MetaType == null)
             {
                 return;
@@ -1744,6 +1909,35 @@ namespace SimpleLanguage.Core
             m_RealMetaType = realType;
         }
 
+        private void SyncArrayLiteralLengthFromContent()
+        {
+            if (m_NewType != ENewType.ArrayClass || m_MetaContent?.assignStatementsList == null)
+            {
+                return;
+            }
+
+            int literalLength = m_MetaContent.assignStatementsList.Count;
+            if (literalLength < 0)
+            {
+                return;
+            }
+
+            if (m_RealMetaType != null && m_RealMetaType.IsArray() && m_RealMetaType.arrayLength == -1)
+            {
+                m_RealMetaType.SetArrayLength(literalLength);
+            }
+
+            if (m_NewMetaType != null && m_NewMetaType.IsArray() && m_NewMetaType.arrayLength == -1)
+            {
+                m_NewMetaType.SetArrayLength(literalLength);
+            }
+
+            if (m_MetaType != null && m_MetaType.IsArray() && m_MetaType.arrayLength == -1)
+            {
+                m_MetaType.SetArrayLength(literalLength);
+            }
+        }
+
         /// <summary>
         /// 赋值场景下左值为数组类型（如 <c>Array&lt;Int32&gt;</c>）时写入，供 <see cref="CalcReturnType"/> 与右值模板做数值元素对齐。
         /// </summary>
@@ -1752,6 +1946,11 @@ namespace SimpleLanguage.Core
             if (leftArrayMetaType != null && leftArrayMetaType.IsArray())
             {
                 m_DefineMetaType = new MetaType(leftArrayMetaType);
+                if (m_NewMetaType == null || !m_NewMetaType.IsArray())
+                {
+                    m_NewMetaType = new MetaType(leftArrayMetaType);
+                }
+                m_MetaContent?.SetDefineMetaType(m_DefineMetaType);
             }
         }
 
