@@ -1533,9 +1533,19 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Jmp:
                     {
                         m_ExecuteIndex = (ushort)iri.index;
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "jumpto->" + m_ExecuteIndex);
+#endif
                     }
                     break;
-                case EIROpCode.Label: break;
+                case EIROpCode.Label:
+                    {
+
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "label" );
+#endif
+                    }
+                    break;
                 case EIROpCode.BrFalse:
                     {
                         if (m_ValueIndex > 0)

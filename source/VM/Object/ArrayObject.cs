@@ -164,6 +164,7 @@ namespace SimpleLanguage.VM
                     return;
                 }
                 sval.SetRawSObject(obj);
+                sval.eType = eArrayType.eType;
                 return;
             }
 
