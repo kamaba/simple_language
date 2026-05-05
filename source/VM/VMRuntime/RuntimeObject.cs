@@ -231,7 +231,40 @@ namespace SimpleLanguage.VM
                 return ValidateInterfaceTemplateCovariance(sourceType, targetType);
             }
 
-            return IsExactRuntimeType(sourceType, targetType);
+            if (!ReferenceEquals(sourceType.runtimeClass, targetType.runtimeClass))
+                return false;
+
+            return ValidateSameGenericRuntimeTypeRecursive(sourceType, targetType);
+        }
+
+        private static bool ValidateSameGenericRuntimeTypeRecursive(RuntimeType sourceType, RuntimeType targetType)
+        {
+            if (sourceType == null || targetType == null)
+                return false;
+
+            if (!ReferenceEquals(sourceType.runtimeClass, targetType.runtimeClass))
+                return false;
+
+            var sourceTemplates = sourceType.runtimeTemplateList;
+            var targetTemplates = targetType.runtimeTemplateList;
+            if (sourceTemplates == null || targetTemplates == null)
+                return sourceTemplates == targetTemplates;
+
+            if (sourceTemplates.Count != targetTemplates.Count)
+                return false;
+
+            for (int i = 0; i < sourceTemplates.Count; i++)
+            {
+                var sourceArg = sourceTemplates[i];
+                var targetArg = targetTemplates[i];
+                if (sourceArg == null || targetArg == null)
+                    return false;
+
+                if (!ValidateSameGenericRuntimeTypeRecursive(sourceArg, targetArg))
+                    return false;
+            }
+
+            return true;
         }
 
         private static bool ValidateInterfaceTemplateCovariance(RuntimeType sourceType, RuntimeType targetType)

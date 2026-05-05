@@ -19,7 +19,7 @@ ArrayTest
         }
         override string toString()
         {
-            ret this.t.toString()
+            ret "Level<T>(" + this.t.toString() + ")"
         }
     }
 
@@ -247,7 +247,6 @@ ArrayTest
         global.println("1111111111= " + mixedNest.$1.toString() )
        
         var tt1 = mixedNest.$aa.$3
-         #!
         if tt1 is ArrClass tt2
         {
             tt2.i1 = 200
@@ -260,7 +259,8 @@ ArrayTest
     {
         global.println("========== Level<int>[][] matrix ==========")
         levelvar = Level<int>(100);
-        Level<int>[][] levelGrid = { [ levelvar, levelvar ], [ levelvar, levelvar ] };
+        Level<int>[][] levelGrid = { [ levelvar, levelvar ], [ levelvar, levelvar ], [levelvar] };
+        levelGrid[2][0].t = 200
         forIIterator(levelGrid) #不支持这种方式，需要是接口的才可以
     }
 
@@ -297,7 +297,9 @@ ArrayTest
         global.println("========== ctor: primitive + alias ==========")
         intsByCtor = Array<int>(5){1,2,3,4,5}
         objsByAlias = ObjectArray(20)
-        objectRows = Array<Object>(3){ ObjectArray(0), ObjectArray(0), ObjectArray(0) }
+        objectRows = Array<Object>(3){ intsByCtor, objsByAlias, ObjectArray(3) }
+        
+        forIIterator(objectRows)
     }
 
     static arrayCtorMultidimClassShapeTest()
@@ -305,9 +307,13 @@ ArrayTest
         global.println("========== ctor: multidim class shape ==========")
         int[][][] cube = { [[1,2,3],[1,2,3,4]], [[1,2,3],[5,6,7,8]] }
         cube[1][1][1] = 12
-        cubeValue = cube[1][1][1]
-        ArrClass[][] arrclass1 = new(10)  #不支持这种方式
-        arrClass2 = ArrClass[10][10][]
+        forIIterator(cube)
+
+        #cubeValue = cube[1][1][1]
+        #global.println("==========cubevalue:" + cubeValue )
+
+        #ArrClass[][] arrclass1 = new(10)  #不支持这种方式
+        #arrClass2 = ArrClass[10][10][]
     }
 
     static arrayCtorLiteralMixTypeTest()
@@ -411,13 +417,14 @@ ArrayTest
         arrayJagged2DAssignTest()        
         arrayIntLiteralReadTest()
         arrayRank2SparseJaggedTest()
-        !#
         arrayMixedLiteralDollarIndexTest()
-        #arrayLevelMatrixTest()
-        #arrayStringAndLevelVectorTest()
-        #arrayHeterogeneousObject2DTest()
-        #arrayCtorPrimitiveAndAliasTest()
-        #arrayCtorMultidimClassShapeTest()
+        arrayLevelMatrixTest()
+        arrayStringAndLevelVectorTest()
+        arrayHeterogeneousObject2DTest()
+        arrayCtorPrimitiveAndAliasTest()
+        !#
+
+        arrayCtorMultidimClassShapeTest()
         #arrayCtorLiteralMixTypeTest()
         #arrayCtorTypedClassArrayTest()
         #arrayCtorFloatOverloadTest()

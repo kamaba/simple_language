@@ -70,6 +70,13 @@ namespace SimpleLanguage.Core
                         }
                     }
                     break;
+                case MetaNewObjectExpressNode _:
+                case MetaArrayExpressNode _:
+                case MetaAsIsExpressNode _:
+                case MetaExpressTypeConvert _:
+                    {
+                    }
+                    break;
                 default:
                     {
                         Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL75, "Error -------------------------------------------");

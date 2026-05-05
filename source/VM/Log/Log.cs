@@ -29,15 +29,15 @@ namespace SimpleLanguage.Logging
         public LID error { get; set; } = LID.None;
         public EErrorType errorType { get; set; } = EErrorType.None;
         public LogType logType { get; set; } = LogType.Info;
-        public string message { get; set; }
-        public string filePath { get; set; }
+        public string? message { get; set; }
+        public string? filePath { get; set; }
         public int sourceBeginLine { get; set; }         //开始所在行
         public int sourceBeginChar { get; set; }         //开始所在列
         public int sourceEndLine { get; set; }            //结束所在行
         public int sourceEndChar { get; set; }            //结束所在行
-        public string demo { get; set; }
-        public string advan { get; set; }
-        public string extendMessage { get; set; }
+        public string? demo { get; set; }
+        public string? advan { get; set; }
+        public string? extendMessage { get; set; }
         public DateTime time { get; set; }
 
         public bool enableAssert { get; set; } = false;
@@ -179,18 +179,18 @@ namespace SimpleLanguage.Logging
         {
             return WriteCoreByToken(lid, EErrorType.Project, null, par, msg );
         }
-        public static LogData AddProjectLog(LID lid, string msg, DebugInfo token, string extendMessage = null)
+        public static LogData AddProjectLog(LID lid, string msg, DebugInfo? token, string? extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.Project, token, null, ""); ;
+            return WriteCoreByToken(lid, EErrorType.Project, token, null, extendMessage ?? string.Empty);
         }
         //--------------------------------Process----------------------------------------------
         public static LogData AddProcessLog(LID lid, string msg, params object[] par)
         {
             return WriteCoreByToken(lid, EErrorType.Process, null, par, msg);
         }
-        public static LogData AddProcessLog(LID lid, string msg, DebugInfo token, string extendMessage = null)
+        public static LogData AddProcessLog(LID lid, string msg, DebugInfo? token, string? extendMessage = null)
         {
-            return WriteCoreByToken(lid, EErrorType.Process, token, null, ""); ;
+            return WriteCoreByToken(lid, EErrorType.Process, token, null, extendMessage ?? string.Empty);
         }
         //--------------------------------ParseIR----------------------------------------------
         public static LogData AddParseIRLog(LID lid, string msg, params object[] objs)
@@ -225,13 +225,20 @@ namespace SimpleLanguage.Logging
         private static LogData WriteCoreByToken(
             LID lid,
             EErrorType errorType,
-            DebugInfo token,
-            object[] objects,
-            string extendMessage )
+            DebugInfo? token,
+            object[]? objects,
+            string? extendMessage )
         {
             if( !LogManager.TryGet( (int)lid, out var errorDefine ) )
             {
-                return null;
+                return new LogData()
+                {
+                    error = lid,
+                    errorType = errorType,
+                    logType = LogType.Warning,
+                    extendMessage = extendMessage ?? $"LogManager.TryGet failed for lid={(int)lid}",
+                    time = DateTime.Now
+                };
             }
 
             var ld = new LogData()

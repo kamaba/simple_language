@@ -166,8 +166,34 @@ namespace SimpleLanguage.VM
         }
         public static bool SameRuntimeType(RuntimeType rt1, RuntimeType rt2)
         {
-            if (rt1 == null || rt2 == null) return false;
-            return rt1.runtimeClass.id == rt2.runtimeClass.id;
+            return IsSameRuntimeTypeRecursive(rt1, rt2);
+        }
+
+        private static bool IsSameRuntimeTypeRecursive(RuntimeType? left, RuntimeType? right)
+        {
+            if (ReferenceEquals(left, right))
+                return true;
+            if (left == null || right == null)
+                return false;
+            if (left.runtimeClass == null || right.runtimeClass == null)
+                return false;
+            if (left.runtimeClass.id != right.runtimeClass.id)
+                return false;
+
+            var leftTemplates = left.runtimeTemplateList;
+            var rightTemplates = right.runtimeTemplateList;
+            if (leftTemplates == null || rightTemplates == null)
+                return leftTemplates == rightTemplates;
+            if (leftTemplates.Count != rightTemplates.Count)
+                return false;
+
+            for (int i = 0; i < leftTemplates.Count; i++)
+            {
+                if (!IsSameRuntimeTypeRecursive(leftTemplates[i], rightTemplates[i]))
+                    return false;
+            }
+
+            return true;
         }
         private static void EnsureByClassName(string runtimeClassName, ref RuntimeType targetField, bool isCore = false )
         {

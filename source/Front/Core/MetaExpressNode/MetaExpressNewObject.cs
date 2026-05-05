@@ -1578,6 +1578,27 @@ namespace SimpleLanguage.Core
             if (targetArray == null || exprArray == null) return false;
             if (!targetArray.IsArray() || !exprArray.IsArray()) return false;
 
+            if (TypeManager.CompareMetaType(targetArray, exprArray))
+            {
+                return true;
+            }
+
+            var targetArgs0 = targetArray.GetGenTemplateMetaTypeList();
+            var exprArgs0 = exprArray.GetGenTemplateMetaTypeList();
+            if (targetArgs0 != null && exprArgs0 != null && targetArgs0.Count == 1 && exprArgs0.Count == 1)
+            {
+                var targetElement0 = targetArgs0[0];
+                var exprElement0 = exprArgs0[0];
+                if (targetElement0 != null && targetElement0.metaClass == CoreMetaClassManager.objectMetaClass)
+                {
+                    return true;
+                }
+                if (targetElement0 != null && exprElement0 != null && targetElement0.IsArray() && exprElement0.IsArray())
+                {
+                    return TryArrayElementAssignableForNewObject(targetElement0, exprElement0);
+                }
+            }
+
             var targetTemplate = targetArray.GetTemplateMetaClass();
             var exprTemplate = exprArray.GetTemplateMetaClass();
             if (targetTemplate != exprTemplate) return false;
