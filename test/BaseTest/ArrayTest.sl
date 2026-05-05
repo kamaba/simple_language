@@ -309,31 +309,34 @@ ArrayTest
         cube[1][1][1] = 12
         forIIterator(cube)
 
-        #cubeValue = cube[1][1][1]
-        #global.println("==========cubevalue:" + cubeValue )
+        cubeValue = cube[1][1][1]
+        global.println("==========cubevalue:" + cubeValue )
 
-        #ArrClass[][] arrclass1 = new(10)  #不支持这种方式
-        #arrClass2 = ArrClass[10][10][]
+        ArrClass[][] arrclass1 = new(10)  #不支持这种方式
+        arrclass1.fill( ArrClass[2] )
+        forIIterator(arrclass1)
+
+        arrClass2 = ArrClass[10][10][]
+        forIIterator(arrClass2)
     }
 
     static arrayCtorLiteralMixTypeTest()
     {
         global.println("========== ctor: literal mix ==========")
         float[] floatsFromLiteral = {1.2,1.3,1.5}
+        forIIterator(floatsFromLiteral)
         mixedObj = object[8]{"aa", 1, "232", 1.0f}
+        forIIterator(mixedObj)
     }
-
-    static arrayCtorTypedClassArrayTest()
-    {
-        global.println("========== ctor: typed class array ==========")
-        ArrClass[] a6 = Array<ArrClass>(4)
-    }
-
     static arrayCtorFloatOverloadTest()
     {
         global.println("========== ctor: float overload ==========")
         float[] a7 = Array<float>(10){ 1.2, 2.2, 3.4 }
         float[] a8 = Array<float>(20){1,2,3,5,3.3}
+
+        
+        forIIterator(a7)
+        forIIterator(a8)
     }
 
     static arrayArrClassIndexAndCurrentTest()
@@ -347,10 +350,13 @@ ArrayTest
         arr1.$i11.i1 = 10
         arr1[1] = { i1 = 20 }
         arr1[1].i1 = 10000
-        arr1.$0.i1 = 10
+        arr1.$0.i1 = 330
         #arr1.$"aa".i1 = 20; #报错
         arr1.index = 2
         arr1.current.i1 = 10
+
+        
+        forIIterator(arr1)
     }
 
     static arrayArrClassForInAssignTest()
@@ -362,29 +368,32 @@ ArrayTest
         arr1[2] = ArrClass()
         for a in arr1
         {
-            if arr1.index == 20
+            if arr1.index == 2
             {
                 arr1.current = ArrClass(){ i1 = 100 }
+                global.println("=========arr1: " + a.toString() )
                 continue
             }
             a.i1 = 200
+            global.println("=========arr111---: " + a.toString() )
         }
     }
 
     static arrayForInLiteralIndexTest()
     {
         global.println("========== for-in literal index ==========")
-        arr = [1,2,3,4]
+        arr = [111,2222,33,44444444444]
         for a in arr
         {
-            var forInIdx = arr.index + 1
+            var forInIdx = arr.index + 1            
+            global.println("=forIndex=" + arr.index )
         }
-        #!
-        for a in [1,2,3,4]
+
+        for a in [11111111,2222222222,3,4444444444444]
         {
             #这里只允许使用a 像访问数组下标，只能通过变量获取
+            global.println("=a==" + a.toString() )
         }
-        !#
     }
 
     static arrayArrClassCountLoopWriteTest()
@@ -402,12 +411,12 @@ ArrayTest
             arr1[i] = ArrClass()
             arr1[i].i1 = 100
             arr1.$i.i1 = 100
-            i += 2
+             global.println("====index: " + i + "  arrobj: " + arr1.$i.toString() )
+            i += 2           
         }
     }
     static fun()
     {
-        #!
         arrayBasicApiTest()        
         arrayGenericElementTest()
         arrayCreateInstanceIndexLoopTest()
@@ -422,16 +431,13 @@ ArrayTest
         arrayStringAndLevelVectorTest()
         arrayHeterogeneousObject2DTest()
         arrayCtorPrimitiveAndAliasTest()
-        !#
-
         arrayCtorMultidimClassShapeTest()
-        #arrayCtorLiteralMixTypeTest()
-        #arrayCtorTypedClassArrayTest()
-        #arrayCtorFloatOverloadTest()
-        #arrayArrClassIndexAndCurrentTest()
-        #arrayArrClassForInAssignTest()
-        #arrayForInLiteralIndexTest()
-        #arrayArrClassCountLoopWriteTest()
+        arrayCtorLiteralMixTypeTest()
+        arrayCtorFloatOverloadTest()
+        arrayArrClassIndexAndCurrentTest()
+        arrayArrClassForInAssignTest()
+        arrayForInLiteralIndexTest()
+        arrayArrClassCountLoopWriteTest()
         
     }
 }

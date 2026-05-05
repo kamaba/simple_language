@@ -830,9 +830,21 @@ namespace SimpleLanguage.Core
             }
             if (allNumeric)
             {
+                bool hasInt64 = false;
+                bool hasUInt64 = false;
                 int maxRank = int.MinValue;
                 for (int i = 0; i < types.Count; i++)
                 {
+                    var numericClass = types[i].metaClass;
+                    if (numericClass == CoreMetaClassManager.int64MetaClass)
+                    {
+                        hasInt64 = true;
+                    }
+                    else if (numericClass == CoreMetaClassManager.uint64MetaClass)
+                    {
+                        hasUInt64 = true;
+                    }
+
                     if (!NumberManager.TryGetLiteralPromotionRank(types[i].metaClass, out int rank))
                     {
                         return objmt;
@@ -842,6 +854,12 @@ namespace SimpleLanguage.Core
                         maxRank = rank;
                     }
                 }
+
+                if (hasInt64 && hasUInt64)
+                {
+                    return objmt;
+                }
+
                 var promotedMc = NumberManager.GetMetaClassForLiteralPromotionRank(maxRank);
                 return promotedMc != null ? new MetaType(promotedMc) : objmt;
             }

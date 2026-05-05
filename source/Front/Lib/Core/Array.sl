@@ -31,10 +31,12 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     #接口层
     override void reset()
     {
-        this._index = 0;
+        this._index = -1;
+        this._current = null
     }
     override bool moveNext()
-    {            
+    {          
+        this._index++;  
         bool hasNext_var = this._index < this._length 
         if hasNext_var
         {
@@ -44,7 +46,6 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         {
             this._current = null
         }
-        this._index++;
         #global.println(" Array.moveNext-----" + this._index + " length: " + this._length  )
         ret hasNext_var
     }
