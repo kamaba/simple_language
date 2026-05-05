@@ -10,6 +10,7 @@ using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text;
 namespace SimpleLanguage.VM
 {
     public partial struct SValue
@@ -1193,6 +1194,52 @@ namespace SimpleLanguage.VM
                     }
                 default: return sobject;
             }
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("SValue{");
+            sb.Append("Type=");
+            sb.Append(eType);
+            sb.Append(", IsNull=");
+            sb.Append(isNull);
+
+            if (!isNull)
+            {
+                sb.Append(", Value=");
+                switch (eType)
+                {
+                    case EVMType.String:
+                        sb.Append('"');
+                        sb.Append(stringValue ?? string.Empty);
+                        sb.Append('"');
+                        break;
+                    case EVMType.Array:
+                    case EVMType.Object:
+                    case EVMType.Class:
+                    case EVMType.Type:
+                    case EVMType.Member:
+                        if (sobject != null)
+                        {
+                            sb.Append(sobject.ToString());
+                            sb.Append(", ObjectId=");
+                            sb.Append(sobject.id);
+                        }
+                        else
+                        {
+                            sb.Append("null");
+                        }
+                        break;
+                    default:
+                        sb.Append(Convert.ToString(GetValueObject(), CultureInfo.InvariantCulture));
+                        break;
+                }
+            }
+
+            sb.Append('}');
+
+            return sb.ToString();
         }
     }
 }

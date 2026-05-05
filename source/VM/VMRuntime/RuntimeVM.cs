@@ -229,6 +229,9 @@ namespace SimpleLanguage.VM.Runtime
             if (m_ValueStack == null) m_ValueStack = new SValue[1024];
             if (m_ValueIndex >= m_ValueStack.Length) return;
             m_ValueStack[m_ValueIndex++] = v;
+#if DEBUG
+            Log.AddVM(LID.ShowMessageInfo, "push svalue " + v.ToString() );
+#endif
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryPushStackSlot(out int slotIndex)
@@ -974,7 +977,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt8);
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "Convert to UInt8");
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to UInt8");
 #endif
                     }
                     break;
@@ -982,7 +985,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int8);
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "Convert to Int8");
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to Int8");
 #endif
                     }
                     break;
@@ -990,7 +993,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int16);
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "Convert to Int16");
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to Int16");
 #endif
                     }
                     break;
@@ -998,7 +1001,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt16);
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "Convert to UInt16");
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to UInt16");
 #endif
                     }
                     break;
@@ -1006,7 +1009,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int32);
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "Convert to Int32");
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to Int32");
 #endif
                     }
                     break;
@@ -1014,7 +1017,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt32);
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "Convert to UInt32");
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to UInt32");
 #endif
                     }
                     break;
@@ -1022,7 +1025,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Int64);
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "Convert to Int64");
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to Int64");
 #endif
                     }
                     break;
@@ -1030,7 +1033,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.UInt64);
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "Convert to UInt64");
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to UInt64");
 #endif
                     }
                     break;
@@ -1038,7 +1041,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Float32);
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "Convert to Float32");
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to Float32");
 #endif
                     }
                     break;
@@ -1046,7 +1049,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.Float64);
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "Convert to Float64");
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to Float64");
 #endif
                     }
                     break;
@@ -1054,7 +1057,7 @@ namespace SimpleLanguage.VM.Runtime
                     {
                         m_ValueStack[m_ValueIndex - 1].ConvertByEType(EVMType.String);
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "Convert to String");
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to String");
 #endif
                     }
                     break;
@@ -1069,7 +1072,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             m_ArgumentRuntimeObjectArray[(uint)iri.index].SetSValueByRuntimeObjct(ref m_ValueStack[slot]);
 #if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "LoadArgument: index=" + iri.index);
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadArgument: index=" + iri.index);
 #endif
                         }
                     }
@@ -1085,7 +1088,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             m_LocalVariableRuntimeObjectArray[(uint)iri.index].SetSValueByRuntimeObjct(ref m_ValueStack[slot] );
 #if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "LoadLocal: index=" + iri.index);
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadLocal: index=" + iri.index);
 #endif
                         }
                     }
@@ -1096,7 +1099,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             CLRVM.LoadGlobalVariable((uint)iri.index, ref m_ValueStack[slot]);
 #if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "LoadGlobal: index=" + iri.index);
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadGlobal: index=" + iri.index);
 #endif
                         }
                     }
@@ -1107,17 +1110,17 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             if ((uint)iri.index > m_LocalVariableRuntimeObjectArray.Length)
                             {
-                                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "SetLocalVariableSValue", (uint)iri.index );
+                                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "MethodId:" + id.ToString() + "SetLocalVariableSValue", (uint)iri.index );
                                 return;
                             }
                             m_LocalVariableRuntimeObjectArray[(uint)iri.index].SetSObjectBySValue(ref m_ValueStack[--m_ValueIndex]);
 #if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "StoreLocal: index=" + iri.index);
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreLocal: index=" + iri.index);
 #endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, $"StoreLocal stack underflow at index {iri.index}");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "MethodId:" + id.ToString() + $"StoreLocal stack underflow at index {iri.index}");
                         }
                     }
                     break;
@@ -1127,17 +1130,17 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             if ((uint)iri.index > m_ReturnRuntimeObjectArray.Length)
                             {
-                                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "StoreReturn", (uint)iri.index);
+                                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "MethodId:" + id.ToString() + "StoreReturn", (uint)iri.index);
                                 return;
                             }
                             m_ReturnRuntimeObjectArray[(uint)iri.index].SetSObjectBySValue(ref m_ValueStack[--m_ValueIndex]);
 #if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "StoreReturn: index=" + iri.index);
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreReturn: index=" + iri.index);
 #endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, $"StoreReturn stack underflow at index {iri.index}");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "MethodId:" + id.ToString() + $"StoreReturn stack underflow at index {iri.index}");
                         }
                         m_ExecuteIndex = m_ExecuteCount;
                     }
@@ -1148,12 +1151,12 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             CLRVM.StoreGlobalVariable( (uint)iri.index, ref m_ValueStack[--m_ValueIndex]);
 #if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "StoreGlobal: index=" + iri.index);
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreGlobal: index=" + iri.index);
 #endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndex", "" );
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", "" );
                         }
                     }
                     break;
@@ -1165,12 +1168,13 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ao.LoadValue(iri.index, ref v );
 #if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "LoadArrayIndex: index=" + iri.index);
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadArrayIndex: runtimeclass=" + ao.runtimeClass?.name
+                                            + " objectId=" + ao.id + "index=" + iri.index );
 #endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndex", v.eType.ToString() );
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", v.eType.ToString() );
                         }
                     }
                     break;
@@ -1204,18 +1208,19 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 ao.StoreValue(iri.index, sValue);
 #if DEBUG
-                                Log.AddVM(LID.ShowMessageInfo, "StoreArrayIndex: index=" + iri.index);
+                                Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreArrayIndex: runtimeclass=" + ao.runtimeClass?.name
+                                            + " objectId=" + ao.id + "index=" + iri.index );
 #endif
                             }
                             else
                             {
-                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", sStore.eType.ToString());
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM StoreArrayIndex", sStore.eType.ToString());
                             }
                             m_ValueIndex -= 2;
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndex", "");
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", "");
                         }
                     }
                     break;
@@ -1232,23 +1237,24 @@ namespace SimpleLanguage.VM.Runtime
                                 {
                                     ao.LoadValue(idx, ref arrayref );
 #if DEBUG
-                                    Log.AddVM(LID.ShowMessageInfo, "LoadArrayIndexField: idx=" + idx);
+                                    Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadArrayIndexField: runtimeclass=" + ao.runtimeClass?.name
+                                            + " objectId=" + ao.id + "index=" + idx);
 #endif
                                 }
                                 else
                                 {
-                                    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndexField", loadindex.eType.ToString());
+                                    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndexField", loadindex.eType.ToString());
                                 }
                             }
                             else
                             {
-                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndexField", arrayref.eType.ToString());
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndexField", arrayref.eType.ToString());
                             }
                             m_ValueIndex -= 1;
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndex", "");
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", "");
                         }
                     }
                     break;
@@ -1266,23 +1272,24 @@ namespace SimpleLanguage.VM.Runtime
                                 {
                                     ao.StoreValue(idx, storevalue);
 #if DEBUG
-                                    Log.AddVM(LID.ShowMessageInfo, "StoreArrayIndexField: idx=" + idx);
+                                    Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreArrayIndexField: runtimeclass=" + ao.runtimeClass?.name
+                                            + " objectId=" + ao.id + "index=" + idx );
 #endif
                                 }
                                 else
                                 {
-                                    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndexField", loadindex.eType.ToString());
+                                    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM StoreArrayIndexField", loadindex.eType.ToString());
                                 }
                             }
                             else
                             {
-                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndexField", arrayref.eType.ToString());
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM StoreArrayIndexField", arrayref.eType.ToString());
                             }
                             m_ValueIndex -= 3;
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM LoadArrayIndex", "");
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", "");
                         }
                     }
                     break;
@@ -1326,7 +1333,8 @@ namespace SimpleLanguage.VM.Runtime
                                     {
                                         co.GetMemberVariableSValue(iri.index, ref m_ValueStack[slot]);
 #if DEBUG
-                                        Log.AddVM(LID.ShowMessageInfo, "LoadNotStaticField: index=" + iri.index);
+                                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadNotStaticField: runtimeclass=" + co.runtimeClass?.name 
+                                            + " objectId=" + co.id + "index=" + iri.index  );
 #endif
                                     }
                                 }
@@ -1338,12 +1346,12 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM StoreArrayIndex", inst.eType.ToString());
                             }
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", "" );
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM StoreArrayIndex", "" );
                         }
                     }
                     break;
@@ -1358,7 +1366,8 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 co.SetMemberVariableSValue( iri.index, val);
 #if DEBUG
-                                Log.AddVM(LID.ShowMessageInfo, "StoreNotStaticField2: index=" + iri.index);
+                                Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField2: runtimeclass=" + co.runtimeClass?.name
+                                            + " objectId=" + co.id + "index=" + iri.index);
 #endif
                             }
                             //else
@@ -1381,7 +1390,8 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 co.SetMemberVariableSValue(iri.index, val);
 #if DEBUG
-                                Log.AddVM(LID.ShowMessageInfo, "StoreNotStaticField1: index=" + iri.index);
+                                Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + co.runtimeClass?.name
+                                            + " objectId=" + co.id + "index=" + iri.index);
 #endif
                             }
                             //else
@@ -1423,6 +1433,12 @@ namespace SimpleLanguage.VM.Runtime
                                 }
                             }
                             SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
+
+
+#if DEBUG
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + rt.runtimeClass?.name + " objectId=" + sobj.id );
+#endif
+
                             ObjectManager.RegisterObject(sobj);
                             m_ValueStack[m_ValueIndex++].SetRawSObject(sobj);
 
@@ -1448,6 +1464,9 @@ namespace SimpleLanguage.VM.Runtime
                             m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
                             var irc = rt.runtimeClass;
 
+#if DEBUG
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + rt.runtimeClass?.name + " objectId=" + sobj.id);
+#endif
 
                             var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                             if (irList.Count > 0)
@@ -1459,7 +1478,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "MethodId:" + id.ToString() + "new array get svalue");
                             break;
                         }
                     }
@@ -1473,13 +1492,13 @@ namespace SimpleLanguage.VM.Runtime
                             var sval = m_ValueStack[m_ValueIndex - 1];
                             if (!SValue.TryGetInt32FromSValue(sval, out var arrLength))
                             {
-                                Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "MethodId:" + id.ToString() + "new array get svalue");
                                 break;
                             }
 
                             if (arrLength < 0)
                             {
-                                Log.AddRuntimeLog(LID.ShowMessageAssert,
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "MethodId:" + id.ToString() +
                                     $"不能将负值写入无符号类型: target= int32, source={sval.eType}");
                                 return;
                             }
@@ -1491,6 +1510,11 @@ namespace SimpleLanguage.VM.Runtime
                             arr.CreateObject();
                             ObjectManager.AddClassObject(arr);
                             m_ValueStack[m_ValueIndex - 1].SetArrayObject(arr);
+
+#if DEBUG
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + rt.runtimeClass?.name + " objectId=" + arr.id);
+#endif
+
 
                             //var sv = default(SValue);
                             //sv.SetSObject(arr);
@@ -1522,6 +1546,15 @@ namespace SimpleLanguage.VM.Runtime
                                 if (cond.int8Value != 1)
                                 {
                                     m_ExecuteIndex = (ushort)(iri.index - 1);
+#if DEBUG
+                                    Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "brfalse to->" + m_ExecuteIndex);
+#endif
+                                }
+                                else
+                                {
+#if DEBUG
+                                    Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "brfalse nojump ");
+#endif
                                 }
                             }
                             else if( cond.sobject is BoolObject bl )
@@ -1529,17 +1562,26 @@ namespace SimpleLanguage.VM.Runtime
                                 if ( !bl.value )
                                 {
                                     m_ExecuteIndex = (ushort)(iri.index - 1);
+#if DEBUG
+                                    Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "brfalse to->" + m_ExecuteIndex );
+#endif
+                                }
+                                else
+                                {
+#if DEBUG
+                                    Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "brfalse nojump ");
+#endif
                                 }
                             }
                             else
                             {
-                                Log.AddRuntimeLog(LID.ShowMessageAssert, "BrFalse");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "MethodId:" + id.ToString() + "BrFalse");
                                 break;
                             }
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "BrFalse");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "MethodId:" + id.ToString() + "BrFalse");
                             break;
                         }
                     }
@@ -1554,6 +1596,15 @@ namespace SimpleLanguage.VM.Runtime
                                 if (cond.int8Value != 1)
                                 {
                                     m_ExecuteIndex = (ushort)(iri.index - 1);
+#if DEBUG
+                                    Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "brtrue to->" + m_ExecuteIndex);
+#endif
+                                }
+                                else
+                                {
+#if DEBUG
+                                    Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "brtrue nojump ");
+#endif
                                 }
                             }
                             else if (cond.sobject is BoolObject bl)
@@ -1561,11 +1612,20 @@ namespace SimpleLanguage.VM.Runtime
                                 if (bl.value)
                                 {
                                     m_ExecuteIndex = (ushort)(iri.index - 1);
+#if DEBUG
+                                    Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "brtrue to->" + m_ExecuteIndex);
+#endif
+                                }
+                                else
+                                {
+#if DEBUG
+                                    Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "brtrue nojump ");
+#endif
                                 }
                             }
                             else
                             {
-                                Log.AddRuntimeLog(LID.ShowMessageAssert, "BrTrue");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "MethodId:" + id.ToString() + "BrTrue");
                                 break;
                             }
                         }
@@ -1601,6 +1661,15 @@ namespace SimpleLanguage.VM.Runtime
                                 if (!matched)
                                 {
                                     m_ExecuteIndex = (ushort)(iri.index + caseCount - 1);
+#if DEBUG
+                                    Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() +  "  switch to->" + m_ExecuteIndex);
+#endif
+                                }
+                                else
+                                {
+#if DEBUG
+                                    Log.AddVM(LID.ShowMessageInfo, "switch nojump ");
+#endif
                                 }
                             }
                         }
