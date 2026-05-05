@@ -174,3 +174,148 @@ for-in 需要对象满足可迭代接口语义（`IIterable` / `IIterator` 路�
 - 与 **§5.1「数组实体不协变」** 不矛盾：这里针对的是 **字面量** 在编译期 **重写推断与常量表示**，不是把 `Array<Int16>` 变量引用当成 `Array<Int32>` 使用。
 - 仍建议 **§6 建议 1**：能写清左值类型时，右值也尽量显式，减少仅靠第二轮纠正的路径。
 
+## 10) ArrayTest 语法总表（用于解析逻辑对照）
+
+本节直接按 `test/BaseTest/ArrayTest.sl` 出现过的写法归档，目标是给 Front/Meta 解析提供“出现过 + 期望行为”的快速索引。
+
+### 10.1 声明与构造
+
+```sl
+Int32[] nums = Array<Int32>.create(3)
+Int32[] a = Int32[5]
+ObjectArray boxed = object[2]
+Level<Int32>[] levels = new(3) { Level<Int32>(10), Level<Int32>(100), Level<Int32>(30) }
+ArrClass[] arr1 = new(3)
+```
+
+要点：
+- 同时支持 `Array<T>.create(n)`、`T[n]`、`new(n){...}`。
+- `ObjectArray` 作为 `Array<Object>` 别名在测试中频繁使用。
+
+### 10.2 字面量与带长度初始化
+
+```sl
+arr2 = [1000,2000,3000,1005]
+int[] a33 = {1,2,3,4}
+int[] a332 = new(4){21,22,23,24}
+int[4][] a335 = {[11,22,33], int[3]{871,872,873}, int[20]}
+float[] floatsFromLiteral = {1.2,1.3,1.5}
+mixedObj = object[8]{"aa", 1, "232", 1.0f}
+```
+
+要点：
+- 支持直接 `[]` 推导字面量。
+- 左值已知类型时支持 `{...}`。
+- 支持 `T[n]{...}`（最后一维给长度）。
+- 支持“长度大于 initializer 个数”的部分初始化。
+
+### 10.3 下标与 `$` 等价访问
+
+```sl
+a2[1] = 50
+a2.$1 += 100
+a2[1] = a2.$1 + 200
+jagged2.$0.$2 = 997
+var tt1 = mixedNest.$aa.$3
+arr1.$i11.i1 = 10
+```
+
+要点：
+- `arr.$k` 与 `arr[k]` 等价，支持链式多层访问。
+- `$` 后支持字面常量下标、变量下标、表达式结果变量下标。
+
+### 10.4 index/current 游标语义
+
+```sl
+nums.index = 2
+nums.current = 123
+arr1.index = 2
+arr1.current.i1 = 10
+```
+
+要点：
+- `index/current` 可读写。
+- 在 `for-in` 场景可结合 `arr.index` 定位当前位置。
+
+### 10.5 for-in / 计数 for / while 迭代
+
+```sl
+for v in levels { ... }
+for a in arr1 { ... }
+for a in [11111111,2222222222,3,4444444444444] { ... }
+for i = 0, i < a2.length, i++ { ... }
+while it.moveNext() { Num n = it.current() }
+```
+
+要点：
+- 覆盖 `for-in`、三段式 `for`、`while + IIterator`。
+- `for-in` 支持变量数组与字面量数组。
+
+### 10.6 多维与锯齿数组
+
+```sl
+int[][] jagged2 = int[2][]
+jagged2[0] = int[4]
+jagged2[1] = [1,100,1000]
+
+int[][][] cube = { [[1,2,3],[1,2,3,4]], [[1,2,3],[5,6,7,8]] }
+ArrClass[][] arrclass1 = new(10)
+arrClass2 = ArrClass[10][10][]
+object[][] mixedNest = [[137,138,139,ac,148],[[11],[13,14,15]]]
+```
+
+要点：
+- 支持规则多维与锯齿混合。
+- 支持对象元素嵌套（`object[][]` 中放基础值、对象、子数组）。
+- 未完全支持的形态在测试中有注释标记，作为负例保留。
+
+### 10.7 元素类型包含泛型/类
+
+```sl
+Level<int>[] a44 = new(15) { Level<int>(200) }
+Level<int>[][] levelGrid = { [levelvar, levelvar], [levelvar, levelvar], [levelvar] }
+ArrClass[] arr1 = new(3)
+arr1[1] = { i1 = 20 }
+arr1[1].i1 = 10000
+```
+
+要点：
+- 数组元素可为泛型类实例。
+- 支持数组元素对象初始化器（`arr[i] = { field = ... }`）。
+
+### 10.8 数组 API 与成员
+
+```sl
+nums.fill(7)
+nums.setValue(2, 99)
+nums.getValue(2)
+nums.length
+concrete.iterator
+```
+
+要点：
+- 已覆盖 `fill/setValue/getValue/length/iterator`。
+- `iterator` 可桥接到接口变量（见下一节协变规则）。
+
+### 10.9 协变/可赋值边界（以测试行为为准）
+
+```sl
+IIterator<Num> it = concrete.iterator
+IIterable<Object> it2 = concrete
+forObject(arr2)           # 预期报错：不支持数组实体协变
+#ObjectArray oaa = arr2   # 预期报错
+```
+
+要点：
+- 数组实体默认不协变（`Int32[]` 不能当 `Object[]`）。
+- 接口视角存在受控协变路径（用于遍历语义）。
+
+## 11) 解析实现建议（后续改动时建议同步维护）
+
+- 若新增数组语法，请在 `ArrayTest.sl` 增加“正例 + 负例注释”，并在本文件第 10 节补一条最小示例。
+- 若调整 `MetaAssignStatements` / `MetaExpressNewObject` 的数组推断逻辑，优先检查：
+  - 字面量二次纠正是否被绕过；
+  - 显式 `Array<T>(...){...}` 是否仍保持“显式优先”；
+  - `Object` 元素类型是否被错误强制窄化。
+- 建议把“语法支持”与“语义限制（暂不支持）”分开记录，避免把负例误当成可用写法。
+
