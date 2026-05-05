@@ -35,18 +35,21 @@ namespace SimpleLanguage.Core
             MetaType cmt = null;
             if (defineMT != null )
             {
-                if (!defineMT.IsArray() || defineMT.defineTemplateMetaTypeList.Count != 1)
+                if( defineMT.metaClass != CoreMetaClassManager.objectMetaClass )
                 {
-                    Token token = m_Token;
-                    if( mv?.token != null )
+                    if (!defineMT.IsArray() || defineMT.defineTemplateMetaTypeList.Count != 1)
                     {
-                        token = mv?.token;
+                        Token token = m_Token;
+                        if (mv?.token != null)
+                        {
+                            token = mv?.token;
+                        }
+                        Log.AddMetaCoreLog(LID.MetaCoreArrayMustIsArray, token, "MetaArrayExpressNode", mv?.name);
+                        return;
                     }
-                    Log.AddMetaCoreLog(LID.MetaCoreArrayMustIsArray, token, "MetaArrayExpressNode", mv?.name );
-                    return;
+                    this.m_MetaType = defineMT;
+                    cmt = m_MetaType.defineTemplateMetaTypeList[0];
                 }
-                this.m_MetaType = defineMT;
-                cmt = m_MetaType.defineTemplateMetaTypeList[0];
             }
             for (int i = 0; i < m_FileMetaBaseTermList.Count; i++)
             {

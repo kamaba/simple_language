@@ -28,7 +28,16 @@ namespace SimpleLanguage.VM
         {
             m_Type = EVMType.Array;
             m_RuntimeType = rt;
-            eArrayType = rt.runtimeTemplateList[0];
+            if (rt?.runtimeTemplateList != null && rt.runtimeTemplateList.Count > 0)
+            {
+                eArrayType = rt.runtimeTemplateList[0];
+            }
+            else
+            {
+                eArrayType = RuntimeTypeManager.objectRuntimeType;
+                Log.AddRuntimeLog(LID.ShowMessageWarning,
+                    $"ArrayObject ctor missing element runtime type, fallback to Core.Object. runtimeClass={rt?.runtimeClass?.name ?? "null"}");
+            }
             m_Length = length;
 
             m_IRTemplateList = rt.runtimeTemplateList;

@@ -1639,6 +1639,19 @@ namespace SimpleLanguage.Core
                 }
             }
 
+            // Array<Object>(...){ [1], [2,3] } 这类 object 槽中的嵌套数组字面量，
+            // 需要对外暴露其真实数组类型；否则后续 IR 会把 NewArray 的类型写成 Core.Object，
+            // 导致 VM 在创建 ArrayObject 时拿不到元素模板类型。
+            if (m_NewType == ENewType.ArrayClass
+                && m_RealMetaType != null
+                && m_RealMetaType.IsArray()
+                && m_MetaType != null
+                && !m_MetaType.IsArray()
+                && m_MetaType.metaClass == CoreMetaClassManager.objectMetaClass)
+            {
+                m_MetaType = new MetaType(m_RealMetaType);
+            }
+
             // 仅有左值 m_DefineMetaType（如 Array<Int32>）与字面量推断 m_RealMetaType（如 Array<Int16>）时，不能以推断类型覆盖左值元素类型
             if (m_DefineMetaType != null && m_NewMetaType == null && m_RealMetaType != null
                 && m_DefineMetaType.IsArray() && m_RealMetaType.IsArray()

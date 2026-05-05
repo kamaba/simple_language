@@ -499,7 +499,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "ParseDefineMetaType not array ");
                 }
             }
             
@@ -527,7 +527,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.Assert(false, "");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "ParseDefineRealMetaType not array ");
                 }
             }
             else

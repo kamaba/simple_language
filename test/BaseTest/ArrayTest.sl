@@ -236,25 +236,24 @@ ArrayTest
     {
         global.println("========== mixed literal / `$` / is ArrClass ==========")
         var ac = ArrClass(){ i1 = 20, i2 = "mix" }
-        mixedNest = [[137,138,139,ac,148],[[11],[13,14,15]]];        
+        object[][] mixedNest = [[137,138,139,ac,148],[[11],[13,14,15]]];        
         #mixedNest = ObjectArray(2){ ObjectArray(5){0,1,2,ac,4}, ObjectArray(2){ [11], [13,14,15] } }
+        
         forIIterator(mixedNest)
 
-        #!
         int aa = 0
         #mixedNest.$1.$aa.$1 = 3000; #报错
-        mixedNest.$1 = 111
-        global.println("1111111111= " + mixedNest.$1 )
-
-        #!
-        var tt1 = mixedNest.$aa
+        #mixedNest.$1 = 111
+        global.println("1111111111= " + mixedNest.$1.toString() )
+       
+        var tt1 = mixedNest.$aa.$3
+         #!
         if tt1 is ArrClass tt2
         {
             tt2.i1 = 200
             var aa1111 = tt2.i1;
             global.println("22222222= " +aa1111 )
         }
-        !#
     }
 
     static arrayLevelMatrixTest()
