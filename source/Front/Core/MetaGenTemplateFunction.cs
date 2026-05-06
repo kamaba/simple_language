@@ -64,10 +64,8 @@ namespace SimpleLanguage.Core
         }
         public void UpdateGenMemberFunctionByTemplateClass(MetaMemberFunction mmf)
         {
-            m_MetaMemberParamCollection = mmf.metaMemberParamCollection;
-            for( int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++ )
-            {
-            }
+            m_MetaMemberParamCollection = new MetaDefineParamCollection(mmf.metaMemberParamCollection);
+            m_MetaMemberParamCollection.SetOwnerMetaFunction(this);
             m_FileMetaMemberFunction = mmf.fileMetaMemberFunction;
             m_Name = mmf.name;
 
@@ -96,28 +94,70 @@ namespace SimpleLanguage.Core
             //    m_MetaBlockStatements.isOnFunction = true;
             //    m_MetaMemberParamCollection = new MetaDefineParamCollection();
         }
+        private static bool NeedUpdateGenMetaType(MetaType mt)
+        {
+            if (mt == null)
+            {
+                return false;
+            }
+            return !(mt.eMetaTypeType == EMetaTypeType.MetaClass
+                && mt.metaClass != null
+                && mt.metaClass.isTemplateClass == false);
+        }
+        private void UpdateMetaVariableByGenClass(MetaVariable mv)
+        {
+            if (mv == null)
+            {
+                return;
+            }
+
+            var ownerGenClass = m_OwnerMetaClass as MetaGenTemplateClass;
+            if (ownerGenClass == null)
+            {
+                return;
+            }
+
+            if (mv.defineMetaType != null)
+            {
+                var defineMetaType = new MetaType(mv.defineMetaType);
+                if (NeedUpdateGenMetaType(defineMetaType))
+                {
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(defineMetaType, ownerGenClass, this);
+                }
+                mv.SetMetaDefineType(defineMetaType);
+            }
+
+            if (mv.realMetaType != null)
+            {
+                var realMetaType = new MetaType(mv.realMetaType);
+                if (NeedUpdateGenMetaType(realMetaType))
+                {
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(realMetaType, ownerGenClass, this);
+                }
+                mv.SetRealMetaType(realMetaType);
+            }
+            else if (mv.defineMetaType != null)
+            {
+                mv.SetRealMetaType(new MetaType(mv.defineMetaType));
+            }
+
+            mv.SetOwnerMetaClass(ownerGenClass);
+        }
         public MetaGenTemplate GetMetaGenTemplate( string name )
         {
             return m_MetaGenTemplateList.Find(a => a.name == name);
         }
         void ParseMetaMemberFunctionDefineMetaType()
         {
-            if ( m_ReturnMetaVariable?.defineMetaType != null)
-            {
-                if (!(m_ReturnMetaVariable.defineMetaType.eMetaTypeType == EMetaTypeType.MetaClass
-                    && m_ReturnMetaVariable.defineMetaType.metaClass.isTemplateClass == false))
-                {
-                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ReturnMetaVariable.defineMetaType, m_OwnerMetaClass as MetaGenTemplateClass, this );
-                }
-            }
+            UpdateMetaVariableByGenClass(m_ReturnMetaVariable);
+            m_IsDefineMetaType = m_ReturnMetaVariable?.isDefineMetaType == true;
+            m_DefineMetaType = m_ReturnMetaVariable?.defineMetaType != null ? new MetaType(m_ReturnMetaVariable.defineMetaType) : null;
+            m_RealMetaType = m_ReturnMetaVariable?.realMetaType != null ? new MetaType(m_ReturnMetaVariable.realMetaType) : null;
+
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
             {
                 var mdp = m_MetaMemberParamCollection.metaDefineParamList[i];
-                if (!(mdp.metaVariable.defineMetaType.eMetaTypeType == EMetaTypeType.MetaClass
-                    && mdp.metaVariable.defineMetaType.metaClass.isTemplateClass == false))
-                {
-                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mdp.metaVariable.defineMetaType, m_OwnerMetaClass as MetaGenTemplateClass, this );
-                }
+                UpdateMetaVariableByGenClass(mdp?.metaVariable);
             }
         }
         public void UpdateRegsterGenMetaFunction()

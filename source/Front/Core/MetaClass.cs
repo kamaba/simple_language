@@ -691,6 +691,19 @@ namespace SimpleLanguage.Core
             }
             return mt;
         }
+        public void EnsureParsedGenTemplateMetaClasses()
+        {
+            var list = new List<MetaGenTemplateClass>(m_MetaGenTemplateClassList);
+            foreach (var mgtc in list)
+            {
+                if (mgtc == null)
+                {
+                    continue;
+                }
+                mgtc.ParseGenTemplateClass(mgtc);
+                mgtc.ParseGenMemberVarible();
+            }
+        }
         public MetaGenTemplateClass AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList( List<MetaType> templateMetaTypeList )
         {
             List<MetaClass> mcList = new List<MetaClass>();

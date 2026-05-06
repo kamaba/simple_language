@@ -827,32 +827,43 @@ namespace SimpleLanguage.Core
         {
             if (fmcd == null) return null;
 
+            MetaType ApplyFileMetaClassDefineDecorations(MetaType mt)
+            {
+                if (mt == null)
+                {
+                    return null;
+                }
+
+                var retMt = new MetaType(mt);
+                if (fmcd.isNullable)
+                {
+                    retMt.SetNullable(true);
+                }
+                if (fmcd.isArray)
+                {
+                    var list = fmcd.arrayDimsionLengthList;
+                    retMt = AddArrayTemplate(retMt, list);
+                }
+                return retMt;
+            }
+
             // typealias：文件局部 / 工程 / 内置
             if (fmcd.stringList != null && fmcd.stringList.Count == 1)
             {
                 if (TryResolveTypeAlias(fmcd.stringList[0], fmcd.fileMeta, out MetaType aliasTarget) && aliasTarget != null)
                 {
-                    var retAlias = new MetaType(aliasTarget);
-                    if (fmcd.isNullable)
-                        retAlias.SetNullable(true);
-                    if (fmcd.isArray)
-                    {
-                        var list = fmcd.arrayDimsionLengthList;
-                        retAlias = AddArrayTemplate(retAlias, list);
-                    }
-                    return retAlias;
+                    return ApplyFileMetaClassDefineDecorations(aliasTarget);
                 }
             }
 
             MetaNode getmc = ClassManager.instance.GetMetaClassByRef(curMc, fmcd);
             if (getmc == null)
             {
-                var gmtbn = curMc.GetMetaTemplateByName(fmcd.stringList[0]);
+                var gmtbn = curMc?.GetMetaTemplateByName(fmcd.stringList[0]);
                 if (gmtbn != null)
                 {
-                    var mt = new MetaType(gmtbn, fmcd.stringList[0] );
-                    if (fmcd.isNullable) mt.SetNullable(true);
-                    return mt;
+                    var mt = new MetaType(gmtbn, fmcd.stringList[0]);
+                    return ApplyFileMetaClassDefineDecorations(mt);
                 }
                 else if (findFun != null)
                 {
@@ -862,8 +873,7 @@ namespace SimpleLanguage.Core
                         return null;
                     }
                     var ret = new MetaType(mt, fmcd.stringList[0]);
-                    if (fmcd.isNullable) ret.SetNullable(true);
-                    return ret;
+                    return ApplyFileMetaClassDefineDecorations(ret);
                 }
                 else
                 {
@@ -874,13 +884,7 @@ namespace SimpleLanguage.Core
             else
             {
                 var ret =  GetMetaTypeByTemplateList(curMc, getmc, findFun, fmcd.inputTemplateNodeList);
-                if (fmcd.isArray)
-                {
-                    var list = fmcd.arrayDimsionLengthList;
-                    var rarraymt = AddArrayTemplate(ret, list);
-                    return rarraymt;
-                }
-                return ret;
+                return ApplyFileMetaClassDefineDecorations(ret);
             }
             return null;
         }
@@ -895,7 +899,7 @@ namespace SimpleLanguage.Core
                 mt.AddDefineTemplateMetaType(dmt);
                 //mt.AddGenTemplateMetaType(dmt);
 
-                cmt = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(mt, true, out bool igmc);
+                cmt = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(mt, false, out bool igmc);
                 cmt.SetArrayLength(list[i]);
             }
             return cmt;

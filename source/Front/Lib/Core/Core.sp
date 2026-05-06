@@ -16,7 +16,8 @@ Project
         #ObjectTest.fun()
         #NumberTest.fun()
         #GlobalTest.fun()
-        ArrayTest.fun()
+        #ArrayTest.fun()
+        AssignStatement.fun()
         #StringTest.fun()
         #TypeTest.fun()       
     }

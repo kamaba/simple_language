@@ -122,8 +122,8 @@ namespace SimpleLanguage.Core
             m_FunctionAllName = null;
             m_PintTokenList = mf.m_PintTokenList;
             m_VirtualFunctionName = mf.m_VirtualFunctionName;
-            m_DefineMetaType = m_DefineMetaType != null ? new MetaType(mf.m_DefineMetaType) : null;
-            m_RealMetaType = realMetaType != null ? new MetaType(mf.realMetaType) : null;
+            m_DefineMetaType = mf.m_DefineMetaType != null ? new MetaType(mf.m_DefineMetaType) : null;
+            m_RealMetaType = mf.m_RealMetaType != null ? new MetaType(mf.m_RealMetaType) : null;
             m_IsDefineMetaType = mf.m_IsDefineMetaType;
 
             m_OwnerMetaClass = mf.m_OwnerMetaClass; 

@@ -122,6 +122,14 @@ namespace SimpleLanguage.Core
             m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Argument,
                 null, m_OwnerMetaFunction.ownerMetaClass, null );
         }
+        public void SetOwnerMetaFunction(MetaFunction mf)
+        {
+            m_OwnerMetaFunction = mf;
+            if (m_MetaVariable != null)
+            {
+                m_MetaVariable.SetOwnerMetaClass(mf?.ownerMetaClass);
+            }
+        }
         public void ParseMetaDefineType()
         {
             MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
@@ -379,6 +387,15 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < m_MetaDefineParamList.Count; i++)
             {
                 var dParam = m_MetaDefineParamList[i];
+                dParam?.metaVariable?.SetOwnerMetaClass(ownerclass);
+            }
+        }
+        public void SetOwnerMetaFunction(MetaFunction ownerFunction)
+        {
+            for (int i = 0; i < m_MetaDefineParamList.Count; i++)
+            {
+                var dParam = m_MetaDefineParamList[i];
+                dParam?.SetOwnerMetaFunction(ownerFunction);
             }
         }
         public MetaDefineParam GetMetaDefineParamByName( string name )

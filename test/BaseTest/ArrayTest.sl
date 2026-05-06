@@ -61,8 +61,11 @@ ArrayTest
         Int32[] nums = Array<Int32>.create(3)
         nums.fill(7)
         nums.setValue(2, 99)
+        int lenValue = nums.length
+        lenValue += 1
 
         global.println("nums.length -> " + nums.length.toString())
+        global.println("lenValue -> " + lenValue.toString())
         global.println("nums.getValue(0) -> " + nums.getValue(0).toString())
         global.println("nums.getValue(2) -> " + nums.getValue(2).toString())
 

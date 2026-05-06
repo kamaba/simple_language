@@ -496,6 +496,7 @@ namespace SimpleLanguage.Core
                 it.ParseFileCollectMemberVariableDefineMetaType();
                 it.ParseFileCollectMemberFunctionDefineMetaType();
                 it.HandleExtendAndInterfaceMetaTypeInstnace();
+                it.EnsureParsedGenTemplateMetaClasses();
             }
             //foreach( var it in m_InitHandleMetaClassList )
             //{

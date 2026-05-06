@@ -66,3 +66,7 @@
 /test/BaseTest/NumberTest
 /tools/ExtractLogs/obj
 /tools/ExtractLogs/bin
+/test/BaseTest/AssignStatement/Code.txt
+/test/BaseTest/AssignStatement/File.txt
+/test/BaseTest/AssignStatement/Node.txt
+/test/BaseTest/AssignStatement/Token.txt

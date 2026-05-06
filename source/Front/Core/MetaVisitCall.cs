@@ -62,6 +62,7 @@ namespace SimpleLanguage.Core
             }
             m_VMCallMetaFunction = _fun;
             MetaMemberFunction mmf = _fun as MetaMemberFunction;
+            m_MetaMemberFunction = mmf;
             //m_MetaInputParamList = _param;
             if( mpipList != null )
             {
@@ -144,6 +145,7 @@ namespace SimpleLanguage.Core
             m_InputParamCollectionForDebug = _paramCollection;
             m_VMCallMetaFunction = _fun;
             MetaMemberFunction mmf = _fun as MetaMemberFunction;
+            m_MetaMemberFunction = mmf;
             //m_MetaInputParamList = _param;
             if (mpipList != null)
             {
@@ -637,13 +639,15 @@ namespace SimpleLanguage.Core
                     {
                         if( methodCall.metaMemberFunction != null )
                         {
-                            return methodCall.metaMemberFunction.returnMetaVariable.defineMetaType;
+                            return methodCall.metaMemberFunction.returnMetaVariable.GetFinalMetaType()
+                                ?? methodCall.metaMemberFunction.GetFinalMetaType();
                         }
-                        if( methodCall.function.returnMetaVariable.isDefineMetaType )
+                        var finalRetMetaType = methodCall.function.returnMetaVariable.GetFinalMetaType();
+                        if (finalRetMetaType != null)
                         {
-                            return methodCall.function.returnMetaVariable.defineMetaType;
+                            return finalRetMetaType;
                         }
-                        return methodCall.function.returnMetaVariable.realMetaType;
+                        return methodCall.function.GetFinalMetaType();
                     }
                     case EVisitType.VisitVariable:
                     {
