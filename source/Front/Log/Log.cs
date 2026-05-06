@@ -189,8 +189,7 @@ namespace SimpleLanguage.Logging
         {
             return WriteCoreByToken(lid, EErrorType.ParseNode, null, null, msg);
         }
-
-        public static LogData AddNodeLog(LID lid, string msg, Token token, params object[] objs )
+        public static LogData AddNodeLog(LID lid, Token token, string msg, params object[] objs )
         {
             return WriteCoreByToken(lid, EErrorType.ParseNode, token, objs, msg);
         }

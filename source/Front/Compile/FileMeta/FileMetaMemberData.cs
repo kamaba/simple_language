@@ -36,6 +36,8 @@ namespace SimpleLanguage.Compile
         public FileMetaConstValueTerm fileMetaConstValue => m_FileMetaConstValue;
         public FileMetaCallTerm fileMetaCallTermValue => m_FileMetaCallTermValue;
         public bool isWithName => m_IsWithName;
+        public bool isAnonymous => !m_IsWithName;
+        public bool isAnonymousData => m_MemberDataType == EMemberDataType.Data && !m_IsWithName;
         public EMemberDataType DataType => m_MemberDataType;
 
         private Token m_AssignToken = null;

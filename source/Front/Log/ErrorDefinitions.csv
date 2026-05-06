@@ -805,3 +805,5 @@
 12257,Error,TRUE,FALSE,1,,"数组[{0}]没有找到定义长度",,Auto-generated LID mapping,,
 12258,Error,TRUE,FALSE,1,,"定义表达式[{0}]应该是一维数组",,Auto-generated LID mapping,,
 12259,Error,TRUE,FALSE,0,,"",,Auto-generated LID mapping,,
+12260,Error,TRUE,FALSE,1,,"这里与关键字{0}没有匹配的{}",,Auto-generated LID mapping,,
+12261,Error,TRUE,FALSE,1,,"Data数据中，不允许使用除自定义以后的{0}字段!",,Auto-generated LID mapping,,

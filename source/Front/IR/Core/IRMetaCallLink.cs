@@ -182,7 +182,6 @@ namespace SimpleLanguage.Core.IR
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MetaClass)
             {
-
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.Enum )
             {

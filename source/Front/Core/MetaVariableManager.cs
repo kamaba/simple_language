@@ -61,14 +61,16 @@ namespace SimpleLanguage.Core
         }
         public void ParseMetaDataMemberExpress()
         {
-            foreach (var v in metaMemberDataVariableList )
+            var snapshot = metaMemberDataVariableList.ToArray();
+            foreach (var v in snapshot)
             {
                 v.ParseMetaExpress();
             }
         }
         public void ParseMetaEnumMemberExpress()
         {
-            foreach (var v in metaMemberEnumVariableList )
+            var snapshot = metaMemberEnumVariableList.ToArray();
+            foreach (var v in snapshot)
             {
                 v.ParseMetaExpress();
             }

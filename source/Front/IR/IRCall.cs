@@ -56,8 +56,10 @@ namespace SimpleLanguage.IR
             paramCount = mfc.metaInputParamList.Count;
             for (int j = 0; j < paramCount; j++)
             {
-                IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, mfc.metaInputParamList[j]);
+                var argNode = mfc.metaInputParamList[j];
+                IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, argNode);
                 AddIRRangeData(irexpress.IRDataList);
+                TryAddDataTypeLiteralFallback(argNode, irexpress);
             }
 
             var mf = mfc.GetTemplateMemberFunction();
@@ -100,8 +102,10 @@ namespace SimpleLanguage.IR
             paramCount = mfc.metaInputParamList.Count;
             for (int j = 0; j < paramCount; j++)
             {
-                IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, mfc.metaInputParamList[j]);
+                var argNode = mfc.metaInputParamList[j];
+                IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, argNode);
                 AddIRRangeData(irexpress.IRDataList);
+                TryAddDataTypeLiteralFallback(argNode, irexpress);
             }
             MetaFunction mf = mfc.GetTemplateMemberFunction();
             
@@ -266,6 +270,50 @@ namespace SimpleLanguage.IR
         public override string ToIRString()
         {
             return base.ToIRString();
+        }
+
+        private void TryAddDataTypeLiteralFallback(MetaExpressNode? argNode, IRExpressBase? irexpress)
+        {
+            if (argNode == null || irexpress == null)
+                return;
+
+            if (irexpress.IRDataList.Count > 0)
+                return;
+
+            var metaType = argNode.metaType;
+            if (argNode is MetaCallLinkExpressNode callLinkNode)
+            {
+                var metaCallLink = callLinkNode.metaCallLink;
+                metaType = metaCallLink?.finalCallNode?.GetMetaType() ?? metaType;
+                if (metaCallLink?.visitNodeList != null)
+                {
+                    for (int i = metaCallLink.visitNodeList.Count - 1; i >= 0; i--)
+                    {
+                        var visitMetaType = metaCallLink.visitNodeList[i]?.GetMetaType();
+                        if (visitMetaType?.metaClass is MetaData)
+                        {
+                            metaType = visitMetaType;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            var targetMetaClass = metaType?.metaClass as MetaData;
+            if (targetMetaClass == null)
+                return;
+
+            var ownerMetaClass = argNode.ownerMetaClass ?? targetMetaClass;
+            var ownerIrMetaClass = IRManager.instance.GetIRMetaClassById(ownerMetaClass.GetHashCode());
+            if (ownerIrMetaClass == null)
+                return;
+
+            var irMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(metaType, ownerIrMetaClass);
+            var irdata = new IRData();
+            irdata.opCode = EIROpCode.Ldc;
+            irdata.SetOpValue(irMetaType);
+            irdata.SetDebugInfoByToken(argNode.token, "Ldc data literal fallback");
+            AddIRData(irdata);
         }
     }
 }

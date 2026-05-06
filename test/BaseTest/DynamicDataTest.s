@@ -27,7 +27,7 @@ namespace N1
     {
         static Fun()
         {
-            dynamic c1 = {a = 10; c1 = Class1(); Class1_2 c2 = Class1_2( Class1() ){ c2 = Class2() } };
+            dynamic c1 = {a = 10, c1 = Class1(), Class1_2 c2 = Class1_2( Class1() ){ c2 = Class2() } };
             data c2 = {a=2,b="ace",N1.Class1 c1 = { a2 = 10}, arr1 = [1,2,3,4,5] }
 
             re1 = c2.c1.a2
@@ -39,8 +39,8 @@ namespace N1
 
 
 !# 动态类说明
-1. 动态类，必须以dynamic关键字作为开头
-2. 如果没有开头直接写，则认为 是data 匿名数据为开头的处理
+1. 动态类，必须以dynamic关键字作为开头  
+2. 如果没有开头直接写，则认为 是data 匿名数据为开头的处理  需要，号进行中间切换
 3. 动态类可以通过 DynamicClass.addMemberVariable( c1, int, a,  10 );  或者 是定义结构体 
     MemberVariable cv;
     cv.defineType = int.type;

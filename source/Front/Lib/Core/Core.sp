@@ -3,6 +3,9 @@ Project
 {
     string cpk = "cpkkk"
     float Pi = 3.14f
+    Global()
+    {
+    }
     print( object str )
     {        
         SystemPrint(str)
@@ -18,9 +21,10 @@ Project
         #GlobalTest.fun()
         #ArrayTest.fun()
         #AssignStatement.fun()
-        BoolTest.fun()
+        #BoolTest.fun()
         #StringTest.fun()
-        #TypeTest.fun()       
+        #TypeTest.fun()
+        DataTest.fun()       
     }
     _test_()
     {

@@ -101,7 +101,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 结束{}错误，关键字不允许或者是其它错误" + node?.token?.ToLexemeAllString());
+                    Log.AddNodeLog(LID.NodeKeyNotMatchBrack, node?.token, tokenType.ToString() );
                 }
             }
             public bool IsLineEndBreak()
@@ -182,7 +182,7 @@ namespace SimpleLanguage.Compile
 
                 if (curNode.nodeType == ENodeType.Comment)
                 {
-                    break;
+                    continue;
                 }
                 else if (curNodeType == ENodeType.LineEnd)
                 {
@@ -440,7 +440,7 @@ namespace SimpleLanguage.Compile
             }
             if (beforeNodeList.Count == 0)
             {
-                Log.AddNodeLog(LID.NodeAssetFrontListNodeIsZero, "", opAssignNode?.token );
+                Log.AddNodeLog(LID.NodeAssetFrontListNodeIsZero, opAssignNode?.token, "" );
                 return null;
             }
 
@@ -598,7 +598,7 @@ namespace SimpleLanguage.Compile
             {
                 if (nameToken == null)
                 {
-                    Log.AddNodeLog(LID.NodeNotFoundNameToken, "", assignNode.token );
+                    Log.AddNodeLog(LID.NodeNotFoundNameToken, assignNode.token, "" );
                     return null;
                 }
                 if (classRef != null)
@@ -627,7 +627,7 @@ namespace SimpleLanguage.Compile
             {
                 if (nameToken == null)
                 {
-                    Log.AddNodeLog(LID.NodeNotFoundNameToken, "", assignNode.token);
+                    Log.AddNodeLog(LID.NodeNotFoundNameToken, assignNode.token, "");
                     return null;
                 }
                 if (classRef != null)

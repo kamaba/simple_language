@@ -383,12 +383,6 @@ namespace SimpleLanguage.Compile
                                     pnode.parseIndex++;
                                     break;
                                 }
-                                if (m_FileMeta.path != null && m_FileMeta.path.EndsWith(".sp", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    Log.AddNodeLog(LID.ShowExtendMessage, "Error .sp 中 typealias 只能写在 Project { } 类体内");
-                                    pnode.parseIndex++;
-                                    break;
-                                }
                                 int ni = ConsumeTypeAliasAt(m_RootNode, pnode.parseIndex, false);
                                 if (ni > pnode.parseIndex)
                                     pnode.parseIndex = ni;
@@ -1287,7 +1281,7 @@ namespace SimpleLanguage.Compile
 
                     AddParseDataInfo(fmmd);
 
-                    ParseDataNode(curNode);
+                    ParseDataNode(curNode, true);
 
                     m_CurrentNodeInfoStack.Pop();
                 }
@@ -1352,7 +1346,24 @@ namespace SimpleLanguage.Compile
             }
             bracketNode.parseIndex = index;
         }
-        public void ParseDataNode(Node pnode)
+        private Node GetNextDataMeaningNode(Node parentNode, int startIndex)
+        {
+            for (int i = startIndex; i < parentNode.childList.Count; i++)
+            {
+                var node = parentNode.childList[i];
+                if (node == null)
+                {
+                    continue;
+                }
+                if (node.nodeType == ENodeType.LineEnd || node.nodeType == ENodeType.Comment)
+                {
+                    continue;
+                }
+                return node;
+            }
+            return null;
+        }
+        public void ParseDataNode(Node pnode, bool requireCommaSeparator = false)
         {            
             Node curParentNode = pnode;
             int index = curParentNode.parseIndex;
@@ -1459,7 +1470,7 @@ namespace SimpleLanguage.Compile
                                 }
                                 else
                                 {
-                                    Log.AddNodeLog(LID.ShowExtendMessage, "Error Data数据中，不允许使用除自定义以后的字段!!" + curNode?.token?.ToLexemeAllString());
+                                    Log.AddNodeLog(LID.NodeDataParseNotfoundIdentify, curNode?.token, curNode?.token?.ToLexemeAllString() );
                                 }
                             }
                         }
@@ -1581,7 +1592,7 @@ namespace SimpleLanguage.Compile
                         AddParseDataInfo(fmmd);
                         if( parseType == 1 )
                         {
-                            ParseDataNode(blockNode);
+                            ParseDataNode(blockNode, true);
                         }
                         else if( parseType == 2 )
                         {
@@ -1592,6 +1603,20 @@ namespace SimpleLanguage.Compile
                     continue;
                 }
                 else if (curNode.nodeType == ENodeType.LineEnd)
+                {
+                    if (requireCommaSeparator && frontList.Count > 0)
+                    {
+                        // Nested/anonymous data members should be comma-delimited.
+                        // Keep parsing for error recovery, but emit a precise diagnostic.
+                        var nextMeaningNode = GetNextDataMeaningNode(curParentNode, index);
+                        if (nextMeaningNode != null)
+                        {
+                            Log.AddNodeLog(LID.ShowExtendMessage, "Error 匿名Data或嵌套Data成员必须使用逗号分隔");
+                        }
+                    }
+                    isParseEnd = true;
+                }
+                else if (curNode.nodeType == ENodeType.Comma)
                 {
                     isParseEnd = true;
                 }

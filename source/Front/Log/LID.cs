@@ -300,5 +300,7 @@
         MetaCoreArrayNotFoundSetLength = 12257,
         MetaCoreArrayMustIsArray = 12258,
         MetaCoreAssertShowMessage = 12259,
+        NodeKeyNotMatchBrack = 12260,
+        NodeDataParseNotfoundIdentify = 12261,
     }
 }
