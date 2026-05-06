@@ -498,10 +498,25 @@ namespace SimpleLanguage.Core
                 it.HandleExtendAndInterfaceMetaTypeInstnace();
                 it.EnsureParsedGenTemplateMetaClasses();
             }
+            EnsureAllGenTemplateClassesParsed();
             //foreach( var it in m_InitHandleMetaClassList )
             //{
             //    it.ParseGenTemplateClassMetaType();
             //}
+        }
+
+        public void EnsureAllGenTemplateClassesParsed()
+        {
+            var list = new List<MetaGenTemplateClass>(m_GenTemplateMetaClassList);
+            foreach (var mgtc in list)
+            {
+                if (mgtc == null)
+                {
+                    continue;
+                }
+                mgtc.ParseGenTemplateClass(mgtc);
+                mgtc.ParseGenMemberVarible();
+            }
         }
 
         /// <summary>等价于先 <see cref="ParseInitMetaClassListThroughInheritance"/> 再 <see cref="ParseInitMetaClassListCollectMemberDefineMetaTypes"/>（中间无 typealias 解析；管线请用分步 API）。</summary>

@@ -72,3 +72,7 @@
 /test/BaseTest/AssignStatement/Token.txt
 /test/BaseTest/AssignStatement/IR.txt
 /test/BaseTest/AssignStatement/Meta.txt
+/test/BaseTest/BoolTest/Code.txt
+/test/BaseTest/BoolTest/File.txt
+/test/BaseTest/BoolTest/Node.txt
+/test/BaseTest/BoolTest/Token.txt

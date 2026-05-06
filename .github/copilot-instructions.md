@@ -14,6 +14,7 @@
 - For common utilities and shared type definitions, first search and reuse implementations in `src/define.h` and `src/base` before creating new ones in business/runtime modules.
 - If a common helper is missing, add it to the appropriate `src/base` module using existing `base_*` naming conventions, then update call sites to use that base helper.
 - When adding or refactoring csimple_lang code, modularize VMValue-related capabilities into separate `svalue.h/svalue.c` files (referencing the SValue organization in SimpleLanguageVM) to avoid duplicate implementations in `vm_runtime.c/runtime_object.c`.
+- Parse `defineMetaType` before parsing statements; `realMetaType` should be resolved later when the function returns or runtime flow requires it.
 
 ## Code Style
 - Use specific formatting rules
