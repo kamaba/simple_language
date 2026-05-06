@@ -86,13 +86,14 @@ AssignStatement
         xorValue ^= 0b1100
         global.println("xorValue ^= 0b1100 -> " + xorValue.toString())
 
-        Int32 orValue = 0b0010
+        Int32 orValue = 0b1010
         orValue |= 0b0100
         global.println("orValue |= 0b0100 -> " + orValue.toString())
 
         Int32 stepValue = 10
         stepValue++
         stepValue--
+        #a = stepValue++;    #不允许这样处理，只可以直接使用++ --
         global.println("stepValue ++ / -- -> " + stepValue.toString())
 
         Num mixed = 10.0

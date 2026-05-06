@@ -20,14 +20,14 @@ namespace SimpleLanguage.Compile
     {
         public Node rootNode => m_RootNode;
 
-        private FileMeta m_FileMeta;
-        private List<Token> m_TokensList;
+        private FileMeta m_FileMeta = null;
+        private List<Token> m_TokensList = null;
         private int m_TokenIndex = 0;
         private int m_TokenCount = 0;
 
-        Node m_RootNode = new Node(null);
-        Stack<Node> currentNodeStack = new Stack<Node>();
-        Node currentNode = null;
+        private Node m_RootNode = new Node(null);
+        private Stack<Node> m_CurrentNodeStack = new Stack<Node>();
+        private Node m_CurrentNode = null;
 
         public TokenParse(FileMeta fm, List<Token> list)
         {
@@ -35,8 +35,8 @@ namespace SimpleLanguage.Compile
             m_TokensList = list;
             m_TokenCount = list.Count;
             m_RootNode.nodeType = ENodeType.Root;
-            currentNode = m_RootNode;
-            currentNodeStack.Push(m_RootNode);
+            m_CurrentNode = m_RootNode;
+            m_CurrentNodeStack.Push(m_RootNode);
         }
         public void BuildStruct()
         {
@@ -52,73 +52,51 @@ namespace SimpleLanguage.Compile
             }
             return;
         }
-        public void AddImportNode( Token token )
-        {
-            var nnode = new Node(token);
-            nnode.nodeType = ENodeType.Key;
-            m_TokenIndex++;
-            currentNode.AddChild(nnode);
-        }
-        public void AddNamespaceNode(Token token)
-        {
-            var nnode = new Node(token);
-            nnode.nodeType = ENodeType.Key;
-            m_TokenIndex++;
-            currentNode.AddChild(nnode);
-        }
         public void AddIdentifier(Token code)      //Print/Function
         {
             Node node = new Node(code);
             node.nodeType = ENodeType.IdentifierLink;
 
-            if ( currentNode.linkToken != null)
+            if ( m_CurrentNode.linkToken != null)
             {
-                Node node2 = new Node(currentNode.linkToken);
+                Node node2 = new Node(m_CurrentNode.linkToken);
                 node2.nodeType = ENodeType.Period;
 
-                currentNode.AddLinkNode(node2);
-                currentNode.AddLinkNode(node );
-                if(currentNode.atToken != null )
+                m_CurrentNode.AddLinkNode(node2);
+                m_CurrentNode.AddLinkNode(node );
+                if(m_CurrentNode.atToken != null )
                 {
-                    node.atToken = currentNode.atToken;
-                    currentNode.atToken = null;
+                    node.atToken = m_CurrentNode.atToken;
+                    m_CurrentNode.atToken = null;
                 }
-                currentNode.linkToken = null;
+                m_CurrentNode.linkToken = null;
 
 
             }
             else
             {
-                currentNode.AddChild(node);
+                m_CurrentNode.AddChild(node);
             }
             //tempNode.lastNode = node;
             m_TokenIndex++;
-        }        
-        private void AddAnnotation(Token code)
-        {
-            m_TokenIndex++;
-
-            Node node = new Node(code);
-            node.nodeType = ENodeType.Comment;
-            currentNode.AddChild(node);
-        }
+        }   
         private Node AddKeyNode(Token token )
         {
             Node node = new Node(token);
             node.nodeType = ENodeType.Key;
-            currentNode.AddChild(node);
+            m_CurrentNode.AddChild(node);
             m_TokenIndex++;
             return node;
         }
         private Node AddAtOpSign( Token token )
         {
-            if (currentNode.linkToken != null)
+            if (m_CurrentNode.linkToken != null)
             {
                 if (token.type == ETokenType.At)
                 {
                     // `.@` is no longer supported; reserve '@' for attribute syntax.
                     Log.AddTokenLog(LID.ShowExtendMessage, "不再支持 a.@b 语法，请使用 a.$b / a.$0 形式");
-                    currentNode.linkToken = null;
+                    m_CurrentNode.linkToken = null;
                     m_TokenIndex++;
                     return null;
                 }
@@ -144,14 +122,14 @@ namespace SimpleLanguage.Compile
                 }
 
                 
-                Node node2 = new Node(currentNode.linkToken);
+                Node node2 = new Node(m_CurrentNode.linkToken);
                 node2.nodeType = ENodeType.Period;
 
-                currentNode.AddLinkNode(node2);
-                currentNode.AddLinkNode(node);
+                m_CurrentNode.AddLinkNode(node2);
+                m_CurrentNode.AddLinkNode(node);
                 node.atToken = token;
 
-                currentNode.linkToken = null;
+                m_CurrentNode.linkToken = null;
                 //tempNode.lastNode = node;
 
             }
@@ -167,82 +145,15 @@ namespace SimpleLanguage.Compile
         {
             Node node = new Node(token);
             node.nodeType = ENodeType.Symbol;
-            currentNode.AddChild(node);
+            m_CurrentNode.AddChild(node);
             m_TokenIndex++;
-            var cnode = currentNodeStack.Peek();
+            var cnode = m_CurrentNodeStack.Peek();
             return node;
-        }
-        private void AddPlusMinus(Token code)
-        {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level2_LinkOp;
-        }
-        private void AddAsOrIs(Token code)
-        {
-            // as 有两个作用一个是import 里边 代名   一个是 as 类
-            var node = AddKeyNode(code);
-            //var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level9_AsOsIs;
-        }
-        private void AddDoublePlusMinus(Token code)
-        {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level2_LinkOp;
-        }
-        private void AddLeftToRightEqualSymbol(Token code)
-        {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level11_Assign;
         }
         private void AddBitMoveOperatorSymbol(Token code)
         {
             var node = AddSymbol(code);
             node.priority = SignComputePriority.Level5_BitMoveOp;
-        }
-        private void AddDXCompareSymbol(Token code)
-        {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level6_Compare;
-        }
-        private void AddCompareNotOrEqualSymbol(Token code)
-        {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level7_EqualAb;
-        }
-        private void AddBitAndSymbol(Token code)
-        {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level8_BitAndOp;
-        }
-        private void AddBitXOrOpSymbol(Token code)
-        {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level8_BitXOrOp;
-        }
-        private void AddBitOrOpSymbol(Token code)
-        {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level8_BitOrOp;
-        }
-        private void AddHightComputeSymbol(Token code)
-        {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level3_Hight_Compute;
-        }
-        private void AddSingleSign(Token code)
-        {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level2_LinkOp;
-        }
-        private void AddAndCompareSymbol(Token code)
-        {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level9_And;
-        }
-        private void AddOrCompareSymbol(Token code)
-        {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level9_Or;
         }
         /*
          * 
@@ -250,7 +161,7 @@ namespace SimpleLanguage.Compile
          */
         void ParseDetailToken( Token token )
         {
-            if (currentNode == null)
+            if (m_CurrentNode == null)
             {
                 Log.AddTokenLog(LID.ShowExtendMessage, "Error CurrentNode is NULL!!" + token?.ToLexemeAllString());
                 return;
@@ -258,10 +169,6 @@ namespace SimpleLanguage.Compile
             switch (token.type)
             {
                 case ETokenType.Identifier:  //Identifier
-                    {
-                        AddIdentifier(token);
-                    }
-                    break;
                 case ETokenType.Type:
                     {
                         AddIdentifier(token);
@@ -272,26 +179,26 @@ namespace SimpleLanguage.Compile
                         Node node = new Node(token);
                         node.nodeType = ENodeType.Brace;
                         m_TokenIndex++;
-                        currentNodeStack.Push(node);
+                        m_CurrentNodeStack.Push(node);
                         
-                        currentNode.AddChild(node);
-                        currentNode = node;
+                        m_CurrentNode.AddChild(node);
+                        m_CurrentNode = node;
                     }
                     break;
                 case ETokenType.RightBrace: //}
                     {
-                        var cnode = currentNodeStack.Pop();
+                        var cnode = m_CurrentNodeStack.Pop();
                         
 
                         if (cnode.nodeType == ENodeType.Brace )
                         {
                             cnode.endToken = token;
                             m_TokenIndex++;
-                            currentNode = cnode.parent;
+                            m_CurrentNode = cnode.parent;
                         }
                         else
                         {
-                            Log.AddTokenLog(LID.ShowExtendMessage, "Error 不对称{}");
+                            Log.AddTokenLog(LID.MetaCoreAssertShowMessage, "Error 不对称{}");
                         }
                     }
                     break;
@@ -300,14 +207,14 @@ namespace SimpleLanguage.Compile
                         Node node = new Node(token);
                         node.nodeType = ENodeType.LeftAngle;
                         m_TokenIndex++;
-                        currentNode.AddChild(node);
+                        m_CurrentNode.AddChild(node);
                     }
                     break;
                 case ETokenType.Greater:            // >
                     {
                         Node node = new Node(token);
                         node.nodeType = ENodeType.RightAngle;
-                        currentNode.AddChild(node);
+                        m_CurrentNode.AddChild(node);
                         m_TokenIndex++;
                     }
                     break;
@@ -316,20 +223,20 @@ namespace SimpleLanguage.Compile
                         Node node = new Node(token);
                         node.nodeType = ENodeType.Par;
                         m_TokenIndex++;
-                        currentNodeStack.Push(node);
+                        m_CurrentNodeStack.Push(node);
 
-                        currentNode.AddChild(node);
-                        currentNode = node;
+                        m_CurrentNode.AddChild(node);
+                        m_CurrentNode = node;
                     }
                     break;
                 case ETokenType.RightPar: //)
                     {
-                        var cnode = currentNodeStack.Pop();
+                        var cnode = m_CurrentNodeStack.Pop();
                         if( cnode != null && cnode.nodeType == ENodeType.Par)
                         {
                             cnode.endToken = token;
                             m_TokenIndex++;
-                            currentNode = cnode.parent;
+                            m_CurrentNode = cnode.parent;
                             //currentNode.SetLastNode( currentNode );
                         }
                         else
@@ -343,20 +250,20 @@ namespace SimpleLanguage.Compile
                         Node node = new Node(token);
                         node.nodeType = ENodeType.Bracket;
                         m_TokenIndex++;
-                        currentNodeStack.Push(node);
+                        m_CurrentNodeStack.Push(node);
 
-                        currentNode.AddChild(node);
-                        currentNode = node;
+                        m_CurrentNode.AddChild(node);
+                        m_CurrentNode = node;
                     }
                     break;
                 case ETokenType.RightBracket://]
                     {
-                        var cnode = currentNodeStack.Pop();
+                        var cnode = m_CurrentNodeStack.Pop();
                         if (cnode != null && cnode.nodeType == ENodeType.Bracket)
                         {
                             cnode.endToken = token;
                             m_TokenIndex++;
-                            currentNode = cnode.parent;
+                            m_CurrentNode = cnode.parent;
                         }
                         else
                         {
@@ -366,14 +273,14 @@ namespace SimpleLanguage.Compile
                     break;
                 case ETokenType.Period:  //.
                     {
-                        currentNode.linkToken = token;
+                        m_CurrentNode.linkToken = token;
                         m_TokenIndex++;
                     }
                     break;
                 case ETokenType.QuestionMarkDot: // ?.
                     {
                         // treat null-conditional operator like a linking token (similar to '.')
-                        currentNode.linkToken = token;
+                        m_CurrentNode.linkToken = token;
                         m_TokenIndex++;
                     }
                     break;
@@ -381,7 +288,7 @@ namespace SimpleLanguage.Compile
                     {
                         Node node = new Node(token);
                         node.nodeType = ENodeType.Comma;
-                        currentNode.AddChild(node);
+                        m_CurrentNode.AddChild(node);
                         m_TokenIndex++;
                     }
                     break;
@@ -389,7 +296,7 @@ namespace SimpleLanguage.Compile
                     {
                         Node node = new Node(token);
                         node.nodeType = ENodeType.QuestionMark;
-                        currentNode.AddChild(node);
+                        m_CurrentNode.AddChild(node);
                         m_TokenIndex++;
                     }
                     break;
@@ -397,7 +304,7 @@ namespace SimpleLanguage.Compile
                     {
                         Node node = new Node(token);
                         node.nodeType = ENodeType.Colon;
-                        currentNode.AddChild(node);
+                        m_CurrentNode.AddChild(node);
                         m_TokenIndex++;
                     }
                     break;
@@ -405,7 +312,7 @@ namespace SimpleLanguage.Compile
                     {
                         Node node = new Node(token);
                         node.nodeType = ENodeType.SemiColon;
-                        currentNode.AddChild(node);
+                        m_CurrentNode.AddChild(node);
                         m_TokenIndex++;
                     }
                     break;
@@ -413,7 +320,7 @@ namespace SimpleLanguage.Compile
                     {
                         Node node = new Node(token);
                         node.nodeType = ENodeType.LineEnd;
-                        currentNode.AddChild(node);
+                        m_CurrentNode.AddChild(node);
                         m_TokenIndex++;
                     }
                     break;
@@ -421,45 +328,53 @@ namespace SimpleLanguage.Compile
                     {
                         Node node = new Node(token);
                         node.nodeType = ENodeType.Assign;
-                        currentNode.AddChild(node);
+                        m_CurrentNode.AddChild(node);
                         m_TokenIndex++;
                     }
                     break;
                 case ETokenType.Plus:            //+
                 case ETokenType.Minus:           //-
                     {
-                        AddPlusMinus(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level2_LinkOp;
                     }
                     break;
                 case ETokenType.As:
                 case ETokenType.Is:
                 case ETokenType.IsNot:
-                    {   
-                        AddAsOrIs(token);
+                    {
+                        // as 有两个作用一个是import 里边 代名   一个是 as 类
+                        var node = AddKeyNode(token);
+                        //var node = AddSymbol(code);
+                        node.priority = SignComputePriority.Level9_AsOsIs;
                     }
                     break;
                 case ETokenType.DoublePlus:     //++
                 case ETokenType.DoubleMinus:    //--
                     {
-                        AddDoublePlusMinus(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level2_LinkOp;
                     }
                     break;
                 case ETokenType.Multiply:        // *
                 case ETokenType.Divide:          // /
                 case ETokenType.Modulo:          // %
                     {
-                        AddHightComputeSymbol(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level3_Hight_Compute;
                     }
                     break;
                 case ETokenType.Not:             // !
                 case ETokenType.Negative:        // ~
                     {
-                        AddSingleSign(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level2_LinkOp;
                     }
                     break;
                 case ETokenType.Shi:               //  <<
                     {
-                        AddBitMoveOperatorSymbol(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level5_BitMoveOp;
                     }
                     break;
                 case ETokenType.Shr:               //  >>
@@ -473,13 +388,13 @@ namespace SimpleLanguage.Compile
                             t1.SetType(ETokenType.Greater);
                             t1.SetLexeme(">");
                             var n1 = new Node(t1) { nodeType = ENodeType.RightAngle };
-                            currentNode.AddChild(n1);
+                            m_CurrentNode.AddChild(n1);
 
                             var t2 = new Token(token);
                             t2.SetType(ETokenType.Greater);
                             t2.SetLexeme(">");
                             var n2 = new Node(t2) { nodeType = ENodeType.RightAngle };
-                            currentNode.AddChild(n2);
+                            m_CurrentNode.AddChild(n2);
 
                             m_TokenIndex++;
                         }
@@ -492,38 +407,45 @@ namespace SimpleLanguage.Compile
                 case ETokenType.GreaterOrEqual:  // >=
                 case ETokenType.LessOrEqual:     // <=
                     {
-                        AddDXCompareSymbol(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level6_Compare;
                     }
                     break;
                 case ETokenType.Equal:           // ==
                 case ETokenType.NotEqual:        // !=
                     {
-                        AddCompareNotOrEqualSymbol(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level7_EqualAb;
                     }
                     break;
                 case ETokenType.Combine:                // &
                     {
-                        AddBitAndSymbol(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level8_BitAndOp;
                     }
                     break;
                 case ETokenType.InclusiveOr:            // |
                     {
-                        AddBitOrOpSymbol(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level8_BitOrOp;
                     }
                     break;
                 case ETokenType.XOR:                    //  ^
                     {
-                        AddBitXOrOpSymbol(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level8_BitXOrOp;
                     }
                     break;
                 case ETokenType.Or:              // ||
                     {
-                        AddOrCompareSymbol(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level9_Or;
                     }
                     break;
                 case ETokenType.And:             // &&  
                     {
-                        AddAndCompareSymbol(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level9_And;
                     }
                     break;
                 case ETokenType.PlusAssign:             // +=
@@ -537,12 +459,16 @@ namespace SimpleLanguage.Compile
                 case ETokenType.ShiAssign:              // <<=
                 case ETokenType.ShrAssign:              // >>=
                     {
-                        AddLeftToRightEqualSymbol(token);
+                        var node = AddSymbol(token);
+                        node.priority = SignComputePriority.Level11_Assign;
                     }
                     break;
                 case ETokenType.Sharp:   //#
                     {
-                        AddAnnotation(token);
+                        m_TokenIndex++;
+                        Node node = new Node(token);
+                        node.nodeType = ENodeType.Comment;
+                        m_CurrentNode.AddChild(node);
                     }
                     break;
                 case ETokenType.Number:
@@ -554,23 +480,23 @@ namespace SimpleLanguage.Compile
                     {
                         Node node = new Node(token);
                         node.nodeType = ENodeType.ConstValue;
-                        if ( currentNode.linkToken != null)
+                        if ( m_CurrentNode.linkToken != null)
                         {
-                            Node node2 = new Node(currentNode.linkToken);
+                            Node node2 = new Node(m_CurrentNode.linkToken);
                             node2.nodeType = ENodeType.Period;
 
-                            currentNode.AddLinkNode(node2);
-                            currentNode.AddLinkNode(node);
-                            currentNode.linkToken = null;
-                            if(currentNode.atToken != null )
+                            m_CurrentNode.AddLinkNode(node2);
+                            m_CurrentNode.AddLinkNode(node);
+                            m_CurrentNode.linkToken = null;
+                            if(m_CurrentNode.atToken != null )
                             {
-                                node.atToken = currentNode.atToken;
-                                currentNode.atToken = null;
+                                node.atToken = m_CurrentNode.atToken;
+                                m_CurrentNode.atToken = null;
                             }
                         }
                         else
                         {
-                            currentNode.AddChild(node);
+                            m_CurrentNode.AddChild(node);
                         }
                         //tempNode.lastNode = node;
 
@@ -580,31 +506,29 @@ namespace SimpleLanguage.Compile
 
                 case ETokenType.Import:
                     {
-                        AddImportNode(token);
+                        var nnode = new Node(token);
+                        nnode.nodeType = ENodeType.Key;
+                        m_TokenIndex++;
+                        m_CurrentNode.AddChild(nnode);
                     }
                     break;
                 case ETokenType.Namespace:
                     {
-                        AddNamespaceNode(token);
+                        var nnode = new Node(token);
+                        nnode.nodeType = ENodeType.Key;
+                        m_TokenIndex++;
+                        m_CurrentNode.AddChild(nnode);
                     }
                     break;
                 case ETokenType.Enum:
                 case ETokenType.Data:
                 case ETokenType.Class:
                 case ETokenType.Dynamic:
-                    {
-                        AddKeyNode(token);
-                    }
-                    break;
                 case ETokenType.Extern:
                 case ETokenType.Public:
                 case ETokenType.Projected:
                 case ETokenType.Private:
                 //case ETokenType.Operator:
-                    {
-                        AddKeyNode(token);
-                    }
-                    break;
                 case ETokenType.Base:         //base
                 case ETokenType.This:           //this
                 case ETokenType.Object:
@@ -681,7 +605,7 @@ namespace SimpleLanguage.Compile
             // This intentionally ignores nested node stacks (Par/Brace/Bracket), because '>>' that
             // tokenizes inside those should still typically behave as shift.
             int depth = 0;
-            var list = currentNode?.childList;
+            var list = m_CurrentNode?.childList;
             if (list == null) return false;
 
             for (int i = 0; i < list.Count; i++)
