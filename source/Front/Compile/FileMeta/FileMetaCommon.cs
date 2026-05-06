@@ -531,7 +531,7 @@ namespace SimpleLanguage.Compile
             }
             return sb.ToString();
         }
-    }    
+    }
     public class FileMetaClassDefine
     {
         public List<string> stringList
@@ -585,11 +585,11 @@ namespace SimpleLanguage.Compile
 
         private List<Token> m_TokenList = new List<Token>();
         private bool m_IsInputTemplateData = false;
-        public FileMetaClassDefine( FileMeta fm, Node node ) : this(fm, node, null)
+        public FileMetaClassDefine(FileMeta fm, Node node) : this(fm, node, null)
         {
         }
 
-        public FileMetaClassDefine( FileMeta fm, Node node, Node questionMark )
+        public FileMetaClassDefine(FileMeta fm, Node node, Node questionMark)
         {
             m_FileMeta = fm;
             // collect tokens that form the type reference (including dotted names)
@@ -628,27 +628,27 @@ namespace SimpleLanguage.Compile
             else
                 m_ClassNameToken = null;
 
-            if ( node.angleNode != null )
+            if (node.angleNode != null)
             {
                 m_IsInputTemplateData = true;
                 m_AngleTokenBegin = node.angleNode.token;
                 m_AngleTokenEnd = node.angleNode.endToken;
-                for( int i = 0; i < node.angleNode.childList.Count; i++ )
+                for (int i = 0; i < node.angleNode.childList.Count; i++)
                 {
                     var cnode = node.angleNode.childList[i];
-                    if (cnode.nodeType == ENodeType.Comma )
+                    if (cnode.nodeType == ENodeType.Comma)
                         continue;
                     FileInputTemplateNode fmcn = new FileInputTemplateNode(fm, cnode);
                     m_InputTemplateNodeList.Add(fmcn);
                 }
             }
-            if( node.bracketNode != null )
+            if (node.bracketNode != null)
             {
                 isArray = true;
 
-                for( int i = 0; i < node.bracketNodeList.Count; i++ )
+                for (int i = 0; i < node.bracketNodeList.Count; i++)
                 {
-                    FileMetaBracketTerm fmbt = new FileMetaBracketTerm( m_FileMeta, node.bracketNodeList[i] );
+                    FileMetaBracketTerm fmbt = new FileMetaBracketTerm(m_FileMeta, node.bracketNodeList[i]);
                     m_FileMetaBracketTermList.Add(fmbt);
                 }
                 GetBracketListInt32Value();
@@ -666,16 +666,16 @@ namespace SimpleLanguage.Compile
                     break;
             }
             return mb2;
-        }       
+        }
         public void GetBracketListInt32Value()
         {
             m_ArrayDimsionLengthList.Clear();
-            for ( int i = 0; i < m_FileMetaBracketTermList.Count; i++ )
+            for (int i = 0; i < m_FileMetaBracketTermList.Count; i++)
             {
                 var fmbtc = m_FileMetaBracketTermList[i];
-                if( fmbtc.fileMetaExpressList.Count == 1 )
+                if (fmbtc.fileMetaExpressList.Count == 1)
                 {
-                    if( fmbtc.fileMetaExpressList[0] is FileMetaConstValueTerm fmcvt )
+                    if (fmbtc.fileMetaExpressList[0] is FileMetaConstValueTerm fmcvt)
                     {
                         if (fmcvt.token?.type == ETokenType.Number)
                         {
@@ -689,7 +689,7 @@ namespace SimpleLanguage.Compile
                     m_ArrayDimsionLengthList.Add(-1);
                 }
             }
-            if(m_ArrayDimsionLengthList.Count != m_FileMetaBracketTermList.Count )
+            if (m_ArrayDimsionLengthList.Count != m_FileMetaBracketTermList.Count)
             {
                 Log.AddFileMetaLog(LID.AutoFileMetaCommonL691, "数组获取长度文件的时候，有异常!");
             }
@@ -706,14 +706,14 @@ namespace SimpleLanguage.Compile
         {
             StringBuilder sb = new StringBuilder();
             sb.Append(allName);
-            if(m_IsInputTemplateData)
+            if (m_IsInputTemplateData)
             {
                 sb.Append(m_AngleTokenBegin?.lexeme.ToString());
 
-                for( int i = 0; i < m_InputTemplateNodeList.Count; i++ )
+                for (int i = 0; i < m_InputTemplateNodeList.Count; i++)
                 {
                     sb.Append(m_InputTemplateNodeList[i].ToFormatString());
-                    if( i < m_InputTemplateNodeList.Count - 1 )
+                    if (i < m_InputTemplateNodeList.Count - 1)
                     {
                         sb.Append(",");
                     }
@@ -721,33 +721,14 @@ namespace SimpleLanguage.Compile
 
                 sb.Append(m_AngleTokenEnd?.lexeme?.ToString());
             }
-            if( isArray )
+            if (isArray)
             {
-                for( int i = 0; i < m_FileMetaBracketTermList.Count; i++ )
+                for (int i = 0; i < m_FileMetaBracketTermList.Count; i++)
                 {
                     sb.Append(m_FileMetaBracketTermList[i].ToFormatString());
                 }
             }
             return sb.ToString();
-        }
-        public void AddError2(int errorId, [CallerFilePath] string pfile = "", [CallerMemberName] string pfunction = "",
-            [CallerLineNumber] int line = 0)
-        {
-            string str = "";
-            switch (errorId)
-            {
-                case 0:
-                    {
-                        str = "判断接口的时候没有发现[" + allName + "]类";
-                    }
-                    break;
-                default: break;
-            }
-            str = str + " \n Token: 在文件:" + m_ClassNameToken.path + " 开始行号:" + m_ClassNameToken.sourceBeginLine.ToString() + "开始位置: "
-                + m_ClassNameToken.sourceBeginChar.ToString();
-            str = str + " \n 在代码中文件:" + pfile + "   函数:" + pfunction + "行号: " + line.ToString();
-            //Trace.WriteLine( "" )
-            Log.AddFileMetaLog(LID.AutoFileMetaCommonL747, str);
         }
     }
     public class FileMetaTemplateDefine : FileMetaBase

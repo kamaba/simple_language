@@ -52,9 +52,6 @@ namespace SimpleLanguage.Compile
             m_FileMeta = fm;
             m_Token = node.token;
             m_IsWithName = isWithName;
-
-
-
             if (m_MemberDataType == EMemberDataType.ConstValue)
             {
                 m_FileMetaConstValue = new FileMetaConstValueTerm(m_FileMeta, m_Token );

@@ -239,14 +239,14 @@ namespace SimpleLanguage.Project
             LocalManager.instance.InjectLocalInitCalls(fileParseList);
 
             // Export per-file MetaCore debug data after logic parsing is complete.
+#if DEBUG
             for (int i = 0; i < fileParseList.Count; i++)
             {
                 fileParseList[i].ExportMetaDebugData();
             }
-
             //ClassManager.instance.UpdateMetaGenTemplateClassHandle();
-
             ModuleManager.instance.selfModule.metaNode.SetDeep(0);
+#endif
 
             Log.AddProcessLog(LID.ProcessCompileMetaEnd, "");
         }

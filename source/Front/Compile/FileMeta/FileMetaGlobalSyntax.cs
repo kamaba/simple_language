@@ -15,29 +15,28 @@ namespace SimpleLanguage.Compile
 {
     public sealed class FileMetaImportSyntax : FileMetaBase
     {
-        public Token m_AsToken;
-        public Token m_AsNameToken;
-        List<Token> m_ImportNameListToken = new List<Token>();
+        public NamespaceStatementBlock namespaceStatement => m_NamespaceStatement;
+        public NamespaceStatementBlock asNameStatement => m_AsNameStatement;
+
+
+
+        private Token m_AsToken;
+        private Token m_AsNameToken;
+        private List<Token> m_ImportNameListToken = new List<Token>();
         private List<Node> m_NodeList = new List<Node>();
         private List<Token> m_TokenList = new List<Token>();
         private NamespaceStatementBlock m_NamespaceStatement = null;
 #pragma warning disable CS0649
         private NamespaceStatementBlock m_AsNameStatement = null;
 #pragma warning restore CS0649
-
-        public NamespaceStatementBlock namespaceStatement => m_NamespaceStatement;
-        public NamespaceStatementBlock asNameStatement => m_AsNameStatement;
-
         public FileMetaImportSyntax(List<Node> _nodeList)
         {
             m_NodeList = _nodeList;
         }
-
         public FileMetaImportSyntax(List<Token> _tokenList)
         {
             m_TokenList = _tokenList;
         }
-
         private bool ParseImportSyntax()
         {
             if (m_NodeList.Count < 2)

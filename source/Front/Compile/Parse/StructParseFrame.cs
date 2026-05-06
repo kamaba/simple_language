@@ -11,7 +11,6 @@ using SimpleLanguage.Project;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile
 {

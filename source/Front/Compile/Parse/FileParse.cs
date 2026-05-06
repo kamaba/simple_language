@@ -83,22 +83,25 @@ namespace SimpleLanguage.Compile
                 m_LexerParse = new LexerParse( m_FilePath, m_ContentBuffer );
 
                 m_LexerParse.ParseToTokenList();
-
+#if DEBUG
                 m_LexerParse.DumpTokensToFile();
+#endif
 
                 m_TokenParse = new TokenParse( m_File, m_LexerParse.listTokens );
 
                 m_TokenParse.BuildStruct();
-
+#if DEBUG
                 m_TokenParse.WriteNodeString(true);
+#endif
 
                 m_StructBuild = new StructParse(m_File, m_TokenParse.rootNode );
 
                 m_StructBuild.ParseRootNodeToFileMeta();
 
                 m_File.SetDeep(0);
-
+#if DEBUG
                 ExportFileMetaDebugData();
+#endif
 
                 Log.AddProcessLog(LID.ProcessCompileFileCompleted, "", m_FilePath );
 
