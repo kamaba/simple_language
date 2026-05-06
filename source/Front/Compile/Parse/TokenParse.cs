@@ -505,6 +505,7 @@ namespace SimpleLanguage.Compile
                     break;
 
                 case ETokenType.Import:
+                case ETokenType.TypeAlias:
                     {
                         var nnode = new Node(token);
                         nnode.nodeType = ENodeType.Key;
@@ -589,7 +590,7 @@ namespace SimpleLanguage.Compile
                     break;
                 default:
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, string.Format("Line:{0} Source: {1}", token.sourceBeginLine, 
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, string.Format("Path:{0} Line:{1} Source: {2}", token.path, token.sourceBeginLine, 
                             token.sourceBeginChar) );
                         throw new Exception( "不支持的语法 " );
                     }

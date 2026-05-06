@@ -383,12 +383,6 @@ namespace SimpleLanguage.Compile
                                     pnode.parseIndex++;
                                     break;
                                 }
-                                if (m_FileMeta.path != null && m_FileMeta.path.EndsWith(".sp", StringComparison.OrdinalIgnoreCase))
-                                {
-                                    Log.AddNodeLog(LID.ShowExtendMessage, "Error .sp 中 typealias 只能写在 Project { } 类体内");
-                                    pnode.parseIndex++;
-                                    break;
-                                }
                                 int ni = ConsumeTypeAliasAt(m_RootNode, pnode.parseIndex, false);
                                 if (ni > pnode.parseIndex)
                                     pnode.parseIndex = ni;

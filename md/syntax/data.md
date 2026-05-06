@@ -1,138 +1,252 @@
-# 数据（data / 记录/结构体）
+# data（数据类型）
 
-`data` 用于声明轻量的数据结构，通常用于静态配置、常量数据或值语义对象。`data` 的语法与 `class` 相似，但更偏向于声明静态/可序列化的数据。
+`data` 是一种轻量的数据结构定义方式。它的成员声明风格接近 `class`，但用途更偏向于描述结构化数据、配置数据以及数据字面量。
 
-语法示例：
+## 1. 基本声明
 
-```s
-data Book {
-    string name = "我的天空";
-    string desc = "描述";
-    RentInfo rent = { manager = "X", time = "2012-10-12" };
-    string[] author = ["Lif", "Paper"];
+普通 `data`：
+
+```sl
+data UserInfo
+{
+    id = 0
+    name = ""
+}
+```
+
+只读 `const data`：
+
+```sl
+const data Rule
+{
+    min = 1
+    max = 100
 }
 ```
 
 说明：
-- `data` 常用于配置或序列化数据；可用 `const data` 将其标记为只读常量。
-- `data` 可以直接作为值使用：`print("book name: $Book.name");`。
-- 可通过 `toStream` / `toJson` / `toClass<T>` 等辅助方法在 runtime 中转换。
 
-示例使用：
+- `data` 适合描述一组字段，不强调行为。
+- `const data` 表示只读数据，语义上不应再修改其成员值。
 
-```s
-Project {
-    _main_()
-    {
-        Console.println(Book.name);
-        BookRef = Book; # 复制/引用 data
-        Book.name = "新书名"; // 若非 const 可修改
-        BookClass bc = Book.toClass<BookClass>();
-        Book bk = bc.ToData<Book>();
+## 2. 成员声明形式
+
+`data` 内部可以像 `class` 字段一样声明成员，也可以直接使用数组字面量、对象字面量，以及嵌套 `data` 字面量。
+
+### 2.1 标量成员
+
+```sl
+data UserInfo
+{
+    id = 0
+    name = "guest"
+    enabled = True
+}
+```
+
+### 2.2 数组成员
+
+可以直接用 `[]` 初始化数组成员：
+
+```sl
+data ScoreInfo
+{
+    scores = [100, 98, 87]
+    tags = ["math", "final", "top"]
+}
+```
+
+如果需要表达更复杂的层级，也可以写成对象数组或嵌套数组：
+
+```sl
+data GroupInfo
+{
+    matrix = [[1, 2], [3, 4]]
+    students = [
+        { name = "A", age = 18 },
+        { name = "B", age = 19 }
+    ]
+}
+```
+
+### 2.3 对象成员
+
+可以直接用 `{}` 表示一个匿名对象结构：
+
+```sl
+data StudentRecord
+{
+    sid = 0
+    name = ""
+    profile = { grade = 3, rank = 1 }
+}
+```
+
+对象成员内部同样可以继续包含数组或子对象：
+
+```sl
+data ComplexProfile
+{
+    profile = {
+        grade = 3
+        rank = 1
+        contact = {
+            city = "Shenzhen"
+            zip = 518000
+        }
+        subjects = ["math", "physics"]
     }
 }
 ```
 
-约束：
-- `data` 可引用其它 `data`，但不能引用 `class` 或 `enum`（避免复杂依赖）。
-- 不允许循环引用的 `data` 定义。
+### 2.4 嵌套 data 成员
 
-## `global.data`（jsonc）中的 data/array 支持
+可以直接把另一个 `data` 当作成员值来初始化：
 
-`Project.jsonc` 下 `global.data` 现在支持：
-- 基础值：`int32` / `float64` / `string` / `bool` / `null`
-- 对象：会转换为 `MetaData` 树，可通过 `global.xxx.yyy` 访问
-- 数组：支持基础值数组与嵌套数组，可通过下标访问
+```sl
+data MetaInfo
+{
+    level = 1
+    passed = False
+}
 
-示例：
+data StudentRecord
+{
+    sid = 0
+    name = ""
+    meta = MetaInfo(){ level = 2, passed = True }
+}
+```
 
-```jsonc
-"global": {
-  "data": {
-    "var1": 12,
-    "arr": [1, 2, 3],
-    "arr2": [[1, 2], [3, 4]],
-    "cfg": {
-      "name": "demo",
-      "flags": [true, false]
+### 2.5 组合示例
+
+下面这个例子把标量、数组、对象、对象数组、嵌套 `data` 放在同一个 `data` 里：
+
+```sl
+data MetaInfo
+{
+    level = 1
+    passed = False
+}
+
+data FullStudentRecord
+{
+    sid = 0
+    name = ""
+    scores = [95, 88, 91]
+    profile = {
+        grade = 3
+        rank = 5
+        address = {
+            city = "Shenzhen"
+            zip = 518000
+        }
     }
-  }
+    awards = [
+        { name = "Math", year = 2024 },
+        { name = "Physics", year = 2025 }
+    ]
+    meta = MetaInfo(){ level = 2, passed = True }
 }
 ```
 
-访问示例：
-- `global.var1`
-- `global.arr[0]`
-- `global.arr2[1][0]`
-- `global.cfg.name`
-- `global.cfg.flags[1]`
+## 3. 初始化方式
 
-## `bind`（绑定 data 到 class / interface）
+`data` 的初始化方式与 `class` 对象初始化的实际使用方式很接近，常见有下面三种。
 
-`bind` 用于在声明 `class` 或 `interface` 时，把一个或多个 `data` 结构“绑定”到该类型上，使其内部可以把绑定的数据当作该类型的一部分来访问（通过 `this.binddata`）。
+### 3.1 先声明，再 `new()`
 
-### 语法（示例）
-
-```ruby
-data A { string name = "a" }
-data B { string name = "b" }
-
-class C bind A, B
-{
-    // C 内部可以访问 this.binddata.A.name / this.binddata.B.name
-}
-
-interface I bind A, B
-{
-    // interface 也可以声明同样的绑定数据访问/接口
-}
+```sl
+StudentRecord a = new()
 ```
 
-### 数据访问结构
+适合先创建默认实例，再逐步赋值。
 
-- 绑定数据统一入口为 `this.binddata`
-- 访问方式为：`this.binddata.<DataName>.<fieldName>`
-- 当你在 `class` / `interface` 中访问某个字段名（如 `name`）时，解析规则以“当前类型自身成员定义”为准：
-  - 若当前类型已定义了同名的 `get/set` 属性（或字段），则使用当前类型的实现
-  - 若未定义同名成员，则可通过 `this.binddata.<DataName>.<fieldName>` 显式访问具体来源
+### 3.2 直接使用 `DataName(){ ... }`
 
-### bind 数据重复字段名问题（必须重写）
-
-当绑定了多个 `data`，且它们内部存在**同名字段**时（例如都叫 `name`），会出现“同名歧义”。此时需要在绑定类/接口里**重写（实现）冲突字段的 `get/set`**，明确该字段应该映射到哪一个绑定 data。
-
-例如（你的示例）：
-
-```ruby
-data a { name = "a" }
-data b { name = "b" }
-
-class c bind a,b
-{
-    // 如果不重写，这里的 name 会有歧义
-    // 因此需要明确 name 来自 a 或 b
-}
+```sl
+StudentRecord b = StudentRecord(){ sid = 2, name = "n2" }
 ```
 
-为了消除重复字段歧义，你可以在 `c` 内尽量重写该字段（用 `this.binddata.<data>.<field>` 做转发）：
+适合在一处直接完成构造和初始化。
 
-```ruby
-class c bind a,b
+也可以在里面继续写数组、对象或嵌套 `data`：
+
+```sl
+FullStudentRecord c = FullStudentRecord()
 {
-    string get name
-    { 
-        ret this.binddata.a.name
+    sid = 3
+    name = "n3"
+    scores = [99, 97, 96]
+    profile = {
+        grade = 4
+        rank = 2
     }
+    meta = MetaInfo(){ level = 3, passed = True }
+}
+```
 
-    void set name( string n )
-    {
-        this.binddata.a.name = n
+### 3.3 先声明，再赋值 `{ ... }`
+
+```sl
+StudentRecord d
+d = { sid = 4, name = "n4" }
+```
+
+这种方式适合先声明变量，再在后续位置补全对象内容。
+
+同样可以结合对象嵌套：
+
+```sl
+FullStudentRecord e
+e = {
+    sid = 5
+    name = "n5"
+    profile = {
+        grade = 5
+        rank = 1
+        address = {
+            city = "Guangzhou"
+            zip = 510000
+        }
     }
 }
 ```
 
-#### 重写策略建议
+## 4. 当前建议理解
 
-- 对于每个冲突字段，必须在绑定目标类型上显式提供 `get/set`（或等价的属性定义）
-- 映射到的来源要在 `this.binddata.<sourceData>.<field>` 里明确写出
-- 如果你希望用户访问的是 `b` 的字段，就把映射改成 `this.binddata.b.name`
+从语法设计上，`data` 可以表达以下几类结构：
+
+- 普通字段，如 `id = 0`
+- 数组字段，如 `scores = [1, 2, 3]`
+- 匿名对象字段，如 `profile = { grade = 3, rank = 1 }`
+- 对象数组，如 `items = [{ id = 1 }, { id = 2 }]`
+- 嵌套 `data`，如 `meta = MetaInfo(){ ... }`
+- 多层组合嵌套，如“对象里套数组、数组里套对象、对象里再套 data”
+
+## 5. 约束
+
+`data` 比 `class` 更强调结构，因此约束也更严格：
+
+- `data` 不支持继承，不能使用 `extends`。
+- `data` 不定义方法，通常只包含成员变量。
+- `const data` 应视为只读结构。
+
+## 6. 当前编译/运行状态说明
+
+就当前实现而言，前端解析层已经支持 `data` 的声明和多种字面量写法；但某些复杂的成员默认值、嵌套对象、嵌套 `data`、对象数组等路径，在部分 Meta / IR / VM 流程下仍可能存在未补齐的实现缺口。
+
+因此建议这样使用这份文档：
+
+- 这份文档可以作为 `data` 的语法目标和语义说明。
+- 做语法覆盖测试时，可以尽量把结构形式都写全。
+- 做可执行运行时测试时，建议和“纯结构声明测试”分开验证，避免把运行时现有缺口和语法能力混在一起。
+
+## 7. bind 相关
+
+`bind` 可以把一个或多个 `data` 结构绑定到 `class` / `interface` 上。示例可参考：
+
+- [test/ExpendTest/BindDataTest.sl](../../test/ExpendTest/BindDataTest.sl)
+
+如果多个被绑定的 `data` 中存在同名字段，应当在目标类型中显式消除歧义，而不要依赖隐式推断。
 

@@ -1,5 +1,8 @@
 import Std
 import CSharp.System
+        
+typealias AliasIntArray = Array<int>
+typealias AliasObjArray = Array<Object>
 
 TypeTest
 {
@@ -8,9 +11,115 @@ TypeTest
         int i = 0
     }
 
+    Box<T>
+    {
+        T value = null
+
+        _init_(T v)
+        {
+            this.value = v
+        }
+
+        string toString()
+        {
+            ret "Box(" + this.value.toString() + ")"
+        }
+    }
+
     static bool IsIntType(Type t)
     {
         ret t == int.type
+    }
+
+    static primitiveAliasTypeTest()
+    {
+        global.println("----- primitiveAliasTypeTest -----")
+
+        tIntLower = int.type
+        tIntUpper = Int32.type
+        tFloatLower = float.type
+        tFloatUpper = Float32.type
+
+        global.println("int.type   -> " + tIntLower.toString())
+        global.println("Int32.type -> " + tIntUpper.toString())
+        global.println("float.type -> " + tFloatLower.toString())
+        global.println("Float.type -> " + tFloatUpper.toString())
+
+        global.println("int.type == Int32.type -> " + (tIntLower == tIntUpper).toString())
+        global.println("float.type == Float.type -> " + (tFloatLower == tFloatUpper).toString())
+        global.println("int.type == float.type -> " + (tIntLower == tFloatLower).toString())
+    }
+
+    static arrayAliasTypeTest()
+    {
+        global.println("----- arrayAliasTypeTest -----")
+
+        tObjArrAlias = ObjectArray.type
+        tObjArrRaw = Array<Object>.type
+        tIntArrAlias = Int32Array.type
+        tIntArrRaw = Array<Int32>.type
+        tAliasIntArray = AliasIntArray.type
+        tAliasObjArray = AliasObjArray.type
+
+        global.println("ObjectArray.type -> " + tObjArrAlias.toString())
+        global.println("Array<Object>.type -> " + tObjArrRaw.toString())
+        global.println("Int32Array.type -> " + tIntArrAlias.toString())
+        global.println("Array<Int32>.type -> " + tIntArrRaw.toString())
+        global.println("AliasIntArray.type -> " + tAliasIntArray.toString())
+        global.println("AliasObjArray.type -> " + tAliasObjArray.toString())
+
+        global.println("ObjectArray == Array<Object> -> " + (tObjArrAlias == tObjArrRaw).toString())
+        global.println("Int32Array == Array<Int32> -> " + (tIntArrAlias == tIntArrRaw).toString())
+        global.println("ObjectArray == Int32Array -> " + (tObjArrAlias == tIntArrAlias).toString())
+        global.println("AliasIntArray == Array<Int32> -> " + (tAliasIntArray == tIntArrRaw).toString())
+        global.println("AliasObjArray == Array<Object> -> " + (tAliasObjArray == tObjArrRaw).toString())
+    }
+
+    static templateTypeTest()
+    {
+        global.println("----- templateTypeTest -----")
+
+        tBoxInt = Box<int>.type
+        tBoxInt2 = Box<Int32>.type
+        tBoxStr = Box<string>.type
+        tBoxObj = Box<Object>.type
+
+        global.println("Box<int>.type -> " + tBoxInt.toString())
+        global.println("Box<Int32>.type -> " + tBoxInt2.toString())
+        global.println("Box<string>.type -> " + tBoxStr.toString())
+        global.println("Box<Object>.type -> " + tBoxObj.toString())
+
+        global.println("Box<int> == Box<Int32> -> " + (tBoxInt == tBoxInt2).toString())
+        global.println("Box<int> == Box<string> -> " + (tBoxInt == tBoxStr).toString())
+        global.println("Box<Object> == Object.type -> " + (tBoxObj == Object.type).toString())
+
+        Box<int> bi = Box<int>(10)
+        Box<string> bs = Box<string>("txt")
+        global.println("instance bi.type == Box<int>.type -> " + (bi.type == tBoxInt).toString())
+        global.println("instance bs.type == Box<string>.type -> " + (bs.type == tBoxStr).toString())
+    }
+
+    static inferredAndDynamicTypeTest()
+    {
+        global.println("----- inferredAndDynamicTypeTest -----")
+
+        var vi = 123
+        var vf = 1.5
+        var vs = "hello"
+
+        global.println("vi.type -> " + vi.type.toString())
+        global.println("vf.type -> " + vf.type.toString())
+        global.println("vs.type -> " + vs.type.toString())
+
+        global.println("vi.type == int.type -> " + (vi.type == int.type).toString())
+        global.println("vf.type == float.type -> " + (vf.type == float.type).toString())
+        global.println("vs.type == string.type -> " + (vs.type == string.type).toString())
+
+        dynamic dyn = { a = 10, b = "ok", c = ArrClass(){ i = 7 } }
+        tDyn = dyn.type
+        global.println("dynamic value .type -> " + tDyn.toString())
+        global.println("dynamic self type compare -> " + (tDyn == dyn.type).toString())
+        global.println("dyn.c.type == ArrClass.type -> " + (dyn.c.type == ArrClass.type).toString())
     }
 
     static fun()
@@ -63,6 +172,11 @@ TypeTest
         Object obj3 = new()
         tObj = obj3.type
         global.println("new() instance .type -> " + tObj.toString())
+
+        primitiveAliasTypeTest()
+        arrayAliasTypeTest()
+        templateTypeTest()
+        inferredAndDynamicTypeTest()
 
         global.println("========== TypeTest (end) ==========")
     }
