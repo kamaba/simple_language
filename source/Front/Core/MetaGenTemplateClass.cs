@@ -300,11 +300,28 @@ namespace SimpleLanguage.Core
         {
             MetaMemberVariable mgmv = new MetaMemberVariable(mmv);
             mgmv.SetOwnerMetaClass(this);
-            if(mgmv.realMetaType == null )
+
+            if (mgmv.defineMetaType != null)
             {
-                mgmv.SetRealMetaType(new MetaType(mgmv.defineMetaType));
+                var defineMetaType = new MetaType(mgmv.defineMetaType);
+                TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(defineMetaType, this, null);
+                mgmv.SetMetaDefineType(defineMetaType);
             }
-            TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(mgmv.realMetaType, this, null );
+
+            if (mgmv.realMetaType == null)
+            {
+                if (mgmv.defineMetaType != null)
+                {
+                    mgmv.SetRealMetaType(new MetaType(mgmv.defineMetaType));
+                }
+            }
+            else
+            {
+                var realMetaType = new MetaType(mgmv.realMetaType);
+                TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(realMetaType, this, null);
+                mgmv.SetRealMetaType(realMetaType);
+            }
+
             return mgmv;
         }
         public void ParseMemberFunctionDefineMetaType()

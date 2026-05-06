@@ -70,3 +70,5 @@
 /test/BaseTest/AssignStatement/File.txt
 /test/BaseTest/AssignStatement/Node.txt
 /test/BaseTest/AssignStatement/Token.txt
+/test/BaseTest/AssignStatement/IR.txt
+/test/BaseTest/AssignStatement/Meta.txt

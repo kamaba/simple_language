@@ -1344,10 +1344,10 @@ namespace SimpleLanguage.VM.Runtime
                                         m_ValueStack[slot].SetNull();
                                 }
                             }
-                            else
-                            {
-                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM StoreArrayIndex", inst.eType.ToString());
-                            }
+                            //else
+                            //{
+                            //    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM StoreArrayIndex", inst.eType.ToString());
+                            //}
                         }
                         else
                         {
