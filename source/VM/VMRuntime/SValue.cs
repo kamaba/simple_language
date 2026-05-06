@@ -79,7 +79,7 @@ namespace SimpleLanguage.VM
 
             if (targetType == typeof(object)) return GetValueObject();
             if (targetType == typeof(string)) return eType == EVMType.String ? stringValue : GetValueObject()?.ToString();
-            if (targetType == typeof(bool)) return eType == EVMType.Boolean ? (int8Value == 1) : Convert.ToBoolean(GetValueObject());
+            if (targetType == typeof(bool)) return eType == EVMType.Boolean ? (uint8Value == 1) : Convert.ToBoolean(GetValueObject());
             if (targetType == typeof(int)) return eType == EVMType.Int32 ? int32Value : Convert.ToInt32(GetValueObject());
             if (targetType == typeof(long)) return eType == EVMType.Int64 ? int64Value : Convert.ToInt64(GetValueObject());
             if (targetType == typeof(float)) return eType == EVMType.Float32 ? float32Value : Convert.ToSingle(GetValueObject());
@@ -175,7 +175,9 @@ namespace SimpleLanguage.VM
         {
             isNull = false;
             eType = EVMType.Boolean;
-            uint8Value = val ? (byte)1 : (byte)0;
+            var b = val ? (byte)1 : (byte)0;
+            uint8Value = b;
+            int8Value = (sbyte)b;
 #if DEBUG
             Log.AddVM(LID.ShowMessageInfo, "Load Const Boolean: " + val);
 #endif
@@ -416,7 +418,9 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Boolean:
                     {
-                        uint8Value = (byte)tobj == 1 ? (byte)1 : (byte)0;
+                        var b = (byte)tobj == 1 ? (byte)1 : (byte)0;
+                        uint8Value = b;
+                        int8Value = (sbyte)b;
                     }
                     break;
                 case EVMType.Int8:
@@ -1137,7 +1141,7 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.Boolean:
                     {
-                        return int8Value == 1;
+                        return uint8Value == 1;
                     }
                 case EVMType.UInt8:
                     {

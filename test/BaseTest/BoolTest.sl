@@ -6,7 +6,7 @@ BoolTest
 
         Num a = 3.14
         Num b = 2.5
-
+        
         global.println("a > b  = " + (a > b).toString())
         global.println("a < b  = " + (a < b).toString())
         global.println("a == b = " + (a == b).toString())

@@ -76,3 +76,5 @@
 /test/BaseTest/BoolTest/File.txt
 /test/BaseTest/BoolTest/Node.txt
 /test/BaseTest/BoolTest/Token.txt
+/test/BaseTest/BoolTest/IR.txt
+/test/BaseTest/BoolTest/Meta.txt

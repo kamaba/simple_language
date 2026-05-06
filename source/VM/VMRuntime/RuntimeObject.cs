@@ -390,14 +390,14 @@ namespace SimpleLanguage.VM
             }
             else if( m_RuntimeType.eType == EVMType.Num )
             {
-                if( RuntimeTypeManager.IsPureNumericTypeLocal(svalue.eType ) )
-                {
+                //if( RuntimeTypeManager.IsPureNumericTypeLocal(svalue.eType ) )
+                //{
                     ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), EVMType.Float64, ref svalue);
-                }
-                else if( svalue.eType == EVMType.Null )
-                {
-                    m_IsNull = true;
-                }
+                //}
+                //else if( svalue.eType == EVMType.Null )
+                //{
+                //    m_IsNull = true;
+                //}
             }
             else
             {
