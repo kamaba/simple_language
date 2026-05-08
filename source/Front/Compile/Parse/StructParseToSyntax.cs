@@ -148,6 +148,63 @@ namespace SimpleLanguage.Compile
                 eTokenTypeList.Add(tokenType);
             }
         }
+        private static bool NeedAttachTrailingBrace(ETokenType tokenType)
+        {
+            return tokenType == ETokenType.If
+                || tokenType == ETokenType.ElseIf
+                || tokenType == ETokenType.Else
+                || tokenType == ETokenType.Switch
+                || tokenType == ETokenType.For
+                || tokenType == ETokenType.While
+                || tokenType == ETokenType.DoWhile
+                || tokenType == ETokenType.Case
+                || tokenType == ETokenType.Default
+                || tokenType == ETokenType.Label;
+        }
+        private static bool IsSkippableNodeBetweenKeyAndBrace(Node node)
+        {
+            if (node == null)
+            {
+                return false;
+            }
+            return node.nodeType == ENodeType.Comment
+                || node.nodeType == ENodeType.LineEnd;
+        }
+        private static int AttachTrailingBraceNode(Node pnode, int startIndex, SyntaxNodeStruct keynodeStruct)
+        {
+            if (pnode == null || keynodeStruct == null)
+            {
+                return 0;
+            }
+            if (keynodeStruct.blockNode != null || !NeedAttachTrailingBrace(keynodeStruct.tokenType))
+            {
+                return 0;
+            }
+
+            int moveCount = 0;
+            for (int i = startIndex + 1; i < pnode.childList.Count; i++)
+            {
+                var nextNode = pnode.childList[i];
+                if (nextNode == null)
+                {
+                    break;
+                }
+
+                if (IsSkippableNodeBetweenKeyAndBrace(nextNode))
+                {
+                    moveCount++;
+                    continue;
+                }
+
+                if (nextNode.nodeType == ENodeType.Brace)
+                {
+                    keynodeStruct.SetBraceNode(nextNode);
+                    moveCount++;
+                }
+                break;
+            }
+            return moveCount;
+        }
         public SyntaxNodeStruct GetOneSyntax( Node pnode, Condition condition = null )
         {
             SyntaxNodeStruct keynodeStruct = new SyntaxNodeStruct();
@@ -182,7 +239,8 @@ namespace SimpleLanguage.Compile
 
                 if (curNode.nodeType == ENodeType.Comment)
                 {
-                    continue;
+                    index += AttachTrailingBraceNode(pnode, tCurIndex, keynodeStruct);
+                    break;
                 }
                 else if (curNodeType == ENodeType.LineEnd)
                 {
@@ -203,32 +261,7 @@ namespace SimpleLanguage.Compile
                                  + curToken?.ToLexemeAllString());
                         }
 
-                        if(keynodeStruct.keyNode?.token?.type == ETokenType.Case
-                            || keynodeStruct.keyNode?.token?.type == ETokenType.Default
-                            || keynodeStruct.keyNode?.token?.type == ETokenType.ElseIf
-                            || keynodeStruct.keyNode?.token?.type == ETokenType.If )
-                        {
-                            int tcurindex = 0;
-                            int addIndex = 0;
-                            while (true)
-                            {
-                                tcurindex = tCurIndex + 1;
-                                addIndex++;
-                                if (tcurindex < pnode.childList.Count)
-                                {
-                                    var tTurNode = pnode.childList[tcurindex];
-                                    if (tTurNode != null)
-                                    {
-                                        if (tTurNode.nodeType == ENodeType.Brace)
-                                        {
-                                            keynodeStruct.SetBraceNode( tTurNode );
-                                            break;
-                                        }
-                                    }
-                                }
-                            }
-                            index += addIndex;
-                        }
+                        index += AttachTrailingBraceNode(pnode, tCurIndex, keynodeStruct);
                         break;
                     }
                 }

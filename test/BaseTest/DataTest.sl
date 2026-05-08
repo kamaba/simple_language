@@ -37,6 +37,43 @@ data MetaInfo
     passed = false
 }
 
+data AnonymousNestedDataSample
+{
+    nd = {
+        a = 20
+        b = 30
+        child = {
+            x = 1
+            y = 2
+        }
+    }
+}
+
+data ClassDataEnumSample
+{
+    cc = DataHolder(){ value = 200 }
+    vb = MetaInfo(){ level = 3, passed = True }
+    kind = DataKind.Advanced
+}
+
+data MixedArrayElementSample
+{
+    items = [
+        1,
+        [2, 3],
+        { code = 7, title = "ok" },
+        DataHolder(){ value = 22 },
+        MetaInfo(){ level = 9, passed = False },
+        DataKind.Base
+    ]
+}
+
+# const member-intent sample for anonymous data syntax documentation:
+# data ConstMemberIntentSample = {
+#     const aa = 20
+#     bb = 30
+# }
+
 data StructMatrix
 {
     scores = [95, 88, 91]
@@ -85,16 +122,29 @@ DataTest
         StudentRecord c = { sid = 3, name = "n3" }
 
         global.println(ScoreRule)
+        global.println(ScoreRule.passLine)
+        global.println(ScoreRule.excellentLine)
         global.println(a)
         global.println(b)
         global.println(c)
+
+        # negative-intent cases for const restriction documentation:
+        # ScoreRule.passLine = 61
+        # ScoreRule = { passLine = 61, excellentLine = 91 }
     }
 
     static staticDataDirectUseTest()
     {
         global.println("----- staticDataDirectUseTest -----")
         global.println("data GlobalCounter declared (direct static access case placeholder)")
+        GlobalCounter.totalExamCount = 10
+        GlobalCounter.totalScore = 200
+        global.println(GlobalCounter.totalExamCount)
+        global.println(GlobalCounter.totalScore)
         global.println(StudentRecord)
+
+        # whole-object static data reassignment intent:
+        # GlobalCounter = { totalExamCount = 11, totalScore = 210 }
     }
 
     static newDataInstanceTest()
@@ -103,9 +153,17 @@ DataTest
 
         ScoreData s1 = new()
         ScoreData s2 = new()
+        ScoreData s3 = { id = 1, math = 10, english = 20, physics = 30 }
+
+        s1.id = 10
+        s1.math = 99
+        s1 = { id = 11, math = 98, english = 97, physics = 96 }
+        s2 = ScoreData(){ id = 12, math = 88, english = 87, physics = 86 }
 
         global.println("----- newDataInstanceTest -----")
         global.println("----- newDataInstanceTest -----")
+        global.println(s1)
+        global.println(s2)
         if( s1 == s2 )   #data数据的比较是，真比较里边的值是否相同
         {
             global.println("scoreData is same")
@@ -114,6 +172,15 @@ DataTest
         {
             global.println("scoreData isnot same")
         }
+
+        if( s1 == s3 )
+        {
+            global.println("scoreData unexpected same")
+        }
+        else
+        {
+            global.println("scoreData value diff detected")
+        }
     }
 
     static memberShapeCoverageTest()
@@ -121,15 +188,29 @@ DataTest
         global.println("----- memberShapeCoverageTest -----")
         global.println("member shape samples added in DataTest declarations and comments")
         global.println(StructMatrix)
+        global.println(AnonymousNestedDataSample)
+        global.println(ClassDataEnumSample)
+        global.println(MixedArrayElementSample)
+        global.println(StructMatrix.profile.address.city)
+        global.println(StructMatrix.profile.rank)
+        global.println(StudentRecord.meta.level)
+        global.println(ClassDataEnumSample.cc.value)
+        global.println(ClassDataEnumSample.kind)
 
         # See top-level syntax samples in this file:
         # - array members
         # - nested object members
+        # - anonymous nested data members
         # - named data members
         # - class members
         # - enum members
         # - object arrays
+        # - arrays containing class/data/enum/anonymous-object elements
         # - nested data literals
+        # - const data read constraints
+        # - data after new() member reassignment and whole-object reassignment
+        # - static data member reassignment
+        # - chain member reads
         # - declare + new()
         # - direct DataName(){...}
         # - declare then assign {...}
@@ -159,8 +240,26 @@ DataTest
             }
         }
 
+        data typedProfile3 = {
+            nested = {
+                a = 20,
+                b = 30
+            },
+            holder = DataHolder(){ value = 11 },
+            meta = MetaInfo(){ level = 8, passed = True },
+            kind = DataKind.Advanced,
+            items = [
+                1,
+                [2, 3],
+                { code = 9, title = "mix" },
+                DataHolder(){ value = 12 },
+                MetaInfo(){ level = 6, passed = False },
+                DataKind.Base
+            ]
+        }
+
         # typed anonymous-field samples (kept as syntax reference; currently unstable in full compile path):
-        # data typedProfile3 = {
+        # data typedProfile4 = {
         #     string a = "333",
         #     Array<int> a4 = [1, 2, 3, 4],
         #     MetaInfo meta = MetaInfo(){ level = 8, passed = true },

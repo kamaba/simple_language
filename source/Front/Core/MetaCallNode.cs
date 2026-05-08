@@ -1646,6 +1646,7 @@ namespace SimpleLanguage.Core
                 {
                     m_MetaData = retMC.metaData;
                     m_CallNodeType = ECallNodeType.DataName;
+                    m_MetaType = new MetaType(m_MetaData);
                 }
                 else if (retMC.isMetaEnum)
                 {
@@ -1955,6 +1956,10 @@ namespace SimpleLanguage.Core
                 else if (m_CallNodeType == ECallNodeType.NewClass)
                 {
                     sb.Append(m_MetaClass.ToFormatString());
+                }
+                else if(m_CallNodeType == ECallNodeType.NewData )
+                {
+                    sb.Append( m_MetaData.ToFormatString() );
                 }
                 else if (m_CallNodeType == ECallNodeType.NewTemplate)
                 {

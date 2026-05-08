@@ -893,10 +893,35 @@ namespace SimpleLanguage.Compile
         public override string ToFormatString()
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.Append(m_Token?.lexeme.ToString());            
-            foreach( var v in m_FileMetaExpressList )
+           stringBuilder.Append(m_Token?.lexeme.ToString());
+            if (m_FileMetaAssignSyntaxList.Count > 0)
             {
-                stringBuilder.Append(v.ToFormatString());
+                for (int i = 0; i < m_FileMetaAssignSyntaxList.Count; i++)
+                {
+                    stringBuilder.Append(m_FileMetaAssignSyntaxList[i].ToFormatString());
+                    if (i < m_FileMetaAssignSyntaxList.Count - 1)
+                    {
+                        stringBuilder.Append(",");
+                    }
+                }
+            }
+            else if (m_FileMetaCallLinkList.Count > 0)
+            {
+                for (int i = 0; i < m_FileMetaCallLinkList.Count; i++)
+                {
+                    stringBuilder.Append(m_FileMetaCallLinkList[i].ToFormatString());
+                    if (i < m_FileMetaCallLinkList.Count - 1)
+                    {
+                        stringBuilder.Append(",");
+                    }
+                }
+            }
+            else
+            {
+                foreach (var v in m_FileMetaExpressList)
+                {
+                    stringBuilder.Append(v.ToFormatString());
+                }
             }
             stringBuilder.Append(m_BraceEndToken?.lexeme.ToString());
             return stringBuilder.ToString();

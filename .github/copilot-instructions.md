@@ -15,6 +15,8 @@
 - If a common helper is missing, add it to the appropriate `src/base` module using existing `base_*` naming conventions, then update call sites to use that base helper.
 - When adding or refactoring csimple_lang code, modularize VMValue-related capabilities into separate `svalue.h/svalue.c` files (referencing the SValue organization in SimpleLanguageVM) to avoid duplicate implementations in `vm_runtime.c/runtime_object.c`.
 - Parse `defineMetaType` before parsing statements; `realMetaType` should be resolved later when the function returns or runtime flow requires it.
+- Data should be treated like a struct-like data container with no functions. Preserve support for primitive constants, arrays (containing constants/arrays/objects/anonymous objects), anonymous nested data, class instances, data instances, enum values, data equality by first comparing structure and then `m_MemberDataBuffer` contents, and data printing in data-format with values.
+- Data documentation and tests should explicitly cover const constraints, anonymous data const members, reassignment after new(), static data reassignment, chain member reads, and struct-like data semantics.
 
 ## Code Style
 - Use specific formatting rules

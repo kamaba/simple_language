@@ -2,6 +2,12 @@
 
 `data` 是一种轻量的数据结构定义方式。它的成员声明风格接近 `class`，但用途更偏向于描述结构化数据、配置数据以及数据字面量。
 
+它更接近 C# 里的 `struct` / 纯数据载体概念，但这里要特别强调：
+
+- `data` 只用于提供数据，不提供函数行为
+- `data` 内部不支持定义成员函数 / 普通函数
+- `data` 的重点是结构、成员值、结构匹配、打印与比较
+
 ## 1. 基本声明
 
 普通 `data`：
@@ -29,9 +35,57 @@ const data Rule
 - `data` 适合描述一组字段，不强调行为。
 - `const data` 表示只读数据，语义上不应再修改其成员值。
 
+### 1.1 const 约束
+
+推荐的稳定语义是“以整个 `data` 容器为单位施加只读约束”：
+
+```sl
+const data Rule
+{
+    min = 1
+    max = 100
+}
+```
+
+在这种情况下，应把 `Rule` 视为只读数据对象：
+
+- 可以读取 `Rule.min`、`Rule.max`
+- 不应允许对其成员重新赋值
+- 不应允许对整个 `Rule` 对象重新赋值
+
+例如下面这些都应视为非法或受限语义：
+
+```sl
+# Rule.min = 2
+# Rule = { min = 2, max = 200 }
+```
+
+对于下面这种写法：
+
+```sl
+# data a = { const aa = 20 }
+```
+
+它表达的是“匿名 `data` 内部成员级 const 约束”的设计意图。
+
+当前文档建议：
+
+- 成员级 `const` 约束应被记录为 `data` 语义的一部分
+- 如果当前解析/运行时尚未完整支持该写法，则应优先使用容器级 `const data`
+- 后续如果启用该语法，则 `aa` 应被视为只读成员，不允许被再次赋值
+
 ## 2. 成员声明形式
 
 `data` 内部可以像 `class` 字段一样声明成员，也可以直接使用数组字面量、对象字面量，以及嵌套 `data` 字面量。
+
+支持的核心成员值类型包括：
+
+- 常数：`int8/int16/int32/int64/uint/string/bool/float/double/...`
+- 数组：`[]`
+- 匿名对象 / 匿名 data：`{}`
+- 具名 `class` 实例：`ClassName(){}`
+- 具名 `data` 实例：`DataName(){}`
+- `enum` 值：`EnumName.Member`
 
 ### 2.1 标量成员
 
@@ -44,6 +98,16 @@ data UserInfo
 }
 ```
 
+`data` 中的数组成员，数组内部应支持以下元素：
+
+- 常数
+- 数组
+- 对象
+- 匿名对象 / 匿名 data
+- 具名 `class` / `data` /`enum` 初始化结果
+
+也就是说，数组不只是基础类型数组，也可以是多层结构数组。
+
 ### 2.2 数组成员
 
 可以直接用 `[]` 初始化数组成员：
@@ -55,6 +119,8 @@ data ScoreInfo
     tags = ["math", "final", "top"]
 }
 ```
+
+这类匿名结构本质上也应按匿名 `data` 处理，即它是纯数据结构，不带函数能力。
 
 如果需要表达更复杂的层级，也可以写成对象数组或嵌套数组：
 
@@ -118,7 +184,68 @@ data StudentRecord
 }
 ```
 
-### 2.5 组合示例
+也支持直接写匿名 `data`：
+
+```sl
+data A
+{
+    nd = {
+        a = 20
+        b = 30
+    }
+}
+```
+
+这里的 `nd = { ... }` 应被视为匿名 `data` / 匿名结构数据。
+
+### 2.5 class / data / enum 成员支持
+
+`data` 的成员值不只支持匿名结构，也支持具名 `class`、具名 `data`、`enum`。
+
+#### class 成员值
+
+```sl
+class CC
+{
+    va = 100
+}
+
+data A
+{
+    cc = CC(){ va = 200 }
+}
+```
+
+#### data 成员值
+
+```sl
+data DA
+{
+    a = 20
+}
+
+data B
+{
+    vb = DA(){ a = 30 }
+}
+```
+
+#### enum 成员值
+
+```sl
+enum DataKind
+{
+    Base = 1
+    Advanced = 2
+}
+
+data C
+{
+    kind = DataKind.Advanced
+}
+```
+
+### 2.6 组合示例
 
 下面这个例子把标量、数组、对象、对象数组、嵌套 `data` 放在同一个 `data` 里：
 
@@ -162,6 +289,20 @@ StudentRecord a = new()
 
 适合先创建默认实例，再逐步赋值。
 
+对于可写 `data` 对象，还应支持在 `new()` 之后继续整体或局部重赋值，例如：
+
+```sl
+StudentRecord a = new()
+a.sid = 10
+a = { sid = 11, name = "next" }
+a = StudentRecord(){ sid = 12, name = "final" }
+```
+
+也就是说：
+
+- `new()` 创建后的 `data` 对象，如果不是 `const`，应允许成员重写
+- 也应覆盖“整个对象重新赋值”的测试
+
 ### 3.2 直接使用 `DataName(){ ... }`
 
 ```sl
@@ -185,6 +326,25 @@ FullStudentRecord c = FullStudentRecord()
     meta = MetaInfo(){ level = 3, passed = True }
 }
 ```
+
+### 3.4 静态 data 对象的重新赋值
+
+对于顶层、可直接访问的非 `const data` 对象，也应覆盖“静态对象写入”场景。
+
+至少应包含下面两类：
+
+```sl
+GlobalCounter.totalExamCount = 10
+GlobalCounter.totalScore = 200
+```
+
+以及在语法/运行时支持时，覆盖整个对象重赋值：
+
+```sl
+GlobalCounter = { totalExamCount = 11, totalScore = 210 }
+```
+
+与之相对，`const data` 不应允许上述修改行为。
 
 ### 3.3 先声明，再赋值 `{ ... }`
 
@@ -220,7 +380,35 @@ FullStudentRecord e = {
 - 匿名对象字段，如 `profile = { grade = 3, rank = 1 }`
 - 对象数组，如 `items = [{ id = 1 }, { id = 2 }]`
 - 嵌套 `data`，如 `meta = MetaInfo(){ ... }`
+- `class` 成员，如 `cc = CC(){ va = 200 }`
+- `enum` 成员，如 `kind = DataKind.Advanced`
 - 多层组合嵌套，如“对象里套数组、数组里套对象、对象里再套 data”
+
+同时要保持一个明确限制：
+
+- `data` 不是行为对象
+- `data` 不提供成员函数
+- `data` 的职责是承载和组织数据
+
+## 4.1 链式读取
+
+`data` 应支持链式读取其内部成员值，包括：
+
+- 匿名对象链：`record.profile.address.city`
+- 具名 `data` 链：`record.meta.level`
+- `class` 成员链：`sample.cc.value`
+- `const data` 成员链：`Rule.min`
+
+示例：
+
+```sl
+city = StudentRecord.profile.address.city
+level = StudentRecord.meta.level
+value = ClassDataEnumSample.cc.value
+passLine = ScoreRule.passLine
+```
+
+这类访问应作为 `data` 的基础测试面之一。
 
 ## 5. Meta 层规则
 
@@ -230,6 +418,7 @@ FullStudentRecord e = {
 - 右值可以是常量、数组、匿名 `data`、具名 `data`、`class`、`enum`。
 - 匿名 `data` 的本质不是“带方法的对象”，而是“纯结构数据”。
 - `data` 进入 IR 时，整体按接近 `class` 字段布局的方式导出，但没有 method 概念。
+- 匿名 `{}` 在 `data` 语义里应优先按匿名 `data` / 匿名结构数据理解。
 
 ### 5.1 允许的右值形式
 
@@ -252,6 +441,15 @@ data DataMemberShape
 - `DataName(){}` 表示具名 `data`
 - `ClassName(){}` 表示 `class`
 - `EnumName.Member` 表示 `enum`
+
+并且 `[]` 内部允许继续放：
+
+- 常数
+- 数组
+- 对象
+- 匿名对象 / 匿名 `data`
+- `ClassName(){}`
+- `DataName(){}`
 
 ### 5.2 匿名 data 的结构匹配
 
@@ -318,6 +516,47 @@ data profile = {
 - 无类型字段按右值推导
 - 显式类型字段按声明类型约束
 - 匿名子结构继续做结构匹配
+
+## 6. 运行时语义
+
+### 6.1 data 比较
+
+当两个 `data` 使用 `==` 进行比较时，规则应为：
+
+1. 先比较两边的结构是否相同
+2. 结构相同后，再比较内部成员数据缓冲区 `m_MemberDataBuffer` 是否一致
+
+也就是说，`data == data` 不是单纯比较引用，而是以“结构 + 数据内容”为基础进行比较。
+
+### 6.2 data 打印
+
+`data` 打印时，应输出为 `data` 的结构化格式与当前成员数据值。
+
+目标效果不是只打印类型名，也不是只打印对象地址，而是输出接近 `data` 字面量/格式化结构的可读结果。
+
+例如：
+
+```sl
+data ScoreData
+{
+    id = 1
+    math = 90
+    english = 95
+}
+```
+
+打印时，应表现为包含字段名与字段值的 `data` 格式化结果。
+
+## 7. 结论
+
+`data` 的定位应固定为：
+
+- 类似 `struct` 的纯数据结构
+- 无函数、无行为，只负责承载数据
+- 支持常数、数组、匿名对象、匿名 `data`、具名 `class`、具名 `data`、`enum`
+- 支持多层嵌套
+- `==` 按结构 + `m_MemberDataBuffer` 内容比较
+- 打印输出结构化 `data` 内容
 
 ## 6. 约束
 
