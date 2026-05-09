@@ -9,7 +9,7 @@ const data ScoreRule
 data GlobalCounter
 {
     totalExamCount = 0
-    totalScore = 0
+    totalScore = 0L
 }
 
 data ScoreData

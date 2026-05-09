@@ -478,6 +478,7 @@ namespace SimpleLanguage.Compile
             }
 
             Token staticToken = null;
+            Token constToken = null;
             Token dynamicToken = null;
             Token varToken = null;
             Token dataToken = null;
@@ -516,6 +517,14 @@ namespace SimpleLanguage.Compile
                             Log.AddNodeLog(LID.ShowExtendMessage, "Error 多个Static!!");
                         }
                         staticToken = token;
+                    }
+                    else if (token?.type == ETokenType.Const)
+                    {
+                        if (constToken != null)
+                        {
+                            Log.AddNodeLog(LID.ShowExtendMessage, "Error 多个Const!!");
+                        }
+                        constToken = token;
                     }
                     else if (token?.type == ETokenType.Type
                         || token?.type == ETokenType.String)
@@ -637,7 +646,7 @@ namespace SimpleLanguage.Compile
                 if (classRef != null)
                 {
                     FileMetaDefineVariableSyntax fmdvs = new FileMetaDefineVariableSyntax(m_FileMeta, classRef,
-                        nameToken, assignNode.token, staticToken, fme);
+                        nameToken, assignNode.token, staticToken, constToken, fme);
                     return fmdvs;
                 }
                 if (varRef != null)
@@ -665,7 +674,7 @@ namespace SimpleLanguage.Compile
                 }
                 if (classRef != null)
                 {
-                    FileMetaDefineVariableSyntax fmdvs = new FileMetaDefineVariableSyntax(m_FileMeta, classRef, nameToken, staticToken, null, null);
+                    FileMetaDefineVariableSyntax fmdvs = new FileMetaDefineVariableSyntax(m_FileMeta, classRef, nameToken, null, staticToken, constToken, null);
                     return fmdvs;
                 }
                 else

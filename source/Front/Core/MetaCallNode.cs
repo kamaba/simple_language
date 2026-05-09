@@ -872,8 +872,38 @@ namespace SimpleLanguage.Core
                     }
                     else if (frontCNT == ECallNodeType.DataName)
                     {
-                        m_MetaVariable = GetDataValueByMetaData(m_FrontCallNode.m_MetaData, m_Name);
-                        m_CallNodeType = ECallNodeType.MemberDataName;
+                        var retmmd = GetDataValueByMetaData(m_FrontCallNode.m_MetaData, m_Name);
+                        m_MetaVariable = retmmd;
+                        if (retmmd == null)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 娌℃湁鎵惧埌{m_Name} 鐨凪etaData鏁版嵁!");
+                            return false;
+                        }
+
+                        if (retmmd.memberDataType == EMemberDataType.MemberClass)
+                        {
+                            m_MetaClass = retmmd.GetFinalMetaType()?.metaClass;
+                            m_CallNodeType = ECallNodeType.MemberVariableName;
+                        }
+                        else if( retmmd.memberDataType == EMemberDataType.ConstValue )
+                        {
+                            if( m_MetaVariable.isConst )
+                            {
+                                //这块，可以写成常量模式
+                                //m_CallNodeType = ECallNodeType.ConstValue;
+                                //EType etyp = CoreMetaClassManager.GetETypeByMetaClass(m_MetaVariable.GetFinalMetaType().metaClass);
+                                //this.m_ExpressNode = new MetaConstExpressNode(etyp, m_MetaVariable.)
+                                m_CallNodeType = ECallNodeType.MemberDataName;
+                            }
+                            else
+                            {
+                                m_CallNodeType = ECallNodeType.MemberDataName;
+                            }
+                        }
+                        else
+                        {
+                            m_CallNodeType = ECallNodeType.MemberDataName;
+                        }
                     }
                     else if (frontCNT == ECallNodeType.MemberDataName)
                     {
@@ -882,6 +912,18 @@ namespace SimpleLanguage.Core
                         if (md != null)
                         {
                             findMd = md.GetMemberDataByName(m_Name);
+                            if (findMd == null)
+                            {
+                                var dataType = md.GetFinalMetaType()?.metaClass as MetaData;
+                                if (dataType == null)
+                                {
+                                    dataType = md.defineMetaType?.metaClass as MetaData;
+                                }
+                                if (dataType != null)
+                                {
+                                    findMd = dataType.GetMemberDataByName(m_Name);
+                                }
+                            }
                         }
                         if (findMd == null)
                         {
@@ -890,7 +932,8 @@ namespace SimpleLanguage.Core
                         }
                         if (findMd.memberDataType == EMemberDataType.MemberClass)
                         {
-                            m_MetaClass = m_MetaVariable.realMetaType.metaClass;
+                            m_MetaVariable = findMd;
+                            m_MetaClass = findMd.GetFinalMetaType()?.metaClass;
                             m_CallNodeType = ECallNodeType.MemberVariableName;
                         }
                         //else if (findMd.memberDataType == EMemberDataType.ConstValue)
@@ -1327,7 +1370,8 @@ namespace SimpleLanguage.Core
                     {
                         //ArrClass()
                         MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_MetaInputParamCollection);
-                        if (mmf == null)
+                        bool allowDefaultConstructWithoutInit = (m_MetaInputParamCollection == null || m_MetaInputParamCollection.count == 0);
+                        if (mmf == null && !allowDefaultConstructWithoutInit)
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + curmc.allClassName + "鐨刜init_鏂规硶!)");
                             return false;

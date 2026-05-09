@@ -25,9 +25,10 @@ namespace SimpleLanguage.Core
             Global,
             Argument,
             LocalStatement,
-            Member,
             ArrayValue,
+            ClassMember,
             EnumMember,
+            DataMember,
         }
         public bool isDefineMetaType => m_IsDefineMetaType;
         public virtual bool isStatic => m_IsStatic;

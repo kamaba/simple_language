@@ -16,7 +16,7 @@ Coroutinest
     }
     static fun()
     {
-        cor = Coroutine.run( Test( 2 ) )
+        cor = go Test( 2 )
         await cor
     }
 }

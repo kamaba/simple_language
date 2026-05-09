@@ -119,7 +119,7 @@ namespace SimpleLanguage.IR
                     // template-specialized / copied members are still MetaMemberVariable; require dup even if
                     // variableFrom was not normalized to Member|Global.
                     bool needInstanceDup = mvtt != null && !mvtt.isStatic
-                        && (mvtt.variableFrom == MetaVariable.EVariableFrom.Member
+                        && (mvtt.variableFrom == MetaVariable.EVariableFrom.ClassMember
                             || mvtt.variableFrom == MetaVariable.EVariableFrom.Global
                             || mvtt is MetaMemberVariable);
                     if (needInstanceDup)

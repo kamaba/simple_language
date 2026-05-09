@@ -33,7 +33,7 @@ namespace SimpleLanguage.Core
 
         private List<MetaClass> m_RuntimeClassList = new List<MetaClass>();
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
-        private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();         
+        //private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();         
         private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
 
         private List<MetaGenTemplateClass> m_GenTemplateMetaClassList = new List<MetaGenTemplateClass>();
@@ -68,24 +68,24 @@ namespace SimpleLanguage.Core
                 m_AllClassDict.Add(mc.allClassName, mc);
             }
         }
-        public MetaDynamicClass FindDynamicClass( MetaClass dc )
-        {
-            foreach( var v in m_DynamicClassList )
-            {
-                if( CompareMetaClassMemberVariable( dc, v ) )
-                {
-                    return v;
-                }
-            }
-            return null;
-        }
-        public bool AddDynamicClass(MetaDynamicClass dc )
-        {
-            m_DynamicClassList.Add(dc);
+        //public MetaDynamicClass FindDynamicClass( MetaClass dc )
+        //{
+        //    foreach( var v in m_DynamicClassList )
+        //    {
+        //        if( CompareMetaClassMemberVariable( dc, v ) )
+        //        {
+        //            return v;
+        //        }
+        //    }
+        //    return null;
+        //}
+        //public bool AddDynamicClass(MetaDynamicClass dc )
+        //{
+        //    m_DynamicClassList.Add(dc);
 
-            m_AllClassDict.Add(dc.allClassName, dc);
-            return true;
-        }
+        //    m_AllClassDict.Add(dc.allClassName, dc);
+        //    return true;
+        //}
         //public void AddMetaGenTemplateClassList(MetaGenTemplateClass mc)
         //{
         //    if (m_GenTemplateMetaClassList.IndexOf(mc) == -1)

@@ -366,7 +366,7 @@ namespace SimpleLanguage.IR
                     }
                     if (callMethodIndex == -1)
                     {
-                        Log.AddIRLog(LID.AutoIRExpressL326, "娌℃湁鎵惧埌鏋勫缓瀵硅薄鍑芥暟!");
+                        Log.AddIRLog(LID.IRNotFoundArrayInitFunction, mnoen.token, "" );
                     }
                     List<IRMetaType> functionMtList = new List<IRMetaType>();
                     var irmethodcall = new IRMethodCall(newObjectIRMT, functionMtList, runtimeMethod, paramCount);
@@ -374,7 +374,7 @@ namespace SimpleLanguage.IR
                     datacall.opCode = EIROpCode.CallVirt;
                     datacall.index = callMethodIndex;
                     datacall.opValue = irmethodcall;
-                    //datacall.SetDebugInfoByToken(mf.pingToken);
+                    datacall.SetDebugInfoByToken(mnoen.token);
                     AddIRData(datacall);
                 }
 
@@ -459,6 +459,7 @@ namespace SimpleLanguage.IR
                                 IRData irdata = new IRData();
                                 irdata.index = lirmv.index;
                                 irdata.opCode = EIROpCode.StoreNotStaticField1;
+                                irdata.SetDebugInfoByToken(mnoen.token);
                                 m_IRDataList.Add(irdata);
                             }
                         }
@@ -505,7 +506,7 @@ namespace SimpleLanguage.IR
                     }
                     if (callMethodIndex == -1)
                     {
-                        Log.AddIRLog(LID.AutoIRExpressL451, "娌℃湁鎵惧埌鏋勫缓瀵硅薄鍑芥暟!");
+                        Log.AddIRLog(LID.IRNotFoundArrayInitFunction, mnoen.token, "");
                     }
                     List<IRMetaType> functionMtList = new List<IRMetaType>();
                     var irmethodcall = new IRMethodCall(newObjectIRMT, functionMtList, runtimeMethod, paramCount);
@@ -513,7 +514,7 @@ namespace SimpleLanguage.IR
                     datacall.opCode = EIROpCode.CallVirt;
                     datacall.index = callMethodIndex;
                     datacall.opValue = irmethodcall;
-                    //datacall.SetDebugInfoByToken(mf.pingToken);
+                    datacall.SetDebugInfoByToken(mnoen.token);
                     AddIRData(datacall);
                 }
             }

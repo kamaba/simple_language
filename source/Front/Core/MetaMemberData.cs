@@ -6,6 +6,7 @@
 //  Description: class's memeber variable metadata and member 'data' metadata
 //****************************************************************************
 using SimpleLanguage.Compile;
+using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Text;
@@ -42,6 +43,7 @@ namespace SimpleLanguage.Core
 
         private MetaMemberData()
         {
+            m_VariableFrom = EVariableFrom.DataMember;
         }
 
         public MetaMemberData(MetaData mc, FileMetaOpAssignSyntax fmoa)
@@ -50,6 +52,8 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = new MetaType(mc);
             SetOwnerMetaClass(mc);
             m_IsConst = mc.isConst;
+            m_VariableFrom = EVariableFrom.DataMember;
+            m_Token = fmoa.token;
             ParseName();
         }
         public MetaMemberData(MetaData mc, FileMetaMemberData fmmd, int index, bool isStatic )
@@ -63,6 +67,8 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(mc);
             m_IsConst = mc.isConst;
+            m_Token = fmmd.nameToken;
+            m_VariableFrom = EVariableFrom.DataMember;
         }
         public MetaMemberData(MetaMemberData parentNode, FileMetaMemberData fmmd, int _index, bool isEnd = false)
         {
@@ -73,6 +79,8 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(parentNode.ownerMetaClass);
             m_IsConst = parentNode.isConst;
+            m_Token = fmmd.nameToken;
+            m_VariableFrom = EVariableFrom.DataMember;
 
             ParseName();
         }
@@ -83,6 +91,7 @@ namespace SimpleLanguage.Core
             SetOwnerMetaClass(parentNode.ownerMetaClass);
             m_IsConst = parentNode.isConst;
             m_Express = men;
+            m_VariableFrom = EVariableFrom.DataMember;
         }
 
         public static MetaMemberData CreateConst(MetaData owner, string name, int index, MetaConstExpressNode constExpress)
@@ -91,12 +100,12 @@ namespace SimpleLanguage.Core
             mmd.m_Name = name;
             mmd.m_Index = index;
             mmd.m_IsWithName = true;
-            mmd.m_VariableFrom = EVariableFrom.Member;
+            mmd.m_VariableFrom = EVariableFrom.DataMember;
             mmd.m_DefineMetaType = new MetaType(constExpress?.GetReturnMetaClass() ?? CoreMetaClassManager.objectMetaClass);
             mmd.m_RealMetaType = new MetaType(mmd.m_DefineMetaType);
             mmd.m_IsDefineMetaType = true;
             mmd.SetOwnerMetaClass(owner);
-            mmd.m_IsConst = false;//owner?.isConst ?? false;
+            mmd.m_IsConst = owner?.isConst ?? false;
             mmd.m_IsStatic = false;
             mmd.m_Express = constExpress;
             mmd.m_MemberDataType = EMemberDataType.ConstValue;
@@ -113,8 +122,9 @@ namespace SimpleLanguage.Core
             mmd.m_RealMetaType = new MetaType(mmd.m_DefineMetaType);
             mmd.m_IsDefineMetaType = true;
             mmd.SetOwnerMetaClass(owner);
-            mmd.m_IsConst = false;// owner?.isConst ?? false;
+            mmd.m_IsConst = owner?.isConst ?? false;
             mmd.m_MemberDataType = EMemberDataType.MemberData;
+            mmd.m_VariableFrom = EVariableFrom.DataMember;
             return mmd;
         }
 
@@ -124,6 +134,7 @@ namespace SimpleLanguage.Core
             mmd.m_Name = name;
             mmd.m_Index = index;
             mmd.m_IsWithName = true;
+            mmd.m_VariableFrom = EVariableFrom.DataMember;
 
             var et = elementType ?? new MetaType(CoreMetaClassManager.objectMetaClass);
             var arrType = new MetaType(CoreMetaClassManager.arrayMetaClass, new List<MetaType>() { et });
@@ -133,7 +144,7 @@ namespace SimpleLanguage.Core
             mmd.m_RealMetaType = new MetaType(arrType);
             mmd.m_IsDefineMetaType = true;
             mmd.SetOwnerMetaClass(owner);
-            mmd.m_IsConst = false;// owner?.isConst ?? false;
+            mmd.m_IsConst = owner?.isConst ?? false;
             mmd.m_MemberDataType = EMemberDataType.MemberArray;
             return mmd;
         }
@@ -143,7 +154,7 @@ namespace SimpleLanguage.Core
             mmd.m_Name = string.IsNullOrEmpty(name) ? index.ToString() : name;
             mmd.m_Index = index;
             mmd.m_IsWithName = true;
-            mmd.m_VariableFrom = EVariableFrom.Member;
+            mmd.m_VariableFrom = EVariableFrom.DataMember;
             mmd.SetOwnerMetaClass(owner);
             mmd.m_IsConst = owner?.isConst ?? false;
 
@@ -358,6 +369,7 @@ namespace SimpleLanguage.Core
             if (m_Express != null)
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType, m_MetaVariable );
                 m_Express.CalcReturnType();
                 m_DefineMetaType = m_Express.GetReturnMetaDefineType();
                 if (m_DefineMetaType == null)

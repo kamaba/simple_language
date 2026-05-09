@@ -1,8 +1,3 @@
-import Application.Core;
-
-#namespace Application.MFC;
-
-
 namespace N1
 {
     Class1
@@ -15,8 +10,8 @@ namespace N1
     }
     Class1_2
     {
-        Class1 c1;
-        Class2 c2;
+        Class1 c1 = null;
+        Class2 c2 = null;
 
         _init_( Class1 x1 )
         {

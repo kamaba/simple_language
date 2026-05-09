@@ -807,3 +807,7 @@
 12259,Error,TRUE,FALSE,0,,"",,Auto-generated LID mapping,,
 12260,Error,TRUE,FALSE,1,,"这里与关键字{0}没有匹配的{}",,Auto-generated LID mapping,,
 12261,Error,TRUE,FALSE,1,,"Data数据中，不允许使用除自定义以后的{0}字段!",,Auto-generated LID mapping,,
+12262,Error,TRUE,FALSE,0,,"New的方法，已经独立于表达式",,Auto-generated LID mapping,,
+12263,Error,TRUE,FALSE,0,,"当前的表达式[{0}]不支持该类型",,Auto-generated LID mapping,,
+12264,Error,TRUE,FALSE,1,,"没有找到对应的from[{0}]",,Auto-generated LID mapping,,
+12265,Error,TRUE,FALSE,0,,"没有找到相关的初始化函数",,Auto-generated LID mapping,,

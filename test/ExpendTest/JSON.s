@@ -1,27 +1,17 @@
-function_test_class
+JsonTest
 {
-    fun1()
+    fun()
     {
-        m = 20;
-        fn( a )
-        {
-            b = if a == 30{ tr 100 + m; }
-            if( b > 90 )
-            {    ret a+100; }
-            fn2( s1, s2 )
-            {
-                if( s1 > 100 )
-                {ret 20;}    
-                else
-                {
-                    ret 100;
-                }
-            }
+        Json a = Json('{"a":10, b = [1,2,3,4] }' )  #通过字符串转为Json
 
-            ret fn2(a, 10 ) - 100;
-        }
+        Json a = Json( {a = 20, b = [1,2,3,5 ] } )  #匿名data 转为json
 
+        a = Json();
+        a["a"] = 20;
+        a["b"] = [1,2,3,4];     #手动构建json内容
 
-        fn.fn2( 10, 20 );
+        a.delete("a")  
+
+        a.$"b".$1 #访问里边某个元素
     }
 }

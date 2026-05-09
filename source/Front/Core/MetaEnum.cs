@@ -137,8 +137,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                     isHave = false;
-                // 濡傛灉绫诲畾涔夊墠甯︽湁 const锛屽垯浼犻€掔埗绾?const 鏍囧織锛屼娇鍐呴儴鎴愬憳榛樿瑙嗕负 const
-                bool parentIsConst = fmc.isConst;
+                bool parentIsConst = true;
                 MetaMemberEnum mmv = new MetaMemberEnum(this, v, this.extendClass, parentIsConst);
                 if (isHave)
                 {

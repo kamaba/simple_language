@@ -10,6 +10,10 @@ parseInt的尝试
 compare的验证
 int x1 = 10 + (1-20) * 33/20 + 10~/20 - 22 * 2/1; 有报错处理
 
+data的相关逻辑
+1. 里边匿名data的表现与逻辑
+2. data在vm层，只是个数据，没有函数的概念
+
 
 1. 优化vm层，类型的处理
 2. 在模板array 的 iteraror 的参数 argurment 需要 声明成templateObject

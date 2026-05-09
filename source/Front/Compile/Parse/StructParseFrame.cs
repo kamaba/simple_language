@@ -1275,6 +1275,15 @@ namespace SimpleLanguage.Compile
             {
                 var curNode = bracketNode.childList[index++];
 
+                if (curNode == null)
+                {
+                    continue;
+                }
+                if (curNode.nodeType == ENodeType.Comment
+                    || curNode.nodeType == ENodeType.LineEnd)
+                {
+                    continue;
+                }
                 if (curNode.nodeType == ENodeType.Brace)  //Class1 [{},{}]
                 {
                     FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, false, FileMetaMemberData.EMemberDataType.Data);
@@ -1316,6 +1325,35 @@ namespace SimpleLanguage.Compile
                 }
                 else if (curNode.nodeType == ENodeType.IdentifierLink)   // [Class1(),Class2()]
                 {
+                    while (index < bracketNode.childList.Count)
+                    {
+                        var nextNode = bracketNode.childList[index];
+                        if (nextNode == null)
+                        {
+                            index++;
+                            continue;
+                        }
+                        if (nextNode.nodeType == ENodeType.Comment
+                            || nextNode.nodeType == ENodeType.LineEnd)
+                        {
+                            index++;
+                            continue;
+                        }
+                        if (nextNode.nodeType == ENodeType.Par)
+                        {
+                            curNode.SetParNode(nextNode);
+                            index++;
+                            continue;
+                        }
+                        if (nextNode.nodeType == ENodeType.Brace)
+                        {
+                            curNode.SetBlockNode(nextNode);
+                            index++;
+                            continue;
+                        }
+                        break;
+                    }
+
                     FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, false, FileMetaMemberData.EMemberDataType.Class);
 
                     currentNodeInfo.codeData.AddFileMemberData(fmmd);
@@ -1604,16 +1642,6 @@ namespace SimpleLanguage.Compile
                 }
                 else if (curNode.nodeType == ENodeType.LineEnd)
                 {
-                    if (requireCommaSeparator && frontList.Count > 0)
-                    {
-                        // Nested/anonymous data members should be comma-delimited.
-                        // Keep parsing for error recovery, but emit a precise diagnostic.
-                        var nextMeaningNode = GetNextDataMeaningNode(curParentNode, index);
-                        if (nextMeaningNode != null)
-                        {
-                            Log.AddNodeLog(LID.ShowExtendMessage, "Error 匿名Data或嵌套Data成员必须使用逗号分隔");
-                        }
-                    }
                     isParseEnd = true;
                 }
                 else if (curNode.nodeType == ENodeType.Comma)
@@ -1920,19 +1948,6 @@ namespace SimpleLanguage.Compile
             ParseCommon(pnode);
         }
         */
-        void AddFileMetaFunctionVariable(Node pnode, Node blockNode, List<Node> nodeList )
-        {
-            FileMetaMemberFunction cpf = new FileMetaMemberFunction(m_FileMeta, blockNode, nodeList);
-
-            AddParseFunctionNodeInfo(cpf);
-
-            if(blockNode != null )
-            {
-                ParseSyntax(blockNode);
-            }
-
-            m_CurrentNodeInfoStack.Pop();
-        }
         void AddFileMetaClasss( Node blockNode, List<Node> nodeList)
         {
             FileMetaClass cpc = new FileMetaClass(m_FileMeta, nodeList);

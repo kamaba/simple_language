@@ -17,6 +17,7 @@
 - Parse `defineMetaType` before parsing statements; `realMetaType` should be resolved later when the function returns or runtime flow requires it.
 - Data should be treated like a struct-like data container with no functions. Preserve support for primitive constants, arrays (containing constants/arrays/objects/anonymous objects), anonymous nested data, class instances, data instances, enum values, data equality by first comparing structure and then `m_MemberDataBuffer` contents, and data printing in data-format with values.
 - Data documentation and tests should explicitly cover const constraints, anonymous data const members, reassignment after new(), static data reassignment, chain member reads, and struct-like data semantics.
+- Implement const constraints in the simple_language Front layer: const is effective only at compile time; adding const before ordinary statements makes them non-assignable thereafter; const can be used for variables, member variables, and members under class/data/enum; when const is added to data, all sub-nodes become const by default; enums are const by default, and modification is only allowed with `mut`.
 
 ## Code Style
 - Use specific formatting rules

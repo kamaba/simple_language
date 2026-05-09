@@ -40,7 +40,8 @@ namespace SimpleLanguage.Core
             {
                 m_MetaCallLink.Parse( auc );
 
-                if(m_MetaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.New )
+                if(m_MetaCallLink.finalCallNode != null
+                    && m_MetaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.New )
                 {
                     m_ConvertNewExpressNode = true;
                 }

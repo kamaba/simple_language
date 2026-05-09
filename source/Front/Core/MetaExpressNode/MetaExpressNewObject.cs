@@ -735,7 +735,7 @@ namespace SimpleLanguage.Core
                 //动态普通类的定义
                 if (mt.isDynamicClass)
                 {
-                    MetaDynamicClass anonClass = new MetaDynamicClass("DynamicClass__" + GetHashCode());
+                    MetaData anonClass = new MetaData("DynamicClass__" + GetHashCode(), false, false, true );
                     //构建匿名类中的项
                     if (fmbt is FileMetaSymbolTerm fmst)
                     {
@@ -775,7 +775,7 @@ namespace SimpleLanguage.Core
                         var mmv = assignStatementsList[i].metaMemberVariable;
                         anonClass.AddMetaMemberVariable(assignStatementsList[i].metaMemberVariable, false);
                     }
-                    MetaClass retClass = ClassManager.instance.FindDynamicClass(anonClass);
+                    MetaClass retClass = ClassManager.instance.FindMetaData(anonClass);
                     if (retClass == null)
                     {
                         for (int i = 0; i < assignStatementsList.Count; i++)
@@ -783,7 +783,7 @@ namespace SimpleLanguage.Core
                             var mmv = assignStatementsList[i].metaMemberVariable;
                             mmv.SetOwnerMetaClass(retClass);
                         }
-                        ClassManager.instance.AddDynamicClass(anonClass);
+                        ClassManager.instance.AddMetaData(anonClass);
                         retClass = anonClass;
                     }
                     else
@@ -1319,7 +1319,7 @@ namespace SimpleLanguage.Core
             }
         }
         // dynamic c = { c1 = 100, c2 = 200 }
-        public MetaNewObjectExpressNode( MetaClass ownermc, List<MetaDynamicClass> list )
+        public MetaNewObjectExpressNode( MetaClass ownermc, List<MetaData> list )
         {
             m_OwnerMetaClass = ownermc;
             m_OwnerMetaBlockStatements = null;
@@ -1587,9 +1587,9 @@ namespace SimpleLanguage.Core
             List<MetaDefineParam> mpList = new();
             if (m_MetaMemberFunction != null )
             {
-                defineCount = m_MetaMemberFunction.metaMemberParamCollection.maxParamCount;
                 if (m_MetaMemberFunction.metaMemberParamCollection != null)
                 {
+                    defineCount = m_MetaMemberFunction.metaMemberParamCollection.maxParamCount;
                     mpList = m_MetaMemberFunction.metaMemberParamCollection.metaDefineParamList;
                 }
             }
@@ -1611,6 +1611,23 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
+
+            if (newType == ENewType.ArrayClass
+                && m_MetaInputParamList.Count == 0
+                && _paramCollection != null
+                && _paramCollection.metaInputParamList != null
+                && _paramCollection.metaInputParamList.Count > 0)
+            {
+                for (int i = 0; i < _paramCollection.metaInputParamList.Count; i++)
+                {
+                    var mip = _paramCollection.metaInputParamList[i];
+                    if (mip?.express != null)
+                    {
+                        m_MetaInputParamList.Add(mip.express);
+                    }
+                }
+            }
+
             if( newType == ENewType.ArrayClass )
             {
                 if( m_MetaInputParamList.Count == 1 )
@@ -1634,7 +1651,13 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreArrayNotFoundSetLength, m_Token, "", m_Token.lexeme.ToString() );
+                    if (m_MetaInputParamList.Count == 0)
+                    {
+                        return;
+                    }
+
+                    var tokenText = m_Token?.lexeme?.ToString() ?? "<array-new>";
+                    Log.AddMetaCoreLog(LID.MetaCoreArrayNotFoundSetLength, m_Token, "", tokenText );
                 }
             }
         }

@@ -62,7 +62,7 @@ namespace SimpleLanguage.IR
             m_IsConst = mv.isConst;
             m_IsStatic = mv.isStatic;
             m_Permission = mv.permission;
-            if( mv.variableFrom == MetaVariable.EVariableFrom.Member )
+            if( mv.variableFrom == MetaVariable.EVariableFrom.ClassMember )
             {
                 if( mv.isStatic )
                 {
@@ -95,8 +95,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Debug.Assert(false);
-                Log.AddIRLog(LID.AutoIRMetaVariableL96, "IRMetaVariable 没有找到对应的from ");
+                Log.AddIRLog(LID.IRNotFoundVariableFrom, mv.token, "", mv.variableFrom.ToString() );
             }
             IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
             // 与 MetaMemberVariable 一致：显式左值类型用 define，var / 首赋局部推断用 real（define 常见为 object 占位）

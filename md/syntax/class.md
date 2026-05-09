@@ -10,9 +10,9 @@
 语法示例：
 
 ```s
-// 简写形式
+# 简写形式
 MyClass {
-    // fields
+    # fields
     Int32 x = 0;
     String name = "";
 
@@ -27,7 +27,7 @@ MyClass {
     S 语言支持多种形式定义类：
 
     ```s
-    // 简写形式
+    # 简写形式
     MyClass {
         Int32 x = 0;           // 成员变量（字段）
         String name = "";
@@ -269,13 +269,13 @@ file: test.sp
 ```python
 ProjectEnter
 {
-    static Main()
+    static _main_()
     {  
         amc = Application.MyClass();
         amcc = Application.MyClass.MyChildClass();
         amc2 = Application.MyClass2();
     }
-    static Test()
+    static _test_()
     {
     }
 }

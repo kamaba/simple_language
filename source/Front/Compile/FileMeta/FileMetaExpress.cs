@@ -863,7 +863,7 @@ namespace SimpleLanguage.Compile
                         Token nameToken = defineNodeList[1].token;
                         var classRef = new FileMetaClassDefine(m_FileMeta, defineNodeList[0]); 
                         FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common); 
-                        FileMetaDefineVariableSyntax fmdvs = new FileMetaDefineVariableSyntax(m_FileMeta, classRef, nameToken, assignToken, null, fmel );
+                        FileMetaDefineVariableSyntax fmdvs = new FileMetaDefineVariableSyntax(m_FileMeta, classRef, nameToken, assignToken, null, null, fmel );
                         fmdvs.isAppendSemiColon = false;
                         m_FileMetaAssignSyntaxList.Add(fmdvs);
                     }
@@ -960,6 +960,14 @@ namespace SimpleLanguage.Compile
             for ( int i = 0; i < node.childList.Count; i++ )
             {
                 var cnode = node.childList[i];
+                if (cnode == null)
+                {
+                    continue;
+                }
+                if (cnode.nodeType == ENodeType.LineEnd || cnode.nodeType == ENodeType.Comment)
+                {
+                    continue;
+                }
                 if (cnode.nodeType == ENodeType.Comma )
                 {
                 //    var fileMetaSymbolTerm = new FileMetaSymbolTerm(m_FileMeta, cnode.token);

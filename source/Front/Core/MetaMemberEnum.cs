@@ -72,28 +72,13 @@ namespace SimpleLanguage.Core
             {
                 SetIsDefineMetaType(true);
             }
-            // 成员语义：如果枚举本身声明为 const，则成员均视为 const；否则成员视为 static
-            if (parentIsConst)
-            {
-                m_IsConst = true;
-                m_IsStatic = false;
-            }
-            else
-            {
-                m_IsConst = false;
-                m_IsStatic = true;
-            }
+            // Front 语义：enum 成员默认均为 const，只有显式 mut 才允许后续修改。
+            m_IsConst = true;
+            m_IsStatic = false;
             m_VariableFrom = MetaVariable.EVariableFrom.EnumMember;
             if (fmmv.mutToken != null)
             {
-                if (parentIsConst)
-                {
-                    Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL91, "Warning Enum 中声明为 const 时，成员不能使用 mut，成员仍视为 const");
-                }
-                else
-                {
-                    Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL95, "Warning Enum 成员使用 mut，枚举成员语义仍由枚举定义决定（默认为 static）");
-                }
+                m_IsConst = false;
             }
             if (fmmv.staticToken != null)
             {

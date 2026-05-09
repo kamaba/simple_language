@@ -11,6 +11,14 @@
 `data` 可以是普通 `data`，也可以是 `const data`。
 
 ```sl
+data DataA
+{
+	a = 20
+}
+data DataB
+{
+	b = 100
+}
 class ClassName bind DataA, DataB {
 	// class body
 }
@@ -24,6 +32,19 @@ const data ConfigData {
 }
 
 class Service bind ConfigData {
+}
+
+class LogicC
+{
+	static fun()
+	{
+		ClassName cn = new()
+
+		cn.DataA.a = 100;
+		int b = cn.DataB.b
+		b2 = cn.b;				#直接调用
+		var db = cn.DataB;		#直接访问DataB的定义
+	}
 }
 ```
 
@@ -39,6 +60,18 @@ data DB { a2 = 100, b2 = 100 }
 
 class CA bind DA, DB {
 }
+
+#! 可以理解为
+class CA
+{
+	get int a(){ ret DA.a }
+	set void a( int _a ){ this.DA.a = _a }
+	get int b(){ ret DB.b }
+	set void b( int _b ){ this.DB.b = _b }
+	DA DA = new()
+	DB DB = new()
+}
+!#
 ```
 
 上例可理解为:
@@ -84,6 +117,14 @@ set a(int v) { DA.a = v }
 语义示例:
 
 ```sl
+data DA
+{
+	a = 20
+}
+data DB
+{
+	a = 30
+}
 class CA bind DA, DB {
 	get a() {
 		// 自选策略: 返回 DA.a、DB.a 或 CA 内部字段

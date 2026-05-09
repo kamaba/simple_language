@@ -80,12 +80,14 @@ namespace SimpleLanguage.Core
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
                 m_DefineVarMetaVariable.SetIsDefineMetaType(true);
+                m_DefineVarMetaVariable.SetIsConst(m_FileMetaDefineVariableSyntax.constToken != null);
                 m_DefineVarMetaVariable.AddPingToken(m_FileMetaDefineVariableSyntax.token);
                 fileExpress = m_FileMetaDefineVariableSyntax.express;
             }
             else if (m_FileMetaOpAssignSyntax != null)
             {
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
+                m_DefineVarMetaVariable.SetIsConst(m_FileMetaOpAssignSyntax.constToken != null);
                 m_Token = m_FileMetaOpAssignSyntax.variableRef.callNodeList[0].token;
                 AddPingToken(m_Token);
                 if ( m_FileMetaOpAssignSyntax.dynamicToken != null )

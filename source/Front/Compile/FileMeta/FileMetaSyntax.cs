@@ -923,22 +923,25 @@ namespace SimpleLanguage.Compile
     public class FileMetaDefineVariableSyntax : FileMetaSyntax
     {
         public Token nameToken => m_Token;
+        public Token constToken => m_ConstToken;
         public Token staticToken => m_StaticToken;
         public Token assignToken => m_AssignToken;
         public FileMetaClassDefine fileMetaClassDefine => m_FileMetaClassDefine;       
         public FileMetaBaseTerm express => m_FileMetaExpress;
 
         private FileMetaClassDefine m_FileMetaClassDefine = null;
+        private Token m_ConstToken = null;
         private Token m_StaticToken = null;
         private Token m_AssignToken = null;
         private FileMetaBaseTerm m_FileMetaExpress = null;
 
         public FileMetaDefineVariableSyntax( FileMeta fm, FileMetaClassDefine fmcd, Token nameToken,
-            Token _assignToken, Token _staticToken, FileMetaBaseTerm _express )
+            Token _assignToken, Token _staticToken, Token _constToken, FileMetaBaseTerm _express )
         {
             m_FileMeta = fm;
             m_Token = nameToken;
             m_StaticToken = _staticToken;
+            m_ConstToken = _constToken;
             m_AssignToken = _assignToken;
             m_FileMetaClassDefine = fmcd;
             m_FileMetaExpress = _express;
@@ -948,6 +951,10 @@ namespace SimpleLanguage.Compile
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < deep; i++)
                 sb.Append(Global.tabChar);
+            if( m_ConstToken != null )
+            {
+                sb.Append( m_ConstToken.lexeme.ToString() + " " );
+            }
             if( m_StaticToken != null )
             {
                 sb.Append( m_StaticToken.lexeme.ToString() + " ");

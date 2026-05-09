@@ -63,7 +63,7 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Manual;
             m_IsInnerDefine = mmv.m_IsInnerDefine;
             m_Express = mmv.m_Express;
-            m_VariableFrom = EVariableFrom.Member;
+            m_VariableFrom = EVariableFrom.ClassMember;
 
             this.m_FileMetaMemeberVariable = mmv.m_FileMetaMemeberVariable;
             m_Name = mmv.m_Name;
@@ -76,6 +76,7 @@ namespace SimpleLanguage.Core
         }
         protected MetaMemberVariable()
         {
+            m_VariableFrom = EVariableFrom.ClassMember;
         }
         public MetaMemberVariable(MetaClass mc, string _name)
         {
@@ -83,7 +84,7 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Manual;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_IsInnerDefine = true;
-            m_VariableFrom = EVariableFrom.Member;
+            m_VariableFrom = EVariableFrom.ClassMember;
 
             SetOwnerMetaClass(mc);
         }
@@ -98,7 +99,7 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_IsStatic = m_FileMetaMemeberVariable?.staticToken != null;
             m_IsConst = m_FileMetaMemeberVariable?.constToken != null;
-            m_VariableFrom = EVariableFrom.Member;
+            m_VariableFrom = EVariableFrom.ClassMember;
 
             if( string.IsNullOrEmpty( m_Name ) )
             {
@@ -127,20 +128,6 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        //public MetaMemberVariable(MetaGenTemplateClass mtc, MetaMemberVariable mmv, Dictionary<string,MetaGenTemplate> mgt) : base(mmv)
-        //{
-        //    m_MetaGenTemplateDict = mgt;
-        //    m_Name = mmv.m_Name;
-        //    m_DefineTypeName = mmv.m_DefineTypeName;
-        //    m_IsInnerDefine = mmv.m_IsInnerDefine;
-        //    m_FromType = mmv.m_FromType;
-        //    m_DefineMetaType = mmv.m_DefineMetaType;
-        //    m_VariableFrom = EVariableFrom.Member;
-        //    m_PintTokenList = mmv.m_PintTokenList;
-        //    m_FileMetaMemeberVariable = mmv.m_FileMetaMemeberVariable;
-
-        //    SetOwnerMetaClass(mtc);
-        //}
         public void SetVariableFrom(EVariableFrom vfrom )
         {
             m_VariableFrom = vfrom;
@@ -263,26 +250,26 @@ namespace SimpleLanguage.Core
 
             if (m_FileMetaMemeberVariable.DataType == FileMetaMemberVariable.EMemberDataType.Array)
             {
-                List<MetaDynamicClass> list = new List<MetaDynamicClass>();
+                //List<MetaMemberData> list = new List<MetaMemberData>();
 
-                for (int i = 0; i < count; i++)
-                {
-                    var fmmv = m_FileMetaMemeberVariable.fileMetaMemberVariable[i];
+                //for (int i = 0; i < count; i++)
+                //{
+                //    var fmmv = m_FileMetaMemeberVariable.fileMetaMemberVariable[i];
 
-                    MetaDynamicClass mdc = new MetaDynamicClass(fmmv.GetHashCode().ToString());
-                    list.Add(mdc);
+                //    MetaMemberData mdc = new MetaMemberData(fmmv.GetHashCode().ToString());
+                //    list.Add(mdc);
 
-                    for (int j = 0; j < fmmv.fileMetaMemberVariable.Count; j++)
-                    {
-                        MetaMemberVariable mmv = new MetaMemberVariable(mdc, fmmv.fileMetaMemberVariable[j] as FileMetaMemberVariable);
+                //    for (int j = 0; j < fmmv.fileMetaMemberVariable.Count; j++)
+                //    {
+                //        MetaMemberVariable mmv = new MetaMemberVariable(mdc, fmmv.fileMetaMemberVariable[j] as FileMetaMemberVariable);
 
-                        mmv.ParseChildMemberData();
-                        mmv.CalcReturnType();
+                //        mmv.ParseChildMemberData();
+                //        mmv.CalcReturnType();
 
-                    }
+                //    }
 
-                }
-                m_Express = new MetaNewObjectExpressNode(this.m_OwnerMetaClass, list);
+                //}
+                //m_Express = new MetaNewObjectExpressNode(this.m_OwnerMetaClass, list);
             }
             else if (m_FileMetaMemeberVariable.DataType == FileMetaMemberVariable.EMemberDataType.ConstVariable)
             {
@@ -298,13 +285,13 @@ namespace SimpleLanguage.Core
                 {
                     var fmmv = m_FileMetaMemeberVariable.fileMetaMemberVariable[i];
 
-                    MetaDynamicClass mdc = new MetaDynamicClass(i.GetHashCode().ToString());
+                    //MetaDynamicClass mdc = new MetaDynamicClass(i.GetHashCode().ToString());
 
-                    MetaMemberVariable mmd = new MetaMemberVariable(mdc, fmmv);
-                    if (!AddMetaVariable(mmd))
-                    {
-                        Log.AddMetaCoreLog(LID.AutoMetaMemberVariableL308, "Error 命名有重名!!");
-                    }
+                    //MetaMemberVariable mmd = new MetaMemberVariable(mdc, fmmv);
+                    //if (!AddMetaVariable(mmd))
+                    //{
+                    //    Log.AddMetaCoreLog(LID.AutoMetaMemberVariableL308, "Error 命名有重名!!");
+                    //}
                 }
             }
         }

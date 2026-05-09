@@ -347,7 +347,7 @@ namespace SimpleLanguage.Core
                 }
                 if(m_MetaVariable.isConst )
                 {
-                    Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL309, m_Token, "Error 类型为Const类型，不允许使用赋值!!");
+                    Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL309, m_Token, "Error 当前左值声明为 const，不允许进行赋值或修改!!");
                     return;
                 }
 

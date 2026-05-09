@@ -35,6 +35,10 @@ Commit   #注释类
 
     static fun()
     {
+        if true  #兼容语句后边的注释
+        {
+
+        }
         global.println("========== CommitTest (start) ==========")
         global.println("Commit.test 默认参数演示（空体，仅编译/链接 smoke）")
         Commit c = Commit()

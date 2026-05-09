@@ -178,7 +178,7 @@ namespace SimpleLanguage.Core.IR
             else if (cnode.visitType == MetaVisitNode.EVisitType.New)
             {
                 //ParseNew(cnode, _irMethod, irList );
-                Debug.Assert(false, "New的方法，已经独立于表达式");
+                Log.AddIRLog(LID.IRMethodNotSupportNew, cnode.token, $"New expression is not supported in MetaCallLink anymore");
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MetaClass)
             {
@@ -189,7 +189,7 @@ namespace SimpleLanguage.Core.IR
             }
             else
             {
-                Debug.Assert(false, $"没有找到:{cnode.visitType} ");
+                Log.AddIRLog(LID.IRNotSupportVisitType, cnode.token, $"Visit type is not supported in MetaCallLink: {cnode.visitType}", cnode.visitType.ToString() );
             }
             return irList;
         }

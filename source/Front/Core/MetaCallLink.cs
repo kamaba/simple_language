@@ -87,6 +87,7 @@ namespace SimpleLanguage.Core
         public MetaCallLink(MetaVisitNode mvn)
         {
             m_VisitNodeList.Add(mvn);
+            m_FinalCallNode = mvn;
         }
         private void CreateCallLinkNode(MetaType frontDefineMt, MetaVariable mv)
         {
@@ -210,6 +211,14 @@ namespace SimpleLanguage.Core
         */
         public bool Parse(AllowUseSettings _useConst)
         {
+            if ((m_CallNodeList == null || m_CallNodeList.Count == 0)
+                && m_VisitNodeList != null
+                && m_VisitNodeList.Count > 0)
+            {
+                m_FinalCallNode = m_VisitNodeList[m_VisitNodeList.Count - 1];
+                return true;
+            }
+
             allowUseSettings = new AllowUseSettings(_useConst);
             allowUseSettings.setterFunction = false;
             allowUseSettings.getterFunction = true;

@@ -15,7 +15,7 @@ Interface2
 {
     interface void itf2(){}
 }
-class Class2 :: Class1 interface Interface1, Interface2
+class Class2 extends Class1 interface Interface1, Interface2
 {
     void itf1(){}
     void itf2(){}
@@ -28,7 +28,7 @@ ClassT2<T>
     #List<T> tlist;
 }
 
-ClassT2_2<T> :: ClassT2<T> interface Interface1, Interface2
+ClassT2_2<T> extends ClassT2<T> interface Interface1, Interface2
 {
     T t2;
     void itf1(){}

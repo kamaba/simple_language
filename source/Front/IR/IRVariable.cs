@@ -9,6 +9,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
+using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.IR
@@ -45,19 +46,80 @@ namespace SimpleLanguage.IR
                 IRLoadVariable irVar = new IRLoadVariable(irmt2, _irMethod, index, IRMetaVariableFrom.Static);
                 return irVar;
             }
-            else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.ClassMember)
             {
                 int index = -1;
-                if (irmc != null )
+                if (irmc != null)
                 {
                     MetaVariable gmv = mv;
-                    if( mv.sourceMetaVariable != null )
+                    if (mv.sourceMetaVariable != null)
                     {
                         gmv = mv.sourceMetaVariable;
                     }
                     index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
                 }
-                if ( mv.isConst || mv.isStatic )
+                if (mv.isConst || mv.isStatic)
+                {
+                    // For const member variables (including injected project global.data primitive fields),
+                    // prefer direct const load IR instead of runtime static field load.
+                    if (mv is MetaMemberVariable mmv && mmv.isConst && mmv.constExpressNode != null)
+                    {
+                        IRLoadVariable constLoadVar = new IRLoadVariable();
+                        var irexp = new IRExpress(_irMethod, mmv.constExpressNode);
+                        constLoadVar.m_IRDataList.AddRange(irexp.IRDataList);
+                        return constLoadVar;
+                    }
+
+                    //if (mv.realMetaType.GenTemplateIsIncludeTemplate())
+                    //{
+                    //    if (index == -1)
+                    //    {
+                    //        Log.AddIRLog(LID.Unknown, "没有找到对应成员变量的Index");
+                    //        return null;
+                    //    }
+                    //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
+                    //    return irVar;
+                    //}
+                    //else
+                    //{
+                    //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global );
+                    //    return irVar;
+                    //}
+                    //
+                    if (index == -1)
+                    {
+                        Log.AddIRLog(LID.IRMethodNotFoundVariable, "in const member index = -1", _irMethod.id, mv.name);
+                        return null;
+                    }
+                    irmt = new IRMetaType(irmc);
+                    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
+                    return irVar;
+                }
+                else
+                {
+                    if (index == -1)
+                    {
+                        Log.AddIRLog(LID.IRMethodNotFoundVariable, "in member index = -1", _irMethod.id, mv.name);
+                        return null;
+                    }
+                    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Member);
+                    return irVar;
+                }
+            }
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.DataMember)
+            {
+                Debug.Assert(irmc != null, "DataMember should have a valid owner class");
+                int index = -1;
+                if (irmc != null)
+                {
+                    MetaVariable gmv = mv;
+                    if (mv.sourceMetaVariable != null)
+                    {
+                        gmv = mv.sourceMetaVariable;
+                    }
+                    index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
+                }
+                if (mv.isConst || mv.isStatic)
                 {
                     // For const member variables (including injected project global.data primitive fields),
                     // prefer direct const load IR instead of runtime static field load.
@@ -247,19 +309,55 @@ namespace SimpleLanguage.IR
                 IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, irmv.index, IRMetaVariableFrom.LocalStatement);
                 return irsv;
             }
-            else if (mv.variableFrom == MetaVariable.EVariableFrom.Member)
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.ClassMember)
             {
                 int index = -1;
                 var cirmc = irmc == null ? irmt.irMetaClass : irmc;
 
                 MetaVariable gmv = mv;
-                if( mv.sourceMetaVariable != null )
+                if (mv.sourceMetaVariable != null)
                 {
                     gmv = mv.sourceMetaVariable;
                 }
-                if (cirmc != null )
+                if (cirmc != null)
                 {
                     index = cirmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
+                }
+                if (gmv.isStatic)
+                {
+                    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
+                    return irsv;
+
+                    //if ( mv.realMetaType.GenTemplateIsIncludeTemplate() )
+                    //{
+                    //    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
+                    //    return irsv;
+                    //}
+                    //else
+                    //{
+                    //    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global);
+                    //    return irsv;
+                    //}
+                }
+                else
+                {
+                    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, index, IRMetaVariableFrom.Member);
+                    return irsv;
+                }
+            }
+            else if (mv.variableFrom == MetaVariable.EVariableFrom.DataMember)
+            {
+                int index = -1;
+                irmt = new IRMetaType(irmc);
+
+                MetaVariable gmv = mv;
+                if (mv.sourceMetaVariable != null)
+                {
+                    gmv = mv.sourceMetaVariable;
+                }
+                if (irmc != null)
+                {
+                    index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
                 }
                 if (gmv.isStatic)
                 {

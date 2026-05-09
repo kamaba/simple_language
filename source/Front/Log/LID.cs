@@ -302,5 +302,9 @@
         MetaCoreAssertShowMessage = 12259,
         NodeKeyNotMatchBrack = 12260,
         NodeDataParseNotfoundIdentify = 12261,
+        IRMethodNotSupportNew = 12262,
+        IRNotSupportVisitType = 12263,
+        IRNotFoundVariableFrom = 12264,
+        IRNotFoundArrayInitFunction = 12265,
     }
 }
