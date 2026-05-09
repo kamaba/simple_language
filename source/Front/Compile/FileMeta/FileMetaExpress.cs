@@ -1099,9 +1099,9 @@ namespace SimpleLanguage.Compile
 
                     type = 1;
 
-                    //FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, EMemberDataType.NoNameClass);
+                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, EMemberDataType.NoNameClass);
 
-                    //AddFileMemberVariable(fmmd);
+                    AddFileMemberVariable(fmmd);
                 }
                 else if (curNode?.nodeType == ENodeType.Bracket) // [[],[]]
                 {
@@ -1113,7 +1113,7 @@ namespace SimpleLanguage.Compile
 
                     type = 3;
 
-                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.Array);
+                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, global::SimpleLanguage.Compile.EMemberDataType.Array);
 
                     //AddFileMemberVariable(fmmd);
                 }

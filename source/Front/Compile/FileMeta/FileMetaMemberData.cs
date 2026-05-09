@@ -159,16 +159,49 @@ namespace SimpleLanguage.Compile
             }
             else if (m_MemberDataType == EMemberDataType.Array)
             {
-                sb.Append("[");
-                for (int i = 0; i < m_FileMetaMemberData.Count; i++)
+                if (m_FileMetaMemberData.Count == 0)
                 {
-                    sb.Append(m_FileMetaMemberData[i].ToFormatString());
-                    if (i < m_FileMetaMemberData.Count - 1)
+                    sb.Append("[]");
+                }
+                else
+                {
+                    bool multiLine = false;
+                    for (int i = 0; i < m_FileMetaMemberData.Count; i++)
                     {
-                        sb.Append(",");
+                        var item = m_FileMetaMemberData[i];
+                        if (item.DataType == EMemberDataType.Data || item.DataType == EMemberDataType.Array)
+                        {
+                            multiLine = true;
+                            break;
+                        }
+                    }
+
+                    if (!multiLine)
+                    {
+                        sb.Append("[");
+                        for (int i = 0; i < m_FileMetaMemberData.Count; i++)
+                        {
+                            sb.Append(m_FileMetaMemberData[i].ToFormatString().Trim());
+                            if (i < m_FileMetaMemberData.Count - 1)
+                            {
+                                sb.Append(", ");
+                            }
+                        }
+                        sb.Append("]");
+                    }
+                    else
+                    {
+                        sb.AppendLine("[");
+                        for (int i = 0; i < m_FileMetaMemberData.Count; i++)
+                        {
+                            var itemText = m_FileMetaMemberData[i].ToFormatString();
+                            sb.AppendLine(itemText);
+                        }
+                        for (int i = 0; i < deep; i++)
+                            sb.Append(Global.tabChar);
+                        sb.Append("]");
                     }
                 }
-                sb.Append("]");
             }
             else if (m_MemberDataType == EMemberDataType.ConstValue )
             {

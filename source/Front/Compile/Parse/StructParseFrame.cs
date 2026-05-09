@@ -1544,7 +1544,7 @@ namespace SimpleLanguage.Compile
 
                     if( nextNode == null )
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 后边必须有延伸位...");
+                        Log.AddNodeLog(LID.FileMetaNeedAssignAfterEqualSyntax, curNode.token, "after", frontList[frontList.Count-1].token?.ToLexemeAllString() );
                         continue;
                     }
 

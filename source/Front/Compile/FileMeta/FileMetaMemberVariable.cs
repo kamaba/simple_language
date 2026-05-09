@@ -13,34 +13,20 @@ using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Compile
 {
+    public enum EMemberDataType
+    {
+        None,
+        NameClass,
+        //NoNameClass,
+        Array,
+        KeyValue,
+        ConstVariable,
+    }
     public sealed class FileMetaMemberVariable : FileMetaBase
     {
         public List<FileMetaAttributeSyntax> attributeList => m_AttributeList;
-
-        private readonly List<FileMetaAttributeSyntax> m_AttributeList = new List<FileMetaAttributeSyntax>();
-
-        public void AddAttributes(List<FileMetaAttributeSyntax> list)
-        {
-            if (list == null || list.Count == 0) return;
-            m_AttributeList.AddRange(list);
-        }
-
-        public void AddAttribute(FileMetaAttributeSyntax attr)
-        {
-            if (attr == null) return;
-            m_AttributeList.Add(attr);
-        }
-
-        public enum EMemberDataType
-        {
-            None,
-            NameClass,
-            //NoNameClass,
-            Array,
-            KeyValue,
-            ConstVariable,
-        }
-
+        public List<FileMetaMemberVariable> fileMetaMemberVariable => m_FileMetaMemberVariableList;
+        public EMemberDataType DataType => m_MemberDataType;
         public FileMetaClassDefine classDefineRef => m_ClassDefineRef;
         public Token permissionToken => m_PermissionToken;
         public Token staticToken => m_StaticToken;
@@ -50,31 +36,21 @@ namespace SimpleLanguage.Compile
         public FileMetaBaseTerm express => m_Express;
         public Token assignToken => m_AssignToken;
 
-        private FileMetaClassDefine m_ClassDefineRef;
+        private EMemberDataType m_MemberDataType = EMemberDataType.None;
+        private FileMetaClassDefine m_ClassDefineRef = null;
         private Token m_AssignToken = null;
         private Token m_PermissionToken = null;
         private Token m_StaticToken = null;
         private Token m_ConstToken = null;
         private Token m_MutToken = null;
-        private FileMetaBaseTerm m_Express;
-        public List<FileMetaMemberVariable> fileMetaMemberVariable => m_FileMetaMemberVariableList;
-        //public FileMetaConstValueTerm fileMetaConstValue => m_FileMetaConstValue;
-        public FileMetaCallTerm fileMetaCallTermValue => m_FileMetaCallTermValue;
-        public EMemberDataType DataType => m_MemberDataType;
-
+        private readonly List<FileMetaAttributeSyntax> m_AttributeList = new List<FileMetaAttributeSyntax>();
         private List<FileMetaMemberVariable> m_FileMetaMemberVariableList = new List<FileMetaMemberVariable>();
-        private EMemberDataType m_MemberDataType = EMemberDataType.None;
-        //private FileMetaConstValueTerm m_FileMetaConstValue = null;
-        private FileMetaCallTerm m_FileMetaCallTermValue = null;
-
-        private List<Node> m_NodeList = null;
+        private FileMetaBaseTerm m_Express = null;
         public FileMetaMemberVariable( FileMeta fm, List<Node> list)
         {
             m_FileMeta = fm;
 
-            m_NodeList = list;
-
-            ParseBuildMetaVariable();
+            ParseBuildMetaVariable( list );
         }
         public FileMetaMemberVariable( FileMeta fm, Node brace )
         {
@@ -130,17 +106,21 @@ namespace SimpleLanguage.Compile
 
             if(isParseBuild )
             {
-                ParseBuildMetaVariable();
-            }
-            
+                ParseBuildMetaVariable(null);
+            }            
         }
 
-        public bool ParseBuildMetaVariable()
+        public bool ParseBuildMetaVariable( List<Node> list )
         {
+            if ( list == null )
+            {
+                return false;
+            }
+
             var bedoreNodeList = new List<Node>();
             var afterNodeList = new List<Node>();
 
-            if (!FileMetatUtil.SplitNodeList(m_NodeList, bedoreNodeList, afterNodeList, ref m_AssignToken))
+            if (!FileMetatUtil.SplitNodeList(list, bedoreNodeList, afterNodeList, ref m_AssignToken))
             {
                 Log.AddFileMetaLog(LID.AutoFileMetaMemberVariableL145, "Error 解析NodeList出现错误~~~");
                 return false;
@@ -235,7 +215,7 @@ namespace SimpleLanguage.Compile
 
                     type = 2;
 
-                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.ConstVariable );
+                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, EMemberDataType.ConstVariable );
 
                     AddFileMemberVariable(fmmd);
                 }
@@ -249,7 +229,7 @@ namespace SimpleLanguage.Compile
 
                     type = 3;
 
-                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.Array);
+                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, EMemberDataType.Array);
 
                     AddFileMemberVariable(fmmd);
                 }
@@ -403,6 +383,18 @@ namespace SimpleLanguage.Compile
             //    Debug.WriteLine("Error 不允许=号后边没值!!");
             //}
         }
+
+        public void AddAttributes(List<FileMetaAttributeSyntax> list)
+        {
+            if (list == null || list.Count == 0) return;
+            m_AttributeList.AddRange(list);
+        }
+
+        public void AddAttribute(FileMetaAttributeSyntax attr)
+        {
+            if (attr == null) return;
+            m_AttributeList.Add(attr);
+        }
         bool GetNameAndTypeToken(List<Node> defineNodeList, out Node typeNode )
         {
             bool isError = false;
@@ -516,20 +508,25 @@ namespace SimpleLanguage.Compile
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < deep; i++)
                 sb.Append(Global.tabChar);
-            EPermission permis = EPermission.Public;
+            EPermission permis = EPermission.Null;
             if( m_PermissionToken != null)
                 permis = CompilerUtil.GetPerMissionByType( m_PermissionToken.type );
-            if( permis == EPermission.Null )
-            {
-                sb.Append("_public ");
-            }
-            else
+            if( permis != EPermission.Null )
             {
                 sb.Append(permis.ToFormatString());
+                sb.Append(" ");
             }
             if(m_StaticToken!= null )
             {
                 sb.Append(" " + m_StaticToken.lexeme.ToString());
+            }
+            if (m_ConstToken != null)
+            {
+                if (m_StaticToken != null || permis != EPermission.Null)
+                {
+                    sb.Append(" ");
+                }
+                sb.Append(m_ConstToken.lexeme.ToString());
             }
 
             if (m_MemberDataType == EMemberDataType.NameClass)
@@ -584,8 +581,13 @@ namespace SimpleLanguage.Compile
             }
             else if (m_MemberDataType == EMemberDataType.ConstVariable )
             {
+                if (m_ClassDefineRef != null)
+                {
+                    sb.Append(m_ClassDefineRef.ToFormatString());
+                    sb.Append(" ");
+                }
                 sb.Append(m_ClassDefineRef?.ToFormatString());
-                sb.Append( " " + name + " = ");
+                sb.Append(name + " = ");
                 sb.Append(m_Express?.ToFormatString());
             }
             else

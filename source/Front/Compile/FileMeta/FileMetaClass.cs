@@ -774,21 +774,17 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-
-                stringBuilder.Append(m_PermissionToken != null ? m_PermissionToken.lexeme.ToString() : "_public");
-                stringBuilder.Append(" ");
+                if (m_PermissionToken != null)
+                {
+                    stringBuilder.Append(m_PermissionToken.lexeme.ToString());
+                    stringBuilder.Append(" ");
+                }
                 if (m_PartialToken != null)
                     stringBuilder.Append(m_PartialToken.lexeme.ToString() + " ");
-                else
-                    stringBuilder.Append("_partial ");
                 if (m_ClassToken != null)
                 {
                     stringBuilder.Append(m_ClassToken.lexeme.ToString());
                     stringBuilder.Append(" ");
-                }
-                else
-                {
-                    stringBuilder.Append("_class" + " ");
                 }
 
                 if (m_NamespaceBlock != null)

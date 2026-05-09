@@ -306,5 +306,6 @@
         IRNotSupportVisitType = 12263,
         IRNotFoundVariableFrom = 12264,
         IRNotFoundArrayInitFunction = 12265,
+        FileMetaNeedAssignAfterEqualSyntax = 12266,
     }
 }

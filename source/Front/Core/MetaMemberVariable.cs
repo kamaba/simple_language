@@ -199,7 +199,7 @@ namespace SimpleLanguage.Core
         {
             if( this.m_FileMetaMemeberVariable != null )
             {
-                if (this.m_FileMetaMemeberVariable?.DataType == FileMetaMemberVariable.EMemberDataType.Array)
+                if (this.m_FileMetaMemeberVariable?.DataType == global::SimpleLanguage.Compile.EMemberDataType.Array)
                 {
                     m_Express = CreateExpressNodeInClassMetaVariable();
                 }
@@ -248,7 +248,7 @@ namespace SimpleLanguage.Core
 
             int count = m_FileMetaMemeberVariable.fileMetaMemberVariable.Count;
 
-            if (m_FileMetaMemeberVariable.DataType == FileMetaMemberVariable.EMemberDataType.Array)
+            if (m_FileMetaMemeberVariable.DataType == global::SimpleLanguage.Compile.EMemberDataType.Array)
             {
                 //List<MetaMemberData> list = new List<MetaMemberData>();
 
@@ -271,11 +271,11 @@ namespace SimpleLanguage.Core
                 //}
                 //m_Express = new MetaNewObjectExpressNode(this.m_OwnerMetaClass, list);
             }
-            else if (m_FileMetaMemeberVariable.DataType == FileMetaMemberVariable.EMemberDataType.ConstVariable)
+            else if (m_FileMetaMemeberVariable.DataType == global::SimpleLanguage.Compile.EMemberDataType.ConstVariable)
             {
                 //CreateExpress();
             }
-            else if (m_FileMetaMemeberVariable.DataType == FileMetaMemberVariable.EMemberDataType.KeyValue)
+            else if (m_FileMetaMemeberVariable.DataType == global::SimpleLanguage.Compile.EMemberDataType.KeyValue)
             {
 
             }
