@@ -240,12 +240,13 @@ namespace SimpleLanguage.Project
 
             // Export per-file MetaCore debug data after logic parsing is complete.
 #if DEBUG
+            //ClassManager.instance.UpdateMetaGenTemplateClassHandle();
+            ModuleManager.instance.selfModule.metaNode.SetDeep(0);
+            ModuleManager.instance.coreModule.metaNode.SetDeep(-1);
             for (int i = 0; i < fileParseList.Count; i++)
             {
                 fileParseList[i].ExportMetaDebugData();
             }
-            //ClassManager.instance.UpdateMetaGenTemplateClassHandle();
-            ModuleManager.instance.selfModule.metaNode.SetDeep(0);
 #endif
 
             Log.AddProcessLog(LID.ProcessCompileMetaEnd, "");

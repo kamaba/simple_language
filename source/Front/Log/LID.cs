@@ -309,5 +309,6 @@
         FileMetaNeedAssignAfterEqualSyntax = 12266,
         MetaCoreDefineNameRepeat = 12267,
         MetaCoreDataNotAllowHasFunction = 12268,
+        MetaCoreNotSupportParseType = 12269
     }
 }

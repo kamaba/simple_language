@@ -40,6 +40,18 @@ namespace SimpleLanguage.Core
             m_IsStatic = staticToken;
             m_IsDynamic = dynamic;
         }
+        public override void SetDeep(int deep)
+        {
+            this.m_Deep = deep;
+            foreach (var v in m_MetaExtendMemeberVariableDict)
+            {
+                v.Value.SetDeep(deep + 1);
+            }
+            foreach (var v in m_MetaMemberDataDict)
+            {
+                v.Value.SetDeep(deep + 1);
+            }
+        }
         public MetaMemberData GetMemberDataByName(string name)
         {
             if (m_MetaMemberDataDict.ContainsKey(name))
@@ -117,53 +129,43 @@ namespace SimpleLanguage.Core
                 {
                     stringBuilder.Append("const ");
                 }
-                //if (topLevelMetaNamespace != null)
-                //{
-                //    stringBuilder.Append(topLevelMetaNamespace.allName + ".");
-                //}
-                //stringBuilder.Append(name + " = {");
-                //foreach (var v in m_ChildrenNameNodeDict)
-                //{
-                //    MetaBase mb = v.Value;
-                //    if (mb is MetaMemberData)
-                //    {
-                //        stringBuilder.Append((mb as MetaMemberData).ToFormatString());
-                //        stringBuilder.Append(",");
-                //    }
-                //}
+                stringBuilder.Append( allClassName + " = {");
+                int index = 0;
+                foreach (var v in m_MetaMemberDataDict)
+                {
+                    stringBuilder.Append(v.Value.ToFormatString(true));
+                    if (index < m_MetaMemberDataDict.Count - 1)
+                    {
+                        stringBuilder.Append(",");
+                    }
+                    index++;
+                }
                 stringBuilder.Append("}");
             }
             else
             {
-                //for (int i = 0; i < realDeep; i++)
-                //    stringBuilder.Append(Global.tabChar);
-                //if (isConst)
-                //{
-                //    stringBuilder.Append("const ");
-                //}
-                //if (topLevelMetaNamespace != null)
-                //{
-                //    stringBuilder.Append(topLevelMetaNamespace.allName + ".");
-                //}
-                //stringBuilder.Append(name + " ");
+                for (int i = 0; i < realDeep; i++)
+                    stringBuilder.Append(Global.tabChar);
+                if (isConst)
+                {
+                    stringBuilder.Append("const ");
+                }
+                stringBuilder.Append("data ");
+                stringBuilder.Append(allClassName);
+                stringBuilder.Append(Environment.NewLine);
 
-                //stringBuilder.Append(Environment.NewLine);
-                //for (int i = 0; i < realDeep; i++)
-                //    stringBuilder.Append(Global.tabChar);
-                //stringBuilder.Append("{" + Environment.NewLine);
+                for (int i = 0; i < realDeep; i++)
+                    stringBuilder.Append(Global.tabChar);
+                stringBuilder.Append("{" + Environment.NewLine);
 
-                //foreach (var v in m_ChildrenNameNodeDict)
-                //{
-                //    MetaBase mb = v.Value;
-                //    if (mb is MetaMemberData)
-                //    {
-                //        stringBuilder.Append((mb as MetaMemberData).ToFormatString2(m_IsDynamic));
-                //        stringBuilder.Append(Environment.NewLine);
-                //    }
-                //}
+                foreach (var v in m_MetaMemberDataDict)
+                {
+                    stringBuilder.Append(v.Value.ToFormatString(false));
+                    stringBuilder.Append(Environment.NewLine);
+                }
 
-                //for (int i = 0; i < realDeep; i++)
-                //    stringBuilder.Append(Global.tabChar);
+                for (int i = 0; i < realDeep; i++)
+                    stringBuilder.Append(Global.tabChar);
                 stringBuilder.Append("}" + Environment.NewLine);
             }
 

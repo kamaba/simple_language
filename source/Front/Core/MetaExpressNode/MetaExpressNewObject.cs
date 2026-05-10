@@ -2241,7 +2241,7 @@ namespace SimpleLanguage.Core
                         {
                             continue;
                         }
-                        sb.Append(bsc.metaMemberData?.ToFormatString2(m_MetaType.isDynamicData));
+                        sb.Append(bsc.metaMemberData?.ToFormatString(m_MetaType.isDynamicData));
 
                         if( i < m_MetaContent.count - 1 )
                         {
