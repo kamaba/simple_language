@@ -410,6 +410,28 @@ passLine = ScoreRule.passLine
 
 这类访问应作为 `data` 的基础测试面之一。
 
+## 4.2 一些自带的系统方法
+
+### 4.2.1 clone
+
+```sl
+StudentRecord sr = new(){ srcoe = 100 }
+srclone = sr.clone()   #对sr的克隆，数据在底层直接进行复制
+srcclone2 = StudentRecord.clone()  # 对静态StudentRecord的直接复制
+```
+
+### 4.2.2 toString()
+```sl
+StudentRecord sr = new(){ srcoe = 100 }
+srstr = sr.toString()   #对sr的格式化输出 类似于json格式
+srcstr3 = StudentRecord.toString()  # 对静态StudentRecord的直接输出
+str4 = sr.toString(DataType.json)  # 输出json格式
+str5 = sr.toString(DataType.trim)  # 输出不带换行与空格的
+str6 = sr.toString(DataType.jsonTrim)  #输出json格式不带换行相关
+json1 = sr.toJson()  #输出一个json格式
+```
+
+
 ## 5. Meta 层规则
 
 在 Meta 层里，`data` 的核心规则可以概括为下面几条：
