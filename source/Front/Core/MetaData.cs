@@ -28,6 +28,7 @@ namespace SimpleLanguage.Core
             m_IsConst =  md.isConst;
             m_IsStatic = md.isStatic;
             m_IsDynamic = false;
+            m_Token = md.token;
             AddPingToken(md?.token);
         }
         public MetaData(string _name, bool constToken, bool staticToken, bool dynamic ) : base(_name)
@@ -73,6 +74,11 @@ namespace SimpleLanguage.Core
         //}
         public virtual void ParseFileMetaDataMemeberData(FileMetaClass fmc)
         {
+            if (fmc.memberVariableList.Count > 0 || fmc.memberFunctionList.Count > 0)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreDataNotAllowHasFunction, "Error Data中不允许有Variable 和 Function!!");
+            }
+
             bool isHave = false;
             for (int i = 0; i < fmc.memberDataList.Count; i++)
             {
@@ -80,7 +86,7 @@ namespace SimpleLanguage.Core
                 MetaNode mb = m_MetaNode.GetChildrenMetaNodeByName(v.name);
                 if (mb != null)
                 {
-                    Log.AddMetaCoreLog(LID.AutoMetaDataL83, "Error MetaData MetaDataMember已有定义类: " + m_AllName + "中 已有: " + v.token?.ToLexemeAllString() + "的元素!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreDefineNameRepeat, v.token, "", v.token, mb.name );
                     isHave = true;
                 }
                 else
@@ -94,11 +100,6 @@ namespace SimpleLanguage.Core
                 AddMetaMemberData(mmv);
 
                 mmv.ParseChildMemberData();
-            }
-
-            if (fmc.memberVariableList.Count > 0 || fmc.memberFunctionList.Count > 0)
-            {
-                Log.AddMetaCoreLog(LID.AutoMetaDataL101, "Error Data中不允许有Variable 和 Function!!");
             }
         }
         public override void ParseDefineComplete()

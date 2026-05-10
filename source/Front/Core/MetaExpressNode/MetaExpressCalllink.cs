@@ -24,10 +24,12 @@ namespace SimpleLanguage.Core
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_EqualMetaVariable = mv;
-            
+            m_Token = fmcl.callNodeList[0].token;
+
             if (fmcl != null )
             {
                 m_MetaCallLink = new MetaCallLink( fmcl, mc, mbs, mv?.defineMetaType, mv );
+                m_Token = m_MetaCallLink.callNodeList[0].token;
             }
         }
         public MetaCallLinkExpressNode( MetaCallLink mcl )

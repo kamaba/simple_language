@@ -307,5 +307,7 @@
         IRNotFoundVariableFrom = 12264,
         IRNotFoundArrayInitFunction = 12265,
         FileMetaNeedAssignAfterEqualSyntax = 12266,
+        MetaCoreDefineNameRepeat = 12267,
+        MetaCoreDataNotAllowHasFunction = 12268,
     }
 }

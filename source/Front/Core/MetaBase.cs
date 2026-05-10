@@ -73,6 +73,10 @@ namespace SimpleLanguage.Core
             {
                 m_PintTokenList.Add(token);
             }
+            if( m_Token == null )
+            {
+                m_Token = token;
+            }
         }
         public void AddPingToken(string path, int beginline, int beginpos, int endline, int endpos)
         {

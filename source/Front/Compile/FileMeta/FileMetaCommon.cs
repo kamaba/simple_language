@@ -347,7 +347,7 @@ namespace SimpleLanguage.Compile
                         for (int j = 0; j < fmbt?.fileMetaExpressList?.Count; j++)
                         {
                             sb.Append(fmbt?.fileMetaExpressList[j].ToFormatString());
-                            if (i < fmbt?.fileMetaExpressList.Count - 1)
+                            if (j < fmbt?.fileMetaExpressList.Count - 1)
                                 sb.Append(",");
                         }
                         sb.Append(fmbt.endToken?.lexeme?.ToString());

@@ -169,6 +169,11 @@ namespace SimpleLanguage.Compile
 
         public override string ToFormatString()
         {
+            if (m_Token == null || m_NamespaceStatement == null)
+            {
+                ParseImportSyntax();
+            }
+
             StringBuilder sb = new StringBuilder();
             sb.Append(this.m_Token?.lexeme.ToString() + " " + m_NamespaceStatement?.ToFormatString());
             if (m_AsToken != null)

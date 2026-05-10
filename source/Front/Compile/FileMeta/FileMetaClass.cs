@@ -702,6 +702,10 @@ namespace SimpleLanguage.Compile
             {
                 v.SetDeep(m_Deep + 1);
             }
+            foreach( var v in m_MemberDataList )
+            {
+                v.SetDeep(m_Deep + 1);
+            }
             foreach (var v in m_MemberVariableList)
             {
                 v.SetDeep(m_Deep + 1);

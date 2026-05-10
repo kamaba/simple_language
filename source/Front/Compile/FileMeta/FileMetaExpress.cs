@@ -508,9 +508,17 @@ namespace SimpleLanguage.Compile
         {
             StringBuilder sb = new StringBuilder();
 
+            if(m_PlusOrMinusToken != null )
+            {
+                sb.Append(m_PlusOrMinusToken?.ToString());
+            }
             sb.Append(m_Token?.ToLexemeAllString());
 
             return sb.ToString();
+        }
+        public override string ToString()
+        {
+            return m_Token?.ToConstString();
         }
     }
     // 
@@ -553,6 +561,13 @@ namespace SimpleLanguage.Compile
             {
                 sb.Append(callLink.ToTokenString());
             }
+            return sb.ToString();
+        }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            if (m_CallLink != null)
+                sb.Append(m_CallLink.ToFormatString());
             return sb.ToString();
         }
     }
@@ -718,6 +733,10 @@ namespace SimpleLanguage.Compile
             sb.Append("EndParToken:" + m_EndToken?.ToLexemeAllString());
 
             return sb.ToString();
+        }
+        public override string ToString()
+        {
+            return ToFormatString();
         }
     }
     public class FileMetaBraceTerm : FileMetaBaseTerm
@@ -918,9 +937,13 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                foreach (var v in m_FileMetaExpressList)
+                for (int i = 0; i < m_FileMetaExpressList.Count; i++)
                 {
-                    stringBuilder.Append(v.ToFormatString());
+                    stringBuilder.Append(m_FileMetaExpressList[i].ToFormatString());
+                    if (i < m_FileMetaAssignSyntaxList.Count - 1)
+                    {
+                        stringBuilder.Append(",");
+                    }
                 }
             }
             stringBuilder.Append(m_BraceEndToken?.lexeme.ToString());
@@ -935,6 +958,10 @@ namespace SimpleLanguage.Compile
             sb.Append("EndBraceToken:" + m_BraceEndToken?.ToLexemeAllString());
 
             return sb.ToString();
+        }
+        public override string ToString()
+        {
+            return ToFormatString();
         }
     }
     // [1,2,3,[1,2,3]]  [i][1]
@@ -1101,7 +1128,7 @@ namespace SimpleLanguage.Compile
 
                     FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, EMemberDataType.NoNameClass);
 
-                    AddFileMemberVariable(fmmd);
+                    //AddFileMemberVariable(fmmd);
                 }
                 else if (curNode?.nodeType == ENodeType.Bracket) // [[],[]]
                 {
@@ -1134,11 +1161,17 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < m_FileMetaExpressList.Count; i++)
             {
                 stringBuilder.Append(m_FileMetaExpressList[i].ToFormatString());
-                //if (i < m_FileMetaAssignSyntaxList.Count - 1)
-                //    stringBuilder.Append(", ");
+                if (i < m_FileMetaExpressList.Count - 1)
+                {
+                    stringBuilder.Append(",");
+                }
             }
             stringBuilder.Append("]");
             return stringBuilder.ToString();
+        }
+        public override string ToString()
+        {
+            return ToFormatString();
         }
         public override string ToTokenString()
         {
@@ -1175,6 +1208,10 @@ namespace SimpleLanguage.Compile
             sb.Append(Environment.NewLine);
             sb.Append(m_IfSyntax.ToFormatString());
             return sb.ToString();
+        }
+        public override string ToString()
+        {
+            return ToFormatString();
         }
     }
     // express ? var/const : var2/const2
@@ -1257,6 +1294,10 @@ namespace SimpleLanguage.Compile
             sb.Append(Environment.NewLine);
             sb.Append(m_SwitchSyntax.ToFormatString());
             return sb.ToString();
+        }
+        public override string ToString()
+        {
+            return ToFormatString();
         }
     }
 
@@ -1581,6 +1622,10 @@ namespace SimpleLanguage.Compile
                 beforeFMTE = cur;
             }
             return sb.ToString();
+        }
+        public override string ToString()
+        {
+            return ToFormatString();
         }
 
         public override string ToTokenString()

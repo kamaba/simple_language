@@ -17,7 +17,7 @@ namespace SimpleLanguage.Compile
     {
         None,
         NameClass,
-        //NoNameClass,
+        NoNameClass,
         Array,
         KeyValue,
         ConstVariable,

@@ -14,6 +14,16 @@ using System.Collections.Generic;
 
 namespace SimpleLanguage.Compile
 {
+    public enum EParseNodeType
+    {
+        Null,
+        File,
+        Namespace,
+        Class,
+        Function,
+        Statements,
+        DataMemeber,
+    }
     public partial class StructParse
     {
         private void ParseLeadingAttributes(Node pnode, ref int index, List<FileMetaAttributeSyntax> list)
@@ -98,16 +108,6 @@ namespace SimpleLanguage.Compile
                     break;
                 }
             }
-        }
-        public enum EParseNodeType
-        {
-            Null,
-            File,
-            Namespace,
-            Class,
-            Function,
-            Statements,
-            DataMemeber,
         }
         public class ParseCurrentNodeInfo
         {
@@ -1274,11 +1274,6 @@ namespace SimpleLanguage.Compile
             for (index = bracketNode.parseIndex; index < bracketNode.childList.Count;)
             {
                 var curNode = bracketNode.childList[index++];
-
-                if (curNode == null)
-                {
-                    continue;
-                }
                 if (curNode.nodeType == ENodeType.Comment
                     || curNode.nodeType == ENodeType.LineEnd)
                 {
@@ -1286,7 +1281,7 @@ namespace SimpleLanguage.Compile
                 }
                 if (curNode.nodeType == ENodeType.Brace)  //Class1 [{},{}]
                 {
-                    FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, false, FileMetaMemberData.EMemberDataType.Data);
+                    FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, FileMetaMemberData.EMemberDataType.Data);
 
                     AddParseDataInfo(fmmd);
 
@@ -1319,7 +1314,7 @@ namespace SimpleLanguage.Compile
                 }
                 else if (curNode.nodeType == ENodeType.ConstValue)   // ["stringValue","Stvlue"]
                 {
-                    FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, false, FileMetaMemberData.EMemberDataType.ConstValue);
+                    FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, FileMetaMemberData.EMemberDataType.ConstValue);
 
                     currentNodeInfo.codeData.AddFileMemberData(fmmd);
                 }
@@ -1354,13 +1349,13 @@ namespace SimpleLanguage.Compile
                         break;
                     }
 
-                    FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, false, FileMetaMemberData.EMemberDataType.Class);
+                    FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, FileMetaMemberData.EMemberDataType.Class);
 
                     currentNodeInfo.codeData.AddFileMemberData(fmmd);
                 }
                 else if (curNode?.nodeType == ENodeType.Bracket) // [[],[]]
                 {
-                    FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, false, FileMetaMemberData.EMemberDataType.Array);
+                    FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, FileMetaMemberData.EMemberDataType.Array);
 
                     AddParseDataInfo(fmmd);
 
@@ -1424,11 +1419,11 @@ namespace SimpleLanguage.Compile
                 {
                     if (assignNode == null)
                     {
-                        frontList.Add(curNode);
+                        frontList.Add(curNode);                 // curNode =(assignNode) 
                     }
                     else
                     {
-                        backList.Add(curNode);
+                        backList.Add(curNode);                  // frontNode =(assignNode)  curNode
 
                         for( int j = index; j < curParentNode.childList.Count; )
                         {
@@ -1622,7 +1617,12 @@ namespace SimpleLanguage.Compile
 
                     if( parseType > 0 )
                     {
-                        FileMetaMemberData.EMemberDataType emdt = parseType == 1 ? FileMetaMemberData.EMemberDataType.Data : FileMetaMemberData.EMemberDataType.Array;
+                        FileMetaMemberData.EMemberDataType emdt = parseType switch
+                        {
+                            1 => FileMetaMemberData.EMemberDataType.Data,
+                            2 => FileMetaMemberData.EMemberDataType.Array,
+                            _ => FileMetaMemberData.EMemberDataType.Data
+                        };
                         FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, frontList, assignNode, backList, true, emdt);
                         frontList.Clear();
                         isParseEnd = false;
@@ -1670,6 +1670,16 @@ namespace SimpleLanguage.Compile
                     }
                     isParseEnd = false;
                 }
+            }
+
+            if (frontList.Count > 0)
+            {
+                FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, frontList, assignNode, backList, true, FileMetaMemberData.EMemberDataType.ConstValue);
+                frontList.Clear();
+                backList.Clear();
+                assignNode = null;
+                AddParseDataInfo(fmmd);
+                m_CurrentNodeInfoStack.Pop();
             }
             curParentNode.parseIndex = index;            
         }

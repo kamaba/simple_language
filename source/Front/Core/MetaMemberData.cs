@@ -23,21 +23,20 @@ namespace SimpleLanguage.Core
     }
     public sealed class MetaMemberData : MetaVariable
     {
+        /// <summary>Source declaration order within the owning <see cref="MetaData"/> (used by IR field indices).</summary>
+        public int dataFieldOrderIndex => m_Index;
         public override bool isConst { get { return m_IsConst; } }
         public EMemberDataType memberDataType => m_MemberDataType;
-        public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNode expressNode => m_Express;
         public Dictionary<string, MetaMemberData> metaMemberDataDict => m_MetaMemberDataDict;
 
         private MetaExpressNode m_Express = null;
-        private MetaVariable m_MetaVariable = null;
         private EMemberDataType m_MemberDataType = EMemberDataType.None;
         private int m_Index = -1;
         private bool m_End = false;
         private bool m_IsWithName = false;
 
         private Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
-
         private FileMetaMemberData m_FileMetaMemeberData = null;
         private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
 
@@ -45,21 +44,19 @@ namespace SimpleLanguage.Core
         {
             m_VariableFrom = EVariableFrom.DataMember;
         }
-
-        public MetaMemberData(MetaData mc, FileMetaOpAssignSyntax fmoa)
-        {
-            m_FileMetaOpAssignSyntax = fmoa;
-            m_DefineMetaType = new MetaType(mc);
-            SetOwnerMetaClass(mc);
-            m_IsConst = mc.isConst;
-            m_VariableFrom = EVariableFrom.DataMember;
-            m_Token = fmoa.token;
-            ParseName();
-        }
+        //public MetaMemberData(MetaData mc, FileMetaOpAssignSyntax fmoa)
+        //{
+        //    m_FileMetaOpAssignSyntax = fmoa;
+        //    m_DefineMetaType = new MetaType(mc);
+        //    SetOwnerMetaClass(mc);
+        //    m_IsConst = mc.isConst;
+        //    m_VariableFrom = EVariableFrom.DataMember;
+        //    m_Token = fmoa.token;
+        //    ParseName();
+        //}
         public MetaMemberData(MetaData mc, FileMetaMemberData fmmd, int index, bool isStatic )
         {
             m_FileMetaMemeberData = fmmd;
-            fmmd.SetMetaMemberData(this);
             m_Name = fmmd.name;
             m_Index = index;
             m_IsStatic = isStatic;
@@ -75,7 +72,6 @@ namespace SimpleLanguage.Core
             m_Index = _index;
             m_End = isEnd;
             m_FileMetaMemeberData = fmmd;
-            fmmd.SetMetaMemberData(this);
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(parentNode.ownerMetaClass);
             m_IsConst = parentNode.isConst;
@@ -92,8 +88,8 @@ namespace SimpleLanguage.Core
             m_IsConst = parentNode.isConst;
             m_Express = men;
             m_VariableFrom = EVariableFrom.DataMember;
+            m_Token = men.token;
         }
-
         public static MetaMemberData CreateConst(MetaData owner, string name, int index, MetaConstExpressNode constExpress)
         {
             var mmd = new MetaMemberData();
@@ -109,6 +105,7 @@ namespace SimpleLanguage.Core
             mmd.m_IsStatic = false;
             mmd.m_Express = constExpress;
             mmd.m_MemberDataType = EMemberDataType.ConstValue;
+            mmd.AddPingToken(constExpress.token);
             return mmd;
         }
 
@@ -178,8 +175,6 @@ namespace SimpleLanguage.Core
             return mmd;
         }
         public void SetIndex(int index) { m_Index = index; }
-        /// <summary>Source declaration order within the owning <see cref="MetaData"/> (used by IR field indices).</summary>
-        public int dataFieldOrderIndex => m_Index;
         public string GetString(string name, bool isInChildren = true)
         {
             var constExpress = (m_Express as MetaConstExpressNode);
@@ -369,13 +364,13 @@ namespace SimpleLanguage.Core
             if (m_Express != null)
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType, m_MetaVariable );
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType, this );
                 m_Express.CalcReturnType();
                 m_DefineMetaType = m_Express.GetReturnMetaDefineType();
                 if (m_DefineMetaType == null)
                 {
                     string tokenText = m_FileMetaMemeberData?.fileMetaCallTermValue?.ToTokenString() ?? m_Name;
-                    Log.AddMetaCoreLog(LID.AutoMetaMemberDataL286, "Error 在生成Data时，没有找到." + tokenText);
+                    Log.AddMetaCoreLog(LID.MetaCoreDefineTypeIsNull, m_Token, tokenText);
                     return false;
                 }
                 if (m_DefineMetaType.isData)
@@ -393,15 +388,6 @@ namespace SimpleLanguage.Core
                 else
                 {
                     m_MemberDataType = EMemberDataType.MemberClass;
-
-                    switch (m_Express)
-                    {
-                        case MetaCallLinkExpressNode mcen:
-                            {
-                                m_MetaVariable = mcen.GetMetaVariable();
-                                break;
-                            }
-                    }
                 }
             }
             if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
@@ -415,39 +401,6 @@ namespace SimpleLanguage.Core
                     m_RealMetaType = new MetaType(m_DefineMetaType);
             }
             return true;
-        }
-        public MetaMemberData Copy()
-        {
-            //var newMMD = new MetaMemberData(m_OwnerMetaClass as MetaData,  );
-            //newMMD.m_Name = m_Name;
-            //newMMD.m_MemberDataType = m_MemberDataType;
-            //if (m_MemberDataType == EMemberDataType.MemberData)
-            //{
-            //    foreach (var v in m_MetaMemberDataDict)
-            //    {
-            //        newMMD.AddMetaMemberData(v.Value.Copy());
-            //    }
-            //}
-            //else if (m_MemberDataType == EMemberDataType.ConstValue)
-            //{
-            //    newMMD.m_Express = m_Express;
-            //}
-            //return newMMD;
-            return null;
-        }
-        public void CopyByMetaData(MetaData md)
-        {
-            MetaData curMD = m_OwnerMetaClass as MetaData;
-            foreach (var v in md.metaMemberDataDict)
-            {
-                if (v.Value.IsIncludeMetaData(curMD))
-                {
-                    Log.AddMetaCoreLog(LID.AutoMetaMemberDataL349, "Error 当前有循环引用数量现象，请查正!!" + md.allClassName );
-                    continue;
-                }
-                var newMMD = v.Value.Copy();
-                this.AddMetaMemberData(newMMD);
-            }
         }
         public bool IsIncludeMetaData(MetaData md)
         {
@@ -474,18 +427,15 @@ namespace SimpleLanguage.Core
                     MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
 
                     mmd.ParseName();
-                    mmd.ParseDefineMetaType();
-                    mmd.ParseMetaExpress();
+                    //mmd.ParseMetaExpress();
 
                     if (AddMetaMemberData(mmd))
                     {
-                        //this.AddMetaBase(mmd.name, mmd);
-
                         mmd.ParseChildMemberData();
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaMemberDataL392, "Error ParseChildMemberData 命名有重名!!" + mmd.name );
+                        Log.AddMetaCoreLog(LID.MetaCoreDefineNameRepeat, m_FileMetaMemeberData.fileMetaMemberData[i].token, "" , m_FileMetaMemeberData.fileMetaMemberData[i].token, mmd.name );
                     }
                 }
             }
@@ -498,10 +448,10 @@ namespace SimpleLanguage.Core
                     for (int i = 0; i < mne.metaContent?.assignStatementsList?.Count; i++)
                     {
 
-            if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
-            {
-                ResolveAnonymousDataMetaType();
-            }
+                        if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
+                        {
+                            ResolveAnonymousDataMetaType();
+                        }
                         var asl = mne.metaContent.assignStatementsList[i];
 
                         if (asl == null) continue;
@@ -531,7 +481,7 @@ namespace SimpleLanguage.Core
 
                         if (m_MetaMemberDataDict.ContainsKey(addMmd.name))
                         {
-                            Log.AddMetaCoreLog(LID.AutoMetaMemberDataL433, "Error 重复的MetaMemberData的名称 在484");
+                            Log.AddMetaCoreLog(LID.MetaCoreDefineNameRepeat, cne.token, "534" , cne.token, addMmd.name );
                             continue;
                         }
                         m_MetaMemberDataDict.Add(addMmd.name, addMmd);
@@ -542,7 +492,7 @@ namespace SimpleLanguage.Core
                     MetaMemberData addMmd = new MetaMemberData( this, name, 0, cne );
                     if (m_MetaMemberDataDict.ContainsKey(addMmd.name))
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaMemberDataL444, "Error 重复的MetaMemberData的名称 在410");
+                        Log.AddMetaCoreLog(LID.MetaCoreDefineNameRepeat, cne.token, "534", cne.token, addMmd.name);
                     }
                     m_MetaMemberDataDict.Add(addMmd.name, addMmd);
                 }
@@ -678,6 +628,7 @@ namespace SimpleLanguage.Core
                     break;
                 case EMemberDataType.MemberClass:
                     {
+                        MetaType mt = GetFinalMetaType();                        
                         sb.Append(m_Express.ToFormatString());
                     }
                     break;

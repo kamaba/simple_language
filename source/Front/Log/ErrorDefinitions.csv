@@ -812,3 +812,5 @@
 12264,Error,TRUE,FALSE,1,,"没有找到对应的from[{0}]",,Auto-generated LID mapping,,
 12265,Error,TRUE,FALSE,0,,"没有找到相关的初始化函数",,Auto-generated LID mapping,,
 12266,Error,TRUE,FALSE,0,,"在等号后边必须有赋值语句",,Auto-generated LID mapping,,
+12267,Error,TRUE,FALSE,2,,"MetaDataMember已有定义类: [{0}]中 已有: [{1}]的元素!!",,Auto-generated LID mapping,,
+12268,Error,TRUE,FALSE,0,,"Data中不允许有Variable 和 Function",,Auto-generated LID mapping,,

@@ -1366,7 +1366,7 @@ namespace SimpleLanguage.Core
                     //    m_MetaFunction = mmf;
                     //    m_CallNodeType = ECallNodeType.NewClass;                        
                     //}
-                    //else
+                    if( m_MetaType.isData == false && m_MetaType.isEnum == false )
                     {
                         //ArrClass()
                         MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_MetaInputParamCollection);
@@ -1376,17 +1376,6 @@ namespace SimpleLanguage.Core
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + curmc.allClassName + "鐨刜init_鏂规硶!)");
                             return false;
                         }
-                        if (m_DefineMetaVariable == null)
-                        {
-                            m_MetaVariable = new MetaVariable("new_" + curmc.allClassName + "_" + curmc.GetHashCode(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock,
-                                m_OwnerMetaClass, m_MetaType);
-                            m_OwnerMetaFunctionBlock.AddMetaVariable(m_MetaVariable);
-                        }
-                        else
-                        {
-                            m_MetaVariable = m_DefineMetaVariable;
-                        }
-                        this.m_MetaClass = curmc;
                         m_MetaFunction = mmf;
                         if ((m_CallNodeType != ECallNodeType.NewTemplate)
                             && (m_CallNodeType != ECallNodeType.NewClass))
@@ -1409,6 +1398,18 @@ namespace SimpleLanguage.Core
                         }
                         */
                     }
+
+                    if (m_DefineMetaVariable == null)
+                    {
+                        m_MetaVariable = new MetaVariable("new_" + curmc.allClassName + "_" + curmc.GetHashCode(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock,
+                            m_OwnerMetaClass, m_MetaType);
+                        m_OwnerMetaFunctionBlock.AddMetaVariable(m_MetaVariable);
+                    }
+                    else
+                    {
+                        m_MetaVariable = m_DefineMetaVariable;
+                    }
+                    this.m_MetaClass = curmc;
 
                     if (!m_AllowUseSettings.callFunction && m_IsFunction)
                     {
