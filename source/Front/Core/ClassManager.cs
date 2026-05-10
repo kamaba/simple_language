@@ -9,6 +9,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
+using System.Linq;
 using SimpleLanguage.Project;
 
 namespace SimpleLanguage.Core
@@ -117,6 +118,10 @@ namespace SimpleLanguage.Core
         }
         public MetaData FindMetaData( MetaData md )
         {
+            if (md == null)
+            {
+                return null;
+            }
             foreach( var v in m_AllDataDict )
             {
                 if(CompareMetaDataMember( v.Value, md ) )
@@ -167,8 +172,21 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
+        /// <summary>
+        /// 判断两个 MetaData 是否表示同一匿名/结构化类型，用于注册表去重。
+        /// 动态匿名类型：成员个数相同、按声明顺序名称一致、字段类型形状一致（嵌套匿名 MetaData 递归比较）。
+        /// </summary>
         public bool CompareMetaDataMember(MetaData curClass, MetaData cpClass)
         {
+            if (ReferenceEquals(curClass, cpClass))
+            {
+                return true;
+            }
+            if (curClass == null || cpClass == null)
+            {
+                return false;
+            }
+
             var curClassList = curClass.metaMemberDataDict;
             var cpClassList = cpClass.metaMemberDataDict;
 
@@ -176,6 +194,19 @@ namespace SimpleLanguage.Core
             {
                 return false;
             }
+
+            // 避免「两个均无 data 成员」被误判为同一类型（如动态 class 占位）
+            if (curClassList.Count == 0 && cpClassList.Count == 0)
+            {
+                return false;
+            }
+
+            // 动态匿名 data 字面量：按顺序做完整结构 + 类型形状比较（不依赖字典迭代顺序）
+            if (curClass.isDynamic && cpClass.isDynamic)
+            {
+                return CompareDynamicAnonymousMetaDataShape(curClass, cpClass);
+            }
+
             foreach( var v in curClassList )
             {
                 if( !cpClassList.ContainsKey(v.Key ) )
@@ -184,8 +215,87 @@ namespace SimpleLanguage.Core
                 }
                 var vval = v.Value;
                 var val2 = cpClassList[v.Key];
-
+                if (vval.defineMetaType == null || val2.defineMetaType == null)
+                {
+                    return false;
+                }
                 if( vval.defineMetaType.metaClass != val2.defineMetaType.metaClass )
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private static List<MetaMemberData> OrderMetaMemberDataList(MetaData md)
+        {
+            return md.GetMetaMemberDataList()
+                .OrderBy(m => m.dataFieldOrderIndex)
+                .ThenBy(m => m.name, System.StringComparer.Ordinal)
+                .ToList();
+        }
+
+        private static MetaType GetStructuralMetaTypeForCompare(MetaMemberData mmd)
+        {
+            if (mmd.isDefineMetaType && mmd.defineMetaType != null)
+            {
+                return mmd.defineMetaType;
+            }
+            if (mmd.realMetaType != null)
+            {
+                return mmd.realMetaType;
+            }
+            if (mmd.defineMetaType != null)
+            {
+                return mmd.defineMetaType;
+            }
+            return new MetaType(CoreMetaClassManager.objectMetaClass);
+        }
+
+        private static bool FieldMetaTypesShapeEqual(MetaType ta, MetaType tb)
+        {
+            if (ta == null || tb == null)
+            {
+                return ta == tb;
+            }
+            if (ta.metaClass is MetaData mdA && tb.metaClass is MetaData mdB
+                && mdA.isDynamic && mdB.isDynamic)
+            {
+                return CompareDynamicAnonymousMetaDataShape(mdA, mdB);
+            }
+            return TypeManager.CompareMetaType(ta, tb);
+        }
+
+        private static bool CompareDynamicAnonymousMetaDataShape(MetaData a, MetaData b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+            if (a == null || b == null || !a.isDynamic || !b.isDynamic)
+            {
+                return false;
+            }
+
+            var listA = OrderMetaMemberDataList(a);
+            var listB = OrderMetaMemberDataList(b);
+            if (listA.Count != listB.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < listA.Count; i++)
+            {
+                var ma = listA[i];
+                var mb = listB[i];
+                if (ma.name != mb.name)
+                {
+                    return false;
+                }
+                var ta = GetStructuralMetaTypeForCompare(ma);
+                var tb = GetStructuralMetaTypeForCompare(mb);
+                if (!FieldMetaTypesShapeEqual(ta, tb))
                 {
                     return false;
                 }

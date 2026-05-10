@@ -258,7 +258,9 @@ namespace SimpleLanguage.Core
             clone.m_IsStatic = source.m_IsStatic;
             clone.m_Token = source.m_Token;
             clone.m_MemberDataType = source.m_MemberDataType;
-            clone.m_Express = source.m_Express;
+            // 注册用/去重的匿名 MetaData 只保留结构（类型、嵌套形状），不复制字面量表达式；
+            // new 时的初值一律来自当前解析的 MetaMemberData（见 MetaNewObjectExpressNode.FillAnonymousDataAssignStatementsFromMemberDict）。
+            clone.m_Express = null;
 
             if (source.m_DefineMetaType != null)
             {
@@ -314,91 +316,32 @@ namespace SimpleLanguage.Core
         }
         private void CreateAnonymousDataNewExpress(MetaData anonymousMetaData)
         {
-            if (anonymousMetaData == null || m_FileMetaMemeberData == null || m_FileMetaMemeberData.token == null)
+            if (anonymousMetaData == null)
             {
                 return;
             }
 
-            var braceNode = new Node(m_FileMetaMemeberData.token)
+            MetaNewObjectExpressNode newExpress = MetaNewObjectExpressNode.CreateAnonymousDataNewObjectExpress(
+                this,
+                anonymousMetaData,
+                m_OwnerMetaClass,
+                m_OwnerMetaBlockStatements);
+            if (newExpress == null)
             {
-                nodeType = ENodeType.Brace,
-                endToken = m_FileMetaMemeberData.token
-            };
-
-            for (int i = 0; i < m_FileMetaMemeberData.fileMetaMemberData.Count; i++)
-            {
-                var child = m_FileMetaMemeberData.fileMetaMemberData[i];
-                if (child == null || child.nameToken == null)
-                {
-                    continue;
-                }
-
-                var leftNode = new Node(child.nameToken)
-                {
-                    nodeType = ENodeType.IdentifierLink,
-                    endToken = child.nameToken
-                };
-                braceNode.AddChild(leftNode, false);
-
-                var assignToken = new Token(child.nameToken.path, ETokenType.Assign, "=", child.nameToken.sourceBeginLine, child.nameToken.sourceBeginChar);
-                var assignNode = new Node(assignToken)
-                {
-                    nodeType = ENodeType.Assign,
-                    endToken = assignToken
-                };
-                braceNode.AddChild(assignNode, false);
-
-                switch (child.DataType)
-                {
-                    case FileMetaMemberData.EMemberDataType.ConstValue:
-                        {
-                            if (child.fileMetaConstValue?.token != null)
-                            {
-                                var valueNode = new Node(child.fileMetaConstValue.token)
-                                {
-                                    nodeType = ENodeType.ConstValue,
-                                    endToken = child.fileMetaConstValue.token
-                                };
-                                braceNode.AddChild(valueNode, false);
-                            }
-                            break;
-                        }
-                    case FileMetaMemberData.EMemberDataType.Class:
-                        {
-                            if (child.fileMetaCallTermValue?.token != null)
-                            {
-                                var valueNode = new Node(child.fileMetaCallTermValue.token)
-                                {
-                                    nodeType = ENodeType.IdentifierLink,
-                                    endToken = child.fileMetaCallTermValue.token
-                                };
-                                braceNode.AddChild(valueNode, false);
-                            }
-                            break;
-                        }
-                }
-
-                if (i < m_FileMetaMemeberData.fileMetaMemberData.Count - 1)
-                {
-                    var commaToken = new Token(child.nameToken.path, ETokenType.Comma, ",", child.nameToken.sourceBeginLine, child.nameToken.sourceBeginChar);
-                    var commaNode = new Node(commaToken)
-                    {
-                        nodeType = ENodeType.Comma,
-                        endToken = commaToken
-                    };
-                    braceNode.AddChild(commaNode, false);
-                }
+                return;
             }
 
-            var braceTerm = new FileMetaBraceTerm(m_FileMetaMemeberData.fileMeta, braceNode);
-            var anonymousMetaType = new MetaType(anonymousMetaData);
-            var newExpress = new MetaNewObjectExpressNode(braceTerm, anonymousMetaType, m_OwnerMetaClass, m_OwnerMetaBlockStatements, this);
             newExpress.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
             newExpress.CalcReturnType();
             m_Express = newExpress;
         }
         private void ResolveAnonymousDataMetaType()
         {
+            if (m_MetaMemberDataDict.Count == 0)
+            {
+                return;
+            }
+
             var anonymousMetaData = BuildAnonymousMetaDataType();
             if (anonymousMetaData == null)
             {
@@ -410,9 +353,16 @@ namespace SimpleLanguage.Core
             m_IsDefineMetaType = true;
             m_MemberDataType = EMemberDataType.MemberData;
 
-            if (m_Express == null && m_FileMetaMemeberData != null)
+            // 将 m_MetaMemberDataDict 中每个字段的 express（含嵌套匿名 MetaData 的 MetaNewObjectExpressNode）写入 new 对象的 MetaBraceAssignStatements
+            if (m_Express == null)
             {
                 CreateAnonymousDataNewExpress(anonymousMetaData);
+            }
+            if (m_Express is MetaNewObjectExpressNode existingMnoe)
+            {
+                existingMnoe.RebuildAnonymousAssignStatementsFromMemberDict(this, anonymousMetaData, m_OwnerMetaBlockStatements);
+                existingMnoe.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
+                existingMnoe.CalcReturnType();
             }
         }
         private void ParseName()
@@ -530,6 +480,17 @@ namespace SimpleLanguage.Core
         }
         public override bool ParseMetaExpress()
         {
+            // 子成员（含嵌套匿名 data）须先完成 ParseMetaExpress，父级组装 MetaNewObjectExpressNode / MetaBraceAssignStatements 时才能拿到右值表达式。
+            if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
+            {
+                var orderedChildren = new List<MetaMemberData>(m_MetaMemberDataDict.Values);
+                orderedChildren.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
+                foreach (var child in orderedChildren)
+                {
+                    child.ParseMetaExpress();
+                }
+            }
+
             if (this.m_Express != null)
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
@@ -559,6 +520,8 @@ namespace SimpleLanguage.Core
                     m_MemberDataType = EMemberDataType.MemberClass;
                 }
             }
+            // 匿名/结构化 data 字面量：BuildAnonymousMetaDataType 后，把 m_MetaMemberDataDict 各字段的 expressNode
+            //（含子字段若为匿名 MetaData 则已是 MetaNewObjectExpressNode）写入本层 MetaNewObjectExpressNode 的 assign 列表。
             if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
             {
                 ResolveAnonymousDataMetaType();

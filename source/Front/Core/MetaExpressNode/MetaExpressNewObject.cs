@@ -203,12 +203,26 @@ namespace SimpleLanguage.Core
             m_MetaExpress = men;
             this.m_MetaMemberVariable = mmv;
         }
+        /// <summary>
+        /// 对象初始化列表中的 data 字段赋值（目标为 <see cref="MetaMemberData"/>），与 <see cref="MetaMemberVariable"/> 分支对称。
+        /// </summary>
+        public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaExpressNode men, MetaMemberData mmd)
+        {
+            m_OwnerMetaBlockStatements = mbs;
+            m_MetaExpress = men;
+            m_MetaMemberData = mmd;
+            if (mmd?.defineMetaType != null)
+            {
+                m_MetaType = new MetaType(mmd.defineMetaType);
+            }
+        }
         public void Parse( AllowUseSettings aus )
         {
             if( m_MetaExpress != null )
             {
                 m_MetaExpress.Parse(aus);
-                m_MetaExpress = ExpressManager.ConvertNewExpress(m_MetaExpress, m_MetaType, this.m_MetaMemberVariable );                
+                MetaVariable assignTarget = (MetaVariable)m_MetaMemberData ?? m_MetaMemberVariable;
+                m_MetaExpress = ExpressManager.ConvertNewExpress(m_MetaExpress, m_MetaType, assignTarget);
             }
         }
         public MetaType GetRetMetaType()
@@ -382,7 +396,15 @@ namespace SimpleLanguage.Core
 
         public MetaNewObjectStatementsContent( MetaClass mc, MetaBlockStatements mbs )
         {
+            m_OwnerMetaClass = mc;
+            m_OwnerMetaBlockStatements = mbs;
+        }
 
+        public MetaNewObjectStatementsContent(MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV)
+        {
+            m_OwnerMetaClass = mc;
+            m_OwnerMetaBlockStatements = mbs;
+            m_EqualMetaVariable = equalMV;
         }
 
         public MetaNewObjectStatementsContent( MetaArrayExpressNode maen, MetaClass mc, MetaBlockStatements mbs, MetaVariable parentMt)
@@ -420,7 +442,7 @@ namespace SimpleLanguage.Core
             {
 
             }
-            if (m_FileMetaBaseTerm?.fileMetaExpressList.Count > 0)
+            if (m_FileMetaBaseTerm?.fileMetaExpressList?.Count > 0)
             {
                 //Log.AddMetaCoreLog(LID.Unknown, "解析大括号里边的内容");
                 for (int i = 0; i < m_FileMetaBaseTerm.fileMetaExpressList.Count; i++)
@@ -1390,9 +1412,18 @@ namespace SimpleLanguage.Core
         }
         // 手动构建NewObject表达式
         public MetaNewObjectExpressNode(MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs)
+            : this(mt, ownerMC, mbs, null)
+        {
+        }
+
+        /// <summary>
+        /// 手动构建 new 对象表达式；<paramref name="equalMV"/> 与语法上大括号初始化左侧变量一致时传入（如 data 成员匿名字面量）。
+        /// </summary>
+        public MetaNewObjectExpressNode(MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaVariable equalMV)
         {
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
+            m_StoreMetaVariable = equalMV;
             m_DefineMetaType = new MetaType(mt);
             m_NewMetaType = new MetaType(mt);
             m_MetaType = new MetaType(mt);
@@ -1404,10 +1435,83 @@ namespace SimpleLanguage.Core
             {
                 m_NewType = ENewType.CommomClass;
             }
-            m_MetaContent = new MetaNewObjectStatementsContent( ownerMC, mbs );
+            m_MetaContent = new MetaNewObjectStatementsContent(ownerMC, mbs, equalMV);
             m_MetaContent.SetDefineMetaType(m_NewMetaType);
-            //m_MetaConstructFunctionCall = new MetaMethodCall(mt.metaClass, mt.defineTemplateMetaTypeList, m_OwnerMetaBlockStatements.ownerMetaFunction,
-            //    null, null, null, null );
+        }
+
+        /// <summary>
+        /// 用 <paramref name="braceLiteralOwner"/> 的 <see cref="MetaMemberData.metaMemberDataDict"/> 里已解析的
+        /// <see cref="MetaMemberData.expressNode"/>（含嵌套匿名 data 的 <see cref="MetaNewObjectExpressNode"/>）
+        /// 填充 <paramref name="node"/> 的初始化赋值列表，目标字段来自规范化后的 <paramref name="anonymousMetaData"/>。
+        /// </summary>
+        public static void FillAnonymousDataAssignStatementsFromMemberDict(
+            MetaNewObjectExpressNode node,
+            MetaMemberData braceLiteralOwner,
+            MetaData anonymousMetaData,
+            MetaBlockStatements mbs)
+        {
+            if (node?.m_MetaContent?.assignStatementsList == null || braceLiteralOwner == null || anonymousMetaData == null)
+            {
+                return;
+            }
+
+            node.m_MetaContent.assignStatementsList.Clear();
+
+            var ordered = new List<MetaMemberData>(braceLiteralOwner.metaMemberDataDict.Values);
+            ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
+
+            foreach (var sourceField in ordered)
+            {
+                var targetField = anonymousMetaData.GetMemberDataByName(sourceField.name);
+                if (targetField == null)
+                {
+                    continue;
+                }
+
+                MetaExpressNode expr = sourceField.expressNode;
+                if (expr == null)
+                {
+                    continue;
+                }
+
+                var mas = new MetaBraceAssignStatements(mbs, expr, targetField);
+                node.m_MetaContent.assignStatementsList.Add(mas);
+            }
+        }
+
+        /// <summary>
+        /// 在已有 <see cref="MetaNewObjectExpressNode"/> 上，按当前 <see cref="MetaMemberData.metaMemberDataDict"/> 重新生成赋值语句。
+        /// </summary>
+        public void RebuildAnonymousAssignStatementsFromMemberDict(
+            MetaMemberData braceLiteralOwner,
+            MetaData anonymousMetaData,
+            MetaBlockStatements mbs)
+        {
+            FillAnonymousDataAssignStatementsFromMemberDict(this, braceLiteralOwner, anonymousMetaData, mbs);
+        }
+
+        /// <summary>
+        /// 为匿名 <see cref="MetaData"/> 字面量构造 <see cref="MetaNewObjectExpressNode"/>：
+        /// 先得到结构化 <paramref name="anonymousMetaData"/>，再按子 <see cref="MetaMemberData"/> 的已解析表达式填入 <see cref="MetaBraceAssignStatements"/>，不合成语法 <see cref="Node"/> 树。
+        /// </summary>
+        public static MetaNewObjectExpressNode CreateAnonymousDataNewObjectExpress(
+            MetaMemberData braceLiteralOwner,
+            MetaData anonymousMetaData,
+            MetaClass ownerMetaClass,
+            MetaBlockStatements mbs)
+        {
+            if (braceLiteralOwner == null || anonymousMetaData == null)
+            {
+                return null;
+            }
+
+            var anonymousType = new MetaType(anonymousMetaData);
+            var node = new MetaNewObjectExpressNode(anonymousType, ownerMetaClass, mbs, braceLiteralOwner);
+            node.m_Token = braceLiteralOwner.token;
+
+            FillAnonymousDataAssignStatementsFromMemberDict(node, braceLiteralOwner, anonymousMetaData, mbs);
+
+            return node;
         }
         //public MetaNewObjectExpressNode(MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaVariable storeMv, MetaMemberFunction mmf)
         //{

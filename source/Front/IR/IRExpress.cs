@@ -446,7 +446,18 @@ namespace SimpleLanguage.IR
                                 for (int y = 0; y < mnoen.metaContent.assignStatementsList.Count; y++)
                                 {
                                     var asl = mnoen.metaContent.assignStatementsList[y];
-                                    if (asl.metaMemberVariable.GetHashCode() == lirmv.id )
+                                    int assignTargetId = -1;
+                                    if (asl.metaMemberVariable != null)
+                                    {
+                                        assignTargetId = asl.metaMemberVariable.GetHashCode();
+                                    }
+                                    else if (asl.metaMemberData != null)
+                                    {
+                                        // data 匿名类型字面量：MetaBraceAssignStatements 只绑定 MetaMemberData（与 IRMetaVariable.id 一致）
+                                        assignTargetId = asl.metaMemberData.GetHashCode();
+                                    }
+
+                                    if (assignTargetId == lirmv.id)
                                     {
                                         men = asl.expressNode;
                                         break;
