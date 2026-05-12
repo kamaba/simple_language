@@ -94,7 +94,7 @@ data UserInfo
 {
     id = 0
     name = "guest"
-    enabled = True
+    enabled = true
 }
 ```
 
@@ -102,8 +102,8 @@ data UserInfo
 
 - 常数
 - 数组
-- 对象
-- 匿名对象 / 匿名 data
+- 匿名 data
+- 具名 data 
 - 具名 `class` / `data` /`enum` 初始化结果
 
 也就是说，数组不只是基础类型数组，也可以是多层结构数组。
@@ -253,7 +253,7 @@ data C
 data MetaInfo
 {
     level = 1
-    passed = False
+    passed = false
 }
 
 data FullStudentRecord
@@ -345,6 +345,8 @@ GlobalCounter = { totalExamCount = 11, totalScore = 210 }
 ```
 
 与之相对，`const data` 不应允许上述修改行为。
+
+如果是  `static data ` 是，不允许 再内容进行new 的 只允许静态的调用。
 
 ### 3.3 先声明，再赋值 `{ ... }`
 
@@ -484,7 +486,8 @@ data typedProfile = {
     a2 = 10
     a3 = 10000L
     string a = "333"
-    int[] a4 = {1, 2, 3, 4}
+    # int[] a4 = {1, 2, 3, 4} 不允许这种方式 只能使用下边的方式 
+    a4 = int[4]{1,2,3,4} # 或者直接a4 = [1,2,3,4] 但这种的，可以是一个byte[4]的数组
 }
 ```
 
@@ -523,9 +526,9 @@ data typedProfile = {
 data profile = {
     a2 = 10
     string a = "333"
-    MetaInfo meta = MetaInfo(){ level = 8, passed = True }
-    DataHolder holder = DataHolder(){ value = 11 }
-    DataKind kind = DataKind.Advanced
+    metainfo = MetaInfo(){ level = 8, passed = True }
+    holder = DataHolder(){ value = 11 }
+    kind = DataKind.Advanced
     anon = {
         code = 7
         title = "ok"

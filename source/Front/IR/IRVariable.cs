@@ -119,6 +119,11 @@ namespace SimpleLanguage.IR
                     }
                     index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
                 }
+                if (index == -1 && mv is MetaMemberData mmdIndex)
+                {
+                    // Fallback for data members that are not yet bound in hash->index map.
+                    index = mmdIndex.dataFieldOrderIndex;
+                }
                 if (mv.isConst || mv.isStatic)
                 {
                     // For const member variables (including injected project global.data primitive fields),
@@ -127,6 +132,13 @@ namespace SimpleLanguage.IR
                     {
                         IRLoadVariable constLoadVar = new IRLoadVariable();
                         var irexp = new IRExpress(_irMethod, mmv.constExpressNode);
+                        constLoadVar.m_IRDataList.AddRange(irexp.IRDataList);
+                        return constLoadVar;
+                    }
+                    if (mv is MetaMemberData mmdConst && mmdConst.isConst && mmdConst.expressNode is MetaConstExpressNode constDataExpress)
+                    {
+                        IRLoadVariable constLoadVar = new IRLoadVariable();
+                        var irexp = new IRExpress(_irMethod, constDataExpress);
                         constLoadVar.m_IRDataList.AddRange(irexp.IRDataList);
                         return constLoadVar;
                     }
@@ -358,6 +370,11 @@ namespace SimpleLanguage.IR
                 if (irmc != null)
                 {
                     index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
+                }
+                if (index == -1 && mv is MetaMemberData mmdIndex)
+                {
+                    // Fallback for data members that are not yet bound in hash->index map.
+                    index = mmdIndex.dataFieldOrderIndex;
                 }
                 if (gmv.isStatic)
                 {

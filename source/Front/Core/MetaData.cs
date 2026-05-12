@@ -60,14 +60,17 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public void AddMetaMemberData(MetaMemberData mmd)
+        public void AddMetaMemberData(MetaMemberData mmd, bool AddManager )
         {
             if (m_MetaMemberDataDict.ContainsKey(mmd.name))
             {
                 return;
             }
             m_MetaMemberDataDict.Add(mmd.name, mmd);
-            MetaVariableManager.instance.AddMetaDataVariable(mmd);
+            if(AddManager )
+            {
+                MetaVariableManager.instance.AddMetaDataVariable(mmd);
+            }
         }
         public List<MetaMemberData> GetMetaMemberDataList()
         {
@@ -109,9 +112,7 @@ namespace SimpleLanguage.Core
                     mmv.SetName(mmv.name + "__repeat__");
                 }
                 mmv.ParseDefineMetaType();
-                AddMetaMemberData(mmv);
-
-                mmv.ParseChildMemberData();
+                AddMetaMemberData(mmv, mmv.memberDataType == EMemberDataType.MemberClass );
             }
         }
         public override void ParseDefineComplete()

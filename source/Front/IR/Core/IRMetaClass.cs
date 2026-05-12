@@ -235,15 +235,25 @@ namespace SimpleLanguage.IR
                     .OrderBy(m => m.dataFieldOrderIndex)
                     .ThenBy(m => m.name, System.StringComparer.Ordinal)
                     .ToList();
+                int localIndex = 0;
+                int staticIndex = 0;
                 for (int i = 0; i < dataMembers.Count; i++)
                 {
                     var mmd = dataMembers[i];
-                    var irmv = new IRMetaVariable(this, mmd, i);
                     if (mmd.isStatic)
+                    {
+                        var irmv = new IRMetaVariable(this, mmd, staticIndex);
                         m_StaticIRMetaVariableList.Add(irmv);
+                        AddMetaMemberVariableIndexBindHashCode(irmv.id, staticIndex);
+                        staticIndex++;
+                    }
                     else
+                    {
+                        var irmv = new IRMetaVariable(this, mmd, localIndex);
                         m_LocalIRMetaVariableList.Add(irmv);
-                    AddMetaMemberVariableIndexBindHashCode(irmv.id, i);
+                        AddMetaMemberVariableIndexBindHashCode(irmv.id, localIndex);
+                        localIndex++;
+                    }
                 }
             }
             else

@@ -336,12 +336,12 @@ namespace SimpleLanguage.Project
                 var child = CreateMetaMemberDataByJson(md, kv.Name, kv.Value, seed * 1000 + idx);
                 if (child != null)
                 {
-                    md.AddMetaMemberData(child);
+                    md.AddMetaMemberData(child, false );
                 }
                 idx++;
             }
 
-            ClassManager.instance.AddMetaData(md);
+            ClassManager.instance.AddAnonymousMetaData(md);
             return md;
         }
 
@@ -379,7 +379,7 @@ namespace SimpleLanguage.Project
                     var child = CreateMetaMemberDataByJson(owner, kv.Name, kv.Value, index * 1000 + childIndex);
                     if (child != null)
                     {
-                        objNode.AddMetaMemberData(child);
+                        objNode.AddMetaMemberData(child, false);
                     }
                     childIndex++;
                 }
@@ -394,7 +394,7 @@ namespace SimpleLanguage.Project
                     var child = CreateMetaMemberDataByJson(owner, childIndex.ToString(), item, index * 1000 + childIndex);
                     if (child != null)
                     {
-                        arrNode.AddMetaMemberData(child);
+                        arrNode.AddMetaMemberData(child, false );
                     }
                     childIndex++;
                 }

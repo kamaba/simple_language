@@ -66,6 +66,21 @@ namespace SimpleLanguage.Core
             {
                 v.ParseMetaExpress();
             }
+
+            // 嵌套 const / 匿名 {} / 数组元素未进入 metaMemberDataVariableList，需在 ParseExpress 之后按树后序补全匿名 MetaData 与 NewObject。
+            foreach (var md in ClassManager.instance.EnumerateDefineMetaData())
+            {
+                var roots = new List<MetaMemberData>();
+                foreach (var kv in md.metaMemberDataDict)
+                {
+                    roots.Add(kv.Value);
+                }
+                roots.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
+                for (int i = 0; i < roots.Count; i++)
+                {
+                    MetaMemberData.ResolveAnonymousDataHierarchyPostOrder(roots[i]);
+                }
+            }
         }
         public void ParseMetaEnumMemberExpress()
         {

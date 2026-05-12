@@ -21,12 +21,53 @@ namespace SimpleLanguage.Core
         public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaType mt, FileMetaOpAssignSyntax fmos)
         {
             m_OwnerMetaBlockStatements = mbs;
+            m_MetaType = mt;
             if (fmos != null)
             {
                 m_AssignToken = fmos.assignToken;
                 if (fmos.variableRef.isOnlyName)
                 {
-                    
+                    m_DefineName = fmos.variableRef.name;
+                    if (mt != null && mt.isData)
+                    {
+                        var md = mt.metaClass as MetaData;
+                        m_MetaMemberData = md?.GetMemberDataByName(m_DefineName);
+                    }
+                    else
+                    {
+                        m_MetaMemberVariable = mt?.metaClass?.GetMetaMemberVariableByName(m_DefineName);
+                    }
+
+                    var targetMetaVariable = (MetaVariable)m_MetaMemberData ?? m_MetaMemberVariable;
+                    var targetMetaType = targetMetaVariable?.defineMetaType != null
+                        ? new MetaType(targetMetaVariable.defineMetaType)
+                        : (mt != null ? new MetaType(mt) : new MetaType(CoreMetaClassManager.objectMetaClass));
+                    m_MetaType = targetMetaType;
+
+                    if (fmos.express is FileMetaCallTerm fmct
+                        && fmct.callLink != null
+                        && fmct.callLink.isOnlyName)
+                    {
+                        var litName = fmct.callLink.name;
+                        if (string.Equals(litName, "True", StringComparison.OrdinalIgnoreCase))
+                        {
+                            m_MetaExpress = new MetaConstExpressNode(EType.Boolean, true);
+                            return;
+                        }
+                        if (string.Equals(litName, "False", StringComparison.OrdinalIgnoreCase))
+                        {
+                            m_MetaExpress = new MetaConstExpressNode(EType.Boolean, false);
+                            return;
+                        }
+                    }
+
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.fme = fmos.express;
+                    cep.equalMetaVariable = targetMetaVariable;
+                    cep.metaType = targetMetaType;
+                    cep.ownerMBS = mbs;
+                    cep.ownerMetaClass = mbs?.ownerMetaClass ?? mt?.metaClass;
+                    m_MetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
 
                 }
                 else
@@ -357,6 +398,10 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(m_MetaMemberVariable.name);
             }
+            else if (m_MetaMemberData != null)
+            {
+                sb.Append(m_MetaMemberData.name);
+            }
             sb.Append(m_AssignToken?.lexeme.ToString());
             sb.Append(m_MetaExpress?.ToFormatString());
 
@@ -460,6 +505,25 @@ namespace SimpleLanguage.Core
                         if (braceTerm.fileMetaAssignSyntaxList[i] is FileMetaDefineVariableSyntax fmdvs)
                         {
                             var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, m_DefineMetaType, fmdvs);
+                            if (mas.expressNode == null)
+                            {
+                                continue;
+                            }
+                            mas.Parse(aws);
+                            mas.CalcReturnType();
+                            m_AssignStatementsList.Add(mas);
+                        }
+                        else if (!m_DefineMetaType.isDynamicData
+                            && !m_DefineMetaType.isDynamicClass
+                            && !m_DefineMetaType.IsArray()
+                            && m_OwnerMetaBlockStatements == null
+                            && braceTerm.fileMetaAssignSyntaxList[i] is FileMetaOpAssignSyntax fmoas)
+                        {
+                            var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, m_DefineMetaType, fmoas);
+                            if (mas.expressNode == null)
+                            {
+                                continue;
+                            }
                             mas.Parse(aws);
                             mas.CalcReturnType();
                             m_AssignStatementsList.Add(mas);
@@ -516,12 +580,12 @@ namespace SimpleLanguage.Core
                     for (int i = 0; i < assignStatementsList.Count; i++)
                     {
                         var mmv = assignStatementsList[i].metaMemberData;
-                        m_NewTempMetaData.AddMetaMemberData(mmv);
+                        m_NewTempMetaData.AddMetaMemberData(mmv, false );
                     }
                     MetaData retClass = ClassManager.instance.FindMetaData(m_NewTempMetaData);
                     if (retClass == null)
                     {
-                        ClassManager.instance.AddMetaData(m_NewTempMetaData);
+                        ClassManager.instance.AddAnonymousMetaData(m_NewTempMetaData);
                         retClass = m_NewTempMetaData;
                     }
                     m_NewMetaData = retClass;
@@ -805,7 +869,7 @@ namespace SimpleLanguage.Core
                             var mmv = assignStatementsList[i].metaMemberVariable;
                             mmv.SetOwnerMetaClass(retClass);
                         }
-                        ClassManager.instance.AddMetaData(anonClass);
+                        ClassManager.instance.AddAnonymousMetaData(anonClass);
                         retClass = anonClass;
                     }
                     else
@@ -1285,6 +1349,23 @@ namespace SimpleLanguage.Core
 
             m_MetaMemberFunction = mcen.metaCallLink.finalCallNode.methodCall?.function as MetaMemberFunction;
             m_NewMetaType = new MetaType( mcen.metaCallLink.finalCallNode.callMetaType );
+            MetaCallNode initNode = null;
+            if (mcen.metaCallLink.callNodeList.Count > 0)
+            {
+                for (int i = mcen.metaCallLink.callNodeList.Count - 1; i >= 0; i--)
+                {
+                    var n = mcen.metaCallLink.callNodeList[i];
+                    if (n?.fileMetaBraceTerm != null || n?.fileMetaParTerm != null || n?.metaInputParamCollection != null)
+                    {
+                        initNode = n;
+                        break;
+                    }
+                }
+                if (initNode == null)
+                {
+                    initNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
+                }
+            }
             if ( mcen.metaCallLink.finalCallNode.callMetaType.IsArray() )
             {
                 m_NewType = ENewType.ArrayClass;
@@ -1292,7 +1373,7 @@ namespace SimpleLanguage.Core
 
                 if (mcen.metaCallLink.callNodeList.Count > 0)
                 {
-                    var lastNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
+                    var lastNode = initNode ?? mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
 
                     m_Token = lastNode.token;
                     if ( lastNode.metaInputParamCollection != null )
@@ -1330,7 +1411,7 @@ namespace SimpleLanguage.Core
                 m_NewType = ENewType.CommomClass;
                 if (mcen.metaCallLink.callNodeList.Count > 0)
                 {
-                    var lastNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
+                    var lastNode = initNode ?? mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
                     m_Token = lastNode.token;
                     SetInputParams(lastNode.metaInputParamCollection);
 
@@ -1448,7 +1529,8 @@ namespace SimpleLanguage.Core
             MetaNewObjectExpressNode node,
             MetaMemberData braceLiteralOwner,
             MetaData anonymousMetaData,
-            MetaBlockStatements mbs)
+            MetaBlockStatements mbs,
+            bool preferSourceMemberExpress = true)
         {
             if (node?.m_MetaContent?.assignStatementsList == null || braceLiteralOwner == null || anonymousMetaData == null)
             {
@@ -1460,6 +1542,9 @@ namespace SimpleLanguage.Core
             var ordered = new List<MetaMemberData>(braceLiteralOwner.metaMemberDataDict.Values);
             ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
 
+            MetaClass ownerMc = node.ownerMetaClass;
+            var parseSetting = new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress };
+
             foreach (var sourceField in ordered)
             {
                 var targetField = anonymousMetaData.GetMemberDataByName(sourceField.name);
@@ -1468,7 +1553,65 @@ namespace SimpleLanguage.Core
                     continue;
                 }
 
-                MetaExpressNode expr = sourceField.expressNode;
+                MetaExpressNode expr = null;
+
+                var fieldForAssign = preferSourceMemberExpress ? sourceField : targetField;
+                if (fieldForAssign == null)
+                {
+                    fieldForAssign = sourceField ?? targetField;
+                }
+
+                bool nestedStructuralData = fieldForAssign != null
+                    && fieldForAssign.memberDataType == EMemberDataType.MemberData
+                    && fieldForAssign.metaMemberDataDict.Count > 0;
+
+                bool useNestFromHierarchy = nestedStructuralData
+                    && (fieldForAssign.expressNode == null || fieldForAssign.expressNode is MetaNewObjectExpressNode);
+
+                if (useNestFromHierarchy)
+                {
+                    MetaData nestedCanon = targetField.defineMetaType?.metaClass as MetaData;
+                    if (nestedCanon == null)
+                    {
+                        nestedCanon = fieldForAssign.BuildAnonymousMetaDataType(out _);
+                    }
+                    if (nestedCanon != null)
+                    {
+                        if (fieldForAssign.expressNode is MetaNewObjectExpressNode existingNest)
+                        {
+                            existingNest.m_MetaContent?.assignStatementsList?.Clear();
+                            FillAnonymousDataAssignStatementsFromMemberDict(existingNest, fieldForAssign, nestedCanon, mbs, preferSourceMemberExpress);
+                            existingNest.Parse(parseSetting);
+                            existingNest.CalcReturnType();
+                            expr = existingNest;
+                        }
+                        else
+                        {
+                            var nestedNode = CreateAnonymousDataNewObjectExpress(
+                                fieldForAssign,
+                                nestedCanon,
+                                ownerMc,
+                                mbs,
+                                preferSourceMemberExpress);
+                            if (nestedNode != null)
+                            {
+                                nestedNode.Parse(parseSetting);
+                                nestedNode.CalcReturnType();
+                                expr = nestedNode;
+                            }
+                        }
+                    }
+                }
+
+                if (expr == null)
+                {
+                    expr = fieldForAssign?.expressNode;
+                }
+                if (expr == null)
+                {
+                    expr = preferSourceMemberExpress ? targetField.expressNode : sourceField.expressNode;
+                }
+
                 if (expr == null)
                 {
                     continue;
@@ -1485,9 +1628,10 @@ namespace SimpleLanguage.Core
         public void RebuildAnonymousAssignStatementsFromMemberDict(
             MetaMemberData braceLiteralOwner,
             MetaData anonymousMetaData,
-            MetaBlockStatements mbs)
+            MetaBlockStatements mbs,
+            bool preferSourceMemberExpress = true)
         {
-            FillAnonymousDataAssignStatementsFromMemberDict(this, braceLiteralOwner, anonymousMetaData, mbs);
+            FillAnonymousDataAssignStatementsFromMemberDict(this, braceLiteralOwner, anonymousMetaData, mbs, preferSourceMemberExpress);
         }
 
         /// <summary>
@@ -1498,7 +1642,8 @@ namespace SimpleLanguage.Core
             MetaMemberData braceLiteralOwner,
             MetaData anonymousMetaData,
             MetaClass ownerMetaClass,
-            MetaBlockStatements mbs)
+            MetaBlockStatements mbs,
+            bool preferSourceMemberExpress = true)
         {
             if (braceLiteralOwner == null || anonymousMetaData == null)
             {
@@ -1509,7 +1654,7 @@ namespace SimpleLanguage.Core
             var node = new MetaNewObjectExpressNode(anonymousType, ownerMetaClass, mbs, braceLiteralOwner);
             node.m_Token = braceLiteralOwner.token;
 
-            FillAnonymousDataAssignStatementsFromMemberDict(node, braceLiteralOwner, anonymousMetaData, mbs);
+            FillAnonymousDataAssignStatementsFromMemberDict(node, braceLiteralOwner, anonymousMetaData, mbs, preferSourceMemberExpress);
 
             return node;
         }

@@ -35,7 +35,8 @@ namespace SimpleLanguage.Core
         private List<MetaClass> m_RuntimeClassList = new List<MetaClass>();
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
         //private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();         
-        private Dictionary<string, MetaData> m_AllDataDict = new Dictionary<string, MetaData>();
+        private Dictionary<string, MetaData> m_DefineDataDict = new Dictionary<string, MetaData>();
+        private Dictionary<string, MetaData> m_AnonymousDataDict = new Dictionary<string, MetaData>();
 
         private List<MetaGenTemplateClass> m_GenTemplateMetaClassList = new List<MetaGenTemplateClass>();
         //private List<MetaGenTemplateClass> m_NeedHandleTemplateMetaClassList = new List<MetaGenTemplateClass>();
@@ -116,13 +117,21 @@ namespace SimpleLanguage.Core
                 m_InitHandleMetaClassList.Add(mc);
             }
         }
+        /// <summary>
+        /// 仅在匿名 data 池中按结构查找（用于语句字面量、data 内嵌匿名结构去重）。
+        /// </summary>
         public MetaData FindMetaData( MetaData md )
+        {
+            return FindAnonymousMetaData(md);
+        }
+
+        public MetaData FindAnonymousMetaData(MetaData md)
         {
             if (md == null)
             {
                 return null;
             }
-            foreach( var v in m_AllDataDict )
+            foreach (var v in m_AnonymousDataDict)
             {
                 if(CompareMetaDataMember( v.Value, md ) )
                 {
@@ -133,17 +142,59 @@ namespace SimpleLanguage.Core
         }
         public MetaData FindMetaDataByName( string name )
         {
-            if(m_AllDataDict.ContainsKey(name ) )
+            if (m_DefineDataDict.ContainsKey(name))
             {
-                return m_AllDataDict[name];
+                return m_DefineDataDict[name];
+            }
+            if (m_AnonymousDataDict.ContainsKey(name))
+            {
+                return m_AnonymousDataDict[name];
             }
             return null;
         }
-        public bool AddMetaData(MetaData dc)
+
+        /// <summary>
+        /// 遍历源码声明 data（define 区）。
+        /// </summary>
+        public IEnumerable<MetaData> EnumerateDefineMetaData()
         {
-            m_AllDataDict.Add(dc.name, dc);
+            foreach (var kv in m_DefineDataDict)
+            {
+                yield return kv.Value;
+            }
+        }
+        public bool AddDefineMetaData(MetaData dc)
+        {
+            if (dc == null)
+            {
+                return false;
+            }
+            if (m_DefineDataDict.ContainsKey(dc.name))
+            {
+                return false;
+            }
+            m_DefineDataDict.Add(dc.name, dc);
             AddRuntimeMetaClass(dc);
             return true;
+        }
+        public bool AddAnonymousMetaData(MetaData dc)
+        {
+            if (dc == null)
+            {
+                return false;
+            }
+            if (m_AnonymousDataDict.ContainsKey(dc.name))
+            {
+                return false;
+            }
+            m_AnonymousDataDict.Add(dc.name, dc);
+            AddRuntimeMetaClass(dc);
+            return true;
+        }
+        public bool AddMetaData(MetaData dc)
+        {
+            // 兼容旧调用：define data 进 define 区，dynamic/anonymous data 进 anonymous 区。
+            return dc != null && (dc.isDynamic ? AddAnonymousMetaData(dc) : AddDefineMetaData(dc));
         }
         public bool CompareMetaClassMemberVariable(MetaClass curClass, MetaClass cpClass)
         {
@@ -524,6 +575,7 @@ namespace SimpleLanguage.Core
                     finalTopMetaNode.AddMetaData(newmd);
                     newmd.UpdateClassAllName();
                     newmd.ParseFileMetaDataMemeberData(fmc);
+                    AddDefineMetaData(newmd);
                     AddInitHandleMetaClassList(newmd);
 
                     return newmd;

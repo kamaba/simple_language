@@ -47,6 +47,31 @@ namespace SimpleLanguage.Core
                 {
                     m_ConvertNewExpressNode = true;
                 }
+                else
+                {
+                    // Class/Data call-shape like DataHolder(){ ... } / MetaInfo(){ ... } may end as method-call
+                    // (_init_) rather than visit-type New, but semantically still needs NewObject conversion
+                    // so initializer assignStatements are preserved in Meta/IR.
+                    var mmf = m_MetaCallLink.finalCallNode?.methodCall?.function as MetaMemberFunction;
+                    if (mmf != null && mmf.isConstructInitFunction)
+                    {
+                        m_ConvertNewExpressNode = true;
+                    }
+                    else
+                    {
+                        // Fallback: if call syntax carries object-initializer braces, force NewObject conversion
+                        // so brace assignments are materialized into MetaNewObjectExpressNode.metaContent.
+                        var nodes = m_MetaCallLink.callNodeList;
+                        if (nodes != null && nodes.Count > 0)
+                        {
+                            var lastNode = nodes[nodes.Count - 1];
+                            if (lastNode?.fileMetaBraceTerm != null)
+                            {
+                                m_ConvertNewExpressNode = true;
+                            }
+                        }
+                    }
+                }
             }
         }
         public override int CalcParseLevel(int level)
