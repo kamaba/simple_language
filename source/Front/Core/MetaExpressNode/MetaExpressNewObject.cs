@@ -39,6 +39,10 @@ namespace SimpleLanguage.Core
                     }
 
                     var targetMetaVariable = (MetaVariable)m_MetaMemberData ?? m_MetaMemberVariable;
+                    if (targetMetaVariable == null)
+                    {
+                        return;
+                    }
                     var targetMetaType = targetMetaVariable?.defineMetaType != null
                         ? new MetaType(targetMetaVariable.defineMetaType)
                         : (mt != null ? new MetaType(mt) : new MetaType(CoreMetaClassManager.objectMetaClass));
@@ -516,7 +520,6 @@ namespace SimpleLanguage.Core
                         else if (!m_DefineMetaType.isDynamicData
                             && !m_DefineMetaType.isDynamicClass
                             && !m_DefineMetaType.IsArray()
-                            && m_OwnerMetaBlockStatements == null
                             && braceTerm.fileMetaAssignSyntaxList[i] is FileMetaOpAssignSyntax fmoas)
                         {
                             var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, m_DefineMetaType, fmoas);

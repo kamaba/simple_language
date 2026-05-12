@@ -272,6 +272,17 @@ namespace SimpleLanguage.IR
 
     public class IRNewExpress : IRExpressBase
     {
+        private static bool CanEmitExpress(MetaExpressNode node)
+        {
+            return node is MetaConstExpressNode
+                || node is MetaUnaryOpExpressNode
+                || node is MetaOpExpressNode
+                || node is MetaCallLinkExpressNode
+                || node is MetaArrayExpressNode
+                || node is MetaNewObjectExpressNode
+                || node is MetaThreeItemExpressNode
+                || node is MetaAsIsExpressNode;
+        }
         public IRNewExpress(IRMethod irMethod, MetaConstExpressNode mnoen ) : base(irMethod)
         {
             IRData irdata = new IRData();
@@ -464,8 +475,12 @@ namespace SimpleLanguage.IR
                                     }
                                 }
 
+                                if (!CanEmitExpress(men))
+                                {
+                                    continue;
+                                }
                                 IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, men );
-                                AddIRRangeData(irexp.IRDataList);                                
+                                AddIRRangeData(irexp.IRDataList);
 
                                 IRData irdata = new IRData();
                                 irdata.index = lirmv.index;
@@ -473,6 +488,38 @@ namespace SimpleLanguage.IR
                                 irdata.SetDebugInfoByToken(mnoen.token);
                                 m_IRDataList.Add(irdata);
                             }
+                        }
+                    }
+                }
+                // Fallback: some data/class shapes may not populate localIRMetaVariableList,
+                // which causes initializer assignments in `Type(){ a = ... }` to be lost.
+                // In that case, emit explicit object-initializer field stores directly.
+                if (mnoen.metaContent?.assignStatementsList?.Count > 0
+                    && (irmc == null || irmc.localIRMetaVariableList.Count == 0))
+                {
+                    for (int y = 0; y < mnoen.metaContent.assignStatementsList.Count; y++)
+                    {
+                        var asl = mnoen.metaContent.assignStatementsList[y];
+                        var targetMv = (MetaVariable)asl.metaMemberData ?? asl.metaMemberVariable;
+                        if (targetMv == null || asl.expressNode == null)
+                        {
+                            continue;
+                        }
+
+                        IRDup irdup = new IRDup(irMethod);
+                        AddIRRangeData(irdup.IRDataList);
+
+                        if (!CanEmitExpress(asl.expressNode))
+                        {
+                            continue;
+                        }
+                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
+                        AddIRRangeData(irexp.IRDataList);
+
+                        var storeField = IRStoreVariable.CreateIRStoreVariable(newObjectIRMT, irmc, irMethod, targetMv);
+                        if (storeField != null)
+                        {
+                            AddIRRangeData(storeField.IRDataList);
                         }
                     }
                 }
