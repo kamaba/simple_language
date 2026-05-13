@@ -113,7 +113,7 @@ namespace SimpleLanguage.Core
                     {
                         fme = m_FileMetaMemeberVariable.express,
                         metaType = m_DefineMetaType,
-                        ownerMetaClass = m_OwnerMetaClass,
+                        ownerMetaClass = ownerMetaClass,
                         equalMetaVariable = this,
                         ownerMBS = m_OwnerMetaBlockStatements,
                         parsefrom = EParseFrom.MemberVariableExpress
@@ -171,7 +171,7 @@ namespace SimpleLanguage.Core
             if (memberClass == null) return;
 
             var memberType = new MetaType(memberClass);
-            var newMember = new MetaNewObjectExpressNode(memberType, m_OwnerMetaClass, m_OwnerMetaBlockStatements);
+            var newMember = new MetaNewObjectExpressNode(memberType, ownerMetaClass, m_OwnerMetaBlockStatements);
             newMember.metaContent.SetDefineMetaType(memberType);
             FillMemberNewObjectAssignList(newMember, m_OwnerMetaBlockStatements, m_EnumValueExpress, m_Name, m_Index);
 
@@ -202,7 +202,7 @@ namespace SimpleLanguage.Core
                 return null;
 
             var memberType = new MetaType(memberClass);
-            var newMember = new MetaNewObjectExpressNode(memberType, m_OwnerMetaClass, m_OwnerMetaBlockStatements);
+            var newMember = new MetaNewObjectExpressNode(memberType, ownerMetaClass, m_OwnerMetaBlockStatements);
             newMember.metaContent.SetDefineMetaType(memberType);
             FillMemberNewObjectAssignList(newMember, m_OwnerMetaBlockStatements, valueExpr, m_Name, m_Index);
             return newMember;

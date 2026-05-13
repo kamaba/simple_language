@@ -41,6 +41,8 @@ namespace SimpleLanguage.Core
         private List<MetaGenTemplateClass> m_GenTemplateMetaClassList = new List<MetaGenTemplateClass>();
         //private List<MetaGenTemplateClass> m_NeedHandleTemplateMetaClassList = new List<MetaGenTemplateClass>();
         private List<MetaClass> m_InitHandleMetaClassList = new List<MetaClass>();
+        private List<MetaEnum> m_InitHandleMetaEnumList = new List<MetaEnum>();
+        private List<MetaData> m_InitHandleMetaDataList = new List<MetaData>();
 
         public MetaClass GetClassByName(string name, int templateCount = 0 )
         {
@@ -57,6 +59,16 @@ namespace SimpleLanguage.Core
                 topLevelNamespace = ModuleManager.instance.selfModule.metaNode;
             }
             topLevelNamespace.AddMetaClass(mc);
+            return true;
+        }
+        public bool AddMetaClass(MetaData md, MetaModule mm = null)
+        {
+            MetaNode topLevelNamespace = mm?.metaNode;
+            if (topLevelNamespace == null)
+            {
+                topLevelNamespace = ModuleManager.instance.selfModule.metaNode;
+            }
+            topLevelNamespace.AddMetaData(md);
             return true;
         }
         public void AddGenTemplateClass(MetaGenTemplateClass mc)
@@ -115,6 +127,20 @@ namespace SimpleLanguage.Core
             if (m_InitHandleMetaClassList.IndexOf(mc) == -1)
             {
                 m_InitHandleMetaClassList.Add(mc);
+            }
+        }
+        public void AddInitHandleMetaEnumList(MetaEnum me)
+        {
+            if (me != null && m_InitHandleMetaEnumList.IndexOf(me) == -1)
+            {
+                m_InitHandleMetaEnumList.Add(me);
+            }
+        }
+        public void AddInitHandleMetaDataList(MetaData md)
+        {
+            if (md != null && m_InitHandleMetaDataList.IndexOf(md) == -1)
+            {
+                m_InitHandleMetaDataList.Add(md);
             }
         }
         /// <summary>
@@ -310,7 +336,9 @@ namespace SimpleLanguage.Core
             {
                 return ta == tb;
             }
-            if (ta.metaClass is MetaData mdA && tb.metaClass is MetaData mdB
+            var mdA = ta.metaData;
+            var mdB = tb.metaData;
+            if (mdA != null && mdB != null
                 && mdA.isDynamic && mdB.isDynamic)
             {
                 return CompareDynamicAnonymousMetaDataShape(mdA, mdB);
@@ -358,7 +386,7 @@ namespace SimpleLanguage.Core
         {
             return null;
         }
-        public MetaClass AddClass( FileMetaClass fmc )
+        public MetaBase AddClass( FileMetaClass fmc )
         {
             bool isCanAddBind = false;
             Token token = fmc.token;
@@ -558,15 +586,15 @@ namespace SimpleLanguage.Core
                 {
                     MetaEnum newme = new MetaEnum(fmc.name);
                     finalTopMetaNode.AddMetaEnum(newme);
-                    fmc.SetMetaClass(newme);
+                    fmc.SetMetaEnum(newme);
                     newme.SetClassDefineType(EClassDefineType.CodeDefine);
                     newme.BindFileMetaClass(fmc);
                     newme.ParseFileMetaEnumMemeberEnum(fmc);
                     newme.UpdateClassAllName();
                     
-                    AddInitHandleMetaClassList(newme);
+                    AddInitHandleMetaEnumList(newme);
 
-                    return newme;
+                    return CoreMetaClassManager.enumMetaData;
                 }
                 else if (fmc.isData)
                 {
@@ -577,7 +605,7 @@ namespace SimpleLanguage.Core
                     newmd.UpdateClassAllName();
                     newmd.ParseFileMetaDataMemeberData(fmc);
                     AddDefineMetaData(newmd);
-                    AddInitHandleMetaClassList(newmd);
+                    AddInitHandleMetaDataList(newmd);
 
                     return newmd;
                 }
@@ -616,6 +644,13 @@ namespace SimpleLanguage.Core
                 AddDictMetaClass(mc);
             }
         }
+        public void AddExportMetaClass(MetaData md)
+        {
+            // MetaData 不再继承 MetaClass，使用独立的导出登记。
+            // 当前导出列表仅承载 MetaClass，因此此处仅做必要的占位/告警，
+            // 真正的 MetaData 注册由 AddDefineMetaData / AddAnonymousMetaData 完成。
+            if (md == null) return;
+        }
         void AddDictMetaClass( MetaClass mc )
         {
             string acn = mc.allClassName + "_" + mc.metaTemplateList.Count;
@@ -641,6 +676,10 @@ namespace SimpleLanguage.Core
                 it.ParseMetaTemplateInConstraint();
                 it.ParseExtendsRelation();
                 it.ParseInterfaceRelation();
+            }
+            foreach( var it in m_InitHandleMetaEnumList )
+            {
+                it.ParseExtendsRelation();
             }
 
             foreach (var it in m_InitHandleMetaClassList)
@@ -724,15 +763,16 @@ namespace SimpleLanguage.Core
             {
                 it.ParseDefineComplete();
             }
+            foreach (var md in m_InitHandleMetaDataList)
+            {
+                md.ParseDefineComplete();
+            }
         }
         public void ParseMemberEnumExpress()
         {
-            foreach (var it in m_InitHandleMetaClassList )
+            foreach (var me in m_InitHandleMetaEnumList)
             {
-                if( it is MetaEnum me )
-                {
-                    me.ParseMemberMetaEnumExpress();
-                }
+                me.ParseMemberMetaEnumExpress();
             }
         }
 

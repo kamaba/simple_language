@@ -253,7 +253,7 @@ namespace SimpleLanguage.Core
                 // Special rule for enum parameters:
                 // If function parameter is declared as `enum`, the argument must be an enum value
                 // (MetaEnum) of the same enum type, not the underlying primitive type.
-                if (declaredMC is MetaEnum declaredEnum && mip.express is MetaCallLinkExpressNode mcle)
+                if (declaredMC == CoreMetaClassManager.enumMetaData && mip.express is MetaCallLinkExpressNode mcle)
                 {
                     var v = mcle.metaCallLink.finalCallNode.variable;
 

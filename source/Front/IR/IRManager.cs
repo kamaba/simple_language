@@ -384,36 +384,15 @@ namespace SimpleLanguage.IR
             }
             foreach ( var v in exportClassList )
             {
-                if( v.isTemplateClass )
+                if (v.isTemplateClass)
                 {
                     continue;
                 }
-                var irmc = m_IRMetaClassList.Find(a => a.irName == v.allClassName );
+                var irmc = m_IRMetaClassList.Find(a => a.irName == v.allClassName);
                 if (irmc == null)
                     continue;
 
-                if ( v is MetaEnum me )
-                {
-                    var mmvd = me.metaMemberVariableDict;
-                    //foreach (var v2 in mmvd)
-                    //{
-                    //    if (v2.Value.isStatic)
-                    //    {
-                    //        IRMetaVariable irMV = new IRMetaVariable(v2.Value);
-                    //        irMV.index = m_StaticVariableList.Count;
-                    //        irMV.SetExpress(v2.Value.express);
-                    //        m_StaticVariableList.Add(irMV);
-                    //    }
-                    //}
-                    //if( me.metaVariable != null )
-                    //{
-                    //    IRMetaVariable irMV = new IRMetaVariable(me.metaVariable);
-                    //    irMV.index = m_StaticVariableList.Count;
-                    //    //irMV.SetExpress(v2.Value.express);
-                    //    m_StaticVariableList.Add(irMV);
-                    //}
-                }
-                else if( v is MetaData md )
+                if (v != null && ClassManager.instance.FindMetaDataByName(v.allClassName) is MetaData md)
                 {
                     var mmvd = md.metaMemberDataDict;
                     foreach (var v2 in mmvd)

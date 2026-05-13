@@ -7,8 +7,9 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaData : MetaClass
+    public class MetaData : MetaBase
     {
+        public string allClassName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
         public bool isConst => m_IsConst;
         public bool isStatic => m_IsStatic;
         public bool isDynamic=>m_IsDynamic;
@@ -18,6 +19,8 @@ namespace SimpleLanguage.Core
         protected bool m_IsConst = false;
         protected bool m_IsStatic = false;
         protected bool m_IsDynamic = false;
+        protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
+        protected FileMetaClass m_FileMetaClass = null;
         protected Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
 
         public MetaData( FileMetaClass md )
@@ -31,7 +34,7 @@ namespace SimpleLanguage.Core
             m_Token = md.token;
             AddPingToken(md?.token);
         }
-        public MetaData(string _name, bool constToken, bool staticToken, bool dynamic ) : base(_name)
+        public MetaData(string _name, bool constToken, bool staticToken, bool dynamic ) : base()
         {
             m_Name = _name;
             m_AllName = _name;
@@ -40,13 +43,56 @@ namespace SimpleLanguage.Core
             m_IsStatic = staticToken;
             m_IsDynamic = dynamic;
         }
+        public void SetClassDefineType(EClassDefineType type)
+        {
+            m_ClassDefineType = type;
+        }
+        public void BindFileMetaClass(FileMetaClass fmc)
+        {
+            m_FileMetaClass = fmc;
+        }
+        public void UpdateClassAllName()
+        {
+            m_AllName = m_MetaNode?.GetAllName() ?? m_Name;
+        }
+        public MetaVariable GetMetaMemberVariableByName(string name)
+        {
+            if (m_MetaMemberDataDict.TryGetValue(name, out var mmd))
+            {
+                return mmd;
+            }
+            return null;
+        }
+        /// <summary>兼容注入路径：将 <see cref="MetaMemberVariable"/> 转为 <see cref="MetaMemberData"/> 写入 <see cref="m_MetaMemberDataDict"/>。</summary>
+        public MetaMemberData AddMetaMemberVariable(MetaMemberVariable mmv, bool addManager)
+        {
+            if (mmv == null)
+            {
+                return null;
+            }
+            if (m_MetaMemberDataDict.ContainsKey(mmv.name))
+            {
+                return null;
+            }
+            var mmd = MetaMemberData.CreateFromInjectedMemberVariable(this, mmv, m_MetaMemberDataDict.Count);
+            AddMetaMemberData(mmd, addManager);
+            return mmd;
+        }
+        public List<MetaVariable> allMetaMemberVariableList
+        {
+            get
+            {
+                var list = new List<MetaVariable>();
+                foreach (var v in m_MetaMemberDataDict)
+                {
+                    list.Add(v.Value);
+                }
+                return list;
+            }
+        }
         public override void SetDeep(int deep)
         {
             this.m_Deep = deep;
-            foreach (var v in m_MetaExtendMemeberVariableDict)
-            {
-                v.Value.SetDeep(deep + 1);
-            }
             foreach (var v in m_MetaMemberDataDict)
             {
                 v.Value.SetDeep(deep + 1);
@@ -115,9 +161,8 @@ namespace SimpleLanguage.Core
                 AddMetaMemberData(mmv, mmv.memberDataType == EMemberDataType.MemberClass );
             }
         }
-        public override void ParseDefineComplete()
+        public void ParseDefineComplete()
         {
-            base.ParseDefineComplete();
         }
         public override string ToFormatString()
         {

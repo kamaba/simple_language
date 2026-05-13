@@ -213,23 +213,10 @@ namespace SimpleLanguage.IR
         }
         public void CreateMemberData()
         {
-            if (m_MetaClass is MetaEnum me)
-            {
-                var enumMembers = me.metaMemberVariableDict
-                    .Values
-                    .OrderBy(v => v.index)
-                    .ToList();
-
-                for (int i = 0; i < enumMembers.Count; i++)
-                {
-                    var mv = enumMembers[i];
-                    IRMetaVariable irmv = new IRMetaVariable(this, mv, mv.index);
-                    m_StaticIRMetaVariableList.Add(irmv);
-                    AddMetaMemberVariableIndexBindHashCode(mv.GetHashCode(), mv.index);
-                    //IRManager.instance.AddGlobalMetaMemberVariable(irmv);
-                }
-            }
-            else if (m_MetaClass is MetaData md)
+            var md = m_MetaClass != null
+                ? ClassManager.instance.FindMetaDataByName(m_MetaClass.allClassName)
+                : null;
+            if (md != null)
             {
                 var dataMembers = md.GetMetaMemberDataList()
                     .OrderBy(m => m.dataFieldOrderIndex)

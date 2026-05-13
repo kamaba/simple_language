@@ -355,9 +355,9 @@ namespace SimpleLanguage.Core
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_VisitType = EVisitType.MetaClass;
-            if (mt?.metaClass is MetaEnum me)
+            if (mt?.metaClass == CoreMetaClassManager.enumMetaData)
             {
-                me.CreateValues();
+                mt.enumValue?.ownerMetaClass?.metaNode?.metaEnum?.CreateValues();
             }
             vn.m_ReturnMetaType = mt;
 
@@ -368,9 +368,9 @@ namespace SimpleLanguage.Core
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_VisitType = EVisitType.MetaClass;
-            if (mt?.metaClass is MetaEnum me)
+            if (mt?.metaClass == CoreMetaClassManager.enumMetaData)
             {
-                me.CreateValues();
+                mt.enumValue?.ownerMetaClass?.metaNode?.metaEnum?.CreateValues();
             }
             vn.m_ReturnMetaType = mt;
 
@@ -381,9 +381,9 @@ namespace SimpleLanguage.Core
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_VisitType = EVisitType.Enum;
-            if (mt?.metaClass is MetaEnum me)
+            if (mt?.metaClass == CoreMetaClassManager.enumMetaData)
             {
-                vn.m_Variable = me.GetOrCreateValuesVariable();
+                vn.m_Variable = mt.enumValue?.ownerMetaClass?.metaNode?.metaEnum?.GetOrCreateValuesVariable();
             }
             vn.m_ReturnMetaType = mt;
 

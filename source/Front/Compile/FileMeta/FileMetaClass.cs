@@ -25,6 +25,8 @@ namespace SimpleLanguage.Compile
         public bool isPartial => m_PartialToken != null;
         public Token preInterfaceToken => m_PreInterfaceToken;
         public MetaClass metaClass => m_MetaClass;
+        public MetaEnum metaEnum => m_MetaEnum;
+        public MetaData metaData => m_MetaData;
         public FileMetaClassDefine fileMetaExtendClass => m_FileMetaExtendClass;
         public List<FileMetaClassDefine> interfaceClassList => m_InterfaceClassList;
         public FileMetaNamespace topLevelFileMetaNamespace => m_TopLevelFileMetaNamespace;
@@ -48,6 +50,8 @@ namespace SimpleLanguage.Compile
         protected Token m_StaticToken = null;
         #endregion
         private MetaClass m_MetaClass = null;
+        private MetaEnum m_MetaEnum = null;
+        private MetaData m_MetaData = null;
         private FileMetaNamespace m_TopLevelFileMetaNamespace = null;
         private FileMetaClass m_TopLevelFileMetaClass = null;
         private FileMetaClassDefine m_FileMetaExtendClass = null;
@@ -675,6 +679,14 @@ namespace SimpleLanguage.Compile
             {
                 m_MetaClass.SetAbstractClass(true);
             }
+        }
+        public void SetMetaEnum(MetaEnum me)
+        {
+            m_MetaEnum = me;
+        }
+        public void SetMetaData(MetaData md)
+        {
+            m_MetaData = md;
         }
         //public MetaBase GetChildrenMetaBaseByName( string name )
         //{

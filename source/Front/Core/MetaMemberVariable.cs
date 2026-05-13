@@ -82,6 +82,26 @@ namespace SimpleLanguage.Core
 
             SetOwnerMetaClass(mc);
         }
+        public MetaMemberVariable(MetaData md, string _name)
+        {
+            m_Name = _name;
+            m_FromType = EFromType.Manual;
+            m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            m_IsInnerDefine = true;
+            m_VariableFrom = EVariableFrom.DataMember;
+
+            SetOwnerMetaClass(md);
+        }
+        public MetaMemberVariable(MetaEnum me, string _name)
+        {
+            m_Name = _name;
+            m_FromType = EFromType.Manual;
+            m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            m_IsInnerDefine = true;
+            m_VariableFrom = EVariableFrom.EnumMember;
+
+            SetOwnerMetaClass(me);
+        }
         public MetaMemberVariable( MetaClass mc, FileMetaMemberVariable fmmv )
         {
             m_FileMetaMemeberVariable = fmmv;
@@ -135,7 +155,7 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaMemeberVariable?.classDefineRef != null)
             {
-                m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(m_OwnerMetaClass, m_FileMetaMemeberVariable.classDefineRef);
+                m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(ownerMetaClass, m_FileMetaMemeberVariable.classDefineRef);
                 //if( m_DefineMetaType.isTemplate || m_DefineMetaType.eType == EMetaTypeType.TemplateClassWithTemplate )
                 if( m_DefineMetaType != null )
                 {
@@ -445,7 +465,7 @@ namespace SimpleLanguage.Core
                                     if (expressRetMetaDefineType.metaClass == ownerMetaClass && (!m_IsStatic && !m_IsConst))
                                     {
                                         Log.AddMetaCoreLog(LID.MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass, m_Token, 
-                                            "in member variable", m_OwnerMetaClass.allClassName, m_Name );
+                                            "in member variable", ownerMetaClass?.allClassName ?? m_OwnerMetaClass?.name, m_Name );
                                         return;
                                     }
                                 }
@@ -478,7 +498,7 @@ namespace SimpleLanguage.Core
                                     if (expressRetMetaDefineType.metaClass == ownerMetaClass)
                                     {
                                         Log.AddMetaCoreLog(LID.MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass, m_Token,
-                                            "in member variable", m_OwnerMetaClass.allClassName, m_Name);
+                                            "in member variable", ownerMetaClass?.allClassName ?? m_OwnerMetaClass?.name, m_Name);
                                         return;
                                     }
                                 }

@@ -18,10 +18,10 @@ namespace SimpleLanguage.Core
 
         private MetaClass m_GlobalClass;
         private MetaMemberFunction m_GlobalInitFunction;
-        private MetaMemberVariable m_GlobalInstanceVariable;
+        private MetaVariable m_GlobalInstanceVariable;
         private FileMeta m_GlobalBindFileMeta;
 
-        public MetaMemberVariable GetGlobalInstanceVariable()
+        public MetaVariable GetGlobalInstanceVariable()
         {
             return m_GlobalInstanceVariable;
         }
@@ -90,7 +90,7 @@ namespace SimpleLanguage.Core
             }
         }
 
-        private MetaMemberVariable CreateOrGetGlobalInstanceVariable(MetaClass globalMc)
+        private MetaVariable CreateOrGetGlobalInstanceVariable(MetaClass globalMc)
         {
             if (globalMc == null) return null;
 
@@ -99,15 +99,15 @@ namespace SimpleLanguage.Core
 
             const string varName = "global";
             var exist = globalData.GetMetaMemberVariableByName(varName);
-            if (exist is MetaMemberVariable emv)
-                return emv;
+            if (exist != null)
+                return exist;
 
             var mv = new MetaMemberVariable(globalData, varName);
             mv.SetMetaDefineType(new MetaType(globalMc));
             mv.SetRealMetaType(new MetaType(globalMc));
             mv.SetIsStatic(true);
             globalData.AddMetaMemberVariable(mv, false);
-            return mv;
+            return globalData.GetMetaMemberVariableByName(varName);
         }
 
         public void InjectGlobalInitCall()

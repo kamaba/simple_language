@@ -13,21 +13,52 @@ using System.Linq;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaEnum : MetaClass
+    public class MetaEnum : MetaBase
     {
+        public string allClassName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
+        public MetaClass extendClass => m_ExtendClass;
+        public MetaData extendMetaData => m_ExtendMetaData;
+        public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
 
-        protected MetaMemberVariable m_ValuesMetaVariable = null;       //遍历时的对象
-        public MetaEnum(string _name) : base(_name)
+        protected MetaMemberVariable m_ValuesMetaVariable = null;
+        protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
+        protected MetaClass m_ExtendClass = null;
+        protected MetaData m_ExtendMetaData = null;
+        protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
+        protected FileMetaClass m_FileMetaClass = null;
+        public MetaEnum(string _name) : base()
         {
+            m_Name = _name;
+            m_AllName = _name;
             m_Type = EType.Enum;
         }
-        public MetaMemberVariable GetMemberVariableByName(string name)
+        public void SetClassDefineType(EClassDefineType type)
+        {
+            m_ClassDefineType = type;
+        }
+        public void BindFileMetaClass(FileMetaClass fmc)
+        {
+            m_FileMetaClass = fmc;
+        }
+        public void UpdateClassAllName()
+        {
+            m_AllName = m_MetaNode?.GetAllName() ?? m_Name;
+        }
+        public void SetExtendClass(MetaClass mc)
+        {
+            m_ExtendClass = mc;
+        }
+        public MetaMemberVariable GetMetaMemberVariableByName(string name)
         {
             if (m_MetaMemberVariableDict.ContainsKey(name))
             {
                 return m_MetaMemberVariableDict[name];
             }
             return null;
+        }
+        public MetaMemberVariable GetMemberVariableByName(string name)
+        {
+            return GetMetaMemberVariableByName(name);
         }
         public MetaVariable GetOrCreateValuesVariable()
         {
@@ -43,14 +74,14 @@ namespace SimpleLanguage.Core
                 var nmt = new MetaType(CoreMetaClassManager.memberMetaClass);
                 mtList.Add(nmt);
                 var mt = new MetaType(CoreMetaClassManager.arrayMetaClass, mtList);
-                m_ValuesMetaVariable = new MetaMemberVariable(this, "values" );
+                m_ValuesMetaVariable = new MetaMemberVariable(CoreMetaClassManager.enumMetaData, "values" );
                 m_ValuesMetaVariable.SetVariableFrom(MetaVariable.EVariableFrom.EnumMember);
                 m_ValuesMetaVariable.SetIsDefineMetaType(true);
                 m_ValuesMetaVariable.SetMetaDefineType(mt);
                 m_ValuesMetaVariable.SetRealMetaType(mt);
                 m_ValuesMetaVariable.SetIndex(m_MetaMemberVariableDict.Count);
 
-                MetaArrayExpressNode maen = new MetaArrayExpressNode( this, null, mt, m_ValuesMetaVariable );
+                MetaArrayExpressNode maen = new MetaArrayExpressNode(CoreMetaClassManager.enumMetaData, null, mt, m_ValuesMetaVariable );
                 // values 鏁扮粍鍙簲鍖呭惈鐪熷疄鏋氫妇鎴愬憳锛屼笉搴旀妸 values 鑷繁涔熸斁杩涘幓锛?
                 // 鍚﹀垯 for-in 鏋氫妇閬嶅巻浼氬嚭鐜伴澶栭」骞跺鑷村鍑虹殑 IR 閫昏緫寮傚父銆?
                 var enumMembers = m_MetaMemberVariableDict.Values
@@ -70,7 +101,12 @@ namespace SimpleLanguage.Core
 
                 //newRMT.AddGenTemplateMetaType(m_RealMetaType);
 
-                var valuesNewExpress = new MetaNewObjectExpressNode(maen, this, null, m_ValuesMetaVariable);
+                var valuesNewExpress = new MetaNewObjectExpressNode(mt, CoreMetaClassManager.enumMetaData, null, m_ValuesMetaVariable);
+                foreach (var itemExpress in maen.metaCallArray)
+                {
+                    valuesNewExpress.metaContent.assignStatementsList.Add(
+                        new MetaBraceAssignStatements(null, new MetaType(CoreMetaClassManager.enumMetaData), itemExpress));
+                }
                 MetaType inputType = valuesNewExpress.metaContent.GetMaxLevelMetaType();
 
                 MetaType newRMT = new MetaType();
@@ -102,6 +138,66 @@ namespace SimpleLanguage.Core
                 return;
             }
             m_MetaMemberVariableDict.Add(mmd.name, mmd);
+        }
+        public void ParseExtendsRelation()
+        {
+            if (m_ClassDefineType == EClassDefineType.InnerDefine)
+            {
+                return;
+            }
+            if (m_ExtendClass != null)
+            {
+                return;
+            }
+            if (m_FileMetaClass == null)
+            {
+                return;
+            }
+
+            var fmcd = m_FileMetaClass.fileMetaExtendClass;
+            if (fmcd == null)
+            {
+                m_ExtendClass = CoreMetaClassManager.int32MetaClass;
+                return;
+            }
+
+            MetaNode mn = ClassManager.instance.GetMetaClassByNameAndFileMeta(
+                null, fmcd.fileMeta, fmcd.stringList);
+
+            if (mn == null)
+            {
+                mn = fmcd.fileMeta.GetMetaBaseByFileMetaClassRef(fmcd);
+            }
+
+            if (mn == null)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                    "Error Enum extends 没有找到继承类: " + fmcd.allName);
+                m_ExtendClass = CoreMetaClassManager.int32MetaClass;
+                return;
+            }
+
+            if (mn.IsMetaClass())
+            {
+                m_ExtendClass = mn.GetMetaClassByTemplateCount(0);
+            }
+            else if (mn.isMetaData)
+            {
+                m_ExtendClass = CoreMetaClassManager.dynamicMetaData;
+                m_ExtendMetaData = mn.metaData;
+            }
+            else if (mn.isMetaEnum)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                    "Error Enum 不允许继承另一个 Enum: " + fmcd.allName);
+                m_ExtendClass = CoreMetaClassManager.int32MetaClass;
+            }
+            else
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                    "Error Enum extends 解析到未知节点类型: " + fmcd.allName);
+                m_ExtendClass = CoreMetaClassManager.int32MetaClass;
+            }
         }
         public void ParseFileMetaEnumMemeberEnum(FileMetaClass fmc)
         {
@@ -138,7 +234,7 @@ namespace SimpleLanguage.Core
                 else
                     isHave = false;
                 bool parentIsConst = true;
-                MetaMemberEnum mmv = new MetaMemberEnum(this, v, this.extendClass, parentIsConst);
+                MetaMemberEnum mmv = new MetaMemberEnum(CoreMetaClassManager.enumMetaData, v, this.extendClass, parentIsConst);
                 if (isHave)
                 {
                     mmv.SetName(mmv.name + "__repeat__");
@@ -146,7 +242,7 @@ namespace SimpleLanguage.Core
                 AddMetaMemberEnum(mmv);
             }
         }
-        public override void HandleExtendMemberVariable()
+        public void HandleExtendMemberVariable()
         {
             if (m_ExtendClass == null)
             {
@@ -164,24 +260,38 @@ namespace SimpleLanguage.Core
                || m_ExtendClass == CoreMetaClassManager.stringMetaClass)
             {
                 var mt = new MetaType(m_ExtendClass);
-                foreach (var v in m_MetaMemberVariableDict )
+                foreach (var v in m_MetaMemberVariableDict)
+                {
+                    v.Value.SetMetaDefineType(mt);
+                }
+            }
+            else if (m_ExtendMetaData != null)
+            {
+                var mt = new MetaType(m_ExtendMetaData);
+                foreach (var v in m_MetaMemberVariableDict)
                 {
                     v.Value.SetMetaDefineType(mt);
                 }
             }
             else if (m_ExtendClass == CoreMetaClassManager.dynamicMetaData)
             {
-                //浠呴檺data鏁版嵁绫诲瀷
                 var mt = new MetaType(m_ExtendClass);
-                foreach (var v in m_MetaMemberVariableDict )
+                foreach (var v in m_MetaMemberVariableDict)
+                {
+                    v.Value.SetMetaDefineType(mt);
+                }
+            }
+            else
+            {
+                var mt = new MetaType(m_ExtendClass);
+                foreach (var v in m_MetaMemberVariableDict)
                 {
                     v.Value.SetMetaDefineType(mt);
                 }
             }
         }
-        public override void ParseDefineComplete()
+        public void ParseDefineComplete()
         {
-            base.ParseDefineComplete();
         }
         public void ParseMemberMetaEnumExpress()
         {
@@ -360,6 +470,36 @@ namespace SimpleLanguage.Core
                     mme.WrapAsMemberObjectExpress();
                 }
             }
+            else if (m_ExtendMetaData != null)
+            {
+                foreach (var v in m_MetaMemberVariableDict)
+                {
+                    if (v.Value is not MetaMemberEnum mme) continue;
+
+                    mme.ParseDefineMetaType();
+                    if (mme.express == null)
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                            "Error Enum extends data: member must have = assignment: " + v.Key);
+                        continue;
+                    }
+                    mme.ParseMetaExpress();
+                    if (mme.express is MetaNewObjectExpressNode mnoeData)
+                    {
+                        if (!mnoeData.GetReturnMetaDefineType().isData)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                                "Error Enum extends data: member value must be a data new expression");
+                        }
+                    }
+                    else
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                            "Error Enum extends data: member value must use data new expression");
+                    }
+                    mme.WrapAsMemberObjectExpress();
+                }
+            }
             else if (m_ExtendClass == CoreMetaClassManager.dynamicMetaData)
             {
                 foreach (var v in m_MetaMemberVariableDict)
@@ -392,35 +532,38 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                foreach (var v in m_MetaMemberVariableDict )
+                foreach (var v in m_MetaMemberVariableDict)
                 {
-                    v.Value.ParseDefineMetaType();
-                    if (v.Value.express == null)
+                    if (v.Value is not MetaMemberEnum mmeClass) continue;
+
+                    mmeClass.ParseDefineMetaType();
+                    if (mmeClass.express == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鎴愬憳蹇呴』鏈?鍙");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                            "Error Enum extends class: member must have = assignment");
                         continue;
                     }
-                    v.Value.ParseMetaExpress();
+                    mmeClass.ParseMetaExpress();
 
-                    if (v.Value.express is MetaNewObjectExpressNode mnoe)
+                    if (mmeClass.express is MetaNewObjectExpressNode mnoeClass)
                     {
-                        if (mnoe.GetReturnMetaDefineType().isData)
+                        var retType = mnoeClass.GetReturnMetaDefineType();
+                        if (retType?.metaClass != null && retType.metaClass != m_ExtendClass)
                         {
-
-                        }
-                        else
-                        {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata鍊肩被鍙橀噺, 涓嶅厑璁稿叾瀹冪被鍨");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                                "Error Enum extends class: member type " + retType.metaClass.allClassName
+                                + " does not match extends class " + m_ExtendClass.allClassName);
                         }
                     }
-                    else if (v.Value.constExpressNode != null)
+                    else if (mmeClass.constExpressNode != null)
                     {
-
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata new 鍊肩被鍙橀噺");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                            "Error Enum extends class: member value must use new expression or const value");
                     }
+                    mmeClass.WrapAsMemberObjectExpress();
                 }
             }
         }

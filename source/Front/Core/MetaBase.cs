@@ -20,6 +20,7 @@ namespace SimpleLanguage.Core
     {
         public int deep => m_Deep;
         public virtual Token token => m_Token;
+        public EType eType => m_Type;
         public virtual List<Token> pingTokenList => m_PintTokenList;
         public int realDeep
         {
@@ -43,10 +44,18 @@ namespace SimpleLanguage.Core
         protected int m_AnchorDeep = 0;
         protected List<Token> m_PintTokenList = new List<Token>();
         protected Token m_Token = null;
+        protected EType m_Type = EType.None;
 
         public MetaBase()
         {
             m_RefFromType = RefFromType.Local;
+        }
+        protected MetaBase( string name, RefFromType refFromType, EPermission permission, MetaNode metaNode )
+        {
+            m_Name = name;
+            m_RefFromType = refFromType;
+            m_Permission = permission;
+            m_MetaNode = metaNode;
         }
         public MetaBase( MetaBase mb )
         {

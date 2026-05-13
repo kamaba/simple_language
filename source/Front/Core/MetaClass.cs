@@ -26,7 +26,6 @@ namespace SimpleLanguage.Core
     {
         public List<MetaAttribute> attributeList => m_AttributeList;
         public string allClassName=> this.m_AllName;
-        public EType eType => m_Type;
         public EClassDefineType classDefineType => m_ClassDefineType;
         public bool isAbstractClass => m_IsAbstractClass;
         public bool allowExtendsClassWithTemplate => m_GenMetaClassTemplateList.Count > 0 ;             //允许继承类 是否可携带模板  像 ListInt : List<int>{} ListIntEx<T> : List<int> 这种情况不允许
@@ -74,7 +73,6 @@ namespace SimpleLanguage.Core
 
 
         protected int m_ExtendLevel = 0;
-        protected EType m_Type = EType.None;
         protected Dictionary<Token, FileMetaClass> m_FileMetaClassDict = new Dictionary<Token, FileMetaClass>();
         protected MetaClass m_ExtendClass = null;
         protected MetaType m_ExtendClassMetaType = null;

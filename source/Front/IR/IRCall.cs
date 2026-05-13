@@ -290,7 +290,7 @@ namespace SimpleLanguage.IR
                     for (int i = metaCallLink.visitNodeList.Count - 1; i >= 0; i--)
                     {
                         var visitMetaType = metaCallLink.visitNodeList[i]?.GetMetaType();
-                        if (visitMetaType?.metaClass is MetaData)
+                        if (visitMetaType?.metaData != null)
                         {
                             metaType = visitMetaType;
                             break;
@@ -299,12 +299,14 @@ namespace SimpleLanguage.IR
                 }
             }
 
-            var targetMetaClass = metaType?.metaClass as MetaData;
-            if (targetMetaClass == null)
+            var targetMetaData = metaType?.metaData;
+            if (targetMetaData == null)
                 return;
 
-            var ownerMetaClass = argNode.ownerMetaClass ?? targetMetaClass;
-            var ownerIrMetaClass = IRManager.instance.GetIRMetaClassById(ownerMetaClass.GetHashCode());
+            int ownerHashCode = argNode.ownerMetaClass != null
+                ? argNode.ownerMetaClass.GetHashCode()
+                : targetMetaData.GetHashCode();
+            var ownerIrMetaClass = IRManager.instance.GetIRMetaClassById(ownerHashCode);
             if (ownerIrMetaClass == null)
                 return;
 

@@ -341,10 +341,10 @@ namespace SimpleLanguage.Core
                 return EClassRelation.CompareClassError;
             }
 
-            if (allowEnumOwnerEqual && curClass is MetaEnum me && expressNode is MetaCallLinkExpressNode mclen)
+            if (allowEnumOwnerEqual && curClass == CoreMetaClassManager.enumMetaData && expressNode is MetaCallLinkExpressNode mclen)
             {
                 var mv = mclen.GetMetaVariable();
-                if (mv?.ownerMetaClass == me)
+                if (mv?.ownerMetaClass == CoreMetaClassManager.enumMetaData)
                 {
                     return EClassRelation.Same;
                 }

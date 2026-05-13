@@ -21,7 +21,7 @@ namespace SimpleLanguage.Core
 
         private readonly Dictionary<string, MetaClass> m_FileLocalClassDict = new Dictionary<string, MetaClass>();
         private readonly Dictionary<string, MetaMemberFunction> m_FileInitFunctionDict = new Dictionary<string, MetaMemberFunction>();
-        private readonly Dictionary<string, MetaMemberVariable> m_FileLocalInstanceVarDict = new Dictionary<string, MetaMemberVariable>();
+        private readonly Dictionary<string, MetaVariable> m_FileLocalInstanceVarDict = new Dictionary<string, MetaVariable>();
 
         public MetaClass GetFileLocalClass(FileMeta fm)
         {
@@ -37,7 +37,7 @@ namespace SimpleLanguage.Core
             return fn;
         }
 
-        public MetaMemberVariable GetFileLocalInstanceVariable(FileMeta fm)
+        public MetaVariable GetFileLocalInstanceVariable(FileMeta fm)
         {
             if (fm == null) return null;
             m_FileLocalInstanceVarDict.TryGetValue(fm.path, out var v);
@@ -118,7 +118,7 @@ namespace SimpleLanguage.Core
             }
         }
 
-        private MetaMemberVariable CreateOrGetFileLocalInstanceVariable(FileMeta fm, MetaClass localMc)
+        private MetaVariable CreateOrGetFileLocalInstanceVariable(FileMeta fm, MetaClass localMc)
         {
             if (fm == null || localMc == null) return null;
 
@@ -128,15 +128,15 @@ namespace SimpleLanguage.Core
 
             var varName = "local_" + fm.path.GetHashCode();
             var exist = global.GetMetaMemberVariableByName(varName);
-            if (exist is MetaMemberVariable emv)
-                return emv;
+            if (exist != null)
+                return exist;
 
             var mv = new MetaMemberVariable(global, varName);
             mv.SetMetaDefineType(new MetaType(localMc));
             mv.SetRealMetaType(new MetaType(localMc));
             mv.SetIsStatic(true);
             global.AddMetaMemberVariable(mv, false);
-            return mv;
+            return global.GetMetaMemberVariableByName(varName);
         }
 
         private MetaMemberFunction CreateLocalInitFunction(MetaClass localMc, FileMetaLocalSyntax localSyntax)

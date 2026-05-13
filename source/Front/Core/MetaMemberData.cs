@@ -191,6 +191,72 @@ namespace SimpleLanguage.Core
 
             return mmd;
         }
+
+        /// <summary>
+        /// 将前端按需构造的 <see cref="MetaMemberVariable"/> 并入所属 <see cref="MetaData"/> 的唯一成员表（<see cref="MetaData.metaMemberDataDict"/>），不再使用并行字典。
+        /// </summary>
+        public static MetaMemberData CreateFromInjectedMemberVariable(MetaData owner, MetaMemberVariable mmv, int fallbackIndex)
+        {
+            if (mmv == null || owner == null)
+            {
+                return null;
+            }
+
+            var mmd = new MetaMemberData();
+            mmd.m_Name = mmv.name;
+            mmd.m_Index = mmv.index >= 0 ? mmv.index : fallbackIndex;
+            mmd.m_IsWithName = true;
+            mmd.m_VariableFrom = EVariableFrom.DataMember;
+            mmd.SetOwnerMetaClass(owner);
+            mmd.m_IsStatic = mmv.isStatic;
+            mmd.m_IsConst = mmv.isConst || owner.isConst;
+            mmd.m_Permission = mmv.permission;
+
+            var def = mmv.defineMetaType ?? new MetaType(CoreMetaClassManager.objectMetaClass);
+            mmd.m_DefineMetaType = new MetaType(def);
+            mmd.m_IsDefineMetaType = mmv.isDefineMetaType;
+
+            if (mmv.realMetaType != null)
+            {
+                mmd.m_RealMetaType = new MetaType(mmv.realMetaType);
+            }
+            else
+            {
+                mmd.m_RealMetaType = new MetaType(mmd.m_DefineMetaType);
+            }
+
+            mmd.m_Express = mmv.express;
+
+            if (def.isData)
+            {
+                mmd.m_MemberDataType = EMemberDataType.MemberData;
+            }
+            else if (def.IsArray())
+            {
+                mmd.m_MemberDataType = EMemberDataType.MemberArray;
+            }
+            else
+            {
+                mmd.m_MemberDataType = EMemberDataType.MemberClass;
+            }
+
+            if (mmv.token != null)
+            {
+                mmd.m_Token = mmv.token;
+            }
+
+            var plist = mmv.pingTokenList;
+            if (plist != null)
+            {
+                for (int i = 0; i < plist.Count; i++)
+                {
+                    mmd.AddPingToken(plist[i]);
+                }
+            }
+
+            return mmd;
+        }
+
         public override void ParseDefineMetaType()
         {
             if (m_FileMetaMemeberData != null)
@@ -221,7 +287,7 @@ namespace SimpleLanguage.Core
                             m_MemberDataType = EMemberDataType.MemberClass;
                             m_Express = new MetaCallLinkExpressNode(
                                 m_FileMetaMemeberData.fileMetaCallTermValue.callLink,
-                                m_OwnerMetaClass,
+                                ownerMetaClass,
                                 m_OwnerMetaBlockStatements,
                                 this);
                         }
@@ -393,7 +459,7 @@ namespace SimpleLanguage.Core
             MetaNewObjectExpressNode newExpress = MetaNewObjectExpressNode.CreateAnonymousDataNewObjectExpress(
                 this,
                 anonymousMetaData,
-                m_OwnerMetaClass,
+                ownerMetaClass,
                 m_OwnerMetaBlockStatements);
             if (newExpress == null)
             {
@@ -453,7 +519,9 @@ namespace SimpleLanguage.Core
             }
 
             var arrayType = new MetaType(CoreMetaClassManager.arrayMetaClass, new List<MetaType>() { elementType });
-            arrayType.SetArrayLength(elementCount);
+            // Keep the last dimension flexible (-1) for member-dict reconstructed array literals;
+            // concrete element count is carried by the initializer content instead of define type.
+            arrayType.SetArrayLength(-1);
             return arrayType;
         }
 
@@ -469,7 +537,7 @@ namespace SimpleLanguage.Core
 
             var arrayType = BuildArrayTypeForMemberDict(ordered.Count);
             var parseSetting = new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress };
-            MetaClass ownerMc = m_OwnerMetaClass ?? ownerMetaClass ?? CoreMetaClassManager.objectMetaClass;
+            MetaClass ownerMc = ownerMetaClass ?? CoreMetaClassManager.objectMetaClass;
 
             var arrayExpr = m_Express as MetaNewObjectExpressNode;
             if (arrayExpr == null || arrayExpr.newType != MetaNewObjectExpressNode.ENewType.ArrayClass)
@@ -757,7 +825,8 @@ namespace SimpleLanguage.Core
         {
             if (md == null) return false;
 
-            MetaData belongMD = m_OwnerMetaClass as MetaData;
+            MetaData belongMD = ownerMetaData
+                ?? (ownerMetaClass != null ? ClassManager.instance.FindMetaDataByName(ownerMetaClass.allClassName) : null);
             if (belongMD != null)
             {
                 if (belongMD == md)

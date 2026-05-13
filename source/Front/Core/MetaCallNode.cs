@@ -464,7 +464,7 @@ namespace SimpleLanguage.Core
                         {
                             m_MetaVariable.ParseRealMetaType();
                             m_MetaType = m_MetaVariable.realMetaType;
-                            m_CallMetaType = new MetaType(ProjectManager.globalData);
+                            m_CallMetaType = new MetaType(m_MetaType);
                         }
                         m_MetaData = ProjectManager.globalData;
                         m_CallNodeType = ECallNodeType.Global;
@@ -632,7 +632,7 @@ namespace SimpleLanguage.Core
                     m_MetaVariable = mv;
                     m_CallNodeType = ECallNodeType.Local;
                     m_MetaType = mv.realMetaType;
-                    m_CallMetaType = new MetaType(global);
+                    m_CallMetaType = new MetaType(m_MetaType);
                     return true;                    
                 }
                 else
@@ -704,7 +704,7 @@ namespace SimpleLanguage.Core
                                 else if (mn.isMetaEnum)
                                 {
                                     m_MetaEnum = mn.metaEnum;
-                                    m_MetaType = new MetaType(m_MetaEnum);
+                                    m_MetaType = new MetaType(CoreMetaClassManager.enumMetaData);
                                     m_CallNodeType = ECallNodeType.EnumName;
                                 }
                                 else if (mn.IsMetaClass())
@@ -927,10 +927,10 @@ namespace SimpleLanguage.Core
                             findMd = md.GetMemberDataByName(m_Name);
                             if (findMd == null)
                             {
-                                var dataType = md.GetFinalMetaType()?.metaClass as MetaData;
+                                var dataType = md.GetFinalMetaType()?.metaData;
                                 if (dataType == null)
                                 {
-                                    dataType = md.defineMetaType?.metaClass as MetaData;
+                                    dataType = md.defineMetaType?.metaData;
                                 }
                                 if (dataType != null)
                                 {
@@ -1032,9 +1032,10 @@ namespace SimpleLanguage.Core
                             MetaClass mc = null;
                             var mtt = mv.GetFinalMetaType();
                             mc = mtt.metaClass == null ? mv.GetTemplateMetaClass() : mtt.metaClass;
-                            if (mc is MetaData)
+                            var md = mtt.metaData
+                                ?? (mc != null ? ClassManager.instance.FindMetaDataByName(mc.allClassName) : null);
+                            if (md != null)
                             {
-                                MetaData md = mc as MetaData;
                                 var retmmd = GetDataValueByMetaData(md, m_Name);
                                 m_MetaVariable = retmmd;
                                 if (retmmd == null)
@@ -1062,14 +1063,6 @@ namespace SimpleLanguage.Core
                                     m_MetaVariable = retmmd;
                                     m_CallNodeType = ECallNodeType.MemberDataName;
                                 }
-                            }
-                            else
-                            if (mc is MetaEnum)
-                            {
-                                MetaEnum me = mc as MetaEnum;
-                                m_MetaVariable = me.GetMemberVariableByName(m_Name);
-                                m_CallNodeType = ECallNodeType.MemberVariableName;
-                                m_FrontCallNode.SetStoreMetaVariable(m_MetaVariable);
                             }
                             else
                             {
@@ -1715,7 +1708,7 @@ namespace SimpleLanguage.Core
                 {
                     m_MetaEnum = retMC.metaEnum;
                     m_CallNodeType = ECallNodeType.EnumName;
-                    m_MetaType = new MetaType(m_MetaEnum);
+                    m_MetaType = new MetaType(CoreMetaClassManager.enumMetaData);
                 }
                 else if (retMC.IsMetaClass())
                 {
@@ -1848,7 +1841,7 @@ namespace SimpleLanguage.Core
         {
             return md.GetMemberDataByName(inputName);
         }
-        private MetaMemberVariable GetOrCreateDataDefaultStaticInstanceVariable(MetaData dataType)
+        private MetaMemberData GetOrCreateDataDefaultStaticInstanceVariable(MetaData dataType)
         {
             if (dataType == null || dataType.isStatic)
             {
@@ -1863,7 +1856,7 @@ namespace SimpleLanguage.Core
             }
 
             string varName = "__data_default_instance_" + dataType.GetHashCode();
-            var exist = globalData.GetMetaMemberVariableByName(varName) as MetaMemberVariable;
+            var exist = globalData.GetMetaMemberVariableByName(varName) as MetaMemberData;
             if (exist != null)
             {
                 return exist;
@@ -1874,8 +1867,7 @@ namespace SimpleLanguage.Core
             mmv.SetIsDefineMetaType(true);
             mmv.SetMetaDefineType(new MetaType(dataType));
             mmv.SetRealMetaType(new MetaType(dataType));
-            mmv.SetExpress(new MetaNewObjectExpressNode(new MetaType(dataType), globalData, null));
-            globalData.AddMetaMemberVariable(mmv, false);
+            mmv.SetExpress(new MetaNewObjectExpressNode(new MetaType(dataType), (MetaClass)null, null));
 
             // 该变量是 Frontend 解析过程中按需注入的，需立即完成表达式与类型收敛，
             // 否则后续 IR 可能拿不到默认实例的初始化表达式。
@@ -1883,7 +1875,8 @@ namespace SimpleLanguage.Core
             mmv.CalcReturnType();
             mmv.ParseChildMemberData();
 
-            return mmv;
+            var mmd = globalData.AddMetaMemberVariable(mmv, false) ?? globalData.GetMemberDataByName(varName);
+            return mmd;
         }
         public MetaMemberData GetDataValueByMetaMemberData(MetaMemberData md, string inputName)
         {
@@ -2039,7 +2032,7 @@ namespace SimpleLanguage.Core
                 }
                 else if (m_CallNodeType == ECallNodeType.EnumName)
                 {
-                    sb.Append(m_MetaEnum.allClassName);
+                    sb.Append(m_MetaEnum?.allClassName ?? m_MetaEnum?.name);
                 }
                 else if (m_CallNodeType == ECallNodeType.EnumMember )
                 {

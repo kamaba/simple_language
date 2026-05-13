@@ -53,14 +53,19 @@ namespace SimpleLanguage.Core
         public EVariableFrom variableFrom => m_VariableFrom;
         public MetaType defineMetaType => m_DefineMetaType;
         public MetaType realMetaType => m_RealMetaType;
-        public MetaClass ownerMetaClass => m_OwnerMetaClass;
+        public MetaClass ownerMetaClass => m_OwnerMetaClass as MetaClass;
+        public MetaData ownerMetaData => m_OwnerMetaClass as MetaData;
+        public MetaEnum ownerMetaEnum => m_OwnerMetaClass as MetaEnum;
+        public MetaBase ownerMetaBase => m_OwnerMetaClass;
         public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
 
         private Token m_VariableNameToken = null;
 
         #region 属性
 
-        protected MetaClass m_OwnerMetaClass = null;
+        // MetaData / MetaEnum 不再继承自 MetaClass，故 owner 升级为 MetaBase，
+        // 同时仍通过 ownerMetaClass / ownerMetaData / ownerMetaEnum 提供分类视图。
+        protected MetaBase m_OwnerMetaClass = null;
         protected MetaType m_DefineMetaType = null;
         protected MetaType m_RealMetaType = null;
         protected EVariableFrom m_VariableFrom;
@@ -118,6 +123,18 @@ namespace SimpleLanguage.Core
         public virtual void SetOwnerMetaClass(MetaClass ownerclass)
         {
             m_OwnerMetaClass = ownerclass;
+        }
+        public virtual void SetOwnerMetaClass(MetaData ownerData)
+        {
+            m_OwnerMetaClass = ownerData;
+        }
+        public virtual void SetOwnerMetaClass(MetaEnum ownerEnum)
+        {
+            m_OwnerMetaClass = ownerEnum;
+        }
+        public virtual void SetOwnerMetaBase(MetaBase ownerBase)
+        {
+            m_OwnerMetaClass = ownerBase;
         }
         public void SetIsStatic( bool iss )
         {
@@ -244,7 +261,7 @@ namespace SimpleLanguage.Core
             {
                 return mgtc.metaTemplateClass;
             }
-            return m_OwnerMetaClass;
+            return m_OwnerMetaClass as MetaClass;
         }
         public virtual MetaClass GetTemplateMetaClass()
         {

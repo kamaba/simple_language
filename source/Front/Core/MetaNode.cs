@@ -273,7 +273,7 @@ namespace SimpleLanguage.Core
                 {
                     Debug.Assert(false, "enum没有扩展<T>和形式");
                 }
-                return m_MetaEnum;
+                return CoreMetaClassManager.enumMetaData;
             }
             if( m_MetaData != null )
             {
@@ -281,7 +281,8 @@ namespace SimpleLanguage.Core
                 {
                     Debug.Assert(false, "data没有扩展<T>和形式");
                 }
-                return m_MetaData;
+                // MetaData 不再继承自 MetaClass，调用方需通过 isMetaData / metaData 单独处理。
+                return null;
             }
             if (m_MetaTemplateClassDict.ContainsKey(count))
             {

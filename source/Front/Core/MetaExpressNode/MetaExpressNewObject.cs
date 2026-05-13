@@ -30,7 +30,7 @@ namespace SimpleLanguage.Core
                     m_DefineName = fmos.variableRef.name;
                     if (mt != null && mt.isData)
                     {
-                        var md = mt.metaClass as MetaData;
+                        var md = mt.metaData;
                         m_MetaMemberData = md?.GetMemberDataByName(m_DefineName);
                     }
                     else
@@ -103,12 +103,12 @@ namespace SimpleLanguage.Core
 
                 if (mt != null && mt.isData)
                 {
-                    m_MetaMemberData = MetaMemberData.CreateDeclared(mt.metaClass as MetaData, m_DefineName, -1, mdt, true);
+                    m_MetaMemberData = MetaMemberData.CreateDeclared(mt.metaData, m_DefineName, -1, mdt, true);
                     m_MetaMemberData.SetOwnerBlockstatements(mbs);
                 }
                 else
                 {
-                    m_MetaMemberVariable = new MetaMemberVariable(null, m_DefineName);
+                    m_MetaMemberVariable = new MetaMemberVariable((MetaClass)null, m_DefineName);
                     m_MetaMemberVariable.SetOwnerMetaClass(mt?.metaClass ?? mbs.ownerMetaClass);
                     m_MetaMemberVariable.SetOwnerBlockstatements(mbs);
                     m_MetaMemberVariable.SetMetaDefineType(mdt);
@@ -189,13 +189,13 @@ namespace SimpleLanguage.Core
             {
                 if (mt.isDynamicClass)
                 {
-                    m_MetaMemberVariable = new MetaMemberVariable(null, m_DefineName);
+                    m_MetaMemberVariable = new MetaMemberVariable((MetaClass)null, m_DefineName);
                     m_MetaMemberVariable.SetOwnerMetaClass(mbs.ownerMetaClass);
                     m_MetaMemberVariable.SetOwnerBlockstatements(mbs);
                 }
                 else
                 {
-                    m_MetaMemberData = MetaMemberData.CreateDeclared(mt.metaClass as MetaData, m_DefineName, -1, new MetaType(CoreMetaClassManager.objectMetaClass), false);
+                    m_MetaMemberData = MetaMemberData.CreateDeclared(mt.metaData, m_DefineName, -1, new MetaType(CoreMetaClassManager.objectMetaClass), false);
                     m_MetaMemberData.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);
                 }
             }
@@ -203,11 +203,11 @@ namespace SimpleLanguage.Core
             {
                 if (mt.isData)
                 {
-                    m_MetaMemberData = (mt.metaClass as MetaData).GetMemberDataByName(m_DefineName);
+                    m_MetaMemberData = mt.metaData?.GetMemberDataByName(m_DefineName);
                     if (m_MetaMemberData == null)
                     {
-                        System.Diagnostics.Debug.Write("Error 在类" + mt.metaClass?.allClassName + "函数: " + mbs?.ownerMetaFunction.name
-                            + " 没有找到: 类" + mt.metaClass?.allClassName + " 变量:" + m_DefineName);
+                        System.Diagnostics.Debug.Write("Error 在类" + mt.name + "函数: " + mbs?.ownerMetaFunction.name
+                            + " 没有找到: 类" + mt.name + " 变量:" + m_DefineName);
                     }
                     //m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberData, m_OwnerMetaBlockStatements, m_FileMetaOpAssignSyntax?.express);
                 }
@@ -612,8 +612,7 @@ namespace SimpleLanguage.Core
                         //mmv.metaDefineType.SetRawMetaClass(m_NewMetaData);
                         //mmv.metaDefineType.SetMetaClass(m_NewMetaData);
                     }
-                    m_DefineMetaType.SetMetaClass(m_NewMetaData);
-                    m_DefineMetaType.SetTemplateMetaClass(m_NewMetaData);
+                    m_DefineMetaType.SetMetaData(m_NewMetaData);
                     m_ContentType = EStatementsContentType.DynamicData;
                     m_EqualMetaVariable?.SetMetaDefineType(m_DefineMetaType);
                 }
@@ -878,13 +877,13 @@ namespace SimpleLanguage.Core
                         var mmv = assignStatementsList[i].metaMemberVariable;
                         anonClass.AddMetaMemberVariable(assignStatementsList[i].metaMemberVariable, false);
                     }
-                    MetaClass retClass = ClassManager.instance.FindMetaData(anonClass);
+                    MetaData retClass = ClassManager.instance.FindMetaData(anonClass);
                     if (retClass == null)
                     {
                         for (int i = 0; i < assignStatementsList.Count; i++)
                         {
                             var mmv = assignStatementsList[i].metaMemberVariable;
-                            mmv.SetOwnerMetaClass(retClass);
+                            mmv.SetOwnerMetaClass(anonClass);
                         }
                         ClassManager.instance.AddAnonymousMetaData(anonClass);
                         retClass = anonClass;
@@ -1587,7 +1586,7 @@ namespace SimpleLanguage.Core
 
                 if (useNestFromHierarchy)
                 {
-                    MetaData nestedCanon = targetField.defineMetaType?.metaClass as MetaData;
+                    MetaData nestedCanon = targetField.defineMetaType?.metaData;
                     if (nestedCanon == null)
                     {
                         nestedCanon = fieldForAssign.BuildAnonymousMetaDataType(out _);
