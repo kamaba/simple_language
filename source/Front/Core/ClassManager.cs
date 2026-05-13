@@ -29,10 +29,10 @@ namespace SimpleLanguage.Core
             }
         }
         public List<MetaGenTemplateClass> genTemplateMetaClassList => m_GenTemplateMetaClassList;
-        public List<MetaClass> runtimeClassList => m_RuntimeClassList;
+        public List<MetaClass> exportClassList => m_ExportClassList;
 
 
-        private List<MetaClass> m_RuntimeClassList = new List<MetaClass>();
+        private List<MetaClass> m_ExportClassList = new List<MetaClass>();
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
         //private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();         
         private Dictionary<string, MetaData> m_DefineDataDict = new Dictionary<string, MetaData>();
@@ -174,7 +174,7 @@ namespace SimpleLanguage.Core
                 return false;
             }
             m_DefineDataDict.Add(dc.name, dc);
-            AddRuntimeMetaClass(dc);
+            AddExportMetaClass(dc);
             return true;
         }
         public bool AddAnonymousMetaData(MetaData dc)
@@ -188,7 +188,7 @@ namespace SimpleLanguage.Core
                 return false;
             }
             m_AnonymousDataDict.Add(dc.name, dc);
-            AddRuntimeMetaClass(dc);
+            AddExportMetaClass(dc);
             return true;
         }
         public bool AddMetaData(MetaData dc)
@@ -563,6 +563,7 @@ namespace SimpleLanguage.Core
                     newme.BindFileMetaClass(fmc);
                     newme.ParseFileMetaEnumMemeberEnum(fmc);
                     newme.UpdateClassAllName();
+                    
                     AddInitHandleMetaClassList(newme);
 
                     return newme;
@@ -605,12 +606,12 @@ namespace SimpleLanguage.Core
                 return null;
             }
         }
-        public void AddRuntimeMetaClass( MetaClass mc )
+        public void AddExportMetaClass( MetaClass mc )
         {
-            var find1 = m_RuntimeClassList.Find(a => a == mc);
+            var find1 = m_ExportClassList.Find(a => a == mc);
             if( find1  == null )
             {
-                m_RuntimeClassList.Add(mc);
+                m_ExportClassList.Add(mc);
 
                 AddDictMetaClass(mc);
             }
@@ -631,7 +632,7 @@ namespace SimpleLanguage.Core
         }
         /// <summary>
         /// 模板约束、extends/implements、运行时注册，以及按继承深度排序（尚未收集成员上的定义类型）。
-        /// 之后应调用 <see cref="TypeManager.ResolveAllDeclaredTypeAliases"/>，再调用 <see cref="ParseInitMetaClassListCollectMemberDefineMetaTypes"/>。
+        /// 之后应调用 <see cref="TypeManager.ResolveAllDeclaredTypeAliases"/>，再调用 <see cref=""/>。
         /// </summary>
         public void ParseInitMetaClassListThroughInheritance()
         {
@@ -640,7 +641,6 @@ namespace SimpleLanguage.Core
                 it.ParseMetaTemplateInConstraint();
                 it.ParseExtendsRelation();
                 it.ParseInterfaceRelation();
-                AddRuntimeMetaClass(it);
             }
 
             foreach (var it in m_InitHandleMetaClassList)
@@ -679,13 +679,6 @@ namespace SimpleLanguage.Core
                 mgtc.ParseGenTemplateClass(mgtc);
                 mgtc.ParseGenMemberVarible();
             }
-        }
-
-        /// <summary>等价于先 <see cref="ParseInitMetaClassListThroughInheritance"/> 再 <see cref="ParseInitMetaClassListCollectMemberDefineMetaTypes"/>（中间无 typealias 解析；管线请用分步 API）。</summary>
-        public void ParseInitMetaClassList()
-        {
-            ParseInitMetaClassListThroughInheritance();
-            ParseInitMetaClassListCollectMemberDefineMetaTypes();
         }
         public void UpdateMetaGenTemplateClassHandle()
         {
@@ -739,6 +732,25 @@ namespace SimpleLanguage.Core
                 if( it is MetaEnum me )
                 {
                     me.ParseMemberMetaEnumExpress();
+                }
+            }
+        }
+
+        public void ParseMetaDataMemberAnonAndArray()
+        {
+
+            // 嵌套 const / 匿名 {} / 数组元素未进入 metaMemberDataVariableList，需在 ParseExpress 之后按树后序补全匿名 MetaData 与 NewObject。
+            foreach (var md in EnumerateDefineMetaData())
+            {
+                var roots = new List<MetaMemberData>();
+                foreach (var kv in md.metaMemberDataDict)
+                {
+                    roots.Add(kv.Value);
+                }
+                roots.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
+                for (int i = 0; i < roots.Count; i++)
+                {
+                    MetaMemberData.ResolveAnonymousDataHierarchyPostOrder(roots[i]);
                 }
             }
         }

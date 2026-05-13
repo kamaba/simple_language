@@ -222,8 +222,8 @@ namespace SimpleLanguage.Project
             ClassManager.instance.ParseDefineComplete();
 
             ClassManager.instance.ParseMemberEnumExpress();
-            MetaVariableManager.instance.ParseMetaDataMemberExpress();
             MetaVariableManager.instance.ParseMetaClassMemberExpress();
+            ClassManager.instance.ParseMetaDataMemberAnonAndArray();
 
             // Inject project global.data config into Project meta members before statements parse.
             ProjectClass.InjectProjectGlobalDataFromConfig();

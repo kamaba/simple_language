@@ -42,52 +42,22 @@ namespace SimpleLanguage.Core
         }
         public void ParseMetaClassMemberExpress()
         {
-            foreach (var v in metaMemeberVariableList)
-            {
-                v.CreateExpress();
-            }
-            foreach (var v in metaMemeberVariableList)
+            List<MetaVariable> mvlist = new List<MetaVariable>();
+            mvlist.AddRange(metaMemeberVariableList);
+            mvlist.AddRange(metaMemberDataVariableList);
+            mvlist.AddRange(metaMemberEnumVariableList);
+
+            foreach (var v in mvlist)
             {
                 v.CalcParseLevel();
             }
-            metaMemeberVariableList.Sort((x, y) => x.CompareTo(y));
+            mvlist.Sort((x, y) => x.CompareTo(y));
 
-            foreach (var v in metaMemeberVariableList)
+            foreach (var v in mvlist)
             {
                 v.ParseMetaExpress();
-                v.CalcReturnType();
+                v.ParseRealMetaType();
                 v.ParseChildMemberData();
-            }
-        }
-        public void ParseMetaDataMemberExpress()
-        {
-            var snapshot = metaMemberDataVariableList.ToArray();
-            foreach (var v in snapshot)
-            {
-                v.ParseMetaExpress();
-            }
-
-            // 嵌套 const / 匿名 {} / 数组元素未进入 metaMemberDataVariableList，需在 ParseExpress 之后按树后序补全匿名 MetaData 与 NewObject。
-            foreach (var md in ClassManager.instance.EnumerateDefineMetaData())
-            {
-                var roots = new List<MetaMemberData>();
-                foreach (var kv in md.metaMemberDataDict)
-                {
-                    roots.Add(kv.Value);
-                }
-                roots.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
-                for (int i = 0; i < roots.Count; i++)
-                {
-                    MetaMemberData.ResolveAnonymousDataHierarchyPostOrder(roots[i]);
-                }
-            }
-        }
-        public void ParseMetaEnumMemberExpress()
-        {
-            var snapshot = metaMemberEnumVariableList.ToArray();
-            foreach (var v in snapshot)
-            {
-                v.ParseMetaExpress();
             }
         }
     }

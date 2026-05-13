@@ -152,7 +152,7 @@ namespace SimpleLanguage.Core
                 //ModuleManager.instance.coreModule.metaNode.AddMetaClass(v);
                 ClassManager.instance.AddMetaClass(v, ModuleManager.instance.coreModule);
                 v.UpdateClassAllName();
-                ClassManager.instance.AddRuntimeMetaClass(v);
+                ClassManager.instance.AddExportMetaClass(v);
             }
         }
         public static bool IsIncludeMetaClass( MetaClass metaclass )

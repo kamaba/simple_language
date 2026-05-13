@@ -16,7 +16,7 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaVariable : MetaBase
+    public class MetaVariable : MetaBase, IComparable<MetaVariable>
     {
         public enum EVariableFrom
         {
@@ -30,6 +30,13 @@ namespace SimpleLanguage.Core
             EnumMember,
             DataMember,
         }
+
+        public static int s_ConstLevel = 10000000;
+        public static int s_IsHaveRetStaticLevel = 100000000;
+        public static int s_NoHaveRetStaticLevel = 200000000;
+        public static int s_DefineMetaTypeLevel = 1000000000;
+        public static int s_ExpressLevel = 1500000000;
+
         public bool isDefineMetaType => m_IsDefineMetaType;
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isConst => m_IsConst;
@@ -40,6 +47,7 @@ namespace SimpleLanguage.Core
         {
             get { return m_IsDefineMetaType ? (m_DefineMetaType != null ? m_DefineMetaType.IsArray() : false) : (m_RealMetaType != null ? m_RealMetaType.IsArray() : false); }
         }
+        public int parseLevel { get; set; } = -1;
 
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
         public EVariableFrom variableFrom => m_VariableFrom;
@@ -286,6 +294,10 @@ namespace SimpleLanguage.Core
         {
             return true;
         }
+        public virtual void CalcParseLevel()
+        {
+
+        }
         public virtual void CreateMetaExpress()
         {
 
@@ -293,7 +305,18 @@ namespace SimpleLanguage.Core
         public virtual bool ParseMetaExpress()
         {
             return true;
-        }        
+        }
+        public virtual void ParseChildMemberData()
+        {
+
+        }
+        public int CompareTo(MetaVariable mmv)
+        {
+            if (this.parseLevel > mmv.parseLevel)
+                return 1;
+            else
+                return -1;
+        }
         public bool AddMetaVariable( MetaVariable mv )
         {
             if(m_MetaVariableDict.ContainsKey(mv.name) )

@@ -16,7 +16,7 @@ namespace SimpleLanguage.Core
     public class MetaEnum : MetaClass
     {
 
-        protected MetaMemberVariable m_ValuesMetaVariable = null;
+        protected MetaMemberVariable m_ValuesMetaVariable = null;       //遍历时的对象
         public MetaEnum(string _name) : base(_name)
         {
             m_Type = EType.Enum;
@@ -107,11 +107,11 @@ namespace SimpleLanguage.Core
         {
             if (fmc.memberFunctionList.Count > 0)
             {
-                Log.AddMetaCoreLog(LID.AutoMetaEnumL110, "Error Enum涓笉鍏佽鏈塅unction!!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum涓笉鍏佽鏈塅unction!!");
             }
             if (fmc.templateDefineList.Count > 0)
             {
-                Log.AddMetaCoreLog(LID.AutoMetaEnumL114, "Error 鍦‥num瀹氫箟涓紝涓嶅厑璁镐娇鐢═emplate妯℃澘鐨勫舰寮?");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鍦‥num瀹氫箟涓紝涓嶅厑璁镐娇鐢═emplate妯℃澘鐨勫舰寮?");
             }
             //for (int i = 0; i < fmc.templateParamList.Count; i++)
             //{
@@ -132,7 +132,7 @@ namespace SimpleLanguage.Core
                 MetaBase mb = GetMetaMemberVariableByName(v.name);
                 if (mb != null)
                 {
-                    Log.AddMetaCoreLog(LID.AutoMetaEnumL135, "Error Enum MetaMemberData宸叉湁瀹氫箟绫? " + m_AllName + "涓?宸叉湁: " + v.token?.ToLexemeAllString() + "鐨勫厓绱?!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum MetaMemberData宸叉湁瀹氫箟绫? " + m_AllName + "涓?宸叉湁: " + v.token?.ToLexemeAllString() + "鐨勫厓绱?!");
                     isHave = true;
                 }
                 else
@@ -214,7 +214,7 @@ namespace SimpleLanguage.Core
                     {
                         if (mme.express == null)
                         {
-                            Log.AddMetaCoreLog(LID.AutoMetaEnumL218, "Warning Enum Member Enum 鎴愬憳绗竴浣嶅繀椤绘湁=鍙");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Warning Enum Member Enum 鎴愬憳绗竴浣嶅繀椤绘湁=鍙");
                             continue;
                         }
                     }
@@ -224,7 +224,7 @@ namespace SimpleLanguage.Core
                         mme.ParseMetaExpress();
                         if (mme.enumValueConstExpressNode == null)
                         {
-                            Log.AddMetaCoreLog(LID.AutoMetaEnumL228, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╟onst鍊肩被鍙橀噺");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╟onst鍊肩被鍙橀噺");
                             continue;
                         }
 
@@ -237,7 +237,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddMetaCoreLog(LID.AutoMetaEnumL241, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                 continue;
                             }
                         }
@@ -250,7 +250,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddMetaCoreLog(LID.AutoMetaEnumL254, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                 continue;
                             }
                         }
@@ -263,7 +263,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddMetaCoreLog(LID.AutoMetaEnumL267, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                 continue;
                             }
                         }
@@ -276,7 +276,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddMetaCoreLog(LID.AutoMetaEnumL280, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                 continue;
                             }
                         }
@@ -289,7 +289,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddMetaCoreLog(LID.AutoMetaEnumL293, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                 continue;
                             }
                         }
@@ -302,7 +302,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddMetaCoreLog(LID.AutoMetaEnumL306, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                 continue;
                             }
                         }
@@ -342,18 +342,18 @@ namespace SimpleLanguage.Core
                     mme.ParseDefineMetaType();
                     if (mme.express == null)
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaEnumL346, "Error Enum Member Enum String鎴愬憳蹇呴』鏈?鍙" + v.Key);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum String鎴愬憳蹇呴』鏈?鍙" + v.Key);
                         continue;
                     }
                     mme.ParseMetaExpress();
                     if (mme.enumValueConstExpressNode == null)
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaEnumL352, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╟onst鍊肩被鍙橀噺");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╟onst鍊肩被鍙橀噺");
                         continue;
                     }
                     if (mme.enumValueConstExpressNode.eType != EType.String)
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaEnumL357, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╯tring鍊肩被鍙橀噺");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╯tring鍊肩被鍙橀噺");
                         continue;
                     }
 
@@ -369,7 +369,7 @@ namespace SimpleLanguage.Core
                     mme.ParseDefineMetaType();
                     if (mme.express == null)
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaEnumL373, "Error Enum Member Enum 鍔ㄦ€佹垚鍛樼涓€浣嶅繀椤绘湁=鍙");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍔ㄦ€佹垚鍛樼涓€浣嶅繀椤绘湁=鍙");
                         continue;
                     }
                     mme.ParseMetaExpress();
@@ -381,12 +381,12 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.AutoMetaEnumL385, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata鍊肩被鍙橀噺, 涓嶅厑璁稿叾瀹冪被鍨");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata鍊肩被鍙橀噺, 涓嶅厑璁稿叾瀹冪被鍨");
                         }
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaEnumL390, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata new 鍊肩被鍙橀噺");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata new 鍊肩被鍙橀噺");
                     }
                 }
             }
@@ -397,7 +397,7 @@ namespace SimpleLanguage.Core
                     v.Value.ParseDefineMetaType();
                     if (v.Value.express == null)
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaEnumL401, "Error Enum Member Enum 鎴愬憳蹇呴』鏈?鍙");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鎴愬憳蹇呴』鏈?鍙");
                         continue;
                     }
                     v.Value.ParseMetaExpress();
@@ -410,7 +410,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.AutoMetaEnumL414, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata鍊肩被鍙橀噺, 涓嶅厑璁稿叾瀹冪被鍨");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata鍊肩被鍙橀噺, 涓嶅厑璁稿叾瀹冪被鍨");
                         }
                     }
                     else if (v.Value.constExpressNode != null)
@@ -419,7 +419,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaEnumL423, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata new 鍊肩被鍙橀噺");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata new 鍊肩被鍙橀噺");
                     }
                 }
             }

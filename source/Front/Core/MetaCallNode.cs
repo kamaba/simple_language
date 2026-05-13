@@ -879,6 +879,19 @@ namespace SimpleLanguage.Core
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 娌℃湁鎵惧埌{m_Name} 鐨凪etaData鏁版嵁!");
                             return false;
                         }
+                        if (retmmd.isStatic == false && m_FrontCallNode.m_MetaData?.isStatic == false)
+                        {
+                            var defaultInstance = GetOrCreateDataDefaultStaticInstanceVariable(m_FrontCallNode.m_MetaData);
+                            if (defaultInstance != null)
+                            {
+                                // data AA{...} 的 AA.a：先加载 AA 的默认静态实例，再取实例字段 a。
+                                m_FrontCallNode.m_MetaVariable = defaultInstance;
+                            }
+                        }
+                        else
+                        {
+                            m_FrontCallNode.m_MetaVariable = null;
+                        }
 
                         if (retmmd.memberDataType == EMemberDataType.MemberClass)
                         {
@@ -1418,6 +1431,11 @@ namespace SimpleLanguage.Core
                 }
                 else if (m_MetaData != null)
                 {
+                    if (m_MetaData.isStatic)
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error data static 不允许进行实例化(new/构造调用): " + m_MetaData.allClassName);
+                        return false;
+                    }
                     m_CallNodeType = ECallNodeType.NewData;
                     /*
                     if (m_FileMetaCallNode.fileMetaBraceTerm != null)  //鍙互浣跨敤  ArrClass(){ x = ??} 鐨勬柟寮?
@@ -1829,6 +1847,43 @@ namespace SimpleLanguage.Core
         public MetaMemberData GetDataValueByMetaData(MetaData md, string inputName)
         {
             return md.GetMemberDataByName(inputName);
+        }
+        private MetaMemberVariable GetOrCreateDataDefaultStaticInstanceVariable(MetaData dataType)
+        {
+            if (dataType == null || dataType.isStatic)
+            {
+                return null;
+            }
+
+            var globalData = ProjectManager.globalData;
+            if (globalData == null)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error data 默认静态实例创建失败：globalData 为空。");
+                return null;
+            }
+
+            string varName = "__data_default_instance_" + dataType.GetHashCode();
+            var exist = globalData.GetMetaMemberVariableByName(varName) as MetaMemberVariable;
+            if (exist != null)
+            {
+                return exist;
+            }
+
+            var mmv = new MetaMemberVariable(globalData, varName);
+            mmv.SetIsStatic(true);
+            mmv.SetIsDefineMetaType(true);
+            mmv.SetMetaDefineType(new MetaType(dataType));
+            mmv.SetRealMetaType(new MetaType(dataType));
+            mmv.SetExpress(new MetaNewObjectExpressNode(new MetaType(dataType), globalData, null));
+            globalData.AddMetaMemberVariable(mmv, false);
+
+            // 该变量是 Frontend 解析过程中按需注入的，需立即完成表达式与类型收敛，
+            // 否则后续 IR 可能拿不到默认实例的初始化表达式。
+            mmv.ParseMetaExpress();
+            mmv.CalcReturnType();
+            mmv.ParseChildMemberData();
+
+            return mmv;
         }
         public MetaMemberData GetDataValueByMetaMemberData(MetaMemberData md, string inputName)
         {

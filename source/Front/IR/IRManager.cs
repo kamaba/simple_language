@@ -360,8 +360,8 @@ namespace SimpleLanguage.IR
             Log.AddIRLog(LID.ShowExtendMessage, "Start translating IRMetaClass...");
             //解析成员中的string类型
             //解析成员中的const类型
-            var classList = ClassManager.instance.runtimeClassList;
-            foreach (var v in classList)
+            var exportClassList = ClassManager.instance.exportClassList;
+            foreach (var v in exportClassList)
             {
                 IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
@@ -382,7 +382,7 @@ namespace SimpleLanguage.IR
                 }
 
             }
-            foreach ( var v in classList )
+            foreach ( var v in exportClassList )
             {
                 if( v.isTemplateClass )
                 {

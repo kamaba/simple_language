@@ -160,7 +160,7 @@ namespace SimpleLanguage.CSharp
             getmb.UpdateAllName();
             if( getmb.IsMetaClass() && isAdd )
             {
-                ClassManager.instance.AddRuntimeMetaClass(getmb.GetMetaClassByTemplateCount(0));
+                ClassManager.instance.AddExportMetaClass(getmb.GetMetaClassByTemplateCount(0));
             }
 
 

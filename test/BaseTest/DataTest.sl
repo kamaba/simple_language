@@ -20,7 +20,7 @@ data ScoreData
     physics = 0
 }
 
-class DataHolder
+class ClassHolder
 {
     value = 0
 }
@@ -51,7 +51,7 @@ data AnonymousNestedDataSample
 
 data ClassDataEnumSample
 {
-    cc = DataHolder(){ value = 200 }
+    cc = ClassHolder(){ value = 200 }
     vb = MetaInfo(){ level = 3, passed = True }
     kind = DataKind.Advanced
 }
@@ -62,7 +62,7 @@ data MixedArrayElementSample
         1,
         [2, 3],
         { code = 7, title = "ok" },
-        DataHolder(){ value = 22 },
+        ClassHolder(){ value = 22 },
         MetaInfo(){ level = 9, passed = False },
         DataKind.Base
     ]

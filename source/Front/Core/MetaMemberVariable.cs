@@ -23,7 +23,7 @@ namespace SimpleLanguage.Core
         ManualAndCSharp = 6,     //手动注入的c#代码进逻辑解析
         All = 7
     }
-    public class MetaMemberVariable : MetaVariable, IComparable<MetaMemberVariable>
+    public class MetaMemberVariable : MetaVariable
     {
         public List<MetaAttribute> attributeList => m_AttributeList;
         public MetaMemberVariable sourceMetaMemberVariable => m_SourceMetaVariable as MetaMemberVariable;
@@ -31,7 +31,6 @@ namespace SimpleLanguage.Core
         public EFromType fromType => m_FromType;
         public MetaExpressNode express => m_Express;
         public MetaConstExpressNode constExpressNode => m_Express as MetaConstExpressNode;  
-        public int parseLevel { get; set; } = -1;
         public bool isInnerDefine => m_IsInnerDefine;
         public int index => m_Index;
         public FileMetaMemberVariable fileMetaMemeberVariable => m_FileMetaMemeberVariable;
@@ -47,11 +46,6 @@ namespace SimpleLanguage.Core
         private readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
         //private Dictionary< string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
         
-        public static int s_ConstLevel = 10000000;
-        public static int s_IsHaveRetStaticLevel = 100000000;
-        public static int s_NoHaveRetStaticLevel = 200000000;
-        public static int s_DefineMetaTypeLevel = 1000000000;
-        public static int s_ExpressLevel = 1500000000;
 
 #pragma warning disable CS0414 // 字段“MetaMemberVariable.m_MemberDataType”已被赋值，但从未使用过它的值
         private EMemberDataType m_MemberDataType = EMemberDataType.None;
@@ -132,6 +126,11 @@ namespace SimpleLanguage.Core
         {
             m_VariableFrom = vfrom;
         }
+        public void SetExpress(MetaExpressNode mcen)
+        {
+            // Auto-filled const is not considered an explicit '=' from source, but it is a valid express for later stages.
+            m_Express = mcen;
+        }
         public override void ParseDefineMetaType()
         {
             if (m_FileMetaMemeberVariable?.classDefineRef != null)
@@ -149,11 +148,11 @@ namespace SimpleLanguage.Core
                 m_IsDefineMetaType = false;
             }
         }
-        public virtual void CalcParseLevel()
+        public override void CalcParseLevel()
         {
             if (isConst)
             {
-                parseLevel = s_ConstLevel;
+                parseLevel = MetaMemberVariable.s_ConstLevel;
                 s_ConstLevel = s_ConstLevel + 10000;
             }
             else if (isStatic)
@@ -195,7 +194,7 @@ namespace SimpleLanguage.Core
                 ExpressManager.CalcParseLevel(parseLevel, m_Express);
             }
         }
-        public void CreateExpress()
+        public override void CreateMetaExpress()
         {
             if( this.m_FileMetaMemeberVariable != null )
             {
@@ -222,11 +221,6 @@ namespace SimpleLanguage.Core
 
                 }
             }
-        }
-        public void SetExpress( MetaExpressNode mcen)
-        {
-            // Auto-filled const is not considered an explicit '=' from source, but it is a valid express for later stages.
-            m_Express = mcen;
         }
         public override bool ParseMetaExpress()
         {
@@ -349,13 +343,6 @@ namespace SimpleLanguage.Core
             {
                 Log.AddMetaCoreLog(LID.MetaCoreExpressIsNull, "", "express" );
             }
-        }
-        public int CompareTo(MetaMemberVariable mmv)
-        {
-            if (this.parseLevel > mmv.parseLevel)
-                return 1;
-            else
-                return -1;
         }
 
         void CalcDefineClassType()

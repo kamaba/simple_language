@@ -574,8 +574,18 @@ namespace SimpleLanguage.Core
             }
             else if (mcn.callNodeType == ECallNodeType.DataName)
             {
-                MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaData(mcn.metaType);
-                m_VisitNodeList.Add(mvn);
+                if (mcn.metaVariable != null)
+                {
+                    // data 类型名参与成员访问时（如 AA.a 且 a 为实例字段），
+                    // 先把 AA 的默认静态实例压栈，再由后续 MemberDataName 取字段。
+                    MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable);
+                    m_VisitNodeList.Add(mvn);
+                }
+                else
+                {
+                    MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaData(mcn.metaType);
+                    m_VisitNodeList.Add(mvn);
+                }
             }
             else if (mcn.callNodeType == ECallNodeType.EnumName)
             {

@@ -43,9 +43,11 @@ namespace SimpleLanguage.Core
                     {
                         return;
                     }
-                    var targetMetaType = targetMetaVariable?.defineMetaType != null
-                        ? new MetaType(targetMetaVariable.defineMetaType)
-                        : (mt != null ? new MetaType(mt) : new MetaType(CoreMetaClassManager.objectMetaClass));
+                    var targetMetaType = targetMetaVariable.GetFinalMetaType();
+                    if( targetMetaType == null )
+                    {
+                        targetMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                    }
                     m_MetaType = targetMetaType;
 
                     if (fmos.express is FileMetaCallTerm fmct
@@ -138,6 +140,7 @@ namespace SimpleLanguage.Core
         private MetaBlockStatements m_OwnerMetaBlockStatements;
         private MetaType m_MetaType = null;
         private string m_DefineName;
+        private bool m_AssignBlockedByConst = false;
 
         private Token m_AssignToken = null;
         //private FileMetaDefineVariableSyntax m_FileMetaDefineVariableSyntax = null;
@@ -263,10 +266,18 @@ namespace SimpleLanguage.Core
         }
         public void Parse( AllowUseSettings aus )
         {
+            MetaVariable assignTarget = (MetaVariable)m_MetaMemberData ?? m_MetaMemberVariable;
+            if (assignTarget != null && assignTarget.isConst)
+            {
+                m_AssignBlockedByConst = true;
+                m_MetaExpress = null;
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, assignTarget.token,
+                    "const 成员不允许在对象初始化中使用 '=' 重新赋值: " + assignTarget.name);
+                return;
+            }
             if( m_MetaExpress != null )
             {
                 m_MetaExpress.Parse(aus);
-                MetaVariable assignTarget = (MetaVariable)m_MetaMemberData ?? m_MetaMemberVariable;
                 m_MetaExpress = ExpressManager.ConvertNewExpress(m_MetaExpress, m_MetaType, assignTarget);
             }
         }
@@ -319,8 +330,11 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                System.Diagnostics.Debug.Assert(false);
-                System.Diagnostics.Debug.Write("使用{}赋值，表达式不允许为空!!");
+                if (!m_AssignBlockedByConst)
+                {
+                    System.Diagnostics.Debug.Assert(false);
+                    System.Diagnostics.Debug.Write("使用{}赋值，表达式不允许为空!!");
+                }
             }
         }
         // 创建NewObject 即 Class c = Class(){ var1 = 1; } 的方式使用 1即生成的表达式

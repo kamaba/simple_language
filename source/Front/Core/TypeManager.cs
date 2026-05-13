@@ -91,7 +91,6 @@ namespace SimpleLanguage.Core
 
         /// <summary>
         /// 在所有源文件已通过 <see cref="FileMeta.CombineFileMeta"/> 创建类结构，且
-        /// <see cref="ClassManager.ParseInitMetaClassListThroughInheritance"/> 已处理模板约束、extends/implements 与 extend 排序之后，
         /// 再解析并注册 typealias（工程级 + 文件级）；须在
         /// <see cref="ClassManager.ParseInitMetaClassListCollectMemberDefineMetaTypes"/> 之前调用。
         /// </summary>

@@ -36,6 +36,7 @@ namespace SimpleLanguage.Compile
         public FileMetaConstValueTerm fileMetaConstValue => m_FileMetaConstValue;
         public FileMetaCallTerm fileMetaCallTermValue => m_FileMetaCallTermValue;
         public bool isWithName => m_IsWithName;
+        public bool isConst => m_ConstToken != null;
         public bool isAnonymous => !m_IsWithName;
         public bool isAnonymousData => m_MemberDataType == EMemberDataType.Data && !m_IsWithName;
         public EMemberDataType DataType => m_MemberDataType;
@@ -47,6 +48,7 @@ namespace SimpleLanguage.Compile
         private FileMetaConstValueTerm m_FileMetaConstValue = null;
         private FileMetaCallTerm m_FileMetaCallTermValue = null;
         private bool m_IsWithName = false;
+        private Token m_ConstToken = null;
 
         public FileMetaMemberData( FileMeta fm, Node node, EMemberDataType dataType )
         {
@@ -73,7 +75,22 @@ namespace SimpleLanguage.Compile
             {
                 if (frontList.Count > 0)
                 {
-                    m_Token = frontList[0].token;
+                    int identifierIndex = 0;
+                    if (frontList[0]?.nodeType == ENodeType.Key
+                        && frontList[0].token?.type == ETokenType.Const)
+                    {
+                        m_ConstToken = frontList[0].token;
+                        identifierIndex = 1;
+                    }
+
+                    if (identifierIndex < frontList.Count)
+                    {
+                        m_Token = frontList[identifierIndex].token;
+                    }
+                    else
+                    {
+                        Log.AddFileMetaLog(LID.NodeNotFoundNameToken, assignNode?.token ?? frontList[0].token, "");
+                    }
                 }
                 else
                 {

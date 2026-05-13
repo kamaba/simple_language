@@ -62,7 +62,7 @@ namespace SimpleLanguage.Core
             m_IsWithName = m_FileMetaMemeberData.isWithName;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(mc);
-            m_IsConst = mc.isConst;
+            m_IsConst = mc.isConst || fmmd.isConst;
             m_Token = fmmd.nameToken;
             m_VariableFrom = EVariableFrom.DataMember;
             if (m_IsWithName)
@@ -81,7 +81,7 @@ namespace SimpleLanguage.Core
             m_FileMetaMemeberData = fmmd;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(parentNode.ownerMetaClass);
-            m_IsConst = parentNode.isConst;
+            m_IsConst = parentNode.isConst || fmmd.isConst;
             m_Token = fmmd.nameToken;            
             m_VariableFrom = EVariableFrom.DataMember;
             m_IsWithName = m_FileMetaMemeberData.isWithName;
@@ -424,6 +424,104 @@ namespace SimpleLanguage.Core
             {
                 mmd.ResolveAnonymousDataMetaType();
             }
+            else if (mmd.memberDataType == EMemberDataType.MemberArray && mmd.metaMemberDataDict.Count > 0)
+            {
+                mmd.ResolveArrayElementExpressFromMemberDict();
+            }
+        }
+
+        private MetaType BuildArrayTypeForMemberDict(int elementCount)
+        {
+            if (m_DefineMetaType != null && m_DefineMetaType.IsArray())
+            {
+                var keep = new MetaType(m_DefineMetaType);
+                keep.SetArrayLength(elementCount);
+                return keep;
+            }
+
+            MetaType elementType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            var ordered = new List<MetaMemberData>(m_MetaMemberDataDict.Values);
+            ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
+            for (int i = 0; i < ordered.Count; i++)
+            {
+                var childType = ordered[i].GetFinalMetaType();
+                if (childType != null)
+                {
+                    elementType = new MetaType(childType);
+                    break;
+                }
+            }
+
+            var arrayType = new MetaType(CoreMetaClassManager.arrayMetaClass, new List<MetaType>() { elementType });
+            arrayType.SetArrayLength(elementCount);
+            return arrayType;
+        }
+
+        internal void ResolveArrayElementExpressFromMemberDict()
+        {
+            if (m_MemberDataType != EMemberDataType.MemberArray || m_MetaMemberDataDict.Count == 0)
+            {
+                return;
+            }
+
+            var ordered = new List<MetaMemberData>(m_MetaMemberDataDict.Values);
+            ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
+
+            var arrayType = BuildArrayTypeForMemberDict(ordered.Count);
+            var parseSetting = new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress };
+            MetaClass ownerMc = m_OwnerMetaClass ?? ownerMetaClass ?? CoreMetaClassManager.objectMetaClass;
+
+            var arrayExpr = m_Express as MetaNewObjectExpressNode;
+            if (arrayExpr == null || arrayExpr.newType != MetaNewObjectExpressNode.ENewType.ArrayClass)
+            {
+                arrayExpr = new MetaNewObjectExpressNode(arrayType, ownerMc, m_OwnerMetaBlockStatements, this);
+                m_Express = arrayExpr;
+            }
+
+            if (arrayExpr.metaContent?.assignStatementsList == null)
+            {
+                return;
+            }
+            arrayExpr.metaContent.assignStatementsList.Clear();
+
+            for (int i = 0; i < ordered.Count; i++)
+            {
+                var elementMember = ordered[i];
+                MetaExpressNode elementExpr = elementMember.expressNode;
+                if (elementExpr == null)
+                {
+                    if (elementMember.memberDataType == EMemberDataType.MemberData
+                        && elementMember.metaMemberDataDict.Count > 0)
+                    {
+                        elementMember.ResolveAnonymousDataMetaType();
+                    }
+                    else
+                    {
+                        elementMember.ParseMetaExpress();
+                    }
+                    elementExpr = elementMember.expressNode;
+                }
+
+                if (elementExpr == null)
+                {
+                    continue;
+                }
+
+                var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(ownerMc), elementExpr);
+                arrayExpr.metaContent.assignStatementsList.Add(mas);
+            }
+
+            arrayExpr.Parse(parseSetting);
+            arrayExpr.CalcReturnType();
+
+            var retArrayType = arrayExpr.GetReturnMetaDefineType();
+            if (retArrayType != null)
+            {
+                m_DefineMetaType = new MetaType(retArrayType);
+                m_RealMetaType = new MetaType(retArrayType);
+                m_IsDefineMetaType = true;
+                m_MemberDataType = EMemberDataType.MemberArray;
+            }
         }
 
         internal void ResolveAnonymousDataMetaType()
@@ -491,6 +589,55 @@ namespace SimpleLanguage.Core
                     }
                     break;
             }
+        }
+        public override void CalcParseLevel()
+        {
+            if (isConst)
+            {
+                parseLevel = MetaMemberVariable.s_ConstLevel;
+                s_ConstLevel = MetaMemberVariable.s_ConstLevel + 10000;
+            }
+            else if (isStatic)
+            {
+                if (parseLevel == -1)
+                {
+                    if (m_DefineMetaType != null)
+                    {
+                        parseLevel = s_IsHaveRetStaticLevel;
+                        s_IsHaveRetStaticLevel = s_IsHaveRetStaticLevel + 100000;
+                    }
+                    else
+                    {
+                        parseLevel = s_NoHaveRetStaticLevel;
+                        s_NoHaveRetStaticLevel = s_NoHaveRetStaticLevel + 100000;
+                    }
+
+                }
+            }
+            else
+            {
+                if (parseLevel == -1)
+                {
+                    if (m_DefineMetaType != null)
+                    {
+                        parseLevel = s_DefineMetaTypeLevel;
+                        s_DefineMetaTypeLevel = s_DefineMetaTypeLevel + 1000000;
+                    }
+                    else
+                    {
+                        parseLevel = s_ExpressLevel;
+                        s_ExpressLevel = s_ExpressLevel + 1000000;
+                    }
+                }
+            }
+
+            if (m_Express != null)
+            {
+                ExpressManager.CalcParseLevel(parseLevel, m_Express);
+            }
+        }
+        public override void CreateMetaExpress()
+        {
         }
         public override bool ParseMetaExpress()
         {

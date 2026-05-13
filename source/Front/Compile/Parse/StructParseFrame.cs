@@ -1520,6 +1520,22 @@ namespace SimpleLanguage.Compile
                         }
                     }
                 }
+                else if (curNode.nodeType == ENodeType.Key
+                    && curNode.token?.type == ETokenType.Const)
+                {
+                    if (assignNode != null)
+                    {
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error data 成员的 const 关键字只能出现在赋值号前");
+                        continue;
+                    }
+                    if (frontList.Count > 0)
+                    {
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error data 成员定义中 const 必须位于名称之前");
+                        continue;
+                    }
+                    frontList.Add(curNode);
+                    continue;
+                }
                 else if (curNode.nodeType == ENodeType.Symbol )
                 {
                     if( assignNode  == null )
