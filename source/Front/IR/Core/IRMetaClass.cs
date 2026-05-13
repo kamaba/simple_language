@@ -22,7 +22,7 @@ namespace SimpleLanguage.IR
         public string irName => m_IRName;
         public string sourcePath => m_SourcePath;
         public bool needInitMemberVariable => m_NeedInitMemberVariable;
-        /// <summary>Whether this IR type is a normal class, <c>enum</c>, or <c>data</c> block (from MetaClass).</summary>
+        /// <summary>Whether this IR type is a <c>class</c>, <c>interface</c>, <c>enum</c>, or <c>data</c> (see <see cref="IRMetaClassKind"/>).</summary>
         public IRMetaClassKind metaClassKind => m_MetaClassKind;
 
         public List<IRMetaVariable> localIRMetaVariableList => m_LocalIRMetaVariableList;
@@ -37,7 +37,13 @@ namespace SimpleLanguage.IR
         // number of generated/template meta types
         public int templateCount => m_TemplateCount;
         /// <summary>Number of template parameters declared in source (e.g. <c>class Foo&lt;T,U&gt;</c> 鈫?2). Not the same as <see cref="templateCount"/>.</summary>
-        public int templateParameterCount => m_MetaClass?.metaTemplateList?.Count ?? 0;
+        public int templateParameterCount => OwnerMetaClass?.metaTemplateList?.Count ?? 0;
+
+        /// <summary>语义类型宿主：<see cref="MetaClass"/> / <see cref="MetaData"/> / <see cref="MetaEnum"/> 之一。</summary>
+        public MetaBase typeOwner => m_TypeOwner;
+        public MetaClass OwnerMetaClass => m_TypeOwner as MetaClass;
+        public MetaData OwnerMetaData => m_TypeOwner as MetaData;
+        public MetaEnum OwnerMetaEnum => m_TypeOwner as MetaEnum;
         // template relations mapping: key is related class id, value maps template index -> IRMetaType
         public Dictionary<int, Dictionary<int, IRMetaType>> templateRelation => m_IRMetaClassMapTemplateDict;
 
@@ -51,7 +57,7 @@ namespace SimpleLanguage.IR
         private List<IRMetaType> m_IRMetaTypeList = new List<IRMetaType>();
         private string m_IRName = "";
         private string m_SourcePath = "";
-        private MetaClass m_MetaClass = null;
+        private MetaBase m_TypeOwner = null;
         private IRMetaClassKind m_MetaClassKind = IRMetaClassKind.Class;
         private int m_TemplateCount = 0;
         private bool m_NeedInitMemberVariable = false;
@@ -64,39 +70,78 @@ namespace SimpleLanguage.IR
         //private int m_ByteCount = 0;
 
         //static int s_TypeLength = 1000;
-        public IRMetaClass( MetaClass mc )
+        public IRMetaClass(MetaClass mc)
         {
-            m_MetaClass = mc;
-            m_MetaClassKind = mc is MetaEnum ? IRMetaClassKind.Enum
-                : mc is MetaData ? IRMetaClassKind.Data
-                : mc.isInterfaceClass ? IRMetaClassKind.Interface
-                : IRMetaClassKind.Class;
-            m_IRName = IRManager.GetIRNameByMetaClass(mc);
-            id = mc.GetHashCode();
+            if (mc == null)
+            {
+                throw new System.ArgumentNullException(nameof(mc));
+            }
+            InitFromMetaOwner(mc, mc.isInterfaceClass ? IRMetaClassKind.Interface : IRMetaClassKind.Class);
+        }
+
+        public IRMetaClass(MetaData md)
+        {
+            if (md == null)
+            {
+                throw new System.ArgumentNullException(nameof(md));
+            }
+            InitFromMetaOwner(md, IRMetaClassKind.Data);
+        }
+
+        public IRMetaClass(MetaEnum me)
+        {
+            if (me == null)
+            {
+                throw new System.ArgumentNullException(nameof(me));
+            }
+            InitFromMetaOwner(me, IRMetaClassKind.Enum);
+        }
+
+        void InitFromMetaOwner(MetaBase owner, IRMetaClassKind kind)
+        {
+            m_TypeOwner = owner ?? throw new System.ArgumentNullException(nameof(owner));
+            m_MetaClassKind = kind;
+            id = owner.GetHashCode();
+            m_IRName = IRManager.GetIRNameByMetaOwner(owner);
 
             try
             {
-                // Best-effort: class may have multiple file definitions; pick the first.
-                foreach (var kv in mc.fileMetaClassDict)
+                if (owner is MetaClass mc)
                 {
-                    var fmc = kv.Value;
-                    if (fmc != null && !string.IsNullOrEmpty(fmc.fileMeta?.path))
+                    foreach (var kv in mc.fileMetaClassDict)
                     {
-                        m_SourcePath = fmc.fileMeta.path;
-                        break;
+                        var fmc = kv.Value;
+                        if (fmc != null && !string.IsNullOrEmpty(fmc.fileMeta?.path))
+                        {
+                            m_SourcePath = fmc.fileMeta.path;
+                            break;
+                        }
                     }
+                }
+                else if (owner is MetaData md && md.boundFileMetaClass != null)
+                {
+                    var fp = md.boundFileMetaClass.fileMeta?.path;
+                    if (!string.IsNullOrEmpty(fp))
+                        m_SourcePath = fp;
+                }
+                else if (owner is MetaEnum me && me.boundFileMetaClass != null)
+                {
+                    var fp = me.boundFileMetaClass.fileMeta?.path;
+                    if (!string.IsNullOrEmpty(fp))
+                        m_SourcePath = fp;
                 }
             }
             catch
             {
                 m_SourcePath = "";
             }
-        }        
+        }
         /// <summary>Ids of interface types this class is declared to implement (stable hash = IR class id), including those merged from the base class.</summary>
         public IReadOnlyList<int> GetImplementsInterfaceClassIds()
         {
-            if (m_MetaClass == null) return System.Array.Empty<int>();
-            var icl = m_MetaClass.interfaceClass;
+            var ownerMc = OwnerMetaClass;
+            if (ownerMc == null) return System.Array.Empty<int>();
+            var icl = ownerMc.interfaceClass;
             if (icl == null || icl.Count == 0) return System.Array.Empty<int>();
             var list = new List<int>(icl.Count);
             for (int i = 0; i < icl.Count; i++)
@@ -213,76 +258,66 @@ namespace SimpleLanguage.IR
         }
         public void CreateMemberData()
         {
-            var md = m_MetaClass != null
-                ? ClassManager.instance.FindMetaDataByName(m_MetaClass.allClassName)
-                : null;
+            if (OwnerMetaData != null)
+            {
+                CreateMemberDataFromMetaData(OwnerMetaData);
+                return;
+            }
+            if (OwnerMetaEnum != null)
+            {
+                CreateMemberDataFromMetaEnum(OwnerMetaEnum);
+                return;
+            }
+            var mc = OwnerMetaClass;
+            if (mc == null)
+            {
+                return;
+            }
+
+            var md = ClassManager.instance.FindMetaDataByName(mc.allClassName);
             if (md != null)
             {
-                var dataMembers = md.GetMetaMemberDataList()
-                    .OrderBy(m => m.dataFieldOrderIndex)
-                    .ThenBy(m => m.name, System.StringComparer.Ordinal)
-                    .ToList();
-                int localIndex = 0;
-                int staticIndex = 0;
-                for (int i = 0; i < dataMembers.Count; i++)
+                CreateMemberDataFromMetaData(md);
+                return;
+            }
+
+            var localMetaMemberVariables = mc.GetMetaMemberVariableListByFlag(false);
+            for (int i = 0; i < localMetaMemberVariables.Count; i++)
+            {
+                var v = localMetaMemberVariables[i];
+                IRMetaVariable irmv = new IRMetaVariable(this, v, i);
+                m_LocalIRMetaVariableList.Add(irmv);
+                AddMetaMemberVariableIndexBindHashCode(irmv.id, i);
+                if (v.isInnerDefine == false)
                 {
-                    var mmd = dataMembers[i];
-                    if (mmd.isStatic)
-                    {
-                        var irmv = new IRMetaVariable(this, mmd, staticIndex);
-                        m_StaticIRMetaVariableList.Add(irmv);
-                        AddMetaMemberVariableIndexBindHashCode(irmv.id, staticIndex);
-                        staticIndex++;
-                    }
-                    else
-                    {
-                        var irmv = new IRMetaVariable(this, mmd, localIndex);
-                        m_LocalIRMetaVariableList.Add(irmv);
-                        AddMetaMemberVariableIndexBindHashCode(irmv.id, localIndex);
-                        localIndex++;
-                    }
+                    //if (v.metaDefineType.metaClass != null)
+                    //    m_MetaTypeList.Add(v.metaDefineType.metaClass.eType);
                 }
             }
-            else
+
+            var staticMetaMemberVariables = mc.GetMetaMemberVariableListByFlag(true);
+            for (int i = 0; i < staticMetaMemberVariables.Count; i++)
             {
-                var localMetaMemberVariables = m_MetaClass.GetMetaMemberVariableListByFlag(false);
-                for (int i = 0; i < localMetaMemberVariables.Count; i++)
-                {
-                    var v = localMetaMemberVariables[i];
-                    IRMetaVariable irmv = new IRMetaVariable(this, v, i);
-                    m_LocalIRMetaVariableList.Add(irmv);
-                    AddMetaMemberVariableIndexBindHashCode(irmv.id, i);
-                    if (v.isInnerDefine == false)
-                    {
-                        //if (v.metaDefineType.metaClass != null)
-                        //    m_MetaTypeList.Add(v.metaDefineType.metaClass.eType);
-                    }
-                }
+                var v = staticMetaMemberVariables[i];
 
-                var staticMetaMemberVariables = m_MetaClass.GetMetaMemberVariableListByFlag(true);
-                for (int i = 0; i < staticMetaMemberVariables.Count; i++)
-                {
-                    var v = staticMetaMemberVariables[i];
+                IRMetaVariable irmv = new IRMetaVariable(this, v, i);
+                //bool isProjectLikeClass = OwnerMetaClass != null
+                //    && OwnerMetaClass.name == "Project"
+                //    && !string.IsNullOrEmpty(this.m_SourcePath)
+                //    && this.m_SourcePath.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase);
 
-                    IRMetaVariable irmv = new IRMetaVariable(this, v, i);
-                    //bool isProjectLikeClass = m_MetaClass != null
-                    //    && m_MetaClass.name == "Project"
-                    //    && !string.IsNullOrEmpty(this.m_SourcePath)
-                    //    && this.m_SourcePath.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase);
+                // const 鎴愬憳闇€瑕佽繘鍏?globalStaticVariableList锛岀敱 VM 鍦ㄥ叏灞€闃舵鍒濆鍖栵紙涓庛€岄潪 Project/闈炴ā鏉块潤鎬併€嶈矾寰勪竴鑷达級銆?
+                // 鑻ュ悓鏃舵斁杩?staticIRMetaVariableList锛屼細涓庡叏灞€鍒濆鍖栭噸澶嶃€?
+                //if (v.isConst || isProjectLikeClass )
+                //{
+                //    IRManager.instance.AddGlobalMetaMemberVariable(irmv);
+                //}
+                //else// if ( v.realMetaType.GenTemplateIsIncludeTemplate())
+                //{
+                //}
 
-                    // const 鎴愬憳闇€瑕佽繘鍏?globalStaticVariableList锛岀敱 VM 鍦ㄥ叏灞€闃舵鍒濆鍖栵紙涓庛€岄潪 Project/闈炴ā鏉块潤鎬併€嶈矾寰勪竴鑷达級銆?
-                    // 鑻ュ悓鏃舵斁杩?staticIRMetaVariableList锛屼細涓庡叏灞€鍒濆鍖栭噸澶嶃€?
-                    //if (v.isConst || isProjectLikeClass )
-                    //{
-                    //    IRManager.instance.AddGlobalMetaMemberVariable(irmv);
-                    //}
-                    //else// if ( v.realMetaType.GenTemplateIsIncludeTemplate())
-                    //{
-                    //}
-
-                    m_StaticIRMetaVariableList.Add(irmv);
-                    AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);
-                }
+                m_StaticIRMetaVariableList.Add(irmv);
+                AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);
             }
             //int count = 0;
             //int ssize = 0;
@@ -293,13 +328,66 @@ namespace SimpleLanguage.IR
             //    m_ByteCount += ssize;
             //}
         }
+
+        void CreateMemberDataFromMetaData(MetaData md)
+        {
+            var dataMembers = md.GetMetaMemberDataList()
+                .OrderBy(m => m.dataFieldOrderIndex)
+                .ThenBy(m => m.name, System.StringComparer.Ordinal)
+                .ToList();
+            int localIndex = 0;
+            int staticIndex = 0;
+            for (int i = 0; i < dataMembers.Count; i++)
+            {
+                var mmd = dataMembers[i];
+                if (mmd.isStatic)
+                {
+                    var irmv = new IRMetaVariable(this, mmd, staticIndex);
+                    m_StaticIRMetaVariableList.Add(irmv);
+                    AddMetaMemberVariableIndexBindHashCode(irmv.id, staticIndex);
+                    staticIndex++;
+                }
+                else
+                {
+                    var irmv = new IRMetaVariable(this, mmd, localIndex);
+                    m_LocalIRMetaVariableList.Add(irmv);
+                    AddMetaMemberVariableIndexBindHashCode(irmv.id, localIndex);
+                    localIndex++;
+                }
+            }
+        }
+
+        void CreateMemberDataFromMetaEnum(MetaEnum me)
+        {
+            var ordered = me.metaMemberVariableDict.OrderBy(kv => kv.Key, System.StringComparer.Ordinal).ToList();
+            int staticIndex = 0;
+            for (int i = 0; i < ordered.Count; i++)
+            {
+                var mv = ordered[i].Value;
+                if (mv is MetaMemberEnum mme)
+                {
+                    var irmv = new IRMetaVariable(this, mme, staticIndex);
+                    m_StaticIRMetaVariableList.Add(irmv);
+                    AddMetaMemberVariableIndexBindHashCode(irmv.id, staticIndex);
+                    staticIndex++;
+                }
+                else if (mv is MetaMemberVariable mmv)
+                {
+                    var irmv = new IRMetaVariable(this, mmv, staticIndex);
+                    m_StaticIRMetaVariableList.Add(irmv);
+                    AddMetaMemberVariableIndexBindHashCode(irmv.id, staticIndex);
+                    staticIndex++;
+                }
+            }
+        }
         public void CreateMemberMethod()
         {
-            if( m_MetaClass is MetaEnum || m_MetaClass is MetaData )
+            var mc = OwnerMetaClass;
+            if (mc == null)
             {
                 return;
             }
-            var smflist = m_MetaClass.staticMetaMemberFunctionList;
+            var smflist = mc.staticMetaMemberFunctionList;
             //int index = 0;
             for (int i = 0; i < smflist.Count; i++)
             {
@@ -310,7 +398,7 @@ namespace SimpleLanguage.IR
                 IRManager.instance.AddIRMethod(gmf);
             }
 
-            var nonsmflist = m_MetaClass.nonStaticVirtualMetaMemberFunctionList;
+            var nonsmflist = mc.nonStaticVirtualMetaMemberFunctionList;
             // Inheritance handling can skip instance methods that are declared in the file but are not
             // considered "virtual overrides" by MetaClass's override-matching rules. For DebugCode/IR
             // we still want those same-level methods to show up.
@@ -322,7 +410,7 @@ namespace SimpleLanguage.IR
             {
                 merged.AddRange(nonsmflist);
             }
-            var fileFuncs = m_MetaClass.fileCollectMetaMemberFunctionList;
+            var fileFuncs = mc.fileCollectMetaMemberFunctionList;
             if (fileFuncs != null)
             {
                 for (int i = 0; i < fileFuncs.Count; i++)
@@ -370,11 +458,12 @@ namespace SimpleLanguage.IR
         }
         public void CreateGenMetaTypeTemplateList()
         {
-            if (m_MetaClass is MetaEnum || m_MetaClass is MetaData)
+            var mc = OwnerMetaClass;
+            if (mc == null)
             {
                 return;
             }
-            foreach (var v in this.m_MetaClass.genMetaTypeTemplateList )
+            foreach (var v in mc.genMetaTypeTemplateList )
             {
                 var nmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(v, this);
                 this.m_IRMetaTypeList.Add(nmt);
@@ -383,11 +472,11 @@ namespace SimpleLanguage.IR
             
             if( m_TemplateCount == 0 )
             {
-                m_TemplateCount = this.m_MetaClass.metaTemplateList.Count;
+                m_TemplateCount = mc.metaTemplateList.Count;
             }
             else
             {
-                if( this.m_MetaClass.metaTemplateList.Count > 0 )
+                if( mc.metaTemplateList.Count > 0 )
                 {
                     Debug.Assert(false, "");
                 }
@@ -395,12 +484,13 @@ namespace SimpleLanguage.IR
         }
         public void CreateTemplateRelation()
         {
-            if (m_MetaClass is MetaEnum || m_MetaClass is MetaData)
+            var mc = OwnerMetaClass;
+            if (mc == null)
             {
                 return;
             }
 
-            foreach ( var v in this.m_MetaClass.metaTemplateMapDict )
+            foreach ( var v in mc.metaTemplateMapDict )
             {
                 IRMetaClass cv = IRManager.instance.GetIRMetaClassById(v.Key.GetHashCode() );
 

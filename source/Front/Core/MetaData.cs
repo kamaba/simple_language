@@ -7,21 +7,22 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public class MetaData : MetaBase
+    public sealed class MetaData : MetaBase
     {
         public string allClassName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
         public bool isConst => m_IsConst;
         public bool isStatic => m_IsStatic;
         public bool isDynamic=>m_IsDynamic;
-
         public Dictionary<string, MetaMemberData> metaMemberDataDict => m_MetaMemberDataDict;
 
-        protected bool m_IsConst = false;
-        protected bool m_IsStatic = false;
-        protected bool m_IsDynamic = false;
-        protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
-        protected FileMetaClass m_FileMetaClass = null;
-        protected Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
+
+
+        private bool m_IsConst = false;
+        private bool m_IsStatic = false;
+        private bool m_IsDynamic = false;
+        private EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
+        private FileMetaClass m_FileMetaClass = null;
+        private Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
 
         public MetaData( FileMetaClass md )
         {
@@ -51,6 +52,8 @@ namespace SimpleLanguage.Core
         {
             m_FileMetaClass = fmc;
         }
+        /// <summary>源码绑定（用于 IR 导出路径等），可能为 null（如纯运行时匿名 data）。</summary>
+        public FileMetaClass boundFileMetaClass => m_FileMetaClass;
         public void UpdateClassAllName()
         {
             m_AllName = m_MetaNode?.GetAllName() ?? m_Name;
@@ -133,7 +136,7 @@ namespace SimpleLanguage.Core
 
         //    MetaVariableManager.instance.AddMetaDataVariable(m_MetaVariable);
         //}
-        public virtual void ParseFileMetaDataMemeberData(FileMetaClass fmc)
+        public void ParseFileMetaDataMemeberData(FileMetaClass fmc)
         {
             if (fmc.memberVariableList.Count > 0 || fmc.memberFunctionList.Count > 0)
             {

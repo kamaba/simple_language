@@ -30,9 +30,14 @@ namespace SimpleLanguage.Core
         }
         public List<MetaGenTemplateClass> genTemplateMetaClassList => m_GenTemplateMetaClassList;
         public List<MetaClass> exportClassList => m_ExportClassList;
+        /// <summary>独立声明的 <see cref="MetaData"/>（与 <see cref="exportClassList"/> 分列；同名已有 MetaClass 行时在 IR 中跳过以避免重复）。</summary>
+        public List<MetaData> exportMetaDataList => m_ExportMetaDataList;
+        public List<MetaEnum> exportMetaEnumList => m_ExportMetaEnumList;
 
 
-        private List<MetaClass> m_ExportClassList = new List<MetaClass>();
+        private readonly List<MetaClass> m_ExportClassList = new List<MetaClass>();
+        private readonly List<MetaData> m_ExportMetaDataList = new List<MetaData>();
+        private readonly List<MetaEnum> m_ExportMetaEnumList = new List<MetaEnum>();
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
         //private List<MetaDynamicClass> m_DynamicClassList = new List<MetaDynamicClass>();         
         private Dictionary<string, MetaData> m_DefineDataDict = new Dictionary<string, MetaData>();
@@ -134,6 +139,7 @@ namespace SimpleLanguage.Core
             if (me != null && m_InitHandleMetaEnumList.IndexOf(me) == -1)
             {
                 m_InitHandleMetaEnumList.Add(me);
+                AddExportMetaEnum(me);
             }
         }
         public void AddInitHandleMetaDataList(MetaData md)
@@ -304,7 +310,6 @@ namespace SimpleLanguage.Core
 
             return true;
         }
-
         private static List<MetaMemberData> OrderMetaMemberDataList(MetaData md)
         {
             return md.GetMetaMemberDataList()
@@ -312,7 +317,6 @@ namespace SimpleLanguage.Core
                 .ThenBy(m => m.name, System.StringComparer.Ordinal)
                 .ToList();
         }
-
         private static MetaType GetStructuralMetaTypeForCompare(MetaMemberData mmd)
         {
             if (mmd.isDefineMetaType && mmd.defineMetaType != null)
@@ -329,7 +333,6 @@ namespace SimpleLanguage.Core
             }
             return new MetaType(CoreMetaClassManager.objectMetaClass);
         }
-
         private static bool FieldMetaTypesShapeEqual(MetaType ta, MetaType tb)
         {
             if (ta == null || tb == null)
@@ -594,7 +597,7 @@ namespace SimpleLanguage.Core
                     
                     AddInitHandleMetaEnumList(newme);
 
-                    return CoreMetaClassManager.enumMetaData;
+                    return newme;
                 }
                 else if (fmc.isData)
                 {
@@ -646,10 +649,20 @@ namespace SimpleLanguage.Core
         }
         public void AddExportMetaClass(MetaData md)
         {
-            // MetaData 不再继承 MetaClass，使用独立的导出登记。
-            // 当前导出列表仅承载 MetaClass，因此此处仅做必要的占位/告警，
-            // 真正的 MetaData 注册由 AddDefineMetaData / AddAnonymousMetaData 完成。
-            if (md == null) return;
+            if (md == null || m_ExportMetaDataList.Contains(md))
+            {
+                return;
+            }
+            m_ExportMetaDataList.Add(md);
+        }
+
+        void AddExportMetaEnum(MetaEnum me)
+        {
+            if (me == null || m_ExportMetaEnumList.Contains(me))
+            {
+                return;
+            }
+            m_ExportMetaEnumList.Add(me);
         }
         void AddDictMetaClass( MetaClass mc )
         {

@@ -121,6 +121,7 @@ namespace SimpleLanguage.IR
                     {
                         var irClass = classList[i];
                         sb.AppendLine("Class: " + irClass.irName);
+                        sb.AppendLine("  metaClassKind: " + irClass.metaClassKind);
                         sb.AppendLine("  TemplateCount: " + irClass.templateCount);
                         sb.AppendLine("  TemplateParameterCount: " + irClass.templateParameterCount);
                         if (irClass.templateTypeList == null || irClass.templateTypeList.Count == 0)
@@ -358,13 +359,34 @@ namespace SimpleLanguage.IR
         void ParseClass()
         {
             Log.AddIRLog(LID.ShowExtendMessage, "Start translating IRMetaClass...");
-            //解析成员中的string类型
-            //解析成员中的const类型
-            var exportClassList = ClassManager.instance.exportClassList;
+            var cm = ClassManager.instance;
+            var exportClassList = cm.exportClassList;
+            var exportedOwnerNames = new HashSet<string>(System.StringComparer.Ordinal);
             foreach (var v in exportClassList)
             {
                 IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
+                if (!string.IsNullOrEmpty(v.allClassName))
+                {
+                    exportedOwnerNames.Add(v.allClassName);
+                }
+            }
+            foreach (var md in cm.exportMetaDataList)
+            {
+                if (md != null && !string.IsNullOrEmpty(md.allClassName) && exportedOwnerNames.Contains(md.allClassName))
+                {
+                    // 已由同名 MetaClass 行合并 data 字段布局，避免重复 IR 类型行。
+                    continue;
+                }
+                m_IRMetaClassList.Add(new IRMetaClass(md));
+            }
+            foreach (var me in cm.exportMetaEnumList)
+            {
+                if (me != null && !string.IsNullOrEmpty(me.allClassName) && exportedOwnerNames.Contains(me.allClassName))
+                {
+                    continue;
+                }
+                m_IRMetaClassList.Add(new IRMetaClass(me));
             }
             foreach ( var v in m_IRMetaClassList )
             {
@@ -525,6 +547,27 @@ namespace SimpleLanguage.IR
             }
             return null;
         }
+        public static string GetIRNameByMetaOwner(MetaBase owner)
+        {
+            if (owner == null)
+            {
+                return string.Empty;
+            }
+            if (owner is MetaClass mc)
+            {
+                return GetIRNameByMetaClass(mc);
+            }
+            if (owner is MetaData md)
+            {
+                return md.allClassName;
+            }
+            if (owner is MetaEnum me)
+            {
+                return me.allClassName;
+            }
+            return owner.name ?? string.Empty;
+        }
+
         public static string GetIRNameByMetaClass(MetaClass mc)
         {
             StringBuilder sb = new StringBuilder();

@@ -40,6 +40,8 @@ namespace SimpleLanguage.Core
         {
             m_FileMetaClass = fmc;
         }
+        /// <summary>源码绑定（用于 IR 导出路径等）。</summary>
+        public FileMetaClass boundFileMetaClass => m_FileMetaClass;
         public void UpdateClassAllName()
         {
             m_AllName = m_MetaNode?.GetAllName() ?? m_Name;

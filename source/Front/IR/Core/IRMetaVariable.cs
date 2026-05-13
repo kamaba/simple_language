@@ -102,22 +102,28 @@ namespace SimpleLanguage.IR
             MetaType exportMt = mv.GetFinalMetaType() ?? mv.defineMetaType;
             m_IRMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(exportMt, owirmc);
         }
-        public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme)
+        public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme, int fieldIndex)
         {
-            //m_MetaVariable = mme;
             m_Id = mme.GetHashCode();
-            m_Name = mme.ownerMetaClass.allClassName + "." + mme.name;
+            m_Index = fieldIndex;
+            m_Name = (irmc?.irName ?? string.Empty) + "." + mme.name;
             FillDebugInfo(mme, mme.name, "IRMetaMemberEnum");
-            m_ExpressNode = mme.express;
+            m_ExpressNode = mme.express ?? mme.enumValueExpress;
             m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             m_IsStatic = true;
             m_Permission = mme.permission;
+            var exportMt = mme.GetFinalMetaType() ?? mme.defineMetaType;
+            if (exportMt != null)
+            {
+                m_IRMetaType = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(exportMt, irmc);
+            }
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberData mmd, int fieldIndex)
         {
             m_Id = mmd.GetHashCode();
             m_Index = fieldIndex;
-            m_Name = mmd.ownerMetaClass.allClassName + "." + mmd.name;
+            var ownerLabel = mmd.ownerMetaData?.allClassName ?? mmd.ownerMetaClass?.allClassName ?? string.Empty;
+            m_Name = ownerLabel + "." + mmd.name;
             FillDebugInfo(mmd, mmd.name, "IRMetaMemberData");
             m_ExpressNode = mmd.expressNode;
             m_IRMetaVariableFrom = mmd.isStatic ? IRMetaVariableFrom.Static : IRMetaVariableFrom.Member;
