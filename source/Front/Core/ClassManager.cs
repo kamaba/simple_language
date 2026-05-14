@@ -29,13 +29,12 @@ namespace SimpleLanguage.Core
             }
         }
         public List<MetaGenTemplateClass> genTemplateMetaClassList => m_GenTemplateMetaClassList;
-        public List<MetaClass> exportClassList => m_ExportClassList;
-        /// <summary>独立声明的 <see cref="MetaData"/>（与 <see cref="exportClassList"/> 分列；同名已有 MetaClass 行时在 IR 中跳过以避免重复）。</summary>
+        public List<MetaClass> exportMetaClassList => m_ExportMetaClassList;
         public List<MetaData> exportMetaDataList => m_ExportMetaDataList;
         public List<MetaEnum> exportMetaEnumList => m_ExportMetaEnumList;
 
 
-        private readonly List<MetaClass> m_ExportClassList = new List<MetaClass>();
+        private readonly List<MetaClass> m_ExportMetaClassList = new List<MetaClass>();
         private readonly List<MetaData> m_ExportMetaDataList = new List<MetaData>();
         private readonly List<MetaEnum> m_ExportMetaEnumList = new List<MetaEnum>();
         private Dictionary<string, MetaClass> m_AllClassDict = new Dictionary<string, MetaClass>();
@@ -134,19 +133,19 @@ namespace SimpleLanguage.Core
                 m_InitHandleMetaClassList.Add(mc);
             }
         }
+        public void AddInitHandleMetaDataList(MetaData md)
+        {
+            if (md != null && m_InitHandleMetaDataList.IndexOf(md) == -1)
+            {
+                m_InitHandleMetaDataList.Add(md);
+            }
+        }
         public void AddInitHandleMetaEnumList(MetaEnum me)
         {
             if (me != null && m_InitHandleMetaEnumList.IndexOf(me) == -1)
             {
                 m_InitHandleMetaEnumList.Add(me);
                 AddExportMetaEnum(me);
-            }
-        }
-        public void AddInitHandleMetaDataList(MetaData md)
-        {
-            if (md != null && m_InitHandleMetaDataList.IndexOf(md) == -1)
-            {
-                m_InitHandleMetaDataList.Add(md);
             }
         }
         /// <summary>
@@ -220,7 +219,7 @@ namespace SimpleLanguage.Core
                 return false;
             }
             m_AnonymousDataDict.Add(dc.name, dc);
-            AddExportMetaClass(dc);
+            m_ExportMetaDataList.Add(dc);
             return true;
         }
         public bool AddMetaData(MetaData dc)
@@ -639,10 +638,10 @@ namespace SimpleLanguage.Core
         }
         public void AddExportMetaClass( MetaClass mc )
         {
-            var find1 = m_ExportClassList.Find(a => a == mc);
+            var find1 = m_ExportMetaClassList.Find(a => a == mc);
             if( find1  == null )
             {
-                m_ExportClassList.Add(mc);
+                m_ExportMetaClassList.Add(mc);
 
                 AddDictMetaClass(mc);
             }

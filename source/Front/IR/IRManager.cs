@@ -360,7 +360,7 @@ namespace SimpleLanguage.IR
         {
             Log.AddIRLog(LID.ShowExtendMessage, "Start translating IRMetaClass...");
             var cm = ClassManager.instance;
-            var exportClassList = cm.exportClassList;
+            var exportClassList = cm.exportMetaClassList;
             var exportedOwnerNames = new HashSet<string>(System.StringComparer.Ordinal);
             foreach (var v in exportClassList)
             {
