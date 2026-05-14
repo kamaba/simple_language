@@ -37,7 +37,7 @@ namespace SimpleLanguage.Core
 
         private Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
         private FileMetaMemberData m_FileMetaMemeberData = null;
-        private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
+        //private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
 
         private MetaMemberData()
         {
@@ -255,105 +255,6 @@ namespace SimpleLanguage.Core
             }
 
             return mmd;
-        }
-
-        public override void ParseDefineMetaType()
-        {
-            if (m_FileMetaMemeberData != null)
-            {
-                switch (m_FileMetaMemeberData.DataType)
-                {
-                    case FileMetaMemberData.EMemberDataType.Data:
-                        {
-                            m_MemberDataType = EMemberDataType.MemberData;
-                            int count = m_FileMetaMemeberData.fileMetaMemberData.Count;
-                            for (int i = 0; i < count; i++)
-                            {
-                                MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
-
-                                mmd.ParseDefineMetaType();
-                                if (AddMetaMemberData(mmd, mmd.memberDataType == EMemberDataType.MemberClass ))
-                                {
-                                }
-                                else
-                                {
-                                    Log.AddMetaCoreLog(LID.MetaCoreDefineNameRepeat, m_FileMetaMemeberData.fileMetaMemberData[i].token, "", m_FileMetaMemeberData.fileMetaMemberData[i].token, mmd.name);
-                                }
-                            }
-                        }
-                        break;
-                    case FileMetaMemberData.EMemberDataType.Class:    // data Data{ $childData = Class1{}$ }
-                        {
-                            m_MemberDataType = EMemberDataType.MemberClass;
-                            m_Express = new MetaCallLinkExpressNode(
-                                m_FileMetaMemeberData.fileMetaCallTermValue.callLink,
-                                ownerMetaClass,
-                                m_OwnerMetaBlockStatements,
-                                this);
-                        }
-                        break;
-                    case FileMetaMemberData.EMemberDataType.Array:      // data Data{ $childArray = [  ]$ }
-                        {
-                            m_MemberDataType = EMemberDataType.MemberArray;
-                            int count = m_FileMetaMemeberData.fileMetaMemberData.Count;
-                            for (int i = 0; i < count; i++)
-                            {
-                                MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
-
-                                mmd.ParseDefineMetaType();
-                                if (AddMetaMemberData(mmd, mmd.memberDataType == EMemberDataType.MemberClass))
-                                {
-                                }
-                                else
-                                {
-                                    Log.AddMetaCoreLog(LID.MetaCoreDefineNameRepeat, m_FileMetaMemeberData.fileMetaMemberData[i].token, "", m_FileMetaMemeberData.fileMetaMemberData[i].token, mmd.name);
-                                }
-                            }
-                        }
-                        break;
-                    case FileMetaMemberData.EMemberDataType.ConstValue:  // data const    a = "aaa"
-                        {
-                            m_MemberDataType = EMemberDataType.ConstValue;
-                            if (m_FileMetaMemeberData.fileMetaConstValue != null)
-                            {
-                                m_Express = new MetaConstExpressNode(ownerMetaClass, null, m_FileMetaMemeberData.fileMetaConstValue);
-                                m_Express.Parse(new AllowUseSettings());
-                                m_Express.CalcReturnType();
-                                var md = m_Express.GetReturnMetaDefineType();
-                                this.SetMetaDefineType(md);
-                                this.SetRealMetaType( md );
-                            }
-                        }
-                        break;
-                }
-            }
-            else if (m_FileMetaOpAssignSyntax != null)
-            {
-                if (m_FileMetaOpAssignSyntax.variableRef != null)
-                {
-                    if (m_FileMetaOpAssignSyntax.variableRef.isOnlyName)
-                    {
-                        m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-                    }
-
-                    FileMetaBaseTerm curFMBT = m_FileMetaOpAssignSyntax?.express;
-                    var fme = m_FileMetaOpAssignSyntax?.express;
-
-                    CreateExpressParam cep = new CreateExpressParam()
-                    {
-                        fme = curFMBT,
-                        metaType = m_DefineMetaType,
-                        equalMetaVariable = this,
-                        ownerMBS = m_OwnerMetaBlockStatements,
-                        parsefrom = EParseFrom.StatementRightExpress
-                    };
-                    m_Express = ExpressManager.CreateExpressNode(cep);
-                    if (m_Express == null)
-                    {
-                        Log.AddMetaCoreLog(LID.AutoMetaMemberDataL272, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
-                    }
-                }
-            }
         }
         public void SetIndex(int index) { m_Index = index; }
         public MetaMemberData GetMemberDataByName(string name)
@@ -658,6 +559,9 @@ namespace SimpleLanguage.Core
                     break;
             }
         }
+        public override void ParseDefineMetaType()
+        {
+        }
         public override void CalcParseLevel()
         {
             if (isConst)
@@ -706,9 +610,79 @@ namespace SimpleLanguage.Core
         }
         public override void CreateMetaExpress()
         {
+            if (m_RealMetaType != null) return; //认为已经解析过了
+            if (m_FileMetaMemeberData != null)
+            {
+                switch (m_FileMetaMemeberData.DataType)
+                {
+                    case FileMetaMemberData.EMemberDataType.Data:
+                        {
+                            m_MemberDataType = EMemberDataType.MemberData;
+                            int count = m_FileMetaMemeberData.fileMetaMemberData.Count;
+                            for (int i = 0; i < count; i++)
+                            {
+                                MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
+
+                                mmd.ParseDefineMetaType();
+                                if (AddMetaMemberData(mmd, mmd.memberDataType == EMemberDataType.MemberClass))
+                                {
+                                }
+                                else
+                                {
+                                    Log.AddMetaCoreLog(LID.MetaCoreDefineNameRepeat, m_FileMetaMemeberData.fileMetaMemberData[i].token, "", m_FileMetaMemeberData.fileMetaMemberData[i].token, mmd.name);
+                                }
+                            }
+                        }
+                        break;
+                    case FileMetaMemberData.EMemberDataType.Class:    // data Data{ $childData = Class1{}$ }
+                        {
+                            m_MemberDataType = EMemberDataType.MemberClass;
+                            m_Express = new MetaCallLinkExpressNode(
+                                m_FileMetaMemeberData.fileMetaCallTermValue.callLink,
+                                ownerMetaClass,
+                                m_OwnerMetaBlockStatements,
+                                this);
+                        }
+                        break;
+                    case FileMetaMemberData.EMemberDataType.Array:      // data Data{ $childArray = [  ]$ }
+                        {
+                            m_MemberDataType = EMemberDataType.MemberArray;
+                            int count = m_FileMetaMemeberData.fileMetaMemberData.Count;
+                            for (int i = 0; i < count; i++)
+                            {
+                                MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
+
+                                mmd.ParseDefineMetaType();
+                                if (AddMetaMemberData(mmd, mmd.memberDataType == EMemberDataType.MemberClass))
+                                {
+                                }
+                                else
+                                {
+                                    Log.AddMetaCoreLog(LID.MetaCoreDefineNameRepeat, m_FileMetaMemeberData.fileMetaMemberData[i].token, "", m_FileMetaMemeberData.fileMetaMemberData[i].token, mmd.name);
+                                }
+                            }
+                        }
+                        break;
+                    case FileMetaMemberData.EMemberDataType.ConstValue:  // data const    a = "aaa"
+                        {
+                            m_MemberDataType = EMemberDataType.ConstValue;
+                            if (m_FileMetaMemeberData.fileMetaConstValue != null)
+                            {
+                                m_Express = new MetaConstExpressNode(ownerMetaClass, null, m_FileMetaMemeberData.fileMetaConstValue);
+                                m_Express.Parse(new AllowUseSettings());
+                                m_Express.CalcReturnType();
+                                var md = m_Express.GetReturnMetaDefineType();
+                                this.SetMetaDefineType(md);
+                                this.SetRealMetaType(md);
+                            }
+                        }
+                        break;
+                }
+            }
         }
         public override bool ParseMetaExpress()
         {
+            if (m_RealMetaType != null) return true; //认为已经解析过了
             if (this.m_Express != null)
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });

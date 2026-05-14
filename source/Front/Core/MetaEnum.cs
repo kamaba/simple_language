@@ -19,6 +19,8 @@ namespace SimpleLanguage.Core
         public MetaClass extendClass => m_ExtendClass;
         public MetaData extendMetaData => m_ExtendMetaData;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
+        /// <summary>源码绑定（用于 IR 导出路径等）。</summary>
+        public FileMetaClass boundFileMetaClass => m_FileMetaClass;
 
         protected MetaMemberVariable m_ValuesMetaVariable = null;
         protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
@@ -36,16 +38,6 @@ namespace SimpleLanguage.Core
         {
             m_ClassDefineType = type;
         }
-        public void BindFileMetaClass(FileMetaClass fmc)
-        {
-            m_FileMetaClass = fmc;
-        }
-        /// <summary>源码绑定（用于 IR 导出路径等）。</summary>
-        public FileMetaClass boundFileMetaClass => m_FileMetaClass;
-        public void UpdateClassAllName()
-        {
-            m_AllName = m_MetaNode?.GetAllName() ?? m_Name;
-        }
         public void SetExtendClass(MetaClass mc)
         {
             m_ExtendClass = mc;
@@ -57,10 +49,6 @@ namespace SimpleLanguage.Core
                 return m_MetaMemberVariableDict[name];
             }
             return null;
-        }
-        public MetaMemberVariable GetMemberVariableByName(string name)
-        {
-            return GetMetaMemberVariableByName(name);
         }
         public MetaVariable GetOrCreateValuesVariable()
         {
@@ -203,13 +191,14 @@ namespace SimpleLanguage.Core
         }
         public void ParseFileMetaEnumMemeberEnum(FileMetaClass fmc)
         {
+            m_FileMetaClass = fmc;
             if (fmc.memberFunctionList.Count > 0)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum涓笉鍏佽鏈塅unction!!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, " Error member function not should function ");
             }
             if (fmc.templateDefineList.Count > 0)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鍦‥num瀹氫箟涓紝涓嶅厑璁镐娇鐢═emplate妯℃澘鐨勫舰寮?");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error template define list ");
             }
             //for (int i = 0; i < fmc.templateParamList.Count; i++)
             //{
@@ -230,13 +219,12 @@ namespace SimpleLanguage.Core
                 MetaBase mb = GetMetaMemberVariableByName(v.name);
                 if (mb != null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum MetaMemberData宸叉湁瀹氫箟绫? " + m_AllName + "涓?宸叉湁: " + v.token?.ToLexemeAllString() + "鐨勫厓绱?!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum MetaMemberData have member variable " + m_AllName + "涓?宸叉湁: " + v.token?.ToLexemeAllString() + "鐨勫厓绱?!");
                     isHave = true;
                 }
                 else
                     isHave = false;
-                bool parentIsConst = true;
-                MetaMemberEnum mmv = new MetaMemberEnum(CoreMetaClassManager.enumMetaData, v, this.extendClass, parentIsConst);
+                MetaMemberEnum mmv = new MetaMemberEnum(CoreMetaClassManager.enumMetaData, v, this.extendClass, true );
                 if (isHave)
                 {
                     mmv.SetName(mmv.name + "__repeat__");
@@ -294,9 +282,6 @@ namespace SimpleLanguage.Core
         }
         public void ParseDefineComplete()
         {
-        }
-        public void ParseMemberMetaEnumExpress()
-        {
             if (m_MetaMemberVariableDict.Count == 0)
             {
                 Log.AddMetaCoreLog(LID.AutoMetaEnumL191, "Warning 鍦╡num : " + name + " 娌℃湁鍙戠幇鏈変换浣曟垚鍛");
@@ -315,7 +300,7 @@ namespace SimpleLanguage.Core
 
                 int i = 0;
                 dynamic indexdynamic = 0;
-                foreach (var v in m_MetaMemberVariableDict )
+                foreach (var v in m_MetaMemberVariableDict)
                 {
                     MetaMemberEnum mme = v.Value as MetaMemberEnum;
                     if (mme == null) continue;
@@ -354,80 +339,80 @@ namespace SimpleLanguage.Core
                             }
                         }
                         else
-                        if (m_ExtendClass == CoreMetaClassManager.int8MetaClass)
-                        {
-                            try
+                            if (m_ExtendClass == CoreMetaClassManager.int8MetaClass)
                             {
-                                explicitValue = (sbyte)Convert.ToByte(mme.enumValueConstExpressNode?.value);
+                                try
+                                {
+                                    explicitValue = (sbyte)Convert.ToByte(mme.enumValueConstExpressNode?.value);
+                                }
+                                catch (Exception ex)
+                                {
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                    continue;
+                                }
                             }
-                            catch (Exception ex)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
-                                continue;
-                            }
-                        }
-                        else
-                        if (m_ExtendClass == CoreMetaClassManager.int16MetaClass)
-                        {
-                            try
-                            {
-                                explicitValue = (short)Convert.ToInt16(mme.enumValueConstExpressNode?.value);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
-                                continue;
-                            }
-                        }
-                        else
-                        if (m_ExtendClass == CoreMetaClassManager.uint16MetaClass)
-                        {
-                            try
-                            {
-                                explicitValue = (ushort)Convert.ToUInt16(mme.enumValueConstExpressNode?.value);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
-                                continue;
-                            }
-                        }
-                        else
-                        if (m_ExtendClass == CoreMetaClassManager.int32MetaClass)
-                        {
-                            try
-                            {
-                                explicitValue = (int)Convert.ToInt32(mme.enumValueConstExpressNode?.value);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
-                                continue;
-                            }
-                        }
-                        else
-                        if (m_ExtendClass == CoreMetaClassManager.uint32MetaClass)
-                        {
-                            try
-                            {
-                                explicitValue = (uint)Convert.ToUInt32(mme.enumValueConstExpressNode?.value);
-                            }
-                            catch (Exception ex)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
-                                continue;
-                            }
-                        }
-                        else
-                        if (m_ExtendClass == CoreMetaClassManager.int64MetaClass)
-                        {
-                            explicitValue = (long)Convert.ToInt64(mme.enumValueConstExpressNode?.value);
-                        }
-                        else
-                        if (m_ExtendClass == CoreMetaClassManager.uint64MetaClass)
-                        {
-                            explicitValue = (ulong)Convert.ToUInt64(mme.enumValueConstExpressNode?.value);
-                        }
+                            else
+                                if (m_ExtendClass == CoreMetaClassManager.int16MetaClass)
+                                {
+                                    try
+                                    {
+                                        explicitValue = (short)Convert.ToInt16(mme.enumValueConstExpressNode?.value);
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                        continue;
+                                    }
+                                }
+                                else
+                                    if (m_ExtendClass == CoreMetaClassManager.uint16MetaClass)
+                                    {
+                                        try
+                                        {
+                                            explicitValue = (ushort)Convert.ToUInt16(mme.enumValueConstExpressNode?.value);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                            continue;
+                                        }
+                                    }
+                                    else
+                                        if (m_ExtendClass == CoreMetaClassManager.int32MetaClass)
+                                        {
+                                            try
+                                            {
+                                                explicitValue = (int)Convert.ToInt32(mme.enumValueConstExpressNode?.value);
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                                continue;
+                                            }
+                                        }
+                                        else
+                                            if (m_ExtendClass == CoreMetaClassManager.uint32MetaClass)
+                                            {
+                                                try
+                                                {
+                                                    explicitValue = (uint)Convert.ToUInt32(mme.enumValueConstExpressNode?.value);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                                    continue;
+                                                }
+                                            }
+                                            else
+                                                if (m_ExtendClass == CoreMetaClassManager.int64MetaClass)
+                                                {
+                                                    explicitValue = (long)Convert.ToInt64(mme.enumValueConstExpressNode?.value);
+                                                }
+                                                else
+                                                    if (m_ExtendClass == CoreMetaClassManager.uint64MetaClass)
+                                                    {
+                                                        explicitValue = (ulong)Convert.ToUInt64(mme.enumValueConstExpressNode?.value);
+                                                    }
 
                         // Next implicit member follows explicit value.
                         indexdynamic = explicitValue + 1;
@@ -437,7 +422,7 @@ namespace SimpleLanguage.Core
                         // auto increment when missing '='
                         var autoConst = new MetaConstExpressNode(m_ExtendClass.eType, indexdynamic++);
                         mme.SetExpress(autoConst);
-                        mme.SetIsExplicitAssign( false );
+                        mme.SetIsExplicitAssign(false);
                         mme.ParseMetaExpress();
                     }
 

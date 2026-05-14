@@ -104,6 +104,16 @@ namespace SimpleLanguage.Core
         }
         public override void ParseDefineMetaType()
         {
+            if(ownerMetaEnum != null )
+            {
+            }
+        }
+        public void SetIsExplicitAssign(bool value)
+        {
+            m_IsExplicitAssign = value;
+        }
+        public override void CreateMetaExpress()
+        {
             if (m_FileMetaMemeberVariable != null)
             {
                 if (m_FileMetaMemeberVariable.express != null)
@@ -124,10 +134,10 @@ namespace SimpleLanguage.Core
                     {
                         Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL140, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
                     }
-                else
-                {
-                    m_IsExplicitAssign = false;
-                }
+                    else
+                    {
+                        m_IsExplicitAssign = false;
+                    }
                 }
 
                 // enum member always has a define type; default real type follows define type until expression parsed.
@@ -142,10 +152,6 @@ namespace SimpleLanguage.Core
 
                 SetIsDefineMetaType(m_IsExplicitAssign);
             }
-        }
-        public void SetIsExplicitAssign(bool value)
-        {
-            m_IsExplicitAssign = value;
         }
         public override bool ParseMetaExpress()
         {

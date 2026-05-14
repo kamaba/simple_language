@@ -219,6 +219,7 @@ namespace SimpleLanguage.Core
         public bool isTemplateFunction => m_IsTemplateFunction;
         public bool isWithInterface => m_IsWithInterface;
         public bool isOverrideFunction => m_IsOverrideFunction;
+        public MetaMemberFunction overrideMetaMemberFunction => m_OverrideMetaMemberFunction;
         public bool isAbstract => m_IsAbstract;
         public bool isOverrideInterface => m_IsOverrideInterface;        
         public bool isConstructInitFunction => m_ConstructInitFunction;
@@ -234,6 +235,7 @@ namespace SimpleLanguage.Core
         public List<MetaGenTemplateFunction> genTempalteFunctionList => m_GenTempalteFunctionList;
 
 
+
         #region 属性
         protected bool m_IsTemplateFunction = false;
         protected bool m_IsOverrideFunction = false;
@@ -246,7 +248,9 @@ namespace SimpleLanguage.Core
         protected bool m_IsTemplateInParam = false;
         protected bool m_ConstructInitFunction = false;
         protected bool m_IsWithInterface = false;
-        protected MetaMemberFunction m_SourceMetaMemberFunction = null;
+        protected MetaMemberFunction m_SourceMetaMemberFunction = null; //模板里边的源函数
+        protected MetaMemberFunction m_OverrideMetaMemberFunction = null;           //override member function的函数
+
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
 
         private readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
@@ -453,6 +457,10 @@ namespace SimpleLanguage.Core
         {
             base.SetAnchorDeep(addep);
         }
+        public void SetOverrideMetaMemberFunction( MetaMemberFunction mmf )
+        {
+            this.m_OverrideMetaMemberFunction = mmf;
+        }
         public void SetSourceMetaMemberFunction( MetaMemberFunction mmf )
         {
             this.m_SourceMetaMemberFunction = mmf;
@@ -608,7 +616,6 @@ namespace SimpleLanguage.Core
         }
         public bool ParseInterface()
         {
-
             return true;
         }
         public virtual void CreateMetaExpress()

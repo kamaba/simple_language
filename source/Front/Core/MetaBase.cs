@@ -65,6 +65,7 @@ namespace SimpleLanguage.Core
             m_Permission = mb.m_Permission;
             m_MetaNode = mb.m_MetaNode;
             m_PintTokenList = mb.m_PintTokenList;
+            m_Type = mb.m_Type;
         }
         public void AddPingToken(Token token)
         {
@@ -96,6 +97,10 @@ namespace SimpleLanguage.Core
             if (find1 == null)
             {
                 m_PintTokenList.Add(pingToken);
+            }
+            if (m_Token == null)
+            {
+                m_Token = token;
             }
         }
         public void SetRefFromType(  RefFromType type )

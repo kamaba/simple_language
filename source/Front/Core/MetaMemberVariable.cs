@@ -155,12 +155,7 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaMemeberVariable?.classDefineRef != null)
             {
-                m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(ownerMetaClass, m_FileMetaMemeberVariable.classDefineRef);
-                //if( m_DefineMetaType.isTemplate || m_DefineMetaType.eType == EMetaTypeType.TemplateClassWithTemplate )
-                if( m_DefineMetaType != null )
-                {
-                    m_RealMetaType = new MetaType(m_DefineMetaType);
-                }
+                m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(ownerMetaClass, m_FileMetaMemeberVariable.classDefineRef);                
                 m_IsDefineMetaType = true;
             }
             else
@@ -249,64 +244,14 @@ namespace SimpleLanguage.Core
                 this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
                 m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType, this );
                 m_Express.CalcReturnType();
-                m_RealMetaType = new MetaType( m_Express.GetReturnMetaDefineType() );
             }
             return true;
         }
-        public void ParseChildMemberData()
+        public override void ParseRealMetaType()
         {
-            if (m_FileMetaMemeberVariable == null)
+            if( m_Express != null )
             {
-                return;
-            }
-
-            int count = m_FileMetaMemeberVariable.fileMetaMemberVariable.Count;
-
-            if (m_FileMetaMemeberVariable.DataType == global::SimpleLanguage.Compile.EMemberDataType.Array)
-            {
-                //List<MetaMemberData> list = new List<MetaMemberData>();
-
-                //for (int i = 0; i < count; i++)
-                //{
-                //    var fmmv = m_FileMetaMemeberVariable.fileMetaMemberVariable[i];
-
-                //    MetaMemberData mdc = new MetaMemberData(fmmv.GetHashCode().ToString());
-                //    list.Add(mdc);
-
-                //    for (int j = 0; j < fmmv.fileMetaMemberVariable.Count; j++)
-                //    {
-                //        MetaMemberVariable mmv = new MetaMemberVariable(mdc, fmmv.fileMetaMemberVariable[j] as FileMetaMemberVariable);
-
-                //        mmv.ParseChildMemberData();
-                //        mmv.CalcReturnType();
-
-                //    }
-
-                //}
-                //m_Express = new MetaNewObjectExpressNode(this.m_OwnerMetaClass, list);
-            }
-            else if (m_FileMetaMemeberVariable.DataType == global::SimpleLanguage.Compile.EMemberDataType.ConstVariable)
-            {
-                //CreateExpress();
-            }
-            else if (m_FileMetaMemeberVariable.DataType == global::SimpleLanguage.Compile.EMemberDataType.KeyValue)
-            {
-
-            }
-            else
-            {
-                for (int i = 0; i < count; i++)
-                {
-                    var fmmv = m_FileMetaMemeberVariable.fileMetaMemberVariable[i];
-
-                    //MetaDynamicClass mdc = new MetaDynamicClass(i.GetHashCode().ToString());
-
-                    //MetaMemberVariable mmd = new MetaMemberVariable(mdc, fmmv);
-                    //if (!AddMetaVariable(mmd))
-                    //{
-                    //    Log.AddMetaCoreLog(LID.AutoMetaMemberVariableL308, "Error 命名有重名!!");
-                    //}
-                }
+                m_RealMetaType = new MetaType(m_Express.GetReturnMetaDefineType());
             }
         }
         public void SetIndex( int index )

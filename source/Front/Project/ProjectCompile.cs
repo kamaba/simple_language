@@ -214,16 +214,15 @@ namespace SimpleLanguage.Project
             }
 
             // 类结构 + 继承/接口与 extend 序就绪后注册 typealias，再收集成员定义类型（见 ClassManager 分步注释）
+            TypeManager.instance.ClearProjectTypeAliases();
             ClassManager.instance.ParseInitMetaClassListThroughInheritance();
             TypeManager.instance.ResolveAllDeclaredTypeAliases(fileParseList);
-            ClassManager.instance.ParseInitMetaClassListCollectMemberDefineMetaTypes();
+            ClassManager.instance.ParseInitMetaListCollectMemberDefineMetaTypes();
 
             ClassManager.instance.CheckInterfaces();
-            ClassManager.instance.ParseDefineComplete();
 
-            ClassManager.instance.ParseMemberEnumExpress();
-            MetaVariableManager.instance.ParseMetaClassMemberExpress();
-            ClassManager.instance.ParseMetaDataMemberAnonAndArray();
+            MetaVariableManager.instance.ParseMetaMemberExpress();
+            ClassManager.instance.ParseDefineComplete();
 
             // Inject project global.data config into Project meta members before statements parse.
             ProjectClass.InjectProjectGlobalDataFromConfig();

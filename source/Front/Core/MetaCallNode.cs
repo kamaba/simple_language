@@ -1873,7 +1873,6 @@ namespace SimpleLanguage.Core
             // 否则后续 IR 可能拿不到默认实例的初始化表达式。
             mmv.ParseMetaExpress();
             mmv.CalcReturnType();
-            mmv.ParseChildMemberData();
 
             var mmd = globalData.AddMetaMemberVariable(mmv, false) ?? globalData.GetMemberDataByName(varName);
             return mmd;

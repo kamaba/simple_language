@@ -48,6 +48,7 @@ namespace SimpleLanguage.Core
             m_GlobalTypeAliasDict.Add(aliasName, targetType);
             return true;
         }
+        public static bool IsNumericEType(EType t) => NumberManager.IsNumericEType(t);
 
         public bool TryGetGlobalTypeAlias(string aliasName, out MetaType targetType)
         {
@@ -97,8 +98,6 @@ namespace SimpleLanguage.Core
         public void ResolveAllDeclaredTypeAliases(List<FileParse> fileParseList)
         {
             if (fileParseList == null) return;
-            EnsureBuiltinGlobalTypeAliases();
-            ClearProjectTypeAliases();
 
             // 工程级 typealias：多轮解析以支持别名之间的依赖
             for (int round = 0; round < 64; round++)

@@ -59,8 +59,6 @@ namespace SimpleLanguage.Core
         public MetaBase ownerMetaBase => m_OwnerMetaClass;
         public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
 
-        private Token m_VariableNameToken = null;
-
         #region 属性
 
         // MetaData / MetaEnum 不再继承自 MetaClass，故 owner 升级为 MetaBase，
@@ -144,10 +142,6 @@ namespace SimpleLanguage.Core
         {
             this.m_IsConst = isc;
         }
-        public void SetVariableNameToken( Token token )
-        {
-            m_VariableNameToken = token;
-        }
         public void SetIsDefineMetaType( bool flag )
         {
             this.m_IsDefineMetaType = flag;
@@ -211,26 +205,65 @@ namespace SimpleLanguage.Core
         }
         public bool GetIsCanCanIterate()
         {
-            MetaClass mc = GetFinalTemplateMetaClass();
 
-            if (mc is MetaEnum)
+            MetaClass mc = CoreMetaClassManager.objectMetaClass;
+            if (m_IsDefineMetaType)
             {
-                return true;
+                if (m_DefineMetaType.isEnum)
+                {
+                    return true;
+                }
+                else if (m_DefineMetaType.isData)
+                {
+                    return false;
+                }
+                else
+                {
+                    if (m_DefineMetaType.metaClass is MetaGenTemplateClass mgtc)
+                    {
+                        mc = mgtc.metaTemplateClass;
+                    }
+                    else
+                    {
+                        mc = m_DefineMetaType.metaClass;
+                    }
+                }
             }
             else
             {
-                MetaClass findMc = ClassManager.instance.GetClassByName("Core.IIterable");
-                if (mc.GetInterfaceByMetaClass(findMc))
+                if (m_RealMetaType.isEnum)
                 {
                     return true;
                 }
-                MetaClass findMc2 = ClassManager.instance.GetClassByName("Core.IIterable<T>", 1 );
-                if (mc.GetInterfaceByMetaClass(findMc2))
+                else if (m_RealMetaType.isData)
                 {
-                    return true;
+                    return false;
+                }
+                else
+                {
+                    if (m_RealMetaType != null)
+                    {
+                        if (m_RealMetaType.metaClass is MetaGenTemplateClass mgtc)
+                        {
+                            mc = mgtc.metaTemplateClass;
+                        }
+                        else
+                        {
+                            mc = m_RealMetaType.metaClass;
+                        }
+                    }
                 }
             }
-
+            MetaClass findMc = ClassManager.instance.GetClassByName("Core.IIterable");
+            if (mc.GetInterfaceByMetaClass(findMc))
+            {
+                return true;
+            }
+            MetaClass findMc2 = ClassManager.instance.GetClassByName("Core.IIterable<T>", 1 );
+            if (mc.GetInterfaceByMetaClass(findMc2))
+            {
+                return true;
+            }   
             return false;
         }
 
@@ -287,10 +320,6 @@ namespace SimpleLanguage.Core
                 return m_RealMetaType.metaClass;
             }
         }
-        public void SetDefineMetaClass(MetaClass defineClass)
-        {
-            m_DefineMetaType.SetMetaClass(defineClass);
-        }
         public void SetMetaDefineType( MetaType mdt )
         {
             m_DefineMetaType = mdt;
@@ -299,6 +328,7 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaBlockStatements = mbs;
         }
+
         public virtual void ParseDefineMetaType()
         {
 
@@ -306,10 +336,6 @@ namespace SimpleLanguage.Core
         public virtual void ParseRealMetaType()
         {
 
-        }
-        public virtual bool Parse()
-        {
-            return true;
         }
         public virtual void CalcParseLevel()
         {
@@ -322,10 +348,6 @@ namespace SimpleLanguage.Core
         public virtual bool ParseMetaExpress()
         {
             return true;
-        }
-        public virtual void ParseChildMemberData()
-        {
-
         }
         public int CompareTo(MetaVariable mmv)
         {
@@ -351,10 +373,6 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public virtual string ToStatementString()
-        {
-            return "";
-        }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -371,12 +389,8 @@ namespace SimpleLanguage.Core
             sb.Append(m_Name);
             return sb.ToString();
         }
-
-        public static bool IsNumericEType(EType t) => NumberManager.IsNumericEType(t);
-
         public static bool TryConvertConstValueByEType(EType targetType, object input, out object converted)
             => NumberManager.TryConvertConstValueByEType(targetType, input, out converted);
-
         public static bool TryAdjustConstExpressByDefineEType(MetaConstExpressNode mcen, EType defineEType)
         {
             if (mcen == null)
@@ -398,7 +412,7 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
-            if (IsNumericEType(curEType) && IsNumericEType(expEType))
+            if (TypeManager.IsNumericEType(curEType) && TypeManager.IsNumericEType(expEType))
             {
                 return NumberManager.TryAdjustConstExpressToNumericTarget(mcen, curEType, expEType, token);
             }
@@ -640,7 +654,7 @@ namespace SimpleLanguage.Core
             //m_IndexMetaVariable.AddPingToken(lmv.pingToken);
             //m_ValueMetaVariable.AddPingToken(lmv.pingToken);
         }
-        public override bool Parse()
+        public virtual void ParseRealMetaType()
         {
             if(m_FileMetaClassDefine != null )
             {
@@ -662,7 +676,7 @@ namespace SimpleLanguage.Core
                 }
             }
             m_RealMetaType = new MetaType(m_DefineMetaType);
-            return true;
+            return;
         }
         public override MetaVariable GetMetaVariable(string name)
         {

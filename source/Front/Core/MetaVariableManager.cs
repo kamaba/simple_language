@@ -40,7 +40,7 @@ namespace SimpleLanguage.Core
         {
             metaMemberEnumVariableList.Add(mv);
         }
-        public void ParseMetaClassMemberExpress()
+        public void ParseMetaMemberExpress()
         {
             List<MetaVariable> mvlist = new List<MetaVariable>();
             mvlist.AddRange(metaMemeberVariableList);
@@ -55,9 +55,9 @@ namespace SimpleLanguage.Core
 
             foreach (var v in mvlist)
             {
+                v.CreateMetaExpress();
                 v.ParseMetaExpress();
                 v.ParseRealMetaType();
-                v.ParseChildMemberData();
             }
         }
     }

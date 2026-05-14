@@ -402,7 +402,7 @@ namespace SimpleLanguage.Core
             {                
                 if( topLevelClass?.metaClass?.metaNode == null )
                 {
-                    Log.AddMetaCoreLog(LID.AutoClassManagerL229, "Error 涓婄骇绫讳腑鐨凪etaClass娌℃湁缁戝畾!!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, " 没有找到顶层类的元节点");
                     return null;
                 }
 
@@ -411,7 +411,7 @@ namespace SimpleLanguage.Core
                 {
                     if(findmc.isMetaNamespace || findmc.isMetaData || findmc.isMetaEnum )
                     {
-                        Log.AddMetaCoreLog(LID.AutoClassManagerL238, "Namespace/data/enum node already exists, duplicate class node is not allowed.");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Namespace/data/enum node already exists, duplicate class node is not allowed.");
                         return null;
                     }
 
@@ -428,12 +428,12 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.AutoClassManagerL255, "Found existing class node with incompatible define type.");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Found existing class node with incompatible define type.");
                         }
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.AutoClassManagerL260, "Found existing class node with incompatible define type.");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Found existing class node with incompatible define type.");
                         return null;
                     }
                 }
@@ -466,7 +466,7 @@ namespace SimpleLanguage.Core
                    
                     if (finalTopMetaNode == null )
                     {
-                        Log.AddMetaCoreLog(LID.AutoClassManagerL293, "鍛藉悕绌洪棿涓紝宸插畾涔夊叾瀹冮潪鍛藉悕绌洪棿鐨勭被鍨?!!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到顶层命名空间，无法绑定类节点!!");
                         return null;
                     }
                 }
@@ -551,7 +551,7 @@ namespace SimpleLanguage.Core
                         }
                         if (!fmc.isPartial)
                         {
-                            Log.AddMetaCoreLog(LID.AutoClassManagerL378, "Class " + fmc.name + " at " + fmc.token.ToAllString() + " does not support parallel file definitions.");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Class " + fmc.name + " at " + fmc.token.ToAllString() + " does not support parallel file definitions.");
                             return null;
                         }
                         bool isPartial = true;
@@ -560,7 +560,7 @@ namespace SimpleLanguage.Core
                             if (v.Value.isPartial == false)
                             {
                                 isPartial = false;
-                                Log.AddMetaCoreLog(LID.AutoClassManagerL387, "Class " + findamc.name + " at " + v.Value.token.ToAllString() + " does not support parallel file definitions.");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Class " + findamc.name + " at " + v.Value.token.ToAllString() + " does not support parallel file definitions.");
                                 break;
                             }
                         }
@@ -582,7 +582,7 @@ namespace SimpleLanguage.Core
             {
                 if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
                 {
-                    Log.AddMetaCoreLog(LID.AutoClassManagerL409, "Error 浣跨敤鐨勫己瀹氬埗绫昏妭鐐圭殑鏂瑰紡涓紝娌℃湁鏌ユ壘鍒扮浉鍏崇殑绫伙紝鎵€浠ヤ笉鍏佽瀹氫箟璇ョ被锛岃鍏堝湪宸ョ▼涓畾涔夌被");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, " ");
                 }
                 if (fmc.isEnum)
                 {
@@ -590,9 +590,7 @@ namespace SimpleLanguage.Core
                     finalTopMetaNode.AddMetaEnum(newme);
                     fmc.SetMetaEnum(newme);
                     newme.SetClassDefineType(EClassDefineType.CodeDefine);
-                    newme.BindFileMetaClass(fmc);
                     newme.ParseFileMetaEnumMemeberEnum(fmc);
-                    newme.UpdateClassAllName();
                     
                     AddInitHandleMetaEnumList(newme);
 
@@ -601,12 +599,9 @@ namespace SimpleLanguage.Core
                 else if (fmc.isData)
                 {
                     var newmd = new MetaData(fmc);
-                    newmd.BindFileMetaClass(fmc);
                     newmd.SetClassDefineType(EClassDefineType.CodeDefine);
                     finalTopMetaNode.AddMetaData(newmd);
-                    newmd.UpdateClassAllName();
                     newmd.ParseFileMetaDataMemeberData(fmc);
-                    AddDefineMetaData(newmd);
                     AddInitHandleMetaDataList(newmd);
 
                     return newmd;
@@ -615,7 +610,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmc.isConst)
                     {
-                        Log.AddMetaCoreLog(LID.AutoClassManagerL440, "Class 涓紝浣跨敤鍏抽敭瀛楋紝涓嶅厑璁镐娇鐢–onst");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Class 不支持 const 定义");
                         return null;
                     }
                     var newmc = new MetaClass(fmc.name);
@@ -679,30 +674,33 @@ namespace SimpleLanguage.Core
         }
         /// <summary>
         /// 模板约束、extends/implements、运行时注册，以及按继承深度排序（尚未收集成员上的定义类型）。
-        /// 之后应调用 <see cref="TypeManager.ResolveAllDeclaredTypeAliases"/>，再调用 <see cref=""/>。
         /// </summary>
         public void ParseInitMetaClassListThroughInheritance()
         {
             foreach (var it in m_InitHandleMetaClassList)
             {
                 it.ParseMetaTemplateInConstraint();
+            }
+            TypeManager.instance.EnsureBuiltinGlobalTypeAliases();
+
+            foreach ( var it in m_InitHandleMetaClassList )
+            {
                 it.ParseExtendsRelation();
                 it.ParseInterfaceRelation();
             }
-            foreach( var it in m_InitHandleMetaEnumList )
-            {
-                it.ParseExtendsRelation();
-            }
-
             foreach (var it in m_InitHandleMetaClassList)
             {
                 it.CalcExtendLevel();
             }
             m_InitHandleMetaClassList.Sort((x, y) => x.extendLevel - y.extendLevel);
+            foreach ( var it in m_InitHandleMetaEnumList )
+            {
+                it.ParseExtendsRelation();
+            }
         }
 
         /// <summary>在 typealias 注册之后，从源文件收集成员变量/函数声明上的定义类型并处理继承侧实例化。</summary>
-        public void ParseInitMetaClassListCollectMemberDefineMetaTypes()
+        public void ParseInitMetaListCollectMemberDefineMetaTypes()
         {
             foreach (var it in m_InitHandleMetaClassList)
             {
@@ -712,10 +710,6 @@ namespace SimpleLanguage.Core
                 it.EnsureParsedGenTemplateMetaClasses();
             }
             EnsureAllGenTemplateClassesParsed();
-            //foreach( var it in m_InitHandleMetaClassList )
-            //{
-            //    it.ParseGenTemplateClassMetaType();
-            //}
         }
 
         public void EnsureAllGenTemplateClassesParsed()
@@ -779,31 +773,9 @@ namespace SimpleLanguage.Core
             {
                 md.ParseDefineComplete();
             }
-        }
-        public void ParseMemberEnumExpress()
-        {
-            foreach (var me in m_InitHandleMetaEnumList)
+            foreach (var md in m_InitHandleMetaEnumList)
             {
-                me.ParseMemberMetaEnumExpress();
-            }
-        }
-
-        public void ParseMetaDataMemberAnonAndArray()
-        {
-
-            // 嵌套 const / 匿名 {} / 数组元素未进入 metaMemberDataVariableList，需在 ParseExpress 之后按树后序补全匿名 MetaData 与 NewObject。
-            foreach (var md in EnumerateDefineMetaData())
-            {
-                var roots = new List<MetaMemberData>();
-                foreach (var kv in md.metaMemberDataDict)
-                {
-                    roots.Add(kv.Value);
-                }
-                roots.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
-                for (int i = 0; i < roots.Count; i++)
-                {
-                    MetaMemberData.ResolveAnonymousDataHierarchyPostOrder(roots[i]);
-                }
+                md.ParseDefineComplete();
             }
         }
         //public static EClassRelation ValidateClassRelation( string curName, string compareName )

@@ -324,7 +324,6 @@ namespace SimpleLanguage.Project
             // are lowered to NewArray/NewObject IR instead of only carrying raw meta definitions.
             mmv.ParseMetaExpress();
             mmv.CalcReturnType();
-            mmv.ParseChildMemberData();
         }
 
         static MetaData CreateMetaDataByJsonObject(string dataName, JsonElement element, int seed)

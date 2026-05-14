@@ -399,6 +399,10 @@ namespace SimpleLanguage.Core
                     {
                         if (v.isWithInterface) continue;
                         //if (v.isConstructInitFunction) continue;
+                        if( v.isOverrideFunction )
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, v.token, "有override标记，但没有父类 ");                            
+                        }
                         m_NonStaticVirtualMetaMemberFunctionList.Add(v);
                     }
                 }
@@ -423,6 +427,7 @@ namespace SimpleLanguage.Core
                             {
                                 Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 子类[" + this.m_AllName + "] 方法: " + v2.name + " 实现了抽象父方法但未使用 override 标记");
                             }
+                            v2.SetOverrideMetaMemberFunction(efun);
                             canAdd = false;
                             m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
                             continue;
@@ -452,6 +457,11 @@ namespace SimpleLanguage.Core
                     {
                         var find = m_NonStaticVirtualMetaMemberFunctionList.Find(a => a == v2);
                         if (find != null) continue;
+
+                        if (v2.isOverrideFunction && v2.overrideMetaMemberFunction != null)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, find.token, "有override标记，但没有父类 ");
+                        }
 
                         m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
                     }
@@ -831,6 +841,7 @@ namespace SimpleLanguage.Core
             {
                 return;
             }
+
             //AddDefineConstructFunction();
             if (m_DefaultExpressNode == null )
             {
@@ -990,7 +1001,7 @@ namespace SimpleLanguage.Core
             if (mmv == null)
             {
                 mmv = new MetaMemberVariable(this, "instance");
-                mmv.SetDefineMetaClass(this);
+                mmv.defineMetaType.SetMetaClass(this);
                 AddMetaMemberVariable(mmv);
             }
         }

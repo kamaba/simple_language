@@ -9,6 +9,8 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaData : MetaBase
     {
+        /// <summary>源码绑定（用于 IR 导出路径等），可能为 null（如纯运行时匿名 data）。</summary>
+        public FileMetaClass boundFileMetaClass => m_FileMetaClass;
         public string allClassName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
         public bool isConst => m_IsConst;
         public bool isStatic => m_IsStatic;
@@ -47,16 +49,6 @@ namespace SimpleLanguage.Core
         public void SetClassDefineType(EClassDefineType type)
         {
             m_ClassDefineType = type;
-        }
-        public void BindFileMetaClass(FileMetaClass fmc)
-        {
-            m_FileMetaClass = fmc;
-        }
-        /// <summary>源码绑定（用于 IR 导出路径等），可能为 null（如纯运行时匿名 data）。</summary>
-        public FileMetaClass boundFileMetaClass => m_FileMetaClass;
-        public void UpdateClassAllName()
-        {
-            m_AllName = m_MetaNode?.GetAllName() ?? m_Name;
         }
         public MetaVariable GetMetaMemberVariableByName(string name)
         {
@@ -138,6 +130,7 @@ namespace SimpleLanguage.Core
         //}
         public void ParseFileMetaDataMemeberData(FileMetaClass fmc)
         {
+            m_FileMetaClass = fmc;
             if (fmc.memberVariableList.Count > 0 || fmc.memberFunctionList.Count > 0)
             {
                 Log.AddMetaCoreLog(LID.MetaCoreDataNotAllowHasFunction, "Error Data中不允许有Variable 和 Function!!");
@@ -160,12 +153,21 @@ namespace SimpleLanguage.Core
                 {
                     mmv.SetName(mmv.name + "__repeat__");
                 }
-                mmv.ParseDefineMetaType();
                 AddMetaMemberData(mmv, mmv.memberDataType == EMemberDataType.MemberClass );
             }
         }
         public void ParseDefineComplete()
         {
+            var roots = new List<MetaMemberData>();
+            foreach (var kv in m_MetaMemberDataDict)
+            {
+                roots.Add(kv.Value);
+            }
+            roots.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
+            for (int i = 0; i < roots.Count; i++)
+            {
+                MetaMemberData.ResolveAnonymousDataHierarchyPostOrder(roots[i]);
+            }
         }
         public override string ToFormatString()
         {

@@ -55,6 +55,7 @@ namespace SimpleLanguage.Core
         protected bool m_ConvertNewExpressNode = false;
         protected bool m_ConvertCallExpressNode = false;
         protected Token m_Token = null;
+        protected bool m_Parse = false;
 
 
         public virtual int CalcParseLevel(int level) { return level; }

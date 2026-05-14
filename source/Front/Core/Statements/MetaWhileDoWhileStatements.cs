@@ -159,7 +159,7 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.AutoMetaWhileDoWhileStatementsL159, "Error For x in X必须有!!");
                     return;
                 }
-                m_ForIterateVariable.Parse();
+                m_ForIterateVariable.ParseRealMetaType();
 
                 //m_HasNextFunction = m_ForIterateVariable.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("hasNext");
                 //m_NextValueFunction = m_ForIterateVariable.realMetaType.metaClass.GetFirstMetaMemberFunctionByName("current");
