@@ -128,7 +128,29 @@ namespace SimpleLanguage.Core
                 return;
             }
             m_MetaMemberVariableDict.Add(mmd.name, mmd);
+
+            MetaVariableManager.instance.AddMetaEnumVariable(mmd);
         }
+        /// <summary>
+        /// Enum 的 extends 底层类型：仅允许内置整型族与 string（与成员语义分支一致），不允许用户 class。
+        /// </summary>
+        static bool IsAllowedEnumUnderlyingMetaClass(MetaClass mc)
+        {
+            if (mc == null)
+            {
+                return false;
+            }
+            return mc == CoreMetaClassManager.uint8MetaClass
+                || mc == CoreMetaClassManager.int8MetaClass
+                || mc == CoreMetaClassManager.int16MetaClass
+                || mc == CoreMetaClassManager.uint16MetaClass
+                || mc == CoreMetaClassManager.int32MetaClass
+                || mc == CoreMetaClassManager.uint32MetaClass
+                || mc == CoreMetaClassManager.int64MetaClass
+                || mc == CoreMetaClassManager.uint64MetaClass
+                || mc == CoreMetaClassManager.stringMetaClass;
+        }
+
         public void ParseExtendsRelation()
         {
             if (m_ClassDefineType == EClassDefineType.InnerDefine)
@@ -169,7 +191,23 @@ namespace SimpleLanguage.Core
 
             if (mn.IsMetaClass())
             {
-                m_ExtendClass = mn.GetMetaClassByTemplateCount(0);
+                var extMc = mn.GetMetaClassByTemplateCount(0);
+                if (extMc == CoreMetaClassManager.dynamicMetaData)
+                {
+                    // 关键字 extends data → 底层为动态 data，成员可为多种已定义 data 的 new 表达式
+                    m_ExtendClass = CoreMetaClassManager.dynamicMetaData;
+                }
+                else if (IsAllowedEnumUnderlyingMetaClass(extMc))
+                {
+                    m_ExtendClass = extMc;
+                }
+                else
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                        "Error Enum extends 仅允许内置整数类型（byte/sbyte/short/ushort/int/uint/long/ulong 等）、string、关键字 data，或具体 data 类型名；不允许继承普通 class: "
+                        + fmcd.allName);
+                    m_ExtendClass = CoreMetaClassManager.int32MetaClass;
+                }
             }
             else if (mn.isMetaData)
             {
@@ -473,10 +511,19 @@ namespace SimpleLanguage.Core
                     mme.ParseMetaExpress();
                     if (mme.express is MetaNewObjectExpressNode mnoeData)
                     {
-                        if (!mnoeData.GetReturnMetaDefineType().isData)
+                        var retDt = mnoeData.GetReturnMetaDefineType();
+                        if (!retDt.isData)
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage,
                                 "Error Enum extends data: member value must be a data new expression");
+                        }
+                        else if (!m_ExtendMetaData.isDynamic
+                            && !ReferenceEquals(retDt.metaData, m_ExtendMetaData))
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                                "Error Enum extends data: 成员必须是 extends 所指定 data 类型的实例（"
+                                + m_ExtendMetaData.allClassName + "），实际为: "
+                                + (retDt.metaData?.allClassName ?? retDt.name ?? "?"));
                         }
                     }
                     else

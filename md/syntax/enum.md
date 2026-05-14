@@ -28,6 +28,34 @@ enum Book
 
 通过 `extends` 关键字可以为枚举指定底层类型，不同底层类型有不同的行为规则。
 
+### extends 允许的类型（重要）
+
+编译器在 `MetaEnum.ParseExtendsRelation` 中强制：**`enum` 的 `extends` 只能是下面几类，其余一律报错并回退为 `int` 语义。**
+
+| 类别 | 说明 |
+|------|------|
+| **内置整数族** | 语言映射到 VM 的 `byte`/`sbyte`/`short`/`ushort`/`int`/`uint`/`long`/`ulong` 等整型底层 |
+| **`string`** | 每项为字符串常量 |
+| **`data`（具名）** | `extends` 某个已定义的 `data` 名，例如 `extends AA`（`data AA { ... }`） |
+| **`data`（泛型写法）** | 如 `extends data`：表示底层为「任意 `data` 实例」的联合语义（实现上绑定到动态 data），成员可为多种已定义 `data` 的 `new` 表达式 |
+
+**不允许：**
+
+- 继承普通 **`class`**（用户类、模板类等均不可作为 enum 的 `extends` 目标）
+- 继承另一个 **`enum`**
+- 将 **`interface`** 或其它非 `MetaClass` 内置整型 / `string` / `MetaData` 的节点作为 extends 目标
+
+### 具名 `data` 与成员取值的对应关系
+
+当写 **`enum E extends AA`** 且存在 **`data AA { ... }`** 时：
+
+- 枚举成员的 `=` 右侧**必须是** `AA() { ... }` 形式的 **data 构造**（与 `extends` 的 **`AA` 为同一 `MetaData`**）。
+- **不允许**写其它 `data` 类型（例如 `extends AA` 却写 `BB() { ... }`）。
+
+当写 **`enum E extends data`**（泛型 data）时：
+
+- 成员仍须为 **某个已定义 `data` 类型** 的 `new` 表达式，但**可以**在各项中使用**不同**的 `data` 类型（见下文「data 类型」示例）。
+
 ### 整数类型（`int` / `uint` / `byte` / `sbyte` / `short` / `ushort` / `long` / `ulong`）
 
 当底层类型为整数时，枚举项**可以省略 `=` 号**，后续项自动从上一个值递增。
@@ -72,7 +100,9 @@ enum Season extends string
 
 ### data 类型
 
-底层类型为 `data` 时，枚举项的值必须是已定义的 `data` 类型实例。使用 `mut` 修饰的项可在运行时重新赋值。
+#### `extends data`（多种 data）
+
+底层类型为关键字 **`data`**（即「未写具体 data 名」）时，枚举项的值必须是已定义的 **`data`** 类型实例，**各项可以属于不同的 `data` 类型**。使用 `mut` 修饰的项可在运行时重新赋值。
 
 ```ruby
 data RectShape
@@ -99,7 +129,21 @@ enum EShape extends data
 }
 ```
 
-> **注意**：`extends data` 时，内部所有项必须使用已定义的 `data` 类型。
+#### `extends` 某个具名 `data`（单一 data）
+
+若写 **`enum EOnly extends RectShape`**，则**每一项**的 `=` 右侧**只能**是 **`RectShape() { ... }`**，不能再写 `CircleShape()` 等其它 `data`。
+
+```ruby
+data Point { x = 0; y = 0; }
+
+enum EPoints extends Point
+{
+    A = Point() { x = 1, y = 2 }
+    B = Point() { x = 3, y = 4 }
+}
+```
+
+> **注意**：`extends data` 与 `extends SomeData` 的区别由编译器区分：前者允许多种 `data` 混排；后者成员类型必须与 `SomeData` 一致。
 
 ---
 
@@ -160,8 +204,10 @@ const enum ConstColor
 ## 限制规则
 
 - **不允许**在 enum 内部嵌套 `enum` 或 `class`
-- `extends` 指定类型后，内部项**必须全部使用该类型**
+- **`extends` 只能是**：内置整型族、`string`、**`data`**（关键字或具体 `data` 名）；**禁止** `extends` 普通 `class`、**禁止** `extends` 另一个 `enum`
 - 使用整数类 `extends` 时，枚举项可省略 `=`，自动从上一个值递增
+- **`extends` 具体 `data` 名时**：成员右侧**仅允许**该 `data` 类型的构造表达式
+- **`extends data`（关键字）时**：成员须为**已定义**的 `data` 构造，但**可以**混用多种 `data` 类型
 - 不使用 `extends` 时，内部项可以是除 `enum`/`class` 之外的任意类型
 - 只有 `const` 和 `mut` 修饰符合法，其他限制关键字不可用
 

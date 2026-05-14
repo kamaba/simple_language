@@ -14,15 +14,20 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaMemberEnum : MetaMemberVariable
     {
-        private bool isExplicitAssign => m_IsExplicitAssign;
-        private bool m_IsExplicitAssign = false;
-        private MetaExpressNode m_EnumValueExpress = null;
-
         public MetaExpressNode enumValueExpress => m_EnumValueExpress;
         public MetaConstExpressNode enumValueConstExpressNode => m_EnumValueExpress as MetaConstExpressNode;
+        private bool isExplicitAssign => m_IsExplicitAssign;
+
+
+        private bool m_IsExplicitAssign = false;
+        private MetaExpressNode m_EnumValueExpress = null;
+        private MetaType m_EnumDefineMetaType = null;
 
         public MetaMemberEnum(MetaClass mc, string name, MetaClass extendClass) : base(mc, name)
         {
+            m_DefineMetaType = new MetaType(CoreMetaClassManager.memberMetaClass);
+            m_RealMetaType = new MetaType(CoreMetaClassManager.memberMetaClass);
+            SetIsDefineMetaType(true);
         }
         public MetaMemberEnum(MetaClass mc, FileMetaMemberVariable fmmv, MetaClass extendClass, bool parentIsConst ) : base()
         {
@@ -55,7 +60,7 @@ namespace SimpleLanguage.Core
 
             if (string.IsNullOrEmpty(m_Name))
             {
-                Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL58, "没有找到定义变量名称!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到定义变量名称!");
                 m_Name = "Error_" + GetHashCode().ToString();
             }
             SetOwnerMetaClass(mc);
@@ -106,6 +111,16 @@ namespace SimpleLanguage.Core
         {
             if(ownerMetaEnum != null )
             {
+                if (ownerMetaEnum.extendClass != null)
+                {
+                    m_DefineMetaType = new MetaType(ownerMetaEnum.extendClass);
+                    m_IsDefineMetaType = true;
+                }
+                if (ownerMetaEnum.extendMetaData != null)
+                {
+                    m_DefineMetaType = new MetaType(ownerMetaEnum.extendMetaData);
+                    m_IsDefineMetaType = true;
+                }
             }
         }
         public void SetIsExplicitAssign(bool value)
@@ -139,17 +154,6 @@ namespace SimpleLanguage.Core
                         m_IsExplicitAssign = false;
                     }
                 }
-
-                // enum member always has a define type; default real type follows define type until expression parsed.
-                if (m_DefineMetaType == null)
-                {
-                    m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-                }
-                if (m_RealMetaType == null)
-                {
-                    m_RealMetaType = new MetaType(m_DefineMetaType.metaClass);
-                }
-
                 SetIsDefineMetaType(m_IsExplicitAssign);
             }
         }
