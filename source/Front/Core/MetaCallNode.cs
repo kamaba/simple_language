@@ -106,7 +106,7 @@ namespace SimpleLanguage.Core
         public MetaType callMetaType => m_CallMetaType;
         //public MetaGenTemplateClass genMetaClass => m_GenMetaClass;
         //public MetaData metaData => m_MetaData;
-        //public MetaEnum metaEnum => m_MetaEnum;
+        public MetaEnum metaEnum => m_MetaEnum;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaTemplate metaTemplate => m_MetaTemplate;
         public MetaFunction metaFunction => m_MetaFunction;
@@ -994,6 +994,10 @@ namespace SimpleLanguage.Core
                                 {
                                     m_MetaVariable = mme;
                                     m_CallNodeType = ECallNodeType.EnumMember;
+                                    if (m_FrontCallNode?.metaEnum != null)
+                                    {
+                                        m_MetaType = new MetaType(m_FrontCallNode.metaEnum);
+                                    }
                                 }
                             }
                             else

@@ -112,11 +112,9 @@ namespace SimpleLanguage.IR
             m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             m_IsStatic = true;
             m_Permission = mme.permission;
-            var exportMt = mme.GetFinalMetaType() ?? mme.defineMetaType;
-            if (exportMt != null)
-            {
-                m_IRMetaType = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(exportMt, irmc);
-            }
+            // 静态字段实际存放 Core.Member；底层 extends 类型在 defineMetaType，表达式值类型在 realMetaType。
+            var exportMt = new MetaType(CoreMetaClassManager.memberMetaClass);
+            m_IRMetaType = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(exportMt, irmc);
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberData mmd, int fieldIndex)
         {

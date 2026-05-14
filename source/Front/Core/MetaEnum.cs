@@ -81,7 +81,7 @@ namespace SimpleLanguage.Core
 
                 foreach (var mme in enumMembers)
                 {
-                    MetaVisitNode mvn = MetaVisitNode.CreateByEnumMember(mme.defineMetaType, mme);
+                    MetaVisitNode mvn = MetaVisitNode.CreateByEnumMember(new MetaType(this), mme);
                     MetaCallLink mcl = new MetaCallLink(mvn);
                     MetaCallLinkExpressNode mclen = new MetaCallLinkExpressNode(mcl);
                     maen.metaCallArray.Add(mclen);
@@ -254,6 +254,12 @@ namespace SimpleLanguage.Core
             bool isHave = false;
             foreach (var v in fmc.memberVariableList)
             {
+                if (string.IsNullOrEmpty(v.name))
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到定义变量名称!");
+                    continue;
+                }
+
                 MetaBase mb = GetMetaMemberVariableByName(v.name);
                 if (mb != null)
                 {
@@ -262,7 +268,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                     isHave = false;
-                MetaMemberEnum mmv = new MetaMemberEnum(CoreMetaClassManager.enumMetaData, v, this.extendClass, true );
+                MetaMemberEnum mmv = new MetaMemberEnum( this, v, this.extendClass, true );
                 if (isHave)
                 {
                     mmv.SetName(mmv.name + "__repeat__");

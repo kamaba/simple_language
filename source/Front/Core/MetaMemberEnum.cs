@@ -14,23 +14,35 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaMemberEnum : MetaMemberVariable
     {
+        MetaEnum DefiningEnumOrNull => m_DefiningMetaEnum ?? ownerMetaEnum;
         public MetaExpressNode enumValueExpress => m_EnumValueExpress;
         public MetaConstExpressNode enumValueConstExpressNode => m_EnumValueExpress as MetaConstExpressNode;
         private bool isExplicitAssign => m_IsExplicitAssign;
 
-
         private bool m_IsExplicitAssign = false;
         private MetaExpressNode m_EnumValueExpress = null;
-        private MetaType m_EnumDefineMetaType = null;
+        /// <summary>所属用户 enum（与 ownerMetaClass 多为 Core.Enum 模板不同，用于 extends 与定义类型）。</summary>
+        private MetaEnum m_DefiningMetaEnum = null;
+        private MetaEnum m_OwnerMetaEnum = null;
 
-        public MetaMemberEnum(MetaClass mc, string name, MetaClass extendClass) : base(mc, name)
+        //public MetaMemberEnum(MetaClass mc, string name, MetaClass extendClass) : base(mc, name)
+        //{
+        //    if (extendClass != null)
+        //    {
+        //        m_DefineMetaType = new MetaType(extendClass);
+        //        m_RealMetaType = new MetaType(extendClass);
+        //        SetIsDefineMetaType(true);
+        //    }
+        //    else
+        //    {
+        //        m_DefineMetaType = new MetaType(CoreMetaClassManager.memberMetaClass);
+        //        m_RealMetaType = new MetaType(CoreMetaClassManager.memberMetaClass);
+        //        SetIsDefineMetaType(true);
+        //    }
+        //}
+        public MetaMemberEnum(MetaEnum mc, FileMetaMemberVariable fmmv, MetaClass extendClass, bool parentIsConst ) : base()
         {
-            m_DefineMetaType = new MetaType(CoreMetaClassManager.memberMetaClass);
-            m_RealMetaType = new MetaType(CoreMetaClassManager.memberMetaClass);
-            SetIsDefineMetaType(true);
-        }
-        public MetaMemberEnum(MetaClass mc, FileMetaMemberVariable fmmv, MetaClass extendClass, bool parentIsConst ) : base()
-        {
+            m_OwnerMetaEnum = mc;
             m_FileMetaMemeberVariable = fmmv;
             m_Name = fmmv.name;
             AddPingToken(fmmv.nameToken);
@@ -39,44 +51,8 @@ namespace SimpleLanguage.Core
             m_VariableFrom = EVariableFrom.EnumMember;
             m_Permission = EPermission.Public;
 
-            m_DefineMetaType = new MetaType(CoreMetaClassManager.memberMetaClass);
-            m_RealMetaType = new MetaType(CoreMetaClassManager.memberMetaClass);
             SetIsDefineMetaType(true);
-
-            if (extendClass == CoreMetaClassManager.uint8MetaClass
-                  || extendClass == CoreMetaClassManager.int8MetaClass
-                  || extendClass == CoreMetaClassManager.int16MetaClass
-                  || extendClass == CoreMetaClassManager.uint16MetaClass
-                  || extendClass == CoreMetaClassManager.int32MetaClass
-                  || extendClass == CoreMetaClassManager.uint32MetaClass
-                  || extendClass == CoreMetaClassManager.int64MetaClass
-                  || extendClass == CoreMetaClassManager.uint64MetaClass
-                  || extendClass == CoreMetaClassManager.stringMetaClass)
-            {
-
-            }
-
-
-
-            if (string.IsNullOrEmpty(m_Name))
-            {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到定义变量名称!");
-                m_Name = "Error_" + GetHashCode().ToString();
-            }
-            SetOwnerMetaClass(mc);
-
-            if (extendClass == CoreMetaClassManager.uint8MetaClass
-                  || extendClass == CoreMetaClassManager.int8MetaClass
-                  || extendClass == CoreMetaClassManager.int16MetaClass
-                  || extendClass == CoreMetaClassManager.uint16MetaClass
-                  || extendClass == CoreMetaClassManager.int32MetaClass
-                  || extendClass == CoreMetaClassManager.uint32MetaClass
-                  || extendClass == CoreMetaClassManager.int64MetaClass
-                  || extendClass == CoreMetaClassManager.uint64MetaClass
-                  || extendClass == CoreMetaClassManager.stringMetaClass)
-            {
-                SetIsDefineMetaType(true);
-            }
+            m_DefineMetaType = new MetaType(extendClass);
             // Front 语义：enum 成员默认均为 const，只有显式 mut 才允许后续修改。
             m_IsConst = true;
             m_IsStatic = false;
@@ -87,50 +63,45 @@ namespace SimpleLanguage.Core
             }
             if (fmmv.staticToken != null)
             {
-                Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL100, "Error Enum 中不允许使用 static 关键字，枚举值的静态语义由系统处理!!");
-            }
-
-            if (string.IsNullOrEmpty(m_Name))
-            {
-                Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL105, "没有找到定义变量名称!");
-                m_Name = "Error_" + GetHashCode().ToString();
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum 中不允许使用 static 关键字，枚举值的静态语义由系统处理!!");
             }
             if (m_FileMetaMemeberVariable.permissionToken?.type != null)
             {
-                Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL110, "Error Enum中，不允许使用public/private等权限关键字!!");
-                var permission = CompilerUtil.GetPerMissionByType(m_FileMetaMemeberVariable.permissionToken.type);
-                if( permission == EPermission.Private || permission == EPermission.Protected )
-                {
-                    Debug.Assert(false);
-                }
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "Error Enum中，不允许使用public/private等权限关键字!!");
             }
 
             SetOwnerMetaClass(mc);
         }
         public override void ParseDefineMetaType()
         {
-            if(ownerMetaEnum != null )
+            var me = DefiningEnumOrNull;
+            if (me == null)
             {
-                if (ownerMetaEnum.extendClass != null)
-                {
-                    m_DefineMetaType = new MetaType(ownerMetaEnum.extendClass);
-                    m_IsDefineMetaType = true;
-                }
-                if (ownerMetaEnum.extendMetaData != null)
-                {
-                    m_DefineMetaType = new MetaType(ownerMetaEnum.extendMetaData);
-                    m_IsDefineMetaType = true;
-                }
+                return;
+            }
+            if (me.extendMetaData != null)
+            {
+                m_DefineMetaType = new MetaType(me.extendMetaData);
+                m_IsDefineMetaType = true;
+            }
+            else if (me.extendClass != null)
+            {
+                m_DefineMetaType = new MetaType(me.extendClass);
+                m_IsDefineMetaType = true;
             }
         }
         public void SetIsExplicitAssign(bool value)
         {
             m_IsExplicitAssign = value;
         }
+        public override void CalcParseLevel()
+        {
+        }
         public override void CreateMetaExpress()
         {
             if (m_FileMetaMemeberVariable != null)
             {
+                ParseDefineMetaType();
                 if (m_FileMetaMemeberVariable.express != null)
                 {
                     m_IsExplicitAssign = true;
@@ -154,7 +125,6 @@ namespace SimpleLanguage.Core
                         m_IsExplicitAssign = false;
                     }
                 }
-                SetIsDefineMetaType(m_IsExplicitAssign);
             }
         }
         public override bool ParseMetaExpress()
@@ -164,12 +134,35 @@ namespace SimpleLanguage.Core
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
                 m_Express.CalcReturnType();
                 m_EnumValueExpress = m_Express;
+                var valueRet = m_Express.GetReturnMetaDefineType();
+                if (valueRet != null)
+                {
+                    SetRealMetaType(new MetaType(valueRet));
+                }
                 return true;
             }
             else
             {
                 Debug.Assert(false, "必须给出定义");
                 return false;
+            }
+        }
+        /// <summary>
+        /// 保持 real 为成员值表达式类型；包装成 Core.Member 后 m_Express 会变，不应再以 m_Express 推导 real。
+        /// </summary>
+        public override void ParseRealMetaType()
+        {
+            if (m_EnumValueExpress != null)
+            {
+                var ret = m_EnumValueExpress.GetReturnMetaDefineType();
+                if (ret != null)
+                {
+                    SetRealMetaType(new MetaType(ret));
+                }
+            }
+            else if (m_Express != null)
+            {
+                base.ParseRealMetaType();
             }
         }
 
@@ -186,11 +179,9 @@ namespace SimpleLanguage.Core
             FillMemberNewObjectAssignList(newMember, m_OwnerMetaBlockStatements, m_EnumValueExpress, m_Name, m_Index);
 
             m_Express = newMember;
-            m_DefineMetaType = memberType;
-            m_RealMetaType = new MetaType(memberClass);
+            // m_DefineMetaType：enum extends 的声明类型；m_RealMetaType：成员值表达式类型（写入 Member.value）
             SetIsDefineMetaType(true);
         }
-
         /// <summary>
         /// 为 enum.values 数组生成一项：new Core.Member() 后按 name、value、index 顺序赋值（与 IRNewExpress 对象初始化一致）。
         /// 使用 Member 类模板上的 MetaMemberVariable，保证 IR 里按 hash 能匹配到字段。
@@ -217,7 +208,6 @@ namespace SimpleLanguage.Core
             FillMemberNewObjectAssignList(newMember, m_OwnerMetaBlockStatements, valueExpr, m_Name, m_Index);
             return newMember;
         }
-
         private static void FillMemberNewObjectAssignList(
             MetaNewObjectExpressNode newMember,
             MetaBlockStatements mbs,

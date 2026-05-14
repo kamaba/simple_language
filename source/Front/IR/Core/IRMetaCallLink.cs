@@ -65,7 +65,14 @@ namespace SimpleLanguage.Core.IR
                 IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                 if (mv.isStatic || mv.isConst )
                 {
-                    if (cnode.callMetaType != null)
+                    irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+                    // 枚举常量成员运行时存 Core.Member，defineMetaType 为 extends；LoadStaticField 的 opValue 须为 Member 类型。
+                    if (mv is MetaMemberEnum)
+                    {
+                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(
+                            new MetaType(CoreMetaClassManager.memberMetaClass), owirmc);
+                    }
+                    else if (cnode.callMetaType != null)
                     {
                         irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
                     }
@@ -73,7 +80,6 @@ namespace SimpleLanguage.Core.IR
                     {
                         irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.isDefineMetaType ? mv.defineMetaType : mv.realMetaType, owirmc);
                     }
-                    irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
                 }
                 else
                 {
@@ -89,37 +95,32 @@ namespace SimpleLanguage.Core.IR
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.EnumMember)
             {
-                // Enum member is represented as a static/global MetaMemberEnum,
-                // but when it is passed into a function whose parameter type is `enum`,
-                // the IR typing must use the *declared enum type* (cnode.callMetaType),
-                // not the underlying primitive type of the member.
+                // MetaMemberEnum → 静态字段为 Core.Member；values 等为合成成员 → 按其 define/real（如 Array<Member>）。
+                // callMetaType 常为声明侧用户 enum，不能优先当作静态字段的运行时存储类型。
                 MetaVariable mv = cnode.variable;
-
-                IRMetaType irmt = null;
-                IRMetaClass irmc = null;
                 IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
 
-                if (mv.isStatic || mv.isConst)
+                IRMetaType irLoadMt = null;
+                if (mv is MetaMemberEnum && owirmc != null)
                 {
-                    irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.isDefineMetaType ? mv.defineMetaType : mv.realMetaType, owirmc);
-
-                    irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+                    irLoadMt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(
+                        new MetaType(CoreMetaClassManager.memberMetaClass), owirmc);
                 }
-                else
+                else if (owirmc != null)
                 {
-                    Debug.Assert(false, "enum类型，不允许使用非const类型!");
-                    //irmc = owirmc;
-                    //if (cnode.callMetaType != null)
-                    //{
-                    //    irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
-                    //}
-                    //else
-                    //{
-                    //    irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.isDefineMetaType ? mv.defineMetaType : mv.realMetaType, owirmc);
-                    //}
+                    var srcMt = mv.GetFinalMetaType() ?? mv.defineMetaType ?? mv.realMetaType;
+                    if (srcMt != null)
+                    {
+                        irLoadMt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(srcMt, owirmc);
+                    }
                 }
 
-                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
+                if (irLoadMt == null && cnode.callMetaType != null)
+                {
+                    irLoadMt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
+                }
+
+                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irLoadMt, owirmc, _irMethod, mv);
                 if (irVar == null)
                 {
                     Log.AddIRLog(LID.IRMethodNotFoundVariable, cnode.token, $"load enum/variable failed (null IR): {mv?.name}");
