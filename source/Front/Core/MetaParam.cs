@@ -31,6 +31,7 @@ namespace SimpleLanguage.Core
             CreateExpressParam cep = new CreateExpressParam()
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
+                ownerMetaBase = m_OwnerMetaClass,
                 ownerMetaClass = m_OwnerMetaClass,
                 metaType = null,
                 fme = m_FileInputParamNode.express,
@@ -127,7 +128,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaFunction = mf;
             if (m_MetaVariable != null)
             {
-                m_MetaVariable.SetOwnerMetaClass(mf?.ownerMetaClass);
+                m_MetaVariable.SetOwnerMetaClass(mf?.ownerMetaBase);
             }
         }
         public void ParseMetaDefineType()
@@ -382,12 +383,12 @@ namespace SimpleLanguage.Core
         {
             m_MetaDefineParamList.Clear();
         }
-        public void SetOwnerMetaClass( MetaClass ownerclass)
+        public void SetOwnerMetaClass( MetaBase ownerBase)
         {
             for (int i = 0; i < m_MetaDefineParamList.Count; i++)
             {
                 var dParam = m_MetaDefineParamList[i];
-                dParam?.metaVariable?.SetOwnerMetaClass(ownerclass);
+                dParam?.metaVariable?.SetOwnerMetaClass(ownerBase);
             }
         }
         public void SetOwnerMetaFunction(MetaFunction ownerFunction)

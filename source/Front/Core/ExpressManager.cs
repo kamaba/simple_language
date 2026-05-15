@@ -27,6 +27,8 @@ namespace SimpleLanguage.Core
     public struct CreateExpressParam
     {
         public MetaBlockStatements ownerMBS;
+        /// <summary>与 <see cref="MetaVariable"/> 一致：可为 Class / Data / Enum。</summary>
+        public MetaBase ownerMetaBase;
         public MetaClass ownerMetaClass;
         public MetaType metaType;
         public MetaType parentMetaType;
@@ -44,6 +46,7 @@ namespace SimpleLanguage.Core
         public CreateExpressParam()
         {
             ownerMBS = null;
+            ownerMetaBase = null;
             ownerMetaClass = null;
             equalMetaVariable = null;
             metaType = null;
@@ -61,6 +64,7 @@ namespace SimpleLanguage.Core
         public CreateExpressParam( CreateExpressParam clone )
         {
             ownerMBS = clone.ownerMBS;
+            ownerMetaBase = clone.ownerMetaBase;
             ownerMetaClass = clone.ownerMetaClass;
             equalMetaVariable = clone.equalMetaVariable;
             metaType = clone.metaType;
@@ -78,6 +82,14 @@ namespace SimpleLanguage.Core
     }
     public class ExpressManager
     {
+        /// <summary>类 / data / enum 宿主上下文；优先 <see cref="CreateExpressParam.ownerMetaBase"/>。</summary>
+        public static MetaBase ResolveExpressOwner(CreateExpressParam cep)
+        {
+            if (cep.ownerMetaBase != null)
+                return cep.ownerMetaBase;
+            return cep.ownerMetaClass;
+        }
+
         public static ExpressOptimizeConfig expressOptimizeConfig = new ExpressOptimizeConfig();
         public static bool IsCanExpressCampute( MetaClass mc )
         {
@@ -95,7 +107,8 @@ namespace SimpleLanguage.Core
             MetaBlockStatements mbs = cep.ownerMBS;
             MetaType mdt = cep.metaType;
             MetaVariable equalMetaVariable = cep.equalMetaVariable;
-            MetaClass mc = cep.ownerMetaClass;
+            MetaBase ownerBase = ResolveExpressOwner(cep);
+            MetaClass mc = ownerBase as MetaClass;
 
             if (fmte == null)
             {
@@ -175,7 +188,8 @@ namespace SimpleLanguage.Core
             {
                 return null;
             }
-            MetaClass ownerClass = cep.ownerMetaClass;
+            MetaBase ownerBase = ResolveExpressOwner(cep);
+            MetaClass ownerClass = ownerBase as MetaClass;
             var root = cep.fme.root;
             if( root == null )
             {
@@ -207,13 +221,13 @@ namespace SimpleLanguage.Core
                         {
                             if (fmcvt.token.type == ETokenType.NumberArrayLink)
                             {
-                                MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(fmcvt, ownerClass, cep.ownerMBS);
+                                MetaNewObjectExpressNode mnoen = new MetaNewObjectExpressNode(fmcvt, ownerBase, cep.ownerMBS);
 
                                 return mnoen;
                             }
                             else
                             {
-                                men = new MetaConstExpressNode(ownerClass, cep.ownerMBS, fmcvt);
+                                men = new MetaConstExpressNode(ownerBase, cep.ownerMBS, fmcvt);
                                 return men;
                             }
                         }
@@ -224,12 +238,12 @@ namespace SimpleLanguage.Core
                         }
                     case FileMetaCallTerm fmct:     //className.functionname().varname;
                         {
-                            MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode(fmct.callLink, cep.ownerMetaClass, cep.ownerMBS, cep.equalMetaVariable );
+                            MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode(fmct.callLink, ownerBase, cep.ownerMBS, cep.equalMetaVariable );
                             return men2;
                         }
                     case FileMetaBraceTerm fmbt:  // {1,2,3} {a=10,b=20}
                         {
-                            men = new MetaNewObjectExpressNode(fmbt, cep.metaType, ownerClass, cep.ownerMBS, cep.equalMetaVariable);
+                            men = new MetaNewObjectExpressNode(fmbt, cep.metaType, ownerBase, cep.ownerMBS, cep.equalMetaVariable);
                             return men;
                         }
                     //case FileMetaParTerm fmpt:  //  (1,2) 不允许 这种方式的处理 可能后边会变成tulpe
@@ -246,16 +260,17 @@ namespace SimpleLanguage.Core
                         {
                             //Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
                             cep.ownerMetaClass = ownerClass;
+                            cep.ownerMetaBase = ownerBase;
                             men = CreateExpressNode(cep);
                             return men;
                         }
                     case FileMetaBracketTerm fmbt:
                         {
                             //解析成这样是因为 在[] 中允许多个值的像 [1,2,3] 这种的
-                            MetaArrayExpressNode maen = new MetaArrayExpressNode(fmbt, cep.ownerMetaClass, cep.ownerMBS, cep.metaType, cep.equalMetaVariable);
+                            MetaArrayExpressNode maen = new MetaArrayExpressNode(fmbt, ownerBase, cep.ownerMBS, cep.metaType, cep.equalMetaVariable);
                             if (cep.allowNewVariable)
                             {
-                                var newob = new MetaNewObjectExpressNode(maen, cep.ownerMetaClass, cep.ownerMBS, cep.equalMetaVariable);
+                                var newob = new MetaNewObjectExpressNode(maen, ownerBase, cep.ownerMBS, cep.equalMetaVariable);
                                 return newob;
                             }
                             else

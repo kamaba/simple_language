@@ -59,7 +59,7 @@ namespace SimpleLanguage.Core
             return null;
         }
         /// <summary>兼容注入路径：将 <see cref="MetaMemberVariable"/> 转为 <see cref="MetaMemberData"/> 写入 <see cref="m_MetaMemberDataDict"/>。</summary>
-        public MetaMemberData AddMetaMemberVariable(MetaMemberVariable mmv, bool addManager)
+        public MetaMemberData AddMetaMemberVariable(MetaMemberVariable mmv )
         {
             if (mmv == null)
             {
@@ -70,7 +70,7 @@ namespace SimpleLanguage.Core
                 return null;
             }
             var mmd = MetaMemberData.CreateFromInjectedMemberVariable(this, mmv, m_MetaMemberDataDict.Count);
-            AddMetaMemberData(mmd, addManager);
+            AddMetaMemberData(mmd);
             return mmd;
         }
         public List<MetaVariable> allMetaMemberVariableList
@@ -101,17 +101,13 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public void AddMetaMemberData(MetaMemberData mmd, bool AddManager )
+        public void AddMetaMemberData(MetaMemberData mmd )
         {
             if (m_MetaMemberDataDict.ContainsKey(mmd.name))
             {
                 return;
             }
             m_MetaMemberDataDict.Add(mmd.name, mmd);
-            if(AddManager )
-            {
-                MetaVariableManager.instance.AddMetaDataVariable(mmd);
-            }
         }
         public List<MetaMemberData> GetMetaMemberDataList()
         {
@@ -148,12 +144,18 @@ namespace SimpleLanguage.Core
                 }
                 else
                     isHave = false;
+                if( v.isWithName == false )
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, v.token, "这里需要个名字的定义!");
+                    continue;
+                }
                 MetaMemberData mmv = new MetaMemberData(this, v, i, isStatic);
                 if (isHave)
                 {
                     mmv.SetName(mmv.name + "__repeat__");
                 }
-                AddMetaMemberData(mmv, mmv.memberDataType == EMemberDataType.MemberClass );
+                AddMetaMemberData( mmv );
+                MetaVariableManager.instance.AddMetaDataVariable(mmv);
             }
         }
         public void ParseDefineComplete()

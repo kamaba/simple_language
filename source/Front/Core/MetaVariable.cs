@@ -98,12 +98,12 @@ namespace SimpleLanguage.Core
             }
             m_OwnerMetaBlockStatements = mv.m_OwnerMetaBlockStatements;
         }
-        public MetaVariable(string _name, EVariableFrom from, MetaBlockStatements mbs, MetaClass ownerClass, MetaType mdt )
+        public MetaVariable(string _name, EVariableFrom from, MetaBlockStatements mbs, MetaBase ownerBase, MetaType mdt )
         {
             m_Name = _name;
             m_VariableFrom = from;
             m_OwnerMetaBlockStatements = mbs;
-            m_OwnerMetaClass = ownerClass;
+            m_OwnerMetaClass = ownerBase;
             m_DefineMetaType = mdt;
             if (m_DefineMetaType == null )
             {
@@ -118,19 +118,8 @@ namespace SimpleLanguage.Core
                 m_RealMetaType = new MetaType(mdt);
             }
         } 
-        public virtual void SetOwnerMetaClass(MetaClass ownerclass)
-        {
-            m_OwnerMetaClass = ownerclass;
-        }
-        public virtual void SetOwnerMetaClass(MetaData ownerData)
-        {
-            m_OwnerMetaClass = ownerData;
-        }
-        public virtual void SetOwnerMetaClass(MetaEnum ownerEnum)
-        {
-            m_OwnerMetaClass = ownerEnum;
-        }
-        public virtual void SetOwnerMetaBase(MetaBase ownerBase)
+        /// <summary>宿主可为 <see cref="MetaClass"/> / <see cref="MetaData"/> / <see cref="MetaEnum"/>，内部按需使用分类属性。</summary>
+        public virtual void SetOwnerMetaClass(MetaBase ownerBase)
         {
             m_OwnerMetaClass = ownerBase;
         }

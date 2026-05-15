@@ -106,7 +106,7 @@ namespace SimpleLanguage.Core
             mv.SetMetaDefineType(new MetaType(globalMc));
             mv.SetRealMetaType(new MetaType(globalMc));
             mv.SetIsStatic(true);
-            globalData.AddMetaMemberVariable(mv, false);
+            globalData.AddMetaMemberVariable(mv);
             return globalData.GetMetaMemberVariableByName(varName);
         }
 

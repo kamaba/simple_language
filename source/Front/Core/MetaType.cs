@@ -37,6 +37,7 @@ namespace SimpleLanguage.Core
         public bool isNullable => m_IsNullable;
         public bool isEnum => m_MetaEnum != null || m_EMetaTypeType == EMetaTypeType.MetaEnum;
         public bool isData => m_MetaData != null || m_EMetaTypeType == EMetaTypeType.MetaData;
+        public bool isClass => m_MetaData != null || m_EMetaTypeType == EMetaTypeType.MetaClass;
         public bool isNull => m_MetaClass == CoreMetaClassManager.nullMetaClass;
         public bool isMap => m_MetaClass == CoreMetaClassManager.mapMetaClass;
         public bool isTemplate => m_EMetaTypeType == EMetaTypeType.Template;
@@ -398,8 +399,10 @@ namespace SimpleLanguage.Core
             }
             return m_MetaTemplate != null;
         }
-        public bool IsIncludeClassTemplate(MetaClass ownerClass)
+        public bool IsIncludeClassTemplate(MetaBase ownerBase)
         {
+            if (ownerBase is not MetaClass ownerClass)
+                return false;
             if (m_MetaTemplate != null && ownerClass.isTemplateClass)
             {
                 return ownerClass.metaTemplateList.IndexOf(m_MetaTemplate) != -1;
@@ -407,7 +410,7 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < m_DefineTemplateMetaTypeList.Count; i++)
             {
                 var tmt = m_DefineTemplateMetaTypeList[i];
-                if (tmt.IsIncludeClassTemplate(ownerClass))
+                if (tmt.IsIncludeClassTemplate(ownerBase))
                 {
                     return true;
                 }

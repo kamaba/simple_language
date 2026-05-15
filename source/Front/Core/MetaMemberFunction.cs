@@ -207,7 +207,7 @@ namespace SimpleLanguage.Core
                 {
                     return 0;
                 }
-                else if( m_OwnerMetaClass.isTemplateClass ){
+                else if( ownerMetaClass?.isTemplateClass == true ){
                     return 1;
                 }
                 else
@@ -433,21 +433,31 @@ namespace SimpleLanguage.Core
             }
             if (!isStatic)
             {
-                var mt = new MetaType(m_OwnerMetaClass);
-                if (m_OwnerMetaClass.isTemplateClass)
+                MetaClass omc = ownerMetaClass;
+                if (omc != null)
                 {
-                    var thisTemplateArgs = new List<MetaType>();
-                    for (int i = 0; i < m_OwnerMetaClass.metaTemplateList.Count; i++)
+                    var mt = new MetaType(omc);
+                    if (omc.isTemplateClass)
                     {
-                        var ct = m_OwnerMetaClass.metaTemplateList[i];
-                        if (ct == null) continue;
-                        thisTemplateArgs.Add(new MetaType(ct, ct.name));
+                        var thisTemplateArgs = new List<MetaType>();
+                        for (int i = 0; i < omc.metaTemplateList.Count; i++)
+                        {
+                            var ct = omc.metaTemplateList[i];
+                            if (ct == null) continue;
+                            thisTemplateArgs.Add(new MetaType(ct, ct.name));
+                        }
+                        mt = new MetaType(omc, thisTemplateArgs);
                     }
-                    mt = new MetaType(m_OwnerMetaClass, thisTemplateArgs);
+                    m_ThisMetaVariable = new MetaVariable(omc.allClassName + "." + m_Name + ".this", MetaVariable.EVariableFrom.Argument, null, omc, mt );
                 }
-                m_ThisMetaVariable = new MetaVariable(m_OwnerMetaClass.allClassName + "." + m_Name + ".this", MetaVariable.EVariableFrom.Argument, null, m_OwnerMetaClass, mt );
             }
-            m_ReturnMetaVariable = new MetaVariable(m_OwnerMetaClass.allClassName + "." + m_Name + ".return", MetaVariable.EVariableFrom.None, null, m_OwnerMetaClass, defineMetaType );
+            {
+                string qn = m_OwnerMetaClass is MetaClass c ? c.allClassName
+                    : m_OwnerMetaClass is MetaData md ? md.allClassName
+                    : m_OwnerMetaClass is MetaEnum me ? me.allClassName
+                    : m_OwnerMetaClass?.name ?? "?";
+                m_ReturnMetaVariable = new MetaVariable(qn + "." + m_Name + ".return", MetaVariable.EVariableFrom.None, null, m_OwnerMetaClass, defineMetaType );
+            }
         }
         public override void SetDeep(int deep)
         {
@@ -585,7 +595,7 @@ namespace SimpleLanguage.Core
                 if (m_FileMetaMemberFunction.defineMetaClass != null)
                 {
                     FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
-                    m_DefineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaClass, this, cmr);
+                    m_DefineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, this, cmr);
                     m_IsDefineMetaType = true;
 
                     if (m_ConstructInitFunction && defineMetaType.metaClass != CoreMetaClassManager.voidMetaClass )
@@ -663,14 +673,18 @@ namespace SimpleLanguage.Core
                     nohasContent = true;
                 }
             }
-            if( !m_IsWithInterface || this.m_OwnerMetaClass.isInterfaceClass )
+            if( !m_IsWithInterface || ownerMetaClass?.isInterfaceClass == true )
             {
             }
             else
             {
                 if (nohasContent)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 类[{this.m_OwnerMetaClass.allClassName}] 该函数[{this.functionAllName}] 没有定义函数内容！！");
+                    string ownerLabel = m_OwnerMetaClass is MetaClass x ? x.allClassName
+                        : m_OwnerMetaClass is MetaData d ? d.allClassName
+                        : m_OwnerMetaClass is MetaEnum e ? e.allClassName
+                        : m_OwnerMetaClass?.name;
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 类[{ownerLabel}] 该函数[{this.functionAllName}] 没有定义函数内容！！");
                 }
             }
         }
@@ -1040,7 +1054,10 @@ namespace SimpleLanguage.Core
             
             if (m_OwnerMetaClass != null)
             {
-                sb.Append(m_OwnerMetaClass.allClassName);
+                sb.Append(m_OwnerMetaClass is MetaClass c ? c.allClassName
+                    : m_OwnerMetaClass is MetaData md ? md.allClassName
+                    : m_OwnerMetaClass is MetaEnum me ? me.allClassName
+                    : m_OwnerMetaClass.name);
                 sb.Append(".");
             }
             sb.Append(m_Name);

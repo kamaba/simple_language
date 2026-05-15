@@ -22,6 +22,7 @@ namespace SimpleLanguage.Core
                 return ownerMetaFunction?.ownerMetaClass;
             }
         }
+        public virtual MetaBase ownerMetaBase => ownerMetaFunction?.ownerMetaBase;
         public virtual MetaFunction ownerMetaFunction
         {
             get
@@ -60,15 +61,15 @@ namespace SimpleLanguage.Core
         {
             m_NextMetaStatements = ms;
         }
-        public virtual void UpdateOwnerMetaClass( MetaClass ownerclass )
+        public virtual void UpdateOwnerMetaClass( MetaBase ownerBase )
         {
             if(m_TrMetaVariable != null )
             {
-                m_TrMetaVariable.SetOwnerMetaClass(ownerclass);
+                m_TrMetaVariable.SetOwnerMetaClass(ownerBase);
             }
             if( m_NextMetaStatements != null )
             {
-                m_NextMetaStatements.UpdateOwnerMetaClass(ownerclass);
+                m_NextMetaStatements.UpdateOwnerMetaClass(ownerBase);
             }
         }
     }

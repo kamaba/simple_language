@@ -14,7 +14,6 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaMemberEnum : MetaMemberVariable
     {
-        MetaEnum DefiningEnumOrNull => m_DefiningMetaEnum ?? ownerMetaEnum;
         public MetaExpressNode enumValueExpress => m_EnumValueExpress;
         public MetaConstExpressNode enumValueConstExpressNode => m_EnumValueExpress as MetaConstExpressNode;
         private bool isExplicitAssign => m_IsExplicitAssign;
@@ -40,7 +39,7 @@ namespace SimpleLanguage.Core
         //        SetIsDefineMetaType(true);
         //    }
         //}
-        public MetaMemberEnum(MetaEnum mc, FileMetaMemberVariable fmmv, MetaClass extendClass, bool parentIsConst ) : base()
+        public MetaMemberEnum(MetaEnum mc, FileMetaMemberVariable fmmv, bool parentIsConst ) : base()
         {
             m_OwnerMetaEnum = mc;
             m_FileMetaMemeberVariable = fmmv;
@@ -50,9 +49,6 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Code;
             m_VariableFrom = EVariableFrom.EnumMember;
             m_Permission = EPermission.Public;
-
-            SetIsDefineMetaType(true);
-            m_DefineMetaType = new MetaType(extendClass);
             // Front 语义：enum 成员默认均为 const，只有显式 mut 才允许后续修改。
             m_IsConst = true;
             m_IsStatic = false;
@@ -74,7 +70,7 @@ namespace SimpleLanguage.Core
         }
         public override void ParseDefineMetaType()
         {
-            var me = DefiningEnumOrNull;
+            var me = m_OwnerMetaEnum;
             if (me == null)
             {
                 return;
@@ -101,7 +97,6 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaMemeberVariable != null)
             {
-                ParseDefineMetaType();
                 if (m_FileMetaMemeberVariable.express != null)
                 {
                     m_IsExplicitAssign = true;
@@ -109,6 +104,7 @@ namespace SimpleLanguage.Core
                     {
                         fme = m_FileMetaMemeberVariable.express,
                         metaType = m_DefineMetaType,
+                        ownerMetaBase = ownerMetaBase,
                         ownerMetaClass = ownerMetaClass,
                         equalMetaVariable = this,
                         ownerMBS = m_OwnerMetaBlockStatements,
@@ -141,11 +137,7 @@ namespace SimpleLanguage.Core
                 }
                 return true;
             }
-            else
-            {
-                Debug.Assert(false, "必须给出定义");
-                return false;
-            }
+            return true;
         }
         /// <summary>
         /// 保持 real 为成员值表达式类型；包装成 Core.Member 后 m_Express 会变，不应再以 m_Express 推导 real。
@@ -166,7 +158,7 @@ namespace SimpleLanguage.Core
             }
         }
 
-        public void WrapAsMemberObjectExpress()
+        public void WrapAsMemberObjectExpress( MetaMemberEnum mme )
         {
             if (m_EnumValueExpress == null) return;
 
@@ -174,9 +166,9 @@ namespace SimpleLanguage.Core
             if (memberClass == null) return;
 
             var memberType = new MetaType(memberClass);
-            var newMember = new MetaNewObjectExpressNode(memberType, ownerMetaClass, m_OwnerMetaBlockStatements);
+            var newMember = new MetaNewObjectExpressNode(memberType, mme.ownerMetaClass, mme.m_OwnerMetaBlockStatements);
             newMember.metaContent.SetDefineMetaType(memberType);
-            FillMemberNewObjectAssignList(newMember, m_OwnerMetaBlockStatements, m_EnumValueExpress, m_Name, m_Index);
+            FillMemberNewObjectAssignList(newMember, mme.m_OwnerMetaBlockStatements, mme.m_EnumValueExpress, mme.m_Name, m_Index);
 
             m_Express = newMember;
             // m_DefineMetaType：enum extends 的声明类型；m_RealMetaType：成员值表达式类型（写入 Member.value）

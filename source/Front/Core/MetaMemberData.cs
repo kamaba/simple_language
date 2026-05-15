@@ -80,7 +80,7 @@ namespace SimpleLanguage.Core
             m_End = isEnd;
             m_FileMetaMemeberData = fmmd;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-            SetOwnerMetaClass(parentNode.ownerMetaClass);
+            SetOwnerMetaClass(parentNode.ownerMetaBase);
             m_IsConst = parentNode.isConst || fmmd.isConst;
             m_Token = fmmd.nameToken;            
             m_VariableFrom = EVariableFrom.DataMember;
@@ -98,7 +98,7 @@ namespace SimpleLanguage.Core
         {
             m_Name = name;
             m_Index = _index;
-            SetOwnerMetaClass(parentNode.ownerMetaClass);
+            SetOwnerMetaClass(parentNode.ownerMetaBase);
             m_IsConst = parentNode.isConst;
             m_Express = men;
             m_VariableFrom = EVariableFrom.DataMember;
@@ -333,7 +333,7 @@ namespace SimpleLanguage.Core
                 var child = entry.Value;
                 var clone = CreateAnonymousMetaTypeClone(tempMetaData, child, index, true);
                 clone.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);
-                tempMetaData.AddMetaMemberData(clone, false );
+                tempMetaData.AddMetaMemberData(clone );
                 index++;
             }
 
@@ -559,15 +559,12 @@ namespace SimpleLanguage.Core
                     break;
             }
         }
-        public override void ParseDefineMetaType()
-        {
-        }
         public override void CalcParseLevel()
         {
             if (isConst)
             {
-                parseLevel = MetaMemberVariable.s_ConstLevel;
-                s_ConstLevel = MetaMemberVariable.s_ConstLevel + 10000;
+                parseLevel = s_ConstLevel;
+                s_ConstLevel = s_ConstLevel + 10000;
             }
             else if (isStatic)
             {
@@ -623,8 +620,7 @@ namespace SimpleLanguage.Core
                             {
                                 MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
 
-                                mmd.ParseDefineMetaType();
-                                if (AddMetaMemberData(mmd, mmd.memberDataType == EMemberDataType.MemberClass))
+                                if (AddMetaMemberData(mmd, false ))
                                 {
                                 }
                                 else
@@ -639,7 +635,7 @@ namespace SimpleLanguage.Core
                             m_MemberDataType = EMemberDataType.MemberClass;
                             m_Express = new MetaCallLinkExpressNode(
                                 m_FileMetaMemeberData.fileMetaCallTermValue.callLink,
-                                ownerMetaClass,
+                                ownerMetaData,
                                 m_OwnerMetaBlockStatements,
                                 this);
                         }
@@ -653,7 +649,7 @@ namespace SimpleLanguage.Core
                                 MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
 
                                 mmd.ParseDefineMetaType();
-                                if (AddMetaMemberData(mmd, mmd.memberDataType == EMemberDataType.MemberClass))
+                                if (AddMetaMemberData(mmd, false ))
                                 {
                                 }
                                 else
@@ -672,9 +668,15 @@ namespace SimpleLanguage.Core
                                 m_Express.Parse(new AllowUseSettings());
                                 m_Express.CalcReturnType();
                                 var md = m_Express.GetReturnMetaDefineType();
-                                this.SetMetaDefineType(md);
-                                this.SetRealMetaType(md);
+                                m_DefineMetaType = md;
+                                this.m_RealMetaType = md;
+                                this.m_IsDefineMetaType = true;
                             }
+                        }
+                        break;
+                    default:
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "");
                         }
                         break;
                 }

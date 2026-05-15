@@ -45,11 +45,19 @@ namespace SimpleLanguage.Core
         public bool convertCallExpressNode => m_ConvertCallExpressNode;
         public virtual Token token => m_Token;
         public MetaType metaType => m_MetaType;
-        public MetaClass ownerMetaClass => m_OwnerMetaClass;
+        /// <summary>所属上下文：普通类。</summary>
+        public MetaClass ownerMetaClass => m_OwnerMetaClass as MetaClass;
+        /// <summary>所属上下文：<see cref="MetaData"/>（与 <see cref="MetaVariable"/> 对称）。</summary>
+        public MetaData ownerMetaData => m_OwnerMetaClass as MetaData;
+        /// <summary>所属上下文：<see cref="MetaEnum"/>。</summary>
+        public MetaEnum ownerMetaEnum => m_OwnerMetaClass as MetaEnum;
+        /// <summary>原始宿主节点（Class / Data / Enum）。</summary>
+        public MetaBase ownerMetaBase => m_OwnerMetaClass;
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
 
 
-        protected MetaClass m_OwnerMetaClass = null;
+        /// <summary>宿主：<see cref="MetaClass"/> / <see cref="MetaData"/> / <see cref="MetaEnum"/>，与 <see cref="MetaVariable"/> 一致。</summary>
+        protected MetaBase m_OwnerMetaClass = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
         protected MetaType m_MetaType = null;
         protected bool m_ConvertNewExpressNode = false;

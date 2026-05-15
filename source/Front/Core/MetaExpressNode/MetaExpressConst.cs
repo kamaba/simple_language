@@ -121,7 +121,7 @@ namespace SimpleLanguage.Core
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
         private List<MetaExpressNode> m_StringParseExpressList = new List<MetaExpressNode>();
         private MetaCallLinkExpressNode m_MetaCallLinkExpressNode = null;
-        public MetaConstExpressNode( MetaClass omc, MetaBlockStatements mbs, FileMetaConstValueTerm fmct)
+        public MetaConstExpressNode( MetaBase omc, MetaBlockStatements mbs, FileMetaConstValueTerm fmct)
         {
             m_FileMetaConstValueTerm = fmct;
             m_OwnerMetaClass = omc;
@@ -249,7 +249,8 @@ namespace SimpleLanguage.Core
                             cep.equalMetaVariable = null;
                             cep.metaType = new MetaType(CoreMetaClassManager.stringMetaClass);
                             cep.ownerMBS = m_OwnerMetaBlockStatements;
-                            cep.ownerMetaClass = m_OwnerMetaClass;
+                            cep.ownerMetaBase = m_OwnerMetaClass;
+                            cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
 
                             var expressc = ExpressManager.CreateExpressNode(cep);
                             expressc.Parse(auc);

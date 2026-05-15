@@ -206,11 +206,11 @@ namespace SimpleLanguage.Core
         {
             UpdateRegsterGenMetaFunction();
 
-            if( this.m_OwnerMetaClass.isTemplateClass )
+            if( this.ownerMetaClass?.isTemplateClass == true )
             {
-                for( int i = 0; i < this.m_OwnerMetaClass.metaGenTemplateClassList.Count; i++ )
+                for( int i = 0; i < this.ownerMetaClass.metaGenTemplateClassList.Count; i++ )
                 {
-                    var mgtc = this.m_OwnerMetaClass.metaGenTemplateClassList[i];
+                    var mgtc = this.ownerMetaClass.metaGenTemplateClassList[i];
                     mgtc.UpdateRegisterTemplateFunction();
                 }
             }

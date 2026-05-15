@@ -15,12 +15,12 @@ namespace SimpleLanguage.Core
 
         private List<FileMetaBaseTerm>  m_FileMetaBaseTermList = null;
         private List<MetaExpressNode>   m_MetaCallArray = new List<MetaExpressNode>();
-        public MetaArrayExpressNode(MetaClass mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv)
+        public MetaArrayExpressNode(MetaBase mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv)
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
         }
-        public MetaArrayExpressNode(FileMetaBracketTerm fmbt, MetaClass mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv  )
+        public MetaArrayExpressNode(FileMetaBracketTerm fmbt, MetaBase mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv  )
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;

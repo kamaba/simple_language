@@ -249,9 +249,9 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public override void UpdateOwnerMetaClass(MetaClass ownerclass)
+        public override void UpdateOwnerMetaClass(MetaBase ownerBase)
         {
-            base.UpdateOwnerMetaClass(ownerclass);
+            base.UpdateOwnerMetaClass(ownerBase);
         }
         public override void SetDeep(int dp)
         {

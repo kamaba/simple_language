@@ -446,7 +446,7 @@ namespace SimpleLanguage.Core
 
         private List<MetaBraceAssignStatements> m_AssignStatementsList = new List<MetaBraceAssignStatements>();
         private MetaArrayExpressNode m_MetaArrayExpressNode = null;
-        private MetaClass m_OwnerMetaClass = null;
+        private MetaBase m_OwnerMetaClass = null;
         private MetaBlockStatements m_OwnerMetaBlockStatements = null;
         private MetaType m_DefineMetaType = null;
         private MetaVariable m_EqualMetaVariable = null;
@@ -457,20 +457,29 @@ namespace SimpleLanguage.Core
         private FileMetaBaseTerm m_FileMetaBaseTerm = null;
         private Token m_Token = null;
 
-        public MetaNewObjectStatementsContent( MetaClass mc, MetaBlockStatements mbs )
+        private static MetaType OwnerPlaceholderMetaType(MetaBase owner)
+        {
+            if (owner == null) return new MetaType(CoreMetaClassManager.objectMetaClass);
+            if (owner is MetaClass mcc) return new MetaType(mcc);
+            if (owner is MetaData md) return new MetaType(md);
+            if (owner is MetaEnum me) return new MetaType(me);
+            return new MetaType(CoreMetaClassManager.objectMetaClass);
+        }
+
+        public MetaNewObjectStatementsContent( MetaBase mc, MetaBlockStatements mbs )
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
         }
 
-        public MetaNewObjectStatementsContent(MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV)
+        public MetaNewObjectStatementsContent(MetaBase mc, MetaBlockStatements mbs, MetaVariable equalMV)
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_EqualMetaVariable = equalMV;
         }
 
-        public MetaNewObjectStatementsContent( MetaArrayExpressNode maen, MetaClass mc, MetaBlockStatements mbs, MetaVariable parentMt)
+        public MetaNewObjectStatementsContent( MetaArrayExpressNode maen, MetaBase mc, MetaBlockStatements mbs, MetaVariable parentMt)
         {
             m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaClass = mc;
@@ -480,13 +489,13 @@ namespace SimpleLanguage.Core
             for( int i = 0; i < m_MetaArrayExpressNode.metaCallArray.Count; i++ )
             {
                 var men = m_MetaArrayExpressNode.metaCallArray[i];
-                MetaBraceAssignStatements mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                MetaBraceAssignStatements mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, OwnerPlaceholderMetaType(m_OwnerMetaClass), men);
                 //mas.CalcReturnType();
                 m_AssignStatementsList.Add(mas);
             }
             m_ContentType = EStatementsContentType.ArrayValue;
         }
-        public MetaNewObjectStatementsContent( FileMetaBaseTerm fmbt, MetaClass mc, MetaBlockStatements mbs, MetaVariable parentMt)
+        public MetaNewObjectStatementsContent( FileMetaBaseTerm fmbt, MetaBase mc, MetaBlockStatements mbs, MetaVariable parentMt)
         {
             m_FileMetaBaseTerm = fmbt;
             m_Token = fmbt?.token;
@@ -597,7 +606,7 @@ namespace SimpleLanguage.Core
                     for (int i = 0; i < assignStatementsList.Count; i++)
                     {
                         var mmv = assignStatementsList[i].metaMemberData;
-                        m_NewTempMetaData.AddMetaMemberData(mmv, false );
+                        m_NewTempMetaData.AddMetaMemberData(mmv );
                     }
                     MetaData retClass = ClassManager.instance.FindMetaData(m_NewTempMetaData);
                     if (retClass == null)
@@ -664,14 +673,15 @@ namespace SimpleLanguage.Core
                 else if( fmbt is FileMetaCallTerm fmct )
                 {
                     CreateExpressParam cep = new CreateExpressParam();
-                    cep.ownerMetaClass = m_OwnerMetaClass;
+                    cep.ownerMetaBase = m_OwnerMetaClass;
+                    cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = fmct;
                     cep.equalMetaVariable = m_EqualMetaVariable;
                     MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());                    
-                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, OwnerPlaceholderMetaType(m_OwnerMetaClass), men);
                     mas.Parse(new AllowUseSettings());
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
@@ -679,7 +689,8 @@ namespace SimpleLanguage.Core
                 else if (fmbt is FileMetaConstValueTerm fmcvt)
                 {
                     CreateExpressParam cep = new CreateExpressParam();
-                    cep.ownerMetaClass = m_OwnerMetaClass;
+                    cep.ownerMetaBase = m_OwnerMetaClass;
+                    cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = fmcvt;
@@ -697,7 +708,7 @@ namespace SimpleLanguage.Core
                             return;
                         }
                     }
-                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, OwnerPlaceholderMetaType(m_OwnerMetaClass), men);
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
                 }
@@ -711,7 +722,8 @@ namespace SimpleLanguage.Core
                 else if( fmbt is FileMetaTermExpress termexpress )
                 {
                     CreateExpressParam cep = new CreateExpressParam();
-                    cep.ownerMetaClass = m_OwnerMetaClass;
+                    cep.ownerMetaBase = m_OwnerMetaClass;
+                    cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = termexpress;
@@ -728,7 +740,7 @@ namespace SimpleLanguage.Core
                             return;
                         }
                     }
-                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, OwnerPlaceholderMetaType(m_OwnerMetaClass), men);
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
                 }
@@ -763,14 +775,15 @@ namespace SimpleLanguage.Core
                 else if (fmbt is FileMetaCallTerm fmctOb)
                 {
                     CreateExpressParam cep = new CreateExpressParam();
-                    cep.ownerMetaClass = m_OwnerMetaClass;
+                    cep.ownerMetaBase = m_OwnerMetaClass;
+                    cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = fmctOb;
                     cep.equalMetaVariable = m_EqualMetaVariable;
                     MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());
-                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, OwnerPlaceholderMetaType(m_OwnerMetaClass), men);
                     mas.Parse(new AllowUseSettings());
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
@@ -778,14 +791,15 @@ namespace SimpleLanguage.Core
                 else if (fmbt is FileMetaConstValueTerm fmcvtOb)
                 {
                     CreateExpressParam cep = new CreateExpressParam();
-                    cep.ownerMetaClass = m_OwnerMetaClass;
+                    cep.ownerMetaBase = m_OwnerMetaClass;
+                    cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = fmcvtOb;
                     cep.equalMetaVariable = m_EqualMetaVariable;
                     MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());
-                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, OwnerPlaceholderMetaType(m_OwnerMetaClass), men);
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
                 }
@@ -799,7 +813,8 @@ namespace SimpleLanguage.Core
                 else if (fmbt is FileMetaTermExpress termexpressOb)
                 {
                     CreateExpressParam cep = new CreateExpressParam();
-                    cep.ownerMetaClass = m_OwnerMetaClass;
+                    cep.ownerMetaBase = m_OwnerMetaClass;
+                    cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = termexpressOb;
@@ -807,7 +822,7 @@ namespace SimpleLanguage.Core
                     MetaExpressNode men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());
                     men = ExpressManager.ConvertNewExpress(men, cep.metaType, m_EqualMetaVariable);
-                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(m_OwnerMetaClass), men);
+                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, OwnerPlaceholderMetaType(m_OwnerMetaClass), men);
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
                 }
@@ -875,7 +890,7 @@ namespace SimpleLanguage.Core
                     for (int i = 0; i < assignStatementsList.Count; i++)
                     {
                         var mmv = assignStatementsList[i].metaMemberVariable;
-                        anonClass.AddMetaMemberVariable(assignStatementsList[i].metaMemberVariable, false);
+                        anonClass.AddMetaMemberVariable(assignStatementsList[i].metaMemberVariable);
                     }
                     MetaData retClass = ClassManager.instance.FindMetaData(anonClass);
                     if (retClass == null)
@@ -1359,7 +1374,7 @@ namespace SimpleLanguage.Core
         public MetaNewObjectExpressNode( MetaType defineMt, MetaCallLinkExpressNode mcen )
         {
             m_DefineMetaType = defineMt != null ? new MetaType( defineMt ) : null;
-            m_OwnerMetaClass = mcen.ownerMetaClass;
+            m_OwnerMetaClass = mcen.ownerMetaBase;
             m_OwnerMetaBlockStatements = mcen.ownerMetaBlockStatements;
             m_StoreMetaVariable = mcen.GetMetaVariable();
 
@@ -1456,7 +1471,7 @@ namespace SimpleLanguage.Core
             //m_MetaConstructFunctionCall = new MetaMethodCall(m_MetaType.metaClass, mmf, mipc);
         }
         // 1..x
-        public MetaNewObjectExpressNode(FileMetaConstValueTerm arrayLinkToken, MetaClass ownerMC, MetaBlockStatements mbs )
+        public MetaNewObjectExpressNode(FileMetaConstValueTerm arrayLinkToken, MetaBase ownerMC, MetaBlockStatements mbs )
         {
             m_FileMetaConstValueTerm = arrayLinkToken;
             m_OwnerMetaClass = ownerMC;
@@ -1468,7 +1483,7 @@ namespace SimpleLanguage.Core
 
             m_MetaType = new MetaType(CoreMetaClassManager.rangeMetaClass, null, metaInputTemplateCollection);
 
-            MetaInputParamCollection mdpc = new MetaInputParamCollection( ownerMC, mbs );
+            MetaInputParamCollection mdpc = new MetaInputParamCollection(ownerMC as MetaClass, mbs );
             String[] arr = m_FileMetaConstValueTerm.name.Split("..");
             m_Token = m_FileMetaConstValueTerm.token;
             if (arr.Length == 2)
@@ -1508,7 +1523,7 @@ namespace SimpleLanguage.Core
             }
         }
         // 手动构建NewObject表达式
-        public MetaNewObjectExpressNode(MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs)
+        public MetaNewObjectExpressNode(MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs)
             : this(mt, ownerMC, mbs, null)
         {
         }
@@ -1516,7 +1531,7 @@ namespace SimpleLanguage.Core
         /// <summary>
         /// 手动构建 new 对象表达式；<paramref name="equalMV"/> 与语法上大括号初始化左侧变量一致时传入（如 data 成员匿名字面量）。
         /// </summary>
-        public MetaNewObjectExpressNode(MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaVariable equalMV)
+        public MetaNewObjectExpressNode(MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs, MetaVariable equalMV)
         {
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
@@ -1683,7 +1698,7 @@ namespace SimpleLanguage.Core
         //    m_MetaMemberFunction = mmf;
         //}
         // 解析后的[] 然后再进行newArray
-        public MetaNewObjectExpressNode(MetaArrayExpressNode maen, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
+        public MetaNewObjectExpressNode(MetaArrayExpressNode maen, MetaBase mc, MetaBlockStatements mbs, MetaVariable equalMV )
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
@@ -1696,7 +1711,7 @@ namespace SimpleLanguage.Core
         // data c = {a = 20, b = 20} | c = {a = 20, b = 20} => 动态数据  
         // Map<int,string> map1 = new(10){ 1:"20", 2:"30", 3:"50" }
         // List<int> list1 = new(){ 1,2,3,4,5 }
-        public MetaNewObjectExpressNode(FileMetaBraceTerm fmbt, MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaVariable equalMV)
+        public MetaNewObjectExpressNode(FileMetaBraceTerm fmbt, MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs, MetaVariable equalMV)
         {
             m_OwnerMetaClass = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
@@ -1715,7 +1730,7 @@ namespace SimpleLanguage.Core
             m_MetaContent.SetDefineMetaType(m_DefineMetaType);
         }
         // Array arr = [1,2,3]   [Class1(), Class2(), variable1.a.b(),100]
-        public MetaNewObjectExpressNode( FileMetaBracketTerm fmbt, MetaType mt, MetaClass mc, MetaBlockStatements mbs, MetaVariable equalMV )
+        public MetaNewObjectExpressNode( FileMetaBracketTerm fmbt, MetaType mt, MetaBase mc, MetaBlockStatements mbs, MetaVariable equalMV )
         {
             m_OwnerMetaClass = mc;
             m_OwnerMetaBlockStatements = mbs;
@@ -2004,7 +2019,7 @@ namespace SimpleLanguage.Core
         {
             base.CalcReturnType();
 
-            MetaInputParamCollection mipc = new MetaInputParamCollection(m_OwnerMetaClass, m_OwnerMetaBlockStatements);
+            MetaInputParamCollection mipc = new MetaInputParamCollection(ownerMetaClass, m_OwnerMetaBlockStatements);
 
             if (m_DefineMetaType != null && m_NewMetaType != null )
             {
@@ -2096,7 +2111,7 @@ namespace SimpleLanguage.Core
                         Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "如果定义了，结构，必须与new对象的类型一样才可以");
                         return;
                     }
-                    else
+                    else if(m_NewMetaType.isClass )
                     {
                         if( m_NewMetaType.metaClass.IsContainMetaClass( m_DefineMetaType.metaClass ) )
                         {
@@ -2107,6 +2122,10 @@ namespace SimpleLanguage.Core
                             Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "定义类型与new的类型不对应 ");
                             return;
                         }
+                    }
+                    else
+                    {
+                        m_MetaType = new MetaType(m_NewMetaType);
                     }
                 }
             }

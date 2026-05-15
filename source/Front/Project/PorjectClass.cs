@@ -335,7 +335,7 @@ namespace SimpleLanguage.Project
                 var child = CreateMetaMemberDataByJson(md, kv.Name, kv.Value, seed * 1000 + idx);
                 if (child != null)
                 {
-                    md.AddMetaMemberData(child, false );
+                    md.AddMetaMemberData(child );
                 }
                 idx++;
             }

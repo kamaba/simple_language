@@ -40,7 +40,10 @@ namespace SimpleLanguage.Core
                     StringBuilder sb = new StringBuilder();
                     if (m_OwnerMetaClass != null)
                     {
-                        sb.Append(m_OwnerMetaClass.allClassName);
+                        sb.Append(m_OwnerMetaClass is MetaClass oc ? oc.allClassName
+                            : m_OwnerMetaClass is MetaData od ? od.allClassName
+                            : m_OwnerMetaClass is MetaEnum oe ? oe.allClassName
+                            : m_OwnerMetaClass.name);
                         sb.Append(".");
                     }
                     sb.Append(name);
@@ -74,7 +77,9 @@ namespace SimpleLanguage.Core
         public MetaVariable thisMetaVariable => m_ThisMetaVariable;
         public MetaVariable returnMetaVariable => m_ReturnMetaVariable;
         public EMethodCallType methodCallType => m_MethodCallType;
-        public MetaClass ownerMetaClass => m_OwnerMetaClass;
+        public MetaClass ownerMetaClass => m_OwnerMetaClass as MetaClass;
+        /// <summary>宿主 <see cref="MetaClass"/> / <see cref="MetaData"/> / <see cref="MetaEnum"/>；与 <see cref="MetaVariable.ownerMetaBase"/> 语义对齐。</summary>
+        public MetaBase ownerMetaBase => m_OwnerMetaClass;
         public MetaDefineParamCollection metaMemberParamCollection => m_MetaMemberParamCollection;
         public MetaBlockStatements metaBlockStatements => m_MetaBlockStatements;
         public MetaDefineTemplateCollection metaMemberTemplateCollection => m_MetaMemberTemplateCollection;
@@ -82,7 +87,7 @@ namespace SimpleLanguage.Core
 
 
         #region 属性
-        protected MetaClass m_OwnerMetaClass = null;
+        protected MetaBase m_OwnerMetaClass = null;
         protected MetaBlockStatements m_MetaBlockStatements = null;
         protected MetaVariable m_ThisMetaVariable = null;
         protected MetaVariable m_ReturnMetaVariable = null;
@@ -147,32 +152,28 @@ namespace SimpleLanguage.Core
             base.SetDeep(deep);
             m_MetaBlockStatements?.SetDeep(deep);
         }
-        public virtual void SetOwnerMetaClass(MetaClass ownerclass)
+        public virtual void SetOwnerMetaClass(MetaBase ownerBase)
         {
-            if( ownerclass == null )
+            if (ownerBase == null || ownerBase == m_OwnerMetaClass)
             {
                 return;
             }
-            if ( ownerclass == m_OwnerMetaClass )
-            {
-                return;
-            }
-            m_OwnerMetaClass = ownerclass;
+            m_OwnerMetaClass = ownerBase;
             if (m_MetaBlockStatements != null )
             {
-                m_MetaBlockStatements.UpdateOwnerMetaClass(ownerclass);
+                m_MetaBlockStatements.UpdateOwnerMetaClass(ownerBase);
             }
             if (m_ThisMetaVariable != null)
             {
-                m_ThisMetaVariable.SetOwnerMetaClass(ownerclass);
+                m_ThisMetaVariable.SetOwnerMetaClass(ownerBase);
             }
             if (m_ReturnMetaVariable != null)
             {
-                m_ReturnMetaVariable.SetOwnerMetaClass(ownerclass);
+                m_ReturnMetaVariable.SetOwnerMetaClass(ownerBase);
             }
             if(m_MetaMemberParamCollection != null )
             {
-                m_MetaMemberParamCollection.SetOwnerMetaClass(ownerclass);
+                m_MetaMemberParamCollection.SetOwnerMetaClass(ownerBase);
             }
         }
         public void SetIsStatic(bool isStatic)

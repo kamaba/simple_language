@@ -28,12 +28,12 @@ namespace SimpleLanguage.Core
             m_AllowUseSettings.callConstructFunction = true;
             m_AllowUseSettings.callFunction = true;
 
-            m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaClass, mbs, null, null );
+            m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaBase, mbs, null, null );
             m_MetaCallLink.Parse(m_AllowUseSettings);
         }
-        public override void UpdateOwnerMetaClass(MetaClass ownerclass)
+        public override void UpdateOwnerMetaClass(MetaBase ownerBase)
         {
-            base.UpdateOwnerMetaClass(ownerclass);
+            base.UpdateOwnerMetaClass(ownerBase);
         }
         public override string ToFormatString()
         {

@@ -347,6 +347,11 @@ namespace SimpleLanguage.Core
                 {
                     return EClassRelation.Same;
                 }
+                // MetaEnum 成员宿主为 MetaEnum（ownerMetaClass 视图常为 null），须单独识别
+                if (mv is MetaMemberEnum)
+                {
+                    return EClassRelation.Same;
+                }
             }
 
             // Iterator<Number> <- Array<具体数值>：仅遍历/访问语义，允许协变

@@ -1202,12 +1202,12 @@ namespace SimpleLanguage.Core
             
             return mb2;
         }
-        public MetaNode GetMetaClassByClassDefine( MetaClass ownerClass, FileMetaClassDefine fmcd)
+        public MetaNode GetMetaClassByClassDefine( MetaBase ownerBase, FileMetaClassDefine fmcd)
         {
-            return GetMetaClassByNameAndFileMeta(ownerClass, fmcd.fileMeta, fmcd.stringList );
+            return GetMetaClassByNameAndFileMeta(ownerBase, fmcd.fileMeta, fmcd.stringList );
         }
         // 鍦╫wnerClass绫讳腑锛岄€氳繃褰撳墠鐨刼wnerClass鐨勭埗鑺傜偣閫愭煡锛岀洿鍒版病鏈夌埗鑺傜偣锛屽鏋滄壘鍒颁簡褰撳墠鐨勮妭鐐瑰悗锛屽紑濮嬪線stringList涓嬭竟鎵?
-        private MetaNode GetMetaNodeByListString( MetaClass ownerClass, List<string> stringList )
+        private MetaNode GetMetaNodeByListString( MetaBase ownerBase, List<string> stringList )
         {
             if (stringList.Count == 0)
                 return null;
@@ -1225,9 +1225,9 @@ namespace SimpleLanguage.Core
             findMB = null;
 
             MetaNode mb = ModuleManager.instance.selfModule.metaNode;
-            if( ownerClass != null )
+            if( ownerBase != null && ownerBase.metaNode != null )
             {
-                mb = ownerClass.metaNode;
+                mb = ownerBase.metaNode;
             }
             while (true)
             {
@@ -1264,9 +1264,9 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaNode GetMetaClassByNameAndFileMeta(MetaClass ownerClass, FileMeta fm, List<string> stringList )
+        public MetaNode GetMetaClassByNameAndFileMeta(MetaBase ownerBase, FileMeta fm, List<string> stringList )
         {
-            MetaNode mn = GetMetaNodeByListString(ownerClass, stringList);
+            MetaNode mn = GetMetaNodeByListString(ownerBase, stringList);
             if(mn == null )
             {
                 var mb = fm.GetMetaNodeFileMetaClass(stringList);
@@ -1278,10 +1278,10 @@ namespace SimpleLanguage.Core
             }
             return mn;
         }
-        public MetaNode GetMetaClassByClassDefineAndFileMeta( MetaClass ownerClass, FileMetaClassDefine fmcd )
+        public MetaNode GetMetaClassByClassDefineAndFileMeta( MetaBase ownerBase, FileMetaClassDefine fmcd )
         {
             FileMeta fm = fmcd.fileMeta;
-            MetaNode mc = GetMetaClassByClassDefine(ownerClass, fmcd);
+            MetaNode mc = GetMetaClassByClassDefine(ownerBase, fmcd);
             if( mc == null )
             {
                 var mb = fm.GetMetaBaseByFileMetaClassRef(fmcd);
@@ -1301,14 +1301,14 @@ namespace SimpleLanguage.Core
             return mc;
         }
         //閫氳繃FileInputTemplateNode 鑾峰彇MetaType 渚?List< List< List<int> > > 杩欑鐨勶紝闇€瑕佸祵濂楄幏鍙栧鐞?
-        public MetaClass GetMetaClassByInputTemplateAndFileMeta( MetaClass ownerClass, FileInputTemplateNode fitn )
+        public MetaClass GetMetaClassByInputTemplateAndFileMeta( MetaBase ownerBase, FileInputTemplateNode fitn )
         {
             if (fitn == null)
             {
                 return null;
             }
             var nlist = fitn.nameList;
-            MetaNode mn = GetMetaClassByNameAndFileMeta(ownerClass, fitn.fileMeta, nlist);
+            MetaNode mn = GetMetaClassByNameAndFileMeta(ownerBase, fitn.fileMeta, nlist);
             if (mn != null)
             {
                 var mb = mn.GetMetaClassByTemplateCount(fitn.inputTemplateCount);

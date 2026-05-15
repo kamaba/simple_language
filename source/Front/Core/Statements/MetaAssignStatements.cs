@@ -723,10 +723,10 @@ namespace SimpleLanguage.Core
 
             return true;
         }
-        public override void UpdateOwnerMetaClass(MetaClass ownerclass)
+        public override void UpdateOwnerMetaClass(MetaBase ownerBase)
         {
-            //this.m_MetaVariable?.SetOwnerMetaClass(ownerclass);
-            base.UpdateOwnerMetaClass(ownerclass);
+            //this.m_MetaVariable?.SetOwnerMetaClass(ownerBase);
+            base.UpdateOwnerMetaClass(ownerBase);
         }
         public override string ToFormatString()
         {

@@ -24,27 +24,32 @@ namespace SimpleLanguage.Core
 
 
         private FileMetaCallLink m_FileMetaCallLink;
-        private MetaClass m_OwnerMetaClass = null;
+        private MetaBase m_OwnerMetaClass = null;
         private MetaBlockStatements m_OwnerMetaBlockStatements = null;
         private List<MetaCallNode> m_CallNodeList = new List<MetaCallNode>();       
 
         private MetaVisitNode m_FinalCallNode = null;
         private List<MetaVisitNode> m_VisitNodeList = new List<MetaVisitNode>();
-        public MetaCallLink(FileMetaCallLink fmcl, MetaClass metaClass, MetaBlockStatements mbs, MetaType frontDefineMt, MetaVariable mv)
+        public MetaClass ownerMetaClass => m_OwnerMetaClass as MetaClass;
+        public MetaData ownerMetaData => m_OwnerMetaClass as MetaData;
+        public MetaEnum ownerMetaEnum => m_OwnerMetaClass as MetaEnum;
+        public MetaBase ownerMetaBase => m_OwnerMetaClass;
+
+        public MetaCallLink(FileMetaCallLink fmcl, MetaBase metaOwner, MetaBlockStatements mbs, MetaType frontDefineMt, MetaVariable mv)
         {
-            m_FileMetaCallLink = RewriteLocalCallLinkIfNeed(fmcl, metaClass);
-            m_OwnerMetaClass = metaClass;
+            m_FileMetaCallLink = RewriteLocalCallLinkIfNeed(fmcl, metaOwner);
+            m_OwnerMetaClass = metaOwner;
             m_OwnerMetaBlockStatements = mbs;
             CreateCallLinkNode(frontDefineMt, mv);
         }
-        public MetaCallLink(MetaClass omc, MetaType frontDefineMt, MetaVariable mv)
+        public MetaCallLink(MetaBase omc, MetaType frontDefineMt, MetaVariable mv)
         {
             m_OwnerMetaClass = omc;
             m_OwnerMetaBlockStatements = null;
             CreateCallLinkNode(frontDefineMt, mv);
         }
 
-        private static FileMetaCallLink RewriteLocalCallLinkIfNeed(FileMetaCallLink fmcl, MetaClass ownerMc)
+        private static FileMetaCallLink RewriteLocalCallLinkIfNeed(FileMetaCallLink fmcl, MetaBase ownerMc)
         {
             if (fmcl == null || ownerMc == null) return fmcl;
             if (fmcl.callNodeList == null || fmcl.callNodeList.Count == 0) return fmcl;
