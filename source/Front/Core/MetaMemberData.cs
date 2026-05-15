@@ -620,6 +620,8 @@ namespace SimpleLanguage.Core
                             {
                                 MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
 
+                                mmd.CreateMetaExpress();
+
                                 if (AddMetaMemberData(mmd, false ))
                                 {
                                 }
@@ -689,15 +691,7 @@ namespace SimpleLanguage.Core
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
                 m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType, this );
-                m_Express.CalcReturnType();
-                m_DefineMetaType = m_Express.GetReturnMetaDefineType();
-                SetRealMetaType(m_DefineMetaType);
-                if (m_DefineMetaType == null)
-                {
-                    string tokenText = m_FileMetaMemeberData?.fileMetaCallTermValue?.ToTokenString() ?? m_Name;
-                    Log.AddMetaCoreLog(LID.MetaCoreDefineTypeIsNull, m_Token, tokenText);
-                    return false;
-                }
+                
                 if (m_DefineMetaType.isData)
                 {
                     m_MemberDataType = EMemberDataType.MemberData;
@@ -715,7 +709,30 @@ namespace SimpleLanguage.Core
                     m_MemberDataType = EMemberDataType.MemberClass;
                 }
             }
+            foreach( var v in m_MetaMemberDataDict )
+            {
+                v.Value.ParseMetaExpress();
+            }
             return true;
+        }
+        public override void ParseRealMetaType()
+        {
+            if( m_Express != null )
+            {
+                m_Express.CalcReturnType();
+                m_DefineMetaType = m_Express.GetReturnMetaDefineType();
+                SetRealMetaType(m_DefineMetaType);
+                if (m_DefineMetaType == null)
+                {
+                    string tokenText = m_FileMetaMemeberData?.fileMetaCallTermValue?.ToTokenString() ?? m_Name;
+                    Log.AddMetaCoreLog(LID.MetaCoreDefineTypeIsNull, m_Token, tokenText);
+                    return;
+                }
+            }
+            foreach (var v in m_MetaMemberDataDict)
+            {
+                v.Value.ParseRealMetaType();
+            }
         }
         public void StructNewObjectData()
         {

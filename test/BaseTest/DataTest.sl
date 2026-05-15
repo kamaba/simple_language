@@ -25,6 +25,11 @@ class ClassHolder
     value = 0
 }
 
+class ClassHolder2
+{
+    ok = 0
+}
+
 enum DataKind
 {
     Base = 1
@@ -40,11 +45,13 @@ data MetaInfo
 data AnonymousNestedDataSample
 {
     nd = {
-        a = 20
-        b = 30
+        a = 20,
+        b = 30,
         child = {
-            x = 1
-            y = 2
+            x = 1,
+            y = ClassDataEnumSample(){ cc = 0 },
+            z = DataKind.Base,
+            w = ClassHolder(){ value = "", value2 = ClassHolder2(){ ok = 2 } },
         }
     }
 }

@@ -1351,7 +1351,12 @@ namespace SimpleLanguage.Compile
 
                     FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, curNode, FileMetaMemberData.EMemberDataType.Class);
 
-                    currentNodeInfo.codeData.AddFileMemberData(fmmd);
+                    AddParseDataInfo(fmmd);
+                    if (curNode.blockNode != null)
+                    {
+                        ParseDataNode(curNode.blockNode, true);
+                    }
+                    m_CurrentNodeInfoStack.Pop();
                 }
                 else if (curNode?.nodeType == ENodeType.Bracket) // [[],[]]
                 {
@@ -1396,6 +1401,11 @@ namespace SimpleLanguage.Compile
             }
             return null;
         }
+        /// <summary>
+        /// 解析 Data 花括号内成员。
+        /// requireCommaSeparator 为 false：顶层 <c>data Name {{ ... }}</c>，可用换行/分号（及可选逗号）分隔；
+        /// 为 true：<c>= {{}}</c> 或 <c>[]</c> 内匿名字块，必须用逗号分隔成员，单靠换行不结束上一成员。
+        /// </summary>
         public void ParseDataNode(Node pnode, bool requireCommaSeparator = false)
         {            
             Node curParentNode = pnode;
@@ -1516,6 +1526,11 @@ namespace SimpleLanguage.Compile
                             assignNode = null;
                             isParseEnd = false;
                             AddParseDataInfo(fmmd);
+                            // TypeName() { ... } 与匿名 / 嵌套 data 一致：花括号内按逗号分隔解析成员（含嵌套 Type2(){}）
+                            if (curNode.blockNode != null)
+                            {
+                                ParseDataNode(curNode.blockNode, true);
+                            }
                             m_CurrentNodeInfoStack.Pop();
                         }
                     }
@@ -1658,7 +1673,11 @@ namespace SimpleLanguage.Compile
                 }
                 else if (curNode.nodeType == ENodeType.LineEnd)
                 {
-                    isParseEnd = true;
+                    // 顶层 data 定义：换行可结束匿名 const 一段；匿名/嵌套 {} 内必须由逗号分隔，换行当空白跳过
+                    if (!requireCommaSeparator)
+                    {
+                        isParseEnd = true;
+                    }
                 }
                 else if (curNode.nodeType == ENodeType.Comma)
                 {
@@ -1666,7 +1685,14 @@ namespace SimpleLanguage.Compile
                 }
                 else if (curNode.nodeType == ENodeType.SemiColon)
                 {
-                    isParseEnd = true;
+                    if (!requireCommaSeparator)
+                    {
+                        isParseEnd = true;
+                    }
+                    else if (assignNode != null || frontList.Count > 0)
+                    {
+                        Log.AddNodeLog(LID.ShowExtendMessage, "匿名或嵌套的 data {{}} 内请使用英文逗号 ',' 分隔成员，不要使用 ';'");
+                    }
                 }
                 else
                 {
