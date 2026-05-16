@@ -77,7 +77,7 @@ namespace SimpleLanguage.Core
         }
         public override void CalcReturnType()
         {
-            m_MetaType = return1Express.GetReturnMetaType();
+            m_ExpressReturnMetaType = return1Express.GetReturnMetaType();
         }
         public override string ToFormatString()
         {

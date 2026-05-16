@@ -682,7 +682,7 @@ namespace SimpleLanguage.Core
                     }
                 case EVisitType.Express:
                     {
-                        return this.express.metaType;
+                        return this.express.expressReturnMetaType;
                     }
                 case EVisitType.Enum:
                     {

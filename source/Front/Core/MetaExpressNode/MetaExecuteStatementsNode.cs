@@ -18,14 +18,14 @@ namespace SimpleLanguage.Core
         private MetaSwitchStatements m_MetaSwitchStatements = null;
         public MetaExecuteStatementsNode( MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, MetaIfStatements ifstate)
         {
-            m_MetaType = mdt;
+            m_ExpressReturnMetaType = mdt;
             m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_MetaIfStatements = ifstate;
         }
         public MetaExecuteStatementsNode(MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, MetaSwitchStatements switchstate)
         {
-            m_MetaType = mdt;
+            m_ExpressReturnMetaType = mdt;
             m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_MetaSwitchStatements = switchstate;
@@ -54,16 +54,16 @@ namespace SimpleLanguage.Core
         }
         public override MetaType GetReturnMetaType()
         {
-            if(m_MetaType != null)
+            if(m_ExpressReturnMetaType != null)
             {
-                return m_MetaType;
+                return m_ExpressReturnMetaType;
             }
             if (m_MetaIfStatements != null || m_MetaSwitchStatements != null)
             {
-                m_MetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             }
 
-            return m_MetaType;
+            return m_ExpressReturnMetaType;
         }
         public override string ToFormatString()
         {

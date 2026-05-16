@@ -287,77 +287,77 @@ namespace SimpleLanguage.Core
                     }
                     break;
             }
-            m_MetaType = new MetaType(eType);
+            m_ExpressReturnMetaType = new MetaType(eType);
         }
         public override void CalcReturnType()
         {
-            if (m_MetaType != null)
+            if (m_ExpressReturnMetaType != null)
             {
-                if( m_MetaType.metaClass == CoreMetaClassManager.nullMetaClass  )
+                if(m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.nullMetaClass  )
                 {
                     eType = EType.Null;
                     value = "null";
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.booleanMetaClass)
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.booleanMetaClass)
                 {
                     eType = EType.Boolean;
                     value = Convert.ToBoolean(value);
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.uint8MetaClass)
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.uint8MetaClass)
                 {
                     eType = EType.UInt8;
                     value = Convert.ToByte(value);
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.int8MetaClass)
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.int8MetaClass)
                 {
                     eType = EType.Int8;
                     value = Convert.ToSByte(value);
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.int16MetaClass)
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.int16MetaClass)
                 {
                     eType = EType.Int16;
                     value = Convert.ToInt16(value);
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.uint16MetaClass)
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.uint16MetaClass)
                 {
                     eType = EType.UInt16;
                     value = Convert.ToUInt16(value);
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.int32MetaClass)
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.int32MetaClass)
                 {
                     eType = EType.Int32;
                     value = Convert.ToInt32(value);
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.uint32MetaClass)
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.uint32MetaClass)
                 {
                     eType = EType.UInt32;
                     value = Convert.ToUInt32(value);
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.int64MetaClass)
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.int64MetaClass)
                 {
                     eType = EType.Int64;
                     value = Convert.ToInt64(value);
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.uint64MetaClass)
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.uint64MetaClass)
                 {
                     eType = EType.UInt64;
                     value = Convert.ToUInt64(value);
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.float32MetaClass)
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.float32MetaClass)
                 {
                     eType = EType.Float32;
                     value = Convert.ToSingle(value);
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.float64MetaClass)
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.float64MetaClass)
                 {
                     eType = EType.Float64;
                     value = Convert.ToDouble(value);
                 }
-                else if( m_MetaType.metaClass == CoreMetaClassManager.numMetaClass )
+                else if(m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.numMetaClass )
                 {
                     eType = EType.Num;
                 }
-                else if (m_MetaType.metaClass == CoreMetaClassManager.stringMetaClass)
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.stringMetaClass)
                 {
                     eType = EType.String;
                     value = value.ToString();
@@ -371,7 +371,7 @@ namespace SimpleLanguage.Core
             //MetaType mdt = null;
             if (eType == EType.Null)
             {
-                m_MetaType = new MetaType(CoreMetaClassManager.nullMetaClass);
+                m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.nullMetaClass);
             }
             else
             {
@@ -379,7 +379,7 @@ namespace SimpleLanguage.Core
 
                 if (mc == null)
                 {
-                    m_MetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                    m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
                 }
                 else
                 {
@@ -388,11 +388,11 @@ namespace SimpleLanguage.Core
                     {
                         MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
                         mitc.AddMetaTemplateParamsList(mitp);
-                        m_MetaType = new MetaType(mc, null, mitc);
+                        m_ExpressReturnMetaType = new MetaType(mc, null, mitc);
                     }
                     else
                     {
-                        m_MetaType = new MetaType(mc);
+                        m_ExpressReturnMetaType = new MetaType(mc);
                     }
                 }
             }

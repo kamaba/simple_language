@@ -30,7 +30,7 @@ namespace SimpleLanguage.Core
             //    m_MetaCallLink.CalcReturnType();
             //}
 
-            m_MetaType = GetReturnMetaType();
+            m_ExpressReturnMetaType = GetReturnMetaType();
         }
         public MetaVariable GetMetaVariable()
         {
@@ -42,14 +42,14 @@ namespace SimpleLanguage.Core
         }
         public override MetaType GetReturnMetaType()
         {
-            if (m_MetaType != null)
+            if (m_ExpressReturnMetaType != null)
             {
-                return m_MetaType;
+                return m_ExpressReturnMetaType;
             }
 
-            m_MetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
 
-            return m_MetaType;
+            return m_ExpressReturnMetaType;
         }
         public override string ToFormatString()
         {

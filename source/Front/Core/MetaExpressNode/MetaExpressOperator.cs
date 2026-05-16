@@ -66,12 +66,12 @@ namespace SimpleLanguage.Core
         {
             if ( m_OpSign == ESingleOpSign.Not)
             {
-                m_MetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
             }
             else
             {
                 m_Value.CalcReturnType();
-                m_MetaType = m_Value.metaType;
+                m_ExpressReturnMetaType = m_Value.expressReturnMetaType;
             }
         }
         public MetaExpressNodeBase SimulateCompute()
@@ -376,7 +376,7 @@ namespace SimpleLanguage.Core
             }
             ParseCompute();
 
-            m_MetaType = new MetaType(m_RealMetaType);
+            m_ExpressReturnMetaType = new MetaType(m_RealMetaType);
         }
         public void ParseCompute()
         {
@@ -628,7 +628,7 @@ namespace SimpleLanguage.Core
 
                 if (isFindDefineFunction)
                 {
-                    var mipc = new MetaInputParamCollection(left.metaType.metaClass, null);
+                    var mipc = new MetaInputParamCollection(left.expressReturnMetaType.metaClass, null);
                     MetaInputParam mip = new MetaInputParam(right);
                     mipc.AddMetaInputParam(mip);
                     var mmf = rightMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_op_add_", 0, mipc);

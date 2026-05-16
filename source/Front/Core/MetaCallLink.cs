@@ -346,7 +346,7 @@ namespace SimpleLanguage.Core
             {
                 case MetaConstExpressNode mcen:
                     {
-                        var newmcn = new MetaCallNode(mcen, m_OwnerMetaClass, m_OwnerMetaBlockStatements, mcen.metaType);
+                        var newmcn = new MetaCallNode(mcen, m_OwnerMetaClass, m_OwnerMetaBlockStatements, mcen.expressReturnMetaType);
                         bracketCNList.Add(newmcn);
                     }
                     break;

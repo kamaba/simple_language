@@ -86,7 +86,7 @@ namespace SimpleLanguage.Core
             //{
             //    m_MetaCallLink.CalcReturnType();
             //}
-            m_MetaType = GetReturnMetaType();
+            m_ExpressReturnMetaType = GetReturnMetaType();
         }
         public MetaVariable GetMetaVariable()
         {
@@ -98,15 +98,15 @@ namespace SimpleLanguage.Core
         }
         public override MetaType GetReturnMetaType()
         {
-            if (m_MetaType != null)
+            if (m_ExpressReturnMetaType != null)
             {
-                return m_MetaType;
+                return m_ExpressReturnMetaType;
             }
             if (m_MetaCallLink == null)
                 return null;
 
-            m_MetaType = m_MetaCallLink.GetMetaDefineType();
-            return m_MetaType;
+            m_ExpressReturnMetaType = m_MetaCallLink.GetMetaDefineType();
+            return m_ExpressReturnMetaType;
         }
         public MetaExpressNodeBase ConvertConstExpressNode()
         {

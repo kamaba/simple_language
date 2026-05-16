@@ -134,7 +134,7 @@ namespace SimpleLanguage.Core
         }
         public override void CalcReturnType()
         {
-            m_MetaType = m_ConvertTargetMetaType;
+            m_ExpressReturnMetaType = m_ConvertTargetMetaType;
         }
         public override string ToFormatString()
         {

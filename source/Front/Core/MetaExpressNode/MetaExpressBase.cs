@@ -38,13 +38,13 @@ namespace SimpleLanguage.Core
         {
             get
             {
-                return MetaTypeFactory.GetOpLevelByMetaType(m_MetaType);
+                return MetaTypeFactory.GetOpLevelByMetaType(m_ExpressReturnMetaType);
             }
         }
         public bool convertNewExpressNode => m_ConvertNewExpressNode;
         public bool convertCallExpressNode => m_ConvertCallExpressNode;
         public virtual Token token => m_Token;
-        public MetaType metaType => m_MetaType;
+        public MetaType expressReturnMetaType => m_ExpressReturnMetaType;
         /// <summary>所属上下文：普通类。</summary>
         public MetaClass ownerMetaClass => m_OwnerMetaBase as MetaClass;
         /// <summary>所属上下文：<see cref="MetaData"/>（与 <see cref="MetaVariable"/> 对称）。</summary>
@@ -59,7 +59,7 @@ namespace SimpleLanguage.Core
         /// <summary>宿主：<see cref="MetaClass"/> / <see cref="MetaData"/> / <see cref="MetaEnum"/>，与 <see cref="MetaVariable"/> 一致。</summary>
         protected MetaBase m_OwnerMetaBase = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
-        protected MetaType m_MetaType = null;
+        protected MetaType m_ExpressReturnMetaType = null;
         protected bool m_ConvertNewExpressNode = false;
         protected bool m_ConvertCallExpressNode = false;
         protected Token m_Token = null;
@@ -71,19 +71,15 @@ namespace SimpleLanguage.Core
         public virtual void Parse(AllowUseSettings auc) { }
         public MetaClass GetReturnMetaClass()
         {
-            if (m_MetaType == null)
+            if (m_ExpressReturnMetaType == null)
             {
                 GetReturnMetaType();
             }
-            return m_MetaType?.metaClass;
-        }
-        public virtual void SetMetaType( MetaType mt )
-        {
-            m_MetaType = mt;
+            return m_ExpressReturnMetaType?.metaClass;
         }
         public virtual MetaType GetReturnMetaType()
         {
-            return m_MetaType;
+            return m_ExpressReturnMetaType;
         }
         public virtual string ToFormatString()
         {

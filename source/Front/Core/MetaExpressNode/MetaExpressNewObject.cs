@@ -708,7 +708,7 @@ namespace SimpleLanguage.Core
 
         public bool needInitMemberVariable => m_NeedInitMemberVariable;
         public ENewType newType => m_NewType;
-        public int arrayLength => m_MetaType.arrayLength;
+        public int arrayLength => m_ExpressReturnMetaType.arrayLength;
         public MetaExpressNodeBase arrayLengthExpress => m_ArrayLengthExpress;
         public List<MetaExpressNodeBase> metaInputParamList => m_MetaInputParamList;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
@@ -930,7 +930,7 @@ namespace SimpleLanguage.Core
             var metaInputTemplateCollection = new MetaInputTemplateCollection();
             //MetaType mitp = new MetaType(MetaDynamicClass);
             //metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
-            m_MetaType = new MetaType(CoreMetaClassManager.arrayMetaClass, null, metaInputTemplateCollection);
+            m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.arrayMetaClass, null, metaInputTemplateCollection);
 
             //MetaInputParamCollection mipc = new MetaInputParamCollection(mc, mbs);
             //mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count)));
@@ -949,7 +949,7 @@ namespace SimpleLanguage.Core
             MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
             metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
 
-            m_MetaType = new MetaType(CoreMetaClassManager.rangeMetaClass, null, metaInputTemplateCollection);
+            m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.rangeMetaClass, null, metaInputTemplateCollection);
 
             MetaInputParamCollection mdpc = new MetaInputParamCollection(ownerMC as MetaClass, mbs);
             String[] arr = m_FileMetaConstValueTerm.name.Split("..");
@@ -983,7 +983,7 @@ namespace SimpleLanguage.Core
                 MetaInputParam mip3 = new MetaInputParam(new MetaConstExpressNode(EType.Int32, 1));
                 mdpc.AddMetaInputParam(mip3);
             }
-            var tfunction = m_MetaType.GetMetaMemberConstructFunction(mdpc);
+            var tfunction = m_ExpressReturnMetaType.GetMetaMemberConstructFunction(mdpc);
 
             if (tfunction != null)
             {
@@ -1005,8 +1005,8 @@ namespace SimpleLanguage.Core
             m_StoreMetaVariable = equalMV;
             m_DefineMetaType = new MetaType(mt);
             m_NewMetaType = new MetaType(mt);
-            m_MetaType = new MetaType(mt);
-            if (m_MetaType.IsArray())
+            m_ExpressReturnMetaType = new MetaType(mt);
+            if (m_ExpressReturnMetaType.IsArray())
             {
                 m_NewType = ENewType.ArrayClass;
             }
@@ -1822,7 +1822,7 @@ namespace SimpleLanguage.Core
                                         }
                                     }
                                 }
-                                m_MetaType = numericMergedArrayMeta != null ? numericMergedArrayMeta : new MetaType(m_NewMetaType);
+                                m_ExpressReturnMetaType = numericMergedArrayMeta != null ? numericMergedArrayMeta : new MetaType(m_NewMetaType);
                             }
                             else
                             {
@@ -1833,7 +1833,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        m_MetaType = new MetaType(m_NewMetaType);
+                        m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
                     }
                 }
                 else
@@ -1847,7 +1847,7 @@ namespace SimpleLanguage.Core
                     {
                         if( m_NewMetaType.metaClass.IsContainMetaClass( m_DefineMetaType.metaClass ) )
                         {
-                            m_MetaType = new MetaType(m_NewMetaType);
+                            m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
                         }
                         else
                         {
@@ -1857,17 +1857,17 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        m_MetaType = new MetaType(m_NewMetaType);
+                        m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
                     }
                 }
             }
             else if (m_NewMetaType != null && m_DefineMetaType == null)
             {
-                m_MetaType = new MetaType(m_NewMetaType);
+                m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
             }
             else if (m_NewMetaType != null && m_DefineMetaType == null )
             {
-                m_MetaType = new MetaType(m_DefineMetaType);
+                m_ExpressReturnMetaType = new MetaType(m_DefineMetaType);
             }
             else if (m_DefineMetaType == null && m_NewMetaType == null )
             {
@@ -1892,7 +1892,7 @@ namespace SimpleLanguage.Core
                         m_DefineMetaType, m_NewMetaType, m_RealMetaType);
                     if (merged != null)
                     {
-                        m_MetaType = merged;
+                        m_ExpressReturnMetaType = merged;
                     }
                 }
             }
@@ -1901,19 +1901,19 @@ namespace SimpleLanguage.Core
             {
                 if (m_RealMetaType.IsArray() )
                 {
-                    if (m_MetaType == null)
+                    if (m_ExpressReturnMetaType == null)
                     {
-                        m_MetaType = new MetaType(m_RealMetaType);                        
+                        m_ExpressReturnMetaType = new MetaType(m_RealMetaType);                        
                     }
                     else
                     {
-                        if( m_MetaType.arrayLength == -1 )
+                        if(m_ExpressReturnMetaType.arrayLength == -1 )
                         {
-                            m_MetaType.SetArrayLength(m_RealMetaType.arrayLength);
+                            m_ExpressReturnMetaType.SetArrayLength(m_RealMetaType.arrayLength);
                         }
                         else
                         {
-                            if( m_MetaType.arrayLength < m_RealMetaType.arrayLength )
+                            if(m_ExpressReturnMetaType.arrayLength < m_RealMetaType.arrayLength )
                             {
                                 //这也还是写具体的数组类型对比，和多维长度对比，暂留以后写
                                 Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "数组赋值内容给出的长度超出了定义长度!");
@@ -1924,9 +1924,9 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    if (m_MetaType == null)
+                    if (m_ExpressReturnMetaType == null)
                     {
-                        m_MetaType = new MetaType(m_RealMetaType);
+                        m_ExpressReturnMetaType = new MetaType(m_RealMetaType);
                     }
                 }
             }
@@ -1937,11 +1937,11 @@ namespace SimpleLanguage.Core
             if (m_NewType == ENewType.ArrayClass
                 && m_RealMetaType != null
                 && m_RealMetaType.IsArray()
-                && m_MetaType != null
-                && !m_MetaType.IsArray()
-                && m_MetaType.metaClass == CoreMetaClassManager.objectMetaClass)
+                && m_ExpressReturnMetaType != null
+                && !m_ExpressReturnMetaType.IsArray()
+                && m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.objectMetaClass)
             {
-                m_MetaType = new MetaType(m_RealMetaType);
+                m_ExpressReturnMetaType = new MetaType(m_RealMetaType);
             }
 
             // 仅有左值 m_DefineMetaType（如 Array<Int32>）与字面量推断 m_RealMetaType（如 Array<Int16>）时，不能以推断类型覆盖左值元素类型
@@ -1959,23 +1959,23 @@ namespace SimpleLanguage.Core
                         m_DefineMetaType, null, m_RealMetaType);
                     if (mergedDr != null)
                     {
-                        m_MetaType = mergedDr;
+                        m_ExpressReturnMetaType = mergedDr;
                     }
                 }
             }
 
             SyncArrayLiteralLengthFromContent();
 
-            if (m_MetaType == null)
+            if (m_ExpressReturnMetaType == null)
             {
                 return;
             }
 
-            if( m_MetaType.IsArray() )
+            if(m_ExpressReturnMetaType.IsArray() )
             {
                 if(m_MetaInputParamList.Count == 0)
                 {
-                    int alen = m_MetaType.arrayLength;
+                    int alen = m_ExpressReturnMetaType.arrayLength;
                     if( alen == -1 && m_RealMetaType == null )
                     {
                         alen = 0;
@@ -1991,7 +1991,7 @@ namespace SimpleLanguage.Core
                 {
                     if( m_MetaInputParamList[0] is MetaConstExpressNode mcen )
                     {
-                        mcen.value = m_MetaType.arrayLength;
+                        mcen.value = m_ExpressReturnMetaType.arrayLength;
                     }                    
                 }
                 else
@@ -2008,17 +2008,17 @@ namespace SimpleLanguage.Core
             }
 
             if (m_NewType == ENewType.ArrayClass
-                && m_MetaType != null
-                && m_MetaType.IsArray())
+                && m_ExpressReturnMetaType != null
+                && m_ExpressReturnMetaType.IsArray())
             {
-                if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_MetaType, m_Token))
+                if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
                 {
                     if (TryRebuildMetaTypeFromLiteralNumericPromotion())
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
                             "数组字面量无法全部强转为当前声明/推断的元素类型，已按数值升阶规则重新推断数组类型为 "
-                            + m_MetaType.ToString() + "；请检查与左值类型是否仍可赋值。");
-                        if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_MetaType, m_Token))
+                            + m_ExpressReturnMetaType.ToString() + "；请检查与左值类型是否仍可赋值。");
+                        if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
                         {
                             return;
                         }
@@ -2060,9 +2060,9 @@ namespace SimpleLanguage.Core
                 m_NewMetaType.SetArrayLength(literalLength);
             }
 
-            if (m_MetaType != null && m_MetaType.IsArray() && m_MetaType.arrayLength == -1)
+            if (m_ExpressReturnMetaType != null && m_ExpressReturnMetaType.IsArray() && m_ExpressReturnMetaType.arrayLength == -1)
             {
-                m_MetaType.SetArrayLength(literalLength);
+                m_ExpressReturnMetaType.SetArrayLength(literalLength);
             }
         }
 
@@ -2102,16 +2102,16 @@ namespace SimpleLanguage.Core
             MetaType newRMT = new MetaType();
             newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
             newRMT.AddDefineTemplateMetaType(inputType);
-            m_MetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out _);
-            m_MetaType.SetArrayLength(m_AssignStatementsList.Count);
-            return m_MetaType != null;
+            m_ExpressReturnMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out _);
+            m_ExpressReturnMetaType.SetArrayLength(m_AssignStatementsList.Count);
+            return m_ExpressReturnMetaType != null;
         }
 
         public void CheckDefineVariableMetaTypeAndContentMetaType()
         {
             //这里要解析 定义数组 的类型，与子元素的类型 是否，可以匹配
 
-            if (m_AssignStatementsList == null || m_MetaType == null)
+            if (m_AssignStatementsList == null || m_ExpressReturnMetaType == null)
             {
                 return;
             }
@@ -2123,9 +2123,9 @@ namespace SimpleLanguage.Core
                 if (mbc == null) continue;
 
                 MetaType mt2 = mbc.GetRetMetaType();
-                if( m_MetaType.IsArray() )
+                if(m_ExpressReturnMetaType.IsArray() )
                 {
-                    var cmt = m_MetaType.GetMetaTypeByIndex(0);
+                    var cmt = m_ExpressReturnMetaType.GetMetaTypeByIndex(0);
                     var equalMv = m_StoreMetaVariable;
                     bool isNumLike =
                         cmt != null
@@ -2158,9 +2158,9 @@ namespace SimpleLanguage.Core
                     continue;
                 }
 
-                if( m_MetaType.IsArray() )
+                if(m_ExpressReturnMetaType.IsArray() )
                 {
-                    var cmt = m_MetaType.GetMetaTypeByIndex(0);
+                    var cmt = m_ExpressReturnMetaType.GetMetaTypeByIndex(0);
 
                     bool isMatch = false;
                     if (cmt?.GetTemplateMetaClass() == CoreMetaClassManager.objectMetaClass)
@@ -2187,10 +2187,10 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    bool isMatch = TypeManager.CompareMetaType(m_MetaType, mt2);
+                    bool isMatch = TypeManager.CompareMetaType(m_ExpressReturnMetaType, mt2);
                     if (!isMatch)
                     {
-                        var cur = m_MetaType.GetTemplateMetaClass();
+                        var cur = m_ExpressReturnMetaType.GetTemplateMetaClass();
                         var cmp = mt2.GetTemplateMetaClass();
                         if (cur != null && cmp != null)
                         {
@@ -2212,15 +2212,15 @@ namespace SimpleLanguage.Core
         }
         public override MetaType GetReturnMetaType()
         {
-            if(this.m_MetaType != null )
+            if(this.expressReturnMetaType != null )
             {
-                return m_MetaType;
+                return expressReturnMetaType;
             }
             //if (m_MetaConstructFunctionCall != null)
             //{
             //    m_MetaType = m_MetaConstructFunctionCall.GeMetaDefineType();
             //}
-            return m_MetaType;
+            return expressReturnMetaType;
         }
         private string FormatBraceAssignListForDebug()
         {
@@ -2244,11 +2244,11 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
 
 
-            if( m_MetaType.isEnum )
+            if( m_ExpressReturnMetaType.isEnum )
             {
-                sb.Append(m_MetaType.name );
+                sb.Append(m_ExpressReturnMetaType.name );
                 sb.Append(".");
-                sb.Append(m_MetaType.enumValue.name);
+                sb.Append(m_ExpressReturnMetaType.enumValue.name);
                 if(m_MetaEnumValue != null)
                 {
                     sb.Append("(");
@@ -2256,9 +2256,9 @@ namespace SimpleLanguage.Core
                     sb.Append(")");
                 }
             }
-            else if( m_MetaType.isData )
+            else if(m_ExpressReturnMetaType.isData )
             {
-                sb.Append(m_MetaType.name);
+                sb.Append(m_ExpressReturnMetaType.name);
                 sb.Append("{");
                 if (m_AssignStatementsList.Count > 0)
                 {
@@ -2269,7 +2269,7 @@ namespace SimpleLanguage.Core
                         {
                             continue;
                         }
-                        sb.Append(bsc.metaMemberData?.ToFormatString(m_MetaType.isDynamicData));
+                        sb.Append(bsc.metaMemberData?.ToFormatString(m_ExpressReturnMetaType.isDynamicData));
 
                         if( i < m_AssignStatementsList.Count - 1 )
                         {
@@ -2281,9 +2281,9 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if ( m_MetaType != null )
+                if (m_ExpressReturnMetaType != null )
                 {
-                    sb.Append(m_MetaType.name + "()");
+                    sb.Append(m_ExpressReturnMetaType.name + "()");
                     sb.Append(".");
                 }
                 //if(m_MetaConstructFunctionCall.m_CallerMetaVariable != null )

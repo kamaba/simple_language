@@ -318,7 +318,7 @@ namespace SimpleLanguage.IR
                 MetaExpressNodeBase lenNode = mnoen.arrayLengthExpress;
                 if (lenNode == null)
                 {
-                    int inferredLen = mnoen.metaType != null ? mnoen.metaType.arrayLength : -1;
+                    int inferredLen = mnoen.expressReturnMetaType != null ? mnoen.expressReturnMetaType.arrayLength : -1;
                     if (inferredLen < 0 && mnoen.assignStatementsList != null)
                     {
                         inferredLen = mnoen.assignStatementsList.Count;
@@ -332,7 +332,7 @@ namespace SimpleLanguage.IR
                 IRExpressBase ire = IRExpressManager.CreateExpress(irMethod, lenNode);
                 m_IRDataList.AddRange(ire.IRDataList);
 
-                var irMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaType, owirmc);
+                var irMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.expressReturnMetaType, owirmc);
                 IRNew irNew = new IRNew(irMethod, irMetaType, 0 );
                 AddIRRangeData(irNew.IRDataList);
 
@@ -351,7 +351,7 @@ namespace SimpleLanguage.IR
                     int callMethodIndex = -1;
                     string fname = "";
 
-                    MetaClass mc2 = mnoen.metaType?.GetTemplateMetaClass();
+                    MetaClass mc2 = mnoen.expressReturnMetaType?.GetTemplateMetaClass();
                     if (mc2 == null)
                         mc2 = mnoen.metaMemberFunction.ownerMetaClass;
                     if (mc2 == null)
@@ -413,23 +413,23 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                if (mnoen.metaType.eMetaTypeType == EMetaTypeType.MetaGenClass)
+                if (mnoen.expressReturnMetaType.eMetaTypeType == EMetaTypeType.MetaGenClass)
                 {
                     if (mnoen.ownerMetaClass is MetaGenTemplateClass mgtc)
                     {
                         owirmc = IRManager.instance.GetIRMetaClassById(mgtc.metaTemplateClass.GetHashCode());
                     }
-                    newObjectIRMT = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaType, owirmc);
-                    irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
+                    newObjectIRMT = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.expressReturnMetaType, owirmc);
+                    irmc = IRManager.instance.GetIRMetaClassById(mnoen.expressReturnMetaType.GetTemplateMetaClass().GetHashCode());
                     IRNew irNew = new IRNew(irMethod, newObjectIRMT);
                     AddIRRangeData(irNew.IRDataList);
 
                 }
-                else if (mnoen.metaType.eMetaTypeType == EMetaTypeType.MetaClass)
+                else if (mnoen.expressReturnMetaType.eMetaTypeType == EMetaTypeType.MetaClass)
                 {
                     owirmc = IRManager.instance.GetIRMetaClassById(mnoen.ownerMetaClass.GetHashCode());
-                    IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
-                    irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
+                    IRMetaClass newObjIRMC = IRManager.instance.GetIRMetaClassById(mnoen.expressReturnMetaType.GetTemplateMetaClass().GetHashCode());
+                    irmc = IRManager.instance.GetIRMetaClassById(mnoen.expressReturnMetaType.GetTemplateMetaClass().GetHashCode());
                     newObjectIRMT = new IRMetaType(newObjIRMC);
                     IRNew irNew = new IRNew(irMethod, newObjIRMC);
                     AddIRRangeData(irNew.IRDataList);
@@ -437,8 +437,8 @@ namespace SimpleLanguage.IR
                 else
                 {
                     owirmc = IRManager.instance.GetIRMetaClassById(mnoen.ownerMetaClass.GetHashCode());                    
-                    irmc = IRManager.instance.GetIRMetaClassById(mnoen.metaType.GetTemplateMetaClass().GetHashCode());
-                    newObjectIRMT = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.metaType, owirmc);
+                    irmc = IRManager.instance.GetIRMetaClassById(mnoen.expressReturnMetaType.GetTemplateMetaClass().GetHashCode());
+                    newObjectIRMT = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.expressReturnMetaType, owirmc);
 
                     IRNew irNew = new IRNew(irMethod, newObjectIRMT);
                     AddIRRangeData(irNew.IRDataList);
@@ -538,7 +538,7 @@ namespace SimpleLanguage.IR
                     int callMethodIndex = -1;
                     string fname = "";
 
-                    MetaClass mc2 = mnoen.metaType?.GetTemplateMetaClass();
+                    MetaClass mc2 = mnoen.expressReturnMetaType?.GetTemplateMetaClass();
                     if (mc2 == null)
                         mc2 = mnoen.metaMemberFunction.ownerMetaClass;
                     if (mc2 == null)

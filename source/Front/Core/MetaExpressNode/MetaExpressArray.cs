@@ -47,8 +47,8 @@ namespace SimpleLanguage.Core
                         Log.AddMetaCoreLog(LID.MetaCoreArrayMustIsArray, token, "MetaArrayExpressNode", mv?.name);
                         return;
                     }
-                    this.m_MetaType = defineMT;
-                    cmt = m_MetaType.defineTemplateMetaTypeList[0];
+                    this.m_ExpressReturnMetaType = defineMT;
+                    cmt = m_ExpressReturnMetaType.defineTemplateMetaTypeList[0];
                 }
             }
             for (int i = 0; i < m_FileMetaBaseTermList.Count; i++)
@@ -91,7 +91,7 @@ namespace SimpleLanguage.Core
             //    m_MetaCallLink.CalcReturnType();
             //}
 
-            m_MetaType = GetReturnMetaType();
+            m_ExpressReturnMetaType = GetReturnMetaType();
         }
         public MetaVariable GetMetaVariable()
         {
@@ -103,16 +103,16 @@ namespace SimpleLanguage.Core
         }
         public override MetaType GetReturnMetaType()
         {
-            if (m_MetaType != null)
+            if (m_ExpressReturnMetaType != null)
             {
-                return m_MetaType;
+                return m_ExpressReturnMetaType;
             }
 
-            m_MetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
 
             if( m_MetaCallArray.Count > 0 )
             {
-                m_MetaType.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
+                m_ExpressReturnMetaType.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
 
 
                 MetaType cmt = null;
@@ -137,14 +137,14 @@ namespace SimpleLanguage.Core
                         cmt = cmt2;                       
                     }
                 }
-                m_MetaType.AddDefineTemplateMetaType(cmt);
+                m_ExpressReturnMetaType.AddDefineTemplateMetaType(cmt);
 
-                var newmt = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(m_MetaType, true, out bool isgmc);
+                var newmt = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(m_ExpressReturnMetaType, true, out bool isgmc);
                 newmt.SetArrayLength(m_MetaCallArray.Count);
 
-                m_MetaType = newmt;// new MetaType(newmt.metaClass as MetaGenTemplateClass, m_MetaType.defineTemplateMetaTypeList, m_MetaType.defineTemplateMetaTypeList);
+                m_ExpressReturnMetaType = newmt;// new MetaType(newmt.metaClass as MetaGenTemplateClass, m_MetaType.defineTemplateMetaTypeList, m_MetaType.defineTemplateMetaTypeList);
             }
-            return m_MetaType;
+            return m_ExpressReturnMetaType;
         }
         public override string ToFormatString()
         {

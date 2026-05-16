@@ -280,7 +280,7 @@ namespace SimpleLanguage.IR
             if (irexpress.IRDataList.Count > 0)
                 return;
 
-            var metaType = argNode.metaType;
+            var metaType = argNode.expressReturnMetaType;
             if (argNode is MetaCallLinkExpressNode callLinkNode)
             {
                 var metaCallLink = callLinkNode.metaCallLink;
