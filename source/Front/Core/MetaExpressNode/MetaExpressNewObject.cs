@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      IRReturnStatements.cs
+//  File:      MetaExpressNewObject.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2025/12/04 12:00:00
@@ -902,7 +902,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        var list = anonClass.allMetaMemberVariableList;
+                        var list = anonClass.metaMemberDataDict;
                         if (list.Count == assignStatementsList.Count)
                         {
 

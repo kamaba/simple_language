@@ -32,7 +32,6 @@ namespace SimpleLanguage.Core
         private EMemberDataType m_MemberDataType = EMemberDataType.None;
         private MetaExpressNode m_Express = null;
         private int m_Index = -1;
-        private bool m_End = false;
         private bool m_IsWithName = false;
 
         private Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
@@ -74,10 +73,9 @@ namespace SimpleLanguage.Core
                 m_Name = m_Index.ToString();
             }
         }
-        public MetaMemberData(MetaMemberData parentNode, FileMetaMemberData fmmd, int _index, bool isEnd = false)
+        public MetaMemberData(MetaMemberData parentNode, FileMetaMemberData fmmd, int _index)
         {
             m_Index = _index;
-            m_End = isEnd;
             m_FileMetaMemeberData = fmmd;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             SetOwnerMetaClass(parentNode.ownerMetaBase);
@@ -265,16 +263,13 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public bool AddMetaMemberData(MetaMemberData mmd, bool isAddManager )
+        public bool AddMetaMemberData(MetaMemberData mmd )
         {
             if (m_MetaMemberDataDict.ContainsKey(mmd.name))
             {
                 return false;
             }
             m_MetaMemberDataDict.Add(mmd.name, mmd);
-
-            if(isAddManager )
-                MetaVariableManager.instance.AddMetaDataVariable(mmd);
 
             return true;
         }
@@ -306,7 +301,7 @@ namespace SimpleLanguage.Core
             foreach (var entry in source.m_MetaMemberDataDict)
             {
                 var childClone = CreateAnonymousMetaTypeClone(owner, entry.Value, entry.Value.dataFieldOrderIndex, keepDefaultExpress);
-                clone.AddMetaMemberData(childClone, false );
+                clone.AddMetaMemberData(childClone );
             }
 
             return clone;
@@ -525,32 +520,9 @@ namespace SimpleLanguage.Core
         public override void SetDeep(int deep)
         {
             m_Deep = deep;
-            switch (m_MemberDataType)
+            foreach (var v in m_MetaMemberDataDict)
             {
-                case EMemberDataType.MemberData:
-                    {
-                        foreach (var v in m_MetaMemberDataDict)
-                        {
-                            v.Value.SetDeep(m_Deep + 1);
-                        }
-                    }
-                    break;
-                case EMemberDataType.MemberClass:
-                    {
-                    }
-                    break;
-                case EMemberDataType.MemberArray:
-                    {
-                        foreach (var v in m_MetaMemberDataDict)
-                        {
-                            v.Value.SetDeep(m_Deep + 1);
-                        }
-                    }
-                    break;
-                case EMemberDataType.ConstValue:
-                    {
-                    }
-                    break;
+                v.Value.SetDeep(m_Deep + 1);
             }
         }
         public override void CalcParseLevel()
@@ -612,11 +584,11 @@ namespace SimpleLanguage.Core
                             int count = m_FileMetaMemeberData.fileMetaMemberData.Count;
                             for (int i = 0; i < count; i++)
                             {
-                                MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
+                                MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i );
 
                                 mmd.CreateMetaExpress();
 
-                                if (AddMetaMemberData(mmd, false ))
+                                if (AddMetaMemberData(mmd ))
                                 {
                                 }
                                 else
@@ -642,10 +614,10 @@ namespace SimpleLanguage.Core
                             int count = m_FileMetaMemeberData.fileMetaMemberData.Count;
                             for (int i = 0; i < count; i++)
                             {
-                                MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
+                                MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i);
 
                                 mmd.CreateMetaExpress();
-                                if (AddMetaMemberData(mmd, false ))
+                                if (AddMetaMemberData(mmd))
                                 {
                                 }
                                 else
@@ -1001,7 +973,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaMemberDataL605, "error 暂不支持其它类型 1");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "error 暂不支持其它类型 1");
                     }
                     break;
             }

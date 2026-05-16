@@ -73,18 +73,6 @@ namespace SimpleLanguage.Core
             AddMetaMemberData(mmd);
             return mmd;
         }
-        public List<MetaVariable> allMetaMemberVariableList
-        {
-            get
-            {
-                var list = new List<MetaVariable>();
-                foreach (var v in m_MetaMemberDataDict)
-                {
-                    list.Add(v.Value);
-                }
-                return list;
-            }
-        }
         public override void SetDeep(int deep)
         {
             this.m_Deep = deep;
@@ -221,10 +209,54 @@ namespace SimpleLanguage.Core
 
             return stringBuilder.ToString();
         }
-
         public override string ToString()
         {
-            return base.ToString();
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Clear();
+
+            if (m_IsDynamic)
+            {
+                if (isConst)
+                {
+                    stringBuilder.Append("const ");
+                }
+                stringBuilder.Append(allClassName + " = {");
+                int index = 0;
+                foreach (var v in m_MetaMemberDataDict)
+                {
+                    stringBuilder.Append(v.Value.ToString());
+                    if (index < m_MetaMemberDataDict.Count - 1)
+                    {
+                        stringBuilder.Append(",");
+                    }
+                    index++;
+                }
+                stringBuilder.Append("}");
+            }
+            else
+            {
+                if (isConst)
+                {
+                    stringBuilder.Append("const ");
+                }
+                stringBuilder.Append("data ");
+                stringBuilder.Append(allClassName);
+                stringBuilder.Append("{");
+
+                int i = 0;
+                foreach (var v in m_MetaMemberDataDict)
+                {
+                    stringBuilder.Append(v.Value.ToString());
+                    if( i++ < m_MetaMemberDataDict.Count - 1 )
+                    {
+                        stringBuilder.Append(",");
+                    }
+                }
+
+                stringBuilder.Append("}" );
+            }
+
+            return stringBuilder.ToString();
         }
     }
 }
