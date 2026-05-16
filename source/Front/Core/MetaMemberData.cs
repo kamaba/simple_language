@@ -650,7 +650,7 @@ namespace SimpleLanguage.Core
                             {
                                 MetaMemberData mmd = new MetaMemberData(this, m_FileMetaMemeberData.fileMetaMemberData[i], i, i == count - 1);
 
-                                mmd.ParseDefineMetaType();
+                                mmd.CreateMetaExpress();
                                 if (AddMetaMemberData(mmd, false ))
                                 {
                                 }
@@ -691,11 +691,11 @@ namespace SimpleLanguage.Core
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
                 m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType, this );
                 
-                if (m_DefineMetaType.isData)
+                if (m_RealMetaType.isData)
                 {
                     m_MemberDataType = EMemberDataType.MemberData;
                 }
-                else if (m_DefineMetaType.IsArray() )
+                else if (m_RealMetaType.IsArray() )
                 {
                     m_MemberDataType = EMemberDataType.MemberArray;
                 }

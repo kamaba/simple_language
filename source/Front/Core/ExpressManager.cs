@@ -379,7 +379,8 @@ namespace SimpleLanguage.Core
             return men;
         }
        
-        public static MetaExpressNode ConvertNewExpress( MetaExpressNode oldmen, MetaType mdt, MetaVariable mv )        {
+        public static MetaExpressNode ConvertNewExpress( MetaExpressNode oldmen, MetaType mdt, MetaVariable mv )  
+        {
 
             MetaExpressNode menNew = oldmen;
             if (oldmen.convertNewExpressNode == true)

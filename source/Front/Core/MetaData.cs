@@ -160,15 +160,12 @@ namespace SimpleLanguage.Core
         }
         public void ParseDefineComplete()
         {
-            var roots = new List<MetaMemberData>();
-            foreach (var kv in m_MetaMemberDataDict)
+            foreach( var v in m_MetaMemberDataDict )
             {
-                roots.Add(kv.Value);
-            }
-            roots.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
-            for (int i = 0; i < roots.Count; i++)
-            {
-                MetaMemberData.ResolveAnonymousDataHierarchyPostOrder(roots[i]);
+                if(v.Value.memberDataType == EMemberDataType.MemberData )
+                {
+                    MetaMemberData.ResolveAnonymousDataHierarchyPostOrder(v.Value);
+                }
             }
         }
         public override string ToFormatString()

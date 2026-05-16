@@ -58,7 +58,7 @@ data AnonymousNestedDataSample
 
 data ClassDataEnumSample
 {
-    cc = ClassHolder(){ value = 200 }
+    cc = ClassHolder(){ value = "200" }
     vb = MetaInfo(){ level = 3, passed = True }
     kind = DataKind.Advanced
 }

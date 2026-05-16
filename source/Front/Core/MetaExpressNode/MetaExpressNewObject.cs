@@ -543,8 +543,6 @@ namespace SimpleLanguage.Core
                             {
                                 continue;
                             }
-                            mas.Parse(aws);
-                            mas.CalcReturnType();
                             m_AssignStatementsList.Add(mas);
                         }
                         else if (!m_DefineMetaType.isDynamicData
@@ -557,8 +555,6 @@ namespace SimpleLanguage.Core
                             {
                                 continue;
                             }
-                            mas.Parse(aws);
-                            mas.CalcReturnType();
                             m_AssignStatementsList.Add(mas);
                         }
                     }
