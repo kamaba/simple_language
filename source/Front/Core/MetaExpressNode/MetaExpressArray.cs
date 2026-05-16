@@ -59,7 +59,7 @@ namespace SimpleLanguage.Core
                 cep.equalMetaVariable = null;
                 cep.metaType = cmt;
                 cep.ownerMBS = m_OwnerMetaBlockStatements;
-                cep.ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass;
+                cep.ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass;
 
                 var en = ExpressManager.CreateExpressNodeByCEP(cep);
                 m_MetaCallArray.Add(en);

@@ -670,9 +670,8 @@ namespace SimpleLanguage.Core
                                 m_Express.Parse(new AllowUseSettings());
                                 m_Express.CalcReturnType();
                                 var md = m_Express.GetReturnMetaDefineType();
-                                m_DefineMetaType = md;
+                                this.m_DefineMetaType = md;
                                 this.m_RealMetaType = md;
-                                this.m_IsDefineMetaType = true;
                             }
                         }
                         break;
@@ -717,21 +716,21 @@ namespace SimpleLanguage.Core
         }
         public override void ParseRealMetaType()
         {
-            if( m_Express != null )
+            foreach (var v in m_MetaMemberDataDict)
+            {
+                v.Value.ParseRealMetaType();
+            }
+            if ( m_Express != null && m_RealMetaType == null )
             {
                 m_Express.CalcReturnType();
                 m_DefineMetaType = m_Express.GetReturnMetaDefineType();
-                SetRealMetaType(m_DefineMetaType);
                 if (m_DefineMetaType == null)
                 {
                     string tokenText = m_FileMetaMemeberData?.fileMetaCallTermValue?.ToTokenString() ?? m_Name;
                     Log.AddMetaCoreLog(LID.MetaCoreDefineTypeIsNull, m_Token, tokenText);
                     return;
                 }
-            }
-            foreach (var v in m_MetaMemberDataDict)
-            {
-                v.Value.ParseRealMetaType();
+                m_RealMetaType = m_DefineMetaType;
             }
         }
         public void StructNewObjectData()

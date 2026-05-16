@@ -35,7 +35,7 @@ namespace SimpleLanguage.Core
             CreateExpressParam conditionCep = new CreateExpressParam()
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
-                ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
+                ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass,
                 metaType = new MetaType(CoreMetaClassManager.booleanMetaClass),
                 fme = m_FileMetaThreeItemSyntaxTerm.conditionTerm,
                 isStatic = false,
@@ -48,7 +48,7 @@ namespace SimpleLanguage.Core
             CreateExpressParam return1Cep = new CreateExpressParam()
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
-                ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
+                ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass,
                 metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
                 fme = m_FileMetaThreeItemSyntaxTerm.return1Term,
                 isStatic = false,
@@ -61,7 +61,7 @@ namespace SimpleLanguage.Core
             CreateExpressParam return2Cep = new CreateExpressParam()
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
-                ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
+                ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass,
                 metaType = new MetaType(CoreMetaClassManager.objectMetaClass ),
                 fme = m_FileMetaThreeItemSyntaxTerm.return2Term,
                 isStatic = false,

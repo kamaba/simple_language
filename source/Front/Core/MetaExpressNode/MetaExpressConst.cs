@@ -250,7 +250,6 @@ namespace SimpleLanguage.Core
                             cep.metaType = new MetaType(CoreMetaClassManager.stringMetaClass);
                             cep.ownerMBS = m_OwnerMetaBlockStatements;
                             cep.ownerMetaBase = m_OwnerMetaClass;
-                            cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
 
                             var expressc = ExpressManager.CreateExpressNode(cep);
                             expressc.Parse(auc);

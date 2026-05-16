@@ -44,9 +44,16 @@ namespace SimpleLanguage.Core
                         return;
                     }
                     var targetMetaType = targetMetaVariable.GetFinalMetaType();
-                    if( targetMetaType == null )
+                    if( targetMetaType == null && m_MetaMemberData != null )
                     {
-                        targetMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                        m_MetaMemberData.CreateMetaExpress();
+                        m_MetaMemberData.ParseMetaExpress();
+                        m_MetaMemberData.ParseRealMetaType();
+                        targetMetaType = m_MetaMemberData.GetFinalMetaType();
+                        if( targetMetaType == null )
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "");
+                        }
                     }
                     m_MetaType = targetMetaType;
 
@@ -72,7 +79,7 @@ namespace SimpleLanguage.Core
                     cep.equalMetaVariable = targetMetaVariable;
                     cep.metaType = targetMetaType;
                     cep.ownerMBS = mbs;
-                    cep.ownerMetaClass = mbs?.ownerMetaClass ?? mt?.metaClass;
+                    cep.ownerMetaBase = mbs?.ownerMetaBase ?? mt?.currentMeta;
                     m_MetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
 
                 }
@@ -125,7 +132,7 @@ namespace SimpleLanguage.Core
                 cep.equalMetaVariable = targetMetaVariable;
                 cep.metaType = targetMetaType;
                 cep.ownerMBS = mbs;
-                cep.ownerMetaClass = mbs.ownerMetaClass;
+                cep.ownerMetaBase = mbs.ownerMetaClass;
                 m_MetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
             }
         }
@@ -236,7 +243,7 @@ namespace SimpleLanguage.Core
                 cep.equalMetaVariable = targetMetaVariable;
                 cep.metaType = targetMetaType;
                 cep.ownerMBS = m_OwnerMetaBlockStatements;
-                cep.ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass;
+                cep.ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass;
                 m_MetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
             }
         }
@@ -320,8 +327,8 @@ namespace SimpleLanguage.Core
                             m_MetaMemberData.SetIsDefineMetaType(true);
                         }
                     }
-                    MetaClass retMetaClass = m_MetaMemberData.defineMetaType.metaClass;
-                    MetaClass ownerMetaClass = m_MetaMemberData.ownerMetaClass;
+                    MetaData retMetaClass = m_MetaMemberData.defineMetaType.metaData;
+                    MetaData ownerMetaClass = m_MetaMemberData.ownerMetaData;
                     //bool m_IsNeedCastStatements = false;
                 }
                 //ExpressManager.CalcDefineClassType(ref retMetaClass, m_MetaExpress, ownerMetaClass,
@@ -674,7 +681,6 @@ namespace SimpleLanguage.Core
                 {
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.ownerMetaBase = m_OwnerMetaClass;
-                    cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = fmct;
@@ -690,7 +696,6 @@ namespace SimpleLanguage.Core
                 {
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.ownerMetaBase = m_OwnerMetaClass;
-                    cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = fmcvt;
@@ -723,7 +728,6 @@ namespace SimpleLanguage.Core
                 {
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.ownerMetaBase = m_OwnerMetaClass;
-                    cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = termexpress;
@@ -776,7 +780,6 @@ namespace SimpleLanguage.Core
                 {
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.ownerMetaBase = m_OwnerMetaClass;
-                    cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = fmctOb;
@@ -792,7 +795,6 @@ namespace SimpleLanguage.Core
                 {
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.ownerMetaBase = m_OwnerMetaClass;
-                    cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = fmcvtOb;
@@ -814,7 +816,6 @@ namespace SimpleLanguage.Core
                 {
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.ownerMetaBase = m_OwnerMetaClass;
-                    cep.ownerMetaClass = m_OwnerMetaClass as MetaClass;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = termexpressOb;

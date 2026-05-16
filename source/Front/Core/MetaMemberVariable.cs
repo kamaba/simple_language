@@ -630,7 +630,6 @@ namespace SimpleLanguage.Core
 
             CreateExpressParam cep = new CreateExpressParam();
             cep.ownerMetaBase = ownerMetaBase;
-            cep.ownerMetaClass = ownerMetaClass;
             cep.metaType = m_DefineMetaType;
             cep.equalMetaVariable = this;
             cep.parsefrom = EParseFrom.MemberVariableExpress;

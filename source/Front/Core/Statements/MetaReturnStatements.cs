@@ -29,7 +29,7 @@ namespace SimpleLanguage.Core
             {
                 CreateExpressParam cep2 = new CreateExpressParam()
                 {
-                    ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
+                    ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass,
                     ownerMBS = m_OwnerMetaBlockStatements,
                     metaType = mdt,
                     fme = m_FileMetaReturnSyntax.returnExpress,

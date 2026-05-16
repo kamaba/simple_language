@@ -412,7 +412,7 @@ namespace SimpleLanguage.Core
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
                 metaType = rightMetaTypeHint,
-                ownerMetaClass = ownerMetaClass,
+                ownerMetaBase = ownerMetaClass,
                 fme = m_FileMetaOpAssignSyntax.express,
                 isStatic = false,
                 isConst = false,

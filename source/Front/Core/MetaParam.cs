@@ -32,7 +32,6 @@ namespace SimpleLanguage.Core
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
                 ownerMetaBase = m_OwnerMetaClass,
-                ownerMetaClass = m_OwnerMetaClass,
                 metaType = null,
                 fme = m_FileInputParamNode.express,
                 isStatic = false,

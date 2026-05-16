@@ -29,7 +29,6 @@ namespace SimpleLanguage.Core
         public MetaBlockStatements ownerMBS;
         /// <summary>与 <see cref="MetaVariable"/> 一致：可为 Class / Data / Enum。</summary>
         public MetaBase ownerMetaBase;
-        public MetaClass ownerMetaClass;
         public MetaType metaType;
         public MetaType parentMetaType;
         public MetaVariable equalMetaVariable;
@@ -47,7 +46,6 @@ namespace SimpleLanguage.Core
         {
             ownerMBS = null;
             ownerMetaBase = null;
-            ownerMetaClass = null;
             equalMetaVariable = null;
             metaType = null;
             parentMetaType = null;
@@ -65,7 +63,6 @@ namespace SimpleLanguage.Core
         {
             ownerMBS = clone.ownerMBS;
             ownerMetaBase = clone.ownerMetaBase;
-            ownerMetaClass = clone.ownerMetaClass;
             equalMetaVariable = clone.equalMetaVariable;
             metaType = clone.metaType;
             parentMetaType = clone.parentMetaType;
@@ -87,7 +84,7 @@ namespace SimpleLanguage.Core
         {
             if (cep.ownerMetaBase != null)
                 return cep.ownerMetaBase;
-            return cep.ownerMetaClass;
+            return cep.ownerMetaBase;
         }
 
         public static ExpressOptimizeConfig expressOptimizeConfig = new ExpressOptimizeConfig();
@@ -259,7 +256,6 @@ namespace SimpleLanguage.Core
                     case FileMetaTermExpress fmte:
                         {
                             //Debug.Write("Error CreateExpressNode 创建表达项不能为符号");
-                            cep.ownerMetaClass = ownerClass;
                             cep.ownerMetaBase = ownerBase;
                             men = CreateExpressNode(cep);
                             return men;

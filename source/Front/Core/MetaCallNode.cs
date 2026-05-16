@@ -241,7 +241,6 @@ namespace SimpleLanguage.Core
                         CreateExpressParam cep = new CreateExpressParam()
                         {
                             ownerMetaBase = m_OwnerMetaClass,
-                            ownerMetaClass = ownerMetaClass,
                             ownerMBS = m_OwnerMetaFunctionBlock,
                             metaType = null,
                             fme = firstNode,
@@ -272,7 +271,7 @@ namespace SimpleLanguage.Core
                         cep.equalMetaVariable = m_DefineMetaVariable;
                         cep.metaType = mt;
                         cep.ownerMBS = m_OwnerMetaFunctionBlock;
-                        cep.ownerMetaClass = m_OwnerMetaFunctionBlock.ownerMetaClass;
+                        cep.ownerMetaBase = m_OwnerMetaFunctionBlock.ownerMetaClass;
 
                         var en = ExpressManager.CreateExpressNodeByCEP(cep);
                         en.Parse(_auc);

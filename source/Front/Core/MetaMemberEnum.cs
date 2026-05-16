@@ -105,7 +105,6 @@ namespace SimpleLanguage.Core
                         fme = m_FileMetaMemeberVariable.express,
                         metaType = m_DefineMetaType,
                         ownerMetaBase = ownerMetaBase,
-                        ownerMetaClass = ownerMetaClass,
                         equalMetaVariable = this,
                         ownerMBS = m_OwnerMetaBlockStatements,
                         parsefrom = EParseFrom.MemberVariableExpress

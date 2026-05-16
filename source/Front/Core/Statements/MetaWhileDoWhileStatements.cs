@@ -73,7 +73,7 @@ namespace SimpleLanguage.Core
                 {
                     CreateExpressParam cep2 = new CreateExpressParam()
                     {
-                        ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
+                        ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass,
                         ownerMBS = m_OwnerMetaBlockStatements,
                         metaType = null,
                         fme = m_FileMetaKeyForSyntax.conditionExpress,
@@ -239,7 +239,7 @@ namespace SimpleLanguage.Core
                     CreateExpressParam cep2 = new CreateExpressParam()
                     {
                         ownerMBS = m_ThenMetaStatements,
-                        ownerMetaClass = m_ThenMetaStatements.ownerMetaClass,
+                        ownerMetaBase = m_ThenMetaStatements.ownerMetaClass,
                         metaType = new MetaType( CoreMetaClassManager.booleanMetaClass ),
                         fme = m_FileMetaKeyForSyntax.conditionExpress,
                         isStatic = false,
@@ -382,7 +382,7 @@ namespace SimpleLanguage.Core
 
                 CreateExpressParam cep2 = new CreateExpressParam()
                 {
-                    ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
+                    ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass,
                     ownerMBS = m_OwnerMetaBlockStatements,
                     metaType = mdt,
                     fme = m_FileMetaKeyWhileSyntax.conditionExpress,

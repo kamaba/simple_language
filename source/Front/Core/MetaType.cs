@@ -37,7 +37,7 @@ namespace SimpleLanguage.Core
         public bool isNullable => m_IsNullable;
         public bool isEnum => m_MetaEnum != null || m_EMetaTypeType == EMetaTypeType.MetaEnum;
         public bool isData => m_MetaData != null || m_EMetaTypeType == EMetaTypeType.MetaData;
-        public bool isClass => m_MetaData != null || m_EMetaTypeType == EMetaTypeType.MetaClass;
+        public bool isClass => m_MetaClass != null || m_EMetaTypeType == EMetaTypeType.MetaClass;
         public bool isNull => m_MetaClass == CoreMetaClassManager.nullMetaClass;
         public bool isMap => m_MetaClass == CoreMetaClassManager.mapMetaClass;
         public bool isTemplate => m_EMetaTypeType == EMetaTypeType.Template;
@@ -46,6 +46,14 @@ namespace SimpleLanguage.Core
             || (m_MetaData != null && m_MetaData.isDynamic);
         public int arrayLength => m_ArrayLength;
         public EMetaTypeType eMetaTypeType => m_EMetaTypeType;
+
+        public MetaBase currentMeta => eMetaTypeType switch
+        {
+            EMetaTypeType.MetaData => m_MetaData,
+            EMetaTypeType.MetaClass => m_MetaClass,
+            EMetaTypeType.MetaEnum => m_MetaEnum,
+            _ => null
+        };
         public MetaClass metaClass => m_MetaClass;
         public MetaEnum metaEnum => m_MetaEnum;
         public MetaData metaData => m_MetaData;

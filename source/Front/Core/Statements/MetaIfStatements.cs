@@ -185,7 +185,7 @@ namespace SimpleLanguage.Core
             CreateExpressParam cep = new CreateExpressParam()
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
-                ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
+                ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass,
                 metaType = mdt,
                 fme = m_FileMetaKeyIfSyntax.ifExpressSyntax.conditionExpress,
                 isStatic = false,
@@ -214,7 +214,7 @@ namespace SimpleLanguage.Core
 
                 CreateExpressParam cep2 = new CreateExpressParam()
                 {
-                    ownerMetaClass = m_OwnerMetaBlockStatements.ownerMetaClass,
+                    ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass,
                     ownerMBS = m_OwnerMetaBlockStatements,
                     metaType = mdt,
                     fme = fmsthen.conditionExpress,

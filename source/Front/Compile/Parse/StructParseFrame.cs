@@ -1511,6 +1511,11 @@ namespace SimpleLanguage.Compile
                                 {
                                     isParseEnd = true;
                                 }
+                                else if( next2Node.nodeType == ENodeType.Comma )
+                                {
+                                    isParseEnd = true;
+                                    break;
+                                }
                                 else
                                 {
                                     Log.AddNodeLog(LID.NodeDataParseNotfoundIdentify, curNode?.token, curNode?.token?.ToLexemeAllString() );

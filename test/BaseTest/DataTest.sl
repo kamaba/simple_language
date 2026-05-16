@@ -86,10 +86,10 @@ data StructMatrix
     scores = [95, 88, 91]
     nestedArray = [[1, 2], [3, 4]]
     profile = {
-        grade = 3
-        rank = 5
+        grade = 3,
+        rank = 5,
         address = {
-            city = "Shenzhen"
+            city = "Shenzhen",
             zip = 518000
         }
     }
