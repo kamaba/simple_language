@@ -410,7 +410,7 @@ namespace SimpleLanguage.Core
                                     if (expressRetMetaDefineType.metaClass == ownerMetaClass && (!m_IsStatic && !m_IsConst))
                                     {
                                         Log.AddMetaCoreLog(LID.MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass, m_Token, 
-                                            "in member variable", ownerMetaClass?.allClassName ?? m_OwnerMetaClass?.name, m_Name );
+                                            "in member variable", ownerMetaClass?.allClassName ?? m_OwnerMetaBase?.name, m_Name );
                                         return;
                                     }
                                 }
@@ -443,7 +443,7 @@ namespace SimpleLanguage.Core
                                     if (expressRetMetaDefineType.metaClass == ownerMetaClass)
                                     {
                                         Log.AddMetaCoreLog(LID.MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass, m_Token,
-                                            "in member variable", ownerMetaClass?.allClassName ?? m_OwnerMetaClass?.name, m_Name);
+                                            "in member variable", ownerMetaClass?.allClassName ?? m_OwnerMetaBase?.name, m_Name);
                                         return;
                                     }
                                 }

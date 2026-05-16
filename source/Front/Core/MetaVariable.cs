@@ -53,17 +53,17 @@ namespace SimpleLanguage.Core
         public EVariableFrom variableFrom => m_VariableFrom;
         public MetaType defineMetaType => m_DefineMetaType;
         public MetaType realMetaType => m_RealMetaType;
-        public MetaClass ownerMetaClass => m_OwnerMetaClass as MetaClass;
-        public MetaData ownerMetaData => m_OwnerMetaClass as MetaData;
-        public MetaEnum ownerMetaEnum => m_OwnerMetaClass as MetaEnum;
-        public MetaBase ownerMetaBase => m_OwnerMetaClass;
+        public MetaClass ownerMetaClass => m_OwnerMetaBase as MetaClass;
+        public MetaData ownerMetaData => m_OwnerMetaBase as MetaData;
+        public MetaEnum ownerMetaEnum => m_OwnerMetaBase as MetaEnum;
+        public MetaBase ownerMetaBase => m_OwnerMetaBase;
         public MetaVariable sourceMetaVariable => m_SourceMetaVariable;
 
         #region 属性
 
         // MetaData / MetaEnum 不再继承自 MetaClass，故 owner 升级为 MetaBase，
         // 同时仍通过 ownerMetaClass / ownerMetaData / ownerMetaEnum 提供分类视图。
-        protected MetaBase m_OwnerMetaClass = null;
+        protected MetaBase m_OwnerMetaBase = null;
         protected MetaType m_DefineMetaType = null;
         protected MetaType m_RealMetaType = null;
         protected EVariableFrom m_VariableFrom;
@@ -80,7 +80,7 @@ namespace SimpleLanguage.Core
         protected MetaVariable() { }
         public MetaVariable(MetaVariable mv) : base(mv)
         {
-            m_OwnerMetaClass = mv.m_OwnerMetaClass;
+            m_OwnerMetaBase = mv.m_OwnerMetaBase;
             m_DefineMetaType = new MetaType( mv.m_DefineMetaType );
             if(mv.m_RealMetaType != null )
                 m_RealMetaType = new MetaType(mv.m_RealMetaType);
@@ -103,7 +103,7 @@ namespace SimpleLanguage.Core
             m_Name = _name;
             m_VariableFrom = from;
             m_OwnerMetaBlockStatements = mbs;
-            m_OwnerMetaClass = ownerBase;
+            m_OwnerMetaBase = ownerBase;
             m_DefineMetaType = mdt;
             if (m_DefineMetaType == null )
             {
@@ -121,7 +121,7 @@ namespace SimpleLanguage.Core
         /// <summary>宿主可为 <see cref="MetaClass"/> / <see cref="MetaData"/> / <see cref="MetaEnum"/>，内部按需使用分类属性。</summary>
         public virtual void SetOwnerMetaClass(MetaBase ownerBase)
         {
-            m_OwnerMetaClass = ownerBase;
+            m_OwnerMetaBase = ownerBase;
         }
         public void SetIsStatic( bool iss )
         {
@@ -279,11 +279,11 @@ namespace SimpleLanguage.Core
         }
         public MetaClass GetOwnerClassTemplateClass()
         {
-            if( m_OwnerMetaClass is MetaGenTemplateClass mgtc )
+            if(m_OwnerMetaBase is MetaGenTemplateClass mgtc )
             {
                 return mgtc.metaTemplateClass;
             }
-            return m_OwnerMetaClass as MetaClass;
+            return m_OwnerMetaBase as MetaClass;
         }
         public virtual MetaClass GetTemplateMetaClass()
         {
@@ -469,7 +469,7 @@ namespace SimpleLanguage.Core
             m_VariableFrom = EVariableFrom.ArrayValue;
             m_Name = _name;
             m_AtName = _name;
-            m_OwnerMetaClass = mc;
+            m_OwnerMetaBase = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_SourceMetaVariable = lmv;
             m_IsDefineMetaType = lmv.isDefineMetaType;   
@@ -481,7 +481,7 @@ namespace SimpleLanguage.Core
             m_VariableFrom = EVariableFrom.ArrayValue;
             m_Name = _name;
             m_AtName = _name;
-            m_OwnerMetaClass = mc;
+            m_OwnerMetaBase = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_SourceMetaVariable = lmv;
             m_FastVisit = false;
@@ -513,7 +513,7 @@ namespace SimpleLanguage.Core
             m_VariableFrom = EVariableFrom.ArrayValue;
             m_Name = _name;
             m_AtName = _name;
-            m_OwnerMetaClass = mc;
+            m_OwnerMetaBase = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_SourceMetaVariable = lmv;
             m_FastVisit = false;
@@ -634,7 +634,7 @@ namespace SimpleLanguage.Core
             m_VariableFrom = EVariableFrom.LocalStatement;
             m_VariableNameToken = variableNameToken;
             m_Name = variableNameToken.lexeme.ToString();
-            m_OwnerMetaClass = mc;
+            m_OwnerMetaBase = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_ContentMetaVariable = lmv;
             //m_OrgMetaDefineType = orgMC;
@@ -643,7 +643,7 @@ namespace SimpleLanguage.Core
             //m_IndexMetaVariable.AddPingToken(lmv.pingToken);
             //m_ValueMetaVariable.AddPingToken(lmv.pingToken);
         }
-        public virtual void ParseRealMetaType()
+        public override void ParseRealMetaType()
         {
             if(m_FileMetaClassDefine != null )
             {

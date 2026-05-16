@@ -151,11 +151,27 @@ namespace SimpleLanguage.Core
         /// <summary>
         /// 仅在匿名 data 池中按结构查找（用于语句字面量、data 内嵌匿名结构去重）。
         /// </summary>
-        public MetaData FindMetaData( MetaData md )
+        public MetaData FindMetaDataByNameAndFormat( MetaData md )
         {
+            var findmd = FindDeclareMetaData(md);
+            if (findmd != null) return findmd;
             return FindAnonymousMetaData(md);
         }
-
+        public MetaData FindDeclareMetaData(MetaData md)
+        {
+            if (md == null)
+            {
+                return null;
+            }
+            foreach (var v in m_DefineDataDict)
+            {
+                if (CompareMetaDataMember(v.Value, md))
+                {
+                    return v.Value;
+                }
+            }
+            return null;
+        }
         public MetaData FindAnonymousMetaData(MetaData md)
         {
             if (md == null)

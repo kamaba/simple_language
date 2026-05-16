@@ -320,7 +320,7 @@ namespace SimpleLanguage.Core
             }
 
             var tempMetaData = new MetaData("DynamicData_" + m_Name + "_" + GetHashCode(), false, false, true);
-            tempMetaData.SetMetaNode(m_OwnerMetaClass?.metaNode);
+            tempMetaData.SetMetaNode(m_OwnerMetaBase?.metaNode);
             tempMetaData.SetDeep(m_Deep + 1);
             if (m_Token != null)
             {
@@ -337,7 +337,7 @@ namespace SimpleLanguage.Core
                 index++;
             }
 
-            var matched = ClassManager.instance.FindMetaData(tempMetaData);
+            var matched = ClassManager.instance.FindMetaDataByNameAndFormat(tempMetaData);
             if (matched == null)
             {
                 ClassManager.instance.AddAnonymousMetaData(tempMetaData);
@@ -360,7 +360,7 @@ namespace SimpleLanguage.Core
             MetaNewObjectExpressNode newExpress = MetaNewObjectExpressNode.CreateAnonymousDataNewObjectExpress(
                 this,
                 anonymousMetaData,
-                ownerMetaClass,
+                ownerMetaBase,
                 m_OwnerMetaBlockStatements);
             if (newExpress == null)
             {
@@ -374,26 +374,23 @@ namespace SimpleLanguage.Core
         /// <summary>
         /// 后序遍历：先解析子字段（含嵌套匿名 data），再为本层 <see cref="MemberData"/> 构造匿名 <see cref="MetaData"/> 与 <see cref="MetaNewObjectExpressNode"/>。
         /// </summary>
-        internal static void ResolveAnonymousDataHierarchyPostOrder(MetaMemberData mmd)
+        public void ResolveAnonymousDataHierarchyPostOrder()
         {
-            if (mmd == null)
-            {
-                return;
-            }
-
-            var ordered = new List<MetaMemberData>(mmd.metaMemberDataDict.Values);
+            var ordered = new List<MetaMemberData>(m_MetaMemberDataDict.Values);
             ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
             foreach (var child in ordered)
             {
-                ResolveAnonymousDataHierarchyPostOrder(child);
+                if (child.metaMemberDataDict.Count == 0) continue;
+
+                child.ResolveAnonymousDataHierarchyPostOrder();
             }
-            if (mmd.memberDataType == EMemberDataType.MemberData && mmd.metaMemberDataDict.Count > 0)
+            if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
             {
-                mmd.ResolveAnonymousDataMetaType();
+                ResolveAnonymousDataMetaType();
             }
-            else if (mmd.memberDataType == EMemberDataType.MemberArray && mmd.metaMemberDataDict.Count > 0)
+            else if (m_MemberDataType == EMemberDataType.MemberArray && m_MetaMemberDataDict.Count > 0)
             {
-                mmd.ResolveArrayElementExpressFromMemberDict();
+                ResolveArrayElementExpressFromMemberDict();
             }
         }
 
@@ -508,8 +505,6 @@ namespace SimpleLanguage.Core
 
             m_DefineMetaType = new MetaType(anonymousMetaData);
             m_RealMetaType = new MetaType(anonymousMetaData);
-            m_IsDefineMetaType = true;
-            m_MemberDataType = EMemberDataType.MemberData;
 
             // 将 m_MetaMemberDataDict 中每个字段的 express（含嵌套匿名 MetaData 的 MetaNewObjectExpressNode）写入 new 对象的 MetaBraceAssignStatements
             if (m_Express == null)
@@ -524,9 +519,8 @@ namespace SimpleLanguage.Core
                     anonymousMetaData,
                     m_OwnerMetaBlockStatements,
                     preferSourceMemberExpress: reusedFromAllDataDict);
-                existingMnoe.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-                existingMnoe.CalcReturnType();
             }
+            m_MetaMemberDataDict.Clear();
         }
         public override void SetDeep(int deep)
         {
@@ -689,24 +683,7 @@ namespace SimpleLanguage.Core
             if (this.m_Express != null)
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType, this );
-                
-                if (m_RealMetaType.isData)
-                {
-                    m_MemberDataType = EMemberDataType.MemberData;
-                }
-                else if (m_RealMetaType.IsArray() )
-                {
-                    m_MemberDataType = EMemberDataType.MemberArray;
-                }
-                else if (m_Express is MetaConstExpressNode)
-                {
-                    m_MemberDataType = EMemberDataType.ConstValue;
-                }
-                else
-                {
-                    m_MemberDataType = EMemberDataType.MemberClass;
-                }
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType, this );                
             }
             foreach( var v in m_MetaMemberDataDict )
             {

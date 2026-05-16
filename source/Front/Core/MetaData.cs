@@ -164,7 +164,7 @@ namespace SimpleLanguage.Core
             {
                 if(v.Value.memberDataType == EMemberDataType.MemberData )
                 {
-                    MetaMemberData.ResolveAnonymousDataHierarchyPostOrder(v.Value);
+                    v.Value.ResolveAnonymousDataHierarchyPostOrder();
                 }
             }
         }
