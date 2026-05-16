@@ -416,11 +416,11 @@ namespace SimpleLanguage.Project
                 arrayExpress.metaCallArray.Add(childExpress);
             }
 
-            arrayMetaType = arrayExpress.GetReturnMetaDefineType();
+            arrayMetaType = arrayExpress.GetReturnMetaType();
             return arrayMetaType != null;
         }
 
-        static bool TryCreateJsonPrimitiveOrArrayExpressNode(MetaClass ownerMc, JsonElement element, out MetaExpressNode expressNode)
+        static bool TryCreateJsonPrimitiveOrArrayExpressNode(MetaClass ownerMc, JsonElement element, out MetaExpressNodeBase expressNode)
         {
             expressNode = null;
 

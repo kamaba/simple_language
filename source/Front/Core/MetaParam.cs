@@ -16,10 +16,10 @@ namespace SimpleLanguage.Core
 
     public class MetaInputParam
     {
-        public MetaExpressNode express => m_Express;
+        public MetaExpressNodeBase express => m_Express;
 
         protected FileInputParamNode m_FileInputParamNode;
-        protected MetaExpressNode m_Express = null;
+        protected MetaExpressNodeBase m_Express = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements;
         protected MetaClass m_OwnerMetaClass = null;
         public MetaInputParam( FileInputParamNode fipn, MetaClass mc, MetaBlockStatements mbs )
@@ -41,7 +41,7 @@ namespace SimpleLanguage.Core
             };
             m_Express = ExpressManager.CreateExpressNode(cep);
         }
-        public MetaInputParam( MetaExpressNode inputExpress )
+        public MetaInputParam( MetaExpressNodeBase inputExpress )
         {
             m_Express = inputExpress;
         }
@@ -85,14 +85,14 @@ namespace SimpleLanguage.Core
     {
         public string name => m_Name;
         public MetaVariable metaVariable => m_MetaVariable;
-        public MetaExpressNode expressNode => m_MetaExpressNode;
+        public MetaExpressNodeBase expressNode => m_MetaExpressNode;
         //public bool isFunctionTemplate => m_IsFunctionTemplate;
         public bool isMust { get { return m_MetaExpressNode == null; } }            //鏄惁涓洪潪鐪佺暐鍙傛暟
         public bool isExtendParams => m_FileMetaParamter?.paramsToken != null;
 
         protected bool m_IsFunctionTemplate = false;
         protected FileMetaParamterDefine m_FileMetaParamter = null;
-        protected MetaExpressNode m_MetaExpressNode = null;
+        protected MetaExpressNodeBase m_MetaExpressNode = null;
         protected MetaVariable m_MetaVariable = null;
         protected MetaFunction m_OwnerMetaFunction = null;
         protected string m_Name = "";
@@ -222,7 +222,7 @@ namespace SimpleLanguage.Core
             if( mip != null)
             {
                 var declaredMt = m_MetaVariable.defineMetaType;
-                var argMt = mip.express != null ? mip.express.GetReturnMetaDefineType() : null;
+                var argMt = mip.express != null ? mip.express.GetReturnMetaType() : null;
                 if (declaredMt != null && argMt != null)
                 {
                     if (declaredMt.IsIterator() && argMt.IsArray()

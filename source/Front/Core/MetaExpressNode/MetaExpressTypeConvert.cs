@@ -9,7 +9,7 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public sealed class MetaExpressTypeConvert : MetaExpressNode
+    public sealed class MetaExpressTypeConvert : MetaExpressNodeBase
     {
         public MetaExpressTypeConvert( List<FileMetaBaseTerm> fmcl, MetaClass mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv  )
         {
@@ -30,7 +30,7 @@ namespace SimpleLanguage.Core
             //    m_MetaCallLink.CalcReturnType();
             //}
 
-            m_MetaType = GetReturnMetaDefineType();
+            m_MetaType = GetReturnMetaType();
         }
         public MetaVariable GetMetaVariable()
         {
@@ -40,7 +40,7 @@ namespace SimpleLanguage.Core
             //}
             return null;
         }
-        public override MetaType GetReturnMetaDefineType()
+        public override MetaType GetReturnMetaType()
         {
             if (m_MetaType != null)
             {
@@ -55,12 +55,12 @@ namespace SimpleLanguage.Core
         {
             return "ExpressCallLink Error!!";
         }
-        public override string ToTokenString()
+        public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
             //if (m_MetaCallLink != null)
             //{
-            //    sb.Append(m_MetaCallLink.ToTokenString());
+            //    sb.Append(m_MetaCallLink.ToString());
             //}
             return sb.ToString();
         }

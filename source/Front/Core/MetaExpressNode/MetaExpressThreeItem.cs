@@ -12,21 +12,21 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public sealed class MetaThreeItemExpressNode : MetaExpressNode
+    public sealed class MetaThreeItemExpressNode : MetaExpressNodeBase
     {
-        public MetaExpressNode conditionExpress => m_ConditionExpress;
-        public MetaExpressNode return1Express => m_Return1Express;
-        public MetaExpressNode return2Express => m_Return2Express;
+        public MetaExpressNodeBase conditionExpress => m_ConditionExpress;
+        public MetaExpressNodeBase return1Express => m_Return1Express;
+        public MetaExpressNodeBase return2Express => m_Return2Express;
 
-        private MetaExpressNode m_ConditionExpress = null;
-        private MetaExpressNode m_Return1Express = null;
-        private MetaExpressNode m_Return2Express = null;
+        private MetaExpressNodeBase m_ConditionExpress = null;
+        private MetaExpressNodeBase m_Return1Express = null;
+        private MetaExpressNodeBase m_Return2Express = null;
 
         private FileMetaThreeItemSyntaxTerm m_FileMetaThreeItemSyntaxTerm = null;
 
         public MetaThreeItemExpressNode(MetaClass ownerMC, MetaBlockStatements mbs, FileMetaThreeItemSyntaxTerm fm ) 
         {
-            m_OwnerMetaClass = ownerMC;
+            m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_FileMetaThreeItemSyntaxTerm = fm;
         }
@@ -77,7 +77,7 @@ namespace SimpleLanguage.Core
         }
         public override void CalcReturnType()
         {
-            m_MetaType = return1Express.GetReturnMetaDefineType();
+            m_MetaType = return1Express.GetReturnMetaType();
         }
         public override string ToFormatString()
         {

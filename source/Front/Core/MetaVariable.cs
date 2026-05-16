@@ -446,7 +446,7 @@ namespace SimpleLanguage.Core
             AT
         }
         public bool fastVisit => m_FastVisit;
-        public MetaExpressNode visitExpressNode => m_VisitExpressNode;
+        public MetaExpressNodeBase visitExpressNode => m_VisitExpressNode;
         public MetaConstExpressNode fastVisitConstExpressNode => m_VisitExpressNode as MetaConstExpressNode;
 
         private MetaVariable m_SourceMetaVariable = null;
@@ -454,7 +454,7 @@ namespace SimpleLanguage.Core
         //private MetaCallLink m_TargetMetaVisitCallLink = null;
         string m_AtName = "";
         private bool m_FastVisit = false;
-        private MetaExpressNode m_VisitExpressNode = null;
+        private MetaExpressNodeBase m_VisitExpressNode = null;
         private int? m_Index = null;
 
         public MetaVisitVariable(MetaVariable source, MetaVariable target)

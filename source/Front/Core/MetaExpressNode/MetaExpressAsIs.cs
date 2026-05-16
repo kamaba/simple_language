@@ -13,7 +13,7 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public sealed class MetaAsIsExpressNode : MetaExpressNode
+    public sealed class MetaAsIsExpressNode : MetaExpressNodeBase
     {
         public MetaCallLink currentVariableLink => m_CurrentVariableLink;
         public MetaVariable convertTargetMetaVariable => m_ConvertTargetMetaVariable;
@@ -41,7 +41,7 @@ namespace SimpleLanguage.Core
         }
         public MetaAsIsExpressNode(MetaClass ownerMC, MetaBlockStatements mbs, FileMetaAsOrIsTerm fm, MetaVariable mv = null) 
         {
-            m_OwnerMetaClass = ownerMC;
+            m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_FileMetaKeyAsIsSyntax = fm;
             m_ReturnMetaVariable = mv;
@@ -61,7 +61,7 @@ namespace SimpleLanguage.Core
                 Log.AddMetaCoreLog(LID.AutoMetaExpressAsIsL61, "定义当前变量错误");
                 return;
             }
-            m_CurrentVariableLink = new MetaCallLink(m_FileMetaKeyAsIsSyntax.variableCallLink, m_OwnerMetaClass, m_OwnerMetaBlockStatements, null, null);
+            m_CurrentVariableLink = new MetaCallLink(m_FileMetaKeyAsIsSyntax.variableCallLink, m_OwnerMetaBase, m_OwnerMetaBlockStatements, null, null);
 
             if ( m_FileMetaKeyAsIsSyntax.defineType == null )
             {
@@ -147,21 +147,6 @@ namespace SimpleLanguage.Core
                 sb.Append(m_ConvertTargetMetaVariable.name + " ");
             };
 
-            return sb.ToString();
-        }
-        public override string ToTokenString()
-        {
-            StringBuilder sb = new StringBuilder();
-            //sb.Append(m_Left?.ToTokenString());
-            //if (m_SignToken != null)
-            //{
-            //    sb.Append(m_SignToken.lexeme?.ToString());
-            //}
-            //else
-            //{
-            ////    sb.Append(GetSignString(m_OpLevelSign));
-            //}
-            //sb.Append(m_Right?.ToTokenString());
             return sb.ToString();
         }
     }

@@ -14,7 +14,7 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public sealed class MetaConstExpressNode : MetaExpressNode
+    public sealed class MetaConstExpressNode : MetaExpressNodeBase
     {
         // pooled string reference (offset/length into shared byte pool)
         public struct StringRef
@@ -109,7 +109,7 @@ namespace SimpleLanguage.Core
             return left;
         }
         public MetaCallLinkExpressNode metaCallLinkExpressNode => m_MetaCallLinkExpressNode;
-        public List<MetaExpressNode> stringParseExpressList => m_StringParseExpressList;
+        public List<MetaExpressNodeBase> stringParseExpressList => m_StringParseExpressList;
         public object value { get; set; } = null;
         // when eType == String, this holds the pooled string reference
         public StringRef stringRef { get; private set; }
@@ -119,12 +119,12 @@ namespace SimpleLanguage.Core
         public override Token token => m_FileMetaConstValueTerm?.token;
 
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
-        private List<MetaExpressNode> m_StringParseExpressList = new List<MetaExpressNode>();
+        private List<MetaExpressNodeBase> m_StringParseExpressList = new List<MetaExpressNodeBase>();
         private MetaCallLinkExpressNode m_MetaCallLinkExpressNode = null;
         public MetaConstExpressNode( MetaBase omc, MetaBlockStatements mbs, FileMetaConstValueTerm fmct)
         {
             m_FileMetaConstValueTerm = fmct;
-            m_OwnerMetaClass = omc;
+            m_OwnerMetaBase = omc;
             m_OwnerMetaBlockStatements = mbs;
 
             eType = fmct.token.GetEType();
@@ -249,7 +249,7 @@ namespace SimpleLanguage.Core
                             cep.equalMetaVariable = null;
                             cep.metaType = new MetaType(CoreMetaClassManager.stringMetaClass);
                             cep.ownerMBS = m_OwnerMetaBlockStatements;
-                            cep.ownerMetaBase = m_OwnerMetaClass;
+                            cep.ownerMetaBase = m_OwnerMetaBase;
 
                             var expressc = ExpressManager.CreateExpressNode(cep);
                             expressc.Parse(auc);
@@ -922,7 +922,7 @@ namespace SimpleLanguage.Core
             }
             return str + signEn;
         }
-        public override string ToTokenString()
+        public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
             if (m_FileMetaConstValueTerm != null)

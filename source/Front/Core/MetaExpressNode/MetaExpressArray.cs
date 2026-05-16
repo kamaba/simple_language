@@ -8,21 +8,21 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public sealed class MetaArrayExpressNode : MetaExpressNode
+    public sealed class MetaArrayExpressNode : MetaExpressNodeBase
     {
-        public List<MetaExpressNode> metaCallArray => m_MetaCallArray;
+        public List<MetaExpressNodeBase> metaCallArray => m_MetaCallArray;
 
 
         private List<FileMetaBaseTerm>  m_FileMetaBaseTermList = null;
-        private List<MetaExpressNode>   m_MetaCallArray = new List<MetaExpressNode>();
+        private List<MetaExpressNodeBase>   m_MetaCallArray = new List<MetaExpressNodeBase>();
         public MetaArrayExpressNode(MetaBase mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv)
         {
-            m_OwnerMetaClass = mc;
+            m_OwnerMetaBase = mc;
             m_OwnerMetaBlockStatements = mbs;
         }
         public MetaArrayExpressNode(FileMetaBracketTerm fmbt, MetaBase mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv  )
         {
-            m_OwnerMetaClass = mc;
+            m_OwnerMetaBase = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_FileMetaBaseTermList = fmbt.fileMetaExpressList;
             m_Token = fmbt.token;
@@ -91,7 +91,7 @@ namespace SimpleLanguage.Core
             //    m_MetaCallLink.CalcReturnType();
             //}
 
-            m_MetaType = GetReturnMetaDefineType();
+            m_MetaType = GetReturnMetaType();
         }
         public MetaVariable GetMetaVariable()
         {
@@ -101,7 +101,7 @@ namespace SimpleLanguage.Core
             //}
             return null;
         }
-        public override MetaType GetReturnMetaDefineType()
+        public override MetaType GetReturnMetaType()
         {
             if (m_MetaType != null)
             {
@@ -118,7 +118,7 @@ namespace SimpleLanguage.Core
                 MetaType cmt = null;
                 for ( int i = 0; i < m_MetaCallArray.Count; i++ )
                 {
-                    MetaType cmt2 = m_MetaCallArray[i].GetReturnMetaDefineType();
+                    MetaType cmt2 = m_MetaCallArray[i].GetReturnMetaType();
                     if( cmt2.metaClass == CoreMetaClassManager.objectMetaClass )
                     {
                         break;

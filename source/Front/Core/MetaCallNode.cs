@@ -70,7 +70,7 @@ namespace SimpleLanguage.Core
         public bool callConstructFunction = true;
         public bool setterFunction = false;
         public bool getterFunction = true;
-        public List<MetaExpressNode> expressNodeList = new List<MetaExpressNode>();
+        public List<MetaExpressNodeBase> expressNodeList = new List<MetaExpressNodeBase>();
         public EParseFrom parseFrom { get; set; }
 
         public AllowUseSettings()
@@ -94,8 +94,8 @@ namespace SimpleLanguage.Core
         public string name => m_Name;
         public Token token => m_Token;
         public ECallNodeType callNodeType => m_CallNodeType;
-        public MetaExpressNode metaExpressValue => m_ExpressNode;
-        public List<MetaExpressNode> bracketExpressList => m_BracketExpressList;
+        public MetaExpressNodeBase metaExpressValue => m_ExpressNode;
+        public List<MetaExpressNodeBase> bracketExpressList => m_BracketExpressList;
         public List<MetaType> metaTemplateParamsList => m_MetaTemplateParamsList;
         public MetaInputParamCollection metaInputParamCollection => m_MetaInputParamCollection;
         public MetaClass ownerMetaClass => m_OwnerMetaClass as MetaClass;
@@ -126,7 +126,7 @@ namespace SimpleLanguage.Core
         private MetaCallNode m_FrontCallNode = null;
         private FileMetaCallNode m_FileMetaCallSign = null;
         private FileMetaCallNode m_FileMetaCallNode = null;
-        private MetaExpressNode m_InputExpressNode = null;
+        private MetaExpressNodeBase m_InputExpressNode = null;
         private MetaType m_CallMetaType = null;
         private MetaBlockStatements m_OwnerMetaFunctionBlock = null;
         private MetaBase m_OwnerMetaClass = null;
@@ -134,10 +134,10 @@ namespace SimpleLanguage.Core
         private List<MetaType> m_MetaTemplateParamsList = new List<MetaType>();
         //private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent  = null;
         private MetaType m_FrontDefineMetaType = null;
-        private MetaExpressNode m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 涓殑3+20+10.f灏辨槸琛ㄧず寮?, fun(expressNode)
+        private MetaExpressNodeBase m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 涓殑3+20+10.f灏辨槸琛ㄧず寮?, fun(expressNode)
         private MetaVariable m_DefineMetaVariable = null;
         private MetaVariable m_StoreMetaVariable = null;
-        private List<MetaExpressNode> m_BracketExpressList = new List<MetaExpressNode>();   // a[1][1][1][]   瑙ｆ瀽鐨勬槸杩欎釜閲岃竟鐨?,鎴栬€呮槸鍦╗]閲岃竟鐨勫彉閲?
+        private List<MetaExpressNodeBase> m_BracketExpressList = new List<MetaExpressNodeBase>();   // a[1][1][1][]   瑙ｆ瀽鐨勬槸杩欎釜閲岃竟鐨?,鎴栬€呮槸鍦╗]閲岃竟鐨勫彉閲?
 
         private MetaNode m_MetaNode = null;
         private MetaType m_MetaType = null;
@@ -155,7 +155,7 @@ namespace SimpleLanguage.Core
 
         public MetaCallNode()
         { }
-        public MetaCallNode(MetaExpressNode mcen, MetaBase mc, MetaBlockStatements mbs, MetaType fdmt)
+        public MetaCallNode(MetaExpressNodeBase mcen, MetaBase mc, MetaBlockStatements mbs, MetaType fdmt)
         {
             m_InputExpressNode = mcen;
             m_OwnerMetaClass = mc;
@@ -248,7 +248,7 @@ namespace SimpleLanguage.Core
                         m_ExpressNode = ExpressManager.CreateExpressNode(cep);
                         m_ExpressNode.Parse(_auc);
                         m_ExpressNode.CalcReturnType();
-                        m_MetaType = m_ExpressNode.GetReturnMetaDefineType();
+                        m_MetaType = m_ExpressNode.GetReturnMetaType();
                         m_CallNodeType = ECallNodeType.Express;
                         return true;
                     }

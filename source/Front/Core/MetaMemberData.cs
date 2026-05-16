@@ -26,11 +26,11 @@ namespace SimpleLanguage.Core
         /// <summary>Source declaration order within the owning <see cref="MetaData"/> (used by IR field indices).</summary>
         public int dataFieldOrderIndex => m_Index;
         public EMemberDataType memberDataType => m_MemberDataType;
-        public MetaExpressNode expressNode => m_Express;
+        public MetaExpressNodeBase expressNode => m_Express;
         public Dictionary<string, MetaMemberData> metaMemberDataDict => m_MetaMemberDataDict;
 
         private EMemberDataType m_MemberDataType = EMemberDataType.None;
-        private MetaExpressNode m_Express = null;
+        private MetaExpressNodeBase m_Express = null;
         private int m_Index = -1;
         private bool m_IsWithName = false;
 
@@ -92,7 +92,7 @@ namespace SimpleLanguage.Core
                 m_Name = m_Index.ToString();
             }
         }
-        public MetaMemberData( MetaMemberData parentNode, string name, int _index, MetaExpressNode men )
+        public MetaMemberData( MetaMemberData parentNode, string name, int _index, MetaExpressNodeBase men )
         {
             m_Name = name;
             m_Index = _index;
@@ -439,16 +439,12 @@ namespace SimpleLanguage.Core
                 m_Express = arrayExpr;
             }
 
-            if (arrayExpr.metaContent?.assignStatementsList == null)
-            {
-                return;
-            }
-            arrayExpr.metaContent.assignStatementsList.Clear();
+            arrayExpr.assignStatementsList.Clear();
 
             for (int i = 0; i < ordered.Count; i++)
             {
                 var elementMember = ordered[i];
-                MetaExpressNode elementExpr = elementMember.expressNode;
+                MetaExpressNodeBase elementExpr = elementMember.expressNode;
                 if (elementExpr == null)
                 {
                     if (elementMember.memberDataType == EMemberDataType.MemberData
@@ -469,13 +465,13 @@ namespace SimpleLanguage.Core
                 }
 
                 var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(ownerMc), elementExpr);
-                arrayExpr.metaContent.assignStatementsList.Add(mas);
+                arrayExpr.assignStatementsList.Add(mas);
             }
 
             arrayExpr.Parse(parseSetting);
             arrayExpr.CalcReturnType();
 
-            var retArrayType = arrayExpr.GetReturnMetaDefineType();
+            var retArrayType = arrayExpr.GetReturnMetaType();
             if (retArrayType != null)
             {
                 m_DefineMetaType = new MetaType(retArrayType);
@@ -509,7 +505,7 @@ namespace SimpleLanguage.Core
             if (m_Express is MetaNewObjectExpressNode existingMnoe)
             {
                 // 命中 m_AnonymousDataDict：使用当前 MetaMemberData 表达式；未命中：使用匿名 data 默认元素表达式。
-                existingMnoe.RebuildAnonymousAssignStatementsFromMemberDict(
+                existingMnoe.FillAnonymousDataAssignStatementsFromMemberDict(
                     this,
                     anonymousMetaData,
                     m_OwnerMetaBlockStatements,
@@ -635,7 +631,7 @@ namespace SimpleLanguage.Core
                                 m_Express = new MetaConstExpressNode(ownerMetaClass, null, m_FileMetaMemeberData.fileMetaConstValue);
                                 m_Express.Parse(new AllowUseSettings());
                                 m_Express.CalcReturnType();
-                                var md = m_Express.GetReturnMetaDefineType();
+                                var md = m_Express.GetReturnMetaType();
                                 this.m_DefineMetaType = md;
                                 this.m_RealMetaType = md;
                             }
@@ -672,7 +668,7 @@ namespace SimpleLanguage.Core
             if ( m_Express != null && m_RealMetaType == null )
             {
                 m_Express.CalcReturnType();
-                m_DefineMetaType = m_Express.GetReturnMetaDefineType();
+                m_DefineMetaType = m_Express.GetReturnMetaType();
                 if (m_DefineMetaType == null)
                 {
                     string tokenText = m_FileMetaMemeberData?.fileMetaCallTermValue?.ToTokenString() ?? m_Name;
@@ -688,14 +684,14 @@ namespace SimpleLanguage.Core
             var cne = m_Express as MetaCallLinkExpressNode;
             if (mne != null)
             {
-                for (int i = 0; i < mne.metaContent?.assignStatementsList?.Count; i++)
+                for (int i = 0; i < mne.assignStatementsList?.Count; i++)
                 {
 
                     if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
                     {
                         ResolveAnonymousDataMetaType();
                     }
-                    var asl = mne.metaContent.assignStatementsList[i];
+                    var asl = mne.assignStatementsList[i];
 
                     if (asl == null) continue;
 

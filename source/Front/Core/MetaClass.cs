@@ -35,7 +35,7 @@ namespace SimpleLanguage.Core
         public bool isInterfaceClass => m_IsInterfaceClass;
         public List<MetaClass> interfaceClass => m_InterfaceClass;
         public List<MetaType> interfaceMetaType => m_InterfaceMetaType;
-        public MetaExpressNode defaultExpressNode => m_DefaultExpressNode;
+        public MetaExpressNodeBase defaultExpressNode => m_DefaultExpressNode;
         public Dictionary<string, MetaMemberVariable> allMetaMemberVariableDict
         {
             get
@@ -90,7 +90,7 @@ namespace SimpleLanguage.Core
         protected List<MetaMemberFunction> m_NonStaticVirtualMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_StaticMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
-        protected MetaExpressNode m_DefaultExpressNode = null;
+        protected MetaExpressNodeBase m_DefaultExpressNode = null;
         protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
         protected bool m_IsInterfaceClass = false;
         protected bool m_IsAbstractClass = false;
@@ -207,7 +207,7 @@ namespace SimpleLanguage.Core
                 m_GenMetaTypeTemplateList.Add( new MetaType( m_GenMetaClassTemplateList[i] ) );
             }
         }
-        public void SetDefaultExpressNode( MetaExpressNode defaultExpressNode )
+        public void SetDefaultExpressNode( MetaExpressNodeBase defaultExpressNode )
         {
             m_DefaultExpressNode = defaultExpressNode;
         }

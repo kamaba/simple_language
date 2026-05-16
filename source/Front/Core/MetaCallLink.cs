@@ -339,7 +339,7 @@ namespace SimpleLanguage.Core
 
             return flag;
         }
-        public List<MetaCallNode> CreateMetaCallNodeList(MetaExpressNode belc)
+        public List<MetaCallNode> CreateMetaCallNodeList(MetaExpressNodeBase belc)
         {
             List<MetaCallNode> bracketCNList = new List<MetaCallNode>();
             switch (belc)
@@ -359,7 +359,7 @@ namespace SimpleLanguage.Core
                     {
                         for (int k = 0; k < maen.metaCallArray.Count; k++)
                         {
-                            MetaExpressNode cen = maen.metaCallArray[k];
+                            MetaExpressNodeBase cen = maen.metaCallArray[k];
                             var bcnList = CreateMetaCallNodeList(cen);
                             bracketCNList.AddRange(bcnList);
                         }
@@ -723,7 +723,7 @@ namespace SimpleLanguage.Core
         {
             return m_FinalCallNode?.GetRetMetaVariable();
         }
-        public MetaExpressNode GetMetaExpressNode()
+        public MetaExpressNodeBase GetMetaExpressNode()
         {
             if (m_FinalCallNode.visitType ==  MetaVisitNode.EVisitType.ConstValue )
             {

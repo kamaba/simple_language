@@ -19,16 +19,16 @@ namespace SimpleLanguage.Core
     public class MetaAssignManager
     {
         public MetaVariable judgmentValueMetaVariable => m_JudgmentValueMetaVariable;
-        public MetaExpressNode expressNode => m_ExpressNode;
+        public MetaExpressNodeBase expressNode => m_ExpressNode;
         public bool isNeedSetMetaVariable => m_IsNeedSetMetaVariable;
 
-        private MetaExpressNode m_ExpressNode = null;
+        private MetaExpressNodeBase m_ExpressNode = null;
         private MetaVariable m_JudgmentValueMetaVariable = null;
         private bool m_IsNeedSetMetaVariable = false;
         private MetaBlockStatements m_MetaBlockStatements = null;
         private MetaType m_MetaDefineType = null;
 
-        public MetaAssignManager(MetaExpressNode expressNode, MetaBlockStatements mbs, MetaType defaultMdt )
+        public MetaAssignManager(MetaExpressNodeBase expressNode, MetaBlockStatements mbs, MetaType defaultMdt )
         {
             m_ExpressNode = expressNode;
             m_MetaBlockStatements = mbs;
@@ -49,7 +49,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL52, "Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
+                            Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL52, "Error 返回的判断语句: " + mcen.ToString() + "   并非是boolean类型!");
                         }
                     }
                     break;
@@ -97,7 +97,7 @@ namespace SimpleLanguage.Core
         public MetaMethodCall leftMethodCall => m_LeftMethodCall;
         public EOpSign opSign => m_OpSign;
         public ELeftRightOpSign autoAddExpressOpSign => m_AutoAddExpressOpSign;
-        public MetaExpressNode rightMetaExpress => m_RightMetaExpress;
+        public MetaExpressNodeBase rightMetaExpress => m_RightMetaExpress;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaCallLinkExpressNode leftMetaExpress => m_LeftMetaExpress;
 
@@ -112,7 +112,7 @@ namespace SimpleLanguage.Core
         private MetaMethodCall m_LeftMethodCall = null;
         private MetaVisitVariable m_LeftLastVisitVariable = null;
 
-        private MetaExpressNode m_RightMetaExpress;
+        private MetaExpressNodeBase m_RightMetaExpress;
         private bool m_IsSettings = false;
 
         public MetaAssignStatements( MetaBlockStatements mbs ):base( mbs )
@@ -342,7 +342,7 @@ namespace SimpleLanguage.Core
                 m_MetaVariable = m_LeftMetaExpress.GetMetaVariable();
                 if (m_MetaVariable == null)
                 {
-                    Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL304, m_Token, "Error 变量没有发现" + m_LeftMetaExpress.ToTokenString());
+                    Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL304, m_Token, "Error 变量没有发现" + m_LeftMetaExpress.ToString());
                     return;
                 }
                 if(m_MetaVariable.isConst )
@@ -497,7 +497,7 @@ namespace SimpleLanguage.Core
                 return;
             }
 
-            var rightMt = m_RightMetaExpress.GetReturnMetaDefineType();
+            var rightMt = m_RightMetaExpress.GetReturnMetaType();
             if (rightMt == null || !rightMt.IsArray())
             {
                 return;
@@ -517,7 +517,7 @@ namespace SimpleLanguage.Core
         {
             var token = m_RightMetaExpress.token;
 
-            MetaType expressRetMetaDefineType = m_RightMetaExpress.GetReturnMetaDefineType();
+            MetaType expressRetMetaDefineType = m_RightMetaExpress.GetReturnMetaType();
             //Class1{  set name( string _n) { _name = _n } }
             // c1 = Class1()
             // c1.name = "aa"  =>   c1.name("aa")
@@ -639,7 +639,7 @@ namespace SimpleLanguage.Core
                     return false;
                 }
                 m_RightMetaExpress.CalcReturnType();
-                rightMetaType = m_RightMetaExpress.GetReturnMetaDefineType();
+                rightMetaType = m_RightMetaExpress.GetReturnMetaType();
                 return true;
             }
 
@@ -675,7 +675,7 @@ namespace SimpleLanguage.Core
                                 return false;
                             }
                             m_RightMetaExpress.CalcReturnType();
-                            rightMetaType = m_RightMetaExpress.GetReturnMetaDefineType();
+                            rightMetaType = m_RightMetaExpress.GetReturnMetaType();
                             m_IsNeedCastState = true;
                         }
                     }
@@ -687,12 +687,12 @@ namespace SimpleLanguage.Core
 
         private bool TryForceConvertArrayLiteralElements(MetaNewObjectExpressNode arrayNode, MetaType targetElemType)
         {
-            if (arrayNode == null || targetElemType == null || arrayNode.metaContent == null)
+            if (arrayNode == null || targetElemType == null)
             {
                 return true;
             }
 
-            var list = arrayNode.metaContent.assignStatementsList;
+            var list = arrayNode.assignStatementsList;
             for (int i = 0; i < list.Count; i++)
             {
                 var item = list[i];

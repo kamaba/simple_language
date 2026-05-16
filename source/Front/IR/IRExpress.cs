@@ -17,7 +17,7 @@ namespace SimpleLanguage.IR
 {
     public class IRExpressManager
     {
-        public static IRExpressBase CreateExpress(IRMethod irMethod, MetaExpressNode men )
+        public static IRExpressBase CreateExpress(IRMethod irMethod, MetaExpressNodeBase men )
         {
             IRExpressBase ireb = null;
             if ( men is MetaNewObjectExpressNode mnoe )
@@ -57,12 +57,12 @@ namespace SimpleLanguage.IR
             irdata.SetDebugInfoByToken(node.token);
             AddIRData(irdata);
         }
-        public IRExpress( IRMethod irMethod, MetaExpressNode node ) : base( irMethod )
+        public IRExpress( IRMethod irMethod, MetaExpressNodeBase node ) : base( irMethod )
         {
             //m_Node = node;
             CreateIRDataOne(node);
         }
-        protected void CreateIRDataOne(MetaExpressNode node)
+        protected void CreateIRDataOne(MetaExpressNodeBase node)
         {
             switch (node)
             {
@@ -86,7 +86,7 @@ namespace SimpleLanguage.IR
                     break;
                 case MetaUnaryOpExpressNode muoen:
                     {
-                        MetaExpressNode valNode = muoen.value;
+                        MetaExpressNodeBase valNode = muoen.value;
                         CreateIRDataOne(valNode);
                         var signData = CreateOneSignIRData(muoen.opSign);
                         signData.SetDebugInfoByToken(muoen.token);
@@ -95,8 +95,8 @@ namespace SimpleLanguage.IR
                     break;
                 case MetaOpExpressNode moen:
                     {
-                        MetaExpressNode leftNode = moen.left;
-                        MetaExpressNode rightNode = moen.right;
+                        MetaExpressNodeBase leftNode = moen.left;
+                        MetaExpressNodeBase rightNode = moen.right;
                         CreateIRDataOne(leftNode);
                         if( moen.leftConvert != null )
                         {
@@ -272,7 +272,7 @@ namespace SimpleLanguage.IR
 
     public class IRNewExpress : IRExpressBase
     {
-        private static bool CanEmitExpress(MetaExpressNode node)
+        private static bool CanEmitExpress(MetaExpressNodeBase node)
         {
             return node is MetaConstExpressNode
                 || node is MetaUnaryOpExpressNode
@@ -315,13 +315,13 @@ namespace SimpleLanguage.IR
 
             if( mnoen.newType == MetaNewObjectExpressNode.ENewType.ArrayClass )
             {
-                MetaExpressNode lenNode = mnoen.arrayLengthExpress;
+                MetaExpressNodeBase lenNode = mnoen.arrayLengthExpress;
                 if (lenNode == null)
                 {
                     int inferredLen = mnoen.metaType != null ? mnoen.metaType.arrayLength : -1;
-                    if (inferredLen < 0 && mnoen.metaContent?.assignStatementsList != null)
+                    if (inferredLen < 0 && mnoen.assignStatementsList != null)
                     {
-                        inferredLen = mnoen.metaContent.assignStatementsList.Count;
+                        inferredLen = mnoen.assignStatementsList.Count;
                     }
                     if (inferredLen < 0)
                     {
@@ -389,11 +389,11 @@ namespace SimpleLanguage.IR
                     AddIRData(datacall);
                 }
 
-                if (mnoen.metaContent?.assignStatementsList?.Count > 0)
+                if (mnoen.assignStatementsList?.Count > 0)
                 {
-                    for (int y = 0; y < mnoen.metaContent.assignStatementsList.Count; y++)
+                    for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
                     {
-                        var asl = mnoen.metaContent.assignStatementsList[y];
+                        var asl = mnoen.assignStatementsList[y];
 
                         IRDup irdup = new IRDup(irMethod);
                         AddIRRangeData(irdup.IRDataList);
@@ -451,12 +451,12 @@ namespace SimpleLanguage.IR
                         for (int x = 0; x < irmc.localIRMetaVariableList.Count; x++)
                         {
                             var lirmv = irmc.localIRMetaVariableList[x];
-                            if (mnoen.metaContent?.assignStatementsList?.Count > 0)
+                            if (mnoen.assignStatementsList?.Count > 0)
                             {
-                                MetaExpressNode men = lirmv.express;
-                                for (int y = 0; y < mnoen.metaContent.assignStatementsList.Count; y++)
+                                MetaExpressNodeBase men = lirmv.express;
+                                for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
                                 {
-                                    var asl = mnoen.metaContent.assignStatementsList[y];
+                                    var asl = mnoen.assignStatementsList[y];
                                     int assignTargetId = -1;
                                     if (asl.metaMemberVariable != null)
                                     {
@@ -494,12 +494,12 @@ namespace SimpleLanguage.IR
                 // Fallback: some data/class shapes may not populate localIRMetaVariableList,
                 // which causes initializer assignments in `Type(){ a = ... }` to be lost.
                 // In that case, emit explicit object-initializer field stores directly.
-                if (mnoen.metaContent?.assignStatementsList?.Count > 0
+                if (mnoen.assignStatementsList?.Count > 0
                     && (irmc == null || irmc.localIRMetaVariableList.Count == 0))
                 {
-                    for (int y = 0; y < mnoen.metaContent.assignStatementsList.Count; y++)
+                    for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
                     {
-                        var asl = mnoen.metaContent.assignStatementsList[y];
+                        var asl = mnoen.assignStatementsList[y];
                         var targetMv = (MetaVariable)asl.metaMemberData ?? asl.metaMemberVariable;
                         if (targetMv == null || asl.expressNode == null)
                         {

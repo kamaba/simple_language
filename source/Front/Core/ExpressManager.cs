@@ -98,7 +98,7 @@ namespace SimpleLanguage.Core
                 return true;
             return false;
         }
-        public static MetaExpressNode CreateExpressNodeByCEP(CreateExpressParam cep)
+        public static MetaExpressNodeBase CreateExpressNodeByCEP(CreateExpressParam cep)
         {
             FileMetaBaseTerm fmte = cep.fme;
             MetaBlockStatements mbs = cep.ownerMBS;
@@ -179,7 +179,7 @@ namespace SimpleLanguage.Core
 
             return CreateExpressNode(cep);
         }
-        public static MetaExpressNode CreateExpressNode(CreateExpressParam cep)
+        public static MetaExpressNodeBase CreateExpressNode(CreateExpressParam cep)
         {
             if(cep.fme == null )
             {
@@ -195,7 +195,7 @@ namespace SimpleLanguage.Core
             }
             if (root.left == null && root.right == null)
             {
-                MetaExpressNode men = null;
+                MetaExpressNodeBase men = null;
                 switch (root)
                 {
 
@@ -284,9 +284,9 @@ namespace SimpleLanguage.Core
             {
                 CreateExpressParam clonecep = new CreateExpressParam(cep);
                 clonecep.fme = root.left;
-                MetaExpressNode leftNode = CreateExpressNode(clonecep);
+                MetaExpressNodeBase leftNode = CreateExpressNode(clonecep);
                 clonecep.fme = root.right;
-                MetaExpressNode rightNode = CreateExpressNode(clonecep);
+                MetaExpressNodeBase rightNode = CreateExpressNode(clonecep);
 
                 if (leftNode != null && rightNode != null)
                 {
@@ -329,7 +329,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public static MetaExpressNode CreateOptimizeAfterExpress( MetaExpressNode men, ExpressOptimizeConfig config = null )
+        public static MetaExpressNodeBase CreateOptimizeAfterExpress( MetaExpressNodeBase men, ExpressOptimizeConfig config = null )
         {
             if( config == null )
             {
@@ -379,10 +379,10 @@ namespace SimpleLanguage.Core
             return men;
         }
        
-        public static MetaExpressNode ConvertNewExpress( MetaExpressNode oldmen, MetaType mdt, MetaVariable mv )  
+        public static MetaExpressNodeBase ConvertNewExpress( MetaExpressNodeBase oldmen, MetaType mdt, MetaVariable mv )  
         {
 
-            MetaExpressNode menNew = oldmen;
+            MetaExpressNodeBase menNew = oldmen;
             if (oldmen.convertNewExpressNode == true)
             {
                 var mcen = oldmen as MetaCallLinkExpressNode;
@@ -413,7 +413,7 @@ namespace SimpleLanguage.Core
                 var mce = oldmen as MetaConstExpressNode;
                 if (mce != null && mce.stringParseExpressList != null && mce.stringParseExpressList.Count > 0)
                 {
-                    MetaExpressNode acc = mce.stringParseExpressList[0];
+                    MetaExpressNodeBase acc = mce.stringParseExpressList[0];
                     for (int i = 1; i < mce.stringParseExpressList.Count; i++)
                     {
                         var right = mce.stringParseExpressList[i];
@@ -490,7 +490,7 @@ namespace SimpleLanguage.Core
             }
         }
         */
-        public static int CalcParseLevel( int level, MetaExpressNode men )
+        public static int CalcParseLevel( int level, MetaExpressNodeBase men )
         {
             switch( men )
             {

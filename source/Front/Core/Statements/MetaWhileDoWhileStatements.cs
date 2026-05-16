@@ -28,7 +28,7 @@ namespace SimpleLanguage.Core
         public MetaBlockStatements thenMetaStatements => m_ThenMetaStatements;
         public MetaDefineVarStatements defineVarStatements => m_DefineVarStatements;
         public MetaAssignStatements assignStatements => m_AssignStatements;
-        public MetaExpressNode conditionExpress => m_ConditionExpress;
+        public MetaExpressNodeBase conditionExpress => m_ConditionExpress;
         public MetaAssignStatements stepStatements => m_StepStatements;
 
         private bool m_IsForIn = false;
@@ -40,7 +40,7 @@ namespace SimpleLanguage.Core
         private MetaBlockStatements m_ThenMetaStatements = null;
         private MetaDefineVarStatements m_DefineVarStatements = null;
         private MetaAssignStatements m_AssignStatements = null;
-        private MetaExpressNode m_ConditionExpress = null;
+        private MetaExpressNodeBase m_ConditionExpress = null;
         private MetaAssignStatements m_StepStatements = null;
         //private MetaMemberFunction m_HasNextFunction = null;
         //private MetaMemberFunction m_NextValueFunction = null;
@@ -87,7 +87,7 @@ namespace SimpleLanguage.Core
 
                     // Keep for-in right-expression behavior consistent with assignments:
                     // convert `range(...)` / class-call / array-literal into explicit MetaNewObjectExpressNode.
-                    var conditionMetaType = m_ConditionExpress.GetReturnMetaDefineType();
+                    var conditionMetaType = m_ConditionExpress.GetReturnMetaType();
                     m_ConditionExpress = ExpressManager.ConvertNewExpress(m_ConditionExpress, conditionMetaType, null);
                 }
 
@@ -104,7 +104,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    m_ForInContent = new MetaVariable("forcontent_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, mnoen.GetReturnMetaDefineType() );
+                    m_ForInContent = new MetaVariable("forcontent_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, mnoen.GetReturnMetaType() );
                     m_ThenMetaStatements.UpdateMetaVariableDict(m_ForInContent);
                     mnoen.SetStoreMetaVariable(m_ForInContent);
                 }
@@ -343,12 +343,12 @@ namespace SimpleLanguage.Core
     public sealed class MetaWhileDoWhileStatements : MetaStatements
     {
         public FileMetaConditionExpressSyntax fileMetaKeyWhileSyntax => m_FileMetaKeyWhileSyntax;
-        public MetaExpressNode conditionExpress => m_ConditionExpress;
+        public MetaExpressNodeBase conditionExpress => m_ConditionExpress;
         public MetaBlockStatements thenMetaStatements => m_ThenMetaStatements;
         public bool isWhile => m_IsWhile;
 
         private FileMetaConditionExpressSyntax m_FileMetaKeyWhileSyntax = null;
-        private MetaExpressNode m_ConditionExpress = null;
+        private MetaExpressNodeBase m_ConditionExpress = null;
         private MetaBlockStatements m_ThenMetaStatements = null;
         private bool m_IsWhile = false;
 

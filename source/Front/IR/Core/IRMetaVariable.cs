@@ -26,7 +26,7 @@ namespace SimpleLanguage.IR
     }
     public class IRMetaVariable
     {
-        public MetaExpressNode express => m_ExpressNode;
+        public MetaExpressNodeBase express => m_ExpressNode;
         public IRMetaType irMetaType => m_IRMetaType;
         public int id => m_Id;
         public string name => m_Name;
@@ -38,7 +38,7 @@ namespace SimpleLanguage.IR
         public List<IRData> irDataList => m_IRDataList;
 
 
-        private MetaExpressNode m_ExpressNode = null;
+        private MetaExpressNodeBase m_ExpressNode = null;
         private List<IRData> m_IRDataList = new List<IRData>();
         private IRMetaType m_IRMetaType = null;
         private IRMetaVariableFrom m_IRMetaVariableFrom = IRMetaVariableFrom.None;

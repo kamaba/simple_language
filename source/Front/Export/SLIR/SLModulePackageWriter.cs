@@ -281,7 +281,7 @@ namespace SimpleLanguage.Export.SLIR
                             {
                                 var expressProp = member.GetType().GetProperty("express");
                                 var express = expressProp?.GetValue(member);
-                                if (express is MetaExpressNode enumMemberExpress)
+                                if (express is MetaExpressNodeBase enumMemberExpress)
                                 {
                                     try
                                     {

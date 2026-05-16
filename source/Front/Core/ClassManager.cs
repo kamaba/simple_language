@@ -948,7 +948,7 @@ namespace SimpleLanguage.Core
         /// 某些链式表达式上，iterator 返回的接口模板参数在当前阶段可能未具体化；
         /// 此时改为从调用链首节点推断 Array 元素类型来判断 Number 协变。
         /// </summary>
-        public static bool TryIteratorNumberFromArrayIteratorSource(MetaType targetIterator, MetaExpressNode expressNode)
+        public static bool TryIteratorNumberFromArrayIteratorSource(MetaType targetIterator, MetaExpressNodeBase expressNode)
         {
             if (targetIterator == null || expressNode == null) return false;
             if (!targetIterator.IsIterator()) return false;

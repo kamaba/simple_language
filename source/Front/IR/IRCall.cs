@@ -272,7 +272,7 @@ namespace SimpleLanguage.IR
             return base.ToIRString();
         }
 
-        private void TryAddDataTypeLiteralFallback(MetaExpressNode? argNode, IRExpressBase? irexpress)
+        private void TryAddDataTypeLiteralFallback(MetaExpressNodeBase? argNode, IRExpressBase? irexpress)
         {
             if (argNode == null || irexpress == null)
                 return;

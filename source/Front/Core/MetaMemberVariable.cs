@@ -29,7 +29,7 @@ namespace SimpleLanguage.Core
         public MetaMemberVariable sourceMetaMemberVariable => m_SourceMetaVariable as MetaMemberVariable;
         public MetaClass sourceMetaClass => m_SourceMetaClass;
         public EFromType fromType => m_FromType;
-        public MetaExpressNode express => m_Express;
+        public MetaExpressNodeBase express => m_Express;
         public MetaConstExpressNode constExpressNode => m_Express as MetaConstExpressNode;  
         public bool isInnerDefine => m_IsInnerDefine;
         public int index => m_Index;
@@ -38,7 +38,7 @@ namespace SimpleLanguage.Core
         protected EFromType m_FromType = EFromType.Code;
         protected int m_Index = -1;
         protected FileMetaMemberVariable m_FileMetaMemeberVariable;
-        protected MetaExpressNode m_Express = null;
+        protected MetaExpressNodeBase m_Express = null;
         protected bool m_IsInnerDefine = false;
         protected List<MetaMemberVariable> m_TemplateChildMetaMemberVariableList = new List<MetaMemberVariable>();
         protected MetaClass m_SourceMetaClass = null;
@@ -146,7 +146,7 @@ namespace SimpleLanguage.Core
         {
             m_VariableFrom = vfrom;
         }
-        public void SetExpress(MetaExpressNode mcen)
+        public void SetExpress(MetaExpressNodeBase mcen)
         {
             // Auto-filled const is not considered an explicit '=' from source, but it is a valid express for later stages.
             m_Express = mcen;
@@ -251,7 +251,7 @@ namespace SimpleLanguage.Core
         {
             if( m_Express != null )
             {
-                m_RealMetaType = new MetaType(m_Express.GetReturnMetaDefineType());
+                m_RealMetaType = new MetaType(m_Express.GetReturnMetaType());
             }
         }
         public void SetIndex( int index )
@@ -330,7 +330,7 @@ namespace SimpleLanguage.Core
                     }
                     if (isCheckReturnType)
                     {
-                        var dmct = m_Express.GetReturnMetaDefineType();
+                        var dmct = m_Express.GetReturnMetaType();
                         if ( dmct != null)
                         {
                             if( !ClassManager.IsNumberClass(dmct.metaClass) )
@@ -373,7 +373,7 @@ namespace SimpleLanguage.Core
                         this);
                     if (relation == EClassRelation.CompareClassError)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 表达式中返回定义类型为空 " + m_Express.ToTokenString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 表达式中返回定义类型为空 " + m_Express.ToString());
                         return;
                     }
 
@@ -513,9 +513,9 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
-        public MetaExpressNode SimulateExpressRun(MetaExpressNode node)
+        public MetaExpressNodeBase SimulateExpressRun(MetaExpressNodeBase node)
         {
-            MetaExpressNode newnode = node;
+            MetaExpressNodeBase newnode = node;
             if ( node is MetaCallLinkExpressNode )
             {
                 MetaCallLinkExpressNode mcen = node as MetaCallLinkExpressNode;
@@ -551,7 +551,7 @@ namespace SimpleLanguage.Core
             }
             return newnode;
         }
-        MetaExpressNode CreateExpressNodeInClassMetaVariable()
+        MetaExpressNodeBase CreateExpressNodeInClassMetaVariable()
         {
             var express = this.m_FileMetaMemeberVariable?.express;
             if (express == null) return null;
@@ -641,7 +641,7 @@ namespace SimpleLanguage.Core
             cep.allowUseBraceSyntax = ProjectManager.isSupportConstructionFunctionOnlyBraceType;
             cep.fme = root;
 
-            MetaExpressNode mn = ExpressManager.CreateExpressNode(cep);
+            MetaExpressNodeBase mn = ExpressManager.CreateExpressNode(cep);
 
             return mn;
         }

@@ -16,7 +16,7 @@ namespace SimpleLanguage.Core
 {
     public class MetaDefineVarStatements : MetaStatements
     {
-        public MetaExpressNode expressNode => m_ExpressNode;
+        public MetaExpressNodeBase expressNode => m_ExpressNode;
         public MetaVariable defineVarMetaVariable => m_DefineVarMetaVariable;
 
         private FileMetaDefineVariableSyntax m_FileMetaDefineVariableSyntax = null;
@@ -24,7 +24,7 @@ namespace SimpleLanguage.Core
         private FileMetaCallSyntax m_FileMetaCallSyntax = null;
 
         private MetaVariable m_DefineVarMetaVariable = null;
-        private MetaExpressNode m_ExpressNode = null;
+        private MetaExpressNodeBase m_ExpressNode = null;
         public MetaDefineVarStatements( MetaBlockStatements mbs ) : base(mbs)
         {
         }
@@ -144,7 +144,7 @@ namespace SimpleLanguage.Core
 
                 m_ExpressNode = ExpressManager.ConvertNewExpress(m_ExpressNode, mdt, m_DefineVarMetaVariable );
 
-                expressRetMetaDefineType = m_ExpressNode.GetReturnMetaDefineType();               
+                expressRetMetaDefineType = m_ExpressNode.GetReturnMetaType();               
                 if (expressRetMetaDefineType == null)
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 解析新建变量语句时，表达式返回类型为空!!__2", defineName);

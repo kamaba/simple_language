@@ -38,7 +38,7 @@ namespace SimpleLanguage.IR
 
             if (mnoen != null)
             {
-                var mt = mnoen.GetReturnMetaDefineType();
+                var mt = mnoen.GetReturnMetaType();
             }
         }
         public string ToIRString()

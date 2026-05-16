@@ -32,7 +32,7 @@ namespace SimpleLanguage.Core
         Not,
         Xor,
     }
-    public class MetaExpressNode
+    public  abstract class MetaExpressNodeBase
     {
         public virtual int opLevel
         {
@@ -46,18 +46,18 @@ namespace SimpleLanguage.Core
         public virtual Token token => m_Token;
         public MetaType metaType => m_MetaType;
         /// <summary>所属上下文：普通类。</summary>
-        public MetaClass ownerMetaClass => m_OwnerMetaClass as MetaClass;
+        public MetaClass ownerMetaClass => m_OwnerMetaBase as MetaClass;
         /// <summary>所属上下文：<see cref="MetaData"/>（与 <see cref="MetaVariable"/> 对称）。</summary>
-        public MetaData ownerMetaData => m_OwnerMetaClass as MetaData;
+        public MetaData ownerMetaData => m_OwnerMetaBase as MetaData;
         /// <summary>所属上下文：<see cref="MetaEnum"/>。</summary>
-        public MetaEnum ownerMetaEnum => m_OwnerMetaClass as MetaEnum;
+        public MetaEnum ownerMetaEnum => m_OwnerMetaBase as MetaEnum;
         /// <summary>原始宿主节点（Class / Data / Enum）。</summary>
-        public MetaBase ownerMetaBase => m_OwnerMetaClass;
+        public MetaBase ownerMetaBase => m_OwnerMetaBase;
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
 
 
         /// <summary>宿主：<see cref="MetaClass"/> / <see cref="MetaData"/> / <see cref="MetaEnum"/>，与 <see cref="MetaVariable"/> 一致。</summary>
-        protected MetaBase m_OwnerMetaClass = null;
+        protected MetaBase m_OwnerMetaBase = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
         protected MetaType m_MetaType = null;
         protected bool m_ConvertNewExpressNode = false;
@@ -73,7 +73,7 @@ namespace SimpleLanguage.Core
         {
             if (m_MetaType == null)
             {
-                GetReturnMetaDefineType();
+                GetReturnMetaType();
             }
             return m_MetaType?.metaClass;
         }
@@ -81,7 +81,7 @@ namespace SimpleLanguage.Core
         {
             m_MetaType = mt;
         }
-        public virtual MetaType GetReturnMetaDefineType()
+        public virtual MetaType GetReturnMetaType()
         {
             return m_MetaType;
         }
@@ -89,10 +89,5 @@ namespace SimpleLanguage.Core
         {
             return "";
         }
-        public virtual string ToTokenString()
-        {
-            return "";
-        }
-
     }
 }

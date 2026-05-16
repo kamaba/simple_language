@@ -303,7 +303,7 @@ namespace SimpleLanguage.Core
 
         public static EClassRelation ResolveAssignRelation(
             MetaType targetMetaType,
-            MetaExpressNode expressNode,
+            MetaExpressNodeBase expressNode,
             bool useTemplateExactMatch,
             bool allowEnumOwnerEqual,
             out MetaType expressRetMetaDefineType,
@@ -333,7 +333,7 @@ namespace SimpleLanguage.Core
                 return EClassRelation.Same;
             }
 
-            expressRetMetaDefineType = expressNode.GetReturnMetaDefineType();
+            expressRetMetaDefineType = expressNode.GetReturnMetaType();
             compareClass = expressRetMetaDefineType?.metaClass;
             if (compareClass == null)
             {

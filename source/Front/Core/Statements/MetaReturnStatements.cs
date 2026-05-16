@@ -14,11 +14,11 @@ namespace SimpleLanguage.Core
 {
     public sealed  class MetaReturnStatements : MetaStatements
     {
-        public MetaExpressNode express => m_Express;
+        public MetaExpressNodeBase express => m_Express;
 
         private FileMetaKeyReturnSyntax m_FileMetaReturnSyntax;
         private MetaType m_ReturnMetaDefineType;
-        private MetaExpressNode m_Express = null;
+        private MetaExpressNodeBase m_Express = null;
         public MetaReturnStatements( MetaBlockStatements mbs, FileMetaKeyReturnSyntax fmrs ) : base(mbs)
         {
             m_FileMetaReturnSyntax = fmrs;
@@ -42,7 +42,7 @@ namespace SimpleLanguage.Core
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                 m_Express = ExpressManager.ConvertNewExpress(m_Express, mdt, mbs.ownerMetaFunction.returnMetaVariable);
                 m_Express.CalcReturnType();
-                m_ReturnMetaDefineType = m_Express.GetReturnMetaDefineType();
+                m_ReturnMetaDefineType = m_Express.GetReturnMetaType();
             }
             else
             {
@@ -63,7 +63,7 @@ namespace SimpleLanguage.Core
     public sealed class MetaTRStatements : MetaStatements
     {
         public MetaClass returnMetaClass;
-        public MetaExpressNode m_Express = null;
+        public MetaExpressNodeBase m_Express = null;
 
         private FileMetaKeyReturnSyntax m_FileMetaReturnSyntax;
         public MetaTRStatements(MetaBlockStatements mbs, FileMetaKeyReturnSyntax fmrs) : base(mbs)

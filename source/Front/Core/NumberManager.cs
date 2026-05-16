@@ -392,20 +392,21 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 当数组类型已确定为 <c>Array&lt;T&gt;</c> 且 <c>T</c> 为具体数值类型时，将 <paramref name="content"/> 中字面量常量统一转为 <c>T</c>；
+        /// 当数组类型已确定为 <c>Array&lt;T&gt;</c> 且 <c>T</c> 为具体数值类型时，将 <paramref name="newObjectNode"/> 中字面量常量统一转为 <c>T</c>；
         /// 混合整型会强转对齐；整数目标与非整值浮点字面量、或无法转换的数值组合会记录日志并返回 false。
         /// 嵌套的数组字面量（元素类型仍为数组）会按声明的内层数组类型递归处理。
         /// </summary>
         public static bool TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(
-            MetaNewObjectStatementsContent content,
+            MetaNewObjectExpressNode newObjectNode,
             MetaType declaredArrayMetaType,
             Token anchor)
         {
-            if (content?.assignStatementsList == null || declaredArrayMetaType == null || !declaredArrayMetaType.IsArray())
+            if (newObjectNode?.assignStatementsList == null || declaredArrayMetaType == null || !declaredArrayMetaType.IsArray())
             {
                 return true;
             }
 
+            var list = newObjectNode.assignStatementsList;
             var elemType = ClassManager.GetSingleTemplateArgMetaType(declaredArrayMetaType);
             if (elemType?.metaClass == null)
             {
@@ -422,7 +423,6 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
-            var list = content.assignStatementsList;
             for (int i = 0; i < list.Count; i++)
             {
                 var mas = list[i];
@@ -455,7 +455,7 @@ namespace SimpleLanguage.Core
                 }
                 else if (expr is MetaNewObjectExpressNode nested
                     && nested.newType == MetaNewObjectExpressNode.ENewType.ArrayClass
-                    && nested.metaContent != null
+                    && nested.assignStatementsList != null
                     && elemType.IsArray())
                 {
                     // 子数组字面量：用左值侧内层 Array<...> 作为目标，再走完整 CalcReturnType，使子树 m_MetaType 与内部常量与左一致

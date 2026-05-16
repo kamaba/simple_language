@@ -30,33 +30,33 @@ namespace SimpleLanguage.Core
             public MetaBlockStatements thenMetaStatements => m_ThenMetaStatements;
             public IfElseState ifElseState => m_IfElseState;
             public FileMetaKeyOnlySyntax elseKeySyntax => m_ElseKeySyntax;
-            public MetaExpressNode finalExpress => m_FinalExpress;
+            public MetaExpressNodeBase finalExpress => m_FinalExpress;
             public MetaAssignManager metaAssignManager => m_MetaAssignManager;
             public MetaVariable boolConditionVariable => m_BoolConditionVariable;
 
             private FileMetaKeyOnlySyntax m_ElseKeySyntax = null;
             private FileMetaConditionExpressSyntax m_IfOrElseIfKeySyntax = null;
             private MetaVariable m_BoolConditionVariable = null;
-            private MetaExpressNode m_Express = null;
-            private MetaExpressNode m_FinalExpress = null;
+            private MetaExpressNodeBase m_Express = null;
+            private MetaExpressNodeBase m_FinalExpress = null;
             private MetaBlockStatements m_ThenMetaStatements = null;
-            private MetaExpressNode m_ExecuteExpress = null;
+            private MetaExpressNodeBase m_ExecuteExpress = null;
             private MetaAssignManager m_MetaAssignManager = null;
             private IfElseState m_IfElseState = IfElseState.Null;
 
             public int deep { get; private set; } = 0;
 
-            public MetaElseIfStatements(MetaBlockStatements mbs, MetaExpressNode conditionExpress, MetaExpressNode return1Express)
+            public MetaElseIfStatements(MetaBlockStatements mbs, MetaExpressNodeBase conditionExpress, MetaExpressNodeBase return1Express)
             {
                 m_Express = conditionExpress;
 
                 m_ExecuteExpress = return1Express;
             }
-            public MetaElseIfStatements(MetaBlockStatements mbs, MetaExpressNode return1Express )
+            public MetaElseIfStatements(MetaBlockStatements mbs, MetaExpressNodeBase return1Express )
             {
                 m_ExecuteExpress = return1Express;
             }
-            public MetaElseIfStatements( MetaBlockStatements mbs, FileMetaConditionExpressSyntax ifexpress, MetaExpressNode conditionExpress )
+            public MetaElseIfStatements( MetaBlockStatements mbs, FileMetaConditionExpressSyntax ifexpress, MetaExpressNodeBase conditionExpress )
             {
                 m_IfOrElseIfKeySyntax = ifexpress;
                 if( conditionExpress != null )

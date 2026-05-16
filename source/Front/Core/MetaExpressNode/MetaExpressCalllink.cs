@@ -12,7 +12,7 @@ using SimpleLanguage.Compile;
 
 namespace SimpleLanguage.Core
 {
-    public sealed class MetaCallLinkExpressNode : MetaExpressNode
+    public sealed class MetaCallLinkExpressNode : MetaExpressNodeBase
     {
         public MetaCallLink metaCallLink => m_MetaCallLink;
 
@@ -21,7 +21,7 @@ namespace SimpleLanguage.Core
         private MetaVariable m_EqualMetaVariable = null;
         public MetaCallLinkExpressNode( FileMetaCallLink fmcl, MetaBase owner, MetaBlockStatements mbs, MetaVariable mv )
         {
-            m_OwnerMetaClass = owner;
+            m_OwnerMetaBase = owner;
             m_OwnerMetaBlockStatements = mbs;
             m_EqualMetaVariable = mv;
             m_Token = fmcl.callNodeList[0].token;
@@ -60,7 +60,7 @@ namespace SimpleLanguage.Core
                     else
                     {
                         // Fallback: if call syntax carries object-initializer braces, force NewObject conversion
-                        // so brace assignments are materialized into MetaNewObjectExpressNode.metaContent.
+                        // so brace assignments are materialized into MetaNewObjectExpressNode.assignStatementsList.
                         var nodes = m_MetaCallLink.callNodeList;
                         if (nodes != null && nodes.Count > 0)
                         {
@@ -86,7 +86,7 @@ namespace SimpleLanguage.Core
             //{
             //    m_MetaCallLink.CalcReturnType();
             //}
-            m_MetaType = GetReturnMetaDefineType();
+            m_MetaType = GetReturnMetaType();
         }
         public MetaVariable GetMetaVariable()
         {
@@ -96,7 +96,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public override MetaType GetReturnMetaDefineType()
+        public override MetaType GetReturnMetaType()
         {
             if (m_MetaType != null)
             {
@@ -108,7 +108,7 @@ namespace SimpleLanguage.Core
             m_MetaType = m_MetaCallLink.GetMetaDefineType();
             return m_MetaType;
         }
-        public MetaExpressNode ConvertConstExpressNode()
+        public MetaExpressNodeBase ConvertConstExpressNode()
         {
             if (m_MetaCallLink == null)
                 return null;
@@ -124,7 +124,7 @@ namespace SimpleLanguage.Core
             }
             return "ExpressCallLink Error!!";
         }
-        public override string ToTokenString()
+        public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
             if (m_MetaCallLink != null)

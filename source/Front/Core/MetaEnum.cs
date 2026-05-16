@@ -94,16 +94,16 @@ namespace SimpleLanguage.Core
                 var valuesNewExpress = new MetaNewObjectExpressNode(mt, CoreMetaClassManager.enumMetaData, null, m_ValuesMetaVariable);
                 foreach (var itemExpress in maen.metaCallArray)
                 {
-                    valuesNewExpress.metaContent.assignStatementsList.Add(
+                    valuesNewExpress.assignStatementsList.Add(
                         new MetaBraceAssignStatements(null, new MetaType(CoreMetaClassManager.enumMetaData), itemExpress));
                 }
-                MetaType inputType = valuesNewExpress.metaContent.GetMaxLevelMetaType();
+                MetaType inputType = valuesNewExpress.GetMaxLevelMetaType();
 
                 MetaType newRMT = new MetaType();
                 newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
                 newRMT.AddDefineTemplateMetaType(inputType);
                 newRMT = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
-                newRMT.SetArrayLength(valuesNewExpress.metaContent.assignStatementsList.Count);
+                newRMT.SetArrayLength(valuesNewExpress.assignStatementsList.Count);
 
                 //valuesNewExpress.Parse(new AllowUseSettings());
                 valuesNewExpress.SetRealMetaType(newRMT);
@@ -455,7 +455,7 @@ namespace SimpleLanguage.Core
                     }
                     if (mme.express is MetaNewObjectExpressNode mnoeData)
                     {
-                        var retDt = mnoeData.GetReturnMetaDefineType();
+                        var retDt = mnoeData.GetReturnMetaType();
                         if (!retDt.isData)
                         {
                             Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage,
@@ -490,7 +490,7 @@ namespace SimpleLanguage.Core
                     }
                     if (mme.express is MetaNewObjectExpressNode mnoe)
                     {
-                        if (mnoe.GetReturnMetaDefineType().isData)
+                        if (mnoe.GetReturnMetaType().isData)
                         {
 
                         }
@@ -519,7 +519,7 @@ namespace SimpleLanguage.Core
                     }
                     if (mmeClass.express is MetaNewObjectExpressNode mnoeClass)
                     {
-                        var retType = mnoeClass.GetReturnMetaDefineType();
+                        var retType = mnoeClass.GetReturnMetaType();
                         if (retType?.metaClass != null && retType.metaClass != m_ExtendClass)
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage,

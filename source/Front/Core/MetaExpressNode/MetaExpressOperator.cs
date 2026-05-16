@@ -20,19 +20,19 @@ namespace SimpleLanguage.Core
         public EType oriType;
         public EType targetType;
     }
-    public sealed class MetaUnaryOpExpressNode : MetaExpressNode
+    public sealed class MetaUnaryOpExpressNode : MetaExpressNodeBase
     {
         private Token tokeType => m_TokeType;
         public ESingleOpSign opSign => m_OpSign;
-        public MetaExpressNode value => m_Value;
+        public MetaExpressNodeBase value => m_Value;
 
         private ESingleOpSign m_OpSign = ESingleOpSign.None;
-        private MetaExpressNode m_Value = null;             //左边值
+        private MetaExpressNodeBase m_Value = null;             //左边值
         private Token m_TokeType = null;
 
         public override Token token => m_TokeType;
 
-        public MetaUnaryOpExpressNode(FileMetaSymbolTerm fme, MetaExpressNode _value )
+        public MetaUnaryOpExpressNode(FileMetaSymbolTerm fme, MetaExpressNodeBase _value )
         {
             m_Value = _value;
             m_TokeType = fme.token;
@@ -50,7 +50,7 @@ namespace SimpleLanguage.Core
                 m_OpSign = ESingleOpSign.Xor;
             }
         }
-        public void SetValue( MetaExpressNode _value )
+        public void SetValue( MetaExpressNodeBase _value )
         {
             m_Value = _value;
         }
@@ -74,7 +74,7 @@ namespace SimpleLanguage.Core
                 m_MetaType = m_Value.metaType;
             }
         }
-        public MetaExpressNode SimulateCompute()
+        public MetaExpressNodeBase SimulateCompute()
         {
             var mcen = value as MetaConstExpressNode;
             if (mcen != null)
@@ -213,7 +213,7 @@ namespace SimpleLanguage.Core
 
             return sb.ToString();
         }
-        public override string ToTokenString()
+        public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
             if (tokeType != null)
@@ -222,22 +222,22 @@ namespace SimpleLanguage.Core
             }
             if(m_Value != null )
             {
-                sb.Append(m_Value.ToTokenString());
+                sb.Append(m_Value.ToString());
             }
             return sb.ToString();
         }
     }
-    public sealed class MetaOpExpressNode : MetaExpressNode
+    public sealed class MetaOpExpressNode : MetaExpressNodeBase
     {
         public bool isEqualType { get; set; } = false;
-        public MetaExpressNode left => m_Left;
-        public MetaExpressNode right => m_Right;
+        public MetaExpressNodeBase left => m_Left;
+        public MetaExpressNodeBase right => m_Right;
         public ELeftRightOpSign opSign => m_OpLevelSign;
         public ConvertType leftConvert => m_LeftConvert;
         public ConvertType rightConvert => m_RightConvert;
 
-        private MetaExpressNode m_Left = null;
-        private MetaExpressNode m_Right = null;
+        private MetaExpressNodeBase m_Left = null;
+        private MetaExpressNodeBase m_Right = null;
         private ConvertType m_LeftConvert = null;
         private ConvertType m_RightConvert = null;
         private ELeftRightOpSign m_OpLevelSign;
@@ -247,7 +247,7 @@ namespace SimpleLanguage.Core
         private MetaType m_RealMetaType = null;
 
         private FileMetaSymbolTerm m_FileMetaBaseTerm = null;
-        public MetaOpExpressNode(FileMetaSymbolTerm fme, MetaType mt, MetaExpressNode _left, MetaExpressNode _right )
+        public MetaOpExpressNode(FileMetaSymbolTerm fme, MetaType mt, MetaExpressNodeBase _left, MetaExpressNodeBase _right )
         {
             m_FileMetaBaseTerm = fme;
 
@@ -322,7 +322,7 @@ namespace SimpleLanguage.Core
             }
             ComputeIsComputeType();
         }
-        public MetaOpExpressNode(MetaExpressNode _left, MetaExpressNode _right, ELeftRightOpSign _opSign)
+        public MetaOpExpressNode(MetaExpressNodeBase _left, MetaExpressNodeBase _right, ELeftRightOpSign _opSign)
         {
             m_Left = _left;
             m_Right = _right;
@@ -344,11 +344,11 @@ namespace SimpleLanguage.Core
             else
                 isEqualType = false;
         }
-        public void SetLeft(MetaExpressNode _left)
+        public void SetLeft(MetaExpressNodeBase _left)
         {
             m_Left = _left;
         }
-        public void SetRight(MetaExpressNode _right)
+        public void SetRight(MetaExpressNodeBase _right)
         {
             m_Right = _right;
         }
@@ -383,8 +383,8 @@ namespace SimpleLanguage.Core
             bool isChange = false;
             if (m_Left != null && m_Right != null)
             {
-                MetaExpressNode left = m_Left;
-                MetaExpressNode right = m_Right;
+                MetaExpressNodeBase left = m_Left;
+                MetaExpressNodeBase right = m_Right;
                 if (m_Left.opLevel > m_Right.opLevel)
                 {
                     left = m_Right;
@@ -409,8 +409,8 @@ namespace SimpleLanguage.Core
                         return;
                     }
 
-                    MetaExpressNode enumExpr = leftMc?.eType == EType.Enum ? left : right;
-                    MetaExpressNode anotherExpr = object.ReferenceEquals(enumExpr, left) ? right : left;
+                    MetaExpressNodeBase enumExpr = leftMc?.eType == EType.Enum ? left : right;
+                    MetaExpressNodeBase anotherExpr = object.ReferenceEquals(enumExpr, left) ? right : left;
                     MetaClass enumClass = enumExpr.GetReturnMetaClass();
                     MetaClass anotherClass = anotherExpr.GetReturnMetaClass();
 
@@ -651,7 +651,7 @@ namespace SimpleLanguage.Core
             }
             return a.allClassName == b.allClassName;
         }
-        private static MetaClass TryGetMemberOwnerMetaClass(MetaExpressNode expr)
+        private static MetaClass TryGetMemberOwnerMetaClass(MetaExpressNodeBase expr)
         {
             if (expr is MetaCallLinkExpressNode mclen)
             {
@@ -673,7 +673,7 @@ namespace SimpleLanguage.Core
             }
             Log.AddMetaCoreLog(LID.AutoMetaExpressOperatorL675, msg);
         }
-        public MetaExpressNode SimulateCompute(ExpressOptimizeConfig config)
+        public MetaExpressNodeBase SimulateCompute(ExpressOptimizeConfig config)
         {
             if (config.greaterOrEqualConvertGeraterAndEqual && m_OpLevelSign == ELeftRightOpSign.GreaterOrEqual)
             {
@@ -681,10 +681,10 @@ namespace SimpleLanguage.Core
                 var constRight = m_Right as MetaConstExpressNode;
                 if (constLeft == null || constRight == null)
                 {
-                    MetaExpressNode left1 = m_Left;
-                    MetaExpressNode right1 = m_Right;
-                    MetaExpressNode left2 = m_Left;
-                    MetaExpressNode right2 = m_Right;
+                    MetaExpressNodeBase left1 = m_Left;
+                    MetaExpressNodeBase right1 = m_Right;
+                    MetaExpressNodeBase left2 = m_Left;
+                    MetaExpressNodeBase right2 = m_Right;
                     m_Left = new MetaOpExpressNode(left1, right1, ELeftRightOpSign.Greater);
                     m_Right = new MetaOpExpressNode(left1, right1, ELeftRightOpSign.Equal);
                     m_OpLevelSign = ELeftRightOpSign.Or;
@@ -696,10 +696,10 @@ namespace SimpleLanguage.Core
                 var constRight = m_Right as MetaConstExpressNode;
                 if (constLeft == null || constRight == null)
                 {
-                    MetaExpressNode left1 = m_Left;
-                    MetaExpressNode right1 = m_Right;
-                    MetaExpressNode left2 = m_Left;
-                    MetaExpressNode right2 = m_Right;
+                    MetaExpressNodeBase left1 = m_Left;
+                    MetaExpressNodeBase right1 = m_Right;
+                    MetaExpressNodeBase left2 = m_Left;
+                    MetaExpressNodeBase right2 = m_Right;
                     m_Left = new MetaOpExpressNode(left1, right1, ELeftRightOpSign.Less);
                     m_Right = new MetaOpExpressNode(left1, right1, ELeftRightOpSign.Equal);
                     m_OpLevelSign = ELeftRightOpSign.Or;
@@ -787,10 +787,10 @@ namespace SimpleLanguage.Core
 
             return sb.ToString();
         }
-        public override string ToTokenString()
+        public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(m_Left?.ToTokenString());
+            sb.Append(m_Left?.ToString());
             if (m_SignToken != null)
             {
                 sb.Append(m_SignToken.lexeme?.ToString());
@@ -799,7 +799,7 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(GetSignString(m_OpLevelSign));
             }
-            sb.Append(m_Right?.ToTokenString());
+            sb.Append(m_Right?.ToString());
             return sb.ToString();
         }
     }

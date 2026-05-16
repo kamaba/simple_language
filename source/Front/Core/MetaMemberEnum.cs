@@ -14,12 +14,12 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaMemberEnum : MetaMemberVariable
     {
-        public MetaExpressNode enumValueExpress => m_EnumValueExpress;
+        public MetaExpressNodeBase enumValueExpress => m_EnumValueExpress;
         public MetaConstExpressNode enumValueConstExpressNode => m_EnumValueExpress as MetaConstExpressNode;
         private bool isExplicitAssign => m_IsExplicitAssign;
 
         private bool m_IsExplicitAssign = false;
-        private MetaExpressNode m_EnumValueExpress = null;
+        private MetaExpressNodeBase m_EnumValueExpress = null;
         /// <summary>所属用户 enum（与 ownerMetaClass 多为 Core.Enum 模板不同，用于 extends 与定义类型）。</summary>
         private MetaEnum m_DefiningMetaEnum = null;
         private MetaEnum m_OwnerMetaEnum = null;
@@ -129,7 +129,7 @@ namespace SimpleLanguage.Core
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
                 m_Express.CalcReturnType();
                 m_EnumValueExpress = m_Express;
-                var valueRet = m_Express.GetReturnMetaDefineType();
+                var valueRet = m_Express.GetReturnMetaType();
                 if (valueRet != null)
                 {
                     SetRealMetaType(new MetaType(valueRet));
@@ -145,7 +145,7 @@ namespace SimpleLanguage.Core
         {
             if (m_EnumValueExpress != null)
             {
-                var ret = m_EnumValueExpress.GetReturnMetaDefineType();
+                var ret = m_EnumValueExpress.GetReturnMetaType();
                 if (ret != null)
                 {
                     SetRealMetaType(new MetaType(ret));
@@ -166,7 +166,6 @@ namespace SimpleLanguage.Core
 
             var memberType = new MetaType(memberClass);
             var newMember = new MetaNewObjectExpressNode(memberType, mme.ownerMetaClass, mme.m_OwnerMetaBlockStatements);
-            newMember.metaContent.SetDefineMetaType(memberType);
             FillMemberNewObjectAssignList(newMember, mme.m_OwnerMetaBlockStatements, mme.m_EnumValueExpress, mme.m_Name, m_Index);
 
             m_Express = newMember;
@@ -177,14 +176,14 @@ namespace SimpleLanguage.Core
         /// 为 enum.values 数组生成一项：new Core.Member() 后按 name、value、index 顺序赋值（与 IRNewExpress 对象初始化一致）。
         /// 使用 Member 类模板上的 MetaMemberVariable，保证 IR 里按 hash 能匹配到字段。
         /// </summary>
-        public MetaExpressNode CreateValuesArrayElementExpress()
+        public MetaExpressNodeBase CreateValuesArrayElementExpress()
         {
             var valueExpr = m_EnumValueExpress ?? m_Express;
             if (valueExpr == null)
                 return null;
             // 已包装成 Member 时，m_EnumValueExpress 仍为原始值表达式；若仅有包装节点则无法再拆值
             if (m_EnumValueExpress == null && valueExpr is MetaNewObjectExpressNode mnoe
-                && mnoe.GetReturnMetaDefineType()?.metaClass == CoreMetaClassManager.memberMetaClass)
+                && mnoe.GetReturnMetaType()?.metaClass == CoreMetaClassManager.memberMetaClass)
             {
                 return null;
             }
@@ -195,19 +194,18 @@ namespace SimpleLanguage.Core
 
             var memberType = new MetaType(memberClass);
             var newMember = new MetaNewObjectExpressNode(memberType, ownerMetaClass, m_OwnerMetaBlockStatements);
-            newMember.metaContent.SetDefineMetaType(memberType);
             FillMemberNewObjectAssignList(newMember, m_OwnerMetaBlockStatements, valueExpr, m_Name, m_Index);
             return newMember;
         }
         private static void FillMemberNewObjectAssignList(
             MetaNewObjectExpressNode newMember,
             MetaBlockStatements mbs,
-            MetaExpressNode valueExpr,
+            MetaExpressNodeBase valueExpr,
             string memberName,
             int memberIndex)
         {
             var memberClass = CoreMetaClassManager.memberMetaClass;
-            if (newMember?.metaContent == null || valueExpr == null || memberClass == null)
+            if (newMember?.assignStatementsList == null || valueExpr == null || memberClass == null)
                 return;
 
             var nameMv = memberClass.GetMetaMemberVariableByName("name");
@@ -224,7 +222,7 @@ namespace SimpleLanguage.Core
             var indexExpr = new MetaConstExpressNode(EType.Int32, memberIndex);
             indexExpr.CalcReturnType();
 
-            var list = newMember.metaContent.assignStatementsList;
+            var list = newMember.assignStatementsList;
             list.Add(new MetaBraceAssignStatements(mbs, nameExpr, nameMv));
             list.Add(new MetaBraceAssignStatements(mbs, valueExpr, valueMv));
             list.Add(new MetaBraceAssignStatements(mbs, indexExpr, indexMv));

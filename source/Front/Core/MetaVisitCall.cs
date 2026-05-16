@@ -24,7 +24,7 @@ namespace SimpleLanguage.Core
         public List<MetaType> staticMetaClassInputTemplateList => m_StaticMetaClassInputTemplateList;
         public MetaFunction function => m_VMCallMetaFunction;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
-        public List<MetaExpressNode> metaInputParamList => m_MetaInputParamList;
+        public List<MetaExpressNodeBase> metaInputParamList => m_MetaInputParamList;
         public List<MetaType> metaFunctionInputTemplateList => m_MetaFunctionInputTemplateList;
 
 
@@ -41,7 +41,7 @@ namespace SimpleLanguage.Core
         protected MetaFunction m_VMCallMetaFunction = null;
         //鐪熷疄鐨勬垚鍛樺嚱鏁?
         protected MetaMemberFunction m_MetaMemberFunction = null;
-        protected List<MetaExpressNode> m_MetaInputParamList = new List<MetaExpressNode>();
+        protected List<MetaExpressNodeBase> m_MetaInputParamList = new List<MetaExpressNodeBase>();
         protected List<MetaType> m_MetaFunctionInputTemplateList = new List<MetaType>();
         protected MetaClass m_OwnerMetaClass = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
@@ -97,7 +97,7 @@ namespace SimpleLanguage.Core
                 {
                     var express = _paramCollection.metaInputParamList[i].express;
                     MetaBraceAssignStatements mbas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, null, express);
-                    mnoe.metaContent.assignStatementsList.Add(mbas);
+                    mnoe.assignStatementsList.Add(mbas);
 
                 }
                 mnoe.Parse(new AllowUseSettings());
@@ -196,7 +196,7 @@ namespace SimpleLanguage.Core
         {
             return m_VMCallMetaFunction.GetFinalMetaType();
         }
-        public void AddMetaInputParamList(MetaExpressNode inputp )
+        public void AddMetaInputParamList(MetaExpressNodeBase inputp )
         {
             m_MetaInputParamList.Add(inputp);
         }
@@ -328,7 +328,7 @@ namespace SimpleLanguage.Core
             SystemCall,
         }
         public MetaConstExpressNode constValueExpress => m_Express as MetaConstExpressNode;
-        public MetaExpressNode express => m_Express;
+        public MetaExpressNodeBase express => m_Express;
         public EVisitType visitType => m_VisitType;
         public MetaVariable variable => m_Variable;
         public MetaVisitVariable visitVariable => m_VisitVariable;
@@ -343,7 +343,7 @@ namespace SimpleLanguage.Core
         private MetaMethodCall m_MethodCall = null;
         private MetaVisitVariable m_VisitVariable = null;
         private MetaVariable m_Variable  = null;
-        private MetaExpressNode m_Express  = null;
+        private MetaExpressNodeBase m_Express  = null;
         private MetaType m_ReturnMetaType = null;
         private MetaClass m_OwnerMetaClass = null;
         private MetaTemplate m_MetaTemplate = null;
@@ -435,7 +435,7 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByNewArrayClass(MetaType mt, List<MetaExpressNode> list, MetaVariable mv = null)
+        public static MetaVisitNode CreateByNewArrayClass(MetaType mt, List<MetaExpressNodeBase> list, MetaVariable mv = null)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
@@ -511,7 +511,7 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByEpxress(MetaExpressNode _express)
+        public static MetaVisitNode CreateByEpxress(MetaExpressNodeBase _express)
         {
             MetaVisitNode vn = new MetaVisitNode();
 

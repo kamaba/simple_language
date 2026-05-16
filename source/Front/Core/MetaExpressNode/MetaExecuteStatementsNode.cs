@@ -12,21 +12,21 @@ using SimpleLanguage.Compile;
 
 namespace SimpleLanguage.Core
 {
-    public sealed class MetaExecuteStatementsNode : MetaExpressNode
+    public sealed class MetaExecuteStatementsNode : MetaExpressNodeBase
     {
         private MetaIfStatements m_MetaIfStatements = null;
         private MetaSwitchStatements m_MetaSwitchStatements = null;
         public MetaExecuteStatementsNode( MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, MetaIfStatements ifstate)
         {
             m_MetaType = mdt;
-            m_OwnerMetaClass = ownerMC;
+            m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_MetaIfStatements = ifstate;
         }
         public MetaExecuteStatementsNode(MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, MetaSwitchStatements switchstate)
         {
             m_MetaType = mdt;
-            m_OwnerMetaClass = ownerMC;
+            m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_MetaSwitchStatements = switchstate;
         }
@@ -52,7 +52,7 @@ namespace SimpleLanguage.Core
                 m_MetaSwitchStatements.SetDeep(dp);
             }
         }
-        public override MetaType GetReturnMetaDefineType()
+        public override MetaType GetReturnMetaType()
         {
             if(m_MetaType != null)
             {
