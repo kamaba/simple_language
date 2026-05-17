@@ -9,6 +9,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
 using SimpleLanguage.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -456,19 +457,8 @@ namespace SimpleLanguage.IR
                                 MetaExpressNodeBase men = lirmv.express;
                                 for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
                                 {
-                                    var asl = mnoen.assignStatementsList[y];
-                                    int assignTargetId = -1;
-                                    if (asl.metaMemberVariable != null)
-                                    {
-                                        assignTargetId = asl.metaMemberVariable.GetHashCode();
-                                    }
-                                    else if (asl.metaMemberData != null)
-                                    {
-                                        // data 匿名类型字面量：MetaBraceAssignStatements 只绑定 MetaMemberData（与 IRMetaVariable.id 一致）
-                                        assignTargetId = asl.metaMemberData.GetHashCode();
-                                    }
-
-                                    if (assignTargetId == lirmv.id)
+                                    var asl = mnoen.assignStatementsList[y];  
+                                    if (asl.id == lirmv.id)
                                     {
                                         men = asl.expressNode;
                                         break;
@@ -500,8 +490,7 @@ namespace SimpleLanguage.IR
                     for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
                     {
                         var asl = mnoen.assignStatementsList[y];
-                        var targetMv = (MetaVariable)asl.metaMemberData ?? asl.metaMemberVariable;
-                        if (targetMv == null || asl.expressNode == null)
+                        if ( asl.expressNode == null || asl.id == 0 )
                         {
                             continue;
                         }
@@ -516,7 +505,7 @@ namespace SimpleLanguage.IR
                         IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
                         AddIRRangeData(irexp.IRDataList);
 
-                        var storeField = IRStoreVariable.CreateIRStoreVariable(newObjectIRMT, irmc, irMethod, targetMv);
+                        var storeField = new IRStoreVariable(newObjectIRMT, irMethod, asl.id, IRMetaVariableFrom.Member);
                         if (storeField != null)
                         {
                             AddIRRangeData(storeField.IRDataList);

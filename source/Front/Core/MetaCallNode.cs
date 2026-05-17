@@ -1386,7 +1386,7 @@ namespace SimpleLanguage.Core
                     //    m_MetaFunction = mmf;
                     //    m_CallNodeType = ECallNodeType.NewClass;                        
                     //}
-                    if( m_MetaType.isData == false && m_MetaType.isEnum == false )
+                    if( m_MetaType.isClass )
                     {
                         //ArrClass()
                         MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_MetaInputParamCollection);

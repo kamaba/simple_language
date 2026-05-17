@@ -108,7 +108,6 @@ namespace SimpleLanguage.Core
             left.ComputeModRight(right);
             return left;
         }
-        public MetaCallLinkExpressNode metaCallLinkExpressNode => m_MetaCallLinkExpressNode;
         public List<MetaExpressNodeBase> stringParseExpressList => m_StringParseExpressList;
         public object value { get; set; } = null;
         // when eType == String, this holds the pooled string reference
@@ -120,7 +119,6 @@ namespace SimpleLanguage.Core
 
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
         private List<MetaExpressNodeBase> m_StringParseExpressList = new List<MetaExpressNodeBase>();
-        private MetaCallLinkExpressNode m_MetaCallLinkExpressNode = null;
         public MetaConstExpressNode( MetaBase omc, MetaBlockStatements mbs, FileMetaConstValueTerm fmct)
         {
             m_FileMetaConstValueTerm = fmct;
@@ -924,12 +922,7 @@ namespace SimpleLanguage.Core
         }
         public override string ToString()
         {
-            StringBuilder sb = new StringBuilder();
-            if (m_FileMetaConstValueTerm != null)
-            {
-                sb.Append(m_FileMetaConstValueTerm.ToTokenString());
-            }
-            return sb.ToString();
+            return ToFormatString();
         }
     }
 }

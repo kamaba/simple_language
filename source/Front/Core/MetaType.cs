@@ -76,6 +76,18 @@ namespace SimpleLanguage.Core
         private int m_ArrayLength = -1;       
         private bool m_IsNullable = false;   // 新增：可空标记
 
+
+
+        public static MetaType OwnerPlaceholderMetaType(MetaBase owner)
+        {
+            if (owner == null) return new MetaType(CoreMetaClassManager.objectMetaClass);
+            if (owner is MetaClass mcc) return new MetaType(mcc);
+            if (owner is MetaData md) return new MetaType(md);
+            if (owner is MetaEnum me) return new MetaType(me);
+            return new MetaType(CoreMetaClassManager.objectMetaClass);
+        }
+
+
         public MetaType()
         {
         }

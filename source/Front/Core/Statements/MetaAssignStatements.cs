@@ -632,7 +632,7 @@ namespace SimpleLanguage.Core
 
             if (m_RightMetaExpress is MetaConstExpressNode rightConst)
             {
-                if (!MetaVariable.TryAdjustConstExpressByDefineMetaType(rightConst, leftMetaType))
+                if (!TypeManager.TryAdjustConstExpressByDefineMetaType(rightConst, leftMetaType))
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
                         "赋值强制转换失败：右值常量无法转换到左值类型 " + leftMetaType.ToString());

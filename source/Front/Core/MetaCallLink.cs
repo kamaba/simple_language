@@ -21,8 +21,6 @@ namespace SimpleLanguage.Core
         public List<MetaVisitNode> visitNodeList => m_VisitNodeList;
         public AllowUseSettings allowUseSettings { get; private set; } = null;
 
-
-
         private FileMetaCallLink m_FileMetaCallLink;
         private MetaBase m_OwnerMetaClass = null;
         private MetaBlockStatements m_OwnerMetaBlockStatements = null;
@@ -731,7 +729,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaType GetMetaDefineType()
+        public MetaType GetMetaType()
         {
             MetaType mt = null;
             for (int i = 0; i < m_VisitNodeList.Count; i++)
@@ -760,12 +758,6 @@ namespace SimpleLanguage.Core
                 if (i < this.m_VisitNodeList.Count - 1)
                     sb.Append("  ->  ");
             }
-            return sb.ToString();
-        }
-        public string ToTokenString()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append(m_FileMetaCallLink.ToTokenString());
             return sb.ToString();
         }
     }

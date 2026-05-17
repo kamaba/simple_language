@@ -29,9 +29,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_FileMetaThreeItemSyntaxTerm = fm;
-        }
-        public override void Parse(AllowUseSettings auc)
-        {
+
             CreateExpressParam conditionCep = new CreateExpressParam()
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
@@ -43,7 +41,6 @@ namespace SimpleLanguage.Core
                 parsefrom = EParseFrom.StatementRightExpress,
             };
             m_ConditionExpress = ExpressManager.CreateExpressNode(conditionCep);
-            m_ConditionExpress.Parse(auc);
 
             CreateExpressParam return1Cep = new CreateExpressParam()
             {
@@ -56,19 +53,24 @@ namespace SimpleLanguage.Core
                 parsefrom = EParseFrom.StatementRightExpress,
             };
             m_Return1Express = ExpressManager.CreateExpressNode(return1Cep);
-            m_Return1Express.Parse(auc);
 
             CreateExpressParam return2Cep = new CreateExpressParam()
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
                 ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass,
-                metaType = new MetaType(CoreMetaClassManager.objectMetaClass ),
+                metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
                 fme = m_FileMetaThreeItemSyntaxTerm.return2Term,
                 isStatic = false,
                 isConst = false,
                 parsefrom = EParseFrom.StatementRightExpress,
             };
             m_Return2Express = ExpressManager.CreateExpressNode(return2Cep);
+
+        }
+        public override void Parse(AllowUseSettings auc)
+        {
+            m_ConditionExpress.Parse(auc);
+            m_Return1Express.Parse(auc);
             m_Return2Express.Parse(auc);
         }
         public override int CalcParseLevel(int level)

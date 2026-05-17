@@ -272,7 +272,7 @@ namespace SimpleLanguage.Core
                 }
                 if( m_Express is MetaConstExpressNode mcen )
                 {
-                    if (!MetaVariable.TryAdjustConstExpressByDefineMetaType(mcen, m_DefineMetaType))
+                    if (!TypeManager.TryAdjustConstExpressByDefineMetaType(mcen, m_DefineMetaType))
                     {
                         // 类型不匹配时日志已在 TryAdjustConstExpressByDefineMetaType 内输出
                     }

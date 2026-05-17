@@ -150,7 +150,7 @@ namespace SimpleLanguage.Core
         {
             foreach( var v in m_MetaMemberDataDict )
             {
-                if(v.Value.memberDataType == EMemberDataType.MemberData )
+                if(v.Value.memberDataType == EMemberDataType.MemberData || v.Value.memberDataType == EMemberDataType.MemberArray )
                 {
                     v.Value.ResolveAnonymousDataHierarchyPostOrder();
                 }

@@ -79,14 +79,6 @@ namespace SimpleLanguage.Core
     }
     public class ExpressManager
     {
-        /// <summary>类 / data / enum 宿主上下文；优先 <see cref="CreateExpressParam.ownerMetaBase"/>。</summary>
-        public static MetaBase ResolveExpressOwner(CreateExpressParam cep)
-        {
-            if (cep.ownerMetaBase != null)
-                return cep.ownerMetaBase;
-            return cep.ownerMetaBase;
-        }
-
         public static ExpressOptimizeConfig expressOptimizeConfig = new ExpressOptimizeConfig();
         public static bool IsCanExpressCampute( MetaClass mc )
         {
@@ -104,7 +96,7 @@ namespace SimpleLanguage.Core
             MetaBlockStatements mbs = cep.ownerMBS;
             MetaType mdt = cep.metaType;
             MetaVariable equalMetaVariable = cep.equalMetaVariable;
-            MetaBase ownerBase = ResolveExpressOwner(cep);
+            MetaBase ownerBase = cep.ownerMetaBase;
             MetaClass mc = ownerBase as MetaClass;
 
             if (fmte == null)
@@ -185,7 +177,7 @@ namespace SimpleLanguage.Core
             {
                 return null;
             }
-            MetaBase ownerBase = ResolveExpressOwner(cep);
+            MetaBase ownerBase = cep.ownerMetaBase;
             MetaClass ownerClass = ownerBase as MetaClass;
             var root = cep.fme.root;
             if( root == null )

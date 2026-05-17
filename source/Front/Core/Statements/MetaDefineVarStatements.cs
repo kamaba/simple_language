@@ -157,7 +157,7 @@ namespace SimpleLanguage.Core
                 MetaConstExpressNode constExpressNode = m_ExpressNode as MetaConstExpressNode;
                 if (constExpressNode != null)
                 {
-                    if (!MetaVariable.TryAdjustConstExpressByDefineMetaType(constExpressNode, expressRetMetaDefineType))
+                    if (!TypeManager.TryAdjustConstExpressByDefineMetaType(constExpressNode, expressRetMetaDefineType))
                     {
                         return;
                     }
@@ -184,7 +184,7 @@ namespace SimpleLanguage.Core
                     MetaConstExpressNode constExpressNode = m_ExpressNode as MetaConstExpressNode;
                     if (constExpressNode != null)
                     {
-                        if (!MetaVariable.TryAdjustConstExpressByDefineMetaType(constExpressNode, mdt))
+                        if (!TypeManager.TryAdjustConstExpressByDefineMetaType(constExpressNode, mdt))
                         {
                             return;
                         }
@@ -271,7 +271,7 @@ namespace SimpleLanguage.Core
                         if (constExpressNode != null)
                         {
                             var defineEType = CoreMetaClassManager.GetETypeByMetaClass(mdt.metaClass);
-                            MetaVariable.TryAdjustConstExpressByDefineEType(constExpressNode, defineEType);
+                            TypeManager.TryAdjustConstExpressByDefineEType(constExpressNode, defineEType);
                         }
                         m_DefineVarMetaVariable.SetRealMetaType(new MetaType(mdt));
                     }

@@ -71,11 +71,81 @@ namespace SimpleLanguage.Core
             m_ProjectTypeAliasDict.Add(aliasName, targetType);
             return true;
         }
-
         public bool TryGetProjectTypeAlias(string aliasName, out MetaType targetType)
         {
             return m_ProjectTypeAliasDict.TryGetValue(aliasName, out targetType);
         }
+        public static bool TryAdjustConstExpressByDefineMetaType(MetaConstExpressNode mcen, MetaType defineMetaType)
+        {
+            if (mcen == null || defineMetaType == null)
+            {
+                return false;
+            }
+
+            var curEType = CoreMetaClassManager.GetETypeByMetaClass(defineMetaType.metaClass);
+
+            if (curEType == EType.Object)
+            {
+                curEType = mcen.eType;
+            }
+
+            if (mcen.eType == curEType)
+            {
+                return true;
+            }
+
+            return TryAdjustConstExpressByDefineEType(mcen, curEType);
+        }
+        public static bool TryAdjustConstExpressByDefineEType(MetaConstExpressNode mcen, EType defineEType)
+        {
+            if (mcen == null)
+            {
+                return false;
+            }
+
+            if (defineEType == EType.Object)
+            {
+                return true;
+            }
+
+            var curEType = defineEType;
+            var expEType = mcen.eType;
+            Token token = mcen.token;
+
+            if (expEType == EType.Null)
+            {
+                return true;
+            }
+
+            if (TypeManager.IsNumericEType(curEType) && TypeManager.IsNumericEType(expEType))
+            {
+                return NumberManager.TryAdjustConstExpressToNumericTarget(mcen, curEType, expEType, token);
+            }
+
+            if (expEType != curEType)
+            {
+                if (TryConvertConstValueByEType(curEType, mcen.value, out var convertedValue))
+                {
+                    mcen.SetConstValue(curEType, convertedValue);
+                    return true;
+                }
+
+                if (NumberManager.IsRadixNumberLiteral(mcen)
+                    && NumberManager.TryConvertRadixUnsignedToSignedByEType(curEType, mcen.value, out var radixConvertedValue))
+                {
+                    mcen.SetConstValue(curEType, radixConvertedValue);
+                    return true;
+                }
+
+                Log.AddMetaCoreLog(LID.MetaCoreExpressTypeGEDefineType, token, (mcen.value?.ToString() ?? "null"), curEType.ToString(), expEType.ToString());
+                return false;
+            }
+
+            return true;
+        }
+        public static bool TryConvertConstValueByEType(EType targetType, object input, out object converted)
+            => NumberManager.TryConvertConstValueByEType(targetType, input, out converted);
+
 
         /// <summary>
         /// 解析简单类型名时的别名链：当前文件局部 typealias → 工程(.sp Project) typealias → 内置全局别名。

@@ -88,7 +88,7 @@ namespace SimpleLanguage.Core
             {
                 m_ConvertTargetMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, m_OwnerMetaBlockStatements.ownerMetaFunction as MetaMemberFunction, m_FileMetaKeyAsIsSyntax.defineType );
 
-                var sourceMetaType = m_CurrentVariableLink?.GetMetaDefineType();
+                var sourceMetaType = m_CurrentVariableLink?.GetMetaType();
                 if (sourceMetaType == null)
                 {
                     var sourceMv = m_CurrentVariableLink?.ExecuteGetMetaVariable();

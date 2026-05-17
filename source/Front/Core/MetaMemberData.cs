@@ -678,6 +678,7 @@ namespace SimpleLanguage.Core
                 m_RealMetaType = m_DefineMetaType;
             }
         }
+        /*
         public void StructNewObjectData()
         {
             var mne = m_Express as MetaNewObjectExpressNode;
@@ -758,6 +759,7 @@ namespace SimpleLanguage.Core
                     m_RealMetaType = new MetaType(m_DefineMetaType);
             }
         }
+        */
         public bool IsIncludeMetaData(MetaData md)
         {
             if (md == null) return false;

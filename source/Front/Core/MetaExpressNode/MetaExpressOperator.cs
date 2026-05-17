@@ -227,6 +227,7 @@ namespace SimpleLanguage.Core
             return sb.ToString();
         }
     }
+
     public sealed class MetaOpExpressNode : MetaExpressNodeBase
     {
         public bool isEqualType { get; set; } = false;
@@ -663,15 +664,15 @@ namespace SimpleLanguage.Core
         {
             if (m_SignToken != null)
             {
-                Log.AddMetaCoreLog(LID.AutoMetaExpressOperatorL667, msg, m_SignToken);
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, msg, m_SignToken);
                 return;
             }
             if (m_FileMetaBaseTerm?.token != null)
             {
-                Log.AddMetaCoreLog(LID.AutoMetaExpressOperatorL672, msg, m_FileMetaBaseTerm.token);
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, msg, m_FileMetaBaseTerm.token);
                 return;
             }
-            Log.AddMetaCoreLog(LID.AutoMetaExpressOperatorL675, msg);
+            Log.AddMetaCoreLog(LID.ShowExtendMessage, msg);
         }
         public MetaExpressNodeBase SimulateCompute(ExpressOptimizeConfig config)
         {

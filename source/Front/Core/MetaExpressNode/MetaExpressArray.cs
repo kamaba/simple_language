@@ -71,70 +71,41 @@ namespace SimpleLanguage.Core
             {
                 var mcac = m_MetaCallArray[i];
                 mcac.Parse(auc);
-
-                //if (mcac.finalCallNode.visitType == MetaVisitNode.EVisitType.New)
-                //{
-                //    m_IsNewExpressNode = true;
-                //}
             }
         }
         public override int CalcParseLevel(int level)
         {
-            //if (m_MetaCallLink != null)
-            //    level = m_MetaCallLink.CalcParseLevel(level);
             return level;
         }
         public override void CalcReturnType()
         {
-            //if (m_MetaCallLink != null)
-            //{
-            //    m_MetaCallLink.CalcReturnType();
-            //}
-
-            m_ExpressReturnMetaType = GetReturnMetaType();
-        }
-        public MetaVariable GetMetaVariable()
-        {
-            //if (m_MetaCallLink != null)
-            //{
-            //    return m_MetaCallLink.ExecuteGetMetaVariable();
-            //}
-            return null;
-        }
-        public override MetaType GetReturnMetaType()
-        {
-            if (m_ExpressReturnMetaType != null)
-            {
-                return m_ExpressReturnMetaType;
-            }
-
             m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
 
-            if( m_MetaCallArray.Count > 0 )
+            if (m_MetaCallArray.Count > 0)
             {
                 m_ExpressReturnMetaType.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
 
 
                 MetaType cmt = null;
-                for ( int i = 0; i < m_MetaCallArray.Count; i++ )
+                for (int i = 0; i < m_MetaCallArray.Count; i++)
                 {
                     MetaType cmt2 = m_MetaCallArray[i].GetReturnMetaType();
-                    if( cmt2.metaClass == CoreMetaClassManager.objectMetaClass )
+                    if (cmt2.metaClass == CoreMetaClassManager.objectMetaClass)
                     {
                         break;
                     }
 
-                    if( cmt != null )
+                    if (cmt != null)
                     {
-                        if( cmt.metaClass != cmt2.metaClass )
+                        if (cmt.metaClass != cmt2.metaClass)
                         {
-                            cmt =new MetaType( CoreMetaClassManager.objectMetaClass );
+                            cmt = new MetaType(CoreMetaClassManager.objectMetaClass);
                             break;
                         }
                     }
                     else
                     {
-                        cmt = cmt2;                       
+                        cmt = cmt2;
                     }
                 }
                 m_ExpressReturnMetaType.AddDefineTemplateMetaType(cmt);
@@ -144,7 +115,6 @@ namespace SimpleLanguage.Core
 
                 m_ExpressReturnMetaType = newmt;// new MetaType(newmt.metaClass as MetaGenTemplateClass, m_MetaType.defineTemplateMetaTypeList, m_MetaType.defineTemplateMetaTypeList);
             }
-            return m_ExpressReturnMetaType;
         }
         public override string ToFormatString()
         {

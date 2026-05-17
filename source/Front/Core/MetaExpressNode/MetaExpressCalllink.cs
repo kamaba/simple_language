@@ -17,20 +17,13 @@ namespace SimpleLanguage.Core
         public MetaCallLink metaCallLink => m_MetaCallLink;
 
         private MetaCallLink m_MetaCallLink = null;
-
-        private MetaVariable m_EqualMetaVariable = null;
         public MetaCallLinkExpressNode( FileMetaCallLink fmcl, MetaBase owner, MetaBlockStatements mbs, MetaVariable mv )
         {
             m_OwnerMetaBase = owner;
             m_OwnerMetaBlockStatements = mbs;
-            m_EqualMetaVariable = mv;
-            m_Token = fmcl.callNodeList[0].token;
 
-            if (fmcl != null )
-            {
-                m_MetaCallLink = new MetaCallLink( fmcl, owner, mbs, mv?.defineMetaType, mv );
-                m_Token = m_MetaCallLink.callNodeList[0].token;
-            }
+            m_MetaCallLink = new MetaCallLink( fmcl, owner, mbs, mv?.defineMetaType, mv );
+            m_Token = m_MetaCallLink.callNodeList[0].token;
         }
         public MetaCallLinkExpressNode( MetaCallLink mcl )
         {
@@ -82,11 +75,10 @@ namespace SimpleLanguage.Core
         }
         public override void CalcReturnType()
         {
-            //if(m_MetaCallLink != null )
-            //{
-            //    m_MetaCallLink.CalcReturnType();
-            //}
-            m_ExpressReturnMetaType = GetReturnMetaType();
+            if (m_MetaCallLink != null)
+            {
+                m_ExpressReturnMetaType = m_MetaCallLink.GetMetaType();
+            }
         }
         public MetaVariable GetMetaVariable()
         {
@@ -105,7 +97,7 @@ namespace SimpleLanguage.Core
             if (m_MetaCallLink == null)
                 return null;
 
-            m_ExpressReturnMetaType = m_MetaCallLink.GetMetaDefineType();
+            m_ExpressReturnMetaType = m_MetaCallLink.GetMetaType();
             return m_ExpressReturnMetaType;
         }
         public MetaExpressNodeBase ConvertConstExpressNode()
@@ -129,7 +121,7 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
             if (m_MetaCallLink != null)
             {
-                sb.Append(m_MetaCallLink.ToTokenString());
+                sb.Append(m_MetaCallLink.ToString());
             }
             return sb.ToString();
         }
