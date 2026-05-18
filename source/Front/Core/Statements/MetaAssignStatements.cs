@@ -434,6 +434,10 @@ namespace SimpleLanguage.Core
                 Log.AddMetaCoreLog(LID.MetaCoreShouldHaveRightExpress, m_Token, "MetaAssignStatements.ConvertNewExpress", m_FileMetaOpAssignSyntax.express.token);
                 return false;
             }
+            if (m_RightMetaExpress is MetaNewObjectExpressNode mnoen)
+            {
+                mnoen.CheckDefineVariableMetaTypeAndContentMetaType();
+            }
             m_RightMetaExpress.CalcReturnType();
             return true;
         }

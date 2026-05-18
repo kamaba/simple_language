@@ -252,6 +252,10 @@ namespace SimpleLanguage.Core
             if( m_Express != null )
             {
                 m_RealMetaType = new MetaType(m_Express.GetReturnMetaType());
+                if (m_Express is MetaNewObjectExpressNode mnoe)
+                {
+                    mnoe.CheckDefineVariableMetaTypeAndContentMetaType();
+                }
             }
         }
         public void SetIndex( int index )

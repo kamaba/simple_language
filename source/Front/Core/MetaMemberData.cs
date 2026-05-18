@@ -464,7 +464,7 @@ namespace SimpleLanguage.Core
                     continue;
                 }
 
-                var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, new MetaType(ownerMc), elementExpr);
+                var mas = new MetaBraceAssignStatements( GetFinalMetaType(), m_OwnerMetaBlockStatements, ownerMc, null,  elementExpr);
                 arrayExpr.assignStatementsList.Add(mas);
             }
 
@@ -479,6 +479,7 @@ namespace SimpleLanguage.Core
                 m_IsDefineMetaType = true;
                 m_MemberDataType = EMemberDataType.MemberArray;
             }
+            arrayExpr.CheckDefineVariableMetaTypeAndContentMetaType();
         }
 
         internal void ResolveAnonymousDataMetaType()
@@ -510,6 +511,7 @@ namespace SimpleLanguage.Core
                     anonymousMetaData,
                     m_OwnerMetaBlockStatements,
                     preferSourceMemberExpress: reusedFromAllDataDict);
+                existingMnoe.CheckDefineVariableMetaTypeAndContentMetaType();
             }
             m_MetaMemberDataDict.Clear();
         }

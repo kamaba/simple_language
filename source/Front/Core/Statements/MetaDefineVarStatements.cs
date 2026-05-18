@@ -143,6 +143,10 @@ namespace SimpleLanguage.Core
                 m_ExpressNode.CalcReturnType();
 
                 m_ExpressNode = ExpressManager.ConvertNewExpress(m_ExpressNode, mdt, m_DefineVarMetaVariable );
+                if( m_ExpressNode is MetaNewObjectExpressNode mnoen )
+                {
+                    mnoen.CheckDefineVariableMetaTypeAndContentMetaType();
+                }
 
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaType();               
                 if (expressRetMetaDefineType == null)

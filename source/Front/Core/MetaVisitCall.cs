@@ -96,7 +96,7 @@ namespace SimpleLanguage.Core
                 for( int i = defineCount - 1; i < inputCount; i++ )
                 {
                     var express = _paramCollection.metaInputParamList[i].express;
-                    MetaBraceAssignStatements mbas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, null, express);
+                    MetaBraceAssignStatements mbas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaClass, null, express);
                     mnoe.assignStatementsList.Add(mbas);
 
                 }

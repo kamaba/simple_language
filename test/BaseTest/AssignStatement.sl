@@ -153,7 +153,7 @@ AssignStatement
         global.println("values[2] -> " + values[2].toString())
         global.println("values.$3 -> " + values.$3.toString())
 
-        AssignBox[] boxes = new(2) { AssignBox(){ value = 1, name = "left" }, AssignBox(){ value = 2, name = "right" } }
+        AssignBox[] boxes = new(2) { AssignBox(){ value = 1, name = "left" }, AssignBox(){ value = 2 } }
         boxes[0].value = 100
         boxes.$0.numbers.$1 = 222
         boxes[1] = { value = 20, name = "brace-rebind", flag = 0b1111 }

@@ -166,7 +166,7 @@ namespace SimpleLanguage.Core
 
             var memberType = new MetaType(memberClass);
             var newMember = new MetaNewObjectExpressNode(memberType, mme.ownerMetaClass, mme.m_OwnerMetaBlockStatements);
-            FillMemberNewObjectAssignList(newMember, mme.m_OwnerMetaBlockStatements, mme.m_EnumValueExpress, mme.m_Name, m_Index);
+            FillMemberNewObjectAssignList(newMember, mme.m_OwnerMetaBlockStatements, mme.ownerMetaBase, mme.m_EnumValueExpress, mme.m_Name, m_Index);
 
             m_Express = newMember;
             // m_DefineMetaType：enum extends 的声明类型；m_RealMetaType：成员值表达式类型（写入 Member.value）
@@ -194,12 +194,13 @@ namespace SimpleLanguage.Core
 
             var memberType = new MetaType(memberClass);
             var newMember = new MetaNewObjectExpressNode(memberType, ownerMetaClass, m_OwnerMetaBlockStatements);
-            FillMemberNewObjectAssignList(newMember, m_OwnerMetaBlockStatements, valueExpr, m_Name, m_Index);
+            FillMemberNewObjectAssignList(newMember, m_OwnerMetaBlockStatements, m_OwnerMetaBase, valueExpr, m_Name, m_Index);
             return newMember;
         }
-        private static void FillMemberNewObjectAssignList(
+        private void FillMemberNewObjectAssignList(
             MetaNewObjectExpressNode newMember,
             MetaBlockStatements mbs,
+            MetaBase owmb,
             MetaExpressNodeBase valueExpr,
             string memberName,
             int memberIndex)
@@ -223,9 +224,9 @@ namespace SimpleLanguage.Core
             indexExpr.CalcReturnType();
 
             var list = newMember.assignStatementsList;
-            list.Add(new MetaBraceAssignStatements(mbs, nameExpr, nameMv));
-            list.Add(new MetaBraceAssignStatements(mbs, valueExpr, valueMv));
-            list.Add(new MetaBraceAssignStatements(mbs, indexExpr, indexMv));
+            list.Add(new MetaBraceAssignStatements(nameMv, mbs, owmb, nameExpr ));
+            list.Add(new MetaBraceAssignStatements(valueMv, mbs, owmb, valueExpr ));
+            list.Add(new MetaBraceAssignStatements(indexMv, mbs, owmb, indexExpr));
         }
         public override string ToFormatString()
         {

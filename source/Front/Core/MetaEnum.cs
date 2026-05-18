@@ -88,14 +88,13 @@ namespace SimpleLanguage.Core
                 }
 
 
-
                 //newRMT.AddGenTemplateMetaType(m_RealMetaType);
 
                 var valuesNewExpress = new MetaNewObjectExpressNode(mt, CoreMetaClassManager.enumMetaData, null, m_ValuesMetaVariable);
                 foreach (var itemExpress in maen.metaCallArray)
                 {
-                    valuesNewExpress.assignStatementsList.Add(
-                        new MetaBraceAssignStatements(null, new MetaType(CoreMetaClassManager.enumMetaData), itemExpress));
+                    var mbas = new MetaBraceAssignStatements(mt, null, this, mt, itemExpress);
+                    valuesNewExpress.assignStatementsList.Add(mbas);
                 }
                 MetaType inputType = valuesNewExpress.GetMaxLevelMetaType();
 
