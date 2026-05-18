@@ -559,6 +559,10 @@ namespace SimpleLanguage.Core
             {
                 return false;
             }
+            if( declared.metaClass == CoreMetaClassManager.objectMetaClass )
+            {
+                return true;
+            }
 
             if (TypeManager.CompareMetaType(declared, express))
             {
