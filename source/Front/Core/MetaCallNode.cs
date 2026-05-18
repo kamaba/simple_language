@@ -448,9 +448,7 @@ namespace SimpleLanguage.Core
                     else
                     {
                         // New behavior: global.xxx reads from Project{} static members in .sp.
-                        var projectMc = ClassManager.instance.GetClassByName("S.Project", 0)
-                            ?? ClassManager.instance.GetClassByName("Core.Project", 0)
-                            ?? ClassManager.instance.GetClassByName("Project", 0);
+                        var projectMc = ClassManager.instance.TryGetProjectMetaClass();
 
                         if (projectMc != null)
                         {

@@ -11,6 +11,7 @@ using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Linq;
 using SimpleLanguage.Project;
+using System;
 
 namespace SimpleLanguage.Core
 {
@@ -53,6 +54,41 @@ namespace SimpleLanguage.Core
             string nname = name + "_" + templateCount;
             if (m_AllClassDict.ContainsKey(nname))
                 return m_AllClassDict[nname];
+            return null;
+        }
+
+        /// <summary>
+        /// 入口 <c>Project</c> 类。全名随 <see cref="MetaNode.GetAllName"/> 可能为 <c>S.Core.Project</c> 等，
+        /// 仅用 <c>GetClassByName(&quot;Core.Project&quot;, 0)</c> 会漏解。
+        /// </summary>
+        public MetaClass TryGetProjectMetaClass()
+        {
+            var mc = GetClassByName("S.Project", 0)
+                ?? GetClassByName("Core.Project", 0)
+                ?? GetClassByName("Project", 0);
+            if (mc != null)
+            {
+                return mc;
+            }
+            return FindFirstMetaClassByShortName("Project", 0);
+        }
+
+        MetaClass FindFirstMetaClassByShortName(string shortName, int templateCount)
+        {
+            if (string.IsNullOrEmpty(shortName))
+            {
+                return null;
+            }
+            foreach (var kv in m_AllClassDict)
+            {
+                var c = kv.Value;
+                if (c == null) continue;
+                if (c.metaTemplateList.Count != templateCount) continue;
+                if (string.Equals(c.name, shortName, StringComparison.Ordinal))
+                {
+                    return c;
+                }
+            }
             return null;
         }
         public bool AddMetaClass( MetaClass mc, MetaModule mm = null )
@@ -440,6 +476,8 @@ namespace SimpleLanguage.Core
                             findmc2.ParseFileMetaClassTemplate(fmc);
                             findmc2.ParseFileMetaClassMemeberVarAndFunc(fmc);
                             findmc2.SetClassDefineType(EClassDefineType.CodeDefine);
+                            findmc2.UpdateClassAllName();
+                            AddExportMetaClass(findmc2);
                             return findmc2;
                         }
                         else
@@ -514,6 +552,7 @@ namespace SimpleLanguage.Core
                             ffmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
                             ffmc.UpdateClassAllName();
                             AddInitHandleMetaClassList(ffmc);
+                            AddExportMetaClass(ffmc);
                             return ffmc;
                         }
                         else
@@ -563,6 +602,8 @@ namespace SimpleLanguage.Core
                             findamc.SetClassDefineType(EClassDefineType.CodeDefine);
                             findamc.ParseFileMetaClassTemplate(fmc);
                             findamc.ParseFileMetaClassMemeberVarAndFunc(fmc);
+                            findamc.UpdateClassAllName();
+                            AddExportMetaClass(findamc);
                             return findamc;
                         }
                         if (!fmc.isPartial)
@@ -585,6 +626,8 @@ namespace SimpleLanguage.Core
                             return null;
                         }
                         findamc.BindFileMetaClass(fmc);
+                        findamc.UpdateClassAllName();
+                        AddExportMetaClass(findamc);
                         return findamc;
                     }                    
                 }
@@ -638,6 +681,7 @@ namespace SimpleLanguage.Core
                     newmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
 
                     AddInitHandleMetaClassList(newmc);
+                    AddExportMetaClass(newmc);
 
                     return newmc;
                 }

@@ -196,9 +196,7 @@ namespace SimpleLanguage.Project
                 return;
             }
 
-            var projectMc = ClassManager.instance.GetClassByName("S.Project", 0)
-                ?? ClassManager.instance.GetClassByName("Core.Project", 0)
-                ?? ClassManager.instance.GetClassByName("Project", 0);
+            var projectMc = ClassManager.instance.TryGetProjectMetaClass();
             if (projectMc == null)
             {
                 return;

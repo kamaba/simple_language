@@ -204,7 +204,7 @@ namespace SimpleLanguage.Core
             }
 
             // Inject init calls into Project._main_() if present.
-            var project = ClassManager.instance.GetClassByName("S.Project", 0) ?? ClassManager.instance.GetClassByName("Core.Project", 0);
+            var project = ClassManager.instance.TryGetProjectMetaClass();
             if (project == null) return;
             var main = project.GetFirstMetaMemberFunctionByName("_main_");
             if (main == null) return;
