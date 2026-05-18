@@ -345,6 +345,11 @@ namespace SimpleLanguage.Core
             MetaClass leftBaseClass = mdtL.GetTemplateMetaClass();
             MetaClass rightBaseClass = mdtR.GetTemplateMetaClass();
 
+            if( rightBaseClass == CoreMetaClassManager.nullMetaClass )
+            {
+                return true;
+            }
+
             if (leftBaseClass != rightBaseClass)
             {
                 return false;

@@ -49,16 +49,16 @@ data AnonymousNestedDataSample
         b = 30,
         child = {
             x = 1,
-            y = ClassDataEnumSample(){ cc = 0 },
+            y = ClassDataEnumSample(){ cc = null },
             z = DataKind.Base,
-            w = ClassHolder(){ value = "", value2 = ClassHolder2(){ ok = 2 } },
+            w = ClassHolder(){ value = 11, value2 = ClassHolder2(){ ok = 2 } },
         }
     }
 }
 
 data ClassDataEnumSample
 {
-    cc = ClassHolder(){ value = "200" }
+    cc = ClassHolder(){ value = 222 }
     vb = MetaInfo(){ level = 3, passed = True }
     kind = DataKind.Advanced
 }

@@ -1003,6 +1003,7 @@ namespace SimpleLanguage.Compile
             m_DataToken = _dynamicDataToken;
             m_VarToken = _varToken;
             m_Express = fme;
+            m_Token = fileMetaVariableRef.callNodeList[0].token;
             isAppendSemiColon = flag;
         }
         public override void SetDeep(int _deep)

@@ -158,6 +158,12 @@ namespace SimpleLanguage.Compile
         }
         void AddNumberRealTokenByRange(ulong parsed, string x)
         {
+            // 字面量 0 统一为 int32，避免被归到 sbyte/byte 导致与常见期望不符。
+            if (parsed == 0UL)
+            {
+                AddToken(ETokenType.NumberReal, 0, x);
+                return;
+            }
             if (parsed <= (ulong)sbyte.MaxValue)
             {
                 AddToken(ETokenType.NumberReal, (sbyte)parsed, x);
@@ -193,6 +199,11 @@ namespace SimpleLanguage.Compile
         }
         void AddIntegerTokenByRange(ulong parsed)
         {
+            if (parsed == 0UL)
+            {
+                AddToken(ETokenType.Number, 0, EType.Int32);
+                return;
+            }
             if (parsed <= (ulong)sbyte.MaxValue)
             {
                 AddToken(ETokenType.Number, (sbyte)parsed, EType.Int8);
@@ -228,6 +239,11 @@ namespace SimpleLanguage.Compile
         }
         void AddUnsignedNumberRealTokenByRange(ulong parsed, string x)
         {
+            if (parsed == 0UL)
+            {
+                AddToken(ETokenType.NumberReal, 0, x);
+                return;
+            }
             if (parsed <= byte.MaxValue)
             {
                 AddToken(ETokenType.NumberReal, (byte)parsed, x);
@@ -682,7 +698,8 @@ namespace SimpleLanguage.Compile
 
                                 Log.AddTokenLog(LID.ShowExtendMessage, "char. logic is float format call inner functionname");
                                 //m_Buffer.Remove(m_Buffer.Length - 1, 1);
-                                AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Int32);
+                                // 无后缀的小数字面量（含 0.0）默认 float32，extend 须与 lexeme 一致。
+                                AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
                                 AddToken(ETokenType.Period, frontChar );
                                 UndoChar();
                             }

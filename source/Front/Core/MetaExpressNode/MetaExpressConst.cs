@@ -126,6 +126,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
 
             eType = fmct.token.GetEType();
+            m_Token = fmct.token;
 
             Parse1(eType, fmct.token.lexeme);
         }
@@ -209,6 +210,23 @@ namespace SimpleLanguage.Core
                 {
                     eType = EType.Num;
                     value = lexeme;
+                }
+            }
+            else if (tt == ETokenType.Number)
+            {
+                // ETokenType.Number 的 EType 存在 extend 字段；小数 lexeme 以实际存储类型为准（0.0 等为 float → Float32）。
+                var lexemeNum = m_FileMetaConstValueTerm.token.lexeme;
+                if (lexemeNum is float fNum)
+                {
+                    eType = EType.Float32;
+                    value = fNum;
+                    m_ExpressReturnMetaType = new MetaType(eType);
+                }
+                else if (lexemeNum is double dNum)
+                {
+                    eType = EType.Float64;
+                    value = dNum;
+                    m_ExpressReturnMetaType = new MetaType(eType);
                 }
             }
             else if (tt == ETokenType.String)
