@@ -800,18 +800,38 @@ namespace SimpleLanguage.Core
         }
         public MetaType GetMetaTypeByInputTemplateList(MetaClass ownerMc, MetaNode getmc, List<FileInputTemplateNode> inputTemplateNodeList, List<MetaType> list = null )
         {
-            if (inputTemplateNodeList.Count == 0)
-            {
-                return new MetaType(getmc.GetMetaClassByTemplateCount(0));
-            }
-            var findfn = getmc.GetMetaClassByTemplateCount(inputTemplateNodeList.Count);
-            if (findfn == null)
+            if (getmc == null)
             {
                 return null;
             }
-            if( inputTemplateNodeList.Count == 0 )
+            int tplCount = inputTemplateNodeList != null ? inputTemplateNodeList.Count : 0;
+            if (getmc.isMetaData)
             {
-                return new MetaType(findfn );
+                if (tplCount > 0)
+                {
+                    Log.AddMetaCoreLog(LID.AutoTypeManagerL545, "data 类型不支持模板实参");
+                    return null;
+                }
+                return getmc.metaData != null ? new MetaType(getmc.metaData) : null;
+            }
+            if (getmc.isMetaEnum)
+            {
+                if (tplCount > 0)
+                {
+                    Log.AddMetaCoreLog(LID.AutoTypeManagerL545, "enum 类型不支持模板实参");
+                    return null;
+                }
+                return getmc.metaEnum != null ? new MetaType(getmc.metaEnum) : null;
+            }
+            if (tplCount == 0)
+            {
+                var mc0 = getmc.GetMetaClassByTemplateCount(0);
+                return mc0 != null ? new MetaType(mc0) : null;
+            }
+            var findfn = getmc.GetMetaClassByTemplateCount(tplCount);
+            if (findfn == null)
+            {
+                return null;
             }
             var mt = new MetaType();
             mt.SetTemplateMetaClass(findfn);
@@ -961,6 +981,14 @@ namespace SimpleLanguage.Core
             }
             else
             {
+                if( getmc.isMetaData )
+                {
+                    return new MetaType(getmc.metaData);
+                }
+                else if( getmc.isMetaEnum )
+                {
+                    return new MetaType(getmc.metaEnum);
+                }
                 var ret =  GetMetaTypeByTemplateList(curMc, getmc, findFun, fmcd.inputTemplateNodeList);
                 return ApplyFileMetaClassDefineDecorations(ret);
             }
@@ -983,11 +1011,35 @@ namespace SimpleLanguage.Core
             return cmt;
         }
         public MetaType GetMetaTypeByTemplateList(MetaClass curMc, MetaNode getmc, MetaMemberFunction findFun, List<FileInputTemplateNode> inputTemplateNodeList)
-        {            
-            var findfn = getmc.GetMetaClassByTemplateCount(inputTemplateNodeList.Count);
+        {
+            if (getmc == null)
+            {
+                return null;
+            }
+            int tplCount = inputTemplateNodeList != null ? inputTemplateNodeList.Count : 0;
+            if (getmc.isMetaData)
+            {
+                if (tplCount > 0)
+                {
+                    Log.AddMetaCoreLog(LID.AutoTypeManagerL545, "data 类型不支持模板实参");
+                    return null;
+                }
+                return getmc.metaData != null ? new MetaType(getmc.metaData) : null;
+            }
+            if (getmc.isMetaEnum)
+            {
+                if (tplCount > 0)
+                {
+                    Log.AddMetaCoreLog(LID.AutoTypeManagerL545, "enum 类型不支持模板实参");
+                    return null;
+                }
+                return getmc.metaEnum != null ? new MetaType(getmc.metaEnum) : null;
+            }
+
+            var findfn = getmc.GetMetaClassByTemplateCount(tplCount);
             if (findfn != null)
             {
-                if( inputTemplateNodeList.Count == 0 )
+                if( tplCount == 0 )
                 {
                     return new MetaType(findfn);
                 }

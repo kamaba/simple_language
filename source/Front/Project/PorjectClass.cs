@@ -9,6 +9,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -190,8 +191,25 @@ namespace SimpleLanguage.Project
 
         public static void InjectProjectGlobalDataFromConfig()
         {
-            var dataMap = ProjectManager.config?.Global?.Data;
-            if (dataMap == null || dataMap.Count == 0)
+            var cfg = ProjectManager.config;
+            var merged = new Dictionary<string, JsonElement>();
+            if (cfg?.Global?.Data != null)
+            {
+                foreach (var kv in cfg.Global.Data)
+                {
+                    merged[kv.Key] = kv.Value;
+                }
+            }
+
+            if (cfg?.JsoncProjectData != null)
+            {
+                foreach (var kv in cfg.JsoncProjectData)
+                {
+                    merged[kv.Key] = kv.Value;
+                }
+            }
+
+            if (merged.Count == 0)
             {
                 return;
             }
@@ -203,7 +221,7 @@ namespace SimpleLanguage.Project
             }
 
             int index = 0;
-            foreach (var kv in dataMap)
+            foreach (var kv in merged)
             {
                 if (string.IsNullOrWhiteSpace(kv.Key))
                 {
@@ -301,23 +319,23 @@ namespace SimpleLanguage.Project
                     mmv.SetMetaDefineType(arrMetaType);
                     mmv.SetRealMetaType(new MetaType(arrMetaType));
                     mmv.SetIsDefineMetaType(true);
-                    mmv.SetExpress(new MetaNewObjectExpressNode(arrExpress, projectMc, null, mmv));
+                    mmv.SetExpress(new MetaNewObjectExpressNode(arrMetaType, arrExpress, projectMc, null, mmv));
                     FinalizeInjectedProjectGlobalMember(projectMc, mmv);
                     return;
                 }
 
-                Log.AddProjectLog(LID.ShowExtendMessage, $"global.data array '{name}' contains unsupported element types (only primitive/array supported).");
+                Log.AddProjectLog(LID.ShowExtendMessage, $"jsonc data array '{name}' contains unsupported element types (only primitive/array supported).");
                 return;
             }
 
-            Log.AddProjectLog(LID.ShowExtendMessage, $"Unsupported global.data value kind for '{name}': {element.ValueKind}");
+            Log.AddProjectLog(LID.ShowExtendMessage, $"Unsupported jsonc data value kind for '{name}': {element.ValueKind}");
         }
 
         static void FinalizeInjectedProjectGlobalMember(MetaClass projectMc, MetaMemberVariable mmv)
         {
             projectMc.AddMetaMemberVariable(mmv);
 
-            // Project global.data is injected after the normal ParseMetaClassMemberExpress pass.
+            // Jsonc root "data" + legacy global.data: injected as Project statics after ParseMetaClassMemberExpress.
             // Re-run expression parse pipeline for injected members so array/data initializers
             // are lowered to NewArray/NewObject IR instead of only carrying raw meta definitions.
             mmv.ParseMetaExpress();
@@ -414,6 +432,7 @@ namespace SimpleLanguage.Project
                 arrayExpress.metaCallArray.Add(childExpress);
             }
 
+            arrayExpress.CalcReturnType();
             arrayMetaType = arrayExpress.GetReturnMetaType();
             return arrayMetaType != null;
         }
@@ -502,21 +521,33 @@ namespace SimpleLanguage.Project
                 sb.AppendLine();
                 sb.AppendLine("`global.xxx` / `global.func()` is integrated with `Project{}` semantic source.");
                 sb.AppendLine();
-                sb.AppendLine("### `global.data` from JSONC");
+                sb.AppendLine("### JSONC `data` on `Project`");
                 sb.AppendLine();
-                sb.AppendLine("When `global.data` is configured in project JSONC:");
+                sb.AppendLine("Prefer a root-level `\"data\": { ... }` block. Legacy `\"global\".\"data\"` is still read; root keys override on name clash.");
                 sb.AppendLine();
-                sb.AppendLine("- Primitive values (`int32`/`string`/`float`/`bool`/`null`) are injected as direct static members on `Project` and can be accessed by `global.<name>`. ");
+                sb.AppendLine("- Primitive values (`int32`/`string`/`float`/`bool`/`null`) are injected as **static members on `Project`** (not on the compiler `global` MetaData shell). Access via `global.<name>`. ");
                 sb.AppendLine("- Array values are supported (primitive and nested arrays), e.g. `global.arr[0]`, `global.arr2[1][0]`. ");
-                sb.AppendLine("- Object values are converted into `MetaData` trees, then injected into `Project` members, e.g. `global.vardata2.a`. ");
+                sb.AppendLine("- Object values become `MetaData` shape types, still as **fields on `Project`**, e.g. `global.vardata2.a`. ");
                 sb.AppendLine();
 
-                var dataMap = ProjectManager.config?.Global?.Data;
-                if (dataMap != null && dataMap.Count > 0)
+                var rootData = ProjectManager.config?.JsoncProjectData;
+                if (rootData != null && rootData.Count > 0)
                 {
-                    sb.AppendLine("### Current configured `global.data` keys");
+                    sb.AppendLine("### Current root `data` keys");
                     sb.AppendLine();
-                    foreach (var kv in dataMap)
+                    foreach (var kv in rootData)
+                    {
+                        sb.AppendLine("- `" + kv.Key + "` (`" + kv.Value.ValueKind + "`)");
+                    }
+                    sb.AppendLine();
+                }
+
+                var legacyGlobalData = ProjectManager.config?.Global?.Data;
+                if (legacyGlobalData != null && legacyGlobalData.Count > 0)
+                {
+                    sb.AppendLine("### Current `global.data` keys (legacy)");
+                    sb.AppendLine();
+                    foreach (var kv in legacyGlobalData)
                     {
                         sb.AppendLine("- `" + kv.Key + "` (`" + kv.Value.ValueKind + "`)");
                     }
@@ -526,13 +557,14 @@ namespace SimpleLanguage.Project
                 sb.AppendLine("## Example");
                 sb.AppendLine();
                 sb.AppendLine("```jsonc");
+                sb.AppendLine("\"data\": {");
+                sb.AppendLine("  \"var1\": 12,");
+                sb.AppendLine("  \"arr\": [1,2,3],");
+                sb.AppendLine("  \"arr2\": [[1,2],[3,4]],");
+                sb.AppendLine("  \"vardata2\": { \"a\": 10, \"b\": 20, \"flags\": [true,false] }");
+                sb.AppendLine("},");
                 sb.AppendLine("\"global\": {");
-                sb.AppendLine("  \"data\": {");
-                sb.AppendLine("    \"var1\": 12,");
-                sb.AppendLine("    \"arr\": [1,2,3],");
-                sb.AppendLine("    \"arr2\": [[1,2],[3,4]],");
-                sb.AppendLine("    \"vardata2\": { \"a\": 10, \"b\": 20, \"flags\": [true,false] }");
-                sb.AppendLine("  }");
+                sb.AppendLine("  \"imports\": [\"Some.Module\"]");
                 sb.AppendLine("}");
                 sb.AppendLine("```");
                 sb.AppendLine();

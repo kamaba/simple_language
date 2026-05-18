@@ -80,6 +80,14 @@ namespace SimpleLanguage.Core
                 m_ExpressReturnMetaType = m_MetaCallLink.GetMetaType();
             }
         }
+        public MetaVariable GetStoreMetaVariable()
+        {
+            if (m_MetaCallLink != null)
+            {
+                return m_MetaCallLink.storeMetaVariable;
+            }
+            return null;
+        }
         public MetaVariable GetMetaVariable()
         {
             if( m_MetaCallLink != null )

@@ -25,24 +25,25 @@ Compile post-hook entry (from `Compile` class). Executed after compile core flow
 
 `global.xxx` / `global.func()` is integrated with `Project{}` semantic source.
 
-### `global.data` from JSONC
+### JSONC `data` on `Project`
 
-When `global.data` is configured in project JSONC:
+Prefer a root-level `"data": { ... }` block. Legacy `"global"."data"` is still read; root keys override on name clash.
 
-- Primitive values (`int32`/`string`/`float`/`bool`/`null`) are injected as direct static members on `Project` and can be accessed by `global.<name>`. 
+- Primitive values (`int32`/`string`/`float`/`bool`/`null`) are injected as **static members on `Project`** (not on the compiler `global` MetaData shell). Access via `global.<name>`. 
 - Array values are supported (primitive and nested arrays), e.g. `global.arr[0]`, `global.arr2[1][0]`. 
-- Object values are converted into `MetaData` trees, then injected into `Project` members, e.g. `global.vardata2.a`. 
+- Object values become `MetaData` shape types, still as **fields on `Project`**, e.g. `global.vardata2.a`. 
 
 ## Example
 
 ```jsonc
+"data": {
+  "var1": 12,
+  "arr": [1,2,3],
+  "arr2": [[1,2],[3,4]],
+  "vardata2": { "a": 10, "b": 20, "flags": [true,false] }
+},
 "global": {
-  "data": {
-    "var1": 12,
-    "arr": [1,2,3],
-    "arr2": [[1,2],[3,4]],
-    "vardata2": { "a": 10, "b": 20, "flags": [true,false] }
-  }
+  "imports": ["Some.Module"]
 }
 ```
 

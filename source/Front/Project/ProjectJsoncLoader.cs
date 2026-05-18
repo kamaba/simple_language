@@ -100,6 +100,14 @@ namespace SimpleLanguage.Project
 
             }
 
+            if (TryGetObj(root, "data", out var rootProjectData))
+            {
+                foreach (var kv in rootProjectData.EnumerateObject())
+                {
+                    cfg.JsoncProjectData[kv.Name] = kv.Value.Clone();
+                }
+            }
+
             if (TryGetObj(root, "global", out var global))
             {
                 if (global.TryGetProperty("imports", out var imports) && imports.ValueKind == JsonValueKind.Array)
@@ -111,6 +119,7 @@ namespace SimpleLanguage.Project
                             cfg.Global.Imports.Add(i.GetString() ?? string.Empty);
                         }
                     }
+                }
 
                 if (TryGetObj(global, "data", out var dataObj))
                 {
@@ -118,7 +127,6 @@ namespace SimpleLanguage.Project
                     {
                         cfg.Global.Data[kv.Name] = kv.Value.Clone();
                     }
-                }
                 }
 
                 if (TryGetObj(global, "replace", out var replace))

@@ -16,6 +16,7 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaCallLink
     {
+        public MetaVariable storeMetaVariable => m_StoreMetaVariable;
         public List<MetaCallNode> callNodeList => m_CallNodeList;
         public MetaVisitNode finalCallNode => m_FinalCallNode;
         public List<MetaVisitNode> visitNodeList => m_VisitNodeList;
@@ -24,7 +25,8 @@ namespace SimpleLanguage.Core
         private FileMetaCallLink m_FileMetaCallLink;
         private MetaBase m_OwnerMetaClass = null;
         private MetaBlockStatements m_OwnerMetaBlockStatements = null;
-        private List<MetaCallNode> m_CallNodeList = new List<MetaCallNode>();       
+        private List<MetaCallNode> m_CallNodeList = new List<MetaCallNode>();
+        private MetaVariable m_StoreMetaVariable = null;
 
         private MetaVisitNode m_FinalCallNode = null;
         private List<MetaVisitNode> m_VisitNodeList = new List<MetaVisitNode>();
@@ -38,6 +40,7 @@ namespace SimpleLanguage.Core
             m_FileMetaCallLink = RewriteLocalCallLinkIfNeed(fmcl, metaOwner);
             m_OwnerMetaClass = metaOwner;
             m_OwnerMetaBlockStatements = mbs;
+            m_StoreMetaVariable = mv;
             CreateCallLinkNode(frontDefineMt, mv);
         }
         public MetaCallLink(MetaBase omc, MetaType frontDefineMt, MetaVariable mv)

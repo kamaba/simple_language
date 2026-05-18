@@ -21,11 +21,6 @@ namespace SimpleLanguage.Core
         private MetaVariable m_GlobalInstanceVariable;
         private FileMeta m_GlobalBindFileMeta;
 
-        public MetaVariable GetGlobalInstanceVariable()
-        {
-            return m_GlobalInstanceVariable;
-        }
-
         public void BuildGlobalClass(List<FileParse> fileParses)
         {
             if (fileParses == null) return;
@@ -117,7 +112,7 @@ namespace SimpleLanguage.Core
 
             m_GlobalInitFunction.ParseStatements();
 
-            var project = ClassManager.instance.TryGetProjectMetaClass();
+            var project = ClassManager.instance.GetClassByName("S.Project", 0) ?? ClassManager.instance.GetClassByName("Core.Project", 0);
             if (project == null) return;
             var main = project.GetFirstMetaMemberFunctionByName("_main_");
             if (main == null) return;

@@ -258,7 +258,7 @@ namespace SimpleLanguage.Core
                             MetaArrayExpressNode maen = new MetaArrayExpressNode(fmbt, ownerBase, cep.ownerMBS, cep.metaType, cep.equalMetaVariable);
                             if (cep.allowNewVariable)
                             {
-                                var newob = new MetaNewObjectExpressNode(maen, ownerBase, cep.ownerMBS, cep.equalMetaVariable);
+                                var newob = new MetaNewObjectExpressNode( cep.metaType, maen, ownerBase, cep.ownerMBS, cep.equalMetaVariable);
                                 return newob;
                             }
                             else
@@ -390,7 +390,7 @@ namespace SimpleLanguage.Core
             }
             else if (oldmen is MetaArrayExpressNode maen)
             {
-                menNew = new MetaNewObjectExpressNode(maen, oldmen.ownerMetaClass, oldmen.ownerMetaBlockStatements, mv);
+                menNew = new MetaNewObjectExpressNode(mdt, maen, oldmen.ownerMetaClass, oldmen.ownerMetaBlockStatements, mv);
                 if (mdt != null && mdt.IsArray() && mdt.metaClass != CoreMetaClassManager.objectMetaClass)
                 {
                     (menNew as MetaNewObjectExpressNode)?.SetAssignmentTargetArrayMetaType(mdt);

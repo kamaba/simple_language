@@ -392,15 +392,12 @@ namespace SimpleLanguage.Core
                     right = m_Left;
                     isChange = true;
                 }
+                MetaType leftMt = left.GetReturnMetaType();
+                MetaType rightMt = right.GetReturnMetaType();
 
-                bool isFindDefineFunction = false;
-                MetaClass leftMc = left.GetReturnMetaClass();
-                MetaClass rightMc = right.GetReturnMetaClass();
+                
 
-                // enum compare rule:
-                // 1) enum only supports == and !=
-                // 2) if one side is enum and another is Member class, Member.ownerMetaClass must be same enum class
-                if (leftMc?.eType == EType.Enum || rightMc?.eType == EType.Enum)
+                if ( leftMt.isData && rightMt.isData )
                 {
                     bool isEnumCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal || m_OpLevelSign == ELeftRightOpSign.NotEqual;
                     if (!isEnumCompareOp)
@@ -409,8 +406,18 @@ namespace SimpleLanguage.Core
                         m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
                         return;
                     }
-
-                    MetaExpressNodeBase enumExpr = leftMc?.eType == EType.Enum ? left : right;
+                    m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                }
+                else if( leftMt.isEnum && rightMt.isEnum )
+                {
+                    bool isEnumCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal || m_OpLevelSign == ELeftRightOpSign.NotEqual;
+                    if (!isEnumCompareOp)
+                    {
+                        AddMetaError("Error enum类型只允许 == 或 != 运算!!");
+                        m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                        return;
+                    }
+                    MetaExpressNodeBase enumExpr = left;
                     MetaExpressNodeBase anotherExpr = object.ReferenceEquals(enumExpr, left) ? right : left;
                     MetaClass enumClass = enumExpr.GetReturnMetaClass();
                     MetaClass anotherClass = anotherExpr.GetReturnMetaClass();
@@ -433,45 +440,172 @@ namespace SimpleLanguage.Core
                     m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
                     return;
                 }
-
-                bool isCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal
-                    || m_OpLevelSign == ELeftRightOpSign.NotEqual
-                    || m_OpLevelSign == ELeftRightOpSign.Greater
-                    || m_OpLevelSign == ELeftRightOpSign.GreaterOrEqual
-                    || m_OpLevelSign == ELeftRightOpSign.Less
-                    || m_OpLevelSign == ELeftRightOpSign.LessOrEqual
-                    || m_OpLevelSign == ELeftRightOpSign.Or
-                    || m_OpLevelSign == ELeftRightOpSign.And;
-
-                if (leftMc.eType == EType.Boolean)
+                else if( leftMt.isClass && rightMt.isClass )
                 {
-                    if (rightMc.eType == EType.Boolean)
+                    bool isFindDefineFunction = false;
+                    MetaClass leftMc = leftMt.metaClass;
+                    MetaClass rightMc = rightMt.metaClass;
+
+                    bool isCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal
+                        || m_OpLevelSign == ELeftRightOpSign.NotEqual
+                        || m_OpLevelSign == ELeftRightOpSign.Greater
+                        || m_OpLevelSign == ELeftRightOpSign.GreaterOrEqual
+                        || m_OpLevelSign == ELeftRightOpSign.Less
+                        || m_OpLevelSign == ELeftRightOpSign.LessOrEqual
+                        || m_OpLevelSign == ELeftRightOpSign.Or
+                        || m_OpLevelSign == ELeftRightOpSign.And;
+
+                    if (leftMc.eType == EType.Boolean)
                     {
-                        //都是布尔类型
-                        m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                        if (rightMc.eType == EType.Boolean)
+                        {
+                            //都是布尔类型
+                            m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                        }
+                        else if (rightMc.eType == EType.String)
+                        {
+                            if (m_OpLevelSign == ELeftRightOpSign.Add)
+                            {
+                                m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+                                // ensure numeric left will be converted to string for concatenation
+                                m_LeftConvert = new ConvertType() { oriType = leftMc.eType, targetType = EType.String };
+                            }
+                            else
+                            {
+                                AddMetaError("Error 字符串类型只能参与加法运算!!");
+                            }
+                        }
+                        else
+                        {
+                            //左边布尔 右边非布尔
+                            AddMetaError("Error 布尔类型不能参与加减运算!!");
+                        }
                     }
-                    else if( rightMc.eType == EType.String)
+                    else if (ClassManager.IsNumberClass(leftMc))
+                    {
+                        if (ClassManager.IsNumberClass(rightMc))
+                        {
+                            switch (m_OpLevelSign)
+                            {
+                                case ELeftRightOpSign.Add:
+                                case ELeftRightOpSign.Minus:
+                                case ELeftRightOpSign.Multiply:
+                                case ELeftRightOpSign.Divide:
+                                case ELeftRightOpSign.Modulo:
+                                case ELeftRightOpSign.InclusiveOr:
+                                case ELeftRightOpSign.Combine:
+                                case ELeftRightOpSign.XOR:
+                                case ELeftRightOpSign.Shi:
+                                case ELeftRightOpSign.Shr:
+                                    {
+                                        //都是数字类型
+                                        if (ProjectManager.config?.Compile?.RequireSameNumericTypes == true
+                                            && leftMc.eType != rightMc.eType)
+                                        {
+                                            AddMetaError("Error 已启用 compile.requireSameNumericTypes：算术/位运算两侧须为同一数字类型（如 byte+byte、Int32+Int32），禁止不同类型混合运算。");
+                                            m_RealMetaType = new MetaType(leftMc);
+                                            break;
+                                        }
+
+                                        EType etype = MetaTypeFactory.CalcETypeByLeftAndRight(leftMc.eType, rightMc.eType, m_OpLevelSign, out int error);
+                                        if (error == 0)
+                                        {
+                                            if (etype != rightMc.eType)
+                                            {
+                                                m_LeftConvert = new ConvertType()
+                                                {
+                                                    oriType = leftMc.eType,
+                                                    targetType = etype
+                                                };
+
+                                                m_RightConvert = new ConvertType()
+                                                {
+                                                    oriType = rightMc.eType,
+                                                    targetType = etype
+                                                };
+                                            }
+
+                                            m_RealMetaType = new MetaType(CoreMetaClassManager.GetMetaClassByEType(etype));
+                                        }
+                                        else
+                                        {
+                                            AddMetaError("Error 加减运算类型计算错误!!");
+                                        }
+                                    }
+                                    break;
+                                case ELeftRightOpSign.Equal:
+                                case ELeftRightOpSign.NotEqual:
+                                case ELeftRightOpSign.Greater:
+                                case ELeftRightOpSign.GreaterOrEqual:
+                                case ELeftRightOpSign.Less:
+                                case ELeftRightOpSign.LessOrEqual:
+                                case ELeftRightOpSign.Or:
+                                case ELeftRightOpSign.And:
+                                    {
+                                        m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                                    }
+                                    break;
+                            }
+                        }
+                        else if (rightMc.eType == EType.String)
+                        {
+                            if (m_OpLevelSign == ELeftRightOpSign.Add)
+                            {
+                                m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+                            }
+                            else
+                            {
+                                AddMetaError("Error 字符串类型只能参与加法运算!!");
+                            }
+                        }
+                        else if (rightMc.eType == EType.Enum)
+                        {
+                            if (isCompareOp)
+                            {
+                                // support number-backed enum comparisons, e.g. BridgeKind param vs BridgeKind.CLR member value
+                                m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                            }
+                            else
+                            {
+                                isFindDefineFunction = true;
+                            }
+                        }
+                        else
+                        {
+                            isFindDefineFunction = true;
+                        }
+                    }
+                    else if (leftMc.eType == EType.String)
                     {
                         if (m_OpLevelSign == ELeftRightOpSign.Add)
                         {
                             m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
-                            // ensure numeric left will be converted to string for concatenation
-                            m_LeftConvert = new ConvertType() { oriType = leftMc.eType, targetType = EType.String };
+                            // if right side is numeric, convert it to string
+                            if (ClassManager.IsNumberClass(rightMc))
+                            {
+                                m_RightConvert = new ConvertType() { oriType = rightMc.eType, targetType = EType.String };
+                            }
                         }
                         else
                         {
                             AddMetaError("Error 字符串类型只能参与加法运算!!");
                         }
                     }
-                    else
+                    else if ((leftMc.eType == EType.Boolean && rightMc.eType == EType.String) || (leftMc.eType == EType.String && rightMc.eType == EType.Boolean))
                     {
-                        //左边布尔 右边非布尔
-                        AddMetaError("Error 布尔类型不能参与加减运算!!");
+                        // implicit convert boolean to string when concatenating
+                        m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+                        // inject convert operation: boolean -> string
+                        if (leftMc.eType == EType.Boolean)
+                        {
+                            m_LeftConvert = new ConvertType() { oriType = EType.Boolean, targetType = EType.String };
+                        }
+                        if (rightMc.eType == EType.Boolean)
+                        {
+                            m_RightConvert = new ConvertType() { oriType = EType.Boolean, targetType = EType.String };
+                        }
                     }
-                }
-                else if (ClassManager.IsNumberClass(leftMc))
-                {
-                    if (ClassManager.IsNumberClass(rightMc))
+                    else
                     {
                         switch (m_OpLevelSign)
                         {
@@ -486,39 +620,7 @@ namespace SimpleLanguage.Core
                             case ELeftRightOpSign.Shi:
                             case ELeftRightOpSign.Shr:
                                 {
-                                    //都是数字类型
-                                    if (ProjectManager.config?.Compile?.RequireSameNumericTypes == true
-                                        && leftMc.eType != rightMc.eType)
-                                    {
-                                        AddMetaError("Error 已启用 compile.requireSameNumericTypes：算术/位运算两侧须为同一数字类型（如 byte+byte、Int32+Int32），禁止不同类型混合运算。");
-                                        m_RealMetaType = new MetaType(leftMc);
-                                        break;
-                                    }
-
-                                    EType etype = MetaTypeFactory.CalcETypeByLeftAndRight(leftMc.eType, rightMc.eType, m_OpLevelSign, out int error);
-                                    if (error == 0)
-                                    {
-                                        if(etype != rightMc.eType )
-                                        {
-                                            m_LeftConvert = new ConvertType()
-                                            {
-                                                oriType = leftMc.eType,
-                                                targetType = etype
-                                            };
-
-                                            m_RightConvert = new ConvertType()
-                                            {
-                                                oriType = rightMc.eType,
-                                                targetType = etype
-                                            };
-                                        }
-
-                                        m_RealMetaType = new MetaType(CoreMetaClassManager.GetMetaClassByEType(etype));
-                                    }
-                                    else
-                                    {
-                                        AddMetaError("Error 加减运算类型计算错误!!");
-                                    }
+                                    isFindDefineFunction = true;
                                 }
                                 break;
                             case ELeftRightOpSign.Equal:
@@ -535,108 +637,23 @@ namespace SimpleLanguage.Core
                                 break;
                         }
                     }
-                    else if( rightMc.eType == EType.String)
+
+
+                    if (isFindDefineFunction)
                     {
-                        if (m_OpLevelSign == ELeftRightOpSign.Add)
+                        var mipc = new MetaInputParamCollection(left.expressReturnMetaType.metaClass, null);
+                        MetaInputParam mip = new MetaInputParam(right);
+                        mipc.AddMetaInputParam(mip);
+                        var mmf = rightMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_op_add_", 0, mipc);
+                        if (mmf == null)
                         {
-                            m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+                            AddMetaError("Error 右边类型不能转换为左边类型进行加减运算!!");
                         }
-                        else
-                        {
-                            AddMetaError("Error 字符串类型只能参与加法运算!!");
-                        }
-                    }
-                    else if (rightMc.eType == EType.Enum)
-                    {
-                        if (isCompareOp)
-                        {
-                            // support number-backed enum comparisons, e.g. BridgeKind param vs BridgeKind.CLR member value
-                            m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
-                        }
-                        else
-                        {
-                            isFindDefineFunction = true;
-                        }
-                    }
-                    else
-                    {
-                        isFindDefineFunction = true;
-                    }
-                }
-                else if (leftMc.eType == EType.String)
-                {
-                    if (m_OpLevelSign == ELeftRightOpSign.Add)
-                    {
-                        m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
-                        // if right side is numeric, convert it to string
-                        if (ClassManager.IsNumberClass(rightMc))
-                        {
-                            m_RightConvert = new ConvertType() { oriType = rightMc.eType, targetType = EType.String };
-                        }
-                    }
-                    else
-                    {
-                        AddMetaError("Error 字符串类型只能参与加法运算!!");
-                    }
-                }
-                else if ((leftMc.eType == EType.Boolean && rightMc.eType == EType.String) || (leftMc.eType == EType.String && rightMc.eType == EType.Boolean))
-                {
-                    // implicit convert boolean to string when concatenating
-                    m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
-                    // inject convert operation: boolean -> string
-                    if (leftMc.eType == EType.Boolean)
-                    {
-                        m_LeftConvert = new ConvertType() { oriType = EType.Boolean, targetType = EType.String };
-                    }
-                    if (rightMc.eType == EType.Boolean)
-                    {
-                        m_RightConvert = new ConvertType() { oriType = EType.Boolean, targetType = EType.String };
                     }
                 }
                 else
                 {
-                    switch (m_OpLevelSign)
-                    {
-                        case ELeftRightOpSign.Add:
-                        case ELeftRightOpSign.Minus:
-                        case ELeftRightOpSign.Multiply:
-                        case ELeftRightOpSign.Divide:
-                        case ELeftRightOpSign.Modulo:
-                        case ELeftRightOpSign.InclusiveOr:
-                        case ELeftRightOpSign.Combine:
-                        case ELeftRightOpSign.XOR:
-                        case ELeftRightOpSign.Shi:
-                        case ELeftRightOpSign.Shr:
-                            {
-                                isFindDefineFunction = true;
-                            }
-                            break;
-                        case ELeftRightOpSign.Equal:
-                        case ELeftRightOpSign.NotEqual:
-                        case ELeftRightOpSign.Greater:
-                        case ELeftRightOpSign.GreaterOrEqual:
-                        case ELeftRightOpSign.Less:
-                        case ELeftRightOpSign.LessOrEqual:
-                        case ELeftRightOpSign.Or:
-                        case ELeftRightOpSign.And:
-                            {
-                                m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
-                            }
-                            break;
-                    }
-                }
-
-
-                if (isFindDefineFunction)
-                {
-                    var mipc = new MetaInputParamCollection(left.expressReturnMetaType.metaClass, null);
-                    MetaInputParam mip = new MetaInputParam(right);
-                    mipc.AddMetaInputParam(mip);
-                    var mmf = rightMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_op_add_", 0, mipc);
-                    if (mmf == null)
-                    {
-                        AddMetaError("Error 右边类型不能转换为左边类型进行加减运算!!");
-                    }
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "", "");
                 }
             }
         }

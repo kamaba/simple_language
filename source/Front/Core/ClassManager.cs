@@ -1315,7 +1315,7 @@ namespace SimpleLanguage.Core
                 }
                 if (parentMB != null)
                 {
-                    if (parentMB.IsMetaClass())
+                    if (parentMB.IsMetaClass() || parentMB.isMetaData || parentMB.isMetaEnum)
                         return parentMB;
                 }
                 mb = mb.parentNode;
@@ -1352,7 +1352,7 @@ namespace SimpleLanguage.Core
                         Log.AddMetaCoreLog(LID.AutoClassManagerL926, "鎵惧埌浜嗗凡鏈夊懡鍚嶇┖闂磋€屼笉鏄缁ф壙鐨勭被!!");
                         return null;
                     }
-                    else if (mb.IsMetaClass())
+                    else if (mb.IsMetaClass() || mb.isMetaData || mb.isMetaEnum)
                     {
                         return mb;
                     }

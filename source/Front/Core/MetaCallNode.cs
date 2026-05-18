@@ -458,17 +458,10 @@ namespace SimpleLanguage.Core
                             m_CallNodeType = ECallNodeType.Global;
                             return true;
                         }
-
-                        // legacy fallback
-                        m_MetaVariable = GlobalManager.instance.GetGlobalInstanceVariable();
-                        if (m_MetaVariable != null)
+                        else
                         {
-                            m_MetaVariable.ParseRealMetaType();
-                            m_MetaType = m_MetaVariable.realMetaType;
-                            m_CallMetaType = new MetaType(m_MetaType);
+                            return false;
                         }
-                        m_MetaData = ProjectManager.globalData;
-                        m_CallNodeType = ECallNodeType.Global;
                     }
                 }
                 else
@@ -511,6 +504,11 @@ namespace SimpleLanguage.Core
                         {
                             m_MetaClass = m_FrontDefineMetaType.metaClass;
                             m_CallNodeType = ECallNodeType.NewClass;
+                        }
+                        else if( m_FrontDefineMetaType.eMetaTypeType == EMetaTypeType.MetaData )
+                        {
+                            m_MetaData = m_FrontDefineMetaType.metaData;
+                            m_CallNodeType = ECallNodeType.NewData;
                         }
                         else
                         {
@@ -1991,7 +1989,7 @@ namespace SimpleLanguage.Core
             if (mmv != null)
             {
                 m_MetaVariable = mmv;
-                m_MetaType = mmv.isDefineMetaType ? mmv.defineMetaType : mmv.realMetaType;
+                m_MetaType = mmv.GetFinalMetaType();
                 m_CallMetaType = new MetaType(mmv.ownerMetaClass);
                 m_CallNodeType = ECallNodeType.MemberVariableName;
                 //var gmmv3 = (mv as MetaIteratorVariable);

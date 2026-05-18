@@ -224,11 +224,10 @@ namespace SimpleLanguage.Project
             MetaVariableManager.instance.ParseMetaMemberExpress();
             ClassManager.instance.ParseDefineComplete();
 
-            // Inject project global.data config into Project meta members before statements parse.
+            // Inject jsonc data (root "data" + legacy global.data) into Project meta members before statements parse.
             ProjectClass.InjectProjectGlobalDataFromConfig();
 
             // Build per-file local{} classes after member express parsed but before statements parsing.
-            GlobalManager.instance.BuildGlobalClass(fileParseList);
             LocalManager.instance.BuildFileLocalClasses(fileParseList);
 
             MethodManager.instance.ParseStatements();

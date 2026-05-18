@@ -35,6 +35,10 @@ namespace SimpleLanguage.Project
         public CompileFilesSection CompileFiles { get; set; } = new CompileFilesSection();
         public CompileFilterSection CompileFilter { get; set; } = new CompileFilterSection();
         public GlobalSection Global { get; set; } = new GlobalSection();
+        /// <summary>
+        /// jsonc ???? <c>"data"</c>?????? <c>Project</c> ????????????????? <see cref="GlobalSection.Data"/>????
+        /// </summary>
+        public Dictionary<string, JsonElement> JsoncProjectData { get; set; } = new Dictionary<string, JsonElement>();
         public StructTreeNode StructTree { get; set; } = new StructTreeNode();
         public List<ReferenceSection> References { get; set; } = new List<ReferenceSection>();
         public ExportSection Export { get; set; } = new ExportSection();
@@ -123,14 +127,14 @@ namespace SimpleLanguage.Project
             public string Target { get; set; } = "AnyCPU";
             public bool Debug { get; set; } = true;
             public bool IsUseForceSemiColonInLineEnd { get; set; } = true;
-            // Force all classes to use class key even if not strictly necessary 强制使用class关键字
+            // Force all classes to use class key even if not strictly necessary ??????class?????
             public bool IsForceUseKeyClass { get; set; }
-            // Support C-style ++/-- operators 支持++/--操作符
+            // Support C-style ++/-- operators ???++/--??????
             public bool IsSupportDoublePlus { get; set; }
 
             /// <summary>
-            /// 为 true 时：算术/位运算两侧必须是同一数字类型（如 byte+byte、Int32+Int32），禁止 byte+Int32 等混合。
-            /// 为 false（默认）：使用 <see cref="MetaTypeFactory.CalcETypeByLeftAndRight"/> 的数值升级规则。
+            /// ? true ???????/λ?????????????????????????? byte+byte??Int32+Int32??????? byte+Int32 ?????
+            /// ? false??????????? <see cref="MetaTypeFactory.CalcETypeByLeftAndRight"/> ?????????????
             /// </summary>
             public bool RequireSameNumericTypes { get; set; } = false;
         }
@@ -178,7 +182,7 @@ namespace SimpleLanguage.Project
         {
             public List<string> Imports { get; set; } = new List<string>();
             public Dictionary<string, string> Replace { get; set; } = new Dictionary<string, string>();
-            // project jsonc: global.data = { key: primitive|object }
+            // project jsonc: global.data = { key: primitive|object }（旧位置；与根级 "data" 合并注入 Project，根级优先）
             public Dictionary<string, JsonElement> Data { get; set; } = new Dictionary<string, JsonElement>();
         }
 

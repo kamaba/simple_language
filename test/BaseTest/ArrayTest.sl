@@ -239,7 +239,7 @@ ArrayTest
     {
         global.println("========== mixed literal / `$` / is ArrClass ==========")
         var ac = ArrClass(){ i1 = 20, i2 = "mix" }
-        object[][] mixedNest = [[137,138,139,ac,148],[[11],[13,14,15]]];        
+        object[5][] mixedNest = [[137,138,139,ac,148],[[11],[13,14,15]]];        
         #mixedNest = ObjectArray(2){ ObjectArray(5){0,1,2,ac,4}, ObjectArray(2){ [11], [13,14,15] } }
         
         forIIterator(mixedNest)

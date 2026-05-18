@@ -1205,18 +1205,27 @@ namespace SimpleLanguage.Core
         //    m_MetaMemberFunction = mmf;
         //}
         // 解析后的[] 然后再进行newArray
-        public MetaNewObjectExpressNode(MetaArrayExpressNode maen, MetaBase mc, MetaBlockStatements mbs, MetaVariable equalMV)
+        public MetaNewObjectExpressNode( MetaType defineMt, MetaArrayExpressNode maen, MetaBase mc, MetaBlockStatements mbs, MetaVariable equalMV)
         {
+            m_DefineMetaType = defineMt;
             m_OwnerMetaBase = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_NewType = ENewType.ArrayClass;
             m_Token = maen.token;
             m_StoreMetaVariable = equalMV;
-            for (int i = 0; i < maen.metaCallArray.Count; i++)
+            if( defineMt.IsArray() )
             {
-                var men = maen.metaCallArray[i];
-                MetaBraceAssignStatements mas = new MetaBraceAssignStatements( null, m_OwnerMetaBlockStatements, m_OwnerMetaBase,null, men);
-                m_AssignStatementsList.Add(mas);
+                var gtmtl = defineMt.GetGenTemplateMetaTypeList();
+                var cmt = gtmtl[0];
+                for (int i = 0; i < maen.metaCallArray.Count; i++)
+                {
+                    MetaBraceAssignStatements mas = new MetaBraceAssignStatements(cmt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, maen.metaCallArray[i]);
+                    m_AssignStatementsList.Add(mas);
+                }
+            }
+            else
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "", m_Token);
             }
             m_StatementsContentType = EStatementsContentType.ArrayValue;
         }
@@ -1264,7 +1273,7 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = defineMt != null ? new MetaType(defineMt) : null;
             m_OwnerMetaBase = mcen.ownerMetaBase;
             m_OwnerMetaBlockStatements = mcen.ownerMetaBlockStatements;
-            m_StoreMetaVariable = mcen.GetMetaVariable();
+            m_StoreMetaVariable = mcen.GetStoreMetaVariable();
 
             m_MetaMemberFunction = mcen.metaCallLink.finalCallNode.methodCall?.function as MetaMemberFunction;
             m_NewMetaType = new MetaType(mcen.metaCallLink.finalCallNode.callMetaType);

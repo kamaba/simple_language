@@ -279,6 +279,13 @@ namespace SimpleLanguage.Core
                         }
                         m_DefineVarMetaVariable.SetRealMetaType(new MetaType(mdt));
                     }
+                    else if( mdt.isData )
+                    {
+                        if(m_ExpressNode.GetReturnMetaType().metaData == mdt.metaData)
+                        {
+                            m_DefineVarMetaVariable.SetRealMetaType(mdt);
+                        }
+                    }
                     else
                     {
                         MetaClass compareClass = null;
