@@ -476,8 +476,7 @@ namespace SimpleLanguage.Core
         /// </summary>
         public static MetaType BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(
             MetaType defineArray,
-            MetaType newArray,
-            MetaType realArray)
+            MetaType newArray )
         {
             if (defineArray == null)
             {
@@ -486,14 +485,13 @@ namespace SimpleLanguage.Core
 
             var r = new MetaType(defineArray);
             int len = -1;
+            if (len < 0 && defineArray != null && defineArray.arrayLength >= 0)
+            {
+                len = defineArray.arrayLength;
+            }
             if (newArray != null && newArray.arrayLength >= 0)
             {
                 len = newArray.arrayLength;
-            }
-
-            if (len < 0 && realArray != null && realArray.arrayLength >= 0)
-            {
-                len = realArray.arrayLength;
             }
 
             if (len >= 0)

@@ -340,36 +340,18 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = mmv.GetFinalMetaType();
             m_AssignTargetType = EAssignTargetType.MemberVariable;
         }
-
-        /// <summary>
-        /// 数组字面量中的槽位（含嵌套 <c>[ ]</c> / <c>{ }</c> 一行），右值为子字面量节点；<paramref name="arraySlotDefineMetaType"/> 为该槽位应对齐的类型（通常为外层数组的元素类型）。
-        /// </summary>
-        public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaExpressNodeBase men, MetaMemberVariable contextOuterMember, MetaType arraySlotDefineMetaType)
-        {
-            m_OwnerMetaBlockStatements = mbs;
-            m_MetaExpress = men;
-            m_Token = men.token;
-            m_MetaMemberVariable = contextOuterMember;
-            m_AssignTargetType = EAssignTargetType.ArrayValue;
-            if (arraySlotDefineMetaType != null)
-            {
-                m_DefineMetaType = new MetaType(arraySlotDefineMetaType);
-            }
-        }
         /// <summary>
         /// 对象初始化列表中的 data 字段赋值（目标为 <see cref="MetaMemberData"/>），与 <see cref="MetaMemberVariable"/> 分支对称。
         /// </summary>
-        public MetaBraceAssignStatements(MetaBlockStatements mbs, MetaExpressNodeBase men, MetaMemberData mmd, EAssignTargetType assignTargetType = EAssignTargetType.MemberData)
+        public MetaBraceAssignStatements(MetaMemberData mmd, MetaBlockStatements mbs, MetaBase owmt, MetaExpressNodeBase men, bool isAnon )
         {
+            m_MetaMemberData = mmd;
             m_OwnerMetaBlockStatements = mbs;
+            m_OwnerMetaBase = owmt;
             m_MetaExpress = men;
             m_Token = men.token;
-            m_MetaMemberData = mmd;
-            m_AssignTargetType = assignTargetType;
-            if (mmd?.defineMetaType != null)
-            {
-                m_DefineMetaType = new MetaType(mmd.defineMetaType);
-            }
+            m_AssignTargetType = isAnon ? EAssignTargetType.AnonVariable : EAssignTargetType.MemberData;
+            m_DefineMetaType = new MetaType(mmd.defineMetaType);
         }
 
 
@@ -1137,8 +1119,6 @@ namespace SimpleLanguage.Core
         /// <summary>大括号/数组字面量左侧被赋值的变量（与原 <c>metaContent.equalMetaVariable</c> 一致）。</summary>
         public MetaVariable equalMetaVariable => m_StoreMetaVariable;
         public EStatementsContentType statementsContentType => m_StatementsContentType;
-        /// <summary>解析 <c>{ ... }</c> / <c>[ ... ]</c> 初始化列表时所依据的类型（可与外层 <c>m_DefineMetaType</c> 不同，如 <c>new Array&lt;T&gt;(){ ... }</c>）。</summary>
-        public MetaType braceStatementsDefineMetaType => m_BraceStatementsDefineMetaType;
 
         /// <summary>
         /// 为 true 表示语法上已写明数组元素类型（如 <c>Array&lt;Int16&gt;(n){ ... }</c> 等由调用链构造的数组），
@@ -1154,7 +1134,6 @@ namespace SimpleLanguage.Core
         private MetaExpressNodeBase m_MetaEnumValue = null;
         private readonly List<MetaBraceAssignStatements> m_AssignStatementsList = new List<MetaBraceAssignStatements>();
         private FileMetaBaseTerm m_BraceFileMetaBaseTerm = null;
-        private MetaType m_BraceStatementsDefineMetaType = null;
         private MetaData m_BraceNewMetaData = null;
         private MetaData m_BraceNewTempMetaData = null;
         private EStatementsContentType m_StatementsContentType = EStatementsContentType.None;
@@ -1163,7 +1142,6 @@ namespace SimpleLanguage.Core
 
         private MetaType m_DefineMetaType = null;
         private MetaType m_NewMetaType = null;
-        private MetaType m_RealMetaType = null;
         private bool m_UsesExplicitArrayElementTypeSyntax = false;
         private MetaExpressNodeBase m_ArrayLengthExpress = null;
         private MetaVariable m_StoreMetaVariable = null; //模板或者是调用时的函数        
@@ -1213,19 +1191,16 @@ namespace SimpleLanguage.Core
             m_NewType = ENewType.ArrayClass;
             m_Token = maen.token;
             m_StoreMetaVariable = equalMV;
-            if( defineMt.IsArray() )
+            MetaType cmt = null;
+            if(defineMt != null && defineMt.IsArray() )
             {
                 var gtmtl = defineMt.GetGenTemplateMetaTypeList();
-                var cmt = gtmtl[0];
-                for (int i = 0; i < maen.metaCallArray.Count; i++)
-                {
-                    MetaBraceAssignStatements mas = new MetaBraceAssignStatements(cmt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, maen.metaCallArray[i]);
-                    m_AssignStatementsList.Add(mas);
-                }
+                cmt = gtmtl[0];
             }
-            else
+            for (int i = 0; i < maen.metaCallArray.Count; i++)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "", m_Token);
+                MetaBraceAssignStatements mas = new MetaBraceAssignStatements(cmt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, maen.metaCallArray[i]);
+                m_AssignStatementsList.Add(mas);
             }
             m_StatementsContentType = EStatementsContentType.ArrayValue;
         }
@@ -1239,19 +1214,20 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_DefineMetaType = new MetaType(mt);
-            m_NewMetaType = new MetaType(mt);
-            if (m_NewMetaType.IsArray())
+            if (m_DefineMetaType != null)
             {
-                m_NewType = ENewType.ArrayClass;
-            }
-            else
-            {
-                m_NewType = ENewType.CommomClass;
+                if (m_DefineMetaType.IsArray())
+                {
+                    m_NewType = ENewType.ArrayClass;
+                }
+                else
+                {
+                    m_NewType = ENewType.CommomClass;
+                }
             }
             m_Token = fmbt.token;
             m_BraceFileMetaBaseTerm = fmbt;
             m_StoreMetaVariable = equalMV;
-            m_BraceStatementsDefineMetaType = m_DefineMetaType;
         }
         // Array arr = [1,2,3]   [Class1(), Class2(), variable1.a.b(),100]
         public MetaNewObjectExpressNode(FileMetaBracketTerm fmbt, MetaType mt, MetaBase mc, MetaBlockStatements mbs, MetaVariable equalMV)
@@ -1262,10 +1238,8 @@ namespace SimpleLanguage.Core
             m_BraceFileMetaBaseTerm = fmbt;
             m_StoreMetaVariable = equalMV;
 
-            m_NewMetaType = new MetaType(mt);
             m_DefineMetaType = new MetaType(mt);
             m_NewType = ENewType.ArrayClass;
-            m_BraceStatementsDefineMetaType = m_DefineMetaType;
         }
         // Class1(10){ c1 = 20, c2 = 30 }  int[2][]{ [1,2,3], [3,4,5] }
         public MetaNewObjectExpressNode(MetaType defineMt, MetaCallLinkExpressNode mcen)
@@ -1331,7 +1305,6 @@ namespace SimpleLanguage.Core
 
                     var fma = lastNode.fileMetaBraceTerm;
                     m_BraceFileMetaBaseTerm = fma;
-                    m_BraceStatementsDefineMetaType = m_NewMetaType;
                 }
             }
             else
@@ -1345,7 +1318,6 @@ namespace SimpleLanguage.Core
 
                     var fma = lastNode.fileMetaBraceTerm;
                     m_BraceFileMetaBaseTerm = fma;
-                    m_BraceStatementsDefineMetaType = m_NewMetaType;
                 }
             }
         }
@@ -1377,7 +1349,8 @@ namespace SimpleLanguage.Core
             MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
             metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
 
-            m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.rangeMetaClass, null, metaInputTemplateCollection);
+            m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.rangeMetaClass, null, metaInputTemplateCollection);            
+            m_NewMetaType = m_ExpressReturnMetaType;
 
             MetaInputParamCollection mdpc = new MetaInputParamCollection(ownerMC as MetaClass, mbs);
             String[] arr = m_FileMetaConstValueTerm.name.Split("..");
@@ -1432,7 +1405,6 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_StoreMetaVariable = equalMV;
             m_DefineMetaType = new MetaType(mt);
-            m_NewMetaType = new MetaType(mt);
             m_ExpressReturnMetaType = new MetaType(mt);
             if (m_ExpressReturnMetaType.IsArray())
             {
@@ -1442,12 +1414,11 @@ namespace SimpleLanguage.Core
             {
                 m_NewType = ENewType.CommomClass;
             }
-            m_BraceStatementsDefineMetaType = m_NewMetaType;
         }
 
         public MetaType GetMaxLevelMetaType()
         {
-            return MetaBraceAssignStatements.GetMaxLevelMetaType(m_AssignStatementsList, m_BraceStatementsDefineMetaType);
+            return MetaBraceAssignStatements.GetMaxLevelMetaType(m_AssignStatementsList, m_DefineMetaType );
         }
 
         public void ParseBraceStatementsContent(AllowUseSettings aws)
@@ -1462,7 +1433,7 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < m_BraceFileMetaBaseTerm.fileMetaExpressList.Count; i++)
                 {
                     var fas = m_BraceFileMetaBaseTerm.fileMetaExpressList[i];
-                    HandleBraceTermNode(fas, m_BraceStatementsDefineMetaType, aws);
+                    HandleBraceTermNode(fas, m_DefineMetaType, aws);
                 }
             }
             else
@@ -1473,20 +1444,20 @@ namespace SimpleLanguage.Core
                     {
                         if (braceTerm.fileMetaAssignSyntaxList[i] is FileMetaDefineVariableSyntax fmdvs)
                         {
-                            var mas = new MetaBraceAssignStatements(fmdvs, m_DefineMetaType, m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_BraceStatementsDefineMetaType);
+                            var mas = new MetaBraceAssignStatements(fmdvs, this.m_NewMetaType, m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_NewMetaType);
                             if (mas.expressNode == null)
                             {
                                 continue;
                             }
                             m_AssignStatementsList.Add(mas);
                         }
-                        else if (!m_BraceStatementsDefineMetaType.isDynamicData
-                            && !m_BraceStatementsDefineMetaType.isDynamicClass
-                            && !m_BraceStatementsDefineMetaType.IsArray()
+                        else if (!m_NewMetaType.isDynamicData
+                            && !m_NewMetaType.isDynamicClass
+                            && !m_NewMetaType.IsArray()
                             && braceTerm.fileMetaAssignSyntaxList[i] is FileMetaOpAssignSyntax fmoas)
                         {
-                            var mas = new MetaBraceAssignStatements(fmoas, m_DefineMetaType, m_OwnerMetaBlockStatements, 
-                                m_OwnerMetaBase, m_BraceStatementsDefineMetaType);
+                            var mas = new MetaBraceAssignStatements(fmoas, m_NewMetaType, m_OwnerMetaBlockStatements, 
+                                m_OwnerMetaBase, m_DefineMetaType);
                             if (mas.expressNode == null)
                             {
                                 continue;
@@ -1528,15 +1499,13 @@ namespace SimpleLanguage.Core
                         m_BraceNewTempMetaData.AddPingToken(m_StoreMetaVariable.token );
                     }
                     m_BraceNewTempMetaData.AddPingToken(m_BraceFileMetaBaseTerm.token);
-                    m_BraceStatementsDefineMetaType = new MetaType(m_BraceNewTempMetaData);
-
                     if (fmbt is FileMetaSymbolTerm fmst)                   
                     {
 
                         var mmd = MetaMemberData.CreateDeclared(mt.metaData, fmst.name, -1, new MetaType(CoreMetaClassManager.objectMetaClass), false);
                         mmd.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);                        
 
-                        MetaBraceAssignStatements mas = new MetaBraceAssignStatements(fmst, m_DefineMetaType, m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_BraceStatementsDefineMetaType );
+                        MetaBraceAssignStatements mas = new MetaBraceAssignStatements(fmst, m_DefineMetaType, m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_DefineMetaType );
                         //mas.CalcReturnType();
                         m_AssignStatementsList.Add(mas);
                         m_BraceNewTempMetaData.AddMetaMemberData(mmd);
@@ -1559,16 +1528,16 @@ namespace SimpleLanguage.Core
                         //mmv.metaDefineType.SetRawMetaClass(m_BraceNewMetaData);
                         //mmv.metaDefineType.SetMetaClass(m_BraceNewMetaData);
                     }
-                    m_BraceStatementsDefineMetaType.SetMetaData(m_BraceNewMetaData);
+                    m_NewMetaType.SetMetaData(m_BraceNewMetaData);
                     m_StatementsContentType = EStatementsContentType.DynamicData;
-                    m_StoreMetaVariable?.SetMetaDefineType(m_BraceStatementsDefineMetaType);
+                    m_StoreMetaVariable?.SetMetaDefineType(m_NewMetaType);
                 }
                 else
                 {
                     //固定数据类赋值 在该行语句前直接使用 data a{ aaa = 10; bbb = 20 }  a = { aaa = 10, bbb = 20} 这样的形式 前边data 已经定义过了
                     if (fmbt is FileMetaSymbolTerm fmst)
                     {
-                        MetaBraceAssignStatements mas = new MetaBraceAssignStatements(fmst, mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_BraceStatementsDefineMetaType);
+                        MetaBraceAssignStatements mas = new MetaBraceAssignStatements(fmst, mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_NewMetaType );
                         //mas.CalcReturnType();
                         m_AssignStatementsList.Add(mas);
                     }
@@ -1595,7 +1564,7 @@ namespace SimpleLanguage.Core
                     MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmst, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
                     mnoe.Parse(aws);
                     mnoe.CalcReturnType();
-                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, mnoe, m_StoreMetaVariable as MetaMemberVariable, cmt);
+                    var mas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, mnoe );
                     m_AssignStatementsList.Add(mas);                    
                 }
                 else if (fmbt is FileMetaBraceTerm fmbrt)
@@ -1605,7 +1574,7 @@ namespace SimpleLanguage.Core
                     MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmbrt, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
                     mnoe.Parse(aws);
                     mnoe.CalcReturnType();
-                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, mnoe, m_StoreMetaVariable as MetaMemberVariable, cmt);
+                    var mas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, mnoe );
                     m_AssignStatementsList.Add(mas);
                 }
                 else if( fmbt is FileMetaCallTerm fmct )
@@ -1670,7 +1639,7 @@ namespace SimpleLanguage.Core
                     MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmstOb, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
                     mnoe.Parse(aws);
                     mnoe.CalcReturnType();
-                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, mnoe, m_StoreMetaVariable as MetaMemberVariable, cmt);
+                    var mas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, mnoe);
                     m_AssignStatementsList.Add(mas);
                 }
                 else if (fmbt is FileMetaBraceTerm fmbrtOb)
@@ -1678,7 +1647,7 @@ namespace SimpleLanguage.Core
                     MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmbrtOb, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
                     mnoe.Parse(aws);
                     mnoe.CalcReturnType();
-                    var mas = new MetaBraceAssignStatements(m_OwnerMetaBlockStatements, mnoe, m_StoreMetaVariable as MetaMemberVariable, cmt);
+                    var mas = new MetaBraceAssignStatements(mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, mnoe);
                     m_AssignStatementsList.Add(mas);
                 }
                 else if (fmbt is FileMetaCallTerm fmctOb)
@@ -1736,7 +1705,7 @@ namespace SimpleLanguage.Core
             {
                 if (fmbt is FileMetaSymbolTerm fmst)
                 {
-                    MetaBraceAssignStatements mas = new MetaBraceAssignStatements( fmst, mt,  m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_BraceStatementsDefineMetaType );
+                    MetaBraceAssignStatements mas = new MetaBraceAssignStatements( fmst, mt,  m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_NewMetaType);
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
                     m_StatementsContentType = EStatementsContentType.ClassValueAssign;
@@ -1799,7 +1768,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmbt is FileMetaSymbolTerm fmst)
                     {
-                        var mas = new MetaBraceAssignStatements(fmst, mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_BraceStatementsDefineMetaType);
+                        var mas = new MetaBraceAssignStatements(fmst, mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_NewMetaType );
                         mas.Parse(aws);
                         mas.CalcReturnType();
                         m_AssignStatementsList.Add(mas);
@@ -1914,7 +1883,7 @@ namespace SimpleLanguage.Core
                     continue;
                 }
 
-                var mas = new MetaBraceAssignStatements(mbs, expr, targetField, MetaBraceAssignStatements.EAssignTargetType.AnonVariable);
+                var mas = new MetaBraceAssignStatements(sourceField, mbs, ownerMc, expr, true );
                 m_AssignStatementsList.Add(mas);
             }
 
@@ -1932,7 +1901,7 @@ namespace SimpleLanguage.Core
                 {
                     MetaType inputType = GetMaxLevelMetaType();
 
-                    m_RealMetaType = new MetaType(inputType);
+                    m_NewMetaType = new MetaType(inputType);
                     //List<MetaType> listMT = new List<MetaType>();
                     //for( int i = 0; i < m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count; i++ )
                     //{
@@ -1941,52 +1910,33 @@ namespace SimpleLanguage.Core
                     //}
                     MetaType newRMT = new MetaType();
                     newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
-                    newRMT.AddDefineTemplateMetaType(m_RealMetaType);
-                    //newRMT.AddGenTemplateMetaType(m_RealMetaType);
-                    m_RealMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
-                    m_RealMetaType.SetArrayLength(m_AssignStatementsList.Count);
-
-                    if (m_DefineMetaType != null
-                        && m_DefineMetaType.IsArray()
-                        && MetaBraceAssignStatements.TryGetCompatibleArrayMetaType(m_DefineMetaType, m_RealMetaType, out var compatibleWithDefine))
-                    {
-                        m_RealMetaType = compatibleWithDefine;
-                    }
-
-                    if(m_NewMetaType == null )
-                    {
-                        m_NewMetaType = new MetaType(m_RealMetaType);
-                    }
+                    newRMT.AddDefineTemplateMetaType(m_NewMetaType);
+                    m_NewMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
+                    m_NewMetaType.SetArrayLength(m_AssignStatementsList.Count);   
                 }
                 else
                 {
-                    m_RealMetaType = null;
+                    m_NewMetaType = null;
                 }
 
             }
             else if( m_NewType == ENewType.CommomClass )
             {
-                ParseBraceStatementsContent(auc);
+                this.ParseBraceStatementsContent(auc);
                 if (m_StatementsContentType == EStatementsContentType.DynamicClass)
                 {
-                    m_RealMetaType = m_BraceStatementsDefineMetaType;
                 }
                 else if (m_StatementsContentType == EStatementsContentType.DynamicData)
                 {
-                    m_RealMetaType = m_BraceStatementsDefineMetaType;
                 }
                 else
                 {
                     // Before creating instance type, check abstract class restriction
-                    var metaClass = m_NewMetaType?.metaClass;
+                    var metaClass = m_DefineMetaType?.metaClass;
                     if (metaClass != null && metaClass.isAbstractClass)
                     {
                         Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1026, m_Token, "Error: cannot instantiate abstract class: " + metaClass.name);
-                        m_RealMetaType = null;
-                    }
-                    else
-                    {
-                        m_RealMetaType = new MetaType(m_NewMetaType);
+                        m_NewMetaType = null;
                     }
                 }
             }
@@ -2106,8 +2056,18 @@ namespace SimpleLanguage.Core
                                     {
                                         if(list1[i] != -1 )
                                         {
-                                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "最后一位数组定义，不能为实体值");
-                                            return;
+                                            if (list2[i] != -1 )
+                                            {
+                                                if (list2[i] != list1[i] )
+                                                {
+                                                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "两个数组的定义长度不同");
+                                                }
+                                            }
+                                            else
+                                            {
+                                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "最后一位数组定义，不能为实体值");
+                                                return;
+                                            }
                                         }
                                         var cmt1 = m_DefineMetaType.GetMetaTypeByIndex(0);
                                         var cmt2 = m_NewMetaType.GetMetaTypeByIndex(0);
@@ -2118,7 +2078,7 @@ namespace SimpleLanguage.Core
                                             {
                                                 // 左值 Array<Int32>、右值模板 Array<Int16> 等：以左值元素类型为准，后续对字面量强转/升阶
                                                 numericMergedArrayMeta = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(
-                                                    m_DefineMetaType, m_NewMetaType, m_RealMetaType);
+                                                    m_DefineMetaType, m_NewMetaType );
                                             }
                                             else if (cmt1.IsArray() && cmt2.IsArray() && MetaBraceAssignStatements.TryArrayElementAssignableForNewObject(cmt1, cmt2))
                                             {
@@ -2193,7 +2153,7 @@ namespace SimpleLanguage.Core
             {
                 m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
             }
-            else if (m_NewMetaType != null && m_DefineMetaType == null )
+            else if (m_NewMetaType == null && m_DefineMetaType != null )
             {
                 m_ExpressReturnMetaType = new MetaType(m_DefineMetaType);
             }
@@ -2217,7 +2177,7 @@ namespace SimpleLanguage.Core
                     && !TypeManager.CompareMetaType(dEl, nEl))
                 {
                     var merged = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(
-                        m_DefineMetaType, m_NewMetaType, m_RealMetaType);
+                        m_DefineMetaType, m_NewMetaType );
                     if (merged != null)
                     {
                         m_ExpressReturnMetaType = merged;
@@ -2225,23 +2185,23 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            if(m_RealMetaType != null )
+            if(m_NewMetaType != null )
             {
-                if (m_RealMetaType.IsArray() )
+                if (m_NewMetaType.IsArray() )
                 {
                     if (m_ExpressReturnMetaType == null)
                     {
-                        m_ExpressReturnMetaType = new MetaType(m_RealMetaType);                        
+                        m_ExpressReturnMetaType = new MetaType(m_NewMetaType);                        
                     }
                     else
                     {
                         if(m_ExpressReturnMetaType.arrayLength == -1 )
                         {
-                            m_ExpressReturnMetaType.SetArrayLength(m_RealMetaType.arrayLength);
+                            m_ExpressReturnMetaType.SetArrayLength(m_NewMetaType.arrayLength);
                         }
                         else
                         {
-                            if(m_ExpressReturnMetaType.arrayLength < m_RealMetaType.arrayLength )
+                            if(m_ExpressReturnMetaType.arrayLength < m_NewMetaType.arrayLength )
                             {
                                 //这也还是写具体的数组类型对比，和多维长度对比，暂留以后写
                                 Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "数组赋值内容给出的长度超出了定义长度!");
@@ -2254,7 +2214,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_ExpressReturnMetaType == null)
                     {
-                        m_ExpressReturnMetaType = new MetaType(m_RealMetaType);
+                        m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
                     }
                 }
             }
@@ -2263,28 +2223,28 @@ namespace SimpleLanguage.Core
             // 需要对外暴露其真实数组类型；否则后续 IR 会把 NewArray 的类型写成 Core.Object，
             // 导致 VM 在创建 ArrayObject 时拿不到元素模板类型。
             if (m_NewType == ENewType.ArrayClass
-                && m_RealMetaType != null
-                && m_RealMetaType.IsArray()
+                && m_NewMetaType != null
+                && m_NewMetaType.IsArray()
                 && m_ExpressReturnMetaType != null
                 && !m_ExpressReturnMetaType.IsArray()
                 && m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.objectMetaClass)
             {
-                m_ExpressReturnMetaType = new MetaType(m_RealMetaType);
+                m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
             }
 
             // 仅有左值 m_DefineMetaType（如 Array<Int32>）与字面量推断 m_RealMetaType（如 Array<Int16>）时，不能以推断类型覆盖左值元素类型
-            if (m_DefineMetaType != null && m_NewMetaType == null && m_RealMetaType != null
-                && m_DefineMetaType.IsArray() && m_RealMetaType.IsArray()
+            if (m_DefineMetaType != null && m_NewMetaType == null && m_NewMetaType != null
+                && m_DefineMetaType.IsArray() && m_NewMetaType.IsArray()
                 && m_NewType == ENewType.ArrayClass)
             {
                 var dEl = ClassManager.GetSingleTemplateArgMetaType(m_DefineMetaType);
-                var rEl = ClassManager.GetSingleTemplateArgMetaType(m_RealMetaType);
+                var rEl = ClassManager.GetSingleTemplateArgMetaType(m_NewMetaType);
                 if (dEl != null && rEl != null
                     && ClassManager.IsNumberClass(dEl.metaClass) && ClassManager.IsNumberClass(rEl.metaClass)
                     && !TypeManager.CompareMetaType(dEl, rEl))
                 {
                     var mergedDr = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(
-                        m_DefineMetaType, null, m_RealMetaType);
+                        m_DefineMetaType, m_NewMetaType);
                     if (mergedDr != null)
                     {
                         m_ExpressReturnMetaType = mergedDr;
@@ -2304,7 +2264,7 @@ namespace SimpleLanguage.Core
                 if(m_MetaInputParamList.Count == 0)
                 {
                     int alen = m_ExpressReturnMetaType.arrayLength;
-                    if( alen == -1 && m_RealMetaType == null )
+                    if( alen == -1 && m_NewMetaType == null )
                     {
                         alen = 0;
                     }
@@ -2358,9 +2318,9 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public void SetRealMetaType( MetaType realType )
+        public void SetNewMetaType( MetaType newType )
         {
-            m_RealMetaType = realType;
+            m_NewMetaType = newType;
         }
 
         private void SyncArrayLiteralLengthFromContent()
@@ -2375,12 +2335,6 @@ namespace SimpleLanguage.Core
             {
                 return;
             }
-
-            if (m_RealMetaType != null && m_RealMetaType.IsArray() && m_RealMetaType.arrayLength == -1)
-            {
-                m_RealMetaType.SetArrayLength(literalLength);
-            }
-
             if (m_NewMetaType != null && m_NewMetaType.IsArray() && m_NewMetaType.arrayLength == -1)
             {
                 m_NewMetaType.SetArrayLength(literalLength);
@@ -2404,7 +2358,7 @@ namespace SimpleLanguage.Core
                 {
                     m_NewMetaType = new MetaType(leftArrayMetaType);
                 }
-                m_BraceStatementsDefineMetaType = m_DefineMetaType;
+                m_NewMetaType = m_DefineMetaType;
             }
         }
 

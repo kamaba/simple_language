@@ -72,7 +72,6 @@ namespace SimpleLanguage.Core
         //private MetaGenTemplate m_MetaGenTemplate = null;
         private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
-        //private List<MetaType> m_GenTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中  //慢慢的移除 直接使用gen class中的数据
         private int m_ArrayLength = -1;       
         private bool m_IsNullable = false;   // 新增：可空标记
 
@@ -110,7 +109,6 @@ namespace SimpleLanguage.Core
             m_MetaClass = mgtc;
             m_DefineTemplateMetaTypeList = defineMTList;
             SyncSpecialMetaTypeByMetaClass();
-            //m_GenTemplateMetaTypeList = genMTList;
         }
         public MetaType( MetaClass mc )
         {
@@ -193,11 +191,6 @@ namespace SimpleLanguage.Core
                 MetaType mtc = new MetaType(mt.m_DefineTemplateMetaTypeList[i]);
                 m_DefineTemplateMetaTypeList.Add(mtc);
             }
-            //for (int i = 0; i < mt.m_GenTemplateMetaTypeList.Count; i++)
-            //{
-            //    MetaType mtc = new MetaType(mt.m_GenTemplateMetaTypeList[i]);
-            //    m_GenTemplateMetaTypeList.Add(mtc);
-            //}
         }
         public bool IsArray()
         {

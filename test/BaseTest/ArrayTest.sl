@@ -229,7 +229,7 @@ ArrayTest
     static arrayRank2SparseJaggedTest()
     {
         global.println("========== int[4][] sparse jagged ==========")
-        int[4][] a335 = {[11,22,33], int[3]{ 871,872,873 }, int[20] };
+        int[3][] a335 = {[11,22,33], int[3]{ 871,872,873 }, int[20] };
         a335[2][1] = 123
         global.println("1111111111= " + a335[2].toString() + "-----" + a335[0].toString() );
     }

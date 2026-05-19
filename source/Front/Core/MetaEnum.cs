@@ -105,7 +105,7 @@ namespace SimpleLanguage.Core
                 newRMT.SetArrayLength(valuesNewExpress.assignStatementsList.Count);
 
                 //valuesNewExpress.Parse(new AllowUseSettings());
-                valuesNewExpress.SetRealMetaType(newRMT);
+                valuesNewExpress.SetNewMetaType(newRMT);
                 valuesNewExpress.CalcReturnType();
                 m_ValuesMetaVariable.SetExpress(valuesNewExpress);
                 m_MetaMemberVariableDict.Add(m_ValuesMetaVariable.name, m_ValuesMetaVariable);
