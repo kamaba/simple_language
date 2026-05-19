@@ -33,13 +33,13 @@ namespace SimpleLanguage.Core
         private bool m_IsAs = false;
         private bool m_IsIsNot = false;
 
-        public static MetaAsIsExpressNode CreateMetaExecuteStatementsNode(MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, FileMetaAsOrIsTerm asisTerm, MetaVariable retMv )
+        public static MetaAsIsExpressNode CreateMetaExecuteStatementsNode(MetaType mdt, MetaBase ownerMC, MetaBlockStatements mbs, FileMetaAsOrIsTerm asisTerm, MetaVariable retMv )
         {
             MetaAsIsExpressNode maien = new MetaAsIsExpressNode(ownerMC, mbs, asisTerm, retMv );
 
             return maien;
         }
-        public MetaAsIsExpressNode(MetaClass ownerMC, MetaBlockStatements mbs, FileMetaAsOrIsTerm fm, MetaVariable mv = null) 
+        public MetaAsIsExpressNode(MetaBase ownerMC, MetaBlockStatements mbs, FileMetaAsOrIsTerm fm, MetaVariable mv = null) 
         {
             m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;

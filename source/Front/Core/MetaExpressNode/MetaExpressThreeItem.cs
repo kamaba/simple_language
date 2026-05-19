@@ -24,7 +24,7 @@ namespace SimpleLanguage.Core
 
         private FileMetaThreeItemSyntaxTerm m_FileMetaThreeItemSyntaxTerm = null;
 
-        public MetaThreeItemExpressNode(MetaClass ownerMC, MetaBlockStatements mbs, FileMetaThreeItemSyntaxTerm fm ) 
+        public MetaThreeItemExpressNode( MetaBase ownerMC, MetaBlockStatements mbs, FileMetaThreeItemSyntaxTerm fm ) 
         {
             m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;

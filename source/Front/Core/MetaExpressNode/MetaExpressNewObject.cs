@@ -59,80 +59,70 @@ namespace SimpleLanguage.Core
             {
                 m_Token = fmos.token;
                 m_AssignToken = fmos.assignToken;
+                MetaVariable targetMetaVariable = null;
                 if (fmos.variableRef.isOnlyName)
                 {
+                    MetaType targetMetaType = null;
                     m_DefineName = fmos.variableRef.name;
                     if (m_NewObjectMetaType != null && m_NewObjectMetaType.isData)
                     {
                         var md = m_NewObjectMetaType.metaData;
-                        m_MetaMemberData = md?.GetMemberDataByName(m_DefineName);
-                    }
-                    else
-                    {
-                        m_MetaMemberVariable = m_NewObjectMetaType?.metaClass?.GetMetaMemberVariableByName(m_DefineName);
-                    }
+                        m_MetaMemberData = md.GetMemberDataByName(m_DefineName);
+                        m_AssignTargetType = EAssignTargetType.MemberData;
+                        if (m_MetaMemberData == null)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到对应的成员数据");
+                            return;
+                        }
+                        m_Id = m_MetaMemberData.GetHashCode();
 
-                    var targetMetaVariable = (MetaVariable)m_MetaMemberData ?? m_MetaMemberVariable;
-                    if (targetMetaVariable == null)
-                    {
-                        return;
-                    }
-                    var targetMetaType = targetMetaVariable.GetFinalMetaType();
-                    if( targetMetaType == null  )
-                    {
-                        if(m_MetaMemberData != null )
+                        if ( m_MetaMemberData.realMetaType == null )
                         {
                             m_MetaMemberData.CreateMetaExpress();
                             m_MetaMemberData.ParseMetaExpress();
                             m_MetaMemberData.ParseRealMetaType();
-                            targetMetaType = m_MetaMemberData.GetFinalMetaType();
-                            if (targetMetaType == null)
-                            {
-                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "");
-                            }
-                            m_Id = m_MetaMemberData.GetHashCode();
                         }
-                        else if( m_MetaMemberVariable != null )
+                        targetMetaType = m_MetaMemberData.GetFinalMetaType();
+                        if (targetMetaType == null)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到对象类型");
+                            return;
+                        }
+
+                        targetMetaVariable = m_MetaMemberData;
+                    }
+                    else
+                    {
+                        m_MetaMemberVariable = m_NewObjectMetaType.metaClass.GetMetaMemberVariableByName(m_DefineName);
+                        m_AssignTargetType = EAssignTargetType.MemberVariable;
+                        if(m_MetaMemberVariable == null)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到对应的成员变量");
+                            return;
+                        }
+                        m_Id = m_MetaMemberVariable.GetHashCode();
+                        if ( m_MetaMemberVariable.realMetaType == null )
                         {
                             m_MetaMemberVariable.CreateMetaExpress();
                             m_MetaMemberVariable.ParseMetaExpress();
                             m_MetaMemberVariable.ParseRealMetaType();
-                            targetMetaType = m_MetaMemberVariable.GetFinalMetaType();
-                            if (targetMetaType == null)
-                            {
-                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "");
-                            }
-                            m_Id = m_MetaMemberVariable.GetHashCode();
                         }
+                        targetMetaType = m_MetaMemberVariable.GetFinalMetaType();
+                        if (targetMetaType == null)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到对象类型");
+                            return;
+                        }
+                        targetMetaVariable = m_MetaMemberVariable;
                     }
+
                     m_DefineMetaType = targetMetaType;
-                    m_AssignTargetType = m_NewObjectMetaType != null && m_NewObjectMetaType.isData
-                        ? EAssignTargetType.MemberData
-                        : EAssignTargetType.MemberVariable;
-
-                    if (fmos.express is FileMetaCallTerm fmct
-                        && fmct.callLink != null
-                        && fmct.callLink.isOnlyName)
-                    {
-                        var litName = fmct.callLink.name;
-                        if (string.Equals(litName, "True", StringComparison.OrdinalIgnoreCase))
-                        {
-                            m_MetaExpress = new MetaConstExpressNode(EType.Boolean, true);
-                            return;
-                        }
-                        if (string.Equals(litName, "False", StringComparison.OrdinalIgnoreCase))
-                        {
-                            m_MetaExpress = new MetaConstExpressNode(EType.Boolean, false);
-                            return;
-                        }
-                    }
-
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.fme = fmos.express;
                     cep.equalMetaVariable = targetMetaVariable;
-                    cep.metaType = targetMetaType;
+                    cep.metaType = m_DefineMetaType;
                     cep.ownerMBS = mbs;
-                    cep.ownerMetaBase = mbs?.ownerMetaBase ?? m_NewObjectMetaType?.currentMeta;
+                    cep.ownerMetaBase = owmt;
                     m_MetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
 
                 }
@@ -1142,6 +1132,7 @@ namespace SimpleLanguage.Core
 
         private MetaType m_DefineMetaType = null;
         private MetaType m_NewMetaType = null;
+        private MetaType m_ArrayCalcMetaType = null;
         private bool m_UsesExplicitArrayElementTypeSyntax = false;
         private MetaExpressNodeBase m_ArrayLengthExpress = null;
         private MetaVariable m_StoreMetaVariable = null; //模板或者是调用时的函数        
@@ -1421,7 +1412,7 @@ namespace SimpleLanguage.Core
             return MetaBraceAssignStatements.GetMaxLevelMetaType(m_AssignStatementsList, m_DefineMetaType );
         }
 
-        public void ParseBraceStatementsContent(AllowUseSettings aws)
+        public void ParseBraceStatementsContent(AllowUseSettings aws, MetaType mt )
         {
             if( m_BraceFileMetaBaseTerm is FileMetaBraceTerm fmbt2 )
             {
@@ -1433,7 +1424,7 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < m_BraceFileMetaBaseTerm.fileMetaExpressList.Count; i++)
                 {
                     var fas = m_BraceFileMetaBaseTerm.fileMetaExpressList[i];
-                    HandleBraceTermNode(fas, m_DefineMetaType, aws);
+                    HandleBraceTermNode(fas, mt, aws);
                 }
             }
             else
@@ -1444,19 +1435,19 @@ namespace SimpleLanguage.Core
                     {
                         if (braceTerm.fileMetaAssignSyntaxList[i] is FileMetaDefineVariableSyntax fmdvs)
                         {
-                            var mas = new MetaBraceAssignStatements(fmdvs, this.m_NewMetaType, m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_NewMetaType);
+                            var mas = new MetaBraceAssignStatements(fmdvs, mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, null );
                             if (mas.expressNode == null)
                             {
                                 continue;
                             }
                             m_AssignStatementsList.Add(mas);
                         }
-                        else if (!m_NewMetaType.isDynamicData
-                            && !m_NewMetaType.isDynamicClass
-                            && !m_NewMetaType.IsArray()
+                        else if (!mt.isDynamicData
+                            && !mt.isDynamicClass
+                            && !mt.IsArray()
                             && braceTerm.fileMetaAssignSyntaxList[i] is FileMetaOpAssignSyntax fmoas)
                         {
-                            var mas = new MetaBraceAssignStatements(fmoas, m_NewMetaType, m_OwnerMetaBlockStatements, 
+                            var mas = new MetaBraceAssignStatements(fmoas, mt, m_OwnerMetaBlockStatements, 
                                 m_OwnerMetaBase, m_DefineMetaType);
                             if (mas.expressNode == null)
                             {
@@ -1555,7 +1546,7 @@ namespace SimpleLanguage.Core
                 var genList = mt.GetGenTemplateMetaTypeList();
                 if (genList.Count != 1 )
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreArrayDiamondShould, "", m_Token);
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "");
                     return;
                 }
                 MetaType cmt = genList[0];
@@ -1895,13 +1886,27 @@ namespace SimpleLanguage.Core
             //该函数，进行，计算出， 要创建的类，使用的初始化函数，以及，初始化成员的解析            //
             if (m_NewType == ENewType.ArrayClass )
             {
-                ParseBraceStatementsContent(auc);
-
-                if(m_AssignStatementsList.Count > 0 )
+                if (m_NewMetaType != null && m_DefineMetaType != null )
+                {
+                    ParseBraceStatementsContent(auc, m_NewMetaType);
+                }
+                else if( m_NewMetaType != null && m_DefineMetaType == null )
+                {
+                    ParseBraceStatementsContent(auc, m_NewMetaType);
+                }
+                else if( m_NewMetaType == null && m_DefineMetaType != null )
+                {
+                    ParseBraceStatementsContent(auc, m_DefineMetaType);
+                }
+                else
+                {
+                    ParseBraceStatementsContent(auc, new MetaType(CoreMetaClassManager.objectMetaClass));
+                }
+                if (m_AssignStatementsList.Count > 0)
                 {
                     MetaType inputType = GetMaxLevelMetaType();
 
-                    m_NewMetaType = new MetaType(inputType);
+                    var newMetaType = new MetaType(inputType);
                     //List<MetaType> listMT = new List<MetaType>();
                     //for( int i = 0; i < m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count; i++ )
                     //{
@@ -1910,19 +1915,27 @@ namespace SimpleLanguage.Core
                     //}
                     MetaType newRMT = new MetaType();
                     newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
-                    newRMT.AddDefineTemplateMetaType(m_NewMetaType);
-                    m_NewMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
-                    m_NewMetaType.SetArrayLength(m_AssignStatementsList.Count);   
-                }
-                else
-                {
-                    m_NewMetaType = null;
+                    newRMT.AddDefineTemplateMetaType(newMetaType);
+                    newMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
+                    newMetaType.SetArrayLength(m_AssignStatementsList.Count);
+                    m_ArrayCalcMetaType = newMetaType;
                 }
 
             }
             else if( m_NewType == ENewType.CommomClass )
             {
-                this.ParseBraceStatementsContent(auc);
+                if(m_NewMetaType != null )
+                {
+                    this.ParseBraceStatementsContent(auc, m_NewMetaType);
+                }
+                else if( m_DefineMetaType != null )
+                {
+                    this.ParseBraceStatementsContent(auc, m_DefineMetaType);
+                }
+                else
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "");
+                }
                 if (m_StatementsContentType == EStatementsContentType.DynamicClass)
                 {
                 }
@@ -2029,228 +2042,22 @@ namespace SimpleLanguage.Core
         {
             base.CalcReturnType();
 
-            MetaInputParamCollection mipc = new MetaInputParamCollection(ownerMetaClass, m_OwnerMetaBlockStatements);
+            var mipc = new MetaInputParamCollection(ownerMetaClass, m_OwnerMetaBlockStatements);
 
-            if (m_DefineMetaType != null && m_NewMetaType != null )
+            if (!ResolveInitialExpressReturnMetaType())
             {
-                if (m_NewMetaType.IsArray() )
-                {
-                    if (m_StoreMetaVariable?.isDefineMetaType == true )
-                    {
-                        if (m_DefineMetaType.IsArray() == false)
-                        {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "如果定义了，结构，必须与new对象的类型一样才可以");
-                            return;
-                        }
-                        else
-                        {
-                            var list1 = m_DefineMetaType.ArrayDimensionLengthList();
-                            var list2 = m_NewMetaType.ArrayDimensionLengthList();
-
-                            if (list1.Count == list2.Count && list1.Count != 0 )
-                            {
-                                MetaType numericMergedArrayMeta = null;
-                                for (int i = 0; i < list1.Count; i++)
-                                {
-                                    if( i == list1.Count - 1 )
-                                    {
-                                        if(list1[i] != -1 )
-                                        {
-                                            if (list2[i] != -1 )
-                                            {
-                                                if (list2[i] != list1[i] )
-                                                {
-                                                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "两个数组的定义长度不同");
-                                                }
-                                            }
-                                            else
-                                            {
-                                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "最后一位数组定义，不能为实体值");
-                                                return;
-                                            }
-                                        }
-                                        var cmt1 = m_DefineMetaType.GetMetaTypeByIndex(0);
-                                        var cmt2 = m_NewMetaType.GetMetaTypeByIndex(0);
-
-                                        if( !TypeManager.CompareMetaType( cmt1, cmt2 ) )
-                                        {
-                                            if (ClassManager.IsNumberClass(cmt1.metaClass) && ClassManager.IsNumberClass(cmt2.metaClass))
-                                            {
-                                                // 左值 Array<Int32>、右值模板 Array<Int16> 等：以左值元素类型为准，后续对字面量强转/升阶
-                                                numericMergedArrayMeta = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(
-                                                    m_DefineMetaType, m_NewMetaType );
-                                            }
-                                            else if (cmt1.IsArray() && cmt2.IsArray() && MetaBraceAssignStatements.TryArrayElementAssignableForNewObject(cmt1, cmt2))
-                                            {
-                                            }
-                                            else
-                                            {
-                                                Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", cmt1.ToString(), cmt2.ToString() );
-                                                return;
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        if (list1[i] == -1)
-                                        {
-                                            if (list2[i] == -1)
-                                            {
-                                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "不是最后一位 生成的数组，需要定义数组长度");
-                                                return;
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (list1[i] != list2[i])
-                                            {
-                                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "最后一位数组定义，不能为实体值! 如果前边定义了长度，new的时候必须和前边的长度一样!");
-                                                return;
-                                            }
-                                        }
-                                    }
-                                }
-                                m_ExpressReturnMetaType = numericMergedArrayMeta != null ? numericMergedArrayMeta : new MetaType(m_NewMetaType);
-                            }
-                            else
-                            {
-                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "定义数组与new数组 的维度不同");
-                                return;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
-                    }
-                }
-                else
-                {
-                    if (m_DefineMetaType.IsArray() )
-                    {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "如果定义了，结构，必须与new对象的类型一样才可以");
-                        return;
-                    }
-                    else if(m_NewMetaType.isClass )
-                    {
-                        if( m_NewMetaType.metaClass.IsContainMetaClass( m_DefineMetaType.metaClass ) )
-                        {
-                            m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
-                        }
-                        else
-                        {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "定义类型与new的类型不对应 ");
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
-                    }
-                }
-            }
-            else if (m_NewMetaType != null && m_DefineMetaType == null)
-            {
-                m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
-            }
-            else if (m_NewMetaType == null && m_DefineMetaType != null )
-            {
-                m_ExpressReturnMetaType = new MetaType(m_DefineMetaType);
-            }
-            else if (m_DefineMetaType == null && m_NewMetaType == null )
-            {
-            }
-            else
-            {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到没有各种定义类型的方法");
+                return;
             }
 
-            // 左值 Array<Int32> + 字面量/右模板 Array<Int16>：未走“变量已带定义类型”分支时，仍以左值元素类型合并 m_MetaType（如 ConvertNewExpress 传入的 SetAssignmentTarget）
-            if (m_DefineMetaType != null && m_NewMetaType != null
-                && m_DefineMetaType.IsArray() && m_NewMetaType.IsArray()
-                && m_NewType == ENewType.ArrayClass)
+            TryApplyNumericArrayElementMergeFromDefineAndNew();
+
+            if (!ApplyExpressReturnFromNewMetaTypeIfNeeded())
             {
-                var dEl = ClassManager.GetSingleTemplateArgMetaType(m_DefineMetaType);
-                var nEl = ClassManager.GetSingleTemplateArgMetaType(m_NewMetaType);
-                if (dEl != null && nEl != null
-                    && ClassManager.IsNumberClass(dEl.metaClass) && ClassManager.IsNumberClass(nEl.metaClass)
-                    && !TypeManager.CompareMetaType(dEl, nEl))
-                {
-                    var merged = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(
-                        m_DefineMetaType, m_NewMetaType );
-                    if (merged != null)
-                    {
-                        m_ExpressReturnMetaType = merged;
-                    }
-                }
+                return;
             }
 
-            if(m_NewMetaType != null )
-            {
-                if (m_NewMetaType.IsArray() )
-                {
-                    if (m_ExpressReturnMetaType == null)
-                    {
-                        m_ExpressReturnMetaType = new MetaType(m_NewMetaType);                        
-                    }
-                    else
-                    {
-                        if(m_ExpressReturnMetaType.arrayLength == -1 )
-                        {
-                            m_ExpressReturnMetaType.SetArrayLength(m_NewMetaType.arrayLength);
-                        }
-                        else
-                        {
-                            if(m_ExpressReturnMetaType.arrayLength < m_NewMetaType.arrayLength )
-                            {
-                                //这也还是写具体的数组类型对比，和多维长度对比，暂留以后写
-                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "数组赋值内容给出的长度超出了定义长度!");
-                                return;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if (m_ExpressReturnMetaType == null)
-                    {
-                        m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
-                    }
-                }
-            }
-
-            // Array<Object>(...){ [1], [2,3] } 这类 object 槽中的嵌套数组字面量，
-            // 需要对外暴露其真实数组类型；否则后续 IR 会把 NewArray 的类型写成 Core.Object，
-            // 导致 VM 在创建 ArrayObject 时拿不到元素模板类型。
-            if (m_NewType == ENewType.ArrayClass
-                && m_NewMetaType != null
-                && m_NewMetaType.IsArray()
-                && m_ExpressReturnMetaType != null
-                && !m_ExpressReturnMetaType.IsArray()
-                && m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.objectMetaClass)
-            {
-                m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
-            }
-
-            // 仅有左值 m_DefineMetaType（如 Array<Int32>）与字面量推断 m_RealMetaType（如 Array<Int16>）时，不能以推断类型覆盖左值元素类型
-            if (m_DefineMetaType != null && m_NewMetaType == null && m_NewMetaType != null
-                && m_DefineMetaType.IsArray() && m_NewMetaType.IsArray()
-                && m_NewType == ENewType.ArrayClass)
-            {
-                var dEl = ClassManager.GetSingleTemplateArgMetaType(m_DefineMetaType);
-                var rEl = ClassManager.GetSingleTemplateArgMetaType(m_NewMetaType);
-                if (dEl != null && rEl != null
-                    && ClassManager.IsNumberClass(dEl.metaClass) && ClassManager.IsNumberClass(rEl.metaClass)
-                    && !TypeManager.CompareMetaType(dEl, rEl))
-                {
-                    var mergedDr = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(
-                        m_DefineMetaType, m_NewMetaType);
-                    if (mergedDr != null)
-                    {
-                        m_ExpressReturnMetaType = mergedDr;
-                    }
-                }
-            }
+            TryPromoteObjectArrayLiteralReturnType();
+            TryApplyNumericArrayElementMergeDeadBranch();
 
             SyncArrayLiteralLengthFromContent();
 
@@ -2259,64 +2066,384 @@ namespace SimpleLanguage.Core
                 return;
             }
 
-            if(m_ExpressReturnMetaType.IsArray() )
+            SetupArrayMemberFunctionAndLengthParam(mipc);
+
+            if (!TryUnifyNumericArrayLiteralMemberTypes())
             {
-                if(m_MetaInputParamList.Count == 0)
+                return;
+            }
+        }
+
+        private void SetExpressReturnFromNewMetaType()
+        {
+            m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
+        }
+
+        private void SetExpressReturnFromDefineMetaType()
+        {
+            m_ExpressReturnMetaType = new MetaType(m_DefineMetaType);
+        }
+
+        private bool IsDefineAndNewArrayClassNew()
+        {
+            return m_DefineMetaType != null && m_NewMetaType != null
+                && m_DefineMetaType.IsArray() && m_NewMetaType.IsArray()
+                && m_NewType == ENewType.ArrayClass;
+        }
+
+        private static bool TryBuildNumericMergedArrayMetaType(MetaType defineArray, MetaType newArray, out MetaType merged)
+        {
+            merged = null;
+            var dEl = ClassManager.GetSingleTemplateArgMetaType(defineArray);
+            var nEl = ClassManager.GetSingleTemplateArgMetaType(newArray);
+            if (dEl == null || nEl == null)
+            {
+                return false;
+            }
+
+            if (!ClassManager.IsNumberClass(dEl.metaClass) || !ClassManager.IsNumberClass(nEl.metaClass))
+            {
+                return false;
+            }
+
+            if (TypeManager.CompareMetaType(dEl, nEl))
+            {
+                return false;
+            }
+
+            merged = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(defineArray, newArray);
+            return merged != null;
+        }
+
+        private bool ResolveInitialExpressReturnMetaType()
+        {
+            if (m_DefineMetaType != null && m_NewMetaType != null)
+            {
+                if (m_NewMetaType.IsArray())
                 {
-                    int alen = m_ExpressReturnMetaType.arrayLength;
-                    if( alen == -1 && m_NewMetaType == null )
-                    {
-                        alen = 0;
-                    }
-
-                    mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, alen )));
-                    mipc.CaleReturnType();
-
-                    m_MetaMemberFunction = CoreMetaClassManager.arrayMetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, mipc);
-                    SetInputParams(mipc);
+                    return ResolveInitialReturnForArrayNew();
                 }
-                else if( m_MetaInputParamList.Count == 1 )
+
+                return ResolveInitialReturnForNonArrayNew();
+            }
+
+            if (m_NewMetaType != null && m_DefineMetaType == null)
+            {
+                SetExpressReturnFromNewMetaType();
+                return true;
+            }
+
+            if (m_NewMetaType == null && m_DefineMetaType != null)
+            {
+                SetExpressReturnFromDefineMetaType();
+                return true;
+            }
+
+            if (m_DefineMetaType == null && m_NewMetaType == null)
+            {
+                return true;
+            }
+
+            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到没有各种定义类型的方法");
+            return true;
+        }
+
+        private bool ResolveInitialReturnForArrayNew()
+        {
+            if (m_StoreMetaVariable?.isDefineMetaType != true)
+            {
+                SetExpressReturnFromNewMetaType();
+                return true;
+            }
+
+            if (!m_DefineMetaType.IsArray())
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "如果定义了，结构，必须与new对象的类型一样才可以");
+                return false;
+            }
+
+            if (!TryResolveDefinedStoreArrayNewReturnType(out var numericMergedArrayMeta))
+            {
+                return false;
+            }
+
+            m_ExpressReturnMetaType = numericMergedArrayMeta != null ? numericMergedArrayMeta : new MetaType(m_NewMetaType);
+            return true;
+        }
+
+        private bool TryResolveDefinedStoreArrayNewReturnType(out MetaType numericMergedArrayMeta)
+        {
+            numericMergedArrayMeta = null;
+            var list1 = m_DefineMetaType.ArrayDimensionLengthList();
+            var list2 = m_NewMetaType.ArrayDimensionLengthList();
+
+            if (list1.Count != list2.Count || list1.Count == 0)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "定义数组与new数组 的维度不同");
+                return false;
+            }
+
+            for (int i = 0; i < list1.Count; i++)
+            {
+                if (i == list1.Count - 1)
                 {
-                    if( m_MetaInputParamList[0] is MetaConstExpressNode mcen )
+                    if (!TryValidateInnermostArrayDimensionForStore(list1, list2, i, ref numericMergedArrayMeta))
                     {
-                        mcen.value = m_ExpressReturnMetaType.arrayLength;
-                    }                    
+                        return false;
+                    }
+                }
+                else if (!TryValidateOuterArrayDimensionForStore(list1, list2, i))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private bool TryValidateInnermostArrayDimensionForStore(
+            List<int> defineDims,
+            List<int> newDims,
+            int index,
+            ref MetaType numericMergedArrayMeta)
+        {
+            if (defineDims[index] != -1)
+            {
+                if (newDims[index] != -1)
+                {
+                    if (newDims[index] != defineDims[index])
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "两个数组的定义长度不同");
+                    }
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "--" );
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "最后一位数组定义，不能为实体值");
+                    return false;
                 }
-                m_ArrayLengthExpress = m_MetaInputParamList[0];
-                m_MetaMemberFunction = null;
+            }
+
+            var cmt1 = m_DefineMetaType.GetMetaTypeByIndex(0);
+            var cmt2 = m_NewMetaType.GetMetaTypeByIndex(0);
+            if (TypeManager.CompareMetaType(cmt1, cmt2))
+            {
+                return true;
+            }
+
+            if (ClassManager.IsNumberClass(cmt1.metaClass) && ClassManager.IsNumberClass(cmt2.metaClass))
+            {
+                numericMergedArrayMeta = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(
+                    m_DefineMetaType, m_NewMetaType);
+                return true;
+            }
+
+            if (cmt1.IsArray() && cmt2.IsArray()
+                && MetaBraceAssignStatements.TryArrayElementAssignableForNewObject(cmt1, cmt2))
+            {
+                return true;
+            }
+
+            Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", cmt1.ToString(), cmt2.ToString());
+            return false;
+        }
+
+        private bool TryValidateOuterArrayDimensionForStore(List<int> defineDims, List<int> newDims, int index)
+        {
+            if (defineDims[index] == -1)
+            {
+                if (newDims[index] == -1)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "不是最后一位 生成的数组，需要定义数组长度");
+                    return false;
+                }
+
+                return true;
+            }
+
+            if (defineDims[index] != newDims[index])
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "最后一位数组定义，不能为实体值! 如果前边定义了长度，new的时候必须和前边的长度一样!");
+                return false;
+            }
+
+            return true;
+        }
+
+        private bool ResolveInitialReturnForNonArrayNew()
+        {
+            if (m_DefineMetaType.IsArray())
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "如果定义了，结构，必须与new对象的类型一样才可以");
+                return false;
+            }
+
+            if (m_NewMetaType.isClass)
+            {
+                if (m_NewMetaType.metaClass.IsContainMetaClass(m_DefineMetaType.metaClass))
+                {
+                    SetExpressReturnFromNewMetaType();
+                    return true;
+                }
+
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "定义类型与new的类型不对应 ");
+                return false;
+            }
+
+            SetExpressReturnFromNewMetaType();
+            return true;
+        }
+
+        /// <summary>
+        /// 左值 Array&lt;Int32&gt; + 字面量/右模板 Array&lt;Int16&gt;：未走“变量已带定义类型”分支时，仍以左值元素类型合并。
+        /// </summary>
+        private void TryApplyNumericArrayElementMergeFromDefineAndNew()
+        {
+            if (!IsDefineAndNewArrayClassNew())
+            {
+                return;
+            }
+
+            if (TryBuildNumericMergedArrayMetaType(m_DefineMetaType, m_NewMetaType, out var merged))
+            {
+                m_ExpressReturnMetaType = merged;
+            }
+        }
+
+        private bool ApplyExpressReturnFromNewMetaTypeIfNeeded()
+        {
+            if (m_NewMetaType == null)
+            {
+                return true;
+            }
+
+            if (!m_NewMetaType.IsArray())
+            {
+                if (m_ExpressReturnMetaType == null)
+                {
+                    SetExpressReturnFromNewMetaType();
+                }
+                return true;
+            }
+
+            if (m_ExpressReturnMetaType == null)
+            {
+                SetExpressReturnFromNewMetaType();
+                return true;
+            }
+
+            if (m_ExpressReturnMetaType.arrayLength == -1)
+            {
+                m_ExpressReturnMetaType.SetArrayLength(m_NewMetaType.arrayLength);
+                return true;
+            }
+
+            if (m_ExpressReturnMetaType.arrayLength < m_NewMetaType.arrayLength)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "数组赋值内容给出的长度超出了定义长度!");
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Array&lt;Object&gt;(...){ [1], [2,3] }：object 槽中的嵌套数组字面量需暴露真实数组类型。
+        /// </summary>
+        private void TryPromoteObjectArrayLiteralReturnType()
+        {
+            if (m_NewType != ENewType.ArrayClass
+                || m_NewMetaType == null
+                || !m_NewMetaType.IsArray()
+                || m_ExpressReturnMetaType == null
+                || m_ExpressReturnMetaType.IsArray()
+                || m_ExpressReturnMetaType.metaClass != CoreMetaClassManager.objectMetaClass)
+            {
+                return;
+            }
+
+            SetExpressReturnFromNewMetaType();
+        }
+
+        /// <summary>保留原条件（<c>m_NewMetaType == null &amp;&amp; m_NewMetaType != null</c> 恒 false），避免改动历史分支。</summary>
+        private void TryApplyNumericArrayElementMergeDeadBranch()
+        {
+            if (m_DefineMetaType != null && m_NewMetaType == null && m_NewMetaType != null
+                && m_DefineMetaType.IsArray() && m_NewMetaType.IsArray()
+                && m_NewType == ENewType.ArrayClass)
+            {
+                if (TryBuildNumericMergedArrayMetaType(m_DefineMetaType, m_NewMetaType, out var mergedDr))
+                {
+                    m_ExpressReturnMetaType = mergedDr;
+                }
+            }
+        }
+
+        private void SetupArrayMemberFunctionAndLengthParam(MetaInputParamCollection mipc)
+        {
+            if (!m_ExpressReturnMetaType.IsArray())
+            {
+                return;
+            }
+
+            if (m_MetaInputParamList.Count == 0)
+            {
+                int alen = m_ExpressReturnMetaType.arrayLength;
+                if (alen == -1 && m_NewMetaType == null)
+                {
+                    alen = 0;
+                }
+
+                mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, alen)));
+                mipc.CaleReturnType();
+
+                m_MetaMemberFunction = CoreMetaClassManager.arrayMetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, mipc);
+                SetInputParams(mipc);
+            }
+            else if (m_MetaInputParamList.Count == 1)
+            {
+                if (m_MetaInputParamList[0] is MetaConstExpressNode mcen)
+                {
+                    mcen.value = m_ExpressReturnMetaType.arrayLength;
+                }
             }
             else
             {
-                //m_MetaMemberFunction = m_MetaType.metaClass.GetMetaMemberConstructFunction(mipc);
-                //SetInputParams(mipc);
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "--");
             }
 
-            if (m_NewType == ENewType.ArrayClass
-                && m_ExpressReturnMetaType != null
-                && m_ExpressReturnMetaType.IsArray())
+            m_ArrayLengthExpress = m_MetaInputParamList[0];
+            m_MetaMemberFunction = null;
+        }
+
+        private bool TryUnifyNumericArrayLiteralMemberTypes()
+        {
+            if (m_NewType != ENewType.ArrayClass
+                || m_ExpressReturnMetaType == null
+                || !m_ExpressReturnMetaType.IsArray())
             {
-                if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
-                {
-                    if (TryRebuildMetaTypeFromLiteralNumericPromotion())
-                    {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                            "数组字面量无法全部强转为当前声明/推断的元素类型，已按数值升阶规则重新推断数组类型为 "
-                            + m_ExpressReturnMetaType.ToString() + "；请检查与左值类型是否仍可赋值。");
-                        if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
-                        {
-                            return;
-                        }
-                    }
-                    else
-                    {
-                        return;
-                    }
-                }
+                return true;
             }
+
+            if (NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
+            {
+                return true;
+            }
+
+            if (!TryRebuildMetaTypeFromLiteralNumericPromotion())
+            {
+                return false;
+            }
+
+            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                "数组字面量无法全部强转为当前声明/推断的元素类型，已按数值升阶规则重新推断数组类型为 "
+                + m_ExpressReturnMetaType.ToString() + "；请检查与左值类型是否仍可赋值。");
+
+            if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
+            {
+                return false;
+            }
+
+            return true;
         }
         public void SetNewMetaType( MetaType newType )
         {

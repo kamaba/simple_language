@@ -134,7 +134,7 @@ namespace SimpleLanguage.Core
         private void Parse()
         {
             MetaCallLink metaCallLink = null;
-            bool isRightDirectBraceLiteral = IsRightDirectBraceLiteral(m_FileMetaOpAssignSyntax?.express);
+            bool isRightDirectBraceLiteral = m_FileMetaOpAssignSyntax?.express is FileMetaBraceTerm;
 
             if (m_FileMetaOpAssignSyntax != null)
             {
@@ -165,12 +165,11 @@ namespace SimpleLanguage.Core
             }
 
             MetaType expressMdt = new MetaType(CoreMetaClassManager.objectMetaClass);
-            if (!isRightDirectBraceLiteral && m_FileMetaOpAssignSyntax.express != null)
+            if ( (isRightDirectBraceLiteral  || m_FileMetaOpAssignSyntax?.express is not FileMetaCallTerm )
+                && m_FileMetaOpAssignSyntax.express != null
+                && metaCallLink.callNodeList.Count > 1)
             {
-                if (!TryParseRightExpress(null))
-                {
-                    return;
-                }
+                TryParseRightExpress(null);
             }
             if (metaCallLink == null)
             {
@@ -366,7 +365,7 @@ namespace SimpleLanguage.Core
                 expressMdt = m_MetaVariable.GetFinalMetaType();
             }
 
-            if (!m_IsSettings && isRightDirectBraceLiteral && m_RightMetaExpress == null && m_FileMetaOpAssignSyntax?.express != null)
+            if ( m_RightMetaExpress == null && m_FileMetaOpAssignSyntax?.express != null)
             {
                 var rightPreferredMetaType = ResolveRightPreferredMetaTypeForDirectBraceLiteral(expressMdt);
                 if (rightPreferredMetaType == null 
@@ -388,7 +387,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_RightMetaExpress == null)
                 {
-                    Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL365, m_Token, "Error 解析新建变量语句时，表达式为空!!__2");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 解析新建变量语句时，表达式为空!!__2");
                     return;
                 }
                 if (m_LeftMethodCall == null)
@@ -427,36 +426,19 @@ namespace SimpleLanguage.Core
                 return false;
             }
 
-            m_RightMetaExpress.Parse(new AllowUseSettings() { setterFunction = false, getterFunction = true } );
-            m_RightMetaExpress = ExpressManager.ConvertNewExpress(m_RightMetaExpress, rightMetaTypeHint, m_MetaVariable);
-            if (m_RightMetaExpress == null)
+            this.m_RightMetaExpress.Parse(new AllowUseSettings() { setterFunction = false, getterFunction = true } );
+            var newexpress = ExpressManager.ConvertNewExpress(m_RightMetaExpress, rightMetaTypeHint, m_MetaVariable);            
+            if (newexpress != m_RightMetaExpress )
             {
-                Log.AddMetaCoreLog(LID.MetaCoreShouldHaveRightExpress, m_Token, "MetaAssignStatements.ConvertNewExpress", m_FileMetaOpAssignSyntax.express.token);
-                return false;
+                m_RightMetaExpress = newexpress;
+                m_RightMetaExpress.CalcReturnType();
             }
             if (m_RightMetaExpress is MetaNewObjectExpressNode mnoen)
             {
                 mnoen.CheckDefineVariableMetaTypeAndContentMetaType();
             }
-            m_RightMetaExpress.CalcReturnType();
             return true;
         }
-
-        private static bool IsRightDirectBraceLiteral(FileMetaBaseTerm rightExpress)
-        {
-            if (rightExpress == null)
-            {
-                return false;
-            }
-
-            if (rightExpress is FileMetaBraceTerm)
-            {
-                return true;
-            }
-
-            return rightExpress.root is FileMetaBraceTerm;
-        }
-
         private MetaType ResolveRightPreferredMetaTypeForDirectBraceLiteral(MetaType setterParamMetaType)
         {
             if (m_LeftMethodCall != null)

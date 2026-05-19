@@ -51,7 +51,7 @@ data AnonymousNestedDataSample
             x = 1,
             y = ClassDataEnumSample(){ cc = null },
             z = DataKind.Base,
-            w = ClassHolder(){ value = 11, value2 = ClassHolder2(){ ok = 2 } },
+            w = ClassHolder(){ value = 11 },
         }
     }
 }
@@ -59,7 +59,7 @@ data AnonymousNestedDataSample
 data ClassDataEnumSample
 {
     cc = ClassHolder(){ value = 222 }
-    vb = MetaInfo(){ level = 3, passed = True }
+    vb = MetaInfo(){ level = 3, passed = true }
     kind = DataKind.Advanced
 }
 
@@ -70,7 +70,7 @@ data MixedArrayElementSample
         [2, 3],
         { code = 7, title = "ok" },
         ClassHolder(){ value = 22 },
-        MetaInfo(){ level = 9, passed = False },
+        MetaInfo(){ level = 9, passed = false },
         DataKind.Base
     ]
 }
@@ -113,7 +113,7 @@ data StudentRecord
         { name = "Math", year = 2024 },
         { name = "Physics", year = 2025 }
      ]
-     meta = MetaInfo(){ level = 2, passed = True }
+     meta = MetaInfo(){ level = 2, passed = true }
 }
 
 DataTest

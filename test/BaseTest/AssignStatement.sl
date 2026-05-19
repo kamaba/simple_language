@@ -156,7 +156,7 @@ AssignStatement
         AssignBox[] boxes = new(2) { AssignBox(){ value = 1, name = "left" }, AssignBox(){ value = 2 } }
         boxes[0].value = 100
         boxes.$0.numbers.$1 = 222
-        boxes[1] = { value = 20, name = "brace-rebind", flag = 0b1111 }
+        boxes[1] = new(){ value = 20, name = "brace-rebind", flag = 0b1111 }
         boxes.$1.value += 5
         boxes.$1.numbers[0] = 999
 
@@ -173,7 +173,7 @@ AssignStatement
         AssignBox alias = left
 
         alias.value = right.value + 100
-        left = { value = 33, name = "brace-left", flag = 0b0110 }
+        left = new(){ value = 33, name = "brace-left", flag = 0b0110 }
         right = AssignBox(){ value = left.value + alias.value, name = "copied", flag = alias.flag }
 
         global.println("left -> " + left.toString())

@@ -16,17 +16,17 @@ namespace SimpleLanguage.Core
     {
         private MetaIfStatements m_MetaIfStatements = null;
         private MetaSwitchStatements m_MetaSwitchStatements = null;
-        public MetaExecuteStatementsNode( MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, MetaIfStatements ifstate)
+        public MetaExecuteStatementsNode( MetaType mdt, MetaBase owmb, MetaBlockStatements mbs, MetaIfStatements ifstate)
         {
             m_ExpressReturnMetaType = mdt;
-            m_OwnerMetaBase = ownerMC;
+            m_OwnerMetaBase = owmb;
             m_OwnerMetaBlockStatements = mbs;
             m_MetaIfStatements = ifstate;
         }
-        public MetaExecuteStatementsNode(MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, MetaSwitchStatements switchstate)
+        public MetaExecuteStatementsNode(MetaType mdt, MetaBase owmb, MetaBlockStatements mbs, MetaSwitchStatements switchstate)
         {
             m_ExpressReturnMetaType = mdt;
-            m_OwnerMetaBase = ownerMC;
+            m_OwnerMetaBase = owmb;
             m_OwnerMetaBlockStatements = mbs;
             m_MetaSwitchStatements = switchstate;
         }
@@ -83,21 +83,21 @@ namespace SimpleLanguage.Core
             }
             return sb.ToString();
         }
-        public static MetaExecuteStatementsNode CreateMetaExecuteStatementsNodeByIfExpress( MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, FileMetaKeyIfSyntax ifStatements)
+        public static MetaExecuteStatementsNode CreateMetaExecuteStatementsNodeByIfExpress( MetaType mdt, MetaBase onmb, MetaBlockStatements mbs, FileMetaKeyIfSyntax ifStatements)
         {
             if (ifStatements == null) return null;
 
             MetaIfStatements newIfStatements = new MetaIfStatements(mbs, ifStatements );
-            MetaExecuteStatementsNode mesn = new MetaExecuteStatementsNode(mdt, ownerMC, mbs, newIfStatements);
+            MetaExecuteStatementsNode mesn = new MetaExecuteStatementsNode(mdt, onmb, mbs, newIfStatements);
 
             return mesn;
         }
-        public static MetaExecuteStatementsNode CreateMetaExecuteStatementsNodeBySwitchExpress(MetaType mdt, MetaClass ownerMC, MetaBlockStatements mbs, FileMetaKeySwitchSyntax switchStatements)
+        public static MetaExecuteStatementsNode CreateMetaExecuteStatementsNodeBySwitchExpress(MetaType mdt, MetaBase onmb, MetaBlockStatements mbs, FileMetaKeySwitchSyntax switchStatements)
         {
             if (switchStatements == null) return null;
 
             MetaSwitchStatements newSwtichStatements = new MetaSwitchStatements(mbs, switchStatements);
-            MetaExecuteStatementsNode mesn = new MetaExecuteStatementsNode(mdt, ownerMC, mbs, newSwtichStatements);
+            MetaExecuteStatementsNode mesn = new MetaExecuteStatementsNode(mdt, onmb, mbs, newSwtichStatements);
 
             return mesn;
         }

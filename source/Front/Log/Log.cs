@@ -231,11 +231,6 @@ namespace SimpleLanguage.Logging
             }
             return WriteCoreByToken(lid, EErrorType.ParseMeta, token, tokens.ToArray(), "");
         }
-        public static LogData AddMetaCoreLog(LID lid, string msg, Token token )
-        {
-            return WriteCoreByToken(lid, EErrorType.ParseMeta, token, null, "" );
-        }
-
         //-------------------------------GenIR----------------------------------------------        
         public static LogData AddIRLog(LID lid, string msg, params object[] objs)
         {

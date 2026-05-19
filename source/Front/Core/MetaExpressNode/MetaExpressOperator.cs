@@ -681,15 +681,15 @@ namespace SimpleLanguage.Core
         {
             if (m_SignToken != null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, msg, m_SignToken);
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_SignToken, msg);
                 return;
             }
             if (m_FileMetaBaseTerm?.token != null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, msg, m_FileMetaBaseTerm.token);
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaBaseTerm.token, msg);
                 return;
             }
-            Log.AddMetaCoreLog(LID.ShowExtendMessage, msg);
+            Log.AddMetaCoreLog(LID.ShowExtendMessage, null, msg);
         }
         public MetaExpressNodeBase SimulateCompute(ExpressOptimizeConfig config)
         {

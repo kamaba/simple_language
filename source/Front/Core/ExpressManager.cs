@@ -97,11 +97,10 @@ namespace SimpleLanguage.Core
             MetaType mdt = cep.metaType;
             MetaVariable equalMetaVariable = cep.equalMetaVariable;
             MetaBase ownerBase = cep.ownerMetaBase;
-            MetaClass mc = ownerBase as MetaClass;
 
             if (fmte == null)
             {
-                Log.AddMetaCoreLog(LID.AutoExpressManagerL102, "", equalMetaVariable?.token );
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, equalMetaVariable?.token, "" );
                 return null;
             }
 
@@ -109,7 +108,7 @@ namespace SimpleLanguage.Core
             FileMetaAsOrIsTerm asOrIsTerm = fmte as FileMetaAsOrIsTerm;
             if (asOrIsTerm != null)
             {
-                MetaAsIsExpressNode mesn = MetaAsIsExpressNode.CreateMetaExecuteStatementsNode(mdt, mc, mbs, asOrIsTerm, equalMetaVariable );
+                MetaAsIsExpressNode mesn = MetaAsIsExpressNode.CreateMetaExecuteStatementsNode(mdt, ownerBase, mbs, asOrIsTerm, equalMetaVariable );
                 if (mesn != null)
                 {
                     return mesn;
@@ -121,7 +120,7 @@ namespace SimpleLanguage.Core
             {
                 if (ifExpressTerm != null)
                 {
-                    MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeByIfExpress(mdt, mc, mbs, ifExpressTerm.ifSyntax);
+                    MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeByIfExpress(mdt, ownerBase, mbs, ifExpressTerm.ifSyntax);
                     if (mesn != null)
                     {
                         return mesn;
@@ -139,7 +138,7 @@ namespace SimpleLanguage.Core
             {
                 if (switchExpressTerm != null)
                 {
-                    MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeBySwitchExpress(mdt, mc, mbs, switchExpressTerm.switchSyntax);
+                    MetaExecuteStatementsNode mesn = MetaExecuteStatementsNode.CreateMetaExecuteStatementsNodeBySwitchExpress(mdt, ownerBase, mbs, switchExpressTerm.switchSyntax);
                     if (mesn != null)
                     {
                         return mesn;
@@ -178,7 +177,6 @@ namespace SimpleLanguage.Core
                 return null;
             }
             MetaBase ownerBase = cep.ownerMetaBase;
-            MetaClass ownerClass = ownerBase as MetaClass;
             var root = cep.fme.root;
             if( root == null )
             {
@@ -198,7 +196,7 @@ namespace SimpleLanguage.Core
                         break;
                     case FileMetaAsOrIsTerm fmaoit:
                         {
-                            MetaAsIsExpressNode mesn = MetaAsIsExpressNode.CreateMetaExecuteStatementsNode( null, ownerClass, cep.ownerMBS,
+                            MetaAsIsExpressNode mesn = MetaAsIsExpressNode.CreateMetaExecuteStatementsNode( null, ownerBase, cep.ownerMBS,
                                 fmaoit, cep.equalMetaVariable );
                             if (mesn != null)
                             {
@@ -222,7 +220,7 @@ namespace SimpleLanguage.Core
                         }
                     case FileMetaThreeItemSyntaxTerm fmtist:
                         {
-                            MetaThreeItemExpressNode mis = new MetaThreeItemExpressNode(ownerClass, cep.ownerMBS, fmtist );
+                            MetaThreeItemExpressNode mis = new MetaThreeItemExpressNode(ownerBase, cep.ownerMBS, fmtist );
                             return mis;
                         }
                     case FileMetaCallTerm fmct:     //className.functionname().varname;
