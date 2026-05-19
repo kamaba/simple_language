@@ -92,7 +92,7 @@ namespace SimpleLanguage.Compile
         {
             if (m_NodeList.Count == 0)
             {
-                Log.AddFileMetaLog(LID.AutoFileMetaClassL91, "Error 错误 !!!");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 错误 !!!");
                 return false;
             }
 
@@ -139,7 +139,7 @@ namespace SimpleLanguage.Compile
                         {
                             if (fcdList.Count == 0)
                             {
-                                Log.AddFileMetaLog(LID.AutoFileMetaClassL138, "接口关键字后边没有相应的内容!");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, "接口关键字后边没有相应的内容!");
                             }
                             m_InterfaceClassList.AddRange(fcdList);
                         }
@@ -148,7 +148,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (classNameTokenList.Count > 0)
                         {
-                            Log.AddFileMetaLog(LID.AutoFileMetaClassL147, "Error 字符两次赋值 107");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 字符两次赋值 107");
                             for (int i = 0; i < classNameTokenList.Count; i++)
                             {
                                 Log.AddFileMetaLog(LID.ShowExtendMessage, classNameTokenList[i].lexeme.ToString());
@@ -317,12 +317,12 @@ namespace SimpleLanguage.Compile
                             if (m_DataToken != null)
                             {
                                 isError = true;
-                                Log.AddFileMetaLog(LID.AutoFileMetaClassL316, "Error 解析过了一次data!!");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次data!!");
                             }
                             if (m_ClassToken != null)
                             {
                                 isError = true;
-                                Log.AddFileMetaLog(LID.AutoFileMetaClassL321, "Error 解析过了一次Class!!");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次Class!!");
                             }
                             m_DataToken = token;
                         }

@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      FileMetaNamespace.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -87,7 +87,7 @@ namespace SimpleLanguage.Compile
 
             if (namespaceNode == null)
             {
-                Log.AddFileMetaLog(LID.AutoFileMetaNamespaceL90, "Error 在解析namespace 中，没有找到namespace设置的名称!!");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在解析namespace 中，没有找到namespace设置的名称!!");
                 return;
             }
 

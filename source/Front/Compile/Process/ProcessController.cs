@@ -44,7 +44,7 @@ namespace SimpleLanguage.Compile.Process
                         {
                             // fallback log
                             //var logger = LogManager.GetLogger(LogModule.FileMeta);
-                            //logger.Log((int)LID.Unknown, message);
+                            //logger.Log((int)LID.ShowExtendMessage, message);
                             //Aborted?.Invoke(new ErrorDefinition { Id = errorId, MessageTemplate = message }, message);
                         }
                     }
@@ -84,7 +84,7 @@ namespace SimpleLanguage.Compile.Process
                 catch (Exception ex)
                 {
                     // unexpected error - log and abort
-                    Abort((int)LID.AutoProcessControllerL87, "Unhandled exception in phase: " + ex.Message);
+                    Abort((int)LID.ShowExtendMessage, "Unhandled exception in phase: " + ex.Message);
                     break;
                 }
             }
@@ -125,7 +125,7 @@ namespace SimpleLanguage.Compile.Process
                         }
                         catch (Exception ex)
                         {
-                            Abort((int)LID.AutoProcessControllerL128, "Unhandled worker exception: " + ex.Message);
+                            Abort((int)LID.ShowExtendMessage, "Unhandled worker exception: " + ex.Message);
                         }
                         finally
                         {

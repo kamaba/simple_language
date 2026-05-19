@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRVariable.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -90,7 +90,7 @@ namespace SimpleLanguage.IR
                     //{
                     //    if (index == -1)
                     //    {
-                    //        Log.AddIRLog(LID.Unknown, "没有找到对应成员变量的Index");
+                    //        Log.AddIRLog(LID.ShowExtendMessage, "没有找到对应成员变量的Index");
                     //        return null;
                     //    }
                     //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
@@ -163,7 +163,7 @@ namespace SimpleLanguage.IR
                     //{
                     //    if (index == -1)
                     //    {
-                    //        Log.AddIRLog(LID.Unknown, "没有找到对应成员变量的Index");
+                    //        Log.AddIRLog(LID.ShowExtendMessage, "没有找到对应成员变量的Index");
                     //        return null;
                     //    }
                     //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
@@ -500,7 +500,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Log.AddIRLog(LID.AutoIRVariableL360, $"SVM Error 没有找到加载变量的来源类型！");
+                Log.AddIRLog(LID.ShowExtendMessage, $"SVM Error 没有找到加载变量的来源类型！");
             }
         }
 

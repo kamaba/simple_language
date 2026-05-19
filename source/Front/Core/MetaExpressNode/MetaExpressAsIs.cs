@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaExpressAsOrIs.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
@@ -58,7 +58,7 @@ namespace SimpleLanguage.Core
 
             if (m_FileMetaKeyAsIsSyntax.variableCallLink == null)
             {
-                Log.AddMetaCoreLog(LID.AutoMetaExpressAsIsL61, "定义当前变量错误");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "定义当前变量错误");
                 return;
             }
             m_CurrentVariableLink = new MetaCallLink(m_FileMetaKeyAsIsSyntax.variableCallLink, m_OwnerMetaBase, m_OwnerMetaBlockStatements, null, null);
@@ -66,7 +66,7 @@ namespace SimpleLanguage.Core
             if ( m_FileMetaKeyAsIsSyntax.defineType == null )
             {
                 Debug.Assert(false, "没有定义转换的类型");
-                Log.AddMetaCoreLog(LID.AutoMetaExpressAsIsL69, "定义的类型不正确");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "定义的类型不正确");
                 return;
             }
             m_ConvertTargetMetaType = null;
@@ -79,7 +79,7 @@ namespace SimpleLanguage.Core
                 //m_CurrentVariable = m_CurrentVariableLink.ExecuteGetMetaVariable();
                 //if( m_CurrentVariable == null )
                 //{
-                //    Log.AddMetaCoreLog(LID.Unknown, "没有找到相关的转化对象");
+                //    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到相关的转化对象");
                 //    return;
                 //}
             }

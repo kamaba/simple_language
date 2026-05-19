@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaCallNode.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
@@ -257,12 +257,18 @@ namespace SimpleLanguage.Core
                 {
                     flag = CreateCallNode();
                 }
-                if (m_FileMetaCallNode.fileMetaBracketTermList.Count > 0)
+                if (this.m_FileMetaCallNode.fileMetaBracketTermList.Count > 0)
                 {
                     MetaType mt = null;
-                    if (m_DefineMetaVariable != null)
+                    if (m_MetaVariable != null)
                     {
-                        mt = m_DefineMetaVariable.isDefineMetaType ? m_DefineMetaVariable.defineMetaType : null;
+                        var fmt = m_MetaVariable.GetFinalMetaType();
+                        if (fmt.IsArray())
+                        {
+                            mt = new MetaType(CoreMetaClassManager.arrayMetaClass);
+                            mt.AddDefineTemplateMetaType(new MetaType(CoreMetaClassManager.int32MetaClass));
+                            //mt = new MetaType( CoreMetaClassManager.int32MetaClass );
+                        }
                     }
                     for (int i = 0; i < m_FileMetaCallNode.fileMetaBracketTermList.Count; i++)
                     {
@@ -1311,7 +1317,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_CallNodeType == ECallNodeType.MetaNode)
                 {
-                    Log.AddMetaCoreLog(LID.AutoMetaCallNodeL1244, "Error 鍑芥暟璋冪敤涓庡懡鍚嶇┖闂村啿绐?!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鍑芥暟璋冪敤涓庡懡鍚嶇┖闂村啿绐?!");
                     return false;
                 }
                 else if (m_CallNodeType == ECallNodeType.MemberFunctionName)
@@ -1375,7 +1381,7 @@ namespace SimpleLanguage.Core
                     //    MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParam("_init_", null, m_MetaInputParamCollection);
                     //    if (mmf == null)
                     //    {
-                    //        Log.AddMetaCoreLog(LID.Unknown, $"Error 娌℃湁鎵惧埌鐩稿叧鐨刜init_绫?! 绫籟{curmc.allClassName}] 鍑芥暟:[_init_({m_MetaInputParamCollection.count} )]", m_Token);
+                    //        Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 娌℃湁鎵惧埌鐩稿叧鐨刜init_绫?! 绫籟{curmc.allClassName}] 鍑芥暟:[_init_({m_MetaInputParamCollection.count} )]", m_Token);
                     //        return false;
                     //    }
                     //    m_MetaClass = curmc;
@@ -1404,7 +1410,7 @@ namespace SimpleLanguage.Core
                         {
                             if( m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress  )
                             {
-                                Log.AddMetaCoreLog(LID.AutoMetaCallNodeL1347, "Error 鍦↖nputParam 閲岃竟锛屾瀯寤哄嚱鏁帮紝鍙厑璁?浣跨敤ClassName() 鐨勬柟寮? " +
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鍦↖nputParam 閲岃竟锛屾瀯寤哄嚱鏁帮紝鍙厑璁?浣跨敤ClassName() 鐨勬柟寮? " +
                                     "涓嶅厑璁镐娇鐢?ClassName(){}鐨勬柟寮" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString() );
                                 return false;
                             }
@@ -1445,7 +1451,7 @@ namespace SimpleLanguage.Core
                     {
                         if (m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress)
                         {
-                            Log.AddMetaCoreLog(LID.AutoMetaCallNodeL1371, "Error 鍦↖nputParam 閲岃竟锛屾瀯寤哄嚱鏁帮紝鍙厑璁?浣跨敤ClassName() 鐨勬柟寮? " +
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鍦↖nputParam 閲岃竟锛屾瀯寤哄嚱鏁帮紝鍙厑璁?浣跨敤ClassName() 鐨勬柟寮? " +
                                 "涓嶅厑璁镐娇鐢?ClassName(){}鐨勬柟寮" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString());
                             return false;
                         }
@@ -1571,7 +1577,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (list[0] > 0 && list[0] < index)
                                 {
-                                    Log.AddMetaCoreLog(LID.AutoMetaCallNodeL1496, "Array index out of range.");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Array index out of range.");
                                     return;
                                 }
                             }
@@ -1621,7 +1627,7 @@ namespace SimpleLanguage.Core
         //{
         //    if (mv == null)
         //    {
-        //        Log.AddMetaCoreLog(LID.Unknown, "Error HandleGetTypeByMetaVariable mv is null");
+        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error HandleGetTypeByMetaVariable mv is null");
         //        return;
         //    }
 

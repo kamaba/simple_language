@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      FileMetaCommon.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -119,7 +119,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.AutoFileMetaCommonL122, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
                         return null;
                     }
                 }
@@ -127,7 +127,7 @@ namespace SimpleLanguage.Compile
                 {
                     if( token[i].type != ETokenType.Period )
                     {
-                        Log.AddFileMetaLog(LID.AutoFileMetaCommonL130, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 命名空间有误，必须为X.xx.X 类似的格式!");
                         return null;
                     }
                     isIdentifier = true;
@@ -691,7 +691,7 @@ namespace SimpleLanguage.Compile
             }
             if (m_ArrayDimsionLengthList.Count != m_FileMetaBracketTermList.Count)
             {
-                Log.AddFileMetaLog(LID.AutoFileMetaCommonL691, "数组获取长度文件的时候，有异常!");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "数组获取长度文件的时候，有异常!");
             }
         }
         public override string ToString()
@@ -764,7 +764,7 @@ namespace SimpleLanguage.Compile
             m_FileMeta = fm;
             if ( nodeList.Count == 0 )
             {
-                Log.AddFileMetaLog(LID.AutoFileMetaCommonL783, "Error 在<>中没有发现元素!!");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在<>中没有发现元素!!");
                 return;
             }
             m_Token = nodeList[0].token;
@@ -775,7 +775,7 @@ namespace SimpleLanguage.Compile
             }
             else if( nodeList.Count == 2 )
             {
-                Log.AddFileMetaLog(LID.AutoFileMetaCommonL794, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
             }
         }
         public void Parse()

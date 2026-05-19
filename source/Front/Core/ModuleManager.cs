@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ModuleManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -74,7 +74,7 @@ namespace SimpleLanguage.Core
         {
             if( string.IsNullOrEmpty( name ) )
             {
-                Log.AddMetaCoreLog(LID.AutoModuleManagerL77, "Error 严重错误，获取模式不传名称!!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 严重错误，获取模式不传名称!!");
                 return null;
             }
             if(m_AllMetaModuleDict.ContainsKey( name ) )
@@ -113,7 +113,7 @@ namespace SimpleLanguage.Core
             m_ImportMetaModuleDict.Add(mm.name, mm);
             if( m_AllMetaModuleDict.ContainsKey( mm.name ) )
             {
-                Log.AddMetaCoreLog(LID.AutoModuleManagerL116, "Error 严重错误，模块有重名!!!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 严重错误，模块有重名!!!");
                 return;
             }
             m_AllMetaModuleDict.Add(mm.name, mm);

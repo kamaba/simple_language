@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaClass.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -137,7 +137,7 @@ namespace SimpleLanguage.Core
             this.m_Name = mc.name;
             if (this.m_MetaTemplateClassDict.ContainsKey(mc.metaTemplateList.Count ) )
             {
-                Log.AddMetaCoreLog(LID.AutoMetaNodeL140, $"已有该模板数量的类{mc.name} :{mc.metaTemplateList.Count}");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, $"已有该模板数量的类{mc.name} :{mc.metaTemplateList.Count}");
                 return;
             }
             this.m_MetaTemplateClassDict.Add(mc.metaTemplateList.Count, mc);
@@ -177,7 +177,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.AutoMetaNodeL180, "添加命名空间");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "添加命名空间");
             }
 
             return null;
@@ -209,7 +209,7 @@ namespace SimpleLanguage.Core
                 {
                     if( node.m_MetaTemplateClassDict.ContainsKey( mc.metaTemplateList.Count ) )
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaNodeL212, "添加add metaclass metanode节点有问题! 有重复:" + mc.allClassName );
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "添加add metaclass metanode节点有问题! 有重复:" + mc.allClassName );
                         return null;
                     }
                     else
@@ -232,7 +232,7 @@ namespace SimpleLanguage.Core
         {
             if( m_ChildrenMetaNodeDict.ContainsKey( mn.name ) )
             {
-                Log.AddMetaCoreLog(LID.AutoMetaNodeL235, $"Parent:{this.GetAllName()} Current:{ mn.name } 添加 add metanode metanode节点有问题! 有重复");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Parent:{this.GetAllName()} Current:{ mn.name } 添加 add metanode metanode节点有问题! 有重复");
                 return false;
             }
             mn.m_ParentNode = this;

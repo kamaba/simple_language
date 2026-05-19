@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRAssignStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -191,7 +191,7 @@ namespace SimpleLanguage.IR
 
             //    if (finalMVN == null)
             //    {
-            //        Log.AddIRLog(LID.Unknown, "没有最终表达式，错误处理");
+            //        Log.AddIRLog(LID.ShowExtendMessage, "没有最终表达式，错误处理");
             //        return;
             //    }
 
@@ -219,12 +219,12 @@ namespace SimpleLanguage.IR
             //        else
             //        {
             //            Debug.Assert(false, "这里应该只有变量和方法调用两种方式");
-            //            Log.AddIRLog(LID.Unknown, "------------------------------------------");
+            //            Log.AddIRLog(LID.ShowExtendMessage, "------------------------------------------");
             //        }
             //    }
             //    else
             //    {
-            //        Log.AddIRLog(LID.Unknown, "这里应该有一个创建new的过程表达式");
+            //        Log.AddIRLog(LID.ShowExtendMessage, "这里应该有一个创建new的过程表达式");
             //    }
             //}
             //else

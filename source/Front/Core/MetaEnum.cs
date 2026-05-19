@@ -415,7 +415,7 @@ namespace SimpleLanguage.Core
                         mme.SetExpress(autoConst);
                         mme.SetIsExplicitAssign(false);
                         mme.ParseMetaExpress();
-                        mme.CalcReturnType();
+                        mme.ParseRealMetaType();
                     }
                     i++;
                 }

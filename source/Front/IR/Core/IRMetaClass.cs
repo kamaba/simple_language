@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRMetaClass.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -159,7 +159,7 @@ namespace SimpleLanguage.IR
         {
             if( index >= m_IRNotStaticMethodList.Count || index < 0 )
             {
-                Log.AddIRLog(LID.AutoIRMetaClassL98, "GetIRMethodByIndex is null");
+                Log.AddIRLog(LID.ShowExtendMessage, "GetIRMethodByIndex is null");
                 return null;
             }
             return m_IRNotStaticMethodList[index];

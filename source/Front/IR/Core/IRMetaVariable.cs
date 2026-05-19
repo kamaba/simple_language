@@ -108,7 +108,7 @@ namespace SimpleLanguage.IR
             m_Index = fieldIndex;
             m_Name = (irmc?.irName ?? string.Empty) + "." + mme.name;
             FillDebugInfo(mme, mme.name, "IRMetaMemberEnum");
-            m_ExpressNode = mme.express ?? mme.enumValueExpress;
+            m_ExpressNode = mme.express;
             m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             m_IsStatic = true;
             m_Permission = mme.permission;

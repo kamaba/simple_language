@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaClass.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -774,7 +774,7 @@ namespace SimpleLanguage.Core
                 var mn = m_MetaNode.GetChildrenMetaNodeByName(v2.name);
                 if( mn != null )
                 {
-                    Log.AddMetaCoreLog(LID.AutoMetaClassL751, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
                     continue;
                 }
 
@@ -789,7 +789,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaClassL766, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
                     }
                     isHave = true;
                 }
@@ -800,7 +800,7 @@ namespace SimpleLanguage.Core
                 {
                     if (v2.staticToken != null || v2.constToken != null)
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaClassL777, "Error Project类成员变量不允许显式定义 static/const，系统会按全局语义处理: " + v2.token?.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Project类成员变量不允许显式定义 static/const，系统会按全局语义处理: " + v2.token?.ToLexemeAllString());
                     }
                     mmv.SetIsStatic(true);
                     mmv.SetIsConst(true);
@@ -817,7 +817,7 @@ namespace SimpleLanguage.Core
                 var mn = this.m_MetaNode.GetChildrenMetaNodeByName(v2.name);
                 if (mn != null)
                 {
-                    Log.AddMetaCoreLog(LID.AutoMetaClassL794, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
                     continue;
                 }
 
@@ -826,7 +826,7 @@ namespace SimpleLanguage.Core
                 {
                     if (v2.staticToken != null)
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaClassL803, "Info Project类成员函数默认按 static 处理: " + v2.token?.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Info Project类成员函数默认按 static 处理: " + v2.token?.ToLexemeAllString());
                     }
                     mmf.SetIsStatic(true);
                 }
@@ -853,7 +853,7 @@ namespace SimpleLanguage.Core
                 var defaultFunction = GetMetaMemberConstructDefaultFunction();
                 if (defaultFunction == null)
                 {
-                    Log.AddMetaCoreLog(LID.AutoMetaClassL829, "没有找发现默认构造函数");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找发现默认构造函数");
                     return;
                 }
                 m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, defaultFunction.metaBlockStatements);
@@ -943,7 +943,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.AutoMetaClassL919, "重复添加接口");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "重复添加接口");
             }
         }
         public void AddMetaMemberVariable( MetaMemberVariable mmv, bool isAddManager = true )

@@ -37,7 +37,7 @@ namespace SimpleLanguage.Core
             {
                 if( defineMT.metaClass != CoreMetaClassManager.objectMetaClass )
                 {
-                    if (!defineMT.IsArray() || defineMT.defineTemplateMetaTypeList.Count != 1)
+                    if (!defineMT.IsArray() )
                     {
                         Token token = m_Token;
                         if (mv?.token != null)

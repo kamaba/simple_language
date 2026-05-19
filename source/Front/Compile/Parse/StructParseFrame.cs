@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      StructParse.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -49,7 +49,7 @@ namespace SimpleLanguage.Compile
                 // only allow in namespace/class blocks
                 if (currentNodeInfo == null || (currentNodeInfo.parseType != EParseNodeType.Namespace && currentNodeInfo.parseType != EParseNodeType.Class))
                 {
-                    Log.AddFileMetaLog(LID.AutoStructParseFrameL43, "Error @Attribute 只允许写在 namespace{} / class{} 内");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error @Attribute 只允许写在 namespace{} / class{} 内");
                     // do not consume; let outer parser handle as error or normal token
                     break;
                 }
@@ -58,7 +58,7 @@ namespace SimpleLanguage.Compile
                 var attrName = atToken.extend != null ? atToken.extend.ToString() : null;
                 if (string.IsNullOrEmpty(attrName))
                 {
-                    Log.AddFileMetaLog(LID.AutoStructParseFrameL52, "Error @Attribute 名称为空");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error @Attribute 名称为空");
                     // invalid attribute; do not consume to avoid breaking outer logic
                     break;
                 }

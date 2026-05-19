@@ -49,13 +49,13 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL52, "Error 返回的判断语句: " + mcen.ToString() + "   并非是boolean类型!");
+                            Log.AddMetaCoreLog( LID.ShowExtendMessage, "Error 返回的判断语句: " + mcen.ToString() + "   并非是boolean类型!");
                         }
                     }
                     break;
                 case MetaConstExpressNode mconen:
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL58, "Error -------------------------------------------");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error -------------------------------------------");
                     }
                     break;
                 case MetaOpExpressNode moen:
@@ -66,7 +66,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            //Log.AddMetaCoreLog( LID.Unknown, "Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
+                            //Log.AddMetaCoreLog( LID.ShowExtendMessage, "Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
                         }
                     }
                     break;
@@ -79,7 +79,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL75, "Error -------------------------------------------");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error -------------------------------------------");
                     }
                     break;
             }
@@ -227,7 +227,7 @@ namespace SimpleLanguage.Core
             //    else
             //    {
             //        //这里只能使用等号进行赋值操作  a.A += 10;  是不允许的
-            //        Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL189, m_Token, "Error set语句只能使用=号进行赋值操作!!");
+            //        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error set语句只能使用=号进行赋值操作!!");
             //        return;
             //    }
             //}
@@ -326,7 +326,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL288, "Error 赋值语句解析符号暂不支持: " + ett.ToString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 赋值语句解析符号暂不支持: " + ett.ToString());
                     }
                     break;
             }
@@ -341,12 +341,12 @@ namespace SimpleLanguage.Core
                 m_MetaVariable = m_LeftMetaExpress.GetMetaVariable();
                 if (m_MetaVariable == null)
                 {
-                    Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL304, m_Token, "Error 变量没有发现" + m_LeftMetaExpress.ToString());
+                    Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, "Error 变量没有发现" + m_LeftMetaExpress.ToString());
                     return;
                 }
                 if(m_MetaVariable.isConst )
                 {
-                    Log.AddMetaCoreLog( LID.AutoMetaAssignStatementsL309, m_Token, "Error 当前左值声明为 const，不允许进行赋值或修改!!");
+                    Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, "Error 当前左值声明为 const，不允许进行赋值或修改!!");
                     return;
                 }
 
@@ -359,7 +359,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog( LID.MetaCoreGlobalSettingNeedInProject, m_Token, "in" + ownerMetaClass.name );
+                        Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, "in" + ownerMetaClass.name );
                     }
                 }
                 expressMdt = m_MetaVariable.GetFinalMetaType();
@@ -422,7 +422,7 @@ namespace SimpleLanguage.Core
             m_RightMetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
             if (m_RightMetaExpress == null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreShouldHaveRightExpress, m_Token, "MetaAssignStatements", m_FileMetaOpAssignSyntax.express.token);
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "MetaAssignStatements", m_FileMetaOpAssignSyntax.express.token);
                 return false;
             }
 
@@ -519,7 +519,7 @@ namespace SimpleLanguage.Core
             //{
             //    if( expressRetMetaDefineType?.metaTemplate != mdt.metaTemplate )
             //    {
-            //        Log.AddMetaCoreLog( LID.Unknown, "Error 模版与类定义的模版不相同!!");
+            //        Log.AddMetaCoreLog( LID.ShowExtendMessage, "Error 模版与类定义的模版不相同!!");
             //    }
             //}
             //else
@@ -543,7 +543,7 @@ namespace SimpleLanguage.Core
 
                 if (relation == EClassRelation.CompareClassError)
                 {
-                    Log.AddMetaCoreLog(LID.AutoMetaAssignStatementsL452, m_Token, "Error 赋值表达式返回定义类型为空");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 赋值表达式返回定义类型为空");
                     return;
                 }
 

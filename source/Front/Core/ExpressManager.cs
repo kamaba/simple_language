@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ExpressManager.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
@@ -129,7 +129,7 @@ namespace SimpleLanguage.Core
             }
             else if( ifExpressTerm != null )
             {
-                Log.AddMetaCoreLog(LID.AutoExpressManagerL131, "不允许使用If语句!!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "不允许使用If语句!!");
                 return null;
             }
 
@@ -147,7 +147,7 @@ namespace SimpleLanguage.Core
             }
             else if (switchExpressTerm != null)
             {
-                Log.AddMetaCoreLog(LID.AutoExpressManagerL149, "不允许使用Switch语句!!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "不允许使用Switch语句!!");
                 return null;
             }
 
@@ -164,7 +164,7 @@ namespace SimpleLanguage.Core
             //}
             //else if (parExpressTerm != null)
             //{
-            //    Log.AddMetaCoreLog(LID.Unknown, "不允许使用Switch语句!!");
+            //    Log.AddMetaCoreLog(LID.ShowExtendMessage, "不允许使用Switch语句!!");
             //    return null;
             //}
 
@@ -266,7 +266,7 @@ namespace SimpleLanguage.Core
                             return maen;
                         }
                     default:
-                        Log.AddMetaCoreLog(LID.AutoExpressManagerL265, "Error CreateExpressNode 创建表达项不能为符号");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error CreateExpressNode 创建表达项不能为符号");
                         break;
                 }
             }
@@ -286,7 +286,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.AutoExpressManagerL285, " Error VisitFileMetaExpress fileMetaNode 不是符号!!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, " Error VisitFileMetaExpress fileMetaNode 不是符号!!");
                     }
                 }
                 else if (leftNode != null && rightNode == null)
@@ -313,7 +313,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.AutoExpressManagerL312, " Error VisitFileMetaExpress left and right都为空!!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, " Error VisitFileMetaExpress left and right都为空!!");
                 }
                 return null;
             }
@@ -362,7 +362,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.AutoExpressManagerL361, "Error Optimaze don't support that ExpressType");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Optimaze don't support that ExpressType");
                     }
                     break;
             }

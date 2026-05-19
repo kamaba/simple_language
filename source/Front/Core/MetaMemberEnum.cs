@@ -14,12 +14,10 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaMemberEnum : MetaMemberVariable
     {
-        public MetaExpressNodeBase enumValueExpress => m_EnumValueExpress;
-        public MetaConstExpressNode enumValueConstExpressNode => m_EnumValueExpress as MetaConstExpressNode;
+        public MetaConstExpressNode enumValueConstExpressNode => m_Express as MetaConstExpressNode;
         private bool isExplicitAssign => m_IsExplicitAssign;
 
         private bool m_IsExplicitAssign = false;
-        private MetaExpressNodeBase m_EnumValueExpress = null;
         /// <summary>所属用户 enum（与 ownerMetaClass 多为 Core.Enum 模板不同，用于 extends 与定义类型）。</summary>
         private MetaEnum m_DefiningMetaEnum = null;
         private MetaEnum m_OwnerMetaEnum = null;
@@ -113,7 +111,7 @@ namespace SimpleLanguage.Core
 
                     if (m_Express == null)
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL140, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
                     }
                     else
                     {
@@ -127,13 +125,7 @@ namespace SimpleLanguage.Core
             if (m_Express != null)
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-                m_Express.CalcReturnType();
-                m_EnumValueExpress = m_Express;
-                var valueRet = m_Express.GetReturnMetaType();
-                if (valueRet != null)
-                {
-                    SetRealMetaType(new MetaType(valueRet));
-                }
+                m_Express.CalcReturnType();           
                 return true;
             }
             return true;
@@ -143,9 +135,9 @@ namespace SimpleLanguage.Core
         /// </summary>
         public override void ParseRealMetaType()
         {
-            if (m_EnumValueExpress != null)
+            if (m_Express != null)
             {
-                var ret = m_EnumValueExpress.GetReturnMetaType();
+                var ret = m_Express.GetReturnMetaType();
                 if (ret != null)
                 {
                     SetRealMetaType(new MetaType(ret));
@@ -159,14 +151,14 @@ namespace SimpleLanguage.Core
 
         public void WrapAsMemberObjectExpress( MetaMemberEnum mme )
         {
-            if (m_EnumValueExpress == null) return;
+            if (m_Express == null) return;
 
             var memberClass = CoreMetaClassManager.memberMetaClass;
             if (memberClass == null) return;
 
             var memberType = new MetaType(memberClass);
             var newMember = new MetaNewObjectExpressNode(memberType, mme.ownerMetaClass, mme.m_OwnerMetaBlockStatements);
-            FillMemberNewObjectAssignList(newMember, mme.m_OwnerMetaBlockStatements, mme.ownerMetaBase, mme.m_EnumValueExpress, mme.m_Name, m_Index);
+            FillMemberNewObjectAssignList(newMember, mme.m_OwnerMetaBlockStatements, mme.ownerMetaBase, mme.m_Express, mme.m_Name, m_Index);
 
             m_Express = newMember;
             // m_DefineMetaType：enum extends 的声明类型；m_RealMetaType：成员值表达式类型（写入 Member.value）
@@ -178,11 +170,11 @@ namespace SimpleLanguage.Core
         /// </summary>
         public MetaExpressNodeBase CreateValuesArrayElementExpress()
         {
-            var valueExpr = m_EnumValueExpress ?? m_Express;
+            var valueExpr = m_Express;
             if (valueExpr == null)
                 return null;
             // 已包装成 Member 时，m_EnumValueExpress 仍为原始值表达式；若仅有包装节点则无法再拆值
-            if (m_EnumValueExpress == null && valueExpr is MetaNewObjectExpressNode mnoe
+            if (m_Express == null && valueExpr is MetaNewObjectExpressNode mnoe
                 && mnoe.GetReturnMetaType()?.metaClass == CoreMetaClassManager.memberMetaClass)
             {
                 return null;
@@ -214,7 +206,7 @@ namespace SimpleLanguage.Core
             var indexMv = memberClass.GetMetaMemberVariableByName("index");
             if (nameMv == null || valueMv == null || indexMv == null)
             {
-                Log.AddMetaCoreLog(LID.AutoMetaMemberEnumL242, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
                 return;
             }
 

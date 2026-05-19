@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      TypeManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -288,7 +288,7 @@ namespace SimpleLanguage.Core
                 var newmc = mt.metaClass.AddInstanceMetaClass(regMCList, true );
                 if (newmc == null)
                 {
-                    Log.AddMetaCoreLog(LID.AutoTypeManagerL212, "MetaClass is Null");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaClass is Null");
                     return false;
                 }
                 mt.SetGenMetaClass(newmc);
@@ -302,7 +302,7 @@ namespace SimpleLanguage.Core
 
                     if (gmgt.metaType.metaClass == null)
                     {
-                        Log.AddMetaCoreLog(LID.AutoTypeManagerL226, "MetaClass is Null");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaClass is Null");
                         return false;
                     }
 
@@ -317,7 +317,7 @@ namespace SimpleLanguage.Core
                     {
                         if (gmgt.metaType.metaClass == null)
                         {
-                            Log.AddMetaCoreLog(LID.AutoTypeManagerL241, "MetaClass is Null");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaClass is Null");
                             return false;
                         }
                         mt.SetMetaClass(gmgt.metaType.metaClass);
@@ -326,7 +326,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.AutoTypeManagerL250, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
                     }
                 }
             }
@@ -772,7 +772,7 @@ namespace SimpleLanguage.Core
                 var mt = curMc.GetMetaTemplateByName(fmcd.stringList[0]);
                 if (mt == null)
                 {
-                    Log.AddMetaCoreLog(LID.AutoTypeManagerL285, $"没有找到模板类中，对应的模板，名称为{fmcd.stringList[0]}请仔细检查模板的命名与使用模板命名是否对应");//, fmcd.classNameToken );
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"没有找到模板类中，对应的模板，名称为{fmcd.stringList[0]}请仔细检查模板的命名与使用模板命名是否对应");//, fmcd.classNameToken );
                 }
                 else
                 {
@@ -809,7 +809,7 @@ namespace SimpleLanguage.Core
             {
                 if (tplCount > 0)
                 {
-                    Log.AddMetaCoreLog(LID.AutoTypeManagerL545, "data 类型不支持模板实参");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "data 类型不支持模板实参");
                     return null;
                 }
                 return getmc.metaData != null ? new MetaType(getmc.metaData) : null;
@@ -818,7 +818,7 @@ namespace SimpleLanguage.Core
             {
                 if (tplCount > 0)
                 {
-                    Log.AddMetaCoreLog(LID.AutoTypeManagerL545, "enum 类型不支持模板实参");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "enum 类型不支持模板实参");
                     return null;
                 }
                 return getmc.metaEnum != null ? new MetaType(getmc.metaEnum) : null;
@@ -854,7 +854,7 @@ namespace SimpleLanguage.Core
                 var findfn = newmn.GetMetaClassByTemplateCount(fmtd.inputTemplateCount);
                 if(findfn == null )
                 {
-                    Log.AddMetaCoreLog(LID.AutoTypeManagerL347, $"没有发现{fmtd.nameList}找到的类!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"没有发现{fmtd.nameList}找到的类!");
                     return null;
                 }
                 if( fmtd.inputTemplateCount == 0 )
@@ -905,7 +905,7 @@ namespace SimpleLanguage.Core
                     var mt = ownerMc.GetMetaTemplateByName(fmtd.nameList[0]);
                     if (mt == null)
                     {
-                        Log.AddMetaCoreLog(LID.AutoTypeManagerL398, "没有找到模板类中，对应的模板，请仔细检查模板的命名与使用模板命名是否对应");//, cnode?.token );
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到模板类中，对应的模板，请仔细检查模板的命名与使用模板命名是否对应");//, cnode?.token );
                     }
                     else
                     {
@@ -914,7 +914,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.AutoTypeManagerL407, "使用模板类中使用.连接符号，模板中不允许使用.");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "使用模板类中使用.连接符号，模板中不允许使用.");
                 }
             }
             return null;
@@ -975,7 +975,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.AutoTypeManagerL458, $"没有找到{fmcd.stringList[0]} 的相关类!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"没有找到{fmcd.stringList[0]} 的相关类!");
                 }
 
             }
@@ -1021,7 +1021,7 @@ namespace SimpleLanguage.Core
             {
                 if (tplCount > 0)
                 {
-                    Log.AddMetaCoreLog(LID.AutoTypeManagerL545, "data 类型不支持模板实参");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "data 类型不支持模板实参");
                     return null;
                 }
                 return getmc.metaData != null ? new MetaType(getmc.metaData) : null;
@@ -1030,7 +1030,7 @@ namespace SimpleLanguage.Core
             {
                 if (tplCount > 0)
                 {
-                    Log.AddMetaCoreLog(LID.AutoTypeManagerL545, "enum 类型不支持模板实参");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "enum 类型不支持模板实参");
                     return null;
                 }
                 return getmc.metaEnum != null ? new MetaType(getmc.metaEnum) : null;
@@ -1088,7 +1088,7 @@ namespace SimpleLanguage.Core
 
                 if (findfn == null)
                 {
-                    Log.AddMetaCoreLog(LID.AutoTypeManagerL545, "没有找到相对应的模板类!!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到相对应的模板类!!");
                     return null;
                 }
                 if( fmtd.inputTemplateCount > 0 )
@@ -1131,7 +1131,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.AutoTypeManagerL588, "----fmtd.nameList.count > 1 ");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "----fmtd.nameList.count > 1 ");
                 }
             }
             return null;

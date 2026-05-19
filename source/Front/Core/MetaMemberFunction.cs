@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaMemberFunction.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -103,7 +103,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                //Log.AddMetaCoreLog(LID.Unknown, "发现已经定义过某某类1" + mmf.functionAllName);
+                //Log.AddMetaCoreLog(LID.ShowExtendMessage, "发现已经定义过某某类1" + mmf.functionAllName);
                 return find2;
             }
         }
@@ -929,7 +929,7 @@ namespace SimpleLanguage.Core
                         {
                             //if (currentBlockStatements.ownerMetaFunction?.isConstructFunction)
                             //{
-                            //    Log.AddMetaCoreLog( LID.Unknown, "Error 构造函数中，不允许使用定义字段，必须使用this.非静态或者是类名.静态字段赋值!" + fmos.variableRef.ToTokenString());
+                            //    Log.AddMetaCoreLog( LID.ShowExtendMessage, "Error 构造函数中，不允许使用定义字段，必须使用this.非静态或者是类名.静态字段赋值!" + fmos.variableRef.ToTokenString());
                             //}
                             MetaDefineVarStatements mnvs11 = new MetaDefineVarStatements( currentBlockStatements, fmos );
                             beforeStatements.SetNextStatements(mnvs11);

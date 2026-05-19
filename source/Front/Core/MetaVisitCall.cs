@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaVisitCall.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -713,7 +713,7 @@ namespace SimpleLanguage.Core
             var mt = GetMetaType();
             if( mt == null )
             {
-                Log.AddMetaCoreLog(LID.AutoMetaVisitCallL705, "Error");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error");
                 return null;
             }
             return mt.metaClass;

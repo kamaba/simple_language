@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      FileMetaMemberFunction.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -44,7 +44,7 @@ namespace SimpleLanguage.Compile
 
             if (!FileMetatUtil.SplitNodeList(nodeList, listDefieNode, valueNodeList, ref m_AssignToken))
             {
-                Log.AddFileMetaLog(LID.AutoFileMetaMemberFunctionL47, "Error 解析NodeList出现错误~~~");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析NodeList出现错误~~~");
                 return false;
             }
             if(valueNodeList.Count > 0 )
@@ -55,12 +55,12 @@ namespace SimpleLanguage.Compile
             Node typeNode = null;
             if (!GetNameAndTypeNode(listDefieNode, ref nameNode, ref typeNode, ref m_ParamsToken ))
             {
-                Log.AddFileMetaLog( LID.AutoFileMetaMemberFunctionL58, "Error 没有找到该定义名称 必须使用例: X = 102; 的格式");
+                Log.AddFileMetaLog( LID.ShowExtendMessage, "Error 没有找到该定义名称 必须使用例: X = 102; 的格式");
                 return false;
             }
             if (nameNode == null)
             {
-                Log.AddFileMetaLog(LID.AutoFileMetaMemberFunctionL63, "Error 没有找到该定义名称 必须使用例: X = 101; 的格式");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 没有找到该定义名称 必须使用例: X = 101; 的格式");
                 return false;
             }
             m_Token = nameNode?.token;
@@ -432,7 +432,7 @@ namespace SimpleLanguage.Compile
                 FileMetaParamterDefine cdp = new FileMetaParamterDefine(m_FileMeta, nodelist);
                 if (nameSet.Contains(cdp.name))
                 {
-                    Log.AddFileMetaLog(LID.AutoFileMetaMemberFunctionL435, "Error 参数名称有重名!!!");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 参数名称有重名!!!");
                 }
                 AddMetaParamter(cdp);
             }
@@ -454,7 +454,7 @@ namespace SimpleLanguage.Compile
                     FileMetaTemplateDefine cdp = new FileMetaTemplateDefine(m_FileMeta, cnode);
                     if (m_MetaTemplatesList.Find( a=> a.name == cdp.name ) != null )
                     {
-                        Log.AddFileMetaLog(LID.AutoFileMetaMemberFunctionL457, "Error 参数名称有重名!!!");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 参数名称有重名!!!");
                         continue;
                     }
                     AddMetaTemplate(cdp);

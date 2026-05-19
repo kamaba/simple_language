@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ClassManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -561,7 +561,7 @@ namespace SimpleLanguage.Core
                         }
                         //if (!fmc.isPartial)
                         //{
-                        //    Log.AddMetaCoreLog(LID.Unknown, "绫?" + fmc.name + "鍦? " + fmc.token.ToAllString() + "涓嶆敮鎸佹枃浠跺苟琛?瀹氫箟绫");
+                        //    Log.AddMetaCoreLog(LID.ShowExtendMessage, "绫?" + fmc.name + "鍦? " + fmc.token.ToAllString() + "涓嶆敮鎸佹枃浠跺苟琛?瀹氫箟绫");
                         //    return null;
                         //}
                         //bool isPartial = true;
@@ -570,7 +570,7 @@ namespace SimpleLanguage.Core
                         //    if (v.Value.isPartial == false)
                         //    {
                         //        isPartial = false;
-                        //        Log.AddMetaCoreLog(LID.Unknown, "绫?" + findamc.name + "鍦? " + v.Value.token.ToAllString() + "涓嶆敮鎸佹枃浠跺苟琛?瀹氫箟绫");
+                        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "绫?" + findamc.name + "鍦? " + v.Value.token.ToAllString() + "涓嶆敮鎸佹枃浠跺苟琛?瀹氫箟绫");
                         //        break;
                         //    }
                         //}
@@ -725,7 +725,7 @@ namespace SimpleLanguage.Core
             {
                 if( v.Value == mc )
                 {
-                    Log.AddMetaCoreLog(LID.AutoClassManagerL478, $"宸插寘鍚被:{mc.allClassName} 鍙堣繘琛屼簡閲嶈繘娣诲姞!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"宸插寘鍚被:{mc.allClassName} 鍙堣繘琛屼簡閲嶈繘娣诲姞!");
                     return;
                 }
             }
@@ -1183,7 +1183,7 @@ namespace SimpleLanguage.Core
 
         //            if( !mc.metaClass.GetMemberInterfaceFunctionByFunc(func) )
         //            {
-        //                Log.AddMetaCoreLog(LID.Unknown, "鏌ユ壘鎺ュ彛绫讳腑鐨勮瀹炵幇鐨勫嚱鏁帮紝瀹炵幇澶辫触鍑芥暟鍚嶇О" + func.name + " Token浣嶇疆: " );
+        //                Log.AddMetaCoreLog(LID.ShowExtendMessage, "鏌ユ壘鎺ュ彛绫讳腑鐨勮瀹炵幇鐨勫嚱鏁帮紝瀹炵幇澶辫触鍑芥暟鍚嶇О" + func.name + " Token浣嶇疆: " );
         //                //func.fileMetaMemberFunction.token.sourceBeginLine.ToString()
         //                isSuccess = false;
         //                break;
@@ -1235,7 +1235,7 @@ namespace SimpleLanguage.Core
         //            {
         //                if( textendClass.metaMemberVariableDict.ContainsKey( v.Key ) )
         //                {
-        //                    Log.AddMetaCoreLog(LID.Unknown, "Error 鍦ㄧ被鐨勫€? " + v.Key + "  鏈夐噸澶嶅畾涔? " + textendClass.allClassName + "涓紝鍊? [" + v.Key + "] Token1浣嶇疆: "
+        //                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鍦ㄧ被鐨勫€? " + v.Key + "  鏈夐噸澶嶅畾涔? " + textendClass.allClassName + "涓紝鍊? [" + v.Key + "] Token1浣嶇疆: "
         //                        + textendClass.metaMemberVariableDict[v.Key].ToTokenString());
         //                    isFailed = true;
         //                    break;
@@ -1349,7 +1349,7 @@ namespace SimpleLanguage.Core
                 {
                     if (mb.isMetaNamespace )
                     {
-                        Log.AddMetaCoreLog(LID.AutoClassManagerL926, "鎵惧埌浜嗗凡鏈夊懡鍚嶇┖闂磋€屼笉鏄缁ф壙鐨勭被!!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "鎵惧埌浜嗗凡鏈夊懡鍚嶇┖闂磋€屼笉鏄缁ф壙鐨勭被!!");
                         return null;
                     }
                     else if (mb.IsMetaClass() || mb.isMetaData || mb.isMetaEnum)
@@ -1388,7 +1388,7 @@ namespace SimpleLanguage.Core
             MetaNode getmc = GetMetaClassByRef(curMc, fmcd );
             if (getmc == null)
             {
-                Log.AddMetaCoreLog(LID.AutoClassManagerL965, "CheckExtendAndInterface failed, class not found: " + fmcd.allName);
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "CheckExtendAndInterface failed, class not found: " + fmcd.allName);
                 //    + "浣嶇疆琛? " + m_ExtendClass.token.sourceBeginLine.ToString() );
 
             }

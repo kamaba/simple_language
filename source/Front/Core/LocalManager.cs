@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      LocalManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -71,7 +71,7 @@ namespace SimpleLanguage.Core
                 var existNode = root.GetChildrenMetaNodeByName(localClassName);
                 if (existNode != null && existNode.IsMetaClass())
                 {
-                    Log.AddMetaCoreLog(LID.AutoLocalManagerL75, "Error local{} 生成的类名发生冲突: " + localClassName);
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error local{} 生成的类名发生冲突: " + localClassName);
                     continue;
                 }
 
@@ -90,7 +90,7 @@ namespace SimpleLanguage.Core
                         if (fmmf == null) continue;
                         if (fmmf.staticToken != null)
                         {
-                            Log.AddMetaCoreLog(LID.AutoLocalManagerL94, "Error local{} 中定义的函数不允许使用 static");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error local{} 中定义的函数不允许使用 static");
                             continue;
                         }
                         var mmf = new MetaMemberFunction(localMc, fmmf);

@@ -117,7 +117,7 @@ namespace SimpleLanguage.Core
 
             if( string.IsNullOrEmpty( m_Name ) )
             {
-                Log.AddMetaCoreLog(LID.AutoMetaMemberVariableL107, "没有找到定义变量名称!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到定义变量名称!");
                 m_Name = "Error_" + GetHashCode().ToString();
             }
             if (m_FileMetaMemeberVariable.permissionToken?.type != null)
@@ -306,7 +306,7 @@ namespace SimpleLanguage.Core
             }
             if( m_DefineMetaType == null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreDefineTypeIsNull, "Error 表达式为空 或者 表达示必须有返回值", "express" );
+                Log.AddMetaCoreLog(LID.MetaCoreDefineTypeIsNull, m_Token, "Error 表达式为空 或者 表达示必须有返回值", "express" );
             }
             if (m_Express == null )
             {
@@ -341,7 +341,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (dmct.metaClass == ownerMetaClass)
                                 {
-                                    Log.AddMetaCoreLog(LID.AutoMetaMemberVariableL403, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
                                     return;
                                 }
                             }
@@ -475,7 +475,7 @@ namespace SimpleLanguage.Core
                     else
                     {
                         sb.Append("表达式错误，或者是定义类型错误");
-                        Log.AddMetaCoreLog( LID.ShowExtendMessage, sb.ToString());
+                        Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, sb.ToString());
                     }
                 }
             }
@@ -577,7 +577,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.AutoMetaMemberVariableL638, "Error 现在配置中，不支持成员变量中使用类的()构造方式!!");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 现在配置中，不支持成员变量中使用类的()构造方式!!");
                             return null;
                         }
                     }
@@ -588,7 +588,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.AutoMetaMemberVariableL649, "Error 在类变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在类变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                             return null;
                         }                        
                     }
@@ -599,7 +599,7 @@ namespace SimpleLanguage.Core
                             var finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
                             if( finalNode.fileMetaBraceTerm != null && !ProjectManager.isSupportConstructionFunctionConnectBraceType)
                             {
-                                Log.AddMetaCoreLog(LID.AutoMetaMemberVariableL660, "Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                                 return null;
                             }
                         }
@@ -609,12 +609,12 @@ namespace SimpleLanguage.Core
                 {
                     if(fmpt != null )
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaMemberVariableL670, "Error 在类没有定义的变量中，不允许 使用()的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在类没有定义的变量中，不允许 使用()的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                         return null;
                     }
                     else if (fmbt != null)
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaMemberVariableL675, "Error 在类没有定义的变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在类没有定义的变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                         return null;
                     }
                     else if (fmct != null)
@@ -624,7 +624,7 @@ namespace SimpleLanguage.Core
                             var finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
                             if (finalNode.fileMetaBraceTerm != null && !ProjectManager.isSupportConstructionFunctionConnectBraceType)
                             {
-                                Log.AddMetaCoreLog(LID.AutoMetaMemberVariableL685, "Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
                                 return null;
                             }
                         }

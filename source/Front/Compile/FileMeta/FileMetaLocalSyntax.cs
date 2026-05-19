@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      FileMetaLocalSyntax.cs
 // ------------------------------------------------
 //  Description:  File-level global/local block syntax
@@ -27,7 +27,7 @@ namespace SimpleLanguage.Compile
 
             if (blockNode == null || blockNode.nodeType != ENodeType.Brace)
             {
-                Log.AddFileMetaLog(LID.AutoFileMetaLocalSyntaxL30, "Error local 后必须跟 {} 块");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error local 后必须跟 {} 块");
                 return;
             }
 
@@ -36,7 +36,7 @@ namespace SimpleLanguage.Compile
             if (left == null || right == null)
             {
                 //Debug.Assert(false, "local block token missing");
-                Log.AddFileMetaLog(LID.AutoFileMetaLocalSyntaxL39, "local block token missing");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "local block token missing");
                 return;
             }
 
@@ -48,7 +48,7 @@ namespace SimpleLanguage.Compile
         {
             if (!isLocal)
             {
-                Log.AddFileMetaLog(LID.AutoFileMetaLocalSyntaxL51, "Info global{} 解析已禁用，当前仅保留 local{} 逻辑");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Info global{} 解析已禁用，当前仅保留 local{} 逻辑");
             }
         }
 

@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaExpressNewObject.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -420,16 +420,6 @@ namespace SimpleLanguage.Core
                         {
                             if (expressRetMetaType != null)
                             {
-                                if (m_MetaMemberData.isDefineMetaType)
-                                {
-                                    m_MetaMemberData.SetRealMetaType(expressRetMetaType);
-                                }
-                                else
-                                {
-                                    m_MetaMemberData.SetMetaDefineType(expressRetMetaType);
-                                    m_MetaMemberData.SetRealMetaType(new MetaType(expressRetMetaType));
-                                    m_MetaMemberData.SetIsDefineMetaType(true);
-                                }
                             }
                         }
                         break;
@@ -1420,7 +1410,7 @@ namespace SimpleLanguage.Core
             }
             if (m_BraceFileMetaBaseTerm?.fileMetaExpressList?.Count > 0)
             {
-                //Log.AddMetaCoreLog(LID.Unknown, "解析大括号里边的内容");
+                //Log.AddMetaCoreLog(LID.ShowExtendMessage, "解析大括号里边的内容");
                 for (int i = 0; i < m_BraceFileMetaBaseTerm.fileMetaExpressList.Count; i++)
                 {
                     var fas = m_BraceFileMetaBaseTerm.fileMetaExpressList[i];
@@ -1595,7 +1585,7 @@ namespace SimpleLanguage.Core
                 {
                     if( fmst2.symBolType != ETokenType.Comma )
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL533, "间隔符号不对,应该使用,");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "间隔符号不对,应该使用,");
                     }
                 }
                 else if( fmbt is FileMetaTermExpress termexpress )
@@ -1616,7 +1606,7 @@ namespace SimpleLanguage.Core
                 else
                 {
                     System.Diagnostics.Debug.Assert(false);
-                    Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL553, "Error 在数组里边应该是FileMetaBracketTerm 类型!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在数组里边应该是FileMetaBracketTerm 类型!");
                 }
             }
             // Array<Object>(n){ ... } 中嵌套 [1,2] 时，子字面量节点的 defineMetaType 为元素类型 object（非 Array），
@@ -1668,7 +1658,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmstOb2.symBolType != ETokenType.Comma)
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL533, "间隔符号不对,应该使用,");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "间隔符号不对,应该使用,");
                     }
                 }
                 else if (fmbt is FileMetaTermExpress termexpressOb)
@@ -1689,7 +1679,7 @@ namespace SimpleLanguage.Core
                 else
                 {
                     System.Diagnostics.Debug.Assert(false);
-                    Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL553, "Error Array<Object> 元素槽不支持该语法节点!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Array<Object> 元素槽不支持该语法节点!");
                 }
             }
             else if (mt.isMap)   // 映射类型的处理 使用   a:10, b:20  20:"aa" 这样的形式
@@ -1948,7 +1938,7 @@ namespace SimpleLanguage.Core
                     var metaClass = m_DefineMetaType?.metaClass;
                     if (metaClass != null && metaClass.isAbstractClass)
                     {
-                        Log.AddMetaCoreLog(LID.AutoMetaExpressNewObjectL1026, m_Token, "Error: cannot instantiate abstract class: " + metaClass.name);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error: cannot instantiate abstract class: " + metaClass.name);
                         m_NewMetaType = null;
                     }
                 }
@@ -2761,7 +2751,7 @@ namespace SimpleLanguage.Core
         //        }
         //        if (flag)
         //        {
-        //            Log.AddMetaCoreLog(LID.Unknown, "在[]中，只允许数字形式存在");
+        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, "在[]中，只允许数字形式存在");
         //        }
         //    }
         //    int use_n_numone = 0;
@@ -2771,7 +2761,7 @@ namespace SimpleLanguage.Core
         //        {
         //            if( use_n_numone == 2 )
         //            {
-        //                Log.AddMetaCoreLog(LID.Unknown, "在[]中，只允许从后边向前[3][-1][-1]这种形式，而不能使用[3][-1][2] 这种形式");
+        //                Log.AddMetaCoreLog(LID.ShowExtendMessage, "在[]中，只允许从后边向前[3][-1][-1]这种形式，而不能使用[3][-1][2] 这种形式");
         //                continue;
         //            }
         //        }

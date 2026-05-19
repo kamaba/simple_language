@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      FileMetaUtil.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -44,14 +44,14 @@ namespace SimpleLanguage.Compile
                 var token = tokenList[i];
                 if (token.lexeme == null)
                 {
-                    Log.AddFileMetaLog(LID.AutoFileMetatUtilL47, "检查到Import语句中，token内容lexeme为空!!");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, "检查到Import语句中，token内容lexeme为空!!");
                     return null;
                 }
                 if (token.type != ETokenType.Period)
                 {
                     if (!IdentifierCheck(token.lexeme.ToString()))
                     {
-                        Log.AddFileMetaLog(LID.AutoFileMetatUtilL54, "检查到Import语句中，导入名称不合规!!");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, "检查到Import语句中，导入名称不合规!!");
                         return null;
                     }
                     stringList.Add(token.lexeme.ToString());
@@ -122,7 +122,7 @@ namespace SimpleLanguage.Compile
             {
                 if (afterNodeList.Count == 0)
                 {
-                    Log.AddFileMetaLog(LID.AutoFileMetatUtilL125, "解析NodeStructVariable时有=号，但没有值内容 " + assignToken?.ToLexemeAllString() );
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, "解析NodeStructVariable时有=号，但没有值内容 " + assignToken?.ToLexemeAllString() );
                     return false;
                 }
             }
@@ -183,7 +183,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddFileMetaLog(LID.AutoFileMetatUtilL186, "Error CreateFileOneTerm 单1表达式，没有找到该类型: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error CreateFileOneTerm 单1表达式，没有找到该类型: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
             }
             return fmbt;
         }
@@ -326,7 +326,7 @@ namespace SimpleLanguage.Compile
 
             if (fmbt == null)
             {
-                Log.AddFileMetaLog(LID.AutoFileMetatUtilL329, "Error 生成表达式错误!!");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 生成表达式错误!!");
                 return null;
             }
             fmbt.BuildAST();

@@ -114,7 +114,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Log.AddMetaCoreLog(LID.AutoMetaTypeL87, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
             m_MetaClass = mc;
             m_EMetaTypeType = EMetaTypeType.MetaClass;
@@ -124,7 +124,7 @@ namespace SimpleLanguage.Core
         {
             if (md == null)
             {
-                Log.AddMetaCoreLog(LID.AutoMetaTypeL87, "Error MetaDefineType RetMetaData is Null");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaData is Null");
             }
             m_MetaData = md;
             m_EMetaTypeType = EMetaTypeType.MetaData;
@@ -133,7 +133,7 @@ namespace SimpleLanguage.Core
         {
             if (me == null)
             {
-                Log.AddMetaCoreLog(LID.AutoMetaTypeL87, "Error MetaDefineType RetMetaEnum is Null");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaEnum is Null");
             }
             m_MetaEnum = me;
             m_EMetaTypeType = EMetaTypeType.MetaEnum;
@@ -641,7 +641,7 @@ namespace SimpleLanguage.Core
                         var mc = mgt.UpdateMetaGenTemplate(metaGenTemplateList);
                         if( mc == null )
                         {
-                            Log.AddMetaCoreLog(LID.AutoMetaTypeL573, "注册生成类是空!");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "注册生成类是空!");
                             return null;
                         }
                         mcList.Add(mc);

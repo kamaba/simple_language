@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ProjectFunction.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -106,7 +106,7 @@ namespace SimpleLanguage.Project
                         // 已有同名子节点，要求其必须是命名空间节点
                         if (!cfindNode.isMetaNamespace)
                         {
-                            Log.AddProjectLog(LID.AutoPorjectClassL108, "Error 解析namespace添加命名空间节点时，发现已有定义类!!");
+                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!");
                             return;
                         }
                         // 复用已有命名空间节点
@@ -580,7 +580,7 @@ namespace SimpleLanguage.Project
             }
             catch (System.Exception ex)
             {
-                Log.AddProjectLog(LID.AutoPorjectClassL554, "Export project guide markdown failed: " + ex.Message);
+                Log.AddProjectLog(LID.ShowExtendMessage, "Export project guide markdown failed: " + ex.Message);
             }
         }
     }

@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      FileParse.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -129,7 +129,7 @@ namespace SimpleLanguage.Compile
         }
         public void PrintFormatString()
         {
-            Log.AddFileMetaLog(LID.AutoFileParseL129, m_File.ToFormatString());
+            Log.AddFileMetaLog(LID.ShowExtendMessage, m_File.ToFormatString());
         }
         public void SaveCodeToFile()
         {

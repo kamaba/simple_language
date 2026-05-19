@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      FileMeta.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -290,7 +290,7 @@ namespace SimpleLanguage.Compile
                 {
                     //if (!ProjectManager.data.IsIncludeDefineStruct(fmn.namespaceStatementBlock.namespaceList))
                     //{
-                    //    Log.AddFileMetaLog( LID.Unknown, "Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + fmn.token.ToLexemeAllString());
+                    //    Log.AddFileMetaLog( LID.ShowExtendMessage, "Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + fmn.token.ToLexemeAllString());
                     //}
                 }
                 NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn);
