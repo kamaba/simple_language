@@ -51,7 +51,7 @@ namespace SimpleLanguage.IR
             this.id = func.functionAllName;
             this.virtualFunctionName = func.virtualFunctionName;
             this.onlyFunctionName = func.name;
-            m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(func.ownerMetaClass.GetHashCode());
+            m_IROwnerMetaClass = IRManager.GetIRMetaClassByMetaOwner(func.ownerMetaBase);
 
             if( func is MetaMemberFunction mmf )
             {

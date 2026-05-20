@@ -43,27 +43,21 @@ namespace SimpleLanguage.IR
             IRMetaType irmt = new();
             irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id);
 
-            var gtmc = type.GetTemplateMetaClass();
-            if (type.eMetaTypeType == EMetaTypeType.MetaClass)
+            if (type.eMetaTypeType == EMetaTypeType.MetaClass
+                || type.eMetaTypeType == EMetaTypeType.MetaData
+                || type.eMetaTypeType == EMetaTypeType.MetaEnum)
             {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(gtmc.GetHashCode());
+                irmt.m_IRMetaClass = IRManager.GetIRMetaClassByMetaType(type);
             }
             else if (type.eMetaTypeType == EMetaTypeType.Template)
             {
                 irmt.m_TemplateIndex = type.metaTemplate.index;
-                var gtmc2 = type.GetTemplateMetaClass();
-                if(gtmc2 != null )
-                {
-                    irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(gtmc2.GetHashCode());
-                }
-                else
-                {
-                    irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassByName("Core.Object");
-                }
+                irmt.m_IRMetaClass = IRManager.GetIRMetaClassByMetaType(type)
+                    ?? IRManager.instance.GetIRMetaClassByName("Core.Object");
             }
             else
             {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+                irmt.m_IRMetaClass = IRManager.GetIRMetaClassByMetaType(type);
             }
             var lits = type.GetGenTemplateMetaTypeList();
             for (int i = 0; i < lits.Count; i++)
@@ -88,18 +82,21 @@ namespace SimpleLanguage.IR
         {
             IRMetaType irmt = new();
             irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id );
-            if (type.eMetaTypeType == EMetaTypeType.MetaClass)
+            if (type.eMetaTypeType == EMetaTypeType.MetaClass
+                || type.eMetaTypeType == EMetaTypeType.MetaData
+                || type.eMetaTypeType == EMetaTypeType.MetaEnum)
             {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+                irmt.m_IRMetaClass = IRManager.GetIRMetaClassByMetaType(type);
             }
             else if (type.eMetaTypeType == EMetaTypeType.Template)
             {
                 irmt.m_TemplateIndex = type.metaTemplate.index;
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+                irmt.m_IRMetaClass = IRManager.GetIRMetaClassByMetaType(type)
+                    ?? IRManager.instance.GetIRMetaClassByName("Core.Object");
             }
             else
             {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
+                irmt.m_IRMetaClass = IRManager.GetIRMetaClassByMetaType(type);
             }
 
             for (int i = 0; i < type.defineTemplateMetaTypeList.Count; i++)

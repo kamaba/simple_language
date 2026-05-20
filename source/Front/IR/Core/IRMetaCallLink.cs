@@ -45,7 +45,9 @@ namespace SimpleLanguage.Core.IR
             }
             else if( cnode.visitType == MetaVisitNode.EVisitType.GetTypeValue )
             {
-                IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(cnode.ownerMetaClass.GetHashCode());
+                IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaOwner(cnode.ownerMetaBase)
+                    ?? IRManager.GetIRMetaClassByMetaType(cnode.callMetaType)
+                    ?? IRManager.instance.GetIRMetaClassByName("Core.Object");
                 IRMetaType irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
 
                 IRData irdata = new IRData();
@@ -62,10 +64,10 @@ namespace SimpleLanguage.Core.IR
 
                 IRMetaType irmt = null;
                 IRMetaClass irmc = null;
-                IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+                IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
                 if (mv.isStatic || mv.isConst )
                 {
-                    irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+                    irmc = IRManager.GetIRMetaClassByMetaVariable(mv);
                     // 枚举常量成员运行时存 Core.Member，defineMetaType 为 extends；LoadStaticField 的 opValue 须为 Member 类型。
                     if (mv is MetaMemberEnum)
                     {
@@ -78,12 +80,12 @@ namespace SimpleLanguage.Core.IR
                     }
                     else
                     {
-                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.isDefineMetaType ? mv.defineMetaType : mv.realMetaType, owirmc);
+                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.GetFinalMetaType(), owirmc);
                     }
                 }
                 else
                 {
-                    irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+                    irmc = IRManager.GetIRMetaClassByMetaVariable(mv);
                 }
                 IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
                 if (irVar == null)
@@ -98,7 +100,7 @@ namespace SimpleLanguage.Core.IR
                 // MetaMemberEnum → 静态字段为 Core.Member；values 等为合成成员 → 按其 define/real（如 Array<Member>）。
                 // callMetaType 常为声明侧用户 enum，不能优先当作静态字段的运行时存储类型。
                 MetaVariable mv = cnode.variable;
-                IRMetaClass owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+                IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
 
                 IRMetaType irLoadMt = null;
                 if (mv is MetaMemberEnum && owirmc != null)
@@ -132,7 +134,7 @@ namespace SimpleLanguage.Core.IR
             {
                 MetaVisitVariable mv = cnode.visitVariable;
 
-                IRMetaClass irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+                IRMetaClass irmc = IRManager.GetIRMetaClassByMetaVariable(mv);
                 IRMetaType irmt = new IRMetaType(irmc);
 
                 IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);

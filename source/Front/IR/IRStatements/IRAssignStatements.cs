@@ -173,8 +173,7 @@ namespace SimpleLanguage.IR
             
             var mv = lastCL.GetRetMetaVariable();
 
-            var irmc = IRManager.instance.GetIRMetaClassById(mv.defineMetaType.GetTemplateMetaClass().GetHashCode());
-            var owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+            var owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
             var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
 
             IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, owirmc, irMethod, mv);

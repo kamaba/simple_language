@@ -334,7 +334,9 @@ namespace SimpleLanguage.Core
         public MetaVisitVariable visitVariable => m_VisitVariable;
         public MetaMethodCall methodCall => m_MethodCall;
         public MetaType callMetaType => m_CallMetaType;
-        public MetaClass ownerMetaClass => m_OwnerMetaClass;
+        /// <summary>仅 <see cref="EVisitType.GetTypeValue"/> 等场景填充；可能为 <see cref="MetaData"/>/<see cref="MetaEnum"/>。</summary>
+        public MetaBase ownerMetaBase => m_OwnerMetaBase;
+        public MetaClass ownerMetaClass => m_OwnerMetaBase as MetaClass;
         public Token token => m_Token;
 
 
@@ -345,7 +347,7 @@ namespace SimpleLanguage.Core
         private MetaVariable m_Variable  = null;
         private MetaExpressNodeBase m_Express  = null;
         private MetaType m_ReturnMetaType = null;
-        private MetaClass m_OwnerMetaClass = null;
+        private MetaBase m_OwnerMetaBase = null;
         private MetaTemplate m_MetaTemplate = null;
         private MetaType m_CallMetaType = null; //璇ュ彉閲忥紝涓€鑸槸涓?T t = new() 杩欑鎯呭喌鍑嗗鐨?
         private Token m_Token = null;
@@ -520,12 +522,12 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByGetType( MetaClass mc, MetaType mt )
+        public static MetaVisitNode CreateByGetType( MetaBase owner, MetaType mt )
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_CallMetaType = mt;
-            vn.m_OwnerMetaClass = mc;
+            vn.m_OwnerMetaBase = owner;
             vn.m_VisitType = EVisitType.GetTypeValue;
 
             return vn;

@@ -174,6 +174,7 @@ namespace SimpleLanguage.Core
             if (md != null && m_InitHandleMetaDataList.IndexOf(md) == -1)
             {
                 m_InitHandleMetaDataList.Add(md);
+                AddExportMetaData(md);
             }
         }
         public void AddInitHandleMetaEnumList(MetaEnum me)
@@ -257,7 +258,7 @@ namespace SimpleLanguage.Core
                 return false;
             }
             m_DefineDataDict.Add(dc.name, dc);
-            AddExportMetaClass(dc);
+            m_ExportMetaDataList.Add(dc);
             return true;
         }
         public bool AddAnonymousMetaData(MetaData dc)
@@ -701,7 +702,7 @@ namespace SimpleLanguage.Core
                 AddDictMetaClass(mc);
             }
         }
-        public void AddExportMetaClass(MetaData md)
+        public void AddExportMetaData(MetaData md)
         {
             if (md == null || m_ExportMetaDataList.Contains(md))
             {

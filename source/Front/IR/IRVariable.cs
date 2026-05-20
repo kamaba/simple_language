@@ -39,8 +39,7 @@ namespace SimpleLanguage.IR
             else if( mv.variableFrom == MetaVariable.EVariableFrom.EnumMember )
             {
                 MetaVariable gmv = mv.sourceMetaVariable ?? mv;
-                var ownerTpl = mv.GetOwnerClassTemplateClass();
-                var fieldOwner = IRManager.instance.GetIRMetaClassById(ownerTpl.GetHashCode());
+                var fieldOwner = IRManager.GetIRMetaClassByMetaVariable(mv);
                 var index = fieldOwner != null
                     ? fieldOwner.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode())
                     : -1;
@@ -417,8 +416,7 @@ namespace SimpleLanguage.IR
             else if (mv.variableFrom == MetaVariable.EVariableFrom.EnumMember)
             {
                 MetaVariable gmv = mv.sourceMetaVariable ?? mv;
-                var ownerTpl = mv.GetOwnerClassTemplateClass();
-                var fieldOwner = irmc ?? IRManager.instance.GetIRMetaClassById(ownerTpl.GetHashCode());
+                var fieldOwner = irmc ?? IRManager.GetIRMetaClassByMetaVariable(mv);
                 var index = fieldOwner != null
                     ? fieldOwner.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode())
                     : -1;

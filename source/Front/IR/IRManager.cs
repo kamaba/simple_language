@@ -356,6 +356,75 @@ namespace SimpleLanguage.IR
         {
             return m_IRMetaClassList.Find(a => a.irName == allname);
         }
+
+        /// <summary>
+        /// 由语义 <see cref="MetaType"/> 解析已导出的 <see cref="IRMetaClass"/>（class / data / enum / 模板实例）。
+        /// </summary>
+        public static IRMetaClass GetIRMetaClassByMetaType(MetaType type)
+        {
+            if (type == null || instance == null)
+            {
+                return null;
+            }
+
+            if (type.isData)
+            {
+                var md = type.metaData;
+                if (md != null)
+                {
+                    return instance.GetIRMetaClassById(md.GetHashCode());
+                }
+            }
+
+            if (type.isEnum)
+            {
+                var me = type.metaEnum;
+                if (me != null)
+                {
+                    return instance.GetIRMetaClassById(me.GetHashCode());
+                }
+            }
+
+            var tmc = type.GetTemplateMetaClass();
+            if (tmc != null)
+            {
+                return instance.GetIRMetaClassById(tmc.GetHashCode());
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// 由宿主 <see cref="MetaBase"/>（class / data / enum）解析 <see cref="IRMetaClass"/>。
+        /// </summary>
+        public static IRMetaClass GetIRMetaClassByMetaOwner(MetaBase owner)
+        {
+            if (owner == null || instance == null)
+            {
+                return null;
+            }
+
+            return instance.GetIRMetaClassById(owner.GetHashCode());
+        }
+
+        /// <summary>
+        /// 由 <see cref="MetaVariable"/> 的 owner 上下文解析 <see cref="IRMetaClass"/>（含 data / enum 宿主）。
+        /// </summary>
+        public static IRMetaClass GetIRMetaClassByMetaVariable(MetaVariable mv)
+        {
+            if (mv == null || instance == null)
+            {
+                return null;
+            }
+
+            var ownerClass = mv.GetOwnerClassTemplateClass();
+            if (ownerClass != null)
+            {
+                return instance.GetIRMetaClassById(ownerClass.GetHashCode());
+            }
+
+            return GetIRMetaClassByMetaOwner(mv.ownerMetaBase);
+        }
         void ParseClass()
         {
             Log.AddIRLog(LID.ShowExtendMessage, "Start translating IRMetaClass...");
@@ -371,29 +440,35 @@ namespace SimpleLanguage.IR
                     exportedOwnerNames.Add(v.allClassName);
                 }
             }
-            foreach (var md in cm.exportMetaDataList)
+            foreach (var v in cm.exportMetaDataList)
             {
-                if (md != null && !string.IsNullOrEmpty(md.allClassName) && exportedOwnerNames.Contains(md.allClassName))
+                IRMetaClass irmc = new IRMetaClass(v);
+                m_IRMetaClassList.Add(irmc);
+                if (!string.IsNullOrEmpty(v.allClassName))
                 {
-                    // 已由同名 MetaClass 行合并 data 字段布局，避免重复 IR 类型行。
-                    continue;
+                    exportedOwnerNames.Add(v.allClassName);
                 }
-                m_IRMetaClassList.Add(new IRMetaClass(md));
             }
-            foreach (var me in cm.exportMetaEnumList)
+            foreach (var v in cm.exportMetaEnumList)
             {
-                if (me != null && !string.IsNullOrEmpty(me.allClassName) && exportedOwnerNames.Contains(me.allClassName))
+                IRMetaClass irmc = new IRMetaClass(v);
+                m_IRMetaClassList.Add(irmc);
+                if (!string.IsNullOrEmpty(v.allClassName))
                 {
-                    continue;
+                    exportedOwnerNames.Add(v.allClassName);
                 }
-                m_IRMetaClassList.Add(new IRMetaClass(me));
             }
             foreach ( var v in m_IRMetaClassList )
             {
                 v.CreateMemberData();
-                v.CreateMemberMethod();
-                v.CreateTemplateRelation();
-                v.CreateGenMetaTypeTemplateList();
+
+                if( v.metaClassKind == IRMetaClassKind.Class
+                    || v.metaClassKind == IRMetaClassKind.Interface )
+                {
+                    v.CreateMemberMethod();
+                    v.CreateTemplateRelation();
+                    v.CreateGenMetaTypeTemplateList();
+                }
             }
             
             foreach ( var v in m_IRMetaClassList)
@@ -611,6 +686,14 @@ namespace SimpleLanguage.IR
                 sb.Append(mt.metaTemplate.name);
                 sb.Append("$");
             }
+            else if (mt.eMetaTypeType == EMetaTypeType.MetaData)
+            {
+                sb.Append(GetIRNameByMetaOwner(mt.metaData));
+            }
+            else if (mt.eMetaTypeType == EMetaTypeType.MetaEnum)
+            {
+                sb.Append(GetIRNameByMetaOwner(mt.metaEnum));
+            }
             else if (mt.eMetaTypeType == EMetaTypeType.MetaClass)
             {
                 sb.Append(mt.GetTemplateMetaClass().metaNode.allName);
@@ -644,15 +727,31 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                sb.Append(mt.GetTemplateMetaClass().metaNode.allName);
-                sb.Append("<");
-                for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)
+                if (mt.isData && mt.metaData != null)
                 {
-                    sb.Append(GetIRNameByMetaType(mt.defineTemplateMetaTypeList[i]));
-                    if (i < mt.defineTemplateMetaTypeList.Count - 1)
-                    { sb.Append(","); }
+                    sb.Append(GetIRNameByMetaOwner(mt.metaData));
                 }
-                sb.Append('>');
+                else if (mt.isEnum && mt.metaEnum != null)
+                {
+                    sb.Append(GetIRNameByMetaOwner(mt.metaEnum));
+                }
+                else
+                {
+                    var tmc = mt.GetTemplateMetaClass();
+                    if (tmc == null)
+                    {
+                        return sb.ToString();
+                    }
+                    sb.Append(tmc.metaNode.allName);
+                    sb.Append("<");
+                    for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)
+                    {
+                        sb.Append(GetIRNameByMetaType(mt.defineTemplateMetaTypeList[i]));
+                        if (i < mt.defineTemplateMetaTypeList.Count - 1)
+                        { sb.Append(","); }
+                    }
+                    sb.Append('>');
+                }
             }
 
             return sb.ToString();

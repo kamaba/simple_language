@@ -58,7 +58,7 @@ namespace SimpleLanguage.IR
                  * endLabel
                  * nextStatements
                  */
-                var irownermc = IRManager.instance.GetIRMetaClassById(ms.forIterateVariable.GetOwnerClassTemplateClass().GetHashCode());
+                var irownermc = IRManager.GetIRMetaClassByMetaVariable(ms.forIterateVariable);
                 var itv_irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(ms.forIterateVariable.defineMetaType, irownermc);
 
                 //var content_irownermc = IRManager.instance.GetIRMetaClassById(ms.forInContent.GetOwnerClassTemplateClass().GetHashCode());
