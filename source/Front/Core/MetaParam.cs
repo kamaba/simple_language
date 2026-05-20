@@ -87,7 +87,7 @@ namespace SimpleLanguage.Core
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNodeBase expressNode => m_MetaExpressNode;
         //public bool isFunctionTemplate => m_IsFunctionTemplate;
-        public bool isMust { get { return m_MetaExpressNode == null; } }            //鏄惁涓洪潪鐪佺暐鍙傛暟
+        public bool isMust { get { return m_MetaExpressNode == null; } }            //????????????
         public bool isExtendParams => m_FileMetaParamter?.paramsToken != null;
 
         protected bool m_IsFunctionTemplate = false;
@@ -191,7 +191,7 @@ namespace SimpleLanguage.Core
                 if (ClassManager.TryNumberArrayCovarianceAllow(md, metaVariable.defineMetaType, metaVariable))
                     return true;
 
-                // 数组仅允许完全一致，不走下方继承放宽
+                // ??????????????????
                 if (md.IsArray() && metaVariable.defineMetaType.IsArray())
                     return false;
 
@@ -200,11 +200,11 @@ namespace SimpleLanguage.Core
                 MetaClass otherClass = md?.GetTemplateMetaClass();
                 if (thisClass != null && otherClass != null)
                 {
-                    var relation = ClassManager.ValidateClassRelationByMetaClass(thisClass, otherClass);
-                    if (relation == EClassRelation.Same
-                        || relation == EClassRelation.Child
-                        || relation == EClassRelation.Parent
-                        || relation == EClassRelation.Interface )
+                    var relation = ClassManager.ValidateClassTypeRelation(thisClass, otherClass);
+                    if (relation == ETypeRelation.Same
+                        || relation == ETypeRelation.Child
+                        || relation == ETypeRelation.Parent
+                        || relation == ETypeRelation.Interface )
                     {
                         return true;
                     }
@@ -268,19 +268,19 @@ namespace SimpleLanguage.Core
                     return false;
                 }
 
-                var relation = ClassManager.ValidateClassRelationByMetaClass(declaredMC, retMC);
+                var relation = ClassManager.ValidateClassTypeRelation(declaredMC, retMC);
 
-                if (relation == EClassRelation.Same
-                    || relation == EClassRelation.Child
-                    || relation == EClassRelation.Interface
-                    || relation == EClassRelation.Parent
+                if (relation == ETypeRelation.Same
+                    || relation == ETypeRelation.Child
+                    || relation == ETypeRelation.Interface
+                    || relation == ETypeRelation.Parent
                     )
                 {
                     return true;
                 }
-                if (relation == EClassRelation.Num)
+                if (relation == ETypeRelation.Num)
                 {
-                    // 原 Num 对任意两数值过宽；传参时仅允许「更窄原语实参」→「更宽形参」，同阶或 int/float 互斥则否。
+                    // ? Num ?????????????????????????????????? int/float ?????
                     if (!ClassManager.IsNarrowerCorePrimitiveWideningOkForCallSite(retMC, declaredMC))
                         return false;
                     return true;
@@ -418,7 +418,7 @@ namespace SimpleLanguage.Core
         {
             if( m_IsExtendParams )
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Params 妯″紡涓嬶紝鍙厑璁?浣跨敤涓€涓弬鏁帮紝澶氫綑鍙傛暟涓烘棤鏁堟ā寮");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Params ???????????????????????????????????");
                 return;
             }
 
@@ -432,7 +432,7 @@ namespace SimpleLanguage.Core
             {
                 if (metaMemberParam.expressNode == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error AddMetaDefineParam 鍙傛暟鍓嶈竟宸插畾涔夎〃杈惧紡锛屽悗杈瑰繀椤昏窡杩涢粯璁ゅ€艰〃杈惧紡!!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error AddMetaDefineParam ???????????????????????????????????!!");
                 }
             }
             else
@@ -456,7 +456,7 @@ namespace SimpleLanguage.Core
             }
             if ( m_IsExtendParams )
             {
-                //浼犲叆鍊?锛屽彲浠ヤ笌瀹氫箟鍊间笉鍚岋紝鍥犱负浣跨敤params 鐨勬柟寮?鍚庤竟涓€鑸窡涓€涓璞℃暟缁勶紝鎴栬€呮槸绫诲瀷鏁扮粍杩涜闄愬埗                
+                //??????????????????????????params ?????????????????????????????????????????                
                 if(m_MetaDefineParamList.Count == 0 )
                 {
                     return false;
@@ -604,7 +604,7 @@ namespace SimpleLanguage.Core
         {
             if (b == null)
             {
-                return !a.isMust;      // 蹇呴』浼犲弬锛屼絾娌℃湁鍙傛暟
+                return !a.isMust;      // ???????????????
             }
             if (a.EqualsInputMetaParam(b))
                 return true;
@@ -686,13 +686,13 @@ namespace SimpleLanguage.Core
                     {
                         var cur = cmc.GetRetMetaClass();
                         var next = nmc.GetRetMetaClass();
-                        var relation = ClassManager.ValidateClassRelationByMetaClass(cur, next);
-                        if( relation == EClassRelation.Same 
-                            || relation == EClassRelation.Child )
+                        var relation = ClassManager.ValidateClassTypeRelation(cur, next);
+                        if( relation == ETypeRelation.Same 
+                            || relation == ETypeRelation.Child )
                         {
                             mc = next;
                         }
-                        else if( relation == EClassRelation.Parent )
+                        else if( relation == ETypeRelation.Parent )
                         {
                             mc = cur;
                         }
@@ -723,7 +723,7 @@ namespace SimpleLanguage.Core
             }
             if(isAllSame )
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "鍏ㄩ兘鐩镐技");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "??????");
             }
             return mc;
         }

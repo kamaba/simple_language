@@ -184,7 +184,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_ExpressNode != null)
                 {
-                    EClassRelation relation = EClassRelation.No;
+                    ETypeRelation relation = ETypeRelation.No;
                     MetaConstExpressNode constExpressNode = m_ExpressNode as MetaConstExpressNode;
                     if (constExpressNode != null)
                     {
@@ -242,7 +242,7 @@ namespace SimpleLanguage.Core
                             out _,
                             out _,
                             m_DefineVarMetaVariable);
-                        if (iteratorRelation == EClassRelation.No || iteratorRelation == EClassRelation.CurClassError || iteratorRelation == EClassRelation.CompareClassError)
+                        if (iteratorRelation == ETypeRelation.No || iteratorRelation == ETypeRelation.TargetTypeError || iteratorRelation == ETypeRelation.ExpressTypeError)
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
                                 "Iterator 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
@@ -262,7 +262,7 @@ namespace SimpleLanguage.Core
                             out _,
                             out _,
                             m_DefineVarMetaVariable);
-                        if (iterableRelation == EClassRelation.No || iterableRelation == EClassRelation.CurClassError || iterableRelation == EClassRelation.CompareClassError)
+                        if (iterableRelation == ETypeRelation.No || iterableRelation == ETypeRelation.TargetTypeError || iterableRelation == ETypeRelation.ExpressTypeError)
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
                                 "IIterable 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
@@ -291,11 +291,11 @@ namespace SimpleLanguage.Core
                             out _,
                             out _,
                             m_DefineVarMetaVariable);
-                        if (relation == EClassRelation.Same)
+                        if (relation == ETypeRelation.Same)
                         {
                             m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType ?? mdt);
                         }
-                        else if (relation != EClassRelation.CompareClassError && relation != EClassRelation.CurClassError)
+                        else if (relation != ETypeRelation.ExpressTypeError && relation != ETypeRelation.TargetTypeError)
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
                                 "data 声明类型与右侧表达式类型不匹配。");
@@ -306,7 +306,7 @@ namespace SimpleLanguage.Core
                         MetaClass compareClass = null;
                         if (constExpressNode != null && constExpressNode.eType == EType.Null)
                         {
-                            relation = EClassRelation.Same;
+                            relation = ETypeRelation.Same;
                         }
                         else
                         {
@@ -335,30 +335,30 @@ namespace SimpleLanguage.Core
                         sb.Append("与后边赋值语句中 ");
                         if (compareClass != null)
                             sb.Append("表达式类为: " + compareClass.allClassName);
-                        if (relation == EClassRelation.No)
+                        if (relation == ETypeRelation.No)
                         {
                             sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
                             m_IsNeedCastState = true;
                         }
-                        else if (relation == EClassRelation.Same)
+                        else if (relation == ETypeRelation.Same)
                         {
                             m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                         }
-                        else if (relation == EClassRelation.Parent)
+                        else if (relation == ETypeRelation.Parent)
                         {
                             sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
                             m_IsNeedCastState = true;
                         }
-                        else if (relation == EClassRelation.Child)
+                        else if (relation == ETypeRelation.Child)
                         {
                             if (compareClass != null)
                             {
                                 m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                             }
                         }
-                        else if (relation == EClassRelation.Interface || relation == EClassRelation.Num)
+                        else if (relation == ETypeRelation.Interface || relation == ETypeRelation.Num)
                         {
                             m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                         }

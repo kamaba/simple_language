@@ -51,22 +51,22 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaKeyAsIsSyntax == null)
             {
-                Debug.Write("Error 没有As语句!!");
+                Debug.Write("Error ??As??!!");
             }
             m_IsAs = m_FileMetaKeyAsIsSyntax.isAsTerm;
             m_IsIsNot = m_FileMetaKeyAsIsSyntax.isIsNotTerm;
 
             if (m_FileMetaKeyAsIsSyntax.variableCallLink == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "定义当前变量错误");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "????????");
                 return;
             }
             m_CurrentVariableLink = new MetaCallLink(m_FileMetaKeyAsIsSyntax.variableCallLink, m_OwnerMetaBase, m_OwnerMetaBlockStatements, null, null);
 
             if ( m_FileMetaKeyAsIsSyntax.defineType == null )
             {
-                Debug.Assert(false, "没有定义转换的类型");
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "定义的类型不正确");
+                Debug.Assert(false, "?????????");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "????????");
                 return;
             }
             m_ConvertTargetMetaType = null;
@@ -79,7 +79,7 @@ namespace SimpleLanguage.Core
                 //m_CurrentVariable = m_CurrentVariableLink.ExecuteGetMetaVariable();
                 //if( m_CurrentVariable == null )
                 //{
-                //    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到相关的转化对象");
+                //    Log.AddMetaCoreLog(LID.ShowExtendMessage, "???????????");
                 //    return;
                 //}
             }
@@ -97,12 +97,12 @@ namespace SimpleLanguage.Core
 
                 if (sourceMetaType != null && m_ConvertTargetMetaType != null)
                 {
-                    var forward = TypeManager.ResolveAssignRelationByMetaTypes(m_ConvertTargetMetaType, sourceMetaType, out _, out _);
-                    var backward = TypeManager.ResolveAssignRelationByMetaTypes(sourceMetaType, m_ConvertTargetMetaType, out _, out _);
-                    if (!IsAcceptableAsIsRelation(forward) && !IsAcceptableAsIsRelation(backward))
+                    var forward = TypeManager.ResolveTypeRelation(m_ConvertTargetMetaType, sourceMetaType, out _, out _);
+                    var backward = TypeManager.ResolveTypeRelation(sourceMetaType, m_ConvertTargetMetaType, out _, out _);
+                    if (!forward.IsAcceptableForAsIs() && !backward.IsAcceptableForAsIs())
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaKeyAsIsSyntax.asOrIsToken,
-                            "as/is 两侧类型不存在可转换关系（支持类继承/接口关系及接口模板协变）。");
+                            "as/is ??????????????????/?????????????");
                     }
                 }
 
@@ -120,14 +120,6 @@ namespace SimpleLanguage.Core
             }
         }
 
-        private static bool IsAcceptableAsIsRelation(EClassRelation relation)
-        {
-            return relation == EClassRelation.Same
-                || relation == EClassRelation.Child
-                || relation == EClassRelation.Parent
-                || relation == EClassRelation.Interface
-                || relation == EClassRelation.Num;
-        }
         public override int CalcParseLevel(int level)
         {
             return 0;

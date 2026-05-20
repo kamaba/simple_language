@@ -58,8 +58,8 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 入口 <c>Project</c> 类。全名随 <see cref="MetaNode.GetAllName"/> 可能为 <c>S.Core.Project</c> 等，
-        /// 仅用 <c>GetClassByName(&quot;Core.Project&quot;, 0)</c> 会漏解。
+        /// ???? <c>Project</c> ??????????? <see cref="MetaNode.GetAllName"/> ????? <c>S.Core.Project</c> ????
+        /// ????? <c>GetClassByName(&quot;Core.Project&quot;, 0)</c> ???????
         /// </summary>
         public MetaClass TryGetProjectMetaClass()
         {
@@ -185,7 +185,7 @@ namespace SimpleLanguage.Core
             }
         }
         /// <summary>
-        /// 仅在匿名 data 池中按结构查找（用于语句字面量、data 内嵌匿名结构去重）。
+        /// ????????? data ??????????????????????????????????data ?????????????????????????
         /// </summary>
         public MetaData FindMetaDataByNameAndFormat( MetaData md )
         {
@@ -237,7 +237,7 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 遍历源码声明 data（define 区）。
+        /// ?????????? data??define ????????
         /// </summary>
         public IEnumerable<MetaData> EnumerateDefineMetaData()
         {
@@ -276,7 +276,7 @@ namespace SimpleLanguage.Core
         }
         public bool AddMetaData(MetaData dc)
         {
-            // 兼容旧调用：define data 进 define 区，dynamic/anonymous data 进 anonymous 区。
+            // ??????????????define data ?? define ?????dynamic/anonymous data ?? anonymous ??????
             return dc != null && (dc.isDynamic ? AddAnonymousMetaData(dc) : AddDefineMetaData(dc));
         }
         public bool CompareMetaClassMemberVariable(MetaClass curClass, MetaClass cpClass)
@@ -307,8 +307,8 @@ namespace SimpleLanguage.Core
             return false;
         }
         /// <summary>
-        /// 判断两个 MetaData 是否表示同一匿名/结构化类型，用于注册表去重。
-        /// 动态匿名类型：成员个数相同、按声明顺序名称一致、字段类型形状一致（嵌套匿名 MetaData 递归比较）。
+        /// ???????? MetaData ??????????????/?????????????????????????????????
+        /// ??????????????????????????????????????????????????????????????????????????????? MetaData ??????????????
         /// </summary>
         public bool CompareMetaDataMember(MetaData curClass, MetaData cpClass)
         {
@@ -329,13 +329,13 @@ namespace SimpleLanguage.Core
                 return false;
             }
 
-            // 避免「两个均无 data 成员」被误判为同一类型（如动态 class 占位）
+            // ?????????????? data ????????????????????????????????? class ????
             if (curClassList.Count == 0 && cpClassList.Count == 0)
             {
                 return false;
             }
 
-            // 动态匿名 data 字面量：按顺序做完整结构 + 类型形状比较（不依赖字典迭代顺序）
+            // ?????????? data ????????????????????????? + ?????????????????????????????
             if (curClass.isDynamic && cpClass.isDynamic)
             {
                 return CompareDynamicAnonymousMetaDataShape(curClass, cpClass);
@@ -454,7 +454,7 @@ namespace SimpleLanguage.Core
             {                
                 if( topLevelClass?.metaClass?.metaNode == null )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, " 没有找到顶层类的元节点");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, " ??????????????????????????");
                     return null;
                 }
 
@@ -520,7 +520,7 @@ namespace SimpleLanguage.Core
                    
                     if (finalTopMetaNode == null )
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到顶层命名空间，无法绑定类节点!!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "???????????????????????????????????????!!");
                         return null;
                     }
                 }
@@ -561,7 +561,7 @@ namespace SimpleLanguage.Core
                         }
                         //if (!fmc.isPartial)
                         //{
-                        //    Log.AddMetaCoreLog(LID.ShowExtendMessage, "绫?" + fmc.name + "鍦? " + fmc.token.ToAllString() + "涓嶆敮鎸佹枃浠跺苟琛?瀹氫箟绫");
+                        //    Log.AddMetaCoreLog(LID.ShowExtendMessage, "??" + fmc.name + "?? " + fmc.token.ToAllString() + "?????????????????????????????");
                         //    return null;
                         //}
                         //bool isPartial = true;
@@ -570,7 +570,7 @@ namespace SimpleLanguage.Core
                         //    if (v.Value.isPartial == false)
                         //    {
                         //        isPartial = false;
-                        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "绫?" + findamc.name + "鍦? " + v.Value.token.ToAllString() + "涓嶆敮鎸佹枃浠跺苟琛?瀹氫箟绫");
+                        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "??" + findamc.name + "?? " + v.Value.token.ToAllString() + "?????????????????????????????");
                         //        break;
                         //    }
                         //}
@@ -669,7 +669,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmc.isConst)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Class 不支持 const 定义");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Class ??????? const ????");
                         return null;
                     }
                     var newmc = new MetaClass(fmc.name);
@@ -725,7 +725,7 @@ namespace SimpleLanguage.Core
             {
                 if( v.Value == mc )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"宸插寘鍚被:{mc.allClassName} 鍙堣繘琛屼簡閲嶈繘娣诲姞!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"???????????:{mc.allClassName} ????????????????????!");
                     return;
                 }
             }
@@ -733,7 +733,7 @@ namespace SimpleLanguage.Core
 
         }
         /// <summary>
-        /// 模板约束、extends/implements、运行时注册，以及按继承深度排序（尚未收集成员上的定义类型）。
+        /// ????????extends/implements????????????????????????????????????????????????????????????????????
         /// </summary>
         public void ParseInitMetaClassListThroughInheritance()
         {
@@ -759,7 +759,7 @@ namespace SimpleLanguage.Core
             }
         }
 
-        /// <summary>在 typealias 注册之后，从源文件收集成员变量/函数声明上的定义类型并处理继承侧实例化。</summary>
+        /// <summary>??? typealias ??????????????????????????????????/???????????????????????????????????????????</summary>
         public void ParseInitMetaListCollectMemberDefineMetaTypes()
         {
             foreach (var it in m_InitHandleMetaClassList)
@@ -874,7 +874,7 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
-            // 瀵规ā鏉跨害鏉?娉涘瀷瀹炰緥鍖栫被锛岃嫢缁ф壙閾惧寘鍚?Num锛屼篃鎸夋暟鍊肩被鍨嬪鐞?
+            // ?????????????????????????????????????????????????????Num????????????????????????????
             if (curClass.IsParseMetaClass(CoreMetaClassManager.numMetaClass))
             {
                 return true;
@@ -883,7 +883,7 @@ namespace SimpleLanguage.Core
             return false;
         }
 
-        /// <summary> 单模板参数，如 Array&lt;T&gt;、Iterator&lt;T&gt; 的第一维元素类型。 </summary>
+        /// <summary> ????????????? Array&lt;T&gt;???Iterator&lt;T&gt; ?????????????????? </summary>
         public static MetaType GetSingleTemplateArgMetaType(MetaType mt)
         {
             if (mt == null) return null;
@@ -900,7 +900,7 @@ namespace SimpleLanguage.Core
             return mt != null && mt.metaClass == CoreMetaClassManager.numMetaClass;
         }
 
-        /// <summary> 具体数值类型（Int32、Float32 等），不含抽象 Num 本身。 </summary>
+        /// <summary> ?????????????????Int32???Float32 ???????????? Num ??????? </summary>
         public static bool IsConcreteNumericElementType(MetaType elem)
         {
             if (elem?.metaClass == null) return false;
@@ -909,7 +909,7 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 仅 Int8…Float64 等核心原语；用于传参阶比较。非核心原语返回 false。
+        /// ?? Int8???Float64 ??????????????????????????????????????????? false???
         /// </summary>
         public static bool TryGetCorePrimitiveScalarStorage(MetaClass mc, out int widthBytes, out bool isFloat)
         {
@@ -952,9 +952,9 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 调用点实参匹配形参：在 <see cref="ValidateClassRelationByMetaClass"/> 已给出 <see cref="EClassRelation.Num"/> 时，
-        /// 对「双核心原语」收紧为仅允许更窄实参隐式拓宽到更宽形参（如 Int8→UInt32、Float32→Float64）；
-        /// 同阶不同号类（如 Int32 与 UInt32）或 int 与 float 混用则 false；任一方非核心原语则 true（保持旧 Num 宽松语义）。
+        /// ?????????????????????????? <see cref="ValidateClassRelationByMetaClass"/> ?????? <see cref="EClassRelation.Num"/> ?????
+        /// ?????????????????????????????????????????????????????????? Int8???UInt32???Float32???Float64????
+        /// ?????????????? Int32 ?? UInt32????? int ?? float ??????? false???????????????????? true????????? Num ??????????
         /// </summary>
         public static bool IsNarrowerCorePrimitiveWideningOkForCallSite(MetaClass argClass, MetaClass paramClass)
         {
@@ -967,7 +967,7 @@ namespace SimpleLanguage.Core
             return aw < pw;
         }
 
-        /// <summary> Iterator&lt;Number&gt; &lt;- 元素为具体数值类型的 Array（只读遍历视角，允许协变）。 </summary>
+        /// <summary> Iterator&lt;Number&gt; &lt;- ??????????????????????? Array?????????????????????????? </summary>
         public static bool TryIteratorNumberFromConcreteNumericArray(MetaType targetIterator, MetaType exprArray)
         {
             if (targetIterator == null || exprArray == null) return false;
@@ -977,7 +977,7 @@ namespace SimpleLanguage.Core
             return IsAbstractNumberMetaType(tArg) && IsConcreteNumericElementType(eArg);
         }
 
-        /// <summary> Iterator&lt;Number&gt; &lt;- Iterator&lt;具体数值&gt;：仅遍历语义，允许 Number 抽象协变。 </summary>
+        /// <summary> Iterator&lt;Number&gt; &lt;- Iterator&lt;???????????&gt;????????????????? Number ?????????? </summary>
         public static bool TryIteratorNumberFromConcreteNumericIterator(MetaType targetIterator, MetaType exprIterator)
         {
             if (targetIterator == null || exprIterator == null) return false;
@@ -988,9 +988,9 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// Iterator&lt;Number&gt; <- arr.iterator 场景兜底：
-        /// 某些链式表达式上，iterator 返回的接口模板参数在当前阶段可能未具体化；
-        /// 此时改为从调用链首节点推断 Array 元素类型来判断 Number 协变。
+        /// Iterator&lt;Number&gt; <- arr.iterator ?????????????
+        /// ????????????????iterator ????????????????????????????????????????????????
+        /// ???????????????????????????????? Array ??????????????? Number ??????
         /// </summary>
         public static bool TryIteratorNumberFromArrayIteratorSource(MetaType targetIterator, MetaExpressNodeBase expressNode)
         {
@@ -1007,8 +1007,8 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// IIterable&lt;TTarget&gt; &lt;- Array&lt;TExpr&gt;：当元素可赋值（同型、子类、接口实现、数值族）时允许。
-        /// 典型场景：IIterable&lt;Object&gt; &lt;- Int32[]。
+        /// IIterable&lt;TTarget&gt; &lt;- Array&lt;TExpr&gt;??????????????????????????????????????????????????????????????
+        /// ??????????????IIterable&lt;Object&gt; &lt;- Int32[]???
         /// </summary>
         public static bool TryIterableFromArrayElementAssignable(MetaType targetIterable, MetaType exprArray)
         {
@@ -1024,14 +1024,14 @@ namespace SimpleLanguage.Core
             var eClass = eArg.GetTemplateMetaClass();
             if (tClass == null || eClass == null) return false;
 
-            var relation = ValidateClassRelationByMetaClass(tClass, eClass);
-            return relation == EClassRelation.Same
-                || relation == EClassRelation.Child
-                || relation == EClassRelation.Interface
-                || relation == EClassRelation.Num;
+            var relation = ValidateClassTypeRelation(tClass, eClass);
+            return relation == ETypeRelation.Same
+                || relation == ETypeRelation.Child
+                || relation == ETypeRelation.Interface
+                || relation == ETypeRelation.Num;
         }
 
-        /// <summary> const Array&lt;Number&gt; &lt;- Array&lt;具体数值&gt;：仅 const 目标允许元素抽象协变。 </summary>
+        /// <summary> const Array&lt;Number&gt; &lt;- Array&lt;???????????&gt;???? const ??????????????????????? </summary>
         public static bool TryConstArrayNumberFromConcreteNumericArray(MetaType targetArray, MetaType exprArray, MetaVariable targetVar)
         {
             if (targetVar == null || !targetVar.isConst) return false;
@@ -1042,7 +1042,7 @@ namespace SimpleLanguage.Core
             return IsAbstractNumberMetaType(tArg) && IsConcreteNumericElementType(eArg);
         }
 
-        /// <summary> Iterator&lt;Num&gt; 或 const Array&lt;Num&gt; 与具体数值 Array 的协变总开关（赋值/参数匹配用）。 </summary>
+        /// <summary> Iterator&lt;Num&gt; ??? const Array&lt;Num&gt; ????????????? Array ?????????????????????/??????????????????? </summary>
         public static bool TryNumberArrayCovarianceAllow(MetaType target, MetaType expr, MetaVariable targetVar)
         {
             if (target == null || expr == null) return false;
@@ -1052,8 +1052,8 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// Array 声明与右侧表达式：模板须与 Array 泛型结构一致；元素类型须 <see cref="TypeManager.CompareMetaType"/> 一致，
-        /// 或（在仍同为 Array 时递归）右侧元素实现左侧元素接口（<see cref="EClassRelation.Interface"/>）。
+        /// Array ?????????????????? Array ?????????????????????????? <see cref="TypeManager.CompareMetaType"/> ???????
+        /// ???????????? Array ?????????????????????????????????<see cref="EClassRelation.Interface"/>?????
         /// </summary>
         public static bool TryArrayElementInterfaceAssignable(MetaType targetArray, MetaType exprArray)
         {
@@ -1076,14 +1076,14 @@ namespace SimpleLanguage.Core
                 MetaClass cur = tArg.GetTemplateMetaClass();
                 MetaClass cmp = eArg.GetTemplateMetaClass();
                 if (cur == null || cmp == null) return false;
-                if (ValidateClassRelationByMetaClass(cur, cmp) == EClassRelation.Interface) continue;
+                if (ValidateClassTypeRelation(cur, cmp) == ETypeRelation.Interface) continue;
                 return false;
             }
             return true;
         }
 
         /// <summary>
-        /// 在 <see cref="TypeManager.CompareMetaType"/> 已为 false 时，判断是否为「右侧实现左侧接口」等非 Array 元素赋值。
+        /// ??? <see cref="TypeManager.CompareMetaType"/> ?? false ??????????????????????????????????????? Array ????????????
         /// </summary>
         public static bool TryMetaTypeAssignableByInterfaceAfterCompareFails(MetaType target, MetaType expr)
         {
@@ -1094,78 +1094,54 @@ namespace SimpleLanguage.Core
             MetaClass cur = target.GetTemplateMetaClass();
             MetaClass cmp = expr.GetTemplateMetaClass();
             if (cur == null || cmp == null) return false;
-            return ValidateClassRelationByMetaClass(cur, cmp) == EClassRelation.Interface;
+            return ValidateClassTypeRelation(cur, cmp) == ETypeRelation.Interface;
         }
 
-        public static EClassRelation ValidateClassRelationByMetaClass( MetaClass curClass, MetaClass compareClass )
+        public static ETypeRelation ValidateClassTypeRelation(MetaClass curClass, MetaClass compareClass)
         {
-            // null can be assigned to any non-primitive/reference type parameter.
-            // This is required for call-site overload resolution, e.g.:
-            // NativeBridge.Call(..., null, paramObjs)
             if (compareClass == CoreMetaClassManager.nullMetaClass)
             {
-                // numeric primitives and bool are treated as value types and do not accept null
                 if (IsNumberClass(curClass) || curClass == CoreMetaClassManager.booleanMetaClass)
-                    return EClassRelation.No;
+                    return ETypeRelation.No;
 
-                // any other class (including Object/String/BridgeObject/arrays) accepts null
                 if (curClass == CoreMetaClassManager.objectMetaClass)
-                    return EClassRelation.Same;
-                return EClassRelation.Parent;
+                    return ETypeRelation.Same;
+                return ETypeRelation.Parent;
             }
             if ( curClass == CoreMetaClassManager.objectMetaClass )
             {
                 if (curClass == compareClass)
-                {
-                    return EClassRelation.Same;
-                }
-                    
-                return EClassRelation.Child;
+                    return ETypeRelation.Same;
+                return ETypeRelation.Child;
             }
             if (curClass.Equals(compareClass))
             {
-                return EClassRelation.Same;
+                return ETypeRelation.Same;
             }
-            else
-            {
-                if( curClass == CoreMetaClassManager.numMetaClass )
-                {
-                    if (IsNumberClass(compareClass))
-                    {
-                        return EClassRelation.Num;
-                    }
-                    else return EClassRelation.No;
-                }
-                else if(IsNumberClass(curClass) && IsNumberClass(compareClass ) )
-                {
-                    //switch( curClass )
-                    //{
-                    //    case Int16MetaClass int16:
-                    //        {
 
-                    //        }
-                    //        break;
-                    //}
-                    return EClassRelation.Num;
-                }
-                else
-                {
-                    if(compareClass.IsInterfaceByMetaClass( curClass ) )
-                    {
-                        return EClassRelation.Interface;
-                    }
-                    if (curClass.IsParseMetaClass(compareClass))
-                    {
-                        return EClassRelation.Parent;
-                    }
-                    if (compareClass.IsParseMetaClass(curClass))
-                    {
-                        return EClassRelation.Child;
-                    }
-                    return EClassRelation.No;
-                }
+            if( curClass == CoreMetaClassManager.numMetaClass )
+            {
+                if (IsNumberClass(compareClass))
+                    return ETypeRelation.Num;
+                return ETypeRelation.No;
             }
+            if(IsNumberClass(curClass) && IsNumberClass(compareClass ) )
+            {
+                return ETypeRelation.Num;
+            }
+
+            if(compareClass.IsInterfaceByMetaClass( curClass ) )
+                return ETypeRelation.Interface;
+            if (curClass.IsParseMetaClass(compareClass))
+                return ETypeRelation.Parent;
+            if (compareClass.IsParseMetaClass(curClass))
+                return ETypeRelation.Child;
+            return ETypeRelation.No;
         }
+
+        [Obsolete("Use ValidateClassTypeRelation")]
+        public static ETypeRelation ValidateClassRelationByMetaClass(MetaClass curClass, MetaClass compareClass)
+            => ValidateClassTypeRelation(curClass, compareClass);
         //public void HandleExtendContent( FileMetaClass mc )
         //{
         //    if (mc.metaClass == null) return;
@@ -1183,7 +1159,7 @@ namespace SimpleLanguage.Core
 
         //            if( !mc.metaClass.GetMemberInterfaceFunctionByFunc(func) )
         //            {
-        //                Log.AddMetaCoreLog(LID.ShowExtendMessage, "鏌ユ壘鎺ュ彛绫讳腑鐨勮瀹炵幇鐨勫嚱鏁帮紝瀹炵幇澶辫触鍑芥暟鍚嶇О" + func.name + " Token浣嶇疆: " );
+        //                Log.AddMetaCoreLog(LID.ShowExtendMessage, "??????????????????????????????????????????????????????????????????????" + func.name + " Token??????: " );
         //                //func.fileMetaMemberFunction.token.sourceBeginLine.ToString()
         //                isSuccess = false;
         //                break;
@@ -1235,7 +1211,7 @@ namespace SimpleLanguage.Core
         //            {
         //                if( textendClass.metaMemberVariableDict.ContainsKey( v.Key ) )
         //                {
-        //                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鍦ㄧ被鐨勫€? " + v.Key + "  鏈夐噸澶嶅畾涔? " + textendClass.allClassName + "涓紝鍊? [" + v.Key + "] Token1浣嶇疆: "
+        //                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error ????????????? " + v.Key + "  ??????????????? " + textendClass.allClassName + "????????? [" + v.Key + "] Token1??????: "
         //                        + textendClass.metaMemberVariableDict[v.Key].ToTokenString());
         //                    isFailed = true;
         //                    break;
@@ -1266,7 +1242,7 @@ namespace SimpleLanguage.Core
         {
             return GetMetaClassByNameAndFileMeta(ownerBase, fmcd.fileMeta, fmcd.stringList );
         }
-        // 鍦╫wnerClass绫讳腑锛岄€氳繃褰撳墠鐨刼wnerClass鐨勭埗鑺傜偣閫愭煡锛岀洿鍒版病鏈夌埗鑺傜偣锛屽鏋滄壘鍒颁簡褰撳墠鐨勮妭鐐瑰悗锛屽紑濮嬪線stringList涓嬭竟鎵?
+        // ????wnerClass?????????????????????????wnerClass???????????????????????????????????????????????????????????????????????????????????????????????stringList?????????
         private MetaNode GetMetaNodeByListString( MetaBase ownerBase, List<string> stringList )
         {
             if (stringList.Count == 0)
@@ -1349,7 +1325,7 @@ namespace SimpleLanguage.Core
                 {
                     if (mb.isMetaNamespace )
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "鎵惧埌浜嗗凡鏈夊懡鍚嶇┖闂磋€屼笉鏄缁ф壙鐨勭被!!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "????????????????????????????????????????????????????????????!!");
                         return null;
                     }
                     else if (mb.IsMetaClass() || mb.isMetaData || mb.isMetaEnum)
@@ -1360,7 +1336,7 @@ namespace SimpleLanguage.Core
             }
             return mc;
         }
-        //閫氳繃FileInputTemplateNode 鑾峰彇MetaType 渚?List< List< List<int> > > 杩欑鐨勶紝闇€瑕佸祵濂楄幏鍙栧鐞?
+        //??????FileInputTemplateNode ??????MetaType ???List< List< List<int> > > ???????????????????????????????????
         public MetaClass GetMetaClassByInputTemplateAndFileMeta( MetaBase ownerBase, FileInputTemplateNode fitn )
         {
             if (fitn == null)
@@ -1380,7 +1356,7 @@ namespace SimpleLanguage.Core
             return null;
         }
         
-        #region 妯℃澘绫诲鐞嗗尯 璇ュ尯鍏堣瘑鍒綋鍓嶇被锛?鍐嶈瘑鍒槸鍚﹀甫妯℃澘杈撳叆锛屽鏋滃甫鍒欐嬁妯℃澘绫?
+        #region ????????????????? ??????????????????????????????????????????????????????????????????????????????????????
         public MetaClass GetMetaClassAndRegisterExptendTemplateClassInstance( MetaClass curMc, FileMetaClassDefine fmcd)
         {
             if (fmcd == null) return null;
@@ -1389,7 +1365,7 @@ namespace SimpleLanguage.Core
             if (getmc == null)
             {
                 Log.AddMetaCoreLog(LID.ShowExtendMessage, "CheckExtendAndInterface failed, class not found: " + fmcd.allName);
-                //    + "浣嶇疆琛? " + m_ExtendClass.token.sourceBeginLine.ToString() );
+                //    + "????????? " + m_ExtendClass.token.sourceBeginLine.ToString() );
 
             }
             else

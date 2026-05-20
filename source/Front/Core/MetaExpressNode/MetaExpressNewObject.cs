@@ -15,7 +15,7 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    // a = { i1 = 10 } 这个过程式的处理
+    // a = { i1 = 10 } ????????
     public class MetaBraceAssignStatements
     {
         public enum EAssignTargetType
@@ -71,7 +71,7 @@ namespace SimpleLanguage.Core
                         m_AssignTargetType = EAssignTargetType.MemberData;
                         if (m_MetaMemberData == null)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到对应的成员数据");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????");
                             return;
                         }
                         m_Id = m_MetaMemberData.GetHashCode();
@@ -85,7 +85,7 @@ namespace SimpleLanguage.Core
                         targetMetaType = m_MetaMemberData.GetFinalMetaType();
                         if (targetMetaType == null)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到对象类型");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "????????");
                             return;
                         }
 
@@ -97,7 +97,7 @@ namespace SimpleLanguage.Core
                         m_AssignTargetType = EAssignTargetType.MemberVariable;
                         if(m_MetaMemberVariable == null)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到对应的成员变量");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????");
                             return;
                         }
                         m_Id = m_MetaMemberVariable.GetHashCode();
@@ -110,7 +110,7 @@ namespace SimpleLanguage.Core
                         targetMetaType = m_MetaMemberVariable.GetFinalMetaType();
                         if (targetMetaType == null)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到对象类型");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "????????");
                             return;
                         }
                         targetMetaVariable = m_MetaMemberVariable;
@@ -128,8 +128,8 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog( LID.MetaCoreAssertShowMessage, m_Token, "Error 在类" + mbs.ownerMetaClass?.allClassName + "函数: " + mbs.ownerMetaFunction.name
-                        + " 语句: " + fmos.variableRef.ToTokenString());
+                    Log.AddMetaCoreLog( LID.MetaCoreAssertShowMessage, m_Token, "Error ??" + mbs.ownerMetaClass?.allClassName + "??: " + mbs.ownerMetaFunction.name
+                        + " ??: " + fmos.variableRef.ToTokenString());
                 }
             }
         }
@@ -210,7 +210,7 @@ namespace SimpleLanguage.Core
             {
                 if( fmst.symBolType != ETokenType.Colon )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "在Map里边，必须使用:个符号");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "?Map???????:???");
                     return;
                 }
             }
@@ -218,13 +218,13 @@ namespace SimpleLanguage.Core
             {
                 if (fmst.symBolType != ETokenType.Assign )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "在class或者是data里边，必须使用=个符号");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "?class???data???????=???");
                     return;
                 }
             }
             if (fmst.left is not FileMetaCallTerm fmct1)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "在class或者是data里边，前值应该使用filemetaCallTerm");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "?class???data?????????filemetaCallTerm");
                 return;
             }
 
@@ -255,8 +255,8 @@ namespace SimpleLanguage.Core
                     m_MetaMemberData = m_DefineMetaType.metaData?.GetMemberDataByName(m_DefineName);
                     if (m_MetaMemberData == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 在类" + m_NewObjectMetaType.name + "函数: " + mbs?.ownerMetaFunction.name
-                            + " 没有找到: 类" + m_NewObjectMetaType.name + " 变量:" + m_DefineName);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error ??" + m_NewObjectMetaType.name + "??: " + mbs?.ownerMetaFunction.name
+                            + " ????: ?" + m_NewObjectMetaType.name + " ??:" + m_DefineName);
                     }
                     m_Id = m_MetaMemberData.GetHashCode();
                     //m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberData, m_OwnerMetaBlockStatements, m_FileMetaOpAssignSyntax?.express);
@@ -270,8 +270,8 @@ namespace SimpleLanguage.Core
                     m_MetaMemberVariable = m_DefineMetaType.metaClass.GetMetaMemberVariableByName(m_DefineName);
                     if (m_MetaMemberVariable == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 在类" + m_DefineMetaType.metaClass?.allClassName + "函数: " + mbs?.ownerMetaFunction.name
-                            + " 没有找到: 类" + m_DefineMetaType.metaClass?.allClassName + " 变量:" + m_DefineName);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error ??" + m_DefineMetaType.metaClass?.allClassName + "??: " + mbs?.ownerMetaFunction.name
+                            + " ????: ?" + m_DefineMetaType.metaClass?.allClassName + " ??:" + m_DefineName);
                     }
                     m_Id = m_MetaMemberVariable.GetHashCode();
                     //m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberVariable, m_OwnerMetaBlockStatements, m_FileMetaOpAssignSyntax?.express);
@@ -331,7 +331,7 @@ namespace SimpleLanguage.Core
             m_AssignTargetType = EAssignTargetType.MemberVariable;
         }
         /// <summary>
-        /// 对象初始化列表中的 data 字段赋值（目标为 <see cref="MetaMemberData"/>），与 <see cref="MetaMemberVariable"/> 分支对称。
+        /// ????????? data ???????? <see cref="MetaMemberData"/>??? <see cref="MetaMemberVariable"/> ?????
         /// </summary>
         public MetaBraceAssignStatements(MetaMemberData mmd, MetaBlockStatements mbs, MetaBase owmt, MetaExpressNodeBase men, bool isAnon )
         {
@@ -367,7 +367,7 @@ namespace SimpleLanguage.Core
                             m_AssignBlockedByConst = true;
                             m_MetaExpress = null;
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_MetaMemberData.token,
-                                "const 成员不允许在对象初始化中使用 '=' 重新赋值: " + m_MetaMemberData.name);
+                                "const ?????????????? '=' ????: " + m_MetaMemberData.name);
                             return;
                         }
                         mv = m_MetaMemberData;
@@ -380,7 +380,7 @@ namespace SimpleLanguage.Core
                             m_AssignBlockedByConst = true;
                             m_MetaExpress = null;
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_MetaMemberVariable.token,
-                                "const 成员不允许在对象初始化中使用 '=' 重新赋值: " + m_MetaMemberVariable.name);
+                                "const ?????????????? '=' ????: " + m_MetaMemberVariable.name);
                             return;
                         }
                         mv = m_MetaMemberVariable;
@@ -442,12 +442,12 @@ namespace SimpleLanguage.Core
                 if (!m_AssignBlockedByConst)
                 {
                     System.Diagnostics.Debug.Assert(false);
-                    System.Diagnostics.Debug.Write("使用{}赋值，表达式不允许为空!!");
+                    System.Diagnostics.Debug.Write("??{}???????????!!");
                 }
             }
         }
         /// <summary>
-        /// new / 字面量初始化场景中，数组模板元素类型对齐（含嵌套数组）。
+        /// new / ????????????????????????????
         /// </summary>
         internal static bool TryArrayElementAssignableForNewObject(MetaType targetArray, MetaType exprArray)
         {
@@ -500,7 +500,7 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 双动态（匿名推断）data：在 <see cref="MetaData.allClassName"/> 已一致的前提下，按字段名递归比对 <see cref="MetaMemberData.defineMetaType"/>。
+        /// ?????????data?? <see cref="MetaData.allClassName"/> ???????????????? <see cref="MetaMemberData.defineMetaType"/>?
         /// </summary>
         private static bool TryAnonymousDynamicDataStructuralCompatible(MetaData declaredData, MetaData expressData)
         {
@@ -535,11 +535,11 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 声明侧与表达式返回类型在「<c>{}</c>/<c>[]</c> 初始化」语境下是否兼容：
-        /// 先结构模板等价；数组走 <see cref=""/> 递归模板实参；
-        /// <b>enum</b> 要求同一宿主且（若均带成员）name 或 index 一致；
-        /// <b>data</b> 双动态先比类型全名再比各字段定义类型；具名 data 实例一致则通过；
-        /// <b>class / 原语</b> 继承/接口/Num，其中核心数值按窄→宽拓宽规则收紧（与调用点 <see cref="ClassManager.IsNarrowerCorePrimitiveWideningOkForCallSite"/> 一致）。
+        /// ?????????????<c>{}</c>/<c>[]</c> ????????????
+        /// ??????????? <see cref=""/> ???????
+        /// <b>enum</b> ??????????????name ? index ???
+        /// <b>data</b> ????????????????????? data ????????
+        /// <b>class / ??</b> ??/??/Num?????????????????????? <see cref="ClassManager.IsNarrowerCorePrimitiveWideningOkForCallSite"/> ????
         /// </summary>
         internal static bool IsBraceAssignDeclaredCompatibleWithExpress(MetaType declared, MetaType express)
         {
@@ -614,15 +614,15 @@ namespace SimpleLanguage.Core
                 return false;
             }
 
-            var relation = ClassManager.ValidateClassRelationByMetaClass(dc, ec);
-            if (relation == EClassRelation.Same
-                || relation == EClassRelation.Child
-                || relation == EClassRelation.Interface)
+            var relation = ClassManager.ValidateClassTypeRelation(dc, ec);
+            if (relation == ETypeRelation.Same
+                || relation == ETypeRelation.Child
+                || relation == ETypeRelation.Interface)
             {
                 return true;
             }
 
-            if (relation == EClassRelation.Num)
+            if (relation == ETypeRelation.Num)
             {
                 return ClassManager.IsNarrowerCorePrimitiveWideningOkForCallSite(ec, dc);
             }
@@ -630,8 +630,8 @@ namespace SimpleLanguage.Core
             return false;
         }
         /// <summary>
-        /// 将成员/槽位声明类型（<see cref="m_DefineMetaType"/> 或成员上的 define）与本句右值返回类型对撞。
-        /// 通过 <see cref="m_AssignTargetType"/> 区分 class/data 成员、匿名 data 字段、数组字面量槽位等场景。
+        /// ???/???????<see cref="m_DefineMetaType"/> ????? define?????????????
+        /// ?? <see cref="m_AssignTargetType"/> ?? class/data ????? data ??????????????
         /// </summary>
         public void ValidateDefineAgainstDeclaredMetaType()
         {
@@ -639,7 +639,7 @@ namespace SimpleLanguage.Core
             MetaType contentMt = GetRetMetaType();
             MetaType defineMt = m_DefineMetaType;
 
-            // 数组字面量槽位须使用本句的槽位类型对撞；不要用外层左值成员类型回填 define（否则与嵌套 int[][] 等语义不符）。
+            // ????????????????????????????????? define?????? int[][] ???????
             if (defineMt == null
                 && m_AssignTargetType != EAssignTargetType.ArrayValue
                 && assignMemberMv?.defineMetaType != null)
@@ -652,8 +652,8 @@ namespace SimpleLanguage.Core
                 return;
             }
 
-            // class/data 初始化列表中「成员类型为数组、右值为整条数组字面量」：对齐数组类型本身；
-            // 数组字面量 ArrayValue 子槽位虽可能挂外层 context 成员，但不走「成员整段数组赋值」分支。
+            // class/data ????????????????????????????????????
+            // ????? ArrayValue ????????? context ???????????????????
             bool memberWholeArrayAssign =
                 m_AssignTargetType != EAssignTargetType.ArrayValue
                 && assignMemberMv != null
@@ -666,7 +666,7 @@ namespace SimpleLanguage.Core
             {
                 if (!IsBraceAssignDeclaredCompatibleWithExpress(defineMt, contentMt))
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken, "里边的元素与边的数据类型不对应，不对应，需要调整数据，或者是定义的结构 ");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken, "??????????????????????????????????? ");
                 }
                 return;
             }
@@ -679,7 +679,7 @@ namespace SimpleLanguage.Core
                 bool isNumLike =
                     cmt != null
                     && (ClassManager.IsNumberClass(cmt.metaClass) || ClassManager.IsAbstractNumberMetaType(cmt));
-                // 与左值 / 成员声明的 Array<元素> 上可空一致：元素类型带 ? 或声明的模板实参为可空
+                // ??? / ????? Array<??> ??????????? ? ???????????
                 bool allowNullableForNumericElement =
                     (cmt?.isNullable == true)
                     || ( defineMt != null
@@ -691,13 +691,13 @@ namespace SimpleLanguage.Core
                     if (!allowNullableForNumericElement)
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                            "数组元素为数值/Num 类型时，仅当元素类型可空（?）或左值声明为 Array<可空类型> 时才允许空位或 null 字面量。");
+                            "???????/Num ????????????????????? Array<????> ??????? null ????");
                     }
                     return;
                 }
                 if (!isNumLike && (isOmittedExpression || isNullLiteral))
                 {
-                    // 非数值/Num：空位与 null 字面量均不在这里做强类型对撞
+                    // ???/Num???? null ??????????????
                     return;
                 }
             }
@@ -714,7 +714,7 @@ namespace SimpleLanguage.Core
                 bool isMatch;
                 if (cmt?.GetTemplateMetaClass() == CoreMetaClassManager.objectMetaClass)
                 {
-                    // Array<Object> 允许任意元素类型。
+                    // Array<Object> ?????????
                     isMatch = true;
                 }
                 else
@@ -724,14 +724,14 @@ namespace SimpleLanguage.Core
 
                 if (!isMatch)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "里边的元素与边的数据类型不对应，不对应，需要调整数据，或者是定义的结构 ");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "??????????????????????????????????? ");
                 }
             }
             else
             {
                 if (!IsBraceAssignDeclaredCompatibleWithExpress(defineMt, contentMt))
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "里边的元素与外边定义的类11，不对应，需要调整数据，或者是定义的结构 ");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "????????????11???????????????????? ");
                 }
             }
         }
@@ -751,7 +751,7 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 数组/大括号字面值中多项赋值语句的公共元素类型推导（与原先 <c>MetaNewObjectStatementsContent.GetMaxLevelMetaType</c> 一致）。
+        /// ??/?????????????????????????? <c>MetaNewObjectStatementsContent.GetMaxLevelMetaType</c> ????
         /// </summary>
         public static MetaType GetMaxLevelMetaType(IReadOnlyList<MetaBraceAssignStatements> assignStatementsList, MetaType defineMetaType)
         {
@@ -848,9 +848,9 @@ namespace SimpleLanguage.Core
 
             int frontOpLevel = 0;
             var mt = new MetaType(CoreMetaClassManager.objectMetaClass);
-#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
+#pragma warning disable CS0219 // ????????????????
             bool isAllSame = true;
-#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
+#pragma warning restore CS0219 // ????????????????
             for (int i = 0; i < assignStatementsList.Count - 1; i++)
             {
                 MetaBraceAssignStatements cmc = assignStatementsList[i];
@@ -886,14 +886,14 @@ namespace SimpleLanguage.Core
                         var nextmt = nmc.GetRetMetaType();
                         var cur = cutmt.metaClass;
                         var next = nextmt.metaClass;
-                        var relation = ClassManager.ValidateClassRelationByMetaClass(cur, next);
-                        if (relation == EClassRelation.Same
-                            || relation == EClassRelation.Child)
+                        var relation = ClassManager.ValidateClassTypeRelation(cur, next);
+                        if (relation == ETypeRelation.Same
+                            || relation == ETypeRelation.Child)
                         {
                             mt = nextmt;
                             frontOpLevel = cmc.opLevel;
                         }
-                        else if (relation == EClassRelation.Parent)
+                        else if (relation == ETypeRelation.Parent)
                         {
                             mt = cutmt;
                         }
@@ -1096,13 +1096,13 @@ namespace SimpleLanguage.Core
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
         public List<MetaBraceAssignStatements> assignStatementsList => m_AssignStatementsList;
         public int braceAssignCount => m_AssignStatementsList.Count;
-        /// <summary>大括号/数组字面量左侧被赋值的变量（与原 <c>metaContent.equalMetaVariable</c> 一致）。</summary>
+        /// <summary>???/???????????????? <c>metaContent.equalMetaVariable</c> ????</summary>
         public MetaVariable equalMetaVariable => m_StoreMetaVariable;
         public EStatementsContentType statementsContentType => m_StatementsContentType;
 
         /// <summary>
-        /// 为 true 表示语法上已写明数组元素类型（如 <c>Array&lt;Int16&gt;(n){ ... }</c> 等由调用链构造的数组），
-        /// 与仅由 <c>[1,2,3]</c> 推断的元素类型不同；赋值时不对左值做跨数值基类型的字面量强转。
+        /// ? true ???????????????? <c>Array&lt;Int16&gt;(n){ ... }</c> ????????????
+        /// ??? <c>[1,2,3]</c> ???????????????????????????????
         /// </summary>
         public bool usesExplicitArrayElementTypeSyntax => m_UsesExplicitArrayElementTypeSyntax;
 
@@ -1125,14 +1125,14 @@ namespace SimpleLanguage.Core
         private MetaType m_ArrayCalcMetaType = null;
         private bool m_UsesExplicitArrayElementTypeSyntax = false;
         private MetaExpressNodeBase m_ArrayLengthExpress = null;
-        private MetaVariable m_StoreMetaVariable = null; //模板或者是调用时的函数        
+        private MetaVariable m_StoreMetaVariable = null; //???????????        
         private MetaMemberFunction m_MetaMemberFunction = null;
         private List<MetaExpressNodeBase> m_MetaInputParamList = new List<MetaExpressNodeBase>();
 
 
         /// <summary>
-        /// 为匿名 <see cref="MetaData"/> 字面量构造 <see cref="MetaNewObjectExpressNode"/>：
-        /// 先得到结构化 <paramref name="anonymousMetaData"/>，再按子 <see cref="MetaMemberData"/> 的已解析表达式填入 <see cref="MetaBraceAssignStatements"/>，不合成语法 <see cref="Node"/> 树。
+        /// ??? <see cref="MetaData"/> ????? <see cref="MetaNewObjectExpressNode"/>?
+        /// ?????? <paramref name="anonymousMetaData"/>???? <see cref="MetaMemberData"/> ????????? <see cref="MetaBraceAssignStatements"/>?????? <see cref="Node"/> ??
         /// </summary>
         public static MetaNewObjectExpressNode CreateAnonymousDataNewObjectExpress(
             MetaMemberData braceLiteralOwner,
@@ -1163,7 +1163,7 @@ namespace SimpleLanguage.Core
         //    m_StoreMetaVariable = storeMv;
         //    m_MetaMemberFunction = mmf;
         //}
-        // 解析后的[] 然后再进行newArray
+        // ????[] ?????newArray
         public MetaNewObjectExpressNode( MetaType defineMt, MetaArrayExpressNode maen, MetaBase mc, MetaBlockStatements mbs, MetaVariable equalMV)
         {
             m_DefineMetaType = defineMt;
@@ -1186,8 +1186,8 @@ namespace SimpleLanguage.Core
             m_StatementsContentType = EStatementsContentType.ArrayValue;
         }
         // Class1 c = { a = 20, b = 20 };  => Class1 c = Class1(); c.a = 20; c.b = 20;
-        // dynamic c = {a = 20, b = 20} => 动态类 
-        // data c = {a = 20, b = 20} | c = {a = 20, b = 20} => 动态数据  
+        // dynamic c = {a = 20, b = 20} => ??? 
+        // data c = {a = 20, b = 20} | c = {a = 20, b = 20} => ????  
         // Map<int,string> map1 = new(10){ 1:"20", 2:"30", 3:"50" }
         // List<int> list1 = new(){ 1,2,3,4,5 }
         public MetaNewObjectExpressNode(FileMetaBraceTerm fmbt, MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs, MetaVariable equalMV)
@@ -1347,7 +1347,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    //处理前边定义过的变量
+                    //??????????
                 }
 
                 int arr1 = 0;
@@ -1359,7 +1359,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    //处理前边定义过的变量
+                    //??????????
                 }
 
                 MetaInputParam mip3 = new MetaInputParam(new MetaConstExpressNode(EType.Int32, 1));
@@ -1372,13 +1372,13 @@ namespace SimpleLanguage.Core
                 //m_MetaConstructFunctionCall = new MetaMethodCall(null, null, tfunction, null, mdpc, null, null);
             }
         }
-        // 手动构建NewObject表达式
+        // ????NewObject???
         public MetaNewObjectExpressNode(MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs)
             : this(mt, ownerMC, mbs, null)
         {
         }
         /// <summary>
-        /// 手动构建 new 对象表达式；<paramref name="equalMV"/> 与语法上大括号初始化左侧变量一致时传入（如 data 成员匿名字面量）。
+        /// ???? new ??????<paramref name="equalMV"/> ????????????????????? data ?????????
         /// </summary>
         public MetaNewObjectExpressNode(MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs, MetaVariable equalMV)
         {
@@ -1410,7 +1410,7 @@ namespace SimpleLanguage.Core
             }
             if (m_BraceFileMetaBaseTerm?.fileMetaExpressList?.Count > 0)
             {
-                //Log.AddMetaCoreLog(LID.ShowExtendMessage, "解析大括号里边的内容");
+                //Log.AddMetaCoreLog(LID.ShowExtendMessage, "??????????");
                 for (int i = 0; i < m_BraceFileMetaBaseTerm.fileMetaExpressList.Count; i++)
                 {
                     var fas = m_BraceFileMetaBaseTerm.fileMetaExpressList[i];
@@ -1456,12 +1456,12 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        //处理在{ Node1, Node2  } 在{}大括号中的Node1, Node2 这样的节点 Node1, 可以是 aaa = 1, "aa":1, 2:33, [1,2,3] [1] 3, this.value 这样的形式
+        //???{ Node1, Node2  } ?{}?????Node1, Node2 ????? Node1, ??? aaa = 1, "aa":1, 2:33, [1,2,3] [1] 3, this.value ?????
         public void HandleBraceTermNode( FileMetaBaseTerm fmbt, MetaType mt, AllowUseSettings aws)
         {
             if (mt.isData)
             {
-                //动态数据类的定义 在该行语句前直接使用 data a = { aaa = 10, bbb = 20} 这样的形式
+                //???????? ?????????? data a = { aaa = 10, bbb = 20} ?????
                 if (mt.isDynamicData)
                 {
                     string anname = "DynamicData_";
@@ -1515,7 +1515,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    //固定数据类赋值 在该行语句前直接使用 data a{ aaa = 10; bbb = 20 }  a = { aaa = 10, bbb = 20} 这样的形式 前边data 已经定义过了
+                    //??????? ?????????? data a{ aaa = 10; bbb = 20 }  a = { aaa = 10, bbb = 20} ????? ??data ??????
                     if (fmbt is FileMetaSymbolTerm fmst)
                     {
                         MetaBraceAssignStatements mas = new MetaBraceAssignStatements(fmst, mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_NewMetaType );
@@ -1530,7 +1530,7 @@ namespace SimpleLanguage.Core
                     m_StatementsContentType = EStatementsContentType.DataValueAssign;
                 }
             }
-            else if (mt.IsArray() )// 数组类型的处理
+            else if (mt.IsArray() )// ???????
             {
                 m_StatementsContentType = EStatementsContentType.ArrayValue;
                 var genList = mt.GetGenTemplateMetaTypeList();
@@ -1550,7 +1550,7 @@ namespace SimpleLanguage.Core
                 }
                 else if (fmbt is FileMetaBraceTerm fmbrt)
                 {
-                    // 兼容多层数组字面量中使用大括号嵌套的写法：
+                    // ?????????????????????
                     // int[][][] a = { { {1,2}, {3,4} }, { {5,6}, {7,8} } };
                     MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmbrt, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
                     mnoe.Parse(aws);
@@ -1585,7 +1585,7 @@ namespace SimpleLanguage.Core
                 {
                     if( fmst2.symBolType != ETokenType.Comma )
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "间隔符号不对,应该使用,");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "??????,????,");
                     }
                 }
                 else if( fmbt is FileMetaTermExpress termexpress )
@@ -1606,11 +1606,11 @@ namespace SimpleLanguage.Core
                 else
                 {
                     System.Diagnostics.Debug.Assert(false);
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在数组里边应该是FileMetaBracketTerm 类型!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error ????????FileMetaBracketTerm ??!");
                 }
             }
-            // Array<Object>(n){ ... } 中嵌套 [1,2] 时，子字面量节点的 defineMetaType 为元素类型 object（非 Array），
-            // 不可走「普通类 { 成员= }」分支，须与数组槽一致地接纳常量/调用/[]/表达式。
+            // Array<Object>(n){ ... } ??? [1,2] ????????? defineMetaType ????? object?? Array??
+            // ??????? { ??= }????????????????/??/[]/????
             else if (mt != null && mt.metaClass == CoreMetaClassManager.objectMetaClass && !mt.IsArray())
             {
                 m_StatementsContentType = EStatementsContentType.ArrayValue;
@@ -1658,7 +1658,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmstOb2.symBolType != ETokenType.Comma)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "间隔符号不对,应该使用,");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "??????,????,");
                     }
                 }
                 else if (fmbt is FileMetaTermExpress termexpressOb)
@@ -1679,10 +1679,10 @@ namespace SimpleLanguage.Core
                 else
                 {
                     System.Diagnostics.Debug.Assert(false);
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Array<Object> 元素槽不支持该语法节点!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Array<Object> ???????????!");
                 }
             }
-            else if (mt.isMap)   // 映射类型的处理 使用   a:10, b:20  20:"aa" 这样的形式
+            else if (mt.isMap)   // ??????? ??   a:10, b:20  20:"aa" ?????
             {
                 if (fmbt is FileMetaSymbolTerm fmst)
                 {
@@ -1700,11 +1700,11 @@ namespace SimpleLanguage.Core
             else
             {
                 /*
-                //动态普通类的定义
+                //????????
                 if (mt.isDynamicClass)
                 {
                     MetaData anonClass = new MetaData("DynamicClass__" + GetHashCode(), false, false, true );
-                    //构建匿名类中的项
+                    //????????
                     if (fmbt is FileMetaSymbolTerm fmst)
                     {
                         var mas = new MetaBraceAssignStatements(fmst, m_BraceStatementsDefineMetaType, m_OwnerMetaBlockStatements);                        
@@ -1744,7 +1744,7 @@ namespace SimpleLanguage.Core
                     m_BraceStatementsDefineMetaType = new MetaType(retClass);
                     m_StatementsContentType = EStatementsContentType.DynamicClass;
                 }
-                else// 普通类赋值处理
+                else// ???????
                 */
                 {
                     if (fmbt is FileMetaSymbolTerm fmst)
@@ -1769,9 +1769,9 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 用 <paramref name="braceLiteralOwner"/> 的 <see cref="MetaMemberData.metaMemberDataDict"/> 里已解析的
-        /// <see cref="MetaMemberData.expressNode"/>（含嵌套匿名 data 的 <see cref="MetaNewObjectExpressNode"/>）
-        /// 填充 <paramref name="node"/> 的初始化赋值列表，目标字段来自规范化后的 <paramref name="anonymousMetaData"/>。
+        /// ? <paramref name="braceLiteralOwner"/> ? <see cref="MetaMemberData.metaMemberDataDict"/> ?????
+        /// <see cref="MetaMemberData.expressNode"/>?????? data ? <see cref="MetaNewObjectExpressNode"/>?
+        /// ?? <paramref name="node"/> ???????????????????? <paramref name="anonymousMetaData"/>?
         /// </summary>
         public void FillAnonymousDataAssignStatementsFromMemberDict(
             MetaMemberData braceLiteralOwner,
@@ -1873,7 +1873,7 @@ namespace SimpleLanguage.Core
         }
         public override void Parse(AllowUseSettings auc)
         {
-            //该函数，进行，计算出， 要创建的类，使用的初始化函数，以及，初始化成员的解析            //
+            //??????????? ??????????????????????????            //
             if (m_NewType == ENewType.ArrayClass )
             {
                 if (m_NewMetaType != null && m_DefineMetaType != null )
@@ -2134,7 +2134,7 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
-            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到没有各种定义类型的方法");
+            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????????");
             return true;
         }
 
@@ -2148,7 +2148,7 @@ namespace SimpleLanguage.Core
 
             if (!m_DefineMetaType.IsArray())
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "如果定义了，结构，必须与new对象的类型一样才可以");
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "????????????new??????????");
                 return false;
             }
 
@@ -2169,7 +2169,7 @@ namespace SimpleLanguage.Core
 
             if (list1.Count != list2.Count || list1.Count == 0)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "定义数组与new数组 的维度不同");
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "?????new?? ?????");
                 return false;
             }
 
@@ -2203,12 +2203,12 @@ namespace SimpleLanguage.Core
                 {
                     if (newDims[index] != defineDims[index])
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "两个数组的定义长度不同");
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????");
                     }
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "最后一位数组定义，不能为实体值");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????????");
                     return false;
                 }
             }
@@ -2243,7 +2243,7 @@ namespace SimpleLanguage.Core
             {
                 if (newDims[index] == -1)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "不是最后一位 生成的数组，需要定义数组长度");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "?????? ??????????????");
                     return false;
                 }
 
@@ -2252,7 +2252,7 @@ namespace SimpleLanguage.Core
 
             if (defineDims[index] != newDims[index])
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "最后一位数组定义，不能为实体值! 如果前边定义了长度，new的时候必须和前边的长度一样!");
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????????! ??????????new?????????????!");
                 return false;
             }
 
@@ -2263,7 +2263,7 @@ namespace SimpleLanguage.Core
         {
             if (m_DefineMetaType.IsArray())
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "如果定义了，结构，必须与new对象的类型一样才可以");
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "????????????new??????????");
                 return false;
             }
 
@@ -2275,7 +2275,7 @@ namespace SimpleLanguage.Core
                     return true;
                 }
 
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "定义类型与new的类型不对应 ");
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "?????new?????? ");
                 return false;
             }
 
@@ -2284,7 +2284,7 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 左值 Array&lt;Int32&gt; + 字面量/右模板 Array&lt;Int16&gt;：未走“变量已带定义类型”分支时，仍以左值元素类型合并。
+        /// ?? Array&lt;Int32&gt; + ???/??? Array&lt;Int16&gt;????????????????????????????
         /// </summary>
         private void TryApplyNumericArrayElementMergeFromDefineAndNew()
         {
@@ -2329,7 +2329,7 @@ namespace SimpleLanguage.Core
 
             if (m_ExpressReturnMetaType.arrayLength < m_NewMetaType.arrayLength)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "数组赋值内容给出的长度超出了定义长度!");
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "??????????????????!");
                 return false;
             }
 
@@ -2337,7 +2337,7 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// Array&lt;Object&gt;(...){ [1], [2,3] }：object 槽中的嵌套数组字面量需暴露真实数组类型。
+        /// Array&lt;Object&gt;(...){ [1], [2,3] }?object ????????????????????
         /// </summary>
         private void TryPromoteObjectArrayLiteralReturnType()
         {
@@ -2354,7 +2354,7 @@ namespace SimpleLanguage.Core
             SetExpressReturnFromNewMetaType();
         }
 
-        /// <summary>保留原条件（<c>m_NewMetaType == null &amp;&amp; m_NewMetaType != null</c> 恒 false），避免改动历史分支。</summary>
+        /// <summary>??????<c>m_NewMetaType == null &amp;&amp; m_NewMetaType != null</c> ? false???????????</summary>
         private void TryApplyNumericArrayElementMergeDeadBranch()
         {
             if (m_DefineMetaType != null && m_NewMetaType == null && m_NewMetaType != null
@@ -2425,8 +2425,8 @@ namespace SimpleLanguage.Core
             }
 
             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                "数组字面量无法全部强转为当前声明/推断的元素类型，已按数值升阶规则重新推断数组类型为 "
-                + m_ExpressReturnMetaType.ToString() + "；请检查与左值类型是否仍可赋值。");
+                "????????????????/????????????????????????? "
+                + m_ExpressReturnMetaType.ToString() + "????????????????");
 
             if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
             {
@@ -2464,7 +2464,7 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 赋值场景下左值为数组类型（如 <c>Array&lt;Int32&gt;</c>）时写入，供 <see cref="CalcReturnType"/> 与右值模板做数值元素对齐。
+        /// ?????????????? <c>Array&lt;Int32&gt;</c>?????? <see cref="CalcReturnType"/> ?????????????
         /// </summary>
         public void SetAssignmentTargetArrayMetaType(MetaType leftArrayMetaType)
         {
@@ -2480,8 +2480,8 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 按字面量数值升阶规则（与 Parse 阶段一致）重建当前节点的 <see cref="m_MetaType"/>。
-        /// 在无法强转为左值声明元素类型时作为兜底推断。
+        /// ???????????? Parse ???????????? <see cref="m_MetaType"/>?
+        /// ??????????????????????
         /// </summary>
         private bool TryRebuildMetaTypeFromLiteralNumericPromotion()
         {
@@ -2654,7 +2654,7 @@ namespace SimpleLanguage.Core
             }
         }
         */
-        // 创建NewObject 即 Class c = Class(){ var1 = 1; } 的方式使用 1即生成的表达式
+        // ??NewObject ? Class c = Class(){ var1 = 1; } ????? 1???????
         /*
         public MetaExpressNodeBase CreateExpressNodeInNewObjectStatements(MetaVariable mv, MetaBlockStatements mbs, FileMetaBaseTerm fme)
         {
@@ -2711,13 +2711,13 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Debug.Write("Error 只有在data varname = {} 支持 { cha1 = [] } 的格式,其它的表达式中不支持");
+                            Debug.Write("Error ???data varname = {} ?? { cha1 = [] } ???,??????????");
                         }
                         break;
                     }
                 default:
                     {
-                        Debug.Write("Error 暂不支持该类型的在NewObject中的解析!!");
+                        Debug.Write("Error ?????????NewObject????!!");
                     }
                     break;
             }
@@ -2751,7 +2751,7 @@ namespace SimpleLanguage.Core
         //        }
         //        if (flag)
         //        {
-        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, "在[]中，只允许数字形式存在");
+        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, "?[]???????????");
         //        }
         //    }
         //    int use_n_numone = 0;
@@ -2761,7 +2761,7 @@ namespace SimpleLanguage.Core
         //        {
         //            if( use_n_numone == 2 )
         //            {
-        //                Log.AddMetaCoreLog(LID.ShowExtendMessage, "在[]中，只允许从后边向前[3][-1][-1]这种形式，而不能使用[3][-1][2] 这种形式");
+        //                Log.AddMetaCoreLog(LID.ShowExtendMessage, "?[]??????????[3][-1][-1]??????????[3][-1][2] ????");
         //                continue;
         //            }
         //        }

@@ -375,7 +375,7 @@ namespace SimpleLanguage.Core
                         out MetaClass compareClass,
                         out bool isNullConstExpress,
                         this);
-                    if (relation == EClassRelation.CompareClassError)
+                    if (relation == ETypeRelation.ExpressTypeError)
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 表达式中返回定义类型为空 " + m_Express.ToString());
                         return;
@@ -394,12 +394,12 @@ namespace SimpleLanguage.Core
                     sb.Append("与后边赋值语句中 ");
                     if (compareClass != null)
                         sb.Append("表达式类为: " + compareClass.allClassName );
-                    if (relation == EClassRelation.No)
+                    if (relation == ETypeRelation.No)
                     {
                         sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                     }
-                    else if (relation == EClassRelation.Same)
+                    else if (relation == ETypeRelation.Same)
                     {
                         //if( !isNullConstExpress )
                         {
@@ -422,17 +422,17 @@ namespace SimpleLanguage.Core
                             SetRealMetaType(expressRetMetaDefineType);
                         }
                     }
-                    else if (relation == EClassRelation.Parent)
+                    else if (relation == ETypeRelation.Parent)
                     {
                         sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                     }
-                    else if( relation == EClassRelation.Num )
+                    else if( relation == ETypeRelation.Num )
                     {
                         sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
                         //Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
                     }
-                    else if (relation == EClassRelation.Child)
+                    else if (relation == ETypeRelation.Child)
                     {
                         if (compareClass != null)
                         {
@@ -455,7 +455,7 @@ namespace SimpleLanguage.Core
                             SetRealMetaType(expressRetMetaDefineType);
                         }
                     }
-                    else if(relation == EClassRelation.Similar )
+                    else if(relation == ETypeRelation.Similar )
                     {
                         if( compareClass != null )
                         {

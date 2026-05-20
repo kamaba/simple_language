@@ -551,7 +551,7 @@ namespace SimpleLanguage.Core
                     out _,
                     m_MetaVariable);
 
-                if (relation == EClassRelation.CompareClassError)
+                if (relation == ETypeRelation.ExpressTypeError)
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 赋值表达式返回定义类型为空");
                     return;
@@ -567,7 +567,7 @@ namespace SimpleLanguage.Core
                 sb.Append("与后边赋值语句中 ");
                 if (compareClass != null)
                     sb.Append("表达式类为: " + compareClass.allClassName);
-                if (relation == EClassRelation.No)
+                if (relation == ETypeRelation.No)
                 {
                     var targetTemplateList = mdt?.GetGenTemplateMetaTypeList();
                     var exprTemplateList = expressRetMetaDefineType?.GetGenTemplateMetaTypeList();
@@ -584,26 +584,26 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, sb.ToString());
                     m_IsNeedCastState = true;
                 }
-                else if (relation == EClassRelation.Similar)
+                else if (relation == ETypeRelation.Similar)
                 {
                     // 数字相似/升阶赋值（如具体数值赋给 Num 或变窄变宽）为正常语义，不记 ShowExtendMessage，避免误判为告警
                     m_IsNeedCastState = true;
                 }
-                else if (relation == EClassRelation.Same)
+                else if (relation == ETypeRelation.Same)
                 {
                 }
-                else if( relation == EClassRelation.Num )
+                else if( relation == ETypeRelation.Num )
                 {
                     // 左值为 Num（如迭代器 _iteratorValue）右值为具体 Int8 等：编译期已强转，属预期行为，不输出扩展告警
                     m_IsNeedCastState = true;
                 }
-                else if (relation == EClassRelation.Parent)
+                else if (relation == ETypeRelation.Parent)
                 {
                     sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
                     m_IsNeedCastState = true;
                 }
-                else if (relation == EClassRelation.Child)
+                else if (relation == ETypeRelation.Child)
                 {
                     if (compareClass != null)
                     {

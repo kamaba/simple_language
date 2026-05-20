@@ -81,3 +81,11 @@
 /test/BaseTest/TypeTest
 /temp_typetest_run.log
 /test/BaseTest/DataTest
+/.type-relation-bak/ClassManager.cs
+/.type-relation-bak/MetaAssignStatements.cs
+/.type-relation-bak/MetaDefineVarStatements.cs
+/.type-relation-bak/MetaExpressAsIs.cs
+/.type-relation-bak/MetaExpressNewObject.cs
+/.type-relation-bak/MetaMemberVariable.cs
+/.type-relation-bak/MetaParam.cs
+/.type-relation-bak/TypeManager.cs
