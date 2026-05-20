@@ -343,6 +343,7 @@ namespace SimpleLanguage.Compile
             }
 
             m_AsOrIsToken = asOrisToken;
+            m_Token = m_AsOrIsToken;
             m_LeftNodes = leftNodes;
 
             // 左侧变量调用链

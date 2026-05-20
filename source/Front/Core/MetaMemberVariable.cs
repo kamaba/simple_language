@@ -269,7 +269,7 @@ namespace SimpleLanguage.Core
             {
                 m_Express.CalcReturnType();
                 var enode = SimulateExpressRun(m_Express);
-                if (enode != null)
+                if (enode != null && enode != m_Express )
                 {
                     m_Express = enode;
                     m_Express.CalcReturnType();

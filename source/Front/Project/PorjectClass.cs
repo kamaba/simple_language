@@ -333,7 +333,7 @@ namespace SimpleLanguage.Project
 
         static void FinalizeInjectedProjectGlobalMember(MetaClass projectMc, MetaMemberVariable mmv)
         {
-            projectMc.AddMetaMemberVariable(mmv);
+            projectMc.AddMetaMemberVariable(mmv, false );
 
             // Jsonc root "data" + legacy global.data: injected as Project statics after ParseMetaClassMemberExpress.
             // Re-run expression parse pipeline for injected members so array/data initializers

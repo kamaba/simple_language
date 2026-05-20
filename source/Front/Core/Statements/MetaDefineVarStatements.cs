@@ -281,9 +281,24 @@ namespace SimpleLanguage.Core
                     }
                     else if( mdt.isData )
                     {
-                        if(m_ExpressNode.GetReturnMetaType().metaData == mdt.metaData)
+                        relation = TypeManager.ResolveAssignRelation(
+                            mdt,
+                            m_ExpressNode,
+                            true,
+                            false,
+                            out expressRetMetaDefineType,
+                            out _,
+                            out _,
+                            out _,
+                            m_DefineVarMetaVariable);
+                        if (relation == EClassRelation.Same)
                         {
-                            m_DefineVarMetaVariable.SetRealMetaType(mdt);
+                            m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType ?? mdt);
+                        }
+                        else if (relation != EClassRelation.CompareClassError && relation != EClassRelation.CurClassError)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                                "data 声明类型与右侧表达式类型不匹配。");
                         }
                     }
                     else

@@ -365,12 +365,15 @@ namespace SimpleLanguage.Core
                 expressMdt = m_MetaVariable.GetFinalMetaType();
             }
 
-            if ( m_RightMetaExpress == null && m_FileMetaOpAssignSyntax?.express != null)
+            if (m_RightMetaExpress == null
+                && m_FileMetaOpAssignSyntax?.express != null )
             {
                 var rightPreferredMetaType = ResolveRightPreferredMetaTypeForDirectBraceLiteral(expressMdt);
-                if (rightPreferredMetaType == null 
-                    || (rightPreferredMetaType?.eMetaTypeType != EMetaTypeType.MetaClass 
-                    && rightPreferredMetaType?.eMetaTypeType != EMetaTypeType.MetaGenClass ) )
+                if (rightPreferredMetaType == null
+                    || (!rightPreferredMetaType.isData
+                        && !rightPreferredMetaType.isClass
+                        && !rightPreferredMetaType.isMap
+                        && rightPreferredMetaType.eMetaTypeType != EMetaTypeType.MetaGenClass))
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
                         "右值为 {} 初始化时，左值类型必须是 class/data/array/map，当前类型不支持该写法。");
@@ -524,7 +527,14 @@ namespace SimpleLanguage.Core
             //}
             //else
             //{
-            if (expressRetMetaDefineType == null || expressRetMetaDefineType.metaClass == CoreMetaClassManager.nullMetaClass)
+            bool shouldResolveAssignRelation = expressRetMetaDefineType != null
+                && (expressRetMetaDefineType.metaClass != CoreMetaClassManager.nullMetaClass
+                    || mdt.isData
+                    || mdt.isEnum
+                    || expressRetMetaDefineType.isData
+                    || expressRetMetaDefineType.isEnum);
+
+            if (!shouldResolveAssignRelation)
             {
 
             }

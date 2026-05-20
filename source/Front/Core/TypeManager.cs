@@ -9,6 +9,7 @@
 
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -342,13 +343,41 @@ namespace SimpleLanguage.Core
             if (mdtL == null || mdtR == null)
                 return false;
 
-            MetaClass leftBaseClass = mdtL.GetTemplateMetaClass();
-            MetaClass rightBaseClass = mdtR.GetTemplateMetaClass();
-
-            if( rightBaseClass == CoreMetaClassManager.nullMetaClass )
+            if (mdtR.isNull || mdtR.metaClass == CoreMetaClassManager.nullMetaClass)
             {
                 return true;
             }
+
+            if (mdtL.isData || mdtR.isData)
+            {
+                if (!mdtL.isData || !mdtR.isData)
+                    return false;
+
+                var leftMd = mdtL.metaData;
+                var rightMd = mdtR.metaData;
+                if (ReferenceEquals(leftMd, rightMd))
+                    return true;
+                if (leftMd == null || rightMd == null)
+                    return false;
+                return ClassManager.instance.CompareMetaDataMember(leftMd, rightMd);
+            }
+
+            if (mdtL.isEnum || mdtR.isEnum)
+            {
+                if (!mdtL.isEnum || !mdtR.isEnum)
+                    return false;
+
+                var leftEnum = mdtL.metaEnum;
+                var rightEnum = mdtR.metaEnum;
+                if (leftEnum == null || rightEnum == null)
+                    return false;
+                if (ReferenceEquals(leftEnum, rightEnum))
+                    return true;
+                return string.Equals(leftEnum.allClassName, rightEnum.allClassName, StringComparison.Ordinal);
+            }
+
+            MetaClass leftBaseClass = mdtL.GetTemplateMetaClass();
+            MetaClass rightBaseClass = mdtR.GetTemplateMetaClass();
 
             if (leftBaseClass != rightBaseClass)
             {
@@ -388,75 +417,172 @@ namespace SimpleLanguage.Core
             MetaVariable targetVariable = null)
         {
             expressRetMetaDefineType = null;
+            curClass = null;
             compareClass = null;
             isNullConstExpress = false;
-            curClass = targetMetaType?.metaClass;
 
-            if (curClass == null)
+            if (targetMetaType.isData)
             {
-                return EClassRelation.CurClassError;
+                if (expressNode == null)
+                    return EClassRelation.CompareClassError;
+
+                if (expressNode is MetaConstExpressNode constExpressNode && constExpressNode.eType == EType.Null)
+                {
+                    isNullConstExpress = true;
+                    expressRetMetaDefineType = new MetaType(CoreMetaClassManager.nullMetaClass);
+                    return EClassRelation.Same;
+                }
+
+                expressRetMetaDefineType = expressNode.GetReturnMetaType();
+                if (expressRetMetaDefineType == null)
+                    return EClassRelation.CompareClassError;
+
+                if (CompareMetaType(targetMetaType, expressRetMetaDefineType))
+                    return EClassRelation.Same;
+
+                return EClassRelation.No;
             }
-            if (expressNode == null)
+            else if (targetMetaType.isEnum)
             {
-                return EClassRelation.CompareClassError;
+                if (expressNode == null)
+                    return EClassRelation.CompareClassError;
+
+                expressRetMetaDefineType = expressNode.GetReturnMetaType();
+                if (expressRetMetaDefineType == null)
+                    return EClassRelation.CompareClassError;
+
+                var targetEnum = targetMetaType.metaEnum;
+                if (targetEnum == null)
+                    return EClassRelation.CurClassError;
+
+                if (CompareMetaType(targetMetaType, expressRetMetaDefineType))
+                    return EClassRelation.Same;
+
+                if (TryResolveEnumMemberAssign(targetEnum, expressNode, expressRetMetaDefineType))
+                    return EClassRelation.Same;
+
+                var extendClass = targetEnum.extendClass;
+                if (extendClass != null && expressRetMetaDefineType.isClass)
+                {
+                    var baseRelation = ClassManager.ValidateClassRelationByMetaClass(extendClass, expressRetMetaDefineType.metaClass);
+                    if (baseRelation == EClassRelation.Same
+                        || baseRelation == EClassRelation.Num
+                        || baseRelation == EClassRelation.Similar)
+                    {
+                        return EClassRelation.Same;
+                    }
+                }
+
+                var extendMd = targetEnum.extendMetaData;
+                if (extendMd != null && expressRetMetaDefineType.isData)
+                {
+                    var exprMd = expressRetMetaDefineType.metaData;
+                    if (exprMd != null
+                        && (ReferenceEquals(extendMd, exprMd)
+                            || ClassManager.instance.CompareMetaDataMember(extendMd, exprMd)))
+                    {
+                        return EClassRelation.Same;
+                    }
+                }
+
+                return EClassRelation.No;
+            }
+            else if( targetMetaType.isClass )
+            {
+                curClass = targetMetaType?.metaClass;
+
+                if (curClass == null)
+                {
+                    return EClassRelation.CurClassError;
+                }
+                if (expressNode == null)
+                {
+                    return EClassRelation.CompareClassError;
+                }
+
+                if (expressNode is MetaConstExpressNode constExpressNode && constExpressNode.eType == EType.Null)
+                {
+                    isNullConstExpress = true;
+                    expressRetMetaDefineType = new MetaType(CoreMetaClassManager.nullMetaClass);
+                    return EClassRelation.Same;
+                }
+
+                expressRetMetaDefineType = expressNode.GetReturnMetaType();
+                compareClass = expressRetMetaDefineType?.metaClass;
+                if (compareClass == null)
+                {
+                    return EClassRelation.CompareClassError;
+                }
+
+                if (allowEnumOwnerEqual && curClass == CoreMetaClassManager.enumMetaData && expressNode is MetaCallLinkExpressNode mclen)
+                {
+                    var mv = mclen.GetMetaVariable();
+                    if (mv?.ownerMetaClass == CoreMetaClassManager.enumMetaData)
+                    {
+                        return EClassRelation.Same;
+                    }
+                    // MetaEnum 成员宿主为 MetaEnum（ownerMetaClass 视图常为 null），须单独识别
+                    if (mv is MetaMemberEnum)
+                    {
+                        return EClassRelation.Same;
+                    }
+                }
+
+                // Iterator<Number> <- Array<具体数值>：仅遍历/访问语义，允许协变
+                if (targetMetaType.IsIterator() && expressRetMetaDefineType.IsArray())
+                {
+                    if (ClassManager.TryIteratorNumberFromConcreteNumericArray(targetMetaType, expressRetMetaDefineType))
+                        return EClassRelation.Same;
+                }
+
+                // Iterator<Number> <- Iterator<具体数值>：仅遍历/访问语义，允许协变
+                if (targetMetaType.IsIterator() && expressRetMetaDefineType.IsIterator())
+                {
+                    if (ClassManager.TryIteratorNumberFromConcreteNumericIterator(targetMetaType, expressRetMetaDefineType))
+                        return EClassRelation.Same;
+                }
+
+                if (targetMetaType.IsIterator())
+                {
+                    if (ClassManager.TryIteratorNumberFromArrayIteratorSource(targetMetaType, expressNode))
+                        return EClassRelation.Same;
+                }
+
+                // IIterable<Object> <- Int32[]：数组到可迭代接口按元素可赋值放宽
+                if (targetMetaType.IsIterable() && expressRetMetaDefineType.IsArray())
+                {
+                    if (ClassManager.TryIterableFromArrayElementAssignable(targetMetaType, expressRetMetaDefineType))
+                        return EClassRelation.Same;
+                }
+
+                return ResolveAssignRelationByMetaTypes(targetMetaType, expressRetMetaDefineType, out _, out _);
             }
 
-            if (expressNode is MetaConstExpressNode constExpressNode && constExpressNode.eType == EType.Null)
-            {
-                isNullConstExpress = true;
-                expressRetMetaDefineType = new MetaType(CoreMetaClassManager.nullMetaClass);
-                return EClassRelation.Same;
-            }
+            curClass = null;
+            compareClass = null;
+            return EClassRelation.CurClassError;
+        }
 
-            expressRetMetaDefineType = expressNode.GetReturnMetaType();
-            compareClass = expressRetMetaDefineType?.metaClass;
-            if (compareClass == null)
-            {
-                return EClassRelation.CompareClassError;
-            }
+        private static bool TryResolveEnumMemberAssign(
+            MetaEnum targetEnum,
+            MetaExpressNodeBase expressNode,
+            MetaType expressRetMetaDefineType)
+        {
+            if (targetEnum == null || expressNode == null)
+                return false;
 
-            if (allowEnumOwnerEqual && curClass == CoreMetaClassManager.enumMetaData && expressNode is MetaCallLinkExpressNode mclen)
+            if (expressNode is MetaCallLinkExpressNode mclen)
             {
                 var mv = mclen.GetMetaVariable();
-                if (mv?.ownerMetaClass == CoreMetaClassManager.enumMetaData)
-                {
-                    return EClassRelation.Same;
-                }
-                // MetaEnum 成员宿主为 MetaEnum（ownerMetaClass 视图常为 null），须单独识别
-                if (mv is MetaMemberEnum)
-                {
-                    return EClassRelation.Same;
-                }
+                if (mv is MetaMemberEnum mme && ReferenceEquals(mme.ownerMetaEnum, targetEnum))
+                    return true;
             }
 
-            // Iterator<Number> <- Array<具体数值>：仅遍历/访问语义，允许协变
-            if (targetMetaType.IsIterator() && expressRetMetaDefineType.IsArray())
-            {
-                if (ClassManager.TryIteratorNumberFromConcreteNumericArray(targetMetaType, expressRetMetaDefineType))
-                    return EClassRelation.Same;
-            }
+            var enumValue = expressRetMetaDefineType?.enumValue;
+            if (enumValue != null && ReferenceEquals(enumValue.ownerMetaEnum, targetEnum))
+                return true;
 
-            // Iterator<Number> <- Iterator<具体数值>：仅遍历/访问语义，允许协变
-            if (targetMetaType.IsIterator() && expressRetMetaDefineType.IsIterator())
-            {
-                if (ClassManager.TryIteratorNumberFromConcreteNumericIterator(targetMetaType, expressRetMetaDefineType))
-                    return EClassRelation.Same;
-            }
-
-            if (targetMetaType.IsIterator())
-            {
-                if (ClassManager.TryIteratorNumberFromArrayIteratorSource(targetMetaType, expressNode))
-                    return EClassRelation.Same;
-            }
-
-            // IIterable<Object> <- Int32[]：数组到可迭代接口按元素可赋值放宽
-            if (targetMetaType.IsIterable() && expressRetMetaDefineType.IsArray())
-            {
-                if (ClassManager.TryIterableFromArrayElementAssignable(targetMetaType, expressRetMetaDefineType))
-                    return EClassRelation.Same;
-            }
-
-            return ResolveAssignRelationByMetaTypes(targetMetaType, expressRetMetaDefineType, out _, out _);
+            return false;
         }
 
         public static EClassRelation ResolveAssignRelationByMetaTypes(
@@ -467,6 +593,32 @@ namespace SimpleLanguage.Core
         {
             curClass = targetMetaType?.metaClass;
             compareClass = expressRetMetaDefineType?.metaClass;
+
+            if (targetMetaType?.isData == true || expressRetMetaDefineType?.isData == true)
+            {
+                curClass = null;
+                compareClass = null;
+                if (targetMetaType == null || expressRetMetaDefineType == null)
+                    return EClassRelation.CompareClassError;
+                if (!targetMetaType.isData || !expressRetMetaDefineType.isData)
+                    return EClassRelation.No;
+                return CompareMetaType(targetMetaType, expressRetMetaDefineType)
+                    ? EClassRelation.Same
+                    : EClassRelation.No;
+            }
+
+            if (targetMetaType?.isEnum == true || expressRetMetaDefineType?.isEnum == true)
+            {
+                curClass = null;
+                compareClass = null;
+                if (targetMetaType == null || expressRetMetaDefineType == null)
+                    return EClassRelation.CompareClassError;
+                if (!targetMetaType.isEnum || !expressRetMetaDefineType.isEnum)
+                    return EClassRelation.No;
+                return CompareMetaType(targetMetaType, expressRetMetaDefineType)
+                    ? EClassRelation.Same
+                    : EClassRelation.No;
+            }
 
             if (curClass == null)
                 return EClassRelation.CurClassError;
