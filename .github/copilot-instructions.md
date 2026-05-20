@@ -21,6 +21,9 @@
 - For anonymous data members, first build the anonymous MetaData type, then represent the value as a MetaNewObjectExpressNode that performs a new of that anonymous data type and applies child assignments via MetaBraceAssignStatements; preserve useful prior code only if it still contributes to this flow.
 - When decoupling MetaData from MetaClass, rewrite logic without MetaClassAdapter: first detect Data type and compare via MetaData semantics; extend MetaType to carry MetaEnum/MetaData structures.
 
+## Return Type Resolution
+- In `MetaExpressNewObject.cs`, centralize all return-type resolution logic in `CalcReturnType`, including define/new type comparison, array literal inferred type precedence, and array length validation rules.
+
 ## Code Style
 - Use specific formatting rules
 - Follow naming conventions

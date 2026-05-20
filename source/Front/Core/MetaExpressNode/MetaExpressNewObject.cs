@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
+using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
@@ -1396,6 +1397,10 @@ namespace SimpleLanguage.Core
                 m_NewType = ENewType.CommomClass;
             }
         }
+        public void SetNewMetaType( MetaType mt )
+        {
+            this.m_NewMetaType = mt;
+        }
 
         public MetaType GetMaxLevelMetaType()
         {
@@ -2034,115 +2039,183 @@ namespace SimpleLanguage.Core
 
             var mipc = new MetaInputParamCollection(ownerMetaClass, m_OwnerMetaBlockStatements);
 
-            if (!ResolveInitialExpressReturnMetaType())
+            if (m_NewType != ENewType.ArrayClass)
             {
+                if (!TryResolveNonArrayReturnMetaTypeByRelation(out var nonArrayRet))
+                {
+                    return;
+                }
+                m_ExpressReturnMetaType = nonArrayRet;
                 return;
             }
 
-            TryApplyNumericArrayElementMergeFromDefineAndNew();
-
-            if (!ApplyExpressReturnFromNewMetaTypeIfNeeded())
+            if (!TryResolveArrayReturnMetaTypeByRelation(out var arrayRet))
             {
                 return;
             }
-
-            TryPromoteObjectArrayLiteralReturnType();
-            TryApplyNumericArrayElementMergeDeadBranch();
-
-            SyncArrayLiteralLengthFromContent();
+            m_ExpressReturnMetaType = arrayRet;
 
             if (m_ExpressReturnMetaType == null)
             {
                 return;
             }
 
+            MetaType newArray = (m_NewMetaType != null && m_NewMetaType.IsArray()) ? m_NewMetaType : null;
+            if (newArray != null && m_ArrayCalcMetaType  !=  null && m_ArrayCalcMetaType.IsArray())
+            {
+                if (m_ExpressReturnMetaType.arrayLength == -1 && newArray.arrayLength >= 0)
+                {
+                    m_ExpressReturnMetaType.SetArrayLength(newArray.arrayLength);
+                }
+                else if (m_ArrayCalcMetaType.arrayLength >= 0
+                    && newArray.arrayLength >= 0
+                    && m_ArrayCalcMetaType.arrayLength > newArray.arrayLength)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "数组赋值内容给出的长度超出了定义长度!");
+                    return;
+                }
+            }
+
+            int literalLength = m_AssignStatementsList.Count;
+            if (literalLength >= 0 && m_ExpressReturnMetaType.IsArray() && m_ExpressReturnMetaType.arrayLength == -1)
+            {
+                m_ExpressReturnMetaType.SetArrayLength(literalLength);
+            }
+            if (literalLength >= 0 && m_NewMetaType != null && m_NewMetaType.IsArray() && m_NewMetaType.arrayLength == -1)
+            {
+                m_NewMetaType.SetArrayLength(literalLength);
+            }
+
             SetupArrayMemberFunctionAndLengthParam(mipc);
 
-            if (!TryUnifyNumericArrayLiteralMemberTypes())
+            if (!m_ExpressReturnMetaType.IsArray())
             {
                 return;
             }
-        }
 
-        private void SetExpressReturnFromNewMetaType()
-        {
-            m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
-        }
-
-        private void SetExpressReturnFromDefineMetaType()
-        {
-            m_ExpressReturnMetaType = new MetaType(m_DefineMetaType);
-        }
-
-        private bool IsDefineAndNewArrayClassNew()
-        {
-            return m_DefineMetaType != null && m_NewMetaType != null
-                && m_DefineMetaType.IsArray() && m_NewMetaType.IsArray()
-                && m_NewType == ENewType.ArrayClass;
-        }
-
-        private static bool TryBuildNumericMergedArrayMetaType(MetaType defineArray, MetaType newArray, out MetaType merged)
-        {
-            merged = null;
-            var dEl = ClassManager.GetSingleTemplateArgMetaType(defineArray);
-            var nEl = ClassManager.GetSingleTemplateArgMetaType(newArray);
-            if (dEl == null || nEl == null)
+            if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
             {
-                return false;
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                    "数组字面量无法全部强转为当前声明/推断的元素类型: " + m_ExpressReturnMetaType.ToString());
             }
-
-            if (!ClassManager.IsNumberClass(dEl.metaClass) || !ClassManager.IsNumberClass(nEl.metaClass))
-            {
-                return false;
-            }
-
-            if (TypeManager.CompareMetaType(dEl, nEl))
-            {
-                return false;
-            }
-
-            merged = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(defineArray, newArray);
-            return merged != null;
         }
 
-        private bool ResolveInitialExpressReturnMetaType()
+        private bool TryResolveNonArrayReturnMetaTypeByRelation(out MetaType result)
         {
+            result = null;
+
             if (m_DefineMetaType != null && m_NewMetaType != null)
             {
-                if (m_NewMetaType.IsArray())
+                bool related = MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(m_DefineMetaType, m_NewMetaType);
+                if (!related)
                 {
-                    return ResolveInitialReturnForArrayNew();
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "定义类型与new的类型不对应");
+                    return false;
                 }
-
-                return ResolveInitialReturnForNonArrayNew();
-            }
-
-            if (m_NewMetaType != null && m_DefineMetaType == null)
-            {
-                SetExpressReturnFromNewMetaType();
+                result = new MetaType(m_NewMetaType);
                 return true;
             }
 
-            if (m_NewMetaType == null && m_DefineMetaType != null)
+            if (m_NewMetaType != null)
             {
-                SetExpressReturnFromDefineMetaType();
+                result = new MetaType(m_NewMetaType);
                 return true;
             }
 
-            if (m_DefineMetaType == null && m_NewMetaType == null)
+            if (m_DefineMetaType != null)
             {
+                result = new MetaType(m_DefineMetaType);
                 return true;
             }
 
-            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????????");
             return true;
         }
+
+        private bool TryResolveArrayReturnMetaTypeByRelation(out MetaType result)
+        {
+            result = null;
+
+            MetaType defineArray = (m_DefineMetaType != null && m_DefineMetaType.IsArray()) ? m_DefineMetaType : null;
+            MetaType newArray = (m_NewMetaType != null && m_NewMetaType.IsArray()) ? m_NewMetaType : null;
+            MetaType calcArray = (m_ArrayCalcMetaType != null && m_ArrayCalcMetaType.IsArray()) ? m_ArrayCalcMetaType : null;
+
+            if (defineArray != null && newArray != null)
+            {
+                bool defineNewRelated = MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(defineArray, newArray);
+                if (!defineNewRelated)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", defineArray.ToString(), newArray.ToString());
+                    return false;
+                }
+
+                var dEl = defineArray.GetMetaTypeByIndex(0);
+                var nEl = newArray.GetMetaTypeByIndex(0);
+                if (dEl != null && nEl != null
+                    && ClassManager.IsNumberClass(dEl.metaClass)
+                    && ClassManager.IsNumberClass(nEl.metaClass)
+                    && !TypeManager.CompareMetaType(dEl, nEl))
+                {
+                    result = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(defineArray, newArray);
+                }
+                else
+                {
+                    result = new MetaType(newArray);
+                }
+            }
+            else if (newArray != null)
+            {
+                result = new MetaType(newArray);
+            }
+            else if (defineArray != null)
+            {
+                result = new MetaType(defineArray);
+            }
+
+            if (calcArray != null)
+            {
+                if (result == null)
+                {
+                    result = new MetaType(calcArray);
+                    return true;
+                }
+
+                bool resultCalcRelated = MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(result, calcArray);
+                bool calcResultRelated = MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(calcArray, result);
+                if (!resultCalcRelated && !calcResultRelated)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", result.ToString(), calcArray.ToString());
+                    return false;
+                }
+
+                // 数组字面量推断类型优先参与最终类型收敛；数值场景仍保持 define 元素类型优先。
+                var retEl = result.GetMetaTypeByIndex(0);
+                var calcEl = calcArray.GetMetaTypeByIndex(0);
+                if (retEl != null && calcEl != null
+                    && ClassManager.IsNumberClass(retEl.metaClass)
+                    && ClassManager.IsNumberClass(calcEl.metaClass)
+                    && !TypeManager.CompareMetaType(retEl, calcEl))
+                {
+                    result = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(result, calcArray);
+                }
+                else if (resultCalcRelated)
+                {
+                    result = new MetaType(calcArray);
+                }
+
+                if (result.arrayLength == -1 && calcArray.arrayLength >= 0)
+                {
+                    result.SetArrayLength(calcArray.arrayLength);
+                }
+            }
+
+            return true;
+        }
+
 
         private bool ResolveInitialReturnForArrayNew()
         {
             if (m_StoreMetaVariable?.isDefineMetaType != true)
             {
-                SetExpressReturnFromNewMetaType();
                 return true;
             }
 
@@ -2258,116 +2331,6 @@ namespace SimpleLanguage.Core
 
             return true;
         }
-
-        private bool ResolveInitialReturnForNonArrayNew()
-        {
-            if (m_DefineMetaType.IsArray())
-            {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "????????????new??????????");
-                return false;
-            }
-
-            if (m_NewMetaType.isClass)
-            {
-                if (m_NewMetaType.metaClass.IsContainMetaClass(m_DefineMetaType.metaClass))
-                {
-                    SetExpressReturnFromNewMetaType();
-                    return true;
-                }
-
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "?????new?????? ");
-                return false;
-            }
-
-            SetExpressReturnFromNewMetaType();
-            return true;
-        }
-
-        /// <summary>
-        /// ?? Array&lt;Int32&gt; + ???/??? Array&lt;Int16&gt;????????????????????????????
-        /// </summary>
-        private void TryApplyNumericArrayElementMergeFromDefineAndNew()
-        {
-            if (!IsDefineAndNewArrayClassNew())
-            {
-                return;
-            }
-
-            if (TryBuildNumericMergedArrayMetaType(m_DefineMetaType, m_NewMetaType, out var merged))
-            {
-                m_ExpressReturnMetaType = merged;
-            }
-        }
-
-        private bool ApplyExpressReturnFromNewMetaTypeIfNeeded()
-        {
-            if (m_NewMetaType == null)
-            {
-                return true;
-            }
-
-            if (!m_NewMetaType.IsArray())
-            {
-                if (m_ExpressReturnMetaType == null)
-                {
-                    SetExpressReturnFromNewMetaType();
-                }
-                return true;
-            }
-
-            if (m_ExpressReturnMetaType == null)
-            {
-                SetExpressReturnFromNewMetaType();
-                return true;
-            }
-
-            if (m_ExpressReturnMetaType.arrayLength == -1)
-            {
-                m_ExpressReturnMetaType.SetArrayLength(m_NewMetaType.arrayLength);
-                return true;
-            }
-
-            if (m_ExpressReturnMetaType.arrayLength < m_NewMetaType.arrayLength)
-            {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "??????????????????!");
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Array&lt;Object&gt;(...){ [1], [2,3] }?object ????????????????????
-        /// </summary>
-        private void TryPromoteObjectArrayLiteralReturnType()
-        {
-            if (m_NewType != ENewType.ArrayClass
-                || m_NewMetaType == null
-                || !m_NewMetaType.IsArray()
-                || m_ExpressReturnMetaType == null
-                || m_ExpressReturnMetaType.IsArray()
-                || m_ExpressReturnMetaType.metaClass != CoreMetaClassManager.objectMetaClass)
-            {
-                return;
-            }
-
-            SetExpressReturnFromNewMetaType();
-        }
-
-        /// <summary>??????<c>m_NewMetaType == null &amp;&amp; m_NewMetaType != null</c> ? false???????????</summary>
-        private void TryApplyNumericArrayElementMergeDeadBranch()
-        {
-            if (m_DefineMetaType != null && m_NewMetaType == null && m_NewMetaType != null
-                && m_DefineMetaType.IsArray() && m_NewMetaType.IsArray()
-                && m_NewType == ENewType.ArrayClass)
-            {
-                if (TryBuildNumericMergedArrayMetaType(m_DefineMetaType, m_NewMetaType, out var mergedDr))
-                {
-                    m_ExpressReturnMetaType = mergedDr;
-                }
-            }
-        }
-
         private void SetupArrayMemberFunctionAndLengthParam(MetaInputParamCollection mipc)
         {
             if (!m_ExpressReturnMetaType.IsArray())
@@ -2404,123 +2367,12 @@ namespace SimpleLanguage.Core
             m_ArrayLengthExpress = m_MetaInputParamList[0];
             m_MetaMemberFunction = null;
         }
-
-        private bool TryUnifyNumericArrayLiteralMemberTypes()
-        {
-            if (m_NewType != ENewType.ArrayClass
-                || m_ExpressReturnMetaType == null
-                || !m_ExpressReturnMetaType.IsArray())
-            {
-                return true;
-            }
-
-            if (NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
-            {
-                return true;
-            }
-
-            if (!TryRebuildMetaTypeFromLiteralNumericPromotion())
-            {
-                return false;
-            }
-
-            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                "????????????????/????????????????????????? "
-                + m_ExpressReturnMetaType.ToString() + "????????????????");
-
-            if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
-            {
-                return false;
-            }
-
-            return true;
-        }
-        public void SetNewMetaType( MetaType newType )
-        {
-            m_NewMetaType = newType;
-        }
-
-        private void SyncArrayLiteralLengthFromContent()
-        {
-            if (m_NewType != ENewType.ArrayClass)
-            {
-                return;
-            }
-
-            int literalLength = m_AssignStatementsList.Count;
-            if (literalLength < 0)
-            {
-                return;
-            }
-            if (m_NewMetaType != null && m_NewMetaType.IsArray() && m_NewMetaType.arrayLength == -1)
-            {
-                m_NewMetaType.SetArrayLength(literalLength);
-            }
-
-            if (m_ExpressReturnMetaType != null && m_ExpressReturnMetaType.IsArray() && m_ExpressReturnMetaType.arrayLength == -1)
-            {
-                m_ExpressReturnMetaType.SetArrayLength(literalLength);
-            }
-        }
-
-        /// <summary>
-        /// ?????????????? <c>Array&lt;Int32&gt;</c>?????? <see cref="CalcReturnType"/> ?????????????
-        /// </summary>
-        public void SetAssignmentTargetArrayMetaType(MetaType leftArrayMetaType)
-        {
-            if (leftArrayMetaType != null && leftArrayMetaType.IsArray())
-            {
-                m_DefineMetaType = new MetaType(leftArrayMetaType);
-                if (m_NewMetaType == null || !m_NewMetaType.IsArray())
-                {
-                    m_NewMetaType = new MetaType(leftArrayMetaType);
-                }
-                m_NewMetaType = m_DefineMetaType;
-            }
-        }
-
-        /// <summary>
-        /// ???????????? Parse ???????????? <see cref="m_MetaType"/>?
-        /// ??????????????????????
-        /// </summary>
-        private bool TryRebuildMetaTypeFromLiteralNumericPromotion()
-        {
-            if (m_AssignStatementsList == null || m_AssignStatementsList.Count == 0)
-            {
-                return false;
-            }
-
-            MetaType inputType = GetMaxLevelMetaType();
-            if (inputType == null)
-            {
-                return false;
-            }
-
-            MetaType newRMT = new MetaType();
-            newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
-            newRMT.AddDefineTemplateMetaType(inputType);
-            m_ExpressReturnMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out _);
-            m_ExpressReturnMetaType.SetArrayLength(m_AssignStatementsList.Count);
-            return m_ExpressReturnMetaType != null;
-        }
         public void CheckDefineVariableMetaTypeAndContentMetaType()
         {
             for (int i = 0; i < this.m_AssignStatementsList.Count; i++)
             {
                 m_AssignStatementsList[i].ValidateDefineAgainstDeclaredMetaType();
             }
-        }
-        public override MetaType GetReturnMetaType()
-        {
-            if(this.expressReturnMetaType != null )
-            {
-                return expressReturnMetaType;
-            }
-            //if (m_MetaConstructFunctionCall != null)
-            //{
-            //    m_MetaType = m_MetaConstructFunctionCall.GeMetaDefineType();
-            //}
-            return expressReturnMetaType;
         }
         private string FormatBraceAssignListForDebug()
         {

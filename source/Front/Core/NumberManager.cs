@@ -390,7 +390,6 @@ namespace SimpleLanguage.Core
                 return false;
             }
         }
-
         /// <summary>
         /// 当数组类型已确定为 <c>Array&lt;T&gt;</c> 且 <c>T</c> 为具体数值类型时，将 <paramref name="newObjectNode"/> 中字面量常量统一转为 <c>T</c>；
         /// 混合整型会强转对齐；整数目标与非整值浮点字面量、或无法转换的数值组合会记录日志并返回 false。
@@ -458,8 +457,6 @@ namespace SimpleLanguage.Core
                     && nested.assignStatementsList != null
                     && elemType.IsArray())
                 {
-                    // 子数组字面量：用左值侧内层 Array<...> 作为目标，再走完整 CalcReturnType，使子树 m_MetaType 与内部常量与左一致
-                    nested.SetAssignmentTargetArrayMetaType(elemType);
                     nested.CalcReturnType();
                 }
 

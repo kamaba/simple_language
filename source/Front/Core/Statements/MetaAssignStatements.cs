@@ -454,7 +454,6 @@ namespace SimpleLanguage.Core
         /// <summary>
         /// 赋值常先解析右值再解析左值（例如 setter 需先把右值放入参数再解析左值），故 <c>[1,2,100]</c> 首次推断无左值元素类型。
         /// 左值最终类型可用后：若左为具元素模板的数组（非 object 元素）、右为未显式 Array-T-构造调用的数组字面量、且左右元素类型不一致，
-        /// 则 <see cref="MetaNewObjectExpressNode.SetAssignmentTargetArrayMetaType"/> + <see cref="MetaNewObjectExpressNode.CalcReturnType"/> 纠正（详见 MetaExpressNewObject / NumberManager）。
         /// <see cref="m_IsSettings"/> 或左值非变量访问时跳过。
         /// </summary>
         private void TryCoerceRightArrayLiteralToLeftArrayTypeAfterLeftResolved()
@@ -497,8 +496,6 @@ namespace SimpleLanguage.Core
             {
                 return;
             }
-
-            mnoe.SetAssignmentTargetArrayMetaType(leftMt);
             mnoe.CalcReturnType();
         }
 
