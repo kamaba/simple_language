@@ -102,6 +102,19 @@ namespace SimpleLanguage.Core
             m_VariableFrom = EVariableFrom.DataMember;
             m_Token = men.token;
         }
+        public MetaMemberData(MetaData owner, string name, int index)
+        {
+            this.m_Name = name;
+            this.m_Index = index;
+            this.m_IsWithName = true;
+            this.m_DefineMetaType = new MetaType(owner);
+            this.m_RealMetaType = new MetaType(this.m_DefineMetaType);
+            this.m_IsDefineMetaType = true;
+            this.SetOwnerMetaClass(owner);
+            this.m_IsConst = owner?.isConst ?? false;
+            this.m_MemberDataType = EMemberDataType.MemberData;
+            this.m_VariableFrom = EVariableFrom.DataMember;
+        }
 
         public static MetaMemberData CreateConst(MetaData owner, string name, int index, MetaConstExpressNode constExpress)
         {
@@ -119,21 +132,6 @@ namespace SimpleLanguage.Core
             mmd.m_Express = constExpress;
             mmd.m_MemberDataType = EMemberDataType.ConstValue;
             mmd.AddPingToken(constExpress.token);
-            return mmd;
-        }
-        public static MetaMemberData CreateObject(MetaData owner, string name, int index)
-        {
-            var mmd = new MetaMemberData();
-            mmd.m_Name = name;
-            mmd.m_Index = index;
-            mmd.m_IsWithName = true;
-            mmd.m_DefineMetaType = new MetaType(owner);
-            mmd.m_RealMetaType = new MetaType(mmd.m_DefineMetaType);
-            mmd.m_IsDefineMetaType = true;
-            mmd.SetOwnerMetaClass(owner);
-            mmd.m_IsConst = owner?.isConst ?? false;
-            mmd.m_MemberDataType = EMemberDataType.MemberData;
-            mmd.m_VariableFrom = EVariableFrom.DataMember;
             return mmd;
         }
 
@@ -255,6 +253,10 @@ namespace SimpleLanguage.Core
             return mmd;
         }
         public void SetIndex(int index) { m_Index = index; }
+        public void SetExpress( MetaExpressNodeBase meb )
+        {
+            this.m_Express = meb;
+        }
         public MetaMemberData GetMemberDataByName(string name)
         {
             if (m_MetaMemberDataDict.ContainsKey(name))

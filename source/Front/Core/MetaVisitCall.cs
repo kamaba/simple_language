@@ -322,6 +322,7 @@ namespace SimpleLanguage.Core
             Enum,
             EnumMember,
             MetaClass,
+            MetaData,
             Express,
             TemplateName,
             GetTypeValue,
@@ -369,11 +370,7 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            vn.m_VisitType = EVisitType.MetaClass;
-            if (mt?.metaClass == CoreMetaClassManager.enumMetaData)
-            {
-                mt.enumValue?.ownerMetaClass?.metaNode?.metaEnum?.CreateValues();
-            }
+            vn.m_VisitType = EVisitType.MetaData;
             vn.m_ReturnMetaType = mt;
 
             return vn;

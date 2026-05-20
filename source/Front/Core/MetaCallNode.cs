@@ -891,19 +891,19 @@ namespace SimpleLanguage.Core
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 娌℃湁鎵惧埌{m_Name} 鐨凪etaData鏁版嵁!");
                             return false;
                         }
-                        if (retmmd.isStatic == false && m_FrontCallNode.m_MetaData?.isStatic == false)
-                        {
-                            var defaultInstance = GetOrCreateDataDefaultStaticInstanceVariable(m_FrontCallNode.m_MetaData);
-                            if (defaultInstance != null)
-                            {
-                                // data AA{...} 的 AA.a：先加载 AA 的默认静态实例，再取实例字段 a。
-                                m_FrontCallNode.m_MetaVariable = defaultInstance;
-                            }
-                        }
-                        else
-                        {
-                            m_FrontCallNode.m_MetaVariable = null;
-                        }
+                        //if (retmmd.isStatic == false && m_FrontCallNode.m_MetaData?.isStatic == false)
+                        //{
+                        //    var defaultInstance = GetOrCreateDataDefaultStaticInstanceVariable(m_FrontCallNode.m_MetaData);
+                        //    if (defaultInstance != null)
+                        //    {
+                        //        // data AA{...} 的 AA.a：先加载 AA 的默认静态实例，再取实例字段 a。
+                        //        m_FrontCallNode.m_MetaVariable = defaultInstance;
+                        //    }
+                        //}
+                        //else
+                        //{
+                        //    m_FrontCallNode.m_MetaVariable = null;
+                        //}
 
                         if (retmmd.memberDataType == EMemberDataType.MemberClass)
                         {
@@ -1497,7 +1497,13 @@ namespace SimpleLanguage.Core
                 }
                 else if (m_MetaData != null)
                 {
-
+                    var defaultInstance = GetOrCreateDataDefaultStaticInstanceVariable(m_MetaData);
+                    if (defaultInstance != null)
+                    {
+                        // data AA{...} 的 AA.a：先加载 AA 的默认静态实例，再取实例字段 a。
+                        m_MetaVariable = defaultInstance;
+                        m_CallNodeType = ECallNodeType.FunctionInnerVariableName;
+                    }
                 }
                 else if (m_MetaFunction != null)
                 {
@@ -1918,27 +1924,25 @@ namespace SimpleLanguage.Core
                 return null;
             }
 
-            string varName = "__data_default_instance_" + dataType.GetHashCode();
-            var exist = globalData.GetMetaMemberVariableByName(varName) as MetaMemberData;
+            string varName = "__data_default_instance_" + dataType.allClassName + "_" + dataType.GetHashCode();
+            var exist = globalData.GetMemberDataByName(varName) as MetaMemberData;
             if (exist != null)
             {
                 return exist;
             }
 
-            var mmv = new MetaMemberVariable(globalData, varName);
+            var mmv = new MetaMemberData(globalData, varName, globalData.metaMemberDataDict.Count );
             mmv.SetIsStatic(true);
             mmv.SetIsDefineMetaType(true);
             mmv.SetMetaDefineType(new MetaType(dataType));
             mmv.SetRealMetaType(new MetaType(dataType));
-            mmv.SetExpress(new MetaNewObjectExpressNode(new MetaType(dataType), (MetaClass)null, null));
+            var newobj = new MetaNewObjectExpressNode(new MetaType(dataType), globalData, null);
+            newobj.Parse(new AllowUseSettings());
+            newobj.CalcReturnType();
+            mmv.SetExpress(newobj);
 
-            // 该变量是 Frontend 解析过程中按需注入的，需立即完成表达式与类型收敛，
-            // 否则后续 IR 可能拿不到默认实例的初始化表达式。
-            mmv.ParseMetaExpress();
-            mmv.CalcReturnType();
-
-            var mmd = globalData.AddMetaMemberVariable(mmv) ?? globalData.GetMemberDataByName(varName);
-            return mmd;
+            globalData.AddMetaMemberData(mmv);
+            return mmv;
         }
         public MetaMemberData GetDataValueByMetaMemberData(MetaMemberData md, string inputName)
         {

@@ -387,7 +387,7 @@ namespace SimpleLanguage.Project
             }
             if (element.ValueKind == JsonValueKind.Object)
             {
-                var objNode = MetaMemberData.CreateObject(owner, name, index);
+                var objNode = new MetaMemberData(owner, name, index);
                 int childIndex = 0;
                 foreach (var kv in element.EnumerateObject())
                 {
