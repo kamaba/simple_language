@@ -353,7 +353,10 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("[" + m_DefineMetaType.ToString() + "]");
+            if( isDefineMetaType )
+                sb.Append("[" + m_DefineMetaType.ToString() + "]");
+            else
+                sb.Append("[" + m_RealMetaType.ToString() + "]");
             sb.Append(m_Name);
             return sb.ToString();
         }

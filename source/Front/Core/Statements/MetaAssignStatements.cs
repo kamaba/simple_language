@@ -430,11 +430,11 @@ namespace SimpleLanguage.Core
             }
 
             this.m_RightMetaExpress.Parse(new AllowUseSettings() { setterFunction = false, getterFunction = true } );
+            this.m_RightMetaExpress.CalcReturnType();
             var newexpress = ExpressManager.ConvertNewExpress(m_RightMetaExpress, rightMetaTypeHint, m_MetaVariable);            
             if (newexpress != m_RightMetaExpress )
             {
                 m_RightMetaExpress = newexpress;
-                m_RightMetaExpress.CalcReturnType();
             }
             if (m_RightMetaExpress is MetaNewObjectExpressNode mnoen)
             {

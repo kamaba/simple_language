@@ -419,18 +419,18 @@ namespace SimpleLanguage.Core
                     }
                     MetaExpressNodeBase enumExpr = left;
                     MetaExpressNodeBase anotherExpr = object.ReferenceEquals(enumExpr, left) ? right : left;
-                    MetaClass enumClass = enumExpr.GetReturnMetaClass();
-                    MetaClass anotherClass = anotherExpr.GetReturnMetaClass();
+                    MetaType enumType = enumExpr.GetReturnMetaType();
+                    MetaType anotherType = anotherExpr.GetReturnMetaType();
 
                     bool isPass = false;
-                    if (anotherClass?.eType == EType.Enum)
+                    if (anotherType.isEnum )
                     {
-                        isPass = IsSameMetaClass(enumClass, anotherClass);
+                        isPass = IsSameEnumHost(enumType, anotherType);
                     }
-                    else if (anotherClass?.eType == EType.Member || anotherClass == CoreMetaClassManager.memberMetaClass)
+                    else if (anotherType?.eType == EType.Member || anotherType?.metaClass == CoreMetaClassManager.memberMetaClass)
                     {
                         var memberOwnerClass = TryGetMemberOwnerMetaClass(anotherExpr);
-                        isPass = IsSameMetaClass(enumClass, memberOwnerClass);
+                        isPass = IsEnumOwnerMatchMemberOwner(enumType, memberOwnerClass);
                     }
 
                     if (!isPass)
@@ -668,6 +668,33 @@ namespace SimpleLanguage.Core
                 return true;
             }
             return a.allClassName == b.allClassName;
+        }
+        private static bool IsSameEnumHost(MetaType enumTypeA, MetaType enumTypeB)
+        {
+            if (enumTypeA == null || enumTypeB == null)
+            {
+                return false;
+            }
+
+            var a = enumTypeA.metaEnum;
+            var b = enumTypeB.metaEnum;
+            if (a == null || b == null)
+            {
+                return false;
+            }
+
+            return object.ReferenceEquals(a, b)
+                || string.Equals(a.allClassName, b.allClassName, StringComparison.Ordinal);
+        }
+        private static bool IsEnumOwnerMatchMemberOwner(MetaType enumType, MetaClass memberOwnerClass)
+        {
+            if (enumType?.metaEnum == null || memberOwnerClass == null)
+            {
+                return false;
+            }
+
+            return string.Equals(enumType.metaEnum.allClassName, memberOwnerClass.allClassName, StringComparison.Ordinal)
+                || string.Equals(enumType.metaEnum.name, memberOwnerClass.name, StringComparison.Ordinal);
         }
         private static MetaClass TryGetMemberOwnerMetaClass(MetaExpressNodeBase expr)
         {

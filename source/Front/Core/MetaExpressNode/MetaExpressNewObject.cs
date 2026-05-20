@@ -636,104 +636,197 @@ namespace SimpleLanguage.Core
         /// </summary>
         public void ValidateDefineAgainstDeclaredMetaType()
         {
-            MetaVariable assignMemberMv = (MetaVariable)m_MetaMemberData ?? m_MetaMemberVariable;
             MetaType contentMt = GetRetMetaType();
-            MetaType defineMt = m_DefineMetaType;
-
-            // ????????????????????????????????? define?????? int[][] ???????
-            if (defineMt == null
-                && m_AssignTargetType != EAssignTargetType.ArrayValue
-                && assignMemberMv?.defineMetaType != null)
-            {
-                defineMt = new MetaType(assignMemberMv.defineMetaType);
-            }
-
-            if (defineMt == null)
-            {
-                return;
-            }
-
-            // class/data ????????????????????????????????????
-            // ????? ArrayValue ????????? context ???????????????????
-            bool memberWholeArrayAssign =
-                m_AssignTargetType != EAssignTargetType.ArrayValue
-                && assignMemberMv != null
-                && assignMemberMv.isDefineMetaType
-                && defineMt.IsArray()
-                && contentMt != null
-                && contentMt.IsArray();
-
-            if (memberWholeArrayAssign)
-            {
-                if (!IsBraceAssignDeclaredCompatibleWithExpress(defineMt, contentMt))
-                {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken, "??????????????????????????????????? ");
-                }
-                return;
-            }
-
             bool isOmittedExpression = expressNode == null;
 
-            if (defineMt.IsArray())
+            bool ValidateEnumCompare(MetaType defineMt, MetaType expressMt, string scene)
             {
-                var cmt = defineMt.GetMetaTypeByIndex(0);
-                bool isNumLike =
-                    cmt != null
-                    && (ClassManager.IsNumberClass(cmt.metaClass) || ClassManager.IsAbstractNumberMetaType(cmt));
-                // ??? / ????? Array<??> ??????????? ? ???????????
-                bool allowNullableForNumericElement =
-                    (cmt?.isNullable == true)
-                    || ( defineMt != null
-                        && defineMt.IsArray()
-                        && defineMt.GetMetaTypeByIndex(0)?.isNullable == true);
-                bool isNullLiteral = contentMt != null && contentMt.isNull;
-                if (isNumLike && (isOmittedExpression || isNullLiteral))
+                if (defineMt == null || expressMt == null)
                 {
-                    if (!allowNullableForNumericElement)
+                    return true;
+                }
+
+                if (!defineMt.isEnum && !expressMt.isEnum)
+                {
+                    return true;
+                }
+
+                if (!(defineMt.isEnum && expressMt.isEnum))
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
+                        scene + " 枚举类型不匹配, define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
+                    return false;
+                }
+
+                var de = defineMt.metaEnum;
+                var ee = expressMt.metaEnum;
+                bool sameEnumHost = de != null && ee != null
+                    && (ReferenceEquals(de, ee)
+                        || string.Equals(de.allClassName, ee.allClassName, StringComparison.Ordinal));
+                if (!sameEnumHost)
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
+                        scene + " 枚举宿主不一致, define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
+                    return false;
+                }
+
+                var dv = defineMt.enumValue;
+                var ev = expressMt.enumValue;
+                if (dv != null && ev != null)
+                {
+                    bool sameEnumValue = string.Equals(dv.name, ev.name, StringComparison.Ordinal) || dv.index == ev.index;
+                    if (!sameEnumValue)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                            "???????/Num ????????????????????? Array<????> ??????? null ????");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
+                            scene + " 枚举成员不一致, define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
+                        return false;
                     }
-                    return;
                 }
-                if (!isNumLike && (isOmittedExpression || isNullLiteral))
-                {
-                    // ???/Num???? null ??????????????
-                    return;
-                }
+
+                return true;
             }
 
-            if (contentMt == null)
+            bool ValidateCommon(MetaType defineMt, string scene)
             {
-                return;
-            }
-
-            if (defineMt.IsArray())
-            {
-                var cmt = defineMt.GetMetaTypeByIndex(0);
-
-                bool isMatch;
-                if (cmt?.GetTemplateMetaClass() == CoreMetaClassManager.objectMetaClass)
+                if (defineMt == null)
                 {
-                    // Array<Object> ?????????
-                    isMatch = true;
-                }
-                else
-                {
-                    isMatch = IsBraceAssignDeclaredCompatibleWithExpress(cmt, contentMt);
+                    return true;
                 }
 
-                if (!isMatch)
+                if (contentMt == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "??????????????????????????????????? ");
+                    return true;
                 }
-            }
-            else
-            {
+
+                if (!ValidateEnumCompare(defineMt, contentMt, scene))
+                {
+                    return false;
+                }
+
                 if (!IsBraceAssignDeclaredCompatibleWithExpress(defineMt, contentMt))
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "????????????11???????????????????? ");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
+                        scene + " 类型不匹配, define=" + defineMt.ToString() + ", express=" + contentMt.ToString());
+                    return false;
                 }
+
+                return true;
+            }
+
+            bool ValidateArrayElement(MetaType arrayDefineMt, string scene)
+            {
+                if (arrayDefineMt == null)
+                {
+                    return true;
+                }
+
+                if (!arrayDefineMt.IsArray())
+                {
+                    return ValidateCommon(arrayDefineMt, scene);
+                }
+
+                var elementMt = arrayDefineMt.GetMetaTypeByIndex(0);
+                if (elementMt == null)
+                {
+                    return true;
+                }
+
+                bool isNumLike = ClassManager.IsNumberClass(elementMt.metaClass) || ClassManager.IsAbstractNumberMetaType(elementMt);
+                bool isNullLiteral = contentMt != null && contentMt.isNull;
+                if (isNumLike && (isOmittedExpression || isNullLiteral) && elementMt.isNullable == false)
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                        "数组元素为数值/Num 时，只有可空元素类型才允许空位或 null");
+                    return false;
+                }
+
+                if (isOmittedExpression || isNullLiteral || contentMt == null)
+                {
+                    return true;
+                }
+
+                if (contentMt.IsArray())
+                {
+                    if (IsBraceAssignDeclaredCompatibleWithExpress(arrayDefineMt, contentMt)
+                        || IsBraceAssignDeclaredCompatibleWithExpress(elementMt, contentMt)
+                        || TryGetCompatibleArrayMetaType(arrayDefineMt, contentMt, out _))
+                    {
+                        return true;
+                    }
+
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                        scene + " 数组模板拆解匹配失败, define=" + arrayDefineMt.ToString() + ", express=" + contentMt.ToString());
+                    return false;
+                }
+
+                if (elementMt.metaClass == CoreMetaClassManager.objectMetaClass)
+                {
+                    return true;
+                }
+
+                if (!ValidateEnumCompare(elementMt, contentMt, scene + "(ArrayElement)"))
+                {
+                    return false;
+                }
+
+                if (!IsBraceAssignDeclaredCompatibleWithExpress(elementMt, contentMt))
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                        scene + " 数组元素类型不匹配, element=" + elementMt.ToString() + ", express=" + contentMt.ToString());
+                    return false;
+                }
+
+                return true;
+            }
+
+            switch (m_AssignTargetType)
+            {
+                case EAssignTargetType.MemberVariable:
+                {
+                    var defineMt = m_MetaMemberVariable?.GetFinalMetaType() ?? m_DefineMetaType;
+                    if (defineMt != null && defineMt.IsArray())
+                    {
+                        ValidateArrayElement(defineMt, "MemberVariable");
+                    }
+                    else
+                    {
+                        ValidateCommon(defineMt, "MemberVariable");
+                    }
+                }
+                break;
+                case EAssignTargetType.MemberData:
+                {
+                    var defineMt = m_MetaMemberData?.GetFinalMetaType() ?? m_DefineMetaType;
+                    if (defineMt != null && defineMt.IsArray())
+                    {
+                        ValidateArrayElement(defineMt, "MemberData");
+                    }
+                    else
+                    {
+                        ValidateCommon(defineMt, "MemberData");
+                    }
+                }
+                break;
+                case EAssignTargetType.ArrayValue:
+                {
+                    ValidateArrayElement(m_DefineMetaType, "ArrayValue");
+                }
+                break;
+                case EAssignTargetType.AnonVariable:
+                {
+                    var defineMt = m_MetaMemberData?.GetFinalMetaType()
+                        ?? m_MetaMemberVariable?.GetFinalMetaType()
+                        ?? m_DefineMetaType;
+                    if (defineMt != null && defineMt.IsArray())
+                    {
+                        ValidateArrayElement(defineMt, "AnonVariable");
+                    }
+                    else
+                    {
+                        ValidateCommon(defineMt, "AnonVariable");
+                    }
+                }
+                break;
             }
         }
 
@@ -2396,7 +2489,7 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
 
 
-            if( m_ExpressReturnMetaType.isEnum )
+            if( this.m_ExpressReturnMetaType.isEnum )
             {
                 sb.Append(m_ExpressReturnMetaType.name );
                 sb.Append(".");

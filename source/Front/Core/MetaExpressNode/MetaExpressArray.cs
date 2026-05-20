@@ -48,7 +48,23 @@ namespace SimpleLanguage.Core
                         return;
                     }
                     this.m_ExpressReturnMetaType = defineMT;
-                    cmt = m_ExpressReturnMetaType.defineTemplateMetaTypeList[0];
+                    if( m_ExpressReturnMetaType.defineTemplateMetaTypeList.Count > 0 )
+                        cmt = m_ExpressReturnMetaType.defineTemplateMetaTypeList[0];
+                    else
+                    {
+                        if( defineMT.metaClass is MetaGenTemplateClass mgtc )
+                        {
+                            if( mgtc.genMetaClassTemplateList.Count > 0 )
+                            {
+                                cmt = new MetaType( mgtc.genMetaClassTemplateList[0] );
+                            }
+                        }
+                    }
+
+                    if (cmt == null)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "MetaArrayExpressNode defineMT need have template meta type");
+                    }
                 }
             }
             for (int i = 0; i < m_FileMetaBaseTermList.Count; i++)
