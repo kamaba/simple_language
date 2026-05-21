@@ -448,13 +448,13 @@ namespace SimpleLanguage.Core
                         }
                         mt = new MetaType(omc, thisTemplateArgs);
                     }
-                    m_ThisMetaVariable = new MetaVariable(omc.allClassName + "." + m_Name + ".this", MetaVariable.EVariableFrom.Argument, null, omc, mt );
+                    m_ThisMetaVariable = new MetaVariable(omc.allName + "." + m_Name + ".this", MetaVariable.EVariableFrom.Argument, null, omc, mt );
                 }
             }
             {
-                string qn = m_OwnerMetaClass is MetaClass c ? c.allClassName
-                    : m_OwnerMetaClass is MetaData md ? md.allClassName
-                    : m_OwnerMetaClass is MetaEnum me ? me.allClassName
+                string qn = m_OwnerMetaClass is MetaClass c ? c.allName
+                    : m_OwnerMetaClass is MetaData md ? md.allName
+                    : m_OwnerMetaClass is MetaEnum me ? me.allName
                     : m_OwnerMetaClass?.name ?? "?";
                 m_ReturnMetaVariable = new MetaVariable(qn + "." + m_Name + ".return", MetaVariable.EVariableFrom.None, null, m_OwnerMetaClass, defineMetaType );
             }
@@ -680,9 +680,9 @@ namespace SimpleLanguage.Core
             {
                 if (nohasContent)
                 {
-                    string ownerLabel = m_OwnerMetaClass is MetaClass x ? x.allClassName
-                        : m_OwnerMetaClass is MetaData d ? d.allClassName
-                        : m_OwnerMetaClass is MetaEnum e ? e.allClassName
+                    string ownerLabel = m_OwnerMetaClass is MetaClass x ? x.allName
+                        : m_OwnerMetaClass is MetaData d ? d.allName
+                        : m_OwnerMetaClass is MetaEnum e ? e.allName
                         : m_OwnerMetaClass?.name;
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 类[{ownerLabel}] 该函数[{this.functionAllName}] 没有定义函数内容！！");
                 }
@@ -1054,9 +1054,9 @@ namespace SimpleLanguage.Core
             
             if (m_OwnerMetaClass != null)
             {
-                sb.Append(m_OwnerMetaClass is MetaClass c ? c.allClassName
-                    : m_OwnerMetaClass is MetaData md ? md.allClassName
-                    : m_OwnerMetaClass is MetaEnum me ? me.allClassName
+                sb.Append(m_OwnerMetaClass is MetaClass c ? c.allName
+                    : m_OwnerMetaClass is MetaData md ? md.allName
+                    : m_OwnerMetaClass is MetaEnum me ? me.allName
                     : m_OwnerMetaClass.name);
                 sb.Append(".");
             }

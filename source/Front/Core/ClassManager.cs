@@ -101,7 +101,7 @@ namespace SimpleLanguage.Core
             topLevelNamespace.AddMetaClass(mc);
             return true;
         }
-        public bool AddMetaClass(MetaData md, MetaModule mm = null)
+        public bool AddMetaData(MetaData md, MetaModule mm = null)
         {
             MetaNode topLevelNamespace = mm?.metaNode;
             if (topLevelNamespace == null)
@@ -117,9 +117,9 @@ namespace SimpleLanguage.Core
             {
                 m_GenTemplateMetaClassList.Add(mc);
             }
-            if( !m_AllClassDict.ContainsKey(mc.allClassName ) )
+            if( !m_AllClassDict.ContainsKey(mc.allName) )
             {
-                m_AllClassDict.Add(mc.allClassName, mc);
+                m_AllClassDict.Add(mc.allName, mc);
             }
         }
         //public MetaDynamicClass FindDynamicClass( MetaClass dc )
@@ -274,11 +274,6 @@ namespace SimpleLanguage.Core
             m_AnonymousDataDict.Add(dc.name, dc);
             m_ExportMetaDataList.Add(dc);
             return true;
-        }
-        public bool AddMetaData(MetaData dc)
-        {
-            // ??????????????define data ?? define ?????dynamic/anonymous data ?? anonymous ??????
-            return dc != null && (dc.isDynamic ? AddAnonymousMetaData(dc) : AddDefineMetaData(dc));
         }
         public bool CompareMetaClassMemberVariable(MetaClass curClass, MetaClass cpClass)
         {
@@ -648,6 +643,7 @@ namespace SimpleLanguage.Core
                 {
                     MetaEnum newme = new MetaEnum(fmc.name);
                     finalTopMetaNode.AddMetaEnum(newme);
+                    newme.UpdateAllName();
                     fmc.SetMetaEnum(newme);
                     newme.SetClassDefineType(EClassDefineType.CodeDefine);
                     newme.ParseFileMetaEnumMemeberEnum(fmc);
@@ -661,6 +657,7 @@ namespace SimpleLanguage.Core
                     var newmd = new MetaData(fmc);
                     newmd.SetClassDefineType(EClassDefineType.CodeDefine);
                     finalTopMetaNode.AddMetaData(newmd);
+                    newmd.UpdateAllName();
                     newmd.ParseFileMetaDataMemeberData(fmc);
                     AddInitHandleMetaDataList(newmd);
 
@@ -721,12 +718,12 @@ namespace SimpleLanguage.Core
         }
         void AddDictMetaClass( MetaClass mc )
         {
-            string acn = mc.allClassName + "_" + mc.metaTemplateList.Count;
+            string acn = mc.allName + "_" + mc.metaTemplateList.Count;
             foreach( var v in m_AllClassDict )
             {
                 if( v.Value == mc )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"???????????:{mc.allClassName} ????????????????????!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"???????????:{mc.allName} ????????????????????!");
                     return;
                 }
             }

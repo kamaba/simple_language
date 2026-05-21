@@ -25,7 +25,7 @@ namespace SimpleLanguage.Core
     public partial class MetaClass : MetaBase
     {
         public List<MetaAttribute> attributeList => m_AttributeList;
-        public string allClassName=> this.m_AllName;
+        public string allName=> this.m_AllName;
         public EClassDefineType classDefineType => m_ClassDefineType;
         public bool isAbstractClass => m_IsAbstractClass;
         public bool allowExtendsClassWithTemplate => m_GenMetaClassTemplateList.Count > 0 ;             //允许继承类 是否可携带模板  像 ListInt : List<int>{} ListIntEx<T> : List<int> 这种情况不允许
@@ -187,7 +187,7 @@ namespace SimpleLanguage.Core
                     if(m_MetaTemplateList[i].extendsMetaClass != null )
                     {
                         sb.Append(":");
-                        sb.Append(m_MetaTemplateList[i].extendsMetaClass.allClassName);
+                        sb.Append(m_MetaTemplateList[i].extendsMetaClass.allName );
                     }
                     if( i < m_MetaTemplateList.Count - 1 )
                     {
@@ -438,7 +438,7 @@ namespace SimpleLanguage.Core
                         // If parent function is abstract and current class is concrete, require override
                         if (efun.isAbstract && !this.m_IsAbstractClass)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAbstractFunctionNeedInstance, this.token, "", this.m_ExtendClass.allClassName, efun.name, this.allClassName );
+                            Log.AddMetaCoreLog(LID.MetaCoreAbstractFunctionNeedInstance, this.token, "", this.m_ExtendClass.allName, efun.name, this.allName);
                         }
                         m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
                     }
@@ -620,7 +620,7 @@ namespace SimpleLanguage.Core
                     }
                     if (!certified)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreInterfaceNeedInstance, token, "", interfaceMc.allClassName, interfaceMMF.name, this.allClassName );
+                        Log.AddMetaCoreLog(LID.MetaCoreInterfaceNeedInstance, token, "", interfaceMc.allName, interfaceMMF.name, this.allName);
                     }
                 }
             }
@@ -1241,7 +1241,7 @@ namespace SimpleLanguage.Core
                 }
             }              
 
-            stringBuilder.Append(allClassName);
+            stringBuilder.Append(allName);
 
             return stringBuilder.ToString();
         }
@@ -1253,7 +1253,7 @@ namespace SimpleLanguage.Core
         {
             StringBuilder stringBuilder = new StringBuilder();
 
-            stringBuilder.Append(allClassName);
+            stringBuilder.Append(allName);
 
             return stringBuilder.ToString();
 
@@ -1295,7 +1295,7 @@ namespace SimpleLanguage.Core
             if (m_ExtendClass != null)
             {
                 stringBuilder.Append(" extends ");
-                stringBuilder.Append(m_ExtendClass.allClassName);
+                stringBuilder.Append(m_ExtendClass.allName);
                 var mtl = m_ExtendClass.metaTemplateList;
                 if (mtl.Count > 0)
                 {

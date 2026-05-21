@@ -209,7 +209,7 @@ namespace SimpleLanguage.Core
                 {
                     if( node.m_MetaTemplateClassDict.ContainsKey( mc.metaTemplateList.Count ) )
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "添加add metaclass metanode节点有问题! 有重复:" + mc.allClassName );
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "添加add metaclass metanode节点有问题! 有重复:" + mc.allName);
                         return null;
                     }
                     else

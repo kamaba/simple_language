@@ -15,7 +15,7 @@ namespace SimpleLanguage.Core
 {
     public class MetaEnum : MetaBase
     {
-        public string allClassName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
+        public string allName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
         public MetaClass extendClass => m_ExtendClass;
         public MetaData extendMetaData => m_ExtendMetaData;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
@@ -31,7 +31,6 @@ namespace SimpleLanguage.Core
         public MetaEnum(string _name) : base()
         {
             m_Name = _name;
-            m_AllName = _name;
             m_Type = EType.Enum;
         }
         public void SetClassDefineType(EClassDefineType type)
@@ -465,8 +464,8 @@ namespace SimpleLanguage.Core
                         {
                             Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage,
                                 "Error Enum extends data: 成员必须是 extends 所指定 data 类型的实例（"
-                                + m_ExtendMetaData.allClassName + "），实际为: "
-                                + (retDt.metaData?.allClassName ?? retDt.name ?? "?"));
+                                + m_ExtendMetaData.allName + "），实际为: "
+                                + (retDt.metaData?.allName ?? retDt.name ?? "?"));
                         }
                     }
                     else
@@ -522,8 +521,8 @@ namespace SimpleLanguage.Core
                         if (retType?.metaClass != null && retType.metaClass != m_ExtendClass)
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage,
-                                "Error Enum extends class: member type " + retType.metaClass.allClassName
-                                + " does not match extends class " + m_ExtendClass.allClassName);
+                                "Error Enum extends class: member type " + retType.metaClass.allName
+                                + " does not match extends class " + m_ExtendClass.allName);
                         }
                     }
                     else if (mmeClass.constExpressNode != null)
@@ -536,6 +535,14 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
+        }
+        public void UpdateAllName()
+        {
+            m_AllName = m_MetaNode?.GetAllName() ?? m_Name;
+            //foreach (var v in m_MetaMemberVariableDict)
+            //{
+            //    v.Value.UpdateAllName();
+            //}
         }
         //public override string ToFormatString()
         //{

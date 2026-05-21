@@ -30,7 +30,7 @@ namespace SimpleLanguage.Core
         public static bool Execute(EAttributeHook hook, MetaClass mc)
         {
             if (mc == null) return true;
-            return Execute(hook, mc.attributeList, mc.allClassName);
+            return Execute(hook, mc.attributeList, mc.allName);
         }
 
         public static bool Execute(EAttributeHook hook, MetaMemberFunction mmf)

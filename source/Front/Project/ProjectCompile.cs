@@ -123,7 +123,7 @@ namespace SimpleLanguage.Project
 
             FileListStructParse();
 
-            ClassManager.instance.AddMetaClass( ProjectManager.globalData );
+            ClassManager.instance.AddMetaData( ProjectManager.globalData );
 
             //ProjectClass.ParseProjectClass();
 

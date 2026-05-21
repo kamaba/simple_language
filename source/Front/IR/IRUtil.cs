@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
+using SimpleLanguage.Logging;
 using System.Diagnostics;
 
 namespace SimpleLanguage.IR
@@ -39,9 +40,10 @@ namespace SimpleLanguage.IR
             }
             return EIROpCode.Nop;
         }
-        public static IRData CreateLeftAndRightIRData(ELeftRightOpSign opSign)
+        public static IRData CreateLeftAndRightIRData(ELeftRightOpSign opSign, out bool isHave )
         {
             IRData data = new IRData();
+            isHave = true;
             switch (opSign)
             {
                 case ELeftRightOpSign.Add:
@@ -137,7 +139,8 @@ namespace SimpleLanguage.IR
                     break;
                 default:
                     {
-                        Debug.Write("Error 未支持表达式中的IR代码" + opSign.ToString());
+                        isHave = false;
+                        //Log.AddIRLog(LID.ShowExtendMessage, "Error 未支持表达式中的IR代码" + opSign.ToString());
                     }
                     break;
             }

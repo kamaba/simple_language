@@ -110,7 +110,12 @@ namespace SimpleLanguage.IR
                             IRConvert ircovn = new IRConvert(m_IRMethod, moen.rightConvert.oriType, moen.rightConvert.targetType);
                             AddIRData(ircovn.data);
                         }
-                        var signData = IRUtil.CreateLeftAndRightIRData(moen.opSign);
+                        var signData = IRUtil.CreateLeftAndRightIRData(moen.opSign, out bool flag );
+                        if( !flag )
+                        {
+                            Log.AddIRLog(LID.MetaCoreAssertShowMessage, moen.token, "not have sign ");
+                            return;
+                        }
                         signData.SetDebugInfoByToken(moen.token);
                         AddIRData(signData);
                     }

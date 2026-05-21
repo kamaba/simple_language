@@ -667,7 +667,7 @@ namespace SimpleLanguage.Core
             {
                 return true;
             }
-            return a.allClassName == b.allClassName;
+            return a.allName == b.allName;
         }
         private static bool IsSameEnumHost(MetaType enumTypeA, MetaType enumTypeB)
         {
@@ -684,7 +684,7 @@ namespace SimpleLanguage.Core
             }
 
             return object.ReferenceEquals(a, b)
-                || string.Equals(a.allClassName, b.allClassName, StringComparison.Ordinal);
+                || string.Equals(a.allName, b.allName, StringComparison.Ordinal);
         }
         private static bool IsEnumOwnerMatchMemberOwner(MetaType enumType, MetaClass memberOwnerClass)
         {
@@ -693,14 +693,14 @@ namespace SimpleLanguage.Core
                 return false;
             }
 
-            return string.Equals(enumType.metaEnum.allClassName, memberOwnerClass.allClassName, StringComparison.Ordinal)
+            return string.Equals(enumType.metaEnum.allName, memberOwnerClass.allName, StringComparison.Ordinal)
                 || string.Equals(enumType.metaEnum.name, memberOwnerClass.name, StringComparison.Ordinal);
         }
         private static MetaClass TryGetMemberOwnerMetaClass(MetaExpressNodeBase expr)
         {
             if (expr is MetaCallLinkExpressNode mclen)
             {
-                return mclen.GetMetaVariable()?.ownerMetaClass;
+                return mclen.GetStoreMetaVariable()?.ownerMetaClass;
             }
             return null;
         }

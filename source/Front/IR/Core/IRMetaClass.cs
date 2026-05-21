@@ -274,7 +274,7 @@ namespace SimpleLanguage.IR
                 return;
             }
 
-            var md = ClassManager.instance.FindMetaDataByName(mc.allClassName);
+            var md = ClassManager.instance.FindMetaDataByName(mc.allName);
             if (md != null)
             {
                 CreateMemberDataFromMetaData(md);

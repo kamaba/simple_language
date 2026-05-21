@@ -11,7 +11,7 @@ namespace SimpleLanguage.Core
     {
         /// <summary>源码绑定（用于 IR 导出路径等），可能为 null（如纯运行时匿名 data）。</summary>
         public FileMetaClass boundFileMetaClass => m_FileMetaClass;
-        public string allClassName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
+        public string allName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
         public bool isConst => m_IsConst;
         public bool isStatic => m_IsStatic;
         public bool isDynamic=>m_IsDynamic;
@@ -29,7 +29,6 @@ namespace SimpleLanguage.Core
         public MetaData( FileMetaClass md )
         {
             m_Name = md.name;
-            m_AllName = md.name;
             m_Type = EType.Data;
             m_IsConst =  md.isConst;
             m_IsStatic = md.isStatic;
@@ -40,7 +39,6 @@ namespace SimpleLanguage.Core
         public MetaData(string _name, bool constToken, bool staticToken, bool dynamic ) : base()
         {
             m_Name = _name;
-            m_AllName = _name;
             m_Type = EType.Data;
             m_IsConst = constToken;
             m_IsStatic = staticToken;
@@ -156,6 +154,14 @@ namespace SimpleLanguage.Core
                 }
             }
         }
+        public void UpdateAllName()
+        {
+            m_AllName = m_MetaNode?.GetAllName() ?? m_Name;
+             foreach (var v in m_MetaMemberDataDict)
+            {
+                //v.Value.UpdateAllName();
+            }
+        }
         public override string ToFormatString()
         {
             StringBuilder stringBuilder = new StringBuilder();
@@ -167,7 +173,7 @@ namespace SimpleLanguage.Core
                 {
                     stringBuilder.Append("const ");
                 }
-                stringBuilder.Append( allClassName + " = {");
+                stringBuilder.Append(allName + " = {");
                 int index = 0;
                 foreach (var v in m_MetaMemberDataDict)
                 {
@@ -189,7 +195,7 @@ namespace SimpleLanguage.Core
                     stringBuilder.Append("const ");
                 }
                 stringBuilder.Append("data ");
-                stringBuilder.Append(allClassName);
+                stringBuilder.Append(allName);
                 stringBuilder.Append(Environment.NewLine);
 
                 for (int i = 0; i < realDeep; i++)
@@ -220,7 +226,7 @@ namespace SimpleLanguage.Core
                 {
                     stringBuilder.Append("const ");
                 }
-                stringBuilder.Append(allClassName + " = {");
+                stringBuilder.Append(allName + " = {");
                 int index = 0;
                 foreach (var v in m_MetaMemberDataDict)
                 {
@@ -240,7 +246,7 @@ namespace SimpleLanguage.Core
                     stringBuilder.Append("const ");
                 }
                 stringBuilder.Append("data ");
-                stringBuilder.Append(allClassName);
+                stringBuilder.Append(allName);
                 stringBuilder.Append("{");
 
                 int i = 0;

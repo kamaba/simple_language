@@ -176,7 +176,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                type = CSharpManager.FindCSharpType(mc.allClassName);
+                type = CSharpManager.FindCSharpType(mc.allName);
             }
 
             return type;

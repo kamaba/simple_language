@@ -126,7 +126,6 @@ namespace SimpleLanguage.Core
                     {
                         var fmn1 = new MetaCallNode(null, cn1, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
                         fmn1.SetFrontCallNode(frontMetaNode);
-                        fmn1.SetStoreMetaVariable(mv);
                         frontMetaNode = fmn1;
                         //AddMetaArrayNode(cn1, frontDefineMt, mv, frontMetaNode);
                     }
@@ -134,7 +133,6 @@ namespace SimpleLanguage.Core
                     {
                         var fmn2 = new MetaCallNode(cn1, cn2, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
                         fmn2.SetFrontCallNode(frontMetaNode);
-                        fmn2.SetStoreMetaVariable(mv);
                         m_CallNodeList.Add(fmn2);
                         frontMetaNode = fmn2;
                         //AddMetaArrayNode(cn2, frontDefineMt, mv, frontMetaNode);
@@ -158,7 +156,6 @@ namespace SimpleLanguage.Core
 
                     var fmn2 = new MetaCallNode(null, cn2, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
                     fmn2.SetFrontCallNode(fmn1);
-                    fmn2.SetStoreMetaVariable(mv);
                     m_CallNodeList.Add(fmn2);
                     frontMetaNode = fmn2;
                     //AddMetaArrayNode(cn2, frontDefineMt, mv, frontMetaNode  );
@@ -170,7 +167,7 @@ namespace SimpleLanguage.Core
             {
                 Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 杩炴帴涓叉病鏈夋壘鍒板悎閫傜殑鑺傜偣  360!!!");
             }
-            m_FinalMetaCallNode.SetDefineMetaVariable(mv);
+            m_FinalMetaCallNode.SetStoreMetaVariable(mv);
         }
         /*
         void AddMetaArrayNode(FileMetaCallNode cn2, MetaType frontDefineMt, MetaVariable mv, MetaCallNode frontMetaNode )
@@ -383,21 +380,25 @@ namespace SimpleLanguage.Core
             if (mcn.callNodeType == ECallNodeType.This)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByThis(mcn.metaVariable);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.Base)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByBase(mcn.metaVariable);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.FunctionInnerVariableName)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.metaType);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.MemberVariableName)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.callMetaType);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.MemberFunctionName)
@@ -441,6 +442,7 @@ namespace SimpleLanguage.Core
                     MetaVisitNode mvn1 = MetaVisitNode.CreateByNewConst(frontNode.ownerMetaClass, frontNode.ownerMetaFunctionBlock,
                         frontNode.metaType, frontNode.metaExpressValue as MetaConstExpressNode, frontNode.metaFunction as MetaMemberFunction,
                         frontNode.metaInputParamCollection, newmv);
+                    mvn1.SetToken(frontNode.token);
                     m_VisitNodeList.Add(mvn1);
 
                     mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType.metaClass, mcn.callMetaType.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, null, null);
@@ -492,6 +494,7 @@ namespace SimpleLanguage.Core
                     m_VisitNodeList.Add(mvn1);
 
                     mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType?.metaClass, mcn.callMetaType?.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, null, null);
+                    mvn1.SetToken(mcn.token);
                     mmc.SetDebugInputParTermText(debugParTermText);
                 }
                 else
@@ -530,11 +533,13 @@ namespace SimpleLanguage.Core
                 mmc.SetDebugInputParTermText(debugParTermText);
 
                 MetaVisitNode mvn2 = MetaVisitNode.CreateBySystemCall(mmc);
+                mvn2.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn2);
             }
             else if (mcn.callNodeType == ECallNodeType.ConstValue)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByConstExpress(mcn.metaExpressValue as MetaConstExpressNode, mcn.metaVariable);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.ClassName)
@@ -543,11 +548,12 @@ namespace SimpleLanguage.Core
                 {
                     MetaClass cmc = mcn.metaType.metaClass;
                     MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mcn.bracketExpressList, mcn.storeMetaVariable);
+                    mvn.SetToken(mcn.token);
                     m_VisitNodeList.Add(mvn);
                 }
                 else
                 {
-                    MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaClass(mcn.metaType);
+                    MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaClass(mcn.metaType); mvn.SetToken(mcn.token);
                     m_VisitNodeList.Add(mvn);
                 }
             }
@@ -559,11 +565,13 @@ namespace SimpleLanguage.Core
                     if (mcn.bracketExpressList.Count > 0)
                     {
                         MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mcn.bracketExpressList, mcn.storeMetaVariable);
+                        mvn.SetToken(mcn.token);
                         m_VisitNodeList.Add(mvn);
                     }
                     else if (index == m_CallNodeList.Count)
                     {
-                        MetaVisitNode mvn = MetaVisitNode.CreateByNewClass(mcn.metaType, mcn.metaVariable);
+                        MetaVisitNode mvn = MetaVisitNode.CreateByNewClass(mcn.metaType, mcn.metaVariable); 
+                        mvn.SetToken(mcn.token);
                         m_VisitNodeList.Add(mvn);
                         if (mcn.metaFunction != null)
                         {
@@ -575,6 +583,7 @@ namespace SimpleLanguage.Core
                 else if (mcn.metaType != null)
                 {
                     MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaClass(mcn.metaType);
+                    mvn.SetToken(mcn.token);
                     m_VisitNodeList.Add(mvn);
                 }
             }
@@ -585,17 +594,20 @@ namespace SimpleLanguage.Core
                     // data 类型名参与成员访问时（如 AA.a 且 a 为实例字段），
                     // 先把 AA 的默认静态实例压栈，再由后续 MemberDataName 取字段。
                     MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable);
+                    mvn.SetToken(mcn.token);
                     m_VisitNodeList.Add(mvn);
                 }
                 else
                 {
                     MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaData(mcn.metaType);
+                    mvn.SetToken(mcn.token);
                     m_VisitNodeList.Add(mvn);
                 }
             }
             else if (mcn.callNodeType == ECallNodeType.EnumName)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaEnum(mcn.metaType);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.TypeName)
@@ -604,11 +616,13 @@ namespace SimpleLanguage.Core
                 {
                     MetaClass cmc = mcn.metaType.metaClass;
                     MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mcn.bracketExpressList, mcn.storeMetaVariable);
+                    mvn.SetToken(mcn.token);
                     m_VisitNodeList.Add(mvn);
                 }
                 else
                 {
                     MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaClass(mcn.metaType);
+                    mvn.SetToken(mcn.token);
                     m_VisitNodeList.Add(mvn);
                 }
             }
@@ -617,6 +631,7 @@ namespace SimpleLanguage.Core
                 if (index == m_CallNodeList.Count)
                 {
                     MetaVisitNode mvn = MetaVisitNode.CreateByNewClass(mcn.metaType, mcn.metaVariable);
+                    mvn.SetToken(mcn.token);
                     m_VisitNodeList.Add(mvn);
 
                     if (mcn.metaFunction != null)
@@ -633,6 +648,8 @@ namespace SimpleLanguage.Core
             else if (mcn.callNodeType == ECallNodeType.NewTemplate)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByNewTemplate(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, mcn.storeMetaVariable);
+
+                mvn.SetToken(mcn.token);
                 MetaClass cmc = mcn.metaType.metaClass;
                 MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType.metaClass, null, mcn.metaFunction, null, mcn.metaInputParamCollection, null, mcn.storeMetaVariable);
                 mvn.SetMethodCall(mmc);
@@ -641,17 +658,20 @@ namespace SimpleLanguage.Core
             else if (mcn.callNodeType == ECallNodeType.NewData)
             {
                 MetaVisitNode mvn = MetaVisitNode.CraeteByNewData(mcn.metaType);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.EnumName)
             {
                 //Debug.Write("Meta Common Parse IteratorVariable----------------------------------------------------");
                 MetaVisitNode mvn = MetaVisitNode.CraeteByEnum(mcn.metaType);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.EnumValueArray)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByEnumMember(mcn.metaType, mcn.metaVariable);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.VisitVariable)
@@ -664,6 +684,7 @@ namespace SimpleLanguage.Core
                 if (mcn.metaVariable is MetaVisitVariable mvv)
                 {
                     MetaVisitNode mvn1 = MetaVisitNode.CreateByVisitVariable(mvv);
+                    mvn1.SetToken(mcn.token);
                     m_VisitNodeList.Add(mvn1);
                 }
                 //for( int i = 0; i < mcn.metaArrayCallNodeList.Count; i++ )
@@ -678,27 +699,32 @@ namespace SimpleLanguage.Core
             else if (mcn.callNodeType == ECallNodeType.DataName)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.EnumMember)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByEnumMember(mcn.metaType, mcn.metaVariable);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.MemberDataName)
             {
-                MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable);
+                MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.callMetaType );
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
                 //Debug.Write("Meta Common Parse MemberDataName----------------------------------------------------");
             }
             else if (mcn.callNodeType == ECallNodeType.TemplateName)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByTemplate(mcn.metaTemplate);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.Express)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByEpxress(mcn.metaExpressValue);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.Global)
@@ -709,6 +735,7 @@ namespace SimpleLanguage.Core
             else if (mcn.callNodeType == ECallNodeType.GetType)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByGetType(mcn.ownerMetaBase, mcn.metaType);
+                mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
         }
@@ -720,9 +747,17 @@ namespace SimpleLanguage.Core
             }
             return level;
         }
-        public MetaVariable ExecuteGetMetaVariable()
+        public MetaVariable GetDefineMetaVariable()
         {
-            return m_FinalCallNode?.GetRetMetaVariable();
+            return m_FinalCallNode?.GetDefineMetaVariable();
+        }
+        public MetaVariable GetStoreMetaVariable()
+        {
+            return m_FinalCallNode?.GetStoreMetaVariable();
+        }
+        public MetaVariable GetReturnMetaVariable()
+        {
+            return m_FinalCallNode?.GetReturnMetaVariable();
         }
         public MetaExpressNodeBase GetMetaExpressNode()
         {

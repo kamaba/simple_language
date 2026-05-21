@@ -45,7 +45,7 @@ namespace SimpleLanguage.Core
                         var retMc = mcen.GetReturnMetaClass();
                         if (retMc == CoreMetaClassManager.booleanMetaClass)
                         {
-                            m_JudgmentValueMetaVariable = mcen.GetMetaVariable();
+                            m_JudgmentValueMetaVariable = mcen.GetStoreMetaVariable();
                         }
                         else
                         {
@@ -336,9 +336,9 @@ namespace SimpleLanguage.Core
             }
 
 
-            if (m_LeftMethodCall == null)
+            if (m_LeftMetaExpress != null)
             {
-                m_MetaVariable = m_LeftMetaExpress.GetMetaVariable();
+                m_MetaVariable = m_LeftMetaExpress.GetDefineMetaVariable();     //这里要使用定义时的变量，因为可能存在 a.b.c += 10; 这种情况，a.b.c 可能在之前被解析成一个临时变量了，这时候就需要回到定义时的变量上去进行类型检查和后续的赋值操作
                 if (m_MetaVariable == null)
                 {
                     Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, "Error 变量没有发现" + m_LeftMetaExpress.ToString());
@@ -429,7 +429,7 @@ namespace SimpleLanguage.Core
                 return false;
             }
 
-            this.m_RightMetaExpress.Parse(new AllowUseSettings() { setterFunction = false, getterFunction = true } );
+            this.m_RightMetaExpress.Parse(new AllowUseSettings() { setterFunction = false, getterFunction = true, ifNotVariableThenAddVariable = rightMetaTypeHint!= null } );
             this.m_RightMetaExpress.CalcReturnType();
             var newexpress = ExpressManager.ConvertNewExpress(m_RightMetaExpress, rightMetaTypeHint, m_MetaVariable);            
             if (newexpress != m_RightMetaExpress )
@@ -555,15 +555,15 @@ namespace SimpleLanguage.Core
                 }
 
                 StringBuilder sb = new StringBuilder();
-                sb.Append("Warning 在类: " + m_OwnerMetaBlockStatements?.ownerMetaClass.allClassName + " 函数: " + m_OwnerMetaBlockStatements.ownerMetaFunction?.name + "中  ");
+                sb.Append("Warning 在类: " + m_OwnerMetaBlockStatements?.ownerMetaClass.allName + " 函数: " + m_OwnerMetaBlockStatements.ownerMetaFunction?.name + "中  ");
                 if (curClass != null)
                 {
-                    sb.Append(" 定义类 : " + curClass.allClassName);
+                    sb.Append(" 定义类 : " + curClass.allName);
                 }
                 sb.Append(" 名称为: " + m_Name?.ToString());
                 sb.Append("与后边赋值语句中 ");
                 if (compareClass != null)
-                    sb.Append("表达式类为: " + compareClass.allClassName);
+                    sb.Append("表达式类为: " + compareClass.allName);
                 if (relation == ETypeRelation.No)
                 {
                     var targetTemplateList = mdt?.GetGenTemplateMetaTypeList();

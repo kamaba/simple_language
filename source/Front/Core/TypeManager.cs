@@ -995,7 +995,7 @@ namespace SimpleLanguage.Core
                     return false;
                 if (ReferenceEquals(leftEnum, rightEnum))
                     return true;
-                return string.Equals(leftEnum.allClassName, rightEnum.allClassName, StringComparison.Ordinal);
+                return string.Equals(leftEnum.allName, rightEnum.allName, StringComparison.Ordinal);
             }
 
             MetaClass leftBaseClass = mdtL.GetTemplateMetaClass();
@@ -1227,7 +1227,7 @@ namespace SimpleLanguage.Core
                 && targetMetaType.metaClass == CoreMetaClassManager.enumMetaData
                 && expressNode is MetaCallLinkExpressNode mclen)
             {
-                var mv = mclen.GetMetaVariable();
+                var mv = mclen.GetReturnMetaVariable();
                 if (mv?.ownerMetaClass == CoreMetaClassManager.enumMetaData || mv is MetaMemberEnum)
                 {
                     curClass = targetMetaType.metaClass;
@@ -1261,7 +1261,7 @@ namespace SimpleLanguage.Core
                 if (targetEnum != null)
                 {
                     if (expressNode is MetaCallLinkExpressNode enumCall
-                        && enumCall.GetMetaVariable() is MetaMemberEnum mme
+                        && enumCall.GetReturnMetaVariable() is MetaMemberEnum mme
                         && ReferenceEquals(mme.ownerMetaEnum, targetEnum))
                     {
                         return ETypeRelation.Same;

@@ -85,7 +85,7 @@ namespace SimpleLanguage.Core
 
                     if( m_OwnerSwitch.matchType == SwitchMatchType.EnumValue )
                     {
-                        m_MatchMetaVariable = mcen.metaCallLink.finalCallNode.GetRetMetaVariable();
+                        m_MatchMetaVariable = mcen.metaCallLink.finalCallNode?.GetReturnMetaVariable();
                     }
                     else
                     {
@@ -216,7 +216,7 @@ namespace SimpleLanguage.Core
                 auc.callConstructFunction = false;
                 m_MetaCallLink.Parse(auc);
                 //m_MetaCallLink.CalcReturnType();
-                m_MatchSourceMv = m_MetaCallLink.ExecuteGetMetaVariable();
+                m_MatchSourceMv = m_MetaCallLink.GetReturnMetaVariable();
                 var mv = m_OwnerMetaBlockStatements.GetMetaVariableByName(m_MatchSourceMv.name);
                 if (mv == m_MatchSourceMv)//如果直接调用其它地方的metavariable，需要生成一个临时的metavariable 
                 {

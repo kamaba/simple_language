@@ -120,7 +120,7 @@ namespace SimpleLanguage.IR
         {
             m_Id = mmd.GetHashCode();
             m_Index = fieldIndex;
-            var ownerLabel = mmd.ownerMetaData?.allClassName ?? mmd.ownerMetaClass?.allClassName ?? string.Empty;
+            var ownerLabel = mmd.ownerMetaData?.allName ?? mmd.ownerMetaClass?.allName ?? string.Empty;
             m_Name = ownerLabel + "." + mmd.name;
             FillDebugInfo(mmd, mmd.name, "IRMetaMemberData");
             m_ExpressNode = mmd.expressNode;
@@ -137,7 +137,7 @@ namespace SimpleLanguage.IR
             //m_MetaVariable = mmv;
             m_Id = mmv.GetHashCode();
             m_Index = index;
-            m_Name = mmv.ownerMetaClass.allClassName + "." + mmv.name;
+            m_Name = mmv.ownerMetaClass.allName + "." + mmv.name;
             FillDebugInfo(mmv, mmv.name, "IRMetaMemberVariable");
             m_ExpressNode = mmv.express;
             m_IsConst = mmv.isConst;

@@ -769,7 +769,7 @@ namespace SimpleLanguage.Core
             if (md == null) return false;
 
             MetaData belongMD = ownerMetaData
-                ?? (ownerMetaClass != null ? ClassManager.instance.FindMetaDataByName(ownerMetaClass.allClassName) : null);
+                ?? (ownerMetaClass != null ? ClassManager.instance.FindMetaDataByName(ownerMetaClass.allName) : null);
             if (belongMD != null)
             {
                 if (belongMD == md)

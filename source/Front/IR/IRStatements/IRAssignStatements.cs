@@ -164,14 +164,14 @@ namespace SimpleLanguage.IR
                 m_IRStatements.Add(m_IRExpress);
             }
 
-            IRData irsign = IRUtil.CreateLeftAndRightIRData(ms.autoAddExpressOpSign);
+            IRData irsign = IRUtil.CreateLeftAndRightIRData(ms.autoAddExpressOpSign, out bool flag );
             if( irsign != null && irsign.opCode != EIROpCode.Nop )
             {
                 IRBase irbase = new IRBase(irsign);
                 m_IRStatements.Add(irbase);
             }
             
-            var mv = lastCL.GetRetMetaVariable();
+            var mv = lastCL.GetReturnMetaVariable();
 
             var owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
             var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);

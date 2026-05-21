@@ -129,7 +129,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog( LID.MetaCoreAssertShowMessage, m_Token, "Error ??" + mbs.ownerMetaClass?.allClassName + "??: " + mbs.ownerMetaFunction.name
+                    Log.AddMetaCoreLog( LID.MetaCoreAssertShowMessage, m_Token, "Error ??" + mbs.ownerMetaClass?.allName + "??: " + mbs.ownerMetaFunction.name
                         + " ??: " + fmos.variableRef.ToTokenString());
                 }
             }
@@ -271,8 +271,8 @@ namespace SimpleLanguage.Core
                     m_MetaMemberVariable = m_DefineMetaType.metaClass.GetMetaMemberVariableByName(m_DefineName);
                     if (m_MetaMemberVariable == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error ??" + m_DefineMetaType.metaClass?.allClassName + "??: " + mbs?.ownerMetaFunction.name
-                            + " ????: ?" + m_DefineMetaType.metaClass?.allClassName + " ??:" + m_DefineName);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error ??" + m_DefineMetaType.metaClass?.allName + "??: " + mbs?.ownerMetaFunction.name
+                            + " ????: ?" + m_DefineMetaType.metaClass?.allName + " ??:" + m_DefineName);
                     }
                     m_Id = m_MetaMemberVariable.GetHashCode();
                     //m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberVariable, m_OwnerMetaBlockStatements, m_FileMetaOpAssignSyntax?.express);
@@ -570,7 +570,7 @@ namespace SimpleLanguage.Core
                 if (de != null && ee != null)
                 {
                     bool sameEnumHost = ReferenceEquals(de, ee)
-                        || string.Equals(de.allClassName, ee.allClassName, StringComparison.Ordinal);
+                        || string.Equals(de.allName, ee.allName, StringComparison.Ordinal);
                     if (!sameEnumHost)
                     {
                         return false;
@@ -594,7 +594,7 @@ namespace SimpleLanguage.Core
                 var ed = express.metaData;
                 if (dd != null && ed != null && dd.isDynamic && ed.isDynamic)
                 {
-                    if (!string.Equals(dd.allClassName, ed.allClassName, StringComparison.Ordinal))
+                    if (!string.Equals(dd.allName, ed.allName, StringComparison.Ordinal))
                     {
                         return false;
                     }
@@ -662,7 +662,7 @@ namespace SimpleLanguage.Core
                 var ee = expressMt.metaEnum;
                 bool sameEnumHost = de != null && ee != null
                     && (ReferenceEquals(de, ee)
-                        || string.Equals(de.allClassName, ee.allClassName, StringComparison.Ordinal));
+                        || string.Equals(de.allName, ee.allName, StringComparison.Ordinal));
                 if (!sameEnumHost)
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,

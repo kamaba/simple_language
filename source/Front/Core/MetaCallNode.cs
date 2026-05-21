@@ -70,6 +70,7 @@ namespace SimpleLanguage.Core
         public bool callConstructFunction = true;
         public bool setterFunction = false;
         public bool getterFunction = true;
+        public bool ifNotVariableThenAddVariable = true;
         public List<MetaExpressNodeBase> expressNodeList = new List<MetaExpressNodeBase>();
         public EParseFrom parseFrom { get; set; }
 
@@ -87,6 +88,7 @@ namespace SimpleLanguage.Core
             setterFunction = clone.setterFunction;
             getterFunction = clone.getterFunction;
             expressNodeList = clone.expressNodeList;
+            ifNotVariableThenAddVariable = clone.ifNotVariableThenAddVariable;
         }
     }
     public sealed class MetaCallNode
@@ -135,8 +137,8 @@ namespace SimpleLanguage.Core
         //private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent  = null;
         private MetaType m_FrontDefineMetaType = null;
         private MetaExpressNodeBase m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 涓殑3+20+10.f灏辨槸琛ㄧず寮?, fun(expressNode)
-        private MetaVariable m_DefineMetaVariable = null;
-        private MetaVariable m_StoreMetaVariable = null;
+        private MetaVariable m_StoreMetaVariable = null;        // store metaVariable 像 a.val = new(){} val就是store 
+        private MetaVariable m_DefineMetaVariable = null;       // define variable 定义变量，是比如 像set方法，对解析有约束作用 比如 a.set( value ); value的函数定义就是定义变量 是要传进来的，而不用自己再创建一个变量
         private List<MetaExpressNodeBase> m_BracketExpressList = new List<MetaExpressNodeBase>();   // a[1][1][1][]   瑙ｆ瀽鐨勬槸杩欎釜閲岃竟鐨?,鎴栬€呮槸鍦╗]閲岃竟鐨勫彉閲?
 
         private MetaNode m_MetaNode = null;
@@ -188,13 +190,13 @@ namespace SimpleLanguage.Core
         {
             m_FrontCallNode = mcn;
         }
-        public void SetDefineMetaVariable(MetaVariable mv)
-        {
-            this.m_DefineMetaVariable = mv;
-        }
         public void SetStoreMetaVariable(MetaVariable mv)
         {
             this.m_StoreMetaVariable = mv;
+        }
+        public void SetDefineMetaVariable( MetaVariable mv )
+        {
+            this.m_DefineMetaVariable = mv;
         }
         public bool ParseNode(AllowUseSettings _auc)
         {
@@ -274,7 +276,7 @@ namespace SimpleLanguage.Core
                     {
                         CreateExpressParam cep = new CreateExpressParam();
                         cep.fme = m_FileMetaCallNode.fileMetaBracketTermList[i];
-                        cep.equalMetaVariable = m_DefineMetaVariable;
+                        cep.equalMetaVariable = m_StoreMetaVariable;
                         cep.metaType = mt;
                         cep.ownerMBS = m_OwnerMetaFunctionBlock;
                         cep.ownerMetaBase = m_OwnerMetaFunctionBlock.ownerMetaClass;
@@ -491,7 +493,6 @@ namespace SimpleLanguage.Core
                             return false;
                         }
                         m_MetaType = m_FrontDefineMetaType;
-                        m_StoreMetaVariable = m_DefineMetaVariable;
                         if (m_FrontDefineMetaType.eMetaTypeType == EMetaTypeType.Template)
                         {
                             m_MetaTemplate = m_FrontDefineMetaType.metaTemplate;
@@ -633,7 +634,7 @@ namespace SimpleLanguage.Core
                         return false;
                     }
 
-                    var varName = "local_" + fm.path.GetHashCode();
+                    var varName = "local_" + fm.path  + "_"+ fm.path.GetHashCode();
                     var mv = global.GetMetaMemberVariableByName(varName);
                     if (mv == null)
                     {
@@ -649,7 +650,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.Assert(false, "local.鍙兘鍦ㄩ浣?");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "local.鍙兘鍦ㄩ浣?");
                     return false;
                 }
             }
@@ -1049,7 +1050,7 @@ namespace SimpleLanguage.Core
                             var mtt = mv.GetFinalMetaType();
                             mc = mtt.metaClass == null ? mv.GetTemplateMetaClass() : mtt.metaClass;
                             var md = mtt.metaData
-                                ?? (mc != null ? ClassManager.instance.FindMetaDataByName(mc.allClassName) : null);
+                                ?? (mc != null ? ClassManager.instance.FindMetaDataByName(mc.allName) : null);
                             if (md != null)
                             {
                                 var retmmd = GetDataValueByMetaData(md, m_Name);
@@ -1146,7 +1147,7 @@ namespace SimpleLanguage.Core
                                 MetaMemberFunction mmf = m_FrontCallNode.m_MetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_FrontCallNode.m_MetaInputParamCollection);
                                 if (mmf == null)
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + m_FrontCallNode.m_MetaClass.allClassName + "鐨刜init_鏂规硶!)");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + m_FrontCallNode.m_MetaClass.allName + "鐨刜init_鏂规硶!)");
                                     return false;
                                 }
                                 m_FrontCallNode.m_MetaFunction = mmf;
@@ -1322,11 +1323,6 @@ namespace SimpleLanguage.Core
                 }
                 else if (m_CallNodeType == ECallNodeType.MemberFunctionName)
                 {
-                    if (this.m_DefineMetaVariable != null
-                        && m_MetaFunction.returnMetaVariable.realMetaType.metaClass != CoreMetaClassManager.voidMetaClass)
-                    {
-                        this.m_StoreMetaVariable = this.m_DefineMetaVariable;
-                    }
                     return true;
                 }
                 else if (m_MetaTemplate != null)
@@ -1395,7 +1391,7 @@ namespace SimpleLanguage.Core
                         bool allowDefaultConstructWithoutInit = (m_MetaInputParamCollection == null || m_MetaInputParamCollection.count == 0);
                         if (mmf == null && !allowDefaultConstructWithoutInit)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + curmc.allClassName + "鐨刜init_鏂规硶!)");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + curmc.allName + "鐨刜init_鏂规硶!)");
                             return false;
                         }
                         m_MetaFunction = mmf;
@@ -1421,15 +1417,24 @@ namespace SimpleLanguage.Core
                         */
                     }
 
-                    if (m_DefineMetaVariable == null)
+                    if ( m_StoreMetaVariable == null)
                     {
-                        m_MetaVariable = new MetaVariable("new_" + curmc.allClassName + "_" + curmc.GetHashCode(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock,
+                        string mvname = "new ( " + curmc.allName + "_" + curmc.GetHashCode() + " )";
+                        m_MetaVariable = new MetaVariable(mvname, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock,
                             ownerMetaClass, m_MetaType);
-                        m_OwnerMetaFunctionBlock.AddMetaVariable(m_MetaVariable);
+                        if (m_OwnerMetaFunctionBlock.GetMetaVariable(mvname) == null)
+                        {
+                            if( m_AllowUseSettings.ifNotVariableThenAddVariable )
+                            {
+                                m_OwnerMetaFunctionBlock.AddMetaVariable(m_MetaVariable);
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "error Class: [" + ownerMetaClass?.allName + "] Method: [" + m_OwnerMetaFunctionBlock.ownerMetaFunction.functionAllName + "]"
+                                    + "中间创建了新的变量:" + token?.ToLexemeAllString() + " var:" + m_MetaVariable.ToFormatString());
+                            }
+                        }
                     }
                     else
                     {
-                        m_MetaVariable = m_DefineMetaVariable;
+                        m_MetaVariable = m_StoreMetaVariable;
                     }
                     this.m_MetaClass = curmc;
 
@@ -1442,7 +1447,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_MetaData.isStatic)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error data static 不允许进行实例化(new/构造调用): " + m_MetaData.allClassName);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error data static 不允许进行实例化(new/构造调用): " + m_MetaData.allName);
                         return false;
                     }
                     m_CallNodeType = ECallNodeType.NewData;
@@ -1497,13 +1502,14 @@ namespace SimpleLanguage.Core
                 }
                 else if (m_MetaData != null)
                 {
-                    var defaultInstance = GetOrCreateDataDefaultStaticInstanceVariable(m_MetaData);
-                    if (defaultInstance != null)
-                    {
-                        // data AA{...} 的 AA.a：先加载 AA 的默认静态实例，再取实例字段 a。
-                        m_MetaVariable = defaultInstance;
-                        m_CallNodeType = ECallNodeType.FunctionInnerVariableName;
-                    }
+                    //var defaultInstance = GetOrCreateDataDefaultStaticInstanceVariable(m_MetaData);
+                    //if (defaultInstance != null)
+                    //{
+                    //    // data AA{...} 的 AA.a：先加载 AA 的默认静态实例，再取实例字段 a。
+                    //    m_MetaVariable = defaultInstance;
+                    //    m_CallNodeType = ECallNodeType.MemberDataName;
+                    //    m_CallMetaType = new MetaType(ProjectManager.globalData);
+                    //}
                 }
                 else if (m_MetaFunction != null)
                 {
@@ -1848,7 +1854,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_IsFunction)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error data 不支持函数调用: " + me.allClassName);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error data 不支持函数调用: " + me.allName);
                         return false;
 
                     }
@@ -1865,7 +1871,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error data '{me.allClassName}' does not have member variable '{inputname}'");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error data '{me.allName}' does not have member variable '{inputname}'");
                             return false;
                         }
                     }
@@ -1924,7 +1930,7 @@ namespace SimpleLanguage.Core
                 return null;
             }
 
-            string varName = "__data_default_instance_" + dataType.allClassName + "_" + dataType.GetHashCode();
+            string varName = "__data_default_instance_" + dataType.allName + "_" + dataType.GetHashCode();
             var exist = globalData.GetMemberDataByName(varName) as MetaMemberData;
             if (exist != null)
             {
@@ -2039,7 +2045,7 @@ namespace SimpleLanguage.Core
                     }
                     catch { }
                 }
-                Log.AddMetaCoreLog(LID.MetaCoreParseCallNodeNotFoundInClass, m_Token, "", m_Token, mc.allClassName );
+                Log.AddMetaCoreLog(LID.MetaCoreParseCallNodeNotFoundInClass, m_Token, "", m_Token, mc.allName);
                 return false;
             }
 
@@ -2092,13 +2098,13 @@ namespace SimpleLanguage.Core
                      )
                 {
                     if (m_CallNodeSign == ECallNodeSign.Null)
-                        sb.Append(m_MetaClass?.allClassName);
+                        sb.Append(m_MetaClass?.allName);
                     else
                         sb.Append(m_MetaClass?.name);
                 }
                 else if (m_CallNodeType == ECallNodeType.EnumName)
                 {
-                    sb.Append(m_MetaEnum?.allClassName ?? m_MetaEnum?.name);
+                    sb.Append(m_MetaEnum?.allName ?? m_MetaEnum?.name);
                 }
                 else if (m_CallNodeType == ECallNodeType.EnumMember )
                 {
@@ -2106,7 +2112,7 @@ namespace SimpleLanguage.Core
                 }
                 else if (m_CallNodeType == ECallNodeType.DataName)
                 {
-                    sb.Append(m_MetaData.allClassName);
+                    sb.Append(m_MetaData?.allName);
                 }
                 else if (m_CallNodeType == ECallNodeType.MemberDataName)
                 {

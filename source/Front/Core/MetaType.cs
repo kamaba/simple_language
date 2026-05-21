@@ -29,9 +29,9 @@ namespace SimpleLanguage.Core
         {
             get
             {
-                if (m_MetaData != null) return m_MetaData.allClassName;
-                if (m_MetaEnum != null) return m_MetaEnum.allClassName;
-                return m_MetaClass?.allClassName;
+                if (m_MetaData != null) return m_MetaData.allName;
+                if (m_MetaEnum != null) return m_MetaEnum.allName;
+                return m_MetaClass?.allName;
             }
         }
         public bool isNullable => m_IsNullable;
@@ -241,7 +241,7 @@ namespace SimpleLanguage.Core
         {
             if (candidate == null) return false;
             if (expected != null && candidate == expected) return true;
-            var n = candidate.allClassName;
+            var n = candidate.allName;
             return n == expectedClassName;
         }
 
@@ -663,17 +663,17 @@ namespace SimpleLanguage.Core
 
             if (m_MetaData != null)
             {
-                sb.Append(m_MetaData.allClassName);
+                sb.Append(m_MetaData.allName);
                 return sb.ToString();
             }
             if (m_MetaEnum != null)
             {
-                sb.Append(m_MetaEnum.allClassName);
+                sb.Append(m_MetaEnum.allName);
                 return sb.ToString();
             }
             if (m_MetaClass != null)
             {
-                sb.Append(this.m_MetaClass.allClassName);
+                sb.Append(this.m_MetaClass.allName);
             }
             for( int i = 0; i < this.m_DefineTemplateMetaTypeList.Count; i++ )
             {
@@ -690,7 +690,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_MetaData != null)
                 {
-                    sb.Append(m_MetaData.allClassName);
+                    sb.Append(m_MetaData.allName);
                 }
                 else
                 {
@@ -702,7 +702,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_MetaEnum != null)
                 {
-                    sb.Append(m_MetaEnum.allClassName);
+                    sb.Append(m_MetaEnum.allName);
                 }
                 else
                 {
@@ -722,7 +722,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_MetaClass != null)
                 {
-                    sb.Append(m_MetaClass.allClassName);
+                    sb.Append(m_MetaClass.allName);
                 }
                 if (m_DefineTemplateMetaTypeList.Count > 0)
                 {
@@ -745,7 +745,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_MetaClass != null)
                 {
-                    sb.Append(m_MetaClass.allClassName);
+                    sb.Append(m_MetaClass.allName);
                     if (m_MetaClass.genMetaClassTemplateList.Count > 0)
                     {
                         sb.Append("<");
@@ -800,7 +800,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_MetaClass is MetaGenTemplateClass mgtc)
                 {
-                    sb.Append(mgtc.allClassName);
+                    sb.Append(mgtc.allName);
                 }
                 else
                 {

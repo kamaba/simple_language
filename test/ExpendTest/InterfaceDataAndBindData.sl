@@ -6,7 +6,7 @@ data VecData2
     y = 0.0f
 }
 
-Interface IVector2 bind VecData2
+interface IVector2 bind VecData2
 {
     float x { get; set; }
     float y { get; set; }
@@ -31,15 +31,15 @@ class Vector2 interface IVector2 bind VecData2
 local
 {
     a = Vector2(){
-        x = 1.0f
+        x = 1.0f,
         y = 2.0f
     }
     b = Vector2(){
-        x = 3.0f
+        x = 3.0f,
         y = 4.0f
     }
     c = VecData2(){
-        x = 5.0f
+        x = 5.0f,
         y = 6.0f
     }
     a.AddVector(c);

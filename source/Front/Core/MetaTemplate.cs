@@ -113,7 +113,7 @@ namespace SimpleLanguage.Core
             if (m_ExtendsMetaClass != null )
             {
                 sb.Append(" extends ");
-                sb.Append(m_ExtendsMetaClass.allClassName );
+                sb.Append(m_ExtendsMetaClass.allName);
             }
 
             return sb.ToString();
@@ -145,7 +145,7 @@ namespace SimpleLanguage.Core
 
         public bool EqualWithMetaType( MetaType mt )
         {
-            return m_MetaType.metaClass.allClassName == mt.metaClass.allClassName;
+            return m_MetaType.metaClass.allName == mt.metaClass.allName;
         }
         public void SetMetaType( MetaType mt ) 
         {

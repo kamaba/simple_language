@@ -91,7 +91,7 @@ namespace SimpleLanguage.Core
                 var sourceMetaType = m_CurrentVariableLink?.GetMetaType();
                 if (sourceMetaType == null)
                 {
-                    var sourceMv = m_CurrentVariableLink?.ExecuteGetMetaVariable();
+                    var sourceMv = m_CurrentVariableLink?.GetReturnMetaVariable();
                     sourceMetaType = sourceMv?.GetFinalMetaType();
                 }
 

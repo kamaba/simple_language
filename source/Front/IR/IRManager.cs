@@ -435,27 +435,27 @@ namespace SimpleLanguage.IR
             {
                 IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
-                if (!string.IsNullOrEmpty(v.allClassName))
+                if (!string.IsNullOrEmpty(v.allName))
                 {
-                    exportedOwnerNames.Add(v.allClassName);
+                    exportedOwnerNames.Add(v.allName);
                 }
             }
             foreach (var v in cm.exportMetaDataList)
             {
                 IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
-                if (!string.IsNullOrEmpty(v.allClassName))
+                if (!string.IsNullOrEmpty(v.allName))
                 {
-                    exportedOwnerNames.Add(v.allClassName);
+                    exportedOwnerNames.Add(v.allName);
                 }
             }
             foreach (var v in cm.exportMetaEnumList)
             {
                 IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
-                if (!string.IsNullOrEmpty(v.allClassName))
+                if (!string.IsNullOrEmpty(v.allName))
                 {
-                    exportedOwnerNames.Add(v.allClassName);
+                    exportedOwnerNames.Add(v.allName);
                 }
             }
             foreach ( var v in m_IRMetaClassList )
@@ -485,11 +485,11 @@ namespace SimpleLanguage.IR
                 {
                     continue;
                 }
-                var irmc = m_IRMetaClassList.Find(a => a.irName == v.allClassName);
+                var irmc = m_IRMetaClassList.Find(a => a.irName == v.allName);
                 if (irmc == null)
                     continue;
 
-                if (v != null && ClassManager.instance.FindMetaDataByName(v.allClassName) is MetaData md)
+                if (v != null && ClassManager.instance.FindMetaDataByName(v.allName) is MetaData md)
                 {
                     var mmvd = md.metaMemberDataDict;
                     foreach (var v2 in mmvd)
@@ -634,11 +634,11 @@ namespace SimpleLanguage.IR
             }
             if (owner is MetaData md)
             {
-                return md.allClassName;
+                return md.allName;
             }
             if (owner is MetaEnum me)
             {
-                return me.allClassName;
+                return me.allName;
             }
             return owner.name ?? string.Empty;
         }
@@ -647,7 +647,7 @@ namespace SimpleLanguage.IR
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(mc.allClassName);
+            sb.Append(mc.allName);
             if (mc is MetaGenTemplateClass mgtc)
             {
                 sb.Append("<");

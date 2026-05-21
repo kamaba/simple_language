@@ -100,7 +100,7 @@ namespace SimpleLanguage.Core
                 }
                 if( mcallEn != null )
                 {
-                    m_ForInContent = mcallEn.GetMetaVariable();
+                    m_ForInContent = mcallEn.GetReturnMetaVariable();
                 }
                 else
                 {

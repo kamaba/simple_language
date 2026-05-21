@@ -117,7 +117,7 @@ namespace SimpleLanguage.Core
                     {
                         sb.Append(Global.tabChar);
                     }
-                    sb.Append(m_BoolConditionVariable.defineMetaType.metaClass.allClassName);
+                    sb.Append(m_BoolConditionVariable.defineMetaType.metaClass.allName);
                     sb.Append(" ");
                     sb.Append(m_BoolConditionVariable.name);
                     sb.Append(" = ");

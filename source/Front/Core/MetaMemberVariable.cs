@@ -385,7 +385,7 @@ namespace SimpleLanguage.Core
                     //sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allName + " 函数: " + metaFunction?.name + "中  ");
                     if (curClass != null)
                     {
-                        sb.Append(" 定义类 : " + curClass.allClassName );
+                        sb.Append(" 定义类 : " + curClass.allName);
                     }
                     if (defineName != null)
                     {
@@ -393,7 +393,7 @@ namespace SimpleLanguage.Core
                     }
                     sb.Append("与后边赋值语句中 ");
                     if (compareClass != null)
-                        sb.Append("表达式类为: " + compareClass.allClassName );
+                        sb.Append("表达式类为: " + compareClass.allName );
                     if (relation == ETypeRelation.No)
                     {
                         sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
@@ -414,7 +414,7 @@ namespace SimpleLanguage.Core
                                     if (expressRetMetaDefineType.metaClass == ownerMetaClass && (!m_IsStatic && !m_IsConst))
                                     {
                                         Log.AddMetaCoreLog(LID.MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass, m_Token, 
-                                            "in member variable", ownerMetaClass?.allClassName ?? m_OwnerMetaBase?.name, m_Name );
+                                            "in member variable", ownerMetaClass?.allName ?? m_OwnerMetaBase?.name, m_Name );
                                         return;
                                     }
                                 }
@@ -447,7 +447,7 @@ namespace SimpleLanguage.Core
                                     if (expressRetMetaDefineType.metaClass == ownerMetaClass)
                                     {
                                         Log.AddMetaCoreLog(LID.MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass, m_Token,
-                                            "in member variable", ownerMetaClass?.allClassName ?? m_OwnerMetaBase?.name, m_Name);
+                                            "in member variable", ownerMetaClass?.allName ?? m_OwnerMetaBase?.name, m_Name);
                                         return;
                                     }
                                 }

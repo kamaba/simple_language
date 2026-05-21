@@ -253,8 +253,6 @@ namespace SimpleLanguage.Core
             if (m_MetaVariableDict.ContainsKey(mv.name))
             {
                 Token token = m_FileMetaBlockSyntax?.token;
-                Debug.Write("error Class: [" + ownerMetaClass?.allClassName + "] Method: [" + ownerMetaFunction.functionAllName + "]" 
-                    + "已定义过了变量名称!!! MBS:" + token?.ToLexemeAllString() + " var:" + mv.ToFormatString() );
                 return false;
             }
             m_MetaVariableDict.Add(mv.name, mv);

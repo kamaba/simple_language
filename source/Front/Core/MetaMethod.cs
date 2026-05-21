@@ -40,9 +40,9 @@ namespace SimpleLanguage.Core
                     StringBuilder sb = new StringBuilder();
                     if (m_OwnerMetaClass != null)
                     {
-                        sb.Append(m_OwnerMetaClass is MetaClass oc ? oc.allClassName
-                            : m_OwnerMetaClass is MetaData od ? od.allClassName
-                            : m_OwnerMetaClass is MetaEnum oe ? oe.allClassName
+                        sb.Append(m_OwnerMetaClass is MetaClass oc ? oc.allName
+                            : m_OwnerMetaClass is MetaData od ? od.allName
+                            : m_OwnerMetaClass is MetaEnum oe ? oe.allName
                             : m_OwnerMetaClass.name);
                         sb.Append(".");
                     }
@@ -114,7 +114,7 @@ namespace SimpleLanguage.Core
 
             var defaultReturnType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_ReturnMetaVariable = new MetaVariable(
-                (mc != null ? mc.allClassName : "Global") + "." + (m_Name ?? "func") + ".return",
+                (mc != null ? mc.allName : "Global") + "." + (m_Name ?? "func") + ".return",
                 MetaVariable.EVariableFrom.None,
                 null,
                 mc,

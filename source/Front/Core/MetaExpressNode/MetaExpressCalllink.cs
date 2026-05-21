@@ -88,11 +88,19 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaVariable GetMetaVariable()
+        public MetaVariable GetDefineMetaVariable()
         {
             if( m_MetaCallLink != null )
             {
-                return m_MetaCallLink.ExecuteGetMetaVariable();
+                return m_MetaCallLink.GetDefineMetaVariable();
+            }
+            return null;
+        }
+        public MetaVariable GetReturnMetaVariable()
+        {
+            if (m_MetaCallLink != null)
+            {
+                return m_MetaCallLink.GetReturnMetaVariable();
             }
             return null;
         }

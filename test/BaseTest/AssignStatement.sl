@@ -188,7 +188,6 @@ AssignStatement
         Level<int> lv = Level<int>(42)
         lv.t = 84
         global.println("Level<int> -> " + lv.toString())
-
         Level<AssignBox> wrapped = Level<AssignBox>(AssignBox(){ value = 5, name = "wrapped" })
         wrapped.t = AssignBox(){ value = lv.t, name = "generic-reassign", flag = 0b0100 }
         wrapped.t.score = 250

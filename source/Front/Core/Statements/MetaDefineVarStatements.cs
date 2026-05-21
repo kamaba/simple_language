@@ -323,10 +323,10 @@ namespace SimpleLanguage.Core
                         }
 
                         StringBuilder sb = new StringBuilder();
-                        sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allClassName + " 函数: " + metaFunction?.name + "中  ");
+                        sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allName + " 函数: " + metaFunction?.name + "中  ");
                         if (curClass != null)
                         {
-                            sb.Append(" 定义类 : " + curClass.allClassName);
+                            sb.Append(" 定义类 : " + curClass.allName);
                         }
                         if (defineName != null)
                         {
@@ -334,7 +334,7 @@ namespace SimpleLanguage.Core
                         }
                         sb.Append("与后边赋值语句中 ");
                         if (compareClass != null)
-                            sb.Append("表达式类为: " + compareClass.allClassName);
+                            sb.Append("表达式类为: " + compareClass.allName);
                         if (relation == ETypeRelation.No)
                         {
                             sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
@@ -435,7 +435,7 @@ namespace SimpleLanguage.Core
                 sb.Append(m_ExpressNode.ToFormatString());
                 if (m_IsNeedCastState)
                 {
-                    sb.Append(").cast<" + m_DefineVarMetaVariable.defineMetaType.metaClass.allClassName + ">()");
+                    sb.Append(").cast<" + m_DefineVarMetaVariable.defineMetaType.metaClass.allName + ">()");
                 }
                 sb.Append(";");
             }

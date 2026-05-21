@@ -258,7 +258,7 @@ namespace SimpleLanguage.Core
             if( this.loadMetaVariable != null )
             {
                 sb.Append("[");
-                sb.Append(this.m_VMCallMetaFunction.ownerMetaClass.allClassName);
+                sb.Append(this.m_VMCallMetaFunction.ownerMetaClass.allName);
                 sb.Append("]");
 
                 sb.Append(this.loadMetaVariable.name);
@@ -606,6 +606,10 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
+        public void SetToken( Token token )
+        {
+            this.m_Token = token;
+        }
         public void SetMethodCall( MetaMethodCall _methodCall)
         {
             this.m_MethodCall = _methodCall;
@@ -701,7 +705,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreVisitCallTypeError, visitType.ToString() );
+                        Log.AddMetaCoreLog(LID.MetaCoreVisitCallTypeError, m_Token, visitType.ToString() );
                     }
                     break;
             }
@@ -712,14 +716,77 @@ namespace SimpleLanguage.Core
             var mt = GetMetaType();
             if( mt == null )
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error");
                 return null;
             }
             return mt.metaClass;
         }
-        public MetaVariable GetRetMetaVariable()
+        public MetaVariable GetDefineMetaVariable()
         {
-            switch( visitType )
+            switch (visitType)
+            {
+                case EVisitType.Variable:
+                    {
+                        return variable;
+                    }
+                case EVisitType.MethodCall:
+                case EVisitType.SystemCall:
+                    {
+                        if( methodCall.function is MetaMemberFunction mmf )
+                        {
+                            if( mmf.isSet )
+                            {
+                                if( mmf.metaMemberParamCollection.metaDefineParamList.Count > 0 )
+                                {
+                                    return mmf.metaMemberParamCollection.metaDefineParamList[0].metaVariable;
+                                }
+                            }
+                            else
+                            {
+                                if (mmf.metaMemberParamCollection.metaDefineParamList.Count > 0)
+                                {
+                                    return mmf.metaMemberParamCollection.metaDefineParamList[0].metaVariable;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if(methodCall.function.metaMemberParamCollection.metaDefineParamList?.Count > 0 )
+                                return methodCall.function.metaMemberParamCollection.metaDefineParamList[0].metaVariable;
+                        }
+                        return null;
+                    }
+                case EVisitType.VisitVariable:
+                    {
+                        return visitVariable;
+                    }
+                case EVisitType.New:
+                    {
+                        return variable;
+                    }
+                case EVisitType.Enum:
+                    {
+                        return variable;
+                    }
+                case EVisitType.MetaData:
+                    {
+                    }
+                    break;
+                case EVisitType.EnumMember:
+                    {
+                        return variable;
+                    }
+                default:
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreVisitCallTypeError, m_Token, "Error MetaVisiCall IsNull!");
+                    }
+                    break;
+            }
+            return null;
+        }
+        public MetaVariable GetStoreMetaVariable()
+        {
+            switch (visitType)
             {
                 case EVisitType.Variable:
                     {
@@ -742,13 +809,58 @@ namespace SimpleLanguage.Core
                     {
                         return variable;
                     }
+                case EVisitType.MetaData:
+                    {
+                    }
+                    break;
                 case EVisitType.EnumMember:
                     {
                         return variable;
                     }
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreVisitCallTypeError, "Error MetaVisiCall IsNull!");
+                        Log.AddMetaCoreLog(LID.MetaCoreVisitCallTypeError, m_Token, "Error MetaVisiCall IsNull!");
+                    }
+                    break;
+            }
+            return null;
+        }
+        public MetaVariable GetReturnMetaVariable()
+        {
+            switch (visitType)
+            {
+                case EVisitType.Variable:
+                    {
+                        return variable;
+                    }
+                case EVisitType.MethodCall:
+                case EVisitType.SystemCall:
+                    {
+                        return methodCall.function.returnMetaVariable;
+                    }
+                case EVisitType.VisitVariable:
+                    {
+                        return visitVariable;
+                    }
+                case EVisitType.New:
+                    {
+                        return variable;
+                    }
+                case EVisitType.Enum:
+                    {
+                        return variable;
+                    }
+                case EVisitType.MetaData:
+                    {
+                    }
+                    break;
+                case EVisitType.EnumMember:
+                    {
+                        return variable;
+                    }
+                default:
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreVisitCallTypeError, m_Token, "Error MetaVisiCall IsNull!");
                     }
                     break;
             }
@@ -784,6 +896,11 @@ namespace SimpleLanguage.Core
                 case EVisitType.MetaClass:
                     {
                         //sb.Append(this.m_CallMetaType.ToString() );
+                    }
+                    break;
+                case EVisitType.MetaData:
+                    {
+                        sb.Append(this.m_ReturnMetaType.metaData.metaNode.ToString());
                     }
                     break;
                 case EVisitType.VisitVariable:
@@ -879,6 +996,12 @@ namespace SimpleLanguage.Core
                 case EVisitType.New:
                     {
                         sb.Append(this.m_CallMetaType.ToString());
+                    }
+                    break;
+                case EVisitType.MetaData:
+                    {
+
+                        sb.Append(this.m_ReturnMetaType.metaData.metaNode.ToString());
                     }
                     break;
                 case MetaVisitNode.EVisitType.EnumMember:
