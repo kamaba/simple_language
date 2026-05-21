@@ -1,3 +1,4 @@
+using SimpleLanguage.Logging;
 using SimpleLanguage.VM;
 using SimpleLanuageVM.Load;
 using System.Diagnostics;
@@ -17,13 +18,35 @@ namespace SimpleLanguage.Parse
         {
             s_MethodById.Clear();
             s_MethodDeclaringTypeById.Clear();
+            s_ClassPackageById.Clear();
+        }
+
+        private static void ApplyRuntimeClassShellMetadata(RuntimeClass rc, SLClassPackage pkg)
+        {
+            if (rc == null || pkg == null) return;
+
+            var fullName = string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName;
+            rc.id = pkg.id;
+            rc.name = fullName;
+            rc.metaClassKind = pkg.metaClassKind;
+            rc.fieldsFromPackageApplied = false;
+
+            if (pkg.implementsInterfaceIdList != null)
+            {
+                for (int i = 0; i < pkg.implementsInterfaceIdList.Count; i++)
+                    rc.AddImplementsInterfaceId(pkg.implementsInterfaceIdList[i]);
+            }
+
+            s_ClassPackageById[pkg.id] = pkg;
         }
 
         private static RuntimeDefType ResolveRuntimeDefType(SLRuntimeDefTypePackage? pkg)
         {
             if (pkg == null) return null;
 
-            var rc = ResolveOrCreateRuntimeClassByIdOrName(pkg.classId, pkg.className);
+            // 解析 data/class 类型定义时，先确保 RuntimeClass 壳存在，
+            // 再继续递归解析模板参数/元素，避免在类型图构建阶段提前递归字段。
+            var rc = ResolveOrCreateRuntimeClassShellByIdOrName(pkg.classId, pkg.className);
             if (rc == null) return null;
 
             var args = new List<RuntimeDefType>();
@@ -233,7 +256,11 @@ namespace SimpleLanguage.Parse
 
             var existed = RuntimeClassManager.GetRuntimeClassById(pkg.id);
             if (existed != null)
+            {
+                // 可能是前序按 id/名称创建的占位壳，这里必须回填完整 class 元信息。
+                ApplyRuntimeClassShellMetadata(existed, pkg);
                 return existed;
+            }
 
             var fullName = string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName;
             var existedByName = RuntimeClassManager.GetRuntimeClassByName(fullName);
@@ -241,18 +268,7 @@ namespace SimpleLanguage.Parse
             {
                 // Core types may already be pre-created by name before package load.
                 // Rebind to exported class id so templateRelationList can attach to the same RuntimeClass instance.
-                existedByName.id = pkg.id;
-                existedByName.name = fullName;
-                existedByName.metaClassKind = pkg.metaClassKind;
-                existedByName.fieldsFromPackageApplied = false;
-                if (pkg.implementsInterfaceIdList != null)
-                {
-                    for (int i = 0; i < pkg.implementsInterfaceIdList.Count; i++)
-                        existedByName.AddImplementsInterfaceId(pkg.implementsInterfaceIdList[i]);
-                }
-
-                if (!s_ClassPackageById.ContainsKey(pkg.id))
-                    s_ClassPackageById[pkg.id] = pkg;
+                ApplyRuntimeClassShellMetadata(existedByName, pkg);
 
                 return existedByName;
             }
@@ -263,18 +279,7 @@ namespace SimpleLanguage.Parse
                 var existedByShortName = RuntimeClassManager.GetRuntimeClassByName(shortName);
                 if (existedByShortName != null)
                 {
-                    existedByShortName.id = pkg.id;
-                    existedByShortName.name = fullName;
-                    existedByShortName.metaClassKind = pkg.metaClassKind;
-                    existedByShortName.fieldsFromPackageApplied = false;
-                    if (pkg.implementsInterfaceIdList != null)
-                    {
-                        for (int i = 0; i < pkg.implementsInterfaceIdList.Count; i++)
-                            existedByShortName.AddImplementsInterfaceId(pkg.implementsInterfaceIdList[i]);
-                    }
-
-                    if (!s_ClassPackageById.ContainsKey(pkg.id))
-                        s_ClassPackageById[pkg.id] = pkg;
+                    ApplyRuntimeClassShellMetadata(existedByShortName, pkg);
 
                     return existedByShortName;
                 }
@@ -293,9 +298,51 @@ namespace SimpleLanguage.Parse
                     rc.AddImplementsInterfaceId(pkg.implementsInterfaceIdList[i]);
             }
             RuntimeClassManager.AddRuntimeClass(rc);
+            s_ClassPackageById[pkg.id] = pkg;
 
-            if (!s_ClassPackageById.ContainsKey(pkg.id))
-                s_ClassPackageById[pkg.id] = pkg;
+            return rc;
+        }
+
+        // TypeDef 解析专用：只保证 RuntimeClass 壳存在，不触发字段填充。
+        private static RuntimeClass? ResolveOrCreateRuntimeClassShellByIdOrName(int classId, string? className)
+        {
+            RuntimeClass? rc = null;
+
+            if (classId != 0)
+            {
+                rc = RuntimeClassManager.GetRuntimeClassById(classId);
+                if (rc == null && s_ClassPackageById.TryGetValue(classId, out var pkg) && pkg != null)
+                {
+                    rc = RegisterRuntimeClassShellFromPackage(pkg);
+                }
+            }
+
+            if (rc == null && !string.IsNullOrWhiteSpace(className))
+            {
+                rc = RuntimeClassManager.GetRuntimeClassByName(className)
+                    ?? RuntimeClassManager.GetRuntimeClassByName(GetShortName(className));
+
+                if (rc == null)
+                {
+                    // 名称路径仅建立壳，不做字段展开。
+                    rc = ResolveOrCreateRuntimeClass(className);
+                }
+
+                if (rc != null && classId != 0 && rc.id != classId)
+                {
+                    rc.id = classId;
+                }
+            }
+
+            if (rc == null && classId != 0)
+            {
+                rc = new RuntimeClass
+                {
+                    id = classId,
+                    name = string.IsNullOrWhiteSpace(className) ? $"Class_{classId}" : className,
+                };
+                RuntimeClassManager.AddRuntimeClass(rc);
+            }
 
             return rc;
         }
@@ -334,6 +381,8 @@ namespace SimpleLanguage.Parse
             if (pkg == null || rc == null) return;
             if (rc.fieldsFromPackageApplied) return;
 
+            rc.ClearFieldRuntimeState();
+
             if (pkg.implementsInterfaceIdList != null)
             {
                 for (int i = 0; i < pkg.implementsInterfaceIdList.Count; i++)
@@ -368,6 +417,10 @@ namespace SimpleLanguage.Parse
                     }
                     catch {
                         Debug.Assert(false, "解析定义类型出错!");
+                    }
+                    if( rdt == null )
+                    {
+                        Log.AddParseIRLog(LID.ShowMessageAssert, "");
                     }
 
                     var rv = new RuntimeVariable(rdt, f.GetHashCode(), f.index, f.name ?? string.Empty);
@@ -404,6 +457,8 @@ namespace SimpleLanguage.Parse
         private static void BindRuntimeClassMethodsFromClassPackage(SLClassPackage c, RuntimeClass rc)
         {
             if (c == null || rc == null) return;
+
+            rc.ClearBoundMethods();
 
             if (c.nonStaticMethodList != null)
             {
@@ -680,10 +735,10 @@ namespace SimpleLanguage.Parse
                 rc = RuntimeClassManager.GetRuntimeClassById(classId);
                 if (rc == null)
                 {
-                    // try to build from cached package metadata if available
+                    // 这里仅允许建壳，禁止触发字段填充，避免 TypeDef 解析阶段递归读包内容。
                     if (s_ClassPackageById.TryGetValue(classId, out var pkg) && pkg != null)
                     {
-                        rc = CreateRuntimeClassFromPackage(pkg);
+                        rc = RegisterRuntimeClassShellFromPackage(pkg);
                     }
                 }
             }

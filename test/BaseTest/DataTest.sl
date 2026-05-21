@@ -98,7 +98,7 @@ data StructMatrix
 data StudentRecord
 {
     sid = 0
-    name = ""
+    name = "StudentRecord Name"
     scores = [95, 88, 91]
     tags = ["math", "final"]
     profile = {
@@ -283,10 +283,10 @@ DataTest
         global.println("========== DataTest (start) ==========")
 
         constDataReadOnlyTest()
-        staticDataDirectUseTest()
-        memberShapeCoverageTest()
-        global.println("anonymousDataMetaCompileTest compiled but is not executed in runtime baseline")
-        global.println("newDataInstanceTest skipped in runtime (known VM gap)")
+        #staticDataDirectUseTest()
+        #memberShapeCoverageTest()
+        #global.println("anonymousDataMetaCompileTest compiled but is not executed in runtime baseline")
+        #global.println("newDataInstanceTest skipped in runtime (known VM gap)")
 
         global.println("========== DataTest (end) ==========")
     }

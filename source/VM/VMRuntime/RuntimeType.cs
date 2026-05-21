@@ -8,6 +8,7 @@
 
 using SimpleLanguage.VM.Runtime;
 using SimpleLanguage.Parse;
+using System.Runtime.CompilerServices;
 using System.Text;
 using SimpleLanguage.Logging;
 namespace SimpleLanguage.VM
@@ -82,6 +83,38 @@ namespace SimpleLanguage.VM
         }
         public RuntimeType GetClassRuntimeType( RuntimeDefType rdt, bool isAdd = false)
         {
+            return GetClassRuntimeTypeCore(rdt, isAdd,
+                new HashSet<RuntimeDefType>(RuntimeDefTypeReferenceComparer.Instance));
+        }
+
+        private sealed class RuntimeDefTypeReferenceComparer : IEqualityComparer<RuntimeDefType>
+        {
+            public static readonly RuntimeDefTypeReferenceComparer Instance = new();
+
+            public bool Equals(RuntimeDefType? x, RuntimeDefType? y) => ReferenceEquals(x, y);
+            public int GetHashCode(RuntimeDefType obj) => RuntimeHelpers.GetHashCode(obj);
+        }
+
+        private RuntimeType? GetClassRuntimeTypeCore(RuntimeDefType rdt, bool isAdd, HashSet<RuntimeDefType> visiting)
+        {
+            if (rdt == null)
+            {
+                return null;
+            }
+
+            if (!visiting.Add(rdt))
+            {
+                // Break cyclic template relation recursion; fallback to raw runtime class type.
+                var raw = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(rdt.runtimeClass, new List<RuntimeType>());
+                if (raw == null && isAdd)
+                {
+                    raw = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(rdt.runtimeClass, new List<RuntimeType>());
+                }
+                return raw;
+            }
+
+            try
+            {
             var irmc = this.m_RuntimeClass;
             if (rdt.templateIndex != -1)
             {
@@ -94,7 +127,7 @@ namespace SimpleLanguage.VM
                     var mt = m_RuntimeClass.GetRuntimeDefTypeByTemplateAndClassRelation(rdt.ownerRuntimeClass, rdt.templateIndex);
                     if (mt == null) return null;
 
-                    return GetClassRuntimeType(mt, isAdd);
+                    return GetClassRuntimeTypeCore(mt, isAdd, visiting);
                 }
             }
             else
@@ -104,7 +137,7 @@ namespace SimpleLanguage.VM
                 {
                     for (int i = 0; i < rdt.runtimeDefTypeList.Count; i++)
                     {
-                        var crt = GetClassRuntimeType(rdt.runtimeDefTypeList[i], isAdd);
+                        var crt = GetClassRuntimeTypeCore(rdt.runtimeDefTypeList[i], isAdd, visiting);
                         rtList.Add(crt);
                     }
                 }
@@ -114,6 +147,11 @@ namespace SimpleLanguage.VM
                     rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(rdt.runtimeClass, rtList);
                 }
                 return rt;
+            }
+            }
+            finally
+            {
+                visiting.Remove(rdt);
             }
         }
         public void GetStaticMemberVariableSValue(int index, ref SValue svalue)

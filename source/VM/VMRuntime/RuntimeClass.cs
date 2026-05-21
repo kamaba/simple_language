@@ -39,6 +39,21 @@ namespace SimpleLanguage.VM
             if (m == null) return;
             m_NotStaticMethodList.Add(m);
         }
+
+        internal void ClearBoundMethods()
+        {
+            m_NotStaticMethodList.Clear();
+            m_OperatorMethodList.Clear();
+        }
+
+        internal void ClearFieldRuntimeState()
+        {
+            m_NonStaticIRMetaVariableList.Clear();
+            m_StaticIRMetaVariableList.Clear();
+            m_NonStaticMemberVariableSetValueList.Clear();
+            m_StaticMemberVariableSetValueList.Clear();
+        }
+
         internal void AddOperatorMethod(RuntimeMethod m)
         {
             if (m == null) return;

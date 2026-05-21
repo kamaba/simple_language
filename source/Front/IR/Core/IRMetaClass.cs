@@ -512,33 +512,33 @@ namespace SimpleLanguage.IR
 
             List<IRData> list = new List<IRData>();
 
-            foreach( var v in m_LocalIRMetaVariableList )
-            {
-                if(v.express == null )
-                {
-                    continue;
-                }
-                if (v.express is MetaNewObjectExpressNode mnoe)
-                {
-                    IRNewExpress irexp = new IRNewExpress(null, mnoe);
-                    list.AddRange(irexp.IRDataList);
-                }
-                else
-                {
-                    var irexp = IRExpressManager.CreateExpress(null, v.express);
-                    list.AddRange(irexp.IRDataList);
+            //foreach( var v in m_LocalIRMetaVariableList )
+            //{
+            //    if(v.express == null )
+            //    {
+            //        continue;
+            //    }
+            //    if (v.express is MetaNewObjectExpressNode mnoe)
+            //    {
+            //        IRNewExpress irexp = new IRNewExpress(null, mnoe);
+            //        list.AddRange(irexp.IRDataList);
+            //    }
+            //    else
+            //    {
+            //        var irexp = IRExpressManager.CreateExpress(null, v.express);
+            //        list.AddRange(irexp.IRDataList);
 
-                }
+            //    }
 
-                IRData irdata = new IRData();
-                irdata.id = list.Count;
-                irdata.opValue = irmt;
-                // for instance member default init we use StoreNotStaticField1
-                irdata.opCode = EIROpCode.StoreNotStaticField1;
-                irdata.index = v.index;
+            //    IRData irdata = new IRData();
+            //    irdata.id = list.Count;
+            //    irdata.opValue = irmt;
+            //    // for instance member default init we use StoreNotStaticField1
+            //    irdata.opCode = EIROpCode.StoreNotStaticField1;
+            //    irdata.index = v.index;
 
-                list.Add(irdata);
-            }
+            //    list.Add(irdata);
+            //}
 
             // Also process static member variables so their initialization expressions are
             // converted to IR (this ensures string constants and other consts are collected
