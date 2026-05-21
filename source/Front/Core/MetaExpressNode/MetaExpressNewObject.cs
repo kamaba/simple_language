@@ -65,32 +65,35 @@ namespace SimpleLanguage.Core
                 {
                     MetaType targetMetaType = null;
                     m_DefineName = fmos.variableRef.name;
-                    if (m_NewObjectMetaType != null && m_NewObjectMetaType.isData)
+                    if (m_NewObjectMetaType != null )
                     {
-                        var md = m_NewObjectMetaType.metaData;
-                        m_MetaMemberData = md.GetMemberDataByName(m_DefineName);
-                        m_AssignTargetType = EAssignTargetType.MemberData;
-                        if (m_MetaMemberData == null)
+                        if(m_NewObjectMetaType.isData )
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????");
-                            return;
-                        }
-                        m_Id = m_MetaMemberData.GetHashCode();
+                            var md = m_NewObjectMetaType.metaData;
+                            m_MetaMemberData = md.GetMemberDataByName(m_DefineName);
+                            m_AssignTargetType = EAssignTargetType.MemberData;
+                            if (m_MetaMemberData == null)
+                            {
+                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????");
+                                return;
+                            }
+                            m_Id = m_MetaMemberData.GetHashCode();
 
-                        if ( m_MetaMemberData.realMetaType == null )
-                        {
-                            m_MetaMemberData.CreateMetaExpress();
-                            m_MetaMemberData.ParseMetaExpress();
-                            m_MetaMemberData.ParseRealMetaType();
-                        }
-                        targetMetaType = m_MetaMemberData.GetFinalMetaType();
-                        if (targetMetaType == null)
-                        {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "????????");
-                            return;
-                        }
+                            if (m_MetaMemberData.realMetaType == null)
+                            {
+                                m_MetaMemberData.CreateMetaExpress();
+                                m_MetaMemberData.ParseMetaExpress();
+                                m_MetaMemberData.ParseRealMetaType();
+                            }
+                            targetMetaType = m_MetaMemberData.GetFinalMetaType();
+                            if (targetMetaType == null)
+                            {
+                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "????????");
+                                return;
+                            }
 
-                        targetMetaVariable = m_MetaMemberData;
+                            targetMetaVariable = m_MetaMemberData;
+                        }
                     }
                     else
                     {
@@ -1530,10 +1533,7 @@ namespace SimpleLanguage.Core
                             }
                             m_AssignStatementsList.Add(mas);
                         }
-                        else if (!mt.isDynamicData
-                            && !mt.isDynamicClass
-                            && !mt.IsArray()
-                            && braceTerm.fileMetaAssignSyntaxList[i] is FileMetaOpAssignSyntax fmoas)
+                        else if ( braceTerm.fileMetaAssignSyntaxList[i] is FileMetaOpAssignSyntax fmoas)
                         {
                             var mas = new MetaBraceAssignStatements(fmoas, mt, m_OwnerMetaBlockStatements, 
                                 m_OwnerMetaBase, m_DefineMetaType);

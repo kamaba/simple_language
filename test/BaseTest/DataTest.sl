@@ -342,15 +342,14 @@ DataTest
         }
 
         # 3) 匿名 data 整体与字段比较
-        data anonSame1 = {
-            code = 7,
-            title = "ok"
-        }
+        data anonSame1 = {code = 7,  title = "ok"}
+
         data anonSame2 = {
             code = 7,
             title = "ok"
         }
-        data anonDiff = {
+        data anonDiff = 
+        {
             code = 8,
             title = "ok"
         }
