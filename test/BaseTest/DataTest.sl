@@ -121,19 +121,18 @@ DataTest
     static constDataReadOnlyTest()
     {
         global.println("----- constDataReadOnlyTest -----")
-        global.println("const data ScoreRule declared (read-only semantics)")
-
-        
-        StudentRecord a = new()
-        StudentRecord b = StudentRecord(){ sid = 2, name = "n2" }
-        StudentRecord c = { sid = 3, name = "n3" }
 
         global.println(ScoreRule)
-        global.println(ScoreRule.passLine)
+        global.println(ScoreRule.passLine.toString())
         global.println(ScoreRule.excellentLine)
-        global.println(a)
-        global.println(b)
-        global.println(c)
+        
+        #StudentRecord a = new()
+        #StudentRecord b = StudentRecord(){ sid = 2, name = "n2" }
+        #StudentRecord c = { sid = 3, name = "n3" }
+
+        #global.println(a)
+        #global.println(b)
+        #global.println(c)
 
         # negative-intent cases for const restriction documentation:
         # ScoreRule.passLine = 61

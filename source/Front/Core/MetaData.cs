@@ -135,7 +135,7 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, v.token, "这里需要个名字的定义!");
                     continue;
                 }
-                MetaMemberData mmv = new MetaMemberData(this, v, i, isStatic);
+                MetaMemberData mmv = new MetaMemberData(this, v, i, false );
                 if (isHave)
                 {
                     mmv.SetName(mmv.name + "__repeat__");
