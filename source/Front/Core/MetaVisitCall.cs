@@ -91,7 +91,7 @@ namespace SimpleLanguage.Core
                 var newarray = CoreMetaClassManager.arrayMetaClass.AddInstanceMetaClass(ilist, true);
                 var mt = new MetaType(newarray);
 
-                MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode( mt, m_OwnerMetaClass, m_OwnerMetaBlockStatements);
+                MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode( mt, m_OwnerMetaClass, m_OwnerMetaBlockStatements, null );
 
                 for( int i = defineCount - 1; i < inputCount; i++ )
                 {

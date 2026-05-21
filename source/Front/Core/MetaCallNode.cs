@@ -1963,7 +1963,7 @@ namespace SimpleLanguage.Core
             mmv.SetIsDefineMetaType(true);
             mmv.SetMetaDefineType(new MetaType(dataType));
             mmv.SetRealMetaType(new MetaType(dataType));
-            var newobj = new MetaNewObjectExpressNode(new MetaType(dataType), globalData, null);
+            var newobj = new MetaNewObjectExpressNode(new MetaType(dataType), globalData, null, null);
             newobj.Parse(new AllowUseSettings());
             newobj.CalcReturnType();
             mmv.SetExpress(newobj);

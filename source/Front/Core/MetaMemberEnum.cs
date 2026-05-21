@@ -157,7 +157,7 @@ namespace SimpleLanguage.Core
             if (memberClass == null) return;
 
             var memberType = new MetaType(memberClass);
-            var newMember = new MetaNewObjectExpressNode(memberType, mme.ownerMetaClass, mme.m_OwnerMetaBlockStatements);
+            var newMember = new MetaNewObjectExpressNode(memberType, mme.ownerMetaClass, mme.m_OwnerMetaBlockStatements, null );
             FillMemberNewObjectAssignList(newMember, mme.m_OwnerMetaBlockStatements, mme.ownerMetaBase, mme.m_Express, mme.m_Name, m_Index);
 
             m_Express = newMember;
@@ -185,7 +185,7 @@ namespace SimpleLanguage.Core
                 return null;
 
             var memberType = new MetaType(memberClass);
-            var newMember = new MetaNewObjectExpressNode(memberType, ownerMetaClass, m_OwnerMetaBlockStatements);
+            var newMember = new MetaNewObjectExpressNode(memberType, ownerMetaClass, m_OwnerMetaBlockStatements, null );
             FillMemberNewObjectAssignList(newMember, m_OwnerMetaBlockStatements, m_OwnerMetaBase, valueExpr, m_Name, m_Index);
             return newMember;
         }

@@ -42,8 +42,7 @@ namespace SimpleLanguage.Core
         public bool isMap => m_MetaClass == CoreMetaClassManager.mapMetaClass;
         public bool isTemplate => m_EMetaTypeType == EMetaTypeType.Template;
         public bool isDynamicClass => m_MetaClass == CoreMetaClassManager.dynamicMetaClass;
-        public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData
-            || (m_MetaData != null && m_MetaData.isDynamic);
+        public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData || (m_MetaData != null && m_MetaData.isDynamic);
         public int arrayLength => m_ArrayLength;
         public EMetaTypeType eMetaTypeType => m_EMetaTypeType;
 

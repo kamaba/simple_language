@@ -1291,7 +1291,7 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
-            m_DefineMetaType = new MetaType(mt);
+            m_DefineMetaType = mt;
             if (m_DefineMetaType != null)
             {
                 if (m_DefineMetaType.IsArray())
@@ -1377,7 +1377,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            System.Diagnostics.Debug.Assert(false, "");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "lastNode.bracketExpressList==0");
                         }
                     }
 
@@ -1398,23 +1398,6 @@ namespace SimpleLanguage.Core
                     m_BraceFileMetaBaseTerm = fma;
                 }
             }
-        }
-        // dynamic c = { c1 = 100, c2 = 200 }
-        public MetaNewObjectExpressNode(MetaClass ownermc, List<MetaData> list)
-        {
-            m_OwnerMetaBase = ownermc;
-            m_OwnerMetaBlockStatements = null;
-
-            var metaInputTemplateCollection = new MetaInputTemplateCollection();
-            //MetaType mitp = new MetaType(MetaDynamicClass);
-            //metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
-            m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.arrayMetaClass, null, metaInputTemplateCollection);
-
-            //MetaInputParamCollection mipc = new MetaInputParamCollection(mc, mbs);
-            //mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, m_MetaBraceOrBracketStatementsContent.count)));
-            //MetaMemberFunction mmf = m_MetaType.metaClass.GetMetaMemberConstructFunction(mipc);
-
-            //m_MetaConstructFunctionCall = new MetaMethodCall(m_MetaType.metaClass, mmf, mipc);
         }
         // 1..x
         public MetaNewObjectExpressNode(FileMetaConstValueTerm arrayLinkToken, MetaBase ownerMC, MetaBlockStatements mbs)
@@ -1469,11 +1452,6 @@ namespace SimpleLanguage.Core
                 //m_MetaConstructFunctionCall = new MetaMethodCall(null, null, tfunction, null, mdpc, null, null);
             }
         }
-        // ????NewObject???
-        public MetaNewObjectExpressNode(MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs)
-            : this(mt, ownerMC, mbs, null)
-        {
-        }
         /// <summary>
         /// ???? new ??????<paramref name="equalMV"/> ????????????????????? data ?????????
         /// </summary>
@@ -1500,7 +1478,20 @@ namespace SimpleLanguage.Core
 
         public MetaType GetMaxLevelMetaType()
         {
-            return MetaBraceAssignStatements.GetMaxLevelMetaType(m_AssignStatementsList, m_DefineMetaType );
+            if( m_NewMetaType != null)
+            {
+                return MetaBraceAssignStatements.GetMaxLevelMetaType(m_AssignStatementsList, m_NewMetaType);
+            }
+            else if( m_DefineMetaType != null )
+            {
+                return MetaBraceAssignStatements.GetMaxLevelMetaType(m_AssignStatementsList, m_DefineMetaType);
+            }
+            else
+            {
+                return MetaBraceAssignStatements.GetMaxLevelMetaType(m_AssignStatementsList, null );
+                //Log.AddMetaCoreLog( LID.MetaCoreAssertShowMessage, m_Token, "MetaNewObjectExpressNode GetMaxLevelMetaType m_NewMetaType and m_DefineMetaType are null");
+            }
+            return null;
         }
 
         public void ParseBraceStatementsContent(AllowUseSettings aws, MetaType mt )
@@ -1971,7 +1962,6 @@ namespace SimpleLanguage.Core
         }
         public override void Parse(AllowUseSettings auc)
         {
-            //??????????? ??????????????????????????            //
             if (m_NewType == ENewType.ArrayClass )
             {
                 if (m_NewMetaType != null && m_DefineMetaType != null )
@@ -2128,8 +2118,6 @@ namespace SimpleLanguage.Core
         }
         public override void CalcReturnType()
         {
-            base.CalcReturnType();
-
             var mipc = new MetaInputParamCollection(ownerMetaClass, m_OwnerMetaBlockStatements);
 
             if (m_NewType != ENewType.ArrayClass)

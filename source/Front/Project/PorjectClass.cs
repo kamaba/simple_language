@@ -307,7 +307,7 @@ namespace SimpleLanguage.Project
                 mmv.SetIsDefineMetaType(true);
                 mmv.SetMetaDefineType(new MetaType(dataClass));
                 mmv.SetRealMetaType(new MetaType(dataClass));
-                mmv.SetExpress(new MetaNewObjectExpressNode(new MetaType(dataClass), projectMc, null));
+                mmv.SetExpress(new MetaNewObjectExpressNode(new MetaType(dataClass), projectMc, null, null) );
                 FinalizeInjectedProjectGlobalMember(projectMc, mmv);
                 return;
             }
