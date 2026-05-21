@@ -408,6 +408,61 @@ DataTest
         {
             global.println("field nested anonymous data: nested.b still equal when only a differs")
         }
+
+        # 5) 系统函数：DataAllEqual / DataTypeEqual / DataNameAndTypeEqual / DataDataEqual
+        if (DataAllEqual(sameA, sameB))
+        {
+            global.println("builtin DataAllEqual(sameA,sameB) -> true")
+        }
+        if (!DataAllEqual(sameA, diffC))
+        {
+            global.println("builtin DataAllEqual(sameA,diffC) -> false")
+        }
+
+        if (DataTypeEqual(sameA, sameB))
+        {
+            global.println("builtin DataTypeEqual(sameA,sameB) -> true")
+        }
+        if (DataNameAndTypeEqual(sameA, sameB))
+        {
+            global.println("builtin DataNameAndTypeEqual(sameA,sameB) -> true")
+        }
+        if (DataDataEqual(sameA, sameB))
+        {
+            global.println("builtin DataDataEqual(sameA,sameB) -> true")
+        }
+        if (!DataDataEqual(sameA, diffC))
+        {
+            global.println("builtin DataDataEqual(sameA,diffC) -> false")
+        }
+
+        if (DataTypeEqual(anonSame1, anonSame2))
+        {
+            global.println("builtin DataTypeEqual(anon) -> true")
+        }
+        if (DataDataEqual(anonSame1, anonSame2))
+        {
+            global.println("builtin DataDataEqual(anon) -> true")
+        }
+        if (!DataDataEqual(anonSame1, anonDiff))
+        {
+            global.println("builtin DataDataEqual(anon diff) -> false")
+        }
+
+        data typedA = { code = 7, title = "ok" }
+        data typedB = { code = 7, title = "ok" }
+        if (DataTypeEqual(typedA, typedB))
+        {
+            global.println("builtin DataTypeEqual(typed anon pair) -> true")
+        }
+        if (DataDataEqual(typedA, typedB))
+        {
+            global.println("builtin DataDataEqual(typed anon pair) -> true")
+        }
+        if (!DataAllEqual(typedA, typedB))
+        {
+            global.println("builtin DataAllEqual(typed anon, diff type id) -> false expected")
+        }
     }
 
 
@@ -416,7 +471,7 @@ DataTest
         global.println("========== DataTest (start) ==========")
 
         constDataReadOnlyTest()
-        #dataIfCompareTest()
+        dataIfCompareTest()
         #staticDataDirectUseTest()
         #memberShapeCoverageTest()
         #anonymousDataMetaCompileTest()

@@ -117,6 +117,13 @@ namespace SimpleLanguage.Core
             { ESystemMethodCall.SystemStringEnd, new SystemMethodCallDeclaration(ESystemMethodCall.SystemStringEnd, Str, false, Str, I32) },
             { ESystemMethodCall.SystemStringRange, new SystemMethodCallDeclaration(ESystemMethodCall.SystemStringRange, Str, false, Str, I32, I32) },
             { ESystemMethodCall.SystemStringToUInt8Array, new SystemMethodCallDeclaration(ESystemMethodCall.SystemStringToUInt8Array, UInt8Array, false, Str) },
+
+            // data compare (operands validated at runtime; params are object for anonymous/typed data instances)
+            { ESystemMethodCall.DataAllEqual, new SystemMethodCallDeclaration(ESystemMethodCall.DataAllEqual, Bool, false, Obj, Obj) },
+            { ESystemMethodCall.DataTypeEqual, new SystemMethodCallDeclaration(ESystemMethodCall.DataTypeEqual, Bool, false, Obj, Obj) },
+            { ESystemMethodCall.DataNameAndTypeEqual, new SystemMethodCallDeclaration(ESystemMethodCall.DataNameAndTypeEqual, Bool, false, Obj, Obj) },
+            { ESystemMethodCall.DataDataEqual, new SystemMethodCallDeclaration(ESystemMethodCall.DataDataEqual, Bool, false, Obj, Obj) },
+            { ESystemMethodCall.SystemConvertSInt8, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertSInt8, I8, false, Obj, I32) },
         };
 
         public static bool TryGet(ESystemMethodCall call, out SystemMethodCallDeclaration decl)

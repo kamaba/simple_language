@@ -44,6 +44,10 @@ namespace SimpleLanguage.VM.Runtime
         SystemStringEnd,
         SystemStringRange,
         SystemStringToByteArray,
+        DataAllEqual,
+        DataTypeEqual,
+        DataNameAndTypeEqual,
+        DataDataEqual,
         /// <summary>Convert to signed byte; must match <see cref="SimpleLanguage.ESystemMethodCall.SystemConvertSInt8"/> ordinal.</summary>
         SystemConvertSInt8,
     }

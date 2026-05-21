@@ -1,0 +1,497 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Globalization;
+using System.Text;
+using SimpleLanuageVM.Load;
+using SimpleLanguage.VM.Runtime;
+
+namespace SimpleLanguage.VM
+{
+    /// <summary>
+    /// Built-in comparisons for <c>data</c> instances (<see cref="RuntimeClass.metaClassKind"/> == 2).
+    /// </summary>
+    internal static class DataSystemMethodCall
+    {
+        const int DataMetaClassKind = 2;
+
+        public static void ExecuteDataAllEqual(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            if (!TryPopTwoDataOperands(vm, sysPkg, out var d1, out var d2))
+            {
+                PushBool(vm, false);
+                return;
+            }
+
+            bool eq = d1.runtimeClass.id == d2.runtimeClass.id && MemberDataBuffersEqual(d1, d2);
+            PushBool(vm, eq);
+        }
+
+        public static void ExecuteDataTypeEqual(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            if (!TryPopTwoDataOperands(vm, sysPkg, out var d1, out var d2))
+            {
+                PushBool(vm, false);
+                return;
+            }
+
+            PushBool(vm, DataLayoutsShapeEqual(d1, d2));
+        }
+
+        public static void ExecuteDataNameAndTypeEqual(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            if (!TryPopTwoDataOperands(vm, sysPkg, out var d1, out var d2))
+            {
+                PushBool(vm, false);
+                return;
+            }
+
+            PushBool(vm, DataLayoutsNameAndTypeEqual(d1, d2));
+        }
+
+        public static void ExecuteDataDataEqual(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            if (!TryPopTwoDataOperands(vm, sysPkg, out var d1, out var d2))
+            {
+                PushBool(vm, false);
+                return;
+            }
+
+            PushBool(vm, DataValuesEqual(d1, d2, new HashSet<(int, int)>()));
+        }
+
+        static void PushBool(RuntimeVM vm, bool value)
+        {
+            var outv = default(SValue);
+            outv.SetBoolValue(value);
+            vm.PushSValueSynced(outv);
+        }
+
+        static bool TryPopTwoDataOperands(RuntimeVM vm, SLSystemMethodCallPackage sysPkg, out ClassObject d1, out ClassObject d2)
+        {
+            d1 = null!;
+            d2 = null!;
+            int pc = sysPkg.paramCount;
+            if (pc < 2 || !vm.TrySystemCallPopArgs(pc, out var args))
+            {
+                Debug.Assert(false, $"Data compare stack underflow, need={pc}");
+                return false;
+            }
+
+            if (!TryGetDataInstance(ref args[0], out d1) || !TryGetDataInstance(ref args[1], out d2))
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        static bool TryGetDataInstance(ref SValue value, out ClassObject dataObject)
+        {
+            dataObject = null!;
+            if (value.isNull)
+            {
+                return false;
+            }
+
+            if (value.sobject is ClassObject co && co.runtimeClass?.metaClassKind == DataMetaClassKind)
+            {
+                dataObject = co;
+                return true;
+            }
+
+            return false;
+        }
+
+        static bool MemberDataBuffersEqual(ClassObject a, ClassObject b)
+        {
+            var bufA = a.memberData;
+            var bufB = b.memberData;
+            if (bufA == null && bufB == null)
+            {
+                return true;
+            }
+
+            if (bufA == null || bufB == null)
+            {
+                return false;
+            }
+
+            return bufA.AsSpan().SequenceEqual(bufB);
+        }
+
+        static bool DataLayoutsShapeEqual(ClassObject a, ClassObject b)
+        {
+            return string.Equals(
+                BuildLayoutShapeKey(a),
+                BuildLayoutShapeKey(b),
+                StringComparison.Ordinal);
+        }
+
+        static bool DataLayoutsNameAndTypeEqual(ClassObject a, ClassObject b)
+        {
+            return string.Equals(
+                BuildLayoutNameAndTypeKey(a),
+                BuildLayoutNameAndTypeKey(b),
+                StringComparison.Ordinal);
+        }
+
+        static string BuildLayoutShapeKey(ClassObject dataObject)
+        {
+            var fields = dataObject.runtimeClass.nonStaticIRMetaVariableList;
+            var sb = new StringBuilder();
+            sb.Append('{');
+            for (int i = 0; i < fields.Count; i++)
+            {
+                if (i > 0)
+                {
+                    sb.Append(',');
+                }
+
+                var field = fields[i];
+                sb.Append(field.name);
+                sb.Append(':');
+                sb.Append(BuildTypeShapeKey(field.runtimeDefType?.runtimeClass != null
+                    ? RuntimeVM.GetRuntimeTypeByDefType(
+                        field.runtimeDefType,
+                        dataObject.runtimeClass,
+                        dataObject.runtimeType.runtimeTemplateList,
+                        false)
+                    : null));
+            }
+            sb.Append('}');
+            return sb.ToString();
+        }
+
+        static string BuildLayoutNameAndTypeKey(ClassObject dataObject)
+        {
+            var fields = dataObject.runtimeClass.nonStaticIRMetaVariableList;
+            var sb = new StringBuilder();
+            sb.Append('{');
+            for (int i = 0; i < fields.Count; i++)
+            {
+                if (i > 0)
+                {
+                    sb.Append(',');
+                }
+
+                var field = fields[i];
+                sb.Append(field.name);
+                sb.Append(':');
+                sb.Append(BuildTypeIdentityKey(field.runtimeDefType?.runtimeClass != null
+                    ? RuntimeVM.GetRuntimeTypeByDefType(
+                        field.runtimeDefType,
+                        dataObject.runtimeClass,
+                        dataObject.runtimeType.runtimeTemplateList,
+                        false)
+                    : null));
+            }
+            sb.Append('}');
+            return sb.ToString();
+        }
+
+        static string BuildTypeShapeKey(RuntimeType? rt)
+        {
+            if (rt == null)
+            {
+                return "null";
+            }
+
+            if (rt.runtimeClass?.metaClassKind == DataMetaClassKind)
+            {
+                return BuildDataClassShapeFromRuntimeClass(rt.runtimeClass);
+            }
+
+            if (IsArrayRuntimeType(rt))
+            {
+                var elem = rt.runtimeTemplateList != null && rt.runtimeTemplateList.Count > 0
+                    ? rt.runtimeTemplateList[0]
+                    : null;
+                return "array[" + BuildTypeShapeKey(elem) + "]";
+            }
+
+            return ScalarShapeCategory(rt.eType);
+        }
+
+        static string BuildDataClassShapeFromRuntimeClass(RuntimeClass? rc)
+        {
+            if (rc == null)
+            {
+                return "data{}";
+            }
+
+            var fields = rc.nonStaticIRMetaVariableList;
+            var sb = new StringBuilder();
+            sb.Append("data{");
+            for (int i = 0; i < fields.Count; i++)
+            {
+                if (i > 0)
+                {
+                    sb.Append(',');
+                }
+
+                var field = fields[i];
+                sb.Append(field.name);
+                sb.Append(':');
+                sb.Append(BuildDefTypeShapeKey(field.runtimeDefType, rc));
+            }
+            sb.Append('}');
+            return sb.ToString();
+        }
+
+        static string BuildDefTypeShapeKey(RuntimeDefType? rdt, RuntimeClass ownerClass)
+        {
+            if (rdt == null)
+            {
+                return "null";
+            }
+
+            var rt = RuntimeVM.GetRuntimeTypeByDefType(rdt, ownerClass, null, false);
+            return BuildTypeShapeKey(rt);
+        }
+
+        static string BuildTypeIdentityKey(RuntimeType? rt)
+        {
+            if (rt == null)
+            {
+                return "null";
+            }
+
+            var sb = new StringBuilder();
+            sb.Append(rt.runtimeClass?.id ?? 0);
+            if (rt.runtimeTemplateList != null && rt.runtimeTemplateList.Count > 0)
+            {
+                sb.Append('<');
+                for (int i = 0; i < rt.runtimeTemplateList.Count; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(',');
+                    }
+
+                    sb.Append(BuildTypeIdentityKey(rt.runtimeTemplateList[i]));
+                }
+                sb.Append('>');
+            }
+
+            return sb.ToString();
+        }
+
+        static string ScalarShapeCategory(EVMType evmType)
+        {
+            return evmType switch
+            {
+                EVMType.Boolean => "bool",
+                EVMType.String => "string",
+                EVMType.UInt8 or EVMType.Int8 => "byte",
+                EVMType.Int16 or EVMType.UInt16 or EVMType.Int32 or EVMType.UInt32
+                    or EVMType.Int64 or EVMType.UInt64 or EVMType.Num => "int",
+                EVMType.Float32 or EVMType.Float64 => "float",
+                _ => "object",
+            };
+        }
+
+        static bool IsArrayRuntimeType(RuntimeType rt)
+        {
+            if (rt?.runtimeClass == null)
+            {
+                return false;
+            }
+
+            return rt.runtimeClass.name.Contains("Array", StringComparison.Ordinal)
+                || (rt.runtimeTemplateList != null && rt.runtimeTemplateList.Count > 0
+                    && rt.eType == EVMType.Class);
+        }
+
+        static bool DataValuesEqual(ClassObject a, ClassObject b, HashSet<(int, int)> pairVisit)
+        {
+            if (!DataFieldNamesAligned(a, b))
+            {
+                return false;
+            }
+
+            var key = (Math.Min(a.id, b.id), Math.Max(a.id, b.id));
+            if (!pairVisit.Add(key))
+            {
+                return true;
+            }
+
+            try
+            {
+                var fieldsA = a.runtimeClass.nonStaticIRMetaVariableList;
+                var fieldsB = b.runtimeClass.nonStaticIRMetaVariableList;
+                if (fieldsA.Count != fieldsB.Count)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < fieldsA.Count; i++)
+                {
+                    var va = default(SValue);
+                    var vb = default(SValue);
+                    a.GetMemberVariableSValue(i, ref va);
+                    b.GetMemberVariableSValue(i, ref vb);
+                    if (!CompatibleValuesEqual(ref va, ref vb, pairVisit))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+            finally
+            {
+                pairVisit.Remove(key);
+            }
+        }
+
+        static bool DataFieldNamesAligned(ClassObject a, ClassObject b)
+        {
+            var fieldsA = a.runtimeClass.nonStaticIRMetaVariableList;
+            var fieldsB = b.runtimeClass.nonStaticIRMetaVariableList;
+            if (fieldsA.Count != fieldsB.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < fieldsA.Count; i++)
+            {
+                if (!string.Equals(fieldsA[i].name, fieldsB[i].name, StringComparison.Ordinal))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        static bool CompatibleValuesEqual(ref SValue a, ref SValue b, HashSet<(int, int)> pairVisit)
+        {
+            a.TryNormalizeObjectScalarInPlace();
+            b.TryNormalizeObjectScalarInPlace();
+
+            if (a.isNull && b.isNull)
+            {
+                return true;
+            }
+
+            if (a.isNull || b.isNull)
+            {
+                return false;
+            }
+
+            if (TryGetDataInstance(ref a, out var da) && TryGetDataInstance(ref b, out var db))
+            {
+                return DataValuesEqual(da, db, pairVisit);
+            }
+
+            if (a.sobject is ArrayObject arrA && b.sobject is ArrayObject arrB)
+            {
+                if (arrA.length != arrB.length)
+                {
+                    return false;
+                }
+
+                for (int i = 0; i < arrA.length; i++)
+                {
+                    var ea = default(SValue);
+                    var eb = default(SValue);
+                    arrA.LoadValue(i, ref ea);
+                    arrB.LoadValue(i, ref eb);
+                    if (!CompatibleValuesEqual(ref ea, ref eb, pairVisit))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            if (IsNumericEvm(a.eType) && IsNumericEvm(b.eType))
+            {
+                return NumericValuesEqual(ref a, ref b);
+            }
+
+            if (a.eType == EVMType.String && b.eType == EVMType.String)
+            {
+                return string.Equals(a.stringValue, b.stringValue, StringComparison.Ordinal);
+            }
+
+            if (a.eType == EVMType.Boolean && b.eType == EVMType.Boolean)
+            {
+                return a.int8Value == b.int8Value;
+            }
+
+            if (ReferenceEquals(a.sobject, b.sobject))
+            {
+                return true;
+            }
+
+            object? av = a.GetValueObject();
+            object? bv = b.GetValueObject();
+            if (ReferenceEquals(av, bv))
+            {
+                return true;
+            }
+
+            if (av == null || bv == null)
+            {
+                return false;
+            }
+
+            return Equals(av, bv);
+        }
+
+        static bool NumericValuesEqual(ref SValue a, ref SValue b)
+        {
+            if (IsFloatFamily(a.eType) || IsFloatFamily(b.eType))
+            {
+                double da = ToDouble(ref a);
+                double db = ToDouble(ref b);
+                return da.Equals(db);
+            }
+
+            long la = ToInt64(ref a);
+            long lb = ToInt64(ref b);
+            return la == lb;
+        }
+
+        static bool IsNumericEvm(EVMType t)
+        {
+            return t == EVMType.UInt8 || t == EVMType.Int8 || t == EVMType.Int16 || t == EVMType.UInt16
+                || t == EVMType.Int32 || t == EVMType.UInt32 || t == EVMType.Int64 || t == EVMType.UInt64
+                || t == EVMType.Float32 || t == EVMType.Float64 || t == EVMType.Num;
+        }
+
+        static bool IsFloatFamily(EVMType t)
+        {
+            return t == EVMType.Float32 || t == EVMType.Float64 || t == EVMType.Num;
+        }
+
+        static double ToDouble(ref SValue v)
+        {
+            return v.eType switch
+            {
+                EVMType.Float64 or EVMType.Num => v.float64Value,
+                EVMType.Float32 => v.float32Value,
+                _ => Convert.ToDouble(v.GetValueObject(), CultureInfo.InvariantCulture),
+            };
+        }
+
+        static long ToInt64(ref SValue v)
+        {
+            return v.eType switch
+            {
+                EVMType.Int64 => v.int64Value,
+                EVMType.UInt64 => unchecked((long)v.uint64Value),
+                EVMType.Int32 => v.int32Value,
+                EVMType.UInt32 => v.uint32Value,
+                EVMType.Int16 => v.int16Value,
+                EVMType.UInt16 => v.uint16Value,
+                EVMType.Int8 => v.int8Value,
+                EVMType.UInt8 => v.uint8Value,
+                _ => Convert.ToInt64(v.GetValueObject(), CultureInfo.InvariantCulture),
+            };
+        }
+    }
+}

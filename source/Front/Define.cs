@@ -429,6 +429,15 @@ namespace SimpleLanguage
         SystemStringEnd,
         SystemStringRange,
         SystemStringToUInt8Array,
+        /// <summary>data 定义类型与成员缓冲区均相同（见 <c>md/syntax/data.md</c>）。</summary>
+        DataAllEqual,
+        /// <summary>data 字段排列的格式/形状相同（标量族、数组、嵌套 data 结构）。</summary>
+        DataTypeEqual,
+        /// <summary>data 字段名与各字段类型签名相同。</summary>
+        DataNameAndTypeEqual,
+        /// <summary>data 字段值相同（数值类型可宽化兼容，如 int8 与 int32）。</summary>
+        DataDataEqual,
+        SystemConvertSInt8,
     }
     public class Global
     {

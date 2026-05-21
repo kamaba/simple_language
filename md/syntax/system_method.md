@@ -24,6 +24,17 @@ VM 通过 `EIROpCode.CallSystemMethod` 调用；`systemMethodKind` 与 Front 中
 
 ---
 
+## data 比较（Data*Equal）
+
+| 名称 | 说明 | 参数 |
+|------|------|------|
+| `DataAllEqual` | 定义类型（`RuntimeClass` id）相同且实例成员缓冲区一致 | `(object data1, object data2)` → `bool` |
+| `DataTypeEqual` | 字段名顺序与各字段**格式形状**相同（如 int/string/byte、数组、嵌套 data），不要求具名类型 id 相同 | 同上 |
+| `DataNameAndTypeEqual` | 字段名与各字段**类型签名**相同（含模板实参） | 同上 |
+| `DataDataEqual` | 字段名对齐后**数据值**相同；数值可按宽化规则兼容（如 `int8` 与 `int32`） | 同上 |
+
+运行时仅接受 `metaClassKind == Data` 的 `ClassObject` 实例（含匿名 `data`）；否则返回 `false`。Front 侧注册返回 `bool`、参数为 `object`；具体比较在 VM `DataSystemMethodCall` 中实现。
+
 ## 类型强制转换（SystemConvert*）
 
 从当前栈顶按调用约定弹出操作数（通常为 **1 个**：待转换的值），在 VM 内先**解包**为 CLR 可用的对象（数值、`SObject` 包装类型、字符串等），再按 **BCL `Convert`** 与 `CultureInfo.InvariantCulture` 转为目标类型，最后把结果 **压回栈**。

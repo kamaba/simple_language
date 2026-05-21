@@ -2068,6 +2068,18 @@ namespace SimpleLanguage.VM.Runtime
                             case (int)ESystemMethodCall.SystemEqualObject:
                                 ObjectSystemMethodCall.ExecuteSystemEqualObject(this, sysPkg);
                                 break;
+                            case (int)ESystemMethodCall.DataAllEqual:
+                                DataSystemMethodCall.ExecuteDataAllEqual(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.DataTypeEqual:
+                                DataSystemMethodCall.ExecuteDataTypeEqual(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.DataNameAndTypeEqual:
+                                DataSystemMethodCall.ExecuteDataNameAndTypeEqual(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.DataDataEqual:
+                                DataSystemMethodCall.ExecuteDataDataEqual(this, sysPkg);
+                                break;
                             case (int)ESystemMethodCall.SystemObjectGetType:
                                 ObjectSystemMethodCall.ExecuteSystemObjectGetType(this, sysPkg);
                                 break;
