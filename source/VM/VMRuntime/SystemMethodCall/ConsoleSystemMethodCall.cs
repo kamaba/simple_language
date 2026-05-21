@@ -122,6 +122,7 @@ namespace SimpleLanguage.VM.Runtime
                     return "{}";
 
                 var sb = new StringBuilder();
+                sb.Append(runtimeType.runtimeClass.name);
                 sb.Append('{');
                 for (int i = 0; i < fieldList.Count; i++)
                 {

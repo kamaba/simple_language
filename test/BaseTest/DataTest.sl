@@ -126,11 +126,12 @@ DataTest
         global.println(ScoreRule.passLine.toString())
         global.println(ScoreRule.excellentLine)
         
-        #StudentRecord a = new()
+        StudentRecord a = new()
+        global.println(a)
+
         #StudentRecord b = StudentRecord(){ sid = 2, name = "n2" }
         #StudentRecord c = { sid = 3, name = "n3" }
 
-        #global.println(a)
         #global.println(b)
         #global.println(c)
 
@@ -276,14 +277,150 @@ DataTest
         global.println("anonymous data meta compile sample prepared")
     }
 
+    static dataIfCompareTest()
+    {
+        global.println("----- dataIfCompareTest -----")
+
+        # 1) 具名 data 整体比较（结构 + 成员缓冲区，非引用）
+        ScoreData sameA = { id = 1, math = 10, english = 20, physics = 30 }
+        ScoreData sameB = ScoreData(){ id = 1, math = 10, english = 20, physics = 30 }
+        ScoreData diffC = { id = 2, math = 10, english = 20, physics = 30 }
+
+        if (sameA == sameB)
+        {
+            global.println("whole ScoreData: same values -> equal")
+        }
+        else
+        {
+            global.println("whole ScoreData: same values -> unexpected not equal")
+        }
+
+        if (sameA != diffC)
+        {
+            global.println("whole ScoreData: id differs -> not equal")
+        }
+        else
+        {
+            global.println("whole ScoreData: id differs -> unexpected equal")
+        }
+
+        # 2) 具名 data 成员（元素）比较
+        if (sameA.id == sameB.id && sameA.math == sameB.math)
+        {
+            global.println("field ScoreData: id+math match")
+        }
+        else
+        {
+            global.println("field ScoreData: id+math mismatch")
+        }
+
+        if (sameA.physics == 30)
+        {
+            global.println("field ScoreData: physics literal ok")
+        }
+
+        if (sameA.id != diffC.id)
+        {
+            global.println("field ScoreData: id diff detected")
+        }
+
+        MetaInfo metaA = MetaInfo(){ level = 2, passed = true }
+        MetaInfo metaB = { level = 2, passed = true }
+        MetaInfo metaC = { level = 3, passed = false }
+
+        if (metaA == metaB)
+        {
+            global.println("whole MetaInfo: equal")
+        }
+        if (metaA != metaC)
+        {
+            global.println("whole MetaInfo: level/passed diff -> not equal")
+        }
+        if (metaA.level == metaB.level && metaA.passed == metaB.passed)
+        {
+            global.println("field MetaInfo: level+passed match")
+        }
+
+        # 3) 匿名 data 整体与字段比较
+        data anonSame1 = {
+            code = 7,
+            title = "ok"
+        }
+        data anonSame2 = {
+            code = 7,
+            title = "ok"
+        }
+        data anonDiff = {
+            code = 8,
+            title = "ok"
+        }
+
+        if (anonSame1 == anonSame2)
+        {
+            global.println("whole anonymous data: same shape+values -> equal")
+        }
+        else
+        {
+            global.println("whole anonymous data: same shape+values -> unexpected not equal")
+        }
+
+        if (anonSame1 != anonDiff)
+        {
+            global.println("whole anonymous data: code differs -> not equal")
+        }
+
+        if (anonSame1.code == anonSame2.code && anonSame1.title == anonSame2.title)
+        {
+            global.println("field anonymous data: code+title match")
+        }
+
+        # 4) 匿名 data 嵌套子结构比较
+        data nestedA = {
+            nested = { a = 20, b = 30 },
+            tag = "pair"
+        }
+        data nestedB = {
+            nested = { a = 20, b = 30 },
+            tag = "pair"
+        }
+        data nestedC = {
+            nested = { a = 21, b = 30 },
+            tag = "pair"
+        }
+
+        if (nestedA == nestedB)
+        {
+            global.println("whole nested anonymous data: equal")
+        }
+        if (nestedA != nestedC)
+        {
+            global.println("whole nested anonymous data: nested.a differs -> not equal")
+        }
+        if (nestedA.nested.a == nestedB.nested.a && nestedA.tag == nestedB.tag)
+        {
+            global.println("field nested anonymous data: nested.a+tag match")
+        }
+        if (nestedA.nested.a != nestedC.nested.a)
+        {
+            global.println("field nested anonymous data: nested.a diff ok")
+        }
+        if (nestedA.nested.b == nestedC.nested.b)
+        {
+            global.println("field nested anonymous data: nested.b still equal when only a differs")
+        }
+    }
+
 
     static fun()
     {
         global.println("========== DataTest (start) ==========")
 
         constDataReadOnlyTest()
+        #dataIfCompareTest()
         #staticDataDirectUseTest()
         #memberShapeCoverageTest()
+        #anonymousDataMetaCompileTest()
+        #newDataInstanceTest()
         #global.println("anonymousDataMetaCompileTest compiled but is not executed in runtime baseline")
         #global.println("newDataInstanceTest skipped in runtime (known VM gap)")
 

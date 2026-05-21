@@ -151,7 +151,10 @@ namespace SimpleLanguage.IR
             IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaVariable(mmv);
             m_IRMetaType = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mmv.GetFinalMetaType(), owirmc);
         }
-
+        public void SetIsStatic( bool iss )
+        {
+            this.m_IsStatic = iss;
+        }
         private void FillDebugInfo(MetaBase mb, string fallbackName, string info)
         {
             m_DebugInfo = new DebugInfo

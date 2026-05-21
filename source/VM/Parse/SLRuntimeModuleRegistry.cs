@@ -1021,11 +1021,11 @@ namespace SimpleLanguage.Parse
                 var f = pkg.fieldList[i];
                 if (f == null) continue;
                 if (f.index != fieldIndex) continue;
-                if ((f.flags & 32) != 32) return new List<Instruction>();
-                if (f.express == null || f.express.Count == 0) return new List<Instruction>();
-
-                //Instruction.UnpackPayloadsFromJson(f.express);
-                return new List<Instruction>(f.express);
+                if ((f.flags & 32) == 32)
+                {
+                    //Instruction.UnpackPayloadsFromJson(f.express);
+                    return new List<Instruction>(f.express);
+                }
             }
 
             return new List<Instruction>();

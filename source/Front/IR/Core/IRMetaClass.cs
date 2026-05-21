@@ -343,6 +343,7 @@ namespace SimpleLanguage.IR
                 //if (mmd.isStatic)
                 {
                     var irmv = new IRMetaVariable(this, mmd, staticIndex);
+                    irmv.SetIsStatic(true);
                     m_StaticIRMetaVariableList.Add(irmv);
                     AddMetaMemberVariableIndexBindHashCode(irmv.id, staticIndex);
                     staticIndex++;
@@ -350,6 +351,7 @@ namespace SimpleLanguage.IR
                 //else
                 {
                     var irmv = new IRMetaVariable(this, mmd, localIndex);
+                    irmv.SetIsStatic(false);
                     m_LocalIRMetaVariableList.Add(irmv);
                     AddMetaMemberVariableIndexBindHashCode(irmv.id, localIndex);
                     localIndex++;

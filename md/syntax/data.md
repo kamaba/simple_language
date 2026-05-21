@@ -570,6 +570,13 @@ data ScoreData
 }
 ```
 
+### 6.3 data 的系统函数
+
+1. DataAllEqual( data1, data2 )  判断是否data的 定义类型相同，并且数据相同
+2. DataTypeEqual( data1, data2 )  返回data里边的格式相同 不一定是相同类型， 也就是 int,string,byte 这里边的排列结构相同
+3. DataNameAndTypeEqual( data1, data2 ) 判断data1,data2 的 Name和类型相同 
+4. DataDataEqual( data1, data2 )   判断data1, data2 的数据是否相同，  可以兼容 int8 <-> int32 的兼容，不一定相同，但可以判断兼容
+
 打印时，应表现为包含字段名与字段值的 `data` 格式化结果。
 
 ## 7. 结论
