@@ -6,7 +6,7 @@ namespace SimpleLanguage.VM
     {
         public int id { get; set; } = 0;
         public string name { get; set; } = "";
-        /// <summary>0=Class, 1=Enum, 2=Data 鈥?from exported SLIR class metadata.</summary>
+        /// <summary>0=Class, 1=Enum, 2=Data 3=Interface from exported SLIR class metadata.</summary>
         public int metaClassKind { get; set; }
         /// <summary>IR generated template meta type count exported from Front <c>IRMetaClass.templateCount</c>.</summary>
         public int templateCount { get; set; }
