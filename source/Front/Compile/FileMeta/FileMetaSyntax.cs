@@ -951,25 +951,38 @@ namespace SimpleLanguage.Compile
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < deep; i++)
                 sb.Append(Global.tabChar);
-            if( m_ConstToken != null )
+            if (m_ConstToken != null)
             {
-                sb.Append( m_ConstToken.lexeme.ToString() + " " );
+                sb.Append(m_ConstToken.lexeme.ToString() + " ");
             }
-            if( m_StaticToken != null )
+            if (m_StaticToken != null)
             {
-                sb.Append( m_StaticToken.lexeme.ToString() + " ");
+                sb.Append(m_StaticToken.lexeme.ToString() + " ");
             }
             if (m_FileMetaClassDefine != null)
-                sb.Append( m_FileMetaClassDefine.ToFormatString() + " ");
-            sb.Append( m_Token.lexeme.ToString() + " ");
-            if(m_AssignToken!= null )
+                sb.Append(m_FileMetaClassDefine.ToFormatString() + " ");
+            sb.Append(m_Token.lexeme.ToString() + " ");
+            if (m_AssignToken != null)
             {
-                sb.Append( m_AssignToken.lexeme.ToString() + " " );
+                sb.Append(m_AssignToken.lexeme.ToString() + " ");
                 sb.Append(m_FileMetaExpress?.ToFormatString());
-                if( isAppendSemiColon )
+                if (isAppendSemiColon)
                 {
-                   sb.Append(";");
+                    sb.Append(";");
                 }
+            }
+            return sb.ToString();
+        }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            if (m_FileMetaClassDefine != null)
+                sb.Append(m_FileMetaClassDefine.ToString() + " ");
+            sb.Append(m_Token.lexeme.ToString() + " ");
+            if (m_AssignToken != null)
+            {
+                sb.Append(m_AssignToken.lexeme.ToString() + " ");
+                sb.Append(m_FileMetaExpress?.ToString());
             }
             return sb.ToString();
         }
@@ -1023,6 +1036,15 @@ namespace SimpleLanguage.Compile
             {
                 sb.Append(";");
             }
+            return sb.ToString();
+        }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            if (m_VariableRef != null)
+                sb.Append(m_VariableRef.ToString() + " ");
+            sb.Append(" " + assignToken.lexeme.ToString());
+            sb.Append(" " + m_Express?.ToString());
             return sb.ToString();
         }
 

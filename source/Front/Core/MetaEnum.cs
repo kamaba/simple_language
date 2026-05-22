@@ -92,7 +92,7 @@ namespace SimpleLanguage.Core
                 var valuesNewExpress = new MetaNewObjectExpressNode(mt, CoreMetaClassManager.enumMetaData, null, m_ValuesMetaVariable);
                 foreach (var itemExpress in maen.metaCallArray)
                 {
-                    var mbas = new MetaBraceAssignStatements(mt, null, this, mt, itemExpress);
+                    var mbas = new MetaBraceAssignStatements(mt, null, this, nmt, itemExpress);
                     valuesNewExpress.assignStatementsList.Add(mbas);
                 }
                 MetaType inputType = valuesNewExpress.GetMaxLevelMetaType();
