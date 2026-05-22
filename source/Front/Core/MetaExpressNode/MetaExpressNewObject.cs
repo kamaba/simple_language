@@ -1563,54 +1563,19 @@ namespace SimpleLanguage.Core
                 //???????? ?????????? data a = { aaa = 10, bbb = 20} ?????
                 if (mt.isDynamicData)
                 {
-                    string anname = "DynamicData_";
-                    if (m_StoreMetaVariable != null)
-                    {
-                        anname = anname + m_StoreMetaVariable.name + "_";
-                    }
-                    if (m_BraceFileMetaBaseTerm != null)
-                    {
-                        anname = anname + m_BraceFileMetaBaseTerm.token?.path + "_" + m_BraceFileMetaBaseTerm.token?.sourceBeginLine.ToString() + "_" + GetHashCode().ToString();
-                    }
-
-                    m_BraceNewTempMetaData = new MetaData(anname, false, false, true);
-                    if (m_StoreMetaVariable?.token != null)
-                    {
-                        m_BraceNewTempMetaData.AddPingToken(m_StoreMetaVariable.token );
-                    }
-                    m_BraceNewTempMetaData.AddPingToken(m_BraceFileMetaBaseTerm.token);
                     if (fmbt is FileMetaSymbolTerm fmst)                   
                     {
-
-                        var mmd = MetaMemberData.CreateDeclared(mt.metaData, fmst.name, -1, new MetaType(CoreMetaClassManager.objectMetaClass), false);
-                        mmd.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);                        
-
                         MetaBraceAssignStatements mas = new MetaBraceAssignStatements(fmst, m_DefineMetaType, m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_DefineMetaType );
-                        //mas.CalcReturnType();
+                        mas.Parse(aws);
+                        mas.CalcReturnType();
                         m_AssignStatementsList.Add(mas);
-                        m_BraceNewTempMetaData.AddMetaMemberData(mmd);
                     }
                     else
                     {
                         Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "symbolterm in data ", m_StoreMetaVariable?.name, "");
                         return;
                     }
-                    MetaData retClass = ClassManager.instance.FindMetaDataByNameAndFormat(m_BraceNewTempMetaData);
-                    if (retClass == null)
-                    {
-                        ClassManager.instance.AddAnonymousMetaData(m_BraceNewTempMetaData);
-                        retClass = m_BraceNewTempMetaData;
-                    }
-                    m_BraceNewMetaData = retClass;
-                    for (int i = 0; i < m_AssignStatementsList.Count; i++)
-                    {
-                        //var mmv = m_AssignStatementsList[i].metaMemberData;
-                        //mmv.metaDefineType.SetRawMetaClass(m_BraceNewMetaData);
-                        //mmv.metaDefineType.SetMetaClass(m_BraceNewMetaData);
-                    }
-                    m_NewMetaType.SetMetaData(m_BraceNewMetaData);
                     m_StatementsContentType = EStatementsContentType.DynamicData;
-                    m_StoreMetaVariable?.SetMetaDefineType(m_NewMetaType);
                 }
                 else
                 {
@@ -1972,6 +1937,108 @@ namespace SimpleLanguage.Core
             Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
             CalcReturnType();
         }
+
+        private MetaData CreateAnonymousDataOwnerMetaDataForBraceLiteral()
+        {
+            string anname = "DynamicData_";
+            if (m_StoreMetaVariable != null)
+            {
+                anname = anname + m_StoreMetaVariable.name + "_";
+            }
+            if (m_BraceFileMetaBaseTerm != null)
+            {
+                anname = anname + m_BraceFileMetaBaseTerm.token?.path + "_" + m_BraceFileMetaBaseTerm.token?.sourceBeginLine.ToString() + "_" + GetHashCode().ToString();
+            }
+
+            var tempMetaData = new MetaData(anname, false, false, true);
+            if (m_StoreMetaVariable?.token != null)
+            {
+                tempMetaData.AddPingToken(m_StoreMetaVariable.token);
+            }
+            tempMetaData.AddPingToken(m_BraceFileMetaBaseTerm?.token);
+            return tempMetaData;
+        }
+
+        private void BuildAnonymousMemberDataTreeFromAssignList(MetaMemberData ownerMemberData, IReadOnlyList<MetaBraceAssignStatements> assignList)
+        {
+            if (ownerMemberData == null || assignList == null) return;
+
+            int index = 0;
+            for (int i = 0; i < assignList.Count; i++)
+            {
+                var mas = assignList[i];
+                if (mas == null || string.IsNullOrWhiteSpace(mas.defineName))
+                {
+                    continue;
+                }
+
+                var expr = mas.expressNode;
+                if (expr != null)
+                {
+                    expr.CalcReturnType();
+                }
+
+                var exprType = mas.GetRetMetaType() ?? expr?.GetReturnMetaType();
+                var fieldType = exprType != null ? new MetaType(exprType) : new MetaType(CoreMetaClassManager.objectMetaClass);
+                bool isDeclaredType = exprType != null && exprType.metaClass != CoreMetaClassManager.objectMetaClass;
+
+                var ownerData = ownerMemberData.ownerMetaData ?? ownerMemberData.ownerMetaBase as MetaData;
+                if (ownerData == null)
+                {
+                    continue;
+                }
+
+                var child = MetaMemberData.CreateDeclared(ownerData, mas.defineName, index, fieldType, isDeclaredType);
+                index++;
+                child.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);
+                child.SetExpress(expr);
+
+                if (expr is MetaNewObjectExpressNode nestedNewObject && nestedNewObject.assignStatementsList.Count > 0)
+                {
+                    BuildAnonymousMemberDataTreeFromAssignList(child, nestedNewObject.assignStatementsList);
+                }
+
+                ownerMemberData.AddMetaMemberData(child);
+            }
+        }
+
+        private void ResolveDynamicAnonymousDataBySharedFlow()
+        {
+            if (m_NewMetaType == null || !m_NewMetaType.isDynamicData)
+            {
+                return;
+            }
+            if (m_AssignStatementsList.Count == 0)
+            {
+                return;
+            }
+
+            var ownerMetaData = CreateAnonymousDataOwnerMetaDataForBraceLiteral();
+            var rootLiteral = MetaMemberData.CreateDeclared(ownerMetaData,
+                m_StoreMetaVariable?.name ?? "_anonymous_",
+                -1,
+                new MetaType(CoreMetaClassManager.objectMetaClass),
+                false);
+            rootLiteral.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);
+
+            BuildAnonymousMemberDataTreeFromAssignList(rootLiteral, m_AssignStatementsList);
+            rootLiteral.ResolveAnonymousDataHierarchyPostOrder();
+
+            var resolvedType = rootLiteral.GetFinalMetaType();
+            if (resolvedType != null && resolvedType.isData)
+            {
+                m_BraceNewMetaData = resolvedType.metaData;
+                m_NewMetaType.SetMetaData(m_BraceNewMetaData);
+                m_StoreMetaVariable?.SetMetaDefineType(m_NewMetaType);
+            }
+
+            if (rootLiteral.expressNode is MetaNewObjectExpressNode resolvedNewObject)
+            {
+                m_AssignStatementsList.Clear();
+                m_AssignStatementsList.AddRange(resolvedNewObject.assignStatementsList);
+            }
+        }
+
         public override void Parse(AllowUseSettings auc)
         {
             m_AllowUseSettings = auc;
@@ -1994,6 +2061,11 @@ namespace SimpleLanguage.Core
                     ParseBraceStatementsContent(auc, null );
                 }
 
+            }
+
+            if (m_NewMetaType != null && m_NewMetaType.isDynamicData)
+            {
+                ResolveDynamicAnonymousDataBySharedFlow();
             }
             //else if( m_NewType == ENewType.CommomClass )
             //{

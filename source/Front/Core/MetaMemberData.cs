@@ -36,22 +36,23 @@ namespace SimpleLanguage.Core
 
         private Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
         private FileMetaMemberData m_FileMetaMemeberData = null;
-        //private FileMetaOpAssignSyntax m_FileMetaOpAssignSyntax = null;
+        private FileMetaSyntax m_FileMetaAssignSyntax = null;
 
         private MetaMemberData()
         {
             m_VariableFrom = EVariableFrom.DataMember;
         }
-        //public MetaMemberData(MetaData mc, FileMetaOpAssignSyntax fmoa)
-        //{
-        //    m_FileMetaOpAssignSyntax = fmoa;
-        //    m_DefineMetaType = new MetaType(mc);
-        //    SetOwnerMetaClass(mc);
-        //    m_IsConst = mc.isConst;
-        //    m_VariableFrom = EVariableFrom.DataMember;
-        //    m_Token = fmoa.token;
-        //    m_Name = m_FileMetaOpAssignSyntax.variableRef.name;
-        //}
+        public MetaMemberData(MetaData mc, FileMetaSyntax fms, MetaBase ownerbase, MetaBlockStatements mbs )
+        {
+            m_DefineMetaType = new MetaType(mc);
+            SetOwnerMetaClass(ownerbase);
+            m_OwnerMetaBlockStatements = mbs;
+            m_IsConst = mc.isConst;
+            m_VariableFrom = EVariableFrom.DataMember;
+            m_Token = fms.token;
+            m_Name = fms.name;
+            m_FileMetaAssignSyntax = fms;
+        }
         public MetaMemberData(MetaData mc, FileMetaMemberData fmmd, int index, bool isStatic )
         {
             m_FileMetaMemeberData = fmmd;
@@ -646,6 +647,25 @@ namespace SimpleLanguage.Core
                             Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "");
                         }
                         break;
+                }
+            }
+
+            if( m_FileMetaAssignSyntax != null )
+            {
+                if( m_FileMetaAssignSyntax is FileMetaOpAssignSyntax fmos )
+                {
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.fme = fmos.express;
+                    cep.equalMetaVariable = null;
+                    cep.metaType = null;
+                    cep.ownerMBS = m_OwnerMetaBlockStatements;
+                    cep.ownerMetaBase = m_OwnerMetaBase;
+
+                    m_Express = ExpressManager.CreateExpressNodeByCEP(cep);
+                }
+                else if( m_FileMetaAssignSyntax is FileMetaCallSyntax fmcs )
+                {
+
                 }
             }
         }

@@ -230,7 +230,14 @@ namespace SimpleLanguage.Core
                         }
                     case FileMetaBraceTerm fmbt:  // {1,2,3} {a=10,b=20}
                         {
-                            men = new MetaNewObjectExpressNode(fmbt, cep.metaType, ownerBase, cep.ownerMBS, cep.equalMetaVariable);
+                            if(cep.metaType == null || cep.metaType?.isDynamicData == true )
+                            {
+                                men = new MetaAnonDataExpressNode(fmbt, ownerBase, cep.ownerMBS, cep.equalMetaVariable);
+                            }
+                            else
+                            {
+                                men = new MetaNewObjectExpressNode(fmbt, cep.metaType, ownerBase, cep.ownerMBS, cep.equalMetaVariable);
+                            }
                             return men;
                         }
                     //case FileMetaParTerm fmpt:  //  (1,2) 不允许 这种方式的处理 可能后边会变成tulpe
@@ -391,6 +398,10 @@ namespace SimpleLanguage.Core
                 menNew = new MetaNewObjectExpressNode(mdt, maen, oldmen.ownerMetaClass, oldmen.ownerMetaBlockStatements, mv);
                 menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                 menNew.CalcReturnType();
+            }
+            else if (oldmen is MetaAnonDataExpressNode maden)
+            {
+
             }
             else if( oldmen.convertCallExpressNode )
             {
