@@ -978,6 +978,11 @@ namespace SimpleLanguage.Core
                         sb.Append(this.m_ReturnMetaType.metaClass.metaNode.ToString());
                     }
                     break;
+                case EVisitType.Enum:
+                    {
+                        sb.Append(this.m_ReturnMetaType.metaEnum.metaNode.ToString());
+                    }
+                    break;
                 case EVisitType.VisitVariable:
                     {
                         sb.Append(this.visitVariable.ToFormatString());

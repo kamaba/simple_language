@@ -133,6 +133,7 @@ namespace SimpleLanguage.Compile
                     Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 不能有多个if语句!!");
                 }
                 ifSyntax.SetFileMetaConditionExpressSyntax(fms);
+                ifSyntax.SetToken(sns.keyNode.token);
             }
 
             for (int i = 0; i < sns.followKeySyntaxStructList.Count; i++)
@@ -147,11 +148,13 @@ namespace SimpleLanguage.Compile
                     var child_fms = new FileMetaConditionExpressSyntax(fm, token, child_conditionExpress, child_executeBlock);
 
                     ifSyntax.AddElseIfExpressSyntax(child_fms);
+                    child_fms.SetToken(token);
                 }
                 else if (token.type == ETokenType.Else)
                 {
                     FileMetaBlockSyntax executeBlock2 = new FileMetaBlockSyntax(fm, csns.blockNode.token, csns.blockNode.endToken);
                     var fms3 = new FileMetaKeyOnlySyntax(fm, token, executeBlock2);
+                    fms3.SetToken(token);
 
                     ifSyntax.SetElseExpressSyntax(fms3);
                 }

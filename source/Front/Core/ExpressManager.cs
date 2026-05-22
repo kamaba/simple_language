@@ -401,7 +401,20 @@ namespace SimpleLanguage.Core
             }
             else if (oldmen is MetaAnonDataExpressNode maden)
             {
+                maden.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                maden.CalcReturnType();
+                var canon = maden.canonicalMetaData ?? maden.schemaMetaData;
+                if (canon == null)
+                {
+                    return oldmen;
+                }
 
+                menNew = MetaNewObjectExpressNode.CreateFromAnonymousMetaData(
+                    canon,
+                    maden.schemaMetaData,
+                    oldmen.ownerMetaBase,
+                    oldmen.ownerMetaBlockStatements,
+                    mv);
             }
             else if( oldmen.convertCallExpressNode )
             {

@@ -146,13 +146,59 @@ namespace SimpleLanguage.Core
         }
         public void ParseDefineComplete()
         {
-            foreach( var v in m_MetaMemberDataDict )
+            // 嵌套 data/array 字面量已在 MetaMemberData 表达式管线（MetaAnonDataExpressNode / MetaArrayExpressNode → MetaNewObjectExpressNode）中解析。
+        }
+
+        /// <summary>
+        /// 按字段最终类型生成匿名 <see cref="MetaData"/> 形状，并与全局匿名表去重。
+        /// </summary>
+        public static MetaData ResolveCanonicalAnonymousType(
+            IEnumerable<MetaMemberData> sourceFields,
+            MetaBase owner,
+            string nameHint = null)
+        {
+            if (sourceFields == null)
             {
-                if(v.Value.memberDataType == EMemberDataType.MemberData || v.Value.memberDataType == EMemberDataType.MemberArray )
-                {
-                    v.Value.ResolveAnonymousDataHierarchyPostOrder();
-                }
+                return null;
             }
+
+            var ordered = new List<MetaMemberData>(sourceFields);
+            if (ordered.Count == 0)
+            {
+                return null;
+            }
+            ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
+
+            string hint = string.IsNullOrEmpty(nameHint) ? "DynamicData" : nameHint;
+            var tempMetaData = new MetaData(hint + "_" + ordered[0].GetHashCode(), false, false, true);
+            tempMetaData.SetMetaNode(owner?.metaNode);
+            if (ordered[0].token != null)
+            {
+                tempMetaData.AddPingToken(ordered[0].token);
+            }
+
+            int index = 0;
+            foreach (var field in ordered)
+            {
+                var childType = field.GetFinalMetaType() ?? field.defineMetaType
+                    ?? new MetaType(CoreMetaClassManager.objectMetaClass);
+                var clone = MetaMemberData.CreateDeclared(
+                    tempMetaData,
+                    field.name,
+                    index,
+                    childType,
+                    field.isDefineMetaType || childType.metaClass != CoreMetaClassManager.objectMetaClass);
+                tempMetaData.AddMetaMemberData(clone);
+                index++;
+            }
+
+            var matched = ClassManager.instance.FindMetaDataByNameAndType(tempMetaData);
+            if (matched == null)
+            {
+                ClassManager.instance.AddAnonymousMetaData(tempMetaData);
+                return tempMetaData;
+            }
+            return matched;
         }
         public void UpdateAllName()
         {

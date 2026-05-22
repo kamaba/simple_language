@@ -37,6 +37,10 @@ namespace SimpleLanguage.Compile
         {
             m_FileMeta = fm;
         }
+        public void SetToken( Token token )
+        {
+            this.m_Token = token;
+        }
         public virtual void SetDeep( int _deep )
         {
             m_Deep = _deep;

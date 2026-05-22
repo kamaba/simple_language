@@ -387,32 +387,44 @@ namespace SimpleLanguage.Project
             }
             if (element.ValueKind == JsonValueKind.Object)
             {
-                var objNode = new MetaMemberData(owner, name, index);
+                var inlineOwner = new MetaData("JsonObject_" + name + "_" + index, false, false, true);
                 int childIndex = 0;
                 foreach (var kv in element.EnumerateObject())
                 {
-                    var child = CreateMetaMemberDataByJson(owner, kv.Name, kv.Value, index * 1000 + childIndex);
+                    var child = CreateMetaMemberDataByJson(inlineOwner, kv.Name, kv.Value, index * 1000 + childIndex);
                     if (child != null)
                     {
-                        objNode.AddMetaMemberData(child);
+                        inlineOwner.AddMetaMemberData(child);
                     }
                     childIndex++;
+                }
+
+                var objNode = MetaMemberData.CreateDeclared(owner, name, index, new MetaType(CoreMetaClassManager.objectMetaClass), false);
+                var canon = MetaData.ResolveCanonicalAnonymousType(inlineOwner.GetMetaMemberDataList(), owner, name);
+                if (canon != null)
+                {
+                    var newObj = MetaNewObjectExpressNode.CreateFromAnonymousMetaData(canon, inlineOwner, owner, null);
+                    objNode.SetExpress(newObj);
+                    objNode.SetMetaDefineType(new MetaType(canon));
                 }
                 return objNode;
             }
             if (element.ValueKind == JsonValueKind.Array)
             {
                 var arrNode = MetaMemberData.CreateArray(owner, name, index, new MetaType(CoreMetaClassManager.objectMetaClass), element.GetArrayLength());
+                var maen = new MetaArrayExpressNode(owner, null, arrNode.defineMetaType, null);
                 int childIndex = 0;
                 foreach (var item in element.EnumerateArray())
                 {
                     var child = CreateMetaMemberDataByJson(owner, childIndex.ToString(), item, index * 1000 + childIndex);
-                    if (child != null)
+                    if (child?.expressNode != null)
                     {
-                        arrNode.AddMetaMemberData(child );
+                        maen.metaCallArray.Add(child.expressNode);
                     }
                     childIndex++;
                 }
+                maen.CalcReturnType();
+                arrNode.SetExpress(ExpressManager.ConvertNewExpress(maen, arrNode.defineMetaType, arrNode) ?? maen);
                 return arrNode;
             }
             return null;

@@ -669,7 +669,7 @@ namespace SimpleLanguage.Core
                 if (!(defineMt.isEnum && expressMt.isEnum))
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
-                        scene + " 枚举类型不匹配, define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
+                        scene + " ???????????, define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
                     return false;
                 }
 
@@ -681,7 +681,7 @@ namespace SimpleLanguage.Core
                 if (!sameEnumHost)
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
-                        scene + " 枚举宿主不一致, define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
+                        scene + " ????????????, define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
                     return false;
                 }
 
@@ -693,7 +693,7 @@ namespace SimpleLanguage.Core
                     if (!sameEnumValue)
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
-                            scene + " 枚举成员不一致, define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
+                            scene + " ??????????, define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
                         return false;
                     }
                 }
@@ -721,7 +721,7 @@ namespace SimpleLanguage.Core
                 if (!IsBraceAssignDeclaredCompatibleWithExpress(defineMt, contentMt))
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
-                        scene + " 类型不匹配, define=" + defineMt.ToString() + ", express=" + contentMt.ToString());
+                        scene + " ????????, define=" + defineMt.ToString() + ", express=" + contentMt.ToString());
                     return false;
                 }
 
@@ -751,7 +751,7 @@ namespace SimpleLanguage.Core
                 if (isNumLike && (isOmittedExpression || isNullLiteral) && elementMt.isNullable == false)
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                        "数组元素为数值/Num 时，只有可空元素类型才允许空位或 null");
+                        "???????????/Num ??????????????????????????? null");
                     return false;
                 }
 
@@ -770,7 +770,7 @@ namespace SimpleLanguage.Core
                     }
 
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                        scene + " 数组模板拆解匹配失败, define=" + arrayDefineMt.ToString() + ", express=" + contentMt.ToString());
+                        scene + " ???????????????, define=" + arrayDefineMt.ToString() + ", express=" + contentMt.ToString());
                     return false;
                 }
 
@@ -787,7 +787,7 @@ namespace SimpleLanguage.Core
                 if (!IsBraceAssignDeclaredCompatibleWithExpress(elementMt, contentMt))
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                        scene + " 数组元素类型不匹配, element=" + elementMt.ToString() + ", express=" + contentMt.ToString());
+                        scene + " ???????????????, element=" + elementMt.ToString() + ", express=" + contentMt.ToString());
                     return false;
                 }
 
@@ -1256,12 +1256,50 @@ namespace SimpleLanguage.Core
                 return null;
             }
 
-            var anonymousType = new MetaType(anonymousMetaData);
-            var node = new MetaNewObjectExpressNode(anonymousType, ownerMeta, mbs, braceLiteralOwner);
-            node.m_Token = braceLiteralOwner.token;
+            var source = braceLiteralOwner.ownerMetaData;
+            if (source == null)
+            {
+                return null;
+            }
 
-            node.FillAnonymousDataAssignStatementsFromMemberDict(braceLiteralOwner, anonymousMetaData, mbs, preferSourceMemberExpress);
+            return CreateFromAnonymousMetaData(anonymousMetaData, source, ownerMeta, mbs, braceLiteralOwner);
+        }
 
+        /// <summary>
+        /// ?? <paramref name="sourceMetaData"/> ??????? <see cref="MetaMemberData.expressNode"/> ????? <paramref name="canonicalMetaData"/> ?? new ???????
+        /// </summary>
+        public static MetaNewObjectExpressNode CreateFromAnonymousMetaData(
+            MetaData canonicalMetaData,
+            MetaData sourceMetaData,
+            MetaBase ownerMeta,
+            MetaBlockStatements mbs,
+            MetaVariable storeMv = null)
+        {
+            if (canonicalMetaData == null || sourceMetaData == null)
+            {
+                return null;
+            }
+
+            var anonymousType = new MetaType(canonicalMetaData);
+            var node = new MetaNewObjectExpressNode(anonymousType, ownerMeta, mbs, storeMv);
+            var ordered = sourceMetaData.GetMetaMemberDataList();
+            ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
+
+            var parseSetting = new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress };
+            foreach (var sourceField in ordered)
+            {
+                var expr = sourceField.expressNode;
+                if (expr == null)
+                {
+                    continue;
+                }
+
+                var mas = new MetaBraceAssignStatements(sourceField, mbs, ownerMeta, expr, true);
+                node.m_AssignStatementsList.Add(mas);
+            }
+
+            node.Parse(parseSetting);
+            node.CalcReturnType();
             return node;
         }
 
@@ -1834,211 +1872,6 @@ namespace SimpleLanguage.Core
             }            
         }
 
-        /// <summary>
-        /// ? <paramref name="braceLiteralOwner"/> ? <see cref="MetaMemberData.metaMemberDataDict"/> ?????
-        /// <see cref="MetaMemberData.expressNode"/>?????? data ? <see cref="MetaNewObjectExpressNode"/>?
-        /// ?? <paramref name="node"/> ???????????????????? <paramref name="anonymousMetaData"/>?
-        /// </summary>
-        public void FillAnonymousDataAssignStatementsFromMemberDict(
-            MetaMemberData braceLiteralOwner,
-            MetaData anonymousMetaData,
-            MetaBlockStatements mbs,
-            bool preferSourceMemberExpress = true)
-        {
-            if (braceLiteralOwner == null || anonymousMetaData == null)
-            {
-                return;
-            }
-
-            m_AssignStatementsList.Clear();
-
-            var ordered = new List<MetaMemberData>(braceLiteralOwner.metaMemberDataDict.Values);
-            ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
-
-            MetaData ownerMc = ownerMetaData;
-            var parseSetting = new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress };
-
-            foreach (var sourceField in ordered)
-            {
-                var targetField = anonymousMetaData.GetMemberDataByName(sourceField.name);
-                if (targetField == null)
-                {
-                    continue;
-                }
-
-                MetaExpressNodeBase expr = null;
-
-                var fieldForAssign = preferSourceMemberExpress ? sourceField : targetField;
-                if (fieldForAssign == null)
-                {
-                    fieldForAssign = sourceField ?? targetField;
-                }
-
-                bool nestedStructuralData = fieldForAssign != null
-                    && fieldForAssign.memberDataType == EMemberDataType.MemberData
-                    && fieldForAssign.metaMemberDataDict.Count > 0;
-
-                bool useNestFromHierarchy = nestedStructuralData
-                    && (fieldForAssign.expressNode == null || fieldForAssign.expressNode is MetaNewObjectExpressNode);
-
-                if (useNestFromHierarchy)
-                {
-                    MetaData nestedCanon = targetField.defineMetaType?.metaData;
-                    if (nestedCanon == null)
-                    {
-                        nestedCanon = fieldForAssign.BuildAnonymousMetaDataType(out _);
-                    }
-                    if (nestedCanon != null)
-                    {
-                        if (fieldForAssign.expressNode is MetaNewObjectExpressNode existingNest)
-                        {
-                            existingNest.m_AssignStatementsList.Clear();
-                            existingNest.FillAnonymousDataAssignStatementsFromMemberDict(fieldForAssign, nestedCanon, mbs, preferSourceMemberExpress);
-                            existingNest.Parse(parseSetting);
-                            existingNest.CalcReturnType();
-                            expr = existingNest;
-                        }
-                        else
-                        {
-                            var nestedNode = CreateAnonymousDataNewObjectExpress(
-                                fieldForAssign,
-                                nestedCanon,
-                                ownerMc,
-                                mbs,
-                                preferSourceMemberExpress);
-                            if (nestedNode != null)
-                            {
-                                nestedNode.Parse(parseSetting);
-                                nestedNode.CalcReturnType();
-                                expr = nestedNode;
-                            }
-                        }
-                    }
-                }
-
-                if (expr == null)
-                {
-                    expr = fieldForAssign?.expressNode;
-                }
-                if (expr == null)
-                {
-                    expr = preferSourceMemberExpress ? targetField.expressNode : sourceField.expressNode;
-                }
-
-                if (expr == null)
-                {
-                    continue;
-                }
-
-                var mas = new MetaBraceAssignStatements(sourceField, mbs, ownerMc, expr, true );
-                m_AssignStatementsList.Add(mas);
-            }
-
-            Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-            CalcReturnType();
-        }
-
-        private MetaData CreateAnonymousDataOwnerMetaDataForBraceLiteral()
-        {
-            string anname = "DynamicData_";
-            if (m_StoreMetaVariable != null)
-            {
-                anname = anname + m_StoreMetaVariable.name + "_";
-            }
-            if (m_BraceFileMetaBaseTerm != null)
-            {
-                anname = anname + m_BraceFileMetaBaseTerm.token?.path + "_" + m_BraceFileMetaBaseTerm.token?.sourceBeginLine.ToString() + "_" + GetHashCode().ToString();
-            }
-
-            var tempMetaData = new MetaData(anname, false, false, true);
-            if (m_StoreMetaVariable?.token != null)
-            {
-                tempMetaData.AddPingToken(m_StoreMetaVariable.token);
-            }
-            tempMetaData.AddPingToken(m_BraceFileMetaBaseTerm?.token);
-            return tempMetaData;
-        }
-
-        private void BuildAnonymousMemberDataTreeFromAssignList(MetaMemberData ownerMemberData, IReadOnlyList<MetaBraceAssignStatements> assignList)
-        {
-            if (ownerMemberData == null || assignList == null) return;
-
-            int index = 0;
-            for (int i = 0; i < assignList.Count; i++)
-            {
-                var mas = assignList[i];
-                if (mas == null || string.IsNullOrWhiteSpace(mas.defineName))
-                {
-                    continue;
-                }
-
-                var expr = mas.expressNode;
-                if (expr != null)
-                {
-                    expr.CalcReturnType();
-                }
-
-                var exprType = mas.GetRetMetaType() ?? expr?.GetReturnMetaType();
-                var fieldType = exprType != null ? new MetaType(exprType) : new MetaType(CoreMetaClassManager.objectMetaClass);
-                bool isDeclaredType = exprType != null && exprType.metaClass != CoreMetaClassManager.objectMetaClass;
-
-                var ownerData = ownerMemberData.ownerMetaData ?? ownerMemberData.ownerMetaBase as MetaData;
-                if (ownerData == null)
-                {
-                    continue;
-                }
-
-                var child = MetaMemberData.CreateDeclared(ownerData, mas.defineName, index, fieldType, isDeclaredType);
-                index++;
-                child.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);
-                child.SetExpress(expr);
-
-                if (expr is MetaNewObjectExpressNode nestedNewObject && nestedNewObject.assignStatementsList.Count > 0)
-                {
-                    BuildAnonymousMemberDataTreeFromAssignList(child, nestedNewObject.assignStatementsList);
-                }
-
-                ownerMemberData.AddMetaMemberData(child);
-            }
-        }
-
-        private void ResolveDynamicAnonymousDataBySharedFlow()
-        {
-            if (m_NewMetaType == null || !m_NewMetaType.isDynamicData)
-            {
-                return;
-            }
-            if (m_AssignStatementsList.Count == 0)
-            {
-                return;
-            }
-
-            var ownerMetaData = CreateAnonymousDataOwnerMetaDataForBraceLiteral();
-            var rootLiteral = MetaMemberData.CreateDeclared(ownerMetaData,
-                m_StoreMetaVariable?.name ?? "_anonymous_",
-                -1,
-                new MetaType(CoreMetaClassManager.objectMetaClass),
-                false);
-            rootLiteral.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);
-
-            BuildAnonymousMemberDataTreeFromAssignList(rootLiteral, m_AssignStatementsList);
-            rootLiteral.ResolveAnonymousDataHierarchyPostOrder();
-
-            var resolvedType = rootLiteral.GetFinalMetaType();
-            if (resolvedType != null && resolvedType.isData)
-            {
-                m_BraceNewMetaData = resolvedType.metaData;
-                m_NewMetaType.SetMetaData(m_BraceNewMetaData);
-                m_StoreMetaVariable?.SetMetaDefineType(m_NewMetaType);
-            }
-
-            if (rootLiteral.expressNode is MetaNewObjectExpressNode resolvedNewObject)
-            {
-                m_AssignStatementsList.Clear();
-                m_AssignStatementsList.AddRange(resolvedNewObject.assignStatementsList);
-            }
-        }
-
         public override void Parse(AllowUseSettings auc)
         {
             m_AllowUseSettings = auc;
@@ -2063,10 +1896,6 @@ namespace SimpleLanguage.Core
 
             }
 
-            if (m_NewMetaType != null && m_NewMetaType.isDynamicData)
-            {
-                ResolveDynamicAnonymousDataBySharedFlow();
-            }
             //else if( m_NewType == ENewType.CommomClass )
             //{
             //    if(m_NewMetaType != null )
@@ -2206,7 +2035,7 @@ namespace SimpleLanguage.Core
             }
             var mipc = new MetaInputParamCollection(ownerMetaClass, m_OwnerMetaBlockStatements);
 
-            if (m_NewType != ENewType.ArrayClass)
+            if (this.m_NewType != ENewType.ArrayClass)
             {
                 if (!TryResolveNonArrayReturnMetaTypeByRelation(out var nonArrayRet))
                 {
@@ -2238,7 +2067,7 @@ namespace SimpleLanguage.Core
                     && newArray.arrayLength >= 0
                     && m_ArrayCalcMetaType.arrayLength > newArray.arrayLength)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "数组赋值内容给出的长度超出了定义长度!");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????????????????????!");
                     return;
                 }
             }
@@ -2263,7 +2092,7 @@ namespace SimpleLanguage.Core
             if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
             {
                 Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                    "数组字面量无法全部强转为当前声明/推断的元素类型: " + m_ExpressReturnMetaType.ToString());
+                    "??????????????????????????/???????????: " + m_ExpressReturnMetaType.ToString());
             }
 
 
@@ -2294,7 +2123,7 @@ namespace SimpleLanguage.Core
                 bool related = MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(m_DefineMetaType, m_NewMetaType);
                 if (!related)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "定义类型与new的类型不对应");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "??????????new??????????");
                     return false;
                 }
                 result = new MetaType(m_NewMetaType);
@@ -2372,7 +2201,7 @@ namespace SimpleLanguage.Core
                     return false;
                 }
 
-                // 数组字面量推断类型优先参与最终类型收敛；数值场景仍保持 define 元素类型优先。
+                // ?????????????????????????????????????????????????? define ????????????
                 var retEl = result.GetMetaTypeByIndex(0);
                 var calcEl = calcArray.GetMetaTypeByIndex(0);
                 if (retEl != null && calcEl != null
@@ -2395,8 +2224,6 @@ namespace SimpleLanguage.Core
 
             return true;
         }
-
-
         private bool ResolveInitialReturnForArrayNew()
         {
             if (m_StoreMetaVariable?.isDefineMetaType != true)
@@ -2418,7 +2245,6 @@ namespace SimpleLanguage.Core
             m_ExpressReturnMetaType = numericMergedArrayMeta != null ? numericMergedArrayMeta : new MetaType(m_NewMetaType);
             return true;
         }
-
         private bool TryResolveDefinedStoreArrayNewReturnType(out MetaType numericMergedArrayMeta)
         {
             numericMergedArrayMeta = null;
@@ -2448,7 +2274,6 @@ namespace SimpleLanguage.Core
 
             return true;
         }
-
         private bool TryValidateInnermostArrayDimensionForStore(
             List<int> defineDims,
             List<int> newDims,
@@ -2654,6 +2479,138 @@ namespace SimpleLanguage.Core
         {
             return "new object: " + ToFormatString();
         }
+
+
+
+
+        /// <summary>
+        /// ?? <paramref name="sourceField"/> ??????? <see cref="MetaMemberData.expressNode"/>?????? <see cref="MetaNewObjectExpressNode"/>????????θ???б???
+        /// </summary>
+        //public void FillAnonymousDataAssignStatementsFromMemberDict(
+        //    MetaMemberData sourceField,
+        //    MetaData anonymousMetaData,
+        //    MetaBlockStatements mbs,
+        //    bool preferSourceMemberExpress = true)
+        //{
+        //    if (sourceField == null || anonymousMetaData == null)
+        //    {
+        //        return;
+        //    }
+
+        //    m_AssignStatementsList.Clear();
+
+        //    if (sourceField.expressNode is MetaNewObjectExpressNode nestedNew)
+        //    {
+        //        for (int i = 0; i < nestedNew.assignStatementsList.Count; i++)
+        //        {
+        //            m_AssignStatementsList.Add(nestedNew.assignStatementsList[i]);
+        //        }
+        //    }
+        //    else if (sourceField.ownerMetaData != null)
+        //    {
+        //        var built = CreateFromAnonymousMetaData(
+        //            anonymousMetaData,
+        //            sourceField.ownerMetaData,
+        //            ownerMetaBase,
+        //            mbs,
+        //            m_StoreMetaVariable);
+        //        if (built != null)
+        //        {
+        //            for (int i = 0; i < built.assignStatementsList.Count; i++)
+        //            {
+        //                m_AssignStatementsList.Add(built.assignStatementsList[i]);
+        //            }
+        //        }
+        //    }
+
+        //    Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
+        //    CalcReturnType();
+        //}
+
+        //private MetaData CreateAnonymousDataOwnerMetaDataForBraceLiteral()
+        //{
+        //    string anname = "DynamicData_";
+        //    if (m_StoreMetaVariable != null)
+        //    {
+        //        anname = anname + m_StoreMetaVariable.name + "_";
+        //    }
+        //    if (m_BraceFileMetaBaseTerm != null)
+        //    {
+        //        anname = anname + m_BraceFileMetaBaseTerm.token?.path + "_" + m_BraceFileMetaBaseTerm.token?.sourceBeginLine.ToString() + "_" + GetHashCode().ToString();
+        //    }
+
+        //    var tempMetaData = new MetaData(anname, false, false, true);
+        //    if (m_StoreMetaVariable?.token != null)
+        //    {
+        //        tempMetaData.AddPingToken(m_StoreMetaVariable.token);
+        //    }
+        //    tempMetaData.AddPingToken(m_BraceFileMetaBaseTerm?.token);
+        //    return tempMetaData;
+        //}
+
+        //private void ResolveDynamicAnonymousDataBySharedFlow()
+        //{
+        //    if (m_NewMetaType == null || !m_NewMetaType.isDynamicData)
+        //    {
+        //        return;
+        //    }
+        //    if (m_AssignStatementsList.Count == 0)
+        //    {
+        //        return;
+        //    }
+
+        //    var ownerMetaData = CreateAnonymousDataOwnerMetaDataForBraceLiteral();
+        //    int index = 0;
+        //    for (int i = 0; i < m_AssignStatementsList.Count; i++)
+        //    {
+        //        var mas = m_AssignStatementsList[i];
+        //        if (mas == null || string.IsNullOrWhiteSpace(mas.defineName))
+        //        {
+        //            continue;
+        //        }
+
+        //        var expr = mas.expressNode;
+        //        if (expr != null)
+        //        {
+        //            expr.CalcReturnType();
+        //        }
+
+        //        var exprType = mas.GetRetMetaType() ?? expr?.GetReturnMetaType();
+        //        var fieldType = exprType != null ? new MetaType(exprType) : new MetaType(CoreMetaClassManager.objectMetaClass);
+        //        bool isDeclaredType = exprType != null && exprType.metaClass != CoreMetaClassManager.objectMetaClass;
+
+        //        var child = MetaMemberData.CreateDeclared(ownerMetaData, mas.defineName, index, fieldType, isDeclaredType);
+        //        index++;
+        //        child.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);
+        //        child.SetExpress(expr);
+        //        ownerMetaData.AddMetaMemberData(child);
+        //    }
+
+        //    var canonical = MetaData.ResolveCanonicalAnonymousType(
+        //        ownerMetaData.GetMetaMemberDataList(),
+        //        m_OwnerMetaBase,
+        //        m_StoreMetaVariable?.name);
+        //    if (canonical == null)
+        //    {
+        //        return;
+        //    }
+
+        //    m_BraceNewMetaData = canonical;
+        //    m_NewMetaType.SetMetaData(m_BraceNewMetaData);
+        //    m_StoreMetaVariable?.SetMetaDefineType(m_NewMetaType);
+
+        //    var resolvedNewObject = MetaNewObjectExpressNode.CreateFromAnonymousMetaData(
+        //        canonical,
+        //        ownerMetaData,
+        //        m_OwnerMetaBase,
+        //        m_OwnerMetaBlockStatements,
+        //        m_StoreMetaVariable);
+        //    if (resolvedNewObject != null)
+        //    {
+        //        m_AssignStatementsList.Clear();
+        //        m_AssignStatementsList.AddRange(resolvedNewObject.assignStatementsList);
+        //    }
+        //}
         /// <summary>
         ///  Class2 c = new( 1, 2 );
         /// </summary>

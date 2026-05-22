@@ -24,6 +24,7 @@ class ClassHolder
 {
     value = 0
 }
+data DataHolder{ value = 0 }
 
 class ClassHolder2
 {
@@ -253,7 +254,7 @@ DataTest
                 b = 30
             },
             holder = DataHolder(){ value = 11 },
-            meta = MetaInfo(){ level = 8, passed = True },
+            meta = MetaInfo(){ level = 8, passed = true },
             kind = DataKind.Advanced,
             items = [
                 1,

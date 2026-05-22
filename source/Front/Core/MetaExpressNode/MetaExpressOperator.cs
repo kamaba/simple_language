@@ -259,6 +259,7 @@ namespace SimpleLanguage.Core
 
             ETokenType ett = fme.token.type;
             m_SignToken = fme.token;
+            m_Token = m_SignToken;
             switch (ett)
             {
                 case ETokenType.Plus:

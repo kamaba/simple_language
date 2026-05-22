@@ -20,6 +20,42 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = mc;
             m_OwnerMetaBlockStatements = mbs;
         }
+        public static MetaArrayExpressNode CreateFromFileMetaMemberData(
+            FileMetaMemberData fmmd,
+            MetaBase owner,
+            MetaBlockStatements mbs,
+            MetaType elementHint)
+        {
+            if (fmmd == null || fmmd.DataType != FileMetaMemberData.EMemberDataType.Array)
+            {
+                return null;
+            }
+
+            var node = new MetaArrayExpressNode(owner, mbs, elementHint, null);
+            node.m_Token = fmmd.nameToken ?? fmmd.token;
+
+            MetaType cmt = null;
+            if (elementHint != null && elementHint.IsArray())
+            {
+                var templates = elementHint.defineTemplateMetaTypeList;
+                if (templates != null && templates.Count > 0)
+                {
+                    cmt = templates[0];
+                }
+            }
+
+            for (int i = 0; i < fmmd.fileMetaMemberData.Count; i++)
+            {
+                var child = fmmd.fileMetaMemberData[i];
+                var en = MetaMemberData.CreateExpressFromFileMetaMemberData(child, owner, mbs, cmt);
+                if (en != null)
+                {
+                    node.m_MetaCallArray.Add(en);
+                }
+            }
+            return node;
+        }
+
         public MetaArrayExpressNode(FileMetaBracketTerm fmbt, MetaBase mc, MetaBlockStatements mbs, MetaType defineMT, MetaVariable mv  )
         {
             m_OwnerMetaBase = mc;

@@ -408,7 +408,8 @@ namespace SimpleLanguage.Core
                             if (isAt)                  //Array.$
                             {
                                 string inputMVName = m_Name;
-                                m_MetaVariable = mmd.GetMemberDataByName(inputMVName);           //Array.@var
+                                var arrayFieldData = mmd.GetFinalMetaType()?.metaData;
+                                m_MetaVariable = arrayFieldData?.GetMemberDataByName(inputMVName);           //Array.@var
                                 if (m_MetaVariable == null)
                                 {
                                     MetaCallLink clink = new MetaCallLink(MetaVisitNode.CreateByVariable(m_MetaVariable));
@@ -961,14 +962,10 @@ namespace SimpleLanguage.Core
                             }   
                             else
                             {
-                                findMd = md.GetMemberDataByName(m_Name);
-                                if (findMd == null)
+                                var dataType = md.GetFinalMetaType()?.metaData;
+                                if (dataType != null)
                                 {
-                                    var dataType = md.GetFinalMetaType().metaData;
-                                    if (dataType != null)
-                                    {
-                                        findMd = dataType.GetMemberDataByName(m_Name);
-                                    }
+                                    findMd = dataType.GetMemberDataByName(m_Name);
                                 }
                                 if (findMd == null)
                                 {
@@ -1443,13 +1440,16 @@ namespace SimpleLanguage.Core
                         string mvname = "new ( " + curmc.allName + "_" + curmc.GetHashCode() + " )";
                         m_MetaVariable = new MetaVariable(mvname, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock,
                             ownerMetaClass, m_MetaType);
-                        if (m_OwnerMetaFunctionBlock.GetMetaVariable(mvname) == null)
+                        if(m_OwnerMetaFunctionBlock != null )
                         {
-                            if( m_AllowUseSettings.ifNotVariableThenAddVariable )
+                            if (m_OwnerMetaFunctionBlock.GetMetaVariable(mvname) == null)
                             {
-                                m_OwnerMetaFunctionBlock.AddMetaVariable(m_MetaVariable);
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "error Class: [" + ownerMetaClass?.allName + "] Method: [" + m_OwnerMetaFunctionBlock.ownerMetaFunction.functionAllName + "]"
-                                    + "中间创建了新的变量:" + token?.ToLexemeAllString() + " var:" + m_MetaVariable.ToFormatString());
+                                if (m_AllowUseSettings.ifNotVariableThenAddVariable)
+                                {
+                                    m_OwnerMetaFunctionBlock.AddMetaVariable(m_MetaVariable);
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "error Class: [" + ownerMetaClass?.allName + "] Method: [" + m_OwnerMetaFunctionBlock.ownerMetaFunction.functionAllName + "]"
+                                        + "中间创建了新的变量:" + token?.ToLexemeAllString() + " var:" + m_MetaVariable.ToFormatString());
+                                }
                             }
                         }
                     }
@@ -1973,7 +1973,7 @@ namespace SimpleLanguage.Core
         }
         public MetaMemberData GetDataValueByMetaMemberData(MetaMemberData md, string inputName)
         {
-            return md.GetMemberDataByName(inputName);
+            return md?.GetFinalMetaType()?.metaData?.GetMemberDataByName(inputName);
         }
         public bool CreateMetaTemplateParams(MetaClass mc, MetaMemberFunction mmf)
         {
