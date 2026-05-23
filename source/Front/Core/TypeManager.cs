@@ -124,6 +124,118 @@ namespace SimpleLanguage.Core
 
             return true;
         }
+
+        public static MetaType GetMaxCompatibleMetaTypeFromList(IReadOnlyList<MetaType> mtList)
+        {
+            var objMt = new MetaType(CoreMetaClassManager.objectMetaClass);
+            if (mtList == null || mtList.Count == 0)
+            {
+                return objMt;
+            }
+
+            if (mtList.Count == 1)
+            {
+                var only = mtList[0];
+                if (only == null || only.isNull)
+                {
+                    return objMt;
+                }
+                return new MetaType(only);
+            }
+
+            bool allNumeric = true;
+            for (int i = 0; i < mtList.Count; i++)
+            {
+                var t = mtList[i];
+                if (t == null || t.isNull)
+                {
+                    return objMt;
+                }
+                if (!ClassManager.IsNumberClass(t.metaClass))
+                {
+                    allNumeric = false;
+                }
+            }
+
+            if (allNumeric)
+            {
+                bool hasInt64 = false;
+                bool hasUInt64 = false;
+                int maxRank = int.MinValue;
+                for (int i = 0; i < mtList.Count; i++)
+                {
+                    var t = mtList[i];
+                    if (t.metaClass == CoreMetaClassManager.int64MetaClass) hasInt64 = true;
+                    else if (t.metaClass == CoreMetaClassManager.uint64MetaClass) hasUInt64 = true;
+
+                    if (!NumberManager.TryGetLiteralPromotionRank(t.metaClass, out int rank))
+                    {
+                        return objMt;
+                    }
+                    if (rank > maxRank) maxRank = rank;
+                }
+
+                if (hasInt64 && hasUInt64)
+                {
+                    return objMt;
+                }
+
+                var promotedMc = NumberManager.GetMetaClassForLiteralPromotionRank(maxRank);
+                return promotedMc != null ? new MetaType(promotedMc) : objMt;
+            }
+
+            var merged = new MetaType(mtList[0]);
+            for (int i = 1; i < mtList.Count; i++)
+            {
+                var next = mtList[i];
+                if (next == null || next.isNull)
+                {
+                    return objMt;
+                }
+
+                if (CompareMetaType(merged, next))
+                {
+                    continue;
+                }
+
+                if (merged.IsArray() && next.IsArray()
+                    && MetaBraceAssignStatements.TryGetCompatibleArrayMetaType(merged, next, out var compatibleArrayMetaType))
+                {
+                    merged = compatibleArrayMetaType;
+                    continue;
+                }
+
+                if (MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(merged, next))
+                {
+                    continue;
+                }
+                if (MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(next, merged))
+                {
+                    merged = new MetaType(next);
+                    continue;
+                }
+
+                var left = merged.metaClass;
+                var right = next.metaClass;
+                if (left != null && right != null)
+                {
+                    var relation = ClassManager.ValidateClassTypeRelation(left, right);
+                    if (relation == ETypeRelation.Child || relation == ETypeRelation.Interface)
+                    {
+                        merged = new MetaType(next);
+                        continue;
+                    }
+                    if (relation == ETypeRelation.Parent)
+                    {
+                        continue;
+                    }
+                }
+
+                return objMt;
+            }
+
+            return merged ?? objMt;
+        }
         /// <summary>
         /// 解析简单类型名时的别名链：当前文件局部 typealias → 工程(.sp Project) typealias → 内置全局别名。
         /// </summary>

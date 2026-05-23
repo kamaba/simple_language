@@ -1319,6 +1319,7 @@ namespace SimpleLanguage.Core
             m_NewType = ENewType.ArrayClass;
             m_Token = maen.token;
             m_StoreMetaVariable = equalMV;
+            m_ArrayCalcMetaType = maen.GetReturnMetaType();
             MetaType cmt = null;
             if(defineMt != null && defineMt.IsArray() )
             {
@@ -2003,21 +2004,24 @@ namespace SimpleLanguage.Core
             {
                 if( this.m_NewType == ENewType.ArrayClass )
                 {
-                    MetaType inputType = GetMaxLevelMetaType();
+                    if(m_ArrayCalcMetaType == null )
+                    {
+                        MetaType inputType = GetMaxLevelMetaType();
 
-                    var newMetaType = new MetaType(inputType);
-                    //List<MetaType> listMT = new List<MetaType>();
-                    //for( int i = 0; i < m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count; i++ )
-                    //{
-                    //    var mt = m_MetaBraceOrBracketStatementsContent.assignStatementsList[i].GetRetMetaType();
-                    //    listMT.Add(mt);
-                    //}
-                    MetaType newRMT = new MetaType();
-                    newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
-                    newRMT.AddDefineTemplateMetaType(newMetaType);
-                    newMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
-                    newMetaType.SetArrayLength(m_AssignStatementsList.Count);
-                    m_ArrayCalcMetaType = newMetaType;
+                        var newMetaType = new MetaType(inputType);
+                        //List<MetaType> listMT = new List<MetaType>();
+                        //for( int i = 0; i < m_MetaBraceOrBracketStatementsContent.assignStatementsList.Count; i++ )
+                        //{
+                        //    var mt = m_MetaBraceOrBracketStatementsContent.assignStatementsList[i].GetRetMetaType();
+                        //    listMT.Add(mt);
+                        //}
+                        MetaType newRMT = new MetaType();
+                        newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
+                        newRMT.AddDefineTemplateMetaType(newMetaType);
+                        newMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
+                        newMetaType.SetArrayLength(m_AssignStatementsList.Count);
+                        m_ArrayCalcMetaType = newMetaType;
+                    }
 
                 }
                 else if( m_NewType == ENewType.CommomClass )
