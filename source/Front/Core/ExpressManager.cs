@@ -401,14 +401,7 @@ namespace SimpleLanguage.Core
             }
             else if (oldmen is MetaAnonDataExpressNode maden)
             {
-                maden.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
-                maden.CalcReturnType();
-                var canon = maden.canonicalMetaData ?? maden.schemaMetaData;
-                if (canon == null)
-                {
-                    return oldmen;
-                }
-
+                var canon = maden.canonicalMetaData ?? maden.schemaMetaData;                
                 menNew = MetaNewObjectExpressNode.CreateFromAnonymousMetaData(
                     canon,
                     maden.schemaMetaData,

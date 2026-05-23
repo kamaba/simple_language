@@ -176,6 +176,7 @@ namespace SimpleLanguage.Core
             {
                 tempMetaData.AddPingToken(ordered[0].token);
             }
+            tempMetaData.UpdateAllName();
 
             int index = 0;
             foreach (var field in ordered)

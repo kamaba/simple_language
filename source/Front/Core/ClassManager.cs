@@ -174,7 +174,7 @@ namespace SimpleLanguage.Core
             if (md != null && m_InitHandleMetaDataList.IndexOf(md) == -1)
             {
                 m_InitHandleMetaDataList.Add(md);
-                AddExportMetaData(md);
+                AddDefineMetaData(md);
             }
         }
         public void AddInitHandleMetaEnumList(MetaEnum me)
@@ -349,9 +349,26 @@ namespace SimpleLanguage.Core
                 {
                     return false;
                 }
-                if( vval.defineMetaType.metaClass != val2.defineMetaType.metaClass )
+                if( vval.realMetaType.isClass && val2.realMetaType.isClass )
                 {
-                    return false;
+                    if (vval.realMetaType.metaClass != val2.realMetaType.metaClass)
+                    {
+                        return false;
+                    }
+                }
+                else if( vval.realMetaType.isData && val2.realMetaType.isData )
+                {
+                    if( !CompareMetaDataMember( vval.realMetaType.metaData, val2.realMetaType.metaData ) )
+                    {
+                        return false;
+                    }
+                }
+                else if( vval.realMetaType.isEnum && val2.realMetaType.isEnum )
+                {
+                    if (vval.realMetaType.metaEnum != val2.realMetaType.metaEnum )
+                    {
+                        return false;
+                    }
                 }
             }
 

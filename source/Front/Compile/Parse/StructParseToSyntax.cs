@@ -598,6 +598,34 @@ namespace SimpleLanguage.Compile
             FileMetaBaseTerm fme = null;
             if (assignNode != null && afterNodeList.Count > 0 )
             {
+                bool hasSameLineExpression = false;
+                for (int i = 0; i < afterNodeList.Count; i++)
+                {
+                    var n = afterNodeList[i];
+                    if (n == null) continue;
+                    if (n.nodeType == ENodeType.Comment)
+                    {
+                        continue;
+                    }
+
+                    if (n.nodeType == ENodeType.LineEnd || n.nodeType == ENodeType.SemiColon)
+                    {
+                        Log.AddNodeLog(LID.ShowExtendMessage, assignNode.token,
+                            "Error '=' 后不允许直接换行或结束，右值必须与 '=' 同行出现（例如: [ { new() ClassName() 等）");
+                        return null;
+                    }
+
+                    hasSameLineExpression = true;
+                    break;
+                }
+
+                if (!hasSameLineExpression)
+                {
+                    Log.AddNodeLog(LID.ShowExtendMessage, assignNode.token,
+                        "Error '=' 后未找到同一行右值表达式");
+                    return null;
+                }
+
                 if(afterNodeList[0].nodeType == ENodeType.Key
                     && afterNodeList[0].token?.type != ETokenType.This
                     && afterNodeList[0].token?.type != ETokenType.Base
@@ -698,8 +726,11 @@ namespace SimpleLanguage.Compile
             {
                 if( akss.commonContent.Count > 0 )
                 {
-                    fms = CrateFileMetaSyntaxNoKey(akss.commonContent);                    
-                    AddParseSyntaxNodeInfo(fms);
+                    fms = CrateFileMetaSyntaxNoKey(akss.commonContent);
+                    if (fms != null)
+                    {
+                        AddParseSyntaxNodeInfo(fms);
+                    }
                 }
             }
             else if( akss.eSyntaxNodeType == ESyntaxNodeStructType.KeySyntax )

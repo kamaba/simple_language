@@ -349,11 +349,18 @@ DataTest
             code = 7,
             title = "ok"
         }
-        data anonDiff = 
+        data anonDiff = {
+            code = 8,
+            title = "ok"
+        }
+
+        #!
+         data anonDiff =     #是否支持这样的写，要进行论证
         {
             code = 8,
             title = "ok"
         }
+        !#
 
         if (anonSame1 == anonSame2)
         {

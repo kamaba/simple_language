@@ -471,15 +471,19 @@ namespace SimpleLanguage.Core
                                 // ensure numeric left will be converted to string for concatenation
                                 m_LeftConvert = new ConvertType() { oriType = leftMc.eType, targetType = EType.String };
                             }
+                            else if(m_OpLevelSign == ELeftRightOpSign.Equal
+                                || m_OpLevelSign == ELeftRightOpSign.NotEqual )
+                            {
+                                m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                            }
                             else
                             {
-                                AddMetaError("Error 字符串类型只能参与加法运算!!");
+                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "string type only support _plus_,_equal_,_noequal_");
                             }
                         }
                         else
                         {
-                            //左边布尔 右边非布尔
-                            AddMetaError("Error 布尔类型不能参与加减运算!!");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "布尔类型不能参与加减运算");
                         }
                     }
                     else if (ClassManager.IsNumberClass(leftMc))
@@ -587,9 +591,14 @@ namespace SimpleLanguage.Core
                                 m_RightConvert = new ConvertType() { oriType = rightMc.eType, targetType = EType.String };
                             }
                         }
+                        else if (m_OpLevelSign == ELeftRightOpSign.Equal
+                            || m_OpLevelSign == ELeftRightOpSign.NotEqual)
+                        {
+                            m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                        }
                         else
                         {
-                            AddMetaError("Error 字符串类型只能参与加法运算!!");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "string type only support _plus_,_equal_,_noequal_");
                         }
                     }
                     else if ((leftMc.eType == EType.Boolean && rightMc.eType == EType.String) || (leftMc.eType == EType.String && rightMc.eType == EType.Boolean))
