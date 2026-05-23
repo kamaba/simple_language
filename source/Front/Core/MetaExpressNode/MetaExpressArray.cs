@@ -151,7 +151,11 @@ namespace SimpleLanguage.Core
                 if (express == null) continue;
 
                 express.CalcReturnType();
-                express = ExpressManager.ConvertNewExpress(express, express.GetReturnMetaType(), null);
+                var newexpress = ExpressManager.ConvertNewExpress( express, express.GetReturnMetaType(), null );
+                if( newexpress   != express )
+                {
+                    m_MetaCallArray[i] = newexpress;
+                }
                 mtList.Add(express.GetReturnMetaType());
             }
 
@@ -186,7 +190,7 @@ namespace SimpleLanguage.Core
         }
         public override string ToString()
         {
-            return ToFormatString();
+            return "ExpressArrayNode:" + ToFormatString();
         }
     }
 }

@@ -87,7 +87,7 @@ namespace SimpleLanguage.Core
                 m_ReturnMetaVariable?.name);
             if (m_CanonicalMetaData != null)
             {
-                m_CanonicalMetaData.UpdateOwner();
+                m_SchemaMetaData.UpdateOwner(m_CanonicalMetaData);
                 m_CanonicalMetaData.SetToken(m_SchemaMetaData.token);
                 m_SchemaMetaData = null;
                 m_ExpressReturnMetaType = new MetaType(m_CanonicalMetaData);
@@ -115,7 +115,7 @@ namespace SimpleLanguage.Core
                     sb.Append(v.Value.ToFormatString(true));
                 }
                 sb.Append("}");
-                return sb.ToString();
+                return "ExpressAnonData" + sb.ToString();
             }
             return "{}";
         }

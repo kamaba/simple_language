@@ -157,11 +157,11 @@ namespace SimpleLanguage.Core
         {
             // 嵌套 data/array 字面量已在 MetaMemberData 表达式管线（MetaAnonDataExpressNode / MetaArrayExpressNode → MetaNewObjectExpressNode）中解析。
         }
-        public override void UpdateOwner() 
+        public override void UpdateOwner( MetaBase mb ) 
         {
             foreach( var v in m_BindOwnerExpressNodeList)
             {
-                v.SetOwnerBase(this);
+                v.SetOwnerBase(mb);
             }
         }
         /// <summary>

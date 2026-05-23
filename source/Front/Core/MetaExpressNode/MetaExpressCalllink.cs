@@ -139,7 +139,7 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(m_MetaCallLink.ToString());
             }
-            return sb.ToString();
+            return "CalllinkExpressNode" + sb.ToString();
         }
     }
 }

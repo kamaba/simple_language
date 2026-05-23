@@ -2515,7 +2515,7 @@ namespace SimpleLanguage.Core
 
         public override string ToString()
         {
-            return "new object: " + ToFormatString();
+            return "NewObjectExpressNode: " + ToFormatString();
         }
 
 
