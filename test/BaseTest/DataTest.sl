@@ -261,7 +261,7 @@ DataTest
                 [2, 3],
                 { code = 9, title = "mix" },
                 DataHolder(){ value = 12 },
-                MetaInfo(){ level = 6, passed = False },
+                MetaInfo(){ level = 6, passed = false },
                 DataKind.Base
             ]
         }

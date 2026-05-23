@@ -66,6 +66,7 @@ namespace SimpleLanguage.Core
         protected bool m_Parse = false;
 
         public void SetToken(Token token) { m_Token = token; }
+        public void SetOwnerBase(MetaBase mb) { m_OwnerMetaBase = mb; }
         public virtual int CalcParseLevel(int level) { return level; }
         public virtual void CalcReturnType() { }
         public virtual void Parse(AllowUseSettings auc) { }

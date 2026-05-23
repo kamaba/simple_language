@@ -151,6 +151,7 @@ namespace SimpleLanguage.Core
                 if (express == null) continue;
 
                 express.CalcReturnType();
+                express = ExpressManager.ConvertNewExpress(express, express.GetReturnMetaType(), null);
                 mtList.Add(express.GetReturnMetaType());
             }
 

@@ -395,7 +395,7 @@ namespace SimpleLanguage.Core
             }
             else if (oldmen is MetaArrayExpressNode maen)
             {
-                menNew = new MetaNewObjectExpressNode(mdt, maen, oldmen.ownerMetaClass, oldmen.ownerMetaBlockStatements, mv);
+                menNew = new MetaNewObjectExpressNode(mdt, maen, oldmen.ownerMetaBase, oldmen.ownerMetaBlockStatements, mv);
                 menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                 menNew.CalcReturnType();
             }

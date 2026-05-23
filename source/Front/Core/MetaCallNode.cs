@@ -370,7 +370,7 @@ namespace SimpleLanguage.Core
 
             if (m_IsFunction)
             {
-                m_MetaInputParamCollection = new MetaInputParamCollection(m_FileMetaCallNode.fileMetaParTerm, ownerMetaClass, m_OwnerMetaFunctionBlock);
+                m_MetaInputParamCollection = new MetaInputParamCollection(m_FileMetaCallNode.fileMetaParTerm, ownerMetaBase, m_OwnerMetaFunctionBlock);
 
                 m_MetaInputParamCollection.CaleReturnType();
             }
@@ -1153,11 +1153,11 @@ namespace SimpleLanguage.Core
                             if (fmetaVariable == null)
                             {
                                 m_FrontCallNode.m_MetaVariable = new MetaVariable(mvname,
-                                    MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock, ownerMetaClass,
+                                    MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock, ownerMetaBase,
                                     new MetaType(m_FrontCallNode.m_MetaClass));
                                 m_OwnerMetaFunctionBlock.AddMetaVariable(m_FrontCallNode.m_MetaVariable);
 
-                                m_FrontCallNode.m_MetaInputParamCollection = new MetaInputParamCollection(ownerMetaClass, ownerMetaFunctionBlock);
+                                m_FrontCallNode.m_MetaInputParamCollection = new MetaInputParamCollection(ownerMetaBase, ownerMetaFunctionBlock);
 
                                 MetaInputParam mip = new MetaInputParam(m_FrontCallNode.metaExpressValue);
                                 m_FrontCallNode.m_MetaInputParamCollection.AddMetaInputParam(mip);
@@ -2024,7 +2024,7 @@ namespace SimpleLanguage.Core
                     {
                         if (m_MetaInputParamCollection == null )
                         {
-                            m_MetaInputParamCollection = new MetaInputParamCollection(ownerMetaClass, m_OwnerMetaFunctionBlock);
+                            m_MetaInputParamCollection = new MetaInputParamCollection(ownerMetaBase, m_OwnerMetaFunctionBlock);
                         }
                         if( m_MetaInputParamCollection.metaInputParamList.Count > 0 )
                         {

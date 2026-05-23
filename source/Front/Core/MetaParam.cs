@@ -21,17 +21,17 @@ namespace SimpleLanguage.Core
         protected FileInputParamNode m_FileInputParamNode;
         protected MetaExpressNodeBase m_Express = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements;
-        protected MetaClass m_OwnerMetaClass = null;
-        public MetaInputParam( FileInputParamNode fipn, MetaClass mc, MetaBlockStatements mbs )
+        protected MetaBase m_OwnerMetaBase = null;
+        public MetaInputParam( FileInputParamNode fipn, MetaBase mc, MetaBlockStatements mbs )
         {
             m_FileInputParamNode = fipn;
             m_OwnerMetaBlockStatements = mbs;
-            m_OwnerMetaClass = mc;
+            m_OwnerMetaBase = mc;
 
             CreateExpressParam cep = new CreateExpressParam()
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
-                ownerMetaBase = m_OwnerMetaClass,
+                ownerMetaBase = m_OwnerMetaBase,
                 metaType = null,
                 fme = m_FileInputParamNode.express,
                 isStatic = false,
@@ -574,18 +574,18 @@ namespace SimpleLanguage.Core
     {
         public List<MetaInputParam> metaInputParamList => m_MetaInputParamList;
         public int count { get { return m_MetaInputParamList.Count; } }
-        private MetaClass m_OwnerMetaClass = null;
+        private MetaBase m_OwnerMetaBase = null;
         private MetaBlockStatements m_MetaBlockStatements = null;
         private List<MetaInputParam> m_MetaInputParamList = new List<MetaInputParam>();
 
-        public MetaInputParamCollection(MetaClass mc, MetaBlockStatements mbs)
+        public MetaInputParamCollection(MetaBase mc, MetaBlockStatements mbs)
         {
-            m_OwnerMetaClass = mc;
+            m_OwnerMetaBase = mc;
             m_MetaBlockStatements = mbs;
         }
-        public MetaInputParamCollection(FileMetaParTerm fmpt, MetaClass mc, MetaBlockStatements mbs)
+        public MetaInputParamCollection(FileMetaParTerm fmpt, MetaBase mc, MetaBlockStatements mbs)
         {
-            m_OwnerMetaClass = mc;
+            m_OwnerMetaBase = mc;
             m_MetaBlockStatements = mbs;
             var splitList = fmpt.SplitParamList();
             List<FileInputParamNode> list = new List<FileInputParamNode>();
@@ -655,7 +655,7 @@ namespace SimpleLanguage.Core
         {
             for (int i = 0; i < splitList.Count; i++)
             {
-                MetaInputParam mp = new MetaInputParam(splitList[i], m_OwnerMetaClass, m_MetaBlockStatements);
+                MetaInputParam mp = new MetaInputParam(splitList[i], m_OwnerMetaBase, m_MetaBlockStatements);
                 AddMetaInputParam(mp);
             }
         }

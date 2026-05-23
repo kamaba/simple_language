@@ -87,6 +87,7 @@ namespace SimpleLanguage.Core
                 m_ReturnMetaVariable?.name);
             if (m_CanonicalMetaData != null)
             {
+                m_CanonicalMetaData.UpdateOwner();
                 m_CanonicalMetaData.SetToken(m_SchemaMetaData.token);
                 m_SchemaMetaData = null;
                 m_ExpressReturnMetaType = new MetaType(m_CanonicalMetaData);

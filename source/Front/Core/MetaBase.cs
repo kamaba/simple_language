@@ -127,6 +127,7 @@ namespace SimpleLanguage.Core
         {
             this.m_MetaNode = mn;
         }
+        public virtual void UpdateOwner() { }
         public virtual string GetFormatString()
         {
             return "";

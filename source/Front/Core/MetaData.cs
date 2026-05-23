@@ -25,6 +25,7 @@ namespace SimpleLanguage.Core
         private EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
         private FileMetaClass m_FileMetaClass = null;
         private Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
+        private List<MetaExpressNodeBase> m_BindOwnerExpressNodeList = new List<MetaExpressNodeBase>();
 
         public MetaData( FileMetaClass md )
         {
@@ -47,6 +48,10 @@ namespace SimpleLanguage.Core
         public void SetAllName( string an )
         {
             this.m_AllName = an;
+        }
+        public void AddBindOwnerExpressNodeList( MetaExpressNodeBase menb )
+        {
+            m_BindOwnerExpressNodeList.Add(menb);
         }
         public void SetClassDefineType(EClassDefineType type)
         {
@@ -152,7 +157,13 @@ namespace SimpleLanguage.Core
         {
             // 嵌套 data/array 字面量已在 MetaMemberData 表达式管线（MetaAnonDataExpressNode / MetaArrayExpressNode → MetaNewObjectExpressNode）中解析。
         }
-
+        public override void UpdateOwner() 
+        {
+            foreach( var v in m_BindOwnerExpressNodeList)
+            {
+                v.SetOwnerBase(this);
+            }
+        }
         /// <summary>
         /// 按字段最终类型生成匿名 <see cref="MetaData"/> 形状，并与全局匿名表去重。
         /// </summary>

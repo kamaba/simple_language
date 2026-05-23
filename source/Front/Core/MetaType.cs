@@ -46,7 +46,7 @@ namespace SimpleLanguage.Core
         public int arrayLength => m_ArrayLength;
         public EMetaTypeType eMetaTypeType => m_EMetaTypeType;
 
-        public MetaBase currentMeta => eMetaTypeType switch
+        public MetaBase metaBase => eMetaTypeType switch
         {
             EMetaTypeType.MetaData => m_MetaData,
             EMetaTypeType.MetaClass => m_MetaClass,

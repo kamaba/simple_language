@@ -659,7 +659,7 @@ namespace SimpleLanguage.Core
 
                     if (isFindDefineFunction)
                     {
-                        var mipc = new MetaInputParamCollection(left.expressReturnMetaType.metaClass, null);
+                        var mipc = new MetaInputParamCollection(left.expressReturnMetaType.metaBase, null);
                         MetaInputParam mip = new MetaInputParam(right);
                         mipc.AddMetaInputParam(mip);
                         var mmf = rightMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_op_add_", 0, mipc);
