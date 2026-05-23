@@ -421,7 +421,7 @@ DataTest
         {
             global.println("builtin DataAllEqual(sameA,sameB) -> true")
         }
-        if (!DataAllEqual(sameA, diffC))
+        if (DataAllEqual(sameA, diffC) == false )
         {
             global.println("builtin DataAllEqual(sameA,diffC) -> false")
         }
@@ -438,7 +438,7 @@ DataTest
         {
             global.println("builtin DataDataEqual(sameA,sameB) -> true")
         }
-        if (!DataDataEqual(sameA, diffC))
+        if DataDataEqual(sameA, diffC) == false
         {
             global.println("builtin DataDataEqual(sameA,diffC) -> false")
         }
@@ -451,7 +451,7 @@ DataTest
         {
             global.println("builtin DataDataEqual(anon) -> true")
         }
-        if (!DataDataEqual(anonSame1, anonDiff))
+        if (DataDataEqual(anonSame1, anonDiff) == false)
         {
             global.println("builtin DataDataEqual(anon diff) -> false")
         }
@@ -466,7 +466,7 @@ DataTest
         {
             global.println("builtin DataDataEqual(typed anon pair) -> true")
         }
-        if (!DataAllEqual(typedA, typedB))
+        if !DataAllEqual(typedA, typedB) 
         {
             global.println("builtin DataAllEqual(typed anon, diff type id) -> false expected")
         }

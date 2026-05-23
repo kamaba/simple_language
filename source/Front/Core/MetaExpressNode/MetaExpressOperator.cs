@@ -22,20 +22,18 @@ namespace SimpleLanguage.Core
     }
     public sealed class MetaUnaryOpExpressNode : MetaExpressNodeBase
     {
-        private Token tokeType => m_TokeType;
+        public override Token token => m_Token;
         public ESingleOpSign opSign => m_OpSign;
         public MetaExpressNodeBase value => m_Value;
 
         private ESingleOpSign m_OpSign = ESingleOpSign.None;
         private MetaExpressNodeBase m_Value = null;             //左边值
-        private Token m_TokeType = null;
 
-        public override Token token => m_TokeType;
 
         public MetaUnaryOpExpressNode(FileMetaSymbolTerm fme, MetaExpressNodeBase _value )
         {
             m_Value = _value;
-            m_TokeType = fme.token;
+            m_Token = fme.token;
             if ( fme.symBolType == ETokenType.Minus )
             {
                 m_OpSign = ESingleOpSign.Neg;
@@ -64,6 +62,11 @@ namespace SimpleLanguage.Core
         }
         public override void CalcReturnType()
         {
+            if (m_Value != null)
+            {
+                m_Value.CalcReturnType();
+            }
+
             if ( m_OpSign == ESingleOpSign.Not)
             {
                 m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
@@ -124,6 +127,11 @@ namespace SimpleLanguage.Core
                         {
                             switch (eType)
                             {
+                                case EType.Boolean:
+                                    {
+                                        mcen.value = !(bool)mcen.value;
+                                        return mcen;
+                                    }
                                 case EType.UInt8:
                                     {
                                         mcen.value = (byte)mcen.value != 0;
@@ -156,7 +164,7 @@ namespace SimpleLanguage.Core
                                     }
                                 case EType.UInt64:
                                     {
-                                        mcen.value = (long)mcen.value != 0;
+                                        mcen.value = (ulong)mcen.value != 0;
                                         return mcen;
                                     }
                                 case EType.String:
@@ -208,7 +216,7 @@ namespace SimpleLanguage.Core
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(tokeType.lexeme.ToString());
+            sb.Append(m_Token.lexeme.ToString());
             sb.Append(m_Value.ToFormatString());
 
             return sb.ToString();
@@ -216,9 +224,9 @@ namespace SimpleLanguage.Core
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            if (tokeType != null)
+            if (m_Token != null)
             {
-                sb.Append(tokeType.ToLexemeAllString());
+                sb.Append(m_Token.ToLexemeAllString());
             }
             if(m_Value != null )
             {

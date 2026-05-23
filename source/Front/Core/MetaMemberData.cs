@@ -22,7 +22,6 @@ namespace SimpleLanguage.Core
     }
     public sealed class MetaMemberData : MetaVariable
     {
-        /// <summary>Source declaration order within the owning <see cref="MetaData"/> (used by IR field indices).</summary>
         public int dataFieldOrderIndex => m_Index;
         public EMemberDataType memberDataType => m_MemberDataType;
         public MetaExpressNodeBase expressNode => m_Express;
@@ -149,11 +148,14 @@ namespace SimpleLanguage.Core
             {
                 mmd.m_MemberDataType = EMemberDataType.MemberArray;
             }
+            else if (TypeManager.IsCoreMetaType(finalType))
+            {
+                mmd.m_MemberDataType = EMemberDataType.ConstValue;
+            }
             else
             {
                 mmd.m_MemberDataType = EMemberDataType.MemberClass;
             }
-
             return mmd;
         }
 
@@ -226,9 +228,6 @@ namespace SimpleLanguage.Core
         {
             this.m_Express = meb;
         }
-        /// <summary>
-        /// 从 <see cref="FileMetaMemberData"/> 构建初始表达式（嵌套 data → <see cref="MetaAnonDataExpressNode"/>，数组 → <see cref="MetaArrayExpressNode"/> 等）。
-        /// </summary>
         internal static MetaExpressNodeBase CreateExpressFromFileMetaMemberData(
             FileMetaMemberData fmmd,
             MetaBase owner,
@@ -410,7 +409,6 @@ namespace SimpleLanguage.Core
             if (this.m_Express != null)
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-                m_Express = ExpressManager.ConvertNewExpress(m_Express, null, this);
             }
             return true;
         }
@@ -445,6 +443,7 @@ namespace SimpleLanguage.Core
             if ( m_Express != null && m_RealMetaType == null )
             {
                 m_Express.CalcReturnType();
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, null, this);
                 m_DefineMetaType = m_Express.GetReturnMetaType();
                 if (m_DefineMetaType == null)
                 {
@@ -456,88 +455,6 @@ namespace SimpleLanguage.Core
                 SyncMemberDataTypeByMetaType(m_DefineMetaType);
             }
         }
-        /*
-        public void StructNewObjectData()
-        {
-            var mne = m_Express as MetaNewObjectExpressNode;
-            var cne = m_Express as MetaCallLinkExpressNode;
-            if (mne != null)
-            {
-                for (int i = 0; i < mne.assignStatementsList?.Count; i++)
-                {
-
-                    if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
-                    {
-                        ResolveAnonymousDataMetaType();
-                    }
-                    var asl = mne.assignStatementsList[i];
-
-                    if (asl == null) continue;
-
-                    MetaMemberData addMmd = null;
-                    if (m_MemberDataType == EMemberDataType.MemberArray)
-                    {
-                        var mcen = asl.expressNode as MetaConstExpressNode;
-                        var mnoe = asl.expressNode as MetaNewObjectExpressNode;
-                        if (mcen != null)
-                        {
-                            addMmd = new MetaMemberData(this, i.ToString(), i, mcen);
-                            addMmd.ParseMetaExpress();
-                        }
-                        if (mnoe != null)
-                        {
-                            addMmd = new MetaMemberData(this, i.ToString(), i, mnoe);
-                            addMmd.ParseMetaExpress();
-                        }
-                    }
-                    else if (m_MemberDataType == EMemberDataType.MemberData)
-                    {
-                        addMmd = asl.metaMemberData;
-                    }
-
-                    if (addMmd == null) continue;
-
-                    if (m_MetaMemberDataDict.ContainsKey(addMmd.name))
-                    {
-                        Log.AddMetaCoreLog(LID.MetaCoreDefineNameRepeat, cne.token, "534", cne.token, addMmd.name);
-                        continue;
-                    }
-                    m_MetaMemberDataDict.Add(addMmd.name, addMmd);
-                }
-            }
-            else if (cne != null)
-            {
-                MetaMemberData addMmd = new MetaMemberData(this, name, 0, cne);
-                if (m_MetaMemberDataDict.ContainsKey(addMmd.name))
-                {
-                    Log.AddMetaCoreLog(LID.MetaCoreDefineNameRepeat, cne.token, "534", cne.token, addMmd.name);
-                }
-                m_MetaMemberDataDict.Add(addMmd.name, addMmd);
-            }
-            // 子成员（含嵌套匿名 data）须先完成 ParseMetaExpress，父级组装 MetaNewObjectExpressNode / MetaBraceAssignStatements 时才能拿到右值表达式。
-            if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
-            {
-                var orderedChildren = new List<MetaMemberData>(m_MetaMemberDataDict.Values);
-                orderedChildren.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
-                foreach (var child in orderedChildren)
-                {
-                    child.ParseMetaExpress();
-                }
-            }
-            // 匿名/结构化 data 字面量：BuildAnonymousMetaDataType 后，把 m_MetaMemberDataDict 各字段的 expressNode
-            //（含子字段若为匿名 MetaData 则已是 MetaNewObjectExpressNode）写入本层 MetaNewObjectExpressNode 的 assign 列表。
-            if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
-            {
-                ResolveAnonymousDataMetaType();
-            }
-            if (m_DefineMetaType != null)
-            {
-                m_IsDefineMetaType = true;
-                if (m_RealMetaType == null)
-                    m_RealMetaType = new MetaType(m_DefineMetaType);
-            }
-        }
-        */
         public bool IsIncludeMetaData(MetaData md)
         {
             if (md == null) return false;
@@ -690,3 +607,88 @@ namespace SimpleLanguage.Core
         }
     }
 }
+
+
+
+/*
+public void StructNewObjectData()
+{
+    var mne = m_Express as MetaNewObjectExpressNode;
+    var cne = m_Express as MetaCallLinkExpressNode;
+    if (mne != null)
+    {
+        for (int i = 0; i < mne.assignStatementsList?.Count; i++)
+        {
+
+            if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
+            {
+                ResolveAnonymousDataMetaType();
+            }
+            var asl = mne.assignStatementsList[i];
+
+            if (asl == null) continue;
+
+            MetaMemberData addMmd = null;
+            if (m_MemberDataType == EMemberDataType.MemberArray)
+            {
+                var mcen = asl.expressNode as MetaConstExpressNode;
+                var mnoe = asl.expressNode as MetaNewObjectExpressNode;
+                if (mcen != null)
+                {
+                    addMmd = new MetaMemberData(this, i.ToString(), i, mcen);
+                    addMmd.ParseMetaExpress();
+                }
+                if (mnoe != null)
+                {
+                    addMmd = new MetaMemberData(this, i.ToString(), i, mnoe);
+                    addMmd.ParseMetaExpress();
+                }
+            }
+            else if (m_MemberDataType == EMemberDataType.MemberData)
+            {
+                addMmd = asl.metaMemberData;
+            }
+
+            if (addMmd == null) continue;
+
+            if (m_MetaMemberDataDict.ContainsKey(addMmd.name))
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreDefineNameRepeat, cne.token, "534", cne.token, addMmd.name);
+                continue;
+            }
+            m_MetaMemberDataDict.Add(addMmd.name, addMmd);
+        }
+    }
+    else if (cne != null)
+    {
+        MetaMemberData addMmd = new MetaMemberData(this, name, 0, cne);
+        if (m_MetaMemberDataDict.ContainsKey(addMmd.name))
+        {
+            Log.AddMetaCoreLog(LID.MetaCoreDefineNameRepeat, cne.token, "534", cne.token, addMmd.name);
+        }
+        m_MetaMemberDataDict.Add(addMmd.name, addMmd);
+    }
+    // 子成员（含嵌套匿名 data）须先完成 ParseMetaExpress，父级组装 MetaNewObjectExpressNode / MetaBraceAssignStatements 时才能拿到右值表达式。
+    if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
+    {
+        var orderedChildren = new List<MetaMemberData>(m_MetaMemberDataDict.Values);
+        orderedChildren.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
+        foreach (var child in orderedChildren)
+        {
+            child.ParseMetaExpress();
+        }
+    }
+    // 匿名/结构化 data 字面量：BuildAnonymousMetaDataType 后，把 m_MetaMemberDataDict 各字段的 expressNode
+    //（含子字段若为匿名 MetaData 则已是 MetaNewObjectExpressNode）写入本层 MetaNewObjectExpressNode 的 assign 列表。
+    if (m_MemberDataType == EMemberDataType.MemberData && m_MetaMemberDataDict.Count > 0)
+    {
+        ResolveAnonymousDataMetaType();
+    }
+    if (m_DefineMetaType != null)
+    {
+        m_IsDefineMetaType = true;
+        if (m_RealMetaType == null)
+            m_RealMetaType = new MetaType(m_DefineMetaType);
+    }
+}
+*/

@@ -75,6 +75,7 @@ namespace SimpleLanguage.Core
                 case MetaAsIsExpressNode _:
                 case MetaExpressTypeConvert _:
                 case MetaAnonDataExpressNode _:
+                case MetaUnaryOpExpressNode _:
                     {
                     }
                     break;

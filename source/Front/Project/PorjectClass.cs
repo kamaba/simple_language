@@ -403,7 +403,7 @@ namespace SimpleLanguage.Project
                 var canon = MetaData.ResolveCanonicalAnonymousType(inlineOwner.GetMetaMemberDataList(), owner, name);
                 if (canon != null)
                 {
-                    var newObj = MetaNewObjectExpressNode.CreateFromAnonymousMetaData(canon, inlineOwner, owner, null);
+                    var newObj = MetaNewObjectExpressNode.CreateFromAnonymousMetaData(canon, owner, null);
                     objNode.SetExpress(newObj);
                     objNode.SetMetaDefineType(new MetaType(canon));
                 }

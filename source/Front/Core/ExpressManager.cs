@@ -191,7 +191,7 @@ namespace SimpleLanguage.Core
 
                     case FileMetaSymbolTerm fmst:
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error CreateExpressNode 创建表达项不能为符号");
+                            //Log.AddMetaCoreLog(LID.ShowExtendMessage, root.token, "Error CreateExpressNode 创建表达项不能为符号");
                         }
                         break;
                     case FileMetaAsOrIsTerm fmaoit:
@@ -400,11 +400,9 @@ namespace SimpleLanguage.Core
                 menNew.CalcReturnType();
             }
             else if (oldmen is MetaAnonDataExpressNode maden)
-            {
-                var canon = maden.canonicalMetaData ?? maden.schemaMetaData;                
+            {         
                 menNew = MetaNewObjectExpressNode.CreateFromAnonymousMetaData(
-                    canon,
-                    maden.schemaMetaData,
+                    maden.canonicalMetaData,
                     oldmen.ownerMetaBase,
                     oldmen.ownerMetaBlockStatements,
                     mv);

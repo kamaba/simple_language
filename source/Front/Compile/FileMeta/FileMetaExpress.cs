@@ -221,6 +221,10 @@ namespace SimpleLanguage.Compile
                     }
                     break;
                 case ETokenType.Modulo:          // %
+                    {
+                        priority = SignComputePriority.Level3_Hight_Compute;
+                    }
+                    break;
                 case ETokenType.Not:             // !
                 case ETokenType.Negative:        // ~
                     {
@@ -1506,6 +1510,16 @@ namespace SimpleLanguage.Compile
                             Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 表达式解析错误!! FileMetaExpress 575" + extendMessage );
                             return false;
                         }
+
+                        // 一元前缀统一形态：left 放符号节点，right 放目标表达式
+                        // 例如：!DataAllEqual(a,b) => root='!' , left='!' , right=DataAllEqual(a,b)
+                        if (currentTerm.left == null)
+                        {
+                            var unarySymbol = new FileMetaSymbolTerm(m_FileMeta, currentTerm.token);
+                            unarySymbol.priority = SignComputePriority.Level2_LinkOp;
+                            currentTerm.left = unarySymbol;
+                        }
+
                         currentTerm.right = listNextTerm;
                         if (listNextTerm != null)
                         {
@@ -1587,6 +1601,11 @@ namespace SimpleLanguage.Compile
                                 fmst.priority = SignComputePriority.Level3_Low_Compute; // binary
                         }
                     }
+                    else if (ttoken?.type == ETokenType.Not || ttoken?.type == ETokenType.Negative)
+                    {
+                        // ! / ~ are unary-prefix operators in this grammar
+                        fmst.priority = SignComputePriority.Level2_LinkOp;
+                    }
                 }
                 if (buildASTList[i].isDirty || buildASTList[i].root == null)
                 {
@@ -1612,6 +1631,11 @@ namespace SimpleLanguage.Compile
         }
         public override string ToFormatString()
         {
+            if (m_Root != null && !ReferenceEquals(m_Root, this))
+            {
+                return FormatByAstNode(m_Root);
+            }
+
             StringBuilder sb = new StringBuilder();
             FileMetaBaseTerm beforeFMTE = null;
             for (int i = 0; i < m_FileMetaExpressList.Count; i++)
@@ -1623,6 +1647,36 @@ namespace SimpleLanguage.Compile
                 beforeFMTE = cur;
             }
             return sb.ToString();
+        }
+
+        private static string FormatByAstNode(FileMetaBaseTerm node)
+        {
+            if (node == null)
+            {
+                return string.Empty;
+            }
+
+            if (node is FileMetaSymbolTerm symbol)
+            {
+                var op = symbol.token?.lexeme?.ToString() ?? string.Empty;
+                var left = symbol.left;
+                var right = symbol.right;
+
+                if (left == null && right != null)
+                {
+                    return op + FormatByAstNode(right);
+                }
+                if (left != null && right == null)
+                {
+                    return FormatByAstNode(left) + op;
+                }
+                if (left != null && right != null)
+                {
+                    return FormatByAstNode(left) + " " + op + " " + FormatByAstNode(right);
+                }
+            }
+
+            return node.ToFormatString();
         }
         public override string ToString()
         {

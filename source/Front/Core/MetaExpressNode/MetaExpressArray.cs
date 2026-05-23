@@ -131,16 +131,15 @@ namespace SimpleLanguage.Core
         }
         public override void CalcReturnType()
         {
-            m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-
             if (m_MetaCallArray.Count > 0)
             {
-                m_ExpressReturnMetaType.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
+                //var expressReturnMetaType.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
 
 
                 MetaType cmt = null;
                 for (int i = 0; i < m_MetaCallArray.Count; i++)
                 {
+                    m_MetaCallArray[i].CalcReturnType();
                     MetaType cmt2 = m_MetaCallArray[i].GetReturnMetaType();
                     if (cmt2.metaClass == CoreMetaClassManager.objectMetaClass)
                     {

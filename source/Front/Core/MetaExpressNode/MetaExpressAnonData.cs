@@ -16,7 +16,7 @@ namespace SimpleLanguage.Core
     public sealed class MetaAnonDataExpressNode : MetaExpressNodeBase
     {
         public FileMetaBraceTerm fileMetaBraceTerm => m_FileMetaBraceTerm;
-        public MetaData schemaMetaData => m_SchemaMetaData;
+        //public MetaData schemaMetaData => m_SchemaMetaData;
         public MetaData canonicalMetaData => m_CanonicalMetaData;
 
         private MetaVariable m_ReturnMetaVariable = null;
@@ -80,6 +80,7 @@ namespace SimpleLanguage.Core
 
         public override void CalcReturnType()
         {
+            if (m_ExpressReturnMetaType != null) return;
             m_CanonicalMetaData = MetaData.ResolveCanonicalAnonymousType(
                 m_SchemaMetaData.GetMetaMemberDataList(),
                 m_OwnerMetaBase,
@@ -87,11 +88,12 @@ namespace SimpleLanguage.Core
             if (m_CanonicalMetaData != null)
             {
                 m_CanonicalMetaData.SetToken(m_SchemaMetaData.token);
+                m_SchemaMetaData = null;
                 m_ExpressReturnMetaType = new MetaType(m_CanonicalMetaData);
             }
             else
             {
-                m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "not found metadata");
             }
         }
 

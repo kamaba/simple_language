@@ -1270,19 +1270,18 @@ namespace SimpleLanguage.Core
         /// </summary>
         public static MetaNewObjectExpressNode CreateFromAnonymousMetaData(
             MetaData canonicalMetaData,
-            MetaData sourceMetaData,
             MetaBase ownerMeta,
             MetaBlockStatements mbs,
             MetaVariable storeMv = null)
         {
-            if (canonicalMetaData == null || sourceMetaData == null)
+            if (canonicalMetaData == null )
             {
                 return null;
             }
 
             var anonymousType = new MetaType(canonicalMetaData);
             var node = new MetaNewObjectExpressNode(anonymousType, ownerMeta, mbs, storeMv);
-            var ordered = sourceMetaData.GetMetaMemberDataList();
+            var ordered = canonicalMetaData.GetMetaMemberDataList();
             ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
 
             var parseSetting = new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress };
