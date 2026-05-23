@@ -408,6 +408,7 @@ namespace SimpleLanguage.Core
                     oldmen.ownerMetaBase,
                     oldmen.ownerMetaBlockStatements,
                     mv);
+                menNew.SetToken(maden.token);
             }
             else if( oldmen.convertCallExpressNode )
             {

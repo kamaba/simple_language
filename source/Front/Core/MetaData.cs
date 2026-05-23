@@ -44,6 +44,10 @@ namespace SimpleLanguage.Core
             m_IsStatic = staticToken;
             m_IsDynamic = dynamic;
         }
+        public void SetAllName( string an )
+        {
+            this.m_AllName = an;
+        }
         public void SetClassDefineType(EClassDefineType type)
         {
             m_ClassDefineType = type;
@@ -171,25 +175,21 @@ namespace SimpleLanguage.Core
 
             string hint = string.IsNullOrEmpty(nameHint) ? "DynamicData" : nameHint;
             var tempMetaData = new MetaData(hint + "_" + ordered[0].GetHashCode(), false, false, true);
-            tempMetaData.SetMetaNode(owner?.metaNode);
-            if (ordered[0].token != null)
-            {
-                tempMetaData.AddPingToken(ordered[0].token);
-            }
-            tempMetaData.UpdateAllName();
 
             int index = 0;
             foreach (var field in ordered)
             {
                 var childType = field.GetFinalMetaType() ?? field.defineMetaType
                     ?? new MetaType(CoreMetaClassManager.objectMetaClass);
-                var clone = MetaMemberData.CreateDeclared(
-                    tempMetaData,
-                    field.name,
-                    index,
-                    childType,
-                    field.isDefineMetaType || childType.metaClass != CoreMetaClassManager.objectMetaClass);
-                tempMetaData.AddMetaMemberData(clone);
+                //var clone = MetaMemberData.CreateDeclared(
+                //    tempMetaData,
+                //    field.name,
+                //    index,
+                //    childType,
+                //    field.isDefineMetaType || childType.metaClass != CoreMetaClassManager.objectMetaClass);
+                //clone.SetExpress(field.expressNode);
+                
+                tempMetaData.AddMetaMemberData(field);
                 index++;
             }
 

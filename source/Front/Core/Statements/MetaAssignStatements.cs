@@ -55,7 +55,7 @@ namespace SimpleLanguage.Core
                     break;
                 case MetaConstExpressNode mconen:
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error -------------------------------------------");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, mconen.token, "Error -------------------------------------------1");
                     }
                     break;
                 case MetaOpExpressNode moen:
@@ -74,12 +74,13 @@ namespace SimpleLanguage.Core
                 case MetaArrayExpressNode _:
                 case MetaAsIsExpressNode _:
                 case MetaExpressTypeConvert _:
+                case MetaAnonDataExpressNode _:
                     {
                     }
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error -------------------------------------------");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error -------------------------------------------2");
                     }
                     break;
             }

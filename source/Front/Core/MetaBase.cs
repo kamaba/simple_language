@@ -67,6 +67,10 @@ namespace SimpleLanguage.Core
             m_PintTokenList = mb.m_PintTokenList;
             m_Type = mb.m_Type;
         }
+        public void SetToken( Token token )
+        {
+            m_Token = token;
+        }
         public void AddPingToken(Token token)
         {
             if (token == null)

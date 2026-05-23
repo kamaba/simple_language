@@ -267,6 +267,7 @@ namespace SimpleLanguage.Core
             {
                 return false;
             }
+            
             if (m_AnonymousDataDict.ContainsKey(dc.name))
             {
                 return false;

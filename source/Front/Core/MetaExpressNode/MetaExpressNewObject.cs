@@ -1244,26 +1244,26 @@ namespace SimpleLanguage.Core
         /// ??? <see cref="MetaData"/> ????? <see cref="MetaNewObjectExpressNode"/>?
         /// ?????? <paramref name="anonymousMetaData"/>???? <see cref="MetaMemberData"/> ????????? <see cref="MetaBraceAssignStatements"/>?????? <see cref="Node"/> ??
         /// </summary>
-        public static MetaNewObjectExpressNode CreateAnonymousDataNewObjectExpress(
-            MetaMemberData braceLiteralOwner,
-            MetaData anonymousMetaData,
-            MetaBase ownerMeta,
-            MetaBlockStatements mbs,
-            bool preferSourceMemberExpress = true)
-        {
-            if (braceLiteralOwner == null || anonymousMetaData == null)
-            {
-                return null;
-            }
+        //public static MetaNewObjectExpressNode CreateAnonymousDataNewObjectExpress(
+        //    MetaMemberData braceLiteralOwner,
+        //    MetaData anonymousMetaData,
+        //    MetaBase ownerMeta,
+        //    MetaBlockStatements mbs,
+        //    bool preferSourceMemberExpress = true)
+        //{
+        //    if (braceLiteralOwner == null || anonymousMetaData == null)
+        //    {
+        //        return null;
+        //    }
 
-            var source = braceLiteralOwner.ownerMetaData;
-            if (source == null)
-            {
-                return null;
-            }
+        //    var source = braceLiteralOwner.ownerMetaData;
+        //    if (source == null)
+        //    {
+        //        return null;
+        //    }
 
-            return CreateFromAnonymousMetaData(anonymousMetaData, source, ownerMeta, mbs, braceLiteralOwner);
-        }
+        //    return CreateFromAnonymousMetaData(anonymousMetaData, source, ownerMeta, mbs, braceLiteralOwner);
+        //}
 
         /// <summary>
         /// ?? <paramref name="sourceMetaData"/> ??????? <see cref="MetaMemberData.expressNode"/> ????? <paramref name="canonicalMetaData"/> ?? new ???????

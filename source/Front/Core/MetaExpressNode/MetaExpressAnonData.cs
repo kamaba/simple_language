@@ -34,6 +34,7 @@ namespace SimpleLanguage.Core
             m_Token = fmbt.token;
 
             m_SchemaMetaData = new MetaData("AnonData_" + fmbt.ToString() + "_" + m_ReturnMetaVariable?.name, false, false, true);
+            m_SchemaMetaData.AddPingToken(m_Token);
 
             for (int i = 0; i < fileMetaBraceTerm.fileMetaAssignSyntaxList.Count; i++)
             {
@@ -52,6 +53,7 @@ namespace SimpleLanguage.Core
             m_Token = fmmd.nameToken ?? fmmd.token;
 
             m_SchemaMetaData = new MetaData("AnonData_" + m_Token?.lexeme + "_" + GetHashCode(), false, false, true);
+            m_SchemaMetaData.AddPingToken(m_Token);
 
             for (int i = 0; i < fmmd.fileMetaMemberData.Count; i++)
             {
@@ -84,6 +86,7 @@ namespace SimpleLanguage.Core
                 m_ReturnMetaVariable?.name);
             if (m_CanonicalMetaData != null)
             {
+                m_CanonicalMetaData.SetToken(m_SchemaMetaData.token);
                 m_ExpressReturnMetaType = new MetaType(m_CanonicalMetaData);
             }
             else

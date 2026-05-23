@@ -6,7 +6,6 @@
 //  Description: class's memeber variable metadata and member 'data' metadata
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Text;
@@ -389,6 +388,7 @@ namespace SimpleLanguage.Core
             {
                 if( m_FileMetaAssignSyntax is FileMetaOpAssignSyntax fmos )
                 {
+                    this.m_Token = fmos.token;
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.fme = fmos.express;
                     cep.equalMetaVariable = null;
@@ -400,7 +400,7 @@ namespace SimpleLanguage.Core
                 }
                 else if( m_FileMetaAssignSyntax is FileMetaCallSyntax fmcs )
                 {
-
+                    this.m_Token = fmcs.token;
                 }
             }
         }
@@ -414,6 +414,32 @@ namespace SimpleLanguage.Core
             }
             return true;
         }
+
+        private void SyncMemberDataTypeByMetaType(MetaType mt)
+        {
+            if (mt == null)
+            {
+                return;
+            }
+
+            if (mt.isData)
+            {
+                m_MemberDataType = EMemberDataType.MemberData;
+            }
+            else if (mt.IsArray())
+            {
+                m_MemberDataType = EMemberDataType.MemberArray;
+            }
+            else if( TypeManager.IsCoreMetaType(mt ) )
+            {
+                m_MemberDataType = EMemberDataType.ConstValue;
+            }
+            else
+            {
+                m_MemberDataType = EMemberDataType.MemberClass;
+            }
+        }
+
         public override void ParseRealMetaType()
         {
             if ( m_Express != null && m_RealMetaType == null )
@@ -427,6 +453,7 @@ namespace SimpleLanguage.Core
                     return;
                 }
                 m_RealMetaType = m_DefineMetaType;
+                SyncMemberDataTypeByMetaType(m_DefineMetaType);
             }
         }
         /*
@@ -630,7 +657,7 @@ namespace SimpleLanguage.Core
                 sb.Append(m_Name);
                 sb.Append(" = ");
             }
-            switch (m_MemberDataType)
+            switch (this.m_MemberDataType)
             {
                 case EMemberDataType.MemberData:
                     {

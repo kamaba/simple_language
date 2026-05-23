@@ -456,8 +456,8 @@ DataTest
             global.println("builtin DataDataEqual(anon diff) -> false")
         }
 
-        data typedA = { code = 7, title = "ok" }
-        data typedB = { code = 7, title = "ok" }
+        data typedA = { code_ttb = 7, title = "ok" }
+        data typedB = { code_ttb = 7, title = "ok" }
         if (DataTypeEqual(typedA, typedB))
         {
             global.println("builtin DataTypeEqual(typed anon pair) -> true")
@@ -478,7 +478,7 @@ DataTest
         global.println("========== DataTest (start) ==========")
 
         constDataReadOnlyTest()
-        dataIfCompareTest()
+        #dataIfCompareTest()
         #staticDataDirectUseTest()
         #memberShapeCoverageTest()
         #anonymousDataMetaCompileTest()

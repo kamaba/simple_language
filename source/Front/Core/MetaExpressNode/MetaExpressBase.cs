@@ -65,7 +65,7 @@ namespace SimpleLanguage.Core
         protected Token m_Token = null;
         protected bool m_Parse = false;
 
-
+        public void SetToken(Token token) { m_Token = token; }
         public virtual int CalcParseLevel(int level) { return level; }
         public virtual void CalcReturnType() { }
         public virtual void Parse(AllowUseSettings auc) { }
