@@ -890,7 +890,8 @@ namespace SimpleLanguage.Core
                         m_MetaVariable = retmmd;
                         if (retmmd == null)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 娌℃湁鎵惧埌{m_Name} 鐨凪etaData鏁版嵁!");
+                            Log.AddMetaCoreLog(LID.MetaCoreNotFoundMetaMemberVariable, m_Token, $"data name not found",
+                                m_FrontCallNode.m_MetaData.allName, m_Name );
                             return false;
                         }
                         //if (retmmd.isStatic == false && m_FrontCallNode.m_MetaData?.isStatic == false)

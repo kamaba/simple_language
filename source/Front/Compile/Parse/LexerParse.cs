@@ -1570,7 +1570,8 @@ namespace SimpleLanguage.Compile
                 }
                 if(isEnd )
                 {
-                    m_Index = offset + 1;
+                    // move cursor to the first character after the full closing marker (!# / !## ...)
+                    m_Index = offset + offset2;
                     break;
                 }
                 offset++;

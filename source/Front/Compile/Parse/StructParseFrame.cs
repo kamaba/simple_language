@@ -1419,6 +1419,11 @@ namespace SimpleLanguage.Compile
             {
                 var curNode = curParentNode.childList[index++];
 
+                if (curNode == null || curNode.nodeType == ENodeType.Comment)
+                {
+                    continue;
+                }
+
                 Node nextNode = null;
                 if (index < curParentNode.childList.Count)
                 {

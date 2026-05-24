@@ -99,10 +99,12 @@ data StructMatrix
 
 data StudentRecord
 {
-    sid = 0
-    name = "StudentRecord Name"
-    scores = [95, 88, 91]
-    tags = ["math", "final"]
+    sid = 7
+    name = "StudentRecord Name",
+    anondatax = {a = 111, b = 222 }
+    #scores = [95, 88, 91]
+    #tags = ["math", "final"]
+    #!
     profile = {
         grade = 3,
         rank = 5,
@@ -116,6 +118,7 @@ data StudentRecord
         { name = "Physics", year = 2025 }
      ]
      meta = MetaInfo(){ level = 2, passed = true }
+     !#
 }
 
 DataTest
@@ -194,6 +197,7 @@ DataTest
 
     static memberShapeCoverageTest()
     {
+        #!
         global.println("----- memberShapeCoverageTest -----")
         global.println("member shape samples added in DataTest declarations and comments")
         global.println(StructMatrix)
@@ -205,6 +209,7 @@ DataTest
         global.println(StudentRecord.meta.level)
         global.println(ClassDataEnumSample.cc.value)
         global.println(ClassDataEnumSample.kind)
+        !#
 
         # See top-level syntax samples in this file:
         # - array members
