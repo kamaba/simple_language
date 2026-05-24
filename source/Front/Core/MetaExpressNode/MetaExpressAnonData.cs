@@ -8,22 +8,18 @@
 
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
-using System.Collections.Generic;
 using System.Text;
 
 namespace SimpleLanguage.Core
 {
     public sealed class MetaAnonDataExpressNode : MetaExpressNodeBase
     {
-        public FileMetaBraceTerm fileMetaBraceTerm => m_FileMetaBraceTerm;
-        //public MetaData schemaMetaData => m_SchemaMetaData;
-        public MetaData canonicalMetaData => m_CanonicalMetaData;
+        public MetaData metaData => m_MetaData;
 
         private MetaVariable m_ReturnMetaVariable = null;
         private FileMetaBraceTerm m_FileMetaBraceTerm = null;
         private FileMetaMemberData m_FileMetaMemberData = null;
-        private MetaData m_SchemaMetaData = null;
-        private MetaData m_CanonicalMetaData = null;
+        private MetaData m_MetaData = null;
 
         public MetaAnonDataExpressNode(FileMetaBraceTerm fmbt, MetaBase ownerMC, MetaBlockStatements mbs, MetaVariable mv = null)
         {
@@ -33,13 +29,14 @@ namespace SimpleLanguage.Core
             m_ReturnMetaVariable = mv;
             m_Token = fmbt.token;
 
-            m_SchemaMetaData = new MetaData("AnonData_" + fmbt.ToString() + "_" + m_ReturnMetaVariable?.name, false, false, true);
-            m_SchemaMetaData.AddPingToken(m_Token);
+            m_MetaData = new MetaData("AnonData_" + m_Token?.ToLexemeAllString() + "_" + m_ReturnMetaVariable?.name, false, false, true);
+            m_MetaData.AddPingToken(m_Token);
 
-            for (int i = 0; i < fileMetaBraceTerm.fileMetaAssignSyntaxList.Count; i++)
+            for (int i = 0; i < m_FileMetaBraceTerm.fileMetaAssignSyntaxList.Count; i++)
             {
-                MetaMemberData mmd = new MetaMemberData(m_SchemaMetaData, fileMetaBraceTerm.fileMetaAssignSyntaxList[i], ownerMC, mbs);
-                m_SchemaMetaData.AddMetaMemberData(mmd);
+                MetaMemberData mmd = new MetaMemberData(m_MetaData, m_FileMetaBraceTerm.fileMetaAssignSyntaxList[i], m_MetaData, mbs);
+                mmd.CreateMetaExpress();
+                m_MetaData.AddMetaMemberData(mmd);
             }
         }
 
@@ -52,24 +49,23 @@ namespace SimpleLanguage.Core
             m_ReturnMetaVariable = mv;
             m_Token = fmmd.nameToken ?? fmmd.token;
 
-            m_SchemaMetaData = new MetaData("AnonData_" + m_Token?.lexeme + "_" + GetHashCode(), false, false, true);
-            m_SchemaMetaData.AddPingToken(m_Token);
+            m_MetaData = new MetaData("AnonData_" + m_Token?.lexeme + "_" + GetHashCode(), false, false, true);
+            m_MetaData.AddPingToken(m_Token);
 
             for (int i = 0; i < fmmd.fileMetaMemberData.Count; i++)
             {
                 var child = fmmd.fileMetaMemberData[i];
-                MetaMemberData mmd = new MetaMemberData(m_SchemaMetaData, child, i, false);
-                m_SchemaMetaData.AddMetaMemberData(mmd);
+                MetaMemberData mmd = new MetaMemberData(m_MetaData, child, m_MetaData, i, false);
+                mmd.CreateMetaExpress();
+                m_MetaData.AddMetaMemberData(mmd);
             }
         }
 
         public override void Parse(AllowUseSettings auc)
         {
-            foreach (var v in m_SchemaMetaData.metaMemberDataDict)
+            foreach (var v in m_MetaData.metaMemberDataDict)
             {
-                v.Value.CreateMetaExpress();
                 v.Value.ParseMetaExpress();
-                v.Value.ParseRealMetaType();
             }
         }
 
@@ -81,16 +77,13 @@ namespace SimpleLanguage.Core
         public override void CalcReturnType()
         {
             if (m_ExpressReturnMetaType != null) return;
-            m_CanonicalMetaData = MetaData.ResolveCanonicalAnonymousType(
-                m_SchemaMetaData.GetMetaMemberDataList(),
-                m_OwnerMetaBase,
-                m_ReturnMetaVariable?.name);
-            if (m_CanonicalMetaData != null)
+            if (m_MetaData != null)
             {
-                m_SchemaMetaData.UpdateOwner(m_CanonicalMetaData);
-                m_CanonicalMetaData.SetToken(m_SchemaMetaData.token);
-                m_SchemaMetaData = null;
-                m_ExpressReturnMetaType = new MetaType(m_CanonicalMetaData);
+                foreach (var v in m_MetaData.metaMemberDataDict)
+                {
+                    v.Value.ParseRealMetaType();
+                }
+                m_ExpressReturnMetaType = new MetaType(m_MetaData);
             }
             else
             {
@@ -100,12 +93,12 @@ namespace SimpleLanguage.Core
 
         public override string ToFormatString()
         {
-            if (m_SchemaMetaData != null)
+            if (m_MetaData != null)
             {
                 var sb = new StringBuilder();
                 sb.Append("{");
                 bool first = true;
-                foreach (var v in m_SchemaMetaData.metaMemberDataDict)
+                foreach (var v in m_MetaData.metaMemberDataDict)
                 {
                     if (!first)
                     {
@@ -118,6 +111,23 @@ namespace SimpleLanguage.Core
                 return "ExpressAnonData" + sb.ToString();
             }
             return "{}";
+        }
+        public override string ToString()
+        {
+            var sb = new StringBuilder();            
+            sb.Append("{");
+            bool first = true;
+            foreach (var v in m_MetaData.metaMemberDataDict)
+            {
+                if (!first)
+                {
+                    sb.Append(", ");
+                }
+                first = false;
+                sb.Append(v.Value.ToFormatString(true));
+            }
+            sb.Append("}");
+            return "ExpressAnonSchemaData" + m_MetaData.allName + sb.ToString();
         }
     }
 }

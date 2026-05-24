@@ -1,9 +1,5 @@
-﻿
-using SimpleLanguage.CSharp;
-using System;
-using System.Collections.Generic;
+﻿using SimpleLanguage.CSharp;
 using System.Reflection;
-using System.Text;
 
 namespace SimpleLanguage.Core
 {
@@ -45,7 +41,7 @@ namespace SimpleLanguage.Core
 
             m_DefineMetaType = new MetaType(defineMetaClassType);
 
-            SetOwnerMetaClass(mc);
+            SetOwnerMetaBase(mc);
         }
     }
 }

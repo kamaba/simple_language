@@ -141,7 +141,7 @@ namespace SimpleLanguage.Core
                 mv.SetRealMetaType(new MetaType(mv.defineMetaType));
             }
 
-            mv.SetOwnerMetaClass(ownerGenClass);
+            mv.SetOwnerMetaBase(ownerGenClass);
         }
         public MetaGenTemplate GetMetaGenTemplate( string name )
         {

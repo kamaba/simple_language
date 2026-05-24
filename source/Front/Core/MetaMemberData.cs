@@ -41,7 +41,7 @@ namespace SimpleLanguage.Core
         public MetaMemberData(MetaData dmt, FileMetaSyntax fms, MetaBase ownerbase, MetaBlockStatements mbs )
         {
             m_DefineMetaType = new MetaType(dmt);
-            SetOwnerMetaClass(ownerbase);
+            SetOwnerMetaBase(ownerbase);
             m_OwnerMetaBlockStatements = mbs;
             m_IsConst = dmt.isConst;
             m_VariableFrom = EVariableFrom.DataMember;
@@ -49,7 +49,7 @@ namespace SimpleLanguage.Core
             m_Name = fms.name;
             m_FileMetaAssignSyntax = fms;
         }
-        public MetaMemberData(MetaData mc, FileMetaMemberData fmmd, int index, bool isStatic )
+        public MetaMemberData(MetaData mc, FileMetaMemberData fmmd, MetaBase owmb, int index, bool isStatic )
         {
             m_FileMetaMemeberData = fmmd;
             m_Name = fmmd.name;
@@ -57,7 +57,7 @@ namespace SimpleLanguage.Core
             m_IsStatic = isStatic;
             m_IsWithName = m_FileMetaMemeberData.isWithName;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-            SetOwnerMetaClass(mc);
+            SetOwnerMetaBase(owmb);
             m_IsConst = mc.isConst || fmmd.isConst;
             m_Token = fmmd.nameToken;
             m_VariableFrom = EVariableFrom.DataMember;
@@ -78,7 +78,7 @@ namespace SimpleLanguage.Core
             this.m_DefineMetaType = new MetaType(owner);
             this.m_RealMetaType = new MetaType(this.m_DefineMetaType);
             this.m_IsDefineMetaType = true;
-            this.SetOwnerMetaClass(owner);
+            this.SetOwnerMetaBase(owner);
             this.m_IsConst = owner?.isConst ?? false;
             this.m_MemberDataType = EMemberDataType.MemberData;
             this.m_VariableFrom = EVariableFrom.DataMember;
@@ -94,7 +94,7 @@ namespace SimpleLanguage.Core
             mmd.m_DefineMetaType = new MetaType(constExpress?.GetReturnMetaClass() ?? CoreMetaClassManager.objectMetaClass);
             mmd.m_RealMetaType = new MetaType(mmd.m_DefineMetaType);
             mmd.m_IsDefineMetaType = true;
-            mmd.SetOwnerMetaClass(owner);
+            mmd.SetOwnerMetaBase(owner);
             mmd.m_IsConst = owner?.isConst ?? false;
             mmd.m_IsStatic = false;
             mmd.m_Express = constExpress;
@@ -118,7 +118,7 @@ namespace SimpleLanguage.Core
             mmd.m_DefineMetaType = arrType;
             mmd.m_RealMetaType = new MetaType(arrType);
             mmd.m_IsDefineMetaType = true;
-            mmd.SetOwnerMetaClass(owner);
+            mmd.SetOwnerMetaBase(owner);
             mmd.m_IsConst = owner?.isConst ?? false;
             mmd.m_MemberDataType = EMemberDataType.MemberArray;
             return mmd;
@@ -130,7 +130,7 @@ namespace SimpleLanguage.Core
             mmd.m_Index = index;
             mmd.m_IsWithName = true;
             mmd.m_VariableFrom = EVariableFrom.DataMember;
-            mmd.SetOwnerMetaClass(owner);
+            mmd.SetOwnerMetaBase(owner);
             mmd.m_IsConst = owner?.isConst ?? false;
 
             var finalType = defineMetaType ?? new MetaType(CoreMetaClassManager.objectMetaClass);
@@ -174,7 +174,7 @@ namespace SimpleLanguage.Core
             mmd.m_Index = mmv.index >= 0 ? mmv.index : fallbackIndex;
             mmd.m_IsWithName = true;
             mmd.m_VariableFrom = EVariableFrom.DataMember;
-            mmd.SetOwnerMetaClass(owner);
+            mmd.SetOwnerMetaBase(owner);
             mmd.m_IsStatic = mmv.isStatic;
             mmd.m_IsConst = mmv.isConst || owner.isConst;
             mmd.m_Permission = mmv.permission;
@@ -333,6 +333,7 @@ namespace SimpleLanguage.Core
                                 ownerMetaBase,
                                 m_OwnerMetaBlockStatements,
                                 m_DefineMetaType);
+                            //m_Express.Parse(new AllowUseSettings());
                         }
                         break;
                     case FileMetaMemberData.EMemberDataType.Class:    // data Data{ $childData = Class1{}$ }
@@ -343,6 +344,7 @@ namespace SimpleLanguage.Core
                                 ownerMetaBase,
                                 m_OwnerMetaBlockStatements,
                                 this);
+                            //m_Express.Parse(new AllowUseSettings());
                         }
                         break;
                     case FileMetaMemberData.EMemberDataType.Array:      // data Data{ $childArray = [  ]$ }
@@ -359,6 +361,7 @@ namespace SimpleLanguage.Core
                                 ownerMetaBase,
                                 m_OwnerMetaBlockStatements,
                                 elementHint);
+                            //m_Express.Parse(new AllowUseSettings());
                         }
                         break;
                     case FileMetaMemberData.EMemberDataType.ConstValue:  // data const    a = "aaa"
@@ -366,7 +369,7 @@ namespace SimpleLanguage.Core
                             m_MemberDataType = EMemberDataType.ConstValue;
                             if (m_FileMetaMemeberData.fileMetaConstValue != null)
                             {
-                                m_Express = new MetaConstExpressNode(ownerMetaClass, null, m_FileMetaMemeberData.fileMetaConstValue);
+                                m_Express = new MetaConstExpressNode(ownerMetaBase, null, m_FileMetaMemeberData.fileMetaConstValue);
                                 m_Express.Parse(new AllowUseSettings());
                                 m_Express.CalcReturnType();
                                 var md = m_Express.GetReturnMetaType();
@@ -377,7 +380,7 @@ namespace SimpleLanguage.Core
                         break;
                     default:
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaMemeberData.token, "");
                         }
                         break;
                 }
@@ -560,7 +563,7 @@ namespace SimpleLanguage.Core
                 default:
                     {
                         sb.Append("有没有支持的类型: " + m_MemberDataType.ToString());
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "error 暂不支持其它类型 1");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "[" + sb.ToString() +"]" + "暂不支持其它类型1");
                     }
                     break;
             }
@@ -599,7 +602,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "error 暂不支持其它类型 1");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "error 暂不支持其它类型 123");
                     }
                     break;
             }

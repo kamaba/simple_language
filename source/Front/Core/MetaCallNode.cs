@@ -1937,40 +1937,40 @@ namespace SimpleLanguage.Core
         {
             return md.GetMemberDataByName(inputName);
         }
-        private MetaMemberData GetOrCreateDataDefaultStaticInstanceVariable(MetaData dataType)
-        {
-            if (dataType == null || dataType.isStatic)
-            {
-                return null;
-            }
+        //private MetaMemberData GetOrCreateDataDefaultStaticInstanceVariable(MetaData dataType)
+        //{
+        //    if (dataType == null || dataType.isStatic)
+        //    {
+        //        return null;
+        //    }
 
-            var globalData = ProjectManager.globalData;
-            if (globalData == null)
-            {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error data 默认静态实例创建失败：globalData 为空。");
-                return null;
-            }
+        //    var globalData = ProjectManager.globalData;
+        //    if (globalData == null)
+        //    {
+        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error data 默认静态实例创建失败：globalData 为空。");
+        //        return null;
+        //    }
 
-            string varName = "__data_default_instance_" + dataType.allName + "_" + dataType.GetHashCode();
-            var exist = globalData.GetMemberDataByName(varName) as MetaMemberData;
-            if (exist != null)
-            {
-                return exist;
-            }
+        //    string varName = "__data_default_instance_" + dataType.allName + "_" + dataType.GetHashCode();
+        //    var exist = globalData.GetMemberDataByName(varName) as MetaMemberData;
+        //    if (exist != null)
+        //    {
+        //        return exist;
+        //    }
 
-            var mmv = new MetaMemberData(globalData, varName, globalData.metaMemberDataDict.Count );
-            mmv.SetIsStatic(true);
-            mmv.SetIsDefineMetaType(true);
-            mmv.SetMetaDefineType(new MetaType(dataType));
-            mmv.SetRealMetaType(new MetaType(dataType));
-            var newobj = new MetaNewObjectExpressNode(new MetaType(dataType), globalData, null, null);
-            newobj.Parse(new AllowUseSettings());
-            newobj.CalcReturnType();
-            mmv.SetExpress(newobj);
+        //    var mmv = new MetaMemberData(globalData, varName, globalData.metaMemberDataDict.Count );
+        //    mmv.SetIsStatic(true);
+        //    mmv.SetIsDefineMetaType(true);
+        //    mmv.SetMetaDefineType(new MetaType(dataType));
+        //    mmv.SetRealMetaType(new MetaType(dataType));
+        //    var newobj = new MetaNewObjectExpressNode(new MetaType(dataType), globalData, null, null);
+        //    newobj.Parse(new AllowUseSettings());
+        //    newobj.CalcReturnType();
+        //    mmv.SetExpress(newobj);
 
-            globalData.AddMetaMemberData(mmv);
-            return mmv;
-        }
+        //    globalData.AddMetaMemberData(mmv);
+        //    return mmv;
+        //}
         public MetaMemberData GetDataValueByMetaMemberData(MetaMemberData md, string inputName)
         {
             return md?.GetFinalMetaType()?.metaData?.GetMemberDataByName(inputName);

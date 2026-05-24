@@ -64,7 +64,7 @@ namespace SimpleLanguage.Core
                 Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "Error Enum中，不允许使用public/private等权限关键字!!");
             }
 
-            SetOwnerMetaClass(mc);
+            SetOwnerMetaBase(mc);
         }
         public override void ParseDefineMetaType()
         {

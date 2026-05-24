@@ -402,7 +402,7 @@ namespace SimpleLanguage.Core
             else if (oldmen is MetaAnonDataExpressNode maden)
             {         
                 menNew = MetaNewObjectExpressNode.CreateFromAnonymousMetaData(
-                    maden.canonicalMetaData,
+                    maden.metaData,
                     oldmen.ownerMetaBase,
                     oldmen.ownerMetaBlockStatements,
                     mv);

@@ -80,7 +80,7 @@ namespace SimpleLanguage.Core
             m_IsInnerDefine = true;
             m_VariableFrom = EVariableFrom.ClassMember;
 
-            SetOwnerMetaClass(mc);
+            SetOwnerMetaBase(mc);
         }
         public MetaMemberVariable(MetaData md, string _name)
         {
@@ -90,7 +90,7 @@ namespace SimpleLanguage.Core
             m_IsInnerDefine = true;
             m_VariableFrom = EVariableFrom.DataMember;
 
-            SetOwnerMetaClass(md);
+            SetOwnerMetaBase(md);
         }
         public MetaMemberVariable(MetaEnum me, string _name)
         {
@@ -100,7 +100,7 @@ namespace SimpleLanguage.Core
             m_IsInnerDefine = true;
             m_VariableFrom = EVariableFrom.EnumMember;
 
-            SetOwnerMetaClass(me);
+            SetOwnerMetaBase(me);
         }
         public MetaMemberVariable( MetaClass mc, FileMetaMemberVariable fmmv )
         {
@@ -132,7 +132,7 @@ namespace SimpleLanguage.Core
                 }
             }
             m_SourceMetaClass = mc;
-            SetOwnerMetaClass(mc);
+            SetOwnerMetaBase(mc);
 
             if (fmmv?.attributeList != null && fmmv.attributeList.Count > 0)
             {

@@ -128,7 +128,7 @@ namespace SimpleLanguage.IR
             m_IsStatic = mmd.isStatic;
             m_IsConst = mmd.isConst;
             m_Permission = mmd.permission;
-            MetaType mt = mmd.realMetaType ?? mmd.defineMetaType;
+            MetaType mt = mmd.GetFinalMetaType();
             if (mt != null)
                 m_IRMetaType = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mt, irmc);
         }

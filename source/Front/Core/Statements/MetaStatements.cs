@@ -65,7 +65,7 @@ namespace SimpleLanguage.Core
         {
             if(m_TrMetaVariable != null )
             {
-                m_TrMetaVariable.SetOwnerMetaClass(ownerBase);
+                m_TrMetaVariable.SetOwnerMetaBase(ownerBase);
             }
             if( m_NextMetaStatements != null )
             {

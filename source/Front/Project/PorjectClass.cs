@@ -6,13 +6,14 @@
 //  Description: project class manager
 //****************************************************************************
 
-using SimpleLanguage.Core;
 using SimpleLanguage.Compile;
+using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.Project
 {
@@ -400,7 +401,12 @@ namespace SimpleLanguage.Project
                 }
 
                 var objNode = MetaMemberData.CreateDeclared(owner, name, index, new MetaType(CoreMetaClassManager.objectMetaClass), false);
-                var canon = MetaData.ResolveCanonicalAnonymousType(inlineOwner.GetMetaMemberDataList(), owner, name);
+                var canon = ClassManager.instance.FindMetaDataByNameAndType(inlineOwner);     
+                if( canon == null )
+                {
+                    ClassManager.instance.AddAnonymousMetaData(inlineOwner);
+                    canon = inlineOwner;
+                }
                 if (canon != null)
                 {
                     var newObj = MetaNewObjectExpressNode.CreateFromAnonymousMetaData(canon, owner, null);

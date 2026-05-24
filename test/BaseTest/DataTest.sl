@@ -91,7 +91,8 @@ data StructMatrix
         rank = 5,
         address = {
             city = "Shenzhen",
-            zip = 518000
+            zip = 518000,
+            okcode = { error = 1, msg = "noerrormsg" }
         }
     }
 }

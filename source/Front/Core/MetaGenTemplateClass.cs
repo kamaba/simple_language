@@ -245,7 +245,7 @@ namespace SimpleLanguage.Core
             foreach (var it in mmvList)
             {
                 MetaMemberVariable mgmv = new MetaMemberVariable(it);
-                mgmv.SetOwnerMetaClass(this);
+                mgmv.SetOwnerMetaBase(this);
                 this.m_MetaExtendMemeberVariableDict.Add(mgmv.name, mgmv);
             }
 
@@ -299,7 +299,7 @@ namespace SimpleLanguage.Core
         MetaMemberVariable ParseMetaMemberVariableDefineMetaType( MetaMemberVariable mmv )
         {
             MetaMemberVariable mgmv = new MetaMemberVariable(mmv);
-            mgmv.SetOwnerMetaClass(this);
+            mgmv.SetOwnerMetaBase(this);
 
             if (mgmv.defineMetaType != null)
             {

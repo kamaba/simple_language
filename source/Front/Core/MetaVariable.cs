@@ -119,7 +119,7 @@ namespace SimpleLanguage.Core
             }
         } 
         /// <summary>宿主可为 <see cref="MetaClass"/> / <see cref="MetaData"/> / <see cref="MetaEnum"/>，内部按需使用分类属性。</summary>
-        public virtual void SetOwnerMetaClass(MetaBase ownerBase)
+        public virtual void SetOwnerMetaBase(MetaBase ownerBase)
         {
             m_OwnerMetaBase = ownerBase;
         }

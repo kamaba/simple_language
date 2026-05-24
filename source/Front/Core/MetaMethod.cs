@@ -165,15 +165,15 @@ namespace SimpleLanguage.Core
             }
             if (m_ThisMetaVariable != null)
             {
-                m_ThisMetaVariable.SetOwnerMetaClass(ownerBase);
+                m_ThisMetaVariable.SetOwnerMetaBase(ownerBase);
             }
             if (m_ReturnMetaVariable != null)
             {
-                m_ReturnMetaVariable.SetOwnerMetaClass(ownerBase);
+                m_ReturnMetaVariable.SetOwnerMetaBase(ownerBase);
             }
             if(m_MetaMemberParamCollection != null )
             {
-                m_MetaMemberParamCollection.SetOwnerMetaClass(ownerBase);
+                m_MetaMemberParamCollection.SetOwnerMetaBase(ownerBase);
             }
         }
         public void SetIsStatic(bool isStatic)

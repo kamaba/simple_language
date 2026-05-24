@@ -127,7 +127,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaFunction = mf;
             if (m_MetaVariable != null)
             {
-                m_MetaVariable.SetOwnerMetaClass(mf?.ownerMetaBase);
+                m_MetaVariable.SetOwnerMetaBase(mf?.ownerMetaBase);
             }
         }
         public void ParseMetaDefineType()
@@ -382,12 +382,12 @@ namespace SimpleLanguage.Core
         {
             m_MetaDefineParamList.Clear();
         }
-        public void SetOwnerMetaClass( MetaBase ownerBase)
+        public void SetOwnerMetaBase( MetaBase ownerBase)
         {
             for (int i = 0; i < m_MetaDefineParamList.Count; i++)
             {
                 var dParam = m_MetaDefineParamList[i];
-                dParam?.metaVariable?.SetOwnerMetaClass(ownerBase);
+                dParam?.metaVariable?.SetOwnerMetaBase(ownerBase);
             }
         }
         public void SetOwnerMetaFunction(MetaFunction ownerFunction)

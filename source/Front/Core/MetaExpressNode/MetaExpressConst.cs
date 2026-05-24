@@ -940,7 +940,7 @@ namespace SimpleLanguage.Core
         }
         public override string ToString()
         {
-            return "ConstExpressNode" + ToFormatString();
+            return "ConstExpressNode: [" + eType.ToString() + "] " + ToFormatString();
         }
     }
 }

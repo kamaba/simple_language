@@ -144,7 +144,7 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, v.token, "这里需要个名字的定义!");
                     continue;
                 }
-                MetaMemberData mmv = new MetaMemberData(this, v, i, false );
+                MetaMemberData mmv = new MetaMemberData(this, v, this, i,  false );
                 if (isHave)
                 {
                     mmv.SetName(mmv.name + "__repeat__");
@@ -163,54 +163,6 @@ namespace SimpleLanguage.Core
             {
                 v.SetOwnerBase(mb);
             }
-        }
-        /// <summary>
-        /// 按字段最终类型生成匿名 <see cref="MetaData"/> 形状，并与全局匿名表去重。
-        /// </summary>
-        public static MetaData ResolveCanonicalAnonymousType(
-            IEnumerable<MetaMemberData> sourceFields,
-            MetaBase owner,
-            string nameHint = null)
-        {
-            if (sourceFields == null)
-            {
-                return null;
-            }
-
-            var ordered = new List<MetaMemberData>(sourceFields);
-            if (ordered.Count == 0)
-            {
-                return null;
-            }
-            ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
-
-            string hint = string.IsNullOrEmpty(nameHint) ? "DynamicData" : nameHint;
-            var tempMetaData = new MetaData(hint + "_" + ordered[0].GetHashCode(), false, false, true);
-
-            int index = 0;
-            foreach (var field in ordered)
-            {
-                var childType = field.GetFinalMetaType() ?? field.defineMetaType
-                    ?? new MetaType(CoreMetaClassManager.objectMetaClass);
-                //var clone = MetaMemberData.CreateDeclared(
-                //    tempMetaData,
-                //    field.name,
-                //    index,
-                //    childType,
-                //    field.isDefineMetaType || childType.metaClass != CoreMetaClassManager.objectMetaClass);
-                //clone.SetExpress(field.expressNode);
-                
-                tempMetaData.AddMetaMemberData(field);
-                index++;
-            }
-
-            var matched = ClassManager.instance.FindMetaDataByNameAndType(tempMetaData);
-            if (matched == null)
-            {
-                ClassManager.instance.AddAnonymousMetaData(tempMetaData);
-                return tempMetaData;
-            }
-            return matched;
         }
         public void UpdateAllName()
         {

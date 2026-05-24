@@ -7,7 +7,6 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
@@ -178,7 +177,7 @@ namespace SimpleLanguage.Core
                 else
                 {
                     m_MetaMemberVariable = new MetaMemberVariable((MetaClass)null, m_DefineName);
-                    m_MetaMemberVariable.SetOwnerMetaClass(m_NewObjectMetaType?.metaClass ?? mbs.ownerMetaClass);
+                    m_MetaMemberVariable.SetOwnerMetaBase(m_NewObjectMetaType?.metaClass ?? mbs.ownerMetaClass);
                     m_MetaMemberVariable.SetOwnerBlockstatements(mbs);
                     m_MetaMemberVariable.SetMetaDefineType(mdt);
                     m_MetaMemberVariable.SetRealMetaType(new MetaType(mdt));
@@ -252,7 +251,7 @@ namespace SimpleLanguage.Core
                 if (m_DefineMetaType.isDynamicClass)
                 {
                     m_MetaMemberVariable = new MetaMemberVariable((MetaClass)null, m_DefineName);
-                    m_MetaMemberVariable.SetOwnerMetaClass(mbs.ownerMetaClass);
+                    m_MetaMemberVariable.SetOwnerMetaBase(mbs.ownerMetaClass);
                     m_MetaMemberVariable.SetOwnerBlockstatements(mbs);
                     m_Id = m_MetaMemberVariable.GetHashCode();
                 }
@@ -348,15 +347,15 @@ namespace SimpleLanguage.Core
         /// <summary>
         /// ????????? data ???????? <see cref="MetaMemberData"/>??? <see cref="MetaMemberVariable"/> ?????
         /// </summary>
-        public MetaBraceAssignStatements(MetaMemberData mmd, MetaBlockStatements mbs, MetaBase owmt, MetaExpressNodeBase men, bool isAnon )
+        public MetaBraceAssignStatements(MetaMemberData mmd, MetaBlockStatements mbs, MetaBase owmt, MetaExpressNodeBase men )
         {
             m_MetaMemberData = mmd;
             m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaBase = owmt;
             m_MetaExpress = men;
             m_Token = men.token;
-            m_AssignTargetType = isAnon ? EAssignTargetType.AnonVariable : EAssignTargetType.MemberData;
-            m_DefineMetaType = new MetaType(mmd.defineMetaType);
+            m_AssignTargetType =  EAssignTargetType.MemberData;
+            m_DefineMetaType = new MetaType(mmd.GetFinalMetaType());
         }
 
 
@@ -1269,19 +1268,25 @@ namespace SimpleLanguage.Core
         /// ?? <paramref name="sourceMetaData"/> ??????? <see cref="MetaMemberData.expressNode"/> ????? <paramref name="canonicalMetaData"/> ?? new ???????
         /// </summary>
         public static MetaNewObjectExpressNode CreateFromAnonymousMetaData(
-            MetaData canonicalMetaData,
-            MetaBase ownerMeta,
+            MetaData metaData,
+            MetaBase mb,
             MetaBlockStatements mbs,
             MetaVariable storeMv = null)
         {
-            if (canonicalMetaData == null )
+            if (metaData == null )
             {
                 return null;
             }
+            var findmd = ClassManager.instance.FindMetaDataByNameAndType(metaData);
+            if( findmd == null )
+            {
+                ClassManager.instance.AddAnonymousMetaData(metaData);
+                findmd = metaData;
+            }
 
-            var anonymousType = new MetaType(canonicalMetaData);
-            var node = new MetaNewObjectExpressNode(anonymousType, ownerMeta, mbs, storeMv);
-            var ordered = canonicalMetaData.GetMetaMemberDataList();
+            var anonymousType = new MetaType(findmd);
+            var node = new MetaNewObjectExpressNode(anonymousType, mb, mbs, storeMv);
+            var ordered = metaData.GetMetaMemberDataList();
             ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
 
             var parseSetting = new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress };
@@ -1293,7 +1298,7 @@ namespace SimpleLanguage.Core
                     continue;
                 }
 
-                var mas = new MetaBraceAssignStatements(sourceField, mbs, ownerMeta, expr, true);
+                var mas = new MetaBraceAssignStatements(sourceField, mbs, mb, expr);
                 node.m_AssignStatementsList.Add(mas);
             }
 
