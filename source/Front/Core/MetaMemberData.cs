@@ -443,10 +443,21 @@ namespace SimpleLanguage.Core
 
         public override void ParseRealMetaType()
         {
-            if ( m_Express != null && m_RealMetaType == null )
+            if (m_Express == null)
             {
+                return;
+            }
+
+            m_Express.CalcReturnType();
+            var convertedExpress = ExpressManager.ConvertNewExpress(m_Express, m_Express.GetReturnMetaType(), this);
+            if (convertedExpress != m_Express )
+            {
+                m_Express = convertedExpress;
                 m_Express.CalcReturnType();
-                m_Express = ExpressManager.ConvertNewExpress(m_Express, null, this);
+            }
+
+            if (m_RealMetaType == null)
+            {
                 m_DefineMetaType = m_Express.GetReturnMetaType();
                 if (m_DefineMetaType == null)
                 {
@@ -455,8 +466,9 @@ namespace SimpleLanguage.Core
                     return;
                 }
                 m_RealMetaType = m_DefineMetaType;
-                SyncMemberDataTypeByMetaType(m_DefineMetaType);
             }
+
+            SyncMemberDataTypeByMetaType(m_Express.GetReturnMetaType() ?? m_DefineMetaType);
         }
         public bool IsIncludeMetaData(MetaData md)
         {

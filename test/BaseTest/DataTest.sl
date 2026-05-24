@@ -108,7 +108,7 @@ data StudentRecord
         rank = 5,
         address = {
             city = "Shenzhen",
-            zip = 518000
+            zip = 518321
         }
     }
     awards = [

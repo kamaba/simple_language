@@ -357,18 +357,16 @@ namespace SimpleLanguage.Core
             m_AssignTargetType =  EAssignTargetType.MemberData;
             m_DefineMetaType = new MetaType(mmd.GetFinalMetaType());
         }
-
-
-        public void SetMetaMemberVariable(MetaMemberVariable mmv)
-        {
-            this.m_MetaMemberVariable = mmv;
-            this.m_AssignTargetType = EAssignTargetType.MemberVariable;
-        }
-        public void SetMetaMemberData(MetaMemberData mmd)
-        {
-            this.m_MetaMemberData = mmd;
-            this.m_AssignTargetType = EAssignTargetType.MemberData;
-        }
+        //public void SetMetaMemberVariable(MetaMemberVariable mmv)
+        //{
+        //    this.m_MetaMemberVariable = mmv;
+        //    this.m_AssignTargetType = EAssignTargetType.MemberVariable;
+        //}
+        //public void SetMetaMemberData(MetaMemberData mmd)
+        //{
+        //    this.m_MetaMemberData = mmd;
+        //    this.m_AssignTargetType = EAssignTargetType.MemberData;
+        //}
         public void Parse( AllowUseSettings aus )
         {
             MetaVariable mv = null;
@@ -1529,8 +1527,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_StoreMetaVariable = equalMV;
             m_DefineMetaType = new MetaType(mt);
-            m_ExpressReturnMetaType = new MetaType(mt);
-            if (m_ExpressReturnMetaType.IsArray())
+            if (m_DefineMetaType.IsArray())
             {
                 m_NewType = ENewType.ArrayClass;
             }

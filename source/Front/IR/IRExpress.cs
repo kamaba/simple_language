@@ -284,7 +284,6 @@ namespace SimpleLanguage.IR
                 || node is MetaUnaryOpExpressNode
                 || node is MetaOpExpressNode
                 || node is MetaCallLinkExpressNode
-                || node is MetaArrayExpressNode
                 || node is MetaNewObjectExpressNode
                 || node is MetaThreeItemExpressNode
                 || node is MetaAsIsExpressNode;
