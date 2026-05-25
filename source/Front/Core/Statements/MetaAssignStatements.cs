@@ -348,7 +348,7 @@ namespace SimpleLanguage.Core
                 }
                 if(m_MetaVariable.isConst )
                 {
-                    Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, "Error 当前左值声明为 const，不允许进行赋值或修改!!");
+                    Log.AddMetaCoreLog( LID.MetaCoreAssertShowMessage, m_Token, "Error 当前左值声明为 const，不允许进行赋值或修改!!");
                     return;
                 }
 

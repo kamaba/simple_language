@@ -1,6 +1,6 @@
 import Std
 
-const data ScoreRule
+data ScoreRule
 {
     passLine = 60
     excellentLine = 90
@@ -128,11 +128,12 @@ DataTest
         global.println("----- constDataReadOnlyTest -----")
 
         global.println(ScoreRule)
-        global.println(ScoreRule.passLine.toString())
-        global.println(ScoreRule.excellentLine)
+        #global.println(ScoreRule.passLine.toString())
+        #global.println(ScoreRule.excellentLine)
+        global.println(StudentRecord.anondatax.a.toString())
         
         StudentRecord a = new()
-        global.println("a=" + a)
+        global.println("a=" + a.toString() )
 
         StudentRecord b = StudentRecord(){ sid = 211i, name = "n211" }
         global.println("b1"  + b.toString() )
@@ -145,7 +146,7 @@ DataTest
 
         # negative-intent cases for const restriction documentation:
         ScoreRule.passLine = 61
-        global.println("ScoreRule=" + ScoreRule)
+        global.println("ScoreRule=" + ScoreRule.toString() )
 
         # ScoreRule = { passLine = 61, excellentLine = 91 } 不允许这种情况
     }

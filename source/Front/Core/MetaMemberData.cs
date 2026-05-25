@@ -7,7 +7,9 @@
 //****************************************************************************
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -372,6 +374,7 @@ namespace SimpleLanguage.Core
                                 m_Express = new MetaConstExpressNode(ownerMetaBase, null, m_FileMetaMemeberData.fileMetaConstValue);
                                 m_Express.Parse(new AllowUseSettings());
                                 m_Express.CalcReturnType();
+                                TryNormalizeDataConstIntegerLiteralType();
                                 var md = m_Express.GetReturnMetaType();
                                 this.m_DefineMetaType = md;
                                 this.m_RealMetaType = md;
@@ -414,6 +417,169 @@ namespace SimpleLanguage.Core
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
             }
             return true;
+        }
+
+        private void TryNormalizeDataConstIntegerLiteralType()
+        {
+            if (m_Express is not MetaConstExpressNode constExpress)
+            {
+                return;
+            }
+
+            var constTerm = m_FileMetaMemeberData?.fileMetaConstValue;
+            var token = constTerm?.token;
+            if (token == null || token.type != ETokenType.Number)
+            {
+                return;
+            }
+
+            if (HasExplicitIntegerSuffix(token))
+            {
+                return;
+            }
+
+            if (!TryGetUnsignedIntegerMagnitude(token.lexeme, out ulong magnitude))
+            {
+                return;
+            }
+
+            bool isNegative = constTerm?.plusMinusToken?.type == ETokenType.Minus;
+            if (isNegative)
+            {
+                if (magnitude <= (ulong)int.MaxValue + 1UL)
+                {
+                    constExpress.SetConstValue(EType.Int32, -(int)magnitude);
+                    constExpress.CalcReturnType();
+                }
+                else if (magnitude <= (ulong)long.MaxValue + 1UL)
+                {
+                    constExpress.SetConstValue(EType.Int64, -(long)magnitude);
+                    constExpress.CalcReturnType();
+                }
+                return;
+            }
+
+            if (magnitude <= int.MaxValue)
+            {
+                constExpress.SetConstValue(EType.Int32, (int)magnitude);
+                constExpress.CalcReturnType();
+            }
+            else if (magnitude <= (ulong)long.MaxValue)
+            {
+                constExpress.SetConstValue(EType.Int64, (long)magnitude);
+                constExpress.CalcReturnType();
+            }
+        }
+
+        private static bool TryGetUnsignedIntegerMagnitude(object? valueObj, out ulong magnitude)
+        {
+            magnitude = 0UL;
+            return valueObj switch
+            {
+                sbyte sv when sv >= 0 => (magnitude = (ulong)sv) >= 0,
+                byte bv => (magnitude = bv) >= 0,
+                short sv when sv >= 0 => (magnitude = (ulong)sv) >= 0,
+                ushort usv => (magnitude = usv) >= 0,
+                int iv when iv >= 0 => (magnitude = (ulong)iv) >= 0,
+                uint uiv => (magnitude = uiv) >= 0,
+                long lv when lv >= 0 => (magnitude = (ulong)lv) >= 0,
+                ulong ulv => (magnitude = ulv) >= 0,
+                _ => false,
+            };
+        }
+
+        private static bool HasExplicitIntegerSuffix(Token token)
+        {
+            if (!TryReadNumericLiteralRawText(token, out var raw))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return false;
+            }
+
+            raw = raw.Trim();
+            if (raw.Length > 0 && (raw[0] == '+' || raw[0] == '-'))
+            {
+                raw = raw.Substring(1);
+            }
+
+            int i = 0;
+            while (i < raw.Length && char.IsDigit(raw[i]))
+            {
+                i++;
+            }
+
+            if (i == 0 || i >= raw.Length)
+            {
+                return false;
+            }
+
+            if (raw[i] == '.')
+            {
+                return true;
+            }
+
+            return char.IsLetter(raw[i]);
+        }
+
+        private static bool TryReadNumericLiteralRawText(Token token, out string raw)
+        {
+            raw = string.Empty;
+            if (token == null || string.IsNullOrEmpty(token.path))
+            {
+                return false;
+            }
+
+            var path = token.path;
+            if (!Path.IsPathRooted(path))
+            {
+                path = Path.GetFullPath(path);
+            }
+            if (!File.Exists(path))
+            {
+                return false;
+            }
+
+            var lines = File.ReadAllLines(path);
+            int lineIndex = token.sourceBeginLine - 1;
+            if (lineIndex < 0 || lineIndex >= lines.Length)
+            {
+                return false;
+            }
+
+            var line = lines[lineIndex];
+            int start = token.sourceBeginChar;
+            if (start < 0 || start >= line.Length)
+            {
+                return false;
+            }
+
+            var sb = new StringBuilder();
+            for (int i = start; i < line.Length; i++)
+            {
+                char c = line[i];
+                if (char.IsWhiteSpace(c)
+                    || c == ','
+                    || c == ';'
+                    || c == ')'
+                    || c == ']'
+                    || c == '}'
+                    || c == ':'
+                    || c == '+'
+                    || c == '-'
+                    || c == '*'
+                    || c == '/')
+                {
+                    break;
+                }
+                sb.Append(c);
+            }
+
+            raw = sb.ToString();
+            return raw.Length > 0;
         }
 
         private void SyncMemberDataTypeByMetaType(MetaType mt)

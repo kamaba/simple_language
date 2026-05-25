@@ -188,6 +188,40 @@ namespace SimpleLanguage.Core.IR
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MetaData)
             {
+                //MetaVariable mv = cnode.GetOrgTemplateMetaVariable();
+
+                //IRMetaType irmt = null;
+                //IRMetaClass irmc = null;
+                //IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
+                //if (mv.isStatic || mv.isConst)
+                //{
+                //    irmc = IRManager.GetIRMetaClassByMetaVariable(mv);
+                //    // 枚举常量成员运行时存 Core.Member，defineMetaType 为 extends；LoadStaticField 的 opValue 须为 Member 类型。
+                //    if (mv is MetaMemberEnum)
+                //    {
+                //        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(
+                //            new MetaType(CoreMetaClassManager.memberMetaClass), owirmc);
+                //    }
+                //    else if (cnode.callMetaType != null)
+                //    {
+                //        irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
+                //    }
+                //    else
+                //    {
+                //        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.GetFinalMetaType(), owirmc);
+                //    }
+                //}
+                //else
+                //{
+                //    irmc = IRManager.GetIRMetaClassByMetaVariable(mv);
+                //}
+                //IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
+                //if (irVar == null)
+                //{
+                //    Log.AddIRLog(LID.IRMethodNotFoundVariable, cnode.token, $"load variable failed (null IR): {mv?.name}");
+                //}
+                //else
+                //    irList.Add(irVar);
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.Enum )
             {
