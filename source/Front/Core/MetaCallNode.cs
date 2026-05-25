@@ -39,7 +39,7 @@ namespace SimpleLanguage.Core
         VisitVariable,
         IteratorVariable,
         MemberVariableName,
-        MemberDataName,
+        //MemberDataName,
         NewClass,
         NewTemplate,
         NewData,
@@ -398,35 +398,35 @@ namespace SimpleLanguage.Core
                         HandleVisit();
                     }
                 }
-                else if (frontCNT == ECallNodeType.MemberDataName)
-                {
-                    MetaMemberData mmd = m_FrontCallNode.m_MetaVariable as MetaMemberData;
-                    if (mmd != null)
-                    {
-                        if (mmd.memberDataType == EMemberDataType.MemberArray)
-                        {
-                            if (isAt)                  //Array.$
-                            {
-                                string inputMVName = m_Name;
-                                var arrayFieldData = mmd.GetFinalMetaType()?.metaData;
-                                m_MetaVariable = arrayFieldData?.GetMemberDataByName(inputMVName);           //Array.@var
-                                if (m_MetaVariable == null)
-                                {
-                                    MetaCallLink clink = new MetaCallLink(MetaVisitNode.CreateByVariable(m_MetaVariable));
-                                    m_MetaVariable = new MetaVisitVariable(inputMVName, ownerMetaClass, m_OwnerMetaFunctionBlock,
-                                        mmd, clink);
-                                    mmd.AddMetaVariable(m_MetaVariable);
-                                }
-                                isNotConstValue = true;
-                            }
-                            else
-                            {
-                                //Array1.0.x 涓嶅厑璁?
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鍦ˋrray.鍚庤竟濡傛灉浣跨敤鍙橀噺鎴栬€呮槸鏁板瓧甯搁噺锛屽繀椤讳娇鐢ˋrray.$鏂瑰紡!!");
-                            }
-                        }
-                    }
-                }
+                //else if (frontCNT == ECallNodeType.MemberDataName)
+                //{
+                //    MetaMemberData mmd = m_FrontCallNode.m_MetaVariable as MetaMemberData;
+                //    if (mmd != null)
+                //    {
+                //        if (mmd.memberDataType == EMemberDataType.MemberArray)
+                //        {
+                //            if (isAt)                  //Array.$
+                //            {
+                //                string inputMVName = m_Name;
+                //                var arrayFieldData = mmd.GetFinalMetaType()?.metaData;
+                //                m_MetaVariable = arrayFieldData?.GetMemberDataByName(inputMVName);           //Array.@var
+                //                if (m_MetaVariable == null)
+                //                {
+                //                    MetaCallLink clink = new MetaCallLink(MetaVisitNode.CreateByVariable(m_MetaVariable));
+                //                    m_MetaVariable = new MetaVisitVariable(inputMVName, ownerMetaClass, m_OwnerMetaFunctionBlock,
+                //                        mmd, clink);
+                //                    mmd.AddMetaVariable(m_MetaVariable);
+                //                }
+                //                isNotConstValue = true;
+                //            }
+                //            else
+                //            {
+                //                //Array1.0.x 涓嶅厑璁?
+                //                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鍦ˋrray.鍚庤竟濡傛灉浣跨敤鍙橀噺鎴栬€呮槸鏁板瓧甯搁噺锛屽繀椤讳娇鐢ˋrray.$鏂瑰紡!!");
+                //            }
+                //        }
+                //    }
+                //}
                 //涓嶆槸甯搁噺鍊?
                 if (!isNotConstValue)
                 {
@@ -881,8 +881,8 @@ namespace SimpleLanguage.Core
                             }
                         }
 
-                        m_MetaVariable = GetDataValueByMetaData(m_FrontCallNode.m_MetaData, m_Name);
-                        m_CallNodeType = ECallNodeType.MemberDataName;
+                        m_MetaVariable = m_FrontCallNode.m_MetaData.GetMemberDataByName(m_Name);
+                        m_CallNodeType = ECallNodeType.MemberVariableName;
                     }
                     else if (frontCNT == ECallNodeType.DataName)
                     {
@@ -891,8 +891,7 @@ namespace SimpleLanguage.Core
                             return true;
                         }
 
-                        var retmmd = GetDataValueByMetaData(m_FrontCallNode.m_MetaData, m_Name);
-                        m_MetaVariable = retmmd;
+                        var retmmd = m_FrontCallNode.m_MetaData.GetMemberDataByName(m_Name);
                         if (retmmd == null)
                         {
                             Log.AddMetaCoreLog(LID.MetaCoreNotFoundMetaMemberVariable, m_Token, $"data name not found",
@@ -913,6 +912,8 @@ namespace SimpleLanguage.Core
                         //    m_FrontCallNode.m_MetaVariable = null;
                         //}
 
+                        m_CallMetaType = new MetaType(m_FrontCallNode.m_MetaData);
+                        m_MetaVariable = retmmd;
                         if (retmmd.memberDataType == EMemberDataType.MemberClass)
                         {
                             m_MetaClass = retmmd.GetFinalMetaType()?.metaClass;
@@ -926,11 +927,11 @@ namespace SimpleLanguage.Core
                                 //m_CallNodeType = ECallNodeType.ConstValue;
                                 //EType etyp = CoreMetaClassManager.GetETypeByMetaClass(m_MetaVariable.GetFinalMetaType().metaClass);
                                 //this.m_ExpressNode = new MetaConstExpressNode(etyp, m_MetaVariable.)
-                                m_CallNodeType = ECallNodeType.MemberDataName;
+                                m_CallNodeType = ECallNodeType.MemberVariableName;
                             }
                             else
                             {
-                                m_CallNodeType = ECallNodeType.MemberDataName;
+                                m_CallNodeType = ECallNodeType.MemberVariableName;
                             }
                         }
                         else if( retmmd.memberDataType == EMemberDataType.MemberArray )
@@ -939,7 +940,7 @@ namespace SimpleLanguage.Core
                         }
                         else if( retmmd.memberDataType == EMemberDataType.MemberData )
                         {
-                            m_CallNodeType = ECallNodeType.MemberDataName;
+                            m_CallNodeType = ECallNodeType.MemberVariableName;
                             m_MetaVariable = retmmd;
                         }
                         else
@@ -947,114 +948,114 @@ namespace SimpleLanguage.Core
                             Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "not found memberDataType");
                         }
                     }
-                    else if (frontCNT == ECallNodeType.MemberDataName)
-                    {
-                        if (TryBuildDataToStringSystemCall(m_Name))
-                        {
-                            return true;
-                        }
+                    //else if (frontCNT == ECallNodeType.MemberDataName)
+                    //{
+                    //    if (TryBuildDataToStringSystemCall(m_Name))
+                    //    {
+                    //        return true;
+                    //    }
 
-                        var md = m_FrontCallNode.m_MetaVariable as MetaMemberData;
-                        MetaMemberData findMd = null;
-                        if (md != null)
-                        {
-                            if( m_IsFunction )
-                            {
-                                MetaClass mc = md.GetFinalMetaType().metaClass;
-                                if( mc != null )
-                                {
-                                    m_MetaClass = mc;
-                                    m_CallNodeType = ECallNodeType.MemberVariableName;
-                                    m_MetaType = new MetaType(mc);
-                                    if( !GetFunctionOrVariableByOwnerClass(m_MetaClass, m_Name) )
-                                    {
-                                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "find function failed");
-                                        return false;
-                                    }
-                                    else
-                                    {
-                                    }
+                    //    var md = m_FrontCallNode.m_MetaVariable as MetaMemberData;
+                    //    MetaMemberData findMd = null;
+                    //    if (md != null)
+                    //    {
+                    //        if( m_IsFunction )
+                    //        {
+                    //            MetaClass mc = md.GetFinalMetaType().metaClass;
+                    //            if( mc != null )
+                    //            {
+                    //                m_MetaClass = mc;
+                    //                m_CallNodeType = ECallNodeType.MemberVariableName;
+                    //                m_MetaType = new MetaType(mc);
+                    //                if( !GetFunctionOrVariableByOwnerClass(m_MetaClass, m_Name) )
+                    //                {
+                    //                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "find function failed");
+                    //                    return false;
+                    //                }
+                    //                else
+                    //                {
+                    //                }
 
-                                }
-                                else
-                                {
-                                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "");
-                                    return false;
-                                }
-                            }   
-                            else
-                            {
-                                var dataType = md.GetFinalMetaType();
-                                if (dataType != null)
-                                {
-                                    if( dataType.isData )
-                                    {
-                                        findMd = dataType.metaData.GetMemberDataByName(m_Name);
-                                        if (findMd == null)
-                                        {
-                                            Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 娌℃湁鎵惧埌{m_Name} 鐨凪etaData鏁版嵁!");
-                                            return false;
-                                        }
-                                        if (findMd.memberDataType == EMemberDataType.MemberClass)
-                                        {
-                                            m_MetaClass = findMd.GetFinalMetaType()?.metaClass;
-                                            m_CallNodeType = ECallNodeType.MemberVariableName;
-                                        }
-                                        else if (findMd.memberDataType == EMemberDataType.ConstValue)
-                                        {
-                                            if (findMd.isConst)
-                                            {
-                                                //这块，可以写成常量模式
-                                                //m_CallNodeType = ECallNodeType.ConstValue;
-                                                //EType etyp = CoreMetaClassManager.GetETypeByMetaClass(m_MetaVariable.GetFinalMetaType().metaClass);
-                                                //this.m_ExpressNode = new MetaConstExpressNode(etyp, m_MetaVariable.)
-                                                m_CallNodeType = ECallNodeType.MemberVariableName;
-                                                m_ExpressNode = findMd.expressNode;
-                                            }
-                                            else
-                                            {
-                                                m_CallNodeType = ECallNodeType.MemberVariableName;
-                                                m_ExpressNode = findMd.expressNode;
-                                            }
-                                            m_MetaVariable = findMd;
-                                        }
-                                        else if (findMd.memberDataType == EMemberDataType.MemberArray)
-                                        {
-                                            m_MetaClass = findMd.GetFinalMetaType()?.metaClass;
-                                        }
-                                        else if (findMd.memberDataType == EMemberDataType.MemberData)
-                                        {
-                                            m_CallNodeType = ECallNodeType.MemberDataName;
-                                            m_MetaVariable = findMd;
-                                        }
-                                        else
-                                        {
-                                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "not found memberDataType");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "dmemberDataType not is data ");
-                                        return false;
-                                    }
-                                }
-                                else
-                                {
-                                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "dmemberDataType not is data 2");
-                                    return false;
-                                }
-                            }
-                        }
-                        //else if (findMd.memberDataType == EMemberDataType.ConstValue)
-                        //{
-                        //    m_CallNodeType = ECallNodeType.ConstValue;
-                        //}
-                        //else if (findMd.memberDataType == EMemberDataType.MemberArray)
-                        //{
-                        //    m_MetaVariable = findMd;
-                        //    m_CallNodeType = ECallNodeType.MemberDataName;
-                        //}
-                    }
+                    //            }
+                    //            else
+                    //            {
+                    //                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "");
+                    //                return false;
+                    //            }
+                    //        }   
+                    //        else
+                    //        {
+                    //            var dataType = md.GetFinalMetaType();
+                    //            if (dataType != null)
+                    //            {
+                    //                if( dataType.isData )
+                    //                {
+                    //                    findMd = dataType.metaData.GetMemberDataByName(m_Name);
+                    //                    if (findMd == null)
+                    //                    {
+                    //                        Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 娌℃湁鎵惧埌{m_Name} 鐨凪etaData鏁版嵁!");
+                    //                        return false;
+                    //                    }
+                    //                    if (findMd.memberDataType == EMemberDataType.MemberClass)
+                    //                    {
+                    //                        m_MetaClass = findMd.GetFinalMetaType()?.metaClass;
+                    //                        m_CallNodeType = ECallNodeType.MemberVariableName;
+                    //                    }
+                    //                    else if (findMd.memberDataType == EMemberDataType.ConstValue)
+                    //                    {
+                    //                        if (findMd.isConst)
+                    //                        {
+                    //                            //这块，可以写成常量模式
+                    //                            //m_CallNodeType = ECallNodeType.ConstValue;
+                    //                            //EType etyp = CoreMetaClassManager.GetETypeByMetaClass(m_MetaVariable.GetFinalMetaType().metaClass);
+                    //                            //this.m_ExpressNode = new MetaConstExpressNode(etyp, m_MetaVariable.)
+                    //                            m_CallNodeType = ECallNodeType.MemberVariableName;
+                    //                            m_ExpressNode = findMd.expressNode;
+                    //                        }
+                    //                        else
+                    //                        {
+                    //                            m_CallNodeType = ECallNodeType.MemberVariableName;
+                    //                            m_ExpressNode = findMd.expressNode;
+                    //                        }
+                    //                        m_MetaVariable = findMd;
+                    //                    }
+                    //                    else if (findMd.memberDataType == EMemberDataType.MemberArray)
+                    //                    {
+                    //                        m_MetaClass = findMd.GetFinalMetaType()?.metaClass;
+                    //                    }
+                    //                    else if (findMd.memberDataType == EMemberDataType.MemberData)
+                    //                    {
+                    //                        m_CallNodeType = ECallNodeType.MemberVariableName;
+                    //                        m_MetaVariable = findMd;
+                    //                    }
+                    //                    else
+                    //                    {
+                    //                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "not found memberDataType");
+                    //                    }
+                    //                }
+                    //                else
+                    //                {
+                    //                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "dmemberDataType not is data ");
+                    //                    return false;
+                    //                }
+                    //            }
+                    //            else
+                    //            {
+                    //                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "dmemberDataType not is data 2");
+                    //                return false;
+                    //            }
+                    //        }
+                    //    }
+                    //    //else if (findMd.memberDataType == EMemberDataType.ConstValue)
+                    //    //{
+                    //    //    m_CallNodeType = ECallNodeType.ConstValue;
+                    //    //}
+                    //    //else if (findMd.memberDataType == EMemberDataType.MemberArray)
+                    //    //{
+                    //    //    m_MetaVariable = findMd;
+                    //    //    m_CallNodeType = ECallNodeType.MemberDataName;
+                    //    //}
+                    //}
                     else if (frontCNT == ECallNodeType.EnumName)
                     {
                         if (m_Name == "values")
@@ -1127,8 +1128,7 @@ namespace SimpleLanguage.Core
                             MetaClass mc = null;
                             var mtt = mv.GetFinalMetaType();
                             mc = mtt.metaClass == null ? mv.GetTemplateMetaClass() : mtt.metaClass;
-                            var md = mtt.metaData
-                                ?? (mc != null ? ClassManager.instance.FindMetaDataByName(mc.allName) : null);
+                            var md = mtt.metaData;
                             if (md != null)
                             {
                                 if (TryBuildDataToStringSystemCall(m_Name))
@@ -1136,7 +1136,7 @@ namespace SimpleLanguage.Core
                                     return true;
                                 }
 
-                                var retmmd = GetDataValueByMetaData(md, m_Name);
+                                var retmmd = md.GetMemberDataByName(m_Name);
                                 m_MetaVariable = retmmd;
                                 if (retmmd == null)
                                 {
@@ -1161,7 +1161,7 @@ namespace SimpleLanguage.Core
                                 else
                                 {
                                     m_MetaVariable = retmmd;
-                                    m_CallNodeType = ECallNodeType.MemberDataName;
+                                    m_CallNodeType = ECallNodeType.MemberVariableName;
                                 }
                             }
                             else
@@ -1751,14 +1751,16 @@ namespace SimpleLanguage.Core
             if (frontNode.metaVariable != null)
             {
                 var callerMt = frontNode.metaType ?? frontNode.metaVariable.GetFinalMetaType();
-                callerNode = MetaVisitNode.CreateByVariable(frontNode.metaVariable, callerMt != null ? new MetaType(callerMt) : null);
+                callerNode = MetaVisitNode.CreateByVariable(frontNode.metaVariable);
             }
             else
             {
                 callerNode = MetaVisitNode.CreateByVisitMetaData(new MetaType(targetType));
             }
+            callerNode.SetToken(m_Token);
             var callerCallLink = new MetaCallLink(callerNode);
             var callerExpress = new MetaCallLinkExpressNode(callerCallLink);
+            callerExpress.SetToken(m_Token);
             callerExpress.CalcReturnType();
             inputParams.AddMetaInputParam(new MetaInputParam(callerExpress));
             m_MetaInputParamCollection = inputParams;
@@ -1767,7 +1769,6 @@ namespace SimpleLanguage.Core
             m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(ownerClass, ESystemMethodCall.SystemBuildDataString.ToString());
             m_MetaFunction.SetIndex((int)ESystemMethodCall.SystemBuildDataString);
             m_MetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
-            m_CallMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
             m_CallNodeType = ECallNodeType.SystemFunctionCall;
             return true;
         }
@@ -1982,7 +1983,7 @@ namespace SimpleLanguage.Core
                         m_MetaData = md;
                         m_MetaVariable = mmd;
                         m_MetaType = mmd.realMetaType;
-                        m_CallNodeType = ECallNodeType.MemberDataName;
+                        m_CallNodeType = ECallNodeType.MemberVariableName;
                         return true;
                     }
                 }
@@ -2002,7 +2003,7 @@ namespace SimpleLanguage.Core
                             m_MetaEnum = me;
                             m_MetaVariable = mmv;
                             m_MetaType = mmv.realMetaType;
-                            m_CallNodeType = ECallNodeType.MemberDataName;
+                            m_CallNodeType = ECallNodeType.MemberVariableName;
                             return true;
                         }
                         else
@@ -2047,10 +2048,6 @@ namespace SimpleLanguage.Core
                 catch { }
             }
             return true;
-        }
-        public MetaMemberData GetDataValueByMetaData(MetaData md, string inputName)
-        {
-            return md.GetMemberDataByName(inputName);
         }
         //private MetaMemberData GetOrCreateDataDefaultStaticInstanceVariable(MetaData dataType)
         //{
@@ -2189,7 +2186,6 @@ namespace SimpleLanguage.Core
             {
                 m_MetaVariable = mmv;
                 m_MetaType = mmv.GetFinalMetaType();
-                m_CallMetaType = new MetaType(mmv.ownerMetaClass);
                 m_CallNodeType = ECallNodeType.MemberVariableName;
                 //var gmmv3 = (mv as MetaIteratorVariable);
                 //if (gmmv3 != null)
@@ -2250,10 +2246,10 @@ namespace SimpleLanguage.Core
                 {
                     sb.Append(m_MetaData?.allName);
                 }
-                else if (m_CallNodeType == ECallNodeType.MemberDataName)
-                {
-                    sb.Append(m_MetaVariable?.name);
-                }
+                //else if (m_CallNodeType == ECallNodeType.MemberDataName)
+                //{
+                //    sb.Append(m_MetaVariable?.name);
+                //}
                 else if (m_CallNodeType == ECallNodeType.NewClass)
                 {
                     sb.Append(m_MetaClass.ToFormatString());

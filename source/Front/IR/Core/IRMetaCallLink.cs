@@ -8,6 +8,7 @@
 
 using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -65,7 +66,8 @@ namespace SimpleLanguage.Core.IR
                 IRMetaType irmt = null;
                 IRMetaClass irmc = null;
                 IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
-                if (mv.isStatic || mv.isConst )
+                IRLoadVariable irVar = null;
+                if (mv.isStatic || mv.isConst || cnode.callMetaType != null )
                 {
                     irmc = IRManager.GetIRMetaClassByMetaVariable(mv);
                     // 枚举常量成员运行时存 Core.Member，defineMetaType 为 extends；LoadStaticField 的 opValue 须为 Member 类型。
@@ -77,6 +79,9 @@ namespace SimpleLanguage.Core.IR
                     else if (cnode.callMetaType != null)
                     {
                         irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
+
+                        int index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                        irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
                     }
                     else
                     {
@@ -87,7 +92,10 @@ namespace SimpleLanguage.Core.IR
                 {
                     irmc = IRManager.GetIRMetaClassByMetaVariable(mv);
                 }
-                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
+                if( irVar == null )
+                {
+                    irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
+                }
                 if (irVar == null)
                 {
                     Log.AddIRLog(LID.IRMethodNotFoundVariable, cnode.token, $"load variable failed (null IR): {mv?.name}");

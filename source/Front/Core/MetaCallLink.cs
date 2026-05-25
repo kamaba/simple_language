@@ -708,13 +708,13 @@ namespace SimpleLanguage.Core
                 mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
-            else if (mcn.callNodeType == ECallNodeType.MemberDataName)
-            {
-                MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.callMetaType );
-                mvn.SetToken(mcn.token);
-                m_VisitNodeList.Add(mvn);
-                //Debug.Write("Meta Common Parse MemberDataName----------------------------------------------------");
-            }
+            //else if (mcn.callNodeType == ECallNodeType.MemberDataName)
+            //{
+            //    MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.callMetaType );
+            //    mvn.SetToken(mcn.token);
+            //    m_VisitNodeList.Add(mvn);
+            //    //Debug.Write("Meta Common Parse MemberDataName----------------------------------------------------");
+            //}
             else if (mcn.callNodeType == ECallNodeType.TemplateName)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByTemplate(mcn.metaTemplate);

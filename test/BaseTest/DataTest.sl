@@ -128,8 +128,8 @@ DataTest
         global.println("----- constDataReadOnlyTest -----")
 
         global.println(ScoreRule)
-        #global.println(ScoreRule.passLine.toString())
-        #global.println(ScoreRule.excellentLine)
+        global.println(ScoreRule.passLine.toString())
+        global.println(ScoreRule.excellentLine)
         global.println(StudentRecord.anondatax.a.toString())
         
         StudentRecord a = new()
