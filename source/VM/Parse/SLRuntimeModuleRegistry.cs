@@ -426,7 +426,7 @@ namespace SimpleLanguage.Parse
                     var rv = new RuntimeVariable(rdt, f.GetHashCode(), f.index, f.name ?? string.Empty);
                     if ((f.flags & 32) == 32)
                     {
-                        rc.staticIRMetaVariableList.Add(rv);
+                        rc.AddStaticIRMetaVariableList(rv);
                         if (f.express != null && f.express.Count > 0)
                         {
                             //Instruction.UnpackPayloadsFromJson(f.express);
@@ -436,12 +436,12 @@ namespace SimpleLanguage.Parse
                     }
                     else
                     {
-                        rc.nonStaticIRMetaVariableList.Add(rv);
+                        rc.AddNonStaticIRMetaVariableList(rv);
                         if (f.express != null && f.express.Count > 0)
                         {
                             //Instruction.UnpackPayloadsFromJson(f.express);
                             foreach (var ins in f.express)
-                                rc.nonStaticMemberVariableSetValueList.Add(ins);
+                                rc.AddNonStaticMemberVariableSetValueList(ins);
                         }
                     }
                 }

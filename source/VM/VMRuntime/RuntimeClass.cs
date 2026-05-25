@@ -53,7 +53,19 @@ namespace SimpleLanguage.VM
             m_NonStaticMemberVariableSetValueList.Clear();
             m_StaticMemberVariableSetValueList.Clear();
         }
-
+        internal void AddNonStaticMemberVariableSetValueList(Instruction item)
+        {
+            m_NonStaticMemberVariableSetValueList.Add(item);
+        }
+        internal void AddNonStaticIRMetaVariableList(RuntimeVariable item)
+        {
+            m_NonStaticIRMetaVariableList.Add(item);
+        }
+        internal void AddStaticIRMetaVariableList(RuntimeVariable item)
+        {
+            m_StaticIRMetaVariableList.Add(item);
+        }
+        
         internal void AddOperatorMethod(RuntimeMethod m)
         {
             if (m == null) return;

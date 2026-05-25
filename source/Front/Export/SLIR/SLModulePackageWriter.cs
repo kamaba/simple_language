@@ -666,8 +666,8 @@ namespace SimpleLanguage.Export.SLIR
         private static void AppendClassInstanceFieldStoreIfNeeded(IRMetaVariable v, List<IRData> irBuf)
         {
             if (v == null || irBuf == null || irBuf.Count == 0) return;
-            var last = irBuf[irBuf.Count - 1];
-            if (last != null && last.opCode == EIROpCode.StoreNotStaticField1) return;
+            //var last = irBuf[irBuf.Count - 1];
+            //if (last != null && last.opCode == EIROpCode.StoreNotStaticField1) return;
             if (v.irMetaType == null) return;
             var irdata = new IRData
             {

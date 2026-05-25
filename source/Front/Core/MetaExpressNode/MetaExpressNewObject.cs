@@ -1670,7 +1670,8 @@ namespace SimpleLanguage.Core
                     if (fmbt is FileMetaSymbolTerm fmst)
                     {
                         MetaBraceAssignStatements mas = new MetaBraceAssignStatements(fmst, mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, m_NewMetaType );
-                        //mas.CalcReturnType();
+                        mas.Parse(aws);
+                        mas.CalcReturnType();
                         m_AssignStatementsList.Add(mas);
                     }
                     else
