@@ -437,6 +437,8 @@ namespace SimpleLanguage
         DataNameAndTypeEqual,
         /// <summary>data 字段值相同（数值类型可宽化兼容，如 int8 与 int32）。</summary>
         DataDataEqual,
+        /// <summary>Build data/anonymous-data string representation.</summary>
+        SystemBuildDataString,
         SystemConvertSInt8,
     }
     public class Global

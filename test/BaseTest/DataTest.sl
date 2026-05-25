@@ -101,7 +101,7 @@ data StudentRecord
 {
     sid = 7
     name = "StudentRecord Name",
-    anondatax = {a = 111, b = 222 }
+    anondatax = {a = 111i, b = 222i }
     #scores = [95, 88, 91]
     #tags = ["math", "final"]
     #!
@@ -132,17 +132,22 @@ DataTest
         global.println(ScoreRule.excellentLine)
         
         StudentRecord a = new()
-        global.println(a)
+        global.println("a=" + a)
 
-        #StudentRecord b = StudentRecord(){ sid = 2, name = "n2" }
-        #StudentRecord c = { sid = 3, name = "n3" }
+        StudentRecord b = StudentRecord(){ sid = 211i, name = "n211" }
+        global.println("b1"  + b.toString() )
+        
+        b.anondatax.a = 919
+        global.println("b2:" + b.toString() )
 
-        #global.println(b)
-        #global.println(c)
+        StudentRecord c = { sid = 339, name = "n339" }
+        global.println(c)
 
         # negative-intent cases for const restriction documentation:
-        # ScoreRule.passLine = 61
-        # ScoreRule = { passLine = 61, excellentLine = 91 }
+        ScoreRule.passLine = 61
+        global.println("ScoreRule=" + ScoreRule)
+
+        # ScoreRule = { passLine = 61, excellentLine = 91 } 不允许这种情况
     }
 
     static staticDataDirectUseTest()

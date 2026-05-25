@@ -666,7 +666,7 @@ namespace SimpleLanguage.Core
                 if (!(defineMt.isEnum && expressMt.isEnum))
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
-                        scene + " ???????????, define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
+                        scene + " defineMt is Enum and expressMt is Enum define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
                     return false;
                 }
 

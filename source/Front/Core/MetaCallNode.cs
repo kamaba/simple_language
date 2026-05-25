@@ -935,6 +935,11 @@ namespace SimpleLanguage.Core
                     }
                     else if (frontCNT == ECallNodeType.MemberDataName)
                     {
+                        if (TryBuildDataToStringSystemCall(m_Name))
+                        {
+                            return true;
+                        }
+
                         var md = m_FrontCallNode.m_MetaVariable as MetaMemberData;
                         MetaMemberData findMd = null;
                         if (md != null)
@@ -1072,6 +1077,11 @@ namespace SimpleLanguage.Core
                                 ?? (mc != null ? ClassManager.instance.FindMetaDataByName(mc.allName) : null);
                             if (md != null)
                             {
+                                if (TryBuildDataToStringSystemCall(m_Name))
+                                {
+                                    return true;
+                                }
+
                                 var retmmd = GetDataValueByMetaData(md, m_Name);
                                 m_MetaVariable = retmmd;
                                 if (retmmd == null)
@@ -1656,6 +1666,48 @@ namespace SimpleLanguage.Core
             m_MetaType = new MetaType(CoreMetaClassManager.typeMetaClass);
             m_CallMetaType = new MetaType(mc);
             m_CallNodeType = ECallNodeType.FunctionCall;
+        }
+
+        private bool TryBuildDataToStringSystemCall(string inputname)
+        {
+            if (!m_IsFunction || !string.Equals(inputname, "toString", StringComparison.Ordinal))
+            {
+                return false;
+            }
+
+            if (m_MetaInputParamCollection == null || m_MetaInputParamCollection.count != 0)
+            {
+                return false;
+            }
+
+            var frontNode = m_FrontCallNode;
+            if (frontNode?.metaVariable == null)
+            {
+                return false;
+            }
+
+            var targetType = frontNode.metaVariable.GetFinalMetaType();
+            if (targetType == null || !targetType.isData)
+            {
+                return false;
+            }
+
+            var inputParams = new MetaInputParamCollection(ownerMetaBase, m_OwnerMetaFunctionBlock);
+            var callerMt = frontNode.metaType ?? frontNode.metaVariable.GetFinalMetaType();
+            var callerNode = MetaVisitNode.CreateByVariable(frontNode.metaVariable, callerMt != null ? new MetaType(callerMt) : null);
+            var callerCallLink = new MetaCallLink(callerNode);
+            var callerExpress = new MetaCallLinkExpressNode(callerCallLink);
+            callerExpress.CalcReturnType();
+            inputParams.AddMetaInputParam(new MetaInputParam(callerExpress));
+            m_MetaInputParamCollection = inputParams;
+
+            var ownerClass = ownerMetaClass ?? CoreMetaClassManager.objectMetaClass;
+            m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(ownerClass, ESystemMethodCall.SystemBuildDataString.ToString());
+            m_MetaFunction.SetIndex((int)ESystemMethodCall.SystemBuildDataString);
+            m_MetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+            m_CallMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
+            m_CallNodeType = ECallNodeType.SystemFunctionCall;
+            return true;
         }
         //void HandleGetTypeByMetaVariable(MetaVariable mv)
         //{

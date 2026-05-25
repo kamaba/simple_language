@@ -2080,6 +2080,9 @@ namespace SimpleLanguage.VM.Runtime
                             case (int)ESystemMethodCall.DataDataEqual:
                                 DataSystemMethodCall.ExecuteDataDataEqual(this, sysPkg);
                                 break;
+                            case (int)ESystemMethodCall.SystemBuildDataString:
+                                DataSystemMethodCall.ExecuteBuildDataString(this, sysPkg);
+                                break;
                             case (int)ESystemMethodCall.SystemObjectGetType:
                                 ObjectSystemMethodCall.ExecuteSystemObjectGetType(this, sysPkg);
                                 break;

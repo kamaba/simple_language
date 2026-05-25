@@ -332,7 +332,7 @@ namespace SimpleLanguage.VM.Runtime
                     ESystemMethodCall.SystemConvertUInt64 => Convert.ToUInt64(raw, CultureInfo.InvariantCulture),
                     ESystemMethodCall.SystemConvertFloat32 => Convert.ToSingle(raw, CultureInfo.InvariantCulture),
                     ESystemMethodCall.SystemConvertFloat64 => Convert.ToDouble(raw, CultureInfo.InvariantCulture),
-                    ESystemMethodCall.SystemConvertString => raw?.ToString() ?? string.Empty,
+                    ESystemMethodCall.SystemConvertString => ConvertStringWithDataSupport(ref arg, raw),
                     _ => raw,
                 };
                 return SValue.FromClrObject(conv);
@@ -386,6 +386,16 @@ namespace SimpleLanguage.VM.Runtime
                 return v.sobject.value ?? v.sobject.ToString() ?? string.Empty;
             }
             return v.GetValueObject() ?? string.Empty;
+        }
+
+        private static object ConvertStringWithDataSupport(ref SValue arg, object raw)
+        {
+            if (DataSystemMethodCall.TryBuildDataString(ref arg, out var dataText))
+            {
+                return dataText;
+            }
+
+            return raw?.ToString() ?? string.Empty;
         }
     }
 }

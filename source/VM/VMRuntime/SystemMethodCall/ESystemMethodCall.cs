@@ -48,6 +48,8 @@ namespace SimpleLanguage.VM.Runtime
         DataTypeEqual,
         DataNameAndTypeEqual,
         DataDataEqual,
+        /// <summary>Build data/anonymous-data string representation.</summary>
+        SystemBuildDataString,
         /// <summary>Convert to signed byte; must match <see cref="SimpleLanguage.ESystemMethodCall.SystemConvertSInt8"/> ordinal.</summary>
         SystemConvertSInt8,
     }

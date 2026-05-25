@@ -123,6 +123,7 @@ namespace SimpleLanguage.Core
             { ESystemMethodCall.DataTypeEqual, new SystemMethodCallDeclaration(ESystemMethodCall.DataTypeEqual, Bool, false, Obj, Obj) },
             { ESystemMethodCall.DataNameAndTypeEqual, new SystemMethodCallDeclaration(ESystemMethodCall.DataNameAndTypeEqual, Bool, false, Obj, Obj) },
             { ESystemMethodCall.DataDataEqual, new SystemMethodCallDeclaration(ESystemMethodCall.DataDataEqual, Bool, false, Obj, Obj) },
+            { ESystemMethodCall.SystemBuildDataString, new SystemMethodCallDeclaration(ESystemMethodCall.SystemBuildDataString, Str, false, Obj) },
             { ESystemMethodCall.SystemConvertSInt8, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertSInt8, I8, false, Obj, I32) },
         };
 
