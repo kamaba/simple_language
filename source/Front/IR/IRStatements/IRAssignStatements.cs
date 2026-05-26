@@ -9,6 +9,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Core.IR;
 using SimpleLanguage.Logging;
+using System;
 
 namespace SimpleLanguage.IR
 {
@@ -174,10 +175,20 @@ namespace SimpleLanguage.IR
             var mv = lastCL.GetReturnMetaVariable();
 
             var owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
-            var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
+            if ( lastCL.callMetaType != null )
+            {
+                var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(lastCL.callMetaType, owirmc);
+                int index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                IRStoreVariable irsv = new IRStoreVariable(irmt, irMethod, index, IRMetaVariableFrom.Static);
+                m_IRStatements.Add(irsv);
+            }
+            else
+            {
+                var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
 
-            IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, owirmc, irMethod, mv);
-            m_IRStatements.Add(irsv);
+                IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, owirmc, irMethod, mv);
+                m_IRStatements.Add(irsv);
+            }
             //if ( ms.isNewStatements )
             //{
             //    MetaVisitNode finalMVN = null;

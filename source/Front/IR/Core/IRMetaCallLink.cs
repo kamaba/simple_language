@@ -67,7 +67,7 @@ namespace SimpleLanguage.Core.IR
                 IRMetaClass irmc = null;
                 IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
                 IRLoadVariable irVar = null;
-                if (mv.isStatic || mv.isConst || cnode.callMetaType != null )
+                if ( cnode.callMetaType != null )
                 {
                     irmc = IRManager.GetIRMetaClassByMetaVariable(mv);
                     // 枚举常量成员运行时存 Core.Member，defineMetaType 为 extends；LoadStaticField 的 opValue 须为 Member 类型。

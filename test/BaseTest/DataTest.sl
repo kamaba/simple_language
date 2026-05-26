@@ -148,7 +148,7 @@ DataTest
         ScoreRule.passLine = 61
         global.println("ScoreRule=" + ScoreRule.toString() )
 
-        # ScoreRule = { passLine = 61, excellentLine = 91 } 不允许这种情况
+        #ScoreRule = { passLine = 61, excellentLine = 91 } #不允许这种情况
     }
 
     static staticDataDirectUseTest()
@@ -490,7 +490,7 @@ DataTest
         global.println("========== DataTest (start) ==========")
 
         constDataReadOnlyTest()
-        #dataIfCompareTest()
+        dataIfCompareTest()
         #staticDataDirectUseTest()
         #memberShapeCoverageTest()
         #anonymousDataMetaCompileTest()

@@ -18,7 +18,7 @@ namespace SimpleLanguage.Core
     public class MetaMethodCall
     {
         public bool isRecieveReturnValue => m_IsRecieveReturnValue;
-        public MetaVariable loadMetaVariable => m_LoadMetaVariable;
+        //public MetaVariable loadMetaVariable => m_LoadMetaVariable;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
         public MetaClass staticCallerMetaClass => m_StaticCallerMetaClass;
         public List<MetaType> staticMetaClassInputTemplateList => m_StaticMetaClassInputTemplateList;
@@ -255,13 +255,13 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            if( this.loadMetaVariable != null )
+            if( this.m_LoadMetaVariable != null )
             {
                 sb.Append("[");
                 sb.Append(this.m_VMCallMetaFunction.ownerMetaClass.allName);
                 sb.Append("]");
 
-                sb.Append(this.loadMetaVariable.name);
+                sb.Append(this.m_LoadMetaVariable.name);
                 sb.Append(".");
             }
             else

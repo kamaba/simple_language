@@ -23,7 +23,7 @@ namespace SimpleLanguage.Core
     }
     public enum ECallNodeType
     {
-        Null,
+        None,
         MetaNode,
         MetaType,
         ClassName,
@@ -118,7 +118,7 @@ namespace SimpleLanguage.Core
         public MetaType metaType => m_MetaType;
 
         private AllowUseSettings m_AllowUseSettings;
-        private ECallNodeType m_CallNodeType;
+        private ECallNodeType m_CallNodeType = ECallNodeType.None;
         private ECallNodeSign m_CallNodeSign = ECallNodeSign.Null;
         public bool m_IsArray = false;
         public bool m_IsFunction = false;
@@ -164,11 +164,15 @@ namespace SimpleLanguage.Core
             m_OwnerMetaFunctionBlock = mbs;
             m_FrontDefineMetaType = fdmt;
         }
+        public MetaCallNode( MetaBase mb, MetaBlockStatements mbs )
+        {
+
+        }
         public MetaCallNode(FileMetaCallNode fmcn1, FileMetaCallNode fmcn2, MetaBase mc, MetaBlockStatements mbs, MetaType fdmt)
         {
             m_FileMetaCallSign = fmcn1;
             m_FileMetaCallNode = fmcn2;
-            m_Token = m_FileMetaCallNode.token;
+            m_Token = m_FileMetaCallNode?.token;
             m_OwnerMetaClass = mc;
             m_OwnerMetaFunctionBlock = mbs;
             m_FrontDefineMetaType = fdmt;
@@ -185,6 +189,14 @@ namespace SimpleLanguage.Core
                 m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
             }
             */
+        }
+        public void SetAllowUseSettings( AllowUseSettings alus )
+        {
+            m_AllowUseSettings = alus;
+        }
+        public void SetToken( Token token )
+        {
+            this.m_Token = token;
         }
         public void SetFrontCallNode(MetaCallNode mcn)
         {
@@ -343,7 +355,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 涓嶆敮鎸佽〃杈惧紡绫诲瀷!!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 涓嶆敮鎸佽〃杈惧紡绫诲瀷!!");
             }
             return true;
         }
@@ -361,7 +373,7 @@ namespace SimpleLanguage.Core
 
 
             ETokenType etype = m_Token.type;
-            ECallNodeType frontCNT = ECallNodeType.Null;
+            ECallNodeType frontCNT = ECallNodeType.None;
 
             if (m_FrontCallNode != null)
             {
@@ -375,9 +387,9 @@ namespace SimpleLanguage.Core
                 m_MetaInputParamCollection.CaleReturnType();
             }
 
-            if (!isFirst && frontCNT == ECallNodeType.Null)
+            if (!isFirst && frontCNT == ECallNodeType.None)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鍓嶈竟鑺傜偣娌℃湁鍙戠幇MetaBase!!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 鍓嶈竟鑺傜偣娌℃湁鍙戠幇MetaBase!!");
                 return false;
             }
 
@@ -452,7 +464,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_IsFunction)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 涓嶅厑璁竒lobal鐨勫嚱鏁板舰寮?!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 涓嶅厑璁竒lobal鐨勫嚱鏁板舰寮?!");
                     }
                     else
                     {
@@ -475,7 +487,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error global can only be used at first position." + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global can only be used at first position." + m_Token.ToLexemeAllString());
                 }
             }
             else if (etype == ETokenType.New)
@@ -484,13 +496,13 @@ namespace SimpleLanguage.Core
                 {
                     if (!m_IsFunction)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error new cannot be used as non-function form." + m_Token.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error new cannot be used as non-function form." + m_Token.ToLexemeAllString());
                     }
                     else
                     {
                         if (m_FrontDefineMetaType == null)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error missing front define meta type." + m_Token.ToLexemeAllString());
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error missing front define meta type." + m_Token.ToLexemeAllString());
                             return false;
                         }
                         m_MetaType = m_FrontDefineMetaType;
@@ -527,25 +539,26 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error new can only be used at first position." + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error new can only be used at first position." + m_Token.ToLexemeAllString());
                 }
             }
             else if (etype == ETokenType.This)
             {
                 if (this.m_AllowUseSettings.parseFrom == EParseFrom.MemberVariableExpress)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error this is not allowed in member variable expression." + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error this is not allowed in member variable expression." + m_Token.ToLexemeAllString());
                 }
                 if (this.m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error this is not allowed in input parameter expression." + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error this is not allowed in input parameter expression." + m_Token.ToLexemeAllString());
                 }
                 //this.鏅€氱殑鍑芥暟锛屽彉閲忥紝get/set鏂规硶
                 if (isFirst)
                 {
                     if (m_IsFunction)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 涓嶅厑璁竧his鐨勫嚱鏁板舰寮?!" + m_Token.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 涓嶅厑璁竧his鐨勫嚱鏁板舰寮?!" + m_Token.ToLexemeAllString());
+                        return false;
                     }
                     else
                     {
@@ -554,43 +567,44 @@ namespace SimpleLanguage.Core
                         m_CallNodeType = ECallNodeType.This;
                         if (m_MetaVariable == null)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error static function cannot use this.");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage,  m_Token, "Error static function cannot use this.");
                             return false;
                         }
                         if (m_OwnerMetaFunctionBlock.ownerMetaFunction.isStatic && m_MetaVariable.isStatic == false)
                         {
-                            Debug.Assert(false, "");
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error static function cannot use this.");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error static function cannot use this.");
+                            return false;
                         }
                     }
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error this can only be used at first position." + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error this can only be used at first position." + m_Token.ToLexemeAllString());
+                    return false;
                 }
             }
             else if (etype == ETokenType.Base)
             {
                 if (this.m_AllowUseSettings.parseFrom == EParseFrom.MemberVariableExpress)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error base is not allowed in member variable expression." + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error base is not allowed in member variable expression." + m_Token.ToLexemeAllString());
                 }
                 if (this.m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error base is not allowed in input parameter expression." + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error base is not allowed in input parameter expression." + m_Token.ToLexemeAllString());
                 }
 
                 MetaClass owningMc = ownerMetaClass;
                 if (owningMc == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error base requires class context.");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error base requires class context.");
                     return false;
                 }
 
                 MetaClass parentClass = owningMc.metaNode.parentNode.GetMetaClassByTemplateCount(0);
                 if (parentClass == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error base parent class not found.");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error base parent class not found.");
                     return false;
                 }
 
@@ -598,7 +612,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_IsFunction)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error base cannot be used as function form.");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error base cannot be used as function form.");
                     }
                     else
                     {
@@ -608,7 +622,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error base can only be used at first position." + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error base can only be used at first position." + m_Token.ToLexemeAllString());
                 }
             }
             else if (etype == ETokenType.Local)
@@ -618,20 +632,20 @@ namespace SimpleLanguage.Core
                     var fm = m_FileMetaCallNode?.fileMeta;
                     if (fm == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error local 瑙ｆ瀽澶辫触: fileMeta 涓虹┖");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error local 瑙ｆ瀽澶辫触: fileMeta 涓虹┖");
                         return false;
                     }
 
                     if (fm.GetFileMetaLocalSyntax() == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 褰撳墠鏂囦欢鏈畾涔?local{}锛屼笉鍏佽浣跨敤 local.xxx" + m_Token.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 褰撳墠鏂囦欢鏈畾涔?local{}锛屼笉鍏佽浣跨敤 local.xxx" + m_Token.ToLexemeAllString());
                         return false;
                     }
 
                     var global = ProjectManager.globalData;
                     if (global == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error local 瑙ｆ瀽澶辫触: globalData 涓虹┖");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error local 瑙ｆ瀽澶辫触: globalData 涓虹┖");
                         return false;
                     }
 
@@ -639,7 +653,7 @@ namespace SimpleLanguage.Core
                     var mv = global.GetMetaMemberVariableByName(varName);
                     if (mv == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error local 瑙ｆ瀽澶辫触: 娌℃湁鎵惧埌 local instance 鍙橀噺: " + varName);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error local 瑙ｆ瀽澶辫触: 娌℃湁鎵惧埌 local instance 鍙橀噺: " + varName);
                         return false;
                     }
 
@@ -651,7 +665,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "local.鍙兘鍦ㄩ浣?");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "local.notfound");
                     return false;
                 }
             }
@@ -787,12 +801,12 @@ namespace SimpleLanguage.Core
                             {
                                 if (!mmf.isStatic)
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 璋冪敤闈為潤鎬佹垚鍛樺嚱鏁帮紝涓嶈兘浣跨敤Class.Variable鐨勬柟寮?");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 璋冪敤闈為潤鎬佹垚鍛樺嚱鏁帮紝涓嶈兘浣跨敤Class.Variable鐨勬柟寮?");
                                     return false;
                                 }
                                 if (mmf.isConstructInitFunction && !m_AllowUseSettings.callConstructFunction)
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error constructor call is not allowed here." + m_Token.ToLexemeAllString());
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error constructor call is not allowed here." + m_Token.ToLexemeAllString());
                                     return false;
                                 }
                                 if (m_FrontCallNode != null)
@@ -811,7 +825,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (!mmv.isStatic && !mmv.isConst)
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 璋冪敤闈為潤鎬佹垚鍛樺彉閲忥紝涓嶈兘浣跨敤Class.Variable鐨勬柟寮?");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 璋冪敤闈為潤鎬佹垚鍛樺彉閲忥紝涓嶈兘浣跨敤Class.Variable鐨勬柟寮?");
                                     return false;
                                 }
                                 if (m_FrontCallNode != null)
@@ -826,7 +840,7 @@ namespace SimpleLanguage.Core
                         {
                             if (tmb.IsMetaClass() == false)
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 鍦ㄥ綋鍓嶇被: {m_FrontCallNode?.m_MetaClass.name} " +
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, $"Error 鍦ㄥ綋鍓嶇被: {m_FrontCallNode?.m_MetaClass.name} " +
                                     $"閲屾煡鎵惧埌浜嗗瓙椤癸紝浣嗕笉鏄被{m_Name} ");
                                 return false;
                             }
@@ -844,12 +858,12 @@ namespace SimpleLanguage.Core
                             }
                             if (m_MetaVariable != null && m_MetaVariable.permission == EPermission.Private)
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鎴愬憳");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鎴愬憳");
                                 return false;
                             }
                             if (m_MetaFunction != null && m_MetaFunction.permission == EPermission.Private)
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鍑芥暟");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鍑芥暟");
                                 return false;
                             }
                             return true;
@@ -869,12 +883,12 @@ namespace SimpleLanguage.Core
 
                                 if (m_MetaVariable != null && m_MetaVariable.permission == EPermission.Private)
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鎴愬憳");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鎴愬憳");
                                     return false;
                                 }
                                 if (m_MetaFunction != null && m_MetaFunction.permission == EPermission.Private)
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鍑芥暟");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鍑芥暟");
                                     return false;
                                 }
                                 return true;
@@ -1911,7 +1925,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娌℃湁鍙戣RetMC鐨勭被鍒玀etaCommon");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 娌℃湁鍙戣RetMC鐨勭被鍒玀etaCommon");
                 }
             }
             else
@@ -1949,7 +1963,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "绗竴浣嶇殑鎴愬憳鍙橀噺鍚嶇О蹇呴』鏄釜闈欐€佸彉閲忔墠鍙互鍝?");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "绗竴浣嶇殑鎴愬憳鍙橀噺鍚嶇О蹇呴』鏄釜闈欐€佸彉閲忔墠鍙互鍝?");
                             return false;
                         }
                     }
@@ -1970,7 +1984,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "绗竴浣嶇殑鎴愬憳鍑芥暟鍚嶇О蹇呴』鏄釜闈欐€佸嚱鏁版墠鍙互鍝?");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "绗竴浣嶇殑鎴愬憳鍑芥暟鍚嶇О蹇呴』鏄釜闈欐€佸嚱鏁版墠鍙互鍝?");
                             return false;
                         }
                     }
@@ -1991,7 +2005,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_IsFunction)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error data 不支持函数调用: " + me.allName);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error data 不支持函数调用: " + me.allName);
                         return false;
 
                     }
@@ -2008,7 +2022,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error data '{me.allName}' does not have member variable '{inputname}'");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, $"Error data '{me.allName}' does not have member variable '{inputname}'");
                             return false;
                         }
                     }

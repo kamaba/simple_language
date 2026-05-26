@@ -45,13 +45,13 @@ namespace SimpleLanguage.IR
             // Keep the same argument emission pipeline as regular calls.
             IRMetaType irmt = null;
             IRMetaClass owirmc = null;
-            if (mfc.loadMetaVariable != null)
-            {
-                owirmc = IRManager.GetIRMetaClassByMetaVariable(mfc.loadMetaVariable);
-                irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.loadMetaVariable.defineMetaType, owirmc);
-                IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, mfc.loadMetaVariable);
-                AddIRRangeData(irload.IRDataList);
-            }
+            //if (mfc.loadMetaVariable != null)
+            //{
+            //    owirmc = IRManager.GetIRMetaClassByMetaVariable(mfc.loadMetaVariable);
+            //    irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.loadMetaVariable.defineMetaType, owirmc);
+            //    IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, mfc.loadMetaVariable);
+            //    AddIRRangeData(irload.IRDataList);
+            //}
 
             paramCount = mfc.metaInputParamList.Count;
             for (int j = 0; j < paramCount; j++)
@@ -91,13 +91,13 @@ namespace SimpleLanguage.IR
         {
             IRMetaType irmt = null;
             IRMetaClass owirmc = null;
-            if (mfc.loadMetaVariable != null)
-            {
-                owirmc = IRManager.GetIRMetaClassByMetaVariable(mfc.loadMetaVariable);
-                irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.loadMetaVariable.defineMetaType, owirmc);
-                IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, mfc.loadMetaVariable);
-                AddIRRangeData(irload.IRDataList);
-            }
+            //if (mfc.loadMetaVariable != null)
+            //{
+            //    owirmc = IRManager.GetIRMetaClassByMetaVariable(mfc.loadMetaVariable);
+            //    irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.loadMetaVariable.defineMetaType, owirmc);
+            //    IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, mfc.loadMetaVariable);
+            //    AddIRRangeData(irload.IRDataList);
+            //}
 
             paramCount = mfc.metaInputParamList.Count;
             for (int j = 0; j < paramCount; j++)

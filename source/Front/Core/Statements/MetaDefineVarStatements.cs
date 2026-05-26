@@ -83,6 +83,18 @@ namespace SimpleLanguage.Core
                 m_DefineVarMetaVariable.SetIsConst(m_FileMetaDefineVariableSyntax.constToken != null);
                 m_DefineVarMetaVariable.AddPingToken(m_FileMetaDefineVariableSyntax.token);
                 fileExpress = m_FileMetaDefineVariableSyntax.express;
+
+                Node node = new Node(m_Token);
+                FileMetaCallNode fmcn = new FileMetaCallNode(m_FileMetaDefineVariableSyntax.fileMeta, node);
+                MetaCallNode mcn = new MetaCallNode( null, fmcn, ownerMetaBase, m_OwnerMetaBlockStatements, mdt );
+                mcn.SetAllowUseSettings(new AllowUseSettings());
+                mcn.SetToken(m_Token);
+                mcn.GetFirstNode(m_Name, ownerMetaBase, 0);
+                if (mcn.callNodeType != ECallNodeType.None)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, $"名称{m_Name}与{mcn.callNodeType} 有重复");
+                    return;
+                }
             }
             else if (m_FileMetaOpAssignSyntax != null)
             {
@@ -90,6 +102,7 @@ namespace SimpleLanguage.Core
                 m_DefineVarMetaVariable.SetIsConst(m_FileMetaOpAssignSyntax.constToken != null);
                 m_Token = m_FileMetaOpAssignSyntax.variableRef.callNodeList[0].token;
                 AddPingToken(m_Token);
+                m_DefineVarMetaVariable.AddPingToken(m_Token);
                 if ( m_FileMetaOpAssignSyntax.dynamicToken != null )
                 {
                     isDynamicClass = true;
@@ -102,12 +115,21 @@ namespace SimpleLanguage.Core
                 }
                 if (m_FileMetaOpAssignSyntax.variableRef != null)
                 {
-                    foreach (var v in m_FileMetaOpAssignSyntax.variableRef.callNodeList)
+                    if( m_FileMetaOpAssignSyntax.variableRef.callNodeList.Count != 1 )
                     {
-                        m_DefineVarMetaVariable.AddPingToken(v.token);
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "call node list is not count equal 1");
+                        return;
+                    }
+                    MetaCallNode mcn = new MetaCallNode( null, m_FileMetaOpAssignSyntax.variableRef.callNodeList[0],ownerMetaBase, m_OwnerMetaBlockStatements, mdt );
+                    mcn.SetAllowUseSettings(new AllowUseSettings());
+                    mcn.SetToken(m_Token);
+                    mcn.GetFirstNode(m_Name, ownerMetaBase, 0);
+                    if( mcn.callNodeType != ECallNodeType.None )
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, $"名称{m_Name}与{mcn.callNodeType } 有重复");
+                        return;
                     }
                 }
-                m_DefineVarMetaVariable.AddPingToken(m_Token);
 
                 fileExpress = m_FileMetaOpAssignSyntax.express;
             }
