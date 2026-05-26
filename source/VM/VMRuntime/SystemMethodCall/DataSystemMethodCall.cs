@@ -126,7 +126,7 @@ namespace SimpleLanguage.VM
 
                     var field = fieldList[i];
                     var memberValue = default(SValue);
-                    dataObject.GetMemberVariableSValue(i, ref memberValue);
+                    ReadInstanceMemberValueByField(dataObject, field, i, fieldList.Count, ref memberValue);
 
                     sb.Append('"');
                     sb.Append(EscapeJsonString(field?.name ?? string.Empty));
@@ -167,7 +167,7 @@ namespace SimpleLanguage.VM
 
                     var field = fieldList[i];
                     var memberValue = default(SValue);
-                    runtimeType.GetStaticMemberVariableSValue(i, ref memberValue);
+                    ReadStaticMemberValueByField(runtimeType, field, i, fieldList.Count, ref memberValue);
 
                     sb.Append('"');
                     sb.Append(EscapeJsonString(field?.name ?? string.Empty));
@@ -215,6 +215,9 @@ namespace SimpleLanguage.VM
             if (value.isNull)
                 return "null";
 
+            if (TryUnwrapObjectReferenceValue(ref value, out var unwrappedValue))
+                value = unwrappedValue;
+
             if (value.sobject is ClassObject dataObject && dataObject.runtimeClass?.metaClassKind == DataMetaClassKind)
                 return FormatDataObject(dataObject, visitPath);
 
@@ -243,9 +246,210 @@ namespace SimpleLanguage.VM
                 case EVMType.Num:
                     return Convert.ToString(value.GetValueObject(), CultureInfo.InvariantCulture) ?? "null";
                 default:
+                    if (value.eType == EVMType.Object && value.sobject is SObject sobj)
+                    {
+                        if (sobj.value is SObject nestedObj && !ReferenceEquals(nestedObj, sobj))
+                        {
+                            var nestedValue = default(SValue);
+                            nestedValue.SetValueBySObject(nestedObj);
+                            return FormatNestedValue(ref nestedValue, visitPath);
+                        }
+                    }
+
                     var raw = value.GetValueObject();
                     return raw?.ToString() ?? "null";
             }
+        }
+
+        private static bool TryUnwrapObjectReferenceValue(ref SValue value, out SValue unwrapped)
+        {
+            unwrapped = value;
+            if (value.isNull || value.sobject == null)
+                return false;
+
+            var current = value;
+            bool changed = false;
+            for (int i = 0; i < 16; i++)
+            {
+                if (current.eType != EVMType.Object)
+                    break;
+
+                if (current.sobject is not SObject wrapper)
+                    break;
+
+                if (wrapper.value is not SObject inner)
+                    break;
+
+                if (ReferenceEquals(inner, wrapper))
+                    break;
+
+                current.SetValueBySObject(inner);
+                changed = true;
+            }
+
+            if (changed)
+            {
+                unwrapped = current;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static int ResolveFieldSlotIndex(RuntimeVariable? field, int fallbackOrdinal, int maxCount)
+        {
+            int idx = field?.index ?? fallbackOrdinal;
+            if (idx < 0 || idx >= maxCount)
+                return fallbackOrdinal;
+            return idx;
+        }
+
+        private static void ReadInstanceMemberValueByField(
+            ClassObject dataObject,
+            RuntimeVariable? field,
+            int fieldOrdinal,
+            int memberCount,
+            ref SValue memberValue)
+        {
+            int ordinalIndex = ResolveFieldSlotIndex(null, fieldOrdinal, memberCount);
+            int variableIndex = ResolveFieldSlotIndex(field, fieldOrdinal, memberCount);
+
+            SValue byOrdinal = default;
+            bool hasOrdinal = dataObject.TryReadMemberDataAsSValue(ordinalIndex, ref byOrdinal);
+            if (hasOrdinal)
+            {
+                memberValue = byOrdinal;
+                if (IsValueCompatibleWithField(dataObject.runtimeType, field, ref byOrdinal))
+                    return;
+            }
+
+            if (variableIndex != ordinalIndex)
+            {
+                SValue byVariableIndex = default;
+                if (dataObject.TryReadMemberDataAsSValue(variableIndex, ref byVariableIndex))
+                {
+                    memberValue = byVariableIndex;
+                    if (IsValueCompatibleWithField(dataObject.runtimeType, field, ref byVariableIndex))
+                        return;
+                }
+            }
+
+            if (TryReadCompatibleInstanceMemberValue(dataObject, field, memberCount, ordinalIndex, variableIndex, ref memberValue))
+                return;
+
+            dataObject.GetMemberVariableSValue(ordinalIndex, ref memberValue);
+        }
+
+        private static void ReadStaticMemberValueByField(
+            RuntimeType runtimeType,
+            RuntimeVariable? field,
+            int fieldOrdinal,
+            int memberCount,
+            ref SValue memberValue)
+        {
+            int ordinalIndex = ResolveFieldSlotIndex(null, fieldOrdinal, memberCount);
+            int variableIndex = ResolveFieldSlotIndex(field, fieldOrdinal, memberCount);
+
+            SValue byOrdinal = default;
+            runtimeType.GetStaticMemberVariableSValue(ordinalIndex, ref byOrdinal);
+            memberValue = byOrdinal;
+            if (IsValueCompatibleWithField(runtimeType, field, ref byOrdinal))
+                return;
+
+            if (variableIndex != ordinalIndex)
+            {
+                SValue byVariableIndex = default;
+                runtimeType.GetStaticMemberVariableSValue(variableIndex, ref byVariableIndex);
+                memberValue = byVariableIndex;
+                if (IsValueCompatibleWithField(runtimeType, field, ref byVariableIndex))
+                    return;
+            }
+
+            if (TryReadCompatibleStaticMemberValue(runtimeType, field, memberCount, ordinalIndex, variableIndex, ref memberValue))
+                return;
+        }
+
+        private static bool TryReadCompatibleInstanceMemberValue(
+            ClassObject dataObject,
+            RuntimeVariable? field,
+            int memberCount,
+            int excludeIndex1,
+            int excludeIndex2,
+            ref SValue memberValue)
+        {
+            for (int i = 0; i < memberCount; i++)
+            {
+                if (i == excludeIndex1 || i == excludeIndex2)
+                    continue;
+
+                SValue candidate = default;
+                if (!dataObject.TryReadMemberDataAsSValue(i, ref candidate))
+                    continue;
+
+                if (!IsValueCompatibleWithField(dataObject.runtimeType, field, ref candidate))
+                    continue;
+
+                memberValue = candidate;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryReadCompatibleStaticMemberValue(
+            RuntimeType runtimeType,
+            RuntimeVariable? field,
+            int memberCount,
+            int excludeIndex1,
+            int excludeIndex2,
+            ref SValue memberValue)
+        {
+            for (int i = 0; i < memberCount; i++)
+            {
+                if (i == excludeIndex1 || i == excludeIndex2)
+                    continue;
+
+                SValue candidate = default;
+                runtimeType.GetStaticMemberVariableSValue(i, ref candidate);
+                if (!IsValueCompatibleWithField(runtimeType, field, ref candidate))
+                    continue;
+
+                memberValue = candidate;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsValueCompatibleWithField(RuntimeType? ownerRuntimeType, RuntimeVariable? field, ref SValue value)
+        {
+            if (ownerRuntimeType == null || field?.runtimeDefType == null)
+                return true;
+
+            var expectedRuntimeType = RuntimeVM.GetRuntimeTypeByDefType(
+                field.runtimeDefType,
+                ownerRuntimeType.runtimeClass,
+                ownerRuntimeType.runtimeTemplateList,
+                false);
+            if (expectedRuntimeType == null)
+                return true;
+
+            if (expectedRuntimeType.runtimeClass?.metaClassKind == DataMetaClassKind)
+            {
+                return value.sobject is ClassObject;
+            }
+
+            if (expectedRuntimeType.eType == EVMType.Array)
+            {
+                return value.sobject is ArrayObject || value.eType == EVMType.Array;
+            }
+
+            if (expectedRuntimeType.eType == EVMType.String)
+            {
+                return value.eType == EVMType.String;
+            }
+
+            return true;
         }
 
         private static string QuoteJsonString(string text)

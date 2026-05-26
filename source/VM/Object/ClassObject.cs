@@ -112,8 +112,54 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            m_MemberRuntimeObjectArray[index].SetSObjectBySValue(ref svalue);
+            int targetIndex = ResolveCompatibleMemberIndex(index, ref svalue);
+            m_MemberRuntimeObjectArray[targetIndex].SetSObjectBySValue(ref svalue);
 
+        }
+
+        private int ResolveCompatibleMemberIndex(int preferIndex, ref SValue svalue)
+        {
+            if (m_RuntimeType?.runtimeClass?.metaClassKind != 2)
+                return preferIndex;
+
+            if (preferIndex < 0 || preferIndex >= m_MemberRuntimeObjectArray.Length)
+                return preferIndex;
+
+            var preferRuntimeType = m_MemberRuntimeObjectArray[preferIndex]?.runtimeType;
+            if (IsValueCompatibleWithRuntimeType(ref svalue, preferRuntimeType))
+                return preferIndex;
+
+            for (int i = 0; i < m_MemberRuntimeObjectArray.Length; i++)
+            {
+                if (i == preferIndex)
+                    continue;
+
+                var candidateType = m_MemberRuntimeObjectArray[i]?.runtimeType;
+                if (IsValueCompatibleWithRuntimeType(ref svalue, candidateType))
+                    return i;
+            }
+
+            return preferIndex;
+        }
+
+        private static bool IsValueCompatibleWithRuntimeType(ref SValue svalue, RuntimeType? expectedType)
+        {
+            if (expectedType == null)
+                return false;
+
+            if (svalue.isNull)
+                return true;
+
+            if (expectedType.runtimeClass?.metaClassKind == 2)
+                return svalue.sobject is ClassObject;
+
+            if (expectedType.eType == EVMType.Array)
+                return svalue.sobject is ArrayObject || svalue.eType == EVMType.Array;
+
+            if (expectedType.eType == EVMType.String)
+                return svalue.eType == EVMType.String || svalue.sobject is StringObject;
+
+            return true;
         }
         public override string ToFormatString()
         {
