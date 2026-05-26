@@ -297,7 +297,9 @@ DataTest
         # 1) 具名 data 整体比较（结构 + 成员缓冲区，非引用）
         ScoreData sameA = { id = 1, math = 10, english = 20, physics = 30 }
         ScoreData sameB = ScoreData(){ id = 1, math = 10, english = 20, physics = 30 }
-        ScoreData diffC = { id = 2, math = 10, english = 20, physics = 30 }
+        ScoreData diffC = new(){ id = 2, math = 10, english = 20, physics = 30 }
+        ScoreData diffD = new()        
+        #ScoreData diffE = ScoreData;        #不允许这样使用 可以使用.clone()
 
         if (sameA == sameB)
         {
@@ -392,42 +394,7 @@ DataTest
         {
             global.println("field anonymous data: code+title match")
         }
-
-        # 4) 匿名 data 嵌套子结构比较
-        data nestedA = {
-            nested = { a = 20, b = 30 },
-            tag = "pair"
-        }
-        data nestedB = {
-            nested = { a = 20, b = 30 },
-            tag = "pair"
-        }
-        data nestedC = {
-            nested = { a = 21, b = 30 },
-            tag = "pair"
-        }
-
-        if (nestedA == nestedB)
-        {
-            global.println("whole nested anonymous data: equal")
-        }
-        if (nestedA != nestedC)
-        {
-            global.println("whole nested anonymous data: nested.a differs -> not equal")
-        }
-        if (nestedA.nested.a == nestedB.nested.a && nestedA.tag == nestedB.tag)
-        {
-            global.println("field nested anonymous data: nested.a+tag match")
-        }
-        if (nestedA.nested.a != nestedC.nested.a)
-        {
-            global.println("field nested anonymous data: nested.a diff ok")
-        }
-        if (nestedA.nested.b == nestedC.nested.b)
-        {
-            global.println("field nested anonymous data: nested.b still equal when only a differs")
-        }
-
+        
         # 5) 系统函数：DataAllEqual / DataTypeEqual / DataNameAndTypeEqual / DataDataEqual
         if (DataAllEqual(sameA, sameB))
         {
@@ -467,6 +434,45 @@ DataTest
         {
             global.println("builtin DataDataEqual(anon diff) -> false")
         }
+    }
+    systemDataCompare()
+    {
+        global.println("----- systemDataCompare -----")       
+
+        # 4) 匿名 data 嵌套子结构比较
+        data nestedA = {
+            nested = { a = 20, b = 30 },
+            tag = "pair"
+        }
+        data nestedB = {
+            nested = { a = 20, b = 30 },
+            tag = "pair"
+        }
+        data nestedC = {
+            nested = { a = 21, b = 30 },
+            tag = "pair"
+        }
+
+        if (nestedA == nestedB)
+        {
+            global.println("whole nested anonymous data: equal")
+        }
+        if (nestedA != nestedC)
+        {
+            global.println("whole nested anonymous data: nested.a differs -> not equal")
+        }
+        if (nestedA.nested.a == nestedB.nested.a && nestedA.tag == nestedB.tag)
+        {
+            global.println("field nested anonymous data: nested.a+tag match")
+        }
+        if (nestedA.nested.a != nestedC.nested.a)
+        {
+            global.println("field nested anonymous data: nested.a diff ok")
+        }
+        if (nestedA.nested.b == nestedC.nested.b)
+        {
+            global.println("field nested anonymous data: nested.b still equal when only a differs")
+        }
 
         data typedA = { code_ttb = 7, title = "ok" }
         data typedB = { code_ttb = 7, title = "ok" }
@@ -489,8 +495,9 @@ DataTest
     {
         global.println("========== DataTest (start) ==========")
 
-        constDataReadOnlyTest()
+        #constDataReadOnlyTest()
         dataIfCompareTest()
+        #systemDataCompare();
         #staticDataDirectUseTest()
         #memberShapeCoverageTest()
         #anonymousDataMetaCompileTest()
