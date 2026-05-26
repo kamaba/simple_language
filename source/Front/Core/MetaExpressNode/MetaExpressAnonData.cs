@@ -34,7 +34,7 @@ namespace SimpleLanguage.Core
 
             for (int i = 0; i < m_FileMetaBraceTerm.fileMetaAssignSyntaxList.Count; i++)
             {
-                MetaMemberData mmd = new MetaMemberData(m_MetaData, m_FileMetaBraceTerm.fileMetaAssignSyntaxList[i], m_MetaData, mbs);
+                MetaMemberData mmd = new MetaMemberData(m_MetaData, m_FileMetaBraceTerm.fileMetaAssignSyntaxList[i], m_MetaData, mbs, i);
                 mmd.CreateMetaExpress();
                 m_MetaData.AddMetaMemberData(mmd);
             }
@@ -49,7 +49,7 @@ namespace SimpleLanguage.Core
             m_ReturnMetaVariable = mv;
             m_Token = fmmd.nameToken ?? fmmd.token;
 
-            m_MetaData = new MetaData("AnonData_" + m_Token?.lexeme + "_" + GetHashCode(), false, false, true);
+            m_MetaData = new MetaData("AnonData_" + m_Token?.ToLexemeAllString() + "_" + m_ReturnMetaVariable?.name, false, false, true);
             m_MetaData.AddPingToken(m_Token);
 
             for (int i = 0; i < fmmd.fileMetaMemberData.Count; i++)

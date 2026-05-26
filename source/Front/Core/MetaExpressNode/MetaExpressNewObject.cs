@@ -1284,6 +1284,7 @@ namespace SimpleLanguage.Core
 
             var anonymousType = new MetaType(findmd);
             var node = new MetaNewObjectExpressNode(anonymousType, mb, mbs, storeMv);
+            node.SetNeedInitMemberVariable(false);
             var ordered = metaData.GetMetaMemberDataList();
             ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
 
@@ -1291,12 +1292,9 @@ namespace SimpleLanguage.Core
             foreach (var sourceField in ordered)
             {
                 var expr = sourceField.expressNode;
-                if (expr == null)
-                {
-                    continue;
-                }
-
-                var mas = new MetaBraceAssignStatements(sourceField, mbs, mb, expr);
+                expr.SetOwnerBase(findmd);
+                var mas = new MetaBraceAssignStatements(sourceField, mbs, findmd, expr);
+                //mas.Parse(new AllowUseSettings());
                 node.m_AssignStatementsList.Add(mas);
             }
 
@@ -1539,6 +1537,10 @@ namespace SimpleLanguage.Core
             {
                 md.AddBindOwnerExpressNodeList(this);
             }
+        }
+        public void SetNeedInitMemberVariable(  bool flag )
+        {
+            m_NeedInitMemberVariable = flag;
         }
         public void SetNewMetaType( MetaType mt )
         {

@@ -175,6 +175,7 @@ namespace SimpleLanguage.Export.SLIR
                     name = typeName,
                     sourcePath = c.sourcePath ?? string.Empty,
                     metaClassKind = (int)c.metaClassKind,
+                    isDynamic = c.OwnerMetaData?.isDynamic ?? false,
                 };
                 var implIds = c.GetImplementsInterfaceClassIds();
                 if (implIds != null && implIds.Count > 0)

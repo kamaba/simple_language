@@ -243,7 +243,7 @@ namespace SimpleLanguage.IR
                     break;
                 default:
                     {
-                        Debug.Assert( false, "Error IR琛ㄨ揪寮忛敊璇?!");
+                        Log.AddIRLog(LID.MetaCoreAssertShowMessage, node.token, "notfound express");
                     }
                     break;
             }
@@ -278,16 +278,6 @@ namespace SimpleLanguage.IR
 
     public class IRNewExpress : IRExpressBase
     {
-        private static bool CanEmitExpress(MetaExpressNodeBase node)
-        {
-            return node is MetaConstExpressNode
-                || node is MetaUnaryOpExpressNode
-                || node is MetaOpExpressNode
-                || node is MetaCallLinkExpressNode
-                || node is MetaNewObjectExpressNode
-                || node is MetaThreeItemExpressNode
-                || node is MetaAsIsExpressNode;
-        }
         public IRNewExpress(IRMethod irMethod, MetaConstExpressNode mnoen ) : base(irMethod)
         {
             IRData irdata = new IRData();
@@ -315,6 +305,12 @@ namespace SimpleLanguage.IR
         public IRNewExpress(IRMethod irMethod, MetaNewObjectExpressNode mnoen ) : base(irMethod)
         {
             IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaOwner(mnoen.ownerMetaBase);
+            if( owirmc == null )
+            {
+                Log.AddIRLog(LID.MetaCoreAssertShowMessage, mnoen.token, "notfound owner mc !");
+                return;
+            }
+
             IRMetaType newObjectIRMT = null;
             IRMetaClass irmc = null;
 
@@ -463,20 +459,18 @@ namespace SimpleLanguage.IR
                             if (mnoen.assignStatementsList?.Count > 0)
                             {
                                 MetaExpressNodeBase men = lirmv.express;
+                                MetaBraceAssignStatements findMBAS = null;
                                 for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
                                 {
                                     var asl = mnoen.assignStatementsList[y];  
                                     if (asl.id == lirmv.id)
                                     {
+                                        findMBAS = asl;
                                         men = asl.expressNode;
                                         break;
                                     }
                                 }
-
-                                if (!CanEmitExpress(men))
-                                {
-                                    continue;
-                                }
+                                mnoen.assignStatementsList.Remove(findMBAS);
                                 IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, men );
                                 AddIRRangeData(irexp.IRDataList);
 
@@ -489,37 +483,23 @@ namespace SimpleLanguage.IR
                         }
                     }
                 }
-                // Fallback: some data/class shapes may not populate localIRMetaVariableList,
-                // which causes initializer assignments in `Type(){ a = ... }` to be lost.
-                // In that case, emit explicit object-initializer field stores directly.
-                if (mnoen.assignStatementsList?.Count > 0
-                    && (irmc == null || irmc.localIRMetaVariableList.Count == 0))
+                for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
                 {
-                    for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
+                    var asl = mnoen.assignStatementsList[y];
+
+                    IRDup irdup = new IRDup(irMethod);
+                    AddIRRangeData(irdup.IRDataList);
+
+                    IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
+                    AddIRRangeData(irexp.IRDataList);
+
+                    var storeField = new IRStoreVariable(newObjectIRMT, irMethod, asl.id, IRMetaVariableFrom.Member);
+                    if (storeField != null)
                     {
-                        var asl = mnoen.assignStatementsList[y];
-                        if ( asl.expressNode == null || asl.id == 0 )
-                        {
-                            continue;
-                        }
-
-                        IRDup irdup = new IRDup(irMethod);
-                        AddIRRangeData(irdup.IRDataList);
-
-                        if (!CanEmitExpress(asl.expressNode))
-                        {
-                            continue;
-                        }
-                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
-                        AddIRRangeData(irexp.IRDataList);
-
-                        var storeField = new IRStoreVariable(newObjectIRMT, irMethod, asl.id, IRMetaVariableFrom.Member);
-                        if (storeField != null)
-                        {
-                            AddIRRangeData(storeField.IRDataList);
-                        }
+                        AddIRRangeData(storeField.IRDataList);
                     }
                 }
+                
                 if (mnoen.metaMemberFunction != null)
                 {
                     IRDup irdup = new IRDup(irMethod);

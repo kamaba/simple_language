@@ -596,6 +596,12 @@ namespace SimpleLanguage.Compile
             }
 
             FileMetaBaseTerm fme = null;
+            if (assignNode != null && afterNodeList.Count == 0)
+            {
+                Log.AddNodeLog(LID.MetaCoreAssertShowMessage, assignNode.token,
+                    "Error '=' 后缺少赋值表达式；不支持 '=\\n{}' 或 '= 后注释再换行 { }' 这类写法。请将右值与 '=' 放在同一行。");
+                return null;
+            }
             if (assignNode != null && afterNodeList.Count > 0 )
             {
                 bool hasSameLineExpression = false;

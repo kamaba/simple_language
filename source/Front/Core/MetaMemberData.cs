@@ -40,7 +40,7 @@ namespace SimpleLanguage.Core
         {
             m_VariableFrom = EVariableFrom.DataMember;
         }
-        public MetaMemberData(MetaData dmt, FileMetaSyntax fms, MetaBase ownerbase, MetaBlockStatements mbs )
+        public MetaMemberData(MetaData dmt, FileMetaSyntax fms, MetaBase ownerbase, MetaBlockStatements mbs, int index  )
         {
             m_DefineMetaType = new MetaType(dmt);
             SetOwnerMetaBase(ownerbase);
@@ -50,6 +50,7 @@ namespace SimpleLanguage.Core
             m_Token = fms.token;
             m_Name = fms.name;
             m_FileMetaAssignSyntax = fms;
+            m_Index = index;
         }
         public MetaMemberData(MetaData mc, FileMetaMemberData fmmd, MetaBase owmb, int index, bool isStatic )
         {

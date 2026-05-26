@@ -362,6 +362,7 @@ DataTest
         data anonSame2 = {
             code = 7,
             title = "ok"
+            # aaaa
         }
         data anonDiff = {
             code = 8,
@@ -435,7 +436,7 @@ DataTest
             global.println("builtin DataDataEqual(anon diff) -> false")
         }
     }
-    systemDataCompare()
+    static systemDataCompare()
     {
         global.println("----- systemDataCompare -----")       
 
@@ -452,6 +453,10 @@ DataTest
             nested = { a = 21, b = 30 },
             tag = "pair"
         }
+
+        global.println( "NA=" + nestedA.toString() );
+        global.println( "NB=" + nestedB.toString() );
+        global.println( "NC=" + nestedC.toString() );
 
         if (nestedA == nestedB)
         {
@@ -496,8 +501,8 @@ DataTest
         global.println("========== DataTest (start) ==========")
 
         #constDataReadOnlyTest()
-        dataIfCompareTest()
-        #systemDataCompare();
+        #dataIfCompareTest()
+        systemDataCompare();
         #staticDataDirectUseTest()
         #memberShapeCoverageTest()
         #anonymousDataMetaCompileTest()

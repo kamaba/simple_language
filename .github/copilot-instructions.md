@@ -20,6 +20,7 @@
 - Implement const constraints in the simple_language Front layer: const is effective only at compile time; adding const before ordinary statements makes them non-assignable thereafter; const can be used for variables, member variables, and members under class/data/enum; when const is added to data, all sub-nodes become const by default; enums are const by default, and modification is only allowed with `mut`.
 - For anonymous data members, first build the anonymous MetaData type, then represent the value as a MetaNewObjectExpressNode that performs a new of that anonymous data type and applies child assignments via MetaBraceAssignStatements; preserve useful prior code only if it still contributes to this flow.
 - When decoupling MetaData from MetaClass, rewrite logic without MetaClassAdapter: first detect Data type and compare via MetaData semantics; extend MetaType to carry MetaEnum/MetaData structures.
+- Users require syntax constraints to be reported as early as possible at the Node or File layer, rather than delaying to the Meta layer.
 
 ## Return Type Resolution
 - In `MetaExpressNewObject.cs`, centralize all return-type resolution logic in `CalcReturnType`, including define/new type comparison, array literal inferred type precedence, and array length validation rules.

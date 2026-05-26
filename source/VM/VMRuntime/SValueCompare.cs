@@ -250,6 +250,202 @@ namespace SimpleLanguage.VM
             return IsNumericType(v.eType) || v.eType == EVMType.Num;
         }
 
+        private static bool IsDataRuntimeType(RuntimeType rt)
+        {
+            return rt?.runtimeClass != null && rt.runtimeClass.metaClassKind == 2;
+        }
+
+        private static bool IsAnonymousDynamicDataRuntimeType(RuntimeType rt)
+        {
+            return IsDataRuntimeType(rt) && rt.runtimeClass.isDynamicData;
+        }
+
+        private static bool TryGetDataClassObject(ref SValue sval, out ClassObject dataObject)
+        {
+            dataObject = null;
+            if (sval.isNull)
+                return false;
+
+            var co = sval.sobject as ClassObject;
+            if (co == null)
+                return false;
+
+            if (!IsDataRuntimeType(co.runtimeType))
+                return false;
+
+            dataObject = co;
+            return true;
+        }
+
+        private static bool IsSameDataRuntimeType(RuntimeType left, RuntimeType right)
+        {
+            if (left == null || right == null)
+                return false;
+
+            if (left.runtimeClass == null || right.runtimeClass == null)
+                return false;
+
+            if (left.runtimeClass.id != right.runtimeClass.id)
+                return false;
+
+            var leftTemplates = left.runtimeTemplateList;
+            var rightTemplates = right.runtimeTemplateList;
+            if (leftTemplates == null || rightTemplates == null)
+                return leftTemplates == rightTemplates;
+
+            if (leftTemplates.Count != rightTemplates.Count)
+                return false;
+
+            for (int i = 0; i < leftTemplates.Count; i++)
+            {
+                if (!IsSameDataRuntimeType(leftTemplates[i], rightTemplates[i]))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsSameDataMemberBuffer(byte[] leftBuffer, byte[] rightBuffer)
+        {
+            if (ReferenceEquals(leftBuffer, rightBuffer))
+                return true;
+            if (leftBuffer == null || rightBuffer == null)
+                return false;
+            if (leftBuffer.Length != rightBuffer.Length)
+                return false;
+
+            for (int i = 0; i < leftBuffer.Length; i++)
+            {
+                if (leftBuffer[i] != rightBuffer[i])
+                    return false;
+            }
+            return true;
+        }
+
+        private static bool IsDataValueEqual(ClassObject leftData, ClassObject rightData)
+        {
+            if (leftData == null || rightData == null)
+                return false;
+
+            if (!IsSameDataRuntimeType(leftData.runtimeType, rightData.runtimeType))
+                return false;
+
+            if (IsSameDataMemberBuffer(leftData.memberData, rightData.memberData))
+                return true;
+
+            return IsDataMemberValuesEqual(leftData, rightData);
+        }
+
+        private static bool IsSValueEqual(ref SValue left, ref SValue right)
+        {
+            var l = left;
+            var r = right;
+            CompareEuqalSValue1AndValue2(ref l, ref r, true, out _);
+            return !l.isNull && l.eType == EVMType.Boolean && l.uint8Value == 1;
+        }
+
+        private static bool IsDataMemberValuesEqual(ClassObject leftData, ClassObject rightData)
+        {
+            if (leftData == null || rightData == null)
+                return false;
+
+            var leftClass = leftData.runtimeType?.runtimeClass;
+            var rightClass = rightData.runtimeType?.runtimeClass;
+            var leftMembers = leftClass?.nonStaticIRMetaVariableList;
+            var rightMembers = rightClass?.nonStaticIRMetaVariableList;
+            if (leftMembers == null || rightMembers == null)
+                return false;
+            if (leftMembers.Count != rightMembers.Count)
+                return false;
+
+            for (int i = 0; i < leftMembers.Count; i++)
+            {
+                SValue lv = default;
+                SValue rv = default;
+                if (!leftData.TryReadMemberDataAsSValue(i, ref lv))
+                    return false;
+                if (!rightData.TryReadMemberDataAsSValue(i, ref rv))
+                    return false;
+
+                bool leftIsData = TryGetDataClassObject(ref lv, out var leftChildData);
+                bool rightIsData = TryGetDataClassObject(ref rv, out var rightChildData);
+                if (leftIsData || rightIsData)
+                {
+                    if (!(leftIsData && rightIsData))
+                        return false;
+
+                    if (ReferenceEquals(leftChildData, rightChildData))
+                        continue;
+
+                    bool leftAnon = IsAnonymousDynamicDataRuntimeType(leftChildData.runtimeType);
+                    bool rightAnon = IsAnonymousDynamicDataRuntimeType(rightChildData.runtimeType);
+                    if (leftAnon != rightAnon)
+                        return false;
+
+                    if (leftAnon)
+                    {
+                        if (!IsAnonymousDataShapeEqual(leftChildData, rightChildData))
+                            return false;
+                        if (!IsDataMemberValuesEqual(leftChildData, rightChildData))
+                            return false;
+                        continue;
+                    }
+
+                    if (!IsDataValueEqual(leftChildData, rightChildData))
+                        return false;
+                    continue;
+                }
+
+                if (!IsSValueEqual(ref lv, ref rv))
+                    return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsAnonymousDataShapeEqual(ClassObject leftData, ClassObject rightData)
+        {
+            if (leftData == null || rightData == null)
+                return false;
+
+            var leftType = leftData.runtimeType;
+            var rightType = rightData.runtimeType;
+            if (!IsAnonymousDynamicDataRuntimeType(leftType) || !IsAnonymousDynamicDataRuntimeType(rightType))
+                return false;
+
+            var leftClass = leftType.runtimeClass;
+            var rightClass = rightType.runtimeClass;
+            var leftMembers = leftClass?.nonStaticIRMetaVariableList;
+            var rightMembers = rightClass?.nonStaticIRMetaVariableList;
+            if (leftMembers == null || rightMembers == null)
+                return false;
+
+            if (leftMembers.Count != rightMembers.Count)
+                return false;
+
+            for (int i = 0; i < leftMembers.Count; i++)
+            {
+                var lm = leftMembers[i];
+                var rm = rightMembers[i];
+                if (lm == null || rm == null)
+                    return false;
+
+                if (!string.Equals(lm.name, rm.name, StringComparison.Ordinal))
+                    return false;
+
+                var ldt = lm.runtimeDefType;
+                var rdt = rm.runtimeDefType;
+                var lrc = ldt?.runtimeClass;
+                var rrc = rdt?.runtimeClass;
+                if (lrc == null || rrc == null)
+                    return false;
+                if (lrc.id != rrc.id)
+                    return false;
+            }
+
+            return true;
+        }
+
         // compareSign 0:== 1:!= 
         public static void CompareEuqalSValue1AndValue2( ref SValue sval1, ref SValue sval2, bool isEqual, out bool methodCall )
         {
@@ -280,6 +476,44 @@ namespace SimpleLanguage.VM
                 {
                     sval1.SetBoolValue(sval1.isNull ? false : true);
                 }
+                return;
+            }
+
+            bool leftIsData = TryGetDataClassObject(ref sval1, out var leftData);
+            bool rightIsData = TryGetDataClassObject(ref sval2, out var rightData);
+            if (leftIsData || rightIsData)
+            {
+                bool equals = false;
+                if (leftIsData && rightIsData)
+                {
+                    if (ReferenceEquals(leftData, rightData))
+                    {
+                        equals = true;
+                    }
+                    else
+                    {
+                        bool leftAnon = IsAnonymousDynamicDataRuntimeType(leftData.runtimeType);
+                        bool rightAnon = IsAnonymousDynamicDataRuntimeType(rightData.runtimeType);
+
+                        if (leftAnon && rightAnon)
+                        {
+                            // 匿名 data：先比结构（成员数量+成员名+成员类型），结构一致后再比 memberData 值。
+                            equals = IsAnonymousDataShapeEqual(leftData, rightData)
+                                && IsDataMemberValuesEqual(leftData, rightData);
+                        }
+                        else if (!leftAnon && !rightAnon)
+                        {
+                            // 命名 data：按原规则（类型一致后比 memberData）。
+                            equals = IsDataValueEqual(leftData, rightData);
+                        }
+                        else
+                        {
+                            // 一个匿名，一个命名：不相同。
+                            equals = false;
+                        }
+                    }
+                }
+                sval1.SetBoolValue(isEqual ? equals : !equals);
                 return;
             }
 
@@ -347,18 +581,12 @@ namespace SimpleLanguage.VM
                     {
                         if (sval2.eType == EVMType.Array )
                         {
-                            if( sval1.sobject == sval2.sobject )
-                            {
-                                sval1.SetBoolValue(true);
-                            }
-                            else
-                            {
-                                sval1.SetBoolValue(false);
-                            }
+                            bool eq = sval1.sobject == sval2.sobject;
+                            sval1.SetBoolValue(isEqual ? eq : !eq);
                         }
                         else
                         {
-                            sval1.SetBoolValue(false);
+                            sval1.SetBoolValue(!isEqual);
                         }
                     }
                     break;
@@ -366,7 +594,8 @@ namespace SimpleLanguage.VM
                     {
                         if( sval2.eType == EVMType.Object )
                         {
-                            sval1.SetBoolValue( sval1.sobject == sval2.sobject );
+                            bool eq = sval1.sobject == sval2.sobject;
+                            sval1.SetBoolValue(isEqual ? eq : !eq);
                             return;
                         }
                     }
@@ -408,14 +637,8 @@ namespace SimpleLanguage.VM
                         {
                             if (sval2.eType == EVMType.Class)
                             {
-                                if (sval1.sobject == sval2.sobject)
-                                {
-                                    sval1.SetBoolValue(true);
-                                }
-                                else
-                                {
-                                    sval1.SetBoolValue(false);
-                                }
+                                bool eq = sval1.sobject == sval2.sobject;
+                                sval1.SetBoolValue(isEqual ? eq : !eq);
                             }
                             else
                             {
@@ -537,14 +760,8 @@ namespace SimpleLanguage.VM
                         {
                             if (sval1.eType == EVMType.Class)
                             {
-                                if (sval1.sobject == sval2.sobject)
-                                {
-                                    sval1.SetBoolValue(true);
-                                }
-                                else
-                                {
-                                    sval1.SetBoolValue(false);
-                                }
+                                bool eq = sval1.sobject == sval2.sobject;
+                                sval1.SetBoolValue(isEqual ? eq : !eq);
                             }
                             else
                             {
@@ -558,7 +775,7 @@ namespace SimpleLanguage.VM
             }
 
             // fallback: already handled objects/classes earlier; default false
-            sval1.SetBoolValue(false);
+            sval1.SetBoolValue(!isEqual);
             Log.AddRuntimeLog(LID.ShowMessageError, "VM Compare SVAlue 比较的低码还没有完善!!");
         }
 

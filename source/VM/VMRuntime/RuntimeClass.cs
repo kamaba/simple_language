@@ -8,6 +8,8 @@ namespace SimpleLanguage.VM
         public string name { get; set; } = "";
         /// <summary>0=Class, 1=Enum, 2=Data 3=Interface from exported SLIR class metadata.</summary>
         public int metaClassKind { get; set; }
+        /// <summary>True when this runtime class comes from anonymous/dynamic data export.</summary>
+        public bool isDynamicData { get; set; }
         /// <summary>IR generated template meta type count exported from Front <c>IRMetaClass.templateCount</c>.</summary>
         public int templateCount { get; set; }
         /// <summary>Declared template parameter count in source (e.g. <c>Foo&lt;T,U&gt;</c> => 2).</summary>

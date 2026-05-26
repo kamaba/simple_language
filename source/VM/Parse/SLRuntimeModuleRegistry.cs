@@ -29,6 +29,7 @@ namespace SimpleLanguage.Parse
             rc.id = pkg.id;
             rc.name = fullName;
             rc.metaClassKind = pkg.metaClassKind;
+            rc.isDynamicData = pkg.isDynamic;
             rc.fieldsFromPackageApplied = false;
 
             if (pkg.implementsInterfaceIdList != null)
@@ -290,6 +291,7 @@ namespace SimpleLanguage.Parse
                 id = pkg.id,
                 name = fullName,
                 metaClassKind = pkg.metaClassKind,
+                isDynamicData = pkg.isDynamic,
                 fieldsFromPackageApplied = false,
             };
             if (pkg.implementsInterfaceIdList != null)
