@@ -1442,10 +1442,13 @@ namespace SimpleLanguage.VM.Runtime
                             ObjectManager.RegisterObject(sobj);
                             m_ValueStack[m_ValueIndex++].SetRawSObject(sobj);
 
-                            var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
-                            if (irList.Count > 0)
+                            if( rt.runtimeClass.metaClassKind == 0 )
                             {
-                                CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt.runtimeTemplateList, irList);
+                                var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
+                                if (irList.Count > 0)
+                                {
+                                    CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt.runtimeTemplateList, irList);
+                                }
                             }
                             //var sv = default(SValue);
                             //sv.SetSObject(sobj);
