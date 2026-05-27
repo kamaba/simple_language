@@ -302,40 +302,40 @@ DataTest
 
         if (sameA == sameB)
         {
-            global.println("whole ScoreData: same values -> equal")
+            global.println("if (sameA == sameB) -> equal")
         }
         else
         {
-            global.println("whole ScoreData: same values -> unexpected not equal")
+            global.println("if (sameA == sameB) unexpected not equal")
         }
 
         if (sameA != diffC)
         {
-            global.println("whole ScoreData: id differs -> not equal")
+            global.println(" if (sameA != diffC) ScoreData: id differs -> not equal")
         }
         else
         {
-            global.println("whole ScoreData: id differs -> unexpected equal")
+            global.println(" if (sameA != diffC) ScoreData: id differs -> unexpected equal")
         }
 
         # 2) 具名 data 成员（元素）比较
         if (sameA.id == sameB.id && sameA.math == sameB.math)
         {
-            global.println("field ScoreData: id+math match")
+            global.println("if (sameA.id == sameB.id && sameA.math == sameB.math) ScoreData: id+math match")
         }
         else
         {
-            global.println("field ScoreData: id+math mismatch")
+            global.println("if (sameA.id == sameB.id && sameA.math == sameB.math) ScoreData: id+math mismatch")
         }
 
         if (sameA.physics == 30)
         {
-            global.println("field ScoreData: physics literal ok")
+            global.println("if (sameA.physics == 30) ScoreData: physics literal ok")
         }
 
         if (sameA.id != diffC.id)
         {
-            global.println("field ScoreData: id diff detected")
+            global.println(" if (sameA.id != diffC.id) ScoreData: id diff detected")
         }
 
         MetaInfo metaA = MetaInfo(){ level = 2, passed = true }
@@ -344,15 +344,15 @@ DataTest
 
         if (metaA == metaB)
         {
-            global.println("whole MetaInfo: equal")
+            global.println(" if (metaA == metaB) MetaInfo: equal")
         }
         if (metaA != metaC)
         {
-            global.println("whole MetaInfo: level/passed diff -> not equal")
+            global.println("if (metaA != metaC) MetaInfo: level/passed diff -> not equal")
         }
         if (metaA.level == metaB.level && metaA.passed == metaB.passed)
         {
-            global.println("field MetaInfo: level+passed match")
+            global.println(" if (metaA.level == metaB.level && metaA.passed == metaB.passed) MetaInfo: level+passed match")
         }
 
         # 3) 匿名 data 整体与字段比较
@@ -378,21 +378,21 @@ DataTest
 
         if (anonSame1 == anonSame2)
         {
-            global.println("whole anonymous data: same shape+values -> equal")
+            global.println(" if (anonSame1 == anonSame2) whole anonymous data: same shape+values -> equal")
         }
         else
         {
-            global.println("whole anonymous data: same shape+values -> unexpected not equal")
+            global.println(" if (anonSame1 == anonSame2) whole anonymous data: same shape+values -> unexpected not equal")
         }
 
         if (anonSame1 != anonDiff)
         {
-            global.println("whole anonymous data: code differs -> not equal")
+            global.println("if (anonSame1 != anonDiff) whole anonymous data: code differs -> not equal")
         }
 
         if (anonSame1.code == anonSame2.code && anonSame1.title == anonSame2.title)
         {
-            global.println("field anonymous data: code+title match")
+            global.println(" if (anonSame1.code == anonSame2.code && anonSame1.title == anonSame2.title) field anonymous data: code+title match")
         }
         
         # 5) 系统函数：DataAllEqual / DataTypeEqual / DataNameAndTypeEqual / DataDataEqual
@@ -589,8 +589,8 @@ DataTest
         global.println("StudentRecord.sid = " + StudentRecord.sid.toString())
 
         # 错误示例：静态 data 只能访问成员，不能当成普通变量值来赋值
-        # StudentRecord a = StudentRecord
-        # a = StudentRecord
+        StudentRecord a = StudentRecord
+        a = StudentRecord
     }
 
 
@@ -598,13 +598,13 @@ DataTest
     {
         global.println("========== DataTest (start) ==========")
 
-        constDataReadOnlyTest()
+        #constDataReadOnlyTest()
         #dataIfCompareTest()
         #systemDataCompare();
         #dataAsCastTest()
         #dataArgumentUsageTest()
         #dataVariableReadWriteTest()
-        #staticDataMisuseErrorDemo()
+        staticDataMisuseErrorDemo()
         #staticDataDirectUseTest()
         #memberShapeCoverageTest()
         #anonymousDataMetaCompileTest()

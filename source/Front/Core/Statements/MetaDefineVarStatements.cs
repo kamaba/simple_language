@@ -239,69 +239,7 @@ namespace SimpleLanguage.Core
                             }
                         }
                     }
-                    //else if( mdt.isData )
-                    //{
-
-                    //}
-                    else if( mdt.IsArray() )
-                    {
-                        if (!TypeManager.CompareMetaType(mdt, expressRetMetaDefineType))
-                        {
-                            Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token,"DefineStatement", mdt.ToString(), expressRetMetaDefineType.ToString() );
-                            return;
-                        }
-                        m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
-                    }
-                    else if (mdt.IsIterator())
-                    {
-                        var iteratorRelation = TypeManager.ResolveAssignRelation(
-                            mdt,
-                            m_ExpressNode,
-                            true,
-                            false,
-                            out _,
-                            out _,
-                            out _,
-                            out _,
-                            m_DefineVarMetaVariable);
-                        if (iteratorRelation == ETypeRelation.No || iteratorRelation == ETypeRelation.TargetTypeError || iteratorRelation == ETypeRelation.ExpressTypeError)
-                        {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                                "Iterator 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
-                            return;
-                        }
-                        m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
-                    }
-                    else if (mdt.IsIterable())
-                    {
-                        var iterableRelation = TypeManager.ResolveAssignRelation(
-                            mdt,
-                            m_ExpressNode,
-                            true,
-                            false,
-                            out _,
-                            out _,
-                            out _,
-                            out _,
-                            m_DefineVarMetaVariable);
-                        if (iterableRelation == ETypeRelation.No || iterableRelation == ETypeRelation.TargetTypeError || iterableRelation == ETypeRelation.ExpressTypeError)
-                        {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                                "IIterable 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
-                            return;
-                        }
-                        m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
-                    }
-                    else if( mdt.IsNum() )
-                    {
-                        if (constExpressNode != null)
-                        {
-                            var defineEType = CoreMetaClassManager.GetETypeByMetaClass(mdt.metaClass);
-                            TypeManager.TryAdjustConstExpressByDefineEType(constExpressNode, defineEType);
-                        }
-                        m_DefineVarMetaVariable.SetRealMetaType(new MetaType(mdt));
-                    }
-                    else if( mdt.isData )
+                    else if (mdt.isData)
                     {
                         relation = TypeManager.ResolveAssignRelation(
                             mdt,
@@ -325,69 +263,130 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        MetaClass compareClass = null;
-                        if (constExpressNode != null && constExpressNode.eType == EType.Null)
+                        if (mdt.IsArray())
                         {
-                            relation = ETypeRelation.Same;
+                            if (!TypeManager.CompareMetaType(mdt, expressRetMetaDefineType))
+                            {
+                                Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "DefineStatement", mdt.ToString(), expressRetMetaDefineType.ToString());
+                                return;
+                            }
+                            m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                         }
-                        else
+                        else if (mdt.IsIterator())
                         {
-                            relation = TypeManager.ResolveAssignRelation(
+                            var iteratorRelation = TypeManager.ResolveAssignRelation(
                                 mdt,
                                 m_ExpressNode,
                                 true,
                                 false,
                                 out _,
                                 out _,
-                                out compareClass,
+                                out _,
                                 out _,
                                 m_DefineVarMetaVariable);
-                        }
-
-                        StringBuilder sb = new StringBuilder();
-                        sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allName + " 函数: " + metaFunction?.name + "中  ");
-                        if (curClass != null)
-                        {
-                            sb.Append(" 定义类 : " + curClass.allName);
-                        }
-                        if (defineName != null)
-                        {
-                            sb.Append(" 名称为: " + defineName?.ToString());
-                        }
-                        sb.Append("与后边赋值语句中 ");
-                        if (compareClass != null)
-                            sb.Append("表达式类为: " + compareClass.allName);
-                        if (relation == ETypeRelation.No)
-                        {
-                            sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
-                            m_IsNeedCastState = true;
-                        }
-                        else if (relation == ETypeRelation.Same)
-                        {
-                            m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
-                        }
-                        else if (relation == ETypeRelation.Parent)
-                        {
-                            sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
-                            m_IsNeedCastState = true;
-                        }
-                        else if (relation == ETypeRelation.Child)
-                        {
-                            if (compareClass != null)
+                            if (iteratorRelation == ETypeRelation.No || iteratorRelation == ETypeRelation.TargetTypeError || iteratorRelation == ETypeRelation.ExpressTypeError)
                             {
-                                m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                                    "Iterator 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
+                                return;
                             }
-                        }
-                        else if (relation == ETypeRelation.Interface || relation == ETypeRelation.Num)
-                        {
                             m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                        }
+                        else if (mdt.IsIterable())
+                        {
+                            var iterableRelation = TypeManager.ResolveAssignRelation(
+                                mdt,
+                                m_ExpressNode,
+                                true,
+                                false,
+                                out _,
+                                out _,
+                                out _,
+                                out _,
+                                m_DefineVarMetaVariable);
+                            if (iterableRelation == ETypeRelation.No || iterableRelation == ETypeRelation.TargetTypeError || iterableRelation == ETypeRelation.ExpressTypeError)
+                            {
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                                    "IIterable 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
+                                return;
+                            }
+                            m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                        }
+                        else if (mdt.IsNum())
+                        {
+                            if (constExpressNode != null)
+                            {
+                                var defineEType = CoreMetaClassManager.GetETypeByMetaClass(mdt.metaClass);
+                                TypeManager.TryAdjustConstExpressByDefineEType(constExpressNode, defineEType);
+                            }
+                            m_DefineVarMetaVariable.SetRealMetaType(new MetaType(mdt));
                         }
                         else
                         {
-                            sb.Append("表达式错误，或者是定义类型错误");
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
+                            MetaClass compareClass = null;
+                            if (constExpressNode != null && constExpressNode.eType == EType.Null)
+                            {
+                                relation = ETypeRelation.Same;
+                            }
+                            else
+                            {
+                                relation = TypeManager.ResolveAssignRelation(
+                                    mdt,
+                                    m_ExpressNode,
+                                    true,
+                                    false,
+                                    out _,
+                                    out _,
+                                    out compareClass,
+                                    out _,
+                                    m_DefineVarMetaVariable);
+                            }
+
+                            StringBuilder sb = new StringBuilder();
+                            sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allName + " 函数: " + metaFunction?.name + "中  ");
+                            if (curClass != null)
+                            {
+                                sb.Append(" 定义类 : " + curClass.allName);
+                            }
+                            if (defineName != null)
+                            {
+                                sb.Append(" 名称为: " + defineName?.ToString());
+                            }
+                            sb.Append("与后边赋值语句中 ");
+                            if (compareClass != null)
+                                sb.Append("表达式类为: " + compareClass.allName);
+                            if (relation == ETypeRelation.No)
+                            {
+                                sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
+                                m_IsNeedCastState = true;
+                            }
+                            else if (relation == ETypeRelation.Same)
+                            {
+                                m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                            }
+                            else if (relation == ETypeRelation.Parent)
+                            {
+                                sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
+                                m_IsNeedCastState = true;
+                            }
+                            else if (relation == ETypeRelation.Child)
+                            {
+                                if (compareClass != null)
+                                {
+                                    m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                                }
+                            }
+                            else if (relation == ETypeRelation.Interface || relation == ETypeRelation.Num)
+                            {
+                                m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
+                            }
+                            else
+                            {
+                                sb.Append("表达式错误，或者是定义类型错误");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
+                            }
                         }
                     }
                 }
