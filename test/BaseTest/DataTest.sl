@@ -481,7 +481,6 @@ DataTest
 
         data typedA = { code_ttb = 7, title = "ok" }
         data typedB = { code_ttb = 7, title = "ok" }
-        
         if (DataTypeEqual(typedA, typedB))
         {
             global.println("builtin DataTypeEqual(typed anon pair) -> true")
@@ -490,10 +489,109 @@ DataTest
         {
             global.println("builtin DataDataEqual(typed anon pair) -> true")
         }
-        if DataAllEqual(typedA, typedB) 
+        if !DataAllEqual(typedA, typedB) 
         {
             global.println("builtin DataAllEqual(typed anon, diff type id) -> false expected")
         }
+    }
+
+    static dataAsCastTest()
+    {
+        global.println("----- dataAsCastTest -----")
+
+        var anyScore = ScoreData(){ id = 77, math = 88, english = 99, physics = 66 }
+        ScoreData scoreOk = anyScore as ScoreData
+        if (scoreOk != null)
+        {
+            global.println("as ScoreData success -> " + scoreOk.toString())
+        }
+
+        MetaInfo metaFail = anyScore as MetaInfo
+        if (metaFail == null)
+        {
+            global.println("as MetaInfo from ScoreData -> null (expected)")
+        }
+
+        data anonScore = { id = 18, math = 60, english = 70, physics = 80 }
+        ScoreData castFromAnon = anonScore as ScoreData
+        if (castFromAnon != null)
+        {
+            global.println("as ScoreData from anonymous data -> " + castFromAnon.toString())
+        }
+        else
+        {
+            global.println("as ScoreData from anonymous data -> null")
+        }
+    }
+
+    static calcScoreTotalByParam(ScoreData sd)
+    {
+        ret sd.math + sd.english + sd.physics
+    }
+
+    #!
+    static readAnonPairByParam(pair)
+    {
+        global.println("pair.tag = " + pair.tag)
+        global.println("pair.nested.a = " + pair.nested.a.toString())
+        global.println("pair.nested.b = " + pair.nested.b.toString())
+        pair.nested.a = pair.nested.a + 1
+        global.println("pair.nested.a after +1 = " + pair.nested.a.toString())
+    }
+    !#
+
+    static dataArgumentUsageTest()
+    {
+        global.println("----- dataArgumentUsageTest -----")
+
+        ScoreData s = ScoreData(){ id = 301, math = 91, english = 92, physics = 93 }
+        sum = calcScoreTotalByParam(s)
+        global.println("typed data arg total = " + sum.toString())
+
+        data pair = {
+            nested = { a = 20, b = 30 },
+            tag = "pair"
+        }
+        #readAnonPairByParam(pair)
+        global.println("pair after call = " + pair.toString())
+    }
+
+    static dataVariableReadWriteTest()
+    {
+        global.println("----- dataVariableReadWriteTest -----")
+
+        ScoreData rw = new()
+        rw.id = 1001
+        rw.math = 95
+        rw.english = 86
+        rw.physics = 88
+
+        readMath = rw.math
+        readEnglish = rw.english
+        global.println("read math = " + readMath.toString())
+        global.println("read english = " + readEnglish.toString())
+
+        rw.math = readMath + 1
+        rw.english = readEnglish + 2
+        global.println("rw after write-back = " + rw.toString())
+
+        StudentRecord sr = new()
+        sr.sid = 900
+        sr.name = "rw-name"
+        sr.anondatax.a = 515
+        global.println("StudentRecord sid read = " + sr.sid.toString())
+        global.println("StudentRecord anondatax.a read = " + sr.anondatax.a.toString())
+    }
+
+    static staticDataMisuseErrorDemo()
+    {
+        global.println("----- staticDataMisuseErrorDemo -----")
+        global.println("StudentRecord static access demo: " + StudentRecord.toString())
+        global.println("StudentRecord.sid = " + StudentRecord.sid.toString())
+
+        # 错误示例：静态 data 只能访问成员，不能当成普通变量值来赋值
+        # StudentRecord a = StudentRecord
+        # a = StudentRecord
     }
 
 
@@ -504,6 +602,10 @@ DataTest
         #constDataReadOnlyTest()
         #dataIfCompareTest()
         systemDataCompare();
+        dataAsCastTest()
+        dataArgumentUsageTest()
+        dataVariableReadWriteTest()
+        staticDataMisuseErrorDemo()
         #staticDataDirectUseTest()
         #memberShapeCoverageTest()
         #anonymousDataMetaCompileTest()

@@ -290,11 +290,13 @@ namespace SimpleLanguage.Core
                 case EType.Boolean:
                     {
                         value = val.ToString() == "true";
+                        eType = EType.Boolean;
                     }
                     break;
                 case EType.Null:
                     {
                         value = "null";
+                        eType = EType.Null;
                     }
                     break;
                 default:

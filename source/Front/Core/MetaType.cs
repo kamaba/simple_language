@@ -35,6 +35,7 @@ namespace SimpleLanguage.Core
             }
         }
         public bool isNullable => m_IsNullable;
+        public bool isObject => m_MetaClass == CoreMetaClassManager.objectMetaClass;
         public bool isEnum => m_MetaEnum != null || m_EMetaTypeType == EMetaTypeType.MetaEnum;
         public bool isData => m_MetaData != null || m_EMetaTypeType == EMetaTypeType.MetaData;
         public bool isClass => m_MetaClass != null || m_EMetaTypeType == EMetaTypeType.MetaClass;
@@ -91,6 +92,7 @@ namespace SimpleLanguage.Core
         }
         public MetaType( EType etype )
         {
+            m_Type = etype;
             m_EMetaTypeType = EMetaTypeType.MetaClass;
             m_MetaClass = CoreMetaClassManager.GetMetaClassByEType(etype);
             SyncSpecialMetaTypeByMetaClass();
@@ -115,6 +117,7 @@ namespace SimpleLanguage.Core
             {
                 Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
             }
+            m_Type = CoreMetaClassManager.GetETypeByMetaClass(mc);
             m_MetaClass = mc;
             m_EMetaTypeType = EMetaTypeType.MetaClass;
             SyncSpecialMetaTypeByMetaClass();

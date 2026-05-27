@@ -9,6 +9,7 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Text;
 
@@ -375,7 +376,7 @@ namespace SimpleLanguage.Core
                                 m_Express = new MetaConstExpressNode(ownerMetaBase, null, m_FileMetaMemeberData.fileMetaConstValue);
                                 m_Express.Parse(new AllowUseSettings());
                                 m_Express.CalcReturnType();
-                                TryNormalizeDataConstIntegerLiteralType();
+                                TryNormalizeDataConstNumericLiteralType();
                                 var md = m_Express.GetReturnMetaType();
                                 this.m_DefineMetaType = md;
                                 this.m_RealMetaType = md;
@@ -420,28 +421,43 @@ namespace SimpleLanguage.Core
             return true;
         }
 
-        private void TryNormalizeDataConstIntegerLiteralType()
+        private void TryNormalizeDataConstNumericLiteralType()
         {
             if (m_Express is not MetaConstExpressNode constExpress)
             {
                 return;
             }
 
-            var constTerm = m_FileMetaMemeberData?.fileMetaConstValue;
-            var token = constTerm?.token;
-            if (token == null || token.type != ETokenType.Number)
+            if (TryNormalizeDataConstIntegerLiteralType(constExpress))
             {
                 return;
+            }
+
+            TryNormalizeDataConstFloatingLiteralType(constExpress);
+        }
+
+        private bool TryNormalizeDataConstIntegerLiteralType(MetaConstExpressNode constExpress)
+        {
+            if (constExpress == null)
+            {
+                return false;
+            }
+
+            var constTerm = m_FileMetaMemeberData?.fileMetaConstValue;
+            var token = constTerm?.token ?? constExpress.token;
+            if (token == null || (token.type != ETokenType.Number && token.type != ETokenType.NumberReal))
+            {
+                return false;
             }
 
             if (HasExplicitIntegerSuffix(token))
             {
-                return;
+                return false;
             }
 
             if (!TryGetUnsignedIntegerMagnitude(token.lexeme, out ulong magnitude))
             {
-                return;
+                return false;
             }
 
             bool isNegative = constTerm?.plusMinusToken?.type == ETokenType.Minus;
@@ -451,25 +467,99 @@ namespace SimpleLanguage.Core
                 {
                     constExpress.SetConstValue(EType.Int32, -(int)magnitude);
                     constExpress.CalcReturnType();
+                    return true;
                 }
                 else if (magnitude <= (ulong)long.MaxValue + 1UL)
                 {
                     constExpress.SetConstValue(EType.Int64, -(long)magnitude);
                     constExpress.CalcReturnType();
+                    return true;
                 }
-                return;
+                return false;
             }
 
             if (magnitude <= int.MaxValue)
             {
                 constExpress.SetConstValue(EType.Int32, (int)magnitude);
                 constExpress.CalcReturnType();
+                return true;
             }
             else if (magnitude <= (ulong)long.MaxValue)
             {
                 constExpress.SetConstValue(EType.Int64, (long)magnitude);
                 constExpress.CalcReturnType();
+                return true;
             }
+
+            return false;
+        }
+
+        private bool TryNormalizeDataConstFloatingLiteralType(MetaConstExpressNode constExpress)
+        {
+            if (constExpress == null)
+            {
+                return false;
+            }
+
+            var token = m_FileMetaMemeberData?.fileMetaConstValue?.token ?? constExpress.token;
+            if (token == null || (token.type != ETokenType.Number && token.type != ETokenType.NumberReal))
+            {
+                return false;
+            }
+
+            if (HasExplicitFloatingSuffix(token))
+            {
+                return false;
+            }
+
+            if (!TryGetFloatingMagnitude(token, out var magnitude))
+            {
+                return false;
+            }
+
+            if (double.IsNaN(magnitude))
+            {
+                return false;
+            }
+
+            if (Math.Abs(magnitude) > float.MaxValue || float.IsInfinity((float)magnitude))
+            {
+                constExpress.SetConstValue(EType.Float64, magnitude);
+                constExpress.CalcReturnType();
+                return true;
+            }
+
+            constExpress.SetConstValue(EType.Float32, (float)magnitude);
+            constExpress.CalcReturnType();
+            return true;
+        }
+
+        private static bool TryGetFloatingMagnitude(Token token, out double magnitude)
+        {
+            magnitude = 0d;
+            if (token == null)
+            {
+                return false;
+            }
+
+            if (token.lexeme is float fv)
+            {
+                magnitude = fv;
+                return true;
+            }
+
+            if (token.lexeme is double dv)
+            {
+                magnitude = dv;
+                return true;
+            }
+
+            if (TryReadNumericLiteralRawText(token, out var raw))
+            {
+                return double.TryParse(raw, NumberStyles.Float, CultureInfo.InvariantCulture, out magnitude);
+            }
+
+            return false;
         }
 
         private static bool TryGetUnsignedIntegerMagnitude(object? valueObj, out ulong magnitude)
@@ -521,6 +611,47 @@ namespace SimpleLanguage.Core
             if (raw[i] == '.')
             {
                 return true;
+            }
+
+            return char.IsLetter(raw[i]);
+        }
+
+        private static bool HasExplicitFloatingSuffix(Token token)
+        {
+            if (!TryReadNumericLiteralRawText(token, out var raw))
+            {
+                return false;
+            }
+
+            if (string.IsNullOrWhiteSpace(raw))
+            {
+                return false;
+            }
+
+            raw = raw.Trim();
+            if (raw.Length > 0 && (raw[0] == '+' || raw[0] == '-'))
+            {
+                raw = raw.Substring(1);
+            }
+
+            int i = 0;
+            while (i < raw.Length && char.IsDigit(raw[i]))
+            {
+                i++;
+            }
+
+            if (i < raw.Length && raw[i] == '.')
+            {
+                i++;
+                while (i < raw.Length && char.IsDigit(raw[i]))
+                {
+                    i++;
+                }
+            }
+
+            if (i >= raw.Length)
+            {
+                return false;
             }
 
             return char.IsLetter(raw[i]);
@@ -615,6 +746,7 @@ namespace SimpleLanguage.Core
                 return;
             }
 
+            TryNormalizeDataConstNumericLiteralType();
             m_Express.CalcReturnType();
             var convertedExpress = ExpressManager.ConvertNewExpress(m_Express, m_Express.GetReturnMetaType(), this);
             if (convertedExpress != m_Express )

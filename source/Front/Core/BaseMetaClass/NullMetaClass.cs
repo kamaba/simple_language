@@ -13,6 +13,7 @@ namespace SimpleLanguage.Core
         public NullMetaClass():base( DefaultObject.Null.ToString())
         {
             m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_Type = EType.Null;
         }        
         public static MetaClass CreateMetaClass()
         {
