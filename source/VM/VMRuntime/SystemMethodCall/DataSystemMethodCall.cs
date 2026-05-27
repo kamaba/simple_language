@@ -24,7 +24,15 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            bool eq = d1.runtimeClass.id == d2.runtimeClass.id && MemberDataBuffersEqual(d1, d2);
+            bool eq = false;
+            if (d1.runtimeClass.isDynamicData == d1.runtimeClass.isDynamicData)
+            {
+                eq = d1.runtimeClass.id == d2.runtimeClass.id;
+            }
+            else
+            {
+                eq = MemberDataBuffersEqual(d1, d2);
+            }
             PushBool(vm, eq);
         }
 

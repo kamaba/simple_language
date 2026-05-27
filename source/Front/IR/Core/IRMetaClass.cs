@@ -332,7 +332,7 @@ namespace SimpleLanguage.IR
         void CreateMemberDataFromMetaData(MetaData md)
         {
             var dataMembers = md.GetMetaMemberDataList()
-                .OrderBy(m => m.dataFieldOrderIndex)
+                .OrderBy(m => m.index)
                 .ThenBy(m => m.name, System.StringComparer.Ordinal)
                 .ToList();
             int localIndex = 0;

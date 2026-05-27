@@ -378,7 +378,7 @@ namespace SimpleLanguage.Core
         private static List<MetaMemberData> OrderMetaMemberDataList(MetaData md)
         {
             return md.GetMetaMemberDataList()
-                .OrderBy(m => m.dataFieldOrderIndex)
+                .OrderBy(m => m.index)
                 .ThenBy(m => m.name, System.StringComparer.Ordinal)
                 .ToList();
         }

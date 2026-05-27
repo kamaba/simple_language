@@ -218,10 +218,14 @@ namespace SimpleLanguage.VM
             if (sourceType == null)
                 return false;
 
-            bool targetIsGeneric = targetType.runtimeTemplateList != null && targetType.runtimeTemplateList.Count > 0;
-            if (!targetIsGeneric)
+            if( targetType.eType == EVMType.Object )
+            {
                 return true;
-
+            }
+            if( targetType == RuntimeTypeManager.objectRuntimeType )
+            {
+                return true;
+            }
             bool targetIsInterface = targetType.runtimeClass?.isInterfaceClass == true;
             if (targetIsInterface)
             {
@@ -231,10 +235,27 @@ namespace SimpleLanguage.VM
                 return ValidateInterfaceTemplateCovariance(sourceType, targetType);
             }
 
-            if (!ReferenceEquals(sourceType.runtimeClass, targetType.runtimeClass))
-                return false;
+            if( targetType.runtimeTemplateList.Count > 0 )  //比较带模板的
+            {
+                if( targetType.runtimeTemplateList.Count != sourceType.runtimeTemplateList.Count )
+                {
+                    return false;
+                }
 
-            return ValidateSameGenericRuntimeTypeRecursive(sourceType, targetType);
+                bool flag = ValidateSameGenericRuntimeTypeRecursive(sourceType, targetType);
+                if (flag == false)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (sourceType.runtimeClass.IsExtendsRelation(targetType.runtimeClass))
+                    return true;
+
+                return ReferenceEquals(sourceType.runtimeClass, targetType.runtimeClass);                   
+            }
+            return true;
         }
 
         private static bool ValidateSameGenericRuntimeTypeRecursive(RuntimeType sourceType, RuntimeType targetType)

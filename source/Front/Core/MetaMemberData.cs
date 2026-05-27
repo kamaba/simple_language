@@ -24,7 +24,7 @@ namespace SimpleLanguage.Core
     }
     public sealed class MetaMemberData : MetaVariable
     {
-        public int dataFieldOrderIndex => m_Index;
+        public int index => m_Index;
         public EMemberDataType memberDataType => m_MemberDataType;
         public MetaExpressNodeBase expressNode => m_Express;
 

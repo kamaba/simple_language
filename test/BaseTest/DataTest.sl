@@ -481,6 +481,7 @@ DataTest
 
         data typedA = { code_ttb = 7, title = "ok" }
         data typedB = { code_ttb = 7, title = "ok" }
+        
         if (DataTypeEqual(typedA, typedB))
         {
             global.println("builtin DataTypeEqual(typed anon pair) -> true")
@@ -489,7 +490,7 @@ DataTest
         {
             global.println("builtin DataDataEqual(typed anon pair) -> true")
         }
-        if !DataAllEqual(typedA, typedB) 
+        if DataAllEqual(typedA, typedB) 
         {
             global.println("builtin DataAllEqual(typed anon, diff type id) -> false expected")
         }

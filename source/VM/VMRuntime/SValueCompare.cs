@@ -266,6 +266,11 @@ namespace SimpleLanguage.VM
             if (sval.isNull)
                 return false;
 
+            if( sval.eType != EVMType.Class )
+            {
+                return false;
+            }
+
             var co = sval.sobject as ClassObject;
             if (co == null)
                 return false;

@@ -101,6 +101,7 @@ namespace SimpleLanguage.Core
                     }
 
                     targetMetaVariable = m_MetaMemberData;
+                    m_Id = m_MetaMemberData.index;
                 }
                 else if( m_NewObjectMetaType.isDynamicData )
                 {
@@ -118,7 +119,7 @@ namespace SimpleLanguage.Core
                         Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????");
                         return;
                     }
-                    m_Id = m_MetaMemberVariable.GetHashCode();
+                    m_Id = m_MetaMemberVariable.index;
                     if (m_MetaMemberVariable.realMetaType == null)
                     {
                         m_MetaMemberVariable.CreateMetaExpress();
@@ -132,6 +133,7 @@ namespace SimpleLanguage.Core
                         return;
                     }
                     targetMetaVariable = m_MetaMemberVariable;
+                    m_Id = m_MetaMemberVariable.index;
                 }
                 else
                 {
@@ -253,13 +255,13 @@ namespace SimpleLanguage.Core
                     m_MetaMemberVariable = new MetaMemberVariable((MetaClass)null, m_DefineName);
                     m_MetaMemberVariable.SetOwnerMetaBase(mbs.ownerMetaClass);
                     m_MetaMemberVariable.SetOwnerBlockstatements(mbs);
-                    m_Id = m_MetaMemberVariable.GetHashCode();
+                    m_Id = m_MetaMemberVariable.index;
                 }
                 else
                 {
                     m_MetaMemberData = MetaMemberData.CreateDeclared(m_NewObjectMetaType.metaData, m_DefineName, -1, new MetaType(CoreMetaClassManager.objectMetaClass), false);
                     m_MetaMemberData.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);
-                    m_Id = m_MetaMemberData.GetHashCode();
+                    m_Id = m_MetaMemberData.index;
                 }
             }
             else
@@ -272,7 +274,7 @@ namespace SimpleLanguage.Core
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error ??" + m_NewObjectMetaType.name + "??: " + mbs?.ownerMetaFunction.name
                             + " ????: ?" + m_NewObjectMetaType.name + " ??:" + m_DefineName);
                     }
-                    m_Id = m_MetaMemberData.GetHashCode();
+                    m_Id = m_MetaMemberData.index;
                     //m_MetaExpress = CreateExpressNodeInNewObjectStatements(m_MetaMemberData, m_OwnerMetaBlockStatements, m_FileMetaOpAssignSyntax?.express);
                 }
                 else if (m_DefineMetaType.isEnum)
@@ -356,6 +358,7 @@ namespace SimpleLanguage.Core
             m_Token = men.token;
             m_AssignTargetType =  EAssignTargetType.MemberData;
             m_DefineMetaType = new MetaType(mmd.GetFinalMetaType());
+            m_Id = m_MetaMemberData.index;
         }
         //public void SetMetaMemberVariable(MetaMemberVariable mmv)
         //{
@@ -1286,7 +1289,7 @@ namespace SimpleLanguage.Core
             var node = new MetaNewObjectExpressNode(anonymousType, mb, mbs, storeMv);
             node.SetNeedInitMemberVariable(false);
             var ordered = metaData.GetMetaMemberDataList();
-            ordered.Sort((a, b) => a.dataFieldOrderIndex.CompareTo(b.dataFieldOrderIndex));
+            ordered.Sort((a, b) => a.index.CompareTo(b.index));
 
             var parseSetting = new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress };
             foreach (var sourceField in ordered)

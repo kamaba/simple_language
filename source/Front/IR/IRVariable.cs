@@ -137,7 +137,7 @@ namespace SimpleLanguage.IR
                 if (index == -1 && mv is MetaMemberData mmdIndex)
                 {
                     // Fallback for data members that are not yet bound in hash->index map.
-                    index = mmdIndex.dataFieldOrderIndex;
+                    index = mmdIndex.index;
                 }
                 if (mv.isConst || mv.isStatic)
                 {
@@ -389,7 +389,7 @@ namespace SimpleLanguage.IR
                 if (index == -1 && mv is MetaMemberData mmdIndex)
                 {
                     // Fallback for data members that are not yet bound in hash->index map.
-                    index = mmdIndex.dataFieldOrderIndex;
+                    index = mmdIndex.index;
                 }
                 if (gmv.isStatic)
                 {
