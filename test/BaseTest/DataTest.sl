@@ -157,12 +157,12 @@ DataTest
         global.println("data GlobalCounter declared (direct static access case placeholder)")
         GlobalCounter.totalExamCount = 10
         GlobalCounter.totalScore = 200
-        global.println(GlobalCounter.totalExamCount)
+        global.println(GlobalCounter.totalExamCount.toString())
         global.println(GlobalCounter.totalScore)
         global.println(StudentRecord)
 
         # whole-object static data reassignment intent:
-        # GlobalCounter = { totalExamCount = 11, totalScore = 210 }
+        #GlobalCounter = { totalExamCount = 11, totalScore = 210 }
     }
 
     static newDataInstanceTest()
@@ -589,8 +589,8 @@ DataTest
         global.println("StudentRecord.sid = " + StudentRecord.sid.toString())
 
         # 错误示例：静态 data 只能访问成员，不能当成普通变量值来赋值
-        StudentRecord a = StudentRecord
-        a = StudentRecord
+        #StudentRecord a = StudentRecord
+        #a = StudentRecord
     }
 
 
@@ -604,8 +604,8 @@ DataTest
         #dataAsCastTest()
         #dataArgumentUsageTest()
         #dataVariableReadWriteTest()
-        staticDataMisuseErrorDemo()
-        #staticDataDirectUseTest()
+        #staticDataMisuseErrorDemo()
+        staticDataDirectUseTest()
         #memberShapeCoverageTest()
         #anonymousDataMetaCompileTest()
         #newDataInstanceTest()
