@@ -1287,7 +1287,6 @@ namespace SimpleLanguage.Core
 
             var anonymousType = new MetaType(findmd);
             var node = new MetaNewObjectExpressNode(anonymousType, mb, mbs, storeMv);
-            node.SetNeedInitMemberVariable(false);
             var ordered = metaData.GetMetaMemberDataList();
             ordered.Sort((a, b) => a.index.CompareTo(b.index));
 

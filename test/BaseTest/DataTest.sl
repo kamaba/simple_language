@@ -167,7 +167,7 @@ DataTest
 
     static newDataInstanceTest()
     {
-        global.println("----- newDataInstanceTest -----")
+        global.println("----- newDataInstanceTest1111 -----")
 
         ScoreData s1 = new()
         ScoreData s2 = new()
@@ -178,8 +178,7 @@ DataTest
         s1 = { id = 11, math = 98, english = 97, physics = 96 }
         s2 = ScoreData(){ id = 12, math = 88, english = 87, physics = 86 }
 
-        global.println("----- newDataInstanceTest -----")
-        global.println("----- newDataInstanceTest -----")
+        global.println("----- newDataInstanceTest2222 -----")
         global.println(s1)
         global.println(s2)
         if( s1 == s2 )   #data数据的比较是，真比较里边的值是否相同
@@ -599,13 +598,13 @@ DataTest
     {
         global.println("========== DataTest (start) ==========")
 
-        #constDataReadOnlyTest()
+        constDataReadOnlyTest()
         #dataIfCompareTest()
-        systemDataCompare();
-        dataAsCastTest()
-        dataArgumentUsageTest()
-        dataVariableReadWriteTest()
-        staticDataMisuseErrorDemo()
+        #systemDataCompare();
+        #dataAsCastTest()
+        #dataArgumentUsageTest()
+        #dataVariableReadWriteTest()
+        #staticDataMisuseErrorDemo()
         #staticDataDirectUseTest()
         #memberShapeCoverageTest()
         #anonymousDataMetaCompileTest()

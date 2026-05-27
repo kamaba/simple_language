@@ -456,14 +456,14 @@ namespace SimpleLanguage.IR
                         for (int x = 0; x < irmc.localIRMetaVariableList.Count; x++)
                         {
                             var lirmv = irmc.localIRMetaVariableList[x];
+                            MetaExpressNodeBase men = lirmv.express;
                             if (mnoen.assignStatementsList?.Count > 0)
                             {
-                                MetaExpressNodeBase men = lirmv.express;
                                 MetaBraceAssignStatements findMBAS = null;
                                 for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
                                 {
                                     var asl = mnoen.assignStatementsList[y];  
-                                    if (asl.id == lirmv.id)
+                                    if (asl.id == lirmv.index )
                                     {
                                         findMBAS = asl;
                                         men = asl.expressNode;
@@ -471,15 +471,15 @@ namespace SimpleLanguage.IR
                                     }
                                 }
                                 mnoen.assignStatementsList.Remove(findMBAS);
-                                IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, men );
-                                AddIRRangeData(irexp.IRDataList);
-
-                                IRData irdata = new IRData();
-                                irdata.index = lirmv.index;
-                                irdata.opCode = EIROpCode.StoreNotStaticField1;
-                                irdata.SetDebugInfoByToken(mnoen.token);
-                                m_IRDataList.Add(irdata);
                             }
+                            IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, men);
+                            AddIRRangeData(irexp.IRDataList);
+
+                            IRData irdata = new IRData();
+                            irdata.index = lirmv.index;
+                            irdata.opCode = EIROpCode.StoreNotStaticField1;
+                            irdata.SetDebugInfoByToken(mnoen.token);
+                            m_IRDataList.Add(irdata);
                         }
                     }
                 }
