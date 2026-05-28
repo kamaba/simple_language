@@ -1077,12 +1077,7 @@ namespace SimpleLanguage.Core
                             m_MetaVariable = m_FrontCallNode.m_MetaEnum.GetOrCreateValuesVariable();
                             if (m_MetaVariable == null)
                             {
-                                m_FrontCallNode.m_MetaEnum.CreateValues();
-                                m_MetaVariable = m_FrontCallNode.m_MetaEnum.GetOrCreateValuesVariable();
-                                if (m_MetaVariable == null)
-                                {
-                                    return false;
-                                }
+                                return false;
                             }
                             m_CallNodeType = ECallNodeType.EnumValueArray;
                         }
@@ -1093,7 +1088,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (m_IsFunction)// Enum e = Enum.MetaVaraible( 2 )
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "涓嶈兘浣跨敤Enum.metaVariable(2) 杩欐牱鐨勬牸寮?");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, m_FrontCallNode.m_MetaEnum.name + "(" + m_Name + ")" + "not allow!");
                                     return false;
                                 }
                                 else
@@ -1108,7 +1103,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 涓嶈兘浣跨敤Enum.xxxx鏈彂鐜板悗缁?");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, m_FrontCallNode.m_MetaEnum.name + "not found enum.member?" + m_Name );
                                 return false;
                             }
                         }
@@ -1991,41 +1986,45 @@ namespace SimpleLanguage.Core
                 }
                 else if (md != null)
                 {
-                    var mmd = md.GetMemberDataByName(inputname);
-                    if (mmd != null)
-                    {
-                        m_MetaData = md;
-                        m_MetaVariable = mmd;
-                        m_MetaType = mmd.realMetaType;
-                        m_CallNodeType = ECallNodeType.MemberVariableName;
-                        return true;
-                    }
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error data 不支持在本体内调用 " + me.allName);
+                    return false;
+                    //var mmd = md.GetMemberDataByName(inputname);
+                    //if (mmd != null)
+                    //{
+                    //    m_MetaData = md;
+                    //    m_MetaVariable = mmd;
+                    //    m_MetaType = mmd.realMetaType;
+                    //    m_CallNodeType = ECallNodeType.MemberVariableName;
+                    //    return true;
+                    //}
                 }
                 else if (me != null)
                 {
-                    if (m_IsFunction)
-                    {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error data 不支持函数调用: " + me.allName);
-                        return false;
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error enum 不支持在本体内调用 " + me.allName);
+                    return false;
+                    //if (m_IsFunction)
+                    //{
+                    //    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error data 不支持函数调用: " + me.allName);
+                    //    return false;
 
-                    }
-                    else
-                    {
-                        var mmv = me.GetMemberEnumByName(inputname);
-                        if (mmv != null)
-                        {
-                            m_MetaEnum = me;
-                            m_MetaVariable = mmv;
-                            m_MetaType = mmv.realMetaType;
-                            m_CallNodeType = ECallNodeType.MemberVariableName;
-                            return true;
-                        }
-                        else
-                        {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, $"Error data '{me.allName}' does not have member variable '{inputname}'");
-                            return false;
-                        }
-                    }
+                    //}
+                    //else
+                    //{
+                    //    var mmv = me.GetMemberEnumByName(inputname);
+                    //    if (mmv != null)
+                    //    {
+                    //        m_MetaEnum = me;
+                    //        m_MetaVariable = mmv;
+                    //        m_MetaType = mmv.realMetaType;
+                    //        m_CallNodeType = ECallNodeType.MemberVariableName;
+                    //        return true;
+                    //    }
+                    //    else
+                    //    {
+                    //        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, $"Error data '{me.allName}' does not have member variable '{inputname}'");
+                    //        return false;
+                    //    }
+                    //}
                 }
 
             }

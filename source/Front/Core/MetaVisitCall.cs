@@ -360,7 +360,7 @@ namespace SimpleLanguage.Core
             vn.m_VisitType = EVisitType.MetaClass;
             if (mt?.metaClass == CoreMetaClassManager.enumMetaData)
             {
-                mt.enumValue?.ownerMetaClass?.metaNode?.metaEnum?.CreateValues();
+                mt.enumValue?.ownerMetaClass?.metaNode?.metaEnum?.GetOrCreateValuesVariable();
             }
             vn.m_ReturnMetaType = mt;
 

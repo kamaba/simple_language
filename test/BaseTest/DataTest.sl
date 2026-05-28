@@ -102,9 +102,8 @@ data StudentRecord
     sid = 7
     name = "StudentRecord Name",
     anondatax = {a = 111i, b = 222i }
-    #scores = [95, 88, 91]
-    #tags = ["math", "final"]
-    #!
+    scores = [95, 88, 91]
+    tags = ["math", "final"]    
     profile = {
         grade = 3,
         rank = 5,
@@ -118,7 +117,7 @@ data StudentRecord
         { name = "Physics", year = 2025 }
      ]
      meta = MetaInfo(){ level = 2, passed = true }
-     !#
+     
 }
 
 DataTest
@@ -159,7 +158,7 @@ DataTest
         GlobalCounter.totalScore = 200
         global.println(GlobalCounter.totalExamCount.toString())
         global.println(GlobalCounter.totalScore)
-        global.println(StudentRecord)
+        global.println(GlobalCounter)
 
         # whole-object static data reassignment intent:
         #GlobalCounter = { totalExamCount = 11, totalScore = 210 }
@@ -202,8 +201,8 @@ DataTest
 
     static memberShapeCoverageTest()
     {
-        #!
         global.println("----- memberShapeCoverageTest -----")
+        #!
         global.println("member shape samples added in DataTest declarations and comments")
         global.println(StructMatrix)
         global.println(AnonymousNestedDataSample)
@@ -213,8 +212,8 @@ DataTest
         global.println(StructMatrix.profile.rank)
         global.println(StudentRecord.meta.level)
         global.println(ClassDataEnumSample.cc.value)
-        global.println(ClassDataEnumSample.kind)
         !#
+        global.println(ClassDataEnumSample.kind)
 
         # See top-level syntax samples in this file:
         # - array members
@@ -605,11 +604,10 @@ DataTest
         #dataArgumentUsageTest()
         #dataVariableReadWriteTest()
         #staticDataMisuseErrorDemo()
-        staticDataDirectUseTest()
-        #memberShapeCoverageTest()
+        #staticDataDirectUseTest()
+        memberShapeCoverageTest()
         #anonymousDataMetaCompileTest()
         #newDataInstanceTest()
-        #global.println("anonymousDataMetaCompileTest compiled but is not executed in runtime baseline")
         #global.println("newDataInstanceTest skipped in runtime (known VM gap)")
 
         global.println("========== DataTest (end) ==========")

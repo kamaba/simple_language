@@ -17,10 +17,7 @@ namespace SimpleLanguage.Core
         public MetaConstExpressNode enumValueConstExpressNode => m_Express as MetaConstExpressNode;
         private bool isExplicitAssign => m_IsExplicitAssign;
 
-        private bool m_IsExplicitAssign = false;
-        /// <summary>所属用户 enum（与 ownerMetaClass 多为 Core.Enum 模板不同，用于 extends 与定义类型）。</summary>
-        private MetaEnum m_DefiningMetaEnum = null;
-        private MetaEnum m_OwnerMetaEnum = null;
+        private bool m_IsExplicitAssign = false;       
 
         //public MetaMemberEnum(MetaClass mc, string name, MetaClass extendClass) : base(mc, name)
         //{
@@ -37,9 +34,9 @@ namespace SimpleLanguage.Core
         //        SetIsDefineMetaType(true);
         //    }
         //}
-        public MetaMemberEnum(MetaEnum mc, FileMetaMemberVariable fmmv, bool parentIsConst ) : base()
+        public MetaMemberEnum(MetaEnum mc, FileMetaMemberVariable fmmv ) : base()
         {
-            m_OwnerMetaEnum = mc;
+            m_OwnerMetaBase = mc;
             m_FileMetaMemeberVariable = fmmv;
             m_Name = fmmv.name;
             AddPingToken(fmmv.nameToken);
@@ -47,28 +44,26 @@ namespace SimpleLanguage.Core
             m_FromType = EFromType.Code;
             m_VariableFrom = EVariableFrom.EnumMember;
             m_Permission = EPermission.Public;
-            // Front 语义：enum 成员默认均为 const，只有显式 mut 才允许后续修改。
             m_IsConst = true;
             m_IsStatic = false;
-            m_VariableFrom = MetaVariable.EVariableFrom.EnumMember;
             if (fmmv.mutToken != null)
             {
                 m_IsConst = false;
             }
             if (fmmv.staticToken != null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum 中不允许使用 static 关键字，枚举值的静态语义由系统处理!!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum 中不允许使用 static 关键字，枚举值的静态语义由系统处理!!");
             }
             if (m_FileMetaMemeberVariable.permissionToken?.type != null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "Error Enum中，不允许使用public/private等权限关键字!!");
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error Enum中，不允许使用public/private等权限关键字!!");
             }
 
             SetOwnerMetaBase(mc);
         }
         public override void ParseDefineMetaType()
         {
-            var me = m_OwnerMetaEnum;
+            var me = ownerMetaEnum;
             if (me == null)
             {
                 return;
@@ -82,6 +77,10 @@ namespace SimpleLanguage.Core
             {
                 m_DefineMetaType = new MetaType(me.extendClass);
                 m_IsDefineMetaType = true;
+            }
+            else
+            {
+                Log.AddMetaCoreLog( LID.MetaCoreAssertShowMessage, m_Token, "Error Enum成员没有找到定义类型，无法解析!!");
             }
         }
         public void SetIsExplicitAssign(bool value)
@@ -111,7 +110,7 @@ namespace SimpleLanguage.Core
 
                     if (m_Express == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 没有解析到Express的内容 在MetaMemberData 里边 372");
                     }
                     else
                     {
@@ -143,26 +142,54 @@ namespace SimpleLanguage.Core
                     SetRealMetaType(new MetaType(ret));
                 }
             }
-            else if (m_Express != null)
-            {
-                base.ParseRealMetaType();
-            }
         }
 
-        public void WrapAsMemberObjectExpress( MetaMemberEnum mme )
+        public MetaMemberVariable WrapAsEnumMemberObjectExpress()
         {
-            if (m_Express == null) return;
+            if (m_Express == null)
+            {
+                return null;
+            }
 
+            var ownerEnum = ownerMetaEnum;
             var memberClass = CoreMetaClassManager.memberMetaClass;
-            if (memberClass == null) return;
+            if (ownerEnum == null || memberClass == null)
+            {
+                return null;
+            }
 
             var memberType = new MetaType(memberClass);
-            var newMember = new MetaNewObjectExpressNode(memberType, mme.ownerMetaClass, mme.m_OwnerMetaBlockStatements, null );
-            FillMemberNewObjectAssignList(newMember, mme.m_OwnerMetaBlockStatements, mme.ownerMetaBase, mme.m_Express, mme.m_Name, m_Index);
+            var wrappedNewObject = new MetaNewObjectExpressNode(memberType, ownerEnum, m_OwnerMetaBlockStatements, null);
+            FillMemberNewObjectAssignList(
+                wrappedNewObject,
+                m_OwnerMetaBlockStatements,
+                ownerEnum,
+                m_Express,
+                m_Name,
+                m_Index);
 
-            m_Express = newMember;
-            // m_DefineMetaType：enum extends 的声明类型；m_RealMetaType：成员值表达式类型（写入 Member.value）
-            SetIsDefineMetaType(true);
+            wrappedNewObject.CalcReturnType();
+
+            var exportVariable = new MetaMemberVariable(ownerEnum, m_Name);
+            exportVariable.SetVariableFrom(EVariableFrom.EnumMember);
+            exportVariable.SetIndex(m_Index);
+            exportVariable.SetIsDefineMetaType(true);
+            exportVariable.SetMetaDefineType(memberType);
+            exportVariable.SetRealMetaType(new MetaType(memberType));
+            exportVariable.SetExpress(wrappedNewObject);
+
+            var exportList = ownerEnum.exportMemberVariableList;
+            int existsIndex = exportList.FindIndex(v => v != null && v.name == exportVariable.name);
+            if (existsIndex >= 0)
+            {
+                exportList[existsIndex] = exportVariable;
+            }
+            else
+            {
+                exportList.Add(exportVariable);
+            }
+
+            return exportVariable;
         }
         /// <summary>
         /// 为 enum.values 数组生成一项：new Core.Member() 后按 name、value、index 顺序赋值（与 IRNewExpress 对象初始化一致）。
@@ -199,7 +226,9 @@ namespace SimpleLanguage.Core
         {
             var memberClass = CoreMetaClassManager.memberMetaClass;
             if (newMember?.assignStatementsList == null || valueExpr == null || memberClass == null)
+            {
                 return;
+            }
 
             var nameMv = memberClass.GetMetaMemberVariableByName("name");
             var valueMv = memberClass.GetMetaMemberVariableByName("value");
@@ -216,8 +245,8 @@ namespace SimpleLanguage.Core
             indexExpr.CalcReturnType();
 
             var list = newMember.assignStatementsList;
-            list.Add(new MetaBraceAssignStatements(nameMv, mbs, owmb, nameExpr ));
-            list.Add(new MetaBraceAssignStatements(valueMv, mbs, owmb, valueExpr ));
+            list.Add(new MetaBraceAssignStatements(nameMv, mbs, owmb, nameExpr));
+            list.Add(new MetaBraceAssignStatements(valueMv, mbs, owmb, valueExpr));
             list.Add(new MetaBraceAssignStatements(indexMv, mbs, owmb, indexExpr));
         }
         public override string ToFormatString()
@@ -227,16 +256,10 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < realDeep; i++)
                 sb.Append(Global.tabChar);
 
-            sb.Append(permission.ToFormatString() + " ");
             if (isConst)
             {
                 sb.Append("const ");
             }
-            if (isStatic)
-            {
-                sb.Append("static ");
-            }
-            sb.Append(base.ToFormatString());
             if (m_Express != null)
             {
                 sb.Append(" = ");
@@ -246,12 +269,21 @@ namespace SimpleLanguage.Core
 
             return sb.ToString();
         }
-        public string ToTokenString()
+        public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(m_FileMetaMemeberVariable.nameToken.sourceBeginLine + " 与父类的Token位置: "
-                    + m_FileMetaMemeberVariable.nameToken.sourceBeginLine.ToString());
+            if (m_IsConst == false )
+            {
+                sb.Append("mut ");
+            }
+            sb.Append(m_Name);
+            if (m_Express != null)
+            {
+                sb.Append(" = ");
+                sb.Append(m_Express.ToFormatString());
+            }
+            sb.Append(";");
 
             return sb.ToString();
         }

@@ -786,6 +786,11 @@ namespace SimpleLanguage.Core
                 it.EnsureParsedGenTemplateMetaClasses();
             }
             EnsureAllGenTemplateClassesParsed();
+
+            foreach( var it in m_InitHandleMetaEnumList )
+            {
+                it.ParseFileCollectMemberVariableDefineMetaType();
+            }
         }
 
         public void EnsureAllGenTemplateClassesParsed()

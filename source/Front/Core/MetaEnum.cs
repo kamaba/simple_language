@@ -10,6 +10,7 @@ using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace SimpleLanguage.Core
 {
@@ -19,11 +20,13 @@ namespace SimpleLanguage.Core
         public MetaClass extendClass => m_ExtendClass;
         public MetaData extendMetaData => m_ExtendMetaData;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
+        public List<MetaMemberVariable> exportMemberVariableList => m_ExportMemberVariableList;
         /// <summary>源码绑定（用于 IR 导出路径等）。</summary>
         public FileMetaClass boundFileMetaClass => m_FileMetaClass;
 
         protected MetaMemberVariable m_ValuesMetaVariable = null;
         protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
+        protected List<MetaMemberVariable> m_ExportMemberVariableList = new List<MetaMemberVariable>();
         protected MetaClass m_ExtendClass = null;
         protected MetaData m_ExtendMetaData = null;
         protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
@@ -41,6 +44,13 @@ namespace SimpleLanguage.Core
         {
             m_ExtendClass = mc;
         }
+        public void ParseFileCollectMemberVariableDefineMetaType()
+        {
+            foreach( var v in m_MetaMemberVariableDict )
+            {
+                v.Value.ParseDefineMetaType();
+            }
+        }
         public MetaMemberVariable GetMetaMemberVariableByName(string name)
         {
             if (m_MetaMemberVariableDict.ContainsKey(name))
@@ -54,7 +64,7 @@ namespace SimpleLanguage.Core
             CreateValues();
             return m_ValuesMetaVariable;
         }
-        public void CreateValues()
+        void CreateValues()
         {
             //鍒涘缓涓€涓狤num 閲岃竟鐨勯潤鎬佸厓绱犲垪琛紝鐢ㄦ潵閬嶅巻 姣斿enum { a = 1; b = 2} 鍒?enum { values = [a,b]
             if(m_ValuesMetaVariable == null )
@@ -85,9 +95,6 @@ namespace SimpleLanguage.Core
                     MetaCallLinkExpressNode mclen = new MetaCallLinkExpressNode(mcl);
                     maen.metaCallArray.Add(mclen);
                 }
-
-
-                //newRMT.AddGenTemplateMetaType(m_RealMetaType);
 
                 var valuesNewExpress = new MetaNewObjectExpressNode(mt, CoreMetaClassManager.enumMetaData, null, m_ValuesMetaVariable);
                 foreach (var itemExpress in maen.metaCallArray)
@@ -151,23 +158,21 @@ namespace SimpleLanguage.Core
 
         public void ParseExtendsRelation()
         {
-            if (m_ClassDefineType == EClassDefineType.InnerDefine)
-            {
-                return;
-            }
             if (m_ExtendClass != null)
             {
+                Log.AddFileMetaLog(LID.ShowExtendMessage, m_Token, "have parse extend in enum");
                 return;
             }
             if (m_FileMetaClass == null)
             {
+                Log.AddFileMetaLog(LID.ShowExtendMessage, m_Token, "m_FileMetaClass is null in ParseExtendsRelation");
                 return;
             }
 
             var fmcd = m_FileMetaClass.fileMetaExtendClass;
             if (fmcd == null)
             {
-                m_ExtendClass = CoreMetaClassManager.int32MetaClass;
+                m_ExtendClass = CoreMetaClassManager.objectMetaClass;
                 return;
             }
 
@@ -181,9 +186,9 @@ namespace SimpleLanguage.Core
 
             if (mn == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
                     "Error Enum extends 没有找到继承类: " + fmcd.allName);
-                m_ExtendClass = CoreMetaClassManager.int32MetaClass;
+                m_ExtendClass = CoreMetaClassManager.objectMetaClass;
                 return;
             }
 
@@ -201,7 +206,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
                         "Error Enum extends 仅允许内置整数类型（byte/sbyte/short/ushort/int/uint/long/ulong 等）、string、关键字 data，或具体 data 类型名；不允许继承普通 class: "
                         + fmcd.allName);
                     m_ExtendClass = CoreMetaClassManager.int32MetaClass;
@@ -209,18 +214,18 @@ namespace SimpleLanguage.Core
             }
             else if (mn.isMetaData)
             {
-                m_ExtendClass = CoreMetaClassManager.dynamicMetaData;
+                m_ExtendClass = null;
                 m_ExtendMetaData = mn.metaData;
             }
             else if (mn.isMetaEnum)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
                     "Error Enum 不允许继承另一个 Enum: " + fmcd.allName);
                 m_ExtendClass = CoreMetaClassManager.int32MetaClass;
             }
             else
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
                     "Error Enum extends 解析到未知节点类型: " + fmcd.allName);
                 m_ExtendClass = CoreMetaClassManager.int32MetaClass;
             }
@@ -228,13 +233,14 @@ namespace SimpleLanguage.Core
         public void ParseFileMetaEnumMemeberEnum(FileMetaClass fmc)
         {
             m_FileMetaClass = fmc;
+            m_Token = fmc.token;
             if (fmc.memberFunctionList.Count > 0)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, " Error member function not should function ");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, " Error member function not should function ");
             }
             if (fmc.templateDefineList.Count > 0)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error template define list ");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error template define list ");
             }
             //for (int i = 0; i < fmc.templateParamList.Count; i++)
             //{
@@ -254,19 +260,19 @@ namespace SimpleLanguage.Core
             {
                 if (string.IsNullOrEmpty(v.name))
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到定义变量名称!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, v.token, "没有找到定义变量名称!");
                     continue;
                 }
 
                 MetaBase mb = GetMetaMemberVariableByName(v.name);
                 if (mb != null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum MetaMemberData have member variable " + m_AllName + "涓?宸叉湁: " + v.token?.ToLexemeAllString() + "鐨勫厓绱?!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, v.token, "Error Enum MetaMemberData have member variable " + m_AllName + "涓?宸叉湁: " + v.token?.ToLexemeAllString() + "鐨勫厓绱?!");
                     isHave = true;
                 }
                 else
                     isHave = false;
-                MetaMemberEnum mmv = new MetaMemberEnum( this, v, true );
+                MetaMemberEnum mmv = new MetaMemberEnum( this, v );
                 if (isHave)
                 {
                     mmv.SetName(mmv.name + "__repeat__");
@@ -278,9 +284,14 @@ namespace SimpleLanguage.Core
         {
             if (m_MetaMemberVariableDict.Count == 0)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Warning 鍦╡num : " + name + " 娌℃湁鍙戠幇鏈変换浣曟垚鍛");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Warning Enum : " + name );
                 return;
             }
+            AutoCreateExpress();
+
+        }        
+        void AutoCreateExpress()
+        {
 
             if (m_ExtendClass == CoreMetaClassManager.uint8MetaClass
                || m_ExtendClass == CoreMetaClassManager.int8MetaClass
@@ -303,7 +314,7 @@ namespace SimpleLanguage.Core
                     {
                         if (mme.realMetaType == null)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Warning Enum Member Enum 鎴愬憳绗竴浣嶅繀椤绘湁=鍙");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Warning Enum Member Enum realMetaType is null");
                             continue;
                         }
                     }
@@ -311,7 +322,7 @@ namespace SimpleLanguage.Core
                     {
                         if (mme.enumValueConstExpressNode == null)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╟onst鍊肩被鍙橀噺");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum const express ");
                             continue;
                         }
 
@@ -324,7 +335,7 @@ namespace SimpleLanguage.Core
                             }
                             catch (Exception ex)
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum ex" + ex.ToString());
                                 continue;
                             }
                         }
@@ -337,7 +348,7 @@ namespace SimpleLanguage.Core
                                 }
                                 catch (Exception ex)
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                     continue;
                                 }
                             }
@@ -350,7 +361,7 @@ namespace SimpleLanguage.Core
                                     }
                                     catch (Exception ex)
                                     {
-                                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                         continue;
                                     }
                                 }
@@ -363,7 +374,7 @@ namespace SimpleLanguage.Core
                                         }
                                         catch (Exception ex)
                                         {
-                                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                             continue;
                                         }
                                     }
@@ -376,7 +387,7 @@ namespace SimpleLanguage.Core
                                             }
                                             catch (Exception ex)
                                             {
-                                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                                 continue;
                                             }
                                         }
@@ -389,7 +400,7 @@ namespace SimpleLanguage.Core
                                                 }
                                                 catch (Exception ex)
                                                 {
-                                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
                                                     continue;
                                                 }
                                             }
@@ -432,7 +443,7 @@ namespace SimpleLanguage.Core
                         Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╟onst鍊肩被鍙橀噺");
                         continue;
                     }
-                    if (mme.enumValueConstExpressNode.eType !=  m_ExtendClass.eType )
+                    if (mme.enumValueConstExpressNode.eType != m_ExtendClass.eType)
                     {
                         Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╯tring鍊肩被鍙橀噺");
                         continue;
@@ -536,6 +547,14 @@ namespace SimpleLanguage.Core
                 }
             }
         }
+        void CreateMemberClass()
+        {
+            foreach (var v in m_MetaMemberVariableDict)
+            {
+                MetaMemberEnum mme = v.Value as MetaMemberEnum;
+                if (mme == null) continue;
+            }
+        }
         public void UpdateAllName()
         {
             m_AllName = m_MetaNode?.GetAllName() ?? m_Name;
@@ -544,46 +563,36 @@ namespace SimpleLanguage.Core
             //    v.Value.UpdateAllName();
             //}
         }
-        //public override string ToFormatString()
-        //{
-        //    StringBuilder stringBuilder = new StringBuilder();
-        //    stringBuilder.Clear();
-        //    for (int i = 0; i < realDeep; i++)
-        //        stringBuilder.Append(Global.tabChar);
-        //    stringBuilder.Append(permission.ToFormatString());
-        //    stringBuilder.Append(" ");
-        //    stringBuilder.Append("enum ");
-        //    if (topLevelMetaNamespace != null)
-        //    {
-        //        stringBuilder.Append(topLevelMetaNamespace.allName + ".");
-        //    }
-        //    stringBuilder.Append(name);
+        public override string ToFormatString()
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.Clear();
+            for (int i = 0; i < realDeep; i++)
+                stringBuilder.Append(Global.tabChar);
+            stringBuilder.Append(permission.ToFormatString());
+            stringBuilder.Append(" ");
+            stringBuilder.Append("enum ");
+            //if (topLevelMetaNamespace != null)
+            //{
+            //    stringBuilder.Append(topLevelMetaNamespace.allName + ".");
+            //}
+            stringBuilder.Append(name);
 
-        //    stringBuilder.Append(Environment.NewLine);
-        //    for (int i = 0; i < realDeep; i++)
-        //        stringBuilder.Append(Global.tabChar);
-        //    stringBuilder.Append("{" + Environment.NewLine);
+            stringBuilder.Append(Environment.NewLine);
+            for (int i = 0; i < realDeep; i++)
+                stringBuilder.Append(Global.tabChar);
+            stringBuilder.Append("{" + Environment.NewLine);
 
-        //    foreach (var v in m_MetaMemberEnumDict )
-        //    {
-        //        MetaMemberEnum mmv = v.Value;                
-        //        if (mmv.fromType == EFromType.Code)
-        //        {
-        //            stringBuilder.Append(mmv.ToFormatString());
-        //            stringBuilder.Append(Environment.NewLine);
-        //        }
-        //        else
-        //        {
-        //            stringBuilder.Append("Errrrrroooorrr ---" + mmv.ToFormatString());
-        //            stringBuilder.Append(Environment.NewLine);
-        //        }
-        //    }
+            foreach (var v in m_MetaMemberVariableDict)
+            {
+                stringBuilder.AppendLine(v.Value.ToFormatString());
+            }
 
-        //    for (int i = 0; i < realDeep; i++)
-        //        stringBuilder.Append(Global.tabChar);
-        //    stringBuilder.Append("}" + Environment.NewLine);
+            for (int i = 0; i < realDeep; i++)
+                stringBuilder.Append(Global.tabChar);
+            stringBuilder.Append("}" + Environment.NewLine);
 
-        //    return stringBuilder.ToString();
-        //}
+            return stringBuilder.ToString();
+        }
     }
 }
