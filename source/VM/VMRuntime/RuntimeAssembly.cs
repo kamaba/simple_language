@@ -38,7 +38,7 @@ namespace SimpleLanguage.VM
 
             if (!File.Exists(assemblyPath))
             {
-                Log.AddRuntimeLog(LID.AutoRuntimeAssemblyL41, $"LoadFromPath: assembly not found: {assemblyPath}");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"LoadFromPath: assembly not found: {assemblyPath}");
                 return null;
             }
 

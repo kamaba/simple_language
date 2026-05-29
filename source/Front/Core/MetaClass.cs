@@ -69,6 +69,7 @@ namespace SimpleLanguage.Core
         public Dictionary<string, MetaMemberVariable> metaExtendMemeberVariableDict => m_MetaExtendMemeberVariableDict;
         public List<MetaType> bindStructTemplateMetaClassList => m_BindStructTemplateMetaClassList;
         public Dictionary<Token, FileMetaClass> fileMetaClassDict => m_FileMetaClassDict;
+        public bool needInitMemberVariables => m_NeedInitMemberVariables;
         public bool isHandleExtendVariableDirty { get; set; } = false;
 
 
@@ -94,6 +95,7 @@ namespace SimpleLanguage.Core
         protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
         protected bool m_IsInterfaceClass = false;
         protected bool m_IsAbstractClass = false;
+        protected bool m_NeedInitMemberVariables = true;
 
         protected readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
 
@@ -171,6 +173,7 @@ namespace SimpleLanguage.Core
                 v.SetDeep(deep + 1);
             }
         }
+        public void SetNeedInitMemberVariables( bool flag) { m_NeedInitMemberVariables = flag; }
         public void SetAbstractClass(bool v) { m_IsAbstractClass = v; }
         public void UpdateClassAllName()
         {

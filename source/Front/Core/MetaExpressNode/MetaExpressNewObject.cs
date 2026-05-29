@@ -344,6 +344,7 @@ namespace SimpleLanguage.Core
             m_Token = men.token;
             this.m_MetaMemberVariable = mmv;
             m_DefineMetaType = mmv.GetFinalMetaType();
+            m_Id = m_MetaMemberVariable.index;
             m_AssignTargetType = EAssignTargetType.MemberVariable;
         }
         /// <summary>

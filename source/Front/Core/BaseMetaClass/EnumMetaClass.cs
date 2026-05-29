@@ -46,17 +46,12 @@ namespace SimpleLanguage.Core
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Member;
             m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_NeedInitMemberVariables = false;
         }
         public override void ParseInnerFunction()
         {
-            MetaMemberVariable value = new MetaMemberVariable(this, "value");
-            AddMetaMemberVariable(value, false);
-            value.SetMetaDefineType(new MetaType(CoreMetaClassManager.objectMetaClass));
-            value.SetIsDefineMetaType(false);
-            var mcen = new MetaConstExpressNode(EType.Null, null);
-            value.SetExpress(mcen);
-
             MetaMemberVariable name = new MetaMemberVariable(this, "name");
+            name.SetIndex(0);
             AddMetaMemberVariable(name, false);
             name.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
             name.SetIsDefineMetaType(true);
@@ -64,11 +59,21 @@ namespace SimpleLanguage.Core
             name.SetExpress(namecexp);
 
             MetaMemberVariable index = new MetaMemberVariable(this, "index");
+            index.SetIndex(1);
             AddMetaMemberVariable(index, false);
             index.SetMetaDefineType(new MetaType(CoreMetaClassManager.int32MetaClass));
             index.SetIsDefineMetaType(true);
             var indexcexp = new MetaConstExpressNode(EType.Int32, 0);
             index.SetExpress(indexcexp);
+
+
+            MetaMemberVariable value = new MetaMemberVariable(this, "value");
+            value.SetIndex(2);
+            AddMetaMemberVariable(value, false);
+            value.SetMetaDefineType(new MetaType(CoreMetaClassManager.objectMetaClass));
+            value.SetIsDefineMetaType(false);
+            var mcen = new MetaConstExpressNode(EType.Null, null);
+            value.SetExpress(mcen);
         }
         public static MetaClass CreateMetaClass()
         {

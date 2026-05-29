@@ -93,12 +93,12 @@ namespace SimpleLanguage.VM
         {
             if (index < 0 )
             {
-                Log.AddRuntimeLog(LID.AutoClassObjectL95, "执行的参数超出范围!! < 0 ");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "执行的参数超出范围!! < 0 ");
                 return;
             }
             if (m_MemberRuntimeObjectArray == null || index >= m_MemberRuntimeObjectArray.Length)
             {
-                Log.AddRuntimeLog(LID.AutoClassObjectL100, "执行的参数超出范围!!");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "执行的参数超出范围!!");
                 return;
             }
             m_MemberRuntimeObjectArray[index].SetSValueByRuntimeObjct(ref svalue);
@@ -108,7 +108,7 @@ namespace SimpleLanguage.VM
         {
             if (m_MemberRuntimeObjectArray == null || index < 0 || index >= m_MemberRuntimeObjectArray.Length)
             {
-                Log.AddRuntimeLog(LID.AutoClassObjectL109, "执行的参数超出范围!!");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "执行的参数超出范围!!");
                 return;
             }
 

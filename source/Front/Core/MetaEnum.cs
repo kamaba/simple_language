@@ -86,6 +86,7 @@ namespace SimpleLanguage.Core
                 // 鍚﹀垯 for-in 鏋氫妇閬嶅巻浼氬嚭鐜伴澶栭」骞跺鑷村鍑虹殑 IR 閫昏緫寮傚父銆?
                 var enumMembers = m_MetaMemberVariableDict.Values                    
                     .OrderBy(v => v.index)
+                    .Where(v => v.name != "values")
                     .ToList();
 
                 foreach (var mme in enumMembers)
@@ -264,11 +265,14 @@ namespace SimpleLanguage.Core
                     return;
                 }
 
-                MetaMemberVariable mmv = MetaMemberEnum.WrapAsEnumMemberObjectExpress(this, v, m_MetaMemberEnumDict.Count);
                 m_MetaMemberEnumDict.Add(mme.name, mme);
-                m_MetaMemberVariableDict.Add(mme.name, mmv);
 
-                mme.SetRelationMemberVariable(mmv);
+                MetaMemberVariable mmv = MetaMemberEnum.WrapAsEnumMemberObjectExpress(this, v, mme.index);
+                if (mmv != null)
+                {
+                    m_MetaMemberVariableDict.Add(mme.name, mmv);
+                    mme.SetRelationMemberVariable(mmv);
+                }
 
                 MetaVariableManager.instance.AddMetaEnumVariable(mme);
             }

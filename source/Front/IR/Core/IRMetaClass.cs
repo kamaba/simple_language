@@ -77,6 +77,7 @@ namespace SimpleLanguage.IR
                 throw new System.ArgumentNullException(nameof(mc));
             }
             InitFromMetaOwner(mc, mc.isInterfaceClass ? IRMetaClassKind.Interface : IRMetaClassKind.Class);
+            m_NeedInitMemberVariable = mc.needInitMemberVariables;
         }
 
         public IRMetaClass(MetaData md)

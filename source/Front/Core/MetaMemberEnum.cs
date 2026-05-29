@@ -43,7 +43,7 @@ namespace SimpleLanguage.Core
             m_FileMetaMemeberVariable = fmmv;
             m_Name = fmmv.name;
             AddPingToken(fmmv.nameToken);
-            m_Index = mc.metaMemberVariableDict.Count;
+            m_Index = mc.metaMemberEnumDict.Count;
             m_FromType = EFromType.Code;
             m_VariableFrom = EVariableFrom.EnumMember;
             m_Permission = EPermission.Public;
@@ -188,9 +188,11 @@ namespace SimpleLanguage.Core
             }
 
             var nameExpr = new MetaConstExpressNode(EType.String, fmmv.name );
+            nameExpr.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
             nameExpr.SetToken(fmmv.token);
             nameExpr.CalcReturnType();
             var indexExpr = new MetaConstExpressNode(EType.Int32, index );
+            indexExpr.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
             indexExpr.SetToken(fmmv.token);
             indexExpr.CalcReturnType();
 

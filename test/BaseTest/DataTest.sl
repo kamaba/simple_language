@@ -213,7 +213,7 @@ DataTest
         global.println(StudentRecord.meta.level)
         global.println(ClassDataEnumSample.cc.value)
         !#
-        global.println(ClassDataEnumSample.kind)
+        global.println(ClassDataEnumSample.kind.toString())
 
         # See top-level syntax samples in this file:
         # - array members
