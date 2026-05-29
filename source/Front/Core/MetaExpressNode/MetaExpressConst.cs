@@ -285,7 +285,7 @@ namespace SimpleLanguage.Core
         }
         private void Parse1(EType _etype, object val)
         {
-            switch (eType)
+            switch (_etype)
             {
                 case EType.Boolean:
                     {
@@ -299,9 +299,17 @@ namespace SimpleLanguage.Core
                         eType = EType.Null;
                     }
                     break;
+                case EType.String:
+                    {
+                        value = val?.ToString();
+                        stringRef = StringPool.AddString(value as string);
+                        eType = EType.String;
+                    }
+                    break;
                 default:
                     {
                         value = val;
+                        eType = _etype;
                     }
                     break;
             }
@@ -379,6 +387,7 @@ namespace SimpleLanguage.Core
                 {
                     eType = EType.String;
                     value = value.ToString();
+                    stringRef = StringPool.AddString(value as string);
                 }
                 else
                 {

@@ -9,6 +9,9 @@ public class Member extends Object
     }
     public string toString()
     {
-        ret this.value.toString()
+        string nameText = this.name == null ? "" : this.name
+        string indexText = this.index.toString()
+        string valueText = this.value == null ? "null" : this.value.toString()
+        ret "Member{name=" + nameText + ", index=" + indexText + ", value=" + valueText + "}"
     }
 }

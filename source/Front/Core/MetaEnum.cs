@@ -118,6 +118,34 @@ namespace SimpleLanguage.Core
 
             }
         }
+        void UpsertRelationMemberValueAssign(MetaMemberEnum mme, MetaExpressNodeBase valueExpress)
+        {
+            if (mme == null || valueExpress == null)
+            {
+                return;
+            }
+            if (mme.relationMemberVariable?.express is not MetaNewObjectExpressNode mnoen)
+            {
+                return;
+            }
+
+            var valueMv = CoreMetaClassManager.memberMetaClass.GetMetaMemberVariableByName("value");
+            if (valueMv == null)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Core.Member 缺少 value 字段，无法构造 Member 初始化");
+                return;
+            }
+
+            var list = mnoen.assignStatementsList;
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                if (list[i]?.defineName == "value")
+                {
+                    list.RemoveAt(i);
+                }
+            }
+            list.Add(new MetaBraceAssignStatements(valueMv, null, mme.ownerMetaBase, valueExpress));
+        }
         /// <summary>
         /// Enum 的 extends 底层类型：仅允许内置整型族与 string（与成员语义分支一致），不允许用户 class。
         /// </summary>
@@ -324,6 +352,8 @@ namespace SimpleLanguage.Core
                             continue;
                         }
 
+                        UpsertRelationMemberValueAssign(mme, mme.express);
+
                         dynamic explicitValue = 0;
                         if (m_ExtendClass == CoreMetaClassManager.uint8MetaClass)
                         {
@@ -427,20 +457,7 @@ namespace SimpleLanguage.Core
 
 
 
-                        if (mme.relationMemberVariable.express is MetaNewObjectExpressNode mnoen)
-                        {
-                            var valueMv = CoreMetaClassManager.memberMetaClass.GetMetaMemberVariableByName("value");
-                            if (valueMv == null)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
-                                return;
-                            }
-                            valueMv.SetIsDefineMetaType(true);
-                            valueMv.SetMetaDefineType(mme.defineMetaType);
-                            valueMv.SetRealMetaType(mme.realMetaType);
-                            var list = mnoen.assignStatementsList;
-                            list.Add(new MetaBraceAssignStatements(valueMv, null, mme.ownerMetaBase, autoConst ) );
-                        }
+                        UpsertRelationMemberValueAssign(mme, autoConst);
                     }
                     i++;
                 }

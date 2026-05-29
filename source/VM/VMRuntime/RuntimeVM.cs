@@ -1314,6 +1314,39 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Pop:
                     if (m_ValueIndex > 0) m_ValueIndex--;
                     break;
+                case EIROpCode.LoadStaticField:
+                    {
+                        var mt = TryGetInstructionRuntimeDefType(iri);
+                        if (mt != null)
+                        {
+                            var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(mt);
+                            if (rt != null)
+                            {
+                                if (TryPushStackSlot(out int slot))
+                                    rt.GetStaticMemberVariableSValue(iri.index, ref m_ValueStack[slot]);
+                            }
+                        }
+                    }
+                    break;
+                case EIROpCode.StoreStaticField:
+                    {
+                        var mt = TryGetInstructionRuntimeDefType(iri);
+                        if (mt != null)
+                        {
+                            if (m_ValueIndex > 0)
+                            {
+                                var val = m_ValueStack[--m_ValueIndex];
+                                var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(mt);
+                                if (rt == null)
+                                {
+                                    Log.AddRuntimeLog(LID.ShowMessageAssert, "StoreStaticField failed to get runtime type for metadata type: ");
+                                    break;
+                                }
+                                rt?.SetStaticMemberVariableSValue(iri.index, val);
+                            }
+                        }
+                    }
+                    break;
                 case EIROpCode.LoadNotStaticField:
                     {
                         // expects instance on stack
@@ -2334,39 +2367,6 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Ret:
                     // stop execution early
                     m_ExecuteIndex = m_ExecuteCount;
-                    break;
-                case EIROpCode.LoadStaticField:
-                    {
-                        var mt = TryGetInstructionRuntimeDefType(iri);
-                        if (mt != null)
-                        {
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(mt);
-                            if (rt != null)
-                            {
-                                if (TryPushStackSlot(out int slot))
-                                    rt.GetStaticMemberVariableSValue(iri.index, ref m_ValueStack[slot]);
-                            }
-                        }
-                    }
-                    break;
-                case EIROpCode.StoreStaticField:
-                    {
-                        var mt = TryGetInstructionRuntimeDefType(iri);
-                        if (mt != null)
-                        {
-                            if (m_ValueIndex > 0)
-                            {
-                                var val = m_ValueStack[--m_ValueIndex];
-                                var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(mt);
-                                if( rt == null )
-                                {
-                                    Log.AddRuntimeLog(LID.ShowMessageAssert, "StoreStaticField failed to get runtime type for metadata type: ");
-                                    break;
-                                }
-                                rt?.SetStaticMemberVariableSValue(iri.index, val);
-                            }
-                        }
-                    }
                     break;
                 case EIROpCode.Beq:
                     {
