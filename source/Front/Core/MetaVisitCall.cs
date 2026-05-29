@@ -673,7 +673,7 @@ namespace SimpleLanguage.Core
                         // When enum member is passed into a function context,
                         // we must expose its type as the *declared enum* (m_CallMetaType),
                         // not the underlying primitive enum storage type.
-                        return m_CallMetaType ?? (variable?.isDefineMetaType == true ? variable.defineMetaType : variable?.realMetaType);
+                        return variable.GetFinalMetaType();
                     }
                 case EVisitType.New:
                     {

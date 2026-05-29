@@ -59,7 +59,8 @@ namespace SimpleLanguage.IR
                     }
                 }
 
-                return new IRLoadVariable(storageMt ?? new IRMetaType(fieldOwner), _irMethod, index, IRMetaVariableFrom.Static);
+                var irvar = new IRLoadVariable(new IRMetaType(fieldOwner), _irMethod, index, IRMetaVariableFrom.Static);
+                return irvar;
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.ClassMember)
             {
@@ -294,7 +295,14 @@ namespace SimpleLanguage.IR
                 m_LoadVarData.opValue = irmt;
                 m_LoadVarData.opCode = EIROpCode.LoadStaticField;
                 m_LoadVarData.index = id;
-                m_LoadVarData.debugStaticOwnerIrName = _irMethod?.irOwnerMetaClass?.irName;
+                if(_irMethod != null )
+                {
+                    m_LoadVarData.debugStaticOwnerIrName = _irMethod?.irOwnerMetaClass?.irName;
+                }
+                else
+                {
+                    m_LoadVarData.debugStaticOwnerIrName = irmt.irMetaClass?.irName;
+                }
                 if(id < 0 )
                 {
                     Log.AddIRLog(LID.IRMethodNotFoundVariable, "in static id < 0", _irMethod.id, id);

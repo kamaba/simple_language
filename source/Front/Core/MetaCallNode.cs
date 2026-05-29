@@ -1083,8 +1083,8 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            MetaMemberEnum mme = m_FrontCallNode.m_MetaEnum.GetMemberEnumByName(m_Name);
-                            if (mme != null)
+                            MetaMemberVariable mmv = m_FrontCallNode.m_MetaEnum.GetMetaMemberVariableByName(m_Name);
+                            if (mmv != null)
                             {
                                 if (m_IsFunction)// Enum e = Enum.MetaVaraible( 2 )
                                 {
@@ -1093,11 +1093,12 @@ namespace SimpleLanguage.Core
                                 }
                                 else
                                 {
-                                    m_MetaVariable = mme;
+                                    m_MetaVariable = mmv;
                                     m_CallNodeType = ECallNodeType.EnumMember;
                                     if (m_FrontCallNode?.metaEnum != null)
                                     {
                                         m_MetaType = new MetaType(m_FrontCallNode.metaEnum);
+                                        m_CallMetaType = m_MetaType;
                                     }
                                 }
                             }

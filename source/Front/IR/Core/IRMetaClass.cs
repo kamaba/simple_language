@@ -361,11 +361,13 @@ namespace SimpleLanguage.IR
 
         void CreateMemberDataFromMetaEnum(MetaEnum me)
         {
-            var ordered = me.exportMemberVariableList;
+            var ordered = me.metaMemberVariableDict;
 
-            for (int i = 0; i < ordered.Count; i++)
+            int index = 0;
+            foreach( var v in ordered )
             {
-                var mmv = ordered[i];                
+                var mmv = v.Value;
+                index++;
                 var irmv = new IRMetaVariable(this, mmv, mmv.index);
                 m_StaticIRMetaVariableList.Add(irmv);
                 AddMetaMemberVariableIndexBindHashCode(irmv.id, mmv.index );

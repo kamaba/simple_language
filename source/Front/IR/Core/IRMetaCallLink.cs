@@ -101,7 +101,13 @@ namespace SimpleLanguage.Core.IR
                     Log.AddIRLog(LID.IRMethodNotFoundVariable, cnode.token, $"load variable failed (null IR): {mv?.name}");
                 }
                 else
+                {
                     irList.Add(irVar);
+                    for (int i = 0; i < irVar.IRDataList.Count; i++)
+                    {
+                        irVar.IRDataList[i].SetDebugInfoByToken(cnode.token);
+                    }
+                }
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.EnumMember)
             {
@@ -118,7 +124,7 @@ namespace SimpleLanguage.Core.IR
                 }
                 else if (owirmc != null)
                 {
-                    var srcMt = mv.GetFinalMetaType() ?? mv.defineMetaType ?? mv.realMetaType;
+                    var srcMt = mv.GetFinalMetaType();
                     if (srcMt != null)
                     {
                         irLoadMt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(srcMt, owirmc);
@@ -136,7 +142,13 @@ namespace SimpleLanguage.Core.IR
                     Log.AddIRLog(LID.IRMethodNotFoundVariable, cnode.token, $"load enum/variable failed (null IR): {mv?.name}");
                 }
                 else
+                {
                     irList.Add(irVar);
+                    for (int i = 0; i < irVar.IRDataList.Count; i++)
+                    {
+                        irVar.IRDataList[i].SetDebugInfoByToken(cnode.token);
+                    }
+                }
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.VisitVariable)
             {
@@ -151,7 +163,13 @@ namespace SimpleLanguage.Core.IR
                     Log.AddIRLog(LID.IRMethodNotFoundVariable, cnode.token, $"load visit target failed (null IR): {mv?.name}");
                 }
                 else
+                {
                     irList.Add(irVar);
+                    for (int i = 0; i < irVar.IRDataList.Count; i++)
+                    {
+                        irVar.IRDataList[i].SetDebugInfoByToken(cnode.token);
+                    }
+                }
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MethodCall)
             {

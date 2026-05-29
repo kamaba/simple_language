@@ -14,10 +14,13 @@ namespace SimpleLanguage.Core
 {
     public sealed class MetaMemberEnum : MetaMemberVariable
     {
+        public MetaMemberVariable relationMemberVariable => m_RelationMemberVariable;
         public MetaConstExpressNode enumValueConstExpressNode => m_Express as MetaConstExpressNode;
         private bool isExplicitAssign => m_IsExplicitAssign;
 
-        private bool m_IsExplicitAssign = false;       
+        private bool m_IsExplicitAssign = false;
+
+        private MetaMemberVariable m_RelationMemberVariable = null;
 
         //public MetaMemberEnum(MetaClass mc, string name, MetaClass extendClass) : base(mc, name)
         //{
@@ -87,6 +90,10 @@ namespace SimpleLanguage.Core
         {
             m_IsExplicitAssign = value;
         }
+        public void SetRelationMemberVariable(MetaMemberVariable mmv )
+        {
+            this.m_RelationMemberVariable = mmv;
+        }
         public override void CalcParseLevel()
         {
         }
@@ -116,6 +123,21 @@ namespace SimpleLanguage.Core
                     {
                         m_IsExplicitAssign = false;
                     }
+
+
+                    if (m_RelationMemberVariable.express is MetaNewObjectExpressNode mnoen)
+                    {
+                        var valueMv = CoreMetaClassManager.memberMetaClass.GetMetaMemberVariableByName("value");
+                        if (valueMv == null)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
+                            return;
+                        }
+                        valueMv.SetIsDefineMetaType(true);
+                        valueMv.SetMetaDefineType(m_DefineMetaType);
+                        var list = mnoen.assignStatementsList;
+                        list.Add(new MetaBraceAssignStatements(valueMv, null, ownerMetaBase, m_Express));
+                    }
                 }
             }
         }
@@ -144,14 +166,9 @@ namespace SimpleLanguage.Core
             }
         }
 
-        public MetaMemberVariable WrapAsEnumMemberObjectExpress()
+        public static MetaMemberVariable WrapAsEnumMemberObjectExpress( MetaEnum me, FileMetaMemberVariable fmmv, int index )
         {
-            if (m_Express == null)
-            {
-                return null;
-            }
-
-            var ownerEnum = ownerMetaEnum;
+            var ownerEnum = me;
             var memberClass = CoreMetaClassManager.memberMetaClass;
             if (ownerEnum == null || memberClass == null)
             {
@@ -159,35 +176,41 @@ namespace SimpleLanguage.Core
             }
 
             var memberType = new MetaType(memberClass);
-            var wrappedNewObject = new MetaNewObjectExpressNode(memberType, ownerEnum, m_OwnerMetaBlockStatements, null);
-            FillMemberNewObjectAssignList(
-                wrappedNewObject,
-                m_OwnerMetaBlockStatements,
-                ownerEnum,
-                m_Express,
-                m_Name,
-                m_Index);
+            var wrappedNewObject = new MetaNewObjectExpressNode(memberType, ownerEnum, null, null);
+
+            var nameMv = memberClass.GetMetaMemberVariableByName("name");
+            var valueMv = memberClass.GetMetaMemberVariableByName("value");
+            var indexMv = memberClass.GetMetaMemberVariableByName("index");
+            if (nameMv == null || valueMv == null || indexMv == null)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, fmmv.token, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
+                return null;
+            }
+
+            var nameExpr = new MetaConstExpressNode(EType.String, fmmv.name );
+            nameExpr.SetToken(fmmv.token);
+            nameExpr.CalcReturnType();
+            var indexExpr = new MetaConstExpressNode(EType.Int32, index );
+            indexExpr.SetToken(fmmv.token);
+            indexExpr.CalcReturnType();
+
+            var list = wrappedNewObject.assignStatementsList;
+            list.Add(new MetaBraceAssignStatements(nameMv, null, ownerEnum, nameExpr));
+            list.Add(new MetaBraceAssignStatements(indexMv, null, ownerEnum, indexExpr));
+            //list.Add(new MetaBraceAssignStatements(valueMv, null, ownerEnum, null));
 
             wrappedNewObject.CalcReturnType();
 
-            var exportVariable = new MetaMemberVariable(ownerEnum, m_Name);
+            var exportVariable = new MetaMemberVariable(ownerEnum, fmmv.name );
+            exportVariable.SetToken(fmmv.token);
             exportVariable.SetVariableFrom(EVariableFrom.EnumMember);
-            exportVariable.SetIndex(m_Index);
+            exportVariable.SetIndex(index);
+            exportVariable.SetIsStatic(true);
+            exportVariable.SetIsConst(fmmv.mutToken != null);
             exportVariable.SetIsDefineMetaType(true);
             exportVariable.SetMetaDefineType(memberType);
             exportVariable.SetRealMetaType(new MetaType(memberType));
             exportVariable.SetExpress(wrappedNewObject);
-
-            var exportList = ownerEnum.exportMemberVariableList;
-            int existsIndex = exportList.FindIndex(v => v != null && v.name == exportVariable.name);
-            if (existsIndex >= 0)
-            {
-                exportList[existsIndex] = exportVariable;
-            }
-            else
-            {
-                exportList.Add(exportVariable);
-            }
 
             return exportVariable;
         }
@@ -224,30 +247,6 @@ namespace SimpleLanguage.Core
             string memberName,
             int memberIndex)
         {
-            var memberClass = CoreMetaClassManager.memberMetaClass;
-            if (newMember?.assignStatementsList == null || valueExpr == null || memberClass == null)
-            {
-                return;
-            }
-
-            var nameMv = memberClass.GetMetaMemberVariableByName("name");
-            var valueMv = memberClass.GetMetaMemberVariableByName("value");
-            var indexMv = memberClass.GetMetaMemberVariableByName("index");
-            if (nameMv == null || valueMv == null || indexMv == null)
-            {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
-                return;
-            }
-
-            var nameExpr = new MetaConstExpressNode(EType.String, memberName ?? string.Empty);
-            nameExpr.CalcReturnType();
-            var indexExpr = new MetaConstExpressNode(EType.Int32, memberIndex);
-            indexExpr.CalcReturnType();
-
-            var list = newMember.assignStatementsList;
-            list.Add(new MetaBraceAssignStatements(nameMv, mbs, owmb, nameExpr));
-            list.Add(new MetaBraceAssignStatements(valueMv, mbs, owmb, valueExpr));
-            list.Add(new MetaBraceAssignStatements(indexMv, mbs, owmb, indexExpr));
         }
         public override string ToFormatString()
         {

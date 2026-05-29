@@ -31,6 +31,7 @@ namespace SimpleLanguage.Core
         }
         public EPermission permission => m_Permission;
         public virtual string name => m_Name;
+        public virtual string allName => m_AllName;
         public RefFromType refFromType => m_RefFromType;
         public MetaNode metaNode => m_MetaNode;
         public string pathName => m_MetaNode?.GetAllName();
