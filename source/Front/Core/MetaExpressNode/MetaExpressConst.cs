@@ -23,46 +23,46 @@ namespace SimpleLanguage.Core
             public int Length;
         }
 
-        static class StringPool
-        {
-            private static List<byte> s_pool = new List<byte>();
-            private static readonly object s_lock = new object();
+        //static class StringPool
+        //{
+        //    private static List<byte> s_pool = new List<byte>();
+        //    private static readonly object s_lock = new object();
 
-            public static StringRef AddString(string s)
-            {
-                if (s == null)
-                {
-                    return new StringRef { Offset = -1, Length = 0 };
-                }
-                var bytes = Encoding.UTF8.GetBytes(s);
-                lock (s_lock)
-                {
-                    int off = s_pool.Count;
-                    s_pool.AddRange(bytes);
-                    return new StringRef { Offset = off, Length = bytes.Length };
-                }
-            }
+        //    public static StringRef AddString(string s)
+        //    {
+        //        if (s == null)
+        //        {
+        //            return new StringRef { Offset = -1, Length = 0 };
+        //        }
+        //        var bytes = Encoding.UTF8.GetBytes(s);
+        //        lock (s_lock)
+        //        {
+        //            int off = s_pool.Count;
+        //            s_pool.AddRange(bytes);
+        //            return new StringRef { Offset = off, Length = bytes.Length };
+        //        }
+        //    }
 
-            public static string GetString(StringRef r)
-            {
-                if (r.Offset < 0 || r.Length == 0) return null;
-                // make copy for decoding
-                byte[] arr;
-                lock (s_lock)
-                {
-                    arr = s_pool.ToArray();
-                }
-                return Encoding.UTF8.GetString(arr, r.Offset, r.Length);
-            }
+        //    public static string GetString(StringRef r)
+        //    {
+        //        if (r.Offset < 0 || r.Length == 0) return null;
+        //        // make copy for decoding
+        //        byte[] arr;
+        //        lock (s_lock)
+        //        {
+        //            arr = s_pool.ToArray();
+        //        }
+        //        return Encoding.UTF8.GetString(arr, r.Offset, r.Length);
+        //    }
 
-            public static byte[] GetPoolBytes()
-            {
-                lock (s_lock)
-                {
-                    return s_pool.ToArray();
-                }
-            }
-        }
+        //    public static byte[] GetPoolBytes()
+        //    {
+        //        lock (s_lock)
+        //        {
+        //            return s_pool.ToArray();
+        //        }
+        //    }
+        //}
 
         public static MetaConstExpressNode operator +(MetaConstExpressNode left, MetaConstExpressNode right)
         {
@@ -111,11 +111,10 @@ namespace SimpleLanguage.Core
         public List<MetaExpressNodeBase> stringParseExpressList => m_StringParseExpressList;
         public object value { get; set; } = null;
         // when eType == String, this holds the pooled string reference
-        public StringRef stringRef { get; private set; }
+        //public StringRef stringRef { get; private set; }
         // helper to inspect pooled string during debugging
-        public string PooledString => StringPool.GetString(stringRef);
+        //public string PooledString => StringPool.GetString(stringRef);
         public EType eType { get; private set; } = EType.None;
-        public override Token token => m_FileMetaConstValueTerm?.token;
 
         private FileMetaConstValueTerm m_FileMetaConstValueTerm = null;
         private List<MetaExpressNodeBase> m_StringParseExpressList = new List<MetaExpressNodeBase>();
@@ -236,7 +235,7 @@ namespace SimpleLanguage.Core
                 {
                     var s = cdlist[0][0].lexeme.ToString();
                     value = s;
-                    stringRef = StringPool.AddString(s);
+                    //stringRef = s;
                     return;
                 }
                 else
@@ -302,7 +301,7 @@ namespace SimpleLanguage.Core
                 case EType.String:
                     {
                         value = val?.ToString();
-                        stringRef = StringPool.AddString(value as string);
+                        //stringRef = StringPool.AddString(value as string);
                         eType = EType.String;
                     }
                     break;
@@ -387,7 +386,7 @@ namespace SimpleLanguage.Core
                 {
                     eType = EType.String;
                     value = value.ToString();
-                    stringRef = StringPool.AddString(value as string);
+                    //stringRef = StringPool.AddString(value as string);
                 }
                 else
                 {

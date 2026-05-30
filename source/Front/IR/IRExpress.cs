@@ -478,7 +478,7 @@ namespace SimpleLanguage.IR
                             IRData irdata = new IRData();
                             irdata.index = lirmv.index;
                             irdata.opCode = EIROpCode.StoreNotStaticField1;
-                            irdata.SetDebugInfoByToken(mnoen.token);
+                            irdata.SetDebugInfoByToken(men.token);
                             m_IRDataList.Add(irdata);
                         }
                     }

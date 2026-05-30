@@ -275,25 +275,20 @@ namespace SimpleLanguage.IR
                 return;
             }
 
-            var md = ClassManager.instance.FindMetaDataByName(mc.allName);
-            if (md != null)
-            {
-                CreateMemberDataFromMetaData(md);
-                return;
-            }
+            //var md = ClassManager.instance.FindMetaDataByName(mc.allName);
+            //if (md != null)
+            //{
+            //    CreateMemberDataFromMetaData(md);
+            //    return;
+            //}
 
-            var localMetaMemberVariables = mc.GetMetaMemberVariableListByFlag(false);
+            var localMetaMemberVariables = mc.GetMetaMemberVariableListByFlag(false);            
             for (int i = 0; i < localMetaMemberVariables.Count; i++)
             {
                 var v = localMetaMemberVariables[i];
                 IRMetaVariable irmv = new IRMetaVariable(this, v, i);
                 m_LocalIRMetaVariableList.Add(irmv);
                 AddMetaMemberVariableIndexBindHashCode(irmv.id, i);
-                if (v.isInnerDefine == false)
-                {
-                    //if (v.metaDefineType.metaClass != null)
-                    //    m_MetaTypeList.Add(v.metaDefineType.metaClass.eType);
-                }
             }
 
             var staticMetaMemberVariables = mc.GetMetaMemberVariableListByFlag(true);
@@ -544,16 +539,8 @@ namespace SimpleLanguage.IR
                 if (v.express == null)
                     continue;
 
-                if (v.express is MetaNewObjectExpressNode mnoe2)
-                {
-                    IRNewExpress irexp2 = new IRNewExpress(null, mnoe2);
-                    list.AddRange(irexp2.IRDataList);
-                }
-                else
-                {
-                    var irexp2 = IRExpressManager.CreateExpress(null, v.express);
-                    list.AddRange(irexp2.IRDataList);
-                }
+                var irexp2 = IRExpressManager.CreateExpress(null, v.express);
+                list.AddRange(irexp2.IRDataList);
 
                 IRData irdata2 = new IRData();
                 irdata2.id = list.Count;
@@ -563,6 +550,9 @@ namespace SimpleLanguage.IR
                 irdata2.index = v.index;
                 irdata2.debugStaticOwnerIrName = this.irName;
                 list.Add(irdata2);
+
+                v.AddIRDataList(irexp2.IRDataList);
+                v.AddIRData(irdata2);
             }
 
             return list;

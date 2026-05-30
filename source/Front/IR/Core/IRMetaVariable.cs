@@ -155,6 +155,14 @@ namespace SimpleLanguage.IR
         {
             this.m_IsStatic = iss;
         }
+        public void AddIRDataList( List<IRData> irdataList )
+        {
+            m_IRDataList.AddRange(irdataList);
+        }
+        public void AddIRData( IRData irdata )
+        {
+            m_IRDataList.Add(irdata);
+        }
         private void FillDebugInfo(MetaBase mb, string fallbackName, string info)
         {
             m_DebugInfo = new DebugInfo
