@@ -202,17 +202,16 @@ DataTest
     static memberShapeCoverageTest()
     {
         global.println("----- memberShapeCoverageTest -----")
-        #!
+        
         global.println("member shape samples added in DataTest declarations and comments")
         global.println(StructMatrix)
         global.println(AnonymousNestedDataSample)
         global.println(ClassDataEnumSample)
         global.println(MixedArrayElementSample)
         global.println(StructMatrix.profile.address.city)
-        global.println(StructMatrix.profile.rank)
-        global.println(StudentRecord.meta.level)
-        global.println(ClassDataEnumSample.cc.value)
-        !#
+        global.println(StructMatrix.profile.rank.toString())
+        global.println(StudentRecord.meta.level.toString())
+        global.println(ClassDataEnumSample.cc.value.toString())        
         global.println(ClassDataEnumSample.kind.toString())
 
         # See top-level syntax samples in this file:
@@ -233,61 +232,6 @@ DataTest
         # - direct DataName(){...}
         # - declare then assign {...}
     }
-
-    static anonymousDataMetaCompileTest()
-    {
-        data typedProfile = {
-            a2 = 10,
-            a3 = 10000L,
-            a = "333",
-            a4 = [1, 2, 3, 4],
-            anon = {
-                code = 7,
-                title = "ok"
-            }
-        }
-
-        data typedProfile2 = {
-            a2 = 20,
-            a3 = 20000L,
-            a = "444",
-            a4 = [5, 6, 7, 8],
-            anon = {
-                code = 8,
-                title = "ok2"
-            }
-        }
-
-        data typedProfile3 = {
-            nested = {
-                a = 20,
-                b = 30
-            },
-            holder = DataHolder(){ value = 11 },
-            meta = MetaInfo(){ level = 8, passed = true },
-            kind = DataKind.Advanced,
-            items = [
-                1,
-                [2, 3],
-                { code = 9, title = "mix" },
-                DataHolder(){ value = 12 },
-                MetaInfo(){ level = 6, passed = false },
-                DataKind.Base
-            ]
-        }
-
-        # typed anonymous-field samples (kept as syntax reference; currently unstable in full compile path):
-        # data typedProfile4 = {
-        #     string a = "333",
-        #     Array<int> a4 = [1, 2, 3, 4],
-        #     MetaInfo meta = MetaInfo(){ level = 8, passed = true },
-        #     DataHolder holder = DataHolder(){ value = 11 },
-        #     DataKind kind = DataKind.Advanced
-        # }
-
-        global.println("anonymous data meta compile sample prepared")
-    }
-
     static dataIfCompareTest()
     {
         global.println("----- dataIfCompareTest -----")
@@ -597,17 +541,16 @@ DataTest
     {
         global.println("========== DataTest (start) ==========")
 
-        #constDataReadOnlyTest()
-        #dataIfCompareTest()
-        #systemDataCompare();
-        #dataAsCastTest()
-        #dataArgumentUsageTest()
-        #dataVariableReadWriteTest()
-        #staticDataMisuseErrorDemo()
-        #staticDataDirectUseTest()
+        constDataReadOnlyTest()
+        dataIfCompareTest()
+        systemDataCompare();
+        dataAsCastTest()
+        dataArgumentUsageTest()
+        dataVariableReadWriteTest()
+        staticDataMisuseErrorDemo()
+        staticDataDirectUseTest()
         memberShapeCoverageTest()
-        #anonymousDataMetaCompileTest()
-        #newDataInstanceTest()
+        newDataInstanceTest()
         #global.println("newDataInstanceTest skipped in runtime (known VM gap)")
 
         global.println("========== DataTest (end) ==========")

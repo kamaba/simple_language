@@ -229,6 +229,9 @@ namespace SimpleLanguage.VM
             if (value.sobject is ClassObject dataObject && dataObject.runtimeClass?.metaClassKind == DataMetaClassKind)
                 return FormatDataObject(dataObject, visitPath);
 
+            if (value.sobject is ClassObject classObject)
+                return FormatClassObject(classObject, visitPath);
+
             if (value.sobject is TypeObject typeObject && typeObject.currentRT?.runtimeClass?.metaClassKind == DataMetaClassKind)
                 return FormatDataRuntimeType(typeObject.currentRT, visitPath);
 
@@ -266,6 +269,47 @@ namespace SimpleLanguage.VM
 
                     var raw = value.GetValueObject();
                     return raw?.ToString() ?? "null";
+            }
+        }
+
+        private static string FormatClassObject(ClassObject classObject, HashSet<int> visitPath)
+        {
+            if (classObject.runtimeClass?.metaClassKind == DataMetaClassKind)
+                return FormatDataObject(classObject, visitPath);
+
+            if (!visitPath.Add(classObject.id))
+                return QuoteJsonString("<cycle>");
+
+            try
+            {
+                var runtimeClass = classObject.runtimeClass;
+                var fieldList = runtimeClass?.nonStaticIRMetaVariableList;
+                if (fieldList == null || fieldList.Count == 0)
+                    return classObject.ToString();
+
+                var sb = new StringBuilder();
+                sb.Append(runtimeClass?.name ?? "Object");
+                sb.Append('{');
+                for (int i = 0; i < fieldList.Count; i++)
+                {
+                    if (i > 0)
+                        sb.Append(", ");
+
+                    var field = fieldList[i];
+                    var memberValue = default(SValue);
+                    ReadInstanceMemberValueByField(classObject, field, i, fieldList.Count, ref memberValue);
+
+                    sb.Append('"');
+                    sb.Append(EscapeJsonString(field?.name ?? string.Empty));
+                    sb.Append("\": ");
+                    sb.Append(FormatNestedValue(ref memberValue, visitPath));
+                }
+                sb.Append('}');
+                return sb.ToString();
+            }
+            finally
+            {
+                visitPath.Remove(classObject.id);
             }
         }
 
