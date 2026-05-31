@@ -52,7 +52,7 @@ namespace SimpleLanguage.Core.IR
                 IRMetaType irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
 
                 IRData irdata = new IRData();
-                irdata.opCode = EIROpCode.Ldc;
+                irdata.opCode = EIROpCode.LoadConstType;
                 irdata.SetOpValue(irmt);
                 irdata.SetDebugInfoByToken(cnode.token, "Ldc type literal");
 

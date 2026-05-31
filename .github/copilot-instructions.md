@@ -21,6 +21,7 @@
 - For anonymous data members, first build the anonymous MetaData type, then represent the value as a MetaNewObjectExpressNode that performs a new of that anonymous data type and applies child assignments via MetaBraceAssignStatements; preserve useful prior code only if it still contributes to this flow.
 - When decoupling MetaData from MetaClass, rewrite logic without MetaClassAdapter: first detect Data type and compare via MetaData semantics; extend MetaType to carry MetaEnum/MetaData structures.
 - Users require syntax constraints to be reported as early as possible at the Node or File layer, rather than delaying to the Meta layer.
+- When porting to this repository, ensure that the implementation of `RuntimeType.cs` is written into `cvm`'s `runtime_type.h/.c` (specifically `vm_runtime_type.h/.c`), and not into `runtime_type_manager.h/.c`.
 
 ## Return Type Resolution
 - In `MetaExpressNewObject.cs`, centralize all return-type resolution logic in `CalcReturnType`, including define/new type comparison, array literal inferred type precedence, and array length validation rules.
@@ -58,8 +59,18 @@
   - OS-related functions in `src/lib/os`
   - Time-related functions in `src/lib/time`
 - Document this organization in Markdown files.
+- In cvm (csimple_lang), system method implementations must be placed in the corresponding domain files under `src/lib`, and dispatch should be completed by calling these lib methods on the VM side, avoiding direct implementation of business logic in `vm/runtime`.
 
 ## Logging System (High Priority)
 - Follow `.github/ai-log-system-guide.md` as mandatory guidance when adding or modifying logs.
 - For every new log entry, always update the corresponding project's `ErrorDefinitions.csv` and `LID.cs` together with code call sites.
 - Prefer typed log API.
+
+## Debugging Guidelines
+- When debugging cvm (csimple_lang) issues, prioritize checking the VM runtime logs at `F:\project\lang\simple_language\out\export\Core\Logs\VM.txt` (VM.txt = virtual machine related logs). This is the preferred first place to look when finding bugs.
+
+## Terminology
+- Use the following terminology for future communications:
+  - `csharpVM` = SimpleLanguageVM
+  - `cvm` = csimple_lang/csimple_language project
+  - `fronted` = SimpleLanguageFront

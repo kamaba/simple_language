@@ -575,8 +575,7 @@ namespace SimpleLanguage.IR
             if (opCode != EIROpCode.LoadStaticField
                 && opCode != EIROpCode.StoreStaticField
                 && opCode != EIROpCode.CastClass
-                && opCode != EIROpCode.Ldc
-                && opCode != EIROpCode.ClassInit
+                && opCode != EIROpCode.LoadConstType
                 && opCode != EIROpCode.NewArray
                 && opCode != EIROpCode.NewTemplateObject)
             {

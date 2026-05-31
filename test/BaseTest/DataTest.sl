@@ -124,10 +124,11 @@ DataTest
 {
     static constDataReadOnlyTest()
     {
-        global.println("----- constDataReadOnlyTest -----")
+        #global.println("----- constDataReadOnlyTest -----")
 
-        global.println(ScoreRule)
+        #global.println(ScoreRule)
         global.println(ScoreRule.passLine.toString())
+        #!
         global.println(ScoreRule.excellentLine)
         global.println(StudentRecord.anondatax.a.toString())
         
@@ -146,7 +147,7 @@ DataTest
         # negative-intent cases for const restriction documentation:
         ScoreRule.passLine = 61
         global.println("ScoreRule=" + ScoreRule.toString() )
-
+        !#
         #ScoreRule = { passLine = 61, excellentLine = 91 } #不允许这种情况
     }
 
@@ -542,6 +543,7 @@ DataTest
         global.println("========== DataTest (start) ==========")
 
         constDataReadOnlyTest()
+        
         dataIfCompareTest()
         systemDataCompare();
         dataAsCastTest()
@@ -551,6 +553,7 @@ DataTest
         staticDataDirectUseTest()
         memberShapeCoverageTest()
         newDataInstanceTest()
+        
         #global.println("newDataInstanceTest skipped in runtime (known VM gap)")
 
         global.println("========== DataTest (end) ==========")

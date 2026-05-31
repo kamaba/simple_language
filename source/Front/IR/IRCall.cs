@@ -309,9 +309,9 @@ namespace SimpleLanguage.IR
 
             var irMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(metaType, ownerIrMetaClass);
             var irdata = new IRData();
-            irdata.opCode = EIROpCode.Ldc;
+            irdata.opCode = EIROpCode.LoadConstType;
             irdata.SetOpValue(irMetaType);
-            irdata.SetDebugInfoByToken(argNode.token, "Ldc data literal fallback");
+            irdata.SetDebugInfoByToken(argNode.token, "LoadConstType data literal fallback");
             AddIRData(irdata);
         }
     }

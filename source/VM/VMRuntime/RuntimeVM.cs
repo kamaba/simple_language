@@ -970,7 +970,15 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadConstType:
                     {
-
+                        var mdt = TryGetInstructionRuntimeDefType(iri);
+                        if (mdt != null)
+                        {
+                            var rt = GetRuntimeTypeByDefType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
+                            var sobj = new TypeObject(rt);
+                            sobj.CreateObject();
+                            if (TryPushStackSlot(out int slot))
+                                m_ValueStack[slot].SetValueBySObject(sobj);
+                        }
                     }
                     break;
                 case EIROpCode.Convert_I8:
@@ -1124,6 +1132,21 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
+                case EIROpCode.StoreGlobal:
+                    {
+                        if (m_ValueIndex > 0)
+                        {
+                            CLRVM.StoreGlobalVariable((uint)iri.index, ref m_ValueStack[--m_ValueIndex]);
+#if DEBUG
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreGlobal: index=" + iri.index);
+#endif
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", "");
+                        }
+                    }
+                    break;
                 case EIROpCode.StoreReturn:
                     {
                         if (m_ValueIndex > 0)
@@ -1145,22 +1168,6 @@ namespace SimpleLanguage.VM.Runtime
                         m_ExecuteIndex = m_ExecuteCount;
                     }
                     break;
-                case EIROpCode.StoreGlobal:
-                    {
-                        if (m_ValueIndex > 0)
-                        {
-                            CLRVM.StoreGlobalVariable( (uint)iri.index, ref m_ValueStack[--m_ValueIndex]);
-#if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreGlobal: index=" + iri.index);
-#endif
-                        }
-                        else
-                        {
-                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", "" );
-                        }
-                    }
-                    break;
-
                 case EIROpCode.LoadArrayIndex:
                     {
                         ref var v = ref m_ValueStack[m_ValueIndex - 1];
@@ -1403,10 +1410,10 @@ namespace SimpleLanguage.VM.Runtime
                                             + " objectId=" + co.id + "index=" + iri.index);
 #endif
                             }
-                            //else
-                            //{
-                            //    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
-                            //}
+                            else
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
+                            }
                         }
                     }
                     break;
@@ -1427,23 +1434,23 @@ namespace SimpleLanguage.VM.Runtime
                                             + " objectId=" + co.id + "index=" + iri.index);
 #endif
                             }
-                            //else
-                            //{
-                            //    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
-                            //}
+                            else
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
+                            }
                             m_ValueIndex -= 1;
                         }
                     }
                     break;
-                case EIROpCode.ClassInit:
-                    {
-                        var mdt = TryGetInstructionRuntimeDefType(iri);
-                        if (mdt != null)
-                        {
-                            var rt = GetRuntimeTypeByDefType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
-                        }
-                    }
-                    break;
+                //case EIROpCode.ClassInit:
+                //    {
+                //        var mdt = TryGetInstructionRuntimeDefType(iri);
+                //        if (mdt != null)
+                //        {
+                //            var rt = GetRuntimeTypeByDefType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
+                //        }
+                //    }
+                //    break;
                 case EIROpCode.NewObject:
                     {
                         if( iri.TryGetInt32(out int i32) )
@@ -2348,20 +2355,6 @@ namespace SimpleLanguage.VM.Runtime
                         CLRVM.RunIRMethod(rtList, cfc);
 
                         var a = ObjectManager.classObjectDict;
-                    }
-                    break;
-                case EIROpCode.Ldc:
-                    {
-                        var mdt = TryGetInstructionRuntimeDefType(iri);
-                        if (mdt != null)
-                        {
-                            var rt = GetRuntimeTypeByDefType(mdt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mdt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
-                           
-                            var sobj = new TypeObject(rt);
-                            sobj.CreateObject();
-                            if (TryPushStackSlot(out int slot))
-                                m_ValueStack[slot].SetValueBySObject(sobj);
-                        }
                     }
                     break;
                 case EIROpCode.Ret:

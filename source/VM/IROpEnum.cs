@@ -38,7 +38,7 @@ namespace SimpleLanguage.VM
         LoadStaticField,
         LoadGlobal,
 
-        ClassInit,
+        //ClassInit,
 
         NewObject,
         NewTemplateObject,
@@ -135,8 +135,6 @@ namespace SimpleLanguage.VM
         Convert_R4,
         Convert_R8,
         Convert_ToString,
-
-        Ldc,
 
         Ret,          
     }

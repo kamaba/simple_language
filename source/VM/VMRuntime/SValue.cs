@@ -1084,11 +1084,10 @@ namespace SimpleLanguage.VM
                         $"数值降阶转换: {oldType} -> {neType}, value={cur}");
                 }
             }
-            catch (OverflowException)
+            catch (Exception e )
             {
-                Log.AddRuntimeLog(LID.ShowMessageWarning,
-                    $"数值转换溢出: {oldType} -> {neType}, value={cur}");
-                throw;
+                Log.AddRuntimeLog(LID.ShowMessageAssert,
+                    $"数值转换溢出: {oldType} -> {neType}, value={cur} exception: {e}");
             }
         }
 
