@@ -459,7 +459,7 @@ namespace SimpleLanguage.VM
             sval1.TryNormalizeObjectScalarInPlace();
             sval2.TryNormalizeObjectScalarInPlace();
 
-            if (sval1.isNull)
+            if (sval1.isNull )
             {
                 if (isEqual)
                 {
@@ -484,6 +484,10 @@ namespace SimpleLanguage.VM
                 return;
             }
 
+            if( sval1.eType == EVMType.Class )
+            {
+                
+            }
             bool leftIsData = TryGetDataClassObject(ref sval1, out var leftData);
             bool rightIsData = TryGetDataClassObject(ref sval2, out var rightData);
             if (leftIsData || rightIsData)

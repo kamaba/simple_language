@@ -1733,6 +1733,88 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
+                case EIROpCode.And:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            ref var right = ref m_ValueStack[--m_ValueIndex];
+                            ref var left = ref m_ValueStack[--m_ValueIndex];
+                            bool methodCall = false;
+                            SValue.LogicalAnd(ref left, ref right, out methodCall);
+                            if (methodCall)
+                            {
+                                if (m_ValueIndex > 0)
+                                {
+                                    var top = m_ValueStack[m_ValueIndex - 1];
+                                    if (top.eType == EVMType.Boolean)
+                                    {
+                                        PushSValueSynced(top);
+                                    }
+                                    else
+                                    {
+                                        bool b = SValue.IsTruthy(ref top);
+                                        top.SetBoolValue(b);
+                                        PushSValueSynced(top);
+                                    }
+                                }
+                                else
+                                {
+                                    PushSValueSynced(left);
+                                }
+                            }
+                            else
+                            {
+                                PushSValueSynced(left);
+                            }
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            break;
+                        }
+                    }
+                    break;
+                case EIROpCode.Or:
+                    {
+                        if (m_ValueIndex >= 2)
+                        {
+                            ref var right = ref m_ValueStack[--m_ValueIndex];
+                            ref var left = ref m_ValueStack[--m_ValueIndex];
+                            bool methodCall = false;
+                            SValue.LogicalOr(ref left, ref right, out methodCall);
+                            if (methodCall)
+                            {
+                                if (m_ValueIndex > 0)
+                                {
+                                    var top = m_ValueStack[m_ValueIndex - 1];
+                                    if (top.eType == EVMType.Boolean)
+                                    {
+                                        PushSValueSynced(top);
+                                    }
+                                    else
+                                    {
+                                        bool b = SValue.IsTruthy(ref top);
+                                        top.SetBoolValue(b);
+                                        PushSValueSynced(top);
+                                    }
+                                }
+                                else
+                                {
+                                    PushSValueSynced(left);
+                                }
+                            }
+                            else
+                            {
+                                PushSValueSynced(left);
+                            }
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
+                            break;
+                        }
+                    }
+                    break;
                 case EIROpCode.Ceq:
                 case EIROpCode.Ceq_Un:
                     {
@@ -1817,86 +1899,21 @@ namespace SimpleLanguage.VM.Runtime
                         }
                     }
                     break;
-                case EIROpCode.And:
+                case EIROpCode.Beq:
                     {
-                        if (m_ValueIndex >= 2)
-                        {
-                            ref var right = ref m_ValueStack[--m_ValueIndex];
-                            ref var left = ref m_ValueStack[--m_ValueIndex];
-                            bool methodCall = false;
-                            SValue.LogicalAnd(ref left, ref right, out methodCall);
-                            if (methodCall)
-                            {
-                                if (m_ValueIndex > 0)
-                                {
-                                    var top = m_ValueStack[m_ValueIndex - 1];
-                                    if (top.eType == EVMType.Boolean)
-                                    {
-                                        PushSValueSynced(top);
-                                    }
-                                    else
-                                    {
-                                        bool b = SValue.IsTruthy(ref top);
-                                        top.SetBoolValue(b);
-                                        PushSValueSynced(top);
-                                    }
-                                }
-                                else
-                                {
-                                    PushSValueSynced(left);
-                                }
-                            }
-                            else
-                            {
-                                PushSValueSynced(left);
-                            }
-                        }
-                        else
-                        {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
-                            break;
-                        }
+                        ExecuteEqualityBranch(iri, true, false);
                     }
                     break;
-                case EIROpCode.Or:
+                case EIROpCode.Beq_Un:
                     {
-                        if (m_ValueIndex >= 2)
-                        {
-                            ref var right = ref m_ValueStack[--m_ValueIndex];
-                            ref var left = ref m_ValueStack[--m_ValueIndex];
-                            bool methodCall = false;
-                            SValue.LogicalOr(ref left, ref right, out methodCall);
-                            if (methodCall)
-                            {
-                                if (m_ValueIndex > 0)
-                                {
-                                    var top = m_ValueStack[m_ValueIndex - 1];
-                                    if (top.eType == EVMType.Boolean)
-                                    {
-                                        PushSValueSynced(top);
-                                    }
-                                    else
-                                    {
-                                        bool b = SValue.IsTruthy(ref top);
-                                        top.SetBoolValue(b);
-                                        PushSValueSynced(top);
-                                    }
-                                }
-                                else
-                                {
-                                    PushSValueSynced(left);
-                                }
-                            }
-                            else
-                            {
-                                PushSValueSynced(left);
-                            }
-                        }
-                        else
-                        {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "new array get svalue");
-                            break;
-                        }
+                        // TODO: implement unsigned compare; for now follow Beq semantics.
+                        ExecuteEqualityBranch(iri, true, false);
+                    }
+                    break;
+                case EIROpCode.Bne:
+                case EIROpCode.Bne_Un:
+                    {
+                        ExecuteEqualityBranch(iri, false, false);
                     }
                     break;
                 case EIROpCode.Clt:
@@ -1949,6 +1966,24 @@ namespace SimpleLanguage.VM.Runtime
                             SValue.CompareSValue1AndValue2(ref left, ref right, 3);
                             PushSValueSynced(left);
                         }
+                    }
+                    break;
+                case EIROpCode.Bge:
+                case EIROpCode.Bge_un:
+                    {
+                        ExecuteRelationalBranch(iri, 1, true);
+                    }
+                    break;
+                case EIROpCode.Bgt:
+                case EIROpCode.Bgt_Un:
+                    {
+                        ExecuteRelationalBranch(iri, 0, true);
+                    }
+                    break;
+                case EIROpCode.Ble:
+                case EIROpCode.Ble_Un:
+                    {
+                        ExecuteRelationalBranch(iri, 3, true);
                     }
                     break;
                 case EIROpCode.Neg:
@@ -2360,41 +2395,6 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Ret:
                     // stop execution early
                     m_ExecuteIndex = m_ExecuteCount;
-                    break;
-                case EIROpCode.Beq:
-                    {
-                        ExecuteEqualityBranch(iri, true, false);
-                    }
-                    break;
-                case EIROpCode.Beq_Un:
-                    {
-                        // TODO: implement unsigned compare; for now follow Beq semantics.
-                        ExecuteEqualityBranch(iri, true, false);
-                    }
-                    break;
-                case EIROpCode.Bne:
-                case EIROpCode.Bne_Un:
-                    {
-                        ExecuteEqualityBranch(iri, false, false);
-                    }
-                    break;
-                case EIROpCode.Bge:
-                case EIROpCode.Bge_un:
-                    {
-                        ExecuteRelationalBranch(iri, 1, true);
-                    }
-                    break;
-                case EIROpCode.Bgt:
-                case EIROpCode.Bgt_Un:
-                    {
-                        ExecuteRelationalBranch(iri, 0, true);
-                    }
-                    break;
-                case EIROpCode.Ble:
-                case EIROpCode.Ble_Un:
-                    {
-                        ExecuteRelationalBranch(iri, 3, true);
-                    }
                     break;
 
                 case EIROpCode.CastClass:

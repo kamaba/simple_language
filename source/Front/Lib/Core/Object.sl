@@ -19,8 +19,7 @@ public class Object
     #reference equality
     public static bool refEquals(object objA, object objB)
     {
-        if (objA == null || objB == null){ ret false };
-        ret objA.refWeak == objB.refWeak;
+        ret SystemEqualObject( objA, objB);
     }
     #hashCode getter - delegated to runtime helper
     public Int32 get hashCode()
