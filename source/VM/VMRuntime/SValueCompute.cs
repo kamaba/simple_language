@@ -745,13 +745,13 @@ namespace SimpleLanguage.VM
                         }
                         else
                         {
-                            Debug.Write("Error -value on non-numeric class");
+                            Log.AddRuntimeLog(LID.ShowMessageError, "Error -value on non-numeric class");
                         }
                     }
                     break;
                 default:
                     {
-                        Debug.Write("Error -value 2");
+                        Log.AddRuntimeLog(LID.ShowMessageError, "Error -value 2");
                     }
                     break;
             }
