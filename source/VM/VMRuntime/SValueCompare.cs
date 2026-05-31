@@ -255,6 +255,34 @@ namespace SimpleLanguage.VM
             return rt?.runtimeClass != null && rt.runtimeClass.metaClassKind == 2;
         }
 
+        private static bool IsEnumRuntimeType(RuntimeType rt)
+        {
+            return rt?.runtimeClass != null && rt.runtimeClass.metaClassKind == 1;
+        }
+
+        private static bool IsMemberClass(RuntimeClass rc)
+        {
+            if (rc == null)
+                return false;
+            return string.Equals(rc.name, "Member", StringComparison.Ordinal)
+                || string.Equals(rc.name, "Core.Member", StringComparison.Ordinal)
+                || rc.name.EndsWith(".Member", StringComparison.Ordinal);
+        }
+
+        private static void NormalizeObjectReferenceKindInPlace(ref SValue sval)
+        {
+            if (sval.isNull || sval.sobject == null)
+                return;
+
+            if (sval.eType != EVMType.Object)
+                return;
+
+            if (sval.sobject.eType == EVMType.Object)
+                return;
+
+            sval.SetValueBySObject(sval.sobject);
+        }
+
         private static bool IsAnonymousDynamicDataRuntimeType(RuntimeType rt)
         {
             return IsDataRuntimeType(rt) && rt.runtimeClass.isDynamicData;
@@ -279,6 +307,250 @@ namespace SimpleLanguage.VM
                 return false;
 
             dataObject = co;
+            return true;
+        }
+
+        private static bool TryGetClassObject(ref SValue sval, out ClassObject classObject)
+        {
+            classObject = null;
+            if (sval.isNull)
+                return false;
+
+            if (sval.eType != EVMType.Class && sval.eType != EVMType.Object)
+                return false;
+
+            classObject = sval.sobject as ClassObject;
+            return classObject != null;
+        }
+
+        private static bool TryGetEnumClassObject(ref SValue sval, out ClassObject enumObject)
+        {
+            enumObject = null;
+            if (!TryGetClassObject(ref sval, out var co))
+                return false;
+
+            var rt = co.runtimeType;
+            var rc = rt?.runtimeClass;
+            if (IsEnumRuntimeType(rt) || IsMemberClass(rc))
+            {
+                enumObject = co;
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool TryReadEnumMemberValue(ClassObject enumMemberObject, ref SValue value)
+        {
+            if (enumMemberObject == null)
+                return false;
+
+            var members = enumMemberObject.runtimeClass?.nonStaticIRMetaVariableList;
+            if (members == null || members.Count == 0)
+                return false;
+
+            int valueIndex = -1;
+            for (int i = 0; i < members.Count; i++)
+            {
+                var name = members[i]?.name ?? string.Empty;
+                if (string.Equals(name, "value", StringComparison.Ordinal)
+                    || name.EndsWith(".value", StringComparison.Ordinal))
+                {
+                    valueIndex = i;
+                    break;
+                }
+            }
+
+            if (valueIndex < 0 && members.Count > 2)
+                valueIndex = 2;
+
+            if (valueIndex < 0)
+                return false;
+
+            enumMemberObject.GetMemberVariableSValue(valueIndex, ref value);
+            return true;
+        }
+
+        private static bool IsReferenceTypeForEquality(EVMType type)
+        {
+            return type == EVMType.Array
+                || type == EVMType.Object
+                || type == EVMType.Type
+                || type == EVMType.Member;
+        }
+
+        private static bool TryCompareReferenceWithoutClass(ref SValue sval1, ref SValue sval2, bool isEqual, out bool handled)
+        {
+            handled = false;
+            if (!IsReferenceTypeForEquality(sval1.eType) && !IsReferenceTypeForEquality(sval2.eType))
+                return false;
+
+            handled = true;
+            if (sval1.eType == EVMType.Type && sval2.eType == EVMType.Type)
+            {
+                TypeObject bo1 = sval1.sobject as TypeObject;
+                TypeObject bo2 = sval2.sobject as TypeObject;
+                bool eq = bo1 != null && bo2 != null && bo1.currentRT == bo2.currentRT;
+                sval1.SetBoolValue(isEqual ? eq : !eq);
+                return true;
+            }
+
+            bool sameType = sval1.eType == sval2.eType;
+            bool sameRef = sameType && sval1.sobject == sval2.sobject;
+            sval1.SetBoolValue(isEqual ? sameRef : !sameRef);
+            return true;
+        }
+
+        private static bool TryCompareEnumValue(ref SValue sval1, ref SValue sval2, bool isEqual)
+        {
+            bool leftIsEnum = TryGetEnumClassObject(ref sval1, out var leftEnum);
+            bool rightIsEnum = TryGetEnumClassObject(ref sval2, out var rightEnum);
+            if (!leftIsEnum && !rightIsEnum)
+                return false;
+
+            bool equals = false;
+            if (leftIsEnum && rightIsEnum)
+            {
+                if (ReferenceEquals(leftEnum, rightEnum))
+                {
+                    equals = true;
+                }
+                else
+                {
+                    SValue leftValue = default;
+                    SValue rightValue = default;
+                    if (TryReadEnumMemberValue(leftEnum, ref leftValue)
+                        && TryReadEnumMemberValue(rightEnum, ref rightValue))
+                    {
+                        equals = IsSValueEqual(ref leftValue, ref rightValue);
+                    }
+                }
+            }
+
+            sval1.SetBoolValue(isEqual ? equals : !equals);
+            return true;
+        }
+
+        private static bool TryCompareDataValue(ref SValue sval1, ref SValue sval2, bool isEqual)
+        {
+            bool leftIsData = TryGetDataClassObject(ref sval1, out var leftData);
+            bool rightIsData = TryGetDataClassObject(ref sval2, out var rightData);
+            if (!leftIsData && !rightIsData)
+                return false;
+
+            bool equals = false;
+            if (leftIsData && rightIsData)
+            {
+                if (ReferenceEquals(leftData, rightData))
+                {
+                    equals = true;
+                }
+                else
+                {
+                    bool leftAnon = IsAnonymousDynamicDataRuntimeType(leftData.runtimeType);
+                    bool rightAnon = IsAnonymousDynamicDataRuntimeType(rightData.runtimeType);
+
+                    if (leftAnon && rightAnon)
+                    {
+                        equals = IsAnonymousDataShapeEqual(leftData, rightData)
+                            && IsDataMemberValuesEqual(leftData, rightData);
+                    }
+                    else if (!leftAnon && !rightAnon)
+                    {
+                        equals = IsDataValueEqual(leftData, rightData);
+                    }
+                }
+            }
+
+            sval1.SetBoolValue(isEqual ? equals : !equals);
+            return true;
+        }
+
+        private static bool TryRunClassEqualityOperator(ClassObject co, bool isEqual, out bool needInvert)
+        {
+            needInvert = false;
+            if (co == null)
+                return false;
+
+            RuntimeClass irc = co.runtimeClass;
+            if (irc == null)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageError, "IRC是调用虚函数为空!!");
+                return false;
+            }
+
+            RuntimeMethod cfc = irc.GetOperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
+            if (cfc == null && !isEqual)
+            {
+                cfc = irc.GetOperatorMethodIndexByMethod("_eq_", out index);
+                if (cfc != null)
+                    needInvert = true;
+            }
+
+            if (cfc == null)
+                return false;
+
+            List<RuntimeType> irmtList = new List<RuntimeType>();
+            CLRVM.RunIRMethod(irmtList, cfc, false);
+            if (needInvert)
+            {
+                TryInvertTopMethodBoolResult();
+            }
+            return true;
+        }
+
+        private static bool TryCompareClassValue(ref SValue sval1, ref SValue sval2, bool isEqual, out bool methodCall)
+        {
+            methodCall = false;
+            bool leftIsClass = TryGetClassObject(ref sval1, out var leftClass);
+            bool rightIsClass = TryGetClassObject(ref sval2, out var rightClass);
+            if (!leftIsClass && !rightIsClass)
+                return false;
+
+            if (leftIsClass && TryRunClassEqualityOperator(leftClass, isEqual, out _))
+            {
+                methodCall = true;
+                return true;
+            }
+
+            if (!leftIsClass && rightIsClass && TryRunClassEqualityOperator(rightClass, isEqual, out _))
+            {
+                methodCall = true;
+                return true;
+            }
+
+            bool equals = leftIsClass && rightIsClass && ReferenceEquals(leftClass, rightClass);
+            sval1.SetBoolValue(isEqual ? equals : !equals);
+            return true;
+        }
+
+        private static bool TryCompareNumericValue(ref SValue sval1, ref SValue sval2, bool isEqual)
+        {
+            if (!((IsNumericType(sval1.eType) || sval1.eType == EVMType.Num) && (IsNumericType(sval2.eType) || sval2.eType == EVMType.Num)))
+                return false;
+
+            bool leftFloat = (sval1.eType == EVMType.Float32 || sval1.eType == EVMType.Float64 || sval1.eType == EVMType.Num);
+            bool rightFloat = (sval2.eType == EVMType.Float32 || sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num);
+            if (leftFloat || rightFloat)
+            {
+                double a = (sval1.eType == EVMType.Float64 || sval1.eType == EVMType.Num) ? sval1.float64Value : (sval1.eType == EVMType.Float32 ? sval1.float32Value : sval1.ConvertToDoubleFromIntTypes());
+                double b = (sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num) ? sval2.float64Value : (sval2.eType == EVMType.Float32 ? sval2.float32Value : sval2.ConvertToDoubleFromIntTypes());
+                sval1.SetBoolValue(isEqual ? a == b : a != b);
+                return true;
+            }
+
+            bool useUnsigned = sval1.IsUnsignedType(sval1.eType) || sval2.IsUnsignedType(sval2.eType);
+            if (useUnsigned)
+            {
+                ulong a = sval1.ConvertToULong();
+                ulong b = sval2.ConvertToULong();
+                sval1.SetBoolValue(isEqual ? a == b : a != b);
+                return true;
+            }
+
+            long la = sval1.ConvertToLong();
+            long lb = sval2.ConvertToLong();
+            sval1.SetBoolValue(isEqual ? la == lb : la != lb);
             return true;
         }
 
@@ -458,332 +730,55 @@ namespace SimpleLanguage.VM
 
             sval1.TryNormalizeObjectScalarInPlace();
             sval2.TryNormalizeObjectScalarInPlace();
+            NormalizeObjectReferenceKindInPlace(ref sval1);
+            NormalizeObjectReferenceKindInPlace(ref sval2);
 
-            if (sval1.isNull )
+            if (sval1.isNull || sval1.eType == EVMType.Null || sval2.isNull || sval2.eType == EVMType.Null)
             {
-                if (isEqual)
-                {
-                    sval1.SetBoolValue(sval2.isNull ? true : false);
-                }
-                else
-                {
-                    sval1.SetBoolValue(sval2.isNull ? false : true);
-                }
-                return;
-            }
-            if (sval2.isNull)
-            {
-                if (isEqual)
-                {
-                    sval1.SetBoolValue(sval1.isNull ? true : false);
-                }
-                else
-                {
-                    sval1.SetBoolValue(sval1.isNull ? false : true);
-                }
-                return;
-            }
-
-            if( sval1.eType == EVMType.Class )
-            {
-                
-            }
-            bool leftIsData = TryGetDataClassObject(ref sval1, out var leftData);
-            bool rightIsData = TryGetDataClassObject(ref sval2, out var rightData);
-            if (leftIsData || rightIsData)
-            {
-                bool equals = false;
-                if (leftIsData && rightIsData)
-                {
-                    if (ReferenceEquals(leftData, rightData))
-                    {
-                        equals = true;
-                    }
-                    else
-                    {
-                        bool leftAnon = IsAnonymousDynamicDataRuntimeType(leftData.runtimeType);
-                        bool rightAnon = IsAnonymousDynamicDataRuntimeType(rightData.runtimeType);
-
-                        if (leftAnon && rightAnon)
-                        {
-                            // 匿名 data：先比结构（成员数量+成员名+成员类型），结构一致后再比 memberData 值。
-                            equals = IsAnonymousDataShapeEqual(leftData, rightData)
-                                && IsDataMemberValuesEqual(leftData, rightData);
-                        }
-                        else if (!leftAnon && !rightAnon)
-                        {
-                            // 命名 data：按原规则（类型一致后比 memberData）。
-                            equals = IsDataValueEqual(leftData, rightData);
-                        }
-                        else
-                        {
-                            // 一个匿名，一个命名：不相同。
-                            equals = false;
-                        }
-                    }
-                }
+                bool equals = (sval1.isNull || sval1.eType == EVMType.Null) && (sval2.isNull || sval2.eType == EVMType.Null);
                 sval1.SetBoolValue(isEqual ? equals : !equals);
                 return;
             }
 
-            // numeric comparison path will use explicit promotion rules
-            // handle simple cases first
-            switch (sval1.eType)
+            if (TryCompareEnumValue(ref sval1, ref sval2, isEqual))
             {
-                //String 只允许对字符形式比较 
-                case EVMType.String:
-                    {
-                        switch (sval2.eType)
-                        {
-                            case EVMType.String:
-                                {
-                                    if (isEqual)
-                                        sval1.SetBoolValue(sval1.stringValue == sval2.stringValue);
-                                    else
-                                        sval1.SetBoolValue(sval1.stringValue != sval2.stringValue);
-                                }
-                                break;
-                            default:
-                                {
-                                    sval1.SetBoolValue(false); break;
-                                }
-                        }
-                        return;
-                    }
-                //只允许对boolean 只允许对字符形式比较 
-                case EVMType.Boolean:
-                    {
-                        switch (sval2.eType)
-                        {
-                            case EVMType.Boolean:
-                                {
-                                    if (isEqual)
-                                    {
-                                        sval1.SetBoolValue(sval1.int8Value == sval2.int8Value );
-                                    }
-                                    else
-                                    {
-                                        sval1.SetBoolValue(sval1.int8Value != sval2.int8Value);
-                                    }
-                                }
-                                break;
-                            default:
-                                {
-                                    sval1.SetBoolValue(false); break;
-                                }                                
-                        }
-                        return;
-                    }
-                case EVMType.UInt8:
-                case EVMType.Int8:
-                case EVMType.Int16:
-                case EVMType.UInt16:
-                case EVMType.Int32:
-                case EVMType.UInt32:
-                case EVMType.Int64:
-                case EVMType.UInt64:
-                case EVMType.Float32:
-                case EVMType.Float64:
-                    // numeric handled below via promotion
-                    break;
-                case EVMType.Array:
-                    {
-                        if (sval2.eType == EVMType.Array )
-                        {
-                            bool eq = sval1.sobject == sval2.sobject;
-                            sval1.SetBoolValue(isEqual ? eq : !eq);
-                        }
-                        else
-                        {
-                            sval1.SetBoolValue(!isEqual);
-                        }
-                    }
-                    break;
-                case EVMType.Object:
-                    {
-                        if( sval2.eType == EVMType.Object )
-                        {
-                            bool eq = sval1.sobject == sval2.sobject;
-                            sval1.SetBoolValue(isEqual ? eq : !eq);
-                            return;
-                        }
-                    }
-                    break;
-                case EVMType.Class:
-                    {
-                        ClassObject co = (sval1.sobject as ClassObject);
-                        if (co == null)
-                        {
-                            sval1.SetBoolValue(false);
-                            return;
-                        }
-                        RuntimeType rt = co.runtimeType;
-                        RuntimeClass irc = co.runtimeClass;                        
-                        if (irc == null)
-                        {
-                            Log.AddRuntimeLog(LID.ShowMessageError, "IRC是调用虚函数为空!!");
-                            return;
-                        }
-                        bool needInvert = false;
-                        RuntimeMethod cfc = irc.GetOperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
-                        if (cfc == null && !isEqual)
-                        {
-                            cfc = irc.GetOperatorMethodIndexByMethod("_eq_", out index);
-                            if (cfc != null)
-                                needInvert = true;
-                        }
-                        if (cfc != null)
-                        {
-                            List<RuntimeType> irmtList = new List<RuntimeType>();
-                            CLRVM.RunIRMethod(irmtList, cfc, false );
-                            if (needInvert)
-                            {
-                                TryInvertTopMethodBoolResult();
-                            }
-                            methodCall = true;
-                        }
-                        else
-                        {
-                            if (sval2.eType == EVMType.Class)
-                            {
-                                bool eq = sval1.sobject == sval2.sobject;
-                                sval1.SetBoolValue(isEqual ? eq : !eq);
-                            }
-                            else
-                            {
-                                sval1.SetBoolValue(!isEqual);
-                                //Log.AddVM(LID.Unknown, " VM Compare SVAlue 比较的低码还没有完善!!");
-                            }
-
-                        }
-                        return;
-                    }
-            }
-
-            // if both are numeric types -> numeric equality with promotion
-            // consider Num as numeric (float) for comparisons
-            if ((IsNumericType(sval1.eType) || sval1.eType == EVMType.Num) && (IsNumericType(sval2.eType) || sval2.eType == EVMType.Num))
-            {
-                // float promotion
-                bool leftFloat = (sval1.eType == EVMType.Float32 || sval1.eType == EVMType.Float64 || sval1.eType == EVMType.Num);
-                bool rightFloat = (sval2.eType == EVMType.Float32 || sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num);
-                if (leftFloat || rightFloat)
-                {
-                    double a = (sval1.eType == EVMType.Float64 || sval1.eType == EVMType.Num) ? sval1.float64Value : (sval1.eType == EVMType.Float32 ? sval1.float32Value : sval1.ConvertToDoubleFromIntTypes());
-                    double b = (sval2.eType == EVMType.Float64 || sval2.eType == EVMType.Num) ? sval2.float64Value : (sval2.eType == EVMType.Float32 ? sval2.float32Value : sval2.ConvertToDoubleFromIntTypes());
-                    if (isEqual) sval1.SetBoolValue(a == b); else sval1.SetBoolValue(a != b);
-                    return;
-                }
-
-                // unsigned promotion if either is unsigned
-                bool useUnsigned = sval1.IsUnsignedType(sval1.eType) || sval2.IsUnsignedType(sval2.eType);
-                if (useUnsigned)
-                {
-                    ulong a = sval1.ConvertToULong();
-                    ulong b = sval2.ConvertToULong();
-                    if (isEqual) sval1.SetBoolValue(a == b); else sval1.SetBoolValue(a != b);
-                    return;
-                }
-
-                // signed integer comparison
-                long la = sval1.ConvertToLong();
-                long lb = sval2.ConvertToLong();
-                if (isEqual) sval1.SetBoolValue(la == lb); else sval1.SetBoolValue(la != lb);
                 return;
             }
 
-            switch (sval2.eType)
+            if (TryCompareDataValue(ref sval1, ref sval2, isEqual))
             {
-                case EVMType.String:
-                    {
-                        Log.AddRuntimeLog(LID.ShowMessageError, " VM Compare SVAlue string 比较的低码还没有完善!!");
-                        //return;
-                    }
-                    break;
-                case EVMType.Boolean:
-                    {
-                        Log.AddRuntimeLog(LID.ShowMessageError, " VM Compare SVAlue boolean 比较的低码还没有完善!!");
-                        //return;
-                    }
-                    break;
-                // numeric types handled earlier
-                case EVMType.Array: { 
-                    }
-                    break;
-                case EVMType.Type:
-                    {
-                        if (sval1.eType == EVMType.Type)
-                        {
-                            TypeObject bo1 = sval1.sobject as TypeObject;
-                            TypeObject bo2 = sval2.sobject as TypeObject;
-                            if (bo1 != null && bo2 != null)
-                            {
-                                sval1.SetBoolValue(bo1.currentRT == bo2.currentRT);
-                            }
-                            else
-                            {
-                                sval1.SetBoolValue(false);
-                            }
-                            return;
-                        }
-                        else
-                        {
-                            Debug.Assert(false);
-                        }
-                    }
-                    break;
-                case EVMType.Class:
-                    {
-                        ClassObject co = (sval2.sobject as ClassObject);
-                        if (co == null)
-                        {
-                            sval1.SetBoolValue(false);
-                            return;
-                        }
-                        RuntimeType rt = co.runtimeType;
-                        RuntimeClass irc = co.runtimeClass;                        
-                        if (irc == null)
-                        {
-                            Log.AddRuntimeLog(LID.ShowMessageError, "IRC是调用虚函数为空!!");
-                            return;
-                        }
-                        bool needInvert = false;
-                        RuntimeMethod cfc = irc.GetOperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
-                        if (cfc == null && !isEqual)
-                        {
-                            cfc = irc.GetOperatorMethodIndexByMethod("_eq_", out index);
-                            if (cfc != null)
-                                needInvert = true;
-                        }
-                        if (cfc != null)
-                        {
-                            List<RuntimeType> irmtList = new List<RuntimeType>();
-                            CLRVM.RunIRMethod(irmtList, cfc);
-                            if (needInvert)
-                            {
-                                TryInvertTopMethodBoolResult();
-                            }
-                            methodCall = true;
-                        }
-                        else
-                        {
-                            if (sval1.eType == EVMType.Class)
-                            {
-                                bool eq = sval1.sobject == sval2.sobject;
-                                sval1.SetBoolValue(isEqual ? eq : !eq);
-                            }
-                            else
-                            {
-                                sval1.SetBoolValue(!isEqual);
-                                //Log.AddVM(LID.ShowMessageError, " VM Compare SVAlue 比较的低码还没有完善!!");
-                            }
-
-                        }
-                        return;
-                    }
+                return;
             }
 
-            // fallback: already handled objects/classes earlier; default false
+            if (TryCompareClassValue(ref sval1, ref sval2, isEqual, out methodCall))
+            {
+                return;
+            }
+
+            if (TryCompareNumericValue(ref sval1, ref sval2, isEqual))
+            {
+                return;
+            }
+
+            if (sval1.eType == EVMType.String || sval2.eType == EVMType.String)
+            {
+                bool equals = sval1.eType == EVMType.String && sval2.eType == EVMType.String && sval1.stringValue == sval2.stringValue;
+                sval1.SetBoolValue(isEqual ? equals : !equals);
+                return;
+            }
+
+            if (sval1.eType == EVMType.Boolean || sval2.eType == EVMType.Boolean)
+            {
+                bool equals = sval1.eType == EVMType.Boolean && sval2.eType == EVMType.Boolean && sval1.int8Value == sval2.int8Value;
+                sval1.SetBoolValue(isEqual ? equals : !equals);
+                return;
+            }
+
+            if (TryCompareReferenceWithoutClass(ref sval1, ref sval2, isEqual, out _))
+            {
+                return;
+            }
+
             sval1.SetBoolValue(!isEqual);
             Log.AddRuntimeLog(LID.ShowMessageError, "VM Compare SVAlue 比较的低码还没有完善!!");
         }
