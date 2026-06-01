@@ -117,23 +117,10 @@ namespace SimpleLanguage.Core.IR
                 IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
 
                 IRMetaType irLoadMt = null;
-                if (mv is MetaMemberEnum && owirmc != null)
+                if ( owirmc != null)
                 {
                     irLoadMt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(
                         new MetaType(CoreMetaClassManager.memberMetaClass), owirmc);
-                }
-                else if (owirmc != null)
-                {
-                    var srcMt = mv.GetFinalMetaType();
-                    if (srcMt != null)
-                    {
-                        irLoadMt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(srcMt, owirmc);
-                    }
-                }
-
-                if (irLoadMt == null && cnode.callMetaType != null)
-                {
-                    irLoadMt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
                 }
 
                 IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irLoadMt, owirmc, _irMethod, mv);

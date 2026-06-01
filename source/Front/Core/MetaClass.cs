@@ -26,7 +26,6 @@ namespace SimpleLanguage.Core
     {
         public List<MetaAttribute> attributeList => m_AttributeList;
         public string allName=> this.m_AllName;
-        public EClassDefineType classDefineType => m_ClassDefineType;
         public bool isAbstractClass => m_IsAbstractClass;
         public bool allowExtendsClassWithTemplate => m_GenMetaClassTemplateList.Count > 0 ;             //允许继承类 是否可携带模板  像 ListInt : List<int>{} ListIntEx<T> : List<int> 这种情况不允许
         public MetaClass extendClass => m_ExtendClass;
@@ -71,6 +70,8 @@ namespace SimpleLanguage.Core
         public Dictionary<Token, FileMetaClass> fileMetaClassDict => m_FileMetaClassDict;
         public bool needInitMemberVariables => m_NeedInitMemberVariables;
         public bool isHandleExtendVariableDirty { get; set; } = false;
+        public bool innderDefine => m_InnderDefine;
+        public bool structDefine => m_StructDefine;
 
 
         protected int m_ExtendLevel = 0;
@@ -92,10 +93,11 @@ namespace SimpleLanguage.Core
         protected List<MetaMemberFunction> m_StaticMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected MetaExpressNodeBase m_DefaultExpressNode = null;
-        protected EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
         protected bool m_IsInterfaceClass = false;
         protected bool m_IsAbstractClass = false;
         protected bool m_NeedInitMemberVariables = true;
+        protected bool m_InnderDefine = false;
+        protected bool m_StructDefine = false;
 
         protected readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
 
@@ -116,7 +118,7 @@ namespace SimpleLanguage.Core
         {
             m_Name = _name;
             m_Type = EType.Class;
-            m_ClassDefineType = ecdt;
+            m_InnderDefine = true;
             this.m_AllName = _name;
         }
         public MetaClass(string _name, EType _type  = EType.Class )
@@ -235,18 +237,12 @@ namespace SimpleLanguage.Core
             ParseInnerVariable();
             ParseInnerFunction();
         }
-        public void SetClassDefineType( EClassDefineType ecdt )
+        public void SetInnderDefine( bool ecdt )
         {
-            var type = typeof(MetaClass);
-
-            this.m_ClassDefineType = ecdt;
+            this.m_InnderDefine = ecdt;
         }
         public virtual void ParseExtendsRelation()
         {
-            if( this.classDefineType == EClassDefineType.InnerDefine )
-            {
-                return;
-            }
             if( this == CoreMetaClassManager.objectMetaClass )
             {
                 return;
@@ -381,7 +377,10 @@ namespace SimpleLanguage.Core
                 {
                     if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
+                        if( !this.innderDefine )
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
+                        }
                         continue;
                     }
                     this.m_MetaMemberVariableDict.Add(c.name, c);

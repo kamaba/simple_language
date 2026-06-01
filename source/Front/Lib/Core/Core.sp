@@ -16,7 +16,7 @@ Project
     }
     _main_()
     {
-        ObjectTest.fun()
+        #ObjectTest.fun()
         #NumberTest.fun()
         #GlobalTest.fun()
         #ArrayTest.fun()
@@ -24,11 +24,12 @@ Project
         #BoolTest.fun()
         #StringTest.fun()
         #TypeTest.fun()
-        #DataTest.fun()       
+        #DataTest.fun() 
+        EnumTest.fun();      
     }
     _test_()
     {
-       #TempTest.Fun();
+       EnumTest.fun()
     }
     CompileBefore()
     {        

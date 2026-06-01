@@ -16,7 +16,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Class;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
         }
         public static MetaClass CreateMetaClass()
         {

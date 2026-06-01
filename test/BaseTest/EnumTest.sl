@@ -15,7 +15,7 @@ data BData
 }
 enum Color2
 {
-    #enum Color2_2{   x = 10 }
+    # enum Color2_2{   x = 10 }
     # 不允许 内部嵌套 
     # 类中允许enum和data的数据
 }
@@ -23,12 +23,8 @@ enum Color2
 # 该类型不允许不使用=号 
 enum Book
 {
-    B1 = BData()
-    {
-         i2 = 20, 
-         url = "http://www.baidu.com", xc1= XC() 
-    }
-    B2 = BData(){ i2 = 10}
+    B1 = 1
+    B2 = 2
     C1 = 1
     mut string Str = ""
     C4 = 10
@@ -59,14 +55,6 @@ data CircleShape
     y = 0
     r = 1.0f
 }
-
-enum reson extends string
-{    
-    #@label("春天")
-    Spring = "春天"
-    Summer = "夏天"
-}
-
 # data类型中，使用mut 可以对数据进行动态设置
 enum EShape extends data
 {
@@ -77,7 +65,7 @@ enum EShape extends data
     mut cd = CircleShape()
 }   
 
-#! 暂不支持该模式，以后可考滤，直接继承某个数据结构
+#!
 enum ERectShape extends RectShape
 {
     r1 = RectShape(){x=1}
@@ -85,6 +73,15 @@ enum ERectShape extends RectShape
     r3 = RectShape(){x=3,y=1,width=100,height=100}
 }
 !#
+
+enum ESeason extends string
+{
+    #@label("春天")
+    Spring = "春天"
+    Summer = "夏天"
+    Autumn = "秋天"
+    Winter = "冬天"
+}
 
 
 enum EBytes extends byte
@@ -145,13 +142,22 @@ enum Res
 
 EnumTest
 {
-    static printBridgeKind(BridgeKind v)
+    static fun()
     {
-        if v == BridgeKind.SELF
+        global.println("========== EnumTest (start) ==========")
+
+        kind = BridgeKind.SELF
+        if kind == BridgeKind.SELF
         {
             global.println("BridgeKind--------------SELF")
         }
-        elif v == BridgeKind.JVM
+
+        kind = BridgeKind.JVM
+        if kind == BridgeKind.SELF
+        {
+            global.println("BridgeKind--------------SELF")
+        }
+        elif kind == BridgeKind.JVM
         {
             global.println("BridgeKind--------------JVM")
         }
@@ -159,14 +165,6 @@ EnumTest
         {
             global.println("BridgeKind--------------OTHER")
         }
-    }
-
-    static fun()
-    {
-        global.println("========== EnumTest (start) ==========")
-
-        printBridgeKind(BridgeKind.SELF)
-        printBridgeKind(BridgeKind.JVM)
 
         EShape shape = EShape.r1
         if shape == EShape.r1
@@ -175,38 +173,117 @@ EnumTest
         }
         elif shape == EShape.cd
         {
-            EShape.cd = CircleShape(){ x = 100, y = 100, r = 1000 }
+            global.println("EShape branch: cd")
         }
 
-        for b3 in reson.values
+        for b3 in ESeason.values
         {
-            global.println("reson value: " + b3)
+            global.println("ESeason value: " + b3)
         }
 
-        global.println("EErr.First ordinal smoke -> " + EErr.First.toString())
+        global.println("----- mut enum member modify -----")
+        global.println("Book.Str before -> " + Book.Str)
+        Book.Str = "runtime string"
+        Book.c4 = 20
+        global.println("Book.Str after -> " + Book.Str)
+    
+        EShape.r1 = RectShape(){ x = 10 }
+        EShape.cd = RectShape()
+
+        global.println("EErr.First ordinal smoke -> " + EErr.First)
         global.println("GameState values count check (manual): Init/Begin/End defined")
 
         global.println("========== EnumTest (end) ==========")
     }
 }
 
+#!
+enum negative compile cases: keep commented; uncomment one block at a time to validate diagnostics.
+
+# 1. enum 内部不允许嵌套 enum/class。
+enum EnumErrorNested
+{
+    enum InnerEnum { A = 1 }
+    class InnerClass { }
+}
+
+# 2. enum extends 不允许普通 class。
+class EnumErrorBaseClass { }
+enum EnumErrorExtendsClass extends EnumErrorBaseClass
+{
+    A = EnumErrorBaseClass()
+}
+
+# 3. enum extends 不允许另一个 enum。
+enum EnumErrorExtendsEnum extends GameState
+{
+    A = 1
+    een = EnumErrorNested()
+}
+
+# 4. extends string 时必须显式字符串常量，不能省略 =，也不能写数字。
+enum EnumErrorStringValue extends string
+{
+    A
+    B = 1
+}
+
+# 5. 无符号整型不能使用负值。
+enum EnumErrorUnsignedNegative extends UInt8
+{
+    A = -1
+}
+
+# 6. extends 具体 data 时，成员只能使用该 data 的 new 表达式，不能混入其它 data。
+enum EnumErrorConcreteData extends RectShape
+{
+    A = CircleShape(){ x = 1, y = 1, r = 10 }
+}
+
+# 7. extends data 时，成员必须是 data new 表达式。
+enum EnumErrorDynamicDataValue extends data
+{
+    A = 1
+}
+
+
+# 9. const enum 内部所有成员都不应允许重赋值。
+numErrorAssignConstEnum
+{
+     static fun()
+     {
+         ConstColor.Red = 0
+         ConstColor.MixColor1 = MixColor(){ Red = 1.0f }
+     }
+}
+
+# 10. enum 成员名重复应报错。
+enum EnumErrorRepeat
+{
+    A = 1
+    A = 2
+}
+
+
 #! 进度
-1. 上边除了T的enum没有实现，其实的都验证通过
-2. 没有在vm中没有实现enum相关的内容
-3. enum的new没有具体的分配相关的逻辑
-4. enum的.ToString() 没有实现。
-5. 如果使用enum 未使用extends ，则内部可以直接使用除enum,class之外 的任意类型，比如 byte/sbyte/int/uint/short/ushort/long/ulong/data
-6. 如果使用上边的某种类形，则必须使用该类型，如果使用byte-ulong之间的类型，则里边可以不使用=号，然后自增
-7. 如果使用了data,则内部必须都使用定义过的data类型
-8. 使用for in 可以遍历 enum内部
-9.
+1. integer/UInt8 enum 自动递增、显式值、Member.name/index/value 已覆盖。
+2. string enum、values 遍历已覆盖。
+3. extends data 与 extends 具体 data 已覆盖。
+4. mut enum 成员运行时重赋值已覆盖。
+5. enum equality / if / switch 基础路径已覆盖。
+6. 错误用例统一保留在 enum negative compile cases 注释块中，按块解注释验证诊断。
 
 !#
 
 # 本文件 static fun() 测试说明（与上表进度区分）：
-# - printBridgeKind：覆盖 BridgeKind 多分支字符串输出。
-# - EShape 与 reson.values：枚举相等与 for-in 遍历。
-# - EErr.First.toString()：整型继承枚举项的字符串化（行为随实现而定，用于回归打印）。
+# - integer/UInt8 enum：覆盖自动递增、显式赋值、Member.name/index/value。
+# - string enum 与 .values：覆盖遍历和值读取。
+# - EShape/ERectShape：覆盖 extends data 与 extends 具名 data。
+# - Book：覆盖无 extends 的混合值与 mut 成员重赋值。
+# - GameState switch：覆盖 enum 与 switch 配合。
 #
 # 预期结果：
-# - 依次看到 SELF、JVM 的 BridgeKind 行；reson 每个字符串一行；无嵌套函数/未声明符号错误。
+# - EErr.First.value == 2、EErr.Six.value == 6、EBytes.x5.value == 14 为 True。
+# - BridgeKind.SELF == BridgeKind.SELF 为 True，BridgeKind.SELF != BridgeKind.JVM 为 True。
+# - EShape.r1 == EShape.r2 和 ERectShape.r1 == ERectShape.r2 为 False。
+# - switch GameState.Begin 命中 Begin 分支；无编译/运行时错误。

@@ -149,7 +149,7 @@ namespace SimpleLanguage.Core
                     newfunctiontoken = mmf.fileMetaMemberFunction?.token.ToLexemeAllString();
                 }
 
-                Log.AddMetaCoreLog(LID.MetaCoreRepeatDefineFunction, "", oldfunctiontoken, newfunctiontoken );
+                Log.AddMetaCoreLog(LID.MetaCoreRepeatDefineFunction, find2.fileMetaMemberFunction?.token, "AddMetaMemberFunction", oldfunctiontoken, newfunctiontoken );
             }
             return false;
         }

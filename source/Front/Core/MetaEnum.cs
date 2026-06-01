@@ -74,7 +74,7 @@ namespace SimpleLanguage.Core
                 var nmt = new MetaType(CoreMetaClassManager.memberMetaClass);
                 mtList.Add(nmt);
                 var mt = new MetaType(CoreMetaClassManager.arrayMetaClass, mtList);
-                m_ValuesMetaVariable = new MetaMemberVariable(CoreMetaClassManager.enumMetaData, "values" );
+                m_ValuesMetaVariable = new MetaMemberVariable( this, "values" );
                 m_ValuesMetaVariable.SetVariableFrom(MetaVariable.EVariableFrom.EnumMember);
                 m_ValuesMetaVariable.SetIsDefineMetaType(true);
                 m_ValuesMetaVariable.SetMetaDefineType(mt);
@@ -473,12 +473,12 @@ namespace SimpleLanguage.Core
 
                     if (mme.enumValueConstExpressNode == null)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╟onst鍊肩被鍙橀噺");
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╟onst鍊肩被鍙橀噺");
                         continue;
                     }
                     if (mme.enumValueConstExpressNode.eType != m_ExtendClass.eType)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╯tring鍊肩被鍙橀噺");
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╯tring鍊肩被鍙橀噺");
                         continue;
                     }
                 }
@@ -492,7 +492,7 @@ namespace SimpleLanguage.Core
 
                     if (mme.express == null)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage,
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
                             "Error Enum extends data: member must have = assignment: " + v.Key);
                         continue;
                     }
@@ -501,13 +501,13 @@ namespace SimpleLanguage.Core
                         var retDt = mnoeData.GetReturnMetaType();
                         if (!retDt.isData)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage,
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
                                 "Error Enum extends data: member value must be a data new expression");
                         }
                         else if (!m_ExtendMetaData.isDynamic
                             && !ReferenceEquals(retDt.metaData, m_ExtendMetaData))
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage,
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
                                 "Error Enum extends data: 成员必须是 extends 所指定 data 类型的实例（"
                                 + m_ExtendMetaData.allName + "），实际为: "
                                 + (retDt.metaData?.allName ?? retDt.name ?? "?"));
@@ -515,7 +515,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage,
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
                             "Error Enum extends data: member value must use data new expression");
                     }
                 }
@@ -529,7 +529,7 @@ namespace SimpleLanguage.Core
 
                     if (mme.express == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍔ㄦ€佹垚鍛樼涓€浣嶅繀椤绘湁=鍙");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍔ㄦ€佹垚鍛樼涓€浣嶅繀椤绘湁=鍙");
                         continue;
                     }
                     if (mme.express is MetaNewObjectExpressNode mnoe)
@@ -540,12 +540,12 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata鍊肩被鍙橀噺, 涓嶅厑璁稿叾瀹冪被鍨");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata鍊肩被鍙橀噺, 涓嶅厑璁稿叾瀹冪被鍨");
                         }
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata new 鍊肩被鍙橀噺");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍐呭厑璁镐娇鐢╠ata new 鍊肩被鍙橀噺");
                     }
                 }
             }

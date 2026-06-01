@@ -11,8 +11,8 @@ namespace SimpleLanguage.Core
     public class DynamicMetaData : MetaClass
     {
         public DynamicMetaData():base(DefaultObject.Data.ToString())
-        {
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+        {            
+            m_InnderDefine = true;
         }      
         public static MetaClass CreateMetaClass()
         {

@@ -13,7 +13,7 @@ namespace SimpleLanguage.Core
         public IteratorMetaClass() : base("Iterator")
         {
             m_Type = EType.Class;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
 
             var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass);
             m_MetaTemplateList.Add(mt);
@@ -29,7 +29,7 @@ namespace SimpleLanguage.Core
         public IterableMetaClass() : base("Iterable")
         {
             m_Type = EType.Class;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
 
             var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass);
             m_MetaTemplateList.Add(mt);
@@ -45,7 +45,7 @@ namespace SimpleLanguage.Core
         public ArrayMetaClass() : base(DefaultObject.Array.ToString())
         {
             m_Type = EType.Array;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
 
 

@@ -319,10 +319,14 @@ namespace SimpleLanguage.Core
         }
         public int CompareTo(MetaVariable mmv)
         {
+            if (ReferenceEquals(mmv, null))
+                return 1;
+
             if (this.parseLevel > mmv.parseLevel)
                 return 1;
-            else
+            if (this.parseLevel < mmv.parseLevel)
                 return -1;
+            return 0;
         }
         public bool AddMetaVariable( MetaVariable mv )
         {

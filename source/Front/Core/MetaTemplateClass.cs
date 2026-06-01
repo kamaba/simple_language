@@ -74,10 +74,9 @@ namespace SimpleLanguage.Core
                     string tTemplateName = fmc.templateDefineList[i].name;
                     if ( m_MetaTemplateList.Find(a => a.name == tTemplateName) != null)
                     {
-                        if(classDefineType == EClassDefineType.InnerDefine )
+                        if( !m_InnderDefine )
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 定义模式名称重复!!");
-                            Debug.Assert(false);
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, fmc.token, "Error 定义模式名称重复!!");
                         }
                     }
                     else

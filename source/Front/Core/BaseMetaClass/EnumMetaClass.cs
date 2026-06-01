@@ -19,7 +19,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Enum;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
         }
         //public override void ParseInnerFunction()
         //{
@@ -45,7 +45,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Member;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
             m_NeedInitMemberVariables = false;
         }
         public override void ParseInnerFunction()

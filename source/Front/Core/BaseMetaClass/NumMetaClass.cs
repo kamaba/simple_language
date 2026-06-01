@@ -17,7 +17,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.Num;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -31,7 +31,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.UInt8;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -45,7 +45,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.Int8;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -60,7 +60,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.Int16;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -74,7 +74,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.UInt16;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -88,7 +88,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.Int32;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -102,7 +102,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.UInt32;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -116,7 +116,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.Int64;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -130,7 +130,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.UInt64;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
         }
         public static MetaClass CreateMetaClass()
         {
@@ -145,7 +145,7 @@ namespace SimpleLanguage.Core
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.Float32;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
             MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float32, 0.0f);
             SetDefaultExpressNode(mcen);
 
@@ -162,7 +162,7 @@ namespace SimpleLanguage.Core
         public Float64MetaClass() : base(DefaultObject.Float64.ToString())
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
             m_Type = EType.Float64;
         }
         public static MetaClass CreateMetaClass()

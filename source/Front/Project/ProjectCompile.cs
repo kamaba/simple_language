@@ -134,6 +134,13 @@ namespace SimpleLanguage.Project
 
         public static void AddFileParse( string path )
         {
+            var find = fileParseList.Find(a => a.filePath == path);
+            if ( find != null )
+            {
+                Log.AddProjectLog(LID.ShowExtendMessage, "已经添加过一次该文件: " + find.filePath);
+                return;
+            }
+
             var fp = new FileParse( path, new ParseFileParam() );
             fp.structParseComplete = null;
             fp.buildParseComplete = null;

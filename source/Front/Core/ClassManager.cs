@@ -484,24 +484,23 @@ namespace SimpleLanguage.Core
                     MetaClass findmc2 = findmc.GetMetaClassByTemplateCount(fmc.templateDefineList.Count);
                     if ( findmc2 != null )
                     {
-                        if( findmc2.classDefineType == EClassDefineType.StructDefine )
+                        if( findmc2.structDefine )
                         {
                             findmc2.BindFileMetaClass(fmc);
                             findmc2.ParseFileMetaClassTemplate(fmc);
                             findmc2.ParseFileMetaClassMemeberVarAndFunc(fmc);
-                            findmc2.SetClassDefineType(EClassDefineType.CodeDefine);
                             findmc2.UpdateClassAllName();
                             AddExportMetaClass(findmc2);
                             return findmc2;
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Found existing class node with incompatible define type.");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage,fmc.token,  "Found existing class node with incompatible define type.");
                         }
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Found existing class node with incompatible define type.");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, fmc.token, "Found existing class node with incompatible define type2.");
                         return null;
                     }
                 }
@@ -560,7 +559,6 @@ namespace SimpleLanguage.Core
                             }
                             fmc.SetMetaClass(ffmc);
                             ffmc.BindFileMetaClass(fmc);
-                            ffmc.SetClassDefineType(EClassDefineType.CodeDefine);
                             ffmc.metaTemplateList.Clear();
                             ffmc.ParseFileMetaClassTemplate(fmc);
                             ffmc.ParseFileMetaClassMemeberVarAndFunc(fmc);
@@ -613,7 +611,6 @@ namespace SimpleLanguage.Core
                         {
                             fmc.SetMetaClass(findamc);
                             findamc.BindFileMetaClass(fmc);
-                            findamc.SetClassDefineType(EClassDefineType.CodeDefine);
                             findamc.ParseFileMetaClassTemplate(fmc);
                             findamc.ParseFileMetaClassMemeberVarAndFunc(fmc);
                             findamc.UpdateClassAllName();
@@ -655,7 +652,7 @@ namespace SimpleLanguage.Core
             {
                 if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, " ");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, token, " useDefineNamespaceType not allow");
                 }
                 if (fmc.isEnum)
                 {
@@ -685,12 +682,11 @@ namespace SimpleLanguage.Core
                 {
                     if (fmc.isConst)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Class ??????? const ????");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, token, "Class ??????? const ????");
                         return null;
                     }
                     var newmc = new MetaClass(fmc.name);
                     newmc.BindFileMetaClass(fmc);
-                    newmc.SetClassDefineType(EClassDefineType.CodeDefine);
                     newmc.ParseFileMetaClassTemplate(fmc);
                     finalTopMetaNode.AddMetaClass(newmc);
                     newmc.UpdateClassAllName();

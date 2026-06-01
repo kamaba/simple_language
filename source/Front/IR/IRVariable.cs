@@ -9,6 +9,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 
@@ -38,27 +39,8 @@ namespace SimpleLanguage.IR
             }
             else if( mv.variableFrom == MetaVariable.EVariableFrom.EnumMember )
             {
-                MetaVariable gmv = mv.sourceMetaVariable ?? mv;
                 var fieldOwner = IRManager.GetIRMetaClassByMetaVariable(mv);
-                var index = fieldOwner != null
-                    ? fieldOwner.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode())
-                    : -1;
-
-                IRMetaType storageMt = irmt;
-                if (mv is MetaMemberEnum && fieldOwner != null)
-                {
-                    storageMt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(
-                        new MetaType(CoreMetaClassManager.memberMetaClass), fieldOwner);
-                }
-                else if (storageMt == null && fieldOwner != null)
-                {
-                    var srcMt = mv.GetFinalMetaType() ?? mv.defineMetaType ?? mv.realMetaType;
-                    if (srcMt != null)
-                    {
-                        storageMt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(srcMt, fieldOwner);
-                    }
-                }
-
+                var index = fieldOwner.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
                 var irvar = new IRLoadVariable(new IRMetaType(fieldOwner), _irMethod, index, IRMetaVariableFrom.Static);
                 return irvar;
             }
@@ -423,28 +405,15 @@ namespace SimpleLanguage.IR
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.EnumMember)
             {
-                MetaVariable gmv = mv.sourceMetaVariable ?? mv;
-                var fieldOwner = irmc ?? IRManager.GetIRMetaClassByMetaVariable(mv);
-                var index = fieldOwner != null
-                    ? fieldOwner.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode())
-                    : -1;
+                var fieldOwner = IRManager.GetIRMetaClassByMetaVariable(mv);
+                var index = fieldOwner.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                var irvar = new IRLoadVariable(new IRMetaType(fieldOwner), _irMethod, index, IRMetaVariableFrom.Static);                
 
-                IRMetaType storageIrmt = irmt;
-                if (mv is MetaMemberEnum && fieldOwner != null)
-                {
-                    storageIrmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(
+                IRMetaType storageIrmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(
                         new MetaType(CoreMetaClassManager.memberMetaClass), fieldOwner);
-                }
-                else if (storageIrmt == null && fieldOwner != null)
-                {
-                    var srcMt = mv.GetFinalMetaType() ?? mv.defineMetaType ?? mv.realMetaType;
-                    if (srcMt != null)
-                    {
-                        storageIrmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(srcMt, fieldOwner);
-                    }
-                }
 
-                IRStoreVariable irsv = new IRStoreVariable(storageIrmt ?? new IRMetaType(fieldOwner), _irMethod, index, IRMetaVariableFrom.Static);
+                IRStoreVariable irsv = new IRStoreVariable(storageIrmt, _irMethod, 2, IRMetaVariableFrom.Member );
+                irsv.IRDataList.InsertRange(0, irvar.IRDataList);
                 return irsv;
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.ArrayValue)

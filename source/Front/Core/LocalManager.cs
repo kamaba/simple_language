@@ -77,7 +77,6 @@ namespace SimpleLanguage.Core
 
                 var localMc = new MetaClass(localClassName);
                 root.AddMetaClass(localMc);
-                localMc.SetClassDefineType(EClassDefineType.CodeDefine);
 
                 var instVar = CreateOrGetFileLocalInstanceVariable(fm, localMc);
 

@@ -1870,9 +1870,13 @@ namespace SimpleLanguage.Compile
                 {
                     nodeList.Add(curNode);
                 }
+                else if( curNode.nodeType == ENodeType.Comment)
+                {
+
+                }
                 else
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 解析Enum memeber 时，不允许有其它形式的存在!");
+                    Log.AddNodeLog(LID.ShowExtendMessage, curNode?.token, $"不允许有{curNode.token.lexeme.ToString()}其它形式的存在!");
                 }
 
                 if(isParse )

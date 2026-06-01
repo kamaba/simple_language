@@ -13,7 +13,7 @@ namespace SimpleLanguage.Core
         public VoidMetaClass():base( DefaultObject.Void.ToString() )
         {
             SetExtendClass(CoreMetaClassManager.objectMetaClass );
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
             MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Null, "null");
             SetDefaultExpressNode(mcen);
             m_Type = EType.Void;

@@ -54,7 +54,6 @@ namespace SimpleLanguage.Core
             {
                 m_GlobalClass = new MetaClass(globalClassName);
                 root.AddMetaClass(m_GlobalClass);
-                m_GlobalClass.SetClassDefineType(EClassDefineType.CodeDefine);
                 ClassManager.instance.AddInitHandleMetaClassList(m_GlobalClass);
             }
 

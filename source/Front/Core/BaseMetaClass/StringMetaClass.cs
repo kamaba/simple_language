@@ -13,7 +13,7 @@ namespace SimpleLanguage.Core
     {
         public StringMetaClass():base( DefaultObject.String.ToString())
         {
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_Type = EType.String;
         }

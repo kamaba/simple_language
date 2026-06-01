@@ -10,7 +10,7 @@ namespace SimpleLanguage.Core
         public BooleanMetaClass(): base(DefaultObject.Boolean.ToString())
         {
             m_Type = EType.Boolean;
-            m_ClassDefineType = EClassDefineType.InnerDefine;
+            m_InnderDefine = true;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
         }
         public static MetaClass CreateMetaClass()

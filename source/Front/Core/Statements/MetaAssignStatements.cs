@@ -465,7 +465,8 @@ namespace SimpleLanguage.Core
                 return;
             }
 
-            if (m_RightMetaExpress is not MetaNewObjectExpressNode mnoe || mnoe.newType != MetaNewObjectExpressNode.ENewType.ArrayClass)
+            if (m_RightMetaExpress is not MetaNewObjectExpressNode mnoe 
+                || mnoe.newType != MetaNewObjectExpressNode.ENewType.ArrayClass)
             {
                 return;
             }
@@ -494,7 +495,7 @@ namespace SimpleLanguage.Core
             }
 
             var rightElem = ClassManager.GetSingleTemplateArgMetaType(rightMt);
-            if (rightElem != null && TypeManager.CompareMetaType(leftElem, rightElem))
+            if (rightElem != null )
             {
                 return;
             }
@@ -728,8 +729,7 @@ namespace SimpleLanguage.Core
             StringBuilder sb = new StringBuilder();
 
             sb.Append(GetFormatString());
-            sb.Append(";");
-            sb.Append(Environment.NewLine);
+            sb.AppendLine(";");
             if (nextMetaStatements != null)
             {
                 sb.Append(nextMetaStatements.ToFormatString());
