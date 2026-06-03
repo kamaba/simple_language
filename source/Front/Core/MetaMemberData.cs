@@ -228,6 +228,10 @@ namespace SimpleLanguage.Core
             return mmd;
         }
         public void SetIndex(int index) { m_Index = index; }
+        public void UpdateAllName()
+        {
+            m_AllName = m_OwnerMetaBase.allName + "." + m_Name;
+        }
         public void SetExpress( MetaExpressNodeBase meb )
         {
             this.m_Express = meb;
@@ -765,6 +769,11 @@ namespace SimpleLanguage.Core
                     return;
                 }
                 m_RealMetaType = m_DefineMetaType;
+                if( m_RealMetaType.isEnumMember )
+                {
+                    m_DefineMetaType = new MetaType(m_RealMetaType.enumValue.ownerMetaBase as MetaEnum);
+                    m_IsDefineMetaType = true;
+                }
             }
 
             SyncMemberDataTypeByMetaType(m_Express.GetReturnMetaType() ?? m_DefineMetaType);

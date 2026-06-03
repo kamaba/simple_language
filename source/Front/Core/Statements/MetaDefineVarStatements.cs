@@ -56,7 +56,7 @@ namespace SimpleLanguage.Core
         private void Parse()
         {
             string defineName = m_Name;
-            MetaType mdt = null;
+            MetaType leftMt = null;
             var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;
 
             bool isDynamicClass = false;
@@ -65,20 +65,20 @@ namespace SimpleLanguage.Core
             if ( m_FileMetaDefineVariableSyntax != null )
             {
                 var fmcd = m_FileMetaDefineVariableSyntax.fileMetaClassDefine;
-                mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, m_OwnerMetaBlockStatements.ownerMetaFunction as MetaMemberFunction, fmcd);
-                if( mdt == null )
+                leftMt = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, m_OwnerMetaBlockStatements.ownerMetaFunction as MetaMemberFunction, fmcd);
+                if(leftMt == null )
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreNotFoundMetaTypeByFMClassDefine, fmcd.classNameToken, "DefineStatements", fmcd.name );
                     return;
                 }
 
-                if( mdt.metaClass is MetaGenTemplateClass mgtc )
+                if(leftMt.metaClass is MetaGenTemplateClass mgtc )
                 {
                     mgtc.ParseGenTemplateClass(mgtc);
                     mgtc.ParseGenMemberVarible();
                 }
 
-                m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
+                m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, leftMt );
                 m_DefineVarMetaVariable.SetIsDefineMetaType(true);
                 m_DefineVarMetaVariable.SetIsConst(m_FileMetaDefineVariableSyntax.constToken != null);
                 m_DefineVarMetaVariable.AddPingToken(m_FileMetaDefineVariableSyntax.token);
@@ -86,7 +86,7 @@ namespace SimpleLanguage.Core
 
                 Node node = new Node(m_Token);
                 FileMetaCallNode fmcn = new FileMetaCallNode(m_FileMetaDefineVariableSyntax.fileMeta, node);
-                MetaCallNode mcn = new MetaCallNode( null, fmcn, ownerMetaBase, m_OwnerMetaBlockStatements, mdt );
+                MetaCallNode mcn = new MetaCallNode( null, fmcn, ownerMetaBase, m_OwnerMetaBlockStatements, leftMt);
                 mcn.SetAllowUseSettings(new AllowUseSettings());
                 mcn.SetToken(m_Token);
                 mcn.GetFirstNode(m_Name, ownerMetaBase, 0);
@@ -98,7 +98,7 @@ namespace SimpleLanguage.Core
             }
             else if (m_FileMetaOpAssignSyntax != null)
             {
-                m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
+                m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, leftMt);
                 m_DefineVarMetaVariable.SetIsConst(m_FileMetaOpAssignSyntax.constToken != null);
                 m_Token = m_FileMetaOpAssignSyntax.variableRef.callNodeList[0].token;
                 AddPingToken(m_Token);
@@ -106,12 +106,12 @@ namespace SimpleLanguage.Core
                 if ( m_FileMetaOpAssignSyntax.dynamicToken != null )
                 {
                     isDynamicClass = true;
-                    mdt = new MetaType(CoreMetaClassManager.dynamicMetaClass);
+                    leftMt = new MetaType(CoreMetaClassManager.dynamicMetaClass);
                 }
                 else if( m_FileMetaOpAssignSyntax.dataToken != null )
                 {
                     isSynamicData = true;
-                    mdt = new MetaType(CoreMetaClassManager.dynamicMetaData );
+                    leftMt = new MetaType(CoreMetaClassManager.dynamicMetaData );
                 }
                 if (m_FileMetaOpAssignSyntax.variableRef != null)
                 {
@@ -120,7 +120,7 @@ namespace SimpleLanguage.Core
                         Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "call node list is not count equal 1");
                         return;
                     }
-                    MetaCallNode mcn = new MetaCallNode( null, m_FileMetaOpAssignSyntax.variableRef.callNodeList[0],ownerMetaBase, m_OwnerMetaBlockStatements, mdt );
+                    MetaCallNode mcn = new MetaCallNode( null, m_FileMetaOpAssignSyntax.variableRef.callNodeList[0],ownerMetaBase, m_OwnerMetaBlockStatements, leftMt);
                     mcn.SetAllowUseSettings(new AllowUseSettings());
                     mcn.SetToken(m_Token);
                     mcn.GetFirstNode(m_Name, ownerMetaBase, 0);
@@ -135,7 +135,7 @@ namespace SimpleLanguage.Core
             }
             else if (m_FileMetaCallSyntax!= null )
             {
-                m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, mdt );
+                m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, leftMt);
                 m_DefineVarMetaVariable.AddPingToken(m_FileMetaCallSyntax.token);
             }
             if(m_DefineVarMetaVariable == null )
@@ -151,7 +151,7 @@ namespace SimpleLanguage.Core
                 CreateExpressParam cep = new CreateExpressParam();
                 cep.fme = fileExpress;
                 cep.equalMetaVariable = m_DefineVarMetaVariable;
-                cep.metaType = mdt;
+                cep.metaType = leftMt;
                 cep.ownerMBS = m_OwnerMetaBlockStatements;
                 cep.ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass;
 
@@ -164,7 +164,7 @@ namespace SimpleLanguage.Core
                 m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                 m_ExpressNode.CalcReturnType();
 
-                m_ExpressNode = ExpressManager.ConvertNewExpress(m_ExpressNode, mdt, m_DefineVarMetaVariable );
+                m_ExpressNode = ExpressManager.ConvertNewExpress(m_ExpressNode, leftMt, m_DefineVarMetaVariable );
                 if( m_ExpressNode is MetaNewObjectExpressNode mnoen )
                 {
                     mnoen.CheckDefineVariableMetaTypeAndContentMetaType();
@@ -207,6 +207,12 @@ namespace SimpleLanguage.Core
                 if (isCheckReturnType)
                 {
                     //m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
+                    if(expressRetMetaDefineType.isEnumMember && this.defineVarMetaVariable.isDefineMetaType == false )
+                    {
+                        var defineMt = new MetaType(expressRetMetaDefineType.enumValue.ownerMetaBase as MetaEnum);
+                        m_DefineVarMetaVariable.SetMetaDefineType(defineMt);
+                        m_DefineVarMetaVariable.SetIsDefineMetaType(true);
+                    }
                     m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                 }
             }
@@ -214,187 +220,16 @@ namespace SimpleLanguage.Core
             {
                 if (m_ExpressNode != null)
                 {
-                    ETypeRelation relation = ETypeRelation.No;
-                    MetaConstExpressNode constExpressNode = m_ExpressNode as MetaConstExpressNode;
-                    if (constExpressNode != null)
+                    if (TypeManager.CompareLeftVariableAndRightExpress(m_DefineVarMetaVariable, m_ExpressNode, m_Token,
+                            out var convertMetaType ) )
                     {
-                        if (!TypeManager.TryAdjustConstExpressByDefineMetaType(constExpressNode, mdt))
+                        if (convertMetaType != null)
                         {
-                            return;
-                        }
-                    }
-                    MetaClass curClass = mdt.metaClass;
-                    if( mdt.isEnum )
-                    {
-                        if(m_ExpressNode != null )
-                        {
-                            MetaCallLinkExpressNode expressMDT = m_ExpressNode as MetaCallLinkExpressNode;
-                            if (expressMDT == null )
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum模式，只允许是调用模式[CallLinkExpress]");
-                            }
-                            else
-                            {
-                                var varableEnum = expressMDT.metaCallLink.finalCallNode.variable.ownerMetaClass;
-                                if( mdt.metaClass != varableEnum )
-                                {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum与值不相等!!");
-                                }
-                                else
-                                {
-                                    m_IsNeedCastState = false;
-                                }
-                            }
-                        }
-                    }
-                    else if (mdt.isData)
-                    {
-                        relation = TypeManager.ResolveAssignRelation(
-                            mdt,
-                            m_ExpressNode,
-                            true,
-                            false,
-                            out expressRetMetaDefineType,
-                            out _,
-                            out _,
-                            out _,
-                            m_DefineVarMetaVariable);
-                        if (relation == ETypeRelation.Same)
-                        {
-                            m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType ?? mdt);
-                        }
-                        else if (relation != ETypeRelation.ExpressTypeError && relation != ETypeRelation.TargetTypeError)
-                        {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                                "data 声明类型与右侧表达式类型不匹配。");
-                        }
-                    }
-                    else
-                    {
-                        if (mdt.IsArray())
-                        {
-                            if (!TypeManager.CompareMetaType(mdt, expressRetMetaDefineType))
-                            {
-                                Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "DefineStatement", mdt.ToString(), expressRetMetaDefineType.ToString());
-                                return;
-                            }
-                            m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
-                        }
-                        else if (mdt.IsIterator())
-                        {
-                            var iteratorRelation = TypeManager.ResolveAssignRelation(
-                                mdt,
-                                m_ExpressNode,
-                                true,
-                                false,
-                                out _,
-                                out _,
-                                out _,
-                                out _,
-                                m_DefineVarMetaVariable);
-                            if (iteratorRelation == ETypeRelation.No || iteratorRelation == ETypeRelation.TargetTypeError || iteratorRelation == ETypeRelation.ExpressTypeError)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                                    "Iterator 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
-                                return;
-                            }
-                            m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
-                        }
-                        else if (mdt.IsIterable())
-                        {
-                            var iterableRelation = TypeManager.ResolveAssignRelation(
-                                mdt,
-                                m_ExpressNode,
-                                true,
-                                false,
-                                out _,
-                                out _,
-                                out _,
-                                out _,
-                                m_DefineVarMetaVariable);
-                            if (iterableRelation == ETypeRelation.No || iterableRelation == ETypeRelation.TargetTypeError || iterableRelation == ETypeRelation.ExpressTypeError)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                                    "IIterable 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
-                                return;
-                            }
-                            m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
-                        }
-                        else if (mdt.IsNum())
-                        {
-                            if (constExpressNode != null)
-                            {
-                                var defineEType = CoreMetaClassManager.GetETypeByMetaClass(mdt.metaClass);
-                                TypeManager.TryAdjustConstExpressByDefineEType(constExpressNode, defineEType);
-                            }
-                            m_DefineVarMetaVariable.SetRealMetaType(new MetaType(mdt));
+                            m_DefineVarMetaVariable.SetRealMetaType(convertMetaType);
                         }
                         else
                         {
-                            MetaClass compareClass = null;
-                            if (constExpressNode != null && constExpressNode.eType == EType.Null)
-                            {
-                                relation = ETypeRelation.Same;
-                            }
-                            else
-                            {
-                                relation = TypeManager.ResolveAssignRelation(
-                                    mdt,
-                                    m_ExpressNode,
-                                    true,
-                                    false,
-                                    out _,
-                                    out _,
-                                    out compareClass,
-                                    out _,
-                                    m_DefineVarMetaVariable);
-                            }
-
-                            StringBuilder sb = new StringBuilder();
-                            sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allName + " 函数: " + metaFunction?.name + "中  ");
-                            if (curClass != null)
-                            {
-                                sb.Append(" 定义类 : " + curClass.allName);
-                            }
-                            if (defineName != null)
-                            {
-                                sb.Append(" 名称为: " + defineName?.ToString());
-                            }
-                            sb.Append("与后边赋值语句中 ");
-                            if (compareClass != null)
-                                sb.Append("表达式类为: " + compareClass.allName);
-                            if (relation == ETypeRelation.No)
-                            {
-                                sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
-                                m_IsNeedCastState = true;
-                            }
-                            else if (relation == ETypeRelation.Same)
-                            {
-                                m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
-                            }
-                            else if (relation == ETypeRelation.Parent)
-                            {
-                                sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
-                                m_IsNeedCastState = true;
-                            }
-                            else if (relation == ETypeRelation.Child)
-                            {
-                                if (compareClass != null)
-                                {
-                                    m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
-                                }
-                            }
-                            else if (relation == ETypeRelation.Interface || relation == ETypeRelation.Num)
-                            {
-                                m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
-                            }
-                            else
-                            {
-                                sb.Append("表达式错误，或者是定义类型错误");
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, sb.ToString());
-                            }
+                            m_DefineVarMetaVariable.SetRealMetaType(m_ExpressNode.GetReturnMetaType());
                         }
                     }
                 }

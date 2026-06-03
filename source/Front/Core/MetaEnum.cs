@@ -81,7 +81,7 @@ namespace SimpleLanguage.Core
                 m_ValuesMetaVariable.SetRealMetaType(mt);
                 m_ValuesMetaVariable.SetIndex(m_MetaMemberVariableDict.Count);
 
-                MetaArrayExpressNode maen = new MetaArrayExpressNode(CoreMetaClassManager.enumMetaData, null, mt, m_ValuesMetaVariable );
+                MetaArrayExpressNode maen = new MetaArrayExpressNode( this, null, mt, m_ValuesMetaVariable );
                 // values 鏁扮粍鍙簲鍖呭惈鐪熷疄鏋氫妇鎴愬憳锛屼笉搴旀妸 values 鑷繁涔熸斁杩涘幓锛?
                 // 鍚﹀垯 for-in 鏋氫妇閬嶅巻浼氬嚭鐜伴澶栭」骞跺鑷村鍑虹殑 IR 閫昏緫寮傚父銆?
                 var enumMembers = m_MetaMemberVariableDict.Values                    
@@ -91,18 +91,16 @@ namespace SimpleLanguage.Core
 
                 foreach (var mme in enumMembers)
                 {
-                    MetaVisitNode mvn = MetaVisitNode.CreateByEnumMember(new MetaType(this), mme);
+                    MetaVisitNode mvn = MetaVisitNode.CreateByEnumMember(mme.GetFinalMetaType(), mme);
                     MetaCallLink mcl = new MetaCallLink(mvn);
                     MetaCallLinkExpressNode mclen = new MetaCallLinkExpressNode(mcl);
                     maen.metaCallArray.Add(mclen);
                 }
+                maen.Parse( new AllowUseSettings());
+                maen.CalcReturnType();
 
-                var valuesNewExpress = new MetaNewObjectExpressNode(mt, CoreMetaClassManager.enumMetaData, null, m_ValuesMetaVariable);
-                foreach (var itemExpress in maen.metaCallArray)
-                {
-                    var mbas = new MetaBraceAssignStatements(mt, null, this, nmt, itemExpress);
-                    valuesNewExpress.assignStatementsList.Add(mbas);
-                }
+                var valuesNewExpress = new MetaNewObjectExpressNode(mt, maen, this, null, m_ValuesMetaVariable);
+                valuesNewExpress.SetToken(m_Token);
 
                 MetaType newRMT = new MetaType();
                 newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
@@ -110,7 +108,7 @@ namespace SimpleLanguage.Core
                 newRMT = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
                 newRMT.SetArrayLength(valuesNewExpress.assignStatementsList.Count);
 
-                //valuesNewExpress.Parse(new AllowUseSettings());
+                valuesNewExpress.Parse(new AllowUseSettings());
                 valuesNewExpress.SetNewMetaType(newRMT);
                 valuesNewExpress.CalcReturnType();
                 m_ValuesMetaVariable.SetExpress(valuesNewExpress);
@@ -300,6 +298,7 @@ namespace SimpleLanguage.Core
                 {
                     m_MetaMemberVariableDict.Add(mme.name, mmv);
                     mme.SetRelationMemberVariable(mmv);
+                    mmv.SetSourceMetaVariable(mme);
                 }
 
                 MetaVariableManager.instance.AddMetaEnumVariable(mme);
@@ -558,7 +557,7 @@ namespace SimpleLanguage.Core
 
                     if (mmeClass.express == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, v.Value.token,
                             "Error Enum extends class: member must have = assignment");
                         continue;
                     }

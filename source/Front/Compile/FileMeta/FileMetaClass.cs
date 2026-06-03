@@ -234,7 +234,7 @@ namespace SimpleLanguage.Compile
                         else
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次权限!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次权限!!");
                         }
                     }
                     else if (token.type == ETokenType.Const)
@@ -246,7 +246,7 @@ namespace SimpleLanguage.Compile
                         else
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次Const!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次Const!!");
                         }
                     }
                     else if (token.type == ETokenType.Partial)
@@ -254,7 +254,7 @@ namespace SimpleLanguage.Compile
                         if (m_PartialToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次Class!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次Class!!");
                         }
                         m_PartialToken = token;
                     }
@@ -263,7 +263,7 @@ namespace SimpleLanguage.Compile
                         if (m_AbstractToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次Abstract!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次Abstract!!");
                         }
                         m_AbstractToken = token;
                     }
@@ -272,17 +272,17 @@ namespace SimpleLanguage.Compile
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次Enum!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次Enum!!");
                         }
                         if (m_DataToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次data!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次data!!");
                         }
                         if (m_ClassToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次Class!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次Class!!");
                         }
                         m_ClassToken = token;
                     }
@@ -291,17 +291,17 @@ namespace SimpleLanguage.Compile
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次Enum!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次Enum!!");
                         }
                         if (m_DataToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次data!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次data!!");
                         }
                         if (m_ClassToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次Class!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次Class!!");
                         }
                         m_EnumToken = token;
                     }
@@ -310,19 +310,19 @@ namespace SimpleLanguage.Compile
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次Enum!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次Enum!!");
                         }
                         else
                         {
                             if (m_DataToken != null)
                             {
                                 isError = true;
-                                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次data!!");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次data!!");
                             }
                             if (m_ClassToken != null)
                             {
                                 isError = true;
-                                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次Class!!");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次Class!!");
                             }
                             m_DataToken = token;
                         }
@@ -332,7 +332,7 @@ namespace SimpleLanguage.Compile
                         if (m_ExtendsToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次Extend!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次Extend!!");
                         }
                         m_ExtendsToken = token;
                     }
@@ -341,24 +341,24 @@ namespace SimpleLanguage.Compile
                         if (m_EnumToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次Enum!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次Enum!!");
                         }
                         if (m_DataToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析过了一次data!!");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次data!!");
                         }
                         if (classNameTokenList.Count > 0 )    //后置
                         {
                             if (m_PreInterfaceToken != null)
                             {
                                 isError = true;
-                                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
                             }
                             if (m_SufInterfaceToken != null)
                             {
                                 isError = true;
-                                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
                             }
                             m_SufInterfaceToken = token;
 
@@ -368,17 +368,17 @@ namespace SimpleLanguage.Compile
                             if (m_ClassToken != null)
                             {
                                 isError = true;
-                                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析interface与class不可以周时出现!!");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析interface与class不可以周时出现!!");
                             }
                             if (m_PreInterfaceToken != null)
                             {
                                 isError = true;
-                                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
                             }
                             if (m_SufInterfaceToken != null)
                             {
                                 isError = true;
-                                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
                             }
                             m_PreInterfaceToken = token;
                         }
@@ -390,7 +390,7 @@ namespace SimpleLanguage.Compile
                     else
                     {
                         isError = true; 
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 有其它未知类型在class中");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 有其它未知类型在class中");
                         break;
                     }
                 }
@@ -401,23 +401,23 @@ namespace SimpleLanguage.Compile
             {
                 if (m_PreInterfaceToken != null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Enum方式，与enum同级，不允许同时出现");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，与enum同级，不允许同时出现");
                     return false;
                 }
                 if (m_SufInterfaceToken != null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Enum方式，不支持接口方式");
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，不支持接口方式");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "");
                     return false;
                 }
                 if (permissionToken != null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Enum方式，不支持权限的使用!!");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，不支持权限的使用!!");
                     return false;
                 }
                 if (m_PartialToken != null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Enum方式，不支持partial的使用!!");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，不支持partial的使用!!");
                     return false;
                 }
 
@@ -426,22 +426,22 @@ namespace SimpleLanguage.Compile
             {
                 if (m_PreInterfaceToken != null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Enum方式，与data同级，不允许同时出现");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，与data同级，不允许同时出现");
                     return false;
                 }
                 if (m_SufInterfaceToken != null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Enum方式，不支持接口方式");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，不支持接口方式");
                     return false;
                 }
                 if (permissionToken != null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Data方式，不支持权限的使用!!");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Data方式，不支持权限的使用!!");
                     return false;
                 }
                 if (m_PartialToken != null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Data方式，不支持partial的使用!!");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Data方式，不支持partial的使用!!");
                     return false;
                 }
 
@@ -451,7 +451,7 @@ namespace SimpleLanguage.Compile
 
                 if (classNameTokenList.Count == 0)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析类型名称错误!!");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析类型名称错误!!");
                 }                
             }
             m_Token = classNameTokenList[classNameTokenList.Count - 1];

@@ -930,7 +930,6 @@ namespace SimpleLanguage.Core
                         m_MetaVariable = retmmd;
                         if (retmmd.memberDataType == EMemberDataType.MemberClass)
                         {
-                            m_MetaClass = retmmd.GetFinalMetaType()?.metaClass;
                             m_CallNodeType = ECallNodeType.MemberVariableName;
                         }
                         else if( retmmd.memberDataType == EMemberDataType.ConstValue )
@@ -1097,7 +1096,7 @@ namespace SimpleLanguage.Core
                                     m_CallNodeType = ECallNodeType.EnumMember;
                                     if (m_FrontCallNode?.metaEnum != null)
                                     {
-                                        m_MetaType = new MetaType(m_FrontCallNode.metaEnum);
+                                        m_MetaType = new MetaType(mmv);
                                         m_CallMetaType = m_MetaType;
                                     }
                                 }
@@ -1111,7 +1110,8 @@ namespace SimpleLanguage.Core
                     }
                     else if (frontCNT == ECallNodeType.FunctionInnerVariableName
                         || frontCNT == ECallNodeType.MemberVariableName
-                        || frontCNT == ECallNodeType.VisitVariable)
+                        || frontCNT == ECallNodeType.VisitVariable
+                        || frontCNT == ECallNodeType.EnumMember )
                     {
                         MetaBase tempMetaBase2 = null;
                         var mv = m_FrontCallNode.m_MetaVariable;
@@ -1134,18 +1134,14 @@ namespace SimpleLanguage.Core
 
                         if (tempMetaBase2 == null)
                         {
-                            //濡傛灉宸茬粡瀹氫箟杩囨潵鍨嬬殑锛屽垯浼樺寲浣跨敤瀹氫箟绫诲瀷锛岃繘琛岃绠?
-                            MetaClass mc = null;
                             var mtt = mv.GetFinalMetaType();
-                            mc = mtt.metaClass == null ? mv.GetTemplateMetaClass() : mtt.metaClass;
-                            var md = mtt.metaData;
-                            if (md != null)
+                            if (mtt.isData)
                             {
                                 if (TryBuildDataToStringSystemCall(m_Name))
                                 {
                                     return true;
                                 }
-
+                                var md = mtt.metaData;
                                 var retmmd = md.GetMemberDataByName(m_Name);
                                 m_MetaVariable = retmmd;
                                 if (retmmd == null)
@@ -1174,8 +1170,30 @@ namespace SimpleLanguage.Core
                                     m_CallNodeType = ECallNodeType.MemberVariableName;
                                 }
                             }
+                            else if(mtt.isEnum )
+                            {
+                                if( mv.realMetaType.isEnumMember )
+                                {
+                                    if (GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.memberMetaClass, m_Name) == false)
+                                    {
+                                        return false;
+                                    }
+                                }
+                                else
+                                {
+                                    return false;
+                                }
+                            }
+                            else if( mtt.isEnumMember )
+                            {
+                                if (GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.memberMetaClass, m_Name) == false)
+                                {
+                                    return false;
+                                }
+                            }
                             else
                             {
+                                MetaClass mc = mtt.metaClass == null ? mv.GetTemplateMetaClass() : mtt.metaClass;
                                 if (isAt)
                                 {
                                 }

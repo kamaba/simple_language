@@ -422,16 +422,22 @@ namespace SimpleLanguage.Core
                     enumExpr = left;
                     enumType = left.GetReturnMetaType();
 
-                    if( m_Right is MetaCallLinkExpressNode mcen )
+                    if(rightMt.isEnumMember )
                     {
-                        MetaMemberVariable mv = mcen.GetReturnMetaVariable() as MetaMemberVariable;
-                        if( mv != null )
+                        if( rightMt.enumValue.ownerMetaBase == leftMt.metaEnum )
                         {
-                            if( mv.ownerMetaEnum != null )
-                            {
-                                anotherType = new MetaType(mv.ownerMetaEnum);
-                            }
+
                         }
+                        else
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "不是同一个enum");
+                            return;
+                        }
+                    }
+                    else
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "is not enum member "); 
+                        return;
                     }
                 }
                 else if( rightMt.isEnum )
@@ -441,33 +447,23 @@ namespace SimpleLanguage.Core
 
                     enumType = m_Right.GetReturnMetaType();
 
-                    if ( m_Left is MetaCallLinkExpressNode mcen)
+                    if ( leftMt.isEnumMember )
                     {
-                        MetaMemberVariable mv = mcen.GetReturnMetaVariable() as MetaMemberVariable;
-                        if (mv != null)
+                        if (leftMt.enumValue.ownerMetaBase == rightMt.metaEnum)
                         {
-                            if (mv.ownerMetaEnum != null)
-                            {
-                                anotherType = new MetaType(mv.ownerMetaEnum);
-                            }
+
+                        }
+                        else
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "不是同一个enum");
+                            return;
                         }
                     }
-                }
-
-                bool isPass = false;
-                if (enumType.isEnum)
-                {
-                    isPass = IsSameEnumHost(enumType, anotherType);
-                }
-                else if (anotherType?.eType == EType.Member || anotherType?.metaClass == CoreMetaClassManager.memberMetaClass)
-                {
-                    var memberOwnerClass = TryGetMemberOwnerMetaClass(enumMemberExpr);
-                    isPass = IsEnumOwnerMatchMemberOwner(enumType, memberOwnerClass);
-                }
-
-                if (!isPass)
-                {
-                    AddMetaError("Error enum比较只允许同一个enum类型与其成员之间进行 ==/!= 运算!!");
+                    else
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaBaseTerm.token, "is not enum member ");
+                        return;
+                    }
                 }
                 m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
                 return;
@@ -497,6 +493,19 @@ namespace SimpleLanguage.Core
                     bool isFindDefineFunction = false;
                     MetaClass leftMc = leftMt.metaClass;
                     MetaClass rightMc = rightMt.metaClass;
+
+                    if( leftMc == null || rightMc == null )
+                    {
+                        if( leftMt == null )
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "left or right class is null" + leftMt.ToFormatString() );
+                        }
+                        else if( rightMc == null )
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "left or right class is null" + rightMt.ToFormatString() );
+                        }
+                        return;
+                    }
 
                     bool isCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal
                         || m_OpLevelSign == ELeftRightOpSign.NotEqual
@@ -741,33 +750,6 @@ namespace SimpleLanguage.Core
                 return true;
             }
             return a.allName == b.allName;
-        }
-        private static bool IsSameEnumHost(MetaType enumTypeA, MetaType enumTypeB)
-        {
-            if (enumTypeA == null || enumTypeB == null)
-            {
-                return false;
-            }
-
-            var a = enumTypeA.metaEnum;
-            var b = enumTypeB.metaEnum;
-            if (a == null || b == null)
-            {
-                return false;
-            }
-
-            return object.ReferenceEquals(a, b)
-                || string.Equals(a.allName, b.allName, StringComparison.Ordinal);
-        }
-        private static bool IsEnumOwnerMatchMemberOwner(MetaType enumType, MetaClass memberOwnerClass)
-        {
-            if (enumType?.metaEnum == null || memberOwnerClass == null)
-            {
-                return false;
-            }
-
-            return string.Equals(enumType.metaEnum.allName, memberOwnerClass.allName, StringComparison.Ordinal)
-                || string.Equals(enumType.metaEnum.name, memberOwnerClass.name, StringComparison.Ordinal);
         }
         private static MetaClass TryGetMemberOwnerMetaClass(MetaExpressNodeBase expr)
         {

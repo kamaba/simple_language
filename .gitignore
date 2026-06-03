@@ -89,3 +89,9 @@
 /.type-relation-bak/MetaMemberVariable.cs
 /.type-relation-bak/MetaParam.cs
 /.type-relation-bak/TypeManager.cs
+/test/BaseTest/EnumTest/Code.txt
+/test/BaseTest/EnumTest/File.txt
+/test/BaseTest/EnumTest/IR.txt
+/test/BaseTest/EnumTest/Meta.txt
+/test/BaseTest/EnumTest/Node.txt
+/test/BaseTest/EnumTest/Token.txt

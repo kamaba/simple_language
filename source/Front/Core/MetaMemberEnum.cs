@@ -188,6 +188,8 @@ namespace SimpleLanguage.Core
                 return null;
             }
 
+            valueMv.SetIsConst(fmmv.mutToken == null);
+
             var nameExpr = new MetaConstExpressNode(EType.String, fmmv.name );
             nameExpr.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
             nameExpr.SetToken(fmmv.token);
@@ -216,31 +218,6 @@ namespace SimpleLanguage.Core
             exportVariable.SetExpress(wrappedNewObject);
 
             return exportVariable;
-        }
-        /// <summary>
-        /// 为 enum.values 数组生成一项：new Core.Member() 后按 name、value、index 顺序赋值（与 IRNewExpress 对象初始化一致）。
-        /// 使用 Member 类模板上的 MetaMemberVariable，保证 IR 里按 hash 能匹配到字段。
-        /// </summary>
-        public MetaExpressNodeBase CreateValuesArrayElementExpress()
-        {
-            var valueExpr = m_Express;
-            if (valueExpr == null)
-                return null;
-            // 已包装成 Member 时，m_EnumValueExpress 仍为原始值表达式；若仅有包装节点则无法再拆值
-            if (m_Express == null && valueExpr is MetaNewObjectExpressNode mnoe
-                && mnoe.GetReturnMetaType()?.metaClass == CoreMetaClassManager.memberMetaClass)
-            {
-                return null;
-            }
-
-            var memberClass = CoreMetaClassManager.memberMetaClass;
-            if (memberClass == null)
-                return null;
-
-            var memberType = new MetaType(memberClass);
-            var newMember = new MetaNewObjectExpressNode(memberType, ownerMetaClass, m_OwnerMetaBlockStatements, null );
-            FillMemberNewObjectAssignList(newMember, m_OwnerMetaBlockStatements, m_OwnerMetaBase, valueExpr, m_Name, m_Index);
-            return newMember;
         }
         private void FillMemberNewObjectAssignList(
             MetaNewObjectExpressNode newMember,

@@ -8,9 +8,11 @@
 
 
 using SimpleLanguage.Compile;
+using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace SimpleLanguage.Core
 {
@@ -330,9 +332,9 @@ namespace SimpleLanguage.Core
         }
 
         // 比较两个MetaType的内容， 主要通过 MetaClass 和里边的MetaType的遍历 都相同 
-        public static bool IsCoreMetaType( MetaType mt )
+        public static bool IsCoreMetaType(MetaType mt)
         {
-            if( mt.eMetaTypeType == EMetaTypeType.MetaClass )
+            if (mt.eMetaTypeType == EMetaTypeType.MetaClass)
             {
                 var curClass = mt.metaClass;
                 if (curClass == CoreMetaClassManager.uint8MetaClass
@@ -346,14 +348,14 @@ namespace SimpleLanguage.Core
                     || curClass == CoreMetaClassManager.uint64MetaClass
                     || curClass == CoreMetaClassManager.booleanMetaClass
                     || curClass == CoreMetaClassManager.stringMetaClass
-                    || curClass == CoreMetaClassManager.arrayMetaClass )
+                    || curClass == CoreMetaClassManager.arrayMetaClass)
                 {
                     return true;
                 }
             }
             return false;
         }
-        public bool UpdateMetaTypeByGenClassAndFunction(MetaType mt, MetaGenTemplateClass mgtc, MetaGenTemplateFunction mgtf )
+        public bool UpdateMetaTypeByGenClassAndFunction(MetaType mt, MetaGenTemplateClass mgtc, MetaGenTemplateFunction mgtf)
         {
             bool isNeedReg = false;
             MetaClass findfn = null;
@@ -373,7 +375,7 @@ namespace SimpleLanguage.Core
             }
             if (isNeedReg)
             {
-                var newmc = mt.metaClass.AddInstanceMetaClass(regMCList, true );
+                var newmc = mt.metaClass.AddInstanceMetaClass(regMCList, true);
                 if (newmc == null)
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaClass is Null");
@@ -1113,7 +1115,7 @@ namespace SimpleLanguage.Core
             MetaClass leftBaseClass = mdtL.GetTemplateMetaClass();
             MetaClass rightBaseClass = mdtR.GetTemplateMetaClass();
 
-            if( leftBaseClass == CoreMetaClassManager.objectMetaClass )
+            if (leftBaseClass == CoreMetaClassManager.objectMetaClass)
             {
                 return true;
             }
@@ -1130,6 +1132,158 @@ namespace SimpleLanguage.Core
                 if (!CompareMetaType(leftTemplateList[i], rightTemplateList[i]))
                     return false;
             }
+
+            return true;
+        }
+
+        public static bool CompareMetaClass( MetaClass leftmc, MetaClass rightmc )
+        {
+            if (leftmc == null || rightmc == null) return false;
+            // 左值 object：可接受任意右值。
+            if (leftmc == CoreMetaClassManager.objectMetaClass)
+            {
+                return true;
+            }
+            else if ( ClassManager.IsNumberClass( leftmc ))
+            {
+                if (leftmc == rightmc)
+                {
+                    return true;
+                }
+                else
+                {
+                    if (leftmc == CoreMetaClassManager.int8MetaClass
+                       || leftmc == CoreMetaClassManager.uint8MetaClass)
+                    {
+                        return false;
+                    }
+                    else if (leftmc == CoreMetaClassManager.int16MetaClass
+                       || leftmc == CoreMetaClassManager.uint16MetaClass)
+                    {
+                        if (rightmc == CoreMetaClassManager.int8MetaClass
+                            || rightmc == CoreMetaClassManager.uint8MetaClass)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else if (leftmc == CoreMetaClassManager.int32MetaClass
+                       || leftmc == CoreMetaClassManager.uint32MetaClass)
+                    {
+                        if (rightmc == CoreMetaClassManager.int8MetaClass
+                            || rightmc == CoreMetaClassManager.uint8MetaClass
+                            || rightmc == CoreMetaClassManager.int16MetaClass
+                            || rightmc == CoreMetaClassManager.uint16MetaClass)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else if (leftmc == CoreMetaClassManager.int64MetaClass
+                       || leftmc == CoreMetaClassManager.uint64MetaClass)
+                    {
+
+                        if (rightmc == CoreMetaClassManager.int8MetaClass
+                            || rightmc == CoreMetaClassManager.uint8MetaClass
+                            || rightmc == CoreMetaClassManager.int16MetaClass
+                            || rightmc == CoreMetaClassManager.uint16MetaClass
+                            || rightmc == CoreMetaClassManager.int32MetaClass
+                            || rightmc == CoreMetaClassManager.uint32MetaClass)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return false;
+                        }
+                    }
+                    else if (leftmc == CoreMetaClassManager.numMetaClass)
+                    {
+                        if (ClassManager.IsNumberClass(rightmc) )
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                }
+            }
+            else
+            {
+                //// 普通 class：调用 ResolveAssignRelation 并根据关系决定是否需要强转。
+                //var classRelation = Re(leftMetaType, rightMt, out MetaClass mc, out MetaClass cmc);
+                //if (classRelation == ETypeRelation.ExpressTypeError)
+                //{
+                //    Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                //        "Error 赋值表达式返回定义类型为空");
+                //    return false;
+                //}
+
+                //switch (classRelation)
+                //{
+                //    case ETypeRelation.Same:
+                //        //convertMetaType = rightClassType ?? leftMetaType;
+                //        return true;
+                //    case ETypeRelation.Child:
+                //        //if (compareClass != null)
+                //        //{
+                //        //    convertMetaType = rightClassType;
+                //        //}
+                //        return true;
+                //    case ETypeRelation.Interface:
+                //    case ETypeRelation.Num:
+                //    case ETypeRelation.Similar:
+                //        //convertMetaType = rightClassType;
+                //        //isNeedCast = classRelation != ETypeRelation.Interface;
+                //        return true;
+                //    case ETypeRelation.Parent:
+                //        {
+                //            var sb = new System.Text.StringBuilder();
+                //            sb.Append("Warning 类型不相同 ");
+                //            //if (curClass != null) sb.Append("定义类: ").Append(curClass.allName).Append(' ');
+                //            //if (compareClass != null) sb.Append("表达式类: ").Append(compareClass.allName).Append(' ');
+                //            //sb.Append("返回值是父类型向子类型转换，存在错误转换!!");
+                //            //Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken, sb.ToString());
+                //            //isNeedCast = true;
+                //            return true;
+                //        }
+                //    case ETypeRelation.No:
+                //        {
+                //            //var targetTemplateList = leftMetaType.GetGenTemplateMetaTypeList();
+                //            //var exprTemplateList = rightMt?.GetGenTemplateMetaTypeList();
+                //            //bool hasTemplateInEither =
+                //            //    (targetTemplateList != null && targetTemplateList.Count > 0)
+                //            //    || (exprTemplateList != null && exprTemplateList.Count > 0);
+                //            //if (hasTemplateInEither)
+                //            //{
+                //            //    Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+                //            //        "模板类型不匹配（接口模板位置仅在可协变标记下允许协变），请检查模板参数或接口变型规则。");
+                //            //    return false;
+                //            //}
+                //            var sb = new System.Text.StringBuilder();
+                //            sb.Append("Warning 类型不相同 ");
+                //            //if (curClass != null) sb.Append("定义类: ").Append(curClass.allName).Append(' ');
+                //            //if (compareClass != null) sb.Append("表达式类: ").Append(compareClass.allName).Append(' ');
+                //            //sb.Append("可能会有强转，强转后可能默认值为null");
+                //            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, sb.ToString());
+                //            //isNeedCast = true;
+                //            return true;
+                //        }
+                //    default:
+                //        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "表达式错误，或者是定义类型错误");
+                //        return false;
+                //}
+            }
+
 
             return true;
         }
@@ -1399,6 +1553,557 @@ namespace SimpleLanguage.Core
             }
 
             return relation;
+        }
+        public static bool CompareLeftVariableAndRightExpress( MetaVariable leftMv, MetaExpressNodeBase menb, Token token, out MetaType convertMt )
+        {
+            convertMt = null;
+            MetaType leftMt = leftMv.GetFinalMetaType();
+            MetaType rightMt = menb.GetReturnMetaType();
+            if (leftMt == null || rightMt == null)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, token, "left or right is null");
+                return false;
+            }
+            if (leftMt.isEnum)
+            {
+                if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
+                {
+                    return false;
+                }
+                if (rightMt.isEnumMember)
+                {
+                    if( leftMt.metaEnum == rightMt.enumValue.ownerMetaEnum )
+                    {
+                        return true;
+                    }
+                }
+
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "enum compare failed");
+                return false;
+            }
+            else if (leftMt.isEnumMember)
+            {
+                if( leftMv.sourceMetaVariable == null )
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token,
+                        "left mv is null");
+                    return false;
+                }
+                return false;
+            }
+
+            return CompareLeftRightMetaType(leftMt, rightMt, token, out convertMt);
+        }
+        public static bool CompareLeftRightMetaType(MetaType leftMetaType, MetaType rightMt, Token token, out MetaType convertMt)
+        {
+            convertMt = null;
+            // 左值 enum：仅允许是同一 enum 的成员调用表达式，或同 enum 的常量值。
+            
+            // 左值 data：右值需为 data 或 null。
+            if (leftMetaType.isData)
+            {
+                if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
+                {
+                    return true;
+                }
+                else
+                {
+                    if (!rightMt.isData)
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                            "data 声明类型与右侧表达式类型不匹配：右值非 data 类型。");
+                        return false;
+                    }
+                    else
+                    {
+                        if (ReferenceEquals(rightMt, rightMt))
+                            return true;
+                        return ClassManager.instance.CompareMetaDataMember(rightMt.metaData, rightMt.metaData);
+                    }
+                }
+            }
+            else if (leftMetaType.isTemplate)
+            {
+                MetaClass leftmc = leftMetaType.metaClass;
+                MetaClass rightmc = rightMt.metaClass;
+                if (rightMt.isNull || rightmc == CoreMetaClassManager.nullMetaClass)
+                {
+                    return true;
+                }
+                else
+                {
+                    if (!rightMt.isTemplate)
+                    {
+                        if (leftmc == CoreMetaClassManager.numMetaClass)
+                        {
+                            if (rightMt.IsNum())
+                            {
+                                return true;
+                            }
+                        }
+                        if (leftmc == CoreMetaClassManager.int8MetaClass
+                           || leftmc == CoreMetaClassManager.uint8MetaClass)
+                        {
+                            return false;
+                        }
+                        else if (leftmc == CoreMetaClassManager.int16MetaClass
+                           || leftmc == CoreMetaClassManager.uint16MetaClass)
+                        {
+                            if (rightmc == CoreMetaClassManager.int8MetaClass
+                                || rightmc == CoreMetaClassManager.uint8MetaClass)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else if (leftmc == CoreMetaClassManager.int32MetaClass
+                           || leftmc == CoreMetaClassManager.uint32MetaClass)
+                        {
+                            if (rightmc == CoreMetaClassManager.int8MetaClass
+                                || rightmc == CoreMetaClassManager.uint8MetaClass
+                                || rightmc == CoreMetaClassManager.int16MetaClass
+                                || rightmc == CoreMetaClassManager.uint16MetaClass)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else if (leftmc == CoreMetaClassManager.int64MetaClass
+                           || leftmc == CoreMetaClassManager.uint64MetaClass)
+                        {
+
+                            if (rightmc == CoreMetaClassManager.int8MetaClass
+                                || rightmc == CoreMetaClassManager.uint8MetaClass
+                                || rightmc == CoreMetaClassManager.int16MetaClass
+                                || rightmc == CoreMetaClassManager.uint16MetaClass
+                                || rightmc == CoreMetaClassManager.int32MetaClass
+                                || rightmc == CoreMetaClassManager.uint32MetaClass)
+                            {
+                                return true;
+                            }
+                            else
+                            {
+                                return false;
+                            }
+                        }
+                        else if (leftmc == CoreMetaClassManager.numMetaClass)
+                        {
+                            if (rightMt.IsNum())
+                            {
+                                return true;
+                            }
+                            return false;
+                        }
+
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                            "data 声明类型与右侧表达式类型不匹配：右值非 data 类型。");
+                        return false;
+                    }
+                    else
+                    {
+                        return true;
+                    }
+                }
+            }
+            else if (leftMetaType.GetGenTemplateMetaTypeList().Count > 0)
+            {
+                if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
+                {
+                    return true;
+                }
+
+                if (CompareMetaClass(leftMetaType.metaClass, rightMt.metaClass) == false)
+                {
+                    return false;
+                }
+
+                var leftDmtList = leftMetaType.GetGenTemplateMetaTypeList();
+                var rightDmtList = rightMt.GetGenTemplateMetaTypeList();
+                if (leftDmtList.Count == rightDmtList.Count )
+                {
+                    for( int i = 0; i < leftDmtList.Count; i++ )
+                    {
+                        var dtmt = leftDmtList[i];
+                        var dtmt2 = rightDmtList[i];
+
+                        if( TypeManager.CompareMetaType( dtmt, dtmt2 ) == false )
+                        {
+                            return false;
+                        }
+
+                    }
+                    return true;
+                }
+
+                //if (leftMetaType.IsArray())
+                //{                    
+                //        //var rightMt = rightExpressNode.GetReturnMetaType();
+                //        //if (CompareMetaType(leftMetaType, rightMt))
+                //        //{
+                //        //    convertMetaType = rightMt;
+                //        //    return true;
+                //        //}
+
+                //        //if (rightExpressNode is MetaNewObjectExpressNode mnoe
+                //        //    && mnoe.newType == MetaNewObjectExpressNode.ENewType.ArrayClass)
+                //        //{
+                //        //    var leftElemType = ClassManager.GetSingleTemplateArgMetaType(leftMetaType);
+                //        //    if (leftElemType != null)
+                //        //    {
+                //        //        if (mnoe.usesExplicitArrayElementTypeSyntax)
+                //        //        {
+                //        //            var rightElemType = ClassManager.GetSingleTemplateArgMetaType(rightMt);
+                //        //            if (rightElemType != null && !CompareMetaType(leftElemType, rightElemType))
+                //        //            {
+                //        //                Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+                //        //                    "右值数组已在创建表达式中指定元素类型（例如 Array<Int16>(...)），与左值元素类型 "
+                //        //                    + leftElemType.ToString() + " 不一致，不能自动强转。请使用与左值一致的元素类型，或使用未标注类型的字面量 [...]。");
+                //        //                return false;
+                //        //            }
+                //        //        }
+                //        //        else
+                //        //        {
+                //        //            if (!TryForceConvertArrayLiteralElements(mnoe, leftElemType, errorAnchorToken))
+                //        //            {
+                //        //                return false;
+                //        //            }
+                //        //            rightExpressNode.CalcReturnType();
+                //        //            isNeedCast = true;
+                //        //            convertMetaType = rightExpressNode.GetReturnMetaType();
+                //        //            return true;
+                //        //        }
+                //        //    }
+
+                //    //Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, errorAnchorToken,
+                //    //    "CompareLeftRightMetaType", leftMetaType.ToString(), rightMt?.ToString() ?? "null");
+
+                //}// 左值 Iterator / Iterable：复用 ResolveAssignRelation 的协变规则。
+                //else if (leftMetaType.IsIterator() || leftMetaType.IsIterable())
+                //{
+                //    var iteratorRelation = ResolveTypeRelation(leftMetaType, rightMt, out MetaClass mc, out MetaClass cmc);
+                //    if (iteratorRelation == ETypeRelation.No
+                //        || iteratorRelation == ETypeRelation.TargetTypeError
+                //        || iteratorRelation == ETypeRelation.ExpressTypeError)
+                //    {
+                //        Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                //            (leftMetaType.IsIterator() ? "Iterator" : "IIterable")
+                //            + " 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
+                //        return false;
+                //    }
+                //    //convertMetaType = rightItType;
+                //    return true;
+                //}
+            }
+            else
+            {
+                MetaClass leftmc = leftMetaType.metaClass;
+                MetaClass rightmc = rightMt.metaClass;
+                
+            }
+
+            return true;
+        }
+        /// <summary>
+        /// 统一比较左值定义类型与右值表达式类型，并按需返回需要强转的目标类型。
+        /// 该方法整合了 MetaDefineVarStatements.Parse() 后半段与 MetaAssignStatements.CheckLeftAndRightExpress()
+        /// 中原本重复的 enum / data / class(object/Num/Array/Iterator/Iterable/普通类) 分支。
+        /// </summary>
+        /// <param name="leftMetaType">左值（定义/已解析）类型。</param>
+        /// <param name="rightExpressNode">右值表达式节点。</param>
+        /// <param name="targetVariable">关联的左值变量（用于继续解析模板等场景），可为空。</param>
+        /// <param name="errorAnchorToken">错误日志锚定 token，可为空。</param>
+        /// <param name="convertMetaType">若解析成功且需要继续把 RealMetaType 同步到右值真实类型，则给出该类型；否则为 null。</param>
+        /// <param name="isNeedCast">是否需要在后续生成阶段执行强转。</param>
+        /// <returns>是否通过校验。失败时会通过 <see cref="Log"/> 输出日志。</returns>
+        //public static bool CompareLeftMetaTypeRightExpress(
+        //    MetaType leftMetaType,
+        //    MetaExpressNodeBase rightExpressNode,
+        //    MetaVariable targetVariable,
+        //    Token errorAnchorToken,
+        //    out MetaType convertMetaType,
+        //    out bool isNeedCast)
+        //{
+        //    convertMetaType = null;
+        //    isNeedCast = false;
+
+        //    if (leftMetaType == null || rightExpressNode == null)
+        //    {
+        //        return true;
+        //    }
+
+        //    var constExpressNode = rightExpressNode as MetaConstExpressNode;
+        //    if (constExpressNode != null)
+        //    {
+        //        if (!TryAdjustConstExpressByDefineMetaType(constExpressNode, leftMetaType))
+        //        {
+        //            return false;
+        //        }
+        //        if (constExpressNode.eType == EType.Null)
+        //        {
+        //            return true;
+        //        }
+        //    }
+
+        //    // 左值 enum：仅允许是同一 enum 的成员调用表达式，或同 enum 的常量值。
+        //    if (leftMetaType.isEnum)
+        //    {
+        //        var mclen = rightExpressNode as MetaCallLinkExpressNode;
+        //        if (mclen == null)
+        //        {
+        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+        //                "Error Enum 模式，只允许是调用模式 [CallLinkExpress]");
+        //            return false;
+        //        }
+        //        var ownerEnum = mclen.metaCallLink?.finalCallNode?.variable?.ownerMetaClass;
+        //        if (leftMetaType.metaClass != ownerEnum)
+        //        {
+        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+        //                "Error Enum 与值不相等！左值 enum=" + leftMetaType.metaClass?.allName
+        //                + "，右值来源=" + (ownerEnum?.allName ?? "null"));
+        //            return false;
+        //        }
+        //        return true;
+        //    }
+
+        //    // 左值 data：右值需为 data 或 null。
+        //    if (leftMetaType.isData)
+        //    {
+        //        var relation = ResolveAssignRelation(
+        //            leftMetaType,
+        //            rightExpressNode,
+        //            true,
+        //            false,
+        //            out var rightDataType,
+        //            out _,
+        //            out _,
+        //            out _,
+        //            targetVariable);
+        //        if (relation == ETypeRelation.Same)
+        //        {
+        //            convertMetaType = rightDataType ?? leftMetaType;
+        //            return true;
+        //        }
+        //        if (relation == ETypeRelation.ExpressTypeError || relation == ETypeRelation.TargetTypeError)
+        //        {
+        //            return false;
+        //        }
+        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+        //            "data 声明类型与右侧表达式类型不匹配。");
+        //        return false;
+        //    }
+
+        //    // 左值 object：可接受任意右值。
+        //    if (leftMetaType.metaClass == CoreMetaClassManager.objectMetaClass)
+        //    {
+        //        return true;
+        //    }
+
+        //    // 左值 Num：数字相互之间允许常量自适配；数组字面量元素需按左值元素类型强转。
+        //    if (leftMetaType.IsNum())
+        //    {
+        //        if (constExpressNode != null)
+        //        {
+        //            var defineEType = CoreMetaClassManager.GetETypeByMetaClass(leftMetaType.metaClass);
+        //            TryAdjustConstExpressByDefineEType(constExpressNode, defineEType);
+        //        }
+        //        convertMetaType = new MetaType(leftMetaType);
+        //        return true;
+        //    }
+
+        //    // 左值数组：与右值数组比较元素类型；右侧为字面量时尝试将常量元素强转到左侧元素类型。
+        //    if (leftMetaType.IsArray())
+        //    {
+        //        var rightMt = rightExpressNode.GetReturnMetaType();
+        //        if (CompareMetaType(leftMetaType, rightMt))
+        //        {
+        //            convertMetaType = rightMt;
+        //            return true;
+        //        }
+
+        //        if (rightExpressNode is MetaNewObjectExpressNode mnoe
+        //            && mnoe.newType == MetaNewObjectExpressNode.ENewType.ArrayClass)
+        //        {
+        //            var leftElemType = ClassManager.GetSingleTemplateArgMetaType(leftMetaType);
+        //            if (leftElemType != null)
+        //            {
+        //                if (mnoe.usesExplicitArrayElementTypeSyntax)
+        //                {
+        //                    var rightElemType = ClassManager.GetSingleTemplateArgMetaType(rightMt);
+        //                    if (rightElemType != null && !CompareMetaType(leftElemType, rightElemType))
+        //                    {
+        //                        Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+        //                            "右值数组已在创建表达式中指定元素类型（例如 Array<Int16>(...)），与左值元素类型 "
+        //                            + leftElemType.ToString() + " 不一致，不能自动强转。请使用与左值一致的元素类型，或使用未标注类型的字面量 [...]。");
+        //                        return false;
+        //                    }
+        //                }
+        //                else
+        //                {
+        //                    if (!TryForceConvertArrayLiteralElements(mnoe, leftElemType, errorAnchorToken))
+        //                    {
+        //                        return false;
+        //                    }
+        //                    rightExpressNode.CalcReturnType();
+        //                    isNeedCast = true;
+        //                    convertMetaType = rightExpressNode.GetReturnMetaType();
+        //                    return true;
+        //                }
+        //            }
+        //        }
+
+        //        Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, errorAnchorToken,
+        //            "CompareLeftRightMetaType", leftMetaType.ToString(), rightMt?.ToString() ?? "null");
+        //        return false;
+        //    }
+
+        //    // 左值 Iterator / Iterable：复用 ResolveAssignRelation 的协变规则。
+        //    if (leftMetaType.IsIterator() || leftMetaType.IsIterable())
+        //    {
+        //        var iteratorRelation = ResolveAssignRelation(
+        //            leftMetaType,
+        //            rightExpressNode,
+        //            true,
+        //            false,
+        //            out var rightItType,
+        //            out _,
+        //            out _,
+        //            out _,
+        //            targetVariable);
+        //        if (iteratorRelation == ETypeRelation.No
+        //            || iteratorRelation == ETypeRelation.TargetTypeError
+        //            || iteratorRelation == ETypeRelation.ExpressTypeError)
+        //        {
+        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+        //                (leftMetaType.IsIterator() ? "Iterator" : "IIterable")
+        //                + " 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
+        //            return false;
+        //        }
+        //        convertMetaType = rightItType;
+        //        return true;
+        //    }
+
+        //    // 普通 class：调用 ResolveAssignRelation 并根据关系决定是否需要强转。
+        //    var classRelation = ResolveAssignRelation(
+        //        leftMetaType,
+        //        rightExpressNode,
+        //        true,
+        //        false,
+        //        out var rightClassType,
+        //        out var curClass,
+        //        out var compareClass,
+        //        out _,
+        //        targetVariable);
+
+        //    if (classRelation == ETypeRelation.ExpressTypeError)
+        //    {
+        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+        //            "Error 赋值表达式返回定义类型为空");
+        //        return false;
+        //    }
+
+        //    switch (classRelation)
+        //    {
+        //        case ETypeRelation.Same:
+        //            convertMetaType = rightClassType ?? leftMetaType;
+        //            return true;
+        //        case ETypeRelation.Child:
+        //            if (compareClass != null)
+        //            {
+        //                convertMetaType = rightClassType;
+        //            }
+        //            return true;
+        //        case ETypeRelation.Interface:
+        //        case ETypeRelation.Num:
+        //        case ETypeRelation.Similar:
+        //            convertMetaType = rightClassType;
+        //            isNeedCast = classRelation != ETypeRelation.Interface;
+        //            return true;
+        //        case ETypeRelation.Parent:
+        //            {
+        //                var sb = new System.Text.StringBuilder();
+        //                sb.Append("Warning 类型不相同 ");
+        //                if (curClass != null) sb.Append("定义类: ").Append(curClass.allName).Append(' ');
+        //                if (compareClass != null) sb.Append("表达式类: ").Append(compareClass.allName).Append(' ');
+        //                sb.Append("返回值是父类型向子类型转换，存在错误转换!!");
+        //                Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken, sb.ToString());
+        //                isNeedCast = true;
+        //                return true;
+        //            }
+        //        case ETypeRelation.No:
+        //            {
+        //                var targetTemplateList = leftMetaType.GetGenTemplateMetaTypeList();
+        //                var exprTemplateList = rightClassType?.GetGenTemplateMetaTypeList();
+        //                bool hasTemplateInEither =
+        //                    (targetTemplateList != null && targetTemplateList.Count > 0)
+        //                    || (exprTemplateList != null && exprTemplateList.Count > 0);
+        //                if (hasTemplateInEither)
+        //                {
+        //                    Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+        //                        "模板类型不匹配（接口模板位置仅在可协变标记下允许协变），请检查模板参数或接口变型规则。");
+        //                    return false;
+        //                }
+        //                var sb = new System.Text.StringBuilder();
+        //                sb.Append("Warning 类型不相同 ");
+        //                if (curClass != null) sb.Append("定义类: ").Append(curClass.allName).Append(' ');
+        //                if (compareClass != null) sb.Append("表达式类: ").Append(compareClass.allName).Append(' ');
+        //                sb.Append("可能会有强转，强转后可能默认值为null");
+        //                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, errorAnchorToken, sb.ToString());
+        //                isNeedCast = true;
+        //                return true;
+        //            }
+        //        default:
+        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+        //                "表达式错误，或者是定义类型错误");
+        //            return false;
+        //    }
+        //}
+
+        private static bool TryForceConvertArrayLiteralElements(
+            MetaNewObjectExpressNode arrayNode,
+            MetaType targetElemType,
+            Token errorAnchorToken)
+        {
+            if (arrayNode == null || targetElemType == null)
+            {
+                return true;
+            }
+
+            var list = arrayNode.assignStatementsList;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var item = list[i];
+                var expr = item?.expressNode;
+                if (expr == null) continue;
+
+                if (expr is MetaConstExpressNode c)
+                {
+                    if (!NumberManager.TryForceAdjustConstExpressByMetaType(c, targetElemType, errorAnchorToken))
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+                            "数组元素强制转换失败（可能溢出或类型不匹配）: 目标类型 " + targetElemType.ToString());
+                        return false;
+                    }
+                    c.CalcReturnType();
+                    continue;
+                }
+
+                if (expr is MetaNewObjectExpressNode childArrayNode && targetElemType.IsArray())
+                {
+                    var nextElemType = ClassManager.GetSingleTemplateArgMetaType(targetElemType);
+                    if (nextElemType != null && !TryForceConvertArrayLiteralElements(childArrayNode, nextElemType, errorAnchorToken))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
 
         #endregion

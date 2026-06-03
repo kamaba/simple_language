@@ -672,9 +672,9 @@ namespace SimpleLanguage.Core
                     var newmd = new MetaData(fmc);
                     newmd.SetClassDefineType(EClassDefineType.CodeDefine);
                     finalTopMetaNode.AddMetaData(newmd);
-                    newmd.UpdateAllName();
                     newmd.ParseFileMetaDataMemeberData(fmc);
                     AddInitHandleMetaDataList(newmd);
+                    newmd.UpdateAllName();
 
                     return newmd;
                 }

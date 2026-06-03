@@ -169,7 +169,7 @@ namespace SimpleLanguage.Core
             m_AllName = m_MetaNode?.GetAllName() ?? m_Name;
              foreach (var v in m_MetaMemberDataDict)
             {
-                //v.Value.UpdateAllName();
+                v.Value.UpdateAllName();
             }
         }
         public override string ToFormatString()

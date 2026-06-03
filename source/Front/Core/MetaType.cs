@@ -19,6 +19,7 @@ namespace SimpleLanguage.Core
         MetaClass,
         MetaData,
         MetaEnum,
+        MetaEnumValue,
         MetaGenClass,
         Template,
         TemplateClassWithTemplate
@@ -37,6 +38,7 @@ namespace SimpleLanguage.Core
         public bool isNullable => m_IsNullable;
         public bool isObject => m_MetaClass == CoreMetaClassManager.objectMetaClass;
         public bool isEnum => m_MetaEnum != null || m_EMetaTypeType == EMetaTypeType.MetaEnum;
+        public bool isEnumMember => m_EnumValue != null;
         public bool isData => m_MetaData != null || m_EMetaTypeType == EMetaTypeType.MetaData;
         public bool isClass => m_MetaClass != null || m_EMetaTypeType == EMetaTypeType.MetaClass;
         public bool isNull => m_MetaClass == CoreMetaClassManager.nullMetaClass;
@@ -58,9 +60,8 @@ namespace SimpleLanguage.Core
         public MetaEnum metaEnum => m_MetaEnum;
         public MetaData metaData => m_MetaData;
         public MetaTemplate metaTemplate => m_MetaTemplate;
-        public MetaMemberEnum enumValue => m_EnumValue;
+        public MetaMemberVariable enumValue => m_EnumValue;
         public List<MetaType> defineTemplateMetaTypeList => m_DefineTemplateMetaTypeList;
-        //public List<MetaType> genTemplateMetaTypeList => m_GenTemplateMetaTypeList;
 
         private EMetaTypeType m_EMetaTypeType = EMetaTypeType.None;
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
@@ -68,14 +69,15 @@ namespace SimpleLanguage.Core
         private MetaData m_MetaData = null;
         private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
-        //private MetaType m_SourceMetaType = null;                         //生成类的 对应来源类
-        //private MetaGenTemplate m_MetaGenTemplate = null;
-        private MetaMemberEnum m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
+        private MetaMemberVariable m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private int m_ArrayLength = -1;       
         private bool m_IsNullable = false;   // 新增：可空标记
 
 
+        //public List<MetaType> genTemplateMetaTypeList => m_GenTemplateMetaTypeList;
+        //private MetaType m_SourceMetaType = null;                         //生成类的 对应来源类
+        //private MetaGenTemplate m_MetaGenTemplate = null;
 
         public static MetaType OwnerPlaceholderMetaType(MetaBase owner)
         {
@@ -139,6 +141,11 @@ namespace SimpleLanguage.Core
             }
             m_MetaEnum = me;
             m_EMetaTypeType = EMetaTypeType.MetaEnum;
+        }
+        public MetaType(MetaMemberVariable mmv )
+        {
+            m_EnumValue = mmv;
+            m_EMetaTypeType = EMetaTypeType.MetaEnumValue;
         }
         public MetaType( MetaClass mc, List<MetaType> mtList )
         {
@@ -712,7 +719,18 @@ namespace SimpleLanguage.Core
                 }
                 return sb.ToString();
             }
-
+            else if( eMetaTypeType == EMetaTypeType.MetaEnumValue )
+            {
+                if (m_EnumValue != null)
+                {
+                    sb.Append(m_EnumValue.name);
+                }
+                else
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "meta type is m_MetaEnum is null");
+                }
+                return sb.ToString();
+            }
             if( eMetaTypeType == EMetaTypeType.Template )
             {
                 if (m_MetaTemplate != null)

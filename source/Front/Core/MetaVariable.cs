@@ -123,6 +123,10 @@ namespace SimpleLanguage.Core
         {
             m_OwnerMetaBase = ownerBase;
         }
+        public void SetSourceMetaVariable( MetaVariable mv  )
+        {
+            m_SourceMetaVariable = mv;
+        }
         public void SetIsStatic( bool iss )
         {
             this.m_IsStatic = iss;

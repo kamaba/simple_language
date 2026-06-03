@@ -83,8 +83,12 @@ namespace SimpleLanguage.IR
                 irCallFun.Parse(mfc);
                 m_IRStatements.Add(irCallFun);
             }
-            else if (lastCL.visitType == MetaVisitNode.EVisitType.Variable)
+            else if (lastCL.visitType == MetaVisitNode.EVisitType.Variable || lastCL.visitType == MetaVisitNode.EVisitType.EnumMember )
             {
+                if( lastCL.visitType == MetaVisitNode.EVisitType.EnumMember )
+                {
+
+                }
                 /*
                  * 
                  *

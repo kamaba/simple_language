@@ -25,9 +25,9 @@ enum Book
 {
     B1 = 1
     B2 = 2
-    C1 = 1
+    C1
     mut string Str = ""
-    C4 = 10
+    mut c4 = 10
 }
 
 #该类 如果使用 数字类型 可以不使用=号， 后续如果再有=号，然后后续的自增
@@ -146,18 +146,19 @@ EnumTest
     {
         global.println("========== EnumTest (start) ==========")
 
-        kind = BridgeKind.SELF
-        if kind == BridgeKind.SELF
+        kind111 = BridgeKind.SELF
+        if kind111 == BridgeKind.SELF
         {
             global.println("BridgeKind--------------SELF")
         }
 
-        kind = BridgeKind.JVM
-        if kind == BridgeKind.SELF
+        #kind111 =  EShape.r1
+        kind111 = BridgeKind.JVM
+        if kind111 == BridgeKind.SELF
         {
             global.println("BridgeKind--------------SELF")
         }
-        elif kind == BridgeKind.JVM
+        elif kind111 == BridgeKind.JVM
         {
             global.println("BridgeKind--------------JVM")
         }
@@ -182,20 +183,39 @@ EnumTest
         }
 
         global.println("----- mut enum member modify -----")
-        global.println("Book.Str before -> " + Book.Str)
+        global.println("Book.Str before# Test both separator styles -> " + Book.Str.toString() )
         Book.Str = "runtime string"
         Book.c4 = 20
-        global.println("Book.Str after -> " + Book.Str)
+        global.println("Book.Str after -> " + Book.Str.toString() )
     
-        EShape.r1 = RectShape(){ x = 10 }
+        #EShape.r1 = RectShape(){ x = 10 }
         EShape.cd = RectShape()
 
-        global.println("EErr.First ordinal smoke -> " + EErr.First)
+        global.println("EErr.First ordinal smoke -> " + EErr.First.value )
         global.println("GameState values count check (manual): Init/Begin/End defined")
 
         global.println("========== EnumTest (end) ==========")
+
+        
+        states = [GameState.Init, GameState.Begin, GameState.End]
+        for s in states
+        {
+            global.println("State: " + s.name)
+        }
     }
 }
+enum ESemi
+{
+    A = 1; B = 2; C = 3;
+}
+
+enum ENewline
+{
+    D = 4
+    E = 5
+    F = 6
+}# Test storing enums in collections
+
 
 #!
 enum negative compile cases: keep commented; uncomment one block at a time to validate diagnostics.
