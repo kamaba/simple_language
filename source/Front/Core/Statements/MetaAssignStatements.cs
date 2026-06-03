@@ -510,7 +510,7 @@ namespace SimpleLanguage.Core
             }
 
 
-            if (TypeManager.CompareLeftVariableAndRightExpress(m_MetaVariable, m_RightMetaExpress, m_Token, out var convertMetaType ) )
+            if (TypeManager.CompareLeftRightMetaType(m_MetaVariable.GetFinalMetaType(), m_RightMetaExpress.GetReturnMetaType(), m_Token, out var convertMetaType ) )
             {
                 if (convertMetaType != null)
                 {

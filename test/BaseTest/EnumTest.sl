@@ -167,12 +167,12 @@ EnumTest
             global.println("BridgeKind--------------OTHER")
         }
 
-        EShape shape = EShape.r1
-        if shape == EShape.r1
+        EShape shape123 = EShape.r1
+        if shape123 == EShape.r1
         {
             global.println("EShape default branch: r1")
         }
-        elif shape == EShape.cd
+        elif shape123 == EShape.cd
         {
             global.println("EShape branch: cd")
         }

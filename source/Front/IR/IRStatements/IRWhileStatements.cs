@@ -61,12 +61,12 @@ namespace SimpleLanguage.IR
                 var irownermc = IRManager.GetIRMetaClassByMetaVariable(ms.forIterateVariable);
                 var itv_irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(ms.forIterateVariable.defineMetaType, irownermc);
 
-                //var content_irownermc = IRManager.instance.GetIRMetaClassById(ms.forInContent.GetOwnerClassTemplateClass().GetHashCode());
-                MetaType dmt = ms.forInContent.isDefineMetaType ? ms.forInContent.defineMetaType : ms.forInContent.realMetaType;
+                    //var content_irownermc = IRManager.instance.GetIRMetaClassById(ms.forInContent.GetOwnerClassTemplateClass().GetHashCode());
+                MetaType dmt = ms.forInContent.GetFinalMetaType();
                 var content_irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList( dmt, irownermc);
 
                 //var iterator_irownermc = IRManager.instance.GetIRMetaClassById(ms.forInContentIterator.GetOwnerClassTemplateClass().GetHashCode());
-                MetaType it_dmt = ms.forInContentIterator.isDefineMetaType ? ms.forInContentIterator.defineMetaType : ms.forInContentIterator.realMetaType;
+                MetaType it_dmt = ms.forInContentIterator.GetFinalMetaType();
                 var iterator_irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(it_dmt, irownermc );
 
                 if (ms.conditionExpress != null)

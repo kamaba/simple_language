@@ -181,10 +181,25 @@ namespace SimpleLanguage.IR
             var owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
             if ( lastCL.callMetaType != null )
             {
-                var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(lastCL.callMetaType, owirmc);
-                int index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
-                IRStoreVariable irsv = new IRStoreVariable(irmt, irMethod, index, IRMetaVariableFrom.Static);
-                m_IRStatements.Add(irsv);
+                if( lastCL.callMetaType.isEnumMember )
+                {
+                    IRMetaType irmtlv = new IRMetaType(owirmc);
+                    int index = owirmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                    IRLoadVariable irlv = new IRLoadVariable(irmtlv, irMethod, index, IRMetaVariableFrom.Static);
+                    m_IRStatements.Add(irlv);
+
+                    MetaType mt = new MetaType(CoreMetaClassManager.memberMetaClass);
+                    var irmtsv = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mt, owirmc);
+                    IRStoreVariable irsv = new IRStoreVariable(irmtsv, irMethod, 2, IRMetaVariableFrom.Member );
+                    m_IRStatements.Add(irsv);
+                }
+                else
+                {
+                    var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(lastCL.callMetaType, owirmc);
+                    int index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                    IRStoreVariable irsv = new IRStoreVariable(irmt, irMethod, index, IRMetaVariableFrom.Static);
+                    m_IRStatements.Add(irsv);
+                }
             }
             else
             {

@@ -92,6 +92,10 @@ namespace SimpleLanguage.IR
             {
                 irmt.m_IRMetaClass = IRManager.GetIRMetaClassByMetaType(type);
             }
+            else if( type.eMetaTypeType == EMetaTypeType.MetaEnumValue )
+            {
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.enumValue.ownerMetaBase.GetHashCode());
+            }
             else if (type.eMetaTypeType == EMetaTypeType.Template)
             {
                 irmt.m_TemplateIndex = type.metaTemplate.index;

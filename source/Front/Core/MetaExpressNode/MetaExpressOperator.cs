@@ -402,7 +402,7 @@ namespace SimpleLanguage.Core
             MetaType leftMt = left.GetReturnMetaType();
             MetaType rightMt = right.GetReturnMetaType();
 
-            if (leftMt.isEnum || rightMt.isEnum)
+            if (leftMt.isEnum || rightMt.isEnum || leftMt.isEnumMember || rightMt.isEnumMember )
             {
                 bool isEnumCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal || m_OpLevelSign == ELeftRightOpSign.NotEqual;
                 if (!isEnumCompareOp)
@@ -422,13 +422,17 @@ namespace SimpleLanguage.Core
                     enumExpr = left;
                     enumType = left.GetReturnMetaType();
 
-                    if(rightMt.isEnumMember )
+                    if (rightMt.isEnum)
                     {
-                        if( rightMt.enumValue.ownerMetaBase == leftMt.metaEnum )
+                        if (leftMt.metaEnum != rightMt.metaEnum)
                         {
-
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "不是同一个enum");
+                            return;
                         }
-                        else
+                    }
+                    else if(rightMt.isEnumMember )
+                    {
+                        if( rightMt.enumValue.ownerMetaBase != leftMt.metaEnum )
                         {
                             Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "不是同一个enum");
                             return;
@@ -447,13 +451,17 @@ namespace SimpleLanguage.Core
 
                     enumType = m_Right.GetReturnMetaType();
 
-                    if ( leftMt.isEnumMember )
+                    if (leftMt.isEnum)
                     {
-                        if (leftMt.enumValue.ownerMetaBase == rightMt.metaEnum)
+                        if (leftMt.metaEnum != rightMt.metaEnum)
                         {
-
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "不是同一个enum");
+                            return;
                         }
-                        else
+                    }
+                    else if ( leftMt.isEnumMember )
+                    {
+                        if (leftMt.enumValue.ownerMetaBase != rightMt.metaEnum)
                         {
                             Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "不是同一个enum");
                             return;
@@ -462,6 +470,14 @@ namespace SimpleLanguage.Core
                     else
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaBaseTerm.token, "is not enum member ");
+                        return;
+                    }
+                }
+                else if( leftMt.isEnumMember && rightMt.isEnumMember )
+                {
+                    if (leftMt.enumValue.ownerMetaBase != rightMt.enumValue.ownerMetaBase )
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "不是同一个enum");
                         return;
                     }
                 }

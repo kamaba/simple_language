@@ -13,6 +13,7 @@ using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using static SimpleLanguage.Core.MetaNewObjectExpressNode;
 
 namespace SimpleLanguage.Core
 {
@@ -1554,53 +1555,121 @@ namespace SimpleLanguage.Core
 
             return relation;
         }
-        public static bool CompareLeftVariableAndRightExpress( MetaVariable leftMv, MetaExpressNodeBase menb, Token token, out MetaType convertMt )
-        {
-            convertMt = null;
-            MetaType leftMt = leftMv.GetFinalMetaType();
-            MetaType rightMt = menb.GetReturnMetaType();
-            if (leftMt == null || rightMt == null)
-            {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, token, "left or right is null");
-                return false;
-            }
-            if (leftMt.isEnum)
-            {
-                if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
-                {
-                    return false;
-                }
-                if (rightMt.isEnumMember)
-                {
-                    if( leftMt.metaEnum == rightMt.enumValue.ownerMetaEnum )
-                    {
-                        return true;
-                    }
-                }
+        //public static bool CompareLeftVariableAndRightExpress( MetaVariable leftMv, MetaExpressNodeBase menb, Token token, out MetaType convertMt )
+        //{
+        //    convertMt = null;
+        //    MetaType leftMt = leftMv.GetFinalMetaType();
+        //    MetaType rightMt = menb.GetReturnMetaType();
+        //    if (leftMt == null || rightMt == null)
+        //    {
+        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, token, "left or right is null");
+        //        return false;
+        //    }
+        //    if (leftMt.isEnum)
+        //    {
+        //        if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
+        //        {
+        //            return false;
+        //        }
+        //        if (rightMt.isEnumMember)
+        //        {
+        //            if( leftMt.metaEnum == rightMt.enumValue.ownerMetaEnum )
+        //            {
+        //                return true;
+        //            }
+        //        }
 
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "enum compare failed");
-                return false;
-            }
-            else if (leftMt.isEnumMember)
-            {
-                if( leftMv.sourceMetaVariable == null )
-                {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token,
-                        "left mv is null");
-                    return false;
-                }
-                return false;
-            }
+        //        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "enum compare failed");
+        //        return false;
+        //    }
+        //    else if (leftMt.isEnumMember)
+        //    {
+        //        if ( leftMv.sourceMetaVariable == null )
+        //        {
+        //            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token,
+        //                "left mv is null");
+        //            return false;
+        //        }
+        //        return false;
+        //    }
 
-            return CompareLeftRightMetaType(leftMt, rightMt, token, out convertMt);
-        }
-        public static bool CompareLeftRightMetaType(MetaType leftMetaType, MetaType rightMt, Token token, out MetaType convertMt)
+        //    return CompareLeftRightMetaType(leftMt, rightMt, token, out convertMt);
+        //}
+        public static bool CompareLeftRightMetaType(MetaType leftMt, MetaType rightMt, Token token, out MetaType convertMt)
         {
             convertMt = null;
             // 左值 enum：仅允许是同一 enum 的成员调用表达式，或同 enum 的常量值。
-            
-            // 左值 data：右值需为 data 或 null。
-            if (leftMetaType.isData)
+
+            if( leftMt.isEnum || leftMt.isEnumMember || rightMt.isEnum || rightMt.isEnumMember )
+            {
+                // 左值 data：右值需为 data 或 null。
+                if (leftMt.isEnum)
+                {
+                    if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
+                    {
+                        return false;
+                    }
+                    if (rightMt.isEnum)
+                    {
+                        if (leftMt.metaEnum != rightMt.metaEnum)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                            return false;
+                        }
+                    }
+                    else if (rightMt.isEnumMember)
+                    {
+                        if (rightMt.enumValue.ownerMetaBase != leftMt.metaEnum)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "is not enum member ");
+                        return false;
+                    }
+                }
+                else if (rightMt.isEnum)
+                {
+                    if (leftMt.isNull || leftMt.metaClass == CoreMetaClassManager.nullMetaClass)
+                    {
+                        return false;
+                    }
+                    if (leftMt.isEnum)
+                    {
+                        if (leftMt.metaEnum != rightMt.metaEnum)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                            return false;
+                        }
+                    }
+                    else if (leftMt.isEnumMember)
+                    {
+                        if (leftMt.enumValue.ownerMetaBase != rightMt.metaEnum)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, token, "is not enum member ");
+                        return false;
+                    }
+                }
+                else if (leftMt.isEnumMember && rightMt.isEnumMember)
+                {
+                    if (leftMt.enumValue.ownerMetaBase != rightMt.enumValue.ownerMetaBase)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                        return false;
+                    }
+                }
+                return true;
+            }
+            else if (leftMt.isData)
             {
                 if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
                 {
@@ -1622,9 +1691,9 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
-            else if (leftMetaType.isTemplate)
+            else if (leftMt.isTemplate)
             {
-                MetaClass leftmc = leftMetaType.metaClass;
+                MetaClass leftmc = leftMt.metaClass;
                 MetaClass rightmc = rightMt.metaClass;
                 if (rightMt.isNull || rightmc == CoreMetaClassManager.nullMetaClass)
                 {
@@ -1711,19 +1780,19 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
-            else if (leftMetaType.GetGenTemplateMetaTypeList().Count > 0)
+            else if (leftMt.GetGenTemplateMetaTypeList().Count > 0)
             {
                 if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
                 {
                     return true;
                 }
 
-                if (CompareMetaClass(leftMetaType.metaClass, rightMt.metaClass) == false)
+                if (CompareMetaClass(leftMt.metaClass, rightMt.metaClass) == false)
                 {
                     return false;
                 }
 
-                var leftDmtList = leftMetaType.GetGenTemplateMetaTypeList();
+                var leftDmtList = leftMt.GetGenTemplateMetaTypeList();
                 var rightDmtList = rightMt.GetGenTemplateMetaTypeList();
                 if (leftDmtList.Count == rightDmtList.Count )
                 {
@@ -1802,7 +1871,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                MetaClass leftmc = leftMetaType.metaClass;
+                MetaClass leftmc = leftMt.metaClass;
                 MetaClass rightmc = rightMt.metaClass;
                 
             }

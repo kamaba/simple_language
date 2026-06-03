@@ -207,12 +207,6 @@ namespace SimpleLanguage.Core
                 if (isCheckReturnType)
                 {
                     //m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
-                    if(expressRetMetaDefineType.isEnumMember && this.defineVarMetaVariable.isDefineMetaType == false )
-                    {
-                        var defineMt = new MetaType(expressRetMetaDefineType.enumValue.ownerMetaBase as MetaEnum);
-                        m_DefineVarMetaVariable.SetMetaDefineType(defineMt);
-                        m_DefineVarMetaVariable.SetIsDefineMetaType(true);
-                    }
                     m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                 }
             }
@@ -220,7 +214,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_ExpressNode != null)
                 {
-                    if (TypeManager.CompareLeftVariableAndRightExpress(m_DefineVarMetaVariable, m_ExpressNode, m_Token,
+                    if (TypeManager.CompareLeftRightMetaType(m_DefineVarMetaVariable.GetFinalMetaType(), m_ExpressNode.GetReturnMetaType(), m_Token,
                             out var convertMetaType ) )
                     {
                         if (convertMetaType != null)
