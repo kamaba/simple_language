@@ -1,7 +1,7 @@
 public class UInt64 extends Num
 {
-    const UInt64 MaxValue = 0xffffffffffffffff;
-    const UInt64 MinValue = 0;
+    const static UInt64 MaxValue = 0xffffffffffffffff;
+    const static UInt64 MinValue = 0;
 
     UInt64 _value = 0ui;
 

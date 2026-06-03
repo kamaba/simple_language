@@ -1,7 +1,7 @@
 public class Int64 extends Num
 {
-    public const Int64 MaxValue = 0x7fffffff
-    public const Int64 MinValue = 0x80000000
+    public const static  Int64 MaxValue = 0x7fffffff
+    public const static Int64 MinValue = 0x80000000
    
     Int64 _value = 0L;  
     _init_( Int64 _val )

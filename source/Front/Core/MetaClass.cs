@@ -787,7 +787,7 @@ namespace SimpleLanguage.Core
                     {
                         m_FileCollectMetaMemberVariable.Add(cmmv);
                         MetaVariableManager.instance.AddMetaMemberVariable(cmmv);
-                        break;
+                        continue;
                     }
                     else
                     {
@@ -1040,42 +1040,40 @@ namespace SimpleLanguage.Core
         public virtual List<MetaMemberVariable>  GetMetaMemberVariableListByFlag( bool isStatic )
         {
             List<MetaMemberVariable> mmvList = new List<MetaMemberVariable>();
-            MetaMemberVariable tempMmv = null;
 
-            foreach (var v in m_MetaExtendMemeberVariableDict)
+            if(isStatic )
             {
-                tempMmv = v.Value;
-                if (isStatic)
+                foreach (var v in m_MetaExtendMemeberVariableDict)
                 {
-                    if (tempMmv.isStatic == isStatic || tempMmv.isConst == isStatic)
+                    if( v.Value.isStatic)
                     {
-                        mmvList.Add(tempMmv);
+                        mmvList.Add(v.Value);
                     }
                 }
-                else
+
+                foreach (var v in this.m_MetaMemberVariableDict)
                 {
-                    if (tempMmv.isStatic == false && tempMmv.isConst == false)
+                    if( v.Value.isStatic )
                     {
-                        mmvList.Add(tempMmv);
+                        mmvList.Add(v.Value);
                     }
                 }
             }
-
-            foreach (var v in this.m_MetaMemberVariableDict)
+            else
             {
-                tempMmv = v.Value;
-                if( isStatic )
+                foreach (var v in m_MetaExtendMemeberVariableDict)
                 {
-                    if ( tempMmv.isStatic == isStatic || tempMmv.isConst == isStatic)
+                    if (!v.Value.isStatic)
                     {
-                        mmvList.Add(tempMmv);
+                        mmvList.Add(v.Value);
                     }
                 }
-                else
+
+                foreach (var v in this.m_MetaMemberVariableDict)
                 {
-                    if( tempMmv.isStatic == false && tempMmv.isConst == false )
+                    if (!v.Value.isStatic)
                     {
-                        mmvList.Add(tempMmv);
+                        mmvList.Add(v.Value);
                     }
                 }
             }

@@ -2,8 +2,8 @@
 public class Member extends Object
 {
     public string name = "";
-    public object value = null;
     public int index = -1;
+    public object value = null;
     void _init_()
     {
     }

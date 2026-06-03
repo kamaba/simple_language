@@ -2,9 +2,9 @@ import CSharp.System;
 
 public class Float32 extends Num
 {
-    public const Float32 Epsilen = 4.9123213f;
-    public const Float32 MaxValue = 20.0f;
-    public const Float32 MinValue = -1.0f;
+    public const static Float32 Epsilen = 4.9123213f;
+    public const static Float32 MaxValue = 20.0f;
+    public const static Float32 MinValue = -1.0f;
 
     Float32 _value = 0.0f
 

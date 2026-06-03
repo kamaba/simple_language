@@ -1,8 +1,8 @@
 
 public class UInt8 extends Num
 {
-    const UInt8 MaxValue = 0b11111111;
-    const UInt8 MinValue = 0b00000000;
+    const static  UInt8 MaxValue = 0b11111111;
+    const static  UInt8 MinValue = 0b00000000;
     UInt8 _value = 0;
 
     _init_(UInt8 _val)

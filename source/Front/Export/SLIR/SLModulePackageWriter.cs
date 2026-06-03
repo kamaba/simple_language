@@ -665,7 +665,6 @@ namespace SimpleLanguage.Export.SLIR
             }
 
             // 16: const, 32: static
-            if (v.isConst) flags |= 16;
             if (v.isStatic) flags |= 32;
 
             return flags;

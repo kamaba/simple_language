@@ -1,7 +1,7 @@
 public class Int32 extends Num
 {
-    const int MaxValue = 0x7fff;
-    const int MinValue = 0x8000;
+    const static  int MaxValue = 0x7fff;
+    const static int MinValue = 0x8000;
 
     Int32 _value = 0i;
     

@@ -1,7 +1,7 @@
 public class UInt32 extends Num
 {
-    const uint MaxValue = 0xffffffff;
-    const uint MinValue = 0;
+    const static uint MaxValue = 0xffffffff;
+    const static uint MinValue = 0;
 
     UInt32 _value = 0ui;
 

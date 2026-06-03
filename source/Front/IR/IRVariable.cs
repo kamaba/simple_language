@@ -56,11 +56,11 @@ namespace SimpleLanguage.IR
                     }
                     index = irmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
                 }
-                if (mv.isConst || mv.isStatic)
+                if ( mv.isStatic)
                 {
                     // For const member variables (including injected project global.data primitive fields),
                     // prefer direct const load IR instead of runtime static field load.
-                    if (mv is MetaMemberVariable mmv && mmv.isConst && mmv.constExpressNode != null)
+                    if (mv is MetaMemberVariable mmv && mmv.constExpressNode != null)
                     {
                         IRLoadVariable constLoadVar = new IRLoadVariable();
                         var irexp = new IRExpress(_irMethod, mmv.constExpressNode);
@@ -122,18 +122,18 @@ namespace SimpleLanguage.IR
                     // Fallback for data members that are not yet bound in hash->index map.
                     index = mmdIndex.index;
                 }
-                if (mv.isConst || mv.isStatic)
+                if ( mv.isStatic)
                 {
                     // For const member variables (including injected project global.data primitive fields),
                     // prefer direct const load IR instead of runtime static field load.
-                    if (mv is MetaMemberVariable mmv && mmv.isConst && mmv.constExpressNode != null)
+                    if (mv is MetaMemberVariable mmv && mmv.constExpressNode != null)
                     {
                         IRLoadVariable constLoadVar = new IRLoadVariable();
                         var irexp = new IRExpress(_irMethod, mmv.constExpressNode);
                         constLoadVar.m_IRDataList.AddRange(irexp.IRDataList);
                         return constLoadVar;
                     }
-                    if (mv is MetaMemberData mmdConst && mmdConst.isConst && mmdConst.expressNode is MetaConstExpressNode constDataExpress)
+                    if (mv is MetaMemberData mmdConst && mmdConst.expressNode is MetaConstExpressNode constDataExpress)
                     {
                         IRLoadVariable constLoadVar = new IRLoadVariable();
                         var irexp = new IRExpress(_irMethod, constDataExpress);

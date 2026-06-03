@@ -36,7 +36,6 @@ namespace SimpleLanguage.Core
         public static int s_NoHaveRetStaticLevel = 200000000;
         public static int s_DefineMetaTypeLevel = 1000000000;
         public static int s_ExpressLevel = 1500000000;
-
         public bool isDefineMetaType => m_IsDefineMetaType;
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isConst => m_IsConst;

@@ -32,7 +32,6 @@ namespace SimpleLanguage.IR
         public string name => m_Name;
         public int index => m_Index;
         public DebugInfo debugInfo => m_DebugInfo;
-        public bool isConst => m_IsConst;
         public bool isStatic => m_IsStatic;
         public EPermission permission => m_Permission;
         public List<IRData> irDataList => m_IRDataList;
@@ -47,7 +46,6 @@ namespace SimpleLanguage.IR
         private int m_Index = -1;
         private string m_Name = "";
         private DebugInfo m_DebugInfo;
-        private bool m_IsConst = false;
         private bool m_IsStatic = false;
         private EPermission m_Permission = EPermission.Public;
         //private MetaVariable m_MetaVariable = null;
@@ -58,8 +56,7 @@ namespace SimpleLanguage.IR
             m_Id = mv.GetHashCode();
             m_Index = index;
             m_Name = mv.ownerMetaBlockStatements?.ownerMetaFunction.name + (mv.isStatic?"_static":"_local") + "[" + mv.name + "]";
-            FillDebugInfo(mv, mv.name, "IRMetaVariable");
-            m_IsConst = mv.isConst;
+            FillDebugInfo(mv, mv.name, "IRMetaVariable");           
             m_IsStatic = mv.isStatic;
             m_Permission = mv.permission;
             if( mv.variableFrom == MetaVariable.EVariableFrom.ClassMember )
@@ -134,7 +131,6 @@ namespace SimpleLanguage.IR
             m_ExpressNode = mmd.expressNode;
             m_IRMetaVariableFrom = mmd.isStatic ? IRMetaVariableFrom.Static : IRMetaVariableFrom.Member;
             m_IsStatic = mmd.isStatic;
-            m_IsConst = mmd.isConst;
             m_Permission = mmd.permission;
             MetaType mt = mmd.GetFinalMetaType();
             if (mt != null)
@@ -148,10 +144,9 @@ namespace SimpleLanguage.IR
             m_Name = mmv.ownerMetaBase.allName + "." + mmv.name;
             FillDebugInfo(mmv, mmv.name, "IRMetaMemberVariable");
             m_ExpressNode = mmv.express;
-            m_IsConst = mmv.isConst;
             m_IsStatic = mmv.isStatic;
             m_Permission = mmv.permission;
-            if (mmv.isStatic || mmv.isConst )
+            if (mmv.isStatic )
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             else
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Member;

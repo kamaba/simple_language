@@ -2,9 +2,9 @@ import CSharp.System;
 
 public class Float64 extends Num
 {
-    public const Epsilen = 4.9123123213d;
-    public const MaxValue = 20d;
-    public const MinValue = -1d;
+    public const static Epsilen = 4.9123123213d;
+    public const static MaxValue = 20d;
+    public const static MinValue = -1d;
 
     Float64 _value = 0.0d
 

@@ -1,7 +1,7 @@
 public class Int8 extends Num
 {    
-    const Int8 MaxValue = 0b1111111;
-    const Int8 MinValue = 0b0000000;
+    const static Int8 MaxValue = 0b1111111;
+    const static Int8 MinValue = 0b0000000;
     Int8 _value = 0;
     
     override get int size() { ret 8 }

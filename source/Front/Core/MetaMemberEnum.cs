@@ -210,7 +210,7 @@ namespace SimpleLanguage.Core
             exportVariable.SetToken(fmmv.token);
             exportVariable.SetVariableFrom(EVariableFrom.EnumMember);
             exportVariable.SetIndex(index);
-            exportVariable.SetIsStatic(true);
+            exportVariable.SetIsStatic(false);
             exportVariable.SetIsConst(fmmv.mutToken == null);
             exportVariable.SetIsDefineMetaType(true);
             exportVariable.SetMetaDefineType(memberType);

@@ -55,7 +55,7 @@ namespace SimpleLanguage.Core
             AddMetaMemberVariable(name, false);
             name.SetMetaDefineType(new MetaType(CoreMetaClassManager.stringMetaClass));
             name.SetIsDefineMetaType(true);
-            name.SetIsConst(true);
+            name.SetIsConst(false);
             var namecexp = new MetaConstExpressNode(EType.String, "");
             name.SetExpress(namecexp);
 
@@ -64,7 +64,7 @@ namespace SimpleLanguage.Core
             AddMetaMemberVariable(index, false);
             index.SetMetaDefineType(new MetaType(CoreMetaClassManager.int32MetaClass));
             index.SetIsDefineMetaType(true);
-            index.SetIsConst(true);
+            index.SetIsConst(false);
             var indexcexp = new MetaConstExpressNode(EType.Int32, 0);
             index.SetExpress(indexcexp);
 

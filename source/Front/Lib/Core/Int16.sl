@@ -1,7 +1,7 @@
 public class Int16 extends Num
 {
-    const Int16 MaxValue = 0x7fff;
-    const Int16 MinValue = -32768;
+    const static Int16 MaxValue = 0x7fff;
+    const static Int16 MinValue = -32768;
 
     Int16 _value = 0;
     
