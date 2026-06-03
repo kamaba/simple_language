@@ -406,14 +406,9 @@ namespace SimpleLanguage.IR
             else if (mv.variableFrom == MetaVariable.EVariableFrom.EnumMember)
             {
                 var fieldOwner = IRManager.GetIRMetaClassByMetaVariable(mv);
-                var index = fieldOwner.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
-                var irvar = new IRLoadVariable(new IRMetaType(fieldOwner), _irMethod, index, IRMetaVariableFrom.Static);                
-
                 IRMetaType storageIrmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(
                         new MetaType(CoreMetaClassManager.memberMetaClass), fieldOwner);
-
                 IRStoreVariable irsv = new IRStoreVariable(storageIrmt, _irMethod, 2, IRMetaVariableFrom.Member );
-                irsv.IRDataList.InsertRange(0, irvar.IRDataList);
                 return irsv;
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.ArrayValue)

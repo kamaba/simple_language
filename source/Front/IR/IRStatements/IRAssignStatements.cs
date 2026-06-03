@@ -56,6 +56,8 @@ namespace SimpleLanguage.IR
                     lastCL = clist[i];
                 }
             }
+
+            var mv = lastCL.GetReturnMetaVariable();
             if (lastCL.visitType == MetaVisitNode.EVisitType.VisitVariable)
             {
                 MetaVisitVariable mvv = lastCL.visitVariable;
@@ -87,7 +89,11 @@ namespace SimpleLanguage.IR
             {
                 if( lastCL.visitType == MetaVisitNode.EVisitType.EnumMember )
                 {
+                    var fieldOwner = IRManager.GetIRMetaClassByMetaVariable(mv);
+                    var index = fieldOwner.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                    var irvar = new IRLoadVariable(new IRMetaType(fieldOwner), irMethod, index, IRMetaVariableFrom.Static);
 
+                    m_IRStatements.Add(irvar);
                 }
                 /*
                  * 
@@ -174,20 +180,13 @@ namespace SimpleLanguage.IR
             {
                 IRBase irbase = new IRBase(irsign);
                 m_IRStatements.Add(irbase);
-            }
-            
-            var mv = lastCL.GetReturnMetaVariable();
+            }            
 
             var owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
             if ( lastCL.callMetaType != null )
             {
                 if( lastCL.callMetaType.isEnumMember )
                 {
-                    IRMetaType irmtlv = new IRMetaType(owirmc);
-                    int index = owirmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
-                    IRLoadVariable irlv = new IRLoadVariable(irmtlv, irMethod, index, IRMetaVariableFrom.Static);
-                    m_IRStatements.Add(irlv);
-
                     MetaType mt = new MetaType(CoreMetaClassManager.memberMetaClass);
                     var irmtsv = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mt, owirmc);
                     IRStoreVariable irsv = new IRStoreVariable(irmtsv, irMethod, 2, IRMetaVariableFrom.Member );

@@ -146,7 +146,8 @@ EnumTest
     {
         global.println("========== EnumTest (start) ==========")
 
-        BridgeKind kind222 = BridgeKind.JVM
+        #!
+        BridgeKind kind222 = BridgeKind.SELF
         kind111 = BridgeKind.SELF
 
         if kind222 == kind111
@@ -156,30 +157,30 @@ EnumTest
 
         if kind222 == BridgeKind.SELF
         {
-            global.println("BridgeKind--------------SELF")
+            global.println("BridgeKind--------------SELF1")
         }
         elif kind222 == BridgeKind.JVM
         {
-            global.println("BridgeKind--------------JVM")
+            global.println("BridgeKind--------------JVM1")
         }
         else
         {
-            global.println("BridgeKind--------------OTHER")
+            global.println("BridgeKind--------------OTHER1")
         }
 
         #kind111 =  EShape.r1
         kind111 = BridgeKind.JVM
         if kind111 == BridgeKind.SELF
         {
-            global.println("BridgeKind--------------SELF")
+            global.println("BridgeKind--------------SELF2")
         }
         elif kind111 == BridgeKind.JVM
         {
-            global.println("BridgeKind--------------JVM")
+            global.println("BridgeKind--------------JVM2")
         }
         else
         {
-            global.println("BridgeKind--------------OTHER")
+            global.println("BridgeKind--------------OTHER2")
         }
 
         EShape shape123 = EShape.r1
@@ -194,11 +195,13 @@ EnumTest
 
         for b3 in ESeason.values
         {
-            global.println("ESeason value: " + b3)
+            global.println("ESeason value: " + b3.toString() )
         }
 
         global.println("----- mut enum member modify -----")
         global.println("Book.Str before# Test both separator styles -> " + Book.Str.toString() )
+        !#
+        
         Book.Str = "runtime string"
         Book.c4 = 20
         global.println("Book.Str after -> " + Book.Str.toString() )
