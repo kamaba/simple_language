@@ -99,8 +99,16 @@ namespace SimpleLanguage.IR
             }
             IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
             // 与 MetaMemberVariable 一致：显式左值类型用 define，var / 首赋局部推断用 real（define 常见为 object 占位）
-            MetaType exportMt = mv.GetFinalMetaType() ?? mv.defineMetaType;
-            m_IRMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(exportMt, owirmc);
+            MetaType exportMt = mv.GetFinalMetaType();
+            if( exportMt.isEnum )
+            {
+                IRMetaClass irmcmm = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.memberMetaClass.GetHashCode());
+                m_IRMetaType = new IRMetaType(irmcmm);
+            }
+            else
+            {
+                m_IRMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(exportMt, owirmc);
+            }
         }
         public IRMetaVariable(IRMetaClass irmc, MetaMemberEnum mme, int fieldIndex)
         {

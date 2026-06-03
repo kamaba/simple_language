@@ -146,10 +146,25 @@ EnumTest
     {
         global.println("========== EnumTest (start) ==========")
 
+        BridgeKind kind222 = BridgeKind.JVM
         kind111 = BridgeKind.SELF
-        if kind111 == BridgeKind.SELF
+
+        if kind222 == kind111
+        {
+            global.println("BridgeKind--------------SELF11111111111")
+        }
+
+        if kind222 == BridgeKind.SELF
         {
             global.println("BridgeKind--------------SELF")
+        }
+        elif kind222 == BridgeKind.JVM
+        {
+            global.println("BridgeKind--------------JVM")
+        }
+        else
+        {
+            global.println("BridgeKind--------------OTHER")
         }
 
         #kind111 =  EShape.r1
