@@ -34,7 +34,7 @@ namespace SimpleLanguage.Core
 
             for (int i = 0; i < m_FileMetaBraceTerm.fileMetaAssignSyntaxList.Count; i++)
             {
-                MetaMemberData mmd = new MetaMemberData(m_MetaData, m_FileMetaBraceTerm.fileMetaAssignSyntaxList[i], m_MetaData, mbs, i);
+                MetaMemberData mmd = new MetaMemberData(m_MetaData, m_FileMetaBraceTerm.fileMetaAssignSyntaxList[i], ownerMC, mbs, i);
                 mmd.CreateMetaExpress();
                 m_MetaData.AddMetaMemberData(mmd);
             }

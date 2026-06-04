@@ -371,12 +371,15 @@ namespace SimpleLanguage.IR
         }
         public void CreateMemberMethod()
         {
-            var mc = OwnerMetaClass;
-            if (mc == null)
+            List<MetaMemberFunction> smflist = new List<MetaMemberFunction>();
+            if( OwnerMetaClass != null )
             {
-                return;
+                smflist = OwnerMetaClass.staticMetaMemberFunctionList;
             }
-            var smflist = mc.staticMetaMemberFunctionList;
+            else if( OwnerMetaData != null )
+            {
+                smflist = OwnerMetaData.staticMetaMemberFunctionList;
+            }
             //int index = 0;
             for (int i = 0; i < smflist.Count; i++)
             {
@@ -387,62 +390,76 @@ namespace SimpleLanguage.IR
                 IRManager.instance.AddIRMethod(gmf);
             }
 
-            var nonsmflist = mc.nonStaticVirtualMetaMemberFunctionList;
+            List<MetaMemberFunction> nonsmflist = new List<MetaMemberFunction>();
+            List<MetaMemberFunction> fileFuncs = new List<MetaMemberFunction>();
+            if (OwnerMetaClass != null)
+            {
+                nonsmflist = OwnerMetaClass.nonStaticVirtualMetaMemberFunctionList;
+                fileFuncs = OwnerMetaClass.fileCollectMetaMemberFunctionList;
+            }
+            else if (OwnerMetaData != null)
+            {
+                nonsmflist = OwnerMetaData.nonStaticVirtualMetaMemberFunctionList;
+                fileFuncs = OwnerMetaData.fileCollectMetaMemberFunctionList;
+            }
+
             // Inheritance handling can skip instance methods that are declared in the file but are not
             // considered "virtual overrides" by MetaClass's override-matching rules. For DebugCode/IR
             // we still want those same-level methods to show up.
             // So: translate both:
             // 1) nonStaticVirtualMetaMemberFunctionList (virtual/inherited)
             // 2) fileCollectMetaMemberFunctionList (child-declared instance functions)
-            List<MetaMemberFunction> merged = new List<MetaMemberFunction>();
-            if (nonsmflist != null)
+            //if( OwnerMetaClass != null )
             {
-                merged.AddRange(nonsmflist);
-            }
-            var fileFuncs = mc.fileCollectMetaMemberFunctionList;
-            if (fileFuncs != null)
-            {
-                for (int i = 0; i < fileFuncs.Count; i++)
+                List<MetaMemberFunction> merged = new List<MetaMemberFunction>();
+                if (nonsmflist != null)
                 {
-                    var mf = fileFuncs[i];
-                    if (mf == null) continue;
-                    if (mf.isStatic) continue;
-                    merged.Add(mf);
+                    merged.AddRange(nonsmflist);
                 }
-            }
+                if (fileFuncs != null)
+                {
+                    for (int i = 0; i < fileFuncs.Count; i++)
+                    {
+                        var mf = fileFuncs[i];
+                        if (mf == null) continue;
+                        if (mf.isStatic) continue;
+                        merged.Add(mf);
+                    }
+                }
 
-            //int index = 0;
-            for (int i = 0; i < merged.Count; i++)
-            {
-                var mf = merged[i];
-                if (mf == null) continue;
-                // Ensure functionAllName/id is recomputed with the latest parsed param types.
-                // Otherwise id may be cached early as Core.Object and overloads may still collide.
-                mf.UpdateFunctionName();
-                mf.UpdateVritualFunctionName();
-                var gmf = IRManager.instance.TranslateIRByFunction(mf);
-                if (mf.name == "_add_"
-                    || mf.name == "_sub_"
-                    || mf.name == "_mul_"
-                    || mf.name == "_truediv_"
-                    || mf.name == "_mod_"
-                    || mf.name == "_iadd_"
-                    || mf.name == "_imul_"
-                    || mf.name == "_itruediv_"
-                    || mf.name == "_lt_"
-                    || mf.name == "_le_"
-                    || mf.name == "_gt_"
-                    || mf.name == "_ge_"
-                    || mf.name == "_eq_"
-                    || mf.name == "_ne_" )
+                //int index = 0;
+                for (int i = 0; i < merged.Count; i++)
                 {
-                    m_IROperatorMethodList.Add(gmf);
+                    var mf = merged[i];
+                    if (mf == null) continue;
+                    // Ensure functionAllName/id is recomputed with the latest parsed param types.
+                    // Otherwise id may be cached early as Core.Object and overloads may still collide.
+                    mf.UpdateFunctionName();
+                    mf.UpdateVritualFunctionName();
+                    var gmf = IRManager.instance.TranslateIRByFunction(mf);
+                    if (mf.name == "_add_"
+                        || mf.name == "_sub_"
+                        || mf.name == "_mul_"
+                        || mf.name == "_truediv_"
+                        || mf.name == "_mod_"
+                        || mf.name == "_iadd_"
+                        || mf.name == "_imul_"
+                        || mf.name == "_itruediv_"
+                        || mf.name == "_lt_"
+                        || mf.name == "_le_"
+                        || mf.name == "_gt_"
+                        || mf.name == "_ge_"
+                        || mf.name == "_eq_"
+                        || mf.name == "_ne_")
+                    {
+                        m_IROperatorMethodList.Add(gmf);
+                    }
+                    else
+                    {
+                        m_IRNotStaticMethodList.Add(gmf);
+                    }
+                    IRManager.instance.AddIRMethod(gmf);
                 }
-                else
-                {
-                    m_IRNotStaticMethodList.Add(gmf);
-                }
-                IRManager.instance.AddIRMethod(gmf);
             }
         }
         public void CreateGenMetaTypeTemplateList()

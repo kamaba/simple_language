@@ -402,7 +402,7 @@ namespace SimpleLanguage.Core
                     this.m_Token = fmos.token;
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.fme = fmos.express;
-                    cep.equalMetaVariable = null;
+                    cep.equalMetaVariable = this;
                     cep.metaType = null;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.ownerMetaBase = m_OwnerMetaBase;
@@ -922,7 +922,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "error 暂不支持其它类型 123");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaMemberData.ToString() 暂不支持其它类型 123");
                     }
                     break;
             }

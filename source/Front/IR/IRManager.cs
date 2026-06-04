@@ -461,11 +461,11 @@ namespace SimpleLanguage.IR
             foreach ( var v in m_IRMetaClassList )
             {
                 v.CreateMemberData();
+                v.CreateMemberMethod();
 
-                if( v.metaClassKind == IRMetaClassKind.Class
+                if ( v.metaClassKind == IRMetaClassKind.Class
                     || v.metaClassKind == IRMetaClassKind.Interface )
                 {
-                    v.CreateMemberMethod();
                     v.CreateTemplateRelation();
                     v.CreateGenMetaTypeTemplateList();
                 }

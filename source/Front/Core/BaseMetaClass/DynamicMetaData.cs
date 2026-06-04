@@ -10,7 +10,7 @@ namespace SimpleLanguage.Core
 {
     public class DynamicMetaData : MetaClass
     {
-        public DynamicMetaData():base(DefaultObject.Data.ToString())
+        public DynamicMetaData():base(DefaultObject.Dynamic.ToString())
         {            
             m_InnderDefine = true;
         }      

@@ -783,6 +783,11 @@ namespace SimpleLanguage.Core
             }
             EnsureAllGenTemplateClassesParsed();
 
+            foreach( var it in m_InitHandleMetaDataList )
+            {
+                it.HandleExtendContent();
+            }
+
             foreach( var it in m_InitHandleMetaEnumList )
             {
                 it.ParseFileCollectMemberVariableDefineMetaType();

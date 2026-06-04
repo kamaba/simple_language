@@ -519,12 +519,13 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByGetType( MetaBase owner, MetaType mt )
+        public static MetaVisitNode CreateByGetType( MetaBase owner, MetaType mt, MetaVariable mv )
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_CallMetaType = mt;
             vn.m_OwnerMetaBase = owner;
+            vn.m_Variable = mv;
             vn.m_VisitType = EVisitType.GetTypeValue;
 
             return vn;
@@ -855,6 +856,11 @@ namespace SimpleLanguage.Core
                     {
                         return variable;
                     }
+                case EVisitType.GetTypeValue:
+                    {
+                        return variable;
+                    }
+                    break;
                 default:
                     {
                         Log.AddMetaCoreLog(LID.MetaCoreVisitCallTypeError, m_Token, "Error MetaVisiCall IsNull!");

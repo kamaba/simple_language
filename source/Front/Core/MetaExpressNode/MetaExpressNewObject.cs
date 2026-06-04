@@ -248,21 +248,11 @@ namespace SimpleLanguage.Core
             {
                 m_DefineName = fmct1.callLink.callNodeList[fmct1.callLink.callNodeList.Count - 1].name;
             }
-            if (m_DefineMetaType.isDynamicData || m_DefineMetaType.isDynamicClass )
-            {
-                if (m_DefineMetaType.isDynamicClass)
-                {
-                    m_MetaMemberVariable = new MetaMemberVariable((MetaClass)null, m_DefineName);
-                    m_MetaMemberVariable.SetOwnerMetaBase(mbs.ownerMetaClass);
-                    m_MetaMemberVariable.SetOwnerBlockstatements(mbs);
-                    m_Id = m_MetaMemberVariable.index;
-                }
-                else
-                {
-                    m_MetaMemberData = MetaMemberData.CreateDeclared(m_NewObjectMetaType.metaData, m_DefineName, -1, new MetaType(CoreMetaClassManager.objectMetaClass), false);
-                    m_MetaMemberData.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);
-                    m_Id = m_MetaMemberData.index;
-                }
+            if (m_DefineMetaType.isDynamicData )
+            {                   
+                m_MetaMemberData = MetaMemberData.CreateDeclared(m_NewObjectMetaType.metaData, m_DefineName, -1, new MetaType(CoreMetaClassManager.objectMetaClass), false);
+                m_MetaMemberData.SetOwnerBlockstatements(m_OwnerMetaBlockStatements);
+                m_Id = m_MetaMemberData.index;                
             }
             else
             {
@@ -294,7 +284,7 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            if (m_DefineMetaType.isDynamicData || m_DefineMetaType.isDynamicClass)
+            if (m_DefineMetaType.isDynamicData )
             {
                 m_AssignTargetType = EAssignTargetType.AnonVariable;
             }
@@ -1283,6 +1273,7 @@ namespace SimpleLanguage.Core
             if( findmd == null )
             {
                 ClassManager.instance.AddAnonymousMetaData(metaData);
+                metaData.HandleExtendContent();
                 findmd = metaData;
             }
 

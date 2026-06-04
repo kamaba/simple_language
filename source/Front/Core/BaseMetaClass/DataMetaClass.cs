@@ -1,5 +1,5 @@
 ﻿//****************************************************************************
-//  File:      DynamicMetaClass.cs
+//  File:      IntMetaClass.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/6/12 12:00:00
@@ -7,20 +7,20 @@
 //****************************************************************************
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    public class DynamicMetaClass : MetaClass
+    public class DataMetaClass : MetaClass
     {
-        public DynamicMetaClass():base(DefaultObject.Dynamic.ToString())
+        public DataMetaClass() : base( DefaultObject.Data.ToString())
         {
+            SetExtendClass(CoreMetaClassManager.objectMetaClass);
+            m_Type = EType.Class;
             m_InnderDefine = true;
-        }     
+        }
         public static MetaClass CreateMetaClass()
         {
-            MetaClass mc = new DynamicMetaClass();
+            DataMetaClass mc = new DataMetaClass();
             return mc;
         }
     }

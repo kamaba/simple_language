@@ -114,8 +114,8 @@ TypeTest
         global.println("vi.type == int.type -> " + (vi.type == int.type).toString())
         global.println("vf.type == float.type -> " + (vf.type == float.type).toString())
         global.println("vs.type == string.type -> " + (vs.type == string.type).toString())
-
-        dynamic dyn = { a = 10, b = "ok", c = ArrClass(){ i = 7 } }
+        
+        data dyn = { a = 10, b = "ok", c = ArrClass(){ i = 7 } }
         tDyn = dyn.type
         global.println("dynamic value .type -> " + tDyn.toString())
         global.println("dynamic self type compare -> " + (tDyn == dyn.type).toString())

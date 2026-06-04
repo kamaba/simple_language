@@ -59,6 +59,7 @@ namespace SimpleLanguage.Core
         }
         public static MetaClass nullMetaClass { get; private set; } = null;
         public static MetaClass objectMetaClass { get; private set; } = null;
+        public static MetaClass dataMetaClass { get; private set; } = null;
         public static MetaClass memberMetaClass { get; private set; } = null;
         public static MetaClass numMetaClass { get; private set; } = null;
         public static MetaClass stringMetaClass { get; private set; } = null;
@@ -81,7 +82,7 @@ namespace SimpleLanguage.Core
         public static MetaClass tulpeMetaClass { get; private set; } = null;
         public static MetaClass mapMetaClass { get; private set; } = null;
         public static MetaClass rangeMetaClass { get; private set; } = null;
-        public static MetaClass dynamicMetaClass { get; private set; } = null;
+        //public static MetaClass dynamicMetaClass { get; private set; } = null;
         public static MetaClass dynamicMetaData { get; private set; } = null;
         public static MetaClass enumMetaData { get; private set; } = null;
         public static MetaClass iteratorMetaClass { get; set; } = null;
@@ -93,6 +94,7 @@ namespace SimpleLanguage.Core
         {
             nullMetaClass = NullMetaClass.CreateMetaClass();
             objectMetaClass = ObjectMetaClass.CreateMetaClass();
+            dataMetaClass = DataMetaClass.CreateMetaClass();
             numMetaClass = NumMetaClass.CreateMetaClass();
             voidMetaClass = VoidMetaClass.CreateMetaClass();
             booleanMetaClass = BooleanMetaClass.CreateMetaClass();
@@ -112,7 +114,6 @@ namespace SimpleLanguage.Core
             iterableMetaClass = IterableMetaClass.CreateMetaClass();
             arrayMetaClass = ArrayMetaClass.CreateMetaClass();
             rangeMetaClass = RangeMetaClass.CreateMetaClass();
-            dynamicMetaClass = DynamicMetaClass.CreateMetaClass();
             dynamicMetaData = DynamicMetaData.CreateMetaClass();
             enumMetaData = EnumMetaClass.CreateMetaClass();
             memberMetaClass = MemberMetaClass.CreateMetaClass();
@@ -120,6 +121,7 @@ namespace SimpleLanguage.Core
 
             s_InnerDefineMetaClassList.Add(objectMetaClass);
             s_InnerDefineMetaClassList.Add(voidMetaClass);
+            s_InnerDefineMetaClassList.Add(dataMetaClass);
             s_InnerDefineMetaClassList.Add(numMetaClass);
             s_InnerDefineMetaClassList.Add(booleanMetaClass);
             s_InnerDefineMetaClassList.Add(uint8MetaClass);
@@ -138,7 +140,6 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(iterableMetaClass);
             s_InnerDefineMetaClassList.Add(arrayMetaClass);
             s_InnerDefineMetaClassList.Add(rangeMetaClass);
-            s_InnerDefineMetaClassList.Add(dynamicMetaClass);
             s_InnerDefineMetaClassList.Add(dynamicMetaData);
             s_InnerDefineMetaClassList.Add(enumMetaData);
             s_InnerDefineMetaClassList.Add(typeMetaClass);

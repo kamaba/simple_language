@@ -593,8 +593,8 @@ namespace SimpleLanguage.Export.SLIR
         }
 
         /// <summary>
-        /// After expression IR for a class static field, append <see cref="EIROpCode.StoreStaticField"/>
-        /// when missing — same order as <see cref="IRMetaClass.CreateStaticMetaMetaVariableIRList"/>.
+        /// After expression IR for a class static field, append <see cref="StoreStaticField"/>
+        /// when missing — same order as <see cref="CreateStaticMetaMetaVariableIRList"/>.
         /// </summary>
         private static void AppendClassStaticFieldStoreIfNeeded(IRMetaVariable v, IRMetaType curirmt, List<IRData> irBuf)
         {

@@ -106,7 +106,7 @@ namespace SimpleLanguage.Core
                 if ( m_FileMetaOpAssignSyntax.dynamicToken != null )
                 {
                     isDynamicClass = true;
-                    leftMt = new MetaType(CoreMetaClassManager.dynamicMetaClass);
+                    leftMt = null;// new MetaType(CoreMetaClassManager.dynamicMetaClass);
                 }
                 else if( m_FileMetaOpAssignSyntax.dataToken != null )
                 {

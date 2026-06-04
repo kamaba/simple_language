@@ -23,9 +23,9 @@ Project
         #AssignStatement.fun()
         #BoolTest.fun()
         #StringTest.fun()
-        #TypeTest.fun()
+        TypeTest.fun()
         #DataTest.fun() 
-        EnumTest.fun();      
+        #EnumTest.fun();      
     }
     _test_()
     {

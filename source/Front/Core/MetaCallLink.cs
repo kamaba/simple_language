@@ -610,22 +610,22 @@ namespace SimpleLanguage.Core
                 mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
-            else if (mcn.callNodeType == ECallNodeType.TypeName)
-            {
-                if (mcn.bracketExpressList.Count > 0)
-                {
-                    MetaClass cmc = mcn.metaType.metaClass;
-                    MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mcn.bracketExpressList, mcn.storeMetaVariable);
-                    mvn.SetToken(mcn.token);
-                    m_VisitNodeList.Add(mvn);
-                }
-                else
-                {
-                    MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaClass(mcn.metaType);
-                    mvn.SetToken(mcn.token);
-                    m_VisitNodeList.Add(mvn);
-                }
-            }
+            //else if (mcn.callNodeType == ECallNodeType.TypeName)
+            //{
+            //    if (mcn.bracketExpressList.Count > 0)
+            //    {
+            //        MetaClass cmc = mcn.metaType.metaClass;
+            //        MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mcn.bracketExpressList, mcn.storeMetaVariable);
+            //        mvn.SetToken(mcn.token);
+            //        m_VisitNodeList.Add(mvn);
+            //    }
+            //    else
+            //    {
+            //        MetaVisitNode mvn = MetaVisitNode.CreateByVisitMetaClass(mcn.metaType);
+            //        mvn.SetToken(mcn.token);
+            //        m_VisitNodeList.Add(mvn);
+            //    }
+            //}
             else if (mcn.callNodeType == ECallNodeType.NewClass)
             {
                 if (index == m_CallNodeList.Count)
@@ -734,7 +734,7 @@ namespace SimpleLanguage.Core
             }
             else if (mcn.callNodeType == ECallNodeType.GetType)
             {
-                MetaVisitNode mvn = MetaVisitNode.CreateByGetType(mcn.ownerMetaBase, mcn.metaType);
+                MetaVisitNode mvn = MetaVisitNode.CreateByGetType(mcn.ownerMetaBase, mcn.metaType, mcn.metaVariable);
                 mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
