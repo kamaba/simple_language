@@ -146,7 +146,7 @@ EnumTest
     {
         global.println("========== EnumTest (start) ==========")
 
-        #!
+        
         BridgeKind kind222 = BridgeKind.SELF
         kind111 = BridgeKind.SELF
 
@@ -200,24 +200,30 @@ EnumTest
 
         global.println("----- mut enum member modify -----")
         global.println("Book.Str before# Test both separator styles -> " + Book.Str.toString() )
-        !#
+        
         
         Book.Str = "runtime string"
-        Book.c4 = 20
         global.println("Book.Str after -> " + Book.Str.toString() )
+        
+        global.println("Book.c4 front -> " + Book.c4.toString() )
+        Book.c4 = 20
+        global.println("Book.c4 after -> " + Book.c4.toString() )
     
         #EShape.r1 = RectShape(){ x = 10 }
         EShape.cd = RectShape()
 
-        global.println("EErr.First ordinal smoke -> " + EErr.First.value )
-        global.println("GameState values count check (manual): Init/Begin/End defined")
-
+        global.println("EErr.First ordinal smoke -> " + EErr.First.value.toString() )
         global.println("========== EnumTest (end) ==========")
 
         
         states = [GameState.Init, GameState.Begin, GameState.End]
         for s in states
         {
+            if( s == GameState.Init )
+            {   
+                global.println("GameState.Init")
+                continue
+            }
             global.println("State: " + s.name)
         }
     }
