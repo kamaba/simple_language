@@ -143,8 +143,6 @@ namespace SimpleLanguage.Core
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Core.Member 缺少 name/value/index 字段，无法构造 Member 初始化");
                         return false;
                     }
-                    valueMv.SetIsDefineMetaType(true);
-                    valueMv.SetMetaDefineType(m_DefineMetaType);
                     var list = mnoen.assignStatementsList;
                     list.Add(new MetaBraceAssignStatements(valueMv, null, ownerMetaBase, m_Express));
                 }
@@ -167,15 +165,9 @@ namespace SimpleLanguage.Core
             }
         }
 
-        public static MetaMemberVariable WrapAsEnumMemberObjectExpress( MetaEnum me, FileMetaMemberVariable fmmv, int index )
+        public static MetaMemberVariable WrapAsEnumMemberObjectExpress( MetaEnum ownerEnum, FileMetaMemberVariable fmmv, int index )
         {
-            var ownerEnum = me;
             var memberClass = CoreMetaClassManager.memberMetaClass;
-            if (ownerEnum == null || memberClass == null)
-            {
-                return null;
-            }
-
             var memberType = new MetaType(memberClass);
             var wrappedNewObject = new MetaNewObjectExpressNode(memberType, ownerEnum, null, null);
 

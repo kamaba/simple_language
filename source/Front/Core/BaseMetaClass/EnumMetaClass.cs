@@ -71,9 +71,9 @@ namespace SimpleLanguage.Core
 
             MetaMemberVariable value = new MetaMemberVariable(this, "value");
             value.SetIndex(2);
-            AddMetaMemberVariable(value, false);
             value.SetMetaDefineType(new MetaType(CoreMetaClassManager.objectMetaClass));
-            value.SetIsDefineMetaType(false);
+            value.SetIsDefineMetaType(true);
+            AddMetaMemberVariable(value, false);
             var mcen = new MetaConstExpressNode(EType.Null, null);
             value.SetExpress(mcen);
         }

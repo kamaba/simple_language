@@ -107,6 +107,7 @@ namespace SimpleLanguage.Core
             if (m_DefineMetaType == null )
             {
                 m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                m_IsDefineMetaType = false;
             }
             else
             {
@@ -137,14 +138,6 @@ namespace SimpleLanguage.Core
         public void SetIsDefineMetaType( bool flag )
         {
             this.m_IsDefineMetaType = flag;
-        }
-        public MetaType GetDefineMetaTypeIsDefine()
-        {
-            if( this.m_IsDefineMetaType )
-            {
-                return m_DefineMetaType;
-            }
-            return null;
         }
         public MetaType GetFinalMetaType()
         {
@@ -505,6 +498,7 @@ namespace SimpleLanguage.Core
                     m_RealMetaType = new MetaType(mtlist[0]);
                     if (m_IsDefineMetaType == false)
                     {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "ParseDefineRealMetaType not array ");
                         m_DefineMetaType = new MetaType(m_RealMetaType);
                     }
                 }

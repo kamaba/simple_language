@@ -142,6 +142,10 @@ namespace SimpleLanguage.Core
                 }
             }
         }
+        public void SetFileMetaMemeberVariable(FileMetaMemberVariable fmmv )
+        {
+            m_FileMetaMemeberVariable = fmmv;
+        }
         public void SetVariableFrom(EVariableFrom vfrom )
         {
             m_VariableFrom = vfrom;

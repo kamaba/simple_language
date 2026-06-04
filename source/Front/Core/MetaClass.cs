@@ -337,7 +337,7 @@ namespace SimpleLanguage.Core
         }
         public virtual void HandleExtendMemberVariable()
         {
-            if(m_ExtendClass == null )
+            if(this.m_ExtendClass == null )
             {
                 foreach( var v in this.m_FileCollectMetaMemberVariable )
                 {
@@ -783,9 +783,11 @@ namespace SimpleLanguage.Core
                 MetaMemberVariable cmmv = GetMetaMemberVariableByName(v2.name);
                 if (cmmv != null)
                 {
-                    if(cmmv != null && cmmv.isInnerDefine )
+                    if (cmmv != null && cmmv.isInnerDefine)
                     {
                         m_FileCollectMetaMemberVariable.Add(cmmv);
+                        cmmv.SetToken(v2.token);
+                        cmmv.SetFileMetaMemeberVariable(v2);
                         MetaVariableManager.instance.AddMetaMemberVariable(cmmv);
                         continue;
                     }

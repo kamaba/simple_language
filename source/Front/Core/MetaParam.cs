@@ -123,6 +123,7 @@ namespace SimpleLanguage.Core
             m_MetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.Argument,
                 null, m_OwnerMetaFunction.ownerMetaClass, null );
             m_Token = m_FileMetaParamter.token;
+            m_MetaVariable.SetToken(m_Token);
         }
         public void SetOwnerMetaFunction(MetaFunction mf)
         {
