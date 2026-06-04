@@ -73,6 +73,8 @@ namespace SimpleLanguage.VM
             EnsureByClassName("Core.String", ref m_StringRuntimeType, true);
             EnsureByClassName("Core.Float32", ref m_Float32RuntimeType, true);
             EnsureByClassName("Core.Float64", ref m_Float64RuntimeType, true);
+            EnsureByClassName("Core.Member", ref m_MemberRuntimeType, true);
+
             //EnsureRuntimeTypeRegisteredByClassName("Core.Array");
         }
         public static bool IsCoreRuntimeType(RuntimeType rt )

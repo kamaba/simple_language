@@ -253,6 +253,13 @@ namespace SimpleLanguage.VM
                 if (sourceType.runtimeClass.IsExtendsRelation(targetType.runtimeClass))
                     return true;
 
+                if(targetType.runtimeClass.metaClassKind == 1 )
+                {
+                    if(sourceType == RuntimeTypeManager.memberRuntimeType )
+                    {
+                        return true;
+                    }
+                }
                 return ReferenceEquals(sourceType.runtimeClass, targetType.runtimeClass);                   
             }
             return true;
