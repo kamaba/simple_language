@@ -380,9 +380,9 @@ namespace SimpleLanguage.Core
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_VisitType = EVisitType.Enum;
-            if (mt?.metaClass == CoreMetaClassManager.enumMetaData)
+            if (mt.isEnum )
             {
-                vn.m_Variable = mt.enumValue?.ownerMetaClass?.metaNode?.metaEnum?.GetOrCreateValuesVariable();
+                vn.m_Variable = mt.metaEnum?.GetOrCreateValuesVariable();
             }
             vn.m_ReturnMetaType = mt;
 

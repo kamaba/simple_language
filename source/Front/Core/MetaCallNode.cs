@@ -1906,7 +1906,7 @@ namespace SimpleLanguage.Core
                 {
                     m_MetaEnum = retMC.metaEnum;
                     m_CallNodeType = ECallNodeType.EnumName;
-                    m_MetaType = new MetaType(CoreMetaClassManager.enumMetaData);
+                    m_MetaType = new MetaType(m_MetaEnum);
                 }
                 else if (retMC.IsMetaClass())
                 {

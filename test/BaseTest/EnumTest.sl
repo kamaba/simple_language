@@ -197,6 +197,17 @@ EnumTest
         {
             global.println("ESeason value: " + b3.toString() )
         }
+        for b4 in ESeason
+        {
+            if b4 == ESeason.Spring
+            {
+                global.println(" if b4 == ESeason.Spring") 
+            }
+            else
+            {
+                global.println("ESeason value: " + b4.toString() )
+            }
+        }
 
         global.println("----- mut enum member modify -----")
         global.println("Book.Str before# Test both separator styles -> " + Book.Str.toString() )
