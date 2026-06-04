@@ -504,7 +504,7 @@ namespace SimpleLanguage.Core
         {
             MetaVisitNode vn = new MetaVisitNode();
 
-            //vn.constValueExpress = constExpress;
+            vn.m_Express = constExpress;
             vn.m_Variable = _variable;
             vn.m_VisitType = EVisitType.ConstValue;
 
@@ -693,10 +693,10 @@ namespace SimpleLanguage.Core
                     {
                         return new MetaType(CoreMetaClassManager.typeMetaClass);
                     }
-                //case EVisitType.ConstValue:
-                //    {
-                //        return this.constValueExpress.metaType;
-                //    }
+                case EVisitType.NewConst:
+                    {
+                        return this.constValueExpress.expressReturnMetaType;
+                    }
                 case EVisitType.MetaClass:
                     {
                     }

@@ -44,7 +44,7 @@ StringTest
         Class1.printf(c6)
 
         # f"" 空占位在部分实现中可能非法，保留占位字面
-        fstr = f"prefix"
+        fstr = f"""prefix"""
         global.println("f-string sample -> " + fstr)
         # 多字符单引号字面量在语言中通常非法，保留为说明：# c5 = 'aaaaa'
     }

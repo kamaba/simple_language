@@ -95,3 +95,9 @@
 /test/BaseTest/EnumTest/Meta.txt
 /test/BaseTest/EnumTest/Node.txt
 /test/BaseTest/EnumTest/Token.txt
+/test/BaseTest/StringTest/Code.txt
+/test/BaseTest/StringTest/File.txt
+/test/BaseTest/StringTest/IR.txt
+/test/BaseTest/StringTest/Meta.txt
+/test/BaseTest/StringTest/Node.txt
+/test/BaseTest/StringTest/Token.txt
