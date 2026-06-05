@@ -177,14 +177,14 @@ namespace SimpleLanguage.Core
                     return;
                 }
             }
-            if (m_ExpressNode is MetaCallLinkExpressNode mclen)
-            {
-                if (mclen.GetReturnMetaVariable() == null)
-                {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "在定义变量时，必须返回一个变量值 1");
-                    return;
-                }
-            }
+            //if (m_ExpressNode is MetaCallLinkExpressNode mclen)
+            //{
+            //    if (mclen.GetReturnMetaVariable() == null)
+            //    {
+            //        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "在定义变量时，必须返回一个变量值 1");
+            //        return;
+            //    }
+            //}
 
             if (!m_DefineVarMetaVariable.isDefineMetaType )
             {

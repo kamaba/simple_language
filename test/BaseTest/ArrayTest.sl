@@ -174,37 +174,45 @@ ArrayTest
     static arrayNestedObjectTreeTest()
     {
         global.println("========== nested Array<Object> / testArray / deep walk ==========")
+        #!
         int[] aaaxx12 = Array<int>.create(2)
         aaaxx12[0] = 5
         aaaxx12[1] = 6
+        forIIterator(aaaxx12)
         int[] axxx12 = [ 7,8,9,5 ]
+        forIIterator(axxx12)
         Array<Array<int> > axxx13 = int[2][] { aaaxx12, [991,992,993,994] }
-
+        forIIterator(axxx13)
+        !#
         int[] axx22 = int[1]{100}
+        forIIterator(axx22)
         object[] axx23 = object[1]{ axx22 }
+        forIIterator(axx23)
+        
+        #!
         a1 = Array<Object>(3){ 1, axxx13, axx23 }
         forIIterator(a1)
-
+        
         for v in a1
         {
             if v != null
             {
                 global.println("nested level1 -> " + v.toString() )
-                #!for v2 in v
+                for v2 in v
                 {
                     global.println("nested level2 -> " + v2.toString() )
                     for i = 0, i < v2.length, i++
                     {
                         global.println("nested level3 -> " + v2[i].toString() )
                     }
-                }
-                !#
+                }                
             }
             else
             {
                 global.println("============index: " + v )
             }
         }
+        !#
     }
 
     # object[][] 锯齿：不能整表用 int[][] 赋给 object[][]，逐行赋 object 可接受的行数组
@@ -429,12 +437,13 @@ ArrayTest
     }
     static fun()
     {
+        #!
         arrayBasicApiTest()        
         arrayGenericElementTest()        
         arrayCreateInstanceIndexLoopTest()
         arrayCovariantAndLiteralForInTest()
         arrayNumberIteratorFromConcreteArrayTest()
-        #!
+        !#
         arrayNestedObjectTreeTest()
         arrayJagged2DAssignTest()        
         arrayIntLiteralReadTest()

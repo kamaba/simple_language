@@ -1691,7 +1691,7 @@ namespace SimpleLanguage.Core
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.ownerMetaBase = m_OwnerMetaBase;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
-                    cep.metaType = new MetaType(cmt);
+                    cep.metaType = cmt;
                     cep.fme = fmct;
                     cep.equalMetaVariable = null;
                     MetaExpressNodeBase men = ExpressManager.CreateExpressNode(cep);

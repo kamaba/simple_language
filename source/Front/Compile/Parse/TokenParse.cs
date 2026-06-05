@@ -198,7 +198,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddTokenLog(LID.MetaCoreAssertShowMessage, "Error 不对称{}");
+                            Log.AddTokenLog(LID.MetaCoreAssertShowMessage, "Error 不对称{}", token );
                         }
                     }
                     break;
