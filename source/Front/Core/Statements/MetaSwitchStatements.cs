@@ -229,7 +229,7 @@ namespace SimpleLanguage.Core
                     {
                         m_MatchType = SwitchMatchType.EnumValue;
                     }
-                    else if (ClassManager.IsNumberClass(fmt.metaClass))
+                    else if (NumberManager.IsNumberClass(fmt.metaClass))
                     {
                         m_MatchType = SwitchMatchType.ConstValue;
                     }

@@ -36,6 +36,50 @@ namespace SimpleLanguage.Core
     /// </summary>
     public static class NumberManager
     {
+        //public static EClassRelation ValidateClassRelation( string curName, string compareName )
+        //{
+        //    MetaClass currentClass = instance.GetClassByName(curName);
+        //    if (currentClass == null)
+        //    {
+        //        return EClassRelation.CurClassError;
+        //    }
+        //    MetaClass compareClass = instance.GetClassByName(compareName);
+        //    if (compareClass == null)
+        //    {
+        //        return EClassRelation.CompareClassError;
+        //    }
+        //    return ValidateClassRelationByMetaClass(currentClass, compareClass);
+        //}
+        public static bool IsNumberClass(MetaClass curClass)
+        {
+            if (curClass == null)
+            {
+                return false;
+            }
+
+            if (curClass == CoreMetaClassManager.numMetaClass
+                || curClass == CoreMetaClassManager.uint8MetaClass
+                || curClass == CoreMetaClassManager.int8MetaClass
+                || curClass == CoreMetaClassManager.int16MetaClass
+                || curClass == CoreMetaClassManager.uint16MetaClass
+                || curClass == CoreMetaClassManager.int32MetaClass
+                || curClass == CoreMetaClassManager.uint32MetaClass
+                || curClass == CoreMetaClassManager.int64MetaClass
+                || curClass == CoreMetaClassManager.uint64MetaClass
+                || curClass == CoreMetaClassManager.float32MetaClass
+                || curClass == CoreMetaClassManager.float64MetaClass)
+            {
+                return true;
+            }
+
+            // ?????????????????????????????????????????????????????Num????????????????????????????
+            if (curClass.IsParseMetaClass(CoreMetaClassManager.numMetaClass))
+            {
+                return true;
+            }
+
+            return false;
+        }
         /// <summary>
         /// 数组字面量等元素均为数值时的统一升阶顺序（阶越大类型越高）：
         /// byte → sbyte → int16 → uint16 → int32 → uint32 → float32 → int64 → uint64 → float64。
@@ -58,7 +102,7 @@ namespace SimpleLanguage.Core
             if (mc == CoreMetaClassManager.int64MetaClass) { rank = 7; return true; }
             if (mc == CoreMetaClassManager.uint64MetaClass) { rank = 8; return true; }
             if (mc == CoreMetaClassManager.float64MetaClass) { rank = 9; return true; }
-            if (ClassManager.IsNumberClass(mc))
+            if (IsNumberClass(mc))
             {
                 rank = -1;
                 return true;
@@ -406,7 +450,7 @@ namespace SimpleLanguage.Core
             }
 
             var list = newObjectNode.assignStatementsList;
-            var elemType = ClassManager.GetSingleTemplateArgMetaType(declaredArrayMetaType);
+            var elemType = TypeManager.GetSingleTemplateArgMetaType(declaredArrayMetaType);
             if (elemType?.metaClass == null)
             {
                 return true;
@@ -417,7 +461,7 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
-            if (!ClassManager.IsNumberClass(elemType.metaClass))
+            if (!NumberManager.IsNumberClass(elemType.metaClass))
             {
                 return true;
             }

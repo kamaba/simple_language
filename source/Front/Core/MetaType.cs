@@ -286,7 +286,7 @@ namespace SimpleLanguage.Core
         public void SetNullable(bool v) { m_IsNullable = v; }
         public bool IsNum()
         {
-            return ClassManager.IsNumberClass(this.m_MetaClass);
+            return NumberManager.IsNumberClass(this.m_MetaClass);
         }
         public int ArrayDimension()
         {

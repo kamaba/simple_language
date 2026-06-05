@@ -550,5 +550,76 @@ namespace SimpleLanguage.Core
                 sb.Append(str, last, str.Length - last);
             return sb.ToString();
         }
+
+
+        public static bool TryAdjustConstExpressByDefineMetaType(MetaType defineMetaType, MetaConstExpressNode mcen)
+        {
+            if (mcen == null || defineMetaType == null)
+            {
+                return false;
+            }
+
+            var curEType = CoreMetaClassManager.GetETypeByMetaClass(defineMetaType.metaClass);
+
+            if (curEType == EType.Object)
+            {
+                curEType = mcen.eType;
+            }
+
+            if (mcen.eType == curEType)
+            {
+                return true;
+            }
+
+            return TryAdjustConstExpressByDefineEType(mcen, curEType);
+        }
+        public static bool TryAdjustConstExpressByDefineEType(MetaConstExpressNode mcen, EType defineEType)
+        {
+            if (mcen == null)
+            {
+                return false;
+            }
+
+            if (defineEType == EType.Object)
+            {
+                return true;
+            }
+
+            var curEType = defineEType;
+            var expEType = mcen.eType;
+            Token token = mcen.token;
+
+            if (expEType == EType.Null)
+            {
+                return true;
+            }
+
+            if (NumberManager.IsNumericEType(curEType) && NumberManager.IsNumericEType(expEType))
+            {
+                return NumberManager.TryAdjustConstExpressToNumericTarget(mcen, curEType, expEType, token);
+            }
+
+            if (expEType != curEType)
+            {
+                if (NumberManager.TryConvertConstValueByEType(curEType, mcen.value, out var convertedValue))
+                {
+                    mcen.SetConstValue(curEType, convertedValue);
+                    return true;
+                }
+
+                if (NumberManager.IsRadixNumberLiteral(mcen)
+                    && NumberManager.TryConvertRadixUnsignedToSignedByEType(curEType, mcen.value, out var radixConvertedValue))
+                {
+                    mcen.SetConstValue(curEType, radixConvertedValue);
+                    return true;
+                }
+
+                Log.AddMetaCoreLog(LID.MetaCoreExpressTypeGEDefineType, token, (mcen.value?.ToString() ?? "null"), curEType.ToString(), expEType.ToString());
+                return false;
+            }
+
+            return true;
+        }
+
     }
 }

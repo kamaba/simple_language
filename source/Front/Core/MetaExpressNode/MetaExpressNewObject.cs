@@ -438,7 +438,7 @@ namespace SimpleLanguage.Core
                     && m_DefineMetaType.metaClass != CoreMetaClassManager.objectMetaClass
                     && m_MetaExpress is MetaConstExpressNode constExpressNode)
                 {
-                    if (!TypeManager.TryAdjustConstExpressByDefineMetaType(constExpressNode, expressRetMetaType ))
+                    if (!ExpressManager.TryAdjustConstExpressByDefineMetaType(m_DefineMetaType, constExpressNode ))
                     {
                         return;
                     }
@@ -621,7 +621,7 @@ namespace SimpleLanguage.Core
                 return false;
             }
 
-            var relation = ClassManager.ValidateClassTypeRelation(dc, ec);
+            var relation = TypeManager.ValidateClassTypeRelation(dc, ec);
             if (relation == ETypeRelation.Same
                 || relation == ETypeRelation.Child
                 || relation == ETypeRelation.Interface)
@@ -631,7 +631,7 @@ namespace SimpleLanguage.Core
 
             if (relation == ETypeRelation.Num)
             {
-                return ClassManager.IsNarrowerCorePrimitiveWideningOkForCallSite(ec, dc);
+                return TypeManager.IsNarrowerCorePrimitiveWideningOkForCallSite(ec, dc);
             }
 
             return false;
@@ -737,7 +737,7 @@ namespace SimpleLanguage.Core
                     return true;
                 }
 
-                bool isNumLike = ClassManager.IsNumberClass(elementMt.metaClass) || ClassManager.IsAbstractNumberMetaType(elementMt);
+                bool isNumLike = NumberManager.IsNumberClass(elementMt.metaClass) || TypeManager.IsAbstractNumberMetaType(elementMt);
                 bool isNullLiteral = contentMt != null && contentMt.isNull;
                 if (isNumLike && (isOmittedExpression || isNullLiteral) && elementMt.isNullable == false)
                 {
@@ -904,7 +904,7 @@ namespace SimpleLanguage.Core
             bool allNumeric = true;
             for (int i = 0; i < types.Count; i++)
             {
-                if (!ClassManager.IsNumberClass(types[i].metaClass))
+                if (!NumberManager.IsNumberClass(types[i].metaClass))
                 {
                     allNumeric = false;
                     break;
@@ -986,7 +986,7 @@ namespace SimpleLanguage.Core
                         var nextmt = nmc.GetRetMetaType();
                         var cur = cutmt.metaClass;
                         var next = nextmt.metaClass;
-                        var relation = ClassManager.ValidateClassTypeRelation(cur, next);
+                        var relation = TypeManager.ValidateClassTypeRelation(cur, next);
                         if (relation == ETypeRelation.Same
                             || relation == ETypeRelation.Child)
                         {
@@ -2179,8 +2179,8 @@ namespace SimpleLanguage.Core
                 var dEl = defineArray.GetMetaTypeByIndex(0);
                 var nEl = newArray.GetMetaTypeByIndex(0);
                 if (dEl != null && nEl != null
-                    && ClassManager.IsNumberClass(dEl.metaClass)
-                    && ClassManager.IsNumberClass(nEl.metaClass)
+                    && NumberManager.IsNumberClass(dEl.metaClass)
+                    && NumberManager.IsNumberClass(nEl.metaClass)
                     && !TypeManager.CompareMetaType(dEl, nEl))
                 {
                     result = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(defineArray, newArray);
@@ -2221,8 +2221,8 @@ namespace SimpleLanguage.Core
                 var retEl = result.GetMetaTypeByIndex(0);
                 var calcEl = calcArray.GetMetaTypeByIndex(0);
                 if (retEl != null && calcEl != null
-                    && ClassManager.IsNumberClass(retEl.metaClass)
-                    && ClassManager.IsNumberClass(calcEl.metaClass)
+                    && NumberManager.IsNumberClass(retEl.metaClass)
+                    && NumberManager.IsNumberClass(calcEl.metaClass)
                     && !TypeManager.CompareMetaType(retEl, calcEl))
                 {
                     result = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(result, calcArray);
@@ -2319,7 +2319,7 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
-            if (ClassManager.IsNumberClass(cmt1.metaClass) && ClassManager.IsNumberClass(cmt2.metaClass))
+            if (NumberManager.IsNumberClass(cmt1.metaClass) && NumberManager.IsNumberClass(cmt2.metaClass))
             {
                 numericMergedArrayMeta = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(
                     m_DefineMetaType, m_NewMetaType);

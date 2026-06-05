@@ -340,7 +340,6 @@ namespace SimpleLanguage.Project
             // Re-run expression parse pipeline for injected members so array/data initializers
             // are lowered to NewArray/NewObject IR instead of only carrying raw meta definitions.
             mmv.ParseMetaExpress();
-            mmv.CalcReturnType();
         }
 
         static MetaData CreateMetaDataByJsonObject(string dataName, JsonElement element, int seed)

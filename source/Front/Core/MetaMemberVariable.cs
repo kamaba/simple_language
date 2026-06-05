@@ -150,6 +150,10 @@ namespace SimpleLanguage.Core
         {
             m_VariableFrom = vfrom;
         }
+        public void SetIndex(int index)
+        {
+            this.m_Index = index;
+        }
         public void SetExpress(MetaExpressNodeBase mcen)
         {
             // Auto-filled const is not considered an explicit '=' from source, but it is a valid express for later stages.
@@ -217,28 +221,36 @@ namespace SimpleLanguage.Core
         {
             if( this.m_FileMetaMemeberVariable != null )
             {
-                if (this.m_FileMetaMemeberVariable?.DataType == global::SimpleLanguage.Compile.EMemberDataType.Array)
+                var express = this.m_FileMetaMemeberVariable?.express;
+                if (express == null)
                 {
-                    m_Express = CreateExpressNodeInClassMetaVariable();
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在类没有定义的变量中，不允许 使用{}的赋值方式!!" + express.token?.ToLexemeAllString());
+
+                    return;
                 }
-                else
-                {
-                    m_Express = CreateExpressNodeInClassMetaVariable();
-                }
+                CreateExpressParam cep = new CreateExpressParam();
+                cep.ownerMetaBase = ownerMetaBase;
+                cep.metaType = m_DefineMetaType;
+                cep.equalMetaVariable = this;
+                cep.parsefrom = EParseFrom.MemberVariableExpress;
+                cep.isConst = isConst;
+                cep.isStatic = isStatic;
+                cep.allowUseIfSyntax = false;
+                cep.allowUseSwitchSyntax = false;
+                cep.allowUseParSyntax = ProjectManager.isSupportConstructionFunctionOnlyParType;
+                cep.allowUseBraceSyntax = ProjectManager.isSupportConstructionFunctionOnlyBraceType;
+                cep.fme = express;
+
+                this.m_Express = ExpressManager.CreateExpressNode(cep);
             }
             if( this.m_Express == null )
             {
-                if( this.m_FileMetaMemeberVariable?.express != null )
+                Token token = null;
+                if ( this.m_FileMetaMemeberVariable?.express != null )
                 {
-                    var tokens = this.m_FileMetaMemeberVariable?.express.GetTokens();
-                    //var ld = Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error [{this.ownerMetaClass.allClassName + "." + this.m_Name} ]配置成员变量时，必须需要有等号及后续的表达式!!");
-                    //ld.demo = "T t";
-                    //ld.advan = "T t = null";
+                    token = this.m_FileMetaMemeberVariable?.express.token;                   
                 }
-                else
-                {
-
-                }
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, $"Error [{this.ownerMetaClass.allName + "." + this.m_Name} ]配置成员变量时，必须需要有等号及后续的表达式!!");
             }
         }
         public override bool ParseMetaExpress()
@@ -248,6 +260,24 @@ namespace SimpleLanguage.Core
                 this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
                 m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType, this );
                 m_Express.CalcReturnType();
+
+                var enode = SimulateExpressRun(m_Express);
+                if (enode != null && enode != m_Express)
+                {
+                    m_Express = enode;
+                    m_Express.CalcReturnType();
+                }
+            }
+            else
+            {
+            }
+            if (m_DefineMetaType == null)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreDefineTypeIsNull, m_Token, "Error 表达式为空 或者 表达示必须有返回值", "express");
+            }
+            if (m_Express == null)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreExpressIsNull, "", "express");
             }
             return true;
         }
@@ -260,266 +290,45 @@ namespace SimpleLanguage.Core
                 {
                     mnoe.CheckDefineVariableMetaTypeAndContentMetaType();
                 }
-            }
-        }
-        public void SetIndex( int index )
-        {
-            this.m_Index = index;
-        }
-        public void CalcReturnType()
-        {
-            string defineName = this.m_Name;
-            if (m_Express != null)
-            {
-                m_Express.CalcReturnType();
-                var enode = SimulateExpressRun(m_Express);
-                if (enode != null && enode != m_Express )
+
+                foreach (var v in m_TemplateChildMetaMemberVariableList)
                 {
-                    m_Express = enode;
-                    m_Express.CalcReturnType();
+                    if (!v.isDefineMetaType)
+                    {
+                        v.m_RealMetaType = m_RealMetaType;
+                    }
                 }
-                if( m_Express is MetaConstExpressNode mcen )
+
+                var relation = TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_Express.GetReturnMetaType(), m_Token,
+                    out MetaType convertMt);
+                if (relation == false)
                 {
-                    if (!TypeManager.TryAdjustConstExpressByDefineMetaType(mcen, m_DefineMetaType))
-                    {
-                        // 类型不匹配时日志已在 TryAdjustConstExpressByDefineMetaType 内输出
-                    }
-                    else
-                    {
-                        var curEType = CoreMetaClassManager.GetETypeByMetaClass(m_DefineMetaType.metaClass);
-                        if (curEType == EType.Object)
-                        {
-                            curEType = mcen.eType;
-                        }
-                        if (curEType == EType.Boolean || curEType == EType.String)
-                        {
-                        }
-                        else
-                        {
-                            CalcDefineClassType();
-                        }
-                    }
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 表达式中返回定义类型为空 " + m_Express.ToString());
+                    return;
                 }
                 else
                 {
-                    CalcDefineClassType();
-                }
-            }
-            else
-            {
-            }
-            if( m_DefineMetaType == null)
-            {
-                Log.AddMetaCoreLog(LID.MetaCoreDefineTypeIsNull, m_Token, "Error 表达式为空 或者 表达示必须有返回值", "express" );
-            }
-            if (m_Express == null )
-            {
-                Log.AddMetaCoreLog(LID.MetaCoreExpressIsNull, "", "express" );
-            }
-        }
-
-        void CalcDefineClassType()
-        {
-            //var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;
-            string defineName = this.m_Name;
-            if (m_RealMetaType == null)
-            {
-                if (m_Express != null)
-                {
-                    MetaConstExpressNode constExpressNode = m_Express as MetaConstExpressNode;
-                    bool isCheckReturnType = true;
-                    if (constExpressNode != null)
+                    if (m_Express is MetaConstExpressNode mcen && m_IsDefineMetaType )
                     {
-                        if (constExpressNode.eType == EType.Null)
+                        var t = m_DefineMetaType.eType;
+                        if ( t != m_RealMetaType.eType 
+                            && (t == EType.UInt8
+                            || t == EType.Int8
+                            || t == EType.Int16
+                            || t == EType.UInt16
+                            || t == EType.Int32
+                            || t == EType.UInt32
+                            || t == EType.Int64
+                            || t == EType.UInt64
+                            || t == EType.Float16
+                            || t == EType.Float32
+                            || t == EType.Float64) )
                         {
-                            isCheckReturnType = false;
-                            m_RealMetaType = new MetaType(m_DefineMetaType);
-                        }
-                    }
-                    if (isCheckReturnType)
-                    {
-                        var dmct = m_Express.GetReturnMetaType();
-                        if ( dmct != null)
-                        {
-                            if( !ClassManager.IsNumberClass(dmct.metaClass) )
-                            {
-                                if (dmct.metaClass == ownerMetaClass)
-                                {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 自己类内部不允许包含 自己的实体，必须赋值为null");
-                                    return;
-                                }
-                            }
-                            m_RealMetaType = dmct;
-                            if( !m_IsDefineMetaType )
-                            {
-                                m_DefineMetaType = new MetaType(m_RealMetaType);
-                            }
-                            foreach( var v in m_TemplateChildMetaMemberVariableList )
-                            {
-                                if( !v.isDefineMetaType )
-                                {
-                                    v.m_RealMetaType = m_RealMetaType;
-                                }
-                            }
+                            mcen.SetNumType(t);
                         }
                     }
                 }
             }
-            else
-            {
-                if (m_Express != null)
-                {                    
-                    var relation = TypeManager.ResolveAssignRelation(
-                        m_DefineMetaType,
-                        m_Express,
-                        false,
-                        true,
-                        out MetaType expressRetMetaDefineType,
-                        out MetaClass curClass,
-                        out MetaClass compareClass,
-                        out bool isNullConstExpress,
-                        this);
-                    if (relation == ETypeRelation.ExpressTypeError)
-                    {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 表达式中返回定义类型为空 " + m_Express.ToString());
-                        return;
-                    }
-
-                    StringBuilder sb = new StringBuilder();
-                    //sb.Append("Warning 在类: " + metaFunction?.ownerMetaClass.allName + " 函数: " + metaFunction?.name + "中  ");
-                    if (curClass != null)
-                    {
-                        sb.Append(" 定义类 : " + curClass.allName);
-                    }
-                    if (defineName != null)
-                    {
-                        sb.Append(" 名称为: " + defineName?.ToString());
-                    }
-                    sb.Append("与后边赋值语句中 ");
-                    if (compareClass != null)
-                        sb.Append("表达式类为: " + compareClass.allName );
-                    if (relation == ETypeRelation.No)
-                    {
-                        sb.Append("类型不相同，可能会有强转，强转后可能默认值为null");
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
-                    }
-                    else if (relation == ETypeRelation.Same)
-                    {
-                        //if( !isNullConstExpress )
-                        {
-                            if( TypeManager.IsCoreMetaType( expressRetMetaDefineType ) )
-                            {
-
-                            }
-                            else
-                            {
-                                if (!ClassManager.IsNumberClass(expressRetMetaDefineType.metaClass))
-                                {
-                                    if (expressRetMetaDefineType.metaClass == ownerMetaClass && (!m_IsStatic && !m_IsConst))
-                                    {
-                                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass, m_Token, 
-                                            "in member variable", ownerMetaClass?.allName ?? m_OwnerMetaBase?.name, m_Name );
-                                        return;
-                                    }
-                                }
-                            }
-                            SetRealMetaType(expressRetMetaDefineType);
-                        }
-                    }
-                    else if (relation == ETypeRelation.Parent)
-                    {
-                        sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
-                    }
-                    else if( relation == ETypeRelation.Num )
-                    {
-                        sb.Append("类型不相同，可能会有强转， 返回值是父类型向子类型转换，存在错误转换!!");
-                        //Log.AddMetaCoreLog(LID.ShowExtendMessage, sb.ToString());
-                    }
-                    else if (relation == ETypeRelation.Child)
-                    {
-                        if (compareClass != null)
-                        {
-                            if (expressRetMetaDefineType.IsArray() )
-                            {
-
-                            }
-                            else
-                            {
-                                if( !this.isStatic && !this.isConst )
-                                {
-                                    if (expressRetMetaDefineType.metaClass == ownerMetaClass)
-                                    {
-                                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass, m_Token,
-                                            "in member variable", ownerMetaClass?.allName ?? m_OwnerMetaBase?.name, m_Name);
-                                        return;
-                                    }
-                                }
-                            }
-                            SetRealMetaType(expressRetMetaDefineType);
-                        }
-                    }
-                    else if(relation == ETypeRelation.Similar )
-                    {
-                        if( compareClass != null )
-                        {
-                            if(IsClassAdapt(curClass, compareClass ) )
-                            {
-                                if( m_IsDefineMetaType )
-                                {
-                                    SetRealMetaType(expressRetMetaDefineType);
-                                }
-                                else
-                                {
-                                    SetRealMetaType(new MetaType(curClass) );
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        sb.Append("表达式错误，或者是定义类型错误");
-                        Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, sb.ToString());
-                    }
-                }
-            }
-        }
-        public bool IsClassAdapt( MetaClass mc1, MetaClass mc2 )
-        {
-            if( mc1 == CoreMetaClassManager.int64MetaClass
-                || mc1 == CoreMetaClassManager.uint64MetaClass )
-            {
-                if( mc2 == CoreMetaClassManager.uint8MetaClass
-                    || mc2 == CoreMetaClassManager.int8MetaClass
-                    || mc2 == CoreMetaClassManager.int16MetaClass
-                    || mc2 == CoreMetaClassManager.uint16MetaClass 
-                    || mc2 == CoreMetaClassManager.int32MetaClass 
-                    || mc2 == CoreMetaClassManager.uint32MetaClass )
-                {
-                    return true;
-                }
-            }
-            else if (mc1 == CoreMetaClassManager.int32MetaClass
-                || mc1 == CoreMetaClassManager.uint32MetaClass)
-            {
-                if (mc2 == CoreMetaClassManager.uint8MetaClass
-                    || mc2 == CoreMetaClassManager.int8MetaClass
-                    || mc2 == CoreMetaClassManager.int16MetaClass
-                    || mc2 == CoreMetaClassManager.uint16MetaClass)
-                {
-                    return true;
-                }
-            }
-            else if (mc1 == CoreMetaClassManager.int16MetaClass
-                || mc1 == CoreMetaClassManager.uint16MetaClass)
-            {
-                if (mc2 == CoreMetaClassManager.uint8MetaClass
-                    || mc2 == CoreMetaClassManager.int8MetaClass )
-                {
-                    return true;
-                }
-            }
-            return false;
         }
         public MetaExpressNodeBase SimulateExpressRun(MetaExpressNodeBase node)
         {
@@ -559,104 +368,6 @@ namespace SimpleLanguage.Core
             }
             return newnode;
         }
-        MetaExpressNodeBase CreateExpressNodeInClassMetaVariable()
-        {
-            var express = this.m_FileMetaMemeberVariable?.express;
-            if (express == null) return null;
-
-            var root = express.root;
-            if (root == null)
-                return null;
-            if (root.left == null && root.right == null)
-            {
-                var fmpt = root as FileMetaParTerm;
-                var fmct = root as FileMetaCallTerm;
-                var fmbt = root as FileMetaBraceTerm;
-                if (m_DefineMetaType != null )
-                {
-                    if (fmpt != null)            // for example: Class1 obj = (1,2,3,4);
-                    {
-                        if( ProjectManager.isSupportConstructionFunctionOnlyParType )
-                        {
-                        }
-                        else
-                        {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 现在配置中，不支持成员变量中使用类的()构造方式!!");
-                            return null;
-                        }
-                    }
-                    else if (fmbt != null)
-                    {
-                        if (ProjectManager.isSupportConstructionFunctionOnlyBraceType)
-                        {
-                        }
-                        else
-                        {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在类变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
-                            return null;
-                        }                        
-                    }
-                    else if (fmct != null)
-                    {
-                        if( fmct.callLink.callNodeList.Count > 0 )
-                        {
-                            var finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
-                            if( finalNode.fileMetaBraceTerm != null && !ProjectManager.isSupportConstructionFunctionConnectBraceType)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
-                                return null;
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if(fmpt != null )
-                    {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在类没有定义的变量中，不允许 使用()的赋值方式!!" + fmbt.token?.ToLexemeAllString());
-                        return null;
-                    }
-                    else if (fmbt != null)
-                    {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在类没有定义的变量中，不允许 使用{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
-                        return null;
-                    }
-                    else if (fmct != null)
-                    {
-                        if (fmct.callLink.callNodeList.Count > 0)
-                        {
-                            var finalNode = fmct.callLink.callNodeList[fmct.callLink.callNodeList.Count - 1];
-                            if (finalNode.fileMetaBraceTerm != null && !ProjectManager.isSupportConstructionFunctionConnectBraceType)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在类变量中，不允许 使用Class()后带{}的赋值方式!!" + fmbt.token?.ToLexemeAllString());
-                                return null;
-                            }
-                        }
-                    }
-                }
-            }
-
-            CreateExpressParam cep = new CreateExpressParam();
-            cep.ownerMetaBase = ownerMetaBase;
-            cep.metaType = m_DefineMetaType;
-            cep.equalMetaVariable = this;
-            cep.parsefrom = EParseFrom.MemberVariableExpress;
-            cep.isConst = isConst;
-            cep.isStatic = isStatic;
-            cep.allowUseIfSyntax = false;
-            cep.allowUseSwitchSyntax = false;
-            cep.allowUseParSyntax = ProjectManager.isSupportConstructionFunctionOnlyParType;
-            cep.allowUseBraceSyntax = ProjectManager.isSupportConstructionFunctionOnlyBraceType;
-            cep.fme = root;
-
-            MetaExpressNodeBase mn = ExpressManager.CreateExpressNode(cep);
-
-            return mn;
-        }
-        public void SetSourceMetaClass( MetaClass mc )
-        {
-            this.m_SourceMetaClass = mc;
-        }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -683,90 +394,28 @@ namespace SimpleLanguage.Core
 
             return sb.ToString();
         }
-        public string ToTokenString()
+        public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(m_FileMetaMemeberVariable.nameToken.sourceBeginLine + " 与父类的Token位置: "
-                    + m_FileMetaMemeberVariable.nameToken.sourceBeginLine.ToString());
-
-            return sb.ToString();
-        }
-        /*
-        public override string ToFormatString()
-        {
-            StringBuilder sb = new StringBuilder();
-            switch (m_FileMetaMemeberData.DataType)
+            sb.Append(permission.ToFormatString() + " ");
+            if (isConst)
             {
-                case FileMetaMemberData.EMemberDataType.NameClass:
-                    {
-                        for (int i = 0; i < realDeep; i++)
-                            sb.Append(Global.tabChar);
-                        sb.AppendLine(m_Name);
-                        for (int i = 0; i < realDeep; i++)
-                            sb.Append(Global.tabChar);
-                        sb.AppendLine("{");
-                        foreach (var v in m_MetaMemberDataDict)
-                        {
-                            sb.AppendLine(v.Value.ToFormatString());
-                        }
-                        for (int i = 0; i < realDeep; i++)
-                            sb.Append(Global.tabChar);
-                        sb.Append("}");
-
-                    }
-                    break;
-                case FileMetaMemberData.EMemberDataType.Array:
-                    {
-                        int i = 0;
-                        for (i = 0; i < realDeep; i++)
-                            sb.Append(Global.tabChar);
-                        sb.Append(m_Name + " = [");
-                        i = 0;
-                        foreach (var v in m_MetaMemberDataDict)
-                        {
-                            sb.Append(v.Value.ToFormatString());
-                            if (i < m_MetaMemberDataDict.Count - 1)
-                                sb.Append(",");
-                            i++;
-                        }
-                        sb.Append("]");
-                    }
-                    break;
-                case FileMetaMemberData.EMemberDataType.NoNameClass:
-                    {
-                        sb.AppendLine();
-                        for (int i = 0; i < realDeep; i++)
-                            sb.Append(Global.tabChar);
-                        sb.AppendLine("{");
-                        foreach (var v in m_MetaMemberDataDict)
-                        {
-                            sb.AppendLine(v.Value.ToFormatString());
-                        }
-                        for (int i = 0; i < realDeep; i++)
-                            sb.Append(Global.tabChar);
-                        sb.Append("}");
-                        //if( m_End )
-                        //{
-                        //    sb.AppendLine();
-                        //}
-                    }
-                    break;
-                case FileMetaMemberData.EMemberDataType.KeyValue:
-                    {
-                        for (int i = 0; i < realDeep; i++)
-                            sb.Append(Global.tabChar);
-                        sb.Append(m_Name + " = " + m_Express.ToFormatString() + ";");
-                    }
-                    break;
-                case FileMetaMemberData.EMemberDataType.Value:
-                    {
-                        sb.Append(m_Express.ToFormatString());
-                    }
-                    break;
+                sb.Append("const ");
             }
+            if (isStatic)
+            {
+                sb.Append("static ");
+            }
+            sb.Append(base.ToString());
+            if (m_Express != null)
+            {
+                sb.Append(" = ");
+                sb.Append(m_Express.ToString());
+            }
+            sb.Append(";");
+
             return sb.ToString();
         }
-        */
     }
 }

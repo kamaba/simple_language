@@ -191,7 +191,7 @@ namespace SimpleLanguage.Core
                 MetaConstExpressNode constExpressNode = m_ExpressNode as MetaConstExpressNode;
                 if (constExpressNode != null)
                 {
-                    if (!TypeManager.TryAdjustConstExpressByDefineMetaType(constExpressNode, expressRetMetaDefineType))
+                    if (!ExpressManager.TryAdjustConstExpressByDefineMetaType(expressRetMetaDefineType, constExpressNode ))
                     {
                         return;
                     }

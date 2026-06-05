@@ -17,11 +17,13 @@ namespace SimpleLanguage.Core
     public class MetaInputParam
     {
         public MetaExpressNodeBase express => m_Express;
+        public Token token => m_Token;
 
         protected FileInputParamNode m_FileInputParamNode;
         protected MetaExpressNodeBase m_Express = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements;
         protected MetaBase m_OwnerMetaBase = null;
+        protected Token m_Token;
         public MetaInputParam( FileInputParamNode fipn, MetaBase mc, MetaBlockStatements mbs )
         {
             m_FileInputParamNode = fipn;
@@ -40,6 +42,7 @@ namespace SimpleLanguage.Core
                 parsefrom = EParseFrom.InputParamExpress
             };
             m_Express = ExpressManager.CreateExpressNode(cep);
+            m_Token = m_FileInputParamNode.express.token;
         }
         public MetaInputParam( MetaExpressNodeBase inputExpress )
         {
@@ -191,7 +194,7 @@ namespace SimpleLanguage.Core
                     return true;
                 }
 
-                if (ClassManager.TryNumberArrayCovarianceAllow(md, metaVariable.defineMetaType, metaVariable))
+                if ( TypeManager.TryNumberArrayCovarianceAllow(md, metaVariable.defineMetaType, metaVariable))
                     return true;
 
                 // ??????????????????
@@ -203,7 +206,7 @@ namespace SimpleLanguage.Core
                 MetaClass otherClass = md?.GetTemplateMetaClass();
                 if (thisClass != null && otherClass != null)
                 {
-                    var relation = ClassManager.ValidateClassTypeRelation(thisClass, otherClass);
+                    var relation = TypeManager.ValidateClassTypeRelation(thisClass, otherClass);
                     if (relation == ETypeRelation.Same
                         || relation == ETypeRelation.Child
                         || relation == ETypeRelation.Parent
@@ -224,81 +227,7 @@ namespace SimpleLanguage.Core
             var argMt = mip.express != null ? mip.express.GetReturnMetaType() : null;
             if (declaredMt == null || argMt == null) return false;
 
-            if( declaredMt.eType == EType.Object )
-            {
-                return true;
-            }
-
-            if( declaredMt.isData && argMt.isData )
-            {
-                if( declaredMt.metaData == argMt.metaData )
-                {
-                    return true;
-                }
-            }
-            else if( declaredMt.isEnum && argMt.isEnum )
-            {
-                if( mip.express is MetaCallLinkExpressNode mcle )
-                {
-                    var v = mcle.metaCallLink.finalCallNode.variable;
-
-                    var mt = v.GetFinalMetaType();
-
-                    var gmv = mt.GetTemplateMetaClass();
-
-                    if (gmv == CoreMetaClassManager.memberMetaClass)
-                    {
-                        return true;
-                    }
-                    return false;
-                }
-            }
-            else if( declaredMt.isClass && argMt.isClass )
-            {
-                if (declaredMt.IsIterator() && argMt.IsArray()
-                    && ClassManager.TryIteratorNumberFromConcreteNumericArray(declaredMt, argMt))
-                    return true;
-                if (declaredMt.IsIterator() && argMt.IsIterator()
-                    && ClassManager.TryIteratorNumberFromConcreteNumericIterator(declaredMt, argMt))
-                    return true;
-                if (declaredMt.IsIterator()
-                    && ClassManager.TryIteratorNumberFromArrayIteratorSource(declaredMt, mip.express))
-                    return true;
-                if (declaredMt.IsIterable() && argMt.IsArray()
-                    && ClassManager.TryIterableFromArrayElementAssignable(declaredMt, argMt))
-                    return true;
-                if (declaredMt.IsArray() && argMt.IsArray())
-                {
-                    return TypeManager.CompareMetaType(declaredMt, argMt);
-                }
-                var declaredMC = m_MetaVariable.GetFinalTemplateMetaClass();
-                var retMC = argMt.metaClass;
-                if (retMC is MetaGenTemplateClass mgtc)
-                {
-                    retMC = mgtc.metaTemplateClass;
-                }
-                var relation = ClassManager.ValidateClassTypeRelation(declaredMC, retMC);
-
-                if (relation == ETypeRelation.Same
-                    || relation == ETypeRelation.Child
-                    || relation == ETypeRelation.Interface
-                    || relation == ETypeRelation.Parent
-                    )
-                {
-                    return true;
-                }
-                if (relation == ETypeRelation.Num)
-                {
-                    // ? Num ?????????????????????????????????? int/float ?????
-                    if (!ClassManager.IsNarrowerCorePrimitiveWideningOkForCallSite(retMC, declaredMC))
-                        return false;
-                    return true;
-                }
-            }
-            else
-            {
-            }
-            return false;
+            return TypeManager.CompareFunctionDefineMetaTypeAndInputMetaType(declaredMt, argMt, mip.token);
         }
         public bool EqualsName( string name )
         {

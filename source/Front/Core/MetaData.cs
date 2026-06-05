@@ -3,6 +3,7 @@
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -361,5 +362,191 @@ namespace SimpleLanguage.Core
 
             return stringBuilder.ToString();
         }
+
+
+        public static bool CompareMetaData(MetaData leftMd, MetaData rightMd)
+        {
+            if (ReferenceEquals(leftMd, rightMd))
+            {
+                return true;
+            }
+            if (leftMd == null || rightMd == null || !leftMd.isDynamic || !rightMd.isDynamic)
+            {
+                return false;
+            }
+
+            var listA = leftMd.GetMetaMemberDataList().ToList();
+            var listB = rightMd.GetMetaMemberDataList().ToList();
+            if (listA.Count != listB.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < listA.Count; i++)
+            {
+                var ma = listA[i];
+                var mb = listB[i];
+                if (ma.name != mb.name)
+                {
+                    return false;
+                }
+                var ta = GetStructuralMetaTypeForCompare(ma);
+                var tb = GetStructuralMetaTypeForCompare(mb);
+                if (!FieldMetaTypesShapeEqual(ta, tb))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+        /// <summary>
+        /// ???????? MetaData ??????????????/?????????????????????????????????
+        /// ??????????????????????????????????????????????????????????????????????????????? MetaData ??????????????
+        /// </summary>
+        public static bool CompareMetaDataMember(MetaData curClass, MetaData cpClass)
+        {
+            if (ReferenceEquals(curClass, cpClass))
+            {
+                return true;
+            }
+            if (curClass == null || cpClass == null)
+            {
+                return false;
+            }
+
+            var curClassList = curClass.metaMemberDataDict;
+            var cpClassList = cpClass.metaMemberDataDict;
+
+            if (curClassList.Count != cpClassList.Count)
+            {
+                return false;
+            }
+
+            // ?????????????? data ????????????????????????????????? class ????
+            if (curClassList.Count == 0 && cpClassList.Count == 0)
+            {
+                return false;
+            }
+
+            // ?????????? data ????????????????????????? + ?????????????????????????????
+            if (curClass.isDynamic && cpClass.isDynamic)
+            {
+                return CompareDynamicAnonymousMetaDataShape(curClass, cpClass);
+            }
+
+            foreach (var v in curClassList)
+            {
+                if (!cpClassList.ContainsKey(v.Key))
+                {
+                    return false;
+                }
+                var vval = v.Value;
+                var val2 = cpClassList[v.Key];
+                if (vval.defineMetaType == null || val2.defineMetaType == null)
+                {
+                    return false;
+                }
+                if (vval.realMetaType.isClass && val2.realMetaType.isClass)
+                {
+                    if (vval.realMetaType.metaClass != val2.realMetaType.metaClass)
+                    {
+                        return false;
+                    }
+                }
+                else if (vval.realMetaType.isData && val2.realMetaType.isData)
+                {
+                    if (!CompareMetaDataMember(vval.realMetaType.metaData, val2.realMetaType.metaData))
+                    {
+                        return false;
+                    }
+                }
+                else if (vval.realMetaType.isEnum && val2.realMetaType.isEnum)
+                {
+                    if (vval.realMetaType.metaEnum != val2.realMetaType.metaEnum)
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+        private static bool FieldMetaTypesShapeEqual(MetaType ta, MetaType tb)
+        {
+            if (ta == null || tb == null)
+            {
+                return ta == tb;
+            }
+            var mdA = ta.metaData;
+            var mdB = tb.metaData;
+            if (mdA != null && mdB != null
+                && mdA.isDynamic && mdB.isDynamic)
+            {
+                return MetaData.CompareDynamicAnonymousMetaDataShape(mdA, mdB);
+            }
+            return TypeManager.CompareMetaType(ta, tb);
+        }
+        private static MetaType GetStructuralMetaTypeForCompare(MetaMemberData mmd)
+        {
+            if (mmd.isDefineMetaType && mmd.defineMetaType != null)
+            {
+                return mmd.defineMetaType;
+            }
+            if (mmd.realMetaType != null)
+            {
+                return mmd.realMetaType;
+            }
+            if (mmd.defineMetaType != null)
+            {
+                return mmd.defineMetaType;
+            }
+            return new MetaType(CoreMetaClassManager.objectMetaClass);
+        }
+        public static List<MetaMemberData> OrderMetaMemberDataList(MetaData md)
+        {
+            return md.GetMetaMemberDataList()
+                .OrderBy(m => m.index)
+                .ThenBy(m => m.name, System.StringComparer.Ordinal)
+                .ToList();
+        }
+        public static bool CompareDynamicAnonymousMetaDataShape(MetaData a, MetaData b)
+        {
+            if (ReferenceEquals(a, b))
+            {
+                return true;
+            }
+            if (a == null || b == null || !a.isDynamic || !b.isDynamic)
+            {
+                return false;
+            }
+
+            var listA = a.GetMetaMemberDataList().ToList();
+            var listB = b.GetMetaMemberDataList().ToList();
+            if (listA.Count != listB.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < listA.Count; i++)
+            {
+                var ma = listA[i];
+                var mb = listB[i];
+                if (ma.name != mb.name)
+                {
+                    return false;
+                }
+                var ta = GetStructuralMetaTypeForCompare(ma);
+                var tb = GetStructuralMetaTypeForCompare(mb);
+                if (!FieldMetaTypesShapeEqual(ta, tb))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     }
+
+
 }

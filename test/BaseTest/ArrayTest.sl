@@ -82,8 +82,8 @@ ArrayTest
     static arrayGenericElementTest()
     {
         global.println("========== Array.generic element ==========")
-        #ttt = Level<Level<int>>(){ t = Level<int>(120) }
-        #global.println("ttt -> " + ttt.toString())
+        ttt = Level<Level<int>>(){ t = Level<int>(120) }
+        global.println("ttt -> " + ttt.toString())
 
         
         Level<Int32>[] levels = new(3) { Level<Int32>(10), Level<int>(){ t = 120 }, Level<Int32>(30) }
@@ -109,13 +109,13 @@ ArrayTest
         a2.$1 += 100
         a2[1] = a2.$1 + 200
         a2[1]--
-        global.println("1111111111= " + a2[1] )
+        global.println("createInstance= " + a2[1] )
 
 
-        global.println("1111111111= " + intvalue )
+        global.println("createInstance= " + intvalue )
         intvalue = 40
         intvalue -= 13
-        global.println("1111111111= " + intvalue )
+        global.println("createInstance= " + intvalue )
         
         for i = 0, i < a2.length, i++
         {
@@ -127,7 +127,7 @@ ArrayTest
             {
                 a2[0] = 123
             }
-            global.println("1111111111= " + a2.$i )
+            global.println("createInstance= " + a2.$i )
         }
     }
 
@@ -135,7 +135,7 @@ ArrayTest
     static arrayCovariantAndLiteralForInTest()
     {
         global.println("========== ObjectArray 装箱 + literal for-in ==========")
-        #!
+        
         ObjectArray boxed = object[2]
         #boxed[0] = 5
         #boxed[1] = 20 + 3.2f
@@ -144,11 +144,11 @@ ArrayTest
         
         forIIterator(boxed)
         forObject(boxed) #这句不报错
-        !#
+        
 
         arr2  = [1000,2000,3000,1005]
         forIIterator(arr2)
-        forObject(arr2) #这句应该是报错，不支持协变
+        forObject(arr2) #这句也不报错，因为参数其实是object
         #ObjectArray oaa = arr2 #这句也报错
     }
 
@@ -429,12 +429,12 @@ ArrayTest
     }
     static fun()
     {
-        #arrayBasicApiTest()        
-        arrayGenericElementTest()
-        #!
+        arrayBasicApiTest()        
+        arrayGenericElementTest()        
         arrayCreateInstanceIndexLoopTest()
         arrayCovariantAndLiteralForInTest()
         arrayNumberIteratorFromConcreteArrayTest()
+        #!
         arrayNestedObjectTreeTest()
         arrayJagged2DAssignTest()        
         arrayIntLiteralReadTest()
@@ -451,8 +451,7 @@ ArrayTest
         arrayArrClassForInAssignTest()
         arrayForInLiteralIndexTest()
         arrayArrClassCountLoopWriteTest()
-        !#
-        
+        !#     
     }
 }
 # 3.1.1 先实现了，在函数里，直接调用C#层写的方法。

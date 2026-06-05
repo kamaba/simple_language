@@ -12,6 +12,7 @@ using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using static SimpleLanguage.Core.MetaNewObjectExpressNode;
 
@@ -59,75 +60,6 @@ namespace SimpleLanguage.Core
         {
             return m_ProjectTypeAliasDict.TryGetValue(aliasName, out targetType);
         }
-        public static bool TryAdjustConstExpressByDefineMetaType(MetaConstExpressNode mcen, MetaType defineMetaType)
-        {
-            if (mcen == null || defineMetaType == null)
-            {
-                return false;
-            }
-
-            var curEType = CoreMetaClassManager.GetETypeByMetaClass(defineMetaType.metaClass);
-
-            if (curEType == EType.Object)
-            {
-                curEType = mcen.eType;
-            }
-
-            if (mcen.eType == curEType)
-            {
-                return true;
-            }
-
-            return TryAdjustConstExpressByDefineEType(mcen, curEType);
-        }
-        public static bool TryAdjustConstExpressByDefineEType(MetaConstExpressNode mcen, EType defineEType)
-        {
-            if (mcen == null)
-            {
-                return false;
-            }
-
-            if (defineEType == EType.Object)
-            {
-                return true;
-            }
-
-            var curEType = defineEType;
-            var expEType = mcen.eType;
-            Token token = mcen.token;
-
-            if (expEType == EType.Null)
-            {
-                return true;
-            }
-
-            if (NumberManager.IsNumericEType(curEType) && NumberManager.IsNumericEType(expEType))
-            {
-                return NumberManager.TryAdjustConstExpressToNumericTarget(mcen, curEType, expEType, token);
-            }
-
-            if (expEType != curEType)
-            {
-                if (NumberManager.TryConvertConstValueByEType(curEType, mcen.value, out var convertedValue))
-                {
-                    mcen.SetConstValue(curEType, convertedValue);
-                    return true;
-                }
-
-                if (NumberManager.IsRadixNumberLiteral(mcen)
-                    && NumberManager.TryConvertRadixUnsignedToSignedByEType(curEType, mcen.value, out var radixConvertedValue))
-                {
-                    mcen.SetConstValue(curEType, radixConvertedValue);
-                    return true;
-                }
-
-                Log.AddMetaCoreLog(LID.MetaCoreExpressTypeGEDefineType, token, (mcen.value?.ToString() ?? "null"), curEType.ToString(), expEType.ToString());
-                return false;
-            }
-
-            return true;
-        }
-
         public static MetaType GetMaxCompatibleMetaTypeFromList(IReadOnlyList<MetaType> mtList)
         {
             var objMt = new MetaType(CoreMetaClassManager.objectMetaClass);
@@ -154,7 +86,7 @@ namespace SimpleLanguage.Core
                 {
                     return objMt;
                 }
-                if (!ClassManager.IsNumberClass(t.metaClass))
+                if (!NumberManager.IsNumberClass(t.metaClass))
                 {
                     allNumeric = false;
                 }
@@ -222,7 +154,7 @@ namespace SimpleLanguage.Core
                 var right = next.metaClass;
                 if (left != null && right != null)
                 {
-                    var relation = ClassManager.ValidateClassTypeRelation(left, right);
+                    var relation = TypeManager.ValidateClassTypeRelation(left, right);
                     if (relation == ETypeRelation.Child || relation == ETypeRelation.Interface)
                     {
                         merged = new MetaType(next);
@@ -477,7 +409,7 @@ namespace SimpleLanguage.Core
             if (tClass == null || eClass == null)
                 return false;
 
-            var relation = ClassManager.ValidateClassTypeRelation(tClass, eClass);
+            var relation = TypeManager.ValidateClassTypeRelation(tClass, eClass);
             return relation == ETypeRelation.Same
                 || relation == ETypeRelation.Child
                 || relation == ETypeRelation.Interface
@@ -1096,7 +1028,7 @@ namespace SimpleLanguage.Core
                     return true;
                 if (leftMd == null || rightMd == null)
                     return false;
-                return ClassManager.instance.CompareMetaDataMember(leftMd, rightMd);
+                return MetaData.CompareMetaDataMember(leftMd, rightMd);
             }
 
             if (mdtL.isEnum || mdtR.isEnum)
@@ -1145,7 +1077,7 @@ namespace SimpleLanguage.Core
             {
                 return true;
             }
-            else if ( ClassManager.IsNumberClass( leftmc ))
+            else if ( NumberManager.IsNumberClass( leftmc ))
             {
                 if (leftmc == rightmc)
                 {
@@ -1206,7 +1138,7 @@ namespace SimpleLanguage.Core
                     }
                     else if (leftmc == CoreMetaClassManager.numMetaClass)
                     {
-                        if (ClassManager.IsNumberClass(rightmc) )
+                        if (NumberManager.IsNumberClass(rightmc) )
                         {
                             return true;
                         }
@@ -1289,6 +1221,271 @@ namespace SimpleLanguage.Core
             return true;
         }
 
+        public static bool CompareEnumMetaType(MetaType leftMt, MetaType rightMt, Token token)
+        {
+            // 左值 data：右值需为 data 或 null。
+            if (leftMt.isEnum)
+            {
+                if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
+                {
+                    return false;
+                }
+                if (rightMt.isEnum)
+                {
+                    if (leftMt.metaEnum != rightMt.metaEnum)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                        return false;
+                    }
+                }
+                else if (rightMt.isEnumMember)
+                {
+                    if (rightMt.enumValue.ownerMetaBase != leftMt.metaEnum)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                        return false;
+                    }
+                }
+                else
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "is not enum member ");
+                    return false;
+                }
+            }
+            else if (rightMt.isEnum)
+            {
+                if (leftMt.isNull || leftMt.metaClass == CoreMetaClassManager.nullMetaClass)
+                {
+                    return false;
+                }
+                if (leftMt.isEnum)
+                {
+                    if (leftMt.metaEnum != rightMt.metaEnum)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                        return false;
+                    }
+                }
+                else if (leftMt.isEnumMember)
+                {
+                    if (leftMt.enumValue.ownerMetaBase != rightMt.metaEnum)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                        return false;
+                    }
+                }
+                else
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, token, "is not enum member ");
+                    return false;
+                }
+            }
+            else if (leftMt.isEnumMember && rightMt.isEnumMember)
+            {
+                if (leftMt.enumValue.ownerMetaBase != rightMt.enumValue.ownerMetaBase)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                    return false;
+                }
+            }
+            return true;
+        }
+
+
+        /// <summary> ?????????????????Int32???Float32 ???????????? Num ??????? </summary>
+        public static bool IsConcreteNumericElementType(MetaType elem)
+        {
+            if (elem?.metaClass == null) return false;
+            if (elem.metaClass == CoreMetaClassManager.numMetaClass) return false;
+            return NumberManager.IsNumberClass(elem.metaClass);
+        }
+        /// <summary> Iterator&lt;Number&gt; &lt;- ??????????????????????? Array?????????????????????????? </summary>
+        public static bool TryIteratorNumberFromConcreteNumericArray(MetaType targetIterator, MetaType exprArray)
+        {
+            if (targetIterator == null || exprArray == null) return false;
+            if (!targetIterator.IsIterator() || !exprArray.IsArray()) return false;
+            var tArg = GetSingleTemplateArgMetaType(targetIterator);
+            var eArg = GetSingleTemplateArgMetaType(exprArray);
+            return IsAbstractNumberMetaType(tArg) && IsConcreteNumericElementType(eArg);
+        }
+        /// <summary> ????????????? Array&lt;T&gt;???Iterator&lt;T&gt; ?????????????????? </summary>
+        public static MetaType GetSingleTemplateArgMetaType(MetaType mt)
+        {
+            if (mt == null) return null;
+            var gen = mt.GetGenTemplateMetaTypeList();
+            if (gen != null && gen.Count == 1)
+                return gen[0];
+            if (mt.defineTemplateMetaTypeList != null && mt.defineTemplateMetaTypeList.Count == 1)
+                return mt.defineTemplateMetaTypeList[0];
+            return mt.GetMetaTypeByIndex(0);
+        }
+
+        /// <summary> Iterator&lt;Number&gt; &lt;- Iterator&lt;???????????&gt;????????????????? Number ?????????? </summary>
+        public static bool TryIteratorNumberFromConcreteNumericIterator(MetaType targetIterator, MetaType exprIterator)
+        {
+            if (targetIterator == null || exprIterator == null) return false;
+            if (!targetIterator.IsIterator() || !exprIterator.IsIterator()) return false;
+            var tArg = GetSingleTemplateArgMetaType(targetIterator);
+            var eArg = GetSingleTemplateArgMetaType(exprIterator);
+            return IsAbstractNumberMetaType(tArg) && IsConcreteNumericElementType(eArg);
+        }
+
+        public static bool IsAbstractNumberMetaType(MetaType mt)
+        {
+            return mt != null && mt.metaClass == CoreMetaClassManager.numMetaClass;
+        }
+
+        /// <summary>
+        /// Iterator&lt;Number&gt; <- arr.iterator ?????????????
+        /// ????????????????iterator ????????????????????????????????????????????????
+        /// ???????????????????????????????? Array ??????????????? Number ??????
+        /// </summary>
+        public static bool TryIteratorNumberFromArrayIteratorSource(MetaType targetIterator, MetaExpressNodeBase expressNode)
+        {
+            if (targetIterator == null || expressNode == null) return false;
+            if (!targetIterator.IsIterator()) return false;
+
+            var mcle = expressNode as MetaCallLinkExpressNode;
+            var list = mcle?.metaCallLink?.callNodeList;
+            if (list == null || list.Count == 0) return false;
+
+            var sourceVar = list[0]?.metaVariable;
+            var sourceArrayMt = sourceVar?.GetFinalMetaType();
+            return TryIteratorNumberFromConcreteNumericArray(targetIterator, sourceArrayMt);
+        }
+
+        /// <summary>
+        /// IIterable&lt;TTarget&gt; &lt;- Array&lt;TExpr&gt;??????????????????????????????????????????????????????????????
+        /// ??????????????IIterable&lt;Object&gt; &lt;- Int32[]???
+        /// </summary>
+        public static bool TryIterableFromArrayElementAssignable(MetaType targetIterable, MetaType exprArray)
+        {
+            if (targetIterable == null || exprArray == null) return false;
+            if (!targetIterable.IsIterable() || !exprArray.IsArray()) return false;
+
+            var tArg = GetSingleTemplateArgMetaType(targetIterable);
+            var eArg = GetSingleTemplateArgMetaType(exprArray);
+            if (tArg == null || eArg == null) return false;
+            if (TypeManager.CompareMetaType(tArg, eArg)) return true;
+
+            var tClass = tArg.GetTemplateMetaClass();
+            var eClass = eArg.GetTemplateMetaClass();
+            if (tClass == null || eClass == null) return false;
+
+            var relation = ValidateClassTypeRelation(tClass, eClass);
+            return relation == ETypeRelation.Same
+                || relation == ETypeRelation.Child
+                || relation == ETypeRelation.Interface
+                || relation == ETypeRelation.Num;
+        }
+
+        /// <summary> const Array&lt;Number&gt; &lt;- Array&lt;???????????&gt;???? const ??????????????????????? </summary>
+        public static bool TryConstArrayNumberFromConcreteNumericArray(MetaType targetArray, MetaType exprArray, MetaVariable targetVar)
+        {
+            if (targetVar == null || !targetVar.isConst) return false;
+            if (targetArray == null || exprArray == null) return false;
+            if (!targetArray.IsArray() || !exprArray.IsArray()) return false;
+            var tArg = GetSingleTemplateArgMetaType(targetArray);
+            var eArg = GetSingleTemplateArgMetaType(exprArray);
+            return IsAbstractNumberMetaType(tArg) && IsConcreteNumericElementType(eArg);
+        }
+
+        /// <summary> Iterator&lt;Num&gt; ??? const Array&lt;Num&gt; ????????????? Array ?????????????????????/??????????????????? </summary>
+        public static bool TryNumberArrayCovarianceAllow(MetaType target, MetaType expr, MetaVariable targetVar)
+        {
+            if (target == null || expr == null) return false;
+            if (TryIteratorNumberFromConcreteNumericArray(target, expr)) return true;
+            if (TryConstArrayNumberFromConcreteNumericArray(target, expr, targetVar)) return true;
+            return false;
+        }
+
+        /// <summary>
+        /// Array ?????????????????? Array ?????????????????????????? <see cref="TypeManager.CompareMetaType"/> ???????
+        /// ???????????? Array ?????????????????????????????????<see cref="EClassRelation.Interface"/>?????
+        /// </summary>
+        public static bool TryArrayElementInterfaceAssignable(MetaType targetArray, MetaType exprArray)
+        {
+            if (targetArray == null || exprArray == null) return false;
+            if (!targetArray.IsArray() || !exprArray.IsArray()) return false;
+            if (targetArray.GetTemplateMetaClass() != exprArray.GetTemplateMetaClass()) return false;
+            var tl = targetArray.GetGenTemplateMetaTypeList();
+            var tr = exprArray.GetGenTemplateMetaTypeList();
+            if (tl == null || tr == null || tl.Count != tr.Count || tl.Count == 0) return false;
+            for (int i = 0; i < tl.Count; i++)
+            {
+                var tArg = tl[i];
+                var eArg = tr[i];
+                if (TypeManager.CompareMetaType(tArg, eArg)) continue;
+                if (tArg.IsArray() && eArg.IsArray())
+                {
+                    if (TryArrayElementInterfaceAssignable(tArg, eArg)) continue;
+                    return false;
+                }
+                MetaClass cur = tArg.GetTemplateMetaClass();
+                MetaClass cmp = eArg.GetTemplateMetaClass();
+                if (cur == null || cmp == null) return false;
+                if (ValidateClassTypeRelation(cur, cmp) == ETypeRelation.Interface) continue;
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// ??? <see cref="TypeManager.CompareMetaType"/> ?? false ??????????????????????????????????????? Array ????????????
+        /// </summary>
+        public static bool TryMetaTypeAssignableByInterfaceAfterCompareFails(MetaType target, MetaType expr)
+        {
+            if (target == null || expr == null) return false;
+            if (target.IsArray() && expr.IsArray()
+                && target.GetTemplateMetaClass() == expr.GetTemplateMetaClass())
+                return TryArrayElementInterfaceAssignable(target, expr);
+            MetaClass cur = target.GetTemplateMetaClass();
+            MetaClass cmp = expr.GetTemplateMetaClass();
+            if (cur == null || cmp == null) return false;
+            return ValidateClassTypeRelation(cur, cmp) == ETypeRelation.Interface;
+        }
+
+        public static ETypeRelation ValidateClassTypeRelation(MetaClass curClass, MetaClass compareClass)
+        {
+            if (compareClass == CoreMetaClassManager.nullMetaClass)
+            {
+                if ( NumberManager.IsNumberClass(curClass) || curClass == CoreMetaClassManager.booleanMetaClass)
+                    return ETypeRelation.No;
+
+                if (curClass == CoreMetaClassManager.objectMetaClass)
+                    return ETypeRelation.Same;
+                return ETypeRelation.Parent;
+            }
+            if (curClass == CoreMetaClassManager.objectMetaClass)
+            {
+                if (curClass == compareClass)
+                    return ETypeRelation.Same;
+                return ETypeRelation.Child;
+            }
+            if (curClass.Equals(compareClass))
+            {
+                return ETypeRelation.Same;
+            }
+
+            if (curClass == CoreMetaClassManager.numMetaClass)
+            {
+                if (NumberManager.IsNumberClass(compareClass))
+                    return ETypeRelation.Num;
+                return ETypeRelation.No;
+            }
+            if (NumberManager.IsNumberClass(curClass) && NumberManager.IsNumberClass(compareClass))
+            {
+                return ETypeRelation.Num;
+            }
+
+            if (compareClass.IsInterfaceByMetaClass(curClass))
+                return ETypeRelation.Interface;
+            if (curClass.IsParseMetaClass(compareClass))
+                return ETypeRelation.Parent;
+            if (compareClass.IsParseMetaClass(curClass))
+                return ETypeRelation.Child;
+            return ETypeRelation.No;
+        }
         /// <summary>合并多维数组各维元素关系：全 Same 为 Same，否则各维须一致（Child/Parent/Interface/Num 等）。</summary>
         private static ETypeRelation CombineArrayElementRelations(ETypeRelation aggregate, ETypeRelation element)
         {
@@ -1398,7 +1595,7 @@ namespace SimpleLanguage.Core
                     targetClass = extendClass;
                     if (expressClass == null)
                         return ETypeRelation.ExpressTypeError;
-                    return ClassManager.ValidateClassTypeRelation(extendClass, expressClass);
+                    return TypeManager.ValidateClassTypeRelation(extendClass, expressClass);
                 }
 
                 var extendMd = targetEnum.extendMetaData;
@@ -1421,7 +1618,7 @@ namespace SimpleLanguage.Core
                 if (isNullExpress)
                 {
                     expressClass = CoreMetaClassManager.nullMetaClass;
-                    return ClassManager.ValidateClassTypeRelation(targetClass, expressClass);
+                    return TypeManager.ValidateClassTypeRelation(targetClass, expressClass);
                 }
 
                 expressClass = expressMetaType.metaClass;
@@ -1450,151 +1647,89 @@ namespace SimpleLanguage.Core
                 if (TryGenericTemplateAssignRelation(targetMetaType, expressMetaType, out var genericRelation))
                     return genericRelation;
 
-                return ClassManager.ValidateClassTypeRelation(targetClass, expressClass);
+                return TypeManager.ValidateClassTypeRelation(targetClass, expressClass);
             }
 
             return ETypeRelation.TargetTypeError;
         }
-
-        /// <summary>从表达式节点解析右值类型，再调用 <see cref="ResolveTypeRelation"/>（含 Iterator/Iterable 协变与 enum 成员特例）。</summary>
-        public static ETypeRelation ResolveAssignRelation(
-            MetaType targetMetaType,
-            MetaExpressNodeBase expressNode,
-            bool useTemplateExactMatch,
-            bool allowEnumOwnerEqual,
-            out MetaType expressRetMetaDefineType,
-            out MetaClass curClass,
-            out MetaClass compareClass,
-            out bool isNullConstExpress,
-            MetaVariable targetVariable = null)
+        public static bool CompareFunctionDefineMetaTypeAndInputMetaType( MetaType declaredMt, MetaType argMt, Token token )
         {
-            expressRetMetaDefineType = null;
-            curClass = null;
-            compareClass = null;
-            isNullConstExpress = false;
-
-            if (targetMetaType == null)
-                return ETypeRelation.TargetTypeError;
-            if (expressNode == null)
-                return ETypeRelation.ExpressTypeError;
-
-            if (expressNode is MetaConstExpressNode constExpressNode && constExpressNode.eType == EType.Null)
+            if (declaredMt.eType == EType.Object)
             {
-                isNullConstExpress = true;
-                expressRetMetaDefineType = new MetaType(CoreMetaClassManager.nullMetaClass);
-                return ResolveTypeRelation(
-                    targetMetaType,
-                    expressRetMetaDefineType,
-                    out curClass,
-                    out compareClass,
-                    allowEnumOwnerEqual ? ETypeRelationResolveFlags.AllowEnumStorageMember : ETypeRelationResolveFlags.None);
+                return true;
             }
 
-            expressRetMetaDefineType = expressNode.GetReturnMetaType();
-            if (expressRetMetaDefineType == null)
-                return ETypeRelation.ExpressTypeError;
-
-            if (allowEnumOwnerEqual
-                && targetMetaType.isClass
-                && targetMetaType.metaClass == CoreMetaClassManager.enumMetaData
-                && expressNode is MetaCallLinkExpressNode mclen)
+            if (declaredMt.isEnum || declaredMt.isEnumMember || argMt.isEnum || argMt.isEnumMember)
             {
-                var mv = mclen.GetReturnMetaVariable();
-                if (mv?.ownerMetaClass == CoreMetaClassManager.enumMetaData || mv is MetaMemberEnum)
+                return CompareEnumMetaType(declaredMt, argMt, token);
+            }
+            else if (declaredMt.isData && argMt.isData)
+            {
+                if (declaredMt.metaData == argMt.metaData)
                 {
-                    curClass = targetMetaType.metaClass;
-                    compareClass = expressRetMetaDefineType.metaClass;
-                    return ETypeRelation.Same;
+                    return true;
                 }
             }
-
-            if (targetMetaType.isClass)
+            else if (declaredMt.isClass && argMt.isClass)
             {
-                if (targetMetaType.IsIterator() && expressRetMetaDefineType.IsArray()
-                    && ClassManager.TryIteratorNumberFromConcreteNumericArray(targetMetaType, expressRetMetaDefineType))
-                    return ETypeRelation.Same;
-
-                if (targetMetaType.IsIterator() && expressRetMetaDefineType.IsIterator()
-                    && ClassManager.TryIteratorNumberFromConcreteNumericIterator(targetMetaType, expressRetMetaDefineType))
-                    return ETypeRelation.Same;
-
-                if (targetMetaType.IsIterator()
-                    && ClassManager.TryIteratorNumberFromArrayIteratorSource(targetMetaType, expressNode))
-                    return ETypeRelation.Same;
-
-                if (targetMetaType.IsIterable() && expressRetMetaDefineType.IsArray()
-                    && ClassManager.TryIterableFromArrayElementAssignable(targetMetaType, expressRetMetaDefineType))
-                    return ETypeRelation.Same;
-            }
-
-            if (targetMetaType.isEnum)
-            {
-                var targetEnum = targetMetaType.metaEnum;
-                if (targetEnum != null)
+                if (declaredMt.IsIterator() )
                 {
-                    if (expressNode is MetaCallLinkExpressNode enumCall
-                        && enumCall.GetReturnMetaVariable() is MetaMemberEnum mme
-                        && ReferenceEquals(mme.ownerMetaEnum, targetEnum))
+                    if( argMt.IsArray()
+                        && TypeManager.TryIteratorNumberFromConcreteNumericArray(declaredMt, argMt))
                     {
-                        return ETypeRelation.Same;
+                        return true;
                     }
+                    if ( argMt.IsIterator()
+                        && TypeManager.TryIteratorNumberFromConcreteNumericIterator(declaredMt, argMt))
+                        return true;
+                    if (TypeManager.TryIteratorNumberFromConcreteNumericArray(declaredMt, argMt))
+                        return true;
+                    return false;
+                }
+                else if (declaredMt.IsIterable() )
+                {
+                    if (argMt.IsArray()
+                    && TypeManager.TryIterableFromArrayElementAssignable(declaredMt, argMt))
+                        return true;
+                    else
+                        return false;
+                }
+                else if (declaredMt.IsArray() )
+                {
+                    if (argMt.IsArray())
+                        return TypeManager.CompareMetaType(declaredMt, argMt);
+                    else
+                        return false;
+                }
+                var declaredMC = declaredMt.GetTemplateMetaClass();
+                var retMC = argMt.metaClass;
+                if (retMC is MetaGenTemplateClass mgtc)
+                {
+                    retMC = mgtc.metaTemplateClass;
+                }
+                var relation = TypeManager.ValidateClassTypeRelation(declaredMC, retMC);
 
-                    var enumValue = expressRetMetaDefineType.enumValue;
-                    if (enumValue != null && ReferenceEquals(enumValue.ownerMetaEnum, targetEnum))
-                        return ETypeRelation.Same;
+                if (relation == ETypeRelation.Same
+                    || relation == ETypeRelation.Child
+                    || relation == ETypeRelation.Interface
+                    || relation == ETypeRelation.Parent
+                    )
+                {
+                    return true;
+                }
+                if (relation == ETypeRelation.Num)
+                {
+                    // ? Num ?????????????????????????????????? int/float ?????
+                    if (!TypeManager.IsNarrowerCorePrimitiveWideningOkForCallSite(retMC, declaredMC))
+                        return false;
+                    return true;
                 }
             }
-
-            var relation = ResolveTypeRelation(targetMetaType, expressRetMetaDefineType, out curClass, out compareClass);
-            // 数组实体赋值要求严格同型（见 md/syntax/array.md §5.1）；关系解析仍可在 as/is 等路径得到 Child 等。
-            if (targetMetaType.IsArray() && expressRetMetaDefineType.IsArray()
-                && relation != ETypeRelation.Same)
+            else
             {
-                return ETypeRelation.No;
             }
-
-            return relation;
+            return false;
         }
-        //public static bool CompareLeftVariableAndRightExpress( MetaVariable leftMv, MetaExpressNodeBase menb, Token token, out MetaType convertMt )
-        //{
-        //    convertMt = null;
-        //    MetaType leftMt = leftMv.GetFinalMetaType();
-        //    MetaType rightMt = menb.GetReturnMetaType();
-        //    if (leftMt == null || rightMt == null)
-        //    {
-        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, token, "left or right is null");
-        //        return false;
-        //    }
-        //    if (leftMt.isEnum)
-        //    {
-        //        if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
-        //        {
-        //            return false;
-        //        }
-        //        if (rightMt.isEnumMember)
-        //        {
-        //            if( leftMt.metaEnum == rightMt.enumValue.ownerMetaEnum )
-        //            {
-        //                return true;
-        //            }
-        //        }
-
-        //        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "enum compare failed");
-        //        return false;
-        //    }
-        //    else if (leftMt.isEnumMember)
-        //    {
-        //        if ( leftMv.sourceMetaVariable == null )
-        //        {
-        //            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token,
-        //                "left mv is null");
-        //            return false;
-        //        }
-        //        return false;
-        //    }
-
-        //    return CompareLeftRightMetaType(leftMt, rightMt, token, out convertMt);
-        //}
         public static bool CompareLeftRightMetaType(MetaType leftMt, MetaType rightMt, Token token, out MetaType convertMt)
         {
             convertMt = null;
@@ -1602,72 +1737,7 @@ namespace SimpleLanguage.Core
 
             if( leftMt.isEnum || leftMt.isEnumMember || rightMt.isEnum || rightMt.isEnumMember )
             {
-                // 左值 data：右值需为 data 或 null。
-                if (leftMt.isEnum)
-                {
-                    if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
-                    {
-                        return false;
-                    }
-                    if (rightMt.isEnum)
-                    {
-                        if (leftMt.metaEnum != rightMt.metaEnum)
-                        {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
-                            return false;
-                        }
-                    }
-                    else if (rightMt.isEnumMember)
-                    {
-                        if (rightMt.enumValue.ownerMetaBase != leftMt.metaEnum)
-                        {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "is not enum member ");
-                        return false;
-                    }
-                }
-                else if (rightMt.isEnum)
-                {
-                    if (leftMt.isNull || leftMt.metaClass == CoreMetaClassManager.nullMetaClass)
-                    {
-                        return false;
-                    }
-                    if (leftMt.isEnum)
-                    {
-                        if (leftMt.metaEnum != rightMt.metaEnum)
-                        {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
-                            return false;
-                        }
-                    }
-                    else if (leftMt.isEnumMember)
-                    {
-                        if (leftMt.enumValue.ownerMetaBase != rightMt.metaEnum)
-                        {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
-                            return false;
-                        }
-                    }
-                    else
-                    {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, token, "is not enum member ");
-                        return false;
-                    }
-                }
-                else if (leftMt.isEnumMember && rightMt.isEnumMember)
-                {
-                    if (leftMt.enumValue.ownerMetaBase != rightMt.enumValue.ownerMetaBase)
-                    {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
-                        return false;
-                    }
-                }
-                return true;
+                return CompareEnumMetaType(leftMt, rightMt, token);
             }
             else if (leftMt.isData)
             {
@@ -1687,7 +1757,7 @@ namespace SimpleLanguage.Core
                     {
                         if (ReferenceEquals(rightMt, rightMt))
                             return true;
-                        return ClassManager.instance.CompareMetaDataMember(rightMt.metaData, rightMt.metaData);
+                        return MetaData.CompareMetaDataMember(rightMt.metaData, rightMt.metaData);
                     }
                 }
             }
@@ -1878,260 +1948,64 @@ namespace SimpleLanguage.Core
 
             return true;
         }
+
         /// <summary>
-        /// 统一比较左值定义类型与右值表达式类型，并按需返回需要强转的目标类型。
-        /// 该方法整合了 MetaDefineVarStatements.Parse() 后半段与 MetaAssignStatements.CheckLeftAndRightExpress()
-        /// 中原本重复的 enum / data / class(object/Num/Array/Iterator/Iterable/普通类) 分支。
+        /// ?????????????????????????? <see cref="ValidateClassRelationByMetaClass"/> ?????? <see cref="EClassRelation.Num"/> ?????
+        /// ?????????????????????????????????????????????????????????? Int8???UInt32???Float32???Float64????
+        /// ?????????????? Int32 ?? UInt32????? int ?? float ??????? false???????????????????? true????????? Num ??????????
         /// </summary>
-        /// <param name="leftMetaType">左值（定义/已解析）类型。</param>
-        /// <param name="rightExpressNode">右值表达式节点。</param>
-        /// <param name="targetVariable">关联的左值变量（用于继续解析模板等场景），可为空。</param>
-        /// <param name="errorAnchorToken">错误日志锚定 token，可为空。</param>
-        /// <param name="convertMetaType">若解析成功且需要继续把 RealMetaType 同步到右值真实类型，则给出该类型；否则为 null。</param>
-        /// <param name="isNeedCast">是否需要在后续生成阶段执行强转。</param>
-        /// <returns>是否通过校验。失败时会通过 <see cref="Log"/> 输出日志。</returns>
-        //public static bool CompareLeftMetaTypeRightExpress(
-        //    MetaType leftMetaType,
-        //    MetaExpressNodeBase rightExpressNode,
-        //    MetaVariable targetVariable,
-        //    Token errorAnchorToken,
-        //    out MetaType convertMetaType,
-        //    out bool isNeedCast)
-        //{
-        //    convertMetaType = null;
-        //    isNeedCast = false;
-
-        //    if (leftMetaType == null || rightExpressNode == null)
-        //    {
-        //        return true;
-        //    }
-
-        //    var constExpressNode = rightExpressNode as MetaConstExpressNode;
-        //    if (constExpressNode != null)
-        //    {
-        //        if (!TryAdjustConstExpressByDefineMetaType(constExpressNode, leftMetaType))
-        //        {
-        //            return false;
-        //        }
-        //        if (constExpressNode.eType == EType.Null)
-        //        {
-        //            return true;
-        //        }
-        //    }
-
-        //    // 左值 enum：仅允许是同一 enum 的成员调用表达式，或同 enum 的常量值。
-        //    if (leftMetaType.isEnum)
-        //    {
-        //        var mclen = rightExpressNode as MetaCallLinkExpressNode;
-        //        if (mclen == null)
-        //        {
-        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
-        //                "Error Enum 模式，只允许是调用模式 [CallLinkExpress]");
-        //            return false;
-        //        }
-        //        var ownerEnum = mclen.metaCallLink?.finalCallNode?.variable?.ownerMetaClass;
-        //        if (leftMetaType.metaClass != ownerEnum)
-        //        {
-        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
-        //                "Error Enum 与值不相等！左值 enum=" + leftMetaType.metaClass?.allName
-        //                + "，右值来源=" + (ownerEnum?.allName ?? "null"));
-        //            return false;
-        //        }
-        //        return true;
-        //    }
-
-        //    // 左值 data：右值需为 data 或 null。
-        //    if (leftMetaType.isData)
-        //    {
-        //        var relation = ResolveAssignRelation(
-        //            leftMetaType,
-        //            rightExpressNode,
-        //            true,
-        //            false,
-        //            out var rightDataType,
-        //            out _,
-        //            out _,
-        //            out _,
-        //            targetVariable);
-        //        if (relation == ETypeRelation.Same)
-        //        {
-        //            convertMetaType = rightDataType ?? leftMetaType;
-        //            return true;
-        //        }
-        //        if (relation == ETypeRelation.ExpressTypeError || relation == ETypeRelation.TargetTypeError)
-        //        {
-        //            return false;
-        //        }
-        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
-        //            "data 声明类型与右侧表达式类型不匹配。");
-        //        return false;
-        //    }
-
-        //    // 左值 object：可接受任意右值。
-        //    if (leftMetaType.metaClass == CoreMetaClassManager.objectMetaClass)
-        //    {
-        //        return true;
-        //    }
-
-        //    // 左值 Num：数字相互之间允许常量自适配；数组字面量元素需按左值元素类型强转。
-        //    if (leftMetaType.IsNum())
-        //    {
-        //        if (constExpressNode != null)
-        //        {
-        //            var defineEType = CoreMetaClassManager.GetETypeByMetaClass(leftMetaType.metaClass);
-        //            TryAdjustConstExpressByDefineEType(constExpressNode, defineEType);
-        //        }
-        //        convertMetaType = new MetaType(leftMetaType);
-        //        return true;
-        //    }
-
-        //    // 左值数组：与右值数组比较元素类型；右侧为字面量时尝试将常量元素强转到左侧元素类型。
-        //    if (leftMetaType.IsArray())
-        //    {
-        //        var rightMt = rightExpressNode.GetReturnMetaType();
-        //        if (CompareMetaType(leftMetaType, rightMt))
-        //        {
-        //            convertMetaType = rightMt;
-        //            return true;
-        //        }
-
-        //        if (rightExpressNode is MetaNewObjectExpressNode mnoe
-        //            && mnoe.newType == MetaNewObjectExpressNode.ENewType.ArrayClass)
-        //        {
-        //            var leftElemType = ClassManager.GetSingleTemplateArgMetaType(leftMetaType);
-        //            if (leftElemType != null)
-        //            {
-        //                if (mnoe.usesExplicitArrayElementTypeSyntax)
-        //                {
-        //                    var rightElemType = ClassManager.GetSingleTemplateArgMetaType(rightMt);
-        //                    if (rightElemType != null && !CompareMetaType(leftElemType, rightElemType))
-        //                    {
-        //                        Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
-        //                            "右值数组已在创建表达式中指定元素类型（例如 Array<Int16>(...)），与左值元素类型 "
-        //                            + leftElemType.ToString() + " 不一致，不能自动强转。请使用与左值一致的元素类型，或使用未标注类型的字面量 [...]。");
-        //                        return false;
-        //                    }
-        //                }
-        //                else
-        //                {
-        //                    if (!TryForceConvertArrayLiteralElements(mnoe, leftElemType, errorAnchorToken))
-        //                    {
-        //                        return false;
-        //                    }
-        //                    rightExpressNode.CalcReturnType();
-        //                    isNeedCast = true;
-        //                    convertMetaType = rightExpressNode.GetReturnMetaType();
-        //                    return true;
-        //                }
-        //            }
-        //        }
-
-        //        Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, errorAnchorToken,
-        //            "CompareLeftRightMetaType", leftMetaType.ToString(), rightMt?.ToString() ?? "null");
-        //        return false;
-        //    }
-
-        //    // 左值 Iterator / Iterable：复用 ResolveAssignRelation 的协变规则。
-        //    if (leftMetaType.IsIterator() || leftMetaType.IsIterable())
-        //    {
-        //        var iteratorRelation = ResolveAssignRelation(
-        //            leftMetaType,
-        //            rightExpressNode,
-        //            true,
-        //            false,
-        //            out var rightItType,
-        //            out _,
-        //            out _,
-        //            out _,
-        //            targetVariable);
-        //        if (iteratorRelation == ETypeRelation.No
-        //            || iteratorRelation == ETypeRelation.TargetTypeError
-        //            || iteratorRelation == ETypeRelation.ExpressTypeError)
-        //        {
-        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
-        //                (leftMetaType.IsIterator() ? "Iterator" : "IIterable")
-        //                + " 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
-        //            return false;
-        //        }
-        //        convertMetaType = rightItType;
-        //        return true;
-        //    }
-
-        //    // 普通 class：调用 ResolveAssignRelation 并根据关系决定是否需要强转。
-        //    var classRelation = ResolveAssignRelation(
-        //        leftMetaType,
-        //        rightExpressNode,
-        //        true,
-        //        false,
-        //        out var rightClassType,
-        //        out var curClass,
-        //        out var compareClass,
-        //        out _,
-        //        targetVariable);
-
-        //    if (classRelation == ETypeRelation.ExpressTypeError)
-        //    {
-        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
-        //            "Error 赋值表达式返回定义类型为空");
-        //        return false;
-        //    }
-
-        //    switch (classRelation)
-        //    {
-        //        case ETypeRelation.Same:
-        //            convertMetaType = rightClassType ?? leftMetaType;
-        //            return true;
-        //        case ETypeRelation.Child:
-        //            if (compareClass != null)
-        //            {
-        //                convertMetaType = rightClassType;
-        //            }
-        //            return true;
-        //        case ETypeRelation.Interface:
-        //        case ETypeRelation.Num:
-        //        case ETypeRelation.Similar:
-        //            convertMetaType = rightClassType;
-        //            isNeedCast = classRelation != ETypeRelation.Interface;
-        //            return true;
-        //        case ETypeRelation.Parent:
-        //            {
-        //                var sb = new System.Text.StringBuilder();
-        //                sb.Append("Warning 类型不相同 ");
-        //                if (curClass != null) sb.Append("定义类: ").Append(curClass.allName).Append(' ');
-        //                if (compareClass != null) sb.Append("表达式类: ").Append(compareClass.allName).Append(' ');
-        //                sb.Append("返回值是父类型向子类型转换，存在错误转换!!");
-        //                Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken, sb.ToString());
-        //                isNeedCast = true;
-        //                return true;
-        //            }
-        //        case ETypeRelation.No:
-        //            {
-        //                var targetTemplateList = leftMetaType.GetGenTemplateMetaTypeList();
-        //                var exprTemplateList = rightClassType?.GetGenTemplateMetaTypeList();
-        //                bool hasTemplateInEither =
-        //                    (targetTemplateList != null && targetTemplateList.Count > 0)
-        //                    || (exprTemplateList != null && exprTemplateList.Count > 0);
-        //                if (hasTemplateInEither)
-        //                {
-        //                    Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
-        //                        "模板类型不匹配（接口模板位置仅在可协变标记下允许协变），请检查模板参数或接口变型规则。");
-        //                    return false;
-        //                }
-        //                var sb = new System.Text.StringBuilder();
-        //                sb.Append("Warning 类型不相同 ");
-        //                if (curClass != null) sb.Append("定义类: ").Append(curClass.allName).Append(' ');
-        //                if (compareClass != null) sb.Append("表达式类: ").Append(compareClass.allName).Append(' ');
-        //                sb.Append("可能会有强转，强转后可能默认值为null");
-        //                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, errorAnchorToken, sb.ToString());
-        //                isNeedCast = true;
-        //                return true;
-        //            }
-        //        default:
-        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
-        //                "表达式错误，或者是定义类型错误");
-        //            return false;
-        //    }
-        //}
+        public static bool IsNarrowerCorePrimitiveWideningOkForCallSite(MetaClass argClass, MetaClass paramClass)
+        {
+            if (!TryGetCorePrimitiveScalarStorage(argClass, out int aw, out bool af))
+                return true;
+            if (!TryGetCorePrimitiveScalarStorage(paramClass, out int pw, out bool pf))
+                return true;
+            if (af != pf)
+                return false;
+            return aw < pw;
+        }
+        /// <summary>
+        /// ?? Int8???Float64 ??????????????????????????????????????????? false???
+        /// </summary>
+        public static bool TryGetCorePrimitiveScalarStorage(MetaClass mc, out int widthBytes, out bool isFloat)
+        {
+            widthBytes = 0;
+            isFloat = false;
+            if (mc == null) return false;
+            if (mc == CoreMetaClassManager.int8MetaClass || mc == CoreMetaClassManager.uint8MetaClass)
+            {
+                widthBytes = 1;
+                return true;
+            }
+            if (mc == CoreMetaClassManager.int16MetaClass || mc == CoreMetaClassManager.uint16MetaClass)
+            {
+                widthBytes = 2;
+                return true;
+            }
+            if (mc == CoreMetaClassManager.int32MetaClass || mc == CoreMetaClassManager.uint32MetaClass)
+            {
+                widthBytes = 4;
+                return true;
+            }
+            if (mc == CoreMetaClassManager.float32MetaClass)
+            {
+                widthBytes = 4;
+                isFloat = true;
+                return true;
+            }
+            if (mc == CoreMetaClassManager.int64MetaClass || mc == CoreMetaClassManager.uint64MetaClass)
+            {
+                widthBytes = 8;
+                return true;
+            }
+            if (mc == CoreMetaClassManager.float64MetaClass)
+            {
+                widthBytes = 8;
+                isFloat = true;
+                return true;
+            }
+            return false;
+        }
 
         private static bool TryForceConvertArrayLiteralElements(
             MetaNewObjectExpressNode arrayNode,
@@ -2164,7 +2038,7 @@ namespace SimpleLanguage.Core
 
                 if (expr is MetaNewObjectExpressNode childArrayNode && targetElemType.IsArray())
                 {
-                    var nextElemType = ClassManager.GetSingleTemplateArgMetaType(targetElemType);
+                    var nextElemType = TypeManager.GetSingleTemplateArgMetaType(targetElemType);
                     if (nextElemType != null && !TryForceConvertArrayLiteralElements(childArrayNode, nextElemType, errorAnchorToken))
                     {
                         return false;
@@ -2175,6 +2049,43 @@ namespace SimpleLanguage.Core
             return true;
         }
 
+        public bool IsClassAdapt(MetaClass mc1, MetaClass mc2)
+        {
+            if (mc1 == CoreMetaClassManager.int64MetaClass
+                || mc1 == CoreMetaClassManager.uint64MetaClass)
+            {
+                if (mc2 == CoreMetaClassManager.uint8MetaClass
+                    || mc2 == CoreMetaClassManager.int8MetaClass
+                    || mc2 == CoreMetaClassManager.int16MetaClass
+                    || mc2 == CoreMetaClassManager.uint16MetaClass
+                    || mc2 == CoreMetaClassManager.int32MetaClass
+                    || mc2 == CoreMetaClassManager.uint32MetaClass)
+                {
+                    return true;
+                }
+            }
+            else if (mc1 == CoreMetaClassManager.int32MetaClass
+                || mc1 == CoreMetaClassManager.uint32MetaClass)
+            {
+                if (mc2 == CoreMetaClassManager.uint8MetaClass
+                    || mc2 == CoreMetaClassManager.int8MetaClass
+                    || mc2 == CoreMetaClassManager.int16MetaClass
+                    || mc2 == CoreMetaClassManager.uint16MetaClass)
+                {
+                    return true;
+                }
+            }
+            else if (mc1 == CoreMetaClassManager.int16MetaClass
+                || mc1 == CoreMetaClassManager.uint16MetaClass)
+            {
+                if (mc2 == CoreMetaClassManager.uint8MetaClass
+                    || mc2 == CoreMetaClassManager.int8MetaClass)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
         #endregion
 
     }

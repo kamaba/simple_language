@@ -574,9 +574,9 @@ namespace SimpleLanguage.Core
                             Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "布尔类型不能参与加减运算");
                         }
                     }
-                    else if (ClassManager.IsNumberClass(leftMc))
+                    else if (NumberManager.IsNumberClass(leftMc))
                     {
-                        if (ClassManager.IsNumberClass(rightMc))
+                        if (NumberManager.IsNumberClass(rightMc))
                         {
                             switch (m_OpLevelSign)
                             {
@@ -674,7 +674,7 @@ namespace SimpleLanguage.Core
                         {
                             m_RealMetaType = new MetaType(CoreMetaClassManager.stringMetaClass);
                             // if right side is numeric, convert it to string
-                            if (ClassManager.IsNumberClass(rightMc))
+                            if (NumberManager.IsNumberClass(rightMc))
                             {
                                 m_RightConvert = new ConvertType() { oriType = rightMc.eType, targetType = EType.String };
                             }

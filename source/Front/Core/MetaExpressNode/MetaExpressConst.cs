@@ -6,6 +6,7 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Compile;
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics; 
@@ -142,6 +143,70 @@ namespace SimpleLanguage.Core
         {
             eType = etype;
             Parse1(etype, val);
+        }
+        public void SetNumType( EType etype )
+        {
+            eType = etype;
+
+            try
+            {
+                switch (etype)
+                {
+                    case EType.Int8:
+                        {
+                            value = Convert.ToSByte(value);
+                        }
+                        break;
+                    case EType.UInt8:
+                        {
+                            value = Convert.ToByte(value);
+                        }
+                        break;
+                    case EType.Int16:
+                        {
+                            value = Convert.ToInt16(value);
+                        }
+                        break;
+                    case EType.UInt16:
+                        {
+                            value = Convert.ToUInt16(value);
+                        }
+                        break;
+                    case EType.Int32:
+                        {
+                            value = Convert.ToInt32(value);
+                        }
+                        break;
+                    case EType.UInt32:
+                        {
+                            value = Convert.ToUInt32(value);
+                        }
+                        break;
+                    case EType.Int64:
+                        {
+                            value = Convert.ToInt64(value);
+                        }
+                        break;
+                    case EType.UInt64:
+                        {
+                            value = Convert.ToUInt64(value);
+                        }
+                        break;
+                    case EType.Float32:
+                        {
+                            value = Convert.ToSingle(value);
+                        }
+                        break;
+                    case EType.Float64:
+                        {
+                            value = Convert.ToDouble(value);
+                        }
+                        break;
+                }
+            }catch( Exception e)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, e.Message);
+            }
         }
         public override void Parse(AllowUseSettings auc)
         {
