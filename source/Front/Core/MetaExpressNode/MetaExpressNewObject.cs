@@ -1336,10 +1336,6 @@ namespace SimpleLanguage.Core
         public MetaNewObjectExpressNode(FileMetaBraceTerm fmbt, MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs, MetaVariable equalMV)
         {
             m_OwnerMetaBase = ownerMC;
-            if (m_OwnerMetaBase is MetaData md)
-            {
-                md.AddBindOwnerExpressNodeList(this);
-            }
             m_OwnerMetaBlockStatements = mbs;
             m_DefineMetaType = mt;
             if (m_DefineMetaType != null)
@@ -1361,10 +1357,6 @@ namespace SimpleLanguage.Core
         public MetaNewObjectExpressNode(FileMetaBracketTerm fmbt, MetaType mt, MetaBase mc, MetaBlockStatements mbs, MetaVariable equalMV)
         {
             m_OwnerMetaBase = mc;
-            if (m_OwnerMetaBase is MetaData md)
-            {
-                md.AddBindOwnerExpressNodeList(this);
-            }
             m_OwnerMetaBlockStatements = mbs;
             m_Token = fmbt.token;
             m_BraceFileMetaBaseTerm = fmbt;
@@ -1378,10 +1370,6 @@ namespace SimpleLanguage.Core
         {
             m_DefineMetaType = defineMt != null ? new MetaType(defineMt) : null;
             m_OwnerMetaBase = mcen.ownerMetaBase;
-            if (m_OwnerMetaBase is MetaData md)
-            {
-                md.AddBindOwnerExpressNodeList(this);
-            }
             m_OwnerMetaBlockStatements = mcen.ownerMetaBlockStatements;
             m_StoreMetaVariable = mcen.GetStoreMetaVariable();
 
@@ -1527,14 +1515,6 @@ namespace SimpleLanguage.Core
             {
                 m_NewType = ENewType.CommomClass;
             }
-            if(ownerMC is MetaData md )
-            {
-                md.AddBindOwnerExpressNodeList(this);
-            }
-        }
-        public void SetNeedInitMemberVariable(  bool flag )
-        {
-            m_NeedInitMemberVariable = flag;
         }
         public void SetNewMetaType( MetaType mt )
         {
@@ -1713,7 +1693,7 @@ namespace SimpleLanguage.Core
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = fmct;
-                    cep.equalMetaVariable = m_StoreMetaVariable;
+                    cep.equalMetaVariable = null;
                     MetaExpressNodeBase men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());                    
                     var mas = new MetaBraceAssignStatements(mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, men);
@@ -1744,10 +1724,10 @@ namespace SimpleLanguage.Core
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = termexpress;
-                    cep.equalMetaVariable = m_StoreMetaVariable;
+                    cep.equalMetaVariable = null;
                     MetaExpressNodeBase men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());
-                    men = ExpressManager.ConvertNewExpress(men, cep.metaType, m_StoreMetaVariable);                   
+                    men = ExpressManager.ConvertNewExpress(men, cep.metaType, null);                   
                     var mas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, men);
                     mas.Parse(new AllowUseSettings());
                     mas.CalcReturnType();
@@ -1755,8 +1735,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    System.Diagnostics.Debug.Assert(false);
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error ????????FileMetaBracketTerm ??!");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, fmbt.token, "Error ????????FileMetaBracketTerm ??!");
                 }
             }
             // Array<Object>(n){ ... } ??? [1,2] ????????? defineMetaType ????? object?? Array??

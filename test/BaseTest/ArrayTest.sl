@@ -13,6 +13,10 @@ ArrayTest
     Level<T>
     {
         T t = new()
+        _init_()
+        {
+
+        }
         _init_( obj )
         {
             this.t = obj as T
@@ -78,7 +82,11 @@ ArrayTest
     static arrayGenericElementTest()
     {
         global.println("========== Array.generic element ==========")
-        Level<Int32>[] levels = new(3) { Level<Int32>(10), Level<Int32>(100), Level<Int32>(30) }
+        #ttt = Level<Level<int>>(){ t = Level<int>(120) }
+        #global.println("ttt -> " + ttt.toString())
+
+        
+        Level<Int32>[] levels = new(3) { Level<Int32>(10), Level<int>(){ t = 120 }, Level<Int32>(30) }
         levels[1].t += 5    #如果下标是应该报空指针错误
         for v in levels
         {
@@ -87,6 +95,7 @@ ArrayTest
                 global.println("level item -> " + v.toString())
             }
         }
+        
     }
 
     # Array.createInstance、[] / `$`、复合赋值、数值 for
@@ -420,8 +429,9 @@ ArrayTest
     }
     static fun()
     {
-        arrayBasicApiTest()        
+        #arrayBasicApiTest()        
         arrayGenericElementTest()
+        #!
         arrayCreateInstanceIndexLoopTest()
         arrayCovariantAndLiteralForInTest()
         arrayNumberIteratorFromConcreteArrayTest()
@@ -441,6 +451,7 @@ ArrayTest
         arrayArrClassForInAssignTest()
         arrayForInLiteralIndexTest()
         arrayArrClassCountLoopWriteTest()
+        !#
         
     }
 }

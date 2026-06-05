@@ -19,7 +19,6 @@ namespace SimpleLanguage.Core
     {
         public bool isRecieveReturnValue => m_IsRecieveReturnValue;
         //public MetaVariable loadMetaVariable => m_LoadMetaVariable;
-        public MetaVariable storeMetaVariable => m_StoreMetaVariable;
         public MetaClass staticCallerMetaClass => m_StaticCallerMetaClass;
         public List<MetaType> staticMetaClassInputTemplateList => m_StaticMetaClassInputTemplateList;
         public MetaFunction function => m_VMCallMetaFunction;
@@ -29,7 +28,7 @@ namespace SimpleLanguage.Core
 
 
         protected MetaVariable m_LoadMetaVariable = null;
-        protected MetaVariable m_StoreMetaVariable = null;
+        //protected MetaVariable m_StoreMetaVariable = null;
         protected MetaClass m_StaticCallerMetaClass = null;
         protected bool m_IsRecieveReturnValue = true;
         protected List<MetaType> m_StaticMetaClassInputTemplateList = new List<MetaType>();
@@ -50,7 +49,8 @@ namespace SimpleLanguage.Core
         private string? m_DebugInputParTermText = null;
         
         public MetaMethodCall( MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaClass staticMc,
-            List<MetaType> staticMmitList,  MetaFunction _fun, List<MetaType> mpipList, MetaInputParamCollection _paramCollection, MetaVariable loadMv, MetaVariable storeMv )
+            List<MetaType> staticMmitList,  MetaFunction _fun, List<MetaType> mpipList, MetaInputParamCollection _paramCollection,
+            MetaVariable loadMv, MetaVariable storeMv )
         {
             m_OwnerMetaClass = ownerClass;
             m_OwnerMetaBlockStatements = ownerMBS;
@@ -126,7 +126,7 @@ namespace SimpleLanguage.Core
             }
                 
             m_LoadMetaVariable = loadMv;
-            m_StoreMetaVariable = storeMv;
+            //m_StoreMetaVariable = storeMv;
 
             if( m_VMCallMetaFunction?.returnMetaVariable?.defineMetaType?.metaClass?.eType == EType.Void )
             {
@@ -134,11 +134,12 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                m_IsRecieveReturnValue = m_StoreMetaVariable != null;
+                m_IsRecieveReturnValue = storeMv != null;
             }
         }
 
-        public MetaMethodCall(MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaFunction _fun, List<MetaType> mpipList, MetaInputParamCollection _paramCollection )
+        public MetaMethodCall(MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaFunction _fun, List<MetaType> mpipList, 
+            MetaInputParamCollection _paramCollection )
         {
             m_OwnerMetaClass = ownerClass;
             m_OwnerMetaBlockStatements = ownerMBS;
@@ -181,16 +182,12 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                m_IsRecieveReturnValue = m_StoreMetaVariable != null;
+                m_IsRecieveReturnValue = false;
             }
         }
         public void SetDebugInputParTermText(string? text)
         {
             m_DebugInputParTermText = text;
-        }
-        public void SetStoreMetaVariable( MetaVariable mv )
-        {
-            this.m_StoreMetaVariable = mv;
         }
         public MetaType GeMetaDefineType()
         {
@@ -400,7 +397,7 @@ namespace SimpleLanguage.Core
             return vn;
         }
         public static MetaVisitNode CreateByNewConst(MetaClass ownermc, MetaBlockStatements mbs,
-            MetaType mt, MetaConstExpressNode mce, MetaMemberFunction mmf, MetaInputParamCollection mipc, MetaVariable mv = null)
+            MetaType mt, MetaConstExpressNode mce, MetaMemberFunction mmf, MetaInputParamCollection mipc )
         {
             MetaVisitNode vn = new MetaVisitNode();
 
@@ -408,25 +405,21 @@ namespace SimpleLanguage.Core
             //vn.m_MetaBraceStatementsContent = mb;
             vn.m_VisitType = EVisitType.NewConst;
             vn.m_Express = mce;
-            vn.m_Variable = mv;
-            vn.m_Token = mv.token;
             if (mt.metaClass is MetaGenTemplateClass mgtc)
             {
                 vn.m_ReturnMetaType = new MetaType(mt);
             }
-            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt.metaClass, null, mmf, null, mipc, null, mv);
+            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt.metaClass, null, mmf, null, mipc, null, null );
 
             return vn;
         }
-        public static MetaVisitNode CreateByNewClass(MetaType mt, MetaVariable mv = null)
+        public static MetaVisitNode CreateByNewClass(MetaType mt)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_CallMetaType = mt;
             //vn.m_MetaBraceStatementsContent = mb;
             vn.m_VisitType = EVisitType.New;
-            vn.m_Variable = mv;
-            vn.m_Token = mv.token;
             if (mt.metaClass is MetaGenTemplateClass mgtc)
             {
                 vn.m_ReturnMetaType = new MetaType(mt);
@@ -500,12 +493,11 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByConstExpress(MetaConstExpressNode constExpress, MetaVariable _variable)
+        public static MetaVisitNode CreateByConstExpress(MetaConstExpressNode constExpress)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_Express = constExpress;
-            vn.m_Variable = _variable;
             vn.m_VisitType = EVisitType.ConstValue;
 
             return vn;

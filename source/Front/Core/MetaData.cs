@@ -28,7 +28,6 @@ namespace SimpleLanguage.Core
         private EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
         private FileMetaClass m_FileMetaClass = null;
         private Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
-        private List<MetaExpressNodeBase> m_BindOwnerExpressNodeList = new List<MetaExpressNodeBase>();
         private MetaClass m_ExtendClass = CoreMetaClassManager.dataMetaClass;
         private List<MetaMemberFunction> m_FileCollectMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         private List<MetaMemberFunction> m_NonStaticVirtualMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
@@ -56,10 +55,6 @@ namespace SimpleLanguage.Core
         public void SetAllName( string an )
         {
             this.m_AllName = an;
-        }
-        public void AddBindOwnerExpressNodeList( MetaExpressNodeBase menb )
-        {
-            m_BindOwnerExpressNodeList.Add(menb);
         }
         public void SetClassDefineType(EClassDefineType type)
         {
@@ -255,13 +250,6 @@ namespace SimpleLanguage.Core
         public void ParseDefineComplete()
         {
             // 嵌套 data/array 字面量已在 MetaMemberData 表达式管线（MetaAnonDataExpressNode / MetaArrayExpressNode → MetaNewObjectExpressNode）中解析。
-        }
-        public override void UpdateOwner( MetaBase mb ) 
-        {
-            foreach( var v in m_BindOwnerExpressNodeList)
-            {
-                v.SetOwnerBase(mb);
-            }
         }
         public void UpdateAllName()
         {

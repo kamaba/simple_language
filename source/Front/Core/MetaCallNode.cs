@@ -1246,32 +1246,33 @@ namespace SimpleLanguage.Core
                     }
                     else if (frontCNT == ECallNodeType.ConstValue)
                     {
-                        if (m_FrontCallNode.m_MetaVariable == null)
+                        if (m_FrontCallNode.m_ExpressNode != null)
                         {
-                            MetaConstExpressNode mcen = m_FrontCallNode.m_ExpressNode as MetaConstExpressNode;
-                            string mvname = "auto_constvalue_" + mcen.eType.ToString()
-                                + "_" + mcen.GetHashCode();
-                            var fmetaVariable = m_OwnerMetaFunctionBlock.GetMetaVariable(mvname);
-                            if (fmetaVariable == null)
+                            //MetaConstExpressNode mcen = m_FrontCallNode.m_ExpressNode as MetaConstExpressNode;
+                            //string mvname = "auto_constvalue_" + mcen.eType.ToString()
+                            //    + "_" + mcen.GetHashCode();
+                            //var fmetaVariable = m_OwnerMetaFunctionBlock.GetMetaVariable(mvname);
+                            //if (fmetaVariable == null)
+                            //{
+                            //    m_FrontCallNode.m_MetaVariable = new MetaVariable(mvname,
+                            //        MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock, ownerMetaBase,
+                            //        new MetaType(m_FrontCallNode.m_MetaClass));
+                            //    m_OwnerMetaFunctionBlock.AddMetaVariable(m_FrontCallNode.m_MetaVariable);
+
+                            //}
+
+                            m_FrontCallNode.m_MetaInputParamCollection = new MetaInputParamCollection(ownerMetaBase, ownerMetaFunctionBlock);
+
+                            MetaInputParam mip = new MetaInputParam(m_FrontCallNode.metaExpressValue);
+                            m_FrontCallNode.m_MetaInputParamCollection.AddMetaInputParam(mip);
+
+                            MetaMemberFunction mmf = m_FrontCallNode.m_MetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_FrontCallNode.m_MetaInputParamCollection);
+                            if (mmf == null)
                             {
-                                m_FrontCallNode.m_MetaVariable = new MetaVariable(mvname,
-                                    MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock, ownerMetaBase,
-                                    new MetaType(m_FrontCallNode.m_MetaClass));
-                                m_OwnerMetaFunctionBlock.AddMetaVariable(m_FrontCallNode.m_MetaVariable);
-
-                                m_FrontCallNode.m_MetaInputParamCollection = new MetaInputParamCollection(ownerMetaBase, ownerMetaFunctionBlock);
-
-                                MetaInputParam mip = new MetaInputParam(m_FrontCallNode.metaExpressValue);
-                                m_FrontCallNode.m_MetaInputParamCollection.AddMetaInputParam(mip);
-
-                                MetaMemberFunction mmf = m_FrontCallNode.m_MetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_FrontCallNode.m_MetaInputParamCollection);
-                                if (mmf == null)
-                                {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + m_FrontCallNode.m_MetaClass.allName + "鐨刜init_鏂规硶!)");
-                                    return false;
-                                }
-                                m_FrontCallNode.m_MetaFunction = mmf;
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + m_FrontCallNode.m_MetaClass.allName + "鐨刜init_鏂规硶!)");
+                                return false;
                             }
+                            m_FrontCallNode.m_MetaFunction = mmf;
                         }
                         if (GetFunctionOrVariableByOwnerClass(m_FrontCallNode.m_MetaClass, m_Name) == false)
                         {
@@ -1537,28 +1538,28 @@ namespace SimpleLanguage.Core
                         */
                     }
 
-                    if ( this.m_StoreMetaVariable == null)
-                    {
-                        string mvname = "new ( " + curmc.allName + "_" + curmc.GetHashCode() + " )";
-                        m_MetaVariable = new MetaVariable(mvname, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock,
-                            ownerMetaClass, m_MetaType);
-                        if(m_OwnerMetaFunctionBlock != null )
-                        {
-                            if (m_OwnerMetaFunctionBlock.GetMetaVariable(mvname) == null)
-                            {
-                                if (m_AllowUseSettings.ifNotVariableThenAddVariable)
-                                {
-                                    m_OwnerMetaFunctionBlock.AddMetaVariable(m_MetaVariable);
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "error Class: [" + ownerMetaClass?.allName + "] Method: [" + m_OwnerMetaFunctionBlock.ownerMetaFunction.functionAllName + "]"
-                                        + "中间创建了新的变量:" + token?.ToLexemeAllString() + " var:" + m_MetaVariable.ToFormatString());
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        m_MetaVariable = m_StoreMetaVariable;
-                    }
+                    //if ( this.m_StoreMetaVariable == null)
+                    //{
+                    //    string mvname = "new ( " + curmc.allName + "_" + curmc.GetHashCode() + " )";
+                    //    m_MetaVariable = new MetaVariable(mvname, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaFunctionBlock,
+                    //        ownerMetaClass, m_MetaType);
+                    //    if(m_OwnerMetaFunctionBlock != null )
+                    //    {
+                    //        if (m_OwnerMetaFunctionBlock.GetMetaVariable(mvname) == null)
+                    //        {
+                    //            if (m_AllowUseSettings.ifNotVariableThenAddVariable)
+                    //            {
+                    //                m_OwnerMetaFunctionBlock.AddMetaVariable(m_MetaVariable);
+                    //                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "error Class: [" + ownerMetaClass?.allName + "] Method: [" + m_OwnerMetaFunctionBlock.ownerMetaFunction.functionAllName + "]"
+                    //                    + "中间创建了新的变量:" + token?.ToLexemeAllString() + " var:" + m_MetaVariable.ToFormatString());
+                    //            }
+                    //        }
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    m_MetaVariable = m_StoreMetaVariable;
+                    //}
                     this.m_MetaClass = curmc;
 
                     if (!m_AllowUseSettings.callFunction && m_IsFunction)

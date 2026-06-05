@@ -427,21 +427,21 @@ namespace SimpleLanguage.Core
 
                     //mbobs.assignStatementsList.Add(mas);
 
-                    string name = "auto_constvalue_" + fvn.constValueExpress.eType.ToString() + "_" + fvn.constValueExpress.GetHashCode();
-                    newmv = frontNode.ownerMetaFunctionBlock.GetMetaVariable(name);
-                    if (newmv == null)
-                    {
-                        Debug.Assert(false, "娌℃湁鍒涘缓const鍙橀噺!");
-                        //var mccm = CoreMetaClassManager.GetMetaClassByEType(fvn.constValueExpress.eType);
-                        //newmv = new MetaVariable(name, MetaVariable.EVariableFrom.LocalStatement,
-                        //frontNode.ownerMetaFunctionBlock, frontNode.metaType.metaClass, new MetaType(mccm));
+                    //string name = "auto_constvalue_" + fvn.constValueExpress.eType.ToString() + "_" + fvn.constValueExpress.GetHashCode();
+                    //newmv = frontNode.ownerMetaFunctionBlock.GetMetaVariable(name);
+                    //if (newmv == null)
+                    //{
+                    //    Debug.Assert(false, "娌℃湁鍒涘缓const鍙橀噺!");
+                    //    //var mccm = CoreMetaClassManager.GetMetaClassByEType(fvn.constValueExpress.eType);
+                    //    //newmv = new MetaVariable(name, MetaVariable.EVariableFrom.LocalStatement,
+                    //    //frontNode.ownerMetaFunctionBlock, frontNode.metaType.metaClass, new MetaType(mccm));
 
-                        //frontNode.ownerMetaFunctionBlock.AddMetaVariable(newmv);
-                    }
+                    //    //frontNode.ownerMetaFunctionBlock.AddMetaVariable(newmv);
+                    //}
 
                     MetaVisitNode mvn1 = MetaVisitNode.CreateByNewConst(frontNode.ownerMetaClass, frontNode.ownerMetaFunctionBlock,
                         frontNode.metaType, frontNode.metaExpressValue as MetaConstExpressNode, frontNode.metaFunction as MetaMemberFunction,
-                        frontNode.metaInputParamCollection, newmv);
+                        frontNode.metaInputParamCollection );
                     mvn1.SetToken(frontNode.token);
                     m_VisitNodeList.Add(mvn1);
 
@@ -481,16 +481,16 @@ namespace SimpleLanguage.Core
                     MetaVisitNode fvn = m_VisitNodeList[m_VisitNodeList.Count - 1];
                     m_VisitNodeList.Remove(fvn);
 
-                    string name = "auto_constvalue_" + fvn.constValueExpress.eType.ToString() + "_" + fvn.constValueExpress.GetHashCode();
-                    newmv = frontNode.ownerMetaFunctionBlock.GetMetaVariable(name);
-                    if (newmv == null)
-                    {
-                        Debug.Assert(false, "娌℃湁鍒涘缓const鍙橀噺!");
-                    }
+                    //string name = "auto_constvalue_" + fvn.constValueExpress.eType.ToString() + "_" + fvn.constValueExpress.GetHashCode();
+                    //newmv = frontNode.ownerMetaFunctionBlock.GetMetaVariable(name);
+                    //if (newmv == null)
+                    //{
+                    //    Debug.Assert(false, "娌℃湁鍒涘缓const鍙橀噺!");
+                    //}
 
                     MetaVisitNode mvn1 = MetaVisitNode.CreateByNewConst(frontNode.ownerMetaClass, frontNode.ownerMetaFunctionBlock,
                         frontNode.metaType, frontNode.metaExpressValue as MetaConstExpressNode, frontNode.metaFunction as MetaMemberFunction,
-                        frontNode.metaInputParamCollection, newmv);
+                        frontNode.metaInputParamCollection );
                     m_VisitNodeList.Add(mvn1);
 
                     mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType?.metaClass, mcn.callMetaType?.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, null, null);
@@ -538,7 +538,7 @@ namespace SimpleLanguage.Core
             }
             else if (mcn.callNodeType == ECallNodeType.ConstValue)
             {
-                MetaVisitNode mvn = MetaVisitNode.CreateByConstExpress(mcn.metaExpressValue as MetaConstExpressNode, mcn.metaVariable);
+                MetaVisitNode mvn = MetaVisitNode.CreateByConstExpress(mcn.metaExpressValue as MetaConstExpressNode);
                 mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
@@ -570,7 +570,7 @@ namespace SimpleLanguage.Core
                     }
                     else if (index == m_CallNodeList.Count)
                     {
-                        MetaVisitNode mvn = MetaVisitNode.CreateByNewClass(mcn.metaType, mcn.metaVariable); 
+                        MetaVisitNode mvn = MetaVisitNode.CreateByNewClass(mcn.metaType); 
                         mvn.SetToken(mcn.token);
                         m_VisitNodeList.Add(mvn);
                         if (mcn.metaFunction != null)
@@ -630,7 +630,7 @@ namespace SimpleLanguage.Core
             {
                 if (index == m_CallNodeList.Count)
                 {
-                    MetaVisitNode mvn = MetaVisitNode.CreateByNewClass(mcn.metaType, mcn.metaVariable);
+                    MetaVisitNode mvn = MetaVisitNode.CreateByNewClass(mcn.metaType);
                     mvn.SetToken(mcn.token);
                     m_VisitNodeList.Add(mvn);
 

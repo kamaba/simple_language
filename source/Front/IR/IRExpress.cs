@@ -449,57 +449,25 @@ namespace SimpleLanguage.IR
                     AddIRRangeData(irNew.IRDataList);
                 }
 
-                if (mnoen.needInitMemberVariable)
-                {
-                    if (irmc.localIRMetaVariableList.Count > 0)
-                    {
-                        for (int x = 0; x < irmc.localIRMetaVariableList.Count; x++)
-                        {
-                            var lirmv = irmc.localIRMetaVariableList[x];
-                            MetaExpressNodeBase men = lirmv.express;
-                            if (mnoen.assignStatementsList?.Count > 0)
-                            {
-                                MetaBraceAssignStatements findMBAS = null;
-                                for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
-                                {
-                                    var asl = mnoen.assignStatementsList[y];  
-                                    if (asl.id == lirmv.index )
-                                    {
-                                        findMBAS = asl;
-                                        men = asl.expressNode;
-                                        break;
-                                    }
-                                }
-                                mnoen.assignStatementsList.Remove(findMBAS);
-                            }
-                            IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, men);
-                            AddIRRangeData(irexp.IRDataList);
+                //if (mnoen.needInitMemberVariable)
+                //{
+                //    //if (irmc.localIRMetaVariableList.Count > 0)
+                //    //{
+                //    //    for (int x = 0; x < irmc.localIRMetaVariableList.Count; x++)
+                //    //    {
+                //    //        var lirmv = irmc.localIRMetaVariableList[x];
+                            
+                //    //        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, lirmv.express);
+                //    //        AddIRRangeData(irexp.IRDataList);
 
-                            IRData irdata = new IRData();
-                            irdata.index = lirmv.index;
-                            irdata.opCode = EIROpCode.StoreNotStaticField1;
-                            irdata.SetDebugInfoByToken(men.token);
-                            m_IRDataList.Add(irdata);
-                        }
-                    }
-                }
-                for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
-                {
-                    var asl = mnoen.assignStatementsList[y];
-
-                    IRDup irdup = new IRDup(irMethod);
-                    AddIRRangeData(irdup.IRDataList);
-
-                    IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
-                    AddIRRangeData(irexp.IRDataList);
-
-                    var storeField = new IRStoreVariable(newObjectIRMT, irMethod, asl.id, IRMetaVariableFrom.Member);
-                    if (storeField != null)
-                    {
-                        AddIRRangeData(storeField.IRDataList);
-                    }
-                }
-                
+                //    //        IRData irdata = new IRData();
+                //    //        irdata.index = lirmv.index;
+                //    //        irdata.opCode = EIROpCode.StoreNotStaticField1;
+                //    //        irdata.SetDebugInfoByToken(lirmv.express.token);
+                //    //        m_IRDataList.Add(irdata);
+                //    //    }
+                //    //}
+                //}
                 if (mnoen.metaMemberFunction != null)
                 {
                     IRDup irdup = new IRDup(irMethod);
@@ -555,6 +523,23 @@ namespace SimpleLanguage.IR
                     datacall.SetDebugInfoByToken(mnoen.token);
                     AddIRData(datacall);
                 }
+                for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
+                {
+                    var asl = mnoen.assignStatementsList[y];
+
+                    IRDup irdup = new IRDup(irMethod);
+                    AddIRRangeData(irdup.IRDataList);
+
+                    IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
+                    AddIRRangeData(irexp.IRDataList);
+
+                    var storeField = new IRStoreVariable(newObjectIRMT, irMethod, asl.id, IRMetaVariableFrom.Member);
+                    if (storeField != null)
+                    {
+                        AddIRRangeData(storeField.IRDataList);
+                    }
+                }
+
             }
         }
     }
