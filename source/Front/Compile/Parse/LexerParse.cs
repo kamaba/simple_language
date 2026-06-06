@@ -1855,9 +1855,12 @@ namespace SimpleLanguage.Compile
                     break;
                 case "for":
                     tokenType = ETokenType.For;
-                    break;               
+                    break;
                 case "in":
                     tokenType = ETokenType.In;
+                    break;
+                case "out":
+                    tokenType = ETokenType.Out;
                     break;
                 case "switch":
                     tokenType = ETokenType.Switch;

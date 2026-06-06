@@ -15,7 +15,7 @@ namespace SimpleLanguage.Core
             m_Type = EType.Range;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
             m_InnderDefine = true;
-            m_MetaTemplateList.Add( new MetaTemplate(this, "T", CoreMetaClassManager.numMetaClass ) );
+            m_MetaTemplateList.Add( new MetaTemplate(this, "T", CoreMetaClassManager.numMetaClass, ECovariance.None ) );
         }
         public static MetaClass CreateMetaClass()
         {

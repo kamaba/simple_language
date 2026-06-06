@@ -281,6 +281,8 @@ namespace SimpleLanguage
         For,
         /// <summary> in </summary>
         In,
+        /// <summary> out </summary>
+        Out,
         /// <summary> function </summary>
         Function,
         /// <summary> try </summary>

@@ -166,6 +166,7 @@ namespace SimpleLanguage.Compile
                         {
                             int cAddCount = addCount + 1;
                             bool templateInExtends = false;
+                            Node covarianceToken = null;
                             Node templateNode = null;
                             Node templateExtendsNode = null;
                             while (cAddCount < m_NodeList.Count)
@@ -180,13 +181,13 @@ namespace SimpleLanguage.Compile
                                         ld.sourceBeginLine = cnode2.token.sourceBeginLine;
                                         break;
                                     }
-                                    FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, templateNode, templateExtendsNode);
+                                    FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, covarianceToken, templateNode, templateExtendsNode);
                                     m_TemplateDefineList.Add(fmtd);
                                     break;
                                 }
                                 else if (cnode2.nodeType == ENodeType.Comma)
                                 {
-                                    FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, templateNode, templateExtendsNode);
+                                    FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, covarianceToken, templateNode, templateExtendsNode);
                                     m_TemplateDefineList.Add(fmtd);
                                     templateNode = null;
                                     templateExtendsNode = null;
@@ -197,6 +198,12 @@ namespace SimpleLanguage.Compile
                                     || (cnode2.nodeType == ENodeType.Key && cnode2.token?.type == ETokenType.Colon))
                                 {
                                     templateInExtends = true;
+                                    continue;
+                                }
+                                else if ( (cnode2.nodeType == ENodeType.Key 
+                                    && (cnode2.token?.type == ETokenType.In || cnode2.token?.type == ETokenType.Out) )) // 协变 逆变
+                                {
+                                    covarianceToken = cnode2;
                                     continue;
                                 }
                                 else if (cnode2.nodeType == ENodeType.IdentifierLink)
@@ -212,7 +219,7 @@ namespace SimpleLanguage.Compile
                                 }
                                 else
                                 {
-                                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 不支持其它格式 在类后续的模板限定中!");
+                                    Log.AddFileMetaLog(LID.ShowExtendMessage,  cnode2.token, "Error 不支持其它格式 在类后续的模板限定中!");
                                 }
                             }
                             addCount = cAddCount;

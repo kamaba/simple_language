@@ -733,15 +733,15 @@ namespace SimpleLanguage.Compile
     }
     public class FileMetaTemplateDefine : FileMetaBase
     {
-        public Token inToken => m_InToken;
+        public Token covarianceToken => m_CovarianceToken;
         public FileInputTemplateNode inClassNameTemplateNode => m_InClassNameTemplateNode;
 
         public Node extendNode => m_ExtendsNode;
 
-        private Token m_InToken = null;
         private FileInputTemplateNode m_InClassNameTemplateNode = null;
         private Node m_Node = null;
         private Node m_ExtendsNode = null;
+        private Token m_CovarianceToken = null;
         public FileMetaTemplateDefine(FileMeta fm, Node node)
         {
             m_FileMeta = fm;
@@ -752,13 +752,14 @@ namespace SimpleLanguage.Compile
                 m_ExtendsNode = node.childList[0];
             }
         }
-        public FileMetaTemplateDefine(FileMeta fm, Node node, Node extendsNode )
+        public FileMetaTemplateDefine(FileMeta fm, Node covarianceToken, Node node, Node extendsNode )
         {
             m_FileMeta = fm;
             m_Node = node;
             m_Token = node.token;
+            m_CovarianceToken = covarianceToken?.token;
             m_ExtendsNode = extendsNode;
-        }
+        }   
         public FileMetaTemplateDefine( FileMeta fm, List<Node> nodeList )
         {
             m_FileMeta = fm;
@@ -768,15 +769,15 @@ namespace SimpleLanguage.Compile
                 return;
             }
             m_Token = nodeList[0].token;
-            if( nodeList.Count == 2 )
-            {
-                m_InToken = nodeList[1].token;
-                m_InClassNameTemplateNode = new FileInputTemplateNode(fm, nodeList[2] );
-            }
-            else if( nodeList.Count == 2 )
-            {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
-            }
+            //if( nodeList.Count == 2 )
+            //{
+            //    m_InToken = nodeList[1].token;
+            //    m_InClassNameTemplateNode = new FileInputTemplateNode(fm, nodeList[2] );
+            //}
+            //else if( nodeList.Count == 2 )
+            //{
+            //    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在<T in> or <T []> or <T ClassName> 使用方法不正确,请使用 <T in []>或者是 <T in ClassName> !!");
+            //}
         }
         public void Parse()
         {
@@ -787,9 +788,9 @@ namespace SimpleLanguage.Compile
             StringBuilder sb = new StringBuilder();
 
             sb.Append(m_Token?.lexeme.ToString());
-            if( m_InToken != null )
+            if(m_CovarianceToken != null )
             {
-                sb.Append( " " + m_InToken?.lexeme.ToString() + " ");
+                sb.Append( " " + m_CovarianceToken?.lexeme.ToString() + " ");
             }
             if(m_InClassNameTemplateNode != null )
             {

@@ -13,18 +13,26 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
+    public enum ECovariance
+    {
+        None = 0,
+        In = 1,
+        Out = 2,
+    }
     public class MetaTemplate : MetaBase
     {
         public int index => m_Index;
         public bool isInFunction => m_IsInFunction;
         public MetaClass extendsMetaClass => m_ExtendsMetaClass;
         public MetaClass ownerClass => m_OwnerClass;
+        public ECovariance covariance => m_Convariance;
 
         protected FileMetaTemplateDefine m_FileMetaTemplateDefine = null;
         protected MetaClass m_OwnerClass = null;
         protected MetaClass m_ExtendsMetaClass = null;
         protected bool m_IsInFunction = false;
         protected int m_Index = -1;
+        protected ECovariance m_Convariance = ECovariance.None;
         //该属性为了绑定new的 _init_ 的方法 然后在实例化模板类的时候，去检查该类，的相关方法，是否有 private _init_的方法，然后就可以确定
         // T t = new() 这时候， 是否有出错 的现象 例 Level<T>{ test(){ T t = new() } } TC{ private _init_(){} } main(){ Level<TC> tc = new()
         // 这时候要进行报错处理，因为在Level.test()里边，有对T进行new的注册，是_init_方法，但Level<TC> 
@@ -42,10 +50,9 @@ namespace SimpleLanguage.Core
             m_OwnerClass = mt.m_OwnerClass;
             m_ExtendsMetaClass = mt.m_ExtendsMetaClass;
             m_IsInFunction = mt.m_IsInFunction;
-            m_Index = mt.m_Index;
-            
+            m_Index = mt.m_Index;            
         }
-        public MetaTemplate( MetaClass mc, string name, MetaClass extendClass )
+        public MetaTemplate( MetaClass mc, string name, MetaClass extendClass, ECovariance convariance )
         {
             m_Name = name;
             m_OwnerClass = mc;
@@ -57,6 +64,7 @@ namespace SimpleLanguage.Core
             {
                 m_ExtendsMetaClass = extendClass;
             }
+            m_Convariance = convariance;
         }
         public void SetIndex( int index )
         {
@@ -66,7 +74,19 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaTemplateDefine != null)
             {
-                if( m_FileMetaTemplateDefine.inClassNameTemplateNode != null )
+                if( m_FileMetaTemplateDefine.covarianceToken != null)
+                {
+                    if (m_FileMetaTemplateDefine.covarianceToken.type == ETokenType.In)
+                    {
+                        m_Convariance = ECovariance.In;
+                    }
+                    else if (m_FileMetaTemplateDefine.covarianceToken.type == ETokenType.Out )
+                    {
+                        m_Convariance = ECovariance.Out;
+                    }
+                }
+
+                if ( m_FileMetaTemplateDefine.inClassNameTemplateNode != null )
                 {
                     m_ExtendsMetaClass = ClassManager.instance.GetMetaClassByInputTemplateAndFileMeta(m_OwnerClass, m_FileMetaTemplateDefine.inClassNameTemplateNode );
                 }

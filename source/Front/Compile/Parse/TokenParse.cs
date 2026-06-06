@@ -561,6 +561,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Label:
                 case ETokenType.Else:
                 case ETokenType.In:
+                case ETokenType.Out:
                 case ETokenType.Switch:
                 case ETokenType.Continue:
                 case ETokenType.Break:

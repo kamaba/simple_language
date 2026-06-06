@@ -15,7 +15,7 @@ namespace SimpleLanguage.Core
             m_Type = EType.Class;
             m_InnderDefine = true;
 
-            var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass);
+            var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass, ECovariance.None);
             m_MetaTemplateList.Add(mt);
         }
         public static MetaClass CreateMetaClass()
@@ -31,7 +31,7 @@ namespace SimpleLanguage.Core
             m_Type = EType.Class;
             m_InnderDefine = true;
 
-            var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass);
+            var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass, ECovariance.None);
             m_MetaTemplateList.Add(mt);
         }
         public static MetaClass CreateMetaClass()
@@ -49,7 +49,7 @@ namespace SimpleLanguage.Core
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
 
 
-            var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass);
+            var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass, ECovariance.None);
             m_MetaTemplateList.Add(mt);
         }
         public static MetaClass CreateMetaClass()

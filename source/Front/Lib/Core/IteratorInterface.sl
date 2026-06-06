@@ -10,7 +10,7 @@ public interface IIterable
     IIterator iterator()
 }
 
-public interface IIterator<T>
+public interface IIterator<out T>
 {
     void reset()
     bool moveNext()
