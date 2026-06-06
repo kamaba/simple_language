@@ -416,6 +416,46 @@ namespace SimpleLanguage.Core
                 || relation == ETypeRelation.Num;
         }
 
+        private static bool IsTemplateArgAssignableByCovariance(MetaTemplate template, MetaType targetArg, MetaType exprArg)
+        {
+            if (CompareMetaType(targetArg, exprArg))
+                return true;
+
+            if (template == null || template.covariance == ECovariance.None)
+                return false;
+
+            var targetClass = targetArg?.GetTemplateMetaClass();
+            var exprClass = exprArg?.GetTemplateMetaClass();
+            if (targetClass == null || exprClass == null)
+                return false;
+
+            var relation = ValidateClassTypeRelation(targetClass, exprClass);
+            if (template.covariance == ECovariance.Out)
+            {
+                return relation == ETypeRelation.Child
+                    || relation == ETypeRelation.Interface
+                    || relation == ETypeRelation.Num;
+            }
+            if (template.covariance == ECovariance.In)
+            {
+                return relation == ETypeRelation.Parent
+                    || relation == ETypeRelation.Num;
+            }
+
+            return false;
+        }
+
+        private static bool CompareTemplateArgByIndex(MetaClass templateOwnerClass, int index, MetaType targetArg, MetaType exprArg)
+        {
+            MetaTemplate template = null;
+            if (templateOwnerClass != null && index >= 0 && index < templateOwnerClass.metaTemplateList.Count)
+            {
+                template = templateOwnerClass.metaTemplateList[index];
+            }
+
+            return IsTemplateArgAssignableByCovariance(template, targetArg, exprArg);
+        }
+
         private static void CollectInterfaceTemplateUsage(MetaClass interfaceClass, MetaTemplate template, HashSet<MetaClass> visited, ref bool usedInInput)
         {
             if (interfaceClass == null || template == null || visited == null)
@@ -567,11 +607,11 @@ namespace SimpleLanguage.Core
 
                 for (int i = 0; i < targetArgs.Count; i++)
                 {
-                    bool allowCovariant = targetClass.isInterfaceClass
-                        && IsInterfaceTemplateArgCovariant(targetClass, i);
-                    bool ok = allowCovariant
-                        ? IsCovariantTemplateArgAssignable(targetArgs[i], exprArgsSameInterface[i])
-                        : CompareMetaType(targetArgs[i], exprArgsSameInterface[i]);
+                    bool ok = CompareTemplateArgByIndex(targetClass, i, targetArgs[i], exprArgsSameInterface[i]);
+                    if (!ok && targetClass.isInterfaceClass && IsInterfaceTemplateArgCovariant(targetClass, i))
+                    {
+                        ok = IsCovariantTemplateArgAssignable(targetArgs[i], exprArgsSameInterface[i]);
+                    }
                     if (!ok)
                     {
                         relation = ETypeRelation.No;
@@ -596,10 +636,11 @@ namespace SimpleLanguage.Core
 
                 for (int i = 0; i < targetArgs.Count; i++)
                 {
-                    bool allowCovariant = IsInterfaceTemplateArgCovariant(targetClass, i);
-                    bool ok = allowCovariant
-                        ? IsCovariantTemplateArgAssignable(targetArgs[i], exprArgsFromInterface[i])
-                        : CompareMetaType(targetArgs[i], exprArgsFromInterface[i]);
+                    bool ok = CompareTemplateArgByIndex(targetClass, i, targetArgs[i], exprArgsFromInterface[i]);
+                    if (!ok && IsInterfaceTemplateArgCovariant(targetClass, i))
+                    {
+                        ok = IsCovariantTemplateArgAssignable(targetArgs[i], exprArgsFromInterface[i]);
+                    }
                     if (!ok)
                     {
                         relation = ETypeRelation.No;
@@ -1062,7 +1103,7 @@ namespace SimpleLanguage.Core
 
             for (int i = 0; i < leftTemplateList.Count; i++)
             {
-                if (!CompareMetaType(leftTemplateList[i], rightTemplateList[i]))
+                if (!CompareTemplateArgByIndex(leftBaseClass, i, leftTemplateList[i], rightTemplateList[i]))
                     return false;
             }
 

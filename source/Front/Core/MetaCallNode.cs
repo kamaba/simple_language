@@ -1856,9 +1856,9 @@ namespace SimpleLanguage.Core
             {
                 // Treat runtime/native bridge calls as system functions.
                 // Accept either exact enum name or literal string.
-                if (mb != null && Enum.TryParse<ESystemMethodCall>(inputname, true, out var inputindex))
+                if (mb != null && SystemMethodCallDeclarationRegistry.TryResolveName(inputname, out var inputindex))
                 {
-                    m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);
+                    m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputindex.ToString());
                     m_MetaFunction.SetIndex((int)inputindex);
                     var retMt = m_MetaFunction.GetFinalMetaType();
                     m_CallMetaType = retMt != null ? new MetaType(retMt) : new MetaType(mc);
@@ -2209,12 +2209,15 @@ namespace SimpleLanguage.Core
                 {
                     try
                     {
-                        if ( Enum.TryParse<ESystemMethodCall>(inputname, out var del))
+                        if (SystemMethodCallDeclarationRegistry.TryResolveName(inputname, out var del))
                         {
                             // create a lightweight builtin placeholder so later phases treat this as a static function
-                            m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);
-                            m_MetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
-                            m_CallNodeType = ECallNodeType.MemberFunctionName;
+                            m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, del.ToString());
+                            m_MetaFunction.SetIndex((int)del);
+                            var retMt = m_MetaFunction.GetFinalMetaType();
+                            m_CallMetaType = retMt != null ? new MetaType(retMt) : new MetaType(mc);
+                            m_MetaType = retMt != null ? new MetaType(retMt) : new MetaType(CoreMetaClassManager.objectMetaClass);
+                            m_CallNodeType = ECallNodeType.SystemFunctionCall;
                             return true;
                         }
                     }

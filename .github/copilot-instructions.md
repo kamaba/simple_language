@@ -23,6 +23,9 @@
 - Users require syntax constraints to be reported as early as possible at the Node or File layer, rather than delaying to the Meta layer.
 - When porting to this repository, ensure that the implementation of `RuntimeType.cs` is written into `cvm`'s `runtime_type.h/.c` (specifically `vm_runtime_type.h/.c`), and not into `runtime_type_manager.h/.c`.
 
+## Type Conversion
+- For byte()/sbyte()/short()/ushort()/int()/uint()/long()/ulong()/float()/double() and UInt8()/Int8()/Int16()/UInt16()/Int32()/UInt32()/Int64()/UInt64()/Float32()/Float64() conversions, handle them through system methods: MetaCallNode should follow the SystemCall path, with the VM invoking the corresponding system method and performing forced type conversions.
+
 ## Return Type Resolution
 - In `MetaExpressNewObject.cs`, centralize all return-type resolution logic in `CalcReturnType`, including define/new type comparison, array literal inferred type precedence, and array length validation rules.
 

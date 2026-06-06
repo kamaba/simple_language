@@ -66,7 +66,7 @@ namespace SimpleLanguage.IR
             string systemName = mf?.name ?? string.Empty;
             int systemKind = -1;
             if (!string.IsNullOrEmpty(systemName)
-                && Enum.TryParse<ESystemMethodCall>(systemName, ignoreCase: true, out var sysEnum))
+                && SystemMethodCallDeclarationRegistry.TryResolveName(systemName, out var sysEnum))
             {
                 systemKind = (int)sysEnum;
             }

@@ -51,6 +51,30 @@ namespace SimpleLanguage.Core
 
     public static class SystemMethodCallDeclarationRegistry
     {
+        private static readonly Dictionary<string, ESystemMethodCall> s_Alias = new Dictionary<string, ESystemMethodCall>
+        {
+            { "byte", ESystemMethodCall.SystemConvertUInt8 },
+            { "sbyte", ESystemMethodCall.SystemConvertSInt8 },
+            { "short", ESystemMethodCall.SystemConvertInt16 },
+            { "ushort", ESystemMethodCall.SystemConvertUInt16 },
+            { "int", ESystemMethodCall.SystemConvertInt32 },
+            { "uint", ESystemMethodCall.SystemConvertUInt32 },
+            { "long", ESystemMethodCall.SystemConvertInt64 },
+            { "ulong", ESystemMethodCall.SystemConvertUInt64 },
+            { "float", ESystemMethodCall.SystemConvertFloat32 },
+            { "double", ESystemMethodCall.SystemConvertFloat64 },
+            { "Int8", ESystemMethodCall.SystemConvertSInt8 },
+            { "UInt8", ESystemMethodCall.SystemConvertUInt8 },
+            { "Int16", ESystemMethodCall.SystemConvertInt16 },
+            { "UInt16", ESystemMethodCall.SystemConvertUInt16 },
+            { "Int32", ESystemMethodCall.SystemConvertInt32 },
+            { "UInt32", ESystemMethodCall.SystemConvertUInt32 },
+            { "Int64", ESystemMethodCall.SystemConvertInt64 },
+            { "UInt64", ESystemMethodCall.SystemConvertUInt64 },
+            { "Float32", ESystemMethodCall.SystemConvertFloat32 },
+            { "Float64", ESystemMethodCall.SystemConvertFloat64 },
+        };
+
         private static readonly MetaType Obj = SystemMethodCallTypes.Of(CoreMetaClassManager.objectMetaClass);
         private static readonly MetaType Void = SystemMethodCallTypes.Of(CoreMetaClassManager.voidMetaClass);
         private static readonly MetaType Str = SystemMethodCallTypes.Of(CoreMetaClassManager.stringMetaClass);
@@ -130,6 +154,13 @@ namespace SimpleLanguage.Core
         public static bool TryGet(ESystemMethodCall call, out SystemMethodCallDeclaration decl)
         {
             return s_Decl.TryGetValue(call, out decl);
+        }
+
+        public static bool TryResolveName(string name, out ESystemMethodCall call)
+        {
+            if (!string.IsNullOrEmpty(name) && s_Alias.TryGetValue(name, out call))
+                return true;
+            return System.Enum.TryParse(name, true, out call);
         }
     }
 }

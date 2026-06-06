@@ -50,7 +50,8 @@ namespace SimpleLanguage.Core
             m_OwnerClass = mt.m_OwnerClass;
             m_ExtendsMetaClass = mt.m_ExtendsMetaClass;
             m_IsInFunction = mt.m_IsInFunction;
-            m_Index = mt.m_Index;            
+            m_Index = mt.m_Index;
+            m_Convariance = mt.m_Convariance;
         }
         public MetaTemplate( MetaClass mc, string name, MetaClass extendClass, ECovariance convariance )
         {
