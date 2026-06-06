@@ -204,30 +204,31 @@ namespace SimpleLanguage.Compile
                 AddToken(ETokenType.Number, 0, EType.Int32);
                 return;
             }
-            if (parsed <= (ulong)sbyte.MaxValue)
-            {
-                AddToken(ETokenType.Number, (sbyte)parsed, EType.Int8);
-            }
-            else if (parsed <= byte.MaxValue)
-            {
-                AddToken(ETokenType.Number, (byte)parsed, EType.UInt8);
-            }
-            else if (parsed <= (ulong)short.MaxValue)
-            {
-                AddToken(ETokenType.Number, (short)parsed, EType.Int16);
-            }
-            else if (parsed <= ushort.MaxValue)
-            {
-                AddToken(ETokenType.Number, (ushort)parsed, EType.UInt16);
-            }
-            else if (parsed <= (ulong)int.MaxValue)
+            //if (parsed <= (ulong)sbyte.MaxValue)
+            //{
+            //    AddToken(ETokenType.Number, (sbyte)parsed, EType.Int8);
+            //}
+            //else if (parsed <= byte.MaxValue)
+            //{
+            //    AddToken(ETokenType.Number, (byte)parsed, EType.UInt8);
+            //}
+            //else if (parsed <= (ulong)short.MaxValue)
+            //{
+            //    AddToken(ETokenType.Number, (short)parsed, EType.Int16);
+            //}
+            //else if (parsed <= ushort.MaxValue)
+            //{
+            //    AddToken(ETokenType.Number, (ushort)parsed, EType.UInt16);
+            //}
+            //else 
+            if (parsed <= (ulong)int.MaxValue)
             {
                 AddToken(ETokenType.Number, (int)parsed, EType.Int32);
             }
-            else if (parsed <= uint.MaxValue)
-            {
-                AddToken(ETokenType.Number, (uint)parsed, EType.UInt32);
-            }
+            //else if (parsed <= uint.MaxValue)
+            //{
+            //    AddToken(ETokenType.Number, (uint)parsed, EType.UInt32);
+            //}
             else if (parsed <= (ulong)long.MaxValue)
             {
                 AddToken(ETokenType.Number, (long)parsed, EType.Int64);
@@ -491,7 +492,6 @@ namespace SimpleLanguage.Compile
                 UndoChar();
             }
         }
-        /// <summary> 璇诲彇鏁板瓧 </summary>
         void ReadNumber()
         {
             m_Builder.Append(m_CurChar);
@@ -626,7 +626,7 @@ namespace SimpleLanguage.Compile
                             break;
                         }
                     }
-                    else if (m_TempChar2 == 'i' || m_TempChar2 == 'I')
+                    else if (m_TempChar2 == 'i' )
                     {
                         if (endPoint == 0)
                         {
@@ -643,7 +643,7 @@ namespace SimpleLanguage.Compile
                             break;
                         }
                     }
-                    else if (m_TempChar2 == 'L' || m_TempChar2 == 'l')
+                    else if (m_TempChar2 == 'L' )
                     {
                         if (endPoint == 0)
                         {
@@ -676,7 +676,7 @@ namespace SimpleLanguage.Compile
                 {
                     if( endPoint > 2 )
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error ReadNumber ... !!!");
+                        Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "Error ReadNumber ...");                    
                     }
                     //else if( endPoint == 3 )
                     //{
@@ -694,9 +694,7 @@ namespace SimpleLanguage.Compile
                             var frontChar = m_Builder[m_Builder.Length - 1];
                             if( frontChar == '.' )
                             {
-                                //LexelLogData lld = new LexelLogData() { m_}
-
-                                Log.AddTokenLog(LID.ShowExtendMessage, "char. logic is float format call inner functionname");
+                                Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "char. logic is float format call inner functionname");
                                 //m_Buffer.Remove(m_Buffer.Length - 1, 1);
                                 // 无后缀的小数字面量（含 0.0）默认 float32，extend 须与 lexeme 一致。
                                 AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);

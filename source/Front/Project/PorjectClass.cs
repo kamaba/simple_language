@@ -308,7 +308,7 @@ namespace SimpleLanguage.Project
                 mmv.SetIsDefineMetaType(true);
                 mmv.SetMetaDefineType(new MetaType(dataClass));
                 mmv.SetRealMetaType(new MetaType(dataClass));
-                mmv.SetExpress(new MetaNewObjectExpressNode(new MetaType(dataClass), projectMc, null, null) );
+                mmv.SetExpress(new MetaNewObjectExpressNode(new MetaType(dataClass), projectMc, null ) );
                 FinalizeInjectedProjectGlobalMember(projectMc, mmv);
                 return;
             }
@@ -320,7 +320,7 @@ namespace SimpleLanguage.Project
                     mmv.SetMetaDefineType(arrMetaType);
                     mmv.SetRealMetaType(new MetaType(arrMetaType));
                     mmv.SetIsDefineMetaType(true);
-                    mmv.SetExpress(new MetaNewObjectExpressNode(arrMetaType, arrExpress, projectMc, null, mmv));
+                    mmv.SetExpress(new MetaNewObjectExpressNode(arrMetaType, arrExpress, projectMc, null ));
                     FinalizeInjectedProjectGlobalMember(projectMc, mmv);
                     return;
                 }

@@ -15,7 +15,6 @@ using System.Text;
 
 namespace SimpleLanguage.Core
 {
-    // a = { i1 = 10 } ????????
     public class MetaBraceAssignStatements
     {
         public enum EAssignTargetType
@@ -1174,7 +1173,6 @@ namespace SimpleLanguage.Core
             ArrayValue,
             ClassValueAssign,
             DataValueAssign,
-            DynamicClass,
             DynamicData,
         }
 
@@ -1187,24 +1185,11 @@ namespace SimpleLanguage.Core
             MapClass,
         }
 
-        public bool needInitMemberVariable => m_NeedInitMemberVariable;
         public ENewType newType => m_NewType;
-        public int arrayLength => m_ExpressReturnMetaType.arrayLength;
         public MetaExpressNodeBase arrayLengthExpress => m_ArrayLengthExpress;
         public List<MetaExpressNodeBase> metaInputParamList => m_MetaInputParamList;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
-        public MetaVariable storeMetaVariable => m_StoreMetaVariable;
         public List<MetaBraceAssignStatements> assignStatementsList => m_AssignStatementsList;
-        public int braceAssignCount => m_AssignStatementsList.Count;
-        /// <summary>???/???????????????? <c>metaContent.equalMetaVariable</c> ????</summary>
-        public MetaVariable equalMetaVariable => m_StoreMetaVariable;
-        public EStatementsContentType statementsContentType => m_StatementsContentType;
-
-        /// <summary>
-        /// ? true ???????????????? <c>Array&lt;Int16&gt;(n){ ... }</c> ????????????
-        /// ??? <c>[1,2,3]</c> ???????????????????????????????
-        /// </summary>
-        public bool usesExplicitArrayElementTypeSyntax => m_UsesExplicitArrayElementTypeSyntax;
 
         private FileMetaParTerm m_FileMetaParTerm = null;
         private FileMetaCallTerm m_FileMetaCallTerm = null;
@@ -1226,39 +1211,9 @@ namespace SimpleLanguage.Core
         private AllowUseSettings m_AllowUseSettings = null;
         private bool m_UsesExplicitArrayElementTypeSyntax = false;
         private MetaExpressNodeBase m_ArrayLengthExpress = null;
-        private MetaVariable m_StoreMetaVariable = null; //???????????        
         private MetaMemberFunction m_MetaMemberFunction = null;
         private List<MetaExpressNodeBase> m_MetaInputParamList = new List<MetaExpressNodeBase>();
 
-
-        /// <summary>
-        /// ??? <see cref="MetaData"/> ????? <see cref="MetaNewObjectExpressNode"/>?
-        /// ?????? <paramref name="anonymousMetaData"/>???? <see cref="MetaMemberData"/> ????????? <see cref="MetaBraceAssignStatements"/>?????? <see cref="Node"/> ??
-        /// </summary>
-        //public static MetaNewObjectExpressNode CreateAnonymousDataNewObjectExpress(
-        //    MetaMemberData braceLiteralOwner,
-        //    MetaData anonymousMetaData,
-        //    MetaBase ownerMeta,
-        //    MetaBlockStatements mbs,
-        //    bool preferSourceMemberExpress = true)
-        //{
-        //    if (braceLiteralOwner == null || anonymousMetaData == null)
-        //    {
-        //        return null;
-        //    }
-
-        //    var source = braceLiteralOwner.ownerMetaData;
-        //    if (source == null)
-        //    {
-        //        return null;
-        //    }
-
-        //    return CreateFromAnonymousMetaData(anonymousMetaData, source, ownerMeta, mbs, braceLiteralOwner);
-        //}
-
-        /// <summary>
-        /// ?? <paramref name="sourceMetaData"/> ??????? <see cref="MetaMemberData.expressNode"/> ????? <paramref name="canonicalMetaData"/> ?? new ???????
-        /// </summary>
         public static MetaNewObjectExpressNode CreateFromAnonymousMetaData(
             MetaData metaData,
             MetaBase mb,
@@ -1278,7 +1233,7 @@ namespace SimpleLanguage.Core
             }
 
             var anonymousType = new MetaType(findmd);
-            var node = new MetaNewObjectExpressNode(anonymousType, mb, mbs, storeMv);
+            var node = new MetaNewObjectExpressNode(anonymousType, mb, mbs);
             var ordered = metaData.GetMetaMemberDataList();
             ordered.Sort((a, b) => a.index.CompareTo(b.index));
 
@@ -1296,34 +1251,17 @@ namespace SimpleLanguage.Core
             node.CalcReturnType();
             return node;
         }
-
-        //public MetaNewObjectExpressNode(MetaType mt, MetaClass ownerMC, MetaBlockStatements mbs, MetaVariable storeMv, MetaMemberFunction mmf)
-        //{
-        //    m_OwnerMetaClass = ownerMC;
-        //    m_OwnerMetaBlockStatements = mbs;
-        //    m_MetaType = new MetaType(mt);
-        //    m_StoreMetaVariable = storeMv;
-        //    m_MetaMemberFunction = mmf;
-        //}
-        // ????[] ?????newArray
-        public MetaNewObjectExpressNode( MetaType defineMt, MetaArrayExpressNode maen, MetaBase mc, MetaBlockStatements mbs, MetaVariable equalMV)
+        public MetaNewObjectExpressNode( MetaType defineMt, MetaArrayExpressNode maen, MetaBase owmb, MetaBlockStatements mbs)
         {
             m_DefineMetaType = defineMt;
-            m_OwnerMetaBase = mc;
+            m_OwnerMetaBase = owmb;
             m_OwnerMetaBlockStatements = mbs;
             m_NewType = ENewType.ArrayClass;
             m_Token = maen.token;
-            m_StoreMetaVariable = equalMV;
             m_ArrayCalcMetaType = maen.GetReturnMetaType();
-            MetaType cmt = null;
-            if(defineMt != null && defineMt.IsArray() )
-            {
-                var gtmtl = defineMt.GetGenTemplateMetaTypeList();
-                cmt = gtmtl[0];
-            }
             for (int i = 0; i < maen.metaCallArray.Count; i++)
             {
-                MetaBraceAssignStatements mas = new MetaBraceAssignStatements(cmt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, maen.metaCallArray[i]);
+                MetaBraceAssignStatements mas = new MetaBraceAssignStatements(null, m_OwnerMetaBlockStatements, m_OwnerMetaBase, null, maen.metaCallArray[i]);
                 m_AssignStatementsList.Add(mas);
             }
             m_StatementsContentType = EStatementsContentType.ArrayValue;
@@ -1333,9 +1271,9 @@ namespace SimpleLanguage.Core
         // data c = {a = 20, b = 20} | c = {a = 20, b = 20} => ????  
         // Map<int,string> map1 = new(10){ 1:"20", 2:"30", 3:"50" }
         // List<int> list1 = new(){ 1,2,3,4,5 }
-        public MetaNewObjectExpressNode(FileMetaBraceTerm fmbt, MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs, MetaVariable equalMV)
+        public MetaNewObjectExpressNode(FileMetaBraceTerm fmbt, MetaType mt, MetaBase owmb, MetaBlockStatements mbs)
         {
-            m_OwnerMetaBase = ownerMC;
+            m_OwnerMetaBase = owmb;
             m_OwnerMetaBlockStatements = mbs;
             m_DefineMetaType = mt;
             if (m_DefineMetaType != null)
@@ -1351,18 +1289,16 @@ namespace SimpleLanguage.Core
             }
             m_Token = fmbt.token;
             m_BraceFileMetaBaseTerm = fmbt;
-            m_StoreMetaVariable = equalMV;
         }
         // Array arr = [1,2,3]   [Class1(), Class2(), variable1.a.b(),100]
-        public MetaNewObjectExpressNode(FileMetaBracketTerm fmbt, MetaType mt, MetaBase mc, MetaBlockStatements mbs, MetaVariable equalMV)
+        public MetaNewObjectExpressNode(FileMetaBracketTerm fmbt, MetaType defineMt, MetaBase owmb, MetaBlockStatements mbs )
         {
-            m_OwnerMetaBase = mc;
+            m_OwnerMetaBase = owmb;
             m_OwnerMetaBlockStatements = mbs;
             m_Token = fmbt.token;
             m_BraceFileMetaBaseTerm = fmbt;
-            m_StoreMetaVariable = equalMV;
 
-            m_DefineMetaType = new MetaType(mt);
+            m_DefineMetaType = defineMt;
             m_NewType = ENewType.ArrayClass;
         }
         // Class1(10){ c1 = 20, c2 = 30 }  int[2][]{ [1,2,3], [3,4,5] }
@@ -1371,7 +1307,6 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = defineMt != null ? new MetaType(defineMt) : null;
             m_OwnerMetaBase = mcen.ownerMetaBase;
             m_OwnerMetaBlockStatements = mcen.ownerMetaBlockStatements;
-            m_StoreMetaVariable = mcen.GetStoreMetaVariable();
 
             m_MetaMemberFunction = mcen.metaCallLink.finalCallNode.methodCall?.function as MetaMemberFunction;
             m_NewMetaType = new MetaType(mcen.metaCallLink.finalCallNode.callMetaType);
@@ -1498,15 +1433,11 @@ namespace SimpleLanguage.Core
                 //m_MetaConstructFunctionCall = new MetaMethodCall(null, null, tfunction, null, mdpc, null, null);
             }
         }
-        /// <summary>
-        /// ???? new ??????<paramref name="equalMV"/> ????????????????????? data ?????????
-        /// </summary>
-        public MetaNewObjectExpressNode(MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs, MetaVariable equalMV)
+        public MetaNewObjectExpressNode(MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs)
         {
             m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
-            m_StoreMetaVariable = equalMV;
-            m_DefineMetaType = new MetaType(mt);
+            m_DefineMetaType = mt;
             if (m_DefineMetaType.IsArray())
             {
                 m_NewType = ENewType.ArrayClass;
@@ -1516,11 +1447,6 @@ namespace SimpleLanguage.Core
                 m_NewType = ENewType.CommomClass;
             }
         }
-        public void SetNewMetaType( MetaType mt )
-        {
-            this.m_NewMetaType = mt;
-        }
-
         public MetaType GetMaxLevelMetaType()
         {
             bool isArrayDefine = m_NewType == ENewType.ArrayClass
@@ -1635,7 +1561,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "symbolterm in data ", m_StoreMetaVariable?.name, "");
+                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "symbolterm in data " );
                         return;
                     }
                     m_StatementsContentType = EStatementsContentType.DynamicData;
@@ -1652,7 +1578,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "symbolterm", m_StoreMetaVariable?.name, "");
+                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "symbolterm" );
                         return;
                     }
                     m_StatementsContentType = EStatementsContentType.DataValueAssign;
@@ -1670,7 +1596,7 @@ namespace SimpleLanguage.Core
                 MetaType cmt = genList[0];
                 if (fmbt is FileMetaBracketTerm fmst)
                 {
-                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmst, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
+                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmst, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements );
                     mnoe.Parse(aws);
                     mnoe.CalcReturnType();
                     var mas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, mnoe );
@@ -1680,7 +1606,7 @@ namespace SimpleLanguage.Core
                 {
                     // ?????????????????????
                     // int[][][] a = { { {1,2}, {3,4} }, { {5,6}, {7,8} } };
-                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmbrt, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
+                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmbrt, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements );
                     mnoe.Parse(aws);
                     mnoe.CalcReturnType();
                     var mas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, mnoe );
@@ -1746,7 +1672,7 @@ namespace SimpleLanguage.Core
                 MetaType cmt = mt;
                 if (fmbt is FileMetaBracketTerm fmstOb)
                 {
-                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmstOb, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
+                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmstOb, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements );
                     mnoe.Parse(aws);
                     mnoe.CalcReturnType();
                     var mas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, mnoe);
@@ -1754,7 +1680,7 @@ namespace SimpleLanguage.Core
                 }
                 else if (fmbt is FileMetaBraceTerm fmbrtOb)
                 {
-                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmbrtOb, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements, m_StoreMetaVariable);
+                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmbrtOb, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements );
                     mnoe.Parse(aws);
                     mnoe.CalcReturnType();
                     var mas = new MetaBraceAssignStatements(mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, mnoe);
@@ -1767,7 +1693,7 @@ namespace SimpleLanguage.Core
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = fmctOb;
-                    cep.equalMetaVariable = m_StoreMetaVariable;
+                    cep.equalMetaVariable = null;
                     MetaExpressNodeBase men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());
                     var mas = new MetaBraceAssignStatements(mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, men);
@@ -1797,10 +1723,10 @@ namespace SimpleLanguage.Core
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
                     cep.metaType = new MetaType(cmt);
                     cep.fme = termexpressOb;
-                    cep.equalMetaVariable = m_StoreMetaVariable;
+                    cep.equalMetaVariable = null;
                     MetaExpressNodeBase men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());
-                    men = ExpressManager.ConvertNewExpress(men, cep.metaType, m_StoreMetaVariable);
+                    men = ExpressManager.ConvertNewExpress(men, cep.metaType, null );
                     var mas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, men);
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
@@ -1822,7 +1748,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "isMap", m_StoreMetaVariable?.name, "");
+                    Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "isMap" );
                     return;
                 }
             }
@@ -1889,14 +1815,13 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "symbol term in common class", m_StoreMetaVariable?.name, "" );
+                        Log.AddMetaCoreLog(LID.MetaCoreMetaMemberShouldNameEqualExpressFormat, m_Token, "symbol term in common class" );
                         return;
                     }
                     m_StatementsContentType = EStatementsContentType.ClassValueAssign;
                 }
             }            
         }
-
         public override void Parse(AllowUseSettings auc)
         {
             m_AllowUseSettings = auc;
@@ -2017,10 +1942,6 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public void SetStoreMetaVariable( MetaVariable smv )
-        {
-            this.m_StoreMetaVariable = smv;
-        }
         public override void CalcReturnType()
         {
             if (m_ExpressReturnMetaType != null) return;
@@ -2049,24 +1970,38 @@ namespace SimpleLanguage.Core
             }
             var mipc = new MetaInputParamCollection(ownerMetaBase, m_OwnerMetaBlockStatements);
 
-            if (this.m_NewType != ENewType.ArrayClass)
+
+            if (m_NewMetaType != null)
             {
-                if (!TryResolveNonArrayReturnMetaTypeByRelation(out var nonArrayRet))
-                {
-                    return;
-                }
-                m_ExpressReturnMetaType = nonArrayRet;
-                return;
+                m_ExpressReturnMetaType = m_NewMetaType;
+            }
+            else if (m_DefineMetaType != null)
+            {
+                m_ExpressReturnMetaType = m_DefineMetaType;
+            }
+            else if ( m_ArrayCalcMetaType != null)
+            {
+                m_ExpressReturnMetaType = m_ArrayCalcMetaType;
             }
 
-            if (!TryResolveArrayReturnMetaTypeByRelation(out var arrayRet))
-            {
-                return;
-            }
-            m_ExpressReturnMetaType = arrayRet;
+            //if (this.m_NewType != ENewType.ArrayClass)
+            //{
+            //    if (!TryResolveNonArrayReturnMetaTypeByRelation(out var nonArrayRet))
+            //    {
+            //        return;
+            //    }
+            //    m_ExpressReturnMetaType = nonArrayRet;
+            //    return;
+            //}
+            //if (!TryResolveArrayReturnMetaTypeByRelation(out var arrayRet))
+            //{
+            //    return;
+            //}
+            //m_ExpressReturnMetaType = arrayRet;
 
             if (m_ExpressReturnMetaType == null)
             {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "m_ExpressReturnMetaType is null");
                 return;
             }
 
@@ -2091,43 +2026,20 @@ namespace SimpleLanguage.Core
             {
                 m_ExpressReturnMetaType.SetArrayLength(literalLength);
             }
-            if (literalLength >= 0 && m_NewMetaType != null && m_NewMetaType.IsArray() && m_NewMetaType.arrayLength == -1)
-            {
-                m_NewMetaType.SetArrayLength(literalLength);
-            }
 
-            SetupArrayMemberFunctionAndLengthParam(mipc);
 
-            if (!m_ExpressReturnMetaType.IsArray())
+            if (m_ExpressReturnMetaType.IsArray())
             {
+                SetupArrayMemberFunctionAndLengthParam(mipc);
+                if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                        "??????????????????????????/???????????: " + m_ExpressReturnMetaType.ToString());
+                }
                 return;
             }
 
-            if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
-            {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                    "??????????????????????????/???????????: " + m_ExpressReturnMetaType.ToString());
-            }
-
-
-            if (m_StatementsContentType == EStatementsContentType.DynamicClass)
-            {
-            }
-            else if (m_StatementsContentType == EStatementsContentType.DynamicData)
-            {
-            }
-            else
-            {
-                // Before creating instance type, check abstract class restriction
-                var metaClass = m_DefineMetaType?.metaClass;
-                if (metaClass != null && metaClass.isAbstractClass)
-                {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error: cannot instantiate abstract class: " + metaClass.name);
-                    m_NewMetaType = null;
-                }
-            }
         }
-
         private bool TryResolveNonArrayReturnMetaTypeByRelation(out MetaType result)
         {
             result = null;
@@ -2166,31 +2078,7 @@ namespace SimpleLanguage.Core
             MetaType defineArray = (m_DefineMetaType != null && m_DefineMetaType.IsArray()) ? m_DefineMetaType : null;
             MetaType newArray = (m_NewMetaType != null && m_NewMetaType.IsArray()) ? m_NewMetaType : null;
             MetaType calcArray = (m_ArrayCalcMetaType != null && m_ArrayCalcMetaType.IsArray()) ? m_ArrayCalcMetaType : null;
-
-            if (defineArray != null && newArray != null)
-            {
-                bool defineNewRelated = MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(defineArray, newArray);
-                if (!defineNewRelated)
-                {
-                    Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", defineArray.ToString(), newArray.ToString());
-                    return false;
-                }
-
-                var dEl = defineArray.GetMetaTypeByIndex(0);
-                var nEl = newArray.GetMetaTypeByIndex(0);
-                if (dEl != null && nEl != null
-                    && NumberManager.IsNumberClass(dEl.metaClass)
-                    && NumberManager.IsNumberClass(nEl.metaClass)
-                    && !TypeManager.CompareMetaType(dEl, nEl))
-                {
-                    result = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(defineArray, newArray);
-                }
-                else
-                {
-                    result = new MetaType(newArray);
-                }
-            }
-            else if (newArray != null)
+            if (newArray != null)
             {
                 result = new MetaType(newArray);
                 return true;
@@ -2200,163 +2088,151 @@ namespace SimpleLanguage.Core
                 result = new MetaType(defineArray);
                 return true;
             }
-
-            if (calcArray != null)
+            else if (calcArray != null)
             {
-                if (result == null)
-                {
-                    result = new MetaType(calcArray);
-                    return true;
-                }
-
-                bool resultCalcRelated = MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(result, calcArray);
-                bool calcResultRelated = MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(calcArray, result);
-                if (!resultCalcRelated && !calcResultRelated)
-                {
-                    Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", result.ToString(), calcArray.ToString());
-                    return false;
-                }
-
-                // ?????????????????????????????????????????????????? define ????????????
-                var retEl = result.GetMetaTypeByIndex(0);
-                var calcEl = calcArray.GetMetaTypeByIndex(0);
-                if (retEl != null && calcEl != null
-                    && NumberManager.IsNumberClass(retEl.metaClass)
-                    && NumberManager.IsNumberClass(calcEl.metaClass)
-                    && !TypeManager.CompareMetaType(retEl, calcEl))
-                {
-                    result = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(result, calcArray);
-                }
-                else if (resultCalcRelated)
-                {
-                    result = new MetaType(calcArray);
-                }
-
-                if (result.arrayLength == -1 && calcArray.arrayLength >= 0)
-                {
-                    result.SetArrayLength(calcArray.arrayLength);
-                }
-            }
-
-            return true;
-        }
-        private bool ResolveInitialReturnForArrayNew()
-        {
-            if (m_StoreMetaVariable?.isDefineMetaType != true)
-            {
+                result = new MetaType(calcArray);
                 return true;
             }
-
-            if (!m_DefineMetaType.IsArray())
-            {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "????????????new??????????");
-                return false;
-            }
-
-            if (!TryResolveDefinedStoreArrayNewReturnType(out var numericMergedArrayMeta))
-            {
-                return false;
-            }
-
-            m_ExpressReturnMetaType = numericMergedArrayMeta != null ? numericMergedArrayMeta : new MetaType(m_NewMetaType);
-            return true;
-        }
-        private bool TryResolveDefinedStoreArrayNewReturnType(out MetaType numericMergedArrayMeta)
-        {
-            numericMergedArrayMeta = null;
-            var list1 = m_DefineMetaType.ArrayDimensionLengthList();
-            var list2 = m_NewMetaType.ArrayDimensionLengthList();
-
-            if (list1.Count != list2.Count || list1.Count == 0)
-            {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "?????new?? ?????");
-                return false;
-            }
-
-            for (int i = 0; i < list1.Count; i++)
-            {
-                if (i == list1.Count - 1)
-                {
-                    if (!TryValidateInnermostArrayDimensionForStore(list1, list2, i, ref numericMergedArrayMeta))
-                    {
-                        return false;
-                    }
-                }
-                else if (!TryValidateOuterArrayDimensionForStore(list1, list2, i))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-        private bool TryValidateInnermostArrayDimensionForStore(
-            List<int> defineDims,
-            List<int> newDims,
-            int index,
-            ref MetaType numericMergedArrayMeta)
-        {
-            if (defineDims[index] != -1)
-            {
-                if (newDims[index] != -1)
-                {
-                    if (newDims[index] != defineDims[index])
-                    {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????");
-                    }
-                }
-                else
-                {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????????");
-                    return false;
-                }
-            }
-
-            var cmt1 = m_DefineMetaType.GetMetaTypeByIndex(0);
-            var cmt2 = m_NewMetaType.GetMetaTypeByIndex(0);
-            if (TypeManager.CompareMetaType(cmt1, cmt2))
-            {
-                return true;
-            }
-
-            if (NumberManager.IsNumberClass(cmt1.metaClass) && NumberManager.IsNumberClass(cmt2.metaClass))
-            {
-                numericMergedArrayMeta = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(
-                    m_DefineMetaType, m_NewMetaType);
-                return true;
-            }
-
-            if (cmt1.IsArray() && cmt2.IsArray()
-                && MetaBraceAssignStatements.TryArrayElementAssignableForNewObject(cmt1, cmt2))
-            {
-                return true;
-            }
-
-            Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", cmt1.ToString(), cmt2.ToString());
             return false;
+            
+            //if (defineArray != null && newArray != null)
+            //{
+            //    bool defineNewRelated = MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(defineArray, newArray);
+            //    if (!defineNewRelated)
+            //    {
+            //        Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", defineArray.ToString(), newArray.ToString());
+            //        return false;
+            //    }
+
+            //    var dEl = defineArray.GetMetaTypeByIndex(0);
+            //    var nEl = newArray.GetMetaTypeByIndex(0);
+            //    if (dEl != null && nEl != null
+            //        && NumberManager.IsNumberClass(dEl.metaClass)
+            //        && NumberManager.IsNumberClass(nEl.metaClass)
+            //        && !TypeManager.CompareMetaType(dEl, nEl))
+            //    {
+            //        result = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(defineArray, newArray);
+            //    }
+            //    else
+            //    {
+            //        result = new MetaType(newArray);
+            //    }
+            //}
+            //else if (newArray != null)
+            //{
+            //    result = new MetaType(newArray);
+            //    return true;
+            //}
+            //else if (defineArray != null)
+            //{
+            //    result = new MetaType(defineArray);
+            //    return true;
+            //}
+
+            //if (calcArray != null)
+            //{
+            //    if (result == null)
+            //    {
+            //        result = new MetaType(calcArray);
+            //        return true;
+            //    }
+
+            //    bool resultCalcRelated = MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(result, calcArray);
+            //    bool calcResultRelated = MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(calcArray, result);
+            //    if (!resultCalcRelated && !calcResultRelated)
+            //    {
+            //        Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", result.ToString(), calcArray.ToString());
+            //        return false;
+            //    }
+
+            //    // ?????????????????????????????????????????????????? define ????????????
+            //    var retEl = result.GetMetaTypeByIndex(0);
+            //    var calcEl = calcArray.GetMetaTypeByIndex(0);
+            //    if (retEl != null && calcEl != null
+            //        && NumberManager.IsNumberClass(retEl.metaClass)
+            //        && NumberManager.IsNumberClass(calcEl.metaClass)
+            //        && !TypeManager.CompareMetaType(retEl, calcEl))
+            //    {
+            //        result = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(result, calcArray);
+            //    }
+            //    else if (resultCalcRelated)
+            //    {
+            //        result = new MetaType(calcArray);
+            //    }
+
+            //    if (result.arrayLength == -1 && calcArray.arrayLength >= 0)
+            //    {
+            //        result.SetArrayLength(calcArray.arrayLength);
+            //    }
+            //}            
         }
+        //private bool TryValidateInnermostArrayDimensionForStore(
+        //    List<int> defineDims,
+        //    List<int> newDims,
+        //    int index,
+        //    ref MetaType numericMergedArrayMeta)
+        //{
+        //    if (defineDims[index] != -1)
+        //    {
+        //        if (newDims[index] != -1)
+        //        {
+        //            if (newDims[index] != defineDims[index])
+        //            {
+        //                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????");
+        //            }
+        //        }
+        //        else
+        //        {
+        //            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????????");
+        //            return false;
+        //        }
+        //    }
 
-        private bool TryValidateOuterArrayDimensionForStore(List<int> defineDims, List<int> newDims, int index)
-        {
-            if (defineDims[index] == -1)
-            {
-                if (newDims[index] == -1)
-                {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "?????? ??????????????");
-                    return false;
-                }
+        //    var cmt1 = m_DefineMetaType.GetMetaTypeByIndex(0);
+        //    var cmt2 = m_NewMetaType.GetMetaTypeByIndex(0);
+        //    if (TypeManager.CompareMetaType(cmt1, cmt2))
+        //    {
+        //        return true;
+        //    }
 
-                return true;
-            }
+        //    if (NumberManager.IsNumberClass(cmt1.metaClass) && NumberManager.IsNumberClass(cmt2.metaClass))
+        //    {
+        //        numericMergedArrayMeta = NumberManager.BuildArrayMetaTypeCopyingElementFromDefinePreservingLength(
+        //            m_DefineMetaType, m_NewMetaType);
+        //        return true;
+        //    }
 
-            if (defineDims[index] != newDims[index])
-            {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????????! ??????????new?????????????!");
-                return false;
-            }
+        //    if (cmt1.IsArray() && cmt2.IsArray()
+        //        && MetaBraceAssignStatements.TryArrayElementAssignableForNewObject(cmt1, cmt2))
+        //    {
+        //        return true;
+        //    }
 
-            return true;
-        }
+        //    Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, m_Token, "", cmt1.ToString(), cmt2.ToString());
+        //    return false;
+        //}
+
+        //private bool TryValidateOuterArrayDimensionForStore(List<int> defineDims, List<int> newDims, int index)
+        //{
+        //    if (defineDims[index] == -1)
+        //    {
+        //        if (newDims[index] == -1)
+        //        {
+        //            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "?????? ??????????????");
+        //            return false;
+        //        }
+
+        //        return true;
+        //    }
+
+        //    if (defineDims[index] != newDims[index])
+        //    {
+        //        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????????! ??????????new?????????????!");
+        //        return false;
+        //    }
+
+        //    return true;
+        //}
         private void SetupArrayMemberFunctionAndLengthParam(MetaInputParamCollection mipc)
         {
             if (!m_ExpressReturnMetaType.IsArray())
@@ -2399,23 +2275,6 @@ namespace SimpleLanguage.Core
             {
                 m_AssignStatementsList[i].ValidateDefineAgainstDeclaredMetaType();
             }
-        }
-        private string FormatBraceAssignListForDebug()
-        {
-            StringBuilder sb = new StringBuilder();
-            if (m_AssignStatementsList.Count > 0)
-            {
-                sb.Append("{");
-                for (int i = 0; i < m_AssignStatementsList.Count; i++)
-                {
-                    var mas = m_AssignStatementsList[i];
-                    sb.Append(mas.ToFormatString());
-                    if (i < m_AssignStatementsList.Count - 1)
-                        sb.Append(", ");
-                }
-                sb.Append("}");
-            }
-            return sb.ToString();
         }
         public override string ToFormatString()
         {
@@ -2464,41 +2323,26 @@ namespace SimpleLanguage.Core
                     sb.Append(m_ExpressReturnMetaType.name + "()");
                     sb.Append(".");
                 }
-                //if(m_MetaConstructFunctionCall.m_CallerMetaVariable != null )
-                //{
-                //    sb.Append(m_MetaConstructFunctionCall.m_CallerMetaVariable.name);
-                //    sb.Append(".");
-                //    sb.Append(m_MetaConstructFunctionCall.function.name);
-                //    sb.Append("(");
-                //    if( m_MetaConstructFunctionCall.metaInputParamCollection != null )
-                //    {
-                //        int count = m_MetaConstructFunctionCall.metaInputParamCollection.metaInputParamList.Count;
-                //        for ( int i = 0; i < count; i++ )
-                //        {
-                //            var mp = m_MetaConstructFunctionCall.metaInputParamCollection.metaInputParamList[i];
-                //            sb.Append(mp.ToFormatString());
-                //            if( i < count - 1 )
-                //            {
-                //                sb.Append(",");
-                //            }
-                //        }
-                //    }
-                //    sb.Append(")");
-                //}
-                sb.Append(FormatBraceAssignListForDebug());
-            }
+
+                if (m_AssignStatementsList.Count > 0)
+                {
+                    sb.Append("{");
+                    for (int i = 0; i < m_AssignStatementsList.Count; i++)
+                    {
+                        var mas = m_AssignStatementsList[i];
+                        sb.Append(mas.ToFormatString());
+                        if (i < m_AssignStatementsList.Count - 1)
+                            sb.Append(", ");
+                    }
+                    sb.Append("}");
+                }            }
 
             return sb.ToString();
         }
-
         public override string ToString()
         {
             return "NewObjectExpressNode: " + ToFormatString();
         }
-
-
-
-
         /// <summary>
         /// ?? <paramref name="sourceField"/> ??????? <see cref="MetaMemberData.expressNode"/>?????? <see cref="MetaNewObjectExpressNode"/>????????ฆศ???งา???
         /// </summary>

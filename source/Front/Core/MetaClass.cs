@@ -860,7 +860,7 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找发现默认构造函数");
                     return;
                 }
-                m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, defaultFunction.metaBlockStatements, null );
+                m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, defaultFunction.metaBlockStatements );
             }
         }
 #endif        

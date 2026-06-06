@@ -316,21 +316,7 @@ namespace SimpleLanguage.IR
 
             if( mnoen.newType == MetaNewObjectExpressNode.ENewType.ArrayClass )
             {
-                MetaExpressNodeBase lenNode = mnoen.arrayLengthExpress;
-                if (lenNode == null)
-                {
-                    int inferredLen = mnoen.expressReturnMetaType != null ? mnoen.expressReturnMetaType.arrayLength : -1;
-                    if (inferredLen < 0 && mnoen.assignStatementsList != null)
-                    {
-                        inferredLen = mnoen.assignStatementsList.Count;
-                    }
-                    if (inferredLen < 0)
-                    {
-                        inferredLen = 0;
-                    }
-                    lenNode = new MetaConstExpressNode(EType.Int32, inferredLen);
-                }
-                IRExpressBase ire = IRExpressManager.CreateExpress(irMethod, lenNode);
+                IRExpressBase ire = IRExpressManager.CreateExpress(irMethod, mnoen.arrayLengthExpress);
                 m_IRDataList.AddRange(ire.IRDataList);
 
                 var irMetaType = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.expressReturnMetaType, owirmc);

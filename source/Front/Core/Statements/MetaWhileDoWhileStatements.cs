@@ -106,7 +106,6 @@ namespace SimpleLanguage.Core
                 {
                     m_ForInContent = new MetaVariable("forcontent_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, mnoen.GetReturnMetaType() );
                     m_ThenMetaStatements.UpdateMetaVariableDict(m_ForInContent);
-                    mnoen.SetStoreMetaVariable(m_ForInContent);
                 }
                 MetaType mdt = m_ForInContent.GetFinalMetaType();
                 if ( !m_ForInContent.GetIsCanCanIterate() )

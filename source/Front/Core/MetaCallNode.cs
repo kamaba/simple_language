@@ -134,7 +134,6 @@ namespace SimpleLanguage.Core
         private MetaBase m_OwnerMetaBase = null;
         private MetaInputParamCollection m_MetaInputParamCollection = null;
         private List<MetaType> m_MetaTemplateParamsList = new List<MetaType>();
-        //private MetaBraceOrBracketStatementsContent m_MetaBraceStatementsContent  = null;
         private MetaType m_FrontDefineMetaType = null;
         private MetaExpressNodeBase m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 涓殑3+20+10.f灏辨槸琛ㄧず寮?, fun(expressNode)
         private MetaVariable m_StoreMetaVariable = null;        // store metaVariable 像 a.val = new(){} val就是store 
@@ -149,8 +148,6 @@ namespace SimpleLanguage.Core
         private MetaTemplate m_MetaTemplate = null;
         private MetaVariable m_MetaVariable = null;
         private MetaFunction m_MetaFunction = null;
-        //private MetaGenTemplateClass m_GenMetaClass = null;
-        //private MetaGenTempalteFunction m_MetaGenTemplateFunction = null;
         private string m_Name;
         //private bool m_NextNotAllowParse = false;
         private bool m_VisitFlag = false;
@@ -1856,16 +1853,28 @@ namespace SimpleLanguage.Core
             {
                 // Treat runtime/native bridge calls as system functions.
                 // Accept either exact enum name or literal string.
-                if (mb != null && SystemMethodCallDeclarationRegistry.TryResolveName(inputname, out var inputindex))
+
+                if( SystemMethodCallDeclarationRegistry.TryResolveName( inputname, out ESystemMethodCall call ) )
                 {
-                    m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputindex.ToString());
-                    m_MetaFunction.SetIndex((int)inputindex);
+                    m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);
+                    m_MetaFunction.SetIndex( (int)call );
                     var retMt = m_MetaFunction.GetFinalMetaType();
                     m_CallMetaType = retMt != null ? new MetaType(retMt) : new MetaType(mc);
                     m_MetaType = retMt != null ? new MetaType(retMt) : null;
                     m_CallNodeType = ECallNodeType.SystemFunctionCall;
                     return true;
                 }
+
+                //if (mb != null && Enum.TryParse<ESystemMethodCall>(inputname, true, out var inputindex))
+                //{
+                //    m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);
+                //    m_MetaFunction.SetIndex((int)inputindex);
+                //    var retMt = m_MetaFunction.GetFinalMetaType();
+                //    m_CallMetaType = retMt != null ? new MetaType(retMt) : new MetaType(mc);
+                //    m_MetaType = retMt != null ? new MetaType(retMt) : null;
+                //    m_CallNodeType = ECallNodeType.SystemFunctionCall;
+                //    return true;
+                //}
             }
 
             MetaNode retMC = null;
@@ -2209,15 +2218,12 @@ namespace SimpleLanguage.Core
                 {
                     try
                     {
-                        if (SystemMethodCallDeclarationRegistry.TryResolveName(inputname, out var del))
+                        if ( Enum.TryParse<ESystemMethodCall>(inputname, out var del))
                         {
                             // create a lightweight builtin placeholder so later phases treat this as a static function
-                            m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, del.ToString());
-                            m_MetaFunction.SetIndex((int)del);
-                            var retMt = m_MetaFunction.GetFinalMetaType();
-                            m_CallMetaType = retMt != null ? new MetaType(retMt) : new MetaType(mc);
-                            m_MetaType = retMt != null ? new MetaType(retMt) : new MetaType(CoreMetaClassManager.objectMetaClass);
-                            m_CallNodeType = ECallNodeType.SystemFunctionCall;
+                            m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);
+                            m_MetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                            m_CallNodeType = ECallNodeType.MemberFunctionName;
                             return true;
                         }
                     }

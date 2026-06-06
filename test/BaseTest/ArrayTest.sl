@@ -184,7 +184,7 @@ ArrayTest
         Array<Array<int> > axxx13 = int[2][] { aaaxx12, [991,992,993,994] }
         forIIterator(axxx13)
         !#
-        int[] axx22 = int[1]{100}
+        int[] axx22 = int[2]{ int(100.0f), Int32("101" ) }
         forIIterator(axx22)
         object[] axx23 = object[1]{ axx22 }
         forIIterator(axx23)

@@ -169,7 +169,7 @@ namespace SimpleLanguage.Core
         {
             var memberClass = CoreMetaClassManager.memberMetaClass;
             var memberType = new MetaType(memberClass);
-            var wrappedNewObject = new MetaNewObjectExpressNode(memberType, ownerEnum, null, null);
+            var wrappedNewObject = new MetaNewObjectExpressNode(memberType, ownerEnum, null );
 
             var nameMv = memberClass.GetMetaMemberVariableByName("name");
             var valueMv = memberClass.GetMetaMemberVariableByName("value");
