@@ -285,12 +285,7 @@ namespace SimpleLanguage.Core
         {
             if( m_Express != null )
             {
-                m_RealMetaType = new MetaType(m_Express.GetReturnMetaType());
-                if (m_Express is MetaNewObjectExpressNode mnoe)
-                {
-                    mnoe.CheckDefineVariableMetaTypeAndContentMetaType();
-                }
-
+                m_RealMetaType = m_Express.GetReturnMetaType();
                 foreach (var v in m_TemplateChildMetaMemberVariableList)
                 {
                     if (!v.isDefineMetaType)
@@ -299,8 +294,7 @@ namespace SimpleLanguage.Core
                     }
                 }
 
-                var relation = TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_Express.GetReturnMetaType(), m_Token,
-                    out MetaType convertMt);
+                var relation = TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_RealMetaType, m_Token, out MetaType convertMt);
                 if (relation == false)
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 表达式中返回定义类型为空 " + m_Express.ToString());

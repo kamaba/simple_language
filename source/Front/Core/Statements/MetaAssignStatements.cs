@@ -438,10 +438,6 @@ namespace SimpleLanguage.Core
             {
                 m_RightMetaExpress = newexpress;
             }
-            if (m_RightMetaExpress is MetaNewObjectExpressNode mnoen)
-            {
-                mnoen.CheckDefineVariableMetaTypeAndContentMetaType();
-            }
             return true;
         }
         private MetaType ResolveRightPreferredMetaTypeForDirectBraceLiteral(MetaType setterParamMetaType)

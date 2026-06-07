@@ -157,11 +157,7 @@ namespace SimpleLanguage.Core
         {
             if (m_Express != null)
             {
-                var ret = m_Express.GetReturnMetaType();
-                if (ret != null)
-                {
-                    SetRealMetaType(new MetaType(ret));
-                }
+                m_RealMetaType = m_Express.GetReturnMetaType();
             }
         }
 

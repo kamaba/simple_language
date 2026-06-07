@@ -547,7 +547,7 @@ namespace SimpleLanguage.Core
                 if (mcn.bracketExpressList.Count > 0)
                 {
                     MetaClass cmc = mcn.metaType.metaClass;
-                    MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mcn.bracketExpressList, mcn.storeMetaVariable);
+                    MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mcn.bracketExpressList);
                     mvn.SetToken(mcn.token);
                     m_VisitNodeList.Add(mvn);
                 }
@@ -564,7 +564,7 @@ namespace SimpleLanguage.Core
                 {
                     if (mcn.bracketExpressList.Count > 0)
                     {
-                        MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mcn.bracketExpressList, mcn.storeMetaVariable);
+                        MetaVisitNode mvn = MetaVisitNode.CreateByNewArrayClass(mcn.metaType, mcn.bracketExpressList);
                         mvn.SetToken(mcn.token);
                         m_VisitNodeList.Add(mvn);
                     }

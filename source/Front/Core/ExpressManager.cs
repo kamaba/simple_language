@@ -388,25 +388,31 @@ namespace SimpleLanguage.Core
                     Debug.Assert(false, "老类型不是CallLinkExpressNode");
                     return null;
                 }
-                menNew = new MetaNewObjectExpressNode(mdt, mcen);
-                menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                var menNew1 = new MetaNewObjectExpressNode(mdt, mcen);
+                menNew1.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
 
-                menNew.CalcReturnType();
+                menNew1.CalcReturnType();
+                menNew1.CheckDefineVariableMetaTypeAndContentMetaType();
+                menNew = menNew1;
             }
             else if (oldmen is MetaArrayExpressNode maen)
             {
-                menNew = new MetaNewObjectExpressNode( null, maen, oldmen.ownerMetaBase, oldmen.ownerMetaBlockStatements );
-                menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
-                menNew.CalcReturnType();
+                var menNew1 = new MetaNewObjectExpressNode( null, maen, oldmen.ownerMetaBase, oldmen.ownerMetaBlockStatements );
+                menNew1.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                menNew1.CalcReturnType();
+                menNew1.CheckDefineVariableMetaTypeAndContentMetaType();
+                menNew = menNew1;
             }
             else if (oldmen is MetaAnonDataExpressNode maden)
             {         
-                menNew = MetaNewObjectExpressNode.CreateFromAnonymousMetaData(
+                var menNew1 = MetaNewObjectExpressNode.CreateFromAnonymousMetaData(
                     maden.metaData,
                     oldmen.ownerMetaBase,
                     oldmen.ownerMetaBlockStatements,
                     mv);
-                menNew.SetToken(maden.token);
+                menNew1.SetToken(maden.token);
+                menNew1.CheckDefineVariableMetaTypeAndContentMetaType();
+                menNew = menNew1;
             }
             else if( oldmen.convertCallExpressNode )
             {
@@ -427,6 +433,7 @@ namespace SimpleLanguage.Core
                     menNew.CalcReturnType();
                 }
             }
+            
 
                 return menNew;
         }

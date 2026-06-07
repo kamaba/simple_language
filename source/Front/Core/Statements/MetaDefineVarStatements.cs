@@ -59,7 +59,6 @@ namespace SimpleLanguage.Core
             MetaType leftMt = null;
             var metaFunction = m_OwnerMetaBlockStatements?.ownerMetaFunction;
 
-            bool isDynamicClass = false;
             bool isSynamicData = false;
             FileMetaBaseTerm fileExpress = null;
             if ( m_FileMetaDefineVariableSyntax != null )
@@ -103,12 +102,13 @@ namespace SimpleLanguage.Core
                 m_Token = m_FileMetaOpAssignSyntax.variableRef.callNodeList[0].token;
                 AddPingToken(m_Token);
                 m_DefineVarMetaVariable.AddPingToken(m_Token);
-                if ( m_FileMetaOpAssignSyntax.dynamicToken != null )
-                {
-                    isDynamicClass = true;
-                    leftMt = null;// new MetaType(CoreMetaClassManager.dynamicMetaClass);
-                }
-                else if( m_FileMetaOpAssignSyntax.dataToken != null )
+                //if ( m_FileMetaOpAssignSyntax.dynamicToken != null )
+                //{
+                //    isDynamicClass = true;
+                //    leftMt = null;// new MetaType(CoreMetaClassManager.dynamicMetaClass);
+                //}
+                //else 
+                    if( m_FileMetaOpAssignSyntax.dataToken != null )
                 {
                     isSynamicData = true;
                     leftMt = new MetaType(CoreMetaClassManager.dynamicMetaData );
@@ -165,72 +165,32 @@ namespace SimpleLanguage.Core
                 m_ExpressNode.CalcReturnType();
 
                 m_ExpressNode = ExpressManager.ConvertNewExpress(m_ExpressNode, leftMt, m_DefineVarMetaVariable );
-                if( m_ExpressNode is MetaNewObjectExpressNode mnoen )
-                {
-                    mnoen.CheckDefineVariableMetaTypeAndContentMetaType();
-                }
-
-                expressRetMetaDefineType = m_ExpressNode.GetReturnMetaType();               
-                if (expressRetMetaDefineType == null)
-                {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 解析新建变量语句时，表达式返回类型为空!!__2", defineName);
-                    return;
-                }
+                expressRetMetaDefineType = m_ExpressNode.GetReturnMetaType();        
             }
-            //if (m_ExpressNode is MetaCallLinkExpressNode mclen)
-            //{
-            //    if (mclen.GetReturnMetaVariable() == null)
-            //    {
-            //        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "在定义变量时，必须返回一个变量值 1");
-            //        return;
-            //    }
-            //}
 
+            if (expressRetMetaDefineType == null)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 解析新建变量语句时，表达式返回类型为空!!__2", defineName);
+                return;
+            }
             if (!m_DefineVarMetaVariable.isDefineMetaType )
             {
-                MetaConstExpressNode constExpressNode = m_ExpressNode as MetaConstExpressNode;
-                if (constExpressNode != null)
-                {
-                    if (!ExpressManager.TryAdjustConstExpressByDefineMetaType(expressRetMetaDefineType, constExpressNode ))
-                    {
-                        return;
-                    }
-                }
-                bool isCheckReturnType = true;
-                if (constExpressNode != null)
-                {
-                    if (constExpressNode.eType == EType.Null)
-                    {
-                        isCheckReturnType = false;
-                    }
-                }
-                if (isCheckReturnType)
-                {
-                    //m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
-                    m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
-                }
+                m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
             }
             else
             {
-                if (m_ExpressNode != null)
+                if (TypeManager.CompareLeftRightMetaType(m_DefineVarMetaVariable.defineMetaType, expressRetMetaDefineType, m_Token,
+                            out var convertMetaType))
                 {
-                    if (TypeManager.CompareLeftRightMetaType(m_DefineVarMetaVariable.GetFinalMetaType(), m_ExpressNode.GetReturnMetaType(), m_Token,
-                            out var convertMetaType ) )
+                    if (convertMetaType != null)
                     {
-                        if (convertMetaType != null)
-                        {
-                            m_DefineVarMetaVariable.SetRealMetaType(convertMetaType);
-                        }
-                        else
-                        {
-                            m_DefineVarMetaVariable.SetRealMetaType(m_ExpressNode.GetReturnMetaType());
-                        }
+                        m_DefineVarMetaVariable.SetRealMetaType(convertMetaType);
+                    }
+                    else
+                    {
+                        m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                     }
                 }
-            }
-            if (m_ExpressNode == null)
-            {
-                m_ExpressNode = m_DefineVarMetaVariable.GetFinalTemplateMetaClass().defaultExpressNode;
             }
             SetTRMetaVariable(m_DefineVarMetaVariable);
         }        

@@ -6,6 +6,7 @@
 //  Description:  this's a calllink's node handle
 //****************************************************************************
 using SimpleLanguage.Compile;
+using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
 using System;
@@ -442,18 +443,14 @@ namespace SimpleLanguage.Core
                     FileMetaConstValueTerm fmcvt = new FileMetaConstValueTerm(m_FileMetaCallNode.fileMeta, m_Token);
                     m_ExpressNode = new MetaConstExpressNode(m_OwnerMetaBase, m_OwnerMetaFunctionBlock, fmcvt);
                     m_ExpressNode.Parse(m_AllowUseSettings);
-                    m_ExpressNode = ExpressManager.ConvertNewExpress(m_ExpressNode, m_MetaType, m_MetaVariable);
-                    if (m_ExpressNode is MetaConstExpressNode)
-                    {
-                        m_CallNodeType = ECallNodeType.ConstValue;
-                    }
-                    else
-                    {
-                        m_CallNodeType = ECallNodeType.Express;
-                    }
-                    m_MetaClass = m_ExpressNode.GetReturnMetaClass();
-                    m_MetaType = new MetaType(m_MetaClass);
+                    m_CallNodeType = ECallNodeType.ConstValue;
+                    m_MetaType = m_ExpressNode.GetReturnMetaType();
+                    m_MetaClass = m_MetaType.metaClass;
                 }
+                //else
+                //{
+                //    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error not const value");
+                //}
             }
             else if ( etype == ETokenType.Global)
             {
@@ -549,7 +546,7 @@ namespace SimpleLanguage.Core
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error this is not allowed in input parameter expression." + m_Token.ToLexemeAllString());
                 }
-                //this.鏅€氱殑鍑芥暟锛屽彉閲忥紝get/set鏂规硶
+                //this.
                 if (isFirst)
                 {
                     if (m_IsFunction)
@@ -1641,6 +1638,10 @@ namespace SimpleLanguage.Core
 
                 }
                 else if (m_MetaNode != null)
+                {
+
+                }
+                else if( m_MetaType != null )
                 {
 
                 }

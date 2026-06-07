@@ -427,7 +427,7 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
-        public static MetaVisitNode CreateByNewArrayClass(MetaType mt, List<MetaExpressNodeBase> list, MetaVariable mv = null)
+        public static MetaVisitNode CreateByNewArrayClass(MetaType mt, List<MetaExpressNodeBase> list )
         {
             MetaVisitNode vn = new MetaVisitNode();
 
@@ -467,10 +467,9 @@ namespace SimpleLanguage.Core
             newRMT = TypeManager.instance.AddArrayTemplate(newRMT, arrayLengthList);
             vn.m_CallMetaType = newRMT;
             vn.m_VisitType = EVisitType.New;
-            vn.m_Variable = mv;
             if (newRMT.metaClass is MetaGenTemplateClass mgtc)
             {
-                vn.m_ReturnMetaType = new MetaType(newRMT);
+                vn.m_ReturnMetaType = newRMT;
             }
 
             return vn;

@@ -313,8 +313,6 @@ namespace SimpleLanguage.Core
                 m_MetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
             }
         }
-
-
         public MetaBraceAssignStatements( MetaType newmt, MetaBlockStatements mbs, MetaBase owmb, MetaType defineMt, MetaExpressNodeBase men )
         {
             m_NewObjectMetaType = newmt;
@@ -335,10 +333,7 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = mmv.GetFinalMetaType();
             m_Id = m_MetaMemberVariable.index;
             m_AssignTargetType = EAssignTargetType.MemberVariable;
-        }
-        /// <summary>
-        /// ????????? data ???????? <see cref="MetaMemberData"/>??? <see cref="MetaMemberVariable"/> ?????
-        /// </summary>
+        }        
         public MetaBraceAssignStatements(MetaMemberData mmd, MetaBlockStatements mbs, MetaBase owmt, MetaExpressNodeBase men )
         {
             m_MetaMemberData = mmd;
@@ -350,16 +345,6 @@ namespace SimpleLanguage.Core
             m_DefineMetaType = new MetaType(mmd.GetFinalMetaType());
             m_Id = m_MetaMemberData.index;
         }
-        //public void SetMetaMemberVariable(MetaMemberVariable mmv)
-        //{
-        //    this.m_MetaMemberVariable = mmv;
-        //    this.m_AssignTargetType = EAssignTargetType.MemberVariable;
-        //}
-        //public void SetMetaMemberData(MetaMemberData mmd)
-        //{
-        //    this.m_MetaMemberData = mmd;
-        //    this.m_AssignTargetType = EAssignTargetType.MemberData;
-        //}
         public void Parse( AllowUseSettings aus )
         {
             MetaVariable mv = null;
@@ -452,9 +437,6 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        /// <summary>
-        /// new / ????????????????????????????
-        /// </summary>
         internal static bool TryArrayElementAssignableForNewObject(MetaType targetArray, MetaType exprArray)
         {
             if (targetArray == null || exprArray == null) return false;
@@ -539,14 +521,6 @@ namespace SimpleLanguage.Core
 
             return true;
         }
-
-        /// <summary>
-        /// ?????????????<c>{}</c>/<c>[]</c> ????????????
-        /// ??????????? <see cref=""/> ???????
-        /// <b>enum</b> ??????????????name ? index ???
-        /// <b>data</b> ????????????????????? data ????????
-        /// <b>class / ??</b> ??/??/Num?????????????????????? <see cref="ClassManager.IsNarrowerCorePrimitiveWideningOkForCallSite"/> ????
-        /// </summary>
         internal static bool IsBraceAssignDeclaredCompatibleWithExpress(MetaType declared, MetaType express)
         {
             if (declared == null || express == null)
@@ -634,11 +608,7 @@ namespace SimpleLanguage.Core
             }
 
             return false;
-        }
-        /// <summary>
-        /// ???/???????<see cref="m_DefineMetaType"/> ????? define?????????????
-        /// ?? <see cref="m_AssignTargetType"/> ?? class/data ????? data ??????????????
-        /// </summary>
+        }      
         public void ValidateDefineAgainstDeclaredMetaType()
         {
             MetaType contentMt = GetRetMetaType();
