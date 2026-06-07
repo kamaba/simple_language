@@ -134,7 +134,7 @@ namespace SimpleLanguage.Core
                 }
 
                 if (merged.IsArray() && next.IsArray()
-                    && MetaBraceAssignStatements.TryGetCompatibleArrayMetaType(merged, next, out var compatibleArrayMetaType))
+                    && TypeManager.TryGetCompatibleArrayMetaType(merged, next, out var compatibleArrayMetaType))
                 {
                     merged = compatibleArrayMetaType;
                     continue;
@@ -1978,5 +1978,111 @@ namespace SimpleLanguage.Core
         }
         #endregion
 
+        public static bool TryGetPreferredElementMetaTypeFromDefine(MetaType defineMetaType, out MetaType preferredElementMetaType)
+        {
+            preferredElementMetaType = null;
+            if (defineMetaType == null || !defineMetaType.IsArray())
+            {
+                return false;
+            }
+
+            var defineTemplateList = defineMetaType.GetGenTemplateMetaTypeList();
+            if (defineTemplateList == null || defineTemplateList.Count != 1)
+            {
+                return false;
+            }
+
+            preferredElementMetaType = defineTemplateList[0];
+            return preferredElementMetaType != null;
+        }
+
+        public static bool IsArrayLiteralElementAssignableToTarget(MetaType targetMetaType, MetaType sourceMetaType)
+        {
+            if (targetMetaType == null || sourceMetaType == null)
+            {
+                return false;
+            }
+
+            if (TypeManager.CompareMetaType(targetMetaType, sourceMetaType))
+            {
+                return true;
+            }
+
+            if (targetMetaType.metaClass == CoreMetaClassManager.objectMetaClass)
+            {
+                return true;
+            }
+
+            if (targetMetaType.IsArray() && sourceMetaType.IsArray())
+            {
+                var targetArgs = targetMetaType.GetGenTemplateMetaTypeList();
+                var sourceArgs = sourceMetaType.GetGenTemplateMetaTypeList();
+                if (targetArgs == null || sourceArgs == null || targetArgs.Count != 1 || sourceArgs.Count != 1)
+                {
+                    return false;
+                }
+
+                return IsArrayLiteralElementAssignableToTarget(targetArgs[0], sourceArgs[0]);
+            }
+
+            if (targetMetaType.IsArray() && sourceMetaType.metaClass == CoreMetaClassManager.objectMetaClass)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool TryGetCompatibleArrayMetaType(MetaType leftArray, MetaType rightArray, out MetaType result)
+        {
+            result = null;
+            if (leftArray == null || rightArray == null) return false;
+            if (!leftArray.IsArray() || !rightArray.IsArray()) return false;
+
+            var leftTemplate = leftArray.GetTemplateMetaClass();
+            var rightTemplate = rightArray.GetTemplateMetaClass();
+            if (leftTemplate != rightTemplate) return false;
+
+            var leftArgs = leftArray.GetGenTemplateMetaTypeList();
+            var rightArgs = rightArray.GetGenTemplateMetaTypeList();
+            if (leftArgs == null || rightArgs == null || leftArgs.Count != rightArgs.Count || leftArgs.Count == 0)
+            {
+                return false;
+            }
+
+            var leftElement = leftArgs[0];
+            var rightElement = rightArgs[0];
+
+            if (TypeManager.CompareMetaType(leftElement, rightElement))
+            {
+                result = new MetaType(leftArray);
+                return true;
+            }
+
+            if (leftElement.IsArray() && rightElement.IsArray())
+            {
+                if (!TryGetCompatibleArrayMetaType(leftElement, rightElement, out var nestedCompatible))
+                {
+                    return false;
+                }
+
+                MetaType build = new MetaType();
+                build.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
+                build.AddDefineTemplateMetaType(nestedCompatible);
+                result = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(build, true, out bool _);
+
+                if (leftArray.arrayLength != -1)
+                {
+                    result.SetArrayLength(leftArray.arrayLength);
+                }
+                else if (rightArray.arrayLength != -1)
+                {
+                    result.SetArrayLength(rightArray.arrayLength);
+                }
+                return true;
+            }
+
+            return false;
+        }
     }
 }

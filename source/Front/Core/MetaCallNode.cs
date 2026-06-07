@@ -285,10 +285,10 @@ namespace SimpleLanguage.Core
                     {
                         CreateExpressParam cep = new CreateExpressParam();
                         cep.fme = m_FileMetaCallNode.fileMetaBracketTermList[i];
-                        cep.equalMetaVariable = m_StoreMetaVariable;
+                        cep.equalMetaVariable = null;
                         cep.metaType = mt;
                         cep.ownerMBS = m_OwnerMetaFunctionBlock;
-                        cep.ownerMetaBase = m_OwnerMetaFunctionBlock.ownerMetaClass;
+                        cep.ownerMetaBase = m_OwnerMetaFunctionBlock.ownerMetaBase;
 
                         var en = ExpressManager.CreateExpressNodeByCEP(cep);
                         en.Parse(_auc);

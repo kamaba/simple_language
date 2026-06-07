@@ -754,7 +754,7 @@ namespace SimpleLanguage.Core
                 {
                     if (IsBraceAssignDeclaredCompatibleWithExpress(arrayDefineMt, contentMt)
                         || IsBraceAssignDeclaredCompatibleWithExpress(elementMt, contentMt)
-                        || TryGetCompatibleArrayMetaType(arrayDefineMt, contentMt, out _))
+                        || TypeManager.TryGetCompatibleArrayMetaType(arrayDefineMt, contentMt, out _))
                     {
                         return true;
                     }
@@ -860,13 +860,13 @@ namespace SimpleLanguage.Core
                 return objmt;
             }
 
-            if (TryGetPreferredElementMetaTypeFromDefine(defineMetaType, out var preferredElementMetaType))
+            if (TypeManager.TryGetPreferredElementMetaTypeFromDefine(defineMetaType, out var preferredElementMetaType))
             {
                 bool allAssignableToPreferred = true;
                 for (int i = 0; i < assignStatementsList.Count; i++)
                 {
                     var itemType = assignStatementsList[i].GetRetMetaType();
-                    if (!IsArrayLiteralElementAssignableToTarget(preferredElementMetaType, itemType))
+                    if (!TypeManager.IsArrayLiteralElementAssignableToTarget(preferredElementMetaType, itemType))
                     {
                         allAssignableToPreferred = false;
                         break;
@@ -968,7 +968,7 @@ namespace SimpleLanguage.Core
                 if (!TypeManager.CompareMetaType(cmcmt, nmcmt))
                 {
                     if (cmcmt.IsArray() && nmcmt.IsArray()
-                        && TryGetCompatibleArrayMetaType(cmcmt, nmcmt, out var compatibleArrayMetaType))
+                        && TypeManager.TryGetCompatibleArrayMetaType(cmcmt, nmcmt, out var compatibleArrayMetaType))
                     {
                         mt = compatibleArrayMetaType;
                         frontOpLevel = cmc.opLevel > nmc.opLevel ? cmc.opLevel : nmc.opLevel;
@@ -1008,7 +1008,7 @@ namespace SimpleLanguage.Core
                         var nextType = nmc.GetRetMetaType();
                         if (currentType != null && nextType != null
                             && currentType.IsArray() && nextType.IsArray()
-                            && TryGetCompatibleArrayMetaType(currentType, nextType, out var compatibleArrayMetaType2))
+                            && TypeManager.TryGetCompatibleArrayMetaType(currentType, nextType, out var compatibleArrayMetaType2))
                         {
                             mt = compatibleArrayMetaType2;
                             frontOpLevel = cmc.opLevel;
@@ -1029,7 +1029,7 @@ namespace SimpleLanguage.Core
                     var nextType = nmc.GetRetMetaType();
                     if (currentType != null && nextType != null
                         && currentType.IsArray() && nextType.IsArray()
-                        && TryGetCompatibleArrayMetaType(currentType, nextType, out var compatibleArrayMetaType3))
+                        && TypeManager.TryGetCompatibleArrayMetaType(currentType, nextType, out var compatibleArrayMetaType3))
                     {
                         mt = compatibleArrayMetaType3;
                         frontOpLevel = Math.Max(cmc.opLevel, nmc.opLevel);
@@ -1055,112 +1055,6 @@ namespace SimpleLanguage.Core
             return mt;
         }
 
-        private static bool TryGetPreferredElementMetaTypeFromDefine(MetaType defineMetaType, out MetaType preferredElementMetaType)
-        {
-            preferredElementMetaType = null;
-            if (defineMetaType == null || !defineMetaType.IsArray())
-            {
-                return false;
-            }
-
-            var defineTemplateList = defineMetaType.GetGenTemplateMetaTypeList();
-            if (defineTemplateList == null || defineTemplateList.Count != 1)
-            {
-                return false;
-            }
-
-            preferredElementMetaType = defineTemplateList[0];
-            return preferredElementMetaType != null;
-        }
-
-        private static bool IsArrayLiteralElementAssignableToTarget(MetaType targetMetaType, MetaType sourceMetaType)
-        {
-            if (targetMetaType == null || sourceMetaType == null)
-            {
-                return false;
-            }
-
-            if (TypeManager.CompareMetaType(targetMetaType, sourceMetaType))
-            {
-                return true;
-            }
-
-            if (targetMetaType.metaClass == CoreMetaClassManager.objectMetaClass)
-            {
-                return true;
-            }
-
-            if (targetMetaType.IsArray() && sourceMetaType.IsArray())
-            {
-                var targetArgs = targetMetaType.GetGenTemplateMetaTypeList();
-                var sourceArgs = sourceMetaType.GetGenTemplateMetaTypeList();
-                if (targetArgs == null || sourceArgs == null || targetArgs.Count != 1 || sourceArgs.Count != 1)
-                {
-                    return false;
-                }
-
-                return IsArrayLiteralElementAssignableToTarget(targetArgs[0], sourceArgs[0]);
-            }
-
-            if (targetMetaType.IsArray() && sourceMetaType.metaClass == CoreMetaClassManager.objectMetaClass)
-            {
-                return true;
-            }
-
-            return false;
-        }
-
-        public static bool TryGetCompatibleArrayMetaType(MetaType leftArray, MetaType rightArray, out MetaType result)
-        {
-            result = null;
-            if (leftArray == null || rightArray == null) return false;
-            if (!leftArray.IsArray() || !rightArray.IsArray()) return false;
-
-            var leftTemplate = leftArray.GetTemplateMetaClass();
-            var rightTemplate = rightArray.GetTemplateMetaClass();
-            if (leftTemplate != rightTemplate) return false;
-
-            var leftArgs = leftArray.GetGenTemplateMetaTypeList();
-            var rightArgs = rightArray.GetGenTemplateMetaTypeList();
-            if (leftArgs == null || rightArgs == null || leftArgs.Count != rightArgs.Count || leftArgs.Count == 0)
-            {
-                return false;
-            }
-
-            var leftElement = leftArgs[0];
-            var rightElement = rightArgs[0];
-
-            if (TypeManager.CompareMetaType(leftElement, rightElement))
-            {
-                result = new MetaType(leftArray);
-                return true;
-            }
-
-            if (leftElement.IsArray() && rightElement.IsArray())
-            {
-                if (!TryGetCompatibleArrayMetaType(leftElement, rightElement, out var nestedCompatible))
-                {
-                    return false;
-                }
-
-                MetaType build = new MetaType();
-                build.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
-                build.AddDefineTemplateMetaType(nestedCompatible);
-                result = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(build, true, out bool _);
-
-                if (leftArray.arrayLength != -1)
-                {
-                    result.SetArrayLength(leftArray.arrayLength);
-                }
-                else if (rightArray.arrayLength != -1)
-                {
-                    result.SetArrayLength(rightArray.arrayLength);
-                }
-                return true;
-            }
-
-            return false;
-        }
     }
 
 
@@ -1209,7 +1103,6 @@ namespace SimpleLanguage.Core
         private MetaType m_NewMetaType = null;
         private MetaType m_ArrayCalcMetaType = null;
         private AllowUseSettings m_AllowUseSettings = null;
-        private bool m_UsesExplicitArrayElementTypeSyntax = false;
         private MetaExpressNodeBase m_ArrayLengthExpress = null;
         private MetaMemberFunction m_MetaMemberFunction = null;
         private List<MetaExpressNodeBase> m_MetaInputParamList = new List<MetaExpressNodeBase>();
@@ -1304,12 +1197,10 @@ namespace SimpleLanguage.Core
         // Class1(10){ c1 = 20, c2 = 30 }  int[2][]{ [1,2,3], [3,4,5] }
         public MetaNewObjectExpressNode(MetaType defineMt, MetaCallLinkExpressNode mcen)
         {
-            m_DefineMetaType = defineMt != null ? new MetaType(defineMt) : null;
             m_OwnerMetaBase = mcen.ownerMetaBase;
             m_OwnerMetaBlockStatements = mcen.ownerMetaBlockStatements;
 
             m_MetaMemberFunction = mcen.metaCallLink.finalCallNode.methodCall?.function as MetaMemberFunction;
-            m_NewMetaType = new MetaType(mcen.metaCallLink.finalCallNode.callMetaType);
             MetaCallNode initNode = null;
             if (mcen.metaCallLink.callNodeList.Count > 0)
             {
@@ -1327,16 +1218,28 @@ namespace SimpleLanguage.Core
                     initNode = mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
                 }
             }
+
+            var lastNode = initNode ?? mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
+            m_Token = lastNode.token;
+            if (lastNode.token.type == ETokenType.New)
+            {
+                m_DefineMetaType = defineMt;
+                if( m_DefineMetaType == null )
+                {
+                    m_NewMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                }
+            }
+            else
+            {
+                m_DefineMetaType = null;
+                m_NewMetaType = mcen.metaCallLink.finalCallNode.callMetaType;
+            }
+
             if (mcen.metaCallLink.finalCallNode.callMetaType.IsArray())
             {
                 m_NewType = ENewType.ArrayClass;
-                m_UsesExplicitArrayElementTypeSyntax = true;
-
                 if (mcen.metaCallLink.callNodeList.Count > 0)
                 {
-                    var lastNode = initNode ?? mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
-
-                    m_Token = lastNode.token;
                     if (lastNode.metaInputParamCollection != null)
                     {
                         SetInputParams(lastNode.metaInputParamCollection);
@@ -1371,8 +1274,6 @@ namespace SimpleLanguage.Core
                 m_NewType = ENewType.CommomClass;
                 if (mcen.metaCallLink.callNodeList.Count > 0)
                 {
-                    var lastNode = initNode ?? mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
-                    m_Token = lastNode.token;
                     SetInputParams(lastNode.metaInputParamCollection);
 
                     var fma = lastNode.fileMetaBraceTerm;
@@ -1617,7 +1518,7 @@ namespace SimpleLanguage.Core
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.ownerMetaBase = m_OwnerMetaBase;
                     cep.ownerMBS = m_OwnerMetaBlockStatements;
-                    cep.metaType = cmt;
+                    cep.metaType = null;
                     cep.fme = fmct;
                     cep.equalMetaVariable = null;
                     MetaExpressNodeBase men = ExpressManager.CreateExpressNode(cep);
