@@ -38,7 +38,6 @@ namespace SimpleLanguage.Core
                 fme = m_FileInputParamNode.express,
                 isStatic = false,
                 isConst = false,
-                allowNewVariable = true,
                 parsefrom = EParseFrom.InputParamExpress
             };
             m_Express = ExpressManager.CreateExpressNode(cep);

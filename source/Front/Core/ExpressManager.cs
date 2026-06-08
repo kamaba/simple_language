@@ -35,7 +35,6 @@ namespace SimpleLanguage.Core
         public FileMetaBaseTerm fme;
         public bool isStatic;
         public bool isConst;
-        public bool allowNewVariable;
         public bool allowUseIfSyntax;
         public bool allowUseSwitchSyntax;
         public bool allowUseParSyntax;
@@ -52,7 +51,6 @@ namespace SimpleLanguage.Core
             fme = null;
             isStatic = false;
             isConst = false;
-            allowNewVariable = false;
             allowUseIfSyntax = false;
             allowUseSwitchSyntax = false;
             allowUseParSyntax = false;
@@ -69,7 +67,6 @@ namespace SimpleLanguage.Core
             fme = clone.fme;
             isStatic = clone.isStatic;
             isConst = clone.isConst;
-            allowNewVariable = clone.allowNewVariable;
             allowUseIfSyntax = clone.allowUseIfSyntax;
             allowUseSwitchSyntax = clone.allowUseSwitchSyntax;
             allowUseParSyntax = clone.allowUseParSyntax;
@@ -260,16 +257,7 @@ namespace SimpleLanguage.Core
                     case FileMetaBracketTerm fmbt:
                         {
                             //解析成这样是因为 在[] 中允许多个值的像 [1,2,3] 这种的
-                            MetaArrayExpressNode maen = new MetaArrayExpressNode(fmbt, ownerBase, cep.ownerMBS, cep.metaType, cep.equalMetaVariable);
-                            if (cep.allowNewVariable)
-                            {
-                                var newob = new MetaNewObjectExpressNode( null, maen, ownerBase, cep.ownerMBS );
-                                return newob;
-                            }
-                            else
-                            {
-
-                            }
+                            var maen = new MetaArrayExpressNode(fmbt, ownerBase, cep.ownerMBS, cep.metaType, cep.equalMetaVariable);                           
                             return maen;
                         }
                     default:

@@ -422,7 +422,6 @@ namespace SimpleLanguage.Core
                 isConst = false,
                 parsefrom = EParseFrom.StatementRightExpress,
                 equalMetaVariable = m_MetaVariable,
-                allowNewVariable = true,
             };
             m_RightMetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
             if (m_RightMetaExpress == null)

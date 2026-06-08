@@ -314,7 +314,8 @@ namespace SimpleLanguage.IR
             IRMetaType newObjectIRMT = null;
             IRMetaClass irmc = null;
 
-            if( mnoen.newType == MetaNewObjectExpressNode.ENewType.ArrayClass )
+            var returnMetaType = mnoen.GetReturnMetaType();
+            if ( returnMetaType.IsArray() )
             {
                 IRExpressBase ire = IRExpressManager.CreateExpress(irMethod, mnoen.arrayLengthExpress);
                 m_IRDataList.AddRange(ire.IRDataList);

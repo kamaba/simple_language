@@ -497,7 +497,6 @@ namespace SimpleLanguage.Core
                     c.CalcReturnType();
                 }
                 else if (expr is MetaNewObjectExpressNode nested
-                    && nested.newType == MetaNewObjectExpressNode.ENewType.ArrayClass
                     && nested.assignStatementsList != null
                     && elemType.IsArray())
                 {

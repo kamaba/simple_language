@@ -94,6 +94,7 @@ namespace SimpleLanguage.Core
                     MetaVisitNode mvn = MetaVisitNode.CreateByEnumMember(mme.GetFinalMetaType(), mme);
                     MetaCallLink mcl = new MetaCallLink(mvn);
                     MetaCallLinkExpressNode mclen = new MetaCallLinkExpressNode(mcl);
+                    mclen.SetToken(mme.token);
                     maen.metaCallArray.Add(mclen);
                 }
                 maen.Parse( new AllowUseSettings());
