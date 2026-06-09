@@ -1857,7 +1857,7 @@ namespace SimpleLanguage.Core
 
                 if( SystemMethodCallDeclarationRegistry.TryResolveName( inputname, out ESystemMethodCall call ) )
                 {
-                    m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, inputname);
+                    m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, call.ToString());
                     m_MetaFunction.SetIndex( (int)call );
                     var retMt = m_MetaFunction.GetFinalMetaType();
                     m_CallMetaType = retMt != null ? new MetaType(retMt) : new MetaType(mc);

@@ -258,7 +258,7 @@ ArrayTest
     {
         global.println("========== mixed literal / `$` / is ArrClass ==========")
         var ac = ArrClass(){ i1 = 20, i2 = "mix" }
-        object[5][] mixedNest = [[137,138,139,ac,148],[[11],[13,14,15]]];        
+        object[5][] mixedNest = [[137,138,139,ac,148],[[11],[13,14,15]], [ac], object[3] ];        
         #mixedNest = ObjectArray(2){ ObjectArray(5){0,1,2,ac,4}, ObjectArray(2){ [11], [13,14,15] } }
         
         forIIterator(mixedNest)
@@ -444,14 +444,14 @@ ArrayTest
         arrayGenericElementTest()        
         arrayCreateInstanceIndexLoopTest()
         arrayCovariantAndLiteralForInTest()
-        arrayNumberIteratorFromConcreteArrayTest()
-        !#
-        arrayNestedObjectTreeTest()
-        #!
+        arrayNumberIteratorFromConcreteArrayTest()        
+        arrayNestedObjectTreeTest()        
         arrayJagged2DAssignTest()        
         arrayIntLiteralReadTest()
         arrayRank2SparseJaggedTest()
+        !#
         arrayMixedLiteralDollarIndexTest()
+        #!
         arrayLevelMatrixTest()
         arrayStringAndLevelVectorTest()
         arrayHeterogeneousObject2DTest()
@@ -462,7 +462,7 @@ ArrayTest
         arrayArrClassIndexAndCurrentTest()
         arrayArrClassForInAssignTest()
         arrayForInLiteralIndexTest()
-        arrayArrClassCountLoopWriteTest()       
+        arrayArrClassCountLoopWriteTest()     
         !#
     }
 }

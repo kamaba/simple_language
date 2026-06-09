@@ -131,7 +131,6 @@ namespace SimpleLanguage.Core
                         return;
                     }
                     targetMetaVariable = m_MetaMemberVariable;
-                    m_Id = m_MetaMemberVariable.index;
                 }
                 else
                 {
@@ -1326,7 +1325,7 @@ namespace SimpleLanguage.Core
 
                 MetaType newRMT = new MetaType();
                 newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
-                newRMT.AddDefineTemplateMetaType(new MetaType(inputType));
+                newRMT.AddDefineTemplateMetaType(inputType);
                 var arrayMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
                 if (arrayMetaType == null)
                 {
@@ -1361,7 +1360,9 @@ namespace SimpleLanguage.Core
             {
                 for (int i = 0; i < m_ArrayExpressNode.metaCallArray.Count; i++)
                 {
-                    MetaBraceAssignStatements mas = new MetaBraceAssignStatements(null, m_OwnerMetaBlockStatements, m_OwnerMetaBase, null, m_ArrayExpressNode.metaCallArray[i]);
+                    var mca = m_ArrayExpressNode.metaCallArray[i];
+                    mca = ExpressManager.ConvertNewExpress(mca, null, null);
+                    MetaBraceAssignStatements mas = new MetaBraceAssignStatements(null, m_OwnerMetaBlockStatements, m_OwnerMetaBase, null, mca );
                     m_AssignStatementsList.Add(mas);
                 }
             }
@@ -1452,14 +1453,14 @@ namespace SimpleLanguage.Core
             else if (mt.IsArray() )// ???????
             {
                 m_StatementsContentType = EStatementsContentType.ArrayValue;
-                var genList = mt.GetGenTemplateMetaTypeList();
+                var genList = mt.defineTemplateMetaTypeList;
                 if (genList.Count != 1 )
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "");
                     return;
                 }
-                MetaType cmt = new MetaType( genList[0] );
-                cmt.SetArrayLength(-1);
+                MetaType cmt = genList[0];
+                //cmt.SetArrayLength(-1);
                 if (fmbt is FileMetaBracketTerm fmst)
                 {
                     MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmst, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements );
@@ -1520,7 +1521,6 @@ namespace SimpleLanguage.Core
                     men.Parse(new AllowUseSettings());
                     men = ExpressManager.ConvertNewExpress(men, cep.metaType, null);                   
                     var mas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, men);
-                    mas.Parse(new AllowUseSettings());
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
                 }
@@ -1810,63 +1810,61 @@ namespace SimpleLanguage.Core
             }
             var mipc = new MetaInputParamCollection(ownerMetaBase, m_OwnerMetaBlockStatements);
 
-
             if (m_NewMetaType != null)
             {
-                m_ExpressReturnMetaType = m_NewMetaType;
+                m_ExpressReturnMetaType = new MetaType( m_NewMetaType );
+
+                bool isArray = m_ExpressReturnMetaType.IsArray();
+                if( m_DefineMetaType != null )
+                {
+                    if (!TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_NewMetaType, m_Token, out MetaType convertMt))
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "m_ExpressReturnMetaType is null");
+                    }
+                    if (isArray&& m_ExpressReturnMetaType.arrayLength == -1)
+                    {
+                        m_ExpressReturnMetaType.SetArrayLength(m_DefineMetaType.arrayLength);
+                    }
+                }
+                if(m_ArrayCalcMetaType != null )
+                {
+                    if( !TypeManager.CompareLeftRightMetaType(m_NewMetaType, m_ArrayCalcMetaType, m_Token, out MetaType convertMt ) )
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "m_ExpressReturnMetaType is null");
+                    }
+                    if (isArray && m_ExpressReturnMetaType.arrayLength == -1)
+                    {
+                        m_ExpressReturnMetaType.SetArrayLength(m_ArrayCalcMetaType.arrayLength);
+                    }
+                }
             }
             else if (m_DefineMetaType != null)
             {
-                m_ExpressReturnMetaType = m_DefineMetaType;
+                m_ExpressReturnMetaType = new MetaType( m_DefineMetaType );
+
+                if (m_ArrayCalcMetaType != null)
+                {
+                    if (!TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_ArrayCalcMetaType, m_Token, out MetaType convertMt))
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "m_ExpressReturnMetaType is null");
+                    }
+                    if(m_ExpressReturnMetaType.IsArray() && m_ExpressReturnMetaType.arrayLength == -1)
+                    {
+                        m_ExpressReturnMetaType.SetArrayLength(m_ArrayCalcMetaType.arrayLength);
+                    }
+                }
+
             }
             else if ( m_ArrayCalcMetaType != null)
             {
                 m_ExpressReturnMetaType = m_ArrayCalcMetaType;
             }
 
-            //if (this.m_NewType != ENewType.ArrayClass)
-            //{
-            //    if (!TryResolveNonArrayReturnMetaTypeByRelation(out var nonArrayRet))
-            //    {
-            //        return;
-            //    }
-            //    m_ExpressReturnMetaType = nonArrayRet;
-            //    return;
-            //}
-            //if (!TryResolveArrayReturnMetaTypeByRelation(out var arrayRet))
-            //{
-            //    return;
-            //}
-            //m_ExpressReturnMetaType = arrayRet;
-
             if (m_ExpressReturnMetaType == null)
             {
                 Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "m_ExpressReturnMetaType is null");
                 return;
             }
-
-            MetaType newArray = (m_NewMetaType != null && m_NewMetaType.IsArray()) ? m_NewMetaType : null;
-            if (newArray != null && m_ArrayCalcMetaType  !=  null && m_ArrayCalcMetaType.IsArray())
-            {
-                if (m_ExpressReturnMetaType.arrayLength == -1 && newArray.arrayLength >= 0)
-                {
-                    m_ExpressReturnMetaType.SetArrayLength(newArray.arrayLength);
-                }
-                else if (m_ArrayCalcMetaType.arrayLength >= 0
-                    && newArray.arrayLength >= 0
-                    && m_ArrayCalcMetaType.arrayLength > newArray.arrayLength)
-                {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????????????????????!");
-                    return;
-                }
-            }
-
-            int literalLength = m_AssignStatementsList.Count;
-            if (literalLength >= 0 && m_ExpressReturnMetaType.IsArray() && m_ExpressReturnMetaType.arrayLength == -1)
-            {
-                m_ExpressReturnMetaType.SetArrayLength(literalLength);
-            }
-
 
             if (m_ExpressReturnMetaType.IsArray())
             {

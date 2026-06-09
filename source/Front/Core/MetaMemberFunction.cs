@@ -275,7 +275,7 @@ namespace SimpleLanguage.Core
                 this.m_Name = name;
                 this.m_IsStatic = true;
 
-                if (System.Enum.TryParse<ESystemMethodCall>(name, true, out var call)
+                if (SystemMethodCallDeclarationRegistry.TryResolveName(name, out var call)
                     && SystemMethodCallDeclarationRegistry.TryGet(call, out var decl)
                     && decl != null)
                 {
