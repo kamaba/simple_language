@@ -108,7 +108,6 @@ namespace SimpleLanguage.Core
             m_Name = fmmv.name;
             AddPingToken( fmmv.nameToken );
             m_Token = fmmv.nameToken;
-            m_Index = mc.metaMemberVariableDict.Count;
             m_FromType = EFromType.Code;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_IsStatic = m_FileMetaMemeberVariable?.staticToken != null;

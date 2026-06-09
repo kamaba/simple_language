@@ -1217,26 +1217,26 @@ namespace SimpleLanguage.Core
                     {
                         SetInputParams(lastNode.metaInputParamCollection);
                     }
-                    else
-                    {
-                        if (lastNode.bracketExpressList?.Count > 0)
-                        {
-                            MetaArrayExpressNode mean = lastNode.bracketExpressList[0] as MetaArrayExpressNode;
+                    //else
+                    //{
+                    //    if (lastNode.bracketExpressList?.Count > 0)
+                    //    {
+                    //        MetaArrayExpressNode mean = lastNode.bracketExpressList[0] as MetaArrayExpressNode;
 
-                            if (mean.metaCallArray.Count == 1)
-                            {
-                                m_MetaInputParamList.Add(mean.metaCallArray[0]);
-                            }
-                            else
-                            {
-                                Log.AddMetaCoreLog(LID.MetaCoreArrayDiamondShould, m_Token, "", 1);
-                            }
-                        }
-                        else
-                        {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "lastNode.bracketExpressList==0");
-                        }
-                    }
+                    //        if (mean.metaCallArray.Count == 1)
+                    //        {
+                    //            m_MetaInputParamList.Add(mean.metaCallArray[0]);
+                    //        }
+                    //        else
+                    //        {
+                    //            Log.AddMetaCoreLog(LID.MetaCoreArrayDiamondShould, m_Token, "", 1);
+                    //        }
+                    //    }
+                    //    else
+                    //    {
+                    //        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "lastNode.bracketExpressList==0");
+                    //    }
+                    //}
                 }
             }
             else

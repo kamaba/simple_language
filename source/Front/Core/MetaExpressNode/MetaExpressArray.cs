@@ -148,14 +148,7 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < m_MetaCallArray.Count; i++)
             {
                 var express = m_MetaCallArray[i];
-                if (express == null) continue;
-
                 express.CalcReturnType();
-                var newexpress = ExpressManager.ConvertNewExpress( express, express.GetReturnMetaType(), null );
-                if( newexpress   != express )
-                {
-                    m_MetaCallArray[i] = newexpress;
-                }
                 mtList.Add(express.GetReturnMetaType());
             }
 
@@ -163,7 +156,7 @@ namespace SimpleLanguage.Core
 
             var build = new MetaType();
             build.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
-            build.AddDefineTemplateMetaType(new MetaType(inferredElementMetaType));
+            build.AddDefineTemplateMetaType(inferredElementMetaType);
             var resultArrayMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(build, true, out bool _isGenericMetaClass);
             resultArrayMetaType.SetArrayLength(m_MetaCallArray.Count);
 

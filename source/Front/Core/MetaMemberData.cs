@@ -166,7 +166,7 @@ namespace SimpleLanguage.Core
         /// <summary>
         /// 将前端按需构造的 <see cref="MetaMemberVariable"/> 并入所属 <see cref="MetaData"/> 的唯一成员表（<see cref="MetaData.metaMemberDataDict"/>），不再使用并行字典。
         /// </summary>
-        public static MetaMemberData CreateFromInjectedMemberVariable(MetaData owner, MetaMemberVariable mmv, int fallbackIndex)
+        public static MetaMemberData CreateFromInjectedMemberVariable(MetaData owner, MetaMemberVariable mmv, int dataIndex )
         {
             if (mmv == null || owner == null)
             {
@@ -175,7 +175,7 @@ namespace SimpleLanguage.Core
 
             var mmd = new MetaMemberData();
             mmd.m_Name = mmv.name;
-            mmd.m_Index = mmv.index >= 0 ? mmv.index : fallbackIndex;
+            mmd.m_Index = dataIndex;
             mmd.m_IsWithName = true;
             mmd.m_VariableFrom = EVariableFrom.DataMember;
             mmd.SetOwnerMetaBase(owner);

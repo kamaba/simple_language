@@ -386,6 +386,21 @@ namespace SimpleLanguage.Core
                     this.m_MetaMemberVariableDict.Add(c.name, c);
                 }
             }
+            int nonStaticIndex = 0;
+            int staticIndex = 0;
+            foreach( var v in this.m_MetaMemberVariableDict)
+            {
+                if( v.Value.isStatic)
+                {
+                    v.Value.SetIndex(staticIndex);
+                    staticIndex++;
+                }
+                else
+                {
+                    v.Value.SetIndex(nonStaticIndex);
+                    nonStaticIndex++;
+                }
+            }
         }
         public virtual void HandleExtendMemberFunction()
         {

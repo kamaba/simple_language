@@ -84,10 +84,7 @@ namespace SimpleLanguage.Core
                 MetaArrayExpressNode maen = new MetaArrayExpressNode( this, null, mt, m_ValuesMetaVariable );
                 // values 鏁扮粍鍙簲鍖呭惈鐪熷疄鏋氫妇鎴愬憳锛屼笉搴旀妸 values 鑷繁涔熸斁杩涘幓锛?
                 // 鍚﹀垯 for-in 鏋氫妇閬嶅巻浼氬嚭鐜伴澶栭」骞跺鑷村鍑虹殑 IR 閫昏緫寮傚父銆?
-                var enumMembers = m_MetaMemberVariableDict.Values                    
-                    .OrderBy(v => v.index)
-                    .Where(v => v.name != "values")
-                    .ToList();
+                var enumMembers = m_MetaMemberVariableDict.Values.Where(v => v.name != "values").ToList();
 
                 foreach (var mme in enumMembers)
                 {
@@ -96,18 +93,13 @@ namespace SimpleLanguage.Core
                     MetaCallLinkExpressNode mclen = new MetaCallLinkExpressNode(mcl);
                     mclen.SetToken(mme.token);
                     maen.metaCallArray.Add(mclen);
+                    maen.SetToken(mme.token);
                 }
                 maen.Parse( new AllowUseSettings());
                 maen.CalcReturnType();
 
                 var valuesNewExpress = new MetaNewObjectExpressNode(mt, maen, this, null );
                 valuesNewExpress.SetToken(m_Token);
-
-                MetaType newRMT = new MetaType();
-                newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
-                newRMT.AddDefineTemplateMetaType(new MetaType(CoreMetaClassManager.memberMetaClass));
-                newRMT = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
-                newRMT.SetArrayLength(valuesNewExpress.assignStatementsList.Count);
 
                 valuesNewExpress.Parse(new AllowUseSettings());
                 valuesNewExpress.CalcReturnType();

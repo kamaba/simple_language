@@ -7,7 +7,7 @@ ArrayTest
 
         override string toString()
         {
-            ret "ArrClass(){ i1=" + this.i1.toString() + " this.i2= " +  this.i2.toString();
+            ret "ArrClass(){ this.i1=" + this.i1.toString() + " this.i2= " +  this.i2.toString();
         }
     }
     Level<T>
@@ -38,6 +38,10 @@ ArrayTest
             if v != null
             {
                 global.println("for-in -> " + v.toString() )
+            }
+            else
+            {
+                global.println("for-in -> null")
             }
         }
     }
@@ -258,6 +262,8 @@ ArrayTest
     {
         global.println("========== mixed literal / `$` / is ArrClass ==========")
         var ac = ArrClass(){ i1 = 20, i2 = "mix" }
+        #global.println("arr_class= " + ac.toString() )
+
         object[5][] mixedNest = [[137,138,139,ac,148],[[11],[13,14,15]], [ac], object[3] ];        
         #mixedNest = ObjectArray(2){ ObjectArray(5){0,1,2,ac,4}, ObjectArray(2){ [11], [13,14,15] } }
         
