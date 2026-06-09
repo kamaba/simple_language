@@ -514,7 +514,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "left or right compare failed");
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left or right compare failed");
                 return;
             }
         }

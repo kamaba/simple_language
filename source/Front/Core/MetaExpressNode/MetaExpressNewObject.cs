@@ -35,9 +35,10 @@ namespace SimpleLanguage.Core
         private MetaMemberData m_MetaMemberData;
         private MetaExpressNodeBase m_MetaExpress;
         private MetaBlockStatements m_OwnerMetaBlockStatements;
-        private MetaType m_DefineMetaType = null;
         private MetaBase m_OwnerMetaBase = null;
+        private MetaType m_DefineMetaType = null;
         private MetaType m_NewObjectMetaType = null;
+        private MetaType m_ReturnMetaType = null;
         private string m_DefineName;
         private bool m_AssignBlockedByConst = false;
         private int m_Id = 0;
@@ -314,6 +315,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = owmb;
             m_OwnerMetaBlockStatements = mbs;
             m_DefineMetaType = defineMt;
+            m_ReturnMetaType = defineMt;
             m_MetaExpress = men;
             m_Token = men.token;
             m_AssignTargetType = EAssignTargetType.ArrayValue;
@@ -381,14 +383,27 @@ namespace SimpleLanguage.Core
         }
         public MetaType GetRetMetaType()
         {
+            if(m_ReturnMetaType != null )
+            {
+                return m_ReturnMetaType;
+            }
             if (m_MetaExpress != null)
             {
-                return m_MetaExpress.GetReturnMetaType();
+                m_ReturnMetaType = m_MetaExpress.GetReturnMetaType();
             }
-            return null;
+            return m_ReturnMetaType;
+        }
+        public void SetReturnMetaType( MetaType mt )
+        {
+            m_ReturnMetaType = mt;
         }
         public void CalcReturnType()
         {
+            if(m_ReturnMetaType != null )
+            {
+                return;
+            }
+
             if (m_MetaExpress != null)
             {
                 m_MetaExpress.CalcReturnType();
@@ -407,6 +422,11 @@ namespace SimpleLanguage.Core
                             if (expressRetMetaType != null)
                             {
                             }
+                        }
+                        break;
+                    case EAssignTargetType.ArrayValue:
+                        {
+                            m_ReturnMetaType = m_DefineMetaType;
                         }
                         break;
                 }
@@ -1358,11 +1378,18 @@ namespace SimpleLanguage.Core
         {
             if (m_ArrayExpressNode != null)
             {
+                MetaType cmt = null;
+                var ggtml = mt.GetGenTemplateMetaTypeList();
+                if (mt.IsArray() && ggtml.Count > 0 )
+                {
+                    cmt = ggtml[0];
+                }
+
                 for (int i = 0; i < m_ArrayExpressNode.metaCallArray.Count; i++)
                 {
                     var mca = m_ArrayExpressNode.metaCallArray[i];
-                    mca = ExpressManager.ConvertNewExpress(mca, null, null);
-                    MetaBraceAssignStatements mas = new MetaBraceAssignStatements(null, m_OwnerMetaBlockStatements, m_OwnerMetaBase, null, mca );
+                    mca = ExpressManager.ConvertNewExpress(mca, cmt, null);
+                    MetaBraceAssignStatements mas = new MetaBraceAssignStatements(null, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, mca );
                     m_AssignStatementsList.Add(mas);
                 }
             }
@@ -1810,10 +1837,9 @@ namespace SimpleLanguage.Core
             }
             var mipc = new MetaInputParamCollection(ownerMetaBase, m_OwnerMetaBlockStatements);
 
-            if (m_NewMetaType != null)
+            if (m_NewMetaType != null )
             {
-                m_ExpressReturnMetaType = new MetaType( m_NewMetaType );
-
+                m_ExpressReturnMetaType = new MetaType(m_NewMetaType);
                 bool isArray = m_ExpressReturnMetaType.IsArray();
                 if( m_DefineMetaType != null )
                 {
@@ -1838,13 +1864,22 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
-            else if (m_DefineMetaType != null)
+            else if (m_DefineMetaType != null )
             {
-                m_ExpressReturnMetaType = new MetaType( m_DefineMetaType );
-
                 if (m_ArrayCalcMetaType != null)
                 {
-                    if (!TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_ArrayCalcMetaType, m_Token, out MetaType convertMt))
+                    if (TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_ArrayCalcMetaType, m_Token, out MetaType convertMt))
+                    {
+                        if(convertMt != null )
+                        {
+                            m_ExpressReturnMetaType = new MetaType(convertMt);
+                        }
+                        else
+                        {
+                            m_ExpressReturnMetaType = new MetaType(m_ArrayCalcMetaType);
+                        }
+                    }
+                    else
                     {
                         Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "m_ExpressReturnMetaType is null");
                     }
@@ -1852,6 +1887,10 @@ namespace SimpleLanguage.Core
                     {
                         m_ExpressReturnMetaType.SetArrayLength(m_ArrayCalcMetaType.arrayLength);
                     }
+                }
+                else
+                {
+                    m_ExpressReturnMetaType = new MetaType(m_DefineMetaType);
                 }
 
             }

@@ -264,7 +264,7 @@ ArrayTest
         var ac = ArrClass(){ i1 = 20, i2 = "mix" }
         #global.println("arr_class= " + ac.toString() )
 
-        object[5][] mixedNest = [[137,138,139,ac,148],[[11],[13,14,15]], [ac], object[3] ];        
+        object[5][] mixedNest = [[137,138,139,ac,148],[[11],[13,14,15]], [ac], object[4]{1,ac,"aaa"} ];        
         #mixedNest = ObjectArray(2){ ObjectArray(5){0,1,2,ac,4}, ObjectArray(2){ [11], [13,14,15] } }
         
         forIIterator(mixedNest)

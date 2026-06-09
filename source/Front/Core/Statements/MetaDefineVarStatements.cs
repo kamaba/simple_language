@@ -7,10 +7,11 @@
 //****************************************************************************
 
 
+using SimpleLanguage.Compile;
+using SimpleLanguage.IR;
+using SimpleLanguage.Logging;
 using System;
 using System.Text;
-using SimpleLanguage.Compile;
-using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Core
 {
@@ -190,6 +191,10 @@ namespace SimpleLanguage.Core
                     {
                         m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);
                     }
+                }
+                else
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 表达式中返回定义类型为空 " );
                 }
             }
             SetTRMetaVariable(m_DefineVarMetaVariable);

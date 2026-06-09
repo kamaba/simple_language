@@ -1050,7 +1050,7 @@ namespace SimpleLanguage.Core
         #region MetaType 对比与赋值关系
 
         /// <summary>两个 <see cref="MetaType"/> 是否结构/类型等价（class / data / enum 分派）。</summary>
-        public static bool CompareMetaType(MetaType mdtL, MetaType mdtR)
+        public static bool CompareMetaType(MetaType mdtL, MetaType mdtR, ECovariance eCovariance = ECovariance.Out )
         {
             if (mdtL == null || mdtR == null)
                 return false;
@@ -1072,7 +1072,7 @@ namespace SimpleLanguage.Core
                 return MetaData.CompareMetaDataMember(leftMd, rightMd);
             }
 
-            if (mdtL.isEnum || mdtR.isEnum)
+            else if (mdtL.isEnum || mdtR.isEnum)
             {
                 if (!mdtL.isEnum || !mdtR.isEnum)
                     return false;
@@ -1086,28 +1086,50 @@ namespace SimpleLanguage.Core
                 return string.Equals(leftEnum.allName, rightEnum.allName, StringComparison.Ordinal);
             }
 
-            MetaClass leftBaseClass = mdtL.GetTemplateMetaClass();
-            MetaClass rightBaseClass = mdtR.GetTemplateMetaClass();
-
-            if (leftBaseClass == CoreMetaClassManager.objectMetaClass)
+            else
             {
+                MetaClass leftBaseClass = mdtL.GetTemplateMetaClass();
+                MetaClass rightBaseClass = mdtR.GetTemplateMetaClass();
+
+                if (leftBaseClass == CoreMetaClassManager.objectMetaClass)
+                {
+                    return true;
+                }
+
+                if(eCovariance == ECovariance.Out )
+                {
+                    if( !rightBaseClass.ExtendClassContainMetaClass(leftBaseClass) )
+                    {
+                        return false;
+                    }
+                }
+                else if( eCovariance == ECovariance.In )
+                {
+                    if( !leftBaseClass.ExtendClassContainMetaClass(rightBaseClass) )
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (leftBaseClass != rightBaseClass)
+                        return false;
+                }
+
+
+                List<MetaType> leftTemplateList = mdtL.GetGenTemplateMetaTypeList();
+                List<MetaType> rightTemplateList = mdtR.GetGenTemplateMetaTypeList();
+                if (leftTemplateList.Count != rightTemplateList.Count)
+                    return false;
+
+                for (int i = 0; i < leftTemplateList.Count; i++)
+                {
+                    if (!CompareTemplateArgByIndex(leftBaseClass, i, leftTemplateList[i], rightTemplateList[i]))
+                        return false;
+                }
+
                 return true;
             }
-            if (leftBaseClass != rightBaseClass)
-                return false;
-
-            List<MetaType> leftTemplateList = mdtL.GetGenTemplateMetaTypeList();
-            List<MetaType> rightTemplateList = mdtR.GetGenTemplateMetaTypeList();
-            if (leftTemplateList.Count != rightTemplateList.Count)
-                return false;
-
-            for (int i = 0; i < leftTemplateList.Count; i++)
-            {
-                if (!CompareTemplateArgByIndex(leftBaseClass, i, leftTemplateList[i], rightTemplateList[i]))
-                    return false;
-            }
-
-            return true;
         }
 
 
@@ -1624,12 +1646,19 @@ namespace SimpleLanguage.Core
         {
             convertMt = null;
             // 左值 enum：仅允许是同一 enum 的成员调用表达式，或同 enum 的常量值。
+            if (leftMt == null || rightMt == null)
+                return false;
 
-            if( leftMt.isEnum || leftMt.isEnumMember || rightMt.isEnum || rightMt.isEnumMember )
+            if (leftMt.metaClass == CoreMetaClassManager.objectMetaClass)
+            {
+                return true;
+            }
+
+            if ( leftMt.isEnum || leftMt.isEnumMember || rightMt.isEnum || rightMt.isEnumMember )
             {
                 return CompareEnumMetaType(leftMt, rightMt, token);
             }
-            else if (leftMt.isData)
+            else if (leftMt.isData )
             {
                 if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
                 {
@@ -1651,191 +1680,260 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
-            else if (leftMt.isTemplate)
+            else
             {
-                MetaClass leftmc = leftMt.metaClass;
-                MetaClass rightmc = rightMt.metaClass;
-                if (rightMt.isNull || rightmc == CoreMetaClassManager.nullMetaClass)
+                if (leftMt.isTemplate)
                 {
-                    return true;
-                }
-                else
-                {
-                    if (!rightMt.isTemplate)
-                    {
-                        if (leftmc == CoreMetaClassManager.numMetaClass)
-                        {
-                            if (rightMt.IsNum())
-                            {
-                                return true;
-                            }
-                        }
-                        if (leftmc == CoreMetaClassManager.int8MetaClass
-                           || leftmc == CoreMetaClassManager.uint8MetaClass)
-                        {
-                            return false;
-                        }
-                        else if (leftmc == CoreMetaClassManager.int16MetaClass
-                           || leftmc == CoreMetaClassManager.uint16MetaClass)
-                        {
-                            if (rightmc == CoreMetaClassManager.int8MetaClass
-                                || rightmc == CoreMetaClassManager.uint8MetaClass)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                        else if (leftmc == CoreMetaClassManager.int32MetaClass
-                           || leftmc == CoreMetaClassManager.uint32MetaClass)
-                        {
-                            if (rightmc == CoreMetaClassManager.int8MetaClass
-                                || rightmc == CoreMetaClassManager.uint8MetaClass
-                                || rightmc == CoreMetaClassManager.int16MetaClass
-                                || rightmc == CoreMetaClassManager.uint16MetaClass)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                        else if (leftmc == CoreMetaClassManager.int64MetaClass
-                           || leftmc == CoreMetaClassManager.uint64MetaClass)
-                        {
-
-                            if (rightmc == CoreMetaClassManager.int8MetaClass
-                                || rightmc == CoreMetaClassManager.uint8MetaClass
-                                || rightmc == CoreMetaClassManager.int16MetaClass
-                                || rightmc == CoreMetaClassManager.uint16MetaClass
-                                || rightmc == CoreMetaClassManager.int32MetaClass
-                                || rightmc == CoreMetaClassManager.uint32MetaClass)
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                        else if (leftmc == CoreMetaClassManager.numMetaClass)
-                        {
-                            if (rightMt.IsNum())
-                            {
-                                return true;
-                            }
-                            return false;
-                        }
-
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
-                            "data 声明类型与右侧表达式类型不匹配：右值非 data 类型。");
-                        return false;
-                    }
-                    else
+                    MetaClass leftmc = leftMt.metaClass;
+                    MetaClass rightmc = rightMt.metaClass;
+                    if (rightMt.isNull || rightmc == CoreMetaClassManager.nullMetaClass)
                     {
                         return true;
                     }
-                }
-            }
-            else if (leftMt.GetGenTemplateMetaTypeList().Count > 0)
-            {
-                if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
-                {
-                    return true;
-                }
-
-                if ( MetaClass.CompareMetaClass(leftMt.metaClass, rightMt.metaClass) == false)
-                {
-                    return false;
-                }
-
-                var leftDmtList = leftMt.GetGenTemplateMetaTypeList();
-                var rightDmtList = rightMt.GetGenTemplateMetaTypeList();
-                if (leftDmtList.Count == rightDmtList.Count )
-                {
-                    for( int i = 0; i < leftDmtList.Count; i++ )
+                    else
                     {
-                        var dtmt = leftDmtList[i];
-                        var dtmt2 = rightDmtList[i];
-
-                        if( TypeManager.CompareMetaType( dtmt, dtmt2 ) == false )
+                        if (!rightMt.isTemplate)
                         {
+                            if (leftmc == CoreMetaClassManager.numMetaClass)
+                            {
+                                if (rightMt.IsNum())
+                                {
+                                    return true;
+                                }
+                            }
+                            if (leftmc == CoreMetaClassManager.int8MetaClass
+                               || leftmc == CoreMetaClassManager.uint8MetaClass)
+                            {
+                                return false;
+                            }
+                            else if (leftmc == CoreMetaClassManager.int16MetaClass
+                               || leftmc == CoreMetaClassManager.uint16MetaClass)
+                            {
+                                if (rightmc == CoreMetaClassManager.int8MetaClass
+                                    || rightmc == CoreMetaClassManager.uint8MetaClass)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    return false;
+                                }
+                            }
+                            else if (leftmc == CoreMetaClassManager.int32MetaClass
+                               || leftmc == CoreMetaClassManager.uint32MetaClass)
+                            {
+                                if (rightmc == CoreMetaClassManager.int8MetaClass
+                                    || rightmc == CoreMetaClassManager.uint8MetaClass
+                                    || rightmc == CoreMetaClassManager.int16MetaClass
+                                    || rightmc == CoreMetaClassManager.uint16MetaClass)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    return false;
+                                }
+                            }
+                            else if (leftmc == CoreMetaClassManager.int64MetaClass
+                               || leftmc == CoreMetaClassManager.uint64MetaClass)
+                            {
+
+                                if (rightmc == CoreMetaClassManager.int8MetaClass
+                                    || rightmc == CoreMetaClassManager.uint8MetaClass
+                                    || rightmc == CoreMetaClassManager.int16MetaClass
+                                    || rightmc == CoreMetaClassManager.uint16MetaClass
+                                    || rightmc == CoreMetaClassManager.int32MetaClass
+                                    || rightmc == CoreMetaClassManager.uint32MetaClass)
+                                {
+                                    return true;
+                                }
+                                else
+                                {
+                                    return false;
+                                }
+                            }
+                            else if (leftmc == CoreMetaClassManager.numMetaClass)
+                            {
+                                if (rightMt.IsNum())
+                                {
+                                    return true;
+                                }
+                                return false;
+                            }
+
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                                "data 声明类型与右侧表达式类型不匹配：右值非 data 类型。");
                             return false;
                         }
-
+                        else
+                        {
+                            return true;
+                        }
                     }
-                    return true;
                 }
+                else if (leftMt.GetGenTemplateMetaTypeList().Count > 0)
+                {
+                    if (rightMt.isNull || rightMt.metaClass == CoreMetaClassManager.nullMetaClass)
+                    {
+                        return true;
+                    }
 
-                //if (leftMetaType.IsArray())
-                //{                    
-                //        //var rightMt = rightExpressNode.GetReturnMetaType();
-                //        //if (CompareMetaType(leftMetaType, rightMt))
-                //        //{
-                //        //    convertMetaType = rightMt;
-                //        //    return true;
-                //        //}
+                    if (MetaClass.CompareMetaClass(leftMt.GetTemplateMetaClass(), rightMt.GetTemplateMetaClass()) == false)
+                    {
+                        return false;
+                    }
 
-                //        //if (rightExpressNode is MetaNewObjectExpressNode mnoe
-                //        //    && mnoe.newType == MetaNewObjectExpressNode.ENewType.ArrayClass)
-                //        //{
-                //        //    var leftElemType = ClassManager.GetSingleTemplateArgMetaType(leftMetaType);
-                //        //    if (leftElemType != null)
-                //        //    {
-                //        //        if (mnoe.usesExplicitArrayElementTypeSyntax)
-                //        //        {
-                //        //            var rightElemType = ClassManager.GetSingleTemplateArgMetaType(rightMt);
-                //        //            if (rightElemType != null && !CompareMetaType(leftElemType, rightElemType))
-                //        //            {
-                //        //                Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
-                //        //                    "右值数组已在创建表达式中指定元素类型（例如 Array<Int16>(...)），与左值元素类型 "
-                //        //                    + leftElemType.ToString() + " 不一致，不能自动强转。请使用与左值一致的元素类型，或使用未标注类型的字面量 [...]。");
-                //        //                return false;
-                //        //            }
-                //        //        }
-                //        //        else
-                //        //        {
-                //        //            if (!TryForceConvertArrayLiteralElements(mnoe, leftElemType, errorAnchorToken))
-                //        //            {
-                //        //                return false;
-                //        //            }
-                //        //            rightExpressNode.CalcReturnType();
-                //        //            isNeedCast = true;
-                //        //            convertMetaType = rightExpressNode.GetReturnMetaType();
-                //        //            return true;
-                //        //        }
-                //        //    }
+                    var leftDmtList = leftMt.GetGenTemplateMetaTypeList();
+                    var rightDmtList = rightMt.GetGenTemplateMetaTypeList();
+                    if (leftDmtList.Count == rightDmtList.Count && leftMt.metaClass.metaTemplateList.Count == rightDmtList.Count)
+                    {
+                        for (int i = 0; i < leftDmtList.Count; i++)
+                        {
+                            var dtmt = leftDmtList[i];
+                            var dtmt2 = rightDmtList[i];
+                            var mtl = leftMt.metaClass.metaTemplateList[i];
 
-                //    //Log.AddMetaCoreLog(LID.MetaCoreArrayNotSupportInConvert, errorAnchorToken,
-                //    //    "CompareLeftRightMetaType", leftMetaType.ToString(), rightMt?.ToString() ?? "null");
+                            if (TypeManager.CompareMetaType(dtmt, dtmt2, mtl.covariance) == false)
+                            {
+                                return false;
+                            }
 
-                //}// 左值 Iterator / Iterable：复用 ResolveAssignRelation 的协变规则。
-                //else if (leftMetaType.IsIterator() || leftMetaType.IsIterable())
-                //{
-                //    var iteratorRelation = ResolveTypeRelation(leftMetaType, rightMt, out MetaClass mc, out MetaClass cmc);
-                //    if (iteratorRelation == ETypeRelation.No
-                //        || iteratorRelation == ETypeRelation.TargetTypeError
-                //        || iteratorRelation == ETypeRelation.ExpressTypeError)
-                //    {
-                //        Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
-                //            (leftMetaType.IsIterator() ? "Iterator" : "IIterable")
-                //            + " 声明类型与右侧不匹配（仅支持接口关系与模板协变规则）。");
-                //        return false;
-                //    }
-                //    //convertMetaType = rightItType;
-                //    return true;
-                //}
+                        }
+                        return true;
+                    }
+                }
+                else
+                {
+                    MetaClass leftmc = leftMt.metaClass;
+                    MetaClass rightmc = rightMt.metaClass;
+                    if (rightMt.isNull || rightmc == CoreMetaClassManager.nullMetaClass)
+                    {
+                        return true;
+                    }
+                    else
+                    {
+                        if (leftmc == rightmc )
+                        {
+                            return true;
+                        }
+
+                        if (leftMt.eType == EType.Int8
+                           || leftMt.eType == EType.UInt8)
+                        {
+                            if (rightMt.eType == EType.Int8
+                                || rightMt.eType == EType.UInt8
+                                || rightMt.eType == EType.Int16
+                                || rightMt.eType == EType.UInt16
+                                || rightMt.eType == EType.Int32
+                                || rightMt.eType == EType.UInt32
+                                || rightMt.eType == EType.Int64
+                                || rightMt.eType == EType.UInt64)
+                            {
+                                convertMt = leftMt;
+                                return true;
+                            }
+                            return false;
+                        }
+                        else if (leftMt.eType == EType.Int16
+                           || leftMt.eType == EType.UInt16 )
+                        {
+                            if (rightMt.eType == EType.Int8
+                                || rightMt.eType == EType.UInt8 )
+                            {
+                                return true;
+                            }
+                            else if (rightMt.eType == EType.Int16
+                                || rightMt.eType == EType.UInt16
+                                || rightMt.eType == EType.Int32
+                                || rightMt.eType == EType.UInt32
+                                || rightMt.eType == EType.Int64
+                                || rightMt.eType == EType.UInt64 )
+                            {
+                                convertMt = leftMt;
+                                return true;
+                            }
+                            return false;
+                        }
+                        else if (leftMt.eType == EType.Int32
+                           || leftMt.eType == EType.UInt32 )
+                        {
+                            if (rightMt.eType == EType.Int8
+                                || rightMt.eType == EType.UInt8
+                                || rightMt.eType == EType.Int16
+                                || rightMt.eType == EType.UInt16
+                                || rightMt.eType == EType.Int32
+                                || rightMt.eType == EType.UInt32 )
+                            {
+                                return true;
+                            }
+                            else if ( rightMt.eType == EType.Int64
+                                || rightMt.eType == EType.UInt64)
+                            {
+                                convertMt = leftMt;
+                                return true;
+                            }
+                            else if (rightMt.eType == leftMt.eType)
+                            {
+                                return true;
+                            }
+                            return false;
+                        }
+                        else if (leftMt.eType == EType.Int64
+                           || leftMt.eType == EType.UInt64)
+                        {
+                            if (rightMt.eType == EType.Int8
+                                || rightMt.eType == EType.UInt8
+                                || rightMt.eType == EType.Int16
+                                || rightMt.eType == EType.UInt16
+                                || rightMt.eType == EType.Int32
+                                || rightMt.eType == EType.UInt32
+                                || rightMt.eType == EType.Int64
+                                || rightMt.eType == EType.UInt64 )
+                            {
+                                return true;
+                            }
+                            return false;
+                        }
+                        else if (leftMt.eType == EType.Float32)
+                        {
+                            if (rightMt.eType == EType.Float32)
+                            {
+                                return true;
+                            }
+                            else if ( rightMt.eType == EType.Float64)
+                            {
+                                convertMt = leftMt;
+                                return true;
+                            }
+                            return true;
+                        }
+                        else if (leftMt.eType == EType.Float64)
+                        {
+                            if ( rightMt.eType == EType.Float32 )
+                            {
+                                return true;
+                            }
+                            return true;
+                        }
+                        else if (leftMt.eType == EType.Num )
+                        {
+                            if (rightMt.IsNum())
+                            {
+                                return true;
+                            }
+                            return false;
+                        }
+                        else
+                        {
+                            return MetaClass.CompareMetaClass(leftmc, rightmc);
+                        }
+
+                        //Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                        //    "data 声明类型与右侧表达式类型不匹配：右值非 data 类型。");
+                        return false;
+                    }
+                }
             }
-            else
-            {
-                MetaClass leftmc = leftMt.metaClass;
-                MetaClass rightmc = rightMt.metaClass;
-                
-            }
-
             return true;
         }
 
