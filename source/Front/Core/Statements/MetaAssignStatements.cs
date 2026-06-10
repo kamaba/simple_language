@@ -504,8 +504,13 @@ namespace SimpleLanguage.Core
                 return;
             }
 
+            var leftMt = m_MetaVariable.GetFinalMetaType();
+            if (leftMt.metaClass == CoreMetaClassManager.memberMetaClass )
+            {
+                leftMt = m_MetaVariable.sourceMetaVariable.realMetaType;
+            }
 
-            if (TypeManager.CompareLeftRightMetaType(m_MetaVariable.GetFinalMetaType(), m_RightMetaExpress.GetReturnMetaType(), m_Token, out var convertMetaType ) )
+            if (TypeManager.CompareLeftRightMetaType(leftMt, m_RightMetaExpress.GetReturnMetaType(), m_Token, out var convertMetaType ) )
             {
                 if (convertMetaType != null)
                 {

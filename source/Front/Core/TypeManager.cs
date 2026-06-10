@@ -75,6 +75,10 @@ namespace SimpleLanguage.Core
                 {
                     return objMt;
                 }
+                if(objMt.isEnumMember )
+                {
+                    return new MetaType(CoreMetaClassManager.memberMetaClass);
+                }
                 return new MetaType(only);
             }
 
@@ -166,7 +170,15 @@ namespace SimpleLanguage.Core
                     }
                 }
 
+                if (objMt.isEnumMember)
+                {
+                    return new MetaType(CoreMetaClassManager.memberMetaClass);
+                }
                 return objMt;
+            }
+            if (merged.isEnumMember)
+            {
+                return new MetaType(CoreMetaClassManager.memberMetaClass);
             }
 
             return merged ?? objMt;
@@ -1072,18 +1084,9 @@ namespace SimpleLanguage.Core
                 return MetaData.CompareMetaDataMember(leftMd, rightMd);
             }
 
-            else if (mdtL.isEnum || mdtR.isEnum)
+            else if (mdtL.isEnum || mdtR.isEnum || mdtL.isEnumMember || mdtR.isEnumMember )
             {
-                if (!mdtL.isEnum || !mdtR.isEnum)
-                    return false;
-
-                var leftEnum = mdtL.metaEnum;
-                var rightEnum = mdtR.metaEnum;
-                if (leftEnum == null || rightEnum == null)
-                    return false;
-                if (ReferenceEquals(leftEnum, rightEnum))
-                    return true;
-                return string.Equals(leftEnum.allName, rightEnum.allName, StringComparison.Ordinal);
+                return CompareEnumMetaType(mdtL, mdtR, null );
             }
 
             else
@@ -1654,7 +1657,11 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
-            if ( leftMt.isEnum || leftMt.isEnumMember || rightMt.isEnum || rightMt.isEnumMember )
+            if( leftMt.metaClass == CoreMetaClassManager.memberMetaClass )
+            {
+
+            }
+            else if ( leftMt.isEnum || leftMt.isEnumMember || rightMt.isEnum || rightMt.isEnumMember )
             {
                 return CompareEnumMetaType(leftMt, rightMt, token);
             }

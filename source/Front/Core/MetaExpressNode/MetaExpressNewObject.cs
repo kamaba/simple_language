@@ -1480,7 +1480,7 @@ namespace SimpleLanguage.Core
             else if (mt.IsArray() )// ???????
             {
                 m_StatementsContentType = EStatementsContentType.ArrayValue;
-                var genList = mt.defineTemplateMetaTypeList;
+                var genList = mt.GetGenTemplateMetaTypeList();
                 if (genList.Count != 1 )
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "");
