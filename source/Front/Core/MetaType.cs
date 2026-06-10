@@ -66,7 +66,6 @@ namespace SimpleLanguage.Core
         private MetaClass m_MetaClass = null;                       // int a = 0; => int  List<int> => List<int>
         private MetaEnum m_MetaEnum = null;
         private MetaData m_MetaData = null;
-        private MetaType m_ParentMetaType = null;
         private MetaTemplate m_MetaTemplate = null;
         private MetaMemberVariable m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
@@ -186,7 +185,6 @@ namespace SimpleLanguage.Core
             this.m_MetaEnum = mt.m_MetaEnum;
             this.m_MetaData = mt.m_MetaData;
             //this.m_TemplateMetaClass = mt.m_TemplateMetaClass;
-            this.m_ParentMetaType = mt.m_ParentMetaType;
             this.m_MetaTemplate = mt.m_MetaTemplate;
             this.m_EnumValue = mt.m_EnumValue;
             //this.m_FromName = mt.m_FromName;
@@ -324,7 +322,7 @@ namespace SimpleLanguage.Core
                 if (curmt.IsArray())
                 {
                     list.Add(curmt.arrayLength);
-                    var gmlist = curmt.GetGenTemplateMetaTypeList();
+                    var gmlist = curmt.defineTemplateMetaTypeList;
                     if (gmlist.Count == 1)
                     {
                         curmt = gmlist[0];
@@ -352,7 +350,6 @@ namespace SimpleLanguage.Core
             this.m_MetaEnum = mt.m_MetaEnum;
             this.m_MetaData = mt.m_MetaData;
             //this.m_TemplateMetaClass = mt.m_TemplateMetaClass;
-            this.m_ParentMetaType = mt.m_ParentMetaType;
             this.m_MetaTemplate = mt.m_MetaTemplate;
             this.m_EnumValue = mt.m_EnumValue;
             //this.m_FromName = mt.m_FromName;
@@ -481,12 +478,7 @@ namespace SimpleLanguage.Core
         }
         public void AddDefineTemplateMetaType(MetaType mt)
         {
-            mt.m_ParentMetaType = this;
             m_DefineTemplateMetaTypeList.Add(mt);
-        }
-        public MetaMemberFunction GetMetaMemberConstructFunction( MetaInputParamCollection input = null)
-        {
-            return m_MetaClass?.GetMetaMemberConstructFunction(input);
         }
         public static bool ExtendRelateionMetaType( MetaType mdtL, MetaType mdtR )
         {

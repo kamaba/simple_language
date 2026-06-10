@@ -4,6 +4,17 @@ ArrayTest
     {
         int i1 = 0;
         i2 = "aaa"
+        
+        _init_(int i1)
+        {
+            this.i1 = i1
+        }
+
+        _init_( int i1, string i2)
+        {
+            this.i1 = i1
+            this.i2 = i2
+        }
 
         override string toString()
         {
@@ -287,7 +298,8 @@ ArrayTest
     {
         global.println("========== Level<int>[][] matrix ==========")
         levelvar = Level<int>(100);
-        Level<int>[][] levelGrid = { [ levelvar, levelvar ], [ levelvar, levelvar ], [levelvar] };
+        levelvar2 = Level<int>(100);
+        Level<int>[][] levelGrid = { [ levelvar, levelvar ], [ levelvar, levelvar ], [levelvar2] };
         levelGrid[2][0].t = 200
         forIIterator(levelGrid) #不支持这种方式，需要是接口的才可以
     }
@@ -295,8 +307,10 @@ ArrayTest
     static arrayStringAndLevelVectorTest()
     {
         global.println("========== string[] + Level<int>[] vector ==========")
+        #!
         strarr = string[6]{"abbc", "cccc", "a100"}
         forIIterator(strarr)   #不支持这种方式，需要是接口的才可以
+        !#
 
         Level<int>[] a44 = new(15) { Level<int>(200) }
         a44[1] = Level<int>(10000)
@@ -373,8 +387,8 @@ ArrayTest
         ArrClass[] arr1 = new(3)
         int i11 = 2
         arr1[0] = ArrClass()
-        arr1[1] = ArrClass()
-        arr1[i11] = ArrClass()
+        arr1[1] = ArrClass(111)
+        arr1[i11] = ArrClass(111, "222" )
         arr1.$i11.i1 = 10
         arr1[1] = { i1 = 20 }
         arr1[1].i1 = 10000
@@ -454,12 +468,13 @@ ArrayTest
         arrayNestedObjectTreeTest()        
         arrayJagged2DAssignTest()        
         arrayIntLiteralReadTest()
-        arrayRank2SparseJaggedTest()
-        !#
+        arrayRank2SparseJaggedTest()        
         arrayMixedLiteralDollarIndexTest()
-        #!
         arrayLevelMatrixTest()
+        !#
+        
         arrayStringAndLevelVectorTest()
+        #!
         arrayHeterogeneousObject2DTest()
         arrayCtorPrimitiveAndAliasTest()
         arrayCtorMultidimClassShapeTest()

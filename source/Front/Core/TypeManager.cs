@@ -859,8 +859,7 @@ namespace SimpleLanguage.Core
                 }
                 if (fmcd.isArray)
                 {
-                    var list = fmcd.arrayDimsionLengthList;
-                    retMt = AddArrayTemplate(retMt, list);
+                    retMt = AddArrayTemplate(retMt, fmcd.arrayDimsionLengthList);
                 }
                 return retMt;
             }

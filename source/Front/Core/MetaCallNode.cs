@@ -1704,14 +1704,14 @@ namespace SimpleLanguage.Core
                     {
                         var index = Convert.ToInt32(mcen.value);
                         var fmt = variable.GetFinalMetaType();
-                        var list = fmt.ArrayDimensionLengthList();
-                        if (fmt.IsArray() && list.Count >= 0)
+                        if (fmt.IsArray() )
                         {
-                            if (list[0] != -1)
+                            var deflen = fmt.arrayLength;
+                            if (deflen != -1)
                             {
-                                if (list[0] > 0 && list[0] < index)
+                                if (deflen > 0 && deflen < index)
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Array index out of range.");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, mcen.token, "Array index out of range.");
                                     return;
                                 }
                             }

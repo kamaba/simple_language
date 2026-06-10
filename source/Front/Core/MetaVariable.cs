@@ -467,7 +467,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_SourceMetaVariable.defineMetaType.IsArray() )
                 {
-                    var mtlist = m_SourceMetaVariable.defineMetaType.GetGenTemplateMetaTypeList();
+                    var mtlist = m_SourceMetaVariable.defineMetaType.defineTemplateMetaTypeList;
                     if (mtlist.Count > 0 )
                     {
                         getMt = new MetaType( mtlist[0] );
@@ -485,31 +485,30 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                m_DefineMetaType = new MetaType(getMt);
+                m_DefineMetaType = getMt;
             }
         }
         public override void  ParseRealMetaType()
         {
+            if(this.m_SourceMetaVariable.isDefineMetaType )
+            {
+                return;
+            }
             if (m_SourceMetaVariable.realMetaType.IsArray() )
             {
-                var mtlist = m_SourceMetaVariable.realMetaType.GetGenTemplateMetaTypeList();
+                var mtlist = m_SourceMetaVariable.realMetaType.defineTemplateMetaTypeList;
                 if( mtlist.Count == 1 )
                 {
                     m_RealMetaType = new MetaType(mtlist[0]);
-                    if (m_IsDefineMetaType == false)
-                    {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "ParseDefineRealMetaType not array ");
-                        m_DefineMetaType = new MetaType(m_RealMetaType);
-                    }
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "ParseDefineRealMetaType not array ");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "ParseDefineRealMetaType not array ");
                 }
             }
             else
             {
-                m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType.metaClass);
+                m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType);
             }
         }
         public void SetNotUseFast()

@@ -1209,7 +1209,7 @@ namespace SimpleLanguage.Core
             m_NewType = ENewType.CommomClass;
             if (lastNode.token.type == ETokenType.New)
             {
-                m_DefineMetaType = defineMt;
+                m_DefineMetaType = new MetaType( defineMt );
                 if( m_DefineMetaType == null )
                 {
                     m_NewMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
@@ -1313,12 +1313,6 @@ namespace SimpleLanguage.Core
                 MetaInputParam mip3 = new MetaInputParam(new MetaConstExpressNode(EType.Int32, 1));
                 mdpc.AddMetaInputParam(mip3);
             }
-            var tfunction = m_ExpressReturnMetaType.GetMetaMemberConstructFunction(mdpc);
-
-            if (tfunction != null)
-            {
-                //m_MetaConstructFunctionCall = new MetaMethodCall(null, null, tfunction, null, mdpc, null, null);
-            }
         }
         public MetaNewObjectExpressNode(MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs)
         {
@@ -1326,7 +1320,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_DefineMetaType = mt;
         }
-        public MetaType GetMaxLevelMetaType()
+        public void GetAssignStatementsArrayMetaType()
         {
             bool isArrayDefine = m_NewType == ENewType.ArrayClass
                 || (m_NewMetaType != null && m_NewMetaType.IsArray())
@@ -1343,36 +1337,12 @@ namespace SimpleLanguage.Core
 
                 var inputType = TypeManager.GetMaxCompatibleMetaTypeFromList(mtList);
 
-                MetaType newRMT = new MetaType();
-                newRMT.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
-                newRMT.AddDefineTemplateMetaType(inputType);
-                var arrayMetaType = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(newRMT, true, out bool isIGM);
-                if (arrayMetaType == null)
-                {
-                    arrayMetaType = newRMT;
-                }
-                arrayMetaType.SetArrayLength(m_AssignStatementsList.Count);
-                m_ArrayCalcMetaType = arrayMetaType;
-
-                return inputType;
+                m_ArrayCalcMetaType = new MetaType();
+                m_ArrayCalcMetaType.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
+                m_ArrayCalcMetaType.AddDefineTemplateMetaType(inputType);
+                m_ArrayCalcMetaType.SetArrayLength(m_AssignStatementsList.Count);
             }
-            Log.AddMetaCoreLog( LID.MetaCoreAssertShowMessage, m_Token, "MetaNewObjectExpressNode GetMaxLevelMetaType m_NewMetaType and m_DefineMetaType are null");
-
-
-
-            if (m_NewMetaType != null)
-            {
-                return MetaBraceAssignStatements.GetMaxLevelMetaType(m_AssignStatementsList, m_NewMetaType);
-            }
-            else if (m_DefineMetaType != null)
-            {
-                return MetaBraceAssignStatements.GetMaxLevelMetaType(m_AssignStatementsList, m_DefineMetaType);
-            }
-            else
-            {
-                return MetaBraceAssignStatements.GetMaxLevelMetaType(m_AssignStatementsList, null);
-            }
-            return null;
+            //Log.AddMetaCoreLog( LID.MetaCoreAssertShowMessage, m_Token, "MetaNewObjectExpressNode GetMaxLevelMetaType m_NewMetaType and m_DefineMetaType are null");
         }
         public void ParseBraceStatementsContent(AllowUseSettings aws, MetaType mt )
         {
@@ -1792,7 +1762,14 @@ namespace SimpleLanguage.Core
                     {
                         if (m_MetaInputParamList[0] is MetaConstExpressNode mcen)
                         {
-                            //m_NewMetaType.SetArrayLength((int)mcen.value);
+                            if( m_DefineMetaType != null )
+                            {
+                                m_DefineMetaType.SetArrayLength((int)mcen.value);
+                            }
+                            if( m_NewMetaType != null )
+                            {
+                                m_NewMetaType.SetArrayLength((int)mcen.value);
+                            }
                         }
                         //Debug.Assert(false);
                     }
@@ -1819,7 +1796,7 @@ namespace SimpleLanguage.Core
                 {
                     if(m_ArrayCalcMetaType == null )
                     {
-                        GetMaxLevelMetaType();
+                        GetAssignStatementsArrayMetaType();
                     }
 
                 }
@@ -1878,14 +1855,14 @@ namespace SimpleLanguage.Core
                         {
                             m_ExpressReturnMetaType = new MetaType(m_ArrayCalcMetaType);
                         }
+                        if (m_DefineMetaType.arrayLength != -1)
+                        {
+                            m_ExpressReturnMetaType.SetArrayLength(m_DefineMetaType.arrayLength);
+                        }
                     }
                     else
                     {
                         Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "m_ExpressReturnMetaType is null");
-                    }
-                    if(m_ExpressReturnMetaType.IsArray() && m_ExpressReturnMetaType.arrayLength == -1)
-                    {
-                        m_ExpressReturnMetaType.SetArrayLength(m_ArrayCalcMetaType.arrayLength);
                     }
                 }
                 else
@@ -2127,10 +2104,6 @@ namespace SimpleLanguage.Core
             }
             else if (m_MetaInputParamList.Count == 1)
             {
-                if (m_MetaInputParamList[0] is MetaConstExpressNode mcen)
-                {
-                    mcen.value = m_ExpressReturnMetaType.arrayLength;
-                }
             }
             else
             {
