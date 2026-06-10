@@ -922,8 +922,6 @@ namespace SimpleLanguage.Core
                 mt.SetTemplateMetaClass(CoreMetaClassManager.arrayMetaClass);
                 MetaType dmt = new MetaType(cmt);
                 mt.AddDefineTemplateMetaType(dmt);
-                //mt.AddGenTemplateMetaType(dmt);
-
                 cmt = CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(mt, false, out bool igmc);
                 cmt.SetArrayLength(list[i]);
             }
