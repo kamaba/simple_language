@@ -131,7 +131,7 @@ namespace SimpleLanguage.Core
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
                 m_Express.CalcReturnType();
-                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_Express.GetReturnMetaType(), m_SourceMetaVariable);
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, null );
 
 
                 if (m_RelationMemberVariable.express is MetaNewObjectExpressNode mnoen)

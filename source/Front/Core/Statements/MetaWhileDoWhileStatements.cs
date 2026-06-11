@@ -88,7 +88,7 @@ namespace SimpleLanguage.Core
                     // Keep for-in right-expression behavior consistent with assignments:
                     // convert `range(...)` / class-call / array-literal into explicit MetaNewObjectExpressNode.
                     var conditionMetaType = m_ConditionExpress.GetReturnMetaType();
-                    m_ConditionExpress = ExpressManager.ConvertNewExpress(m_ConditionExpress, conditionMetaType, null);
+                    m_ConditionExpress = ExpressManager.ConvertNewExpress(m_ConditionExpress, conditionMetaType );
                 }
 
                 var mcallEn = m_ConditionExpress as MetaCallLinkExpressNode;

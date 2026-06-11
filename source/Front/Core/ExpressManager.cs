@@ -364,16 +364,15 @@ namespace SimpleLanguage.Core
             return men;
         }
        
-        public static MetaExpressNodeBase ConvertNewExpress( MetaExpressNodeBase oldmen, MetaType mdt, MetaVariable mv )  
+        public static MetaExpressNodeBase ConvertNewExpress( MetaExpressNodeBase oldmen, MetaType mdt )  
         {
-
             MetaExpressNodeBase menNew = oldmen;
             if (oldmen.convertNewExpressNode == true)
             {
                 var mcen = oldmen as MetaCallLinkExpressNode;
                 if( mcen == null )
                 {
-                    Debug.Assert(false, "老类型不是CallLinkExpressNode");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "老类型不是CallLinkExpressNode");
                     return null;
                 }
                 var menNew1 = new MetaNewObjectExpressNode(mdt, mcen);
@@ -396,29 +395,34 @@ namespace SimpleLanguage.Core
                 var menNew1 = MetaNewObjectExpressNode.CreateFromAnonymousMetaData(
                     maden.metaData,
                     oldmen.ownerMetaBase,
-                    oldmen.ownerMetaBlockStatements,
-                    mv);
+                    oldmen.ownerMetaBlockStatements
+                    );
                 menNew1.SetToken(maden.token);
                 menNew1.CheckDefineVariableMetaTypeAndContentMetaType();
                 menNew = menNew1;
             }
-            else if( oldmen.convertCallExpressNode )
+            else if( oldmen.convertOpExpressNode)
             {
                 // if this constant node contains parsed string parts (interpolations),
                 // fold them into a chain of Add operations: left + right + ...
                 var mce = oldmen as MetaConstExpressNode;
-                if (mce != null && mce.stringParseExpressList != null && mce.stringParseExpressList.Count > 0)
+                if (mce != null && mce.stringParseExpressList.Count > 0)
                 {
                     MetaExpressNodeBase acc = mce.stringParseExpressList[0];
+                    acc.SetToken(mce.token);
                     for (int i = 1; i < mce.stringParseExpressList.Count; i++)
                     {
                         var right = mce.stringParseExpressList[i];
                         acc = new MetaOpExpressNode(acc, right, ELeftRightOpSign.Add);
+                        acc.SetToken(right.token);
                     }
                     menNew = acc;
-                    // make sure the newly created tree is parsed and typed
                     menNew.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                     menNew.CalcReturnType();
+                }
+                else
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "oldmen as MetaConstExpressNode is null");
                 }
             }
             return menNew;

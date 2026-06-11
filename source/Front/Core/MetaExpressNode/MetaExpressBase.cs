@@ -42,7 +42,7 @@ namespace SimpleLanguage.Core
             }
         }
         public bool convertNewExpressNode => m_ConvertNewExpressNode;
-        public bool convertCallExpressNode => m_ConvertCallExpressNode;
+        public bool convertOpExpressNode => m_ConvertOpExpressNode;
         public virtual Token token => m_Token;
         public MetaType expressReturnMetaType => m_ExpressReturnMetaType;
         /// <summary>所属上下文：普通类。</summary>
@@ -61,7 +61,7 @@ namespace SimpleLanguage.Core
         protected MetaBlockStatements m_OwnerMetaBlockStatements = null;
         protected MetaType m_ExpressReturnMetaType = null;
         protected bool m_ConvertNewExpressNode = false;
-        protected bool m_ConvertCallExpressNode = false;
+        protected bool m_ConvertOpExpressNode = false;
         protected Token m_Token = null;
         protected bool m_Parse = false;
 

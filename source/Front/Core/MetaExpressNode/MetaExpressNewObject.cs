@@ -378,7 +378,7 @@ namespace SimpleLanguage.Core
             {
                 m_MetaExpress.Parse(aus);
                 m_MetaExpress.CalcReturnType();
-                m_MetaExpress = ExpressManager.ConvertNewExpress(m_MetaExpress, m_DefineMetaType, mv );
+                m_MetaExpress = ExpressManager.ConvertNewExpress(m_MetaExpress, m_DefineMetaType );
             }
         }
         public void SetDefineMetaType(MetaType defineMt)
@@ -1088,8 +1088,7 @@ namespace SimpleLanguage.Core
         public static MetaNewObjectExpressNode CreateFromAnonymousMetaData(
             MetaData metaData,
             MetaBase mb,
-            MetaBlockStatements mbs,
-            MetaVariable storeMv = null)
+            MetaBlockStatements mbs )
         {
             if (metaData == null )
             {
@@ -1342,7 +1341,7 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < m_ArrayExpressNode.metaCallArray.Count; i++)
                 {
                     var mca = m_ArrayExpressNode.metaCallArray[i];
-                    mca = ExpressManager.ConvertNewExpress(mca, cmt, null);
+                    mca = ExpressManager.ConvertNewExpress(mca, cmt );
                     MetaBraceAssignStatements mas = new MetaBraceAssignStatements(null, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, mca );
                     m_AssignStatementsList.Add(mas);
                 }
@@ -1500,7 +1499,7 @@ namespace SimpleLanguage.Core
                     cep.equalMetaVariable = null;
                     MetaExpressNodeBase men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());
-                    men = ExpressManager.ConvertNewExpress(men, cep.metaType, null);                   
+                    men = ExpressManager.ConvertNewExpress(men, cep.metaType );                   
                     var mas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, men);
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
@@ -1572,7 +1571,7 @@ namespace SimpleLanguage.Core
                     cep.equalMetaVariable = null;
                     MetaExpressNodeBase men = ExpressManager.CreateExpressNode(cep);
                     men.Parse(new AllowUseSettings());
-                    men = ExpressManager.ConvertNewExpress(men, cep.metaType, null );
+                    men = ExpressManager.ConvertNewExpress(men, cep.metaType );
                     var mas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, men);
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);

@@ -100,7 +100,7 @@ data StructMatrix
 data StudentRecord
 {
     sid = 7
-    name = "StudentRecord Name",
+    name = "StudentRecord Name"
     anondatax = {a = 111i, b = 222i }
     scores = [95, 88, 91]
     tags = ["math", "final"]    
@@ -204,7 +204,6 @@ DataTest
     {
         global.println("----- memberShapeCoverageTest -----")
         
-        global.println("member shape samples added in DataTest declarations and comments")
         global.println(StructMatrix)
         global.println(AnonymousNestedDataSample)
         global.println(ClassDataEnumSample)
@@ -503,6 +502,7 @@ DataTest
     {
         global.println("----- dataVariableReadWriteTest -----")
 
+        
         ScoreData rw = new()
         rw.id = 1001
         rw.math = 95
@@ -517,6 +517,7 @@ DataTest
         rw.math = readMath + 1
         rw.english = readEnglish + 2
         global.println("rw after write-back = " + rw.toString())
+        
 
         StudentRecord sr = new()
         sr.sid = 900
@@ -542,18 +543,19 @@ DataTest
     {
         global.println("========== DataTest (start) ==========")
 
-        #constDataReadOnlyTest()        
-        #dataIfCompareTest()
-        systemDataCompare();
-        #!
+        
+        constDataReadOnlyTest()        
+        dataIfCompareTest()
+        systemDataCompare();        
         dataAsCastTest()
         dataArgumentUsageTest()
-        dataVariableReadWriteTest()
+        dataVariableReadWriteTest()        
         staticDataMisuseErrorDemo()
         staticDataDirectUseTest()
+        
         memberShapeCoverageTest()
         newDataInstanceTest()
-        !#
+        
         #global.println("newDataInstanceTest skipped in runtime (known VM gap)")
 
         global.println("========== DataTest (end) ==========")

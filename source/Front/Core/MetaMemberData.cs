@@ -752,7 +752,7 @@ namespace SimpleLanguage.Core
 
             TryNormalizeDataConstNumericLiteralType();
             m_Express.CalcReturnType();
-            var convertedExpress = ExpressManager.ConvertNewExpress(m_Express, m_Express.GetReturnMetaType(), this);
+            var convertedExpress = ExpressManager.ConvertNewExpress(m_Express, null );
             if (convertedExpress != m_Express )
             {
                 m_Express = convertedExpress;

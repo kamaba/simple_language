@@ -1410,10 +1410,7 @@ namespace SimpleLanguage.VM.Runtime
                                             + " objectId=" + co.id + "index=" + iri.index);
 #endif
                             }
-                            else
-                            {
-                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
-                            }
+                            
                         }
                     }
                     break;

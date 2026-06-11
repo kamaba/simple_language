@@ -328,7 +328,7 @@ namespace SimpleLanguage.Core
                     }
                     if (m_StringParseExpressList.Count > 0)
                     {
-                        m_ConvertCallExpressNode = true;
+                        m_ConvertOpExpressNode = true;
                     }
 
                 }

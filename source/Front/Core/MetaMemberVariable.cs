@@ -258,7 +258,7 @@ namespace SimpleLanguage.Core
             if (m_Express != null)
             {
                 this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType, this );
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType );
                 m_Express.CalcReturnType();
 
                 var enode = SimulateExpressRun(m_Express);

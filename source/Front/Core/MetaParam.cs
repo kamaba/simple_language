@@ -52,7 +52,7 @@ namespace SimpleLanguage.Core
             if (m_Express != null)
             {
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.InputParamExpress, ifNotVariableThenAddVariable = false } );
-                m_Express = ExpressManager.ConvertNewExpress(m_Express, null, null);
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, null);
             }
         }
         public virtual void CaleReturnType()

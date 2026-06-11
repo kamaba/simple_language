@@ -429,7 +429,7 @@ namespace SimpleLanguage.Project
                     childIndex++;
                 }
                 maen.CalcReturnType();
-                arrNode.SetExpress(ExpressManager.ConvertNewExpress(maen, arrNode.defineMetaType, arrNode) ?? maen);
+                arrNode.SetExpress(ExpressManager.ConvertNewExpress(maen, arrNode.defineMetaType ) ?? maen);
                 return arrNode;
             }
             return null;

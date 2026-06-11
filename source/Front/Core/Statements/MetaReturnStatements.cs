@@ -40,7 +40,7 @@ namespace SimpleLanguage.Core
                 };
                 m_Express = ExpressManager.CreateExpressNode(cep2);
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
-                m_Express = ExpressManager.ConvertNewExpress(m_Express, mdt, mbs.ownerMetaFunction.returnMetaVariable);
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, mdt );
                 m_Express.CalcReturnType();
                 m_ReturnMetaDefineType = m_Express.GetReturnMetaType();
             }
