@@ -1195,12 +1195,16 @@ namespace SimpleLanguage.Core
             var lastNode = initNode ?? mcen.metaCallLink.callNodeList[mcen.metaCallLink.callNodeList.Count - 1];
             m_Token = lastNode.token;
             m_NewType = ENewType.CommomClass;
+            m_DefineMetaType = defineMt;
             if (lastNode.token.type == ETokenType.New)
             {
-                m_DefineMetaType = new MetaType( defineMt );
                 if( m_DefineMetaType == null )
                 {
                     m_NewMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                }
+                else
+                {
+                    m_NewMetaType = new MetaType(defineMt);
                 }
                 if (m_DefineMetaType.IsArray())
                 {
@@ -1209,8 +1213,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                m_DefineMetaType = null;
-                m_NewMetaType = mcen.metaCallLink.finalCallNode.callMetaType;
+                m_NewMetaType = new MetaType( mcen.metaCallLink.finalCallNode.callMetaType );
                 if (m_NewMetaType.IsArray())
                 {
                     m_NewType = ENewType.ArrayClass;
@@ -1225,26 +1228,6 @@ namespace SimpleLanguage.Core
                     {
                         SetInputParams(lastNode.metaInputParamCollection);
                     }
-                    //else
-                    //{
-                    //    if (lastNode.bracketExpressList?.Count > 0)
-                    //    {
-                    //        MetaArrayExpressNode mean = lastNode.bracketExpressList[0] as MetaArrayExpressNode;
-
-                    //        if (mean.metaCallArray.Count == 1)
-                    //        {
-                    //            m_MetaInputParamList.Add(mean.metaCallArray[0]);
-                    //        }
-                    //        else
-                    //        {
-                    //            Log.AddMetaCoreLog(LID.MetaCoreArrayDiamondShould, m_Token, "", 1);
-                    //        }
-                    //    }
-                    //    else
-                    //    {
-                    //        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "lastNode.bracketExpressList==0");
-                    //    }
-                    //}
                 }
             }
             else
@@ -1337,10 +1320,13 @@ namespace SimpleLanguage.Core
             if (m_ArrayExpressNode != null)
             {
                 MetaType cmt = null;
-                var ggtml = mt.GetGenTemplateMetaTypeList();
-                if (mt.IsArray() && ggtml.Count > 0 )
+                if (mt?.IsArray() == true  )
                 {
-                    cmt = ggtml[0];
+                    var ggtml = mt.GetGenTemplateMetaTypeList();
+                    if (ggtml.Count > 0)
+                    {
+                        cmt = ggtml[0];
+                    }
                 }
 
                 for (int i = 0; i < m_ArrayExpressNode.metaCallArray.Count; i++)
@@ -1438,7 +1424,7 @@ namespace SimpleLanguage.Core
             else if (mt.IsArray() )// ???????
             {
                 //m_StatementsContentType = EStatementsContentType.ArrayValue;
-                var genList = mt.defineTemplateMetaTypeList;
+                var genList = mt.GetGenTemplateMetaTypeList();
                 if (genList.Count != 1 )
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "not define template meta type list");
@@ -1745,21 +1731,6 @@ namespace SimpleLanguage.Core
                             int len = Convert.ToInt32(mcen.value);
                             m_NewMetaType.SetArrayLength(len );
                         }
-                    }
-                    else
-                    {
-                        if (m_MetaInputParamList[0] is MetaConstExpressNode mcen)
-                        {
-                            if( m_DefineMetaType != null )
-                            {
-                                m_DefineMetaType.SetArrayLength((int)mcen.value);
-                            }
-                            if( m_NewMetaType != null )
-                            {
-                                m_NewMetaType.SetArrayLength((int)mcen.value);
-                            }
-                        }
-                        //Debug.Assert(false);
                     }
                 }
                 else

@@ -421,9 +421,7 @@ namespace SimpleLanguage.Core
                     menNew.CalcReturnType();
                 }
             }
-            
-
-                return menNew;
+            return menNew;
         }
         /*
         public static void CreateNewOrCalllink( CreateExpressParam cep, out MetaNewObjectExpressNode mnoen, out MetaCallLinkExpressNode men2 )

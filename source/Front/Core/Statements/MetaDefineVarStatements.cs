@@ -165,7 +165,7 @@ namespace SimpleLanguage.Core
                 m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                 m_ExpressNode.CalcReturnType();
 
-                m_ExpressNode = ExpressManager.ConvertNewExpress(m_ExpressNode, m_ExpressNode.GetReturnMetaType(), m_DefineVarMetaVariable );
+                m_ExpressNode = ExpressManager.ConvertNewExpress(m_ExpressNode, leftMt, m_DefineVarMetaVariable );
                 expressRetMetaDefineType = m_ExpressNode.GetReturnMetaType();        
             }
 

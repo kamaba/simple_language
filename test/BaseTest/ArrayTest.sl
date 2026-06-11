@@ -18,7 +18,7 @@ ArrayTest
 
         override string toString()
         {
-            ret "ArrClass(){ this.i1=" + this.i1.toString() + " this.i2= " +  this.i2.toString();
+            ret "ArrClass(){ this.i1=" + this.i1.toString() + " this.i2= " +  this.i2.toString() + "}";
         }
     }
     Level<T>
@@ -388,7 +388,7 @@ ArrayTest
         int i11 = 2
         arr1[0] = ArrClass()
         arr1[1] = ArrClass(111)
-        arr1[i11] = ArrClass(111, "222" )
+        arr1[i11] = ArrClass(222, "str222str" )
         arr1.$i11.i1 = 10
         arr1[1] = { i1 = 20 }
         arr1[1].i1 = 10000
@@ -458,8 +458,7 @@ ArrayTest
         }
     }
     static fun()
-    {
-        #!
+    {        
         arrayBasicApiTest()        
         arrayGenericElementTest()        
         arrayCreateInstanceIndexLoopTest()
@@ -471,10 +470,7 @@ ArrayTest
         arrayRank2SparseJaggedTest()        
         arrayMixedLiteralDollarIndexTest()
         arrayLevelMatrixTest()
-        !#
-        
-        arrayStringAndLevelVectorTest()
-        #!
+        arrayStringAndLevelVectorTest()        
         arrayHeterogeneousObject2DTest()
         arrayCtorPrimitiveAndAliasTest()
         arrayCtorMultidimClassShapeTest()
@@ -484,7 +480,7 @@ ArrayTest
         arrayArrClassForInAssignTest()
         arrayForInLiteralIndexTest()
         arrayArrClassCountLoopWriteTest()     
-        !#
+        
     }
 }
 # 3.1.1 先实现了，在函数里，直接调用C#层写的方法。
