@@ -191,57 +191,57 @@ namespace SimpleLanguage.IR
             }
             return null;
         }
-        public IRMethod GetIROperatorMethodIndexByMethod( string name, out int index )
-        {
-            index = -1;
-            for (int i = 0; i < m_IROperatorMethodList.Count; i++)
-            {
-                if (m_IROperatorMethodList[i].onlyFunctionName == name)
-                {
-                    index = i;
-                    return m_IROperatorMethodList[i];
-                }
-            }
-            return null;
-        }
-        public IRMetaType GetIRMetaTypeByTemplateAndClassRelation( IRMetaClass irmc, int index )
-        {
-            if(m_IRMetaClassMapTemplateDict.ContainsKey(irmc.id ) )
-            {
-                var irmcmap = m_IRMetaClassMapTemplateDict[irmc.id];
-                if( irmcmap != null )
-                {
-                    if( irmcmap.ContainsKey( index ) )
-                    {
-                        return irmcmap[index];
-                    }
-                }
-            }
-            return null;
-        }
-        public bool IsExtendsRelation( IRMetaClass irmc )
-        {
-            if( this == irmc )
-            {
-                return true;
-            }
-            if (m_IRMetaClassMapTemplateDict.ContainsKey(irmc.id))
-            {
-                return true;
-            }
-            return false;
-        }
-        public int GetIRNonStaticMethodIndexByMethod( string name )
-        {
-            for ( int i = 0; i < m_IRNotStaticMethodList.Count; i++ )
-            {
-                if(m_IRNotStaticMethodList[i].virtualFunctionName == name)
-                {
-                    return i;
-                }
-            }
-            return -1;
-        }
+        //public IRMethod GetIROperatorMethodIndexByMethod( string name, out int index )
+        //{
+        //    index = -1;
+        //    for (int i = 0; i < m_IROperatorMethodList.Count; i++)
+        //    {
+        //        if (m_IROperatorMethodList[i].onlyFunctionName == name)
+        //        {
+        //            index = i;
+        //            return m_IROperatorMethodList[i];
+        //        }
+        //    }
+        //    return null;
+        //}
+        //public IRMetaType GetIRMetaTypeByTemplateAndClassRelation( IRMetaClass irmc, int index )
+        //{
+        //    if(m_IRMetaClassMapTemplateDict.ContainsKey(irmc.id ) )
+        //    {
+        //        var irmcmap = m_IRMetaClassMapTemplateDict[irmc.id];
+        //        if( irmcmap != null )
+        //        {
+        //            if( irmcmap.ContainsKey( index ) )
+        //            {
+        //                return irmcmap[index];
+        //            }
+        //        }
+        //    }
+        //    return null;
+        //}
+        //public bool IsExtendsRelation( IRMetaClass irmc )
+        //{
+        //    if( this == irmc )
+        //    {
+        //        return true;
+        //    }
+        //    if (m_IRMetaClassMapTemplateDict.ContainsKey(irmc.id))
+        //    {
+        //        return true;
+        //    }
+        //    return false;
+        //}
+        //public int GetIRNonStaticMethodIndexByMethod( string name )
+        //{
+        //    for ( int i = 0; i < m_IRNotStaticMethodList.Count; i++ )
+        //    {
+        //        if(m_IRNotStaticMethodList[i].virtualFunctionName == name)
+        //        {
+        //            return i;
+        //        }
+        //    }
+        //    return -1;
+        //}
         public int GetMetaMemberVariableIndexByHashCode( int id )
         {
             if(m_MetaMemberVariableHashCodeDict.ContainsKey(id ) )
@@ -488,20 +488,37 @@ namespace SimpleLanguage.IR
         }
         public void CreateTemplateRelation()
         {
+            Dictionary<MetaClass, ClassLevelRelationData> dict = null;
             var mc = OwnerMetaClass;
-            if (mc == null)
+            Token token = null;
+            if (OwnerMetaClass != null)
+            {
+                dict = OwnerMetaClass.metaTemplateMapDict;
+                token = OwnerMetaClass.token;
+            }
+            if( OwnerMetaData != null )
+            {
+                dict = OwnerMetaData.metaTemplateMapDict;
+                token = OwnerMetaData.token;
+            }
+
+            if(dict == null )
             {
                 return;
             }
 
-            foreach ( var v in mc.metaTemplateMapDict )
+
+            foreach ( var v in dict)
             {
                 IRMetaClass cv = IRManager.instance.GetIRMetaClassById(v.Key.GetHashCode() );
 
-                Debug.Assert(cv != null, "");
+                if( cv == null )
+                {
+                    Log.AddIRLog(LID.MetaCoreAssertShowMessage, token, "cv is null ");
+                    continue;
+                }
 
                 Dictionary<int, IRMetaType> templateMap = new Dictionary<int, IRMetaType >();
-
                 for( int i = 0; i < v.Value.metaTemplateBindDataList.Count; i++ )
                 {
                     var mtbd = v.Value.metaTemplateBindDataList[i];

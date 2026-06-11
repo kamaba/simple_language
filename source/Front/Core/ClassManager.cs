@@ -564,6 +564,10 @@ namespace SimpleLanguage.Core
             }
             TypeManager.instance.EnsureBuiltinGlobalTypeAliases();
 
+            foreach( var it in m_InitHandleMetaDataList )
+            {
+                it.ParseExtendsRelation();
+            }
             foreach ( var it in m_InitHandleMetaClassList )
             {
                 it.ParseExtendsRelation();

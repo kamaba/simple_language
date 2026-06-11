@@ -93,10 +93,11 @@ namespace SimpleLanguage.Core
 
                 MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode( mt, m_OwnerMetaClass, m_OwnerMetaBlockStatements );
 
+                MetaType cmt = new MetaType(CoreMetaClassManager.objectMetaClass);
                 for( int i = defineCount - 1; i < inputCount; i++ )
                 {
                     var express = _paramCollection.metaInputParamList[i].express;
-                    MetaBraceAssignStatements mbas = new MetaBraceAssignStatements( mt, m_OwnerMetaBlockStatements, m_OwnerMetaClass, null, express);
+                    MetaBraceAssignStatements mbas = new MetaBraceAssignStatements(null, m_OwnerMetaBlockStatements, m_OwnerMetaClass, cmt, express);
                     mnoe.assignStatementsList.Add(mbas);
 
                 }

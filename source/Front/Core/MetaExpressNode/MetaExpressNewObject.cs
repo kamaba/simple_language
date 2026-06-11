@@ -1100,6 +1100,7 @@ namespace SimpleLanguage.Core
             {
                 ClassManager.instance.AddAnonymousMetaData(metaData);
                 metaData.HandleExtendContent();
+                metaData.ParseExtendsRelation();
                 findmd = metaData;
             }
 
@@ -1290,6 +1291,15 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_DefineMetaType = mt;
+
+            if (m_DefineMetaType.IsArray())
+            {
+                m_NewType = ENewType.ArrayClass;
+            }
+            else
+            {
+                m_NewType = ENewType.CommomClass;
+            }
         }
         public void GetAssignStatementsArrayMetaType()
         {

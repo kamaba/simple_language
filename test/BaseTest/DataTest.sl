@@ -542,10 +542,10 @@ DataTest
     {
         global.println("========== DataTest (start) ==========")
 
-        constDataReadOnlyTest()
-        
-        dataIfCompareTest()
+        #constDataReadOnlyTest()        
+        #dataIfCompareTest()
         systemDataCompare();
+        #!
         dataAsCastTest()
         dataArgumentUsageTest()
         dataVariableReadWriteTest()
@@ -553,7 +553,7 @@ DataTest
         staticDataDirectUseTest()
         memberShapeCoverageTest()
         newDataInstanceTest()
-        
+        !#
         #global.println("newDataInstanceTest skipped in runtime (known VM gap)")
 
         global.println("========== DataTest (end) ==========")

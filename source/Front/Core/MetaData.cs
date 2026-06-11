@@ -20,6 +20,7 @@ namespace SimpleLanguage.Core
         public List<MetaMemberFunction> staticMetaMemberFunctionList => m_StaticMetaMemberFunctionList;
         public List<MetaMemberFunction> nonStaticVirtualMetaMemberFunctionList => m_NonStaticVirtualMetaMemberFunctionList;
         public List<MetaMemberFunction> fileCollectMetaMemberFunctionList => m_FileCollectMetaMemberFunctionList;
+        public Dictionary<MetaClass, ClassLevelRelationData> metaTemplateMapDict => m_MetaTemplateMapDict;
 
 
 
@@ -28,6 +29,8 @@ namespace SimpleLanguage.Core
         private bool m_IsDynamic = false;
         private EClassDefineType m_ClassDefineType = EClassDefineType.InnerDefine;
         private FileMetaClass m_FileMetaClass = null;
+        protected ClassLevelRelationData m_ClassLevelRelationData = null;
+        private Dictionary<MetaClass, ClassLevelRelationData> m_MetaTemplateMapDict = new Dictionary<MetaClass, ClassLevelRelationData>();
         private Dictionary<string, MetaMemberData> m_MetaMemberDataDict = new Dictionary<string, MetaMemberData>();
         private MetaClass m_ExtendClass = CoreMetaClassManager.dataMetaClass;
         private List<MetaMemberFunction> m_FileCollectMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
@@ -116,6 +119,75 @@ namespace SimpleLanguage.Core
                 list.Add(v.Value);
             }
             return list;
+        }
+        public void ParseExtendsRelation()
+        {
+            HandleParentClassTemplateMapRelation();
+            HandleExtendClassTemplateMapRelation();
+        }
+        void HandleParentClassTemplateMapRelation()
+        {
+            m_ClassLevelRelationData = new ClassLevelRelationData();
+
+            if (!m_MetaTemplateMapDict.ContainsKey(m_ExtendClass))
+            {
+                this.m_MetaTemplateMapDict[m_ExtendClass] = m_ClassLevelRelationData;
+            }
+        }
+        public void HandleExtendClassTemplateMapRelation()
+        {
+            MetaClass extendMC = m_ExtendClass;
+            MetaClass currentMC = extendMC;
+            while (currentMC != null)
+            {
+                var parentMc = currentMC.extendClass;
+
+                if (parentMc == null)
+                {
+                    break;
+                }
+                if (parentMc == CoreMetaClassManager.objectMetaClass)
+                {
+                    break;
+                }
+
+                var tparentMc = parentMc;
+                var tcurrentMC = currentMC;
+
+                if (!m_MetaTemplateMapDict.ContainsKey(tparentMc))
+                {
+                    ClassLevelRelationData clrd = new ClassLevelRelationData();
+                    if (parentMc.isTemplateClass)
+                    {
+                        var list = tcurrentMC.metaTemplateMapDict[tparentMc].metaTemplateBindDataList;
+                        foreach (var v in list)
+                        {
+                            if (m_MetaTemplateMapDict.ContainsKey(tcurrentMC) && tcurrentMC.metaTemplateMapDict.ContainsKey(tparentMc))
+                            {
+                                var t1 = m_MetaTemplateMapDict[tcurrentMC];
+                                var t2 = currentMC.metaTemplateMapDict[tparentMc];
+
+                                MetaType mtfind2 = t2.GetSrouceTemplateByTargetTemplate(v.sourceTemplate);
+                                if (mtfind2 != null)
+                                {
+                                    MetaType copymt = new MetaType(mtfind2);                                  
+                                }
+                                else
+                                {
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到父级别自己模板生成时的数据!!");
+                                }
+                            }
+                            else
+                            {
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到父级别自己模板生成时的数据!!");
+                            }
+                        }
+                    }
+                    this.m_MetaTemplateMapDict[tparentMc] = clrd;
+                }
+
+                currentMC = currentMC.extendClass;
+            }            
         }
         //public void CreateMetaVariable()
         //{

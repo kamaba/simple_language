@@ -462,11 +462,11 @@ namespace SimpleLanguage.IR
             {
                 v.CreateMemberData();
                 v.CreateMemberMethod();
+                v.CreateTemplateRelation();
 
                 if ( v.metaClassKind == IRMetaClassKind.Class
                     || v.metaClassKind == IRMetaClassKind.Interface )
                 {
-                    v.CreateTemplateRelation();
                     v.CreateGenMetaTypeTemplateList();
                 }
             }

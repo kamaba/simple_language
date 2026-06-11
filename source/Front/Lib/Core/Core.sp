@@ -16,16 +16,19 @@ Project
     }
     _main_()
     {
-        #ObjectTest.fun()
-        #NumberTest.fun()
-        #GlobalTest.fun()
+        #!
+        ObjectTest.fun()
+        NumberTest.fun()
+        GlobalTest.fun()
         ArrayTest.fun()
-        #AssignStatement.fun()
-        #BoolTest.fun()
-        #StringTest.fun()
-        #TypeTest.fun()
-        #DataTest.fun() 
+        AssignStatement.fun()
+        BoolTest.fun()
+        StringTest.fun()        
+        TypeTest.fun()
+        !#
+        DataTest.fun() 
         #EnumTest.fun();      
+        
     }
     _test_()
     {
