@@ -1899,15 +1899,15 @@ namespace SimpleLanguage.Core
                     return true;
                 }
             }
-            //閫氳繃fileMeta鏌ユ壘鏄惁鏈夐瀹氫箟瀛楃
-            if (retMC == null)
-            {
-                retMC = ClassManager.instance.GetMetaClassByNameAndFileMeta(m_OwnerMetaBase, m_FileMetaCallNode.fileMeta, new List<string>(1) { inputname });
-            }
             //鏌ユ壘鐖剁被鎴栧瓙绫讳腑鍖呭惈鐨勮妭鐐?
             if (retMC == null && mc != null)
             {
                 retMC = mc.metaNode.GetChildrenMetaNodeByName(inputname);
+            }
+            //閫氳繃fileMeta鏌ユ壘鏄惁鏈夐瀹氫箟瀛楃
+            if (retMC == null)
+            {
+                retMC = ClassManager.instance.GetMetaClassByNameAndFileMeta(m_OwnerMetaBase, m_FileMetaCallNode.fileMeta, new List<string>(1) { inputname });
             }
             if (retMC != null)
             {

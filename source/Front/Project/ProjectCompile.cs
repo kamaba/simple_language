@@ -83,6 +83,7 @@ namespace SimpleLanguage.Project
             // Logs / DebugCode / *.module.json 均在 {export.outputDir}/{moduleName}/（见 ProjectOutputEnvironment）。
             ProjectOutputEnvironment.ApplyFromConfig(config, projectDir, projectName);
             Log.AddProjectLog(LID.ProjectShowConfigPath, "", jsoncPath);
+            ProjectReferenceModuleLoader.LoadReferences(config, projectDir);
 
             // 3. 后续逻辑仍然可以保留 m_ProjectFile，用于旧的基于 FileMeta 的流程
             if (m_ProjectFile == null)

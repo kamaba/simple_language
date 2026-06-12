@@ -104,9 +104,127 @@ namespace SimpleLanguage.Export.SLIR
             options.Converters.Add(new JsonStringEnumConverter());
             options.Converters.Add(new InstructionPayloadByteArrayJsonConverter());
 
-            var pkg = JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
+            var pkg = ReadModulePackageJson(json, options);
             NormalizeFieldFlags(pkg);
             return pkg;
+        }
+
+        internal static SLModulePackage ReadWithoutInstructionCode(string inputPath)
+        {
+            var pkg = Read(inputPath);
+            StripInstructionCode(pkg);
+            return pkg;
+        }
+
+        private static SLModulePackage ReadModulePackageJson(string json, JsonSerializerOptions options)
+        {
+            using var doc = JsonDocument.Parse(json, new JsonDocumentOptions
+            {
+                AllowTrailingCommas = true,
+                CommentHandling = JsonCommentHandling.Skip,
+            });
+
+            if (TryGetJsonArray(doc.RootElement, "moduleList"))
+            {
+                var root = JsonSerializer.Deserialize<SLPackageRootJson>(json, options) ?? new SLPackageRootJson();
+                var pkg = new SLModulePackage
+                {
+                    moduleName = root.entryModule ?? string.Empty,
+                    entryModule = root.entryModule,
+                    uuid = root.uuid ?? string.Empty,
+                    moduleList = root.moduleList ?? new List<SLAssemblyPackage>(),
+                };
+
+                if (string.IsNullOrWhiteSpace(pkg.uuid))
+                {
+                    var firstUuid = pkg.moduleList.FirstOrDefault(m => !string.IsNullOrWhiteSpace(m?.uuid))?.uuid;
+                    pkg.uuid = firstUuid ?? string.Empty;
+                }
+
+                var entry = pkg.moduleList.FirstOrDefault(m => string.Equals(m?.moduleName, pkg.entryModule, StringComparison.Ordinal))
+                    ?? pkg.moduleList.FirstOrDefault();
+                if (entry != null)
+                {
+                    pkg.entryMethodId = entry.entryMethodId;
+                    pkg.moduleReferences = entry.moduleReferences ?? new List<string>();
+                    pkg.irStringDict = entry.irStringDict ?? new List<IRStringItem>();
+                    pkg.namespaceList = entry.namespaceList ?? new List<SLNamespacePackage>();
+                    pkg.classList = entry.classList ?? new List<SLClassPackage>();
+                    pkg.globalStaticVariableList = entry.globalStaticVariableList ?? new List<SLGlobalStaticVariablePackage>();
+                    pkg.methodList = entry.methodList ?? new List<SLMethodPackage>();
+                    if (string.IsNullOrWhiteSpace(pkg.moduleName))
+                    {
+                        pkg.moduleName = entry.moduleName ?? string.Empty;
+                    }
+                }
+                return pkg;
+            }
+
+            return JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
+        }
+
+        private static bool TryGetJsonArray(JsonElement root, string name)
+        {
+            if (root.ValueKind != JsonValueKind.Object) return false;
+            foreach (var p in root.EnumerateObject())
+            {
+                if (string.Equals(p.Name, name, StringComparison.OrdinalIgnoreCase)
+                    && p.Value.ValueKind == JsonValueKind.Array)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private static void StripInstructionCode(SLModulePackage pkg)
+        {
+            if (pkg == null) return;
+            StripInstructionCode(pkg.globalStaticVariableList, pkg.methodList, pkg.classList);
+            if (pkg.moduleList != null)
+            {
+                for (int i = 0; i < pkg.moduleList.Count; i++)
+                {
+                    var module = pkg.moduleList[i];
+                    if (module == null) continue;
+                    StripInstructionCode(module.globalStaticVariableList, module.methodList, module.classList);
+                }
+            }
+        }
+
+        private static void StripInstructionCode(
+            List<SLGlobalStaticVariablePackage>? globals,
+            List<SLMethodPackage>? methods,
+            List<SLClassPackage>? classes)
+        {
+            if (globals != null)
+            {
+                for (int i = 0; i < globals.Count; i++)
+                {
+                    globals[i]?.express?.Clear();
+                }
+            }
+
+            if (methods != null)
+            {
+                for (int i = 0; i < methods.Count; i++)
+                {
+                    methods[i]?.instructionList?.Clear();
+                }
+            }
+
+            if (classes != null)
+            {
+                for (int c = 0; c < classes.Count; c++)
+                {
+                    var cls = classes[c];
+                    if (cls?.fieldList == null) continue;
+                    for (int f = 0; f < cls.fieldList.Count; f++)
+                    {
+                        cls.fieldList[f]?.express?.Clear();
+                    }
+                }
+            }
         }
 
         private static void NormalizeFieldFlags(SLModulePackage pkg)

@@ -199,9 +199,11 @@ namespace SimpleLanguage.Project
                         continue;
                     }
                     var path = GetStr(r, "path", string.Empty);
+                    var uuid = GetStr(r, "uuid", string.Empty);
+                    var name = GetStr(r, "name", string.Empty);
                     if (!string.IsNullOrWhiteSpace(path))
                     {
-                        cfg.References.Add(new ProjectConfig.ReferenceSection() { Path = path });
+                        cfg.References.Add(new ProjectConfig.ReferenceSection() { Path = path, UUID = uuid, Name = name });
                     }
                 }
             }

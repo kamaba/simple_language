@@ -872,8 +872,21 @@ namespace SimpleLanguage.Core
                     return ApplyFileMetaClassDefineDecorations(aliasTarget);
                 }
             }
+            MetaNode getmc = null;
+            //鏌ユ壘鐖剁被鎴栧瓙绫讳腑鍖呭惈鐨勮妭鐐?
+            if ( curMc != null && fmcd.stringList.Count > 0 )
+            {
+                getmc = curMc.metaNode.GetChildrenMetaNodeByName(fmcd.stringList[0]);
+                for (int i = 1; i < fmcd.stringList.Count; i++) 
+                {
+                    getmc = getmc.GetChildrenMetaNodeByName(fmcd.stringList[i]);
+                }
+            }
 
-            MetaNode getmc = ClassManager.instance.GetMetaClassByRef(curMc, fmcd);
+            if( getmc == null )
+            {
+                getmc = ClassManager.instance.GetMetaClassByRef(curMc, fmcd);
+            }
             if (getmc == null)
             {
                 var gmtbn = curMc?.GetMetaTemplateByName(fmcd.stringList[0]);

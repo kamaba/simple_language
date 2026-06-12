@@ -50,7 +50,63 @@ namespace SimpleLanguage.Compile
                     break;
                 }
             }
+            CheckUnclosedPairNodes();
             return;
+        }
+
+        private void CheckUnclosedPairNodes()
+        {
+            while (m_CurrentNodeStack.Count > 0)
+            {
+                var node = m_CurrentNodeStack.Pop();
+                if (node == null || node.nodeType == ENodeType.Root)
+                {
+                    continue;
+                }
+
+                Log.AddNodeLog(LID.MetaCoreAssertShowMessage, node.token, GetUnclosedPairMessage(node));
+            }
+
+            m_CurrentNodeStack.Push(m_RootNode);
+            m_CurrentNode = m_RootNode;
+        }
+
+        private static string GetUnclosedPairMessage(Node node)
+        {
+            return node.nodeType switch
+            {
+                ENodeType.Brace => "Error Node层花括号不对称，缺少右花括号 '}'",
+                ENodeType.Par => "Error Node层圆括号不对称，缺少右圆括号 ')'",
+                ENodeType.Bracket => "Error Node层中括号不对称，缺少右中括号 ']'",
+                _ => "Error Node层括号不对称，缺少闭合符号",
+            };
+        }
+
+        private bool TryPopPairNode(ENodeType expectedNodeType, Token endToken, string pairText)
+        {
+            if (m_CurrentNodeStack.Count <= 1)
+            {
+                Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，多余的右符号 " + pairText);
+                m_TokenIndex++;
+                return false;
+            }
+
+            var cnode = m_CurrentNodeStack.Pop();
+            if (cnode != null && cnode.nodeType == expectedNodeType)
+            {
+                cnode.endToken = endToken;
+                m_TokenIndex++;
+                m_CurrentNode = cnode.parent ?? m_RootNode;
+                return true;
+            }
+
+            Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，期望闭合 " + expectedNodeType.ToString() + " 但遇到 " + pairText);
+            if (cnode != null)
+            {
+                m_CurrentNodeStack.Push(cnode);
+            }
+            m_TokenIndex++;
+            return false;
         }
         public void AddIdentifier(Token code)      //Print/Function
         {
@@ -187,19 +243,7 @@ namespace SimpleLanguage.Compile
                     break;
                 case ETokenType.RightBrace: //}
                     {
-                        var cnode = m_CurrentNodeStack.Pop();
-                        
-
-                        if (cnode.nodeType == ENodeType.Brace )
-                        {
-                            cnode.endToken = token;
-                            m_TokenIndex++;
-                            m_CurrentNode = cnode.parent;
-                        }
-                        else
-                        {
-                            Log.AddTokenLog(LID.MetaCoreAssertShowMessage, "Error 不对称{}", token );
-                        }
+                        TryPopPairNode(ENodeType.Brace, token, "'}'");
                     }
                     break;
                 case ETokenType.Less:         // <
@@ -231,18 +275,7 @@ namespace SimpleLanguage.Compile
                     break;
                 case ETokenType.RightPar: //)
                     {
-                        var cnode = m_CurrentNodeStack.Pop();
-                        if( cnode != null && cnode.nodeType == ENodeType.Par)
-                        {
-                            cnode.endToken = token;
-                            m_TokenIndex++;
-                            m_CurrentNode = cnode.parent;
-                            //currentNode.SetLastNode( currentNode );
-                        }
-                        else
-                        {
-                            Log.AddTokenLog(LID.ShowExtendMessage, "Error 不对称()");
-                        }
+                        TryPopPairNode(ENodeType.Par, token, "')'");
                     }
                     break;
                 case ETokenType.LeftBracket://[
@@ -258,17 +291,7 @@ namespace SimpleLanguage.Compile
                     break;
                 case ETokenType.RightBracket://]
                     {
-                        var cnode = m_CurrentNodeStack.Pop();
-                        if (cnode != null && cnode.nodeType == ENodeType.Bracket)
-                        {
-                            cnode.endToken = token;
-                            m_TokenIndex++;
-                            m_CurrentNode = cnode.parent;
-                        }
-                        else
-                        {
-                            Log.AddTokenLog(LID.ShowExtendMessage, "Error 不对称[]");
-                        }
+                        TryPopPairNode(ENodeType.Bracket, token, "']'");
                     }
                     break;
                 case ETokenType.Period:  //.

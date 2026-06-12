@@ -124,6 +124,7 @@ namespace SimpleLanguage.Export.SLIR.Types
     public sealed class SLAssemblyPackage
     {
         public string moduleName { get; set; } = string.Empty;
+        public string uuid { get; set; } = string.Empty;
         public string? entryMethodId { get; set; }
         public List<string> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
@@ -145,6 +146,7 @@ namespace SimpleLanguage.Export.SLIR.Types
     public sealed class SLPackageRootJson
     {
         public string entryModule { get; set; } = string.Empty;
+        public string uuid { get; set; } = string.Empty;
         public List<SLAssemblyPackage> moduleList { get; set; } = new();
     }
 
@@ -154,6 +156,7 @@ namespace SimpleLanguage.Export.SLIR.Types
     public sealed class SLModulePackage
     {
         public string moduleName { get; set; } = string.Empty;
+        public string uuid { get; set; } = string.Empty;
         /// <summary>Which <see cref="SLAssemblyPackage.moduleName"/> in <see cref="moduleList"/> is the entry module.</summary>
         public string? entryModule { get; set; }
         public List<SLAssemblyPackage> moduleList { get; set; } = new();

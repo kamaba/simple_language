@@ -788,7 +788,7 @@ namespace SimpleLanguage.Core
             bool isHave = false;
             foreach (var v2 in fmc.memberVariableList)
             {
-                var mn = m_MetaNode.GetChildrenMetaNodeByName(v2.name);
+                var mn = this.m_MetaNode.GetChildrenMetaNodeByName(v2.name);
                 if( mn != null )
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");

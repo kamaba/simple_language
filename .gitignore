@@ -101,3 +101,9 @@
 /test/BaseTest/StringTest/Meta.txt
 /test/BaseTest/StringTest/Node.txt
 /test/BaseTest/StringTest/Token.txt
+/test/BaseTest/BlockTest/Code.txt
+/test/BaseTest/BlockTest/File.txt
+/test/BaseTest/BlockTest/IR.txt
+/test/BaseTest/BlockTest/Meta.txt
+/test/BaseTest/BlockTest/Node.txt
+/test/BaseTest/BlockTest/Token.txt
