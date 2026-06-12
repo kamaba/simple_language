@@ -25,9 +25,11 @@ Project
         BoolTest.fun()
         StringTest.fun()        
         TypeTest.fun()
-        !#
-        DataTest.fun() 
-        #EnumTest.fun();      
+        DataTest.fun()
+        EnumTest.fun();   
+        BlockTest.fun()   
+        !# 
+        CallLinkTest.fun();
         
     }
     _test_()

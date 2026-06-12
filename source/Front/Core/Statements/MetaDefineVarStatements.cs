@@ -77,16 +77,9 @@ namespace SimpleLanguage.Core
                     mgtc.ParseGenTemplateClass(mgtc);
                     mgtc.ParseGenMemberVarible();
                 }
-
-                m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, leftMt );
-                m_DefineVarMetaVariable.SetIsDefineMetaType(true);
-                m_DefineVarMetaVariable.SetIsConst(m_FileMetaDefineVariableSyntax.constToken != null);
-                m_DefineVarMetaVariable.AddPingToken(m_FileMetaDefineVariableSyntax.token);
-                fileExpress = m_FileMetaDefineVariableSyntax.express;
-
                 Node node = new Node(m_Token);
                 FileMetaCallNode fmcn = new FileMetaCallNode(m_FileMetaDefineVariableSyntax.fileMeta, node);
-                MetaCallNode mcn = new MetaCallNode( null, fmcn, ownerMetaBase, m_OwnerMetaBlockStatements, leftMt);
+                MetaCallNode mcn = new MetaCallNode(null, fmcn, ownerMetaBase, m_OwnerMetaBlockStatements, leftMt);
                 mcn.SetAllowUseSettings(new AllowUseSettings());
                 mcn.SetToken(m_Token);
                 mcn.GetFirstNode(m_Name, ownerMetaBase, 0);
@@ -95,6 +88,13 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, $"名称{m_Name}与{mcn.callNodeType} 有重复");
                     return;
                 }
+
+                m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, leftMt );
+                m_DefineVarMetaVariable.SetIsDefineMetaType(true);
+                m_DefineVarMetaVariable.SetIsConst(m_FileMetaDefineVariableSyntax.constToken != null);
+                m_DefineVarMetaVariable.AddPingToken(m_FileMetaDefineVariableSyntax.token);
+                fileExpress = m_FileMetaDefineVariableSyntax.express;
+
             }
             else if (m_FileMetaOpAssignSyntax != null)
             {

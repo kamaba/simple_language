@@ -948,7 +948,7 @@ namespace SimpleLanguage.Core
                         if (currentBlockStatements.GetIsMetaVariable(name1))
                         {
                             isDefineVarStatements = true;
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 定义变量名称与类函数临时名称一样!!" + fmvs.token?.ToLexemeAllString());
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, fmvs.token, "Error 定义变量名称与类函数临时名称一样!!" + fmvs.token?.ToLexemeAllString());
                             return null;
                         }
                         else

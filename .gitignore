@@ -107,3 +107,9 @@
 /test/BaseTest/BlockTest/Meta.txt
 /test/BaseTest/BlockTest/Node.txt
 /test/BaseTest/BlockTest/Token.txt
+/test/BaseTest/CallLinkTest/Code.txt
+/test/BaseTest/CallLinkTest/File.txt
+/test/BaseTest/CallLinkTest/IR.txt
+/test/BaseTest/CallLinkTest/Meta.txt
+/test/BaseTest/CallLinkTest/Node.txt
+/test/BaseTest/CallLinkTest/Token.txt

@@ -33,9 +33,9 @@ Class1
     {
         int a = 1;
         {
-            int a = 2;
+            a = 2;
             {
-                int a = 3;
+                a = 3;
                 global.println("inner a = " + a);
             }
             global.println("middle a = " + a);
@@ -96,4 +96,14 @@ Class1
     # {
     #     Class2 c = { m = 1;
     # }
+}
+
+BlockTest
+{
+    static fun()
+    {
+        Class1.scopeShadowCase();
+        Class1.emptyAndStandaloneBlockCase();
+        Class1.initAndStatementMixedCase();
+    }
 }

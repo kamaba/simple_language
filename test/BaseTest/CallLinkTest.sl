@@ -33,8 +33,7 @@ CallLinkTest
 {
     static fun()
     {
-        global.println("========== CallLinkTest (start) ==========")
-        global.println("面向：成员访问链 obj.f().g.h 与赋值、中间返回引用的一致性。")
+        global.println("========== CallLinkTest (start) ========== 面向：成员访问链 obj.f().g.h 与赋值、中间返回引用的一致性。")
 
         Class4 c4 = Class4()
         c4.c4_1 = Class3()

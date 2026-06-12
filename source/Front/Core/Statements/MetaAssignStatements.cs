@@ -51,7 +51,10 @@ namespace SimpleLanguage.Core
                     break;
                 case MetaConstExpressNode mconen:
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, mconen.token, "Error -------------------------------------------1");
+                        if( mconen.eType != EType.Boolean )
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, mconen.token, "Error -------------------------------------------1");
+                        }
                     }
                     break;
                 case MetaOpExpressNode moen:

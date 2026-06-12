@@ -56,6 +56,7 @@
       { "path": "../../../../test/BaseTest/DataTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/ArrayTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/BlockTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "../../../../test/BaseTest/CallLinkTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/AssignStatement.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
