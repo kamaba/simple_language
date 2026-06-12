@@ -7,11 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
-using System;
-using System.Diagnostics;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -370,7 +366,7 @@ namespace SimpleLanguage.Core
             if (m_RightMetaExpress == null
                 && m_FileMetaOpAssignSyntax?.express != null )
             {
-                var rightPreferredMetaType = ResolveRightPreferredMetaTypeForDirectBraceLiteral(expressMdt);
+                var rightPreferredMetaType = expressMdt;
                 if (rightPreferredMetaType == null
                     || (!rightPreferredMetaType.isData
                         && !rightPreferredMetaType.isClass
@@ -439,15 +435,6 @@ namespace SimpleLanguage.Core
             }
             return true;
         }
-        private MetaType ResolveRightPreferredMetaTypeForDirectBraceLiteral(MetaType setterParamMetaType)
-        {
-            if (m_LeftMethodCall != null)
-            {
-                return setterParamMetaType;
-            }
-            return m_MetaVariable?.GetFinalMetaType();
-        }
-
         ///// <summary>
         ///// 赋值常先解析右值再解析左值（例如 setter 需先把右值放入参数再解析左值），故 <c>[1,2,100]</c> 首次推断无左值元素类型。
         ///// 左值最终类型可用后：若左为具元素模板的数组（非 object 元素）、右为未显式 Array-T-构造调用的数组字面量、且左右元素类型不一致，

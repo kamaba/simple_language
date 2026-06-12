@@ -9,8 +9,6 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -65,7 +63,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_FileMetaKeyForSyntax.conditionExpress == null)
                 {
-                    Log.AddMetaCoreLog( LID.ShowExtendMessage, "Error for in express后边没有表达式!!");
+                    Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, "Error for in express后边没有表达式!!");
                 }
 
                 m_ForInContent = null;
@@ -95,7 +93,7 @@ namespace SimpleLanguage.Core
                 var mnoen = m_ConditionExpress as MetaNewObjectExpressNode;
                 if (mcallEn == null && mnoen == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error For in 表达式，应该是个数组形式");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error For in 表达式，应该是个数组形式");
                     return;
                 }
                 if( mcallEn != null )
@@ -131,7 +129,7 @@ namespace SimpleLanguage.Core
                     var dmv = m_ThenMetaStatements.GetMetaVariableByName(dname);
                     if (dmv != null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
                         return;
                     }
                     else
@@ -145,7 +143,7 @@ namespace SimpleLanguage.Core
                     var dmv = m_ThenMetaStatements.GetMetaVariableByName(dname);
                     if (dmv != null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
                         return;
                     }
                     else
@@ -155,7 +153,7 @@ namespace SimpleLanguage.Core
                 }
                 if(m_ForIterateVariable == null )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error For x in X必须有!!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error For x in X必须有!!");
                     return;
                 }
                 m_ForIterateVariable.ParseRealMetaType();
@@ -229,7 +227,7 @@ namespace SimpleLanguage.Core
                 }
                 if (m_ForIterateVariable == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 没有找到相应的变量!!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 没有找到相应的变量!!");
                 }
                 m_ThenMetaStatements.UpdateMetaVariableDict(m_ForIterateVariable);
 

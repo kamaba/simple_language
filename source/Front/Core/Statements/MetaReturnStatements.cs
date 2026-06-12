@@ -7,7 +7,8 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-
+using SimpleLanguage.Logging;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -22,6 +23,7 @@ namespace SimpleLanguage.Core
         public MetaReturnStatements( MetaBlockStatements mbs, FileMetaKeyReturnSyntax fmrs ) : base(mbs)
         {
             m_FileMetaReturnSyntax = fmrs;
+            m_Token = fmrs.token;
 
             MetaType mdt = mbs.ownerMetaFunction.GetFinalMetaType();
 
@@ -40,13 +42,18 @@ namespace SimpleLanguage.Core
                 };
                 m_Express = ExpressManager.CreateExpressNode(cep2);
                 m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
-                m_Express = ExpressManager.ConvertNewExpress(m_Express, mdt );
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, null );
                 m_Express.CalcReturnType();
                 m_ReturnMetaDefineType = m_Express.GetReturnMetaType();
             }
             else
             {
                 m_ReturnMetaDefineType = new MetaType(CoreMetaClassManager.voidMetaClass);
+            }
+
+            if( !TypeManager.CompareLeftRightMetaType(mdt, m_ReturnMetaDefineType, m_Token, out MetaType convertMt  ) )
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left compare right " + m_ReturnMetaDefineType.ToString(), mdt.ToString());
             }
         }        
         public override string ToFormatString()
@@ -62,18 +69,18 @@ namespace SimpleLanguage.Core
     }
     public sealed class MetaTRStatements : MetaStatements
     {
-        public MetaClass returnMetaClass;
+        public MetaType m_ReturnMetaType;
         public MetaExpressNodeBase m_Express = null;
 
         private FileMetaKeyReturnSyntax m_FileMetaReturnSyntax;
         public MetaTRStatements(MetaBlockStatements mbs, FileMetaKeyReturnSyntax fmrs) : base(mbs)
         {
             m_FileMetaReturnSyntax = fmrs;
+            m_Token = fmrs.token;
 
+            MetaType mdt = null;
             if (m_FileMetaReturnSyntax?.returnExpress != null)
             {
-                MetaType mdt = new MetaType(returnMetaClass);
-
                 CreateExpressParam cep2 = new CreateExpressParam()
                 {
                     ownerMBS = m_OwnerMetaBlockStatements,
@@ -84,15 +91,21 @@ namespace SimpleLanguage.Core
                     parsefrom = EParseFrom.StatementRightExpress
                 };
                 m_Express = ExpressManager.CreateExpressNode(cep2);
+                m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, null);
+                m_Express.CalcReturnType();
             }
             if (m_Express != null)
             {
-                m_Express.CalcReturnType();
-                //returnMetaClass = ClassManager.instance.GetClassByMetaType(m_Express.returnType);
+                m_ReturnMetaType = m_Express.GetReturnMetaType();
             }
             else
             {
-                returnMetaClass = CoreMetaClassManager.voidMetaClass;
+                m_ReturnMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
+            }
+            if (!TypeManager.CompareLeftRightMetaType(m_ReturnMetaType, mdt, m_Token, out MetaType convertMt))
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left compare right " + m_ReturnMetaType.ToString(), mdt.ToString());
             }
         }
         public override string ToFormatString()

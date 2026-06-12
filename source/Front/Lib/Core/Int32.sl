@@ -21,7 +21,7 @@ public class Int32 extends Num
     }    
     public override Int32 abs()
     {
-        ret SystemNumAbs(this)
+        ret SystemNumAbs(this) as Int32
     } 
     public override Num floor()
     {

@@ -25,6 +25,7 @@
 
 ## Type Conversion
 - For byte()/sbyte()/short()/ushort()/int()/uint()/long()/ulong()/float()/double() and UInt8()/Int8()/Int16()/UInt16()/Int32()/UInt32()/Int64()/UInt64()/Float32()/Float64() conversions, handle them through system methods: MetaCallNode should follow the SystemCall path, with the VM invoking the corresponding system method and performing forced type conversions.
+- The return type of the SystemInt32Parse system function must be Int32, and all related system functions should maintain consistent return types.
 
 ## Return Type Resolution
 - In `MetaExpressNewObject.cs`, centralize all return-type resolution logic in `CalcReturnType`, including define/new type comparison, array literal inferred type precedence, and array length validation rules.

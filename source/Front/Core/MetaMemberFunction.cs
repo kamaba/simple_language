@@ -306,7 +306,6 @@ namespace SimpleLanguage.Core
             m_MetaMemberParamCollection = new MetaDefineParamCollection(true, false);
             m_FileMetaMemberFunction = fmmf;
             this.m_Name = fmmf.name;
-            AddPingToken(fmmf?.token);
             m_Token = fmmf?.token;
 
             m_IsStatic = fmmf.staticToken != null;
@@ -491,14 +490,6 @@ namespace SimpleLanguage.Core
         {
             this.m_IsOverrideInterface = flag;
         }
-        public Token GetToken()
-        {
-            if( m_FileMetaMemberFunction?.finalToken != null )
-            {
-                return m_FileMetaMemberFunction.finalToken;
-            }
-            return this.token;
-        }
         public bool IsEqualWithMMFByNameAndParam( MetaMemberFunction mmf )
         {
             if (mmf.name != m_Name) return false;
@@ -612,8 +603,15 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    m_DefineMetaType = m_ReturnMetaVariable.defineMetaType;
-                    m_IsDefineMetaType = false;
+                    if( m_IsSet )
+                    {
+                        m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
+                    }
+                    else
+                    {
+                        m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                    }
+                    m_IsDefineMetaType = true;
                     m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
                 }
             }

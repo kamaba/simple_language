@@ -79,6 +79,7 @@ namespace SimpleLanguage.Core
         private static readonly MetaType Void = SystemMethodCallTypes.Of(CoreMetaClassManager.voidMetaClass);
         private static readonly MetaType Str = SystemMethodCallTypes.Of(CoreMetaClassManager.stringMetaClass);
         private static readonly MetaType Bool = SystemMethodCallTypes.Of(CoreMetaClassManager.booleanMetaClass);
+        private static readonly MetaType Num = SystemMethodCallTypes.Of(CoreMetaClassManager.numMetaClass);
         private static readonly MetaType I32 = SystemMethodCallTypes.Of(CoreMetaClassManager.int32MetaClass);
         private static readonly MetaType U32 = SystemMethodCallTypes.Of(CoreMetaClassManager.uint32MetaClass);
         /// <summary><c>Array&lt;object&gt;</c> for generic array <c>this</c> on index get/set builtins.</summary>
@@ -108,6 +109,9 @@ namespace SimpleLanguage.Core
             { ESystemMethodCall.SystemReadLine, new SystemMethodCallDeclaration(ESystemMethodCall.SystemReadLine, Str, false) },
             { ESystemMethodCall.SystemReadKey, new SystemMethodCallDeclaration(ESystemMethodCall.SystemReadKey, Str, false) },
 
+            // parse helpers
+            { ESystemMethodCall.SystemInt32Parse, new SystemMethodCallDeclaration(ESystemMethodCall.SystemInt32Parse, I32, false, Str) },
+
             // convert
             { ESystemMethodCall.SystemConvertBool, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertBool, Bool, false, Obj) },
             { ESystemMethodCall.SystemConvertInt8, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertInt8, I8, false, Obj, I32) },
@@ -135,6 +139,10 @@ namespace SimpleLanguage.Core
             // array helpers (this: Array<object> — element type is erased at builtin boundary)
             { ESystemMethodCall.SystemArrayGetValueThis, new SystemMethodCallDeclaration(ESystemMethodCall.SystemArrayGetValueThis, Obj, false, ArrayObj, I32) },
             { ESystemMethodCall.SystemArraySetValueThis, new SystemMethodCallDeclaration(ESystemMethodCall.SystemArraySetValueThis, Void, false, ArrayObj, I32, Obj) },
+
+            // num helpers
+            { ESystemMethodCall.SystemNumAbs, new SystemMethodCallDeclaration(ESystemMethodCall.SystemNumAbs, Num, false, Num) },
+            { ESystemMethodCall.SystemNumFloor, new SystemMethodCallDeclaration(ESystemMethodCall.SystemNumFloor, Num, false, Num) },
 
             // string slice / bytes (instance: this + args)
             { ESystemMethodCall.SystemStringFront, new SystemMethodCallDeclaration(ESystemMethodCall.SystemStringFront, Str, false, Str, I32) },
