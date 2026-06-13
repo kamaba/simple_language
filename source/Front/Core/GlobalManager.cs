@@ -111,7 +111,7 @@ namespace SimpleLanguage.Core
 
             m_GlobalInitFunction.ParseStatements();
 
-            var project = ClassManager.instance.GetClassByName("S.Project", 0) ?? ClassManager.instance.GetClassByName("Core.Project", 0);
+            var project = ClassManager.instance.projectMetaClass;
             if (project == null) return;
             var main = project.GetFirstMetaMemberFunctionByName("_main_");
             if (main == null) return;

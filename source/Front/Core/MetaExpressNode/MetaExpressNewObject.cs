@@ -637,6 +637,15 @@ namespace SimpleLanguage.Core
                     return true;
                 }
 
+                if( defineMt.isEnum && expressMt.isEnumMember )
+                {
+                    if( defineMt.metaEnum != expressMt.enumValue.ownerMetaEnum )
+                    {
+                        return false;
+                    }
+                    return true;
+                }
+
                 if (!(defineMt.isEnum && expressMt.isEnum))
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,

@@ -111,7 +111,7 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.MetaCoreParseForNotSuppoertIterator, m_Token, "", m_ForInContent.name );
                     return;
                 }
-                MetaClass iterMT = ClassManager.instance.GetClassByName("Core.IIterator<T>", 1);
+                MetaClass iterMT = CoreMetaClassManager.iteratorMetaClass;
                 m_ForInContentIterator = new MetaVariable("for_iterator_" + GetHashCode().ToString(), 
                     MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, 
                     new MetaType( iterMT, mdt.GetGenTemplateMetaTypeList() ) );

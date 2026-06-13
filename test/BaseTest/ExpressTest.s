@@ -1,5 +1,4 @@
-import CSharp.System.Math as AB;
-import Application.Core;
+namespace Application.Core;
 
 ClassX
 {
@@ -7,14 +6,14 @@ ClassX
 }
 Class1
 {   
-    ClassX xx; 
+    ClassX xx = new(); 
     int x = 20;
-    Class1( ix )
+    _init_( ix )
     {
         #x1 = x;
-        this.xx = ix;
+        this.xx = ix as ClassX;
     }
-    Class2 c3;
+    Class2 c3 = Class2( 20 );
     public static bool ab = 10 <= 10 / (20+1 * 35 - (32/15) );
     int a = 10 + (1 - ( 3 * ( 3 / ( -Class2.m2 - 100 ) )  * 30 ) ) / 10 * (15 - (22/2 + 1 ) ) - 20 / -10;
     private static bx = -20;

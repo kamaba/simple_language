@@ -275,12 +275,17 @@ namespace SimpleLanguage.Compile
         //}
         public void CreateNamespace()
         {
+            MetaNode parentNode = ModuleManager.instance.selfModule.metaNode;
+            if ( ProjectManager.config.Project.Name == "Core")
+            {
+                parentNode = ModuleManager.instance.coreModule.metaNode;
+            }
             for (int i = 0; i < m_FileDefineNamespaceList.Count; i++)
             {
                 var fmn = m_FileDefineNamespaceList[i];
                 if( fmn.name != "Core" )
                 {
-                    NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn);
+                    NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn, parentNode);
                 }
             }
             for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
@@ -293,7 +298,7 @@ namespace SimpleLanguage.Compile
                     //    Log.AddFileMetaLog( LID.ShowExtendMessage, "Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + fmn.token.ToLexemeAllString());
                     //}
                 }
-                NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn);
+                NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn, parentNode);
             }
         }
         public void CombineFileMeta()

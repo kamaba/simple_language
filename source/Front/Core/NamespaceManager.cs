@@ -97,13 +97,9 @@ namespace SimpleLanguage.Core
 
             return findNode;
         }
-        public void CreateMetaNamespaceByFineDefineNamespace( FileMetaNamespace fns, MetaNode parentNode = null )
+        public void CreateMetaNamespaceByFineDefineNamespace( FileMetaNamespace fns, MetaNode parentNode )
         {
             FileMetaNamespace fnsc = fns;
-            if ( parentNode == null )
-            {
-                parentNode = ModuleManager.instance.selfModule.metaNode;
-            }
             parentNode = SearchTopLevelFileMetaNamespace(fns, parentNode);
 
             CreateMetaNamespaceHandle(fnsc, parentNode);
@@ -141,10 +137,10 @@ namespace SimpleLanguage.Core
                 if( isCreate )
                 {
                     var mn = new MetaNamespace(name);
-                    if (ProjectManager.useDefineNamespaceType != EUseDefineType.LimitUseProjectConfigNamespaceAndClass )
+                    if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace )
                     {
                         mn.isNotAllowCreateName = true;
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, fns.token, "Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
                     }
                     parentNode = parentNode.AddMetaNamespace(mn);
                 }

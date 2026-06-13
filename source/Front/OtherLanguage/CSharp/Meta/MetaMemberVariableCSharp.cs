@@ -25,7 +25,7 @@ namespace SimpleLanguage.Core
             if( defineMetaClassType == null )
             {
                 string[] fullname = pi.DeclaringType.FullName.Split(".");
-                MetaNode fmc = ModuleManager.instance.csharpModule.metaNode;
+                MetaNode fmc = ModuleManager.instance.csharpLangRegisterModule.metaNode;
                 for( int i = 0; i < fullname.Length; i++ )
                 {
                     var cfmc = fmc.GetChildrenMetaNodeByName(fullname[i]);

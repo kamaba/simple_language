@@ -72,6 +72,8 @@ namespace SimpleLanguage.Core
         public bool isHandleExtendVariableDirty { get; set; } = false;
         public bool innderDefine => m_InnderDefine;
         public bool structDefine => m_StructDefine;
+        public bool manaualDefine => m_ManaualDefine;
+        public bool isPartial => m_IsPartial;
 
 
         protected int m_ExtendLevel = 0;
@@ -98,6 +100,8 @@ namespace SimpleLanguage.Core
         protected bool m_NeedInitMemberVariables = true;
         protected bool m_InnderDefine = false;
         protected bool m_StructDefine = false;
+        protected bool m_ManaualDefine = false;//手动编译的代码
+        protected bool m_IsPartial = false;
 
         protected readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
 
@@ -154,6 +158,7 @@ namespace SimpleLanguage.Core
             m_StaticMetaMemberFunctionList = mc.m_StaticMetaMemberFunctionList;
             m_DefaultExpressNode = mc.m_DefaultExpressNode;
             m_IsAbstractClass = mc.m_IsAbstractClass;
+            m_IsPartial = mc.m_IsPartial;
         }
         public override void SetDeep( int deep )
         {
@@ -237,9 +242,9 @@ namespace SimpleLanguage.Core
             ParseInnerVariable();
             ParseInnerFunction();
         }
-        public void SetInnderDefine( bool ecdt )
+        public void SetManaualDefine( bool ecdt )
         {
-            this.m_InnderDefine = ecdt;
+            this.m_ManaualDefine = ecdt;
         }
         public virtual void ParseExtendsRelation()
         {
@@ -779,6 +784,8 @@ namespace SimpleLanguage.Core
             {
                 m_IsInterfaceClass = fmc.preInterfaceToken != null;
             }
+
+            m_IsPartial = fmc.isPartial;
         }
         public void ParseFileMetaClassMemeberVarAndFunc( FileMetaClass fmc )
         {

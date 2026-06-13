@@ -29,7 +29,7 @@ Project
         EnumTest.fun();   
         BlockTest.fun()   
         !# 
-        CallLinkTest.fun();
+        CallLinkTestNS.CallLinkTest.fun();
         
     }
     _test_()

@@ -13,9 +13,9 @@ namespace SimpleLanguage.Project
 {
     public enum EUseDefineType
     {
-        NoUseProjectConfigNamespace,        //不使用项目内部配置
-        LimitUseProjectConfigNamespace,//限制使用配置后的命名空间 类自由创作
-        LimitUseProjectConfigNamespaceAndClass,//限制使用配置后的命名空间与类
+        NoUseProjectConfigNamespace,        //不使用项目内部配置    不限制代码层定义命名空间
+        LimitUseProjectConfigNamespace,//限制使用配置后的命名空间 类自由创作 如果使用该方式，代码空间不允许定义命名空间，只允许在项目配置中定义
+        LimitUseProjectConfigNamespaceAndClass,//限制使用配置后的命名空间与类   如果使用该方式，代码空间不允许定义命名空间，类，只允许在项目配置中定义
     }
     public class ProjectManager
     {

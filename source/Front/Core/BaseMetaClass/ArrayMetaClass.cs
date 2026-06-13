@@ -10,10 +10,11 @@ namespace SimpleLanguage.Core
 {
     public class IteratorMetaClass : MetaClass
     {
-        public IteratorMetaClass() : base("Iterator")
+        public IteratorMetaClass() : base("IIterator")
         {
             m_Type = EType.Class;
             m_InnderDefine = true;
+            m_IsInterfaceClass = true;
 
             var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass, ECovariance.None);
             m_MetaTemplateList.Add(mt);
@@ -26,10 +27,11 @@ namespace SimpleLanguage.Core
     }
     public class IterableMetaClass : MetaClass
     {
-        public IterableMetaClass() : base("Iterable")
+        public IterableMetaClass() : base("IIterable")
         {
             m_Type = EType.Class;
             m_InnderDefine = true;
+            m_IsInterfaceClass = true;
 
             var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass, ECovariance.None);
             m_MetaTemplateList.Add(mt);

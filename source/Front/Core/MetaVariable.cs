@@ -239,12 +239,12 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
-            MetaClass findMc = ClassManager.instance.GetClassByName("Core.IIterable");
-            if (mc.GetInterfaceByMetaClass(findMc))
-            {
-                return true;
-            }
-            MetaClass findMc2 = ClassManager.instance.GetClassByName("Core.IIterable<T>", 1 );
+            //MetaClass findMc = CoreMetaClassManager.iteratorMetaClass;
+            //if (mc.GetInterfaceByMetaClass(findMc))
+            //{
+            //    return true;
+            //}
+            MetaClass findMc2 = CoreMetaClassManager.iterableMetaClass;
             if (mc.GetInterfaceByMetaClass(findMc2))
             {
                 return true;
