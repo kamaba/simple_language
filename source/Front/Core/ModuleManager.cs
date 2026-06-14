@@ -13,8 +13,6 @@ namespace SimpleLanguage.Core
     public class ModuleManager
     {
         public static ModuleManager instance = new ModuleManager();
-
-        public string moduleName = "S";
         public MetaModule selfModule => m_SelfModule;
         public MetaModule coreModule => m_CoreModule;
         public MetaModule csharpLangRegisterModule => m_CSharpLangRegisterModule;
@@ -32,13 +30,15 @@ namespace SimpleLanguage.Core
         private MetaModule m_JavaLangRegisterModule = null;
         public ModuleManager()
         {
+        }
+        public void InitSelfModuleManager( string moduleName )
+        {
             m_SelfModule = new MetaModule(moduleName);
             m_CoreModule = m_SelfModule;
             m_CSharpLangRegisterModule = new MetaModule("CSharp");
             m_CLangRegisterModule = new MetaModule("CLang");
             m_JavaLangRegisterModule = new MetaModule("Java");
             m_AllMetaModuleDict.Add(moduleName, m_SelfModule);
-            //m_AllMetaModuleDict.Add(coreModuleName, m_CoreModule);
             m_AllMetaModuleDict.Add("CSharp", m_CSharpLangRegisterModule);
             m_AllMetaModuleDict.Add("CLang", m_CLangRegisterModule);
             m_AllMetaModuleDict.Add("Java", m_JavaLangRegisterModule);

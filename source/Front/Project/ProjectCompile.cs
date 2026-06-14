@@ -79,6 +79,7 @@ namespace SimpleLanguage.Project
             // Generate project guide markdown beside .sp/.jsonc
             ProjectClass.ExportProjectGuideMarkdown(spFilePath, jsoncPath);
             ProjectManager.SetConfig(config);
+            ModuleManager.instance.InitSelfModuleManager(config.Project.Name);
 
             // Logs / DebugCode / *.module.json 均在 {export.outputDir}/{moduleName}/（见 ProjectOutputEnvironment）。
             ProjectOutputEnvironment.ApplyFromConfig(config, projectDir, projectName);

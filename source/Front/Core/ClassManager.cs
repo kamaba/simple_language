@@ -752,7 +752,7 @@ namespace SimpleLanguage.Core
                 }
                 if (parentMB != null)
                 {
-                    if (parentMB.IsMetaClass() || parentMB.isMetaData || parentMB.isMetaEnum)
+                    if (parentMB.IsMetaClass() || parentMB.isMetaData || parentMB.isMetaEnum || parentMB.isMetaNamespace )
                         return parentMB;
                 }
                 mb = mb.parentNode;
