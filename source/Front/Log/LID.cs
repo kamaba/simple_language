@@ -66,5 +66,6 @@
         MetaCoreDataNotAllowHasFunction = 12268,
         MetaCoreNotSupportParseType = 12269,
         MetaCoreNotFoundMetaMemberVariable = 12270,
+        FileMetaNotFoundNameSpace = 12271,
     }
 }

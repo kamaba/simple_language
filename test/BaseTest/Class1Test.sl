@@ -44,16 +44,80 @@ namespace N1
     }
 }
 
+namespace Class1Expand
+{
+    ClassDefineBase
+    {
+        public static int staticSeed = 7
+        int baseValue = 10
+
+        _init_(int value)
+        {
+            this.baseValue = value
+        }
+
+        int get baseProp()
+        {
+            ret this.baseValue
+        }
+
+        virtualName()
+        {
+            ret "base:" + this.baseValue.toString()
+        }
+
+        ClassDefineNested
+        {
+            nestedValue = 31
+        }
+    }
+
+    partial ClassDefineBase
+    {
+        partialValue = 20
+
+        sumBase()
+        {
+            ret this.baseValue + this.partialValue
+        }
+    }
+
+    ClassDefineChild extends ClassDefineBase
+    {
+        childValue = 30
+
+        _init_(int value, int child)
+        {
+            base._init_(value)
+            this.childValue = child
+        }
+
+        override virtualName()
+        {
+            ret "child:" + this.baseValue.toString() + ":" + this.childValue.toString()
+        }
+
+        sumAll()
+        {
+            ret this.sumBase() + this.childValue
+        }
+    }
+}
+
 Class1TestSmoke
 {
     static fun()
     {
         global.println("========== Class1Test (start) ==========")
         global.println("本文件为 partial、Std 前缀类、多级 namespace 与 extends 链的声明样例，无运行时断言。")
+        c1 = Class1Expand.ClassDefineChild(11, 22)
+        nested = Class1Expand.ClassDefineBase.ClassDefineNested()
+        global.println("Class1Expand child virtualName -> " + c1.virtualName())
+        global.println("Class1Expand child sumAll -> " + c1.sumAll().toString())
+        global.println("Class1Expand baseProp/static/nested -> " + c1.baseProp.toString() + "/" + Class1Expand.ClassDefineBase.staticSeed.toString() + "/" + nested.nestedValue.toString())
         global.println("========== Class1Test (end) ==========")
     }
 }
 
-# 测试面向：namespace 嵌套（N2.N3 / N4.N5）、partial 与 extends 的符号组织；不含业务 static fun 直至 Class1TestSmoke。
-# 预期：仅编译/索引 smoke；具体类型解析依赖 Std 与 N1.N2.N3 路径配置。
-
+# 测试面向：namespace 嵌套（N2.N3 / N4.N5）、partial 与 extends 的符号组织；扩展覆盖类构造、base._init_、override、getter、static 成员与嵌套类实例化。
+# 预期：原有声明继续编译；Class1Expand.ClassDefineChild 可实例化并打印 child:11:22、sumAll=53、baseProp/static/nested=11/7/31。

@@ -571,4 +571,5 @@
 12267,Error,TRUE,FALSE,2,,"MetaDataMember已有定义类: [{0}]中 已有: [{1}]的元素!!",,Auto-generated LID mapping,,
 12268,Error,TRUE,FALSE,0,,"Data中不允许有Variable 和 Function",,Auto-generated LID mapping,,
 12269,Error,TRUE,FALSE,0,,"不支持解析该类型",,Auto-generated LID mapping,,
-12270,Error,TRUE,FALSE,2,,"在{[0]}中没有发现{[1]}的元素",,Auto-generated LID mapping,,
+12270,Error,TRUE,FALSE,2,,"在[{0}]中没有发现[{1}]的元素",,Auto-generated LID mapping,,
+12271,Error,TRUE,FALSE,1,,"没有发现[{0}]的命名空间",,Auto-generated LID mapping,,

@@ -29,7 +29,9 @@ Project
         EnumTest.fun();   
         BlockTest.fun()   
         !# 
-        CallLinkTestNS.CallLinkTest.fun();
+        #CallLinkTestNS.CallLinkTest.fun();
+        Class1TestSmoke.fun();
+        Class2TestSmoke.fun();
         
     }
     _test_()

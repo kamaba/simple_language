@@ -48,7 +48,7 @@ namespace CallLinkTestNS
             # 以下为依赖 Application.Core / ClassT 的链式与匿名 data 草稿，需在对应工程就绪后启用
             # a20 = 10000 + 20
             # a21 = ClassT(10){ t = 1 }
-            # d2 = { ct = ClassT(20), childd1 = { a3 = { qx = 1024 } }, ch2 = [1,2,3,4], ha = a21, ch3 = [ { a = 20 }, { a = { ax = 10241 } } ], y2 = "sss" }
+            #data d2 = { ct = ClassT(20), childd1 = { a3 = { qx = 1024 } }, ch2 = [1,2,3,4], ha = a21, ch3 = [ { a = 20 }, { a = { ax = 10241 } } ], y2 = "sss" }
 
             global.println("========== CallLinkTest (end) ==========")
         }

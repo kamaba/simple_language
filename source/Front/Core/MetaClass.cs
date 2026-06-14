@@ -254,7 +254,7 @@ namespace SimpleLanguage.Core
             }
             if (this.m_ExtendClassMetaType != null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "已绑定过了继承类 : " + extendClass.name );
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, this.m_Token, "已绑定过了继承类 : " + extendClass.name );
                 return;
             }
             foreach( var v in m_FileMetaClassDict )
@@ -266,7 +266,7 @@ namespace SimpleLanguage.Core
                 }
                 if(this.m_ExtendClassMetaType != null )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "已绑定过了继承类 : " + mc.metaClass.extendClass.name );
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, this.m_Token, "已绑定过了继承类 : " + mc.metaClass.extendClass.name );
                     continue;
                 }
 
@@ -277,7 +277,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有发现继承类的类型!!! " + mc.metaClass.extendClass.name );
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, this.m_Token, "没有发现继承类的类型!!! " + mc.metaClass.extendClass.name );
                 }
             }
 

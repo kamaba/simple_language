@@ -201,13 +201,8 @@ namespace SimpleLanguage.Logging
         {
             return WriteCoreByToken(lid, EErrorType.ParseFile, null, null, msg);
         }
-        public static LogData AddFileMetaLog(LID lid, string msg, params object[] objs)
+        public static LogData AddFileMetaLog(LID lid, Token token, string msg, params object[] objs)
         {
-            Token token = null;
-            if( objs.Length > 0 )
-            {
-                token = objs[0] as Token;
-            }
             return WriteCoreByToken(lid, EErrorType.ParseFile, token, objs, msg);
         }
 

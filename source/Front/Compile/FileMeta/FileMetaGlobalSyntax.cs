@@ -84,6 +84,11 @@ namespace SimpleLanguage.Compile
                     {
                         mb = mb.GetChildrenMetaNodeByName(name);
                     }
+                    if (mb == null)
+                    {
+                        Log.AddFileMetaLog(LID.FileMetaNotFoundNameSpace, m_NamespaceStatement.tokenList[i], "not found namespace", name );
+                        break;
+                    }
                     //Log.AddFileMetaLog(LID.ShowExtendMessage, "查找失败" + name );// mb != null, "查找失败" + name);
                 }
                 else
@@ -115,6 +120,12 @@ namespace SimpleLanguage.Compile
                     }
                 }
             }
+            if (mb == null)
+            {
+                Log.AddFileMetaLog(LID.MetaCoreAssertShowMessage, "没有找到mb" );
+                return;
+            }
+
 
             if (mb.name == "CSharp")
             {

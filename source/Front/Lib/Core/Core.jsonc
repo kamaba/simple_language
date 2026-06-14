@@ -57,6 +57,8 @@
       { "path": "../../../../test/BaseTest/ArrayTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/BlockTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/CallLinkTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "../../../../test/BaseTest/Class1Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "../../../../test/BaseTest/Class2Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/AssignStatement.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
@@ -89,6 +91,7 @@
     "tree": [
       { "namespace": "Core" },
       { "namespace": "Std" },
+      { "namespace": "Application" },
       { "class": "Std.Console" }
     ]
   },
