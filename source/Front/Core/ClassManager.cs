@@ -351,7 +351,9 @@ namespace SimpleLanguage.Core
                         return null;
                     }
                 }
-                if( finalTopMetaNode.isMetaModule && fmc.namespaceBlock?.namespaceList?.Count > 0)
+                if (finalTopMetaNode != null
+                    && (finalTopMetaNode.isMetaModule || finalTopMetaNode.isMetaNamespace)
+                    && fmc.namespaceBlock?.namespaceList?.Count > 0)
                 {
                     finalTopMetaNode = NamespaceManager.instance.FindFinalMetaNamespaceByNSBlock(fmc.namespaceBlock, finalTopMetaNode );
                 }

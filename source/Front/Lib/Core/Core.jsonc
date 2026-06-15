@@ -87,14 +87,37 @@
     //{ "path": "lib/std","uuid": "321323-123123-123123-123123", "name": "Std" },
     //{ "path": "lib/core","uuid": "321323-123123-123123-123123", "name": "Core" }
   ],
-  "struct": {
-    "tree": [
-      { "namespace": "Core" },
-      { "namespace": "Std" },
-      { "namespace": "Application" },
-      { "class": "Std.Console" }
-    ]
-  },
+  "struct": [
+      { "namespace": "Core", "children": 
+      [
+        { "class": "Object" },
+        { "class": "Data" },
+        { "class": "CloneIterface" },
+        { "class": "IteratorInterface" },
+        { "class": "Boolean" },
+        { "class": "Num" },
+        { "class": "UInt8" },
+        { "class": "Int8" },
+        { "class": "Int16" },
+        { "class": "UInt16" },
+        { "class": "Int32" },
+        { "class": "UInt32" },
+        { "class": "Int64" },
+        { "class": "UInt64" },
+        { "class": "Float32" },
+        { "class": "Float64" },
+        { "class": "String" },
+        { "class": "Type" },
+        { "class": "Member" },
+        { "class": "Array" },
+        { "class": "Range" },
+        { "class": "NativeBridge" },
+        { "class": "Attribute" }
+      ] },
+      { "namespace": "Std", "children": [] },
+      { "namespace": "Application", "children": [] },
+      { "class": "Std.Console" }    
+  ],
   "export": {
     "moduleName": "Core",
     "outputDir": "F:\\project\\lang\\simple_language\\out\\export",

@@ -1,6 +1,21 @@
-import Application
+import Math
 import Std
 
+namespace Application.Cat;
+
+namespace Class1Expand
+{
+
+    partial ClassDefineBase
+    {
+        partialValue = 20
+
+        sumBase()
+        {
+            ret this.baseValue + this.partialValue
+        }
+    }
+}
 namespace N1
 {
     N2.Class1

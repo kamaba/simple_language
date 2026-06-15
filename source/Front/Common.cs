@@ -90,8 +90,7 @@ namespace SimpleLanguage
         {
             var rootDir = GetDebugCodeRootDir();
 
-            var relativePath = path ?? string.Empty;
-            relativePath = relativePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+            var relativePath = GetDebugCodeRelativePath(path);
 
             var noExtPath = Path.ChangeExtension(relativePath, null) ?? relativePath;
             if (noExtPath.EndsWith("."))
@@ -99,7 +98,7 @@ namespace SimpleLanguage
                 noExtPath = noExtPath.Substring(0, noExtPath.Length - 1);
             }
 
-            string outDir = Path.Combine(rootDir, noExtPath);
+            string outDir = Path.GetFullPath(Path.Combine(rootDir, noExtPath));
 
             if( !Directory.Exists( outDir ) )
             {
@@ -113,6 +112,101 @@ namespace SimpleLanguage
         {
             var outDir = GetDebugCodeDir(path);
             return Path.Combine(outDir, fileName);
+        }
+
+        private static string GetDebugCodeRelativePath(string path)
+        {
+            var relativePath = path ?? string.Empty;
+            relativePath = relativePath.Replace('\\', Path.DirectorySeparatorChar).Replace('/', Path.DirectorySeparatorChar);
+
+            if (ShouldUseWorkspaceRelativeDebugPath(relativePath))
+            {
+                var workspaceRoot = FindWorkspaceRoot(ProjectManager.projectPath);
+                if (!string.IsNullOrWhiteSpace(workspaceRoot))
+                {
+                    var fullSourcePath = Path.IsPathRooted(relativePath)
+                        ? Path.GetFullPath(relativePath)
+                        : Path.GetFullPath(Path.Combine(ProjectManager.projectPath ?? Directory.GetCurrentDirectory(), relativePath));
+
+                    if (IsPathUnderDirectory(fullSourcePath, workspaceRoot))
+                    {
+                        relativePath = Path.GetRelativePath(workspaceRoot, fullSourcePath);
+                    }
+                }
+            }
+
+            return NormalizeDebugRelativePath(relativePath);
+        }
+
+        private static bool ShouldUseWorkspaceRelativeDebugPath(string relativePath)
+        {
+            if (Path.IsPathRooted(relativePath))
+            {
+                return true;
+            }
+
+            return relativePath == ".."
+                || relativePath.StartsWith(".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                || relativePath.Contains(Path.DirectorySeparatorChar + ".." + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                || relativePath.EndsWith(Path.DirectorySeparatorChar + "..", StringComparison.Ordinal);
+        }
+
+        private static string NormalizeDebugRelativePath(string relativePath)
+        {
+            if (string.IsNullOrWhiteSpace(relativePath))
+            {
+                return string.Empty;
+            }
+
+            var parts = relativePath.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+            var safeParts = new List<string>();
+            for (int i = 0; i < parts.Length; i++)
+            {
+                var part = parts[i];
+                if (string.IsNullOrWhiteSpace(part) || part == ".")
+                {
+                    continue;
+                }
+                if (part == "..")
+                {
+                    safeParts.Add("__parent__");
+                    continue;
+                }
+                safeParts.Add(part);
+            }
+
+            return Path.Combine(safeParts.ToArray());
+        }
+
+        private static string FindWorkspaceRoot(string startDir)
+        {
+            var dir = string.IsNullOrWhiteSpace(startDir)
+                ? Directory.GetCurrentDirectory()
+                : Path.GetFullPath(startDir);
+
+            while (!string.IsNullOrWhiteSpace(dir))
+            {
+                if (Directory.Exists(Path.Combine(dir, "source")) && Directory.Exists(Path.Combine(dir, "test")))
+                {
+                    return dir;
+                }
+
+                var parent = Directory.GetParent(dir)?.FullName;
+                if (string.Equals(parent, dir, StringComparison.OrdinalIgnoreCase))
+                {
+                    break;
+                }
+                dir = parent;
+            }
+
+            return string.Empty;
+        }
+
+        private static bool IsPathUnderDirectory(string path, string directory)
+        {
+            var fullPath = Path.GetFullPath(path).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            var fullDirectory = Path.GetFullPath(directory).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            return fullPath.StartsWith(fullDirectory, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

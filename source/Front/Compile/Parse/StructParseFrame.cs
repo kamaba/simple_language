@@ -908,8 +908,12 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                m_FileMeta.AddFileSearchNamespace(fmn);
+                Log.AddNodeLog(LID.ShowExtendMessage, currentNode.token, "现在不允许 namespace N1;这种的语法了");
             }
+            //else
+            //{
+            //    m_FileMeta.AddFileSearchNamespace(fmn);
+            //}
         }
         public static bool CheckEnd(Node pnode)
         {
@@ -928,6 +932,7 @@ namespace SimpleLanguage.Compile
             Node curNode = null;
             bool isCanAdd = false;
             Node nextNode = null;
+            Node block = null;
 
             int isClass = 0;        //0 unknows 1 class 2namespace
             for (index = pnode.parseIndex; index < pnode.childList.Count;)
@@ -937,7 +942,7 @@ namespace SimpleLanguage.Compile
                 if (curNode.token?.type == ETokenType.At)
                 {
                     // attributes at file root are not allowed
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error @Attribute 不允许出现在文件头级(只能在 namespace{} / class{} 内)");
+                    Log.AddNodeLog(LID.ShowExtendMessage, curNode.token, "Error @Attribute 不允许出现在文件头级(只能在 namespace{} / class{} 内)");
                     continue;
                 }
 
@@ -988,7 +993,7 @@ namespace SimpleLanguage.Compile
                         {
                             isClass = 1;
                         }
-                        curNode = nextNode;
+                        block = nextNode;
                         index++;
                         isCanAdd = true;
                         break;
@@ -1001,6 +1006,7 @@ namespace SimpleLanguage.Compile
                     {
                         isClass = 1;
                     }
+                    block = curNode;
                     break;
                 }
                 else if( curNode.nodeType == ENodeType.Comment )
@@ -1013,7 +1019,7 @@ namespace SimpleLanguage.Compile
                 }    
                 else
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
+                    Log.AddNodeLog(LID.ShowExtendMessage, curNode.token, "Error 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
                 }
             }
             pnode.parseIndex = index;
@@ -1022,35 +1028,43 @@ namespace SimpleLanguage.Compile
             {
                 if (isClass == 1)
                 {
-                    AddFileMetaClasss(curNode, nodeList);
+                    AddFileMetaClasss(block, nodeList);
                     ParseNamespaceOrTopClass(pnode);
                 }
                 else if (isClass == 2)
                 {
                     if (nodeList.Count == 2)
                     {
+                        bool isFile = currentNodeInfo.parseType == EParseNodeType.File;
                         FileMetaNamespace fmn = new FileMetaNamespace(nodeList[0], nodeList[1]);
                         AddParseNamespaceNodeInfo(fmn);
-                        if (nodeList[1].blockNode != null)
+                        if (block != null )
                         {
-                            m_FileMeta.AddFileDefineNamespace(fmn);
-                            ParseNamespaceOrTopClass(nodeList[1].blockNode);
+                            ParseNamespaceOrTopClass(block);
                         }
-                        else
+                        if(isFile)
                         {
-                            m_FileMeta.AddFileSearchNamespace(fmn);
+                            if( block != null )
+                            {
+                                m_FileMeta.AddFileDefineNamespace(fmn);
+                            }
+                            else
+                            {
+                                Log.AddNodeLog(LID.ShowExtendMessage, nodeList[0].token, "现在不允许 namespace N1;这种的语法了");
+                            }
+
                         }
                         m_CurrentNodeInfoStack.Pop();
                         ParseNamespaceOrTopClass(pnode);
                     }
                     else
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 对于 namespace A.B{}的格式 多了一个参数!1");
+                        Log.AddNodeLog(LID.ShowExtendMessage, curNode.token, "Error 对于 namespace A.B{}的格式 多了一个参数!1");
                     }
                 }
                 else
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 没有发现是Class还是Namespace的关键字!");
+                    Log.AddNodeLog(LID.ShowExtendMessage, curNode.token, "Error 没有发现是Class还是Namespace的关键字!");
                 }
             }
         }

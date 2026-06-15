@@ -15,7 +15,7 @@ using System.Text;
 
 namespace SimpleLanguage.Compile
 {
-    public partial class FileMeta : FileMetaBase
+    public sealed class FileMeta : FileMetaBase
     {
         public string path => m_Path;
         public List<FileMetaClass> fileMetaClassList => m_FileMetaClassList;
@@ -27,7 +27,7 @@ namespace SimpleLanguage.Compile
         private FileMetaLocalSyntax m_FileMetaLocalSyntax = null;
         // for example: namespace a.b.c;
         private List<FileMetaNamespace> m_FileDefineNamespaceList = new List<FileMetaNamespace>();
-        private List<FileMetaNamespace> m_FileSearchNamespaceList = new List<FileMetaNamespace>();
+        //private List<FileMetaNamespace> m_FileSearchNamespaceList = new List<FileMetaNamespace>(); 去掉搜索namespace 原因是 要把这个移植到项目配置中
         // for example: namespace a{ namespace b{}}
         //private List<FileMetaNamespace> m_FileMetaNamespaceList = new List<FileMetaNamespace>();
         private List<FileMetaClass> m_FileMetaClassList = new List<FileMetaClass>();
@@ -99,11 +99,11 @@ namespace SimpleLanguage.Compile
             fdn.SetFileMeta(this);
             m_FileDefineNamespaceList.Add(fdn);
         }
-        public void AddFileSearchNamespace(FileMetaNamespace fdn )
-        {
-            fdn.SetFileMeta(this);
-            m_FileSearchNamespaceList.Add(fdn);
-        }
+        //public void AddFileSearchNamespace(FileMetaNamespace fdn )
+        //{
+        //    fdn.SetFileMeta(this);
+        //    m_FileSearchNamespaceList.Add(fdn);
+        //}
         public void AddFileMetaAllNamespace( FileMetaNamespace fmn )
         {
             fmn.SetFileMeta(this);
@@ -276,30 +276,22 @@ namespace SimpleLanguage.Compile
         public void CreateNamespace()
         {
             MetaNode parentNode = ModuleManager.instance.selfModule.metaNode;
-            if ( ProjectManager.config.Project.Name == "Core")
-            {
-                parentNode = ModuleManager.instance.coreModule.metaNode;
-            }
             for (int i = 0; i < m_FileDefineNamespaceList.Count; i++)
             {
-                var fmn = m_FileDefineNamespaceList[i];
-                if( fmn.name != "Core" )
-                {
-                    NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn, parentNode);
-                }
+                m_FileDefineNamespaceList[i].CreateNamespace(parentNode);
             }
-            for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
-            {
-                var fmn = m_FileSearchNamespaceList[i];
-                if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
-                {
-                    //if (!ProjectManager.data.IsIncludeDefineStruct(fmn.namespaceStatementBlock.namespaceList))
-                    //{
-                    //    Log.AddFileMetaLog( LID.ShowExtendMessage, "Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + fmn.token.ToLexemeAllString());
-                    //}
-                }
-                NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn, parentNode);
-            }
+            //for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
+            //{
+            //    var fmn = m_FileSearchNamespaceList[i];
+            //    if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
+            //    {
+            //        //if (!ProjectManager.data.IsIncludeDefineStruct(fmn.namespaceStatementBlock.namespaceList))
+            //        //{
+            //        //    Log.AddFileMetaLog( LID.ShowExtendMessage, "Error 暂不允许使用namespace 定义命名空间!!!" + fmn.ToFormatString() + " 位置: " + fmn.token.ToLexemeAllString());
+            //        //}
+            //    }
+            //    NamespaceManager.instance.CreateMetaNamespaceByFineDefineNamespace(fmn, parentNode);
+            //}
         }
         public void CombineFileMeta()
         {
@@ -311,10 +303,10 @@ namespace SimpleLanguage.Compile
             {
                 var fns = m_FileMetaAllClassList[i];
 
-                for( int j = 0; j < m_FileSearchNamespaceList.Count; j++)
-                {
-                    fns.AddExtendMetaNamespace(m_FileSearchNamespaceList[j]);
-                }
+                //for( int j = 0; j < m_FileSearchNamespaceList.Count; j++)
+                //{
+                //    fns.AddExtendMetaNamespace(m_FileSearchNamespaceList[j]);
+                //}
 
                 ClassManager.instance.AddClass(fns);
             }
@@ -343,10 +335,10 @@ namespace SimpleLanguage.Compile
             {
                 m_FileDefineNamespaceList[i].SetDeep(m_Deep);
             }
-            for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
-            {
-                m_FileSearchNamespaceList[i].SetDeep(m_Deep);
-            }
+            //for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
+            //{
+            //    m_FileSearchNamespaceList[i].SetDeep(m_Deep);
+            //}
             for (int i = 0; i < m_FileMetaClassList.Count; i++)
             {
                 m_FileMetaClassList[i].SetDeep(m_Deep);
@@ -365,10 +357,10 @@ namespace SimpleLanguage.Compile
             {
                 sb.Append(m_FileDefineNamespaceList[i].ToFormatString() + Environment.NewLine);
             }
-            for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
-            {
-                sb.Append(m_FileSearchNamespaceList[i].ToFormatString() + Environment.NewLine);
-            }
+            //for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
+            //{
+            //    sb.Append(m_FileSearchNamespaceList[i].ToFormatString() + Environment.NewLine);
+            //}
             for (int i = 0; i < m_FileMetaClassList.Count; i++)
             {
                 sb.Append(m_FileMetaClassList[i].ToFormatString() + Environment.NewLine);

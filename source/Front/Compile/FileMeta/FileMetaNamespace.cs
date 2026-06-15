@@ -6,16 +6,18 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
+using SimpleLanguage.Project;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace SimpleLanguage.Compile
 {
-    public partial class FileMetaNamespace : FileMetaBase
+    public sealed class FileMetaNamespace : FileMetaBase
     {
-        public bool isSearchNamespace => m_IsSearchNamespace;
+        //public bool isSearchNamespace => m_IsSearchNamespace;
         public Node namespaceNode => m_NamespaceNode;
         public Node namespaceNameNode => m_NamespaceNameNode;
 
@@ -23,9 +25,9 @@ namespace SimpleLanguage.Compile
         private Node m_NamespaceNameNode = null;
         private Token m_BraceBeginToken = null;
         private Token m_BraceEndToken = null;
-        private bool m_IsSearchNamespace = false;
+        //private bool m_IsSearchNamespace = false;
+        private MetaNode m_MetaNode = null;
 
-        //private List<Node> m_NodeList = new List<Node>();
         public new string name
         {
             get
@@ -37,73 +39,135 @@ namespace SimpleLanguage.Compile
                 return "";
             }
         }
-        //public List<MetaNamespace> metaNamespaceList
-        //{
-        //    get
-        //    {
-        //        if (m_NamespaceStateBlock != null)
-        //        {
-        //            return m_NamespaceStateBlock.metaNamespaceList;
-        //        }
-        //        return null;
-        //    }
-        //}
         public NamespaceStatementBlock namespaceStatementBlock => m_NamespaceStateBlock;
         protected NamespaceStatementBlock m_NamespaceStateBlock { get; set; }
 
         public FileMetaNamespace topLevelFileMetaNamespace = null;
-
         private List<FileMetaNamespace> m_MetaNamespaceList = new List<FileMetaNamespace>();
         private List<FileMetaClass> m_ChildrenClassList = new List<FileMetaClass>();
 
         private static Stack<FileMetaNamespace> s_MetaNamespaceStack = new Stack<FileMetaNamespace>();
-        public Stack<FileMetaNamespace> namespaceStack
-        {
-            get
-            {
-                s_MetaNamespaceStack.Clear();
-                var t = topLevelFileMetaNamespace;
-                while (t != null)
-                {
-                    s_MetaNamespaceStack.Push(t);
-                    t = t.topLevelFileMetaNamespace;
-                }
-                s_MetaNamespaceStack.Push(this);
+        //public Stack<FileMetaNamespace> namespaceStack
+        //{
+        //    get
+        //    {
+        //        s_MetaNamespaceStack.Clear();
+        //        var t = topLevelFileMetaNamespace;
+        //        while (t != null)
+        //        {
+        //            s_MetaNamespaceStack.Push(t);
+        //            t = t.topLevelFileMetaNamespace;
+        //        }
+        //        s_MetaNamespaceStack.Push(this);
 
-                return s_MetaNamespaceStack;
-            }
-        }
-        public FileMetaNamespace( FileMetaNamespace fmn )
-        {
-            this.m_NamespaceNode = fmn.m_NamespaceNode;
-            this.m_NamespaceNameNode = fmn.m_NamespaceNameNode;
-        }
+        //        return s_MetaNamespaceStack;
+        //    }
+        //}
+        //public FileMetaNamespace( FileMetaNamespace fmn )
+        //{
+        //    this.m_NamespaceNode = fmn.m_NamespaceNode;
+        //    this.m_NamespaceNameNode = fmn.m_NamespaceNameNode;
+        //}
 
         public FileMetaNamespace(Node namespaceNode, Node namespaceNameNode)
         {
             m_NamespaceNode = namespaceNode;
             m_NamespaceNameNode = namespaceNameNode;
+            m_Token = m_NamespaceNode.token;
 
 
             if (namespaceNode == null)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在解析namespace 中，没有找到namespace设置的名称!!");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, m_Token, "Error 在解析namespace 中，没有找到namespace设置的名称!!");
                 return;
             }
-
             Node blockNode = namespaceNode.blockNode;
-
-            m_Token = m_NamespaceNode.token;
-            m_IsSearchNamespace = true;
+            //m_IsSearchNamespace = true;
             if (blockNode != null )
             {
                 m_BraceBeginToken = blockNode.token;
                 m_BraceEndToken = blockNode.endToken;
-                m_IsSearchNamespace = false;
+                //m_IsSearchNamespace = false;
             }
             m_NamespaceStateBlock = NamespaceStatementBlock.CreateStateBlock(m_NamespaceNameNode.linkTokenList);
 
-        }        
+        }
+        public void CreateNamespace(MetaNode metaNode)
+        {
+            if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
+            {
+                Log.AddFileMetaLog( LID.ShowExtendMessage, this.m_Token, "Error 暂不允许使用namespace 定义命名空间!!!" );
+            }
+            m_MetaNode = CreateMetaNamespaceByFineDefineNamespace( this, metaNode );
+            foreach( var v in m_MetaNamespaceList )
+            {
+                v.CreateNamespace(m_MetaNode);
+            }
+        }
+        public MetaNode CreateMetaNamespaceByFineDefineNamespace(FileMetaNamespace fns, MetaNode parentNode)
+        {
+            FileMetaNamespace fnsc = fns;
+            parentNode = SearchTopLevelFileMetaNamespace(fns, parentNode);
+
+            return CreateMetaNamespaceHandle(fnsc, parentNode);
+        }
+        MetaNode CreateMetaNamespaceHandle(FileMetaNamespace fns, MetaNode parentNode = null)
+        {
+            MetaNode mnode = parentNode;
+            if (parentNode == null)
+            {
+                parentNode = ModuleManager.instance.selfModule.metaNode;
+            }
+            var fnode = parentNode;
+            //fns.metaNamespaceList.Clear();
+            for (int i = 0; i < fns.namespaceStatementBlock.tokenList.Count; i++)
+            {
+                string name = fns.namespaceStatementBlock.tokenList[i].lexeme.ToString();
+                fnode = parentNode.GetChildrenMetaNodeByName(name);
+                if (fnode != null)
+                {
+                    if (fnode.isMetaNamespace)
+                    {
+                        parentNode = fnode;
+                        continue;
+                    }
+
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, fns.token, "Namespace name conflicts with existing node: " + name);
+                    return fnode;
+                }
+                else
+                {
+                    var mn = new MetaNamespace(name);
+                    if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
+                    {
+                        mn.isNotAllowCreateName = true;
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, fns.token, "Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
+                    }
+                    parentNode = parentNode.AddMetaNamespace(mn);
+                    return parentNode;
+                }
+            }
+            return null;
+        }
+        public MetaNode SearchTopLevelFileMetaNamespace(FileMetaNamespace fns, MetaNode parentNode = null)
+        {
+            MetaNode findNode = parentNode;
+            if (fns.topLevelFileMetaNamespace != null)
+            {
+                findNode = SearchTopLevelFileMetaNamespace(fns.topLevelFileMetaNamespace, findNode);
+                for (int i = 0; i < fns.topLevelFileMetaNamespace.namespaceStatementBlock.tokenList.Count; i++)
+                {
+                    string name = fns.topLevelFileMetaNamespace.namespaceStatementBlock.tokenList[i].lexeme.ToString();
+                    var findNode2 = findNode.GetChildrenMetaNodeByName(name);
+                    if (findNode2 == null)
+                    {
+                        break;
+                    }
+                    findNode = findNode2;
+                }
+            }
+            return findNode;
+        }
         public FileMetaNamespace AddFileNamespace( FileMetaNamespace dln )
         {
             dln.topLevelFileMetaNamespace = this;
@@ -136,7 +200,7 @@ namespace SimpleLanguage.Compile
         public new string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < deep; i++)
+            for (int i = 0; i < m_Deep; i++)
                 sb.Append(Global.tabChar);
             sb.Append( m_Token.lexeme.ToString() + " " + m_NamespaceStateBlock.ToFormatString());
             sb.Append(Environment.NewLine);

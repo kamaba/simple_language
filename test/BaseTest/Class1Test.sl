@@ -46,7 +46,7 @@ namespace N1
 
 namespace Class1Expand
 {
-    ClassDefineBase
+    partial ClassDefineBase
     {
         public static int staticSeed = 7
         int baseValue = 10
@@ -69,16 +69,6 @@ namespace Class1Expand
         ClassDefineNested
         {
             nestedValue = 31
-        }
-    }
-
-    partial ClassDefineBase
-    {
-        partialValue = 20
-
-        sumBase()
-        {
-            ret this.baseValue + this.partialValue
         }
     }
 
