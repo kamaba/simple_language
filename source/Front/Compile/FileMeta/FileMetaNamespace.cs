@@ -139,7 +139,7 @@ namespace SimpleLanguage.Compile
                     if (fnode.isMetaNamespace)
                     {
                         parentNode = fnode;
-                        return fnode;
+                        continue;
                     }
 
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, fns.token, "Namespace name conflicts with existing node: " + name);
@@ -149,10 +149,9 @@ namespace SimpleLanguage.Compile
                 {
                     var mn = new MetaNamespace(name);
                     parentNode = parentNode.AddMetaNamespace(mn);
-                    return parentNode;
                 }
             }
-            return null;
+            return parentNode;
         }
         public FileMetaNamespace AddFileNamespace( FileMetaNamespace dln )
         {

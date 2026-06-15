@@ -706,18 +706,17 @@ namespace SimpleLanguage.Core
         {
             return GetMetaClassByNameAndFileMeta(ownerBase, fmcd.fileMeta, fmcd.stringList );
         }
-        // ????wnerClass?????????????????????????wnerClass???????????????????????????????????????????????????????????????????????????????????????????????stringList?????????
         private MetaNode GetMetaNodeByListString( MetaBase ownerBase, List<string> stringList )
         {
             if (stringList.Count == 0)
                 return null;
 
+            MetaNode findMB = null;
             string firstName = "";
             if ( stringList.Count == 1 )
             {
                 firstName = stringList[0];
             }
-            MetaNode findMB = null;
 
             MetaNode mb = ModuleManager.instance.selfModule.metaNode;
             if( ownerBase != null && ownerBase.metaNode != null )
@@ -758,10 +757,11 @@ namespace SimpleLanguage.Core
                     break;
             }
             findMB = CoreMetaClassManager.GetCoreMetaClass(firstName);
-            if (findMB?.IsMetaClass() == true || findMB?.isMetaEnum == true || findMB?.isMetaData == true)
+            if (findMB != null)
             {
                 return findMB;
             }
+
             return null;
         }
         public MetaNode GetMetaClassByNameAndFileMeta(MetaBase ownerBase, FileMeta fm, List<string> stringList )

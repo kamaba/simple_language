@@ -55,69 +55,115 @@ namespace SimpleLanguage.Project
         // Build MetaNode / MetaNamespace tree from StructTreeNode description.
         // parentRoot: existing MetaNode root (通常是 ModuleManager.instance.selfModule.metaNode)
         // node: StructTreeNode from ProjectConfig.StructTree (Root/Namespace/Class)
-        public static void AddDefineNamespace(MetaNode parentRoot, ProjectConfig.StructTreeNode node, bool isAddCurrent = true)
+        public static void AddDefineNamespace(MetaNode parentRoot, ProjectConfig.StructTreeNode node)
         {
             if (parentRoot == null || node == null)
+            {
+                Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!" + node.Name);
                 return;
+            }
 
             // Root 节点只作为逻辑起点，不对应具体 namespace/class，本身不创建 MetaNamespace/MetaClass。
             if (node.Type == ProjectConfig.StructTreeNode.NodeType.Root)
             {
                 for (int i = 0; i < node.Children.Count; i++)
                 {
-                    AddDefineNamespace(parentRoot, node.Children[i], true);
+                    AddDefineNamespace(parentRoot, node.Children[i] );
                 }
                 return;
             }
 
             MetaNode parMS = null;
-
             if (node != null)
             {
-                if (isAddCurrent)
+                // 尝试在当前父节点下查找同名子节点
+                var cfindNode = parentRoot.GetChildrenMetaNodeByName(node.Name);
+                bool isFind = cfindNode != null;
+                // 不存在同名节点，按 StructTreeNode 类型创建新的 MetaClass / MetaNamespace
+                if (node.Type == ProjectConfig.StructTreeNode.NodeType.Class)
                 {
-                    // 尝试在当前父节点下查找同名子节点
-                    var cfindNode = parentRoot.GetChildrenMetaNodeByName(node.Name);
-                    if (cfindNode == null)
+                    if( isFind )
                     {
-                        // 不存在同名节点，按 StructTreeNode 类型创建新的 MetaClass / MetaNamespace
-                        if (node.Type == ProjectConfig.StructTreeNode.NodeType.Class)
+                        if(cfindNode.IsMetaClass() )
                         {
-                            // class: 先尝试从 CoreMetaClassManager 获取内置类，否则创建普通 StructDefine 类
-                            var gcmc = CoreMetaClassManager.GetCoreMetaClass(node.Name);
-                            if (gcmc != null)
-                            {
-                                parMS = parentRoot.AddMetaClass(gcmc.GetMetaClassByTemplateCount(0));
-                            }
-                            else
-                            {
-                                var nodens = new MetaClass(node.Name, EClassDefineType.StructDefine);
-                                parMS = parentRoot.AddMetaClass(nodens);
-                            }
+                            parMS = cfindNode;
                         }
                         else
                         {
-                            // namespace / 其它类型一律按命名空间处理
-                            var nodeNs = new MetaNamespace(node.Name);
-                            parMS = parentRoot.AddMetaNamespace(nodeNs);
+                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!" + node.Name ); 
                         }
                     }
                     else
                     {
-                        // 已有同名子节点，要求其必须是命名空间节点
-                        if (!cfindNode.isMetaNamespace)
+                        var nodens = new MetaClass(node.Name, EClassDefineType.StructDefine);
+                        parMS = parentRoot.AddMetaClass(nodens);
+                    }
+                }
+                else if (node.Type == ProjectConfig.StructTreeNode.NodeType.Data)
+                {
+                    if (isFind)
+                    {
+                        if (cfindNode.isMetaData )
                         {
-                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!");
-                            return;
+                            parMS = cfindNode;
                         }
-                        // 复用已有命名空间节点
-                        parMS = parentRoot.AddMetaNamespace(cfindNode.metaNamespace);
+                        else
+                        {
+                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!" + node.Name);
+                        }
+                    }
+                    else
+                    {
+                        var nodens = new MetaClass(node.Name, EClassDefineType.StructDefine);
+                        parMS = parentRoot.AddMetaClass(nodens);
+                    }
+                }
+                else if (node.Type == ProjectConfig.StructTreeNode.NodeType.Enum)
+                {
+                    if (isFind)
+                    {
+                        if (cfindNode.isMetaEnum )
+                        {
+                            parMS = cfindNode;
+                        }
+                        else
+                        {
+                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!" + node.Name);
+                        }
+                    }
+                    else
+                    {
+                        var nodens = new MetaClass(node.Name, EClassDefineType.StructDefine);
+                        parMS = parentRoot.AddMetaClass(nodens);
                     }
                 }
                 else
                 {
-                    parMS = parentRoot;
+                    if (isFind)
+                    {
+                        if (cfindNode.isMetaNamespace )
+                        {
+                            parMS = cfindNode;
+                        }
+                        else
+                        {
+                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!" + node.Name);
+                        }
+                    }
+                    else
+                    {
+
+                        var nodeNs = new MetaNamespace(node.Name);
+                        parMS = parentRoot.AddMetaNamespace(nodeNs);
+                    }
                 }
+
+                if(parMS != null )
+                {
+                    Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!" + node.Name);
+                    return;
+                }
+
 
                 for (int i = 0; i < node.Children.Count; i++)
                 {
@@ -134,7 +180,7 @@ namespace SimpleLanguage.Project
             if (cfg == null)
                 return;
 
-            AddDefineNamespace(ModuleManager.instance.selfModule.metaNode, cfg.StructTree, false);
+            AddDefineNamespace(ModuleManager.instance.selfModule.metaNode, cfg.StructTree );
 
             var fileList = cfg.CompileFiles.Files;
             var filter = cfg.CompileFilter;

@@ -1,7 +1,7 @@
 import Math
 import Std
-
-namespace Application.Cat;
+import "Core:Std.Math" as StdAlias
+import "Std.Math" as MathAlias
 
 namespace Class1Expand
 {
@@ -16,6 +16,16 @@ namespace Class1Expand
         }
     }
 }
+#!
+ImportAliasStdChild extends StdAlias.Math.ClassG1
+{
+
+}
+ImportAliasMathChild extends MathAlias.ClassG1
+{
+
+}
+!#
 namespace N1
 {
     N2.Class1

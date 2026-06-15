@@ -36,6 +36,7 @@ namespace SimpleLanguage.Compile
         private List<FileMetaClass> m_FileMetaAllClassList = new List<FileMetaClass>();
 
         private List<MetaNamespace> m_ImportMetaNamespaceList = new List<MetaNamespace>();
+        private Dictionary<string, MetaNamespace> m_ImportAliasNamespaceDict = new Dictionary<string, MetaNamespace>();
 
         private readonly List<FileMetaTypeAliasDecl> m_TypeAliasDeclList = new List<FileMetaTypeAliasDecl>();
         private readonly Dictionary<string, MetaType> m_FileResolvedTypeAliasDict = new Dictionary<string, MetaType>();
@@ -122,6 +123,15 @@ namespace SimpleLanguage.Compile
             }
             m_ImportMetaNamespaceList.Add(mn);
         }
+        public void AddImportAliasMetaNamespace(string aliasName, MetaNamespace mn)
+        {
+            if (string.IsNullOrWhiteSpace(aliasName) || mn == null)
+            {
+                return;
+            }
+
+            m_ImportAliasNamespaceDict[aliasName] = mn;
+        }
         public FileMetaClass GetFileMetaClassByName( string name )
         {
             var fmc = m_FileMetaAllClassList.Find(a => a.name == name);
@@ -193,6 +203,12 @@ namespace SimpleLanguage.Compile
         {
             if (classList.Count == 0) return null;
 
+            var aliasNode = GetMetaNodeByImportAlias(classList);
+            if (aliasNode != null)
+            {
+                return aliasNode;
+            }
+
 
             MetaNode mb = null;
             MetaNode searchMN = null;
@@ -217,6 +233,28 @@ namespace SimpleLanguage.Compile
                 if( mb != null )
                 {
                     break;
+                }
+            }
+            return mb;
+        }
+        MetaNode GetMetaNodeByImportAlias(List<string> classList)
+        {
+            if (classList == null || classList.Count == 0)
+            {
+                return null;
+            }
+            if (!m_ImportAliasNamespaceDict.TryGetValue(classList[0], out var aliasNamespace) || aliasNamespace?.metaNode == null)
+            {
+                return null;
+            }
+
+            MetaNode mb = aliasNamespace.metaNode;
+            for (int i = 1; i < classList.Count; i++)
+            {
+                mb = mb?.GetChildrenMetaNodeByName(classList[i]);
+                if (mb == null)
+                {
+                    return null;
                 }
             }
             return mb;
@@ -368,6 +406,11 @@ namespace SimpleLanguage.Compile
             sb.Append("-------------------FileMeta 文件显示 结束 : -----------------------" + Environment.NewLine);
 
             return sb.ToString();
+        }
+
+        public override string ToString()
+        {
+            return m_Path;
         }
     }
 }

@@ -1,6 +1,6 @@
 import Std;
 
-namespace Std.Math
+#namespace Std.Math
 
 partial N1.N2.N3.ClassN1_2_3_1
 {

@@ -141,11 +141,10 @@ namespace SimpleLanguage.Project
                 }
             }
 
-            if (TryGetObj(root, "struct", out var structObj)
-                && structObj.TryGetProperty("tree", out var tree)
-                && tree.ValueKind == JsonValueKind.Array)
+            if (root.TryGetProperty( "struct", out var structObj)
+                && structObj.ValueKind == JsonValueKind.Array)
             {
-                foreach (var item in tree.EnumerateArray())
+                foreach (var item in structObj.EnumerateArray())
                 {
                     if (item.ValueKind != JsonValueKind.Object)
                     {
@@ -162,6 +161,16 @@ namespace SimpleLanguage.Project
                     if (!string.IsNullOrWhiteSpace(cls))
                     {
                         cfg.StructTree.EnsurePath(cls, ProjectConfig.StructTreeNode.NodeType.Class);
+                    }
+                    var dls = GetStr(item, "data", null);
+                    if (!string.IsNullOrWhiteSpace(dls))
+                    {
+                        cfg.StructTree.EnsurePath(dls, ProjectConfig.StructTreeNode.NodeType.Data);
+                    }
+                    var els = GetStr(item, "enum", null);
+                    if (!string.IsNullOrWhiteSpace(els))
+                    {
+                        cfg.StructTree.EnsurePath(els, ProjectConfig.StructTreeNode.NodeType.Enum);
                     }
                 }
             }

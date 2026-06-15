@@ -15,6 +15,7 @@ namespace SimpleLanguage.Core
         public static ModuleManager instance = new ModuleManager();
         public MetaModule selfModule => m_SelfModule;
         public MetaModule coreModule => m_CoreModule;
+        public Dictionary<string, MetaModule> importMetaModuleDict => m_ImportMetaModuleDict;
         public MetaModule csharpLangRegisterModule => m_CSharpLangRegisterModule;
         public MetaModule clangRegisterModule => m_CLangRegisterModule;
 

@@ -908,7 +908,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddNodeLog(LID.ShowExtendMessage, currentNode.token, "现在不允许 namespace N1;这种的语法了");
+                Log.AddNodeLog(LID.ShowExtendMessage, currentNode.token, $"现在不允许 namespace {fmn.name};这种的语法了");
             }
             //else
             //{
@@ -1170,7 +1170,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "Error StructParseFrame.ParseClassNode 解析的类后边不用使用;号结尾!! "
+                        Log.AddNodeLog(LID.ShowExtendMessage, curNode.token, "Error StructParseFrame.ParseClassNode 解析的类后边不用使用;号结尾!! "
                             + "一般是只定义了类变量，没有赋值，正常后边应该可以使用=null赋值");
                         break;
                     }
@@ -1202,6 +1202,15 @@ namespace SimpleLanguage.Compile
                     if (parseType == 3 || parseType == 2)
                     {
                         nodeList.Add(curNode);
+                    }
+                    if (index  < pnode.childList.Count)
+                    {
+                        var nextCurNode = pnode.childList[index];
+                        if (nextCurNode.nodeType == ENodeType.SemiColon 
+                            || nextCurNode.nodeType == ENodeType.LineEnd )
+                        {
+                            index++;
+                        }
                     }
                     break;
                 }
