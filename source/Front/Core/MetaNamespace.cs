@@ -14,7 +14,6 @@ namespace SimpleLanguage.Core
 {
     public class MetaNamespace : MetaBase
     {
-        public bool isNotAllowCreateName { get; set; } = false;
         public MetaNamespace(string _name)
         {
             m_Name = _name;

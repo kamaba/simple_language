@@ -11,6 +11,7 @@ using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 
 namespace SimpleLanguage.Compile
@@ -98,26 +99,35 @@ namespace SimpleLanguage.Compile
             {
                 Log.AddFileMetaLog( LID.ShowExtendMessage, this.m_Token, "Error 暂不允许使用namespace 定义命名空间!!!" );
             }
-            m_MetaNode = CreateMetaNamespaceByFineDefineNamespace( this, metaNode );
-            foreach( var v in m_MetaNamespaceList )
+            //metaNode = SearchTopLevelFileMetaNamespace( this, metaNode);
+            m_MetaNode = CreateMetaNamespaceHandle(this, metaNode);
+            foreach ( var v in m_MetaNamespaceList )
             {
                 v.CreateNamespace(m_MetaNode);
             }
         }
-        public MetaNode CreateMetaNamespaceByFineDefineNamespace(FileMetaNamespace fns, MetaNode parentNode)
-        {
-            FileMetaNamespace fnsc = fns;
-            parentNode = SearchTopLevelFileMetaNamespace(fns, parentNode);
-
-            return CreateMetaNamespaceHandle(fnsc, parentNode);
-        }
-        MetaNode CreateMetaNamespaceHandle(FileMetaNamespace fns, MetaNode parentNode = null)
+        //public MetaNode SearchTopLevelFileMetaNamespace(FileMetaNamespace fns, MetaNode parentNode = null)
+        //{
+        //    MetaNode findNode = parentNode;
+        //    if (fns.topLevelFileMetaNamespace != null)
+        //    {
+        //        findNode = SearchTopLevelFileMetaNamespace(fns.topLevelFileMetaNamespace, findNode);
+        //        for (int i = 0; i < fns.topLevelFileMetaNamespace.namespaceStatementBlock.tokenList.Count; i++)
+        //        {
+        //            string name = fns.topLevelFileMetaNamespace.namespaceStatementBlock.tokenList[i].lexeme.ToString();
+        //            var findNode2 = findNode.GetChildrenMetaNodeByName(name);
+        //            if (findNode2 == null)
+        //            {
+        //                break;
+        //            }
+        //            findNode = findNode2;
+        //        }
+        //    }
+        //    return findNode;
+        //}
+        MetaNode CreateMetaNamespaceHandle(FileMetaNamespace fns, MetaNode parentNode )
         {
             MetaNode mnode = parentNode;
-            if (parentNode == null)
-            {
-                parentNode = ModuleManager.instance.selfModule.metaNode;
-            }
             var fnode = parentNode;
             //fns.metaNamespaceList.Clear();
             for (int i = 0; i < fns.namespaceStatementBlock.tokenList.Count; i++)
@@ -129,7 +139,7 @@ namespace SimpleLanguage.Compile
                     if (fnode.isMetaNamespace)
                     {
                         parentNode = fnode;
-                        continue;
+                        return fnode;
                     }
 
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, fns.token, "Namespace name conflicts with existing node: " + name);
@@ -138,35 +148,11 @@ namespace SimpleLanguage.Compile
                 else
                 {
                     var mn = new MetaNamespace(name);
-                    if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
-                    {
-                        mn.isNotAllowCreateName = true;
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, fns.token, "Error 在使用namespace 时，在项目定义中，没有找到相关的定义!!  位置:" + fns.namespaceStatementBlock.tokenList[i].ToLexemeAllString());
-                    }
                     parentNode = parentNode.AddMetaNamespace(mn);
                     return parentNode;
                 }
             }
             return null;
-        }
-        public MetaNode SearchTopLevelFileMetaNamespace(FileMetaNamespace fns, MetaNode parentNode = null)
-        {
-            MetaNode findNode = parentNode;
-            if (fns.topLevelFileMetaNamespace != null)
-            {
-                findNode = SearchTopLevelFileMetaNamespace(fns.topLevelFileMetaNamespace, findNode);
-                for (int i = 0; i < fns.topLevelFileMetaNamespace.namespaceStatementBlock.tokenList.Count; i++)
-                {
-                    string name = fns.topLevelFileMetaNamespace.namespaceStatementBlock.tokenList[i].lexeme.ToString();
-                    var findNode2 = findNode.GetChildrenMetaNodeByName(name);
-                    if (findNode2 == null)
-                    {
-                        break;
-                    }
-                    findNode = findNode2;
-                }
-            }
-            return findNode;
         }
         public FileMetaNamespace AddFileNamespace( FileMetaNamespace dln )
         {
