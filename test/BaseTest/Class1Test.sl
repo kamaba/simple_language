@@ -84,7 +84,7 @@ namespace Class1Expand
 
         override virtualName()
         {
-            ret "child:" + this.baseValue.toString() + ":" + this.childValue.toString()
+            ret "virtualName baseValue:" + this.baseValue.toString() + "  childValue:" + this.childValue.toString()
         }
 
         sumAll()
