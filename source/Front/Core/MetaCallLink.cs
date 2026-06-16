@@ -668,12 +668,6 @@ namespace SimpleLanguage.Core
                 mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
-            else if (mcn.callNodeType == ECallNodeType.EnumValueArray)
-            {
-                MetaVisitNode mvn = MetaVisitNode.CreateByEnumMember(mcn.metaType, mcn.metaVariable);
-                mvn.SetToken(mcn.token);
-                m_VisitNodeList.Add(mvn);
-            }
             else if (mcn.callNodeType == ECallNodeType.VisitVariable)
             {
                 //if( mcn.extraAddLoadVariable )

@@ -100,7 +100,7 @@ namespace N1.N4
 
         total()
         {
-            ret this.X61 + this.X71 + this.sumX()
+            ret this.X61 + this.X71 + int(this.sumX())
         }
     }
 }

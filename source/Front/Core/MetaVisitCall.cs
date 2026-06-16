@@ -1006,7 +1006,7 @@ namespace SimpleLanguage.Core
                     break;
                 case MetaVisitNode.EVisitType.EnumMember:
                     {
-                        sb.Append(this.visitVariable.ToFormatString());
+                        sb.Append(this.variable.ToFormatString());
                     }
                     break;
                 default:

@@ -326,7 +326,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        AddMetaError("Error 没有适合的符号!!!" + ett.ToString());
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 没有适合的符号!!!" + ett.ToString());
                     }
                     break;
             }
@@ -386,7 +386,7 @@ namespace SimpleLanguage.Core
             }
             ParseCompute();
 
-            m_ExpressReturnMetaType = new MetaType(m_RealMetaType);
+            m_ExpressReturnMetaType = new MetaType(this.m_RealMetaType);
         }
         public void ParseCompute()
         {
@@ -407,7 +407,7 @@ namespace SimpleLanguage.Core
                 bool isEnumCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal || m_OpLevelSign == ELeftRightOpSign.NotEqual;
                 if (!isEnumCompareOp)
                 {
-                    AddMetaError("Error enum类型只允许 == 或 != 运算!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "enum类型只允许 == 或 != 运算!!");
                     m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
                     return;
                 }
@@ -491,7 +491,8 @@ namespace SimpleLanguage.Core
                     bool isEnumCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal || m_OpLevelSign == ELeftRightOpSign.NotEqual;
                     if (!isEnumCompareOp)
                     {
-                        AddMetaError("Error enum类型只允许 == 或 != 运算!!");
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "enum类型只允许 == 或 != 运算!!" );
+
                         m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
                         return;
                     }
@@ -514,11 +515,11 @@ namespace SimpleLanguage.Core
                     {
                         if( leftMt == null )
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "left or right class is null" + leftMt.ToFormatString() );
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left or right class is null" + leftMt.ToFormatString() );
                         }
                         else if( rightMc == null )
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "left or right class is null" + rightMt.ToFormatString() );
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left or right class is null" + rightMt.ToFormatString() );
                         }
                         return;
                     }
@@ -537,7 +538,7 @@ namespace SimpleLanguage.Core
                         isCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal || m_OpLevelSign == ELeftRightOpSign.NotEqual;
                         if (!isCompareOp)
                         {
-                            AddMetaError("Error null == 或 != 运算!!");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error null == 或 != 运算!!");
                             return;
                         }
                         m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
@@ -595,7 +596,7 @@ namespace SimpleLanguage.Core
                                         if (ProjectManager.config?.Compile?.RequireSameNumericTypes == true
                                             && leftMc.eType != rightMc.eType)
                                         {
-                                            AddMetaError("Error 已启用 compile.requireSameNumericTypes：算术/位运算两侧须为同一数字类型（如 byte+byte、Int32+Int32），禁止不同类型混合运算。");
+                                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "已启用 compile.requireSameNumericTypes：算术/位运算两侧须为同一数字类型（如 byte+byte、Int32+Int32），禁止不同类型混合运算。");
                                             m_RealMetaType = new MetaType(leftMc);
                                             break;
                                         }
@@ -622,7 +623,7 @@ namespace SimpleLanguage.Core
                                         }
                                         else
                                         {
-                                            AddMetaError("Error 加减运算类型计算错误!!");
+                                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "加减运算类型计算错误!!");
                                         }
                                     }
                                     break;
@@ -648,7 +649,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                AddMetaError("Error 字符串类型只能参与加法运算!!");
+                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 字符串类型只能参与加法运算!!");
                             }
                         }
                         else if (rightMc.eType == EType.Enum)
@@ -745,49 +746,16 @@ namespace SimpleLanguage.Core
                         var mmf = rightMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_op_add_", 0, mipc);
                         if (mmf == null)
                         {
-                            AddMetaError("Error 右边类型不能转换为左边类型进行加减运算!!");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Left:" + left.token.ToLexemeAllString() + "右边类型不能转换为左边类型进行加减运算!! Right:" + right.token.ToLexemeAllString()  );
+                            return;
                         }
                     }
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "", "");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "");
                 }
             }          
-        }
-        private static bool IsSameMetaClass(MetaClass a, MetaClass b)
-        {
-            if (a == null || b == null)
-            {
-                return false;
-            }
-            if (object.ReferenceEquals(a, b))
-            {
-                return true;
-            }
-            return a.allName == b.allName;
-        }
-        private static MetaClass TryGetMemberOwnerMetaClass(MetaExpressNodeBase expr)
-        {
-            if (expr is MetaCallLinkExpressNode mclen)
-            {
-                return mclen.GetStoreMetaVariable()?.ownerMetaClass;
-            }
-            return null;
-        }
-        private void AddMetaError(string msg)
-        {
-            if (m_SignToken != null)
-            {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_SignToken, msg);
-                return;
-            }
-            if (m_FileMetaBaseTerm?.token != null)
-            {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaBaseTerm.token, msg);
-                return;
-            }
-            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, msg);
         }
         public MetaExpressNodeBase SimulateCompute(ExpressOptimizeConfig config)
         {

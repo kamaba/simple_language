@@ -89,7 +89,7 @@ namespace Class1Expand
 
         sumAll()
         {
-            ret this.sumBase() + this.childValue
+            ret int(this.sumBase()) + this.childValue
         }
     }
 }
