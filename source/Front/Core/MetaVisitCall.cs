@@ -19,8 +19,7 @@ namespace SimpleLanguage.Core
     {
         public bool isRecieveReturnValue => m_IsRecieveReturnValue;
         //public MetaVariable loadMetaVariable => m_LoadMetaVariable;
-        public MetaClass staticCallerMetaClass => m_StaticCallerMetaClass;
-        public List<MetaType> staticMetaClassInputTemplateList => m_StaticMetaClassInputTemplateList;
+        public MetaType staticCallMetaType => m_StaticCallerMetaType;
         public MetaFunction function => m_VMCallMetaFunction;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public List<MetaExpressNodeBase> metaInputParamList => m_MetaInputParamList;
@@ -29,9 +28,8 @@ namespace SimpleLanguage.Core
 
         protected MetaVariable m_LoadMetaVariable = null;
         //protected MetaVariable m_StoreMetaVariable = null;
-        protected MetaClass m_StaticCallerMetaClass = null;
+        protected MetaType m_StaticCallerMetaType = null;
         protected bool m_IsRecieveReturnValue = true;
-        protected List<MetaType> m_StaticMetaClassInputTemplateList = new List<MetaType>();
         // Debug-only: in some call-site shapes, meta member param count may resolve to 0,
         // which results in empty m_MetaInputParamList and missing args in Meta.txt.
         // Keep the parsed input param collection so we can still print args.
@@ -48,18 +46,13 @@ namespace SimpleLanguage.Core
         // This is independent from overload resolution / typed param list building.
         private string? m_DebugInputParTermText = null;
         
-        public MetaMethodCall( MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaClass staticMc,
-            List<MetaType> staticMmitList,  MetaFunction _fun, List<MetaType> mpipList, MetaInputParamCollection _paramCollection,
+        public MetaMethodCall( MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaType staticMt,  MetaFunction _fun, List<MetaType> mpipList, MetaInputParamCollection _paramCollection,
             MetaVariable loadMv, MetaVariable storeMv )
         {
             m_OwnerMetaClass = ownerClass;
             m_OwnerMetaBlockStatements = ownerMBS;
-            m_StaticCallerMetaClass = staticMc;
             m_InputParamCollectionForDebug = _paramCollection;
-            if( staticMmitList != null )
-            {
-                this.m_StaticMetaClassInputTemplateList = staticMmitList;
-            }
+            m_StaticCallerMetaType = staticMt;
             m_VMCallMetaFunction = _fun;
             MetaMemberFunction mmf = _fun as MetaMemberFunction;
             m_MetaMemberFunction = mmf;
@@ -394,7 +387,7 @@ namespace SimpleLanguage.Core
             vn.m_VisitType = EVisitType.New;
             vn.m_Variable = mv;
             vn.m_Token = mv.token;
-            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt.metaClass, null, mf, null, null, null, mv);
+            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mf, null, null, null, mv);
             return vn;
         }
         public static MetaVisitNode CreateByNewConst(MetaClass ownermc, MetaBlockStatements mbs,
@@ -410,7 +403,7 @@ namespace SimpleLanguage.Core
             {
                 vn.m_ReturnMetaType = new MetaType(mt);
             }
-            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt.metaClass, null, mmf, null, mipc, null, null );
+            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mmf, null, mipc, null, null );
 
             return vn;
         }

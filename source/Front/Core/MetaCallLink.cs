@@ -391,13 +391,13 @@ namespace SimpleLanguage.Core
             }
             else if (mcn.callNodeType == ECallNodeType.FunctionInnerVariableName)
             {
-                MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.metaType);
+                MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.staticCallMetaType);
                 mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.MemberVariableName)
             {
-                MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.callMetaType);
+                MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.staticCallMetaType);
                 mvn.SetToken(mcn.token);
                 m_VisitNodeList.Add(mvn);
             }
@@ -445,7 +445,7 @@ namespace SimpleLanguage.Core
                     mvn1.SetToken(frontNode.token);
                     m_VisitNodeList.Add(mvn1);
 
-                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType.metaClass, mcn.callMetaType.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, null, null);
+                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, null, null);
                     mmc.SetDebugInputParTermText(debugParTermText);
                 }
                 else
@@ -455,8 +455,7 @@ namespace SimpleLanguage.Core
                     //{
                     //    m_VisitNodeList.RemoveAt(m_VisitNodeList.Count - 1);
                     //}
-                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType.metaClass,
-                        mcn.callMetaType.defineTemplateMetaTypeList,
+                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType,
                         mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, retmv, mcn.storeMetaVariable);
                     mmc.SetDebugInputParTermText(debugParTermText);
                 }
@@ -495,7 +494,7 @@ namespace SimpleLanguage.Core
                         frontNode.metaInputParamCollection );
                     m_VisitNodeList.Add(mvn1);
 
-                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType?.metaClass, mcn.callMetaType?.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, null, null);
+                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, null, null);
                     mvn1.SetToken(mcn.token);
                     mmc.SetDebugInputParTermText(debugParTermText);
                 }
@@ -506,7 +505,7 @@ namespace SimpleLanguage.Core
                     {
                         m_VisitNodeList.RemoveAt(m_VisitNodeList.Count - 1);
                     }
-                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.callMetaType?.metaClass, mcn.callMetaType?.defineTemplateMetaTypeList, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, retmv, mcn.storeMetaVariable);
+                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, retmv, mcn.storeMetaVariable);
                     mmc.SetDebugInputParTermText(debugParTermText);
                 }
 
@@ -577,7 +576,7 @@ namespace SimpleLanguage.Core
                         m_VisitNodeList.Add(mvn);
                         if (mcn.metaFunction != null)
                         {
-                            MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType.metaClass, null, mcn.metaFunction, null, mcn.metaInputParamCollection, null, mcn.storeMetaVariable);
+                            MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, null, mcn.metaInputParamCollection, null, mcn.storeMetaVariable);
                             mvn.SetMethodCall(mmc);
                         }
                     }
@@ -638,7 +637,7 @@ namespace SimpleLanguage.Core
 
                     if (mcn.metaFunction != null)
                     {
-                        MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType.metaClass, null, mcn.metaFunction, null, mcn.metaInputParamCollection, null, mcn.storeMetaVariable);
+                        MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, null, mcn.metaInputParamCollection, null, mcn.storeMetaVariable);
                         mvn.SetMethodCall(mmc);
                     }
                 }
@@ -653,7 +652,7 @@ namespace SimpleLanguage.Core
 
                 mvn.SetToken(mcn.token);
                 MetaClass cmc = mcn.metaType.metaClass;
-                MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType.metaClass, null, mcn.metaFunction, null, mcn.metaInputParamCollection, null, mcn.storeMetaVariable);
+                MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, null, mcn.metaInputParamCollection, null, mcn.storeMetaVariable);
                 mvn.SetMethodCall(mmc);
                 m_VisitNodeList.Add(mvn);
             }

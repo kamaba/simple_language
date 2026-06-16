@@ -127,9 +127,10 @@ namespace SimpleLanguage.IR
 
             string fname = "";
             IRMetaClass irmc = null;
+            List<IRMetaType> types = new List<IRMetaType>();
             if ( mf.isStatic )
             {
-                var scmc = mfc.staticCallerMetaClass;
+                var scmc = mfc.staticCallMetaType.metaClass;
                 if( scmc != null && scmc is MetaGenTemplateClass mgtc )
                 {
                     scmc = mgtc.metaTemplateClass;
@@ -161,6 +162,12 @@ namespace SimpleLanguage.IR
                 }
 
                 m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(fname);
+
+                var list = mfc.staticCallMetaType.GetGenTemplateMetaTypeList();
+                for (int i = 0; i < list.Count; i++)
+                {
+                    types.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(list[i], owirmc));
+                }
             }
             else
             {
@@ -179,11 +186,6 @@ namespace SimpleLanguage.IR
 
 
                 m_IRRuntimeMethod = irmc?.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
-            }
-            List<IRMetaType> types = new List<IRMetaType>();
-            for (int i = 0; i < mfc.staticMetaClassInputTemplateList.Count; i++)
-            {
-                types.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.staticMetaClassInputTemplateList[i], owirmc));
             }
             irmt = new IRMetaType(irmc, types);
             List<IRMetaType> functionMtList = new List<IRMetaType>();
