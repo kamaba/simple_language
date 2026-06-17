@@ -753,6 +753,7 @@ namespace SimpleLanguage.Core
                     else if (frontCNT == ECallNodeType.DataName)
                     {
                         var retmmd = m_FrontCallNode.m_MetaData.GetMemberDataByName(m_Name);
+                        m_StaticCallMetaType = new MetaType(m_FrontCallNode.m_MetaData);
                         if (retmmd == null)
                         {
                             if (GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.dataMetaClass, m_Name))
