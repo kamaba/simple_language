@@ -117,7 +117,19 @@ namespace SimpleLanguage.Core
             else
             {
                 list = new List<MetaMemberFunction>();
-                m_MetaParamFunctionDict[mmf.metaMemberParamCollection.metaDefineParamList.Count] = list;
+                bool isAdd = true;
+                if(mmf.metaMemberParamCollection.metaDefineParamList.Count > 0 )
+                {
+                    if (mmf.metaMemberParamCollection.metaDefineParamList[mmf.metaMemberParamCollection.metaDefineParamList.Count-1].isExtendParams )
+                    {
+                        m_MetaParamFunctionDict[mmf.metaMemberParamCollection.metaDefineParamList.Count+19] = list;
+                        isAdd = false;
+                    }
+                }
+                if( isAdd )
+                {
+                    m_MetaParamFunctionDict[mmf.metaMemberParamCollection.metaDefineParamList.Count] = list;
+                }
             }
 
             MetaMemberFunction find2 = null;
@@ -177,7 +189,7 @@ namespace SimpleLanguage.Core
             List<MetaMemberFunction> list = new List<MetaMemberFunction>();
             foreach( var v in m_MetaParamFunctionDict )
             {
-                if( v.Key <= count )
+                if( v.Key >= count )
                 {
                     list.AddRange(v.Value);
                 }
@@ -283,7 +295,7 @@ namespace SimpleLanguage.Core
                     for (int i = 0; i < decl.paramMetaTypeList.Count; i++)
                     {
                         var p = new MetaDefineParam("p" + i.ToString(), this);
-                        p.SetMetaType(new MetaType(decl.paramMetaTypeList[i]));
+                        p.SetDefineMetaType(new MetaType(decl.paramMetaTypeList[i]));
                         m_MetaMemberParamCollection.AddMetaDefineParam(p);
                     }
 
@@ -626,23 +638,16 @@ namespace SimpleLanguage.Core
         {
             return true;
         }
-        public virtual void CreateMetaExpress()
+        public void ParseRealMetaType()
         {
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
             {
                 MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
                 mpl.CreateExpress();
-            }
-        }
-        public virtual bool ParseMetaExpress()
-        {
-            for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
-            {
-                MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
                 mpl.Parse();
                 mpl.CaleReturnType();
             }
-            return true;
+
         }
         public void ParseStatements()
         {

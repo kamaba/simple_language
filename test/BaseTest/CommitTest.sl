@@ -26,11 +26,11 @@ import Std
 md类型注释
 !#
 
-Commit   #注释类
+CommitTest   #注释类
 {
     test( int a = 20 #! 这里是注释 !# )
     {
-
+        global.println("Commit.test() a = " + a)
     }
 
     static fun()
@@ -41,7 +41,7 @@ Commit   #注释类
         }
         global.println("========== CommitTest (start) ==========")
         global.println("Commit.test 默认参数演示（空体，仅编译/链接 smoke）")
-        Commit c = Commit()
+        CommitTest c = CommitTest()
         c.test()
         global.println("========== CommitTest (end) ==========")
     }

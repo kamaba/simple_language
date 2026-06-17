@@ -89,8 +89,9 @@ namespace SimpleLanguage.Core
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNodeBase expressNode => m_MetaExpressNode;
         //public bool isFunctionTemplate => m_IsFunctionTemplate;
-        public bool isMust { get { return m_MetaExpressNode == null; } }            //????????????
+        public bool isMust { get { return m_MetaExpressNode == null; } }           
         public bool isExtendParams => m_FileMetaParamter?.paramsToken != null;
+        public bool isHasExpress => m_IsHasExpress;
 
         protected bool m_IsFunctionTemplate = false;
         protected FileMetaParamterDefine m_FileMetaParamter = null;
@@ -99,6 +100,7 @@ namespace SimpleLanguage.Core
         protected MetaFunction m_OwnerMetaFunction = null;
         protected string m_Name = "";
         protected Token m_Token = null;
+        protected bool m_IsHasExpress = false;
 
         public MetaDefineParam( string _name, MetaFunction mf )
         {
@@ -112,9 +114,11 @@ namespace SimpleLanguage.Core
             m_Name = mdp.m_Name;
             m_IsFunctionTemplate = mdp.m_IsFunctionTemplate;
             m_FileMetaParamter = mdp.m_FileMetaParamter;
+            m_IsHasExpress = m_FileMetaParamter.express != null;
             m_MetaExpressNode = mdp.m_MetaExpressNode;
             m_OwnerMetaFunction = mdp.m_OwnerMetaFunction;
             m_MetaVariable = new MetaVariable( mdp.m_MetaVariable );
+            m_Token = mdp.m_Token;
         }
         public MetaDefineParam(MetaFunction mf, FileMetaParamterDefine fmp)
         {
@@ -126,6 +130,7 @@ namespace SimpleLanguage.Core
                 null, m_OwnerMetaFunction.ownerMetaClass, null );
             m_Token = m_FileMetaParamter.token;
             m_MetaVariable.SetToken(m_Token);
+            m_IsHasExpress = m_FileMetaParamter.express != null;
         }
         public void SetOwnerMetaFunction(MetaFunction mf)
         {
@@ -137,22 +142,18 @@ namespace SimpleLanguage.Core
         }
         public void ParseMetaDefineType()
         {
-            MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
             if ( this.m_FileMetaParamter?.classDefineRef != null)
             {
-                mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaFunction.ownerMetaClass, m_OwnerMetaFunction as MetaMemberFunction, m_FileMetaParamter.classDefineRef);
+                var mdt = TypeManager.instance.GetMetaTypeByTemplateFunction(m_OwnerMetaFunction.ownerMetaClass, m_OwnerMetaFunction as MetaMemberFunction, m_FileMetaParamter.classDefineRef);
+                m_MetaVariable.SetMetaDefineType(mdt);
                 m_MetaVariable.SetIsDefineMetaType(true);
-                m_MetaVariable.SetRealMetaType(mdt);
             }
             else
             {
-                m_MetaVariable.SetRealMetaType(mdt);
+                MetaType mdt = new MetaType(CoreMetaClassManager.objectMetaClass);
+                m_MetaVariable.SetMetaDefineType(mdt);
             }
-            m_MetaVariable.SetMetaDefineType(mdt);
 
-            {
-                m_MetaVariable.AddPingToken(m_FileMetaParamter.token);
-            }
         }
         public void CreateExpress()
         {
@@ -161,13 +162,18 @@ namespace SimpleLanguage.Core
                 CreateExpressParam cep = new CreateExpressParam()
                 {
                     ownerMBS = null,
-                    metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
+                    ownerMetaBase = m_OwnerMetaFunction.ownerMetaBase,
+                    metaType = m_MetaVariable.GetFinalMetaType(),
                     fme = m_FileMetaParamter.express,
                     isStatic = false,
                     isConst = false,
                     parsefrom = EParseFrom.InputParamExpress
                 };
                 m_MetaExpressNode = ExpressManager.CreateExpressNode(cep);
+            }
+            else
+            {
+                m_MetaVariable.SetIsDefineMetaType(true);
             }
         }
         public virtual void Parse()
@@ -232,7 +238,7 @@ namespace SimpleLanguage.Core
         {
             return m_MetaVariable.name.Equals(name);
         }
-        public void SetMetaType( MetaType mt )
+        public void SetDefineMetaType( MetaType mt )
         {
             m_MetaVariable.SetMetaDefineType(mt);
         }       
@@ -241,16 +247,18 @@ namespace SimpleLanguage.Core
             if(m_MetaExpressNode != null )
             {
                 m_MetaExpressNode.CalcReturnType();
+                m_MetaVariable.SetRealMetaType(m_MetaExpressNode.GetReturnMetaType());
+
+
+                if( !TypeManager.CompareLeftRightMetaType( m_MetaVariable.defineMetaType, m_MetaVariable.realMetaType, m_Token, out MetaType convertMt ) )
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "define param compare error");
+                }
             }
             //if( !isTemplate )
             {
                // ExpressManager.CalcDefineClassType(ref m_DefineMetaClassType, m_Express, m_OwnerMetaClass, m_OwnerMetaBlockStatements?.ownerMetaFunction, defineName, ref m_IsNeedCastStatements );
-            }
-            
-            if (m_MetaVariable != null)
-            {
-                //m_MetaVariable.SetRetMetaClass(m_DefineMetaClassType);
-            }
+            }   
         }
         public virtual string ToFormatString()
         {
@@ -287,12 +295,14 @@ namespace SimpleLanguage.Core
         public bool isAllConst => m_IsAllConst;
         public int minParamCount => m_MinParamCount;
         public bool isHaveDefaultParamExpress => m_IsHaveDefaultParamExpress;
+        public bool isHasExpress => m_IsHasExpress;
 
         private bool m_IsCanCallFunction = true;
         private bool m_IsExtendParams = false;
         private int m_MinParamCount = 0;
         private bool m_IsAllConst = false;
         private bool m_IsHaveDefaultParamExpress = false;
+        private bool m_IsHasExpress = false;
         private List<MetaDefineParam> m_MetaDefineParamList = new List<MetaDefineParam>();
         public MetaDefineParamCollection()
         {
@@ -310,6 +320,10 @@ namespace SimpleLanguage.Core
             {
                 var mdp = new MetaDefineParam(mdpc.m_MetaDefineParamList[i]);
                 m_MetaDefineParamList.Add(mdp);
+                if( mdp.isHasExpress )
+                {
+                    m_IsHasExpress = true;
+                }
             }
         }
         public MetaDefineParamCollection(bool _isAllConst, bool _isCanCallFunction)

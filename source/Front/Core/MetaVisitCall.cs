@@ -24,6 +24,7 @@ namespace SimpleLanguage.Core
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public List<MetaExpressNodeBase> metaInputParamList => m_MetaInputParamList;
         public List<MetaType> metaFunctionInputTemplateList => m_MetaFunctionInputTemplateList;
+        public Token token => m_Token;
 
 
         protected MetaVariable m_LoadMetaVariable = null;
@@ -45,6 +46,7 @@ namespace SimpleLanguage.Core
         // Debug-only: keep raw "(...)" text from call-site to avoid empty args in Meta.txt.
         // This is independent from overload resolution / typed param list building.
         private string? m_DebugInputParTermText = null;
+        private Token m_Token = null;
         
         public MetaMethodCall( MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaType staticMt,  MetaFunction _fun, List<MetaType> mpipList, MetaInputParamCollection _paramCollection,
             MetaVariable loadMv, MetaVariable storeMv )
@@ -186,6 +188,10 @@ namespace SimpleLanguage.Core
         public MetaType GeMetaDefineType()
         {
             return m_VMCallMetaFunction.GetFinalMetaType();
+        }
+        public void SetToken( Token token )
+        {
+            this.m_Token = token;
         }
         public void AddMetaInputParamList(MetaExpressNodeBase inputp )
         {

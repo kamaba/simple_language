@@ -109,7 +109,7 @@ namespace SimpleLanguage.Compile
                 }
             }
         }
-        public class ParseCurrentNodeInfo
+        public class ParseCurrentNodeInfo  //1111
         {
             public EParseNodeType parseType;
             public FileMeta codeFile = null;
@@ -467,7 +467,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 不允许 在File头级目录中出现2 : " + node.token?.lexeme.ToString());
+                    Log.AddNodeLog(LID.ShowExtendMessage, node.token, "Error 不允许 在File头级目录中出现2 : " + node.token?.lexeme.ToString());
                 }
             }
 
@@ -1011,7 +1011,7 @@ namespace SimpleLanguage.Compile
                 }
                 else if( curNode.nodeType == ENodeType.Comment )
                 {
-                    break;
+                    continue;
                 }
                 else if( curNode.nodeType == ENodeType.SemiColon )
                 {

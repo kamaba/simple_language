@@ -139,7 +139,7 @@ namespace SimpleLanguage.Core
         }
         public void HandleExtendClassTemplateMapRelation()
         {
-            if (m_ExtendClassMetaType != null)
+            if (this.m_ExtendClassMetaType != null)
             {
                 MetaClass extendMC = m_ExtendClass;
                 MetaClass currentMC = extendMC;
@@ -244,7 +244,6 @@ namespace SimpleLanguage.Core
         }
         public void ReplaceMetaTypeTemplateMeta( MetaType mt, ClassLevelRelationData clrd )
         {
-            Debug.Assert(false, "");
             if (mt.defineTemplateMetaTypeList.Count > 0)
             {
                 for (int i = 0; i < mt.defineTemplateMetaTypeList.Count; i++)

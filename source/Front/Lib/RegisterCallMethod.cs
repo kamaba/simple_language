@@ -349,7 +349,7 @@ namespace SimpleLanguage.Lib
                 var mdp = new MetaDefineParam(at.typeName, mmf);
                 var pType = MapEType(at.eType);
                 var pMetaClass = CoreMetaClassManager.GetMetaClassByEType(pType) ?? CoreMetaClassManager.objectMetaClass;
-                mdp.SetMetaType(new MetaType(pMetaClass));
+                mdp.SetDefineMetaType(new MetaType(pMetaClass));
                 if (mdp.metaVariable != null)
                 {
                     mdp.metaVariable.SetIsDefineMetaType(true);

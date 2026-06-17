@@ -1,11 +1,8 @@
 import Application.Core;
 import QS
 
-namespace Application;         
-namespace Application.Core;
 
-
-Class1
+ConStrCC.Class1
 {
     _init_( int _x1, int _y1 )
     {
@@ -38,7 +35,7 @@ Class1
     #arr = [{name = "ed"; my = 22;},{name="wy"; my = 23; }]  #[error]  必须申请为List<object> 类型后 可以使用 List<object> arr = new List<object>(){ {}, {} }; 的方式进行初始化赋值，如果是数组形式，不支持 动态数据
     #dynclass = { q1 = 23; a2 = 25; aws = "xgla"; q4 = ClassT(); }  #[error] 不允许，因为在前期赋值的时候，必须知道该类型  后期如果做的话，也是先提取格式，然后在运行类的时候进行赋值
 }
-Class2 extends Class1
+ConStrCC.Class2 extends ConStrCC.Class1
 {
     public class Class2_2 extends Class2 interface Class1,QS.ClassT2
     {
@@ -69,9 +66,9 @@ Class2 extends Class1
 }
 
 
-ConstructionTest
+ConStrCC.ConstructionTest
 {
-    static Fun()
+    static fun()
     {        
         global.println("========== Object.sl tests (start) ==========")
 

@@ -497,7 +497,6 @@ namespace SimpleLanguage.Core
                         m_MetaTemplate = m_FrontDefineMetaType.metaTemplate;
                         m_MetaType = new MetaType(m_MetaTemplate, "");
                         m_CallNodeType = ECallNodeType.NewTemplate;
-                        m_StaticCallMetaType = new MetaType(m_MetaTemplate, "");
                         MetaMemberFunction mmf = m_FrontDefineMetaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_MetaInputParamCollection);
                         if (mmf == null)
                         {
@@ -1073,12 +1072,15 @@ namespace SimpleLanguage.Core
                     }
                     if( m_MetaType.isClass )
                     {
-                        //ArrClass()
+                        if( m_MetaClass is MetaGenTemplateClass mgtc )
+                        {
+                            curmc = mgtc.metaTemplateClass;
+                        }
                         MetaMemberFunction mmf = curmc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_MetaInputParamCollection);
                         bool allowDefaultConstructWithoutInit = (m_MetaInputParamCollection == null || m_MetaInputParamCollection.count == 0);
                         if (mmf == null && !allowDefaultConstructWithoutInit)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + curmc.allName + "鐨刜init_鏂规硶!)");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + curmc.allName + "鐨刜init_鏂规硶!)");
                             return false;
                         }
                         m_MetaFunction = mmf;
@@ -1092,14 +1094,14 @@ namespace SimpleLanguage.Core
 
                     if (!m_AllowUseSettings.callFunction && m_IsFunction)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 褰撳墠浣嶇疆涓嶅厑璁告湁鍑芥暟璋冪敤鏂瑰紡浣跨敤!!!" + m_Token?.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 褰撳墠浣嶇疆涓嶅厑璁告湁鍑芥暟璋冪敤鏂瑰紡浣跨敤!!!" + m_Token?.ToLexemeAllString());
                     }
                 }
                 else if (m_MetaData != null)
                 {
                     if (m_MetaData.isStatic)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error data static 不允许进行实例化(new/构造调用): " + m_MetaData.allName);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error data static 不允许进行实例化(new/构造调用): " + m_MetaData.allName);
                         return false;
                     }
                     m_CallNodeType = ECallNodeType.NewData;
@@ -1148,7 +1150,7 @@ namespace SimpleLanguage.Core
                             || frontCNT == ECallNodeType.This
                             || frontCNT == ECallNodeType.Base)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 1 闈欐€佽皟鐢紝涓嶈兘璋冪敤闈為潤鎬佸瓧娈?!");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 1 闈欐€佽皟鐢紝涓嶈兘璋冪敤闈為潤鎬佸瓧娈?!");
                             return false;
                         }
                     }
@@ -2004,7 +2006,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "娌℃湁鍙戠幇瀹炰綋鐨勬ā鏉跨被!!" + m_MetaClass?.name);
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "娌℃湁鍙戠幇瀹炰綋鐨勬ā鏉跨被!!" + m_MetaClass?.name);
                     return false;
                 }
             }

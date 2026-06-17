@@ -1,122 +1,125 @@
 import Std
 import CSharp.System
 
-Level1
+namespace ClassAs_IsNS
 {
-    Level1_var1 = 20
-}
-Level2 extends Level1
-{
-    Level2_var1 = 30;
-}
-Level3 extends Level2
-{
-    Level3_var3 = 40
-}
-
-LevelT<T1>
-{
-    T1 levelT1_var1 = new()
-}
-LevelT2<T21,T22> extends LevelT<T22>
-{
-    T22 levelT2_var1 = new()
-}
-LevelT3<T31,T32> extends LevelT2<T32,T31>
-{
-    T31 levelT3_var1 = new()
-    #!
-    _cast_<TargetT>()
+    Level1
     {
-        ret this as TargetT
+        Level1_var1 = 20
     }
-    !#
-}
-
-
-ClassAs_Is{
-    static fun()
+    Level2 extends Level1
     {
-        global.println("========== ClassAs_Is (start) ==========")
-        int a = 100
-        b = "abc"
-        if a is int str 
-        {
-            System.Console.WriteLine("_int is  " + str )
-            #next
-        }
-        elif b is string str2 
-        {
-            System.Console.WriteLine("_int is2  " + str2 )
-        }
+        Level2_var1 = 30;
+    }
+    Level3 extends Level2
+    {
+        Level3_var3 = 40
+    }
 
+    LevelT<T1>
+    {
+        T1 levelT1_var1 = new()
+    }
+    LevelT2<T21,T22> extends LevelT<T22>
+    {
+        T22 levelT2_var1 = new()
+    }
+    LevelT3<T31,T32> extends LevelT2<T32,T31>
+    {
+        T31 levelT3_var1 = new()
         #!
-        if a is string str || b is string str2  #这种语法错误 ，如果使用as/is 必须只有一句处理
+        _cast_<TargetT>()
         {
-            System.Console.WriteLine("_int is  " + str )
-            System.Console.WriteLine("_int is2  " + str2 )
+            ret this as TargetT
         }
         !#
+    }
 
 
-        LevelT3<int,string> levelt3 = new()
-        levelt3.levelT3_var1 = 100
-        #LevelT3<int,int> levelt3_2 = levelt3 as LevelT3<int,string>        
-        levelt3_2 = levelt3 as LevelT3<int,string>
-        if levelt3_2 != null
+    ClassAs_Is{
+        static fun()
         {
-            System.Console.WriteLine("_this_——————————————————————————————  " +levelt3_2.levelT3_var1 )
-        }
-        else
-        {
-            System.Console.WriteLine("aanonnnhooooooooo  "  )
-        }
+            global.println("========== ClassAs_Is (start) ==========")
+            int a = 100
+            b = "abc"
+            if a is int str 
+            {
+                global.println("_int is  " + str )
+                next
+            }
+            elif b is string str2 
+            {
+                global.println("_int is2  " + str2 )
+            }
 
-        LevelT2<int,int> levelt2 = new()
-        levelt2.levelT2_var1 = 1112
-        if levelt2 is LevelT2<int,int> levelt3_22
-        {
-            System.Console.WriteLine("_this_——————————2222222222  " + levelt3_22.levelT2_var1 )
-        }
+            #!
+            if a is string str || b is string str2  #这种语法错误 ，如果使用as/is 必须只有一句处理
+            {
+                global.println("_int is  " + str )
+                global.println("_int is2  " + str2 )
+            }
+            !#
 
-        Level3 level3 = new()
-        Level1 level1 = level3
-        level2 = level1 as Level2
-        
-        #var aaa = level1.Level3_var3        #该语句需要报错，因为已经有定义过的类型，所以即使可以计算出来真实的类型，也不能直接使用
-        
-        if level2 != null
-        {
-            System.Console.WriteLine("_this_——————————————————————————————  " +level2.Level2_var1 )
-        }
-        else
-        {
-            System.Console.WriteLine("aanonnnhooooooooo  " + level1.Level1_var1 )
-        }
 
-        bool flag = level2 is Level3 level3ttt
-        if flag
-        {
-            System.Console.WriteLine("is ok  " + level3ttt.Level3_var3 )
-        }
-        else
-        {
-            System.Console.WriteLine("is No  " )
-        }
+            LevelT3<int,string> levelt3 = new()
+            levelt3.levelT3_var1 = 100
+            #LevelT3<int,int> levelt3_2 = levelt3 as LevelT3<int,string>        
+            levelt3_2 = levelt3 as LevelT3<int,string>
+            if levelt3_2 != null
+            {
+                global.println("_this_——————————————————————————————  " +levelt3_2.levelT3_var1 )
+            }
+            else
+            {
+                global.println("aanonnnhooooooooo  "  )
+            }
 
-        if level1 is Level3 ll3if
-        {
-            System.Console.WriteLine("yes l3 ="  + ll3if.Level3_var3 );
-        }
+            LevelT2<int,int> levelt2 = new()
+            levelt2.levelT2_var1 = 1112
+            if levelt2 is LevelT2<int,int> levelt3_22
+            {
+                global.println("_this_——————————2222222222  " + levelt3_22.levelT2_var1 )
+            }
 
-        #!
-        l1castl3 = level1.cast<Level3>()
-        if l1castl3 != null
-        {
-            Console.WriteLine("yes l1cast l1castl3=" );
+            Level3 level3 = new()
+            Level1 level1 = level3
+            level2 = level1 as Level2
+            
+            #var aaa = level1.Level3_var3        #该语句需要报错，因为已经有定义过的类型，所以即使可以计算出来真实的类型，也不能直接使用
+            
+            if level2 != null
+            {
+                global.println("_this_——————————————————————————————  " +level2.Level2_var1 )
+            }
+            else
+            {
+                global.println("aanonnnhooooooooo  " + level1.Level1_var1 )
+            }
+
+            bool flag = level2 is Level3 level3ttt
+            if flag
+            {
+                global.println("is ok  " + level3ttt.Level3_var3 )
+            }
+            else
+            {
+                global.println("is No  " )
+            }
+
+            if level1 is Level3 ll3if
+            {
+                global.println("yes l3 ="  + ll3if.Level3_var3 );
+            }
+
+            #!
+            l1castl3 = level1.cast<Level3>()
+            if l1castl3 != null
+            {
+                global.println("yes l1cast l1castl3=" );
+            }
+            !#
+            global.println("========== ClassAs_Is (end) ==========")
         }
-        !#
-        global.println("========== ClassAs_Is (end) ==========")
     }
 }
 

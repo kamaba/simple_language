@@ -59,6 +59,8 @@
       { "path": "../../../../test/BaseTest/CallLinkTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/Class1Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/Class2Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "../../../../test/BaseTest/ClassAs_Is.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "../../../../test/BaseTest/CommitTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/AssignStatement.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
@@ -116,6 +118,7 @@
       ] },
       { "namespace": "Std", "children": [] },
       { "namespace": "Application", "children": [] },
+      { "namespace": "ConStrCC", "children": [] },
       { "class": "Std.Console" }    
   ],
   "export": {

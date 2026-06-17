@@ -14,24 +14,14 @@ namespace SimpleLanguage.Core
 {
     class MethodManager
     {
-        public static MethodManager s_Instance = null;
-        public static MethodManager instance
-        {
-            get
-            {
-                if (s_Instance == null)
-                {
-                    s_Instance = new MethodManager();
-                }
-                return s_Instance;
-            }
-        }
+        public static MethodManager instance = new MethodManager();
         public List<MetaMemberFunction> metaOriginalFunctionList => m_MetaOriginalFunctionList;
         public List<MetaMemberFunction> metaDynamicFunctionList => m_MetaDynamicFunctionList;
 
         private Dictionary<string, MetaFunction> m_MetaAllFunctionDict = new Dictionary<string, MetaFunction>();
 
         private List<MetaMemberFunction> m_MetaOriginalFunctionList = new List<MetaMemberFunction>();
+        private List<MetaMemberFunction> m_MetaExpressFunctionList = new List<MetaMemberFunction>();
         private List<MetaMemberFunction> m_MetaDynamicFunctionList = new List<MetaMemberFunction>();
 
 
@@ -70,6 +60,7 @@ namespace SimpleLanguage.Core
             if (m_MetaOriginalFunctionList.IndexOf(mmf) == -1)
             {
                 m_MetaOriginalFunctionList.Add(mmf);
+
                 AddMetaAllFunction(mmf);
             }
         }
@@ -81,16 +72,20 @@ namespace SimpleLanguage.Core
                 AddMetaAllFunction(mmf);
             }
         }
+        public void ParseMetaMethodExpress()
+        {
+            foreach( var v in m_MetaOriginalFunctionList)
+            {
+                v.ParseRealMetaType();
+            }
+        }
         public void ParseStatements()
         {
-            var list = new List<MetaMemberFunction>(m_MetaOriginalFunctionList);
+            //var list = new List<MetaMemberFunction>(m_MetaOriginalFunctionList);
+            //list.Sort( (a, b) => a.parseLevel - b.parseLevel );
 
-            list.Sort( (a, b) => a.parseLevel - b.parseLevel );
-
-            foreach (var v in list)
+            foreach (var v in m_MetaOriginalFunctionList)
             {
-                v.CreateMetaExpress();
-                v.ParseMetaExpress();
                 v.ParseStatements();
             }
         }

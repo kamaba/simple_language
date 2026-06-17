@@ -231,6 +231,8 @@ namespace SimpleLanguage.Project
             ClassManager.instance.CheckInterfaces();
 
             MetaVariableManager.instance.ParseMetaMemberExpress();
+            MethodManager.instance.ParseMetaMethodExpress();
+
             ClassManager.instance.ParseDefineComplete();
 
             // Inject jsonc data (root "data" + legacy global.data) into Project meta members before statements parse.

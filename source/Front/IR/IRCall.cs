@@ -198,7 +198,7 @@ namespace SimpleLanguage.IR
             {
                 if( m_IRRuntimeMethod == null )
                 {
-                    Log.AddIRLog(LID.ShowExtendMessage, "------------娌℃湁鎵惧埌璋冪敤鐨勬柟娉曚綋!!");
+                    Log.AddIRLog(LID.ShowExtendMessage, mfc.token,  $"ir runtime[{fname}] method not found!!");
                     return;
                 }
 

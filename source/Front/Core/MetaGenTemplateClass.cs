@@ -159,14 +159,19 @@ namespace SimpleLanguage.Core
                     TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ExtendClassMetaType, this, null);
                     m_ExtendClass = m_ExtendClassMetaType.metaClass;
                 }
-                else if( ecmt.eMetaTypeType == EMetaTypeType.MetaClass )
+                else if (ecmt.eMetaTypeType == EMetaTypeType.MetaClass)
+                {
+                    m_ExtendClassMetaType = this.m_MetaTemplateClass.extendClassMetaType;
+                    m_ExtendClass = m_ExtendClassMetaType.metaClass;
+                }
+                else if (ecmt.eMetaTypeType == EMetaTypeType.MetaGenClass)
                 {
                     m_ExtendClassMetaType = this.m_MetaTemplateClass.extendClassMetaType;
                     m_ExtendClass = m_ExtendClassMetaType.metaClass;
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, " assert 模板类的父类只能是普通类或者是带模板参数的类!");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, this.m_Token, " assert 模板类的父类只能是普通类或者是带模板参数的类!");
                 }
             }
 

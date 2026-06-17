@@ -32,6 +32,7 @@ namespace SimpleLanguage.Core
         public MetaType realMetaType => m_RealMetaType;
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isParsed => m_IsParsed;
+        public bool isHasExpress => m_MetaMemberParamCollection?.isHasExpress == true;
         public virtual string functionAllName {
             get
             {
