@@ -33,9 +33,9 @@ Project
         Class2TestSmoke.fun();
         ClassAs_IsNS.ClassAs_Is.fun();
         CommitTest.fun();
-        !#
         ConStrCC.ConstructionTest.fun()
-        
+        !#
+        ExpressTest.fun()
         
     }
     _test_()
