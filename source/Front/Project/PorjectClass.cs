@@ -59,7 +59,7 @@ namespace SimpleLanguage.Project
         {
             if (parentRoot == null || node == null)
             {
-                Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!" + node.Name);
+                Log.AddProjectLog(LID.ShowExtendMessage, $"Error [{node.Name}] node is null" );
                 return;
             }
 
@@ -90,7 +90,7 @@ namespace SimpleLanguage.Project
                         }
                         else
                         {
-                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!" + node.Name ); 
+                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类11!!" + node.Name ); 
                         }
                     }
                     else
@@ -109,7 +109,7 @@ namespace SimpleLanguage.Project
                         }
                         else
                         {
-                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!" + node.Name);
+                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类22!!" + node.Name);
                         }
                     }
                     else
@@ -128,7 +128,7 @@ namespace SimpleLanguage.Project
                         }
                         else
                         {
-                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!" + node.Name);
+                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类33!!" + node.Name);
                         }
                     }
                     else
@@ -147,7 +147,7 @@ namespace SimpleLanguage.Project
                         }
                         else
                         {
-                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!" + node.Name);
+                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类44!!" + node.Name);
                         }
                     }
                     else
@@ -160,7 +160,7 @@ namespace SimpleLanguage.Project
 
                 if(parMS != null )
                 {
-                    Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类!!" + node.Name);
+                    Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类55!!" + node.Name);
                     return;
                 }
 

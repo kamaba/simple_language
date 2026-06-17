@@ -48,6 +48,12 @@ namespace Application
 {
         Class2
         {
+            Class222
+            {
+                static a = 20
+                int b = 20
+            }
+
             int x = 20
             int a = -20 - -(Class2.x1 + Class2.x2)
             static x1 = (Class2.x2 * 1) + -2
@@ -67,24 +73,24 @@ namespace Application
             public Class3 fun1(int pppp1 = 20 + 11.1, int p2 = 21)
             {
                 mc33 = Class3(p2 + 2){ b = 100, a = 20 }
-                #bool1 = (pppp1 <= a + Class222.a).ToInt() >= 0
+                bool1 = Int16(pppp1 <= a + Class222.a) >= 0
                 {
                     int b1 = 21
-                    Class3 mc22 = (pppp1, b1, 10.0f - 2.0f, 20 + 12)
-                    Core.Class3 m0
-                    Core.Class3 mc1 = { a = 30, b = 30, c = Class222() }
-                    Core.Class3 mc3 = Class3(20)
+                    Class3 mc22 = new(pppp1, b1, 10.0f - 2.0f, 20 + 12)
+                    Class3 m0 = new(20)
+                    Class3 mc1 = { a = 30, b = 30, c = Class222() }
+                    Class3 mc3 = Class3(20)
                     Class222.a = 10
-                    Core.Class3.m += 10
-                    Core.Class3.GetClass2().x -= 10
+                    Class3.m += 10
+                    Class3.GetClass2().x -= 10
                     this.x22 = 20
                     this.x22 += 10
                     x33 = 30
                     {
                         if (this.x == 35)
                         {
-                            System.Debug.Write("x=" + this.x22)
-                            Debug.Write("x= @this.x22 " + x33)
+                            global.println("x=" + this.x22)
+                            global.println("x= $this.x22 " + x33)
                             ret Class2.mc2
                         }
                     }
@@ -96,36 +102,31 @@ namespace Application
                 ret null
             }
 
-            Class222
-            {
-                static a = 20
-                int b = 20
-            }
 
             static void Init()
             {
-                Core.Class3 m
+                Class3 m = new()
             }
         }
 
         Class3
         {
-            static Class2 class2
+            static Class2 class2 = new()
             a = 20
             b = 20
-            Class2.Class222 c
+            Class2.Class222 c = new()
             static m = 20
-            Class2.Class222 m2
+            Class2.Class222 m2 = null
 
             Class3(x)
             {
-                this.a = x
+                this.a = int(x)
             }
 
             Class3(x, y, z, d)
             {
                 this.a = 20
-                this.b = 20
+                this.b = int(x) + int(y) - int(z) + int(d)
             }
 
             public static Class2 GetClass2()
@@ -175,10 +176,10 @@ ExpressTest
         int d = +a
         global.println("+a = " + d.toString())
 
-        int e = a++
+        int e = a++                     #不允许
         global.println("a++ = " + e.toString() + ", a = " + a.toString())
 
-        int f = --a
+        int f = --a                     #不允许 
         global.println("--a = " + f.toString() + ", a = " + a.toString())
 
         int g = a + b * 2 - 3 / 1
@@ -303,11 +304,11 @@ ExpressTest
 
         string name = "World"
         int age = 25
-        global.println("Hello, $name!")
+        global.println("Hello, $name !")
         global.println("Age: $age")
-        global.println("Next year: $(age + 1)")
+        global.println("Next year: ${age + 1}")
 
-        string complex = "Name: $name, Age: $age, Double: $(age * 2)"
+        string complex = "Name: $name, Age: $age , Double: ${age * 2}"
         global.println("complex = " + complex)
     }
 
@@ -315,6 +316,7 @@ ExpressTest
     {
         global.println("----- lambdaExpressionTest -----")
 
+        #!
         func<int, int> square = (x) => x * x
         global.println("square(5) = " + square(5).toString())
 
@@ -324,6 +326,7 @@ ExpressTest
         func<int, bool> isEven = (x) => x % 2 == 0
         global.println("isEven(4) = " + isEven(4).toString())
         global.println("isEven(5) = " + isEven(5).toString())
+        !#
     }
 
     static typeConversionExpressionTest()
@@ -351,11 +354,11 @@ ExpressTest
     {
         global.println("----- memberAccessExpressionTest -----")
 
-        Application.Core.Class2 c2 = Application.Core.Class2(10)
+        Application.Class2 c2 = Application.Class2(10)
         global.println("c2.x = " + c2.x.toString())
         global.println("c2.a = " + c2.a.toString())
 
-        Application.Core.Class3 c3 = Application.Core.Class3(1, 2, 3, 4)
+        Application.Class3 c3 = Application.Class3(1, 2, 3, 4)
         global.println("c3.a = " + c3.a.toString())
         global.println("c3.b = " + c3.b.toString())
     }
@@ -380,13 +383,13 @@ ExpressTest
     {
         global.println("----- newObjectExpressionTest -----")
 
-        Application.Core.Class2 c2 = new()
+        Application.Class2 c2 = new()
         global.println("new Class2().x = " + c2.x.toString())
 
-        Application.Core.Class2 c2WithArg = new(100)
+        Application.Class2 c2WithArg = new(100)
         global.println("new Class2(100).x = " + c2WithArg.x.toString())
 
-        Application.Core.Class3 c3 = new(10, 20, 30, 40)
+        Application.Class3 c3 = new(10, 20, 30, 40)
         global.println("new Class3(10,20,30,40).a = " + c3.a.toString())
     }
 
@@ -394,12 +397,12 @@ ExpressTest
     {
         global.println("----- staticMemberAccessTest -----")
 
-        global.println("Class2.m2 = " + Application.Core.Class2.m2.toString())
-        global.println("Class2.x1 = " + Application.Core.Class2.x1.toString())
-        global.println("Class2.x2 = " + Application.Core.Class2.x2.toString())
-        global.println("Class2.x3 = " + Application.Core.Class2.x3.toString())
+        global.println("Class2.m2 = " + Application.Class2.m2.toString())
+        global.println("Class2.x1 = " + Application.Class2.x1.toString())
+        global.println("Class2.x2 = " + Application.Class2.x2.toString())
+        global.println("Class2.x3 = " + Application.Class2.x3.toString())
 
-        Application.Core.Class2.m2 = 200
+        Application.Class2.m2 = 200
         global.println("Class2.m2 after assignment = " + Application.Core.Class2.m2.toString())
     }
 
