@@ -1,7 +1,5 @@
 import Math
 import Std
-import "Core:Std.Math" as StdAlias
-import "Std.Math" as MathAlias
 
 namespace Class1Expand
 {

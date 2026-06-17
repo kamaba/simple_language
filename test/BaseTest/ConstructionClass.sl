@@ -1,198 +1,194 @@
-import Application.Core;
-import QS
+import ConStrCC;
 
-
-ConStrCC.Class1
+data ConstructionPoint
 {
-    _init_( int _x1, int _y1 )
-    {
-        #this.x1 = _x1;
-        #this.y1 = _y1;
-        #this.ct1.t = 20;   #[error] 不允许这样的赋值，也不允许静态的赋值
-        #this.ct1 = { t = 20 }; #[error] 暂时有报错, 不支持该方法使用 只支持 Class1()方式 这种方法，只适合于 临时语句 或者是定义成员变量时 Class1 a = {t1 = 1, t2 = 2};的方式
-        #this.ct2 = ClassT( 114 );
-        #this.ct3 = ClassT(){ t = 115 };
-        #this.ct4 = QS.ClassT2();
-        #this.ct5 = QS.ClassT2(){t = 116; };
-    }
-    _init_( ClassT _t, ClassT _t2 )
-    {
-        this.ct3 = _t;
-        this.ct3 = _t2;
-
-        this.t = ClassT.GetMaxInt()
-    }
-    x1 = 117;
-    y1 = 118;
-    #ClassT ct1 = null;               #测试对象赋值为空
-    #ClassT ct2 = ClassT( 119 );        # 测试对象创建  _init_方式
-    #ClassT ct2_2 = ();
-    ClassT ct3 = ();
-    #QS.ClassT2 ct4 = QS.ClassT2();
-    #QS.ClassT2 ct5;
-    #ct6 = ClassT( 120 );
-    #ClassT ct7;
-    #arr = [{name = "ed"; my = 22;},{name="wy"; my = 23; }]  #[error]  必须申请为List<object> 类型后 可以使用 List<object> arr = new List<object>(){ {}, {} }; 的方式进行初始化赋值，如果是数组形式，不支持 动态数据
-    #dynclass = { q1 = 23; a2 = 25; aws = "xgla"; q4 = ClassT(); }  #[error] 不允许，因为在前期赋值的时候，必须知道该类型  后期如果做的话，也是先提取格式，然后在运行类的时候进行赋值
-}
-ConStrCC.Class2 extends ConStrCC.Class1
-{
-    public class Class2_2 extends Class2 interface Class1,QS.ClassT2
-    {
-        int e2c;
-    }
-    _init_( int _x1, int _y1, int _x2, int _y2 )
-    {
-        #!
-        base._init_( _x1, _y2 );
-        _init_( _x1, _y1, _x2 );   
-        !#     
-        this.x2++;
-        this.x2 = this.x1 + _x2;
-        this.y2 = _y2;
-    }
-    _init_( int _x1, int _y1, int _x2 )
-    {
-        this.x2 = _x1;
-    }
-    #!
-    GetX()
-    {
-        ret this.x2;
-    }
-    !#
-    x2 = 0;
-    y2 = 0;
+    x = 0
+    y = 0
 }
 
+data ConstructionMeta
+{
+    level = 0
+    passed = false
+}
+
+data ConstructionRecord
+{
+    id = 0
+    name = ""
+    point = ConstructionPoint(){ x = 1, y = 2 }
+    meta = ConstructionMeta(){ level = 1, passed = true }
+    profile = {
+        grade = 3,
+        address = {
+            city = "Shenzhen",
+            zip = 518000
+        }
+    }
+    tags = ["class", "data", "construction"]
+    history = [
+        { name = "default", value = 1 },
+        { name = "brace", value = 2 }
+    ]
+}
+
+data ConstructionCounter
+{
+    createCount = 0
+    totalValue = 0
+}
+
+ConStrCC.ClassLeaf
+{
+    _init_()
+    {
+        this.value = 0
+    }
+
+    _init_( int _value )
+    {
+        this.value = _value
+    }
+
+    int value = 0
+
+    int getValue()
+    {
+        ret this.value
+    }
+}
+
+ConStrCC.ClassBase
+{
+    _init_()
+    {
+        this.x = 10
+        this.y = 20
+    }
+
+    _init_( int _x, int _y )
+    {
+        this.x = _x
+        this.y = _y
+    }
+
+    int x = 0
+    int y = 0
+
+    int sum()
+    {
+        ret this.x + this.y
+    }
+}
+
+ConStrCC.ClassChild extends ConStrCC.ClassBase
+{
+    _init_( int _x, int _y, int _z )
+    {
+        base._init_( _x, _y )
+        this.z = _z
+    }
+
+    int z = 0
+
+    int sumAll()
+    {
+        ret this.sum() + this.z
+    }
+}
+
+ConStrCC.ClassHolder
+{
+    _init_( int _value )
+    {
+        this.leaf = ConStrCC.ClassLeaf( _value )
+        this.record = ConstructionRecord(){ id = _value, name = "holder" }
+    }
+
+    ConStrCC.ClassLeaf leaf = ConStrCC.ClassLeaf()
+    ConstructionRecord record = new()
+
+    int getLeafValue()
+    {
+        ret this.leaf.getValue()
+    }
+}
 
 ConStrCC.ConstructionTest
 {
     static fun()
-    {        
-        global.println("========== Object.sl tests (start) ==========")
+    {
+        global.println("========== ConstructionClass tests (start) ==========")
+        ConStrCC.ConstructionTest.classConstructionTest()
+        ConStrCC.ConstructionTest.dataConstructionTest()
+        global.println("========== ConstructionClass tests (end) ==========")
+    }
 
-        Object obj = new()
-        Object obj2 = obj
+    static classConstructionTest()
+    {
+        global.println("----- classConstructionTest -----")
+
+        ConStrCC.ClassBase baseDefault = ConStrCC.ClassBase()
+        ConStrCC.ClassBase baseArgs = ConStrCC.ClassBase( 3, 4 )
+        ConStrCC.ClassBase baseBrace = ConStrCC.ClassBase(){ x = 5, y = 6 }
+        ConStrCC.ClassChild child = ConStrCC.ClassChild( 7, 8, 9 )
+        ConStrCC.ClassHolder holder = ConStrCC.ClassHolder( 30 )
+
+        global.println("baseDefault sum -> " + baseDefault.sum().toString())
+        global.println("baseArgs sum -> " + baseArgs.sum().toString())
+        global.println("baseBrace sum -> " + baseBrace.sum().toString())
+        global.println("child sumAll -> " + child.sumAll().toString())
+        global.println("holder leaf value -> " + holder.getLeafValue().toString())
+        global.println("holder record id/name -> " + holder.record.id.toString() + "/" + holder.record.name)
+
+        Object obj1 = new()
+        Object obj2 = obj1
         Object obj3 = new()
-        Object obj4 = new()
+        global.println("object alias refEquals -> " + Object.refEquals(obj1, obj2).toString())
+        global.println("object distinct refEquals -> " + Object.refEquals(obj1, obj3).toString())
+    }
 
-        global.println("[1] new + alias: obj==obj2 (same reference) -> " + (obj == obj2).toString())
-        global.println("[2] equals alias: obj.equals(obj2) -> " + obj.equals(obj2).toString())
-        global.println("[3] static objectEquals alias: Object.objectEquals(obj, obj2) -> " + Object.objectEquals(obj, obj2).toString())
-        global.println("[4] static refEquals alias: Object.refEquals(obj, obj2) -> " + Object.refEquals(obj, obj2).toString())
+    static dataConstructionTest()
+    {
+        global.println("----- dataConstructionTest -----")
 
-        global.println("[5] distinct instances: Object.objectEquals(obj3, obj4) -> " + Object.objectEquals(obj3, obj4).toString())
-        global.println("[6] distinct refEquals: Object.refEquals(obj3, obj4) -> " + Object.refEquals(obj3, obj4).toString())
-        global.println("[7] equals distinct: obj3.equals(obj4) -> " + obj3.equals(obj4).toString())
+        ConstructionRecord recordDefault = new()
+        recordDefault.id = 1
+        recordDefault.name = "default-new"
+        recordDefault.point.x = 11
+        recordDefault.point.y = 12
 
-        int hc1 = obj.hashCode
-        int hc2 = obj3.hashCode
-        global.println("[8] hashCode: obj.hashCode -> " + hc1.toString() + " ; obj3.hashCode -> " + hc2.toString())
-        
+        ConstructionRecord recordNamed = ConstructionRecord(){ id = 2, name = "named", point = ConstructionPoint(){ x = 21, y = 22 }, meta = ConstructionMeta(){ level = 2, passed = true } }
+        ConstructionRecord recordBrace = { id = 3, name = "brace", point = ConstructionPoint(){ x = 31, y = 32 }, meta = ConstructionMeta(){ level = 3, passed = false } }
+        recordBrace = ConstructionRecord(){ id = 4, name = "reassign", point = ConstructionPoint(){ x = 41, y = 42 }, meta = ConstructionMeta(){ level = 4, passed = true } }
 
-        global.println("[11] toString: obj.toString() -> " + obj.toString())
-        global.println("[12] toString: obj3.toString() -> " + obj3.toString())
+        ConstructionCounter.createCount = 3
+        ConstructionCounter.totalValue = recordDefault.id + recordNamed.id + recordBrace.id
 
-        int refc = obj2.refCount
-        global.println("[13] refCount (alias obj2): " + refc.toString())
-
-        global.println("[14] refEquals(null,null) -> " + Object.refEquals(null, null).toString())
-        global.println("[15] objectEquals(null,null) -> " + Object.objectEquals(null, null).toString())
-        global.println("[16] objectEquals(obj,null) / objectEquals(null,obj) -> " + Object.objectEquals(obj, null).toString() + " / " + Object.objectEquals(null, obj).toString())
-
-        rwA = obj.refWeak
-        rwB = obj3.refWeak
-        global.println("[17] refWeak: Object.refEquals(obj.refWeak, obj3.refWeak) -> " + Object.refEquals(rwA, rwB).toString())
-
-        global.println("[18] lifecycle smoke: call free() then release() on a throwaway Object")
-        Object tmp = new()
-        global.println("    tmp.hashCode before -> " + tmp.hashCode.toString())
-        tmp.free()
-        global.println("    called tmp.free()")
-        tmp.release()
-        global.println("    called tmp.release()")
-
-        global.println("========== Object.sl tests (end) ==========")
-        
-        var d1 = Data1(){ ct = ClassT(30) }
-        d1.ct = ClassT(0)
-        vx = d1.ct.t
-
-        #dynamic d1 = {t1 = 2, t2 = 3 }
-        #!
-        a20 = 10000 + 20;
-        a21 = ClassT(10){t=1}
-        d2 = { ct = ClassT(20), childd1 = { a3 = { qx = 1024 } }, ch2 = [1,2,3,4],  ha=a21, ch3 = [ {a=20}, {a = {ax = 10241 } } ], y2 = "sss" }  # 相当于data d2 = {}
-        md2str = d2.y2;
-        r20 = d2.childd1.a3.qx;
-        r21 = d2.ch2.$2;
-        r22 = d2.ha.t
-        r23 = d2.ch3.$2.a.ax
-        !#
-        #ct111 = ClassT(100){ t = 1 }        
-        #vv1 = ClassT().t;      #不允许 newclass只允许 使用创建新的变量方式
-        #c1 = Class1(ClassT(), ct111 );    #传参的时候，如果是 ClassName(){} 不支持后边的{} 只支持ClassName(1,2,3) 的形式使用 
-        #c2 = Class2( 121,122,123,124 );
-        #c3 = Class1( 125, 126 ){ x1 = 127 };
-        #Class1 c4 = { x1 = 128, y1 = 129 };
-        #Class2 c5 = { x1 = 130, y1 = 131, x2 = 132, y2 = 133 };
-        #Class2 c6 = { ct1 = ClassT() };     # { ct1.t = 20; } 是不允许的
-
-        #c1.x1 = 250                                                  #测试调用对象+赋值对象
-
-        
-
-        #t2 = c1.ct3.GetT().t2;                                       #测试调用对象链
-        #t2  = c1.ct3.t;
-        
-        CSharp.System.Debug.Write("Class1 Value: " + vx );     
-
-        #CSharp.System.Debug.Write("Class1 Value: " + c1.ct3.t );     #测试调用对象链
-
-        #aynn = {name = "mypc", wodm = Class1(), womd2 = Class2() };    #测试匿名对象
-        #if aynn.name == "mypc"
-        #{
-             #CSharp.System.Debug.Write("aynn is mypc" );
-        #}        
+        global.println("recordDefault -> " + recordDefault.toString())
+        global.println("recordNamed -> " + recordNamed.toString())
+        global.println("recordBrace -> " + recordBrace.toString())
+        global.println("recordDefault point chain -> " + recordDefault.point.x.toString() + "/" + recordDefault.point.y.toString())
+        global.println("recordNamed meta chain -> " + recordNamed.meta.level.toString() + "/" + recordNamed.meta.passed.toString())
+        global.println("static data counter -> " + ConstructionCounter.createCount.toString() + "/" + ConstructionCounter.totalValue.toString())
+        global.println("static data nested chain -> " + ConstructionRecord.profile.address.city)
     }
 }
 
 #!
-对象的创建使用
-1. Class()的方式，就等于 new()
-2. Class(1,2) 使用函数的重载，传入参数的方式 其实调用的是已配置 __Init( int a, int b )的函数，
-3. 如果使用 private _init_() 的函数，则认为 不能直接默认调用  private _init_(int a ){}   不能使用 Class(20)
-4. 在构造体中，不允许有返回类型，所以构造函数不能return 变量 的使用，在new Class()的时候，首先生成一个对象后，然后再进行构造处理，相当于构造只是一个处理函数，和普通的函数没有什么区别
-相然，构造非静态的才能重构，静态的只能无参数类型
-5. 在函数构造体中 只能调用 普通的表达式，不可以使用 非静态函数  但可以使用静态函数
-所以，正常来说，类的构造，只允许当前变量的赋值，不允许操作其它类的值。
-6. 继承使用 base._init_( _x1, _y1 ); 可以调用父中的构造类的方式
-7. 对象可以使用 Class c = {}的方式，创建，但，与类构造一样，只允许this.当前变量法制，否则语法不通过。
-8. 同样的，不管是在构造体中，还是在{}方式中，使用都不允许有表达式的使用， 如果使用了[NoDefaultConstruction]标记的类，则不能直接使用{}方式 其它{}的方
-式相当于 Class a = {var1=10;var2 = 20; } a = Class(); a.var1 = 10; a.var2 = 20; 
-9. 不允许 Class1().Fun() 这种的调用，必须 是1-7的情况，其它一律不行
-    1. Class1 varname = Class1();   Class1 varname = Class2()
-    2. Class1 varname;               #不允许
-    3. Class1 varname = new(1,2)   在初始化后调用_init_(1,2)函数  如果没有new关键字也不允许 
-    4. Class1 varname = {var1 = 20; var2 = 30; }  在初始化时直接给某个成员赋值
-    5. varname = Class1(1,2){var1 = 20; var2 = 30; }   即调用_init_(1,2)  先给变量赋值，再进行初始化调用
-10. 数组相关的创建对象
-    1. var1 = [1,2,3]
-    2. var1 = Array( 5, int.type ){ 1,2,3,4,5 }
-    3. Set<int> set1 = new(4){ 1,2,3 }
-    4. Map<int,string> map1 = new(10){ {1,"10"}, {2,"20"}, {3,"30"} }
-    5. List<int> list1 = new(){ 1,2,3,4,5 }
-    6. List list1 = new(){ Class1(), Class2(), Class3() }
-!#
+构建类测试规则：
+1. ClassName() 调用默认 _init_。
+2. ClassName(args) 按参数匹配重载 _init_。
+3. ClassName(){ member = value } 先构建对象，再对当前对象成员赋值。
+4. 子类构造中使用 base._init_(...) 初始化父类成员。
+5. 构造函数只负责当前实例成员初始化，不在构造体中直接改写其它对象的内部成员。
+6. 不测试 ClassName().method() 这种临时对象链式调用；对象应先落到变量再访问成员或方法。
 
-#!
-111
+构建 data 测试规则：
+1. DataName v = new() 创建默认 data 实例，非 const data 可继续写成员。
+2. DataName(){ ... } 直接构建并覆盖成员。
+3. DataName v = { ... } 使用 brace 初始化目标 data。
+4. 非 const data 支持整体重新赋值和成员重新赋值。
+5. data 支持匿名对象、数组、具名 data、具名 class 成员和链式成员读取。
+6. static data 只通过成员访问和成员写入覆盖，不把静态 data 当普通临时对象 new。
 !#
-
-# ConstructionClass.sl 中 static Fun() 测试说明（与上文 #! 长文互补）：
-# - 前半段与 ObjectTest 类似：new、equals、refCount、refWeak、free/release 等 Object 语义 smoke。
-# - 中段依赖 Application.Core 中 Data1、ClassT 等类型：匿名 data 字面量、成员链 d2.childd1.a3.qx、索引 d2.ch2.$2 等。
-# - 大量 # 行保留历史负例与计划语法，请勿随意删除；新增行为以 global.println 与可编译片段为准。
-#
-# 预期结果：在完整工程与 Core 依赖就绪时，Object 段与 d1/d2 段打印无异常；单独抽离本文件可能因缺少 ClassT/Data1 编译失败，属依赖问题。

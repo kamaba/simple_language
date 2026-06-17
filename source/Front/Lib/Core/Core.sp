@@ -32,10 +32,9 @@ Project
         Class1TestSmoke.fun();
         Class2TestSmoke.fun();
         ClassAs_IsNS.ClassAs_Is.fun();
-        !#
         CommitTest.fun();
-
-        #ConStrCC.ConstructionTest.fun()
+        !#
+        ConStrCC.ConstructionTest.fun()
         
         
     }
