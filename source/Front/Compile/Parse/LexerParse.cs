@@ -123,18 +123,6 @@ namespace SimpleLanguage.Compile
             m_ListTokens.Add(m_CurrentToken);
             m_Builder.Clear();
         }
-        void AddChildrenToken(ETokenType type, object lexeme)
-        {
-            var token = new Token(m_Path, type, lexeme, m_SourceLine, m_SourceChar );
-            AddChildrenToken(token);
-        }
-        public void AddChildrenToken( Token token )
-        {
-            if( m_CurrentToken != null )
-            {
-                m_CurrentToken.AddChildrenToken(token);
-            }
-        }
         bool IsHexDigit(char c)
         {
             if (char.IsDigit(c))

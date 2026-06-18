@@ -3,7 +3,7 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/5/12 12:00:00
-//  Description: 
+//  Description: struct parse node to code structure, and build code structure file meta data
 //****************************************************************************
 
 
@@ -26,6 +26,353 @@ namespace SimpleLanguage.Compile
     }
     public partial class StructParse
     {
+        public class ParseCurrentNodeInfo  //1111
+        {
+            public EParseNodeType parseType;
+            public FileMeta codeFile = null;
+            public FileMetaNamespace codeNamespace = null;
+            public FileMetaClass codeClass = null;
+            public FileMetaMemberData codeData = null;
+            public FileMetaMemberFunction codeFunction = null;
+            public FileMetaSyntax codeSyntax = null;
+
+            public ParseCurrentNodeInfo(FileMeta cf)
+            {
+                codeFile = cf;
+                parseType = EParseNodeType.File;
+            }
+            public ParseCurrentNodeInfo(FileMetaNamespace nsn)
+            {
+                codeNamespace = nsn;
+                parseType = EParseNodeType.Namespace;
+            }
+            public ParseCurrentNodeInfo(FileMetaClass nsc)
+            {
+                codeClass = nsc;
+                parseType = EParseNodeType.Class;
+            }
+            public ParseCurrentNodeInfo(FileMetaMemberData fmmd)
+            {
+                codeData = fmmd;
+                parseType = EParseNodeType.DataMemeber;
+            }
+            public ParseCurrentNodeInfo(FileMetaMemberFunction nsf)
+            {
+                codeFunction = nsf;
+                parseType = EParseNodeType.Function;
+            }           
+            public ParseCurrentNodeInfo(FileMetaSyntax nss)
+            {
+                codeSyntax = nss;
+                parseType = EParseNodeType.Statements;
+            }
+        }
+        protected ParseCurrentNodeInfo currentNodeInfo
+        {
+            get
+            {
+                if (m_CurrentNodeInfoStack.Count == 0) return null;
+
+                return m_CurrentNodeInfoStack.Peek();
+            }
+        }
+
+        protected FileMeta m_FileMeta;
+        protected Node m_RootNode = null;
+        protected Stack<ParseCurrentNodeInfo> m_CurrentNodeInfoStack = new Stack<ParseCurrentNodeInfo>();
+
+        public StructParse(FileMeta fm, Node node )
+        {
+            m_FileMeta = fm;
+            m_RootNode = node;
+        }
+        public void AddParseNamespaceNodeInfo(FileMetaNamespace fmn)
+        {
+            if (currentNodeInfo.parseType == EParseNodeType.File)
+            {
+                currentNodeInfo.codeFile.AddFileMetaAllNamespace(fmn);
+            }
+            else if (currentNodeInfo.parseType == EParseNodeType.Namespace)
+            {
+                currentNodeInfo.codeNamespace.AddFileNamespace(fmn);
+            }
+            else 
+            {
+                Log.AddFileMetaLog(LID.ShowExtendMessage, fmn.namespaceNode.token, "Error AddParseNamespaceNodeInfo");
+            }
+
+            ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmn);
+            m_CurrentNodeInfoStack.Push(pcni);
+        }
+        public void AddParseClassNodeInfo(FileMetaClass fmc)
+        {
+            if (currentNodeInfo.parseType == EParseNodeType.File)
+            {
+                currentNodeInfo.codeFile.AddFileMetaClass(fmc);
+            }
+            else if (currentNodeInfo.parseType == EParseNodeType.Namespace)
+            {
+                currentNodeInfo.codeNamespace.AddFileMetaClass(fmc);
+            }
+            else if (currentNodeInfo.parseType == EParseNodeType.Class)
+            {
+                currentNodeInfo.codeClass.AddFileMetaClass(fmc);
+            }
+            else
+            {
+                Log.AddNodeLog(LID.ShowExtendMessage, fmc.token, "Error AddParseClassNodeInfo");
+                return;
+            }        
+            m_FileMeta.AddFileMetaAllClass(fmc);
+
+            ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmc);
+            m_CurrentNodeInfoStack.Push(pcni);
+        }
+        public void AddParseVariableInfo(FileMetaMemberVariable csv)
+        {
+            if (currentNodeInfo.parseType == EParseNodeType.Class)
+            {
+                currentNodeInfo.codeClass.AddFileMemberVariable(csv);
+            }
+            else
+            {
+                Log.AddNodeLog(LID.ShowExtendMessage, csv.token, "Error AddParseVariableInfo");
+                return;
+            }
+        }
+        public void AddParseDataInfo(FileMetaMemberData fmmd)
+        {
+            if (currentNodeInfo.parseType == EParseNodeType.Class)
+            {
+                currentNodeInfo.codeClass.AddFileMemberData(fmmd);
+            }
+            else if (currentNodeInfo.parseType == EParseNodeType.DataMemeber )
+            {
+                currentNodeInfo.codeData.AddFileMemberData(fmmd);
+            }
+            else
+            {
+                Log.AddNodeLog(LID.ShowExtendMessage, fmmd.token, "Error AddParseDataInfo");
+                return;
+            }
+
+            ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmmd);
+
+            m_CurrentNodeInfoStack.Push(pcni);
+        }
+        public void AddParseFunctionNodeInfo(FileMetaMemberFunction fmmf)
+        {
+            if (currentNodeInfo.parseType == EParseNodeType.Class)
+            {
+                currentNodeInfo.codeClass.AddFileMemberFunction(fmmf);
+            }
+            else
+            {
+                Log.AddNodeLog(LID.ShowExtendMessage, fmmf.token, "Error AddParseFunctionNodeInfo");
+                return;
+            }
+            
+            ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmmf);
+
+            m_CurrentNodeInfoStack.Push(pcni);
+        }
+        public void AddParseSyntaxNodeInfo(FileMetaSyntax fms, bool isAddParseCurrentNNode = false)
+        {
+            if (currentNodeInfo.parseType == EParseNodeType.Function)
+            {
+                currentNodeInfo.codeFunction.AddFileMetaSyntax(fms);
+            }
+            else if (currentNodeInfo.parseType == EParseNodeType.Statements)
+            {
+                currentNodeInfo.codeSyntax.AddFileMetaSyntax(fms);
+            }
+            else
+            {
+                Log.AddFileMetaLog(LID.ShowExtendMessage, fms.token, "Error AddParseSyntaxNodeInfo");
+                return;
+            }
+
+            if (isAddParseCurrentNNode)
+            { 
+                ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fms);
+                m_CurrentNodeInfoStack.Push(pcni);
+            }
+        }
+        // Normalize single-line sequences: attach trailing (), [] to the preceding
+        // IdentifierLink (or its last extend link). When attached, the bracket/par children
+        // are not recursively processed here — they remain as part of the attached node.
+        private void HandleNodeSingleLine(Node root)
+        {
+            if (root == null) return;
+
+            for (int i = 0; i < root.childList.Count; i++)
+            {
+                var n = root.childList[i];
+                if (n == null) continue;
+
+                if (n.nodeType == ENodeType.IdentifierLink)
+                {
+                    int j = i + 1;
+                    while (j < root.childList.Count)
+                    {
+                        var s = root.childList[j];
+                        if (s == null) { j++; continue; }
+
+                        if (s.nodeType == ENodeType.LineEnd || s.nodeType == ENodeType.SemiColon)
+                            break;
+
+                        // target is identifier or its deepest extend link
+                        Node target = n;
+                        if (n.extendLinkNodeList != null && n.extendLinkNodeList.Count > 0)
+                            target = n.extendLinkNodeList[n.extendLinkNodeList.Count - 1];
+
+                        if (s.nodeType == ENodeType.Par)
+                        {
+                            // bind parentheses to target
+                            target.SetParNode(s);
+                            // remove from root list so it's not processed as sibling
+                            root.childList.RemoveAt(j);
+                            // continue at same index j
+                            continue;
+                        }
+                        else if (s.nodeType == ENodeType.Bracket)
+                        {
+                            // add bracket node to target's bracket list
+                            target.AddBracketNode(s);
+                            root.childList.RemoveAt(j);
+                            continue;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    // recurse into identifier itself (but not into attached par/bracket children)
+                    HandleNodeSingleLine(n);
+                }
+                else
+                {
+                    // skip recursing into Par/Bracket nodes here
+                    if (n.nodeType == ENodeType.Par || n.nodeType == ENodeType.Bracket) continue;
+                    HandleNodeSingleLine(n);
+                }
+            }
+        }
+        public void ParseRootNodeToFileMeta()
+        {
+            ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(m_FileMeta);
+            m_CurrentNodeInfoStack.Push(pcni);
+
+            Node pnode = m_RootNode;
+            bool hasNamespaceOrClass = false;
+            while(pnode.parseIndex < pnode.childList.Count)
+            { 
+                var node = m_RootNode.childList[pnode.parseIndex];
+                if( node.nodeType == ENodeType.LineEnd )
+                {
+                    pnode.parseIndex++;
+                    continue;
+                }
+                else if (node.nodeType == ENodeType.Comment)
+                {
+                    pnode.parseIndex++;
+                    continue;
+                }
+                else if (node.nodeType == ENodeType.Key)
+                {
+                    switch (node.token.type)
+                    {
+                        case ETokenType.TypeAlias:
+                            {
+                                if (hasNamespaceOrClass)
+                                {
+                                    Log.AddNodeLog(LID.ShowExtendMessage, node.token, "Error typealias 只能写在 import/local 后、namespace/class/data/enum 前");
+                                    pnode.parseIndex++;
+                                    break;
+                                }
+                                int ni = ConsumeTypeAliasAt(m_RootNode, pnode.parseIndex, false);
+                                if (ni > pnode.parseIndex)
+                                    pnode.parseIndex = ni;
+                                else
+                                    pnode.parseIndex++;
+                            }
+                            break;
+                        case ETokenType.Import:
+                            {
+                                ParseImport(pnode);
+                            }
+                            break;
+                        case ETokenType.Local:
+                            {
+                                // local{} must be after imports and before any namespace/class definitions.
+                                if (hasNamespaceOrClass)
+                                {
+                                    Log.AddFileMetaLog(LID.ShowExtendMessage, node.token, "Error local{} 只能写在 import 后、namespace/class/data/enum 前");
+                                    pnode.parseIndex++;
+                                    break;
+                                }
+
+                                ParseLocal(pnode);
+                            }
+                            break;
+                        case ETokenType.Namespace:
+                            {
+                                hasNamespaceOrClass = true;
+                                ParseNamespace(pnode);
+                            }
+                            break;
+                        case ETokenType.Const:
+                        case ETokenType.Data:
+                        case ETokenType.Enum:
+                        case ETokenType.Class:
+                        case ETokenType.Interface:
+                        case ETokenType.Extern:
+                        case ETokenType.Public:
+                        case ETokenType.Private:
+                        case ETokenType.Projected:
+                        case ETokenType.Partial:
+                            {
+                                hasNamespaceOrClass = true;
+                                ParseNamespaceOrTopClass(pnode);
+                            }
+                            break;
+                        default:
+                            {
+                                Log.AddNodeLog( LID.ShowExtendMessage, node.token, "Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
+                            }
+                            break;
+                    }
+                }
+                else if (node.nodeType == ENodeType.IdentifierLink)
+                {
+                    ParseNamespaceOrTopClass(pnode);
+                }
+                else
+                {
+                    Log.AddNodeLog(LID.ShowExtendMessage, node.token, "Error 不允许 在File头级目录中出现2 : " + node.token?.lexeme.ToString());
+                }
+            }
+
+            var fileCode = m_CurrentNodeInfoStack.Pop();
+
+            if (fileCode.parseType == EParseNodeType.File)
+            {
+#if DEBUG
+                m_FileMeta.SetDeep(0);
+#endif
+
+                //Log.AddNodeLog( LID.ShowExtendMessage, "解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了  "
+                //+ "生成FileMeta文件成功!!! 下一步，可以 进行混合了");
+                return;
+            }
+            else
+            {
+
+                Log.AddNodeLog( LID.ShowExtendMessage, $"[{m_FileMeta.path}]解析出现错误 ParseFile : " + currentNodeInfo.parseType.ToString() );
+                return;
+            }
+        }
         private void ParseLeadingAttributes(Node pnode, ref int index, List<FileMetaAttributeSyntax> list)
         {
             if (pnode == null) return;
@@ -108,387 +455,6 @@ namespace SimpleLanguage.Compile
                     break;
                 }
             }
-        }
-        public class ParseCurrentNodeInfo  //1111
-        {
-            public EParseNodeType parseType;
-            public FileMeta codeFile = null;
-            public FileMetaNamespace codeNamespace = null;
-            public FileMetaClass codeClass = null;
-            public FileMetaMemberData codeData = null;
-            public FileMetaMemberFunction codeFunction = null;
-            public FileMetaSyntax codeSyntax = null;
-
-            public ParseCurrentNodeInfo(FileMeta cf)
-            {
-                codeFile = cf;
-                parseType = EParseNodeType.File;
-            }
-            public ParseCurrentNodeInfo(FileMetaNamespace nsn)
-            {
-                codeNamespace = nsn;
-                parseType = EParseNodeType.Namespace;
-            }
-            public ParseCurrentNodeInfo(FileMetaClass nsc)
-            {
-                codeClass = nsc;
-                parseType = EParseNodeType.Class;
-            }
-            public ParseCurrentNodeInfo(FileMetaMemberData fmmd)
-            {
-                codeData = fmmd;
-                parseType = EParseNodeType.DataMemeber;
-            }
-            public ParseCurrentNodeInfo(FileMetaMemberFunction nsf)
-            {
-                codeFunction = nsf;
-                parseType = EParseNodeType.Function;
-            }           
-            public ParseCurrentNodeInfo(FileMetaSyntax nss)
-            {
-                codeSyntax = nss;
-                parseType = EParseNodeType.Statements;
-            }
-        }
-        protected ParseCurrentNodeInfo currentNodeInfo
-        {
-            get
-            {
-                if (m_CurrentNodeInfoStack.Count == 0) return null;
-
-                return m_CurrentNodeInfoStack.Peek();
-            }
-        }
-
-
-        protected FileMeta m_FileMeta;
-        protected Stack<ParseCurrentNodeInfo> m_CurrentNodeInfoStack = new Stack<ParseCurrentNodeInfo>();
-
-        protected Node m_RootNode = null;
-        public StructParse(FileMeta fm, Node node    )
-        {
-            m_FileMeta = fm;
-            m_RootNode = node;
-        }
-        private void AddParseFileNodeInfo()
-        {
-            ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(m_FileMeta);
-            m_CurrentNodeInfoStack.Push(pcni);
-        }
-        public void AddParseNamespaceNodeInfo(FileMetaNamespace fmn)
-        {
-            if (currentNodeInfo.parseType == EParseNodeType.File)
-            {
-                currentNodeInfo.codeFile.AddFileMetaAllNamespace(fmn);
-            }
-            else if (currentNodeInfo.parseType == EParseNodeType.Namespace)
-            {
-                currentNodeInfo.codeNamespace.AddFileNamespace(fmn);
-            }
-
-            ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmn);
-            m_CurrentNodeInfoStack.Push(pcni);
-        }
-        public void AddParseClassNodeInfo(FileMetaClass fmc)
-        {
-            if (currentNodeInfo.parseType == EParseNodeType.File)
-            {
-                currentNodeInfo.codeFile.AddFileMetaClass(fmc);
-            }
-            else if (currentNodeInfo.parseType == EParseNodeType.Namespace)
-            {
-                currentNodeInfo.codeNamespace.AddFileMetaClass(fmc);
-            }
-            else if (currentNodeInfo.parseType == EParseNodeType.Class)
-            {
-                currentNodeInfo.codeClass.AddFileMetaClass(fmc);
-            }
-            else
-            {
-                Log.AddNodeLog(LID.ShowExtendMessage, "错误 !!1 AddParseClassNodeInfo");
-                return;
-            }
-
-        
-            m_FileMeta.AddFileMetaAllClass(fmc);
-
-            ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmc);
-            m_CurrentNodeInfoStack.Push(pcni);
-        }
-        public void AddParseVariableInfo(FileMetaMemberVariable csv)
-        {
-            if (currentNodeInfo.parseType == EParseNodeType.Class)
-            {
-                currentNodeInfo.codeClass.AddFileMemberVariable(csv);
-            }
-            else
-            {
-                Log.AddNodeLog(LID.ShowExtendMessage, "错误 !!1 AddParseVariableInfo");
-                return;
-            }
-        }
-        public void AddParseDataInfo(FileMetaMemberData fmmd)
-        {
-            if (currentNodeInfo.parseType == EParseNodeType.Class)
-            {
-                currentNodeInfo.codeClass.AddFileMemberData(fmmd);
-            }
-            else if (currentNodeInfo.parseType == EParseNodeType.DataMemeber )
-            {
-                currentNodeInfo.codeData.AddFileMemberData(fmmd);
-            }
-            else
-            {
-                Log.AddNodeLog(LID.ShowExtendMessage, "错误 !!1 AddParseFunctionNodeInfo");
-                return;
-            }
-
-            ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmmd);
-
-            m_CurrentNodeInfoStack.Push(pcni);
-        }
-        public void AddParseFunctionNodeInfo(FileMetaMemberFunction fmmf, bool isPush = true)
-        {
-            if (currentNodeInfo.parseType == EParseNodeType.Class)
-            {
-                currentNodeInfo.codeClass.AddFileMemberFunction(fmmf);
-            }
-            else
-            {
-                Log.AddNodeLog(LID.ShowExtendMessage, "错误 !!1 AddParseFunctionNodeInfo");
-                return;
-            }
-
-            if (isPush)
-            {
-                ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmmf);
-
-                m_CurrentNodeInfoStack.Push(pcni);
-            }
-        }
-        public void AddParseSyntaxNodeInfo(FileMetaSyntax fms, bool isAddParseCurrentNNode = false)
-        {
-            if (currentNodeInfo.parseType == EParseNodeType.Function)
-            {
-                currentNodeInfo.codeFunction.AddFileMetaSyntax(fms);
-            }
-            else if (currentNodeInfo.parseType == EParseNodeType.Statements)
-            {
-                currentNodeInfo.codeSyntax.AddFileMetaSyntax(fms);
-            }
-            else
-            {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "错误 !!1 AddParseFunctionNodeInfo");
-                return;
-            }
-
-            if (isAddParseCurrentNNode)
-            { 
-                ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fms);
-                m_CurrentNodeInfoStack.Push(pcni);
-            }
-        }
-
-        // Normalize single-line sequences: attach trailing (), [] to the preceding
-        // IdentifierLink (or its last extend link). When attached, the bracket/par children
-        // are not recursively processed here — they remain as part of the attached node.
-        private void HandleNodeSingleLine(Node root)
-        {
-            if (root == null) return;
-
-            for (int i = 0; i < root.childList.Count; i++)
-            {
-                var n = root.childList[i];
-                if (n == null) continue;
-
-                if (n.nodeType == ENodeType.IdentifierLink)
-                {
-                    int j = i + 1;
-                    while (j < root.childList.Count)
-                    {
-                        var s = root.childList[j];
-                        if (s == null) { j++; continue; }
-
-                        if (s.nodeType == ENodeType.LineEnd || s.nodeType == ENodeType.SemiColon)
-                            break;
-
-                        // target is identifier or its deepest extend link
-                        Node target = n;
-                        if (n.extendLinkNodeList != null && n.extendLinkNodeList.Count > 0)
-                            target = n.extendLinkNodeList[n.extendLinkNodeList.Count - 1];
-
-                        if (s.nodeType == ENodeType.Par)
-                        {
-                            // bind parentheses to target
-                            target.SetParNode(s);
-                            // remove from root list so it's not processed as sibling
-                            root.childList.RemoveAt(j);
-                            // continue at same index j
-                            continue;
-                        }
-                        else if (s.nodeType == ENodeType.Bracket)
-                        {
-                            // add bracket node to target's bracket list
-                            target.AddBracketNode(s);
-                            root.childList.RemoveAt(j);
-                            continue;
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    // recurse into identifier itself (but not into attached par/bracket children)
-                    HandleNodeSingleLine(n);
-                }
-                else
-                {
-                    // skip recursing into Par/Bracket nodes here
-                    if (n.nodeType == ENodeType.Par || n.nodeType == ENodeType.Bracket) continue;
-                    HandleNodeSingleLine(n);
-                }
-            }
-        }
-        public void ParseRootNodeToFileMeta()
-        {
-            AddParseFileNodeInfo();
-
-            Node pnode = m_RootNode;
-            bool hasImport = false;
-            bool hasNamespaceOrClass = false;
-            while(true)
-            {
-                if (pnode.parseIndex >= pnode.childList.Count)
-                {
-                    break;
-                }               
-                
-                var node = m_RootNode.childList[pnode.parseIndex];
-                if( node.nodeType == ENodeType.LineEnd )
-                {
-                    pnode.parseIndex++;
-                    continue;
-                }
-
-                if (node.nodeType == ENodeType.Key)
-                {
-                    switch (node.token.type)
-                    {
-                        case ETokenType.TypeAlias:
-                            {
-                                if (hasNamespaceOrClass)
-                                {
-                                    Log.AddNodeLog(LID.ShowExtendMessage, "Error typealias 只能写在 import/local 后、namespace/class/data/enum 前");
-                                    pnode.parseIndex++;
-                                    break;
-                                }
-                                int ni = ConsumeTypeAliasAt(m_RootNode, pnode.parseIndex, false);
-                                if (ni > pnode.parseIndex)
-                                    pnode.parseIndex = ni;
-                                else
-                                    pnode.parseIndex++;
-                            }
-                            break;
-                        case ETokenType.Import:
-                            {
-                                hasImport = true;
-                                ParseImport(pnode);
-                            }
-                            break;
-                        case ETokenType.Local:
-                            {
-                                // local{} must be after imports and before any namespace/class definitions.
-                                if (hasNamespaceOrClass)
-                                {
-                                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error local{} 只能写在 import 后、namespace/class/data/enum 前");
-                                    pnode.parseIndex++;
-                                    break;
-                                }
-
-                                ParseLocal(pnode);
-                            }
-                            break;
-                        //case ETokenType.Global:
-                        //    {
-                        //        if (hasNamespaceOrClass)
-                        //        {
-                        //            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error global{} 只能写在 import 后、namespace/class/data/enum 前");
-                        //            Debug.Assert(false, "");
-                        //            pnode.parseIndex++;
-                        //            break;
-                        //        }
-
-                        //        if (!m_FileMeta.path.EndsWith(".sp", System.StringComparison.OrdinalIgnoreCase))
-                        //        {
-                        //            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error global{} 只能出现在 .sp 文件中");
-                        //            pnode.parseIndex++;
-                        //            break;
-                        //        }
-
-                        //        ParseGlobal(pnode);
-                        //    }
-                        //    break;
-                        case ETokenType.Namespace:
-                            {
-                                hasNamespaceOrClass = true;
-                                ParseNamespace(pnode);
-                            }
-                            break;
-                        case ETokenType.Const:
-                        case ETokenType.Data:
-                        case ETokenType.Enum:
-                        case ETokenType.Class:
-                        case ETokenType.Extern:
-                        case ETokenType.Public:
-                        case ETokenType.Private:
-                        case ETokenType.Projected:
-                        case ETokenType.Partial:
-                            {
-                                hasNamespaceOrClass = true;
-                                ParseNamespaceOrTopClass(pnode);
-                            }
-                            break;
-                        default:
-                            {
-                                Log.AddNodeLog( LID.ShowExtendMessage, "Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
-                            }
-                            break;
-                    }
-                }
-                else if (node.nodeType == ENodeType.IdentifierLink)
-                {
-                    ParseNamespaceOrTopClass(pnode);
-                }
-                else if( node.nodeType == ENodeType.Comment )
-                {
-                    pnode.parseIndex++;
-                    continue;
-                }
-                else
-                {
-                    Log.AddNodeLog(LID.ShowExtendMessage, node.token, "Error 不允许 在File头级目录中出现2 : " + node.token?.lexeme.ToString());
-                }
-            }
-
-            var fileCode = m_CurrentNodeInfoStack.Pop();
-
-            if (fileCode.parseType == EParseNodeType.File)
-            {
-#if DEBUG
-                m_FileMeta.SetDeep(0);
-#endif
-
-                //Log.AddNodeLog( LID.ShowExtendMessage, "解析成Code代码结构文件成功!!! 下一步，可以生产Meta文件了  "
-                //+ "生成FileMeta文件成功!!! 下一步，可以 进行混合了");
-            }
-            else
-            {
-
-                Log.AddNodeLog( LID.ShowExtendMessage, "解析出现错误 ParseFile : " + currentNodeInfo.parseType.ToString() );
-                return;
-            }
-            return;
         }
         public List<Node> GetAllNodeToSemiColon(Node pnode, bool isAddSelf = false)
         {
@@ -683,7 +649,6 @@ namespace SimpleLanguage.Compile
             m_FileMeta.AddTypeAliasDecl(new FileMetaTypeAliasDecl(aliasName, fmcd, projectScope));
             return i;
         }
-
         private bool TryParseLocalFunction(Node ownerBlock, FileMetaLocalSyntax fls, List<Node> lineNodes, ref bool hasFunction)
         {
             int dummy = -1;
@@ -752,7 +717,6 @@ namespace SimpleLanguage.Compile
                 }
             }
         }
-
         private bool TryParseGlobalOrLocalFunction(Node ownerBlock, FileMetaLocalSyntax syntax, List<Node> lineNodes, ref bool hasFunction, ref int contentIndex, bool isLocal)
         {
             if (lineNodes == null || lineNodes.Count == 0) return false;
@@ -914,14 +878,6 @@ namespace SimpleLanguage.Compile
             //{
             //    m_FileMeta.AddFileSearchNamespace(fmn);
             //}
-        }
-        public static bool CheckEnd(Node pnode)
-        {
-            if (pnode.parseIndex >= pnode.childList.Count)
-            {
-                return true;
-            }
-            return false;
         }
         // 只解析 在全局文件下的 namespace 下 的 还有就是文件class
         public void ParseNamespaceOrTopClass(Node pnode)
@@ -1961,82 +1917,7 @@ namespace SimpleLanguage.Compile
                 //}
                 #endregion
             }
-        }
-        /*
-        public void ParseParContrent(Node pnode)
-        {
-            // [] 解析中括号里边的内容
-            Node bracketNode = pnode.bracketNode;
-            int index1 = bracketNode.parseIndex;
-            for (index1 = bracketNode.parseIndex; index1 < bracketNode.childList.Count;)
-            {
-                var curNode = bracketNode.childList[index1++];
-
-                if (curNode.nodeType == ENodeType.Brace)  //Class1 [{},{}]
-                {
-                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.NoNameClass);
-
-                    AddParseVariableInfo(fmmd);
-
-                    ParseCommon(curNode);
-
-                    m_CurrentNodeInfoStack.Pop();
-                }
-                else if (curNode.nodeType == ENodeType.ConstValue)   // ["stringValue","Stvlue"]
-                {
-                    //FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.Value);
-
-                    //currentNodeInfo.codeData.AddFileMemberData(fmmd);
-
-                    if (ProjectManager.isUseForceSemiColonInLineEnd)
-                    {
-                        var next3Node = bracketNode.childList[index1 + 1];
-                        if (next3Node?.nodeType != ENodeType.SemiColon)
-                        {
-                            Debug.WriteLine("Error 应该使用;结束语句!!");
-                        }
-                    }
-                }
-                else if (curNode?.nodeType == ENodeType.Bracket) // [[],[]]
-                {
-                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, FileMetaMemberVariable.EMemberDataType.Array);
-
-                    //AddParseDataInfo(fmmd);
-                    AddParseVariableInfo(fmmd);
-
-                    //ParseDataNode(curNode);
-                    ParseCommon(curNode);
-
-                    m_CurrentNodeInfoStack.Pop();
-                }
-                else if (curNode.nodeType == ENodeType.Comma)
-                {
-                    continue;
-                }
-                else if (curNode.nodeType == ENodeType.LineEnd)
-                {
-                    continue;
-                }
-                else
-                {
-                    Debug.WriteLine("Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
-                    continue;
-                }
-            }
-            bracketNode.parseIndex = index1;
-
-            //ParseDataNode(bracketNode);
-            ParseCommon(bracketNode);
-        }
-        void AddFileMetaMemberVariable( Node pnode, List<Node> nodeList )
-        {
-            FileMetaMemberVariable cpv = new FileMetaMemberVariable(m_FileMeta, nodeList);
-
-            AddParseVariableInfo(cpv);
-
-            ParseCommon(pnode);
-        }
-        */
+        }        
         void AddFileMetaClasss( Node blockNode, List<Node> nodeList)
         {
             FileMetaClass cpc = new FileMetaClass(m_FileMeta, nodeList);
@@ -2080,16 +1961,6 @@ namespace SimpleLanguage.Compile
                 HandleCreateFileMetaSyntaxByPNode(pnode);
             }
             ParseSyntax(pnode);
-        }
-        private static void HandleNodeSingleLine_Recursive(Node node)
-        {
-            if (node == null) return;
-            if (node.childList == null || node.childList.Count == 0) return;
-
-            node.parseIndex = 0;
-            var newList = HandleNodeSingleLine(node.childList);
-            node.SetChildList(newList);
-            node.parseIndex = 0;
         }
 
         public static Stack<Node> lastAttachableStack = new Stack<Node>();
@@ -2390,6 +2261,16 @@ namespace SimpleLanguage.Compile
             return handleBeforeList;
         }
         /*
+        private static void HandleNodeSingleLine_Recursive(Node node)
+        {
+            if (node == null) return;
+            if (node.childList == null || node.childList.Count == 0) return;
+
+            node.parseIndex = 0;
+            var newList = HandleNodeSingleLine(node.childList);
+            node.SetChildList(newList);
+            node.parseIndex = 0;
+        }
         public static List<Node> HandleBeforeNode(Node node )
         {
             List<Node> handleBeforeList = new List<Node>();

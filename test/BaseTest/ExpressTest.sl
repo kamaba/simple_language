@@ -1,4 +1,4 @@
-namespace Application.Core
+import Application
 
 ClassX
 {
@@ -28,7 +28,7 @@ Class1
 
     int x1 = 10 + (1 - 20) * 33 / 20 + 10 / 20 - 22 * 2 / 1
 
-    static print2(int p1 = (20 / (11 / 11) + 1), int p2 = 2 + 20 / (10 * 10))
+    static print2(int p1 = int(20 / (11 / 11) + 1), int p2 = int(2 + 20 / (10 * 10)) )
     {
         global.println("p1=" + p1 + " p2=" + p2)
     }
@@ -290,8 +290,8 @@ ExpressTest
         global.println("null ?? default = " + result1)
         global.println("hello ?? default = " + result2)
 
-        int? n1 = null
-        int? n2 = 10
+        int n1 = null
+        int n2 = 10
         int result3 = n1 ?? 0
         int result4 = n2 ?? 0
         global.println("null ?? 0 = " + result3.toString())
@@ -416,7 +416,7 @@ ExpressTest
         int result = (a + b) * c / (b - a) + (a > b ? a : b) * 2
         global.println("complex expression result = " + result.toString())
 
-        bool condition = a < b && b < c || a == 10
+        bool condition = a < b && b > c || a == 10
         global.println("complex bool expression = " + condition.toString())
 
         int nested = ((a + b) * (c - a)) / (b / 2) + (a % b)

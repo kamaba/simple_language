@@ -323,6 +323,14 @@ namespace SimpleLanguage.Compile
                         m_TokenIndex++;
                     }
                     break;
+                case ETokenType.EmptyRet: //??
+                    {
+                        Node node = new Node(token);
+                        node.nodeType = ENodeType.DoubleQuestion;
+                        m_CurrentNode.AddChild(node);
+                        m_TokenIndex++;
+                    }
+                    break;
                 case ETokenType.Colon:       //:
                     {
                         Node node = new Node(token);

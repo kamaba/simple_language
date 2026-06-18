@@ -43,6 +43,7 @@ namespace SimpleLanguage.Compile
         Period,
         Comma,
         QuestionMark,
+        DoubleQuestion,
         Colon,
         SemiColon,
         LineEnd,

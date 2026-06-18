@@ -220,6 +220,11 @@ namespace SimpleLanguage.Core
                             MetaThreeItemExpressNode mis = new MetaThreeItemExpressNode(ownerBase, cep.ownerMBS, fmtist );
                             return mis;
                         }
+                    case FileMetaEmptyRetSyntaxTerm fmerst:
+                        {
+                            MetaEmptyRetExpressNode mern = new MetaEmptyRetExpressNode(ownerBase, cep.ownerMBS, fmerst);
+                            return mern;
+                        }
                     case FileMetaCallTerm fmct:     //className.functionname().varname;
                         {
                             MetaCallLinkExpressNode men2 = new MetaCallLinkExpressNode(fmct.callLink, ownerBase, cep.ownerMBS, cep.equalMetaVariable );
@@ -275,9 +280,9 @@ namespace SimpleLanguage.Core
 
                 if (leftNode != null && rightNode != null)
                 {
-                    if (root is FileMetaSymbolTerm)
+                    if (root is FileMetaSymbolTerm fmst)
                     {
-                        return new MetaOpExpressNode(root as FileMetaSymbolTerm, cep.metaType, leftNode, rightNode);
+                        return new MetaOpExpressNode(fmst, cep.metaType, leftNode, rightNode);
                     }
                     else
                     {

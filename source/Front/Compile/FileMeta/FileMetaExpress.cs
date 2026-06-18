@@ -276,6 +276,11 @@ namespace SimpleLanguage.Compile
                         priority = SignComputePriority.Level9_And;
                     }
                     break;
+                case ETokenType.EmptyRet:        // ??
+                    {
+                        priority = SignComputePriority.Level9_AsOsIs;
+                    }
+                    break;
                 case ETokenType.PlusAssign:             // +=
                 case ETokenType.MinusAssign:            // -=
                 case ETokenType.MultiplyAssign:         // *=
@@ -1230,7 +1235,7 @@ namespace SimpleLanguage.Compile
         private FileMetaBaseTerm m_Return2Term = null;
         private FileMetaBaseTerm m_ConditionTerm = null;
         public FileMetaThreeItemSyntaxTerm(FileMeta fm, List<Node> conditionNodeList,
-            List<Node> returnNode1List, List<Node> returnNode2List )
+            List<Node> returnNode1List, List<Node> returnNode2List)
         {
             m_FileMeta = fm;
 
@@ -1270,7 +1275,53 @@ namespace SimpleLanguage.Compile
             sb.Append(m_Return1Term.ToString());
             sb.Append(" : ");
             sb.Append(m_Return2Term.ToString());
-   
+
+
+            return sb.ToString();
+        }
+    }
+    // express ? var/const : var2/const2
+    public class FileMetaEmptyRetSyntaxTerm : FileMetaBaseTerm
+    {
+        public FileMetaEmptyRetSyntaxTerm(FileMeta fm, Node sign, List<Node> returnNode1List, List<Node> returnNode2List)
+        {
+            m_FileMeta = fm;
+
+            m_Token = sign.token;
+            m_Left = FileMetatUtil.CreateFileMetaExpress(fm, returnNode1List, FileMetaTermExpress.EExpressType.Common);
+            m_Right = FileMetatUtil.CreateFileMetaExpress(fm, returnNode2List, FileMetaTermExpress.EExpressType.Common);
+        }
+
+        public override bool BuildAST()
+        {
+            m_Root = this;
+            return true;
+        }
+        public override void SetDeep(int _deep)
+        {
+            m_Deep = _deep;
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(m_Left.ToFormatString());
+            sb.Append(" ");
+            sb.Append(m_Token.lexeme.ToString());
+            sb.Append(" ");
+            sb.Append(m_Right.ToFormatString());
+
+
+            return sb.ToString();
+        }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(m_Left.ToString());
+            sb.Append(m_Token.lexeme.ToString());
+            sb.Append(m_Right.ToString());
+
 
             return sb.ToString();
         }
@@ -1430,6 +1481,11 @@ namespace SimpleLanguage.Compile
                 {
                     // 三元表达式在 FileMetatUtil.CreateFileMetaExpress 中统一处理，这里不再直接创建
                     Log.AddFileMetaLog(LID.ShowExtendMessage, "Warning 在表达式中检测到三元运算符'?'，请通过 CreateFileMetaExpress 入口创建表达式");
+                }
+                else if( node.nodeType == ENodeType.DoubleQuestion )
+                {
+                    // ?? 表达式在 FileMetatUtil.CreateFileMetaExpress 中统一处理，这里不再直接创建
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Warning 在表达式中检测到空合并运算符'??'，请通过 CreateFileMetaExpress 入口创建表达式");
                 }
                 else if( node.nodeType == ENodeType.Bracket )
                 {

@@ -273,6 +273,10 @@ namespace SimpleLanguage.Compile
                 {
                     keynodeStruct.AddContent(curNode);
                 }
+                else if (curNodeType == ENodeType.DoubleQuestion)
+                {
+                    keynodeStruct.AddContent(curNode);
+                }
                 else if (curNodeType == ENodeType.Colon)
                 {
                     keynodeStruct.AddContent(curNode);

@@ -85,6 +85,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.XOR:             //  ^
                 case ETokenType.Or:              // ||
                 case ETokenType.And:             // &&  
+                case ETokenType.EmptyRet:        // ??
                 case ETokenType.PlusAssign:             // +=
                 case ETokenType.MinusAssign:            // -=
                 case ETokenType.MultiplyAssign:         // *=
@@ -258,8 +259,43 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                // 2) 当前层不存在顶层 ?:，再判断 as/is
-                int asIsIndex = -1;
+                // 2) 当前层不存在顶层 ?:，再判断 ??
+                int emptyRetIndex = -1;
+                depth = 0;
+                Node emptyRetQuestion = null;
+                for (int i = 0; i < nodeList.Count; i++)
+                {
+                    var n = nodeList[i];
+                    if (n.nodeType == ENodeType.Par || n.nodeType == ENodeType.Brace || n.nodeType == ENodeType.Bracket)
+                    {
+                        depth++;
+                    }
+                    else if (depth > 0)
+                    {
+                        if (n.nodeType == ENodeType.Par || n.nodeType == ENodeType.Brace || n.nodeType == ENodeType.Bracket)
+                        {
+                            depth--;
+                        }
+                        continue;
+                    }
+                    else if (n.nodeType == ENodeType.DoubleQuestion)
+                    {
+                        emptyRetIndex = i;
+                        emptyRetQuestion = n;
+                        break;
+                    }
+                }
+
+                if (emptyRetIndex > 0 && emptyRetIndex < nodeList.Count - 1)
+                {
+                    var leftList = nodeList.GetRange(0, emptyRetIndex);
+                    var rightList = nodeList.GetRange(emptyRetIndex + 1, nodeList.Count - emptyRetIndex - 1);
+                    fmbt = new FileMetaEmptyRetSyntaxTerm(fm, emptyRetQuestion, leftList, rightList);
+                }
+                else
+                {
+                    // 3) 当前层不存在顶层 ??，再判断 as/is
+                    int asIsIndex = -1;
                 for (int i = 0; i < nodeList.Count; i++)
                 {
                     var t = nodeList[i].token?.type;
@@ -317,10 +353,11 @@ namespace SimpleLanguage.Compile
                     }
                 }
 
-                // 3) 既不是 ?: 也不是 as/is，则作为普通表达式交给 FileMetaTermExpress
+                // 4) 既不是 ?: 也不是 ?? 也不是 as/is，则作为普通表达式交给 FileMetaTermExpress
                 if (fmbt == null)
                 {
                     fmbt = new FileMetaTermExpress(fm, nodeList, expressType);
+                }
                 }
             }
 
