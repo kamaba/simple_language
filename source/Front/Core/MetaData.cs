@@ -12,7 +12,7 @@ namespace SimpleLanguage.Core
     {
         /// <summary>源码绑定（用于 IR 导出路径等），可能为 null（如纯运行时匿名 data）。</summary>
         public FileMetaClass boundFileMetaClass => m_FileMetaClass;
-        public string allName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
+        public override string allName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
         public bool isConst => m_IsConst;
         public bool isStatic => m_IsStatic;
         public bool isDynamic=>m_IsDynamic;

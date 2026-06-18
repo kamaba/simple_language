@@ -17,7 +17,7 @@ namespace SimpleLanguage.Core
 {
     public class MetaEnum : MetaBase
     {
-        public string allName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
+        public override string allName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
         public MetaClass extendClass => m_ExtendClass;
         public MetaData extendMetaData => m_ExtendMetaData;
         public Dictionary<string, MetaMemberEnum> metaMemberEnumDict => m_MetaMemberEnumDict;

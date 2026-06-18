@@ -302,7 +302,7 @@ namespace SimpleLanguage.Core
                         List<Node> nodeList = tp.rootNode.childList;
                         if (nodeList.Count > 0)
                         {
-                            List<Node> expressNodeList = StructParse.HandleNodeSingleLine(nodeList);
+                            List<Node> expressNodeList = StructParse.HandleNodeNestedStructure(nodeList);
                             //var elnd = nodeList[nodeList.Count - 1].extendLinkNodeList;
                             //for ( int j = 0; j < elnd.Count; j++ )
                             //{

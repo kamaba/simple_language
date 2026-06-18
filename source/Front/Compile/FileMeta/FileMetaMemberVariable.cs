@@ -135,7 +135,7 @@ namespace SimpleLanguage.Compile
             //beforeNode.SetChildList(bedoreNodeList);
             //beforeNode.parseIndex = 0;
             //var defineNodeList = StructParse.HandleBeforeNode(beforeNode);
-            var defineNodeList = StructParse.HandleNodeSingleLine(bedoreNodeList);
+            var defineNodeList = StructParse.HandleNodeNestedStructure(bedoreNodeList);
 
             Node typeNode = null;
             if (!GetNameAndTypeToken(defineNodeList, out typeNode ))

@@ -25,7 +25,6 @@ namespace SimpleLanguage.Core
     public partial class MetaClass : MetaBase
     {
         public List<MetaAttribute> attributeList => m_AttributeList;
-        public string allName=> this.m_AllName;
         public bool isAbstractClass => m_IsAbstractClass;
         public bool allowExtendsClassWithTemplate => m_GenMetaClassTemplateList.Count > 0 ;             //允许继承类 是否可携带模板  像 ListInt : List<int>{} ListIntEx<T> : List<int> 这种情况不允许
         public MetaClass extendClass => m_ExtendClass;

@@ -350,6 +350,7 @@ namespace SimpleLanguage.Compile
                 Log.AddFileMetaLog(LID.ShowExtendMessage, "Error FileMetaAsOrIsTerm 参数不合法，无法构造 as/is 表达式");
                 return;
             }
+            typeNodes = StructParse.HandleNodeNestedStructure(typeNodes);
 
             m_AsOrIsToken = asOrisToken;
             m_Token = m_AsOrIsToken;
@@ -1375,7 +1376,7 @@ namespace SimpleLanguage.Compile
             //Node tn = new Node( null );
             //tn.SetChildList( nodeList );
             //var childList = StructParse.HandleExpressNode(tn);
-            var childList = StructParse.HandleNodeSingleLine(nodeList);
+            var childList = StructParse.HandleNodeNestedStructure(nodeList);
 
             expressType = _expressType;
 

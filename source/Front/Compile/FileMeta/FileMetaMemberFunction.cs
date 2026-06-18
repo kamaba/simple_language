@@ -40,7 +40,7 @@ namespace SimpleLanguage.Compile
             //beforeNode.SetChildList(inputNodeList);
             //beforeNode.parseIndex = 0;
             //var nodeList = StructParse.HandleBeforeNode(beforeNode);
-            var nodeList = StructParse.HandleNodeSingleLine(inputNodeList);
+            var nodeList = StructParse.HandleNodeNestedStructure(inputNodeList);
 
             if (!FileMetatUtil.SplitNodeList(nodeList, listDefieNode, valueNodeList, ref m_AssignToken))
             {
@@ -244,7 +244,7 @@ namespace SimpleLanguage.Compile
             //Node node = new Node(null);
             //node.childList.AddRange(nodeList);
             //var nodeList2 = StructParse.HandleBeforeNode(node);
-            var nodeList2 = StructParse.HandleNodeSingleLine(nodeList);
+            var nodeList2 = StructParse.HandleNodeNestedStructure(nodeList);
 
             while (addCount < nodeList2.Count)
             {

@@ -348,7 +348,6 @@ namespace SimpleLanguage.Compile
                     {
                         // 右侧类型可能是拆开的泛型节点（例如 Array < Object >），
                         // 先做单行节点归并，确保 as/is 能拿到完整类型定义。
-                        typeNodes = StructParse.HandleNodeSingleLine(typeNodes);
                         fmbt = new FileMetaAsOrIsTerm(fm, leftNodes, asIsNode.token, typeNodes, optionalVarNode);
                     }
                 }

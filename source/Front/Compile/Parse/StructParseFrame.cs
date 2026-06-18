@@ -629,7 +629,7 @@ namespace SimpleLanguage.Compile
                 i++;
             }
 
-            var handled = HandleNodeSingleLine(typeNodes);
+            var handled = HandleNodeNestedStructure(typeNodes);
             Node typeRoot = null;
             for (int h = 0; h < handled.Count; h++)
             {
@@ -721,7 +721,7 @@ namespace SimpleLanguage.Compile
         {
             if (lineNodes == null || lineNodes.Count == 0) return false;
 
-            var normalizedNodes = HandleNodeSingleLine(new List<Node>(lineNodes));
+            var normalizedNodes = HandleNodeNestedStructure(lineNodes);
 
             bool isFunc = false;
             Node sigNode = null;
@@ -1964,7 +1964,7 @@ namespace SimpleLanguage.Compile
         }
 
         public static Stack<Node> lastAttachableStack = new Stack<Node>();
-        public static List<Node> HandleNodeSingleLine(List<Node> nodeList)
+        public static List<Node> HandleNodeNestedStructure(List<Node> nodeList)
         {
             List<Node> handleBeforeList = new List<Node>();
 
