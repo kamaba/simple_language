@@ -123,7 +123,7 @@ namespace SimpleLanguage.Compile
             {
                 if (afterNodeList.Count == 0)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "解析NodeStructVariable时有=号，但没有值内容 " + assignToken?.ToLexemeAllString() );
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, assignToken, "解析NodeStructVariable时有=号，但没有值内容 " + assignToken?.ToLexemeAllString() );
                     return false;
                 }
             }
@@ -131,7 +131,188 @@ namespace SimpleLanguage.Compile
             {
                 return false;
             }
+            preNodeList = FileMetatUtil.HandleClassDefineNodes(preNodeList);
+            afterNodeList = HandleExpressNodes(afterNodeList);
             return true;
+        }
+        public static List<Node> HandleClassDefineNodes(List<Node> nodeList)
+        {
+            List<Node> handleBeforeList = new List<Node>();
+
+            int index = 0;
+            Node lastNode = null;
+            while (index < nodeList.Count) 
+            {
+                // Start of a new identifier / 'new'
+                var v = nodeList[index++];
+                if (v.nodeType == ENodeType.IdentifierLink)
+                {
+                    lastNode = v;
+                    handleBeforeList.Add(v);
+                    continue;
+                }
+                if( lastNode != null)
+                {
+                    if (v.nodeType == ENodeType.Angle)
+                    {
+                        lastNode.SetAngleNode(v);
+                        var list1= HandleClassDefineNodes(v.childList);
+                        v.childList.AddRange(list1);
+                        continue;
+                    }
+                    else if ( v.nodeType == ENodeType.Bracket )
+                    {
+                        var list1 = HandleClassDefineNodes(v.childList);
+                        v.childList.AddRange(list1);
+                        continue;
+                    }
+                }
+                
+                handleBeforeList.Add(v);
+            }
+
+            return handleBeforeList;
+        }
+        public static List<Node> HandleExpressNodes(List<Node> nodeList)
+        {
+            List<Node> handleBeforeList = new List<Node>();
+
+            //handleBeforeList = nodeList;
+
+            Node lastAttachable = null;      // last IdentifierLink or 'new'
+            bool isGenericMode = false;      // true only if current identifier has a valid generic segment
+
+            int index = 0;
+            while( index < nodeList.Count )
+            {
+                var v = nodeList[index++];
+
+                // Start of a new identifier / 'new'
+                if (v.nodeType == ENodeType.IdentifierLink
+                    || v.nodeType == ENodeType.Angle || (v.token.type == ETokenType.This
+                        || v.token.type == ETokenType.Base))
+                {
+
+                    continue;
+                }
+
+                if (v.nodeType == ENodeType.Symbol)
+                {
+                    handleBeforeList.Add(v);
+                    lastAttachable = null;
+                    isGenericMode = false;
+                    continue;
+                }
+
+                // Function call: only fold if we are in generic or plain-call mode (not comparison mode)
+                if (v.nodeType == ENodeType.Par)
+                {
+                    //HandleNodeSingleLine_Recursive(v);
+                    if (lastAttachable != null && (isGenericMode || lastAttachable.angleNode == null))
+                    {
+                        // if the paren expression begins with an operator, do not treat as a call
+                        // instead treat as binary plus: append a '+' symbol and the paren as separate nodes
+                        bool startsWithOperator = false;
+                        if (v.childList != null && v.childList.Count > 0)
+                        {
+                            var first = v.childList[0];
+                            if (first.nodeType == ENodeType.Symbol)
+                            {
+                                var t = first.token.type;
+                                // treat *,/,% at start as binary operator (unlikely unary)
+                                if (t == ETokenType.Multiply || t == ETokenType.Divide || t == ETokenType.Modulo)
+                                {
+                                    startsWithOperator = true;
+                                }
+                                else if (t == ETokenType.Plus || t == ETokenType.Minus)
+                                {
+                                    // plus/minus can be unary. If the token after +/ - is an identifier, const, or a parenthesis/bracket/brace,
+                                    // then this is most likely a unary operator within the paren (e.g. ( -x ) or ( -f() )). In that case do not treat
+                                    // as a binary "startsWithOperator" for the parent call folding. Otherwise mark as startsWithOperator.
+                                    if (v.childList.Count > 1)
+                                    {
+                                        var second = v.childList[1];
+                                        // allow Key:this/base/new as unary operand starters as well
+                                        bool isUnaryStarter = second.nodeType == ENodeType.IdentifierLink
+                                            || second.nodeType == ENodeType.ConstValue
+                                            || second.nodeType == ENodeType.Par
+                                            || second.nodeType == ENodeType.Bracket
+                                            || second.nodeType == ENodeType.Brace
+                                            || (second.nodeType == ENodeType.Key && (second.token?.type == ETokenType.This
+                                            || second.token?.type == ETokenType.Base || second.token?.type == ETokenType.New));
+                                        if (!isUnaryStarter)
+                                        {
+                                            startsWithOperator = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        startsWithOperator = true;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (startsWithOperator)
+                        {
+                            // insert a '+' node then the paren node as normal nodes
+                            var plusToken = new Token("", ETokenType.Plus, "+", 0, 0);
+                            var plusNode = new Node(plusToken);
+                            handleBeforeList.Add(plusNode);
+                            handleBeforeList.Add(v);
+                            // reset lastAttachable so further attachments won't bind
+                            lastAttachable = null;
+                        }
+                        else
+                        {
+                            lastAttachable.finalNode.SetParNode(v);
+                        }
+                    }
+                    else
+                    {
+                        handleBeforeList.Add(v);
+                    }
+                    continue;
+                }
+
+                // Indexer: same rule as Par
+                if (v.nodeType == ENodeType.Bracket)
+                {
+                    //HandleNodeSingleLine_Recursive(v);
+                    if (lastAttachable != null)
+                    {
+                        lastAttachable.finalNode.AddBracketNode(v);
+                    }
+                    else
+                    {
+                        handleBeforeList.Add(v);
+                    }
+                    continue;
+                }
+
+                // Object/initializer block: same rule as Par
+                if (v.nodeType == ENodeType.Brace)
+                {
+                    //HandleNodeSingleLine_Recursive(v);
+                    if (lastAttachable != null && (isGenericMode || lastAttachable.angleNode == null))
+                    {
+                        lastAttachable.finalNode.SetBlockNode(v);
+                    }
+                    else
+                    {
+                        handleBeforeList.Add(v);
+                    }
+                    continue;
+                }
+
+                // Start of generic arguments: attach '<' node to identifier as angleNode.
+                // If later we do not see a matching valid '>' segment, we will roll back
+
+                // Other tokens are kept as-is
+                handleBeforeList.Add(v);
+            }
+
+            return handleBeforeList;
         }
         public static FileMetaBaseTerm CreateFileOneTerm( FileMeta fm, Node node, FileMetaTermExpress.EExpressType expressType)
         {

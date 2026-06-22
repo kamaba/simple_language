@@ -162,30 +162,32 @@ namespace SimpleLanguage.Compile
                             nnode = m_NodeList[addCount];
                         }
 
-                        if( nnode?.nodeType == ENodeType.LeftAngle )
+                        if( nnode?.angleNode != null)
                         {
+                            var childlist = nnode.childList;
                             int cAddCount = addCount + 1;
                             bool templateInExtends = false;
                             Node covarianceToken = null;
                             Node templateNode = null;
                             Node templateExtendsNode = null;
-                            while (cAddCount < m_NodeList.Count)
+                            while (cAddCount < childlist.Count)
                             {
-                                var cnode2 = m_NodeList[cAddCount++];
-                                if (cnode2.nodeType == ENodeType.RightAngle)
-                                {
-                                    if(templateNode == null )
-                                    {
-                                        var ld = Log.AddFileMetaLog(LID.ShowExtendMessage, "没有找到模板定义T");
-                                        ld.filePath = cnode2.token.path;
-                                        ld.sourceBeginLine = cnode2.token.sourceBeginLine;
-                                        break;
-                                    }
-                                    FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, covarianceToken, templateNode, templateExtendsNode);
-                                    m_TemplateDefineList.Add(fmtd);
-                                    break;
-                                }
-                                else if (cnode2.nodeType == ENodeType.Comma)
+                                var cnode2 = childlist[cAddCount++];
+                                //if (cnode2.nodeType == ENodeType.RightAngle)
+                                //{
+                                //    if (templateNode == null)
+                                //    {
+                                //        var ld = Log.AddFileMetaLog(LID.ShowExtendMessage, "没有找到模板定义T");
+                                //        ld.filePath = cnode2.token.path;
+                                //        ld.sourceBeginLine = cnode2.token.sourceBeginLine;
+                                //        break;
+                                //    }
+                                //    FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, covarianceToken, templateNode, templateExtendsNode);
+                                //    m_TemplateDefineList.Add(fmtd);
+                                //    break;
+                                //}
+                                //else 
+                                if (cnode2.nodeType == ENodeType.Comma)
                                 {
                                     FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, covarianceToken, templateNode, templateExtendsNode);
                                     m_TemplateDefineList.Add(fmtd);
@@ -200,8 +202,8 @@ namespace SimpleLanguage.Compile
                                     templateInExtends = true;
                                     continue;
                                 }
-                                else if ( (cnode2.nodeType == ENodeType.Key 
-                                    && (cnode2.token?.type == ETokenType.In || cnode2.token?.type == ETokenType.Out) )) // 协变 逆变
+                                else if ((cnode2.nodeType == ENodeType.Key
+                                    && (cnode2.token?.type == ETokenType.In || cnode2.token?.type == ETokenType.Out))) // 协变 逆变
                                 {
                                     covarianceToken = cnode2;
                                     continue;
@@ -219,11 +221,77 @@ namespace SimpleLanguage.Compile
                                 }
                                 else
                                 {
-                                    Log.AddFileMetaLog(LID.ShowExtendMessage,  cnode2.token, "Error 不支持其它格式 在类后续的模板限定中!");
+                                    Log.AddFileMetaLog(LID.ShowExtendMessage, cnode2.token, "Error 不支持其它格式 在类后续的模板限定中!");
                                 }
                             }
                             addCount = cAddCount;
+
+                            FileMetaTemplateDefine ffmtd = new FileMetaTemplateDefine(m_FileMeta, covarianceToken, templateNode, templateExtendsNode);
+                            m_TemplateDefineList.Add(ffmtd);
                         }
+
+                        //if ( nnode?.nodeType == ENodeType.LeftAngle )
+                        //{
+                        //    int cAddCount = addCount + 1;
+                        //    bool templateInExtends = false;
+                        //    Node covarianceToken = null;
+                        //    Node templateNode = null;
+                        //    Node templateExtendsNode = null;
+                        //    while (cAddCount < m_NodeList.Count)
+                        //    {
+                        //        var cnode2 = m_NodeList[cAddCount++];
+                        //        if (cnode2.nodeType == ENodeType.RightAngle)
+                        //        {
+                        //            if(templateNode == null )
+                        //            {
+                        //                var ld = Log.AddFileMetaLog(LID.ShowExtendMessage, "没有找到模板定义T");
+                        //                ld.filePath = cnode2.token.path;
+                        //                ld.sourceBeginLine = cnode2.token.sourceBeginLine;
+                        //                break;
+                        //            }
+                        //            FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, covarianceToken, templateNode, templateExtendsNode);
+                        //            m_TemplateDefineList.Add(fmtd);
+                        //            break;
+                        //        }
+                        //        else if (cnode2.nodeType == ENodeType.Comma)
+                        //        {
+                        //            FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, covarianceToken, templateNode, templateExtendsNode);
+                        //            m_TemplateDefineList.Add(fmtd);
+                        //            templateNode = null;
+                        //            templateExtendsNode = null;
+                        //            templateInExtends = false;
+                        //            continue;
+                        //        }
+                        //        else if (cnode2.nodeType == ENodeType.Colon
+                        //            || (cnode2.nodeType == ENodeType.Key && cnode2.token?.type == ETokenType.Colon))
+                        //        {
+                        //            templateInExtends = true;
+                        //            continue;
+                        //        }
+                        //        else if ( (cnode2.nodeType == ENodeType.Key 
+                        //            && (cnode2.token?.type == ETokenType.In || cnode2.token?.type == ETokenType.Out) )) // 协变 逆变
+                        //        {
+                        //            covarianceToken = cnode2;
+                        //            continue;
+                        //        }
+                        //        else if (cnode2.nodeType == ENodeType.IdentifierLink)
+                        //        {
+                        //            if (templateInExtends)
+                        //            {
+                        //                templateExtendsNode = cnode2;
+                        //            }
+                        //            else
+                        //            {
+                        //                templateNode = cnode2;
+                        //            }
+                        //        }
+                        //        else
+                        //        {
+                        //            Log.AddFileMetaLog(LID.ShowExtendMessage,  cnode2.token, "Error 不支持其它格式 在类后续的模板限定中!");
+                        //        }
+                        //    }
+                        //    addCount = cAddCount;
+                        //}
                     }
                 }
                 else
@@ -505,40 +573,41 @@ namespace SimpleLanguage.Compile
             {
                 var cnode2 = m_NodeList[cAddCount];
                 
-                if (cnode2.nodeType == ENodeType.RightAngle)
-                {
-                    if (curPST == null)
-                    {
-                        cAddCount++;
-                        break;
-                    }
-                    if (curPST.angleNode != null)
-                    {
-                        curPST.angleNode.endToken = cnode2.token;
-                        if (curPST.parentPSt == null)
-                        {
-                            cAddCount++;
-                            break;
-                        }
-                        else
-                        {
-                            curPST = curPST.parentPSt;
-                        }
-                    }
-                    else
-                    {
-                        if (curPST.parentPSt == null)
-                        {
-                            cAddCount++;
-                            break;
-                        }
-                        else
-                        {
-                            curPST = curPST.parentPSt;
-                        }
-                    }
-                }
-                else if (cnode2.nodeType == ENodeType.Comma)
+                //if (cnode2.nodeType == ENodeType.RightAngle)
+                //{
+                //    if (curPST == null)
+                //    {
+                //        cAddCount++;
+                //        break;
+                //    }
+                //    if (curPST.angleNode != null)
+                //    {
+                //        curPST.angleNode.endToken = cnode2.token;
+                //        if (curPST.parentPSt == null)
+                //        {
+                //            cAddCount++;
+                //            break;
+                //        }
+                //        else
+                //        {
+                //            curPST = curPST.parentPSt;
+                //        }
+                //    }
+                //    else
+                //    {
+                //        if (curPST.parentPSt == null)
+                //        {
+                //            cAddCount++;
+                //            break;
+                //        }
+                //        else
+                //        {
+                //            curPST = curPST.parentPSt;
+                //        }
+                //    }
+                //}
+                //else 
+                if (cnode2.nodeType == ENodeType.Comma)
                 {
                     cAddCount++;
                     continue;
@@ -563,12 +632,12 @@ namespace SimpleLanguage.Compile
                     if( cAddCount + 1 < m_NodeList.Count )
                     {
                         var nextNode = m_NodeList[cAddCount + 1];
-                        if (nextNode.nodeType == ENodeType.LeftAngle)
-                        {
-                            cAddCount++;
-                            newpst.angleNode = nextNode;
-                            curPST = newpst;
-                        }
+                        //if (nextNode.nodeType == ENodeType.LeftAngle)
+                        //{
+                        //    cAddCount++;
+                        //    newpst.angleNode = nextNode;
+                        //    curPST = newpst;
+                        //}
                     }                    
                 }
                 else if( cnode2.nodeType == ENodeType.Key && cnode2.token.type == ETokenType.Interface )

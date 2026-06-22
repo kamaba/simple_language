@@ -350,7 +350,7 @@ namespace SimpleLanguage.Compile
                 Log.AddFileMetaLog(LID.ShowExtendMessage, "Error FileMetaAsOrIsTerm 参数不合法，无法构造 as/is 表达式");
                 return;
             }
-            typeNodes = StructParse.HandleNodeNestedStructure(typeNodes);
+            typeNodes = FileMetatUtil.HandleClassDefineNodes(typeNodes);
 
             m_AsOrIsToken = asOrisToken;
             m_Token = m_AsOrIsToken;
@@ -1373,14 +1373,10 @@ namespace SimpleLanguage.Compile
         public FileMetaTermExpress( FileMeta fm, List<Node> nodeList, EExpressType _expressType = EExpressType.Common )
         {
             m_FileMeta = fm;
-            //Node tn = new Node( null );
-            //tn.SetChildList( nodeList );
-            //var childList = StructParse.HandleExpressNode(tn);
-            var childList = StructParse.HandleNodeNestedStructure(nodeList);
-
+            
             expressType = _expressType;
 
-            CreateFileMetaExpressByChildList(childList);
+            CreateFileMetaExpressByChildList(nodeList);
         }
         void CreateFileMetaExpressByChildList(List<Node> nodeList)
         {
@@ -1397,14 +1393,6 @@ namespace SimpleLanguage.Compile
                     AddFileMetaTerm(fmn);
                     fmbt = null;
                 }
-                //else if (node.nodeType == ENodeType.LeftAngle
-                //    || node.nodeType == ENodeType.RightAngle)
-                //{
-                //    FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
-                //    fmn.priority = SignComputePriority.Level6_Compare;
-                //    AddFileMetaTerm(fmn);
-                //    fmbt = null;
-                //}
                 else if( node.nodeType == ENodeType.Angle )
                 {
                     FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
@@ -1504,7 +1492,7 @@ namespace SimpleLanguage.Compile
                 else
                 {
                     //Debug.Assert(false);
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "没有找到该类型: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, node.token, "没有找到该类型: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
                 }
             }
         }

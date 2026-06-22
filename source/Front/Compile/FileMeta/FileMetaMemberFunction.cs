@@ -36,15 +36,10 @@ namespace SimpleLanguage.Compile
 
             var listDefieNode = new List<Node>();
             var valueNodeList = new List<Node>();
-            //Node beforeNode = new Node(null);
-            //beforeNode.SetChildList(inputNodeList);
-            //beforeNode.parseIndex = 0;
-            //var nodeList = StructParse.HandleBeforeNode(beforeNode);
-            var nodeList = StructParse.HandleNodeNestedStructure(inputNodeList);
 
-            if (!FileMetatUtil.SplitNodeList(nodeList, listDefieNode, valueNodeList, ref m_AssignToken))
+            if (!FileMetatUtil.SplitNodeList(inputNodeList, listDefieNode, valueNodeList, ref m_AssignToken))
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析NodeList出现错误~~~");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, m_AssignToken, "Error 解析NodeList出现错误~~~");
                 return false;
             }
             if(valueNodeList.Count > 0 )
@@ -55,12 +50,12 @@ namespace SimpleLanguage.Compile
             Node typeNode = null;
             if (!GetNameAndTypeNode(listDefieNode, ref nameNode, ref typeNode, ref m_ParamsToken ))
             {
-                Log.AddFileMetaLog( LID.ShowExtendMessage, "Error 没有找到该定义名称 必须使用例: X = 102; 的格式");
+                Log.AddFileMetaLog( LID.ShowExtendMessage, m_AssignToken, "Error 没有找到该定义名称 必须使用例: X = 102; 的格式");
                 return false;
             }
             if (nameNode == null)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 没有找到该定义名称 必须使用例: X = 101; 的格式");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, m_AssignToken, "Error 没有找到该定义名称 必须使用例: X = 101; 的格式");
                 return false;
             }
             m_Token = nameNode?.token;
@@ -72,7 +67,7 @@ namespace SimpleLanguage.Compile
                 if (idx >= 0 && idx + 1 < listDefieNode.Count)
                 {
                     var nextNode = listDefieNode[idx + 1];
-                    if (nextNode.nodeType == ENodeType.QuestionMark || (nextNode.token != null && nextNode.token.type == ETokenType.QuestionMark))
+                    if (nextNode.nodeType == ENodeType.QuestionMark )
                     {
                         qNode = nextNode;
                     }
@@ -228,7 +223,6 @@ namespace SimpleLanguage.Compile
         {
             Token permissionToken = null;
             Token overrideToken = null;
-            int addCount = 0;
             bool isError = false;
             Node returnClassNameNode = null;
             Token interfaceToken = null;
@@ -241,11 +235,9 @@ namespace SimpleLanguage.Compile
             List<List<Token>> interfaceTokenList = new List<List<Token>>();
             List<Token> list = new List<Token>();
             Node funNameNode = null;
-            //Node node = new Node(null);
-            //node.childList.AddRange(nodeList);
-            //var nodeList2 = StructParse.HandleBeforeNode(node);
-            var nodeList2 = StructParse.HandleNodeNestedStructure(nodeList);
 
+            int addCount = 0;
+            var nodeList2 = FileMetatUtil.HandleExpressNodes( nodeList );
             while (addCount < nodeList2.Count)
             {
                 var cnode = nodeList2[addCount++];
@@ -348,7 +340,7 @@ namespace SimpleLanguage.Compile
                     else
                     {
                         isError = true;
-                        Log.AddFileMetaLog(LID.FileFunctionDefineNotHandle,  token, $"");
+                        Log.AddFileMetaLog(LID.FileFunctionDefineNotHandle,  token, $"function define not handle");
                         break;
                     }
                 }

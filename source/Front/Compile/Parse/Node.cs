@@ -36,8 +36,6 @@ namespace SimpleLanguage.Compile
         Root,
         Brace,
         Angle,
-        //LeftAngle,
-        //RightAngle,
         Par,
         Bracket,
         Symbol,
@@ -81,6 +79,9 @@ namespace SimpleLanguage.Compile
         public List<Node> bracketNodeList => m_BracketNodeList;
         public Node lastNode => m_LastNode;         // 最后处理的节点
         public ENodeType nodeType { get; set; } =  ENodeType.None;
+        //public Node contentNode => m_ContentStack.Count > 0 ? m_ContentStack.Peek() : null;
+        //public List<Node> tempNodeList => m_TempNodeList;
+
 
         private List<Node> m_ExtendLinkNodeList { get; set; } = new List<Node>();
         private List<Node> m_BracketNodeList = new List<Node>();
@@ -92,6 +93,9 @@ namespace SimpleLanguage.Compile
         private Node m_LastNode = null;            // 最后处理的节点
         private Node m_Parent = null;              //父节点
         private Token m_Token = null;                  // 
+
+        //private Stack<Node> m_ContentStack = new Stack<Node>();     //<> [] {} () 的内容节点
+        //private List<Node> m_TempNodeList = new List<Node>();
 
         public Node parseCurrent
         {
@@ -155,6 +159,10 @@ namespace SimpleLanguage.Compile
         {
             this.m_LastNode = lastNode;
         }
+        public void SetParentNode(Node parent)
+        {
+            this.m_Parent = parent;
+        }
         public void SetParNode( Node parNode )
         {
             m_ParNode = parNode;
@@ -163,10 +171,14 @@ namespace SimpleLanguage.Compile
         {
             m_BlockNode = blockNode;
         }
-        public void SetAngleNode( Node angleNode )
+        public void SetAngleNode(Node angleNode)
         {
             m_AngleNode = angleNode;
         }
+        //public void SetBracketContentNode(Node contentNode)
+        //{
+        //    m_ContentStack.Push(contentNode);
+        //}
         //public void SetNodeType( ENodeType ent )
         //{
         //    m_NodeType = ent;
@@ -175,6 +187,7 @@ namespace SimpleLanguage.Compile
         {
             if (lastNode == null) return;
             lastNode.m_AngleNode = node;
+            node.SetParentNode(lastNode);
         }
         public void AddLinkNode(Node node )
         {
@@ -190,45 +203,25 @@ namespace SimpleLanguage.Compile
         {
             m_ExtendLinkNodeList = nodeList;
         }
-        //public void SetParList( List<Node> nodes )
-        //{
-        //    if( nodes.Count == 1 )
-        //    {
-        //        if( nodes[0].nodeType == ENodeType.Par )
-        //        {
-        //            parNode = nodes[0];
-        //            return;
-        //        }
-        //    }
-        //    if (parNode == null)
-        //        parNode = new Node(null);
-        //    parNode.childList = nodes;
-        //}
-        //public void SetPar( Node node )
-        //{
-        //    parNode = node;
-        //}
         public void AddChild(Node c, bool setParent = true)
         {
             if (setParent)
                 c.m_Parent = this;
-            if( (c.nodeType == ENodeType.Par ) &&
-                lastNode?.extendLinkNodeList.Count > 0 )
-            {
-                m_LastNode.extendLinkNodeList[m_LastNode.extendLinkNodeList .Count- 1].m_ParNode = c;
-            }
-            else
-            {
+            //if( (c.nodeType == ENodeType.Par ) &&
+            //    lastNode?.extendLinkNodeList.Count > 0 )
+            //{
+            //    m_LastNode.extendLinkNodeList[m_LastNode.extendLinkNodeList .Count- 1].m_ParNode = c;
+            //}
+            //else
+            //{
                 this.childList.Add(c);
                 m_LastNode = c;
-            }
+            //}
         }
         public void AddSyntax( Node c )
         {
             this.childList.Add(c);
         }
-
-
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -455,5 +448,23 @@ namespace SimpleLanguage.Compile
             }
             return sb.ToString();
         }
+        //public void SetParList( List<Node> nodes )
+        //{
+        //    if( nodes.Count == 1 )
+        //    {
+        //        if( nodes[0].nodeType == ENodeType.Par )
+        //        {
+        //            parNode = nodes[0];
+        //            return;
+        //        }
+        //    }
+        //    if (parNode == null)
+        //        parNode = new Node(null);
+        //    parNode.childList = nodes;
+        //}
+        //public void SetPar( Node node )
+        //{
+        //    parNode = node;
+        //}
     }
 }

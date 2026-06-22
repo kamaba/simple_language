@@ -122,23 +122,16 @@ namespace SimpleLanguage.Compile
 
             if (!FileMetatUtil.SplitNodeList(list, bedoreNodeList, afterNodeList, ref m_AssignToken))
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析NodeList出现错误~~~");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, list[0].token, "Error 解析NodeList出现错误~~~");
                 return false;
             }
             if (bedoreNodeList.Count < 1)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error listDefieNode 不能为空~");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, m_AssignToken, "Error listDefieNode 不能为空~");
                 return false;
             }
-
-            //Node beforeNode = new Node( null );
-            //beforeNode.SetChildList(bedoreNodeList);
-            //beforeNode.parseIndex = 0;
-            //var defineNodeList = StructParse.HandleBeforeNode(beforeNode);
-            var defineNodeList = StructParse.HandleNodeNestedStructure(bedoreNodeList);
-
             Node typeNode = null;
-            if (!GetNameAndTypeToken(defineNodeList, out typeNode ))
+            if (!GetNameAndTypeToken(bedoreNodeList, out typeNode ))
             {
                 Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 没有找到该定义名称 必须使用例: X = 103; 的格式");
                 return false;
@@ -146,8 +139,7 @@ namespace SimpleLanguage.Compile
 
             if( m_Token == null )
             {
-                //Debug.Assert(false);
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "token is null");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, list[0].token, "token is null");
                 return false;
             }
 

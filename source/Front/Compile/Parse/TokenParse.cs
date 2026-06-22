@@ -26,10 +26,7 @@ namespace SimpleLanguage.Compile
         private int m_TokenCount = 0;
 
         private Node m_RootNode = new Node(null);
-        private Stack<Node> m_CurrentNodeStack = new Stack<Node>();
         private Node m_CurrentNode = null;
-        private Node m_ContentNode = null;          // <> [] {} () 的内容节点
-        private List<Node> m_TempNodeList = new List<Node>();
 
         public TokenParse(FileMeta fm, List<Token> list)
         {
@@ -38,117 +35,70 @@ namespace SimpleLanguage.Compile
             m_TokenCount = list.Count;
             m_RootNode.nodeType = ENodeType.Root;
             m_CurrentNode = m_RootNode;
-            m_CurrentNodeStack.Push(m_RootNode);
         }
         public void BuildStruct()
         {
-            while (true)
+            while (m_TokenIndex < m_TokenCount)
             {
                 var tempToken = m_TokensList[m_TokenIndex];
                 if (tempToken.type == ETokenType.Finished) { break; }
-                ParseDetailToken(tempToken);
-                if (m_TokenIndex >= m_TokenCount)
-                {
-                    break;
-                }
+                ParseTokenConvertNode(tempToken);
             }
-            CheckUnclosedPairNodes();
             return;
         }
 
-        private void CheckUnclosedPairNodes()
-        {
-            while (m_CurrentNodeStack.Count > 0)
-            {
-                var node = m_CurrentNodeStack.Pop();
-                if (node == null || node.nodeType == ENodeType.Root)
-                {
-                    continue;
-                }
-
-                Log.AddNodeLog(LID.MetaCoreAssertShowMessage, node.token, GetUnclosedPairMessage(node));
-            }
-
-            m_CurrentNodeStack.Push(m_RootNode);
-            m_CurrentNode = m_RootNode;
-        }
-
-        private static string GetUnclosedPairMessage(Node node)
-        {
-            return node.nodeType switch
-            {
-                ENodeType.Brace => "Error Node层花括号不对称，缺少右花括号 '}'",
-                ENodeType.Par => "Error Node层圆括号不对称，缺少右圆括号 ')'",
-                ENodeType.Bracket => "Error Node层中括号不对称，缺少右中括号 ']'",
-                _ => "Error Node层括号不对称，缺少闭合符号",
-            };
-        }
-
-        //private bool TryPopPairNode(ENodeType expectedNodeType, Token endToken, string pairText)
-        //{
-        //    if (m_CurrentNodeStack.Count <= 1)
-        //    {
-        //        Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，多余的右符号 " + pairText);
-        //        m_TokenIndex++;
-        //        return false;
-        //    }
-
-        //    var cnode = m_CurrentNodeStack.Pop();
-        //    if (cnode != null && cnode.nodeType == expectedNodeType)
-        //    {
-        //        cnode.endToken = endToken;
-        //        m_TokenIndex++;
-        //        m_CurrentNode = cnode.parent ?? m_RootNode;
-        //        return true;
-        //    }
-
-        //    Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，期望闭合 " + expectedNodeType.ToString() + " 但遇到 " + pairText);
-        //    if (cnode != null)
-        //    {
-        //        m_CurrentNodeStack.Push(cnode);
-        //    }
-        //    m_TokenIndex++;
-        //    return false;
-        //}
         public void AddIdentifier(Token code)      //Print/Function
         {
             Node node = new Node(code);
             node.nodeType = ENodeType.IdentifierLink;
 
-            if( m_ContentNode != null)
+            if (m_CurrentNode.linkToken != null)
             {
-                m_ContentNode.AddChild(node);
-                m_TempNodeList.Add(node);
-                m_TokenIndex++;
-                return;
+                Node node2 = new Node(m_CurrentNode.linkToken);
+                node2.nodeType = ENodeType.Period;
+
+                m_CurrentNode.AddLinkNode(node2);
+                m_CurrentNode.AddLinkNode(node);
+                if (m_CurrentNode.atToken != null)
+                {
+                    node.atToken = m_CurrentNode.atToken;
+                    m_CurrentNode.atToken = null;
+                }
+                m_CurrentNode.linkToken = null;
             }
             else
             {
-                if (m_CurrentNode.linkToken != null)
-                {
-                    Node node2 = new Node(m_CurrentNode.linkToken);
-                    node2.nodeType = ENodeType.Period;
-
-                    m_CurrentNode.AddLinkNode(node2);
-                    m_CurrentNode.AddLinkNode(node);
-                    if (m_CurrentNode.atToken != null)
-                    {
-                        node.atToken = m_CurrentNode.atToken;
-                        m_CurrentNode.atToken = null;
-                    }
-                    m_CurrentNode.linkToken = null;
-
-
-                }
-                else
-                {
-                    m_CurrentNode.AddChild(node);
-                }
+                m_CurrentNode.AddChild(node);
             }
-            //tempNode.lastNode = node;
+
             m_TokenIndex++;
-        }   
-        private Node AddKeyNode(Token token )
+        }
+        void RestoreAngleNode()
+        {
+
+            if (m_CurrentNode.nodeType == ENodeType.Angle)
+            {
+                m_CurrentNode.parent.childList.Remove(m_CurrentNode);
+
+                Node node2 = new Node(m_CurrentNode.token);
+                node2.nodeType = ENodeType.Symbol;
+                node2.priority = SignComputePriority.Level6_Compare;
+                m_CurrentNode.parent.AddChild(node2);
+
+                m_CurrentNode.parent.childList.AddRange(m_CurrentNode.childList);
+
+                m_CurrentNode = m_CurrentNode.parent;
+            }
+        }
+        private Node AddKeyNode(Token token)
+        {
+            Node node = new Node(token);
+            node.nodeType = ENodeType.Key;
+            m_CurrentNode.AddChild(node);
+            m_TokenIndex++;
+            return node;
+        }
+        private Node AddKeyNodeInAngle(Token token)
         {
             Node node = new Node(token);
             node.nodeType = ENodeType.Key;
@@ -211,54 +161,46 @@ namespace SimpleLanguage.Compile
         }
         private Node AddSymbol( Token token )
         {
+            if (m_CurrentNode.nodeType == ENodeType.Angle)
+            {
+                m_CurrentNode.parent.childList.Remove(m_CurrentNode);
+
+                Node node2 = new Node(m_CurrentNode.token);
+                node2.nodeType = ENodeType.Symbol;
+                node2.priority = SignComputePriority.Level6_Compare;
+                m_CurrentNode.parent.AddChild(node2);
+
+                m_CurrentNode.parent.childList.AddRange(m_CurrentNode.childList);
+            }
+            
             Node node = new Node(token);
             node.nodeType = ENodeType.Symbol;
             m_CurrentNode.AddChild(node);
             m_TokenIndex++;
-            var cnode = m_CurrentNodeStack.Peek();
             return node;
+
         }
         public void AddLessSign(Token token)
         {
-            if (m_ContentNode != null)
-            {
-                if (m_ContentNode.nodeType == ENodeType.Angle)
-                {
-                    var newNode = new Node(token);
-                    m_ContentNode.AddAngleLeftNode(newNode);
-                }
-                else
-                {
-                    var newNode = new Node(token);
-                }
-            }
-            else
-            {
-                m_ContentNode = new Node(token);
-                m_ContentNode.nodeType = ENodeType.Angle;
+            var angleNode = new Node(token);
+            angleNode.nodeType = ENodeType.Angle;
+            m_CurrentNode.AddChild(angleNode);
 
-                var newNode2 = new Node(token);
-                newNode2.nodeType = ENodeType.Symbol;
-                m_TempNodeList.Add(newNode2);
-            }
+            m_CurrentNode = angleNode;
+
             m_TokenIndex++;
         }
         public void AddGreaterSign(Token token)
         {
-            if (m_ContentNode != null)
+            if (m_CurrentNode.nodeType == ENodeType.Angle)
             {
-                if (m_ContentNode.nodeType == ENodeType.Angle)
-                {
-                    m_ContentNode.endToken = token;
-                }
-                else
-                {
-                    m_ContentNode = new Node(token);
-                }
+                m_CurrentNode.endToken = token;
+                m_CurrentNode = m_CurrentNode.parent;
             }
             else
             {
                 Node node = new Node(token);
+                node.priority = SignComputePriority.Level6_Compare;
                 node.nodeType = ENodeType.Symbol;
                 m_CurrentNode.AddChild(node);
             }
@@ -266,51 +208,49 @@ namespace SimpleLanguage.Compile
         }
         public void AddParBlockBraceBegin(Token token, ENodeType enodetype )
         {
-            if (m_ContentNode != null)
-            {
-                if (m_ContentNode.nodeType != enodetype)
-                {
-                    var newNode = new Node(token);
-                    m_ContentNode.AddAngleLeftNode(newNode);
-                }
-                else
-                {
-                    var newNode = new Node(token);
-                }
-            }
-            else
-            {
-                Log.AddNodeLog(LID.ShowExtendMessage, token, "解析符号没有对称!");
-            }
+            var newNode = new Node(token);
+            newNode.nodeType = enodetype;
+            m_CurrentNode.AddChild(newNode);
+
+            m_CurrentNode = newNode;
             m_TokenIndex++;
         }
         public void AddParBlockBraceEnd(Token token, ENodeType enodetype)
         {
-            if (m_ContentNode != null)
+            if( m_CurrentNode.nodeType != enodetype)
             {
-                if (m_ContentNode.nodeType != enodetype)
+                if( m_CurrentNode.nodeType == ENodeType.Angle )
                 {
-                    var newNode = new Node(token);
-                    m_ContentNode.AddAngleLeftNode(newNode);
+                    m_CurrentNode.parent.childList.Remove(m_CurrentNode);
+
+                    Node node2 = new Node(m_CurrentNode.token);
+                    node2.nodeType = ENodeType.Symbol;
+                    node2.priority = SignComputePriority.Level6_Compare;
+                    m_CurrentNode.parent.AddChild(node2);
+
+                    m_CurrentNode.parent.childList.AddRange(m_CurrentNode.childList);
+
                 }
                 else
                 {
-                    var newNode = new Node(token);
+                    Log.AddNodeLog(LID.MetaCoreAssertShowMessage, token, "()[]{} 符号没有对称! 原符号:" + m_CurrentNode.token.ToLexemeAllString() + " 新符号n:" + token.ToLexemeAllString());
                 }
+
             }
             else
             {
-                Log.AddNodeLog(LID.ShowExtendMessage, token, "解析符号没有对称!");
+                m_CurrentNode.endToken = token;
+                m_CurrentNode = m_CurrentNode.parent;
             }
             m_TokenIndex++;
         }
-        void ParseDetailToken( Token token )
+        void ParseTokenConvertNode( Token token )
         {
-            if (m_CurrentNode == null)
-            {
-                Log.AddTokenLog(LID.ShowExtendMessage, "Error CurrentNode is NULL!!" + token?.ToLexemeAllString());
-                return;
-            }
+            //if (m_CurrentNode == null)
+            //{
+            //    Log.AddTokenLog(LID.ShowExtendMessage, "", token, "Error CurrentNode is NULL!!" + token?.ToLexemeAllString());
+            //    return;
+            //}
             switch (token.type)
             {
                 case ETokenType.Identifier:  //Identifier
@@ -319,69 +259,76 @@ namespace SimpleLanguage.Compile
                         AddIdentifier(token);
                     }
                     break;
+                case ETokenType.Number:
+                case ETokenType.NumberReal:
+                case ETokenType.String:
+                case ETokenType.BoolValue:
+                case ETokenType.NumberArrayLink:
+                case ETokenType.Null:
+                    {
+                        Node node = new Node(token);
+                        node.nodeType = ENodeType.ConstValue;
+                        if (m_CurrentNode.linkToken != null)
+                        {
+                            Node node2 = new Node(m_CurrentNode.linkToken);
+                            node2.nodeType = ENodeType.Period;
+
+                            m_CurrentNode.AddLinkNode(node2);
+                            m_CurrentNode.AddLinkNode(node);
+                            m_CurrentNode.linkToken = null;
+                            if (m_CurrentNode.atToken != null)
+                            {
+                                node.atToken = m_CurrentNode.atToken;
+                                m_CurrentNode.atToken = null;
+                            }
+                        }
+                        else
+                        {
+                            m_CurrentNode.AddChild(node);
+                        }
+                        //tempNode.lastNode = node;
+
+                        m_TokenIndex++;
+                    }
+                    break;
                 case ETokenType.LeftPar: //(
                     {
-                        //Node node = new Node(token);
-                        //node.nodeType = ENodeType.Par;
-                        //m_TokenIndex++;
-                        //m_CurrentNodeStack.Push(node);
-
-                        //m_CurrentNode.AddChild(node);
-                        //m_CurrentNode = node;
                         AddParBlockBraceBegin(token, ENodeType.Par);
                     }
                     break;
                 case ETokenType.RightPar: //)
                     {
-                        //TryPopPairNode(ENodeType.Par, token, "')'");
                         AddParBlockBraceEnd(token, ENodeType.Par);
                     }
                     break;
                 case ETokenType.LeftBracket://[
                     {
-                        //Node node = new Node(token);
-                        //node.nodeType = ENodeType.Bracket;
-                        //m_TokenIndex++;
-                        //m_CurrentNodeStack.Push(node);
-
-                        //m_CurrentNode.AddChild(node);
-                        //m_CurrentNode = node;
                         AddParBlockBraceBegin(token, ENodeType.Bracket);
                     }
                     break;
                 case ETokenType.RightBracket://]
                     {
-                        //TryPopPairNode(ENodeType.Bracket, token, "']'");
                         AddParBlockBraceEnd(token, ENodeType.Bracket);
                     }
                     break;
                 case ETokenType.LeftBrace: //{
                     {
-                        //Node node = new Node(token);
-                        //node.nodeType = ENodeType.Brace;
-                        //m_CurrentNodeStack.Push(node);
-
-                        //m_CurrentNode.AddChild(node);
-                        //m_CurrentNode = node;
                         AddParBlockBraceBegin( token, ENodeType.Brace );
                     }
                     break;
                 case ETokenType.RightBrace: //}
                     {
-                        //TryPopPairNode(ENodeType.Brace, token, "'}'");
                         AddParBlockBraceEnd(token, ENodeType.Brace);
                     }
                     break;
                 case ETokenType.Less:         // <
                     {
                         AddLessSign(token);
-                        m_TokenIndex++;
                     }
                     break;
                 case ETokenType.Greater:            // >
                     {
                         AddGreaterSign(token);
-                        m_TokenIndex++;
                     }
                     break;
                 case ETokenType.Period:  //.
@@ -592,38 +539,6 @@ namespace SimpleLanguage.Compile
                         m_CurrentNode.AddChild(node);
                     }
                     break;
-                case ETokenType.Number:
-                case ETokenType.NumberReal:
-                case ETokenType.String:
-                case ETokenType.BoolValue:
-                case ETokenType.NumberArrayLink:
-                case ETokenType.Null:
-                    {
-                        Node node = new Node(token);
-                        node.nodeType = ENodeType.ConstValue;
-                        if ( m_CurrentNode.linkToken != null)
-                        {
-                            Node node2 = new Node(m_CurrentNode.linkToken);
-                            node2.nodeType = ENodeType.Period;
-
-                            m_CurrentNode.AddLinkNode(node2);
-                            m_CurrentNode.AddLinkNode(node);
-                            m_CurrentNode.linkToken = null;
-                            if(m_CurrentNode.atToken != null )
-                            {
-                                node.atToken = m_CurrentNode.atToken;
-                                m_CurrentNode.atToken = null;
-                            }
-                        }
-                        else
-                        {
-                            m_CurrentNode.AddChild(node);
-                        }
-                        //tempNode.lastNode = node;
-
-                        m_TokenIndex++;
-                    }
-                    break;
 
                 case ETokenType.Import:
                 case ETokenType.TypeAlias:
@@ -681,8 +596,6 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Transience:
                 case ETokenType.Label:
                 case ETokenType.Else:
-                case ETokenType.In:
-                case ETokenType.Out:
                 case ETokenType.Switch:
                 case ETokenType.Continue:
                 case ETokenType.Break:
@@ -693,6 +606,12 @@ namespace SimpleLanguage.Compile
                 case ETokenType.New:
                     {
                         AddKeyNode(token);
+                    }
+                    break;
+                case ETokenType.In:
+                case ETokenType.Out:
+                    {
+                        AddKeyNodeInAngle(token);
                     }
                     break;
                 case ETokenType.At:             //@
@@ -718,28 +637,6 @@ namespace SimpleLanguage.Compile
                     }
             }
         }
-        /// <summary>
-        /// Best-effort generic context detection: if there's an unclosed '<' in the current node list,
-        /// prefer treating '>>' as two generic closing tokens instead of a shift operator.
-        /// </summary>
-        //private bool IsInsideGenericAngleContext()
-        //{
-        //    // Scan current node's direct children and compute a simple depth for angle brackets.
-        //    // This intentionally ignores nested node stacks (Par/Brace/Bracket), because '>>' that
-        //    // tokenizes inside those should still typically behave as shift.
-        //    int depth = 0;
-        //    var list = m_CurrentNode?.childList;
-        //    if (list == null) return false;
-
-        //    for (int i = 0; i < list.Count; i++)
-        //    {
-        //        var n = list[i];
-        //        if (n == null) continue;
-        //        if (n.nodeType == ENodeType.LeftAngle) depth++;
-        //        else if (n.nodeType == ENodeType.RightAngle && depth > 0) depth--;
-        //    }
-        //    return depth > 0;
-        //}
         public void WriteNodeString(bool isWriteFile)
         {
             try
@@ -766,5 +663,81 @@ namespace SimpleLanguage.Compile
             }
         }
 
+        /// <summary>
+        /// Best-effort generic context detection: if there's an unclosed '<' in the current node list,
+        /// prefer treating '>>' as two generic closing tokens instead of a shift operator.
+        /// </summary>
+        //private bool IsInsideGenericAngleContext()
+        //{
+        //    // Scan current node's direct children and compute a simple depth for angle brackets.
+        //    // This intentionally ignores nested node stacks (Par/Brace/Bracket), because '>>' that
+        //    // tokenizes inside those should still typically behave as shift.
+        //    int depth = 0;
+        //    var list = m_CurrentNode?.childList;
+        //    if (list == null) return false;
+
+        //    for (int i = 0; i < list.Count; i++)
+        //    {
+        //        var n = list[i];
+        //        if (n == null) continue;
+        //        if (n.nodeType == ENodeType.LeftAngle) depth++;
+        //        else if (n.nodeType == ENodeType.RightAngle && depth > 0) depth--;
+        //    }
+        //    return depth > 0;
+        //}
+        //private void CheckUnclosedPairNodes()
+        //{
+        //    while (m_CurrentNodeStack.Count > 0)
+        //    {
+        //        var node = m_CurrentNodeStack.Pop();
+        //        if (node == null || node.nodeType == ENodeType.Root)
+        //        {
+        //            continue;
+        //        }
+
+        //        Log.AddNodeLog(LID.MetaCoreAssertShowMessage, node.token, GetUnclosedPairMessage(node));
+        //    }
+
+        //    m_CurrentNodeStack.Push(m_RootNode);
+        //    m_CurrentNode = m_RootNode;
+        //}
+
+        //private static string GetUnclosedPairMessage(Node node)
+        //{
+        //    return node.nodeType switch
+        //    {
+        //        ENodeType.Brace => "Error Node层花括号不对称，缺少右花括号 '}'",
+        //        ENodeType.Par => "Error Node层圆括号不对称，缺少右圆括号 ')'",
+        //        ENodeType.Bracket => "Error Node层中括号不对称，缺少右中括号 ']'",
+        //        _ => "Error Node层括号不对称，缺少闭合符号",
+        //    };
+        //}
+
+        //private bool TryPopPairNode(ENodeType expectedNodeType, Token endToken, string pairText)
+        //{
+        //    if (m_CurrentNodeStack.Count <= 1)
+        //    {
+        //        Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，多余的右符号 " + pairText);
+        //        m_TokenIndex++;
+        //        return false;
+        //    }
+
+        //    var cnode = m_CurrentNodeStack.Pop();
+        //    if (cnode != null && cnode.nodeType == expectedNodeType)
+        //    {
+        //        cnode.endToken = endToken;
+        //        m_TokenIndex++;
+        //        m_CurrentNode = cnode.parent ?? m_RootNode;
+        //        return true;
+        //    }
+
+        //    Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，期望闭合 " + expectedNodeType.ToString() + " 但遇到 " + pairText);
+        //    if (cnode != null)
+        //    {
+        //        m_CurrentNodeStack.Push(cnode);
+        //    }
+        //    m_TokenIndex++;
+        //    return false;
+        //}
     }
 }

@@ -490,7 +490,7 @@ namespace SimpleLanguage.Compile
             FileMetaClassDefine classRef = null;
             FileMetaCallLink varRef = null;
 
-            var handleBeforeList = HandleNodeNestedStructure(beforeNodeList);
+            var handleBeforeList = FileMetatUtil.HandleClassDefineNodes(beforeNodeList);
 
             List <Node> defineNodeList = new List<Node>();
             for (int i = 0; i < handleBeforeList.Count; i++)

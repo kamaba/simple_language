@@ -458,14 +458,26 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    //AddToken(ETokenType.Shi, "<<");
-                    UndoChar();
-                    UndoChar();
+                    int lessCount = 2;
+                    while( true )
+                    {
+                        var peek = ReadChar();
+                        if( peek == '=' )
+                        {
+                            lessCount++;
+                        }
+                        else
+                        {
+                            UndoChar();
+                            break;
+                        }
+                    }
+                    AddToken(ETokenType.Less, "<", lessCount );
                 }
             }
             else
             {
-                AddToken(ETokenType.Less, "<");
+                AddToken(ETokenType.Less, "<", 1 );
                 UndoChar();
             }
         }
