@@ -1397,11 +1397,18 @@ namespace SimpleLanguage.Compile
                     AddFileMetaTerm(fmn);
                     fmbt = null;
                 }
-                else if (node.nodeType == ENodeType.LeftAngle
-                    || node.nodeType == ENodeType.RightAngle)
+                //else if (node.nodeType == ENodeType.LeftAngle
+                //    || node.nodeType == ENodeType.RightAngle)
+                //{
+                //    FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
+                //    fmn.priority = SignComputePriority.Level6_Compare;
+                //    AddFileMetaTerm(fmn);
+                //    fmbt = null;
+                //}
+                else if( node.nodeType == ENodeType.Angle )
                 {
                     FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
-                    fmn.priority = SignComputePriority.Level6_Compare;
+                    fmn.priority = node.priority;
                     AddFileMetaTerm(fmn);
                     fmbt = null;
                 }

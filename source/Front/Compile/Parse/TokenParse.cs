@@ -28,6 +28,8 @@ namespace SimpleLanguage.Compile
         private Node m_RootNode = new Node(null);
         private Stack<Node> m_CurrentNodeStack = new Stack<Node>();
         private Node m_CurrentNode = null;
+        private Node m_ContentNode = null;          // <> [] {} () 的内容节点
+        private List<Node> m_TempNodeList = new List<Node>();
 
         public TokenParse(FileMeta fm, List<Token> list)
         {
@@ -82,56 +84,66 @@ namespace SimpleLanguage.Compile
             };
         }
 
-        private bool TryPopPairNode(ENodeType expectedNodeType, Token endToken, string pairText)
-        {
-            if (m_CurrentNodeStack.Count <= 1)
-            {
-                Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，多余的右符号 " + pairText);
-                m_TokenIndex++;
-                return false;
-            }
+        //private bool TryPopPairNode(ENodeType expectedNodeType, Token endToken, string pairText)
+        //{
+        //    if (m_CurrentNodeStack.Count <= 1)
+        //    {
+        //        Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，多余的右符号 " + pairText);
+        //        m_TokenIndex++;
+        //        return false;
+        //    }
 
-            var cnode = m_CurrentNodeStack.Pop();
-            if (cnode != null && cnode.nodeType == expectedNodeType)
-            {
-                cnode.endToken = endToken;
-                m_TokenIndex++;
-                m_CurrentNode = cnode.parent ?? m_RootNode;
-                return true;
-            }
+        //    var cnode = m_CurrentNodeStack.Pop();
+        //    if (cnode != null && cnode.nodeType == expectedNodeType)
+        //    {
+        //        cnode.endToken = endToken;
+        //        m_TokenIndex++;
+        //        m_CurrentNode = cnode.parent ?? m_RootNode;
+        //        return true;
+        //    }
 
-            Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，期望闭合 " + expectedNodeType.ToString() + " 但遇到 " + pairText);
-            if (cnode != null)
-            {
-                m_CurrentNodeStack.Push(cnode);
-            }
-            m_TokenIndex++;
-            return false;
-        }
+        //    Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，期望闭合 " + expectedNodeType.ToString() + " 但遇到 " + pairText);
+        //    if (cnode != null)
+        //    {
+        //        m_CurrentNodeStack.Push(cnode);
+        //    }
+        //    m_TokenIndex++;
+        //    return false;
+        //}
         public void AddIdentifier(Token code)      //Print/Function
         {
             Node node = new Node(code);
             node.nodeType = ENodeType.IdentifierLink;
 
-            if ( m_CurrentNode.linkToken != null)
+            if( m_ContentNode != null)
             {
-                Node node2 = new Node(m_CurrentNode.linkToken);
-                node2.nodeType = ENodeType.Period;
-
-                m_CurrentNode.AddLinkNode(node2);
-                m_CurrentNode.AddLinkNode(node );
-                if(m_CurrentNode.atToken != null )
-                {
-                    node.atToken = m_CurrentNode.atToken;
-                    m_CurrentNode.atToken = null;
-                }
-                m_CurrentNode.linkToken = null;
-
-
+                m_ContentNode.AddChild(node);
+                m_TempNodeList.Add(node);
+                m_TokenIndex++;
+                return;
             }
             else
             {
-                m_CurrentNode.AddChild(node);
+                if (m_CurrentNode.linkToken != null)
+                {
+                    Node node2 = new Node(m_CurrentNode.linkToken);
+                    node2.nodeType = ENodeType.Period;
+
+                    m_CurrentNode.AddLinkNode(node2);
+                    m_CurrentNode.AddLinkNode(node);
+                    if (m_CurrentNode.atToken != null)
+                    {
+                        node.atToken = m_CurrentNode.atToken;
+                        m_CurrentNode.atToken = null;
+                    }
+                    m_CurrentNode.linkToken = null;
+
+
+                }
+                else
+                {
+                    m_CurrentNode.AddChild(node);
+                }
             }
             //tempNode.lastNode = node;
             m_TokenIndex++;
@@ -206,15 +218,92 @@ namespace SimpleLanguage.Compile
             var cnode = m_CurrentNodeStack.Peek();
             return node;
         }
-        private void AddBitMoveOperatorSymbol(Token code)
+        public void AddLessSign(Token token)
         {
-            var node = AddSymbol(code);
-            node.priority = SignComputePriority.Level5_BitMoveOp;
+            if (m_ContentNode != null)
+            {
+                if (m_ContentNode.nodeType == ENodeType.Angle)
+                {
+                    var newNode = new Node(token);
+                    m_ContentNode.AddAngleLeftNode(newNode);
+                }
+                else
+                {
+                    var newNode = new Node(token);
+                }
+            }
+            else
+            {
+                m_ContentNode = new Node(token);
+                m_ContentNode.nodeType = ENodeType.Angle;
+
+                var newNode2 = new Node(token);
+                newNode2.nodeType = ENodeType.Symbol;
+                m_TempNodeList.Add(newNode2);
+            }
+            m_TokenIndex++;
         }
-        /*
-         * 
-         * 解析  让token解析成  identifer {} [] () <> identifer identfier + - * 20 30.1 s.toString () 的结构
-         */
+        public void AddGreaterSign(Token token)
+        {
+            if (m_ContentNode != null)
+            {
+                if (m_ContentNode.nodeType == ENodeType.Angle)
+                {
+                    m_ContentNode.endToken = token;
+                }
+                else
+                {
+                    m_ContentNode = new Node(token);
+                }
+            }
+            else
+            {
+                Node node = new Node(token);
+                node.nodeType = ENodeType.Symbol;
+                m_CurrentNode.AddChild(node);
+            }
+            m_TokenIndex++;
+        }
+        public void AddParBlockBraceBegin(Token token, ENodeType enodetype )
+        {
+            if (m_ContentNode != null)
+            {
+                if (m_ContentNode.nodeType != enodetype)
+                {
+                    var newNode = new Node(token);
+                    m_ContentNode.AddAngleLeftNode(newNode);
+                }
+                else
+                {
+                    var newNode = new Node(token);
+                }
+            }
+            else
+            {
+                Log.AddNodeLog(LID.ShowExtendMessage, token, "解析符号没有对称!");
+            }
+            m_TokenIndex++;
+        }
+        public void AddParBlockBraceEnd(Token token, ENodeType enodetype)
+        {
+            if (m_ContentNode != null)
+            {
+                if (m_ContentNode.nodeType != enodetype)
+                {
+                    var newNode = new Node(token);
+                    m_ContentNode.AddAngleLeftNode(newNode);
+                }
+                else
+                {
+                    var newNode = new Node(token);
+                }
+            }
+            else
+            {
+                Log.AddNodeLog(LID.ShowExtendMessage, token, "解析符号没有对称!");
+            }
+            m_TokenIndex++;
+        }
         void ParseDetailToken( Token token )
         {
             if (m_CurrentNode == null)
@@ -230,68 +319,69 @@ namespace SimpleLanguage.Compile
                         AddIdentifier(token);
                     }
                     break;
-                case ETokenType.LeftBrace: //{
-                    {
-                        Node node = new Node(token);
-                        node.nodeType = ENodeType.Brace;
-                        m_TokenIndex++;
-                        m_CurrentNodeStack.Push(node);
-                        
-                        m_CurrentNode.AddChild(node);
-                        m_CurrentNode = node;
-                    }
-                    break;
-                case ETokenType.RightBrace: //}
-                    {
-                        TryPopPairNode(ENodeType.Brace, token, "'}'");
-                    }
-                    break;
-                case ETokenType.Less:         // <
-                    {
-                        Node node = new Node(token);
-                        node.nodeType = ENodeType.LeftAngle;
-                        m_TokenIndex++;
-                        m_CurrentNode.AddChild(node);
-                    }
-                    break;
-                case ETokenType.Greater:            // >
-                    {
-                        Node node = new Node(token);
-                        node.nodeType = ENodeType.RightAngle;
-                        m_CurrentNode.AddChild(node);
-                        m_TokenIndex++;
-                    }
-                    break;
                 case ETokenType.LeftPar: //(
                     {
-                        Node node = new Node(token);
-                        node.nodeType = ENodeType.Par;
-                        m_TokenIndex++;
-                        m_CurrentNodeStack.Push(node);
+                        //Node node = new Node(token);
+                        //node.nodeType = ENodeType.Par;
+                        //m_TokenIndex++;
+                        //m_CurrentNodeStack.Push(node);
 
-                        m_CurrentNode.AddChild(node);
-                        m_CurrentNode = node;
+                        //m_CurrentNode.AddChild(node);
+                        //m_CurrentNode = node;
+                        AddParBlockBraceBegin(token, ENodeType.Par);
                     }
                     break;
                 case ETokenType.RightPar: //)
                     {
-                        TryPopPairNode(ENodeType.Par, token, "')'");
+                        //TryPopPairNode(ENodeType.Par, token, "')'");
+                        AddParBlockBraceEnd(token, ENodeType.Par);
                     }
                     break;
                 case ETokenType.LeftBracket://[
                     {
-                        Node node = new Node(token);
-                        node.nodeType = ENodeType.Bracket;
-                        m_TokenIndex++;
-                        m_CurrentNodeStack.Push(node);
+                        //Node node = new Node(token);
+                        //node.nodeType = ENodeType.Bracket;
+                        //m_TokenIndex++;
+                        //m_CurrentNodeStack.Push(node);
 
-                        m_CurrentNode.AddChild(node);
-                        m_CurrentNode = node;
+                        //m_CurrentNode.AddChild(node);
+                        //m_CurrentNode = node;
+                        AddParBlockBraceBegin(token, ENodeType.Bracket);
                     }
                     break;
                 case ETokenType.RightBracket://]
                     {
-                        TryPopPairNode(ENodeType.Bracket, token, "']'");
+                        //TryPopPairNode(ENodeType.Bracket, token, "']'");
+                        AddParBlockBraceEnd(token, ENodeType.Bracket);
+                    }
+                    break;
+                case ETokenType.LeftBrace: //{
+                    {
+                        //Node node = new Node(token);
+                        //node.nodeType = ENodeType.Brace;
+                        //m_CurrentNodeStack.Push(node);
+
+                        //m_CurrentNode.AddChild(node);
+                        //m_CurrentNode = node;
+                        AddParBlockBraceBegin( token, ENodeType.Brace );
+                    }
+                    break;
+                case ETokenType.RightBrace: //}
+                    {
+                        //TryPopPairNode(ENodeType.Brace, token, "'}'");
+                        AddParBlockBraceEnd(token, ENodeType.Brace);
+                    }
+                    break;
+                case ETokenType.Less:         // <
+                    {
+                        AddLessSign(token);
+                        m_TokenIndex++;
+                    }
+                    break;
+                case ETokenType.Greater:            // >
+                    {
+                        AddGreaterSign(token);
+                        m_TokenIndex++;
                     }
                     break;
                 case ETokenType.Period:  //.
@@ -408,33 +498,33 @@ namespace SimpleLanguage.Compile
                         node.priority = SignComputePriority.Level5_BitMoveOp;
                     }
                     break;
-                case ETokenType.Shr:               //  >>
-                    {
-                        // In nested generics like Map<List<int>,string>> the lexer produces Shr.
-                        // If we're currently inside an unclosed generic angle sequence, treat this
-                        // as two closing '>' tokens.
-                        if (IsInsideGenericAngleContext())
-                        {
-                            var t1 = new Token(token);
-                            t1.SetType(ETokenType.Greater);
-                            t1.SetLexeme(">");
-                            var n1 = new Node(t1) { nodeType = ENodeType.RightAngle };
-                            m_CurrentNode.AddChild(n1);
+                //case ETokenType.Shr:               //  >>
+                //    {
+                //        // In nested generics like Map<List<int>,string>> the lexer produces Shr.
+                //        // If we're currently inside an unclosed generic angle sequence, treat this
+                //        // as two closing '>' tokens.
+                //        if (IsInsideGenericAngleContext())
+                //        {
+                //            var t1 = new Token(token);
+                //            t1.SetType(ETokenType.Greater);
+                //            t1.SetLexeme(">");
+                //            var n1 = new Node(t1) { nodeType = ENodeType.RightAngle };
+                //            m_CurrentNode.AddChild(n1);
 
-                            var t2 = new Token(token);
-                            t2.SetType(ETokenType.Greater);
-                            t2.SetLexeme(">");
-                            var n2 = new Node(t2) { nodeType = ENodeType.RightAngle };
-                            m_CurrentNode.AddChild(n2);
+                //            var t2 = new Token(token);
+                //            t2.SetType(ETokenType.Greater);
+                //            t2.SetLexeme(">");
+                //            var n2 = new Node(t2) { nodeType = ENodeType.RightAngle };
+                //            m_CurrentNode.AddChild(n2);
 
-                            m_TokenIndex++;
-                        }
-                        else
-                        {
-                            AddBitMoveOperatorSymbol(token);
-                        }
-                    }
-                    break;
+                //            m_TokenIndex++;
+                //        }
+                //        else
+                //        {
+                //            AddBitMoveOperatorSymbol(token);
+                //        }
+                //    }
+                //    break;
                 case ETokenType.GreaterOrEqual:  // >=
                 case ETokenType.LessOrEqual:     // <=
                     {
@@ -632,24 +722,24 @@ namespace SimpleLanguage.Compile
         /// Best-effort generic context detection: if there's an unclosed '<' in the current node list,
         /// prefer treating '>>' as two generic closing tokens instead of a shift operator.
         /// </summary>
-        private bool IsInsideGenericAngleContext()
-        {
-            // Scan current node's direct children and compute a simple depth for angle brackets.
-            // This intentionally ignores nested node stacks (Par/Brace/Bracket), because '>>' that
-            // tokenizes inside those should still typically behave as shift.
-            int depth = 0;
-            var list = m_CurrentNode?.childList;
-            if (list == null) return false;
+        //private bool IsInsideGenericAngleContext()
+        //{
+        //    // Scan current node's direct children and compute a simple depth for angle brackets.
+        //    // This intentionally ignores nested node stacks (Par/Brace/Bracket), because '>>' that
+        //    // tokenizes inside those should still typically behave as shift.
+        //    int depth = 0;
+        //    var list = m_CurrentNode?.childList;
+        //    if (list == null) return false;
 
-            for (int i = 0; i < list.Count; i++)
-            {
-                var n = list[i];
-                if (n == null) continue;
-                if (n.nodeType == ENodeType.LeftAngle) depth++;
-                else if (n.nodeType == ENodeType.RightAngle && depth > 0) depth--;
-            }
-            return depth > 0;
-        }
+        //    for (int i = 0; i < list.Count; i++)
+        //    {
+        //        var n = list[i];
+        //        if (n == null) continue;
+        //        if (n.nodeType == ENodeType.LeftAngle) depth++;
+        //        else if (n.nodeType == ENodeType.RightAngle && depth > 0) depth--;
+        //    }
+        //    return depth > 0;
+        //}
         public void WriteNodeString(bool isWriteFile)
         {
             try

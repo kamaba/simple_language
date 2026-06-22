@@ -430,7 +430,8 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    AddToken(ETokenType.Shr, ">>");
+                    //AddToken(ETokenType.Shr, ">>");
+                    UndoChar();
                     UndoChar();
                 }
             }
@@ -457,7 +458,8 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    AddToken(ETokenType.Shi, "<<");
+                    //AddToken(ETokenType.Shi, "<<");
+                    UndoChar();
                     UndoChar();
                 }
             }

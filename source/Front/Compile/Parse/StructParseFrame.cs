@@ -306,7 +306,7 @@ namespace SimpleLanguage.Compile
                         case ETokenType.Local:
                             {
                                 // local{} must be after imports and before any namespace/class definitions.
-                                if (hasNamespaceOrClass)
+                                if (hasNamespaceOrClass || hasNamespaceOrClass )
                                 {
                                     Log.AddFileMetaLog(LID.ShowExtendMessage, node.token, "Error local{} 只能写在 import 后、namespace/class/data/enum 前");
                                     pnode.parseIndex++;
@@ -529,13 +529,19 @@ namespace SimpleLanguage.Compile
             }
 
             Node blockNode = null;
-            if (pnode.parseIndex < pnode.childList.Count)
+            while (pnode.parseIndex < pnode.childList.Count)
             {
                 var next = pnode.childList[pnode.parseIndex];
                 if (next != null && next.nodeType == ENodeType.Brace)
                 {
                     blockNode = next;
                     pnode.parseIndex++;
+                    break;
+                }
+                if( next.nodeType == ENodeType.Comment )
+                {
+                    pnode.parseIndex++;
+                    continue;
                 }
                 else if (next != null && next.nodeType == ENodeType.LineEnd)
                 {
@@ -546,6 +552,7 @@ namespace SimpleLanguage.Compile
                         {
                             blockNode = next2;
                             pnode.parseIndex += 2;
+                            break;
                         }
                     }
                 }
@@ -916,11 +923,15 @@ namespace SimpleLanguage.Compile
                     }
                     nodeList.Add(curNode);
                 }
-                else if (curNode.nodeType == ENodeType.LeftAngle)   //Class1<T> 
-                {
-                    nodeList.Add(curNode);
-                }
-                else if (curNode.nodeType == ENodeType.RightAngle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
+                //else if (curNode.nodeType == ENodeType.LeftAngle)   //Class1<T> 
+                //{
+                //    nodeList.Add(curNode);
+                //}
+                //else if (curNode.nodeType == ENodeType.RightAngle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
+                //{
+                //    nodeList.Add(curNode);
+                //}
+                else if( curNode.nodeType == ENodeType.Angle )
                 {
                     nodeList.Add(curNode);
                 }
@@ -1087,11 +1098,15 @@ namespace SimpleLanguage.Compile
                 {
                     nodeList.Add(curNode);
                 }
-                else if (curNode.nodeType == ENodeType.LeftAngle)   //Class1<T> 
-                {
-                    nodeList.Add(curNode);
-                }
-                else if (curNode.nodeType == ENodeType.RightAngle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
+                //else if (curNode.nodeType == ENodeType.LeftAngle)   //Class1<T> 
+                //{
+                //    nodeList.Add(curNode);
+                //}
+                //else if (curNode.nodeType == ENodeType.RightAngle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
+                //{
+                //    nodeList.Add(curNode);
+                //}
+                else if( curNode.nodeType == ENodeType.Angle )
                 {
                     nodeList.Add(curNode);
                 }
@@ -1968,6 +1983,8 @@ namespace SimpleLanguage.Compile
         {
             List<Node> handleBeforeList = new List<Node>();
 
+            handleBeforeList = nodeList;
+            /*
             Node lastAttachable = null;      // last IdentifierLink or 'new'
             Node pendingAngleOwner = null;   // identifier that owns current '<>'
             int angleDepth = 0;              // nested generic depth
@@ -2257,7 +2274,7 @@ namespace SimpleLanguage.Compile
                 }
                 pendingAngleOwner.SetAngleNode(null);
             }
-
+            */
             return handleBeforeList;
         }
         /*

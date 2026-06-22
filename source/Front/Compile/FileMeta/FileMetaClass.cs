@@ -122,16 +122,16 @@ namespace SimpleLanguage.Compile
                         {
                             if(m_FileMetaExtendClass != null )
                             {
-                                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 已有继承类,请勿多重继承!");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error 已有继承类,请勿多重继承!");
 
                             }
                             if (fcdList.Count == 0 )
                             {
-                                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 继承关键字后边没有相应的内容!");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error 继承关键字后边没有相应的内容!");
                             }
                             if (fcdList.Count > 1)
                             {
-                                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 继承只能单继承，不能多继承!!");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error 继承只能单继承，不能多继承!!");
                             }
                             m_FileMetaExtendClass = fcdList[0];
                         }
@@ -139,7 +139,7 @@ namespace SimpleLanguage.Compile
                         {
                             if (fcdList.Count == 0)
                             {
-                                Log.AddFileMetaLog(LID.ShowExtendMessage, "接口关键字后边没有相应的内容!");
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, m_SufInterfaceToken, "接口关键字后边没有相应的内容!");
                             }
                             m_InterfaceClassList.AddRange(fcdList);
                         }
@@ -148,7 +148,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (classNameTokenList.Count > 0)
                         {
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 字符两次赋值 107");
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error 字符两次赋值 107");
                             for (int i = 0; i < classNameTokenList.Count; i++)
                             {
                                 Log.AddFileMetaLog(LID.ShowExtendMessage, classNameTokenList[i].lexeme.ToString());

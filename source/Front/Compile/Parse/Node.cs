@@ -35,8 +35,9 @@ namespace SimpleLanguage.Compile
         None,
         Root,
         Brace,
-        LeftAngle,
-        RightAngle,
+        Angle,
+        //LeftAngle,
+        //RightAngle,
         Par,
         Bracket,
         Symbol,
@@ -65,7 +66,6 @@ namespace SimpleLanguage.Compile
         public List<Node> childList => m_ChildList;
         public List<Node> extendLinkNodeList => m_ExtendLinkNodeList;
         public int priority { get; set; } = -1;
-        public bool isDel { get; set; } = false;
         public Token token => m_Token;
         public Token endToken { get; set; } = null;
         public Token linkToken { get; set; } = null;         //.节点
@@ -75,11 +75,10 @@ namespace SimpleLanguage.Compile
         public int parseIndex = 0;
 
         public Node parent => m_Parent;
+        public Node angleNode => m_AngleNode;           // <>的节点
         public Node parNode => m_ParNode;             //(小括号的节点
         public Node blockNode => m_BlockNode;           //{大括号的节点
-        public Node bracketNode => m_BracketNodeList.Count > 0 ? m_BracketNodeList[m_BracketNodeList.Count - 1] : null;
         public List<Node> bracketNodeList => m_BracketNodeList;
-        public Node angleNode => m_AngleNode;
         public Node lastNode => m_LastNode;         // 最后处理的节点
         public ENodeType nodeType { get; set; } =  ENodeType.None;
 
@@ -152,10 +151,6 @@ namespace SimpleLanguage.Compile
             }
             return node;
         }
-        public void SetChildList( List<Node> nodes )
-        {
-            this.m_ChildList = nodes;
-        }   
         public void SetLastNode( Node lastNode )
         {
             this.m_LastNode = lastNode;
@@ -176,6 +171,11 @@ namespace SimpleLanguage.Compile
         //{
         //    m_NodeType = ent;
         //}
+        public void AddAngleLeftNode(Node node)
+        {
+            if (lastNode == null) return;
+            lastNode.m_AngleNode = node;
+        }
         public void AddLinkNode(Node node )
         {
             if (lastNode == null) return;
@@ -227,69 +227,8 @@ namespace SimpleLanguage.Compile
         {
             this.childList.Add(c);
         }
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            switch(nodeType )
-            {
-                case ENodeType.Root:
-                    {
-                        sb.Append("root");
-                    }
-                    break;
-                case ENodeType.IdentifierLink:
-                    {
-                        sb.Append(token != null ? token.ToString() : base.ToString());
-                    }
-                    break;
-                case ENodeType.Brace:
-                    {
-                        sb.Append("  {    }  ");
-                    }
-                    break;
-                case ENodeType.Bracket:
-                    {
-                        sb.Append("  [   ]  ");
-                    }
-                    break;
-                case ENodeType.LeftAngle:
-                    {
-                        sb.Append(" < ");
-                    }
-                    break;
-                case ENodeType.RightAngle:
-                    {
-                        sb.Append(" > ");
-                    }
-                    break;
-                case ENodeType.Par:
-                    {
-                        sb.Append("   (     )   ");
-                    }
-                    break;
-                case ENodeType.Key:
-                    {
-                        sb.Append(token.ToString());
-                    }
-                    break;
-                case ENodeType.LineEnd:
-                    {
-                        sb.AppendLine("换行");
-                    }
-                    break;
-                case ENodeType.SemiColon:
-                    {
-                        sb.AppendLine(";");
-                    }
-                    break;
-                default:
-                    {
-                        sb.Append(token != null ? token.ToString() : base.ToString());
-                    }
-                    break;
-            }
-            return sb.ToString();
-        }
+
+
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -384,7 +323,7 @@ namespace SimpleLanguage.Compile
                     }
                 }
             }
-            else if (nodeType == ENodeType.LeftAngle)
+            else if( nodeType == ENodeType.Angle)
             {
                 sb.Append(token?.lexeme.ToString() + " ");
                 for (int i = 0; i < childList.Count; i++)
@@ -393,15 +332,24 @@ namespace SimpleLanguage.Compile
                 }
                 sb.Append(endToken?.lexeme.ToString());
             }
-            else if (nodeType == ENodeType.RightAngle)
-            {
-                sb.Append(token?.lexeme.ToString() + " ");
-                for (int i = 0; i < childList.Count; i++)
-                {
-                    sb.Append(childList[i].ToFormatString());
-                }
-                sb.Append(endToken?.lexeme.ToString());
-            }
+            //else if (nodeType == ENodeType.LeftAngle)
+            //{
+            //    sb.Append(token?.lexeme.ToString() + " ");
+            //    for (int i = 0; i < childList.Count; i++)
+            //    {
+            //        sb.Append(childList[i].ToFormatString());
+            //    }
+            //    sb.Append(endToken?.lexeme.ToString());
+            //}
+            //else if (nodeType == ENodeType.RightAngle)
+            //{
+            //    sb.Append(token?.lexeme.ToString() + " ");
+            //    for (int i = 0; i < childList.Count; i++)
+            //    {
+            //        sb.Append(childList[i].ToFormatString());
+            //    }
+            //    sb.Append(endToken?.lexeme.ToString());
+            //}
             else if( nodeType == ENodeType.Key )
             {
                 sb.Append( this.token?.lexeme.ToString() );
@@ -436,6 +384,75 @@ namespace SimpleLanguage.Compile
             }
             sb.Append(" ");
 
+            return sb.ToString();
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            switch (nodeType)
+            {
+                case ENodeType.Root:
+                    {
+                        sb.Append("root");
+                    }
+                    break;
+                case ENodeType.IdentifierLink:
+                    {
+                        sb.Append(token != null ? token.ToString() : base.ToString());
+                    }
+                    break;
+                case ENodeType.Brace:
+                    {
+                        sb.Append("  {    }  ");
+                    }
+                    break;
+                case ENodeType.Bracket:
+                    {
+                        sb.Append("  [   ]  ");
+                    }
+                    break;
+                case ENodeType.Angle:
+                    {
+                        sb.Append("  <   >  ");
+                    }
+                    break;
+                //case ENodeType.LeftAngle:
+                //    {
+                //        sb.Append(" < ");
+                //    }
+                //    break;
+                //case ENodeType.RightAngle:
+                //    {
+                //        sb.Append(" > ");
+                //    }
+                //    break;
+                case ENodeType.Par:
+                    {
+                        sb.Append("   (     )   ");
+                    }
+                    break;
+                case ENodeType.Key:
+                    {
+                        sb.Append(token.ToString());
+                    }
+                    break;
+                case ENodeType.LineEnd:
+                    {
+                        sb.AppendLine("换行");
+                    }
+                    break;
+                case ENodeType.SemiColon:
+                    {
+                        sb.AppendLine(";");
+                    }
+                    break;
+                default:
+                    {
+                        sb.Append(token != null ? token.ToString() : base.ToString());
+                    }
+                    break;
+            }
             return sb.ToString();
         }
     }

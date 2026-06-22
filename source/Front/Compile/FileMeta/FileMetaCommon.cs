@@ -302,14 +302,12 @@ namespace SimpleLanguage.Compile
                     m_InputTemplateNodeList.Add(aa);
                 }
             }
-            if (_node.bracketNode != null)     //[1][1][2][]
+            for (int i = 0; i < _node.bracketNodeList.Count; i++) //[1][1][2][]
             {
-                for (int i = 0; i < _node.bracketNodeList.Count; i++)
-                {
-                    var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, _node.bracketNodeList[i]);
-                    m_FileMetaBracketTermList.Add(fileMetaBracketTerm);
-                }
+                var fileMetaBracketTerm = new FileMetaBracketTerm(m_FileMeta, _node.bracketNodeList[i]);
+                m_FileMetaBracketTermList.Add(fileMetaBracketTerm);
             }
+            
             if (_node.blockNode != null)     // { 1,2,3,4 }  { [1,2,3], [2,3,4] }
             {
                 m_FileMetaBraceTerm = new FileMetaBraceTerm(m_FileMeta, _node.blockNode);
@@ -642,7 +640,7 @@ namespace SimpleLanguage.Compile
                     m_InputTemplateNodeList.Add(fmcn);
                 }
             }
-            if (node.bracketNode != null)
+            if (node.bracketNodeList.Count > 0)
             {
                 isArray = true;
 

@@ -141,9 +141,9 @@ namespace SimpleLanguage
         XORAssign,
         /// <summary>  ~ 取反操作 </summary>
         Negative,
-        /// <summary> << 左移 </summary>
+        ///// <summary> << 左移 </summary>
         Shi,
-        /// <summary> >> 右移 </summary>
+        ///// <summary> >> 右移 </summary>
         Shr,
         /// <summary> <<= 左移赋值 </summary>
         ShiAssign,

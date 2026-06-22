@@ -405,6 +405,14 @@ ExpressTest
         Application.Class2.m2 = 200
         global.println("Class2.m2 after assignment = " + Application.Core.Class2.m2.toString())
     }
+    Level<T>
+    {
+        static T t = new()
+        _init_( T it )
+        {
+            this.t = t
+        }
+    }
 
     static complexNestedExpressionTest()
     {
@@ -413,11 +421,15 @@ ExpressTest
         int a = 10
         int b = 20
         int c = 30
-        int result = (a + b) * c / (b - a) + (a > b ? a : b) * 2
+        int result = (a + b) * c / (b - a) + (a < b ? b:a ) - (a > b ? a : b) * 2
         global.println("complex expression result = " + result.toString())
 
         bool condition = a < b && b > c || a == 10
         global.println("complex bool expression = " + condition.toString())
+        Level<int>.t = 100
+        Level<short>.t = 200
+        condition2 = Level<int>.t < 10 || Level<short>.t > 20
+        global.println("complex2 bool expression = " + condition2.toString())
 
         int nested = ((a + b) * (c - a)) / (b / 2) + (a % b)
         global.println("nested arithmetic = " + nested.toString())
