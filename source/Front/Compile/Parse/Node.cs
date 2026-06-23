@@ -370,7 +370,7 @@ namespace SimpleLanguage.Compile
             }
             else if( nodeType == ENodeType.LineEnd )
             {
-                //sb.Append(" ");
+                sb.AppendLine();
             }
             else
             {
