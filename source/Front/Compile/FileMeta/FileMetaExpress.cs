@@ -1116,7 +1116,7 @@ namespace SimpleLanguage.Compile
                     {
                         continue;
                     }
-                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, list);
+                    //FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, list);
 
                     //AddFileMemberVariable(fmmd);
 
@@ -1137,7 +1137,7 @@ namespace SimpleLanguage.Compile
 
                     type = 1;
 
-                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, EMemberDataType.NoNameClass);
+                    //FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, EMemberDataType.NoNameClass);
 
                     //AddFileMemberVariable(fmmd);
                 }
@@ -1151,7 +1151,7 @@ namespace SimpleLanguage.Compile
 
                     type = 3;
 
-                    FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, global::SimpleLanguage.Compile.EMemberDataType.Array);
+                    //FileMetaMemberVariable fmmd = new FileMetaMemberVariable(m_FileMeta, curNode, null, global::SimpleLanguage.Compile.EMemberDataType.Array);
 
                     //AddFileMemberVariable(fmmd);
                 }
