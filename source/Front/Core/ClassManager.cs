@@ -388,7 +388,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Log.AddFileMetaLog(LID.MetaCoreAssertShowMessage, fmc.token, "已经有一个重复的定义类了");
+                                Log.AddFileMetaLog(LID.MetaCoreAssertShowMessage, fmc.token, ffmc.token?.ToLexemeAllString() + "已经有一个重复的定义类了");
                                 return null;
                             }
                         }

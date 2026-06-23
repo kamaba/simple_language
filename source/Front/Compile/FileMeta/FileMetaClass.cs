@@ -156,16 +156,10 @@ namespace SimpleLanguage.Compile
                         }
                         classNameTokenList = cnode.linkTokenList;
 
-                        Node nnode = null;
-                        if (addCount < m_NodeList.Count)
+                        if(cnode?.angleNode != null)
                         {
-                            nnode = m_NodeList[addCount];
-                        }
-
-                        if( nnode?.angleNode != null)
-                        {
-                            var childlist = nnode.childList;
-                            int cAddCount = addCount + 1;
+                            var childlist = cnode.angleNode.childList;
+                            int cAddCount = 0;
                             bool templateInExtends = false;
                             Node covarianceToken = null;
                             Node templateNode = null;
@@ -173,20 +167,6 @@ namespace SimpleLanguage.Compile
                             while (cAddCount < childlist.Count)
                             {
                                 var cnode2 = childlist[cAddCount++];
-                                //if (cnode2.nodeType == ENodeType.RightAngle)
-                                //{
-                                //    if (templateNode == null)
-                                //    {
-                                //        var ld = Log.AddFileMetaLog(LID.ShowExtendMessage, "没有找到模板定义T");
-                                //        ld.filePath = cnode2.token.path;
-                                //        ld.sourceBeginLine = cnode2.token.sourceBeginLine;
-                                //        break;
-                                //    }
-                                //    FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, covarianceToken, templateNode, templateExtendsNode);
-                                //    m_TemplateDefineList.Add(fmtd);
-                                //    break;
-                                //}
-                                //else 
                                 if (cnode2.nodeType == ENodeType.Comma)
                                 {
                                     FileMetaTemplateDefine fmtd = new FileMetaTemplateDefine(m_FileMeta, covarianceToken, templateNode, templateExtendsNode);
@@ -224,8 +204,6 @@ namespace SimpleLanguage.Compile
                                     Log.AddFileMetaLog(LID.ShowExtendMessage, cnode2.token, "Error 不支持其它格式 在类后续的模板限定中!");
                                 }
                             }
-                            addCount = cAddCount;
-
                             FileMetaTemplateDefine ffmtd = new FileMetaTemplateDefine(m_FileMeta, covarianceToken, templateNode, templateExtendsNode);
                             m_TemplateDefineList.Add(ffmtd);
                         }
@@ -542,37 +520,37 @@ namespace SimpleLanguage.Compile
 
             return true;
         }
-        public class ParseStructTemp
+        //public class ParseStructTemp
+        //{
+        //    public ParseStructTemp parentPSt { get; set; } = null;
+        //    public Node nameNode { get; set; } = null;
+        //    public Node angleNode { get; set; } = null;
+
+        //    public List<ParseStructTemp> angleContentNodeList = new List<ParseStructTemp>();
+
+        //    public void AddParseStructTemplate( ParseStructTemp pst )
+        //    {
+        //        angleContentNodeList.Add(pst);
+        //        pst.parentPSt = this;
+        //    }
+
+        //    public void GenFileInputTemplateNode( Node node, FileMeta fm )
+        //    {
+        //        node.SetAngleNode( angleNode );
+        //        for ( int i = 0; i < angleContentNodeList.Count; i++ )
+        //        {
+        //            node.angleNode.AddChild( angleContentNodeList[i].nameNode);
+        //            if(angleContentNodeList[i].angleContentNodeList.Count > 0 )
+        //            {
+        //                angleContentNodeList[i].GenFileInputTemplateNode(angleContentNodeList[i].nameNode, fm );
+        //            }
+        //        }
+        //    }
+        //}
+        public int ReadClassDefineStruct( int cAddCount, List<Node> nodeList, List<FileMetaClassDefine> fcdList )
         {
-            public ParseStructTemp parentPSt { get; set; } = null;
-            public Node nameNode { get; set; } = null;
-            public Node angleNode { get; set; } = null;
-
-            public List<ParseStructTemp> angleContentNodeList = new List<ParseStructTemp>();
-
-            public void AddParseStructTemplate( ParseStructTemp pst )
-            {
-                angleContentNodeList.Add(pst);
-                pst.parentPSt = this;
-            }
-
-            public void GenFileInputTemplateNode( Node node, FileMeta fm )
-            {
-                node.SetAngleNode( angleNode );
-                for ( int i = 0; i < angleContentNodeList.Count; i++ )
-                {
-                    node.angleNode.AddChild( angleContentNodeList[i].nameNode);
-                    if(angleContentNodeList[i].angleContentNodeList.Count > 0 )
-                    {
-                        angleContentNodeList[i].GenFileInputTemplateNode(angleContentNodeList[i].nameNode, fm );
-                    }
-                }
-            }
-        }
-        public int ReadClassDefineStruct( int cAddCount, List<Node> m_NodeList, List<FileMetaClassDefine> fcdList )
-        {
-            List<ParseStructTemp> rootPST = new List<ParseStructTemp>();
-            ParseStructTemp curPST = null;
+            //List<ParseStructTemp> rootPST = new List<ParseStructTemp>();
+            //ParseStructTemp curPST = null;
             while (cAddCount < m_NodeList.Count)
             {
                 var cnode2 = m_NodeList[cAddCount];
@@ -617,32 +595,35 @@ namespace SimpleLanguage.Compile
                     continue;
                 }
                 else if (cnode2.nodeType == ENodeType.IdentifierLink
-                    || (cnode2.nodeType == ENodeType.Key && cnode2.token.type == ETokenType.Object ))
+                    || ( cnode2.token.type == ETokenType.Object ))
                 {
-                    ParseStructTemp newpst = null;
-                    if (curPST == null)
-                    {
-                        newpst = new ParseStructTemp();
-                        newpst.nameNode = cnode2;
-                        rootPST.Add(newpst);
-                    }
-                    else
-                    {
-                        newpst = new ParseStructTemp();
-                        newpst.nameNode = cnode2;
-                        curPST.AddParseStructTemplate(newpst);
-                    }
-                    
-                    if( cAddCount + 1 < m_NodeList.Count )
-                    {
-                        var nextNode = m_NodeList[cAddCount + 1];
-                        //if (nextNode.nodeType == ENodeType.LeftAngle)
-                        //{
-                        //    cAddCount++;
-                        //    newpst.angleNode = nextNode;
-                        //    curPST = newpst;
-                        //}
-                    }                    
+                    FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, cnode2, null );
+
+                    fcdList.Add(fmcd);
+                    //ParseStructTemp newpst = null;
+                    //if (curPST == null)
+                    //{
+                    //    newpst = new ParseStructTemp();
+                    //    newpst.nameNode = cnode2;
+                    //    rootPST.Add(newpst);
+                    //}
+                    //else
+                    //{
+                    //    newpst = new ParseStructTemp();
+                    //    newpst.nameNode = cnode2;
+                    //    curPST.AddParseStructTemplate(newpst);
+                    //}
+
+                    //if( cAddCount + 1 < m_NodeList.Count )
+                    //{
+                    //    var nextNode = m_NodeList[cAddCount + 1];
+                    //    //if (nextNode.nodeType == ENodeType.LeftAngle)
+                    //    //{
+                    //    //    cAddCount++;
+                    //    //    newpst.angleNode = nextNode;
+                    //    //    curPST = newpst;
+                    //    //}
+                    //}                    
                 }
                 else if( cnode2.nodeType == ENodeType.Key && cnode2.token.type == ETokenType.Interface )
                 {
@@ -655,29 +636,29 @@ namespace SimpleLanguage.Compile
                 }
                 cAddCount++;
             }
-            for( int i = 0; i < rootPST.Count; i++ )
-            {
-                var pst = rootPST[i];
-                Node nameNode = pst.nameNode;
-                pst.GenFileInputTemplateNode(nameNode, m_FileMeta);
-                // detect nullable marker following the type node (e.g. `T?`)
-                Node qNode = null;
-                if (pst.nameNode.parent != null)
-                {
-                    var siblings = pst.nameNode.parent.childList;
-                    int idx = siblings.IndexOf(pst.nameNode);
-                    if (idx >= 0 && idx + 1 < siblings.Count)
-                    {
-                        var nextNode = siblings[idx + 1];
-                        if (nextNode.nodeType == ENodeType.QuestionMark || (nextNode.token != null && nextNode.token.type == ETokenType.QuestionMark))
-                        {
-                            qNode = nextNode;
-                        }
-                    }
-                }
-                FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, pst.nameNode, qNode);
-                fcdList.Add(fmcd);
-            }
+            //for( int i = 0; i < rootPST.Count; i++ )
+            //{
+            //    var pst = rootPST[i];
+            //    Node nameNode = pst.nameNode;
+            //    pst.GenFileInputTemplateNode(nameNode, m_FileMeta);
+            //    // detect nullable marker following the type node (e.g. `T?`)
+            //    Node qNode = null;
+            //    if (pst.nameNode.parent != null)
+            //    {
+            //        var siblings = pst.nameNode.parent.childList;
+            //        int idx = siblings.IndexOf(pst.nameNode);
+            //        if (idx >= 0 && idx + 1 < siblings.Count)
+            //        {
+            //            var nextNode = siblings[idx + 1];
+            //            if (nextNode.nodeType == ENodeType.QuestionMark || (nextNode.token != null && nextNode.token.type == ETokenType.QuestionMark))
+            //            {
+            //                qNode = nextNode;
+            //            }
+            //        }
+            //    }
+            //    FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, pst.nameNode, qNode);
+            //    fcdList.Add(fmcd);
+            //}
 
             return cAddCount;
         }
