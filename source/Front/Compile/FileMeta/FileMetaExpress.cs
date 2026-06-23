@@ -350,7 +350,7 @@ namespace SimpleLanguage.Compile
                 Log.AddFileMetaLog(LID.ShowExtendMessage, "Error FileMetaAsOrIsTerm 参数不合法，无法构造 as/is 表达式");
                 return;
             }
-            typeNodes = FileMetatUtil.HandleClassDefineNodes(typeNodes);
+            //typeNodes = FileMetatUtil.HandleClassDefineNodes(typeNodes);
 
             m_AsOrIsToken = asOrisToken;
             m_Token = m_AsOrIsToken;
@@ -1383,9 +1383,10 @@ namespace SimpleLanguage.Compile
             if (nodeList.Count == 0) return;
             FileMetaBaseTerm fmbt = null;
             //FileMetaCallLink fileMetaCallLink = null;
-            for (int i = 0; i < nodeList.Count; i++)
+            int index = 0;
+            while( index < nodeList.Count )
             {
-                var node = nodeList[i];
+                var node = nodeList[index++];
                 if (node.nodeType == ENodeType.Symbol)
                 {
                     FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
@@ -1426,20 +1427,34 @@ namespace SimpleLanguage.Compile
                 }
                 else if (node.nodeType == ENodeType.Key )
                 {
-                    if(node.token?.type == ETokenType.As
-                    || node.token?.type == ETokenType.Is )
+                    if(node.token.type == ETokenType.As
+                    || node.token.type == ETokenType.Is )
                     {
                         FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(m_FileMeta, node.token);
                         fmn.priority = node.priority;
                         AddFileMetaTerm(fmn);
                         fmbt = null;
                     }
-                    else if(node.token?.type == ETokenType.This
-                    || node.token?.type == ETokenType.Base
-                    || node.token?.type == ETokenType.New
-                    || node.token?.type == ETokenType.Global 
-                    || node.token?.type == ETokenType.Local )
+                    else if(node.token.type == ETokenType.This
+                    || node.token.type == ETokenType.Base
+                    || node.token.type == ETokenType.Global 
+                    || node.token.type == ETokenType.Local )
                     {
+                        fmbt = new FileMetaCallTerm(m_FileMeta, node);
+                        fmbt.priority = int.MaxValue;
+                        AddFileMetaTerm(fmbt);
+                    }
+                    else if( node.token.type == ETokenType.New )
+                    {
+                        Node block = null;
+                        if (index < nodeList.Count)
+                        {
+                            if (nodeList[index].nodeType == ENodeType.Brace)
+                            {
+                                block = nodeList[index++];
+                                node.SetBlockNode(block);
+                            }
+                        }
                         fmbt = new FileMetaCallTerm(m_FileMeta, node);
                         fmbt.priority = int.MaxValue;
                         AddFileMetaTerm(fmbt);
@@ -1454,6 +1469,15 @@ namespace SimpleLanguage.Compile
                     if(fmbt != null )
                     {
                         Log.AddFileMetaLog( LID.FileMetaExpressBeforeDefine, fmbt.token, "" );
+                    }
+                    Node block = null;
+                    if( index < nodeList.Count )
+                    {
+                        if (nodeList[index].nodeType == ENodeType.Brace)
+                        {
+                            block = nodeList[index++];
+                            node.SetBlockNode(block);
+                        }
                     }
                     fmbt = new FileMetaCallTerm(m_FileMeta, node);
                     fmbt.priority = int.MaxValue;

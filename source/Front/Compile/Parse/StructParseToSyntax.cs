@@ -490,12 +490,13 @@ namespace SimpleLanguage.Compile
             FileMetaClassDefine classRef = null;
             FileMetaCallLink varRef = null;
 
-            var handleBeforeList = FileMetatUtil.HandleClassDefineNodes(beforeNodeList);
+            //var handleBeforeList = FileMetatUtil.HandleClassDefineNodes(beforeNodeList);
+            //var handleBeforeList = beforeNodeList;
 
             List <Node> defineNodeList = new List<Node>();
-            for (int i = 0; i < handleBeforeList.Count; i++)
+            for (int i = 0; i < beforeNodeList.Count; i++)
             {
-                var cnode = handleBeforeList[i];
+                var cnode = beforeNodeList[i];
                 if (cnode.nodeType == ENodeType.IdentifierLink)
                 {
                     defineNodeList.Add(cnode);

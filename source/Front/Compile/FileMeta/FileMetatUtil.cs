@@ -131,8 +131,8 @@ namespace SimpleLanguage.Compile
             {
                 return false;
             }
-            preNodeList = FileMetatUtil.HandleClassDefineNodes(preNodeList);
-            afterNodeList = HandleExpressNodes(afterNodeList);
+            //preNodeList = FileMetatUtil.HandleClassDefineNodes(preNodeList);
+            //afterNodeList = HandleExpressNodes(afterNodeList);
             return true;
         }
         public static List<Node> HandleClassDefineNodes(List<Node> nodeList)
@@ -363,6 +363,11 @@ namespace SimpleLanguage.Compile
                 fmbt = new FileMetaBracketTerm(fm, node);
                 fmbt.priority = SignComputePriority.Level1;
             }
+            else if( node.nodeType == ENodeType.Key && node.token?.type == ETokenType.New )
+            {
+                fmbt = new FileMetaCallTerm(fm, node);
+                fmbt.priority = int.MaxValue;
+            }
             else
             {
                 Log.AddFileMetaLog(LID.ShowExtendMessage, "Error CreateFileOneTerm 单1表达式，没有找到该类型: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
@@ -425,7 +430,7 @@ namespace SimpleLanguage.Compile
                 }
             }
 
-            if (questionIndex > 0 && colonIndex > questionIndex + 1 && colonIndex < nodeList.Count - 1)
+            if (questionIndex > 0 && colonIndex > questionIndex && colonIndex < nodeList.Count - 1)
             {
                 // 拆成 condition ? trueExpr : falseExpr
                 var condList = nodeList.GetRange(0, questionIndex);

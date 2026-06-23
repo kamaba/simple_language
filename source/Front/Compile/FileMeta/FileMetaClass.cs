@@ -92,7 +92,7 @@ namespace SimpleLanguage.Compile
         {
             if (m_NodeList.Count == 0)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 错误 !!!");
+                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error m_NodeList.Count == 0");
                 return false;
             }
 
@@ -311,6 +311,10 @@ namespace SimpleLanguage.Compile
                             isError = true;
                             Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次权限!!");
                         }
+                    }
+                    else if( token.type == ETokenType.Void )
+                    {
+
                     }
                     else if (token.type == ETokenType.Const)
                     {

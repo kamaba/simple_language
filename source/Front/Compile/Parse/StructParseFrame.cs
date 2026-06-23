@@ -60,7 +60,7 @@ namespace SimpleLanguage.Compile
             {
                 codeFunction = nsf;
                 parseType = EParseNodeType.Function;
-            }           
+            }
             public ParseCurrentNodeInfo(FileMetaSyntax nss)
             {
                 codeSyntax = nss;
@@ -81,7 +81,7 @@ namespace SimpleLanguage.Compile
         protected Node m_RootNode = null;
         protected Stack<ParseCurrentNodeInfo> m_CurrentNodeInfoStack = new Stack<ParseCurrentNodeInfo>();
 
-        public StructParse(FileMeta fm, Node node )
+        public StructParse(FileMeta fm, Node node)
         {
             m_FileMeta = fm;
             m_RootNode = node;
@@ -96,7 +96,7 @@ namespace SimpleLanguage.Compile
             {
                 currentNodeInfo.codeNamespace.AddFileNamespace(fmn);
             }
-            else 
+            else
             {
                 Log.AddFileMetaLog(LID.ShowExtendMessage, fmn.namespaceNode.token, "Error AddParseNamespaceNodeInfo");
             }
@@ -122,7 +122,7 @@ namespace SimpleLanguage.Compile
             {
                 Log.AddNodeLog(LID.ShowExtendMessage, fmc.token, "Error AddParseClassNodeInfo");
                 return;
-            }        
+            }
             m_FileMeta.AddFileMetaAllClass(fmc);
 
             ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmc);
@@ -146,7 +146,7 @@ namespace SimpleLanguage.Compile
             {
                 currentNodeInfo.codeClass.AddFileMemberData(fmmd);
             }
-            else if (currentNodeInfo.parseType == EParseNodeType.DataMemeber )
+            else if (currentNodeInfo.parseType == EParseNodeType.DataMemeber)
             {
                 currentNodeInfo.codeData.AddFileMemberData(fmmd);
             }
@@ -171,7 +171,7 @@ namespace SimpleLanguage.Compile
                 Log.AddNodeLog(LID.ShowExtendMessage, fmmf.token, "Error AddParseFunctionNodeInfo");
                 return;
             }
-            
+
             ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmmf);
 
             m_CurrentNodeInfoStack.Push(pcni);
@@ -193,7 +193,7 @@ namespace SimpleLanguage.Compile
             }
 
             if (isAddParseCurrentNNode)
-            { 
+            {
                 ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fms);
                 m_CurrentNodeInfoStack.Push(pcni);
             }
@@ -266,10 +266,10 @@ namespace SimpleLanguage.Compile
 
             Node pnode = m_RootNode;
             bool hasNamespaceOrClass = false;
-            while(pnode.parseIndex < pnode.childList.Count)
-            { 
+            while (pnode.parseIndex < pnode.childList.Count)
+            {
                 var node = m_RootNode.childList[pnode.parseIndex];
-                if( node.nodeType == ENodeType.LineEnd )
+                if (node.nodeType == ENodeType.LineEnd)
                 {
                     pnode.parseIndex++;
                     continue;
@@ -306,7 +306,7 @@ namespace SimpleLanguage.Compile
                         case ETokenType.Local:
                             {
                                 // local{} must be after imports and before any namespace/class definitions.
-                                if (hasNamespaceOrClass || hasNamespaceOrClass )
+                                if (hasNamespaceOrClass || hasNamespaceOrClass)
                                 {
                                     Log.AddFileMetaLog(LID.ShowExtendMessage, node.token, "Error local{} 只能写在 import 后、namespace/class/data/enum 前");
                                     pnode.parseIndex++;
@@ -339,7 +339,7 @@ namespace SimpleLanguage.Compile
                             break;
                         default:
                             {
-                                Log.AddNodeLog( LID.ShowExtendMessage, node.token, "Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
+                                Log.AddNodeLog(LID.ShowExtendMessage, node.token, "Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
                             }
                             break;
                     }
@@ -369,7 +369,7 @@ namespace SimpleLanguage.Compile
             else
             {
 
-                Log.AddNodeLog( LID.ShowExtendMessage, $"[{m_FileMeta.path}]解析出现错误 ParseFile : " + currentNodeInfo.parseType.ToString() );
+                Log.AddNodeLog(LID.ShowExtendMessage, $"[{m_FileMeta.path}]解析出现错误 ParseFile : " + currentNodeInfo.parseType.ToString());
                 return;
             }
         }
@@ -538,7 +538,7 @@ namespace SimpleLanguage.Compile
                     pnode.parseIndex++;
                     break;
                 }
-                if( next.nodeType == ENodeType.Comment )
+                if (next.nodeType == ENodeType.Comment)
                 {
                     pnode.parseIndex++;
                     continue;
@@ -631,13 +631,14 @@ namespace SimpleLanguage.Compile
                 i++;
             }
 
-            var handled = FileMetatUtil.HandleClassDefineNodes(typeNodes);
+            //var handled = FileMetatUtil.HandleClassDefineNodes(typeNodes);
+            //typeNodes = typeNodes;
             Node typeRoot = null;
-            for (int h = 0; h < handled.Count; h++)
+            for (int h = 0; h < typeNodes.Count; h++)
             {
-                if (handled[h]?.nodeType == ENodeType.IdentifierLink)
+                if (typeNodes[h]?.nodeType == ENodeType.IdentifierLink)
                 {
-                    typeRoot = handled[h];
+                    typeRoot = typeNodes[h];
                     break;
                 }
             }
@@ -682,7 +683,7 @@ namespace SimpleLanguage.Compile
                         continue;
                     }
 
-                    var initSyntax = CrateFileMetaSyntaxNoKey(new List<Node>(lineNodes));
+                    var initSyntax = CrateFileMetaSyntaxNoKey(lineNodes);
                     if (initSyntax != null)
                     {
                         syntax.AddInitSyntax(initSyntax);
@@ -699,7 +700,7 @@ namespace SimpleLanguage.Compile
             {
                 if (!hasFunction)
                 {
-                    var initSyntax = CrateFileMetaSyntaxNoKey(new List<Node>(lineNodes));
+                    var initSyntax = CrateFileMetaSyntaxNoKey(lineNodes);
                     if (initSyntax != null)
                     {
                         syntax.AddInitSyntax(initSyntax);
@@ -717,7 +718,8 @@ namespace SimpleLanguage.Compile
         {
             if (lineNodes == null || lineNodes.Count == 0) return false;
 
-            var normalizedNodes = FileMetatUtil.HandleClassDefineNodes(lineNodes);
+            //var normalizedNodes = FileMetatUtil.HandleClassDefineNodes(lineNodes);
+            var normalizedNodes = lineNodes;
 
             bool isFunc = false;
             Node sigNode = null;
@@ -804,7 +806,7 @@ namespace SimpleLanguage.Compile
 
                 if (nextNode.nodeType == ENodeType.Brace)
                 {
-                    currentNode.SetBlockNode( nextNode );
+                    currentNode.SetBlockNode(nextNode);
                     isBlock = true;
                     break;
                 }
@@ -826,7 +828,7 @@ namespace SimpleLanguage.Compile
                                 var next3Node = pnode.childList[pnode.parseIndex + 2];
                                 if (next3Node?.nodeType == ENodeType.Brace)
                                 {
-                                    currentNode.SetBlockNode( next2Node );
+                                    currentNode.SetBlockNode(next2Node);
                                     isBlock = true;
                                     pnode.parseIndex += 3;
                                     break;
@@ -835,7 +837,7 @@ namespace SimpleLanguage.Compile
                         }
                         else if (next2Node?.nodeType == ENodeType.Brace)
                         {
-                            currentNode.SetBlockNode( next2Node );
+                            currentNode.SetBlockNode(next2Node);
                             isBlock = true;
                             pnode.parseIndex += 2;
                             break;
@@ -906,7 +908,7 @@ namespace SimpleLanguage.Compile
                     }
                     else if (curNode.token.type == ETokenType.Class
                         || curNode.token.type == ETokenType.Data
-                        || curNode.token.type == ETokenType.Enum )
+                        || curNode.token.type == ETokenType.Enum)
                     {
                         isClass = 1;
                     }
@@ -920,7 +922,7 @@ namespace SimpleLanguage.Compile
                 //{
                 //    nodeList.Add(curNode);
                 //}
-                else if( curNode.nodeType == ENodeType.Angle )
+                else if (curNode.nodeType == ENodeType.Angle)
                 {
                     nodeList.Add(curNode);
                 }
@@ -965,14 +967,14 @@ namespace SimpleLanguage.Compile
                     block = curNode;
                     break;
                 }
-                else if( curNode.nodeType == ENodeType.Comment )
+                else if (curNode.nodeType == ENodeType.Comment)
                 {
                     continue;
                 }
-                else if( curNode.nodeType == ENodeType.SemiColon )
+                else if (curNode.nodeType == ENodeType.SemiColon)
                 {
                     break;
-                }    
+                }
                 else
                 {
                     Log.AddNodeLog(LID.ShowExtendMessage, curNode.token, "Error 不允许在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
@@ -994,13 +996,13 @@ namespace SimpleLanguage.Compile
                         bool isFile = currentNodeInfo.parseType == EParseNodeType.File;
                         FileMetaNamespace fmn = new FileMetaNamespace(nodeList[0], nodeList[1]);
                         AddParseNamespaceNodeInfo(fmn);
-                        if (block != null )
+                        if (block != null)
                         {
                             ParseNamespaceOrTopClass(block);
                         }
-                        if(isFile)
+                        if (isFile)
                         {
-                            if( block != null )
+                            if (block != null)
                             {
                                 m_FileMeta.AddFileDefineNamespace(fmn);
                             }
@@ -1044,7 +1046,7 @@ namespace SimpleLanguage.Compile
                 // parse and stash leading attributes (only valid in class/namespace blocks)
                 ParseLeadingAttributes(pnode, ref index, attrs);
 
-                if( index >= pnode.childList.Count )
+                if (index >= pnode.childList.Count)
                 {
                     break;
                 }
@@ -1079,7 +1081,7 @@ namespace SimpleLanguage.Compile
                     }
                     nodeList.Add(curNode);
                 }
-                else if( curNode.nodeType == ENodeType.Symbol )
+                else if (curNode.nodeType == ENodeType.Symbol)
                 {
                     nodeList.Add(curNode);
                 }
@@ -1087,18 +1089,10 @@ namespace SimpleLanguage.Compile
                 {
                     nodeList.Add(curNode);
                 }
-                //else if (curNode.nodeType == ENodeType.LeftAngle)   //Class1<T> 
+                //else if( curNode.nodeType == ENodeType.Angle )
                 //{
                 //    nodeList.Add(curNode);
                 //}
-                //else if (curNode.nodeType == ENodeType.RightAngle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
-                //{
-                //    nodeList.Add(curNode);
-                //}
-                else if( curNode.nodeType == ENodeType.Angle )
-                {
-                    nodeList.Add(curNode);
-                }
                 else if (curNode.nodeType == ENodeType.Assign)
                 {
                     nodeList.Add(curNode);
@@ -1121,10 +1115,14 @@ namespace SimpleLanguage.Compile
                 else if (curNode.nodeType == ENodeType.IdentifierLink)  //Class1
                 {
                     nodeList.Add(curNode);
+                    if (curNode.parNode != null && parseType == 0 )
+                    {
+                        parseType = 2;
+                    }
                 }
-                else if( curNode.nodeType == ENodeType.SemiColon )
+                else if (curNode.nodeType == ENodeType.SemiColon)
                 {
-                    if (parseType == 3 || parseType == 2 )
+                    if (parseType == 3 || parseType == 2)
                     {
                         break;
                     }
@@ -1149,7 +1147,7 @@ namespace SimpleLanguage.Compile
                         }
                         if (!ProjectManager.isUseForceSemiColonInLineEnd)
                         {
-                            if (parseType == 3 || parseType == 2 )
+                            if (parseType == 3 || parseType == 2)
                             {
                                 break;
                             }
@@ -1163,18 +1161,18 @@ namespace SimpleLanguage.Compile
                     {
                         nodeList.Add(curNode);
                     }
-                    if (index  < pnode.childList.Count)
+                    if (index < pnode.childList.Count)
                     {
                         var nextCurNode = pnode.childList[index];
-                        if (nextCurNode.nodeType == ENodeType.SemiColon 
-                            || nextCurNode.nodeType == ENodeType.LineEnd )
+                        if (nextCurNode.nodeType == ENodeType.SemiColon
+                            || nextCurNode.nodeType == ENodeType.LineEnd)
                         {
                             index++;
                         }
                     }
                     break;
                 }
-                else if( curNode.nodeType == ENodeType.QuestionMark )
+                else if (curNode.nodeType == ENodeType.QuestionMark)
                 {
                     nodeList.Add(curNode);
                 }
@@ -1182,13 +1180,13 @@ namespace SimpleLanguage.Compile
                 {
                     nodeList[nodeList.Count - 1].AddBracketNode(curNode);
                 }
-                else if( curNode.nodeType == ENodeType.Comment )
+                else if (curNode.nodeType == ENodeType.Comment)
                 {
                     break;
                 }
                 else
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error ParseClassNode 不允许2在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
+                    Log.AddNodeLog(LID.ShowExtendMessage, curNode?.token, "Error ParseClassNode 不允许2在解释Class的时候，有错误 的语法--------------------" + curNode.token?.ToLexemeAllString());
                 }
             }
             pnode.parseIndex = index;
@@ -1390,7 +1388,7 @@ namespace SimpleLanguage.Compile
         /// 为 true：<c>= {{}}</c> 或 <c>[]</c> 内匿名字块，必须用逗号分隔成员，单靠换行不结束上一成员。
         /// </summary>
         public void ParseDataNode(Node pnode, bool requireCommaSeparator = false)
-        {            
+        {
             Node curParentNode = pnode;
             int index = curParentNode.parseIndex;
 
@@ -1423,29 +1421,29 @@ namespace SimpleLanguage.Compile
                     {
                         backList.Add(curNode);                  // frontNode =(assignNode)  curNode
 
-                        for( int j = index; j < curParentNode.childList.Count; )
+                        for (int j = index; j < curParentNode.childList.Count;)
                         {
                             var next2Node = curParentNode.childList[j++];
                             if (next2Node == null) continue;
 
                             if (next2Node.nodeType == ENodeType.Par)   //Class1()
                             {
-                                curNode.SetParNode( next2Node );
+                                curNode.SetParNode(next2Node);
                                 index = j;
                                 isParseEnd = true;
-                                if ( j < curParentNode.childList.Count )
+                                if (j < curParentNode.childList.Count)
                                 {
                                     var next3Node = curParentNode.childList[j];
                                     if (next3Node == null) continue;
-                                    if( next3Node.nodeType == ENodeType.LineEnd )
+                                    if (next3Node.nodeType == ENodeType.LineEnd)
                                     {
-                                        if( j + 1 < curParentNode .childList.Count )
+                                        if (j + 1 < curParentNode.childList.Count)
                                         {
                                             var next4Node = curParentNode.childList[j + 1];
                                             if (next4Node == null) continue;
                                             if (next4Node.nodeType == ENodeType.Brace)
                                             {
-                                                curNode.SetBlockNode( next4Node );
+                                                curNode.SetBlockNode(next4Node);
                                                 isParseEnd = true;
                                                 index = j + 2;
                                                 break;
@@ -1460,7 +1458,7 @@ namespace SimpleLanguage.Compile
                                     }
                                     else if (next3Node.nodeType == ENodeType.Brace)
                                     {
-                                        curNode.SetBlockNode( next3Node );
+                                        curNode.SetBlockNode(next3Node);
                                         isParseEnd = true;
                                         index = j + 1;
                                         break;
@@ -1477,7 +1475,7 @@ namespace SimpleLanguage.Compile
                             //}
                             else if (next2Node.nodeType == ENodeType.Brace)
                             {
-                                curNode.SetBlockNode( next2Node );
+                                curNode.SetBlockNode(next2Node);
                                 index = j;
                                 isParseEnd = true;
                                 break;
@@ -1499,14 +1497,14 @@ namespace SimpleLanguage.Compile
                                 {
                                     isParseEnd = true;
                                 }
-                                else if( next2Node.nodeType == ENodeType.Comma )
+                                else if (next2Node.nodeType == ENodeType.Comma)
                                 {
                                     isParseEnd = true;
                                     break;
                                 }
                                 else
                                 {
-                                    Log.AddNodeLog(LID.NodeDataParseNotfoundIdentify, curNode?.token, curNode?.token?.ToLexemeAllString() );
+                                    Log.AddNodeLog(LID.NodeDataParseNotfoundIdentify, curNode?.token, curNode?.token?.ToLexemeAllString());
                                 }
                             }
                         }
@@ -1544,9 +1542,9 @@ namespace SimpleLanguage.Compile
                     frontList.Add(curNode);
                     continue;
                 }
-                else if (curNode.nodeType == ENodeType.Symbol )
+                else if (curNode.nodeType == ENodeType.Symbol)
                 {
-                    if( assignNode  == null )
+                    if (assignNode == null)
                     {
                         frontList.Add(curNode);
                     }
@@ -1561,9 +1559,9 @@ namespace SimpleLanguage.Compile
                     assignNode = curNode;
                     Node blockNode = null;
 
-                    if( nextNode == null )
+                    if (nextNode == null)
                     {
-                        Log.AddNodeLog(LID.FileMetaNeedAssignAfterEqualSyntax, curNode.token, "after", frontList[frontList.Count-1].token?.ToLexemeAllString() );
+                        Log.AddNodeLog(LID.FileMetaNeedAssignAfterEqualSyntax, curNode.token, "after", frontList[frontList.Count - 1].token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -1574,19 +1572,19 @@ namespace SimpleLanguage.Compile
                         index++;
                         backList.Add(nextNode);
                     }
-                    else if(nextNode.nodeType == ENodeType.IdentifierLink )
+                    else if (nextNode.nodeType == ENodeType.IdentifierLink)
                     {
                     }
-                    else if (nextNode.nodeType == ENodeType.Symbol && 
+                    else if (nextNode.nodeType == ENodeType.Symbol &&
                         (nextNode.token.type == ETokenType.Plus
-                            || nextNode.token.type == ETokenType.Minus ) )
+                            || nextNode.token.type == ETokenType.Minus))
                     {
-                        if( index + 1 < curParentNode.childList.Count )
+                        if (index + 1 < curParentNode.childList.Count)
                         {
                             var next2Node = curParentNode.childList[index + 1];
-                            if( next2Node.nodeType == ENodeType.ConstValue )
+                            if (next2Node.nodeType == ENodeType.ConstValue)
                             {
-                                index+=2;
+                                index += 2;
                                 backList.Add(nextNode);
                                 backList.Add(next2Node);
                             }
@@ -1600,13 +1598,13 @@ namespace SimpleLanguage.Compile
                             Log.AddNodeLog(LID.ShowExtendMessage, "Error 如果是 x=-??的形式，在符号后边");
                         }
                     }
-                    else if(nextNode.nodeType == ENodeType.Brace )
+                    else if (nextNode.nodeType == ENodeType.Brace)
                     {
                         index++;
                         parseType = 1;
                         blockNode = nextNode;
                     }
-                    else if( nextNode.nodeType == ENodeType.Bracket )
+                    else if (nextNode.nodeType == ENodeType.Bracket)
                     {
                         index++;
                         parseType = 2;
@@ -1639,7 +1637,7 @@ namespace SimpleLanguage.Compile
                         Log.AddNodeLog(LID.ShowExtendMessage, "Error 在定义Data数据的时候，不允许=号后边有其它形式的存在");
                     }
 
-                    if( parseType > 0 )
+                    if (parseType > 0)
                     {
                         FileMetaMemberData.EMemberDataType emdt = parseType switch
                         {
@@ -1652,11 +1650,11 @@ namespace SimpleLanguage.Compile
                         isParseEnd = false;
                         assignNode = null;
                         AddParseDataInfo(fmmd);
-                        if( parseType == 1 )
+                        if (parseType == 1)
                         {
                             ParseDataNode(blockNode, true);
                         }
-                        else if( parseType == 2 )
+                        else if (parseType == 2)
                         {
                             ParseDataBracketNode(blockNode);
                         }
@@ -1689,14 +1687,14 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 报错，不允许 解析Data有其它的类型出现!" + curNode.token.ToLexemeAllString() );
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 报错，不允许 解析Data有其它的类型出现!" + curNode.token.ToLexemeAllString());
                 }
 
                 if (isParseEnd)
                 {
                     if (frontList.Count > 0)
                     {
-                        FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, frontList, assignNode, backList, true, FileMetaMemberData.EMemberDataType.ConstValue );
+                        FileMetaMemberData fmmd = new FileMetaMemberData(m_FileMeta, frontList, assignNode, backList, true, FileMetaMemberData.EMemberDataType.ConstValue);
                         frontList.Clear();
                         backList.Clear();
                         assignNode = null;
@@ -1716,14 +1714,14 @@ namespace SimpleLanguage.Compile
                 AddParseDataInfo(fmmd);
                 m_CurrentNodeInfoStack.Pop();
             }
-            curParentNode.parseIndex = index;            
+            curParentNode.parseIndex = index;
         }
         public void ParseEnumNode(Node pnode)
         {
             if (pnode.parseIndex >= pnode.childList.Count)
                 return;
 
-            var action = delegate( List<Node> addnode )
+            var action = delegate (List<Node> addnode)
             {
                 for (int i = 0; i < addnode.Count; i++)
                 {
@@ -1741,7 +1739,7 @@ namespace SimpleLanguage.Compile
             };
 
             Node blockNode = null;
-            List<Node> nodeList = new List<Node>();           
+            List<Node> nodeList = new List<Node>();
             int index = pnode.parseIndex;
             bool isParse = false;
             bool isAssign = false;
@@ -1757,41 +1755,36 @@ namespace SimpleLanguage.Compile
 
                 if (curNode.nodeType == ENodeType.IdentifierLink)  //Enum1
                 {
-                    if(isAssign)
+                    if (isAssign)
                     {
                         nodeList.Add(curNode);
-                        if (nextNode?.nodeType == ENodeType.Par)  //Enum1()
+                        if (curNode.parNode != null)  //Enum1()
                         {
-                            curNode.SetParNode(nextNode);
-                            if (index + 1 < pnode.childList.Count)
+                            if (nextNode.nodeType == ENodeType.LineEnd)
                             {
-                                Node next2Node = pnode.childList[index + 1];
-                                if (next2Node.nodeType == ENodeType.LineEnd)
+                                index += 1;
+                                isParse = true;
+                                if (index + 1 < pnode.childList.Count)
                                 {
-                                    index += 1;
-                                    isParse = true;
-                                    if (index + 1 < pnode.childList.Count)
+                                    nextNode = pnode.childList[index + 1];
+                                    if (nextNode?.nodeType == ENodeType.Brace)
                                     {
-                                        next2Node = pnode.childList[index + 1];
-                                        if( next2Node?.nodeType == ENodeType.Brace )
-                                        {
-                                            index += 2;
-                                            curNode.SetBlockNode(next2Node);
-                                            blockNode = next2Node;
-                                        }
+                                        index += 2;
+                                        curNode.SetBlockNode(nextNode);
+                                        blockNode = nextNode;
                                     }
                                 }
-                                else if (next2Node?.nodeType == ENodeType.Brace)  //Class1(){}的结构
-                                {
-                                    index += 2;
-                                    blockNode = next2Node;
-                                    isParse = true;
-                                }
-                                else if (next2Node?.nodeType == ENodeType.SemiColon)
-                                {
-                                    index += 1;
-                                    isParse = true;
-                                }
+                            }
+                            else if (nextNode?.nodeType == ENodeType.Brace)  //Class1(){}的结构
+                            {
+                                index += 2;
+                                blockNode = nextNode;
+                                isParse = true;
+                            }
+                            else if (nextNode?.nodeType == ENodeType.SemiColon)
+                            {
+                                index += 1;
+                                isParse = true;
                             }
                         }
                         //else if (nextNode?.nodeType == ENodeType.LeftAngle)    // Class1<>
@@ -1845,15 +1838,15 @@ namespace SimpleLanguage.Compile
                     nodeList.Add(curNode);
                     isAssign = true;
                 }
-                else if( curNode.nodeType == ENodeType.ConstValue )
+                else if (curNode.nodeType == ENodeType.ConstValue)
                 {
                     nodeList.Add(curNode);
                 }
-                else if( curNode.nodeType == ENodeType.Key && curNode.token.type == ETokenType.Mut )
+                else if (curNode.nodeType == ENodeType.Key && curNode.token.type == ETokenType.Mut)
                 {
                     nodeList.Add(curNode);
                 }
-                else if( curNode.nodeType == ENodeType.Comment)
+                else if (curNode.nodeType == ENodeType.Comment || curNode.nodeType == ENodeType.Brace)
                 {
 
                 }
@@ -1862,9 +1855,9 @@ namespace SimpleLanguage.Compile
                     Log.AddNodeLog(LID.ShowExtendMessage, curNode?.token, $"不允许有{curNode.token.lexeme.ToString()}其它形式的存在!");
                 }
 
-                if(isParse )
+                if (isParse)
                 {
-                    if(nodeList.Count > 0)
+                    if (nodeList.Count > 0)
                     {
                         action.Invoke(nodeList);
                         nodeList.Clear();
@@ -1921,8 +1914,8 @@ namespace SimpleLanguage.Compile
                 //}
                 #endregion
             }
-        }        
-        void AddFileMetaClasss( Node blockNode, List<Node> nodeList)
+        }
+        void AddFileMetaClasss(Node blockNode, List<Node> nodeList)
         {
             FileMetaClass cpc = new FileMetaClass(m_FileMeta, nodeList);
 
@@ -1932,7 +1925,7 @@ namespace SimpleLanguage.Compile
             {
                 ParseEnumNode(blockNode);
             }
-            else if( cpc.isData )
+            else if (cpc.isData)
             {
                 ParseDataNode(blockNode);
             }

@@ -302,7 +302,8 @@ namespace SimpleLanguage.Core
                         List<Node> nodeList = tp.rootNode.childList;
                         if (nodeList.Count > 0)
                         {
-                            List<Node> expressNodeList = FileMetatUtil.HandleExpressNodes(nodeList);
+                            //List<Node> expressNodeList = FileMetatUtil.HandleExpressNodes(nodeList);
+                            List<Node> expressNodeList =nodeList;
                             //var elnd = nodeList[nodeList.Count - 1].extendLinkNodeList;
                             //for ( int j = 0; j < elnd.Count; j++ )
                             //{

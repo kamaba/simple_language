@@ -237,7 +237,8 @@ namespace SimpleLanguage.Compile
             Node funNameNode = null;
 
             int addCount = 0;
-            var nodeList2 = FileMetatUtil.HandleExpressNodes( nodeList );
+            //var nodeList2 = FileMetatUtil.HandleExpressNodes( nodeList );
+            var nodeList2 = nodeList;
             while (addCount < nodeList2.Count)
             {
                 var cnode = nodeList2[addCount++];
@@ -257,6 +258,7 @@ namespace SimpleLanguage.Compile
                         returnClassNameNode = cnode;
                     }
                 }
+                else if( cnode.nodeType == ENodeType.Brace) { }
                 else
                 {
                     var token = cnode.token;

@@ -76,6 +76,7 @@ namespace SimpleLanguage.Compile
         public Node angleNode => m_AngleNode;           // <>的节点
         public Node parNode => m_ParNode;             //(小括号的节点
         public Node blockNode => m_BlockNode;           //{大括号的节点
+        public Node identifierNode => m_IdentifierNode;       //标识符链节点
         public List<Node> bracketNodeList => m_BracketNodeList;
         public Node lastNode => m_LastNode;         // 最后处理的节点
         public ENodeType nodeType { get; set; } =  ENodeType.None;
@@ -91,6 +92,7 @@ namespace SimpleLanguage.Compile
         private Node m_ParNode = null;              // ()
         private Node m_BlockNode = null;            // {}
         private Node m_LastNode = null;            // 最后处理的节点
+        private Node m_IdentifierNode = null;       //标识符链节点
         private Node m_Parent = null;              //父节点
         private Token m_Token = null;                  // 
 
@@ -155,6 +157,10 @@ namespace SimpleLanguage.Compile
             }
             return node;
         }
+        public void SetIdentifierNode(Node identifierNode)
+        {
+            this.m_IdentifierNode = identifierNode;
+        }   
         public void SetLastNode( Node lastNode )
         {
             this.m_LastNode = lastNode;
