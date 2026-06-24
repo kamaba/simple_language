@@ -1092,12 +1092,12 @@ namespace SimpleLanguage.Compile
                 {
                     nodeList.Add(curNode);
                 }
-                //else if (curNode.nodeType == ENodeType.Par)   //Class1()
-                //{
-                //    nodeList.Add(curNode);
-                //    if (parseType == 0)
-                //        parseType = 2;
-                //}
+                else if (curNode.nodeType == ENodeType.Par)   //Class1()
+                {
+                    nodeList.Add(curNode);
+                    //if (parseType == 0)
+                    //    parseType = 2;
+                }
                 else if (curNode.nodeType == ENodeType.IdentifierLink)  //Class1
                 {
                     nodeList.Add(curNode);

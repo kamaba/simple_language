@@ -1316,6 +1316,10 @@ namespace SimpleLanguage.Compile
             
             expressType = _expressType;
 
+            m_FileMetaExpressList = childList;
+
+            BuildAST();
+
             BuildTst(childList);
         }
         private bool BuildTst(List<FileMetaBaseTerm> list)
@@ -1357,7 +1361,7 @@ namespace SimpleLanguage.Compile
                 {
                     listNextTerm = list[index + 1].root;
                 }
-                if(listNextTerm?.priority == SignComputePriority.Level2_LinkOp )
+                if(currentTerm.priority == SignComputePriority.Level2_LinkOp )
                 {
                     ETokenType ett = currentTerm.token.type;
                     if (!m_CanUseDoublePlusOrMinus && (ett == ETokenType.DoubleMinus || ett == ETokenType.DoublePlus) )
