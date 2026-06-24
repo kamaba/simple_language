@@ -190,7 +190,6 @@ namespace SimpleLanguage.Compile
         {
             if (m_CurrentNode.nodeType == ENodeType.Angle)
             {
-
                 RestoreAngleNode();
             }
 
@@ -510,7 +509,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Minus:           //-
                     {
                         var node = AddSymbol(token);
-                        node.priority = SignComputePriority.Level2_LinkOp;
+                        node.priority = SignComputePriority.Level3_Low_Compute;
                     }
                     break;
                 case ETokenType.As:

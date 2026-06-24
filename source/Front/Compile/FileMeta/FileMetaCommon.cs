@@ -454,9 +454,6 @@ namespace SimpleLanguage.Compile
             m_FileMeta = fm;
             AddChildExtendLinkList(node, isIncludeSelf );
         }
-        public FileMetaCallLink( FileMeta fm, List<Token> list )
-        {
-        }
         void AddChildExtendLinkList( Node cnode, bool isIncludeSelf )
         {
             List<Node> childNodeList = cnode.GetLinkNodeList( isIncludeSelf );

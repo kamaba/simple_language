@@ -520,33 +520,6 @@ namespace SimpleLanguage.Compile
 
             return true;
         }
-        //public class ParseStructTemp
-        //{
-        //    public ParseStructTemp parentPSt { get; set; } = null;
-        //    public Node nameNode { get; set; } = null;
-        //    public Node angleNode { get; set; } = null;
-
-        //    public List<ParseStructTemp> angleContentNodeList = new List<ParseStructTemp>();
-
-        //    public void AddParseStructTemplate( ParseStructTemp pst )
-        //    {
-        //        angleContentNodeList.Add(pst);
-        //        pst.parentPSt = this;
-        //    }
-
-        //    public void GenFileInputTemplateNode( Node node, FileMeta fm )
-        //    {
-        //        node.SetAngleNode( angleNode );
-        //        for ( int i = 0; i < angleContentNodeList.Count; i++ )
-        //        {
-        //            node.angleNode.AddChild( angleContentNodeList[i].nameNode);
-        //            if(angleContentNodeList[i].angleContentNodeList.Count > 0 )
-        //            {
-        //                angleContentNodeList[i].GenFileInputTemplateNode(angleContentNodeList[i].nameNode, fm );
-        //            }
-        //        }
-        //    }
-        //}
         public int ReadClassDefineStruct( int cAddCount, List<Node> nodeList, List<FileMetaClassDefine> fcdList )
         {
             //List<ParseStructTemp> rootPST = new List<ParseStructTemp>();
@@ -554,41 +527,6 @@ namespace SimpleLanguage.Compile
             while (cAddCount < m_NodeList.Count)
             {
                 var cnode2 = m_NodeList[cAddCount];
-                
-                //if (cnode2.nodeType == ENodeType.RightAngle)
-                //{
-                //    if (curPST == null)
-                //    {
-                //        cAddCount++;
-                //        break;
-                //    }
-                //    if (curPST.angleNode != null)
-                //    {
-                //        curPST.angleNode.endToken = cnode2.token;
-                //        if (curPST.parentPSt == null)
-                //        {
-                //            cAddCount++;
-                //            break;
-                //        }
-                //        else
-                //        {
-                //            curPST = curPST.parentPSt;
-                //        }
-                //    }
-                //    else
-                //    {
-                //        if (curPST.parentPSt == null)
-                //        {
-                //            cAddCount++;
-                //            break;
-                //        }
-                //        else
-                //        {
-                //            curPST = curPST.parentPSt;
-                //        }
-                //    }
-                //}
-                //else 
                 if (cnode2.nodeType == ENodeType.Comma)
                 {
                     cAddCount++;
@@ -598,32 +536,7 @@ namespace SimpleLanguage.Compile
                     || ( cnode2.token.type == ETokenType.Object ))
                 {
                     FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, cnode2, null );
-
-                    fcdList.Add(fmcd);
-                    //ParseStructTemp newpst = null;
-                    //if (curPST == null)
-                    //{
-                    //    newpst = new ParseStructTemp();
-                    //    newpst.nameNode = cnode2;
-                    //    rootPST.Add(newpst);
-                    //}
-                    //else
-                    //{
-                    //    newpst = new ParseStructTemp();
-                    //    newpst.nameNode = cnode2;
-                    //    curPST.AddParseStructTemplate(newpst);
-                    //}
-
-                    //if( cAddCount + 1 < m_NodeList.Count )
-                    //{
-                    //    var nextNode = m_NodeList[cAddCount + 1];
-                    //    //if (nextNode.nodeType == ENodeType.LeftAngle)
-                    //    //{
-                    //    //    cAddCount++;
-                    //    //    newpst.angleNode = nextNode;
-                    //    //    curPST = newpst;
-                    //    //}
-                    //}                    
+                    fcdList.Add(fmcd);        
                 }
                 else if( cnode2.nodeType == ENodeType.Key && cnode2.token.type == ETokenType.Interface )
                 {
@@ -788,10 +701,6 @@ namespace SimpleLanguage.Compile
                 v.SetDeep(m_Deep + 1);
             }
         }
-        public override string ToString()
-        {
-            return this.name;
-        }
         public override string ToFormatString()
         {
             stringBuilder.Clear();
@@ -927,6 +836,12 @@ namespace SimpleLanguage.Compile
             }
 
             return stringBuilder.ToString();
+        }
+
+
+        public override string ToString()
+        {
+            return this.name;
         }
     }
 }

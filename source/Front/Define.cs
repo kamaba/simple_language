@@ -53,7 +53,7 @@ namespace SimpleLanguage
         Member,
     }
     //token类型
-    public enum ETokenType
+    public enum ETokenType : byte
     {
         /// <summary>  </summary>
         None = 0,

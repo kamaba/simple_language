@@ -306,7 +306,7 @@ namespace SimpleLanguage.Compile
                         case ETokenType.Local:
                             {
                                 // local{} must be after imports and before any namespace/class definitions.
-                                if (hasNamespaceOrClass || hasNamespaceOrClass)
+                                if (hasNamespaceOrClass)
                                 {
                                     Log.AddFileMetaLog(LID.ShowExtendMessage, node.token, "Error local{} 只能写在 import 后、namespace/class/data/enum 前");
                                     pnode.parseIndex++;
@@ -512,7 +512,6 @@ namespace SimpleLanguage.Compile
             FileMetaImportSyntax ist = new FileMetaImportSyntax(nodeList);
             m_FileMeta.AddFileImportSyntax(ist);
         }
-
         public void ParseLocal(Node pnode)
         {
             Node localNode = pnode.GetParseNode(); // consume 'local'
@@ -569,7 +568,6 @@ namespace SimpleLanguage.Compile
 
             ParseLocalContent(fls, blockNode, true);
         }
-
         /// <summary>
         /// 从 parent.childList[startIndex] 为 typealias 起解析一行，登记到 FileMeta，返回下一未消费下标；失败返回 startIndex。
         /// </summary>
@@ -914,18 +912,6 @@ namespace SimpleLanguage.Compile
                     }
                     nodeList.Add(curNode);
                 }
-                //else if (curNode.nodeType == ENodeType.LeftAngle)   //Class1<T> 
-                //{
-                //    nodeList.Add(curNode);
-                //}
-                //else if (curNode.nodeType == ENodeType.RightAngle)   //Class1<T>   Func<T>( T t );  array<int> arr1;
-                //{
-                //    nodeList.Add(curNode);
-                //}
-                else if (curNode.nodeType == ENodeType.Angle)
-                {
-                    nodeList.Add(curNode);
-                }
                 else if (curNode.nodeType == ENodeType.Comma)
                 {
                     nodeList.Add(curNode);
@@ -1106,12 +1092,12 @@ namespace SimpleLanguage.Compile
                 {
                     nodeList.Add(curNode);
                 }
-                else if (curNode.nodeType == ENodeType.Par)   //Class1()
-                {
-                    nodeList.Add(curNode);
-                    if (parseType == 0)
-                        parseType = 2;
-                }
+                //else if (curNode.nodeType == ENodeType.Par)   //Class1()
+                //{
+                //    nodeList.Add(curNode);
+                //    if (parseType == 0)
+                //        parseType = 2;
+                //}
                 else if (curNode.nodeType == ENodeType.IdentifierLink)  //Class1
                 {
                     nodeList.Add(curNode);
@@ -1244,7 +1230,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 未111111111111123123123");
+                    Log.AddNodeLog(LID.ShowExtendMessage, nodeList[0]?.token, "在fileMetaMemberVariable 不在class里边");
                 }
             }
             ParseClassNode(pnode);
@@ -1729,7 +1715,7 @@ namespace SimpleLanguage.Compile
                     if (curNodexxx.nodeType == ENodeType.Key
                         && curNodexxx.token.type == ETokenType.Enum)
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "error 不允许在enum 内容里边再嵌套enum");
+                        Log.AddNodeLog(LID.ShowExtendMessage, curNodexxx.token, "error 不允许在enum 内容里边再嵌套enum");
                         return;
                     }
                 }

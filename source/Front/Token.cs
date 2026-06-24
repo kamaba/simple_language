@@ -25,6 +25,18 @@ namespace SimpleLanguage
             this.sourceBeginChar = sourceChar;
             this.extend = _extend;
         }
+        public Token() { type = ETokenType.None; lexeme = ""; sourceBeginLine = 0; sourceBeginChar = 0; }
+        public Token(Token token)
+        {
+            this.path = token.path;
+            this.type = token.type;
+            this.lexeme = token.lexeme;
+            this.extend = token.extend;
+            this.sourceBeginChar = token.sourceBeginChar;
+            this.sourceBeginLine = token.sourceBeginLine;
+            this.sourceEndChar = token.sourceEndChar;
+            this.sourceEndLine = token.sourceEndLine;
+        }
         public void SetSrouceEnd( int endSourceLine, int endSourceChar )
         {
             this.sourceEndLine = endSourceLine;
@@ -51,18 +63,6 @@ namespace SimpleLanguage
         {
             path = _path;
         }
-        public Token() { type = ETokenType.None; lexeme = ""; sourceBeginLine = 0; sourceBeginChar = 0; }
-        public Token( Token token )
-        {
-            this.path = token.path;
-            this.type = token.type;
-            this.lexeme = token.lexeme;
-            this.extend = token.extend;
-            this.sourceBeginChar = token.sourceBeginChar;
-            this.sourceBeginLine = token.sourceBeginLine;
-            this.sourceEndChar = token.sourceEndChar;
-            this.sourceEndLine = token.sourceEndLine;
-        }    
         public void AddChildrenToken( Token token )
         {
             // each child entry is a list of tokens representing one interpolation parameter
@@ -202,9 +202,15 @@ namespace SimpleLanguage
                         break;
                     case EType.Float32:
                         {
-                            float f = (float)lexeme;
-                            val = f.ToString("0.0");
-                            types = "f";
+                            try
+                            {
+                                float f = (float)lexeme;
+                                val = f.ToString("0.0");
+                                types = "f";
+                            }catch( Exception e )
+                            {
+
+                            }
                         }
                         break;
                     case EType.Float64:

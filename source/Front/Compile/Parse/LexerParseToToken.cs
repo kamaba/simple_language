@@ -101,15 +101,21 @@ namespace SimpleLanguage.Compile
         }
         void AddToken( ETokenType type)
         {
-            AddToken(type, m_CurChar);
+            m_CurrentToken = new Token(m_Path, type, m_CurChar, m_SourceLine, m_SourceChar);
+            m_ListTokens.Add(m_CurrentToken);
+            m_Builder.Length = 0;
         }
         void AddToken( ETokenType type, object lexeme)
         {
-            AddToken(type, lexeme, m_SourceLine, m_SourceChar);
+            m_CurrentToken = new Token(m_Path, type, lexeme, m_SourceLine, m_SourceChar);
+            m_ListTokens.Add(m_CurrentToken);
+            m_Builder.Length = 0;
         }
         void AddToken( ETokenType type, object lexeme, object extend )
         {
-            AddToken(type, lexeme, extend, m_SourceLine, m_SourceChar );
+            m_CurrentToken = new Token(m_Path, type, lexeme, m_SourceLine, m_SourceChar, extend);
+            m_ListTokens.Add(m_CurrentToken);
+            m_Builder.Length = 0;
         }
         void AddToken( ETokenType type, object lexeme, int sourceLine, int sourceChar)
         {
@@ -899,31 +905,6 @@ namespace SimpleLanguage.Compile
                 Log.AddTokenLog(LID.ShowExtendMessage, "@ _ token ");
             }
         }
-        /// <summary> 璇诲彇 }  </summary>
-        void ReadRightBrace() 
-        {
-            //if (m_FormatString == EFormatString.None ) 
-            //{
-                AddToken( ETokenType.RightBrace, '}');
-            //} 
-            //else
-            //{
-            //    AddToken(ETokenType.RightPar, ')');
-            //    AddToken(ETokenType.Plus, '+');
-            //    if (m_FormatString == EFormatString.SingleQuotes || m_FormatString == EFormatString.DoubleQuotes || m_FormatString == EFormatString.Point) 
-            //    {
-            //        m_CurChar = m_FormatString == EFormatString.SingleQuotes ? '\'' : (m_FormatString == EFormatString.DoubleQuotes ? '\"' : '`');
-            //        m_FormatString = EFormatString.None;
-            //        ReadString();
-            //    } 
-            //    else
-            //    {
-            //        m_CurChar = m_FormatString == EFormatString.SimpleSingleQuotes ? '\'' : (m_FormatString == EFormatString.SimpleDoubleQuotes ? '\"' : '`');
-            //        m_FormatString = EFormatString.None;
-            //        ReadSimpleString(false);
-            //    }
-            //}
-        }
         void ReadOrigenString()
         {
             m_Builder.Clear();
@@ -1469,9 +1450,6 @@ namespace SimpleLanguage.Compile
             int checkBracket = 1;
             bool isBracket = false;
             StringBuilder bracketStringBuild = new StringBuilder();
-#pragma warning disable CS0219 // 鍙橀噺宸茶璧嬪€硷紝浣嗕粠鏈娇鐢ㄨ繃瀹冪殑鍊?
-            int offsetLine = 0;
-#pragma warning restore CS0219 // 鍙橀噺宸茶璧嬪€硷紝浣嗕粠鏈娇鐢ㄨ繃瀹冪殑鍊?
             int type = 0;// 0 all line 1 #! !#  ##! !##
             while( true )
             {
@@ -2090,7 +2068,7 @@ namespace SimpleLanguage.Compile
                             m_SourceChar++;
                             break;
                         case '}':
-                            ReadRightBrace();
+                            AddToken(ETokenType.RightBrace, '}');
                             m_Index++;
                             m_SourceChar++;
                             break;
@@ -2287,9 +2265,9 @@ namespace SimpleLanguage.Compile
                 else if (t.type == ETokenType.Sharp)
                 {
                     int extend = 0;
-                    if (!int.TryParse(t.extend.ToString(), out extend))
+                    if (!int.TryParse(t.extend?.ToString(), out extend))
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, t, " token not found extend in sharp!");
                     }
                     if (extend == 0)
                     {
