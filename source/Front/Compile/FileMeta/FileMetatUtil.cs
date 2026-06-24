@@ -237,12 +237,13 @@ namespace SimpleLanguage.Compile
                     else if (cnode.token.type == ETokenType.New)
                     {
                         Node block = null;
-                        if (index < nodeList.Count)
+                        if (index+1 < nodeList.Count)
                         {
-                            if (nodeList[index].nodeType == ENodeType.Brace)
+                            if (nodeList[index+1].nodeType == ENodeType.Brace)
                             {
-                                block = nodeList[index++];
+                                block = nodeList[index+1];
                                 cnode.SetBlockNode(block);
+                                index++;
                             }
                         }
                         fmbt = new FileMetaCallTerm(fm, cnode);
@@ -277,12 +278,13 @@ namespace SimpleLanguage.Compile
                 else if (cnode.nodeType == ENodeType.IdentifierLink)
                 {
                     Node block = null;
-                    if (index < nodeList.Count)
+                    if (index+1 < nodeList.Count)
                     {
-                        if (nodeList[index].nodeType == ENodeType.Brace)
+                        if (nodeList[index+1].nodeType == ENodeType.Brace)
                         {
-                            block = nodeList[index++];
+                            block = nodeList[index+1];
                             cnode.SetBlockNode(block);
+                            index++;
                         }
                     }
                     fmbt = new FileMetaCallTerm(fm, cnode);

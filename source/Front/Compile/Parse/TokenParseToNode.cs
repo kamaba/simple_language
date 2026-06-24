@@ -489,6 +489,10 @@ namespace SimpleLanguage.Compile
                     break;
                 case ETokenType.LineEnd:      // \n
                     {
+                        if (m_CurrentNode.nodeType == ENodeType.Angle)
+                        {
+                            RestoreAngleNode();
+                        }
                         Node node = new Node(token);
                         node.nodeType = ENodeType.LineEnd;
                         m_CurrentNode.AddChild(node);
