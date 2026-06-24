@@ -1319,8 +1319,6 @@ namespace SimpleLanguage.Compile
             m_FileMetaExpressList = childList;
 
             BuildAST();
-
-            BuildTst(childList);
         }
         private bool BuildTst(List<FileMetaBaseTerm> list)
         {

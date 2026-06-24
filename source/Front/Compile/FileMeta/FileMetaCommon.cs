@@ -398,7 +398,7 @@ namespace SimpleLanguage.Compile
             else
             {
                 sb.Append(token?.lexeme.ToString());
-                sb.Append("在文件:" + token?.path + " 行: " + token?.sourceBeginLine + " 位置: " + token.sourceBeginChar);
+                sb.Append("FileMetaCommon ToTokenString 在文件:" + token?.path + " 行: " + token?.sourceBeginLine + " 位置: " + token.sourceBeginChar);
                 if (isCallFunction)
                 {
                     sb.Append( m_BeginParToken?.lexeme.ToString());

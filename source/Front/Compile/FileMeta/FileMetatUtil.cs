@@ -181,7 +181,7 @@ namespace SimpleLanguage.Compile
             int index = 0;
             while(index < nodeList.Count )
             {
-                var cnode = nodeList[index++];
+                var cnode = nodeList[index];
                 if (cnode.nodeType == ENodeType.QuestionMark)
                 {
                     if (questionIndex < 0)
@@ -223,9 +223,7 @@ namespace SimpleLanguage.Compile
                     if (ttype == ETokenType.As || ttype == ETokenType.Is || ttype == ETokenType.IsNot)
                     {
                         asIsIndex = index;
-                        FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
-                        fmn.priority = cnode.priority;
-                        commonTermExpressList.Add(fmbt);
+                        break;
                     }
                     else if (cnode.token.type == ETokenType.This
                     || cnode.token.type == ETokenType.Base
@@ -315,6 +313,7 @@ namespace SimpleLanguage.Compile
                 {
                     Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "没有找到该类型: " + cnode.token.type.ToString() + " 位置: " + cnode.token.ToLexemeAllString());
                 }
+                index++;
             }
 
             if (questionIndex > 0 && colonIndex > questionIndex && colonIndex < nodeList.Count - 1)
@@ -331,7 +330,7 @@ namespace SimpleLanguage.Compile
                 FileMetaBaseTerm falseTerm = new FileMetaTermExpress(fm, commonTermExpressList, expressType);
                 fmbt = new FileMetaEmptyRetSyntaxTerm(fm, emptyRetQuestion.token, trueTerm, falseTerm);
             }
-            else if (asIsIndex > 0 && asIsIndex < nodeList.Count - 1)
+            else if (asIsIndex > 0 && asIsIndex < nodeList.Count )
             {
                 var asIsNode = nodeList[asIsIndex];
                 var leftNodes = nodeList[0];
