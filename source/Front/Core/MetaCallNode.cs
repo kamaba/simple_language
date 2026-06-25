@@ -1083,7 +1083,7 @@ namespace SimpleLanguage.Core
                         bool allowDefaultConstructWithoutInit = (m_MetaInputParamCollection == null || m_MetaInputParamCollection.count == 0);
                         if (mmf == null && !allowDefaultConstructWithoutInit)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + curmc.allName + "鐨刜init_鏂规硶!)");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Class._init_" + curmc.allName + "not found");
                             return false;
                         }
                         m_MetaFunction = mmf;
@@ -1153,7 +1153,7 @@ namespace SimpleLanguage.Core
                             || frontCNT == ECallNodeType.This
                             || frontCNT == ECallNodeType.Base)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 1 闈欐€佽皟鐢紝涓嶈兘璋冪敤闈為潤鎬佸瓧娈?!");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, $"Error {m_MetaVariable.ownerMetaBase.allName} is {m_MetaVariable.name} shuld not static variable");
                             return false;
                         }
                     }

@@ -388,6 +388,11 @@ namespace SimpleLanguage.Compile
                 m_ConvertIsTypeNameToken = optionalVarNode.token;
             }
         }
+        public override bool BuildAST()
+        {
+            m_Root = this;
+            return true;
+        }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -1176,9 +1181,13 @@ namespace SimpleLanguage.Compile
         private FileMetaBaseTerm m_Return1Term = null;
         private FileMetaBaseTerm m_Return2Term = null;
         private FileMetaBaseTerm m_ConditionTerm = null;
-        public FileMetaThreeItemSyntaxTerm(FileMeta fm, FileMetaBaseTerm conditionTerm, FileMetaBaseTerm return1Term, FileMetaBaseTerm return2Term)
+        private Token m_ColonToken = null;
+        public FileMetaThreeItemSyntaxTerm(FileMeta fm, Token token1, Token token2, FileMetaBaseTerm conditionTerm, FileMetaBaseTerm return1Term, FileMetaBaseTerm return2Term)
         {
             m_FileMeta = fm;
+
+            m_Token = token1;
+            m_ColonToken = token2;
 
             m_ConditionTerm = conditionTerm;
             m_Return1Term = return1Term;
@@ -1187,6 +1196,10 @@ namespace SimpleLanguage.Compile
 
         public override bool BuildAST()
         {
+            m_ConditionTerm.BuildAST();
+            m_Return1Term.BuildAST();
+            m_Return2Term.BuildAST();
+
             m_Root = this;
             return true;
         }
@@ -1232,9 +1245,11 @@ namespace SimpleLanguage.Compile
             m_Left = return1fmbt;
             m_Right = return2fmbt;
         }
-
         public override bool BuildAST()
         {
+            m_Left.BuildAST();
+            m_Right.BuildAST();
+
             m_Root = this;
             return true;
         }
@@ -1360,12 +1375,6 @@ namespace SimpleLanguage.Compile
                 if(currentTerm.priority == SignComputePriority.Level2_LinkOp )
                 {
                     ETokenType ett = currentTerm.token.type;
-                    if (!m_CanUseDoublePlusOrMinus && (ett == ETokenType.DoubleMinus || ett == ETokenType.DoublePlus) )
-                    {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, extendMessage + "Error 只有在语句中，可以使用i++ 等语法，变量与传参是禁止使用i++" +
-                            "Token 位置:" + currentTerm.token.ToAllString());
-                        return false;
-                    }
 
                     if( ett == ETokenType.DoubleMinus || ett == ETokenType.DoublePlus )
                     {
@@ -1375,6 +1384,11 @@ namespace SimpleLanguage.Compile
                         {
                             currentTerm.left = listFrontTerm;
                             list.RemoveAt(index - 1);
+                        }
+                        else
+                        {
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, list[0].token, "Error not allow " + currentTerm.token.lexeme.ToString() + " !");
+                            return false;
                         }
                     }
                     else if( ett == ETokenType.Minus || ett == ETokenType.Plus || ett == ETokenType.Not || ett == ETokenType.Negative )
@@ -1398,6 +1412,12 @@ namespace SimpleLanguage.Compile
                         if (listNextTerm != null)
                         {
                             list.RemoveAt(index+1);
+                        }
+                        if (!m_CanUseDoublePlusOrMinus && (ett == ETokenType.DoubleMinus || ett == ETokenType.DoublePlus))
+                        {
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, extendMessage + "Error 只有在语句中，可以使用i++ 等语法，变量与传参是禁止使用i++" +
+                                "Token 位置:" + currentTerm.token.ToAllString());
+                            return false;
                         }
                     }
                     else

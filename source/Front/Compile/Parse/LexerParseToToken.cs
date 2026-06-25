@@ -437,13 +437,29 @@ namespace SimpleLanguage.Compile
                 else
                 {
                     //AddToken(ETokenType.Shr, ">>");
-                    UndoChar();
-                    UndoChar();
+                    //UndoChar();
+                    //UndoChar();
+                    int greaterCount = 2;
+                    while (true)
+                    {
+                        var peek = ReadChar();
+                        if (peek == '>')
+                        {
+                            greaterCount++;
+                        }
+                        else
+                        {
+                            UndoChar();
+                            UndoChar();
+                            break;
+                        }
+                    }
+                    AddToken(ETokenType.Greater, ">", greaterCount );
                 }
             }
             else 
             {
-                AddToken(ETokenType.Greater, ">");
+                AddToken(ETokenType.Greater, ">", 1 );
                 UndoChar();
             }
         }
@@ -465,10 +481,10 @@ namespace SimpleLanguage.Compile
                 else
                 {
                     int lessCount = 2;
-                    while( true )
+                    while (true)
                     {
                         var peek = ReadChar();
-                        if( peek == '=' )
+                        if (peek == '=')
                         {
                             lessCount++;
                         }
@@ -478,7 +494,15 @@ namespace SimpleLanguage.Compile
                             break;
                         }
                     }
-                    AddToken(ETokenType.Less, "<", lessCount );
+                    if( lessCount == 2 )
+                    {
+                        AddToken(ETokenType.Shi, "<<");
+                    }
+                    else
+                    {
+                        Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "nosupport <<<? style!");
+                    }
+                    //AddToken(ETokenType.Less, "<", lessCount );
                 }
             }
             else

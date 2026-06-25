@@ -651,6 +651,8 @@ namespace SimpleLanguage.Core
         }
         public void ParseStatements()
         {
+            if (!m_CanParse) return;
+
             // If this function is declared abstract, skip parsing its body/content.
             if (m_IsAbstract)
             {

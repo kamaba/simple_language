@@ -86,6 +86,8 @@ namespace SimpleLanguage.Core
         public MetaDefineTemplateCollection metaMemberTemplateCollection => m_MetaMemberTemplateCollection;
         public int index => m_Index;
 
+        protected bool m_CanParse = true;
+
 
         #region 属性
         protected MetaBase m_OwnerMetaClass = null;
@@ -152,6 +154,10 @@ namespace SimpleLanguage.Core
         {
             base.SetDeep(deep);
             m_MetaBlockStatements?.SetDeep(deep);
+        }
+        public void SetCanParse( bool canparse )
+        {
+            this.m_CanParse = canparse;
         }
         public virtual void SetOwnerMetaClass(MetaBase ownerBase)
         {

@@ -227,8 +227,8 @@ namespace SimpleLanguage.Core
         public bool EqualsInputMetaParam(MetaInputParam mip)
         {
             if (m_MetaVariable == null) return false;
-            
-           var declaredMt = m_MetaVariable.GetFinalMetaType();
+
+            var declaredMt = m_MetaVariable.defineMetaType;
             var argMt = mip.express != null ? mip.express.GetReturnMetaType() : null;
             if (declaredMt == null || argMt == null) return false;
 

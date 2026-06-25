@@ -216,16 +216,26 @@ namespace SimpleLanguage.Compile
         {
             if (m_CurrentNode.nodeType == ENodeType.Angle)
             {
-                m_CurrentNode.endToken = token;
-                var angleNode = m_CurrentNode;
-                m_CurrentNode = m_CurrentNode.parent;
-
-                if (m_CurrentNode.identifierNode != null)
+                int count = (int)token.extend;
+                if( count == 0 )
                 {
-                    m_CurrentNode.childList.Remove(angleNode);
-                    m_CurrentNode.identifierNode.SetAngleNode(angleNode);
+                    Log.AddNodeLog(LID.MetaCoreAssertShowMessage, token, "greater count is zero");
+                    return;
                 }
 
+                while( count > 0 )
+                {
+                    m_CurrentNode.endToken = token;
+                    var angleNode = m_CurrentNode;
+                    m_CurrentNode = m_CurrentNode.parent;
+
+                    if (m_CurrentNode.identifierNode != null)
+                    {
+                        m_CurrentNode.childList.Remove(angleNode);
+                        m_CurrentNode.identifierNode.SetAngleNode(angleNode);
+                    }
+                    count--;
+                }
             }
             else
             {

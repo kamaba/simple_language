@@ -51,6 +51,7 @@ namespace SimpleLanguage.Core
         {
             m_FileMetaCallSyntax = callSyntax;
             m_Name = callSyntax.variableRef.name;
+            m_Token = callSyntax.variableRef.callNodeList[0].token;
             m_OwnerMetaBlockStatements.AddOnlyNameMetaVariable(m_Name);
             Parse();
         }
@@ -62,6 +63,7 @@ namespace SimpleLanguage.Core
 
             bool isSynamicData = false;
             FileMetaBaseTerm fileExpress = null;
+            MetaType expressRetMetaDefineType = null;
             if ( m_FileMetaDefineVariableSyntax != null )
             {
                 var fmcd = m_FileMetaDefineVariableSyntax.fileMetaClassDefine;
@@ -138,6 +140,11 @@ namespace SimpleLanguage.Core
             {
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, leftMt);
                 m_DefineVarMetaVariable.AddPingToken(m_FileMetaCallSyntax.token);
+
+                expressRetMetaDefineType = new MetaType(CoreMetaClassManager.objectMetaClass);
+
+                m_DefineVarMetaVariable.SetIsDefineMetaType(true);
+                m_DefineVarMetaVariable.SetMetaDefineType(expressRetMetaDefineType);
             }
             if(m_DefineVarMetaVariable == null )
             {
@@ -146,7 +153,6 @@ namespace SimpleLanguage.Core
             }
             m_OwnerMetaBlockStatements.UpdateMetaVariableDict(m_DefineVarMetaVariable);
 
-            MetaType expressRetMetaDefineType = null;
             if (fileExpress != null)
             {
                 CreateExpressParam cep = new CreateExpressParam();

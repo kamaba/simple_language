@@ -838,7 +838,12 @@ namespace SimpleLanguage.Compile
                 else if (akss.tokenType == ETokenType.Return
                     || akss.tokenType == ETokenType.Transience)
                 {
-                    FileMetaBaseTerm conditionExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, akss.keyContent, FileMetaTermExpress.EExpressType.Common);
+                    FileMetaBaseTerm conditionExpress = null;
+
+                    if (akss.keyContent.Count > 0)
+                    {
+                        conditionExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, akss.keyContent, FileMetaTermExpress.EExpressType.Common);
+                    }
 
                     FileMetaKeyReturnSyntax fmkis = new FileMetaKeyReturnSyntax(m_FileMeta, akss.keyNode.token, conditionExpress);
                     AddParseSyntaxNodeInfo(fmkis);
@@ -963,14 +968,17 @@ namespace SimpleLanguage.Compile
             }
             if (inToken != null)
             {
-                var cfe = FileMetatUtil.CreateFileMetaExpress(fm, conditionExpressNodeList, FileMetaTermExpress.EExpressType.Common);
-                if (cfe == null)
+                if(conditionExpressNodeList.Count > 0 )
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 解析for 第二部分错误!!");
-                }
-                else
-                {
-                    fms.SetInKeyAndArrayVariable(inToken, cfe);
+                    var cfe = FileMetatUtil.CreateFileMetaExpress(fm, conditionExpressNodeList, FileMetaTermExpress.EExpressType.Common);
+                    if (cfe == null)
+                    {
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 解析for 第二部分错误!!");
+                    }
+                    else
+                    {
+                        fms.SetInKeyAndArrayVariable(inToken, cfe);
+                    }
                 }
             }
             else
@@ -980,7 +988,7 @@ namespace SimpleLanguage.Compile
                     var cfe = FileMetatUtil.CreateFileMetaExpress(fm, conditionExpressNodeList, FileMetaTermExpress.EExpressType.Common);
                     if (cfe == null)
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 解析for 第二部分错误!!");
+                        Log.AddNodeLog(LID.ShowExtendMessage, conditionExpressNodeList[0]?.token, "Error 解析for 第二部分错误!!");
                     }
                     else
                     {

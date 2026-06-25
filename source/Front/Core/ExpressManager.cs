@@ -242,16 +242,27 @@ namespace SimpleLanguage.Core
                             }
                             return men;
                         }
-                    //case FileMetaParTerm fmpt:  //  (1,2) 不允许 这种方式的处理 可能后边会变成tulpe
-                    //    {
-                    //        //Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
-                    //        MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar((root as FileMetaParTerm), cep.metaType, ownerClass, cep.ownerMBS);
-                    //        if (mnoen != null)
-                    //            return mnoen;
+                    case FileMetaParTerm fmpt:  //  (1,2) 不允许 这种方式的处理 可能后边会变成tulpe
+                        {
+                            ////Debug.Write("Error CreateExpressNode 已在前边拆解，不应该还有原素, 该位置的()一般只能构建对象时使用");
+                            //MetaNewObjectExpressNode mnoen = MetaNewObjectExpressNode.CreateNewObjectExpressNodeByPar((root as FileMetaParTerm), cep.metaType, ownerClass, cep.ownerMBS);
+                            //if (mnoen != null)
+                            //    return mnoen;
 
-                    //        //men = CreateMetaClassByFileMetaClass( ownerClass, selfMC, mbs, fmpt.express);
-                    //    }
-                    //    break;
+                            //men = FileMetatUtil.CreateFileMetaExpress( fmpt.fileMeta, fmpt.root, FileMetaTermExpress.EExpressType.Common );
+                            //return men;
+                            if( fmpt.fileMetaExpressList.Count ==  1 )
+                            {
+                                cep.fme = fmpt.fileMetaExpressList[0];
+                                men = CreateExpressNode(cep);
+                                return men;
+                            }
+                            else
+                            {
+                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, fmpt.token, "fmpt file meta express list count !");
+                            }
+                        }
+                        break;
                     case FileMetaTermExpress fmte:
                         {
                             //Debug.Write("Error CreateExpressNode 创建表达项不能为符号");

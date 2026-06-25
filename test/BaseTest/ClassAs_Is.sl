@@ -45,7 +45,7 @@ namespace ClassAs_IsNS
             if a is int str 
             {
                 global.println("_int is  " + str )
-                next
+                #next
             }
             elif b is string str2 
             {

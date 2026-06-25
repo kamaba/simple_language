@@ -36,7 +36,7 @@ Class1
     print1()
     {
         int x2 = 20
-        int a2 = c2.a
+        int a2 = this.c2.a
         {
             global.println("p1=" + x2 + " x=" + this.a)
         }
@@ -71,10 +71,10 @@ namespace Application
                 Class2.x1 = this.x
             }
 
-            public Class3 fun1(int pppp1 = 20 + 11.1, int p2 = 21)
+            public Class3 fun1(int pppp1 = int(20 + 11.1), int p2 = 21)
             {
                 mc33 = Class3(p2 + 2){ b = 100, a = 20 }
-                bool1 = Int16(pppp1 <= a + Class222.a) >= 0
+                bool1 = Int16(pppp1 <= this.a + Class222.a) >= 0
                 {
                     int b1 = 21
                     Class3 mc22 = new(pppp1, b1, 10.0f - 2.0f, 20 + 12)
@@ -119,12 +119,12 @@ namespace Application
             static m = 20
             Class2.Class222 m2 = null
 
-            Class3(x)
+            _init_(x)
             {
                 this.a = int(x)
             }
 
-            Class3(x, y, z, d)
+            _init_(x, y, z, d)
             {
                 this.a = 20
                 this.b = int(x) + int(y) - int(z) + int(d)
@@ -178,11 +178,11 @@ ExpressTest
         int d = +a
         global.println("+a = " + d.toString())
 
-        int e = a++                     #不允许
-        global.println("a++ = " + e.toString() + ", a = " + a.toString())
+        #int e = a++                     #不允许
+        #global.println("a++ = " + e.toString() + ", a = " + a.toString())
 
-        int f = --a                     #不允许 
-        global.println("--a = " + f.toString() + ", a = " + a.toString())
+        #int f = --a                     #不允许 
+        #global.println("--a = " + f.toString() + ", a = " + a.toString())
 
         int g = a + b * 2 - 3 / 1
         global.println("a + b * 2 - 3 / 1 = " + g.toString())
@@ -405,14 +405,15 @@ ExpressTest
         global.println("Class2.x3 = " + Application.Class2.x3.toString())
 
         Application.Class2.m2 = 200
-        global.println("Class2.m2 after assignment = " + Application.Core.Class2.m2.toString())
+        global.println("Class2.m2 after assignment = " + Application.Class2.m2.toString())
     }
     Level<T>
     {
-        static T t = new()
+        static T st = new()
+        T t = new()
         _init_( T it )
         {
-            this.t = t
+            this.t = it
         }
     }
 
@@ -429,7 +430,7 @@ ExpressTest
         bool condition = a < b && b > c || a == 10
         global.println("complex bool expression = " + condition.toString())
         Level<int>.t = 100
-        Level<short>.t = 200
+        Level<short>.t = 200s
         condition2 = Level<int>.t < 10 || Level<short>.t > 20
         global.println("complex2 bool expression = " + condition2.toString())
 

@@ -29,6 +29,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_FileMetaThreeItemSyntaxTerm = fm;
+            this.m_Token = fm.token;
 
             CreateExpressParam conditionCep = new CreateExpressParam()
             {
@@ -69,7 +70,7 @@ namespace SimpleLanguage.Core
         }
         public override void Parse(AllowUseSettings auc)
         {
-            m_ConditionExpress.Parse(auc);
+            this.m_ConditionExpress.Parse(auc);
             m_Return1Express.Parse(auc);
             m_Return2Express.Parse(auc);
         }
@@ -79,6 +80,8 @@ namespace SimpleLanguage.Core
         //}
         public override void CalcReturnType()
         {
+            m_Return1Express.CalcReturnType();
+            m_Return2Express.CalcReturnType();
             m_ExpressReturnMetaType = return1Express.GetReturnMetaType();
         }
         public override string ToFormatString()

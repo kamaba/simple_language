@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile
 {
@@ -162,6 +163,12 @@ namespace SimpleLanguage.Compile
             List<Node> tlist = new List<Node>();
             if (isIncludeSelf) tlist.Add(this);
             tlist.AddRange(m_ExtendLinkNodeList);
+
+            if (this.angleNode != null)
+            {
+                tlist.AddRange(angleNode.extendLinkNodeList);
+            }
+
             return tlist;
         }
         public void AddLinkNode(Node node )

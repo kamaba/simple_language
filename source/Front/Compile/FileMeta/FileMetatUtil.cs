@@ -158,17 +158,6 @@ namespace SimpleLanguage.Compile
         */
         public static FileMetaBaseTerm CreateFileMetaExpress(FileMeta fm, List<Node> nodeList, FileMetaTermExpress.EExpressType expressType)
         {
-            if (nodeList == null || nodeList.Count == 0)
-                return null;
-
-            //// 单节点直接走基础创建
-            //if (nodeList.Count == 1)
-            //{
-            //    var fot =  CreateFileOneTerm(fm, nodeList[0], expressType);
-            //    fot.BuildAST();
-            //    return fot;
-            //}
-
             FileMetaBaseTerm fmbt = null;
             int questionIndex = -1;
             int colonIndex = -1;
@@ -325,7 +314,7 @@ namespace SimpleLanguage.Compile
                 FileMetaBaseTerm trueTerm = new FileMetaTermExpress(fm, term1ExpressList, expressType);
                 FileMetaBaseTerm falseTerm = new FileMetaTermExpress(fm, commonTermExpressList, expressType);
                 // 三个部分继续递归走同样逻辑（内部还可以再包含 as/is、三元等）
-                fmbt = new FileMetaThreeItemSyntaxTerm(fm, condTerm, trueTerm, falseTerm);
+                fmbt = new FileMetaThreeItemSyntaxTerm(fm, nodeList[questionIndex]?.token, nodeList[colonIndex].token, condTerm, trueTerm, falseTerm);
             }
             else if (emptyRetIndex > 0 && emptyRetIndex < nodeList.Count - 1)
             {
@@ -387,7 +376,10 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    fmbt = new FileMetaTermExpress(fm, commonTermExpressList, expressType);
+                    if( commonTermExpressList.Count > 1 )
+                    {
+                        fmbt = new FileMetaTermExpress(fm, commonTermExpressList, expressType);
+                    }
                 }
             }
 

@@ -25,7 +25,7 @@ enum Book
 {
     B1 = 1
     B2 = 2
-    C1
+    C1 = 3
     mut string Str = ""
     mut c4 = 10
 }

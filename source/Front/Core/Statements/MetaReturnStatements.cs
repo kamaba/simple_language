@@ -41,10 +41,13 @@ namespace SimpleLanguage.Core
                     equalMetaVariable = mbs.ownerMetaFunction.returnMetaVariable
                 };
                 m_Express = ExpressManager.CreateExpressNode(cep2);
-                m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
-                m_Express = ExpressManager.ConvertNewExpress(m_Express, null );
-                m_Express.CalcReturnType();
-                m_ReturnMetaDefineType = m_Express.GetReturnMetaType();
+                if( m_Express != null )
+                {
+                    m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                    m_Express = ExpressManager.ConvertNewExpress(m_Express, null);
+                    m_Express.CalcReturnType();
+                    m_ReturnMetaDefineType = m_Express.GetReturnMetaType();
+                }
             }
             else
             {
@@ -53,7 +56,7 @@ namespace SimpleLanguage.Core
 
             if( !TypeManager.CompareLeftRightMetaType(mdt, m_ReturnMetaDefineType, m_Token, out MetaType convertMt  ) )
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left compare right " + m_ReturnMetaDefineType.ToString(), mdt.ToString());
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left compare right " + m_ReturnMetaDefineType?.ToString(), mdt.ToString());
             }
         }        
         public override string ToFormatString()

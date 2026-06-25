@@ -174,6 +174,7 @@ namespace SimpleLanguage.Compile
         public Token getToken => m_GetToken;
         public Token setToken => m_SetToken;
         public Token finalToken => m_FinalToken;
+        public bool canParse => m_CanParse;
 
         private Token m_InterfaceToken = null;
         private Token m_StaticToken = null;
@@ -186,6 +187,7 @@ namespace SimpleLanguage.Compile
         private Token m_LeftBraceToken = null;
         private Token m_RightBraceToken = null;
         private Node m_BlockNode;
+        private bool m_CanParse = true;
 
         private readonly List<FileMetaAttributeSyntax> m_AttributeList = new List<FileMetaAttributeSyntax>();
 
