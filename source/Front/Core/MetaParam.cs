@@ -47,11 +47,11 @@ namespace SimpleLanguage.Core
         {
             m_Express = inputExpress;
         }
-        public virtual void Parse()
+        public virtual void Parse(AllowUseSettings allowUse )
         {
             if (m_Express != null)
             {
-                m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.InputParamExpress, ifNotVariableThenAddVariable = false } );
+                m_Express.Parse(new AllowUseSettings(allowUse) { parseFrom = EParseFrom.InputParamExpress, ifNotVariableThenAddVariable = false } );
                 m_Express = ExpressManager.ConvertNewExpress(m_Express, null);
             }
         }
@@ -627,11 +627,17 @@ namespace SimpleLanguage.Core
         {
             m_MetaInputParamList.Add(mip);
         }
+        public void Parse(AllowUseSettings alu)
+        {
+            for (int i = 0; i < m_MetaInputParamList.Count; i++)
+            {
+                m_MetaInputParamList[i].Parse(alu);
+            }
+        }
         public void CaleReturnType()
         {
             for (int i = 0; i < m_MetaInputParamList.Count; i++)
             {
-                m_MetaInputParamList[i].Parse();
                 m_MetaInputParamList[i].CaleReturnType();
             }
         }
@@ -692,7 +698,7 @@ namespace SimpleLanguage.Core
         //                var mt = cmc.GetRetMetaType();
         //                isAllSame = true;
         //            }
-                    
+
         //        }
         //        else 
         //        {

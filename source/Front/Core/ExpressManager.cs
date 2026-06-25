@@ -494,29 +494,29 @@ namespace SimpleLanguage.Core
             }
         }
         */
-        public static int CalcParseLevel( int level, MetaExpressNodeBase men )
-        {
-            switch( men )
-            {
-                case MetaUnaryOpExpressNode muoen:
-                    {
-                        level = CalcParseLevel( level, muoen.value );
-                    }
-                    break;
-                case MetaOpExpressNode moen:
-                    {
-                        level = CalcParseLevel(level, moen.right);
-                        level = CalcParseLevel(level, moen.left);
-                    }
-                    break;
-                case MetaCallLinkExpressNode mcn:
-                    {
-                        level = mcn.CalcParseLevel(level);
-                    }
-                    break;
-            }
-            return level;
-        }
+        //public static int CalcParseLevel( int level, MetaExpressNodeBase men )
+        //{
+        //    switch( men )
+        //    {
+        //        case MetaUnaryOpExpressNode muoen:
+        //            {
+        //                level = CalcParseLevel( level, muoen.value );
+        //            }
+        //            break;
+        //        case MetaOpExpressNode moen:
+        //            {
+        //                level = CalcParseLevel(level, moen.right);
+        //                level = CalcParseLevel(level, moen.left);
+        //            }
+        //            break;
+        //        case MetaCallLinkExpressNode mcn:
+        //            {
+        //                level = mcn.CalcParseLevel(level);
+        //            }
+        //            break;
+        //    }
+        //    return level;
+        //}
 
         // Remove placeholders with id <= threshold, and for placeholders with id > threshold
         // subtract threshold from their id.

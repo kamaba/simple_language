@@ -17,12 +17,12 @@ namespace SimpleLanguage.Core
         public override void Parse(AllowUseSettings auc)
         {
         }
-        public override int CalcParseLevel(int level)
-        {
-            //if (m_MetaCallLink != null)
-            //    level = m_MetaCallLink.CalcParseLevel(level);
-            return level;
-        }
+        //public override int CalcParseLevel(int level)
+        //{
+        //    //if (m_MetaCallLink != null)
+        //    //    level = m_MetaCallLink.CalcParseLevel(level);
+        //    return level;
+        //}
         public override void CalcReturnType()
         {
             //if (m_MetaCallLink != null)

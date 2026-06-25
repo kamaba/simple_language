@@ -231,6 +231,10 @@ namespace SimpleLanguage.Core
         }
         public void HandleExtendContent()
         {
+            foreach(var v in m_MetaMemberDataDict )
+            {
+                v.Value.CreateMetaExpress();
+            }
             HandleExtendMemberVariable();
             HandleExtendMemberFunction();
         }

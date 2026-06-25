@@ -73,10 +73,10 @@ namespace SimpleLanguage.Core
             m_Return1Express.Parse(auc);
             m_Return2Express.Parse(auc);
         }
-        public override int CalcParseLevel(int level)
-        {
-            return 0;
-        }
+        //public override int CalcParseLevel(int level)
+        //{
+        //    return 0;
+        //}
         public override void CalcReturnType()
         {
             m_ExpressReturnMetaType = return1Express.GetReturnMetaType();

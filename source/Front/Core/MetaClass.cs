@@ -605,6 +605,7 @@ namespace SimpleLanguage.Core
             foreach (var it in this.m_FileCollectMetaMemberVariable )
             {
                 it.ParseDefineMetaType();
+                it.CreateMetaExpress();
             }
         }
         public virtual void ParseFileCollectMemberFunctionDefineMetaType()

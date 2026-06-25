@@ -52,32 +52,32 @@ namespace SimpleLanguage.Compile
 
             ParseBuildMetaVariable( list );
         }
-        public FileMetaMemberVariable( FileMeta fm, Node brace )
-        {
-            //分析 {}中的内容，一般用于解析匿名函数
-            m_FileMeta = fm;
-            m_Token = brace.token;
+        //public FileMetaMemberVariable( FileMeta fm, Node brace )
+        //{
+        //    //分析 {}中的内容，一般用于解析匿名函数
+        //    m_FileMeta = fm;
+        //    m_Token = brace.token;
 
 
-            List<Node> list2 = new List<Node>();
-            for ( int i = 0; i < brace.childList.Count; i++ )
-            {
-                Node c = brace.childList[i];
-                if( c.nodeType == ENodeType.LineEnd || c.nodeType == ENodeType.SemiColon )
-                {
-                    if( list2.Count == 0 )
-                    {
-                        continue;
-                    }
-                    FileMetaMemberVariable cfm = new FileMetaMemberVariable(m_FileMeta, list2);
-                    list2 = new List<Node>();
+        //    List<Node> list2 = new List<Node>();
+        //    for ( int i = 0; i < brace.childList.Count; i++ )
+        //    {
+        //        Node c = brace.childList[i];
+        //        if( c.nodeType == ENodeType.LineEnd || c.nodeType == ENodeType.SemiColon )
+        //        {
+        //            if( list2.Count == 0 )
+        //            {
+        //                continue;
+        //            }
+        //            FileMetaMemberVariable cfm = new FileMetaMemberVariable(m_FileMeta, list2);
+        //            list2 = new List<Node>();
 
-                    AddFileMemberVariable(cfm);
-                    continue;
-                }
-                list2.Add(c);
-            }
-        }
+        //            AddFileMemberVariable(cfm);
+        //            continue;
+        //        }
+        //        list2.Add(c);
+        //    }
+        //}
         public FileMetaMemberVariable(FileMeta fm, Node _beforeNode, Node _afterNode, EMemberDataType dataType)
         {
             m_MemberDataType = dataType;

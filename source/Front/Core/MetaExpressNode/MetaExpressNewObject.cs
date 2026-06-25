@@ -2074,6 +2074,7 @@ namespace SimpleLanguage.Core
                 }
 
                 mipc.AddMetaInputParam(new MetaInputParam(new MetaConstExpressNode(EType.Int32, alen)));
+                mipc.Parse(m_AllowUseSettings);
                 mipc.CaleReturnType();
 
                 m_MetaMemberFunction = CoreMetaClassManager.arrayMetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, mipc);

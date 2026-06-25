@@ -47,16 +47,17 @@ namespace SimpleLanguage.Core
             mvlist.AddRange(metaMemberDataVariableList);
             mvlist.AddRange(metaMemberEnumVariableList);
 
-            foreach (var v in mvlist)
-            {
-                v.CalcParseLevel();
-            }
             mvlist.Sort((x, y) => x.CompareTo(y));
 
             foreach (var v in mvlist)
             {
-                v.CreateMetaExpress();
                 v.ParseMetaExpress();
+            }
+
+            mvlist.Sort((x, y) => x.CompareTo(y));
+
+            foreach (var v in mvlist)
+            {
                 v.ParseRealMetaType();
             }
         }

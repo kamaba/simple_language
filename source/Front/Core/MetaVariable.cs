@@ -31,11 +31,11 @@ namespace SimpleLanguage.Core
             DataMember,
         }
 
-        public static int s_ConstLevel = 10000000;
-        public static int s_IsHaveRetStaticLevel = 100000000;
-        public static int s_NoHaveRetStaticLevel = 200000000;
-        public static int s_DefineMetaTypeLevel = 1000000000;
-        public static int s_ExpressLevel = 1500000000;
+        public const int s_ConstLevel = 100000;
+        public const int s_StaticDefLevel = 200000;
+        public const int s_StaticNonDefLevel = 300000;
+        public const int s_NonDefExpressLevel = 500000;
+        public const int s_DefExpressLevel = 500000;
         public bool isDefineMetaType => m_IsDefineMetaType;
         public virtual bool isStatic => m_IsStatic;
         public virtual bool isConst => m_IsConst;
@@ -139,6 +139,8 @@ namespace SimpleLanguage.Core
         {
             this.m_IsDefineMetaType = flag;
         }
+        public virtual void SetParseLevel(int level) { }
+
         public MetaType GetFinalMetaType()
         {
             if (this.m_IsDefineMetaType)
@@ -301,10 +303,6 @@ namespace SimpleLanguage.Core
         {
 
         }
-        public virtual void CalcParseLevel()
-        {
-
-        }
         public virtual void CreateMetaExpress()
         {
 
@@ -319,9 +317,9 @@ namespace SimpleLanguage.Core
                 return 1;
 
             if (this.parseLevel > mmv.parseLevel)
-                return 1;
-            if (this.parseLevel < mmv.parseLevel)
                 return -1;
+            if (this.parseLevel < mmv.parseLevel)
+                return 1;
             return 0;
         }
         public bool AddMetaVariable( MetaVariable mv )

@@ -50,6 +50,7 @@ namespace SimpleLanguage.Core
             foreach( var v in m_MetaMemberEnumDict )
             {
                 v.Value.ParseDefineMetaType();
+                v.Value.CreateMetaExpress();
             }
         }
         public MetaMemberVariable GetMetaMemberVariableByName(string name)

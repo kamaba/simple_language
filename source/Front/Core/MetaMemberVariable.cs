@@ -170,27 +170,25 @@ namespace SimpleLanguage.Core
             {
                 m_IsDefineMetaType = false;
             }
+            CreateCalcParseLevel();
         }
-        public override void CalcParseLevel()
+        protected void CreateCalcParseLevel()
         {
-            if (isConst)
+            if (this.isConst)
             {
-                parseLevel = MetaMemberVariable.s_ConstLevel;
-                s_ConstLevel = s_ConstLevel + 10000;
+                parseLevel = s_ConstLevel;
             }
             else if (isStatic)
             {
                 if (parseLevel == -1)
                 {
-                    if (m_DefineMetaType != null)
+                    if (m_IsDefineMetaType)
                     {
-                        parseLevel = s_IsHaveRetStaticLevel;
-                        s_IsHaveRetStaticLevel = s_IsHaveRetStaticLevel + 100000;
+                        parseLevel = s_StaticDefLevel;
                     }
                     else
                     {
-                        parseLevel = s_NoHaveRetStaticLevel;
-                        s_NoHaveRetStaticLevel = s_NoHaveRetStaticLevel + 100000;
+                        parseLevel = s_StaticNonDefLevel;
                     }
 
                 }
@@ -199,27 +197,28 @@ namespace SimpleLanguage.Core
             {
                 if (parseLevel == -1)
                 {
-                    if (m_DefineMetaType != null)
+                    if (m_IsDefineMetaType)
                     {
-                        parseLevel = s_DefineMetaTypeLevel;
-                        s_DefineMetaTypeLevel = s_DefineMetaTypeLevel + 1000000;
+                        parseLevel = s_NonDefExpressLevel;
                     }
                     else
                     {
-                        parseLevel = s_ExpressLevel;
-                        s_ExpressLevel = s_ExpressLevel + 1000000;
+                        parseLevel = s_DefExpressLevel;
                     }
                 }
             }
-
-            if (m_Express != null)
-            {
-                ExpressManager.CalcParseLevel(parseLevel, m_Express);
-            }
+        }
+        public override void SetParseLevel(int level)
+        {
+            parseLevel = level;
         }
         public override void CreateMetaExpress()
         {
-            if( this.m_FileMetaMemeberVariable != null )
+            //if (m_Express != null)
+            //{
+            //    ExpressManager.CalcParseLevel(parseLevel, m_Express);
+            //}
+            if ( this.m_FileMetaMemeberVariable != null )
             {
                 var express = this.m_FileMetaMemeberVariable?.express;
                 if (express == null)
@@ -257,16 +256,7 @@ namespace SimpleLanguage.Core
         {
             if (m_Express != null)
             {
-                this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType );
-                m_Express.CalcReturnType();
-
-                var enode = SimulateExpressRun(m_Express);
-                if (enode != null && enode != m_Express)
-                {
-                    m_Express = enode;
-                    m_Express.CalcReturnType();
-                }
+                this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress, parseLevel = this.parseLevel });
             }
             else
             {
@@ -277,7 +267,7 @@ namespace SimpleLanguage.Core
             }
             if (m_Express == null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreExpressIsNull, "", "express");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressIsNull, m_Token, "express");
             }
             return true;
         }
@@ -285,6 +275,15 @@ namespace SimpleLanguage.Core
         {
             if( m_Express != null )
             {
+                m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType);
+                m_Express.CalcReturnType();
+
+                var enode = SimulateExpressRun(m_Express);
+                if (enode != null && enode != m_Express)
+                {
+                    m_Express = enode;
+                    m_Express.CalcReturnType();
+                }
                 m_RealMetaType = m_Express.GetReturnMetaType();
                 foreach (var v in m_TemplateChildMetaMemberVariableList)
                 {

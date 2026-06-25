@@ -84,6 +84,7 @@ namespace SimpleLanguage.Core
             {
                 Log.AddMetaCoreLog( LID.MetaCoreAssertShowMessage, m_Token, "Error Enum成员没有找到定义类型，无法解析!!");
             }
+            CreateCalcParseLevel();
         }
         public void SetIsExplicitAssign(bool value)
         {
@@ -92,9 +93,6 @@ namespace SimpleLanguage.Core
         public void SetRelationMemberVariable(MetaMemberVariable mmv )
         {
             this.m_RelationMemberVariable = mmv;
-        }
-        public override void CalcParseLevel()
-        {
         }
         public override void CreateMetaExpress()
         {

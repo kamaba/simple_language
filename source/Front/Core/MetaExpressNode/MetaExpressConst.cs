@@ -210,8 +210,8 @@ namespace SimpleLanguage.Core
         }
         public override void Parse(AllowUseSettings auc)
         {
-            if (m_Parse) return;
-            m_Parse = true;
+            if (m_Parsed) return;
+            m_Parsed = true;
             ETokenType tt = ETokenType.None;
             if( m_FileMetaConstValueTerm?.token != null )
             {

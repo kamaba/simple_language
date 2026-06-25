@@ -52,6 +52,7 @@ namespace SimpleLanguage.Core
             m_Name = fms.name;
             m_FileMetaAssignSyntax = fms;
             m_Index = index;
+            CalcParseLevel();
         }
         public MetaMemberData(MetaData mc, FileMetaMemberData fmmd, MetaBase owmb, int index, bool isStatic )
         {
@@ -73,6 +74,7 @@ namespace SimpleLanguage.Core
             {
                 m_Name = m_Index.ToString();
             }
+            CalcParseLevel();
         }
         public MetaMemberData(MetaData owner, string name, int index)
         {
@@ -104,6 +106,7 @@ namespace SimpleLanguage.Core
             mmd.m_Express = constExpress;
             mmd.m_MemberDataType = EMemberDataType.ConstValue;
             mmd.AddPingToken(constExpress.token);
+            mmd.CalcParseLevel();
             return mmd;
         }
 
@@ -125,6 +128,7 @@ namespace SimpleLanguage.Core
             mmd.SetOwnerMetaBase(owner);
             mmd.m_IsConst = owner?.isConst ?? false;
             mmd.m_MemberDataType = EMemberDataType.MemberArray;
+            mmd.CalcParseLevel();
             return mmd;
         }
         public static MetaMemberData CreateDeclared(MetaData owner, string name, int index, MetaType defineMetaType, bool isDeclaredType)
@@ -280,50 +284,15 @@ namespace SimpleLanguage.Core
         {
             m_Deep = deep;
         }
-        public override void CalcParseLevel()
+        public void CalcParseLevel()
         {
             if (isConst)
             {
                 parseLevel = s_ConstLevel;
-                s_ConstLevel = s_ConstLevel + 10000;
-            }
-            else if (isStatic)
-            {
-                if (parseLevel == -1)
-                {
-                    if (m_DefineMetaType != null)
-                    {
-                        parseLevel = s_IsHaveRetStaticLevel;
-                        s_IsHaveRetStaticLevel = s_IsHaveRetStaticLevel + 100000;
-                    }
-                    else
-                    {
-                        parseLevel = s_NoHaveRetStaticLevel;
-                        s_NoHaveRetStaticLevel = s_NoHaveRetStaticLevel + 100000;
-                    }
-
-                }
             }
             else
             {
-                if (parseLevel == -1)
-                {
-                    if (m_DefineMetaType != null)
-                    {
-                        parseLevel = s_DefineMetaTypeLevel;
-                        s_DefineMetaTypeLevel = s_DefineMetaTypeLevel + 1000000;
-                    }
-                    else
-                    {
-                        parseLevel = s_ExpressLevel;
-                        s_ExpressLevel = s_ExpressLevel + 1000000;
-                    }
-                }
-            }
-
-            if (m_Express != null)
-            {
-                ExpressManager.CalcParseLevel(parseLevel, m_Express);
+                parseLevel = s_StaticNonDefLevel;
             }
         }
         public override void CreateMetaExpress()

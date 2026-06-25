@@ -120,10 +120,10 @@ namespace SimpleLanguage.Core
             }
         }
 
-        public override int CalcParseLevel(int level)
-        {
-            return 0;
-        }
+        //public override int CalcParseLevel(int level)
+        //{
+        //    return 0;
+        //}
         public override void CalcReturnType()
         {
             m_ExpressReturnMetaType = m_ConvertTargetMetaType;

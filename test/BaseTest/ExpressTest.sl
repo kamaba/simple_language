@@ -60,11 +60,12 @@ namespace Application
             static x2 = Class2.x3 + 4
             static x3 = 13
             static m2 = 100
-            static Class3 mc2 =new(10, 2, 10.0f - 2.0f, (20 + 12) / 2)
+            static Class3 mc2 =new(10, 2, 10.0f - 2.0f, (20 + 12) / Class2.x1)
             static a2 = 20.0f + Class3.m / 30 * 100
+            static Class3 mc33 = { a = 300, b = 400, c = Class222() }
             public int x22 = 0
 
-            Class2( int x11)
+            _init_( int x11)
             {
                 this.x = x11
                 Class2.x1 = this.x
@@ -155,6 +156,7 @@ ExpressTest
         ExpressTest.newObjectExpressionTest()
         ExpressTest.staticMemberAccessTest()
         ExpressTest.complexNestedExpressionTest()
+        ExpressTest.classMemberInitTest()
         global.println("========== ExpressTest (end) ==========")
     }
 
@@ -433,5 +435,41 @@ ExpressTest
 
         int nested = ((a + b) * (c - a)) / (b / 2) + (a % b)
         global.println("nested arithmetic = " + nested.toString())
+    }
+
+    static classMemberInitTest()
+    {
+        global.println("----- classMemberInitTest -----")
+
+        Class1 c1 = new(ClassX())
+        global.println("Class1.x = " + c1.x.toString())
+        global.println("Class1.a = " + c1.a.toString())
+        global.println("Class1.x1 = " + c1.x1.toString())
+        global.println("Class1.ab = " + Class1.ab.toString())
+        global.println("Class1.bx = " + Class1.bx.toString())
+        global.println("Class1.c2.x = " + c1.c2.x.toString())
+        global.println("Class1.c2.a = " + c1.c2.a.toString())
+        global.println("Class1.c3.x = " + c1.c3.x.toString())
+        global.println("Class1.xx.ClassXVal = " + c1.xx.ClassXVal.toString())
+
+        Application.Class2 c2 = Application.Class2(10)
+        global.println("Class2.x = " + c2.x.toString())
+        global.println("Class2.a = " + c2.a.toString())
+        global.println("Class2.x1 = " + Application.Class2.x1.toString())
+        global.println("Class2.x2 = " + Application.Class2.x2.toString())
+        global.println("Class2.x3 = " + Application.Class2.x3.toString())
+        global.println("Class2.m2 = " + Application.Class2.m2.toString())
+        global.println("Class2.a2 = " + Application.Class2.a2.toString())
+        global.println("Class2.x22 = " + c2.x22.toString())
+        global.println("Class2.mc33.a = " + Application.Class2.mc33.a.toString())
+        global.println("Class2.mc33.b = " + Application.Class2.mc33.b.toString())
+
+        Application.Class3 c3 = Application.Class3(1, 2, 3, 4)
+        global.println("Class3.a = " + c3.a.toString())
+        global.println("Class3.b = " + c3.b.toString())
+        global.println("Class3.m = " + Application.Class3.m.toString())
+        global.println("Class3.class2.x = " + Application.Class3.class2.x.toString())
+        global.println("Class3.c.b = " + c3.c.b.toString())
+        global.println("Class3.m2 = " + (c3.m2 == null).toString())
     }
 }

@@ -31,6 +31,8 @@ namespace SimpleLanguage.Core
         }
         public override void Parse( AllowUseSettings auc )
         {
+            if( m_Parsed ) { return; }
+
             if(m_MetaCallLink!= null )
             {
                 m_MetaCallLink.Parse( auc );
@@ -66,13 +68,14 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
+            m_Parsed = true;
         }
-        public override int CalcParseLevel(int level)
-        {
-            if (m_MetaCallLink != null)
-                level = m_MetaCallLink.CalcParseLevel(level);
-            return level;
-        }
+        ///public override int CalcParseLevel(int level)
+        //{
+        //    if (m_MetaCallLink != null)
+        //        level = m_MetaCallLink.CalcParseLevel(level);
+        //    return level;
+        //}
         public override void CalcReturnType()
         {
             if (m_MetaCallLink != null)

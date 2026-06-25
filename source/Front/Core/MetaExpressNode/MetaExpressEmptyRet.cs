@@ -57,12 +57,12 @@ namespace SimpleLanguage.Core
             m_Return1Express.Parse(auc);
             m_Return2Express.Parse(auc);
         }
-        public override int CalcParseLevel(int level)
-        {
-            int level1 = m_Return1Express.CalcParseLevel(level);
-            int level2 = m_Return2Express.CalcParseLevel(level1);
-            return level2;
-        }
+        //public override int CalcParseLevel(int level)
+        //{
+        //    int level1 = m_Return1Express.CalcParseLevel(level);
+        //    int level2 = m_Return2Express.CalcParseLevel(level1);
+        //    return level2;
+        //}
         public override void CalcReturnType()
         {
             m_Return1Express.CalcReturnType();

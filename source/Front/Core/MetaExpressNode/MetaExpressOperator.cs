@@ -56,10 +56,10 @@ namespace SimpleLanguage.Core
         {
             m_Value.Parse(auc);
         }
-        public override int CalcParseLevel(int level)
-        {
-            return m_Value.CalcParseLevel(level);
-        }
+        //public override int CalcParseLevel(int level)
+        //{
+        //    return m_Value.CalcParseLevel(level);
+        //}
         public override void CalcReturnType()
         {
             if (m_Value != null)
@@ -367,13 +367,13 @@ namespace SimpleLanguage.Core
             m_Left.Parse(auc);
             m_Right.Parse(auc);
         }
-        public override int CalcParseLevel(int level)
-        {
-            int level1 = m_Left.CalcParseLevel(level);
-            int level2 = m_Right.CalcParseLevel(level1);
-
-            return level2;
-        }
+        //public override int CalcParseLevel(int level)
+        //{
+        //    int level1 = m_Left.CalcParseLevel(level);
+        //    int level2 = m_Right.CalcParseLevel(level1);
+        //
+        //    return level2;
+        //}
         public override void CalcReturnType()
         {
             if (this.m_Left != null)

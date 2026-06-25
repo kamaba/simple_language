@@ -70,6 +70,7 @@ namespace SimpleLanguage.Core
         public bool callConstructFunction = true;
         public bool setterFunction = false;
         public bool getterFunction = true;
+        public int parseLevel = 0;
         public bool ifNotVariableThenAddVariable = true;
         public List<MetaExpressNodeBase> expressNodeList = new List<MetaExpressNodeBase>();
         public EParseFrom parseFrom { get; set; }
@@ -88,6 +89,7 @@ namespace SimpleLanguage.Core
             setterFunction = clone.setterFunction;
             getterFunction = clone.getterFunction;
             expressNodeList = clone.expressNodeList;
+            parseLevel = clone.parseLevel;
             ifNotVariableThenAddVariable = clone.ifNotVariableThenAddVariable;
         }
     }
@@ -378,6 +380,7 @@ namespace SimpleLanguage.Core
             if (m_IsFunction)
             {
                 m_MetaInputParamCollection = new MetaInputParamCollection(m_FileMetaCallNode.fileMetaParTerm, ownerMetaBase, m_OwnerMetaFunctionBlock);
+                m_MetaInputParamCollection.Parse( m_AllowUseSettings );
                 m_MetaInputParamCollection.CaleReturnType();
             }
 
@@ -2077,6 +2080,16 @@ namespace SimpleLanguage.Core
             {
                 m_MetaVariable = mmv;
                 m_MetaType = mmv.GetFinalMetaType();
+                if( m_MetaType == null )
+                {
+                    mmv.ParseMetaExpress();
+                    mmv.ParseRealMetaType();
+                    m_MetaType = mmv.GetFinalMetaType();
+                    if( m_MetaType == null )
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到metatype的类型" );
+                    }
+                }
                 m_CallNodeType = ECallNodeType.MemberVariableName;
                 if( mmv.isStatic )
                 {

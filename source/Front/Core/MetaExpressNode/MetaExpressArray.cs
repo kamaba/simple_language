@@ -125,10 +125,10 @@ namespace SimpleLanguage.Core
                 mcac.Parse(auc);
             }
         }
-        public override int CalcParseLevel(int level)
-        {
-            return level;
-        }
+        //public override int CalcParseLevel(int level)
+        //{
+        //    return level;
+        //}
         public override void CalcReturnType()
         {
             if (m_ExpressReturnMetaType != null) return;

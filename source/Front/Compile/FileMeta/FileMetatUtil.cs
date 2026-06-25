@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.Intrinsics.X86;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile
 {
@@ -257,8 +258,8 @@ namespace SimpleLanguage.Compile
                 }
                 else if (cnode.nodeType == ENodeType.Brace)
                 {
-                    fmbt = new FileMetaCallTerm(fm, cnode);
-                    fmbt.priority = int.MaxValue;
+                    fmbt = new FileMetaBraceTerm(fm, cnode);
+                    fmbt.priority = SignComputePriority.Level1;
                     commonTermExpressList.Add(fmbt);
                 }
                 else if (cnode.nodeType == ENodeType.ConstValue)
@@ -380,7 +381,14 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                fmbt = new FileMetaTermExpress(fm, commonTermExpressList, expressType);
+                if(commonTermExpressList.Count == 1 )
+                {
+                    fmbt = commonTermExpressList[0];
+                }
+                else
+                {
+                    fmbt = new FileMetaTermExpress(fm, commonTermExpressList, expressType);
+                }
             }
 
             if (fmbt == null)
