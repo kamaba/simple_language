@@ -289,6 +289,12 @@ namespace SimpleLanguage.IR
                 IRMetaVariable irmv = new IRMetaVariable(this, v, i);
                 m_LocalIRMetaVariableList.Add(irmv);
                 AddMetaMemberVariableIndexBindHashCode(irmv.id, i);
+                // Also bind the source member variable's hash code so that lookups via
+                // sourceMetaVariable (used for template-generated classes) resolve correctly.
+                if (v is MetaMemberVariable mmv && mmv.sourceMetaMemberVariable != null)
+                {
+                    AddMetaMemberVariableIndexBindHashCode(mmv.sourceMetaMemberVariable.GetHashCode(), i);
+                }
             }
 
             var staticMetaMemberVariables = mc.GetMetaMemberVariableListByFlag(true);
@@ -314,6 +320,12 @@ namespace SimpleLanguage.IR
 
                 m_StaticIRMetaVariableList.Add(irmv);
                 AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);
+                // Also bind the source member variable's hash code so that lookups via
+                // sourceMetaVariable (used for template-generated classes) resolve correctly.
+                if (v is MetaMemberVariable mmv && mmv.sourceMetaMemberVariable != null)
+                {
+                    AddMetaMemberVariableIndexBindHashCode(mmv.sourceMetaMemberVariable.GetHashCode(), i);
+                }
             }
             //int count = 0;
             //int ssize = 0;

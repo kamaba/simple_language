@@ -442,6 +442,10 @@ namespace SimpleLanguage.IR
                 m_Data.index = id;
                 m_Data.debugStaticOwnerIrName = _irMethod?.irOwnerMetaClass?.irName;
                 AddIRData(m_Data);
+                if( id == -1 )
+                {
+                    Log.AddIRLog(LID.MetaCoreAssertShowMessage, $"SVM Error 没有找到加载变量的来源类型！");
+                }
             }
             else if (irmvf == IRMetaVariableFrom.Member)
             {

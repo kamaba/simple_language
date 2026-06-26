@@ -195,7 +195,16 @@ namespace SimpleLanguage.IR
                 else
                 {
                     var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(lastCL.callMetaType, owirmc);
-                    int index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                    int hashcode = 0;
+                    if(mv.sourceMetaVariable != null )
+                    {
+                        hashcode = mv.sourceMetaVariable.GetHashCode();
+                    }
+                    else
+                    {
+                        hashcode = mv.GetHashCode();
+                    }
+                    int index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(hashcode);
                     IRStoreVariable irsv = new IRStoreVariable(irmt, irMethod, index, IRMetaVariableFrom.Static);
                     m_IRStatements.Add(irsv);
                 }
