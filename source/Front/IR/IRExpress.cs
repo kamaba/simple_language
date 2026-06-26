@@ -181,6 +181,7 @@ namespace SimpleLanguage.IR
                 case MetaEmptyRetExpressNode meren:
                     {
                         // left ?? right
+                        // If left is null or 0, return right; otherwise return left.
                         // 1. evaluate left
                         IRExpressBase leftExpress = IRExpressManager.CreateExpress(this.m_IRMethod, meren.return1Express);
                         m_IRDataList.AddRange(leftExpress.IRDataList);

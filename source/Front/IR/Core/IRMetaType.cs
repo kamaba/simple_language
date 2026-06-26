@@ -107,9 +107,10 @@ namespace SimpleLanguage.IR
                 irmt.m_IRMetaClass = IRManager.GetIRMetaClassByMetaType(type);
             }
 
-            for (int i = 0; i < type.defineTemplateMetaTypeList.Count; i++)
+            var dtmtList = type.GetGenTemplateMetaTypeList();
+            for (int i = 0; i < dtmtList.Count; i++)
             {
-                irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(type.defineTemplateMetaTypeList[i], irmt.m_IROwnerMetaClass));
+                irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(dtmtList[i], irmt.m_IROwnerMetaClass));
             }
             if (irmt.m_IRMetaClass == null )
             {
