@@ -297,7 +297,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, " Error VisitFileMetaExpress fileMetaNode 不是符号!!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, root.token, " Error VisitFileMetaExpress fileMetaNode 不是符号!!");
                     }
                 }
                 else if (leftNode != null && rightNode == null)

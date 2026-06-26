@@ -166,8 +166,7 @@ namespace SimpleLanguage.Core
             }
 
             MetaType expressMdt = new MetaType(CoreMetaClassManager.objectMetaClass);
-            if ( (isRightDirectBraceLiteral  || m_FileMetaOpAssignSyntax?.express is FileMetaCallTerm )
-                && m_FileMetaOpAssignSyntax.express != null
+            if ( m_FileMetaOpAssignSyntax.express != null
                 && metaCallLink.callNodeList.Count > 1)
             {
                 TryParseRightExpress(null);

@@ -1237,18 +1237,24 @@ namespace SimpleLanguage.Compile
     // express ? var/const : var2/const2
     public class FileMetaEmptyRetSyntaxTerm : FileMetaBaseTerm
     {
+        public FileMetaBaseTerm return1Term => m_Return1Term;
+        public FileMetaBaseTerm return2Term => m_Return2Term;
+
+        private FileMetaBaseTerm m_Return1Term = null;
+        private FileMetaBaseTerm m_Return2Term = null;
+
         public FileMetaEmptyRetSyntaxTerm(FileMeta fm, Token sign, FileMetaBaseTerm return1fmbt, FileMetaBaseTerm return2fmbt)
         {
             m_FileMeta = fm;
 
             m_Token = sign;
-            m_Left = return1fmbt;
-            m_Right = return2fmbt;
+            m_Return1Term = return1fmbt;
+            m_Return2Term = return2fmbt;
         }
         public override bool BuildAST()
         {
-            m_Left.BuildAST();
-            m_Right.BuildAST();
+            m_Return1Term.BuildAST();
+            m_Return2Term.BuildAST();
 
             m_Root = this;
             return true;
@@ -1261,11 +1267,11 @@ namespace SimpleLanguage.Compile
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(m_Left.ToFormatString());
+            sb.Append(m_Return1Term.ToFormatString());
             sb.Append(" ");
             sb.Append(m_Token.lexeme.ToString());
             sb.Append(" ");
-            sb.Append(m_Right.ToFormatString());
+            sb.Append(m_Return2Term.ToFormatString());
 
 
             return sb.ToString();
@@ -1274,9 +1280,9 @@ namespace SimpleLanguage.Compile
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(m_Left.ToString());
+            sb.Append(m_Return1Term.ToString());
             sb.Append(m_Token.lexeme.ToString());
-            sb.Append(m_Right.ToString());
+            sb.Append(m_Return2Term.ToString());
 
 
             return sb.ToString();

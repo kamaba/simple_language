@@ -429,9 +429,9 @@ ExpressTest
 
         bool condition = a < b && b > c || a == 10
         global.println("complex bool expression = " + condition.toString())
-        Level<int>.t = 100
-        Level<short>.t = 200s
-        condition2 = Level<int>.t < 10 || Level<short>.t > 20
+        Level<int>.st = 100
+        Level<short>.st = 200s
+        condition2 = Level<int>.st < 10 || Level<short>.st > 20
         global.println("complex2 bool expression = " + condition2.toString())
 
         int nested = ((a + b) * (c - a)) / (b / 2) + (a % b)

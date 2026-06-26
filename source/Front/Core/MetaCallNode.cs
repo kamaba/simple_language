@@ -1264,7 +1264,7 @@ namespace SimpleLanguage.Core
                 {
                     if (!mmv.isStatic && !mmv.isConst)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 璋冪敤闈為潤鎬佹垚鍛樺彉閲忥紝涓嶈兘浣跨敤Class.Variable鐨勬柟寮?");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, $"Error {mmv.ownerMetaBase.allName}'s member variable {mmv.name} is static! ");
                         return false;
                     }
                     if (m_FrontCallNode != null)
