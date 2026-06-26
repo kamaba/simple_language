@@ -35,6 +35,10 @@ namespace SimpleLanguage.Core
         public bool isInnerDefine => m_IsInnerDefine;
         public int index => m_Index;
         public FileMetaMemberVariable fileMetaMemeberVariable => m_FileMetaMemeberVariable;
+        // 解析顺序：在 ParseMetaExpress 首次执行时记录的全局自增序号。
+        // 用于在 IR 导出/VM 加载时按依赖解析顺序还原成员初始化表达式的执行次序。
+        // -1 表示尚未参与解析（兜底按声明顺序）。
+        public int parseOrder => m_ParseOrder;
 
         protected EFromType m_FromType = EFromType.Code;
         protected int m_Index = -1;
@@ -43,6 +47,9 @@ namespace SimpleLanguage.Core
         protected bool m_IsInnerDefine = false;
         protected List<MetaMemberVariable> m_TemplateChildMetaMemberVariableList = new List<MetaMemberVariable>();
         protected MetaClass m_SourceMetaClass = null;
+        protected int m_ParseOrder = -1;
+
+        private static int s_NextParseOrder = 0;
 
         private readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
         //private Dictionary< string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
@@ -254,6 +261,14 @@ namespace SimpleLanguage.Core
         }
         public override bool ParseMetaExpress()
         {
+            // 首次进入解析时记录全局解析顺序：
+            // 在 MetaCallNode.cs 第 2083 行附近，若依赖的成员变量尚未解析其类型，
+            // 会主动调用 mmv.ParseMetaExpress() 触发提前解析；
+            // 此时被依赖的成员先得到较小 order，保证 VM 端初始化按依赖顺序执行。
+            if (m_ParseOrder < 0)
+            {
+                m_ParseOrder = s_NextParseOrder++;
+            }
             if (m_Express != null)
             {
                 this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress, parseLevel = this.parseLevel });

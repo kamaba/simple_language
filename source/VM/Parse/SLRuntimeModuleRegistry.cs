@@ -407,6 +407,8 @@ namespace SimpleLanguage.Parse
 
             if (pkg.fieldList != null)
             {
+                // Phase 1: 注册 RuntimeVariable —— 必须严格按声明顺序，
+                // 保证 RuntimeClass 内部按 index 维护的槽位与 SLIR 包一致。
                 foreach (var f in pkg.fieldList)
                 {
                     if (f == null) continue;
@@ -429,22 +431,48 @@ namespace SimpleLanguage.Parse
                     if ((f.flags & 32) == 32)
                     {
                         rc.AddStaticIRMetaVariableList(rv);
-                        if (f.express != null && f.express.Count > 0)
-                        {
-                            //Instruction.UnpackPayloadsFromJson(f.express);
-                            foreach (var ins in f.express)
-                                rc.staticMemberVariableSetValueList.Add(ins);
-                        }
                     }
                     else
                     {
                         rc.AddNonStaticIRMetaVariableList(rv);
-                        if (f.express != null && f.express.Count > 0)
-                        {
-                            //Instruction.UnpackPayloadsFromJson(f.express);
-                            foreach (var ins in f.express)
-                                rc.AddNonStaticMemberVariableSetValueList(ins);
-                        }
+                    }
+                }
+
+                // Phase 2: 按 order 升序注入初始化表达式指令。
+                // order 来自 MetaMemberVariable.parseOrder（首次进入 ParseMetaExpress 时分配），
+                // 反映成员之间的实际依赖解析次序：被依赖者先获得较小 order，需要先执行其初始化。
+                // 缺省 order(-1) 排在后面（视为"无显式依赖"），相同 order 内按原始声明顺序稳定排列。
+                var orderedFields = new List<(SLFieldPackage field, int declIndex)>(pkg.fieldList.Count);
+                for (int fi = 0; fi < pkg.fieldList.Count; fi++)
+                {
+                    var f = pkg.fieldList[fi];
+                    if (f == null) continue;
+                    orderedFields.Add((f, fi));
+                }
+                orderedFields.Sort((a, b) =>
+                {
+                    int ao = a.field.order;
+                    int bo = b.field.order;
+                    // -1 视为最大值，排到末尾
+                    int akey = ao < 0 ? int.MaxValue : ao;
+                    int bkey = bo < 0 ? int.MaxValue : bo;
+                    int cmp = akey.CompareTo(bkey);
+                    if (cmp != 0) return cmp;
+                    return a.declIndex.CompareTo(b.declIndex);
+                });
+
+                foreach (var (f, _) in orderedFields)
+                {
+                    if (f.express == null || f.express.Count == 0) continue;
+                    if ((f.flags & 32) == 32)
+                    {
+                        foreach (var ins in f.express)
+                            rc.staticMemberVariableSetValueList.Add(ins);
+                    }
+                    else
+                    {
+                        foreach (var ins in f.express)
+                            rc.AddNonStaticMemberVariableSetValueList(ins);
                     }
                 }
             }

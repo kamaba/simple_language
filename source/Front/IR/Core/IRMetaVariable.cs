@@ -35,6 +35,10 @@ namespace SimpleLanguage.IR
         public bool isStatic => m_IsStatic;
         public EPermission permission => m_Permission;
         public List<IRData> irDataList => m_IRDataList;
+        // 解析顺序：源自 MetaMemberVariable.parseOrder，
+        // 用于 IR 导出 / VM 加载阶段按依赖解析次序排序初始化表达式。
+        // -1 表示该 IRMetaVariable 不参与解析顺序排序（例如局部变量、参数）。
+        public int order => m_Order;
 
 
         private MetaExpressNodeBase m_ExpressNode = null;
@@ -48,6 +52,7 @@ namespace SimpleLanguage.IR
         private DebugInfo m_DebugInfo;
         private bool m_IsStatic = false;
         private EPermission m_Permission = EPermission.Public;
+        private int m_Order = -1;
         //private MetaVariable m_MetaVariable = null;
 
         public IRMetaVariable( MetaVariable mv, int index = -1 )
@@ -146,6 +151,7 @@ namespace SimpleLanguage.IR
             m_ExpressNode = mmv.express;
             m_IsStatic = mmv.isStatic;
             m_Permission = mmv.permission;
+            m_Order = mmv.parseOrder;
             if (mmv.isStatic )
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Static;
             else

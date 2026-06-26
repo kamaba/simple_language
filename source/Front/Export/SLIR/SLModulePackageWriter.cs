@@ -375,6 +375,7 @@ namespace SimpleLanguage.Export.SLIR
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                             flags = BuildFieldFlags(v),
                             index = v.index,
+                            order = v.order,
                         };
                         var irBufLocal = new List<IRData>();
                         // fill express from IRMetaVariable.irDataList if present
@@ -478,6 +479,7 @@ namespace SimpleLanguage.Export.SLIR
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                             flags = BuildFieldFlags(v) | 32,
                             index = v.index,
+                            order = v.order,
                         };
                         var irBufStatic = new List<IRData>();
                         if (v.irDataList != null && v.irDataList.Count > 0)

@@ -130,6 +130,9 @@ namespace SimpleLanuageVM.Load
         // flags: 1(private),2(public),4(export),8(protected),16(const),32(static)
         public int flags { get; set; }
         public int index { get; set; }
+        // Parse order captured at Front MetaCore time; -1 means unspecified.
+        // VM loader sorts field initializer instructions by this value so dependent members init first.
+        public int order { get; set; } = -1;
         public List<Instruction> express { get; set; } = new();
     }
     public sealed class SLMethodPackage

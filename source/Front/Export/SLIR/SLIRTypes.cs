@@ -79,6 +79,12 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string name { get; set; } = string.Empty;
         public SLRuntimeDefTypePackage? typeDef { get; set; } 
         public int flags { get; set; } public int index { get; set; }
+        /// <summary>
+        /// Member parse order captured at MetaCore time (see <see cref="SimpleLanguage.Core.MetaMemberVariable.parseOrder"/>).
+        /// VM loaders sort field initializer expressions by this value so dependent members initialize first.
+        /// -1 means unspecified; loaders should treat it as "no order" and keep declaration order as fallback.
+        /// </summary>
+        public int order { get; set; } = -1;
         public List<SLIRInstructionPackage> express { get; set; } = new(); 
     }
 
