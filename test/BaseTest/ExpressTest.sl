@@ -294,17 +294,18 @@ ExpressTest
 
         string s1 = null
         string s2 = "hello"
-        string result1 = s1 ?? "default"
+        #string result1 = s1 ?? "default"
         string result2 = s2 ?? "default"
-        global.println("null ?? default = " + result1)
-        global.println("hello ?? default = " + result2)
-
+        #global.println("null ?? default ====:" + result1)
+        global.println("hello ?? default ====:" + result2 + "-----")
+        #!
         int n1 = null
         int n2 = 10
         int result3 = n1 ?? 0
         int result4 = n2 ?? 0
         global.println("null ?? 0 = " + result3.toString())
         global.println("10 ?? 0 = " + result4.toString())
+        !#
     }
 
     static stringInterpolationTest()

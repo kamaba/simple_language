@@ -204,19 +204,14 @@ namespace SimpleLanguage.IR
                         cneData.SetDebugInfoByToken(meren.token, "?? Cne");
                         m_IRDataList.Add(cneData);
 
-                        // 5. if not null, jump to end (keep dup'd left on stack)
+                        // 5. if null, jump to else (left is dup'd on stack)
                         IRData elseirdata = new IRData();
                         IRData endirdata = new IRData();
 
                         IRBranch ifbranch = new IRBranch(m_IRMethod, EIROpCode.BrFalse, elseirdata);
                         m_IRDataList.AddRange(ifbranch.IRDataList);
 
-                        // 6. left is not null: pop the duplicate, keep original left as result
-                        IRData popData = new IRData();
-                        popData.opCode = EIROpCode.Pop;
-                        popData.SetDebugInfoByToken(meren.token, "?? pop dup, keep left");
-                        m_IRDataList.Add(popData);
-
+                        // 6. left is not null: keep left on stack as result, jump to end
                         IRBranch br = new IRBranch(m_IRMethod, EIROpCode.Br, endirdata);
                         m_IRDataList.AddRange(br.IRDataList);
 
