@@ -365,7 +365,9 @@ namespace SimpleLanguage.Core
         public override void Parse(AllowUseSettings auc)
         {
             m_Left.Parse(auc);
+            m_Left = ExpressManager.ConvertNewExpress(m_Left, null);
             m_Right.Parse(auc);
+            m_Right = ExpressManager.ConvertNewExpress(m_Right, null);
         }
         //public override int CalcParseLevel(int level)
         //{

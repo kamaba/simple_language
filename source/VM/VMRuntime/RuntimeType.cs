@@ -297,7 +297,7 @@ namespace SimpleLanguage.VM
             }
 
             s_StaticExprApplyingByKey.Add(key);
-            m_IsStaticExprBatchApplying = true;
+            this.m_IsStaticExprBatchApplying = true;
             try
             {
                 // 按 order（依赖解析次序）收集静态字段初始化指令，而不是按声明顺序。

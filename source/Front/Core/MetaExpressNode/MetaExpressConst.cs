@@ -295,22 +295,13 @@ namespace SimpleLanguage.Core
                     //解析 string里边的${} $name 这种的提取
                     for (int i = 0; i < cdlist.Count; i++)
                     {
-                        Node node = new Node(null);
                         TokenParse tp = new TokenParse( null, cdlist[i]);
                         tp.BuildStruct();
 
                         List<Node> nodeList = tp.rootNode.childList;
                         if (nodeList.Count > 0)
                         {
-                            //List<Node> expressNodeList = FileMetatUtil.HandleExpressNodes(nodeList);
-                            List<Node> expressNodeList =nodeList;
-                            //var elnd = nodeList[nodeList.Count - 1].extendLinkNodeList;
-                            //for ( int j = 0; j < elnd.Count; j++ )
-                            //{
-                            //    expressNodeList.Add(elnd[i]);
-                            //}
-
-                            var filemetaExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMetaConstValueTerm.fileMeta, expressNodeList, FileMetaTermExpress.EExpressType.Common);
+                            var filemetaExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMetaConstValueTerm.fileMeta, nodeList, FileMetaTermExpress.EExpressType.Common);
 
                             CreateExpressParam cep = new CreateExpressParam();
                             cep.fme = filemetaExpress;

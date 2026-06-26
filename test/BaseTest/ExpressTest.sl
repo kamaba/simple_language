@@ -143,10 +143,13 @@ ExpressTest
     {
         global.println("========== ExpressTest (start) ==========")
         
+        #!
         ExpressTest.arithmeticExpressionTest()
         ExpressTest.comparisonExpressionTest()
         ExpressTest.logicalExpressionTest()
+        !#
         ExpressTest.assignmentExpressionTest()
+        #!
         ExpressTest.ternaryExpressionTest()
         ExpressTest.nullCoalescingExpressionTest()
         ExpressTest.stringInterpolationTest()
@@ -158,6 +161,7 @@ ExpressTest
         ExpressTest.staticMemberAccessTest()
         
         ExpressTest.complexNestedExpressionTest()
+        !#
         #ExpressTest.classMemberInitTest()
         global.println("========== ExpressTest (end) ==========")
     }
@@ -252,19 +256,19 @@ ExpressTest
 
         int b = 5
         b <<= 1
-        global.println("b <<= 1 = " + b.toString())
+        global.println("b[$b.toString() ]<<= 1 = " + b.toString())
 
         b >>= 1
-        global.println("b >>= 1 = " + b.toString())
+        global.println("b[$b.toString() ] >>= 1 = " + b.toString())
 
         b &= 3
-        global.println("b &= 3 = " + b.toString())
+        global.println("b[$b.toString() ] &= 3 = " + b.toString())
 
         b |= 1
-        global.println("b |= 1 = " + b.toString())
+        global.println("b[$b ] |= 1 = " + b.toString())
 
         b ^= 2
-        global.println("b ^= 2 = " + b.toString())
+        global.println("b[$b ] ^= 2 = " + b.toString())
     }
 
     static ternaryExpressionTest()

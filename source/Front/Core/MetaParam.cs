@@ -52,6 +52,7 @@ namespace SimpleLanguage.Core
             if (m_Express != null)
             {
                 m_Express.Parse(new AllowUseSettings(allowUse) { parseFrom = EParseFrom.InputParamExpress, ifNotVariableThenAddVariable = false } );
+                m_Express.CalcReturnType();
                 m_Express = ExpressManager.ConvertNewExpress(m_Express, null);
             }
         }
