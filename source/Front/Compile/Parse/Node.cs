@@ -8,6 +8,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile
 {
@@ -35,14 +36,14 @@ namespace SimpleLanguage.Compile
         None,
         Root,
         Brace,
-        LeftAngle,
-        RightAngle,
+        Angle,
         Par,
         Bracket,
         Symbol,
         Period,
         Comma,
         QuestionMark,
+        DoubleQuestion,
         Colon,
         SemiColon,
         LineEnd,
@@ -61,37 +62,6 @@ namespace SimpleLanguage.Compile
         /*
          *   class{ static printf(){} a(){ return a } int b; } printf() a() 和b 就是子内容节点
          */
-        public List<Node> childList => m_ChildList;
-        public List<Node> extendLinkNodeList => m_ExtendLinkNodeList;
-        public int priority { get; set; } = -1;
-        public bool isDel { get; set; } = false;
-        public Token token => m_Token;
-        public Token endToken { get; set; } = null;
-        public Token linkToken { get; set; } = null;         //.节点
-        public Token atToken { get; set; } = null;          // $节点
-        public Node angleOwnerNode { get; set; } = null;
-
-        public int parseIndex = 0;
-
-        public Node parent => m_Parent;
-        public Node parNode => m_ParNode;             //(小括号的节点
-        public Node blockNode => m_BlockNode;           //{大括号的节点
-        public Node bracketNode => m_BracketNodeList.Count > 0 ? m_BracketNodeList[m_BracketNodeList.Count - 1] : null;
-        public List<Node> bracketNodeList => m_BracketNodeList;
-        public Node angleNode => m_AngleNode;
-        public Node lastNode => m_LastNode;         // 最后处理的节点
-        public ENodeType nodeType { get; set; } =  ENodeType.None;
-
-        private List<Node> m_ExtendLinkNodeList { get; set; } = new List<Node>();
-        private List<Node> m_BracketNodeList = new List<Node>();
-        private List<Node> m_ChildList  = new List<Node>();    //子内容节点
-
-        private Node m_AngleNode = null;            // <>
-        private Node m_ParNode = null;              // ()
-        private Node m_BlockNode = null;            // {}
-        private Node m_LastNode = null;            // 最后处理的节点
-        private Node m_Parent = null;              //父节点
-        private Token m_Token = null;                  // 
 
         public Node parseCurrent
         {
@@ -102,38 +72,51 @@ namespace SimpleLanguage.Compile
                 return childList[parseIndex];
             }
         }
-        public Node finalNode
-        {
-            get
-            {
-                if ( m_ExtendLinkNodeList.Count > 0)
-                {
-                    Node t = m_ExtendLinkNodeList[m_ExtendLinkNodeList.Count - 1];
-                    return t;
-                }
-                return this;
-            }
-        }
-        public List<Node> GetLinkNodeList(bool isIncludeSelf = true)
-        {
-            List<Node> tlist = new List<Node>();
-            if (isIncludeSelf) tlist.Add(this);
-            tlist.AddRange(m_ExtendLinkNodeList);
-            return tlist;
-        }
         public List<Token> linkTokenList
         {
             get
             {
                 List<Token> tlist = new List<Token>();
                 tlist.Add(this.token);
-                for( int i = 0; i < m_ExtendLinkNodeList.Count; i++ )
+                for (int i = 0; i < m_ExtendLinkNodeList.Count; i++)
                 {
                     tlist.Add(m_ExtendLinkNodeList[i].token);
                 }
                 return tlist;
             }
         }
+
+        public List<Node> childList => m_ChildList;
+        public List<Node> extendLinkNodeList => m_ExtendLinkNodeList;
+        public int priority { get; set; } = -1;
+        public Token token => m_Token;
+        public Token endToken { get; set; } = null;
+        public Token linkToken { get; set; } = null;         //.节点
+        public Token atToken { get; set; } = null;          // $节点
+
+
+        public Node parent => m_Parent;
+        public Node angleNode => m_AngleNode;           // <>的节点
+        public Node parNode => m_ParNode;             //(小括号的节点
+        public Node blockNode => m_BlockNode;           //{大括号的节点
+        public Node identifierNode => m_IdentifierNode;       //标识符链节点
+        public List<Node> bracketNodeList => m_BracketNodeList;
+        public Node lastNode => m_LastNode;         // 最后处理的节点
+
+        public int parseIndex = 0;
+        public ENodeType nodeType { get; set; } =  ENodeType.None;
+
+        private List<Node> m_ExtendLinkNodeList = new List<Node>();
+        private List<Node> m_BracketNodeList = new List<Node>();
+        private List<Node> m_ChildList  = new List<Node>();    //子内容节点
+
+        private Node m_AngleNode = null;            // <>
+        private Node m_ParNode = null;              // ()
+        private Node m_BlockNode = null;            // {}
+        private Node m_LastNode = null;            // 最后处理的节点
+        private Node m_IdentifierNode = null;       //标识符链节点
+        private Node m_Parent = null;              //父节点
+        private Token m_Token = null;                  // 
 
 
         public Node(Token _token)
@@ -151,13 +134,17 @@ namespace SimpleLanguage.Compile
             }
             return node;
         }
-        public void SetChildList( List<Node> nodes )
+        public void SetIdentifierNode(Node identifierNode)
         {
-            this.m_ChildList = nodes;
+            this.m_IdentifierNode = identifierNode;
         }   
         public void SetLastNode( Node lastNode )
         {
             this.m_LastNode = lastNode;
+        }
+        public void SetParentNode(Node parent)
+        {
+            this.m_Parent = parent;
         }
         public void SetParNode( Node parNode )
         {
@@ -167,14 +154,23 @@ namespace SimpleLanguage.Compile
         {
             m_BlockNode = blockNode;
         }
-        public void SetAngleNode( Node angleNode )
+        public void SetAngleNode(Node angleNode)
         {
             m_AngleNode = angleNode;
         }
-        //public void SetNodeType( ENodeType ent )
-        //{
-        //    m_NodeType = ent;
-        //}
+        public List<Node> GetLinkNodeList(bool isIncludeSelf = true)
+        {
+            List<Node> tlist = new List<Node>();
+            if (isIncludeSelf) tlist.Add(this);
+            tlist.AddRange(m_ExtendLinkNodeList);
+
+            if (this.angleNode != null)
+            {
+                tlist.AddRange(angleNode.extendLinkNodeList);
+            }
+
+            return tlist;
+        }
         public void AddLinkNode(Node node )
         {
             if (lastNode == null) return;
@@ -189,106 +185,14 @@ namespace SimpleLanguage.Compile
         {
             m_ExtendLinkNodeList = nodeList;
         }
-        //public void SetParList( List<Node> nodes )
-        //{
-        //    if( nodes.Count == 1 )
-        //    {
-        //        if( nodes[0].nodeType == ENodeType.Par )
-        //        {
-        //            parNode = nodes[0];
-        //            return;
-        //        }
-        //    }
-        //    if (parNode == null)
-        //        parNode = new Node(null);
-        //    parNode.childList = nodes;
-        //}
-        //public void SetPar( Node node )
-        //{
-        //    parNode = node;
-        //}
         public void AddChild(Node c, bool setParent = true)
         {
             if (setParent)
                 c.m_Parent = this;
-            if( (c.nodeType == ENodeType.Par ) &&
-                lastNode?.extendLinkNodeList.Count > 0 )
-            {
-                m_LastNode.extendLinkNodeList[m_LastNode.extendLinkNodeList .Count- 1].m_ParNode = c;
-            }
-            else
-            {
-                this.childList.Add(c);
-                m_LastNode = c;
-            }
-        }
-        public void AddSyntax( Node c )
-        {
             this.childList.Add(c);
+            m_LastNode = c;
         }
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            switch(nodeType )
-            {
-                case ENodeType.Root:
-                    {
-                        sb.Append("root");
-                    }
-                    break;
-                case ENodeType.IdentifierLink:
-                    {
-                        sb.Append(token != null ? token.ToString() : base.ToString());
-                    }
-                    break;
-                case ENodeType.Brace:
-                    {
-                        sb.Append("  {    }  ");
-                    }
-                    break;
-                case ENodeType.Bracket:
-                    {
-                        sb.Append("  [   ]  ");
-                    }
-                    break;
-                case ENodeType.LeftAngle:
-                    {
-                        sb.Append(" < ");
-                    }
-                    break;
-                case ENodeType.RightAngle:
-                    {
-                        sb.Append(" > ");
-                    }
-                    break;
-                case ENodeType.Par:
-                    {
-                        sb.Append("   (     )   ");
-                    }
-                    break;
-                case ENodeType.Key:
-                    {
-                        sb.Append(token.ToString());
-                    }
-                    break;
-                case ENodeType.LineEnd:
-                    {
-                        sb.AppendLine("换行");
-                    }
-                    break;
-                case ENodeType.SemiColon:
-                    {
-                        sb.AppendLine(";");
-                    }
-                    break;
-                default:
-                    {
-                        sb.Append(token != null ? token.ToString() : base.ToString());
-                    }
-                    break;
-            }
-            return sb.ToString();
-        }
+
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
@@ -383,16 +287,7 @@ namespace SimpleLanguage.Compile
                     }
                 }
             }
-            else if (nodeType == ENodeType.LeftAngle)
-            {
-                sb.Append(token?.lexeme.ToString() + " ");
-                for (int i = 0; i < childList.Count; i++)
-                {
-                    sb.Append(childList[i].ToFormatString());
-                }
-                sb.Append(endToken?.lexeme.ToString());
-            }
-            else if (nodeType == ENodeType.RightAngle)
+            else if( nodeType == ENodeType.Angle)
             {
                 sb.Append(token?.lexeme.ToString() + " ");
                 for (int i = 0; i < childList.Count; i++)
@@ -422,7 +317,7 @@ namespace SimpleLanguage.Compile
             }
             else if( nodeType == ENodeType.LineEnd )
             {
-                //sb.Append(" ");
+                sb.AppendLine();
             }
             else
             {
@@ -437,5 +332,92 @@ namespace SimpleLanguage.Compile
 
             return sb.ToString();
         }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            switch (nodeType)
+            {
+                case ENodeType.Root:
+                    {
+                        sb.Append("root");
+                    }
+                    break;
+                case ENodeType.IdentifierLink:
+                    {
+                        sb.Append(token != null ? token.ToString() : base.ToString());
+                    }
+                    break;
+                case ENodeType.Brace:
+                    {
+                        sb.Append("  {    }  ");
+                    }
+                    break;
+                case ENodeType.Bracket:
+                    {
+                        sb.Append("  [   ]  ");
+                    }
+                    break;
+                case ENodeType.Angle:
+                    {
+                        sb.Append("  <   >  ");
+                    }
+                    break;
+                //case ENodeType.LeftAngle:
+                //    {
+                //        sb.Append(" < ");
+                //    }
+                //    break;
+                //case ENodeType.RightAngle:
+                //    {
+                //        sb.Append(" > ");
+                //    }
+                //    break;
+                case ENodeType.Par:
+                    {
+                        sb.Append("   (     )   ");
+                    }
+                    break;
+                case ENodeType.Key:
+                    {
+                        sb.Append(token.ToString());
+                    }
+                    break;
+                case ENodeType.LineEnd:
+                    {
+                        sb.AppendLine("换行");
+                    }
+                    break;
+                case ENodeType.SemiColon:
+                    {
+                        sb.AppendLine(";");
+                    }
+                    break;
+                default:
+                    {
+                        sb.Append(token != null ? token.ToString() : base.ToString());
+                    }
+                    break;
+            }
+            return sb.ToString();
+        }
+        //public void SetParList( List<Node> nodes )
+        //{
+        //    if( nodes.Count == 1 )
+        //    {
+        //        if( nodes[0].nodeType == ENodeType.Par )
+        //        {
+        //            parNode = nodes[0];
+        //            return;
+        //        }
+        //    }
+        //    if (parNode == null)
+        //        parNode = new Node(null);
+        //    parNode.childList = nodes;
+        //}
+        //public void SetPar( Node node )
+        //{
+        //    parNode = node;
+        //}
     }
 }

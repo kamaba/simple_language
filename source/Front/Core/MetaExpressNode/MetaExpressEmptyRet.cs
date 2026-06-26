@@ -1,13 +1,12 @@
 //****************************************************************************
-//  File:      MetaExpressThreeItem.cs
+//  File:      MetaExpressEmptyRet.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
-//  DateTime: 2026/1/12 12:00:00
-//  Description:  
+//  DateTime: 2026/6/18 12:00:00
+//  Description:  ?? null coalescing operator
 //****************************************************************************
 
 using SimpleLanguage.Compile;
-using SimpleLanguage.Logging;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -20,32 +19,20 @@ namespace SimpleLanguage.Core
         private MetaExpressNodeBase m_Return1Express = null;
         private MetaExpressNodeBase m_Return2Express = null;
 
-        private FileMetaThreeItemSyntaxTerm m_FileMetaThreeItemSyntaxTerm = null;
+        private FileMetaEmptyRetSyntaxTerm m_FileMetaEmptyRetSyntaxTerm = null;
 
-        public MetaEmptyRetExpressNode( MetaBase ownerMC, MetaBlockStatements mbs, FileMetaThreeItemSyntaxTerm fm ) 
+        public MetaEmptyRetExpressNode(MetaBase ownerMC, MetaBlockStatements mbs, FileMetaEmptyRetSyntaxTerm fm)
         {
             m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
-            m_FileMetaThreeItemSyntaxTerm = fm;
-
-            CreateExpressParam conditionCep = new CreateExpressParam()
-            {
-                ownerMBS = m_OwnerMetaBlockStatements,
-                ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass,
-                metaType = new MetaType(CoreMetaClassManager.booleanMetaClass),
-                fme = m_FileMetaThreeItemSyntaxTerm.conditionTerm,
-                isStatic = false,
-                isConst = false,
-                parsefrom = EParseFrom.StatementRightExpress,
-            };
-            m_ConditionExpress = ExpressManager.CreateExpressNode(conditionCep);
+            m_FileMetaEmptyRetSyntaxTerm = fm;
 
             CreateExpressParam return1Cep = new CreateExpressParam()
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
                 ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass,
                 metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
-                fme = m_FileMetaThreeItemSyntaxTerm.return1Term,
+                fme = m_FileMetaEmptyRetSyntaxTerm.return1Term,
                 isStatic = false,
                 isConst = false,
                 parsefrom = EParseFrom.StatementRightExpress,
@@ -57,35 +44,48 @@ namespace SimpleLanguage.Core
                 ownerMBS = m_OwnerMetaBlockStatements,
                 ownerMetaBase = m_OwnerMetaBlockStatements.ownerMetaClass,
                 metaType = new MetaType(CoreMetaClassManager.objectMetaClass),
-                fme = m_FileMetaThreeItemSyntaxTerm.return2Term,
+                fme = m_FileMetaEmptyRetSyntaxTerm.return2Term,
                 isStatic = false,
                 isConst = false,
                 parsefrom = EParseFrom.StatementRightExpress,
             };
             m_Return2Express = ExpressManager.CreateExpressNode(return2Cep);
-
         }
+
         public override void Parse(AllowUseSettings auc)
         {
             m_Return1Express.Parse(auc);
             m_Return2Express.Parse(auc);
         }
-        public override int CalcParseLevel(int level)
-        {
-            return 0;
-        }
+        //public override int CalcParseLevel(int level)
+        //{
+        //    int level1 = m_Return1Express.CalcParseLevel(level);
+        //    int level2 = m_Return2Express.CalcParseLevel(level1);
+        //    return level2;
+        //}
         public override void CalcReturnType()
         {
-            m_ExpressReturnMetaType = return1Express.GetReturnMetaType();
+            m_Return1Express.CalcReturnType();
+            m_Return2Express.CalcReturnType();
+
+            MetaType leftMt = m_Return1Express.GetReturnMetaType();
+            MetaType rightMt = m_Return2Express.GetReturnMetaType();
+
+            if (leftMt != null)
+            {
+                m_ExpressReturnMetaType = new MetaType(leftMt);
+            }
+            else if (rightMt != null)
+            {
+                m_ExpressReturnMetaType = new MetaType(rightMt);
+            }
         }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-
             sb.Append(m_Return1Express.ToFormatString());
-            sb.Append(" ? ");
+            sb.Append(" ?? ");
             sb.Append(m_Return2Express.ToFormatString());
-
             return sb.ToString();
         }
     }

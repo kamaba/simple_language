@@ -458,6 +458,7 @@ namespace SimpleLanguage.IR
                     exportedOwnerNames.Add(v.allName);
                 }
             }
+
             foreach ( var v in m_IRMetaClassList )
             {
                 v.CreateMemberData();

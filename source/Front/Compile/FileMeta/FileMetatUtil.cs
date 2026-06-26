@@ -6,8 +6,11 @@
 //  Description: 
 //****************************************************************************
 using SimpleLanguage.Logging;
+using System;
 using System.Collections.Generic;
+using System.Runtime.Intrinsics.X86;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile
 {
@@ -59,48 +62,7 @@ namespace SimpleLanguage.Compile
             }
             return stringList;
         }
-        public static bool IsSymbol( Token token )
-        {
-            switch( token.type )
-            {
-                case ETokenType.Plus:
-                case ETokenType.Minus:
-                case ETokenType.Multiply:
-                case ETokenType.Divide:
-                case ETokenType.DoublePlus:     //++
-                case ETokenType.DoubleMinus:    //--
-                case ETokenType.Modulo:          // %
-                case ETokenType.Not:             // !
-                case ETokenType.Negative:        // ~
-                case ETokenType.Shi:               //  <<
-                case ETokenType.Shr:               //  >>
-                case ETokenType.Less:            // >
-                case ETokenType.GreaterOrEqual:  // >=
-                case ETokenType.Greater:         // <
-                case ETokenType.LessOrEqual:     // <=
-                case ETokenType.Equal:           // ==
-                case ETokenType.NotEqual:        // !=
-                case ETokenType.Combine:         // &
-                case ETokenType.InclusiveOr:     // |
-                case ETokenType.XOR:             //  ^
-                case ETokenType.Or:              // ||
-                case ETokenType.And:             // &&  
-                case ETokenType.PlusAssign:             // +=
-                case ETokenType.MinusAssign:            // -=
-                case ETokenType.MultiplyAssign:         // *=
-                case ETokenType.DivideAssign:           // /=
-                case ETokenType.ModuloAssign:           // %=
-                case ETokenType.CombineAssign:          // &=
-                case ETokenType.InclusiveOrAssign:      // |=
-                case ETokenType.XORAssign:              // ^=
-                case ETokenType.ShiAssign:              // <<=
-                case ETokenType.ShrAssign:              // >>=
-                    {
-                        return true;
-                    }
-            }
-            return false;
-        }
+
         public static bool SplitNodeList(List<Node> nodeList, List<Node> preNodeList, List<Node> afterNodeList, ref Token assignToken)
         {
             bool isEqual = false;
@@ -122,7 +84,7 @@ namespace SimpleLanguage.Compile
             {
                 if (afterNodeList.Count == 0)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "解析NodeStructVariable时有=号，但没有值内容 " + assignToken?.ToLexemeAllString() );
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, assignToken, "解析NodeStructVariable时有=号，但没有值内容 " + assignToken?.ToLexemeAllString() );
                     return false;
                 }
             }
@@ -132,6 +94,7 @@ namespace SimpleLanguage.Compile
             }
             return true;
         }
+        /*
         public static FileMetaBaseTerm CreateFileOneTerm( FileMeta fm, Node node, FileMetaTermExpress.EExpressType expressType)
         {
             FileMetaBaseTerm fmbt = null;
@@ -181,146 +144,242 @@ namespace SimpleLanguage.Compile
                 fmbt = new FileMetaBracketTerm(fm, node);
                 fmbt.priority = SignComputePriority.Level1;
             }
+            else if( node.nodeType == ENodeType.Key && node.token?.type == ETokenType.New )
+            {
+                fmbt = new FileMetaCallTerm(fm, node);
+                fmbt.priority = int.MaxValue;
+            }
             else
             {
                 Log.AddFileMetaLog(LID.ShowExtendMessage, "Error CreateFileOneTerm 单1表达式，没有找到该类型: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
             }
             return fmbt;
         }
+        */
         public static FileMetaBaseTerm CreateFileMetaExpress(FileMeta fm, List<Node> nodeList, FileMetaTermExpress.EExpressType expressType)
         {
-            if (nodeList == null || nodeList.Count == 0)
-                return null;
-
-            // 单节点直接走基础创建
-            if (nodeList.Count == 1)
-            {
-                var fot =  CreateFileOneTerm(fm, nodeList[0], expressType);
-                fot.BuildAST();
-                return fot;
-            }
-
             FileMetaBaseTerm fmbt = null;
-
-            // 1) 优先在当前这一层判断三元 ?:，因为它的优先级最低，需要最先把整体拆成三个子表达式，
-            //    然后对子表达式再递归调用 CreateFileMetaExpress，继续做 as/is、三元等识别。
             int questionIndex = -1;
             int colonIndex = -1;
-            int depth = 0; // 简单跳过括号/大括号/中括号里的 ? :
-            for (int i = 0; i < nodeList.Count; i++)
+            int emptyRetIndex = -1;
+            Node emptyRetQuestion = null;                      
+            int asIsIndex = -1;// 3) 当前层不存在顶层 ??，再判断 as/is
+
+            List<FileMetaBaseTerm> commonTermExpressList = new List<FileMetaBaseTerm>();
+            List<FileMetaBaseTerm> condList = new List<FileMetaBaseTerm>();
+            List<FileMetaBaseTerm> term1ExpressList = new List<FileMetaBaseTerm>();
+            int index = 0;
+            while(index < nodeList.Count )
             {
-                var n = nodeList[i];
-                if (n.nodeType == ENodeType.Par || n.nodeType == ENodeType.Brace || n.nodeType == ENodeType.Bracket)
-                {
-                    depth++;
-                }
-                else if (n.nodeType == ENodeType.SemiColon || n.nodeType == ENodeType.LineEnd)
-                {
-                    // 语句分隔，重置
-                    if (depth == 0 && questionIndex >= 0 && colonIndex > questionIndex)
-                        break;
-                }
-
-                if (depth > 0)
-                {
-                    // 括号内部的 ?: 不在这一层处理
-                    if (n.nodeType == ENodeType.Par || n.nodeType == ENodeType.Brace || n.nodeType == ENodeType.Bracket)
-                    {
-                        depth--;
-                    }
-                    continue;
-                }
-
-                if (n.nodeType == ENodeType.QuestionMark )
+                var cnode = nodeList[index];
+                if (cnode.nodeType == ENodeType.QuestionMark)
                 {
                     if (questionIndex < 0)
-                        questionIndex = i;
+                    {
+                        condList = commonTermExpressList;
+                        commonTermExpressList = new List<FileMetaBaseTerm>();
+                        questionIndex = index;
+                    }
                 }
-                else if (n.nodeType == ENodeType.Colon && questionIndex >= 0)
+                else if (cnode.nodeType == ENodeType.Colon)
                 {
-                    colonIndex = i;
-                    break;
+                    if (questionIndex > 0)
+                    {
+                        colonIndex = index;
+                        term1ExpressList = commonTermExpressList;
+                        commonTermExpressList = new List<FileMetaBaseTerm>();
+                    }
+                    else
+                    {
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
+                    }
                 }
+                else if (cnode.nodeType == ENodeType.DoubleQuestion)
+                {
+                    emptyRetIndex = index;
+                    emptyRetQuestion = cnode;
+                    term1ExpressList = commonTermExpressList;
+                    commonTermExpressList = new List<FileMetaBaseTerm>();
+                }
+                else if (cnode.nodeType == ENodeType.Symbol)
+                {
+                    FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
+                    fmn.priority = cnode.priority;
+                    commonTermExpressList.Add(fmn);
+                }
+                else if( cnode.nodeType == ENodeType.Key )
+                { 
+                    var ttype = cnode.token?.type;
+                    if (ttype == ETokenType.As || ttype == ETokenType.Is || ttype == ETokenType.IsNot)
+                    {
+                        asIsIndex = index;
+                        break;
+                    }
+                    else if (cnode.token.type == ETokenType.This
+                    || cnode.token.type == ETokenType.Base
+                    || cnode.token.type == ETokenType.Global
+                    || cnode.token.type == ETokenType.Local)
+                    {
+                        fmbt = new FileMetaCallTerm(fm, cnode);
+                        fmbt.priority = int.MaxValue;
+                        commonTermExpressList.Add(fmbt);
+                    }
+                    else if (cnode.token.type == ETokenType.New)
+                    {
+                        Node block = null;
+                        if (index+1 < nodeList.Count)
+                        {
+                            if (nodeList[index+1].nodeType == ENodeType.Brace)
+                            {
+                                block = nodeList[index+1];
+                                cnode.SetBlockNode(block);
+                                index++;
+                            }
+                        }
+                        fmbt = new FileMetaCallTerm(fm, cnode);
+                        fmbt.priority = int.MaxValue;
+                        commonTermExpressList.Add(fmbt);
+                    }
+                    else
+                    {
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error --------------------------------------!!" + fmbt.ToTokenString());
+                    }
+                }
+                else if (cnode.nodeType == ENodeType.Brace)
+                {
+                    fmbt = new FileMetaBraceTerm(fm, cnode);
+                    fmbt.priority = SignComputePriority.Level1;
+                    commonTermExpressList.Add(fmbt);
+                }
+                else if (cnode.nodeType == ENodeType.ConstValue)
+                {
+                    if (cnode.extendLinkNodeList.Count > 0)
+                    {
+                        fmbt = new FileMetaCallTerm(fm, cnode);
+                        fmbt.priority = int.MaxValue;
+                    }
+                    else
+                    {
+                        fmbt = new FileMetaConstValueTerm(fm, cnode.token);
+                        fmbt.priority = int.MaxValue;
+                    }
+                    commonTermExpressList.Add(fmbt);
+                }
+                else if (cnode.nodeType == ENodeType.IdentifierLink)
+                {
+                    Node block = null;
+                    if (index+1 < nodeList.Count)
+                    {
+                        if (nodeList[index+1].nodeType == ENodeType.Brace)
+                        {
+                            block = nodeList[index+1];
+                            cnode.SetBlockNode(block);
+                            index++;
+                        }
+                    }
+                    fmbt = new FileMetaCallTerm(fm, cnode);
+                    fmbt.priority = int.MaxValue;
+                    commonTermExpressList.Add(fmbt);
+                }
+                else if (cnode.nodeType == ENodeType.Par)
+                {
+                    if (cnode.extendLinkNodeList.Count > 0)
+                    {
+                        fmbt = new FileMetaCallTerm(fm, cnode);
+                        fmbt.priority = int.MaxValue;
+                    }
+                    else
+                    {
+                        fmbt = new FileMetaParTerm(fm, cnode, expressType);
+                        fmbt.priority = SignComputePriority.Level1;
+                    }
+                    commonTermExpressList.Add(fmbt);
+                }
+                else if (cnode.nodeType == ENodeType.Bracket)
+                {
+                    var fileMetaBracketTerm = new FileMetaBracketTerm(fm, cnode);
+                    fileMetaBracketTerm.priority = SignComputePriority.Level1;
+                    commonTermExpressList.Add(fileMetaBracketTerm);
+                }
+                else
+                {
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "没有找到该类型: " + cnode.token.type.ToString() + " 位置: " + cnode.token.ToLexemeAllString());
+                }
+                index++;
             }
 
-            if (questionIndex > 0 && colonIndex > questionIndex + 1 && colonIndex < nodeList.Count - 1)
+            if (questionIndex > 0 && colonIndex > questionIndex && colonIndex < nodeList.Count - 1)
             {
-                // 拆成 condition ? trueExpr : falseExpr
-                var condList = nodeList.GetRange(0, questionIndex);
-                var trueList = nodeList.GetRange(questionIndex + 1, colonIndex - questionIndex - 1);
-                var falseList = nodeList.GetRange(colonIndex + 1, nodeList.Count - colonIndex - 1);
-
+                FileMetaBaseTerm condTerm = new FileMetaTermExpress(fm, condList, expressType);
+                FileMetaBaseTerm trueTerm = new FileMetaTermExpress(fm, term1ExpressList, expressType);
+                FileMetaBaseTerm falseTerm = new FileMetaTermExpress(fm, commonTermExpressList, expressType);
                 // 三个部分继续递归走同样逻辑（内部还可以再包含 as/is、三元等）
-                fmbt = new FileMetaThreeItemSyntaxTerm(fm,
-                    condList,
-                    trueList,
-                    falseList);
+                fmbt = new FileMetaThreeItemSyntaxTerm(fm, nodeList[questionIndex]?.token, nodeList[colonIndex].token, condTerm, trueTerm, falseTerm);
+            }
+            else if (emptyRetIndex > 0 && emptyRetIndex < nodeList.Count - 1)
+            {
+                FileMetaBaseTerm trueTerm = new FileMetaTermExpress(fm, term1ExpressList, expressType); ;
+                FileMetaBaseTerm falseTerm = new FileMetaTermExpress(fm, commonTermExpressList, expressType);
+                fmbt = new FileMetaEmptyRetSyntaxTerm(fm, emptyRetQuestion.token, trueTerm, falseTerm);
+            }
+            else if (asIsIndex > 0 && asIsIndex < nodeList.Count )
+            {
+                var asIsNode = nodeList[asIsIndex];
+                var leftNodes = nodeList[0];
+                var rightCount = nodeList.Count - asIsIndex - 1;
+                List<Node> typeNodes = null;
+                Node optionalVarNode = null;
+
+                if (asIsNode.token?.type == ETokenType.As)
+                {
+                    // as 支持泛型类型写法（例如: arr as Array<Object>），
+                    // 右侧类型可能被拆成多个节点，需整体作为 typeNodes 处理。
+                    typeNodes = nodeList.GetRange(asIsIndex + 1, rightCount);
+                }
+                else if (rightCount == 1)
+                {
+                    // var1 as Class1  或  var1 is Class1
+                    typeNodes = new List<Node> { nodeList[asIsIndex + 1] };
+                }
+                else if (rightCount >= 2 && (asIsNode.token?.type == ETokenType.Is || asIsNode.token?.type == ETokenType.IsNot))
+                {
+                    // var1 is Class1 var2
+                    // 兼容泛型类型：若末尾不是可作为变量名的节点，则整段都作为类型。
+                    var tailNode = nodeList[nodeList.Count - 1];
+                    bool tailCanBeVarName =
+                        tailNode?.nodeType == ENodeType.IdentifierLink
+                        || tailNode?.token?.type == ETokenType.Identifier;
+                    if (tailCanBeVarName)
+                    {
+                        typeNodes = nodeList.GetRange(asIsIndex + 1, rightCount - 1);
+                        optionalVarNode = tailNode;
+                    }
+                    else
+                    {
+                        typeNodes = nodeList.GetRange(asIsIndex + 1, rightCount);
+                    }
+                }
+                FileMetaCallLink fmCallLink = new FileMetaCallLink(fm, leftNodes);
+
+                if (typeNodes != null)
+                {
+                    // 右侧类型可能是拆开的泛型节点（例如 Array < Object >），
+                    // 先做单行节点归并，确保 as/is 能拿到完整类型定义。
+                    fmbt = new FileMetaAsOrIsTerm(fm, fmCallLink, asIsNode.token, typeNodes, optionalVarNode);
+                }
             }
             else
             {
-                // 2) 当前层不存在顶层 ?:，再判断 as/is
-                int asIsIndex = -1;
-                for (int i = 0; i < nodeList.Count; i++)
+                if(commonTermExpressList.Count == 1 )
                 {
-                    var t = nodeList[i].token?.type;
-                    if (t == ETokenType.As || t == ETokenType.Is || t == ETokenType.IsNot)
-                    {
-                        asIsIndex = i;
-                        break;
-                    }
+                    fmbt = commonTermExpressList[0];
                 }
-
-                if (asIsIndex > 0 && asIsIndex < nodeList.Count - 1)
+                else
                 {
-                    var asIsNode = nodeList[asIsIndex];
-                    var leftNodes = nodeList.GetRange(0, asIsIndex);
-                    var rightCount = nodeList.Count - asIsIndex - 1;
-                    List<Node> typeNodes = null;
-                    Node optionalVarNode = null;
-
-                    if (asIsNode.token?.type == ETokenType.As)
+                    if( commonTermExpressList.Count > 1 )
                     {
-                        // as 支持泛型类型写法（例如: arr as Array<Object>），
-                        // 右侧类型可能被拆成多个节点，需整体作为 typeNodes 处理。
-                        typeNodes = nodeList.GetRange(asIsIndex + 1, rightCount);
+                        fmbt = new FileMetaTermExpress(fm, commonTermExpressList, expressType);
                     }
-                    else if (rightCount == 1)
-                    {
-                        // var1 as Class1  或  var1 is Class1
-                        typeNodes = new List<Node> { nodeList[asIsIndex + 1] };
-                    }
-                    else if (rightCount >= 2 && (asIsNode.token?.type == ETokenType.Is || asIsNode.token?.type == ETokenType.IsNot))
-                    {
-                        // var1 is Class1 var2
-                        // 兼容泛型类型：若末尾不是可作为变量名的节点，则整段都作为类型。
-                        var tailNode = nodeList[nodeList.Count - 1];
-                        bool tailCanBeVarName =
-                            tailNode?.nodeType == ENodeType.IdentifierLink
-                            || tailNode?.token?.type == ETokenType.Identifier;
-                        if (tailCanBeVarName)
-                        {
-                            typeNodes = nodeList.GetRange(asIsIndex + 1, rightCount - 1);
-                            optionalVarNode = tailNode;
-                        }
-                        else
-                        {
-                            typeNodes = nodeList.GetRange(asIsIndex + 1, rightCount);
-                        }
-                    }
-
-                    if (typeNodes != null)
-                    {
-                        // 右侧类型可能是拆开的泛型节点（例如 Array < Object >），
-                        // 先做单行节点归并，确保 as/is 能拿到完整类型定义。
-                        typeNodes = StructParse.HandleNodeSingleLine(typeNodes);
-                        fmbt = new FileMetaAsOrIsTerm(fm, leftNodes, asIsNode.token, typeNodes, optionalVarNode);
-                    }
-                }
-
-                // 3) 既不是 ?: 也不是 as/is，则作为普通表达式交给 FileMetaTermExpress
-                if (fmbt == null)
-                {
-                    fmbt = new FileMetaTermExpress(fm, nodeList, expressType);
                 }
             }
 
@@ -332,5 +391,231 @@ namespace SimpleLanguage.Compile
             fmbt.BuildAST();
             return fmbt;
         }
+        //public static bool IsSymbol( Token token )
+        //{
+        //    switch( token.type )
+        //    {
+        //        case ETokenType.Plus:
+        //        case ETokenType.Minus:
+        //        case ETokenType.Multiply:
+        //        case ETokenType.Divide:
+        //        case ETokenType.DoublePlus:     //++
+        //        case ETokenType.DoubleMinus:    //--
+        //        case ETokenType.Modulo:          // %
+        //        case ETokenType.Not:             // !
+        //        case ETokenType.Negative:        // ~
+        //        case ETokenType.Shi:               //  <<
+        //        case ETokenType.Shr:               //  >>
+        //        case ETokenType.Less:            // >
+        //        case ETokenType.GreaterOrEqual:  // >=
+        //        case ETokenType.Greater:         // <
+        //        case ETokenType.LessOrEqual:     // <=
+        //        case ETokenType.Equal:           // ==
+        //        case ETokenType.NotEqual:        // !=
+        //        case ETokenType.Combine:         // &
+        //        case ETokenType.InclusiveOr:     // |
+        //        case ETokenType.XOR:             //  ^
+        //        case ETokenType.Or:              // ||
+        //        case ETokenType.And:             // &&  
+        //        case ETokenType.EmptyRet:        // ??
+        //        case ETokenType.PlusAssign:             // +=
+        //        case ETokenType.MinusAssign:            // -=
+        //        case ETokenType.MultiplyAssign:         // *=
+        //        case ETokenType.DivideAssign:           // /=
+        //        case ETokenType.ModuloAssign:           // %=
+        //        case ETokenType.CombineAssign:          // &=
+        //        case ETokenType.InclusiveOrAssign:      // |=
+        //        case ETokenType.XORAssign:              // ^=
+        //        case ETokenType.ShiAssign:              // <<=
+        //        case ETokenType.ShrAssign:              // >>=
+        //            {
+        //                return true;
+        //            }
+        //    }
+        //    return false;
+        //}
+        //public static List<Node> HandleClassDefineNodes(List<Node> nodeList)
+        //{
+        //    List<Node> handleBeforeList = new List<Node>();
+
+        //    int index = 0;
+        //    Node lastNode = null;
+        //    while (index < nodeList.Count)
+        //    {
+        //        // Start of a new identifier / 'new'
+        //        var v = nodeList[index++];
+        //        if (v.nodeType == ENodeType.IdentifierLink)
+        //        {
+        //            lastNode = v;
+        //            handleBeforeList.Add(v);
+        //            continue;
+        //        }
+        //        if (lastNode != null)
+        //        {
+        //            if (v.nodeType == ENodeType.Angle)
+        //            {
+        //                lastNode.SetAngleNode(v);
+        //                var list1 = HandleClassDefineNodes(v.childList);
+        //                v.childList.AddRange(list1);
+        //                continue;
+        //            }
+        //            else if (v.nodeType == ENodeType.Bracket)
+        //            {
+        //                var list1 = HandleClassDefineNodes(v.childList);
+        //                v.childList.AddRange(list1);
+        //                continue;
+        //            }
+        //        }
+
+        //        handleBeforeList.Add(v);
+        //    }
+
+        //    return handleBeforeList;
+        //}
+        /*
+         *
+         *
+        public static List<Node> HandleExpressNodes(List<Node> nodeList)
+        {
+            List<Node> handleBeforeList = new List<Node>();
+
+            //handleBeforeList = nodeList;
+
+            Node lastAttachable = null;      // last IdentifierLink or 'new'
+            bool isGenericMode = false;      // true only if current identifier has a valid generic segment
+
+            int index = 0;
+            while( index < nodeList.Count )
+            {
+                var v = nodeList[index++];
+
+                // Start of a new identifier / 'new'
+                if (v.nodeType == ENodeType.IdentifierLink
+                    || v.nodeType == ENodeType.Angle || (v.token.type == ETokenType.This
+                        || v.token.type == ETokenType.Base))
+                {
+
+                    continue;
+                }
+
+                if (v.nodeType == ENodeType.Symbol)
+                {
+                    handleBeforeList.Add(v);
+                    lastAttachable = null;
+                    isGenericMode = false;
+                    continue;
+                }
+
+                // Function call: only fold if we are in generic or plain-call mode (not comparison mode)
+                if (v.nodeType == ENodeType.Par)
+                {
+                    //HandleNodeSingleLine_Recursive(v);
+                    if (lastAttachable != null && (isGenericMode || lastAttachable.angleNode == null))
+                    {
+                        // if the paren expression begins with an operator, do not treat as a call
+                        // instead treat as binary plus: append a '+' symbol and the paren as separate nodes
+                        bool startsWithOperator = false;
+                        if (v.childList != null && v.childList.Count > 0)
+                        {
+                            var first = v.childList[0];
+                            if (first.nodeType == ENodeType.Symbol)
+                            {
+                                var t = first.token.type;
+                                // treat *,/,% at start as binary operator (unlikely unary)
+                                if (t == ETokenType.Multiply || t == ETokenType.Divide || t == ETokenType.Modulo)
+                                {
+                                    startsWithOperator = true;
+                                }
+                                else if (t == ETokenType.Plus || t == ETokenType.Minus)
+                                {
+                                    // plus/minus can be unary. If the token after +/ - is an identifier, const, or a parenthesis/bracket/brace,
+                                    // then this is most likely a unary operator within the paren (e.g. ( -x ) or ( -f() )). In that case do not treat
+                                    // as a binary "startsWithOperator" for the parent call folding. Otherwise mark as startsWithOperator.
+                                    if (v.childList.Count > 1)
+                                    {
+                                        var second = v.childList[1];
+                                        // allow Key:this/base/new as unary operand starters as well
+                                        bool isUnaryStarter = second.nodeType == ENodeType.IdentifierLink
+                                            || second.nodeType == ENodeType.ConstValue
+                                            || second.nodeType == ENodeType.Par
+                                            || second.nodeType == ENodeType.Bracket
+                                            || second.nodeType == ENodeType.Brace
+                                            || (second.nodeType == ENodeType.Key && (second.token?.type == ETokenType.This
+                                            || second.token?.type == ETokenType.Base || second.token?.type == ETokenType.New));
+                                        if (!isUnaryStarter)
+                                        {
+                                            startsWithOperator = true;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        startsWithOperator = true;
+                                    }
+                                }
+                            }
+                        }
+
+                        if (startsWithOperator)
+                        {
+                            // insert a '+' node then the paren node as normal nodes
+                            var plusToken = new Token("", ETokenType.Plus, "+", 0, 0);
+                            var plusNode = new Node(plusToken);
+                            handleBeforeList.Add(plusNode);
+                            handleBeforeList.Add(v);
+                            // reset lastAttachable so further attachments won't bind
+                            lastAttachable = null;
+                        }
+                        else
+                        {
+                            lastAttachable.finalNode.SetParNode(v);
+                        }
+                    }
+                    else
+                    {
+                        handleBeforeList.Add(v);
+                    }
+                    continue;
+                }
+
+                // Indexer: same rule as Par
+                if (v.nodeType == ENodeType.Bracket)
+                {
+                    //HandleNodeSingleLine_Recursive(v);
+                    if (lastAttachable != null)
+                    {
+                        lastAttachable.finalNode.AddBracketNode(v);
+                    }
+                    else
+                    {
+                        handleBeforeList.Add(v);
+                    }
+                    continue;
+                }
+
+                // Object/initializer block: same rule as Par
+                if (v.nodeType == ENodeType.Brace)
+                {
+                    //HandleNodeSingleLine_Recursive(v);
+                    if (lastAttachable != null && (isGenericMode || lastAttachable.angleNode == null))
+                    {
+                        lastAttachable.finalNode.SetBlockNode(v);
+                    }
+                    else
+                    {
+                        handleBeforeList.Add(v);
+                    }
+                    continue;
+                }
+
+                // Start of generic arguments: attach '<' node to identifier as angleNode.
+                // If later we do not see a matching valid '>' segment, we will roll back
+
+                // Other tokens are kept as-is
+                handleBeforeList.Add(v);
+            }
+
+            return handleBeforeList;
+        }
+         */
     }
 }

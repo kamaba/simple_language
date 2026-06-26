@@ -142,7 +142,7 @@ ExpressTest
     static fun()
     {
         global.println("========== ExpressTest (start) ==========")
-        #!
+        
         ExpressTest.arithmeticExpressionTest()
         ExpressTest.comparisonExpressionTest()
         ExpressTest.logicalExpressionTest()
@@ -156,7 +156,7 @@ ExpressTest
         ExpressTest.arrayIndexExpressionTest()
         ExpressTest.newObjectExpressionTest()
         ExpressTest.staticMemberAccessTest()
-        !#
+        
         ExpressTest.complexNestedExpressionTest()
         #ExpressTest.classMemberInitTest()
         global.println("========== ExpressTest (end) ==========")
