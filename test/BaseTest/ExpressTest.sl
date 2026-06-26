@@ -147,13 +147,14 @@ ExpressTest
         ExpressTest.arithmeticExpressionTest()
         ExpressTest.comparisonExpressionTest()
         ExpressTest.logicalExpressionTest()
-        !#
         ExpressTest.assignmentExpressionTest()
-        #!
         ExpressTest.ternaryExpressionTest()
+        !#
+        
         ExpressTest.nullCoalescingExpressionTest()
         ExpressTest.stringInterpolationTest()
         ExpressTest.lambdaExpressionTest()
+        #!
         ExpressTest.typeConversionExpressionTest()
         ExpressTest.memberAccessExpressionTest()
         ExpressTest.arrayIndexExpressionTest()

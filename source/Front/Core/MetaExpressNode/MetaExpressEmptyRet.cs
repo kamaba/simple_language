@@ -26,6 +26,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = ownerMC;
             m_OwnerMetaBlockStatements = mbs;
             m_FileMetaEmptyRetSyntaxTerm = fm;
+            m_Token = fm.token;
 
             CreateExpressParam return1Cep = new CreateExpressParam()
             {
