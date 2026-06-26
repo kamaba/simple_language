@@ -1326,7 +1326,8 @@ namespace SimpleLanguage.VM.Runtime
                         var mt = TryGetInstructionRuntimeDefType(iri);
                         if (mt != null)
                         {
-                            var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(mt);
+                            // 使用当前模板参数列表解析泛型类型，确保泛型类的静态字段能正确访问
+                            var rt = GetRuntimeTypeByDefType(mt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                             if (rt != null)
                             {
                                 if (TryPushStackSlot(out int slot))
@@ -1343,7 +1344,8 @@ namespace SimpleLanguage.VM.Runtime
                             if (m_ValueIndex > 0)
                             {
                                 var val = m_ValueStack[--m_ValueIndex];
-                                var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(mt);
+                                // 使用当前模板参数列表解析泛型类型，确保泛型类的静态字段能正确存储
+                                var rt = GetRuntimeTypeByDefType(mt, m_CurrentRuntimeClass != null ? m_CurrentRuntimeClass : mt.ownerRuntimeClass, m_InputTemplateRuntimeTypeList, true);
                                 if (rt == null)
                                 {
                                     Log.AddRuntimeLog(LID.ShowMessageAssert, "StoreStaticField failed to get runtime type for metadata type: ");
@@ -2236,7 +2238,7 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         var v = m_ValueStack[stackIndex];
 
-                        if (v.isNull)
+                        if (v.isNull || v.eType == EVMType.Null )
                         {
                             Log.AddRuntimeLog(LID.RuntimeVMNotShouldIsNull, iri.debugInfo,  "Current stack value is null." );
                             return;
@@ -2332,13 +2334,29 @@ namespace SimpleLanguage.VM.Runtime
                             || rt.eType == EVMType.UInt64
                             || rt.eType == EVMType.Float32
                             || rt.eType == EVMType.Float64
-                            || rt.eType == EVMType.Num
-                            || rt.eType == EVMType.String;
+                            || rt.eType == EVMType.Num;
                         if (targetIsPrimitiveLike)
                         {
                             try
                             {
-                                v1.ConvertByEType(rt.eType);
+                                var etype = v1.eType;
+                                var rso = v1.GetReferenceSObject();
+                                if (rso != null && v1.eType == EVMType.Object )
+                                {
+                                    etype = rso.eType;
+                                }
+                                if (rt.eType == EVMType.Num  )
+                                {
+
+                                }
+                                else if( rt.eType != etype)
+                                {
+                                    v1.SetNull();
+                                }
+                                else
+                                {
+                                }
+                                //v1.ConvertByEType(rt.eType);
                             }
                             catch
                             {

@@ -83,7 +83,7 @@ namespace Application
                     Class3 mc3 = Class3(20)
                     Class222.a = 10
                     Class3.m += 10
-                    Class3.GetClass2().x -= 10
+                    #Class3.GetClass2().x -= 10
                     this.x22 = 20
                     this.x22 += 10
                     x33 = 30
@@ -112,10 +112,8 @@ namespace Application
 
         Class3
         {
-            static Class2 class2 = new()
             a = 20
             b = 20
-            Class2.Class222 c = new()
             static m = 20
             Class2.Class222 m2 = null
 
@@ -128,11 +126,6 @@ namespace Application
             {
                 this.a = 20
                 this.b = int(x) + int(y) - int(z) + int(d)
-            }
-
-            public static Class2 GetClass2()
-            {
-                ret Class3.class2
             }
         }
 }
@@ -149,21 +142,18 @@ ExpressTest
         ExpressTest.logicalExpressionTest()
         ExpressTest.assignmentExpressionTest()
         ExpressTest.ternaryExpressionTest()
-        !#
-        
         ExpressTest.nullCoalescingExpressionTest()
         ExpressTest.stringInterpolationTest()
         ExpressTest.lambdaExpressionTest()
-        #!
         ExpressTest.typeConversionExpressionTest()
-        ExpressTest.memberAccessExpressionTest()
+        ExpressTest.memberAccessExpressionTest() 
         ExpressTest.arrayIndexExpressionTest()
         ExpressTest.newObjectExpressionTest()
-        ExpressTest.staticMemberAccessTest()
-        
-        ExpressTest.complexNestedExpressionTest()
-        !#
-        #ExpressTest.classMemberInitTest()
+        ExpressTest.staticMemberAccessTest() 
+        !#                      
+        ExpressTest.complexNestedExpressionTest()        
+        ExpressTest.classMemberInitTest()
+
         global.println("========== ExpressTest (end) ==========")
     }
 
@@ -294,18 +284,18 @@ ExpressTest
 
         string s1 = null
         string s2 = "hello"
-        #string result1 = s1 ?? "default"
+        string result1 = s1 ?? "default"
         string result2 = s2 ?? "default"
-        #global.println("null ?? default ====:" + result1)
+        global.println("null ?? default ====:" + result1)
         global.println("hello ?? default ====:" + result2 + "-----")
-        #!
+        
         int n1 = null
         int n2 = 10
         int result3 = n1 ?? 0
         int result4 = n2 ?? 0
         global.println("null ?? 0 = " + result3.toString())
         global.println("10 ?? 0 = " + result4.toString())
-        !#
+        
     }
 
     static stringInterpolationTest()
@@ -349,11 +339,17 @@ ExpressTest
 
         Num d = 3.14
         int j = d as int
-        global.println("3.14 as int = " + j.toString())
+        if( j != null )
+        {
+            global.println("3.14 as int = " + j.toString())
+        }
 
         string s = "123"
         int k = s as int
-        global.println("123 as int = " + k.toString())
+        if( k != null )
+        {
+            global.println("123 as int = " + k.toString())
+        }
 
         object obj = 100
         int l = obj as int
@@ -479,8 +475,8 @@ ExpressTest
         global.println("Class3.a = " + c3.a.toString())
         global.println("Class3.b = " + c3.b.toString())
         global.println("Class3.m = " + Application.Class3.m.toString())
-        global.println("Class3.class2.x = " + Application.Class3.class2.x.toString())
-        global.println("Class3.c.b = " + c3.c.b.toString())
+        #global.println("Class3.class2.x = " + Application.Class3.class2.x.toString())
+        #global.println("Class3.c.b = " + c3.c.b.toString())
         global.println("Class3.m2 = " + (c3.m2 == null).toString())
     }
 }

@@ -320,21 +320,11 @@ namespace SimpleLanguage.IR
 
                 m_StaticIRMetaVariableList.Add(irmv);
                 AddMetaMemberVariableIndexBindHashCode(v.GetHashCode(), i);
-                // Also bind the source member variable's hash code so that lookups via
-                // sourceMetaVariable (used for template-generated classes) resolve correctly.
                 if (v is MetaMemberVariable mmv && mmv.sourceMetaMemberVariable != null)
                 {
                     AddMetaMemberVariableIndexBindHashCode(mmv.sourceMetaMemberVariable.GetHashCode(), i);
                 }
             }
-            //int count = 0;
-            //int ssize = 0;
-            //for (int i = 0; i < m_MetaTypeList.Count; i++)
-            //{
-            //    ssize = IR.IRUtil.GetTypeSize(m_MetaTypeList[i]);
-            //    count += ssize;
-            //    m_ByteCount += ssize;
-            //}
         }
 
         void CreateMemberDataFromMetaData(MetaData md)

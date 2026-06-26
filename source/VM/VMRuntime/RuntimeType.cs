@@ -319,24 +319,24 @@ namespace SimpleLanguage.VM
                 //m_IsStaticExprBatchApplied = true;
                 s_StaticExprAppliedByKey[key] = true;
 
-                bool pushedRoot = false;
-                if (CLRVM.clrRuntimeStack.Count == 0)
-                {
-                    var root = new RuntimeVM("__static_field_init_root__", new List<Instruction>());
-                    CLRVM.PushCLRRuntime(root);
-                    pushedRoot = true;
-                }
+                //bool pushedRoot = false;
+                //if (CLRVM.clrRuntimeStack.Count == 0)
+                //{
+                //    var root = new RuntimeVM("__static_field_init_root__", new List<Instruction>());
+                //    CLRVM.PushCLRRuntime(root);
+                //    pushedRoot = true;
+                //}
 
                 try
                 {
-                    var vm = CLRVM.CreateExeSplite($"__static_field_init__{m_RuntimeClass.name}", new List<RuntimeType>(), initIR);
+                    var vm = CLRVM.CreateExeSplite($"__static_field_init__{m_RuntimeClass.name}", this.runtimeTemplateList, initIR);
                     //vm.isPersistent = true;
                     vm.Run(true);
                     CLRVM.PopCLRRuntime();
                 }
-                finally
+                catch (Exception e)
                 {
-                    if (pushedRoot && CLRVM.clrRuntimeStack.Count > 0)
+                    if (CLRVM.clrRuntimeStack.Count > 0)
                     {
                         CLRVM.PopCLRRuntime();
                     }
