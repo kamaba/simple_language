@@ -178,61 +178,6 @@ namespace SimpleLanguage.IR
 
                     }
                     break;
-                case MetaEmptyRetExpressNode meren:
-                    {
-                        // left ?? right
-                        // 1. evaluate left
-                        IRExpressBase leftExpress = IRExpressManager.CreateExpress(this.m_IRMethod, meren.return1Express);
-                        m_IRDataList.AddRange(leftExpress.IRDataList);
-
-                        // 2. dup left value on stack
-                        IRData dupData = new IRData();
-                        dupData.opCode = EIROpCode.Dup;
-                        dupData.SetDebugInfoByToken(meren.token, "?? dup left");
-                        m_IRDataList.Add(dupData);
-
-                        // 3. load null for comparison
-                        IRData nullData = new IRData();
-                        nullData.opCode = EIROpCode.LoadConstNull;
-                        nullData.SetDebugInfoByToken(meren.token, "?? load null");
-                        m_IRDataList.Add(nullData);
-
-                        // 4. compare != null
-                        IRData cneData = new IRData();
-                        cneData.opCode = EIROpCode.Cne;
-                        cneData.SetDebugInfoByToken(meren.token, "?? Cne");
-                        m_IRDataList.Add(cneData);
-
-                        // 5. if not null, jump to end (keep dup'd left on stack)
-                        IRData elseirdata = new IRData();
-                        IRData endirdata = new IRData();
-
-                        IRBranch ifbranch = new IRBranch(m_IRMethod, EIROpCode.BrFalse, elseirdata);
-                        m_IRDataList.AddRange(ifbranch.IRDataList);
-
-                        // 6. left is not null: pop the duplicate, keep original left as result
-                        IRData popData = new IRData();
-                        popData.opCode = EIROpCode.Pop;
-                        popData.SetDebugInfoByToken(meren.token, "?? pop dup, keep left");
-                        m_IRDataList.Add(popData);
-
-                        IRBranch br = new IRBranch(m_IRMethod, EIROpCode.Br, endirdata);
-                        m_IRDataList.AddRange(br.IRDataList);
-
-                        // 7. left is null: pop the dup'd left, evaluate right
-                        m_IRDataList.Add(elseirdata);
-
-                        IRData popData2 = new IRData();
-                        popData2.opCode = EIROpCode.Pop;
-                        popData2.SetDebugInfoByToken(meren.token, "?? pop left, eval right");
-                        m_IRDataList.Add(popData2);
-
-                        IRExpressBase rightExpress = IRExpressManager.CreateExpress(this.m_IRMethod, meren.return2Express);
-                        m_IRDataList.AddRange(rightExpress.IRDataList);
-
-                        m_IRDataList.Add(endirdata);
-                    }
-                    break;
                 case MetaAsIsExpressNode maien:
                     {
                         IRMetaCallLink irmcl = new IRMetaCallLink();

@@ -1060,5 +1060,44 @@ namespace SimpleLanguage.Parse
 
             return new List<Instruction>();
         }
+
+        // 按 order 升序返回某个类的全部静态字段初始化指令（合并好的单一序列）。
+        // order 来自 MetaMemberVariable.parseOrder，反映成员之间的依赖解析次序：
+        // 被依赖者先获得较小 order，必须先执行其初始化。缺省 order(-1) 视为最大值排到末尾，
+        // 相同 order 内按字段在包内的声明顺序（fieldList 索引）稳定排列。
+        // 这样静态初始化（如 x1 = x2 * 1 + -2, x2 = x3 + 4, x3 = 13）会按 x3 -> x2 -> x1 执行。
+        public static List<Instruction> GetStaticFieldInitializerExpressionsInOrder(int classId)
+        {
+            var result = new List<Instruction>();
+            if (classId == 0) return result;
+            if (!s_ClassPackageById.TryGetValue(classId, out var pkg) || pkg == null) return result;
+            if (pkg.fieldList == null || pkg.fieldList.Count == 0) return result;
+
+            var orderedFields = new List<(SLFieldPackage field, int declIndex)>(pkg.fieldList.Count);
+            for (int i = 0; i < pkg.fieldList.Count; i++)
+            {
+                var f = pkg.fieldList[i];
+                if (f == null) continue;
+                if ((f.flags & 32) != 32) continue;
+                if (f.express == null || f.express.Count == 0) continue;
+                orderedFields.Add((f, i));
+            }
+
+            orderedFields.Sort((a, b) =>
+            {
+                int akey = a.field.order < 0 ? int.MaxValue : a.field.order;
+                int bkey = b.field.order < 0 ? int.MaxValue : b.field.order;
+                int cmp = akey.CompareTo(bkey);
+                if (cmp != 0) return cmp;
+                return a.declIndex.CompareTo(b.declIndex);
+            });
+
+            foreach (var (f, _) in orderedFields)
+            {
+                result.AddRange(f.express);
+            }
+
+            return result;
+        }
     }
 }

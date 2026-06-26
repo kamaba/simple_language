@@ -48,6 +48,8 @@ namespace SimpleLanguage.Core
         protected List<MetaMemberVariable> m_TemplateChildMetaMemberVariableList = new List<MetaMemberVariable>();
         protected MetaClass m_SourceMetaClass = null;
         protected int m_ParseOrder = -1;
+        // 防止依赖循环时 ParseMetaExpress 递归重入导致的死循环（A 依赖 B、B 依赖 A）。
+        private bool m_IsParsingExpress = false;
 
         private static int s_NextParseOrder = 0;
 
@@ -261,20 +263,28 @@ namespace SimpleLanguage.Core
         }
         public override bool ParseMetaExpress()
         {
-            // 首次进入解析时记录全局解析顺序：
-            // 在 MetaCallNode.cs 第 2083 行附近，若依赖的成员变量尚未解析其类型，
-            // 会主动调用 mmv.ParseMetaExpress() 触发提前解析；
-            // 此时被依赖的成员先得到较小 order，保证 VM 端初始化按依赖顺序执行。
-            if (m_ParseOrder < 0)
-            {
-                m_ParseOrder = s_NextParseOrder++;
-            }
+            // 解析顺序（order）必须在依赖被递归解析之后再分配：
+            // 在 MetaCallNode.cs 第 2085 行，解析某成员表达式时若遇到尚未解析类型的其它成员，
+            // 会主动调用该成员的 ParseMetaExpress() 提前解析。
+            // 因此先 Parse 表达式（递归解析依赖），表达式解析完成后再分配 order，
+            // 这样被依赖成员会先得到较小 order，VM 端据此先执行其初始化表达式。
+            // m_IsParsingExpress 守卫用于在依赖循环时避免递归重入死循环。
             if (m_Express != null)
             {
-                this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress, parseLevel = this.parseLevel });
+                if (!m_IsParsingExpress)
+                {
+                    m_IsParsingExpress = true;
+                    this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress, parseLevel = this.parseLevel });
+                    m_IsParsingExpress = false;
+                }
             }
             else
             {
+            }
+            // 表达式（含其依赖）解析完成后分配 order；仅首次分配，循环依赖时由先返回者获得较小 order。
+            if (m_ParseOrder < 0)
+            {
+                m_ParseOrder = s_NextParseOrder++;
             }
             if (m_DefineMetaType == null)
             {

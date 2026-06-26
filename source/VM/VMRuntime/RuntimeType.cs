@@ -300,16 +300,10 @@ namespace SimpleLanguage.VM
             m_IsStaticExprBatchApplying = true;
             try
             {
-                // Collect all static field initializer instructions in class order.
-                List<Instruction> initIR = new List<Instruction>();
-                for (int i = 0; i < m_RuntimeClass.staticIRMetaVariableList.Count; i++)
-                {
-                    var field = m_RuntimeClass.staticIRMetaVariableList[i];
-                    if (field == null) continue;
-                    var fieldExpr = SLRuntimeModuleRegistry.GetStaticFieldInitializerExpressions(m_RuntimeClass.id, field.index);
-                    if (fieldExpr == null || fieldExpr.Count == 0) continue;
-                    initIR.AddRange(fieldExpr);
-                }
+                // 按 order（依赖解析次序）收集静态字段初始化指令，而不是按声明顺序。
+                // order 来自 Front 的 MetaMemberVariable.parseOrder：被依赖的成员先获得较小 order，
+                // 必须先执行其初始化。例如 x1 = x2 * 1 + -2、x2 = x3 + 4、x3 = 13 会按 x3 -> x2 -> x1 执行。
+                List<Instruction> initIR = SLRuntimeModuleRegistry.GetStaticFieldInitializerExpressionsInOrder(m_RuntimeClass.id);
 
                 if (initIR.Count == 0)
                 {

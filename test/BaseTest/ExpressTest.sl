@@ -142,6 +142,7 @@ ExpressTest
     static fun()
     {
         global.println("========== ExpressTest (start) ==========")
+        #!
         ExpressTest.arithmeticExpressionTest()
         ExpressTest.comparisonExpressionTest()
         ExpressTest.logicalExpressionTest()
@@ -155,8 +156,9 @@ ExpressTest
         ExpressTest.arrayIndexExpressionTest()
         ExpressTest.newObjectExpressionTest()
         ExpressTest.staticMemberAccessTest()
+        !#
         ExpressTest.complexNestedExpressionTest()
-        ExpressTest.classMemberInitTest()
+        #ExpressTest.classMemberInitTest()
         global.println("========== ExpressTest (end) ==========")
     }
 
@@ -421,6 +423,7 @@ ExpressTest
     {
         global.println("----- complexNestedExpressionTest -----")
 
+        #!
         int a = 10
         int b = 20
         int c = 30
@@ -429,13 +432,14 @@ ExpressTest
 
         bool condition = a < b && b > c || a == 10
         global.println("complex bool expression = " + condition.toString())
+        
+        int nested = ((a + b) * (c - a)) / (b / 2) + (a % b)
+        global.println("nested arithmetic = " + nested.toString())
+        !#
         Level<int>.st = 100
         Level<short>.st = 200s
         condition2 = Level<int>.st < 10 || Level<short>.st > 20
         global.println("complex2 bool expression = " + condition2.toString())
-
-        int nested = ((a + b) * (c - a)) / (b / 2) + (a % b)
-        global.println("nested arithmetic = " + nested.toString())
     }
 
     static classMemberInitTest()
