@@ -52,5 +52,27 @@ namespace SimpleLanguage.VM.Runtime
         SystemBuildDataString,
         /// <summary>Convert to signed byte; must match <see cref="SimpleLanguage.ESystemMethodCall.SystemConvertSInt8"/> ordinal.</summary>
         SystemConvertSInt8,
+
+        #region Math
+        SystemMathSin,
+        SystemMathCos,
+        SystemMathTan,
+        SystemMathAsin,
+        SystemMathAcos,
+        SystemMathAtan,
+        SystemMathAtan2,
+        SystemMathSinh,
+        SystemMathCosh,
+        SystemMathTanh,
+        SystemMathPow,
+        SystemMathSqrt,
+        SystemMathExp,
+        SystemMathLog,
+        SystemMathLog10,
+        SystemMathCeil,
+        SystemMathFloor,
+        SystemMathRound,
+        SystemMathTruncate,
+        #endregion
     }
 }

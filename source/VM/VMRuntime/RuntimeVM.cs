@@ -2082,6 +2082,67 @@ namespace SimpleLanguage.VM.Runtime
                             case (int)ESystemMethodCall.SystemArraySetValueThis:
                                 ObjectSystemMethodCall.ExecuteSystemArraySetValueThis(this, sysPkg);
                                 break;
+
+                            #region Math
+                            case (int)ESystemMethodCall.SystemMathSin:
+                                MathSystemMethodCall.ExecuteMathSin(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathCos:
+                                MathSystemMethodCall.ExecuteMathCos(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathTan:
+                                MathSystemMethodCall.ExecuteMathTan(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathAsin:
+                                MathSystemMethodCall.ExecuteMathAsin(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathAcos:
+                                MathSystemMethodCall.ExecuteMathAcos(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathAtan:
+                                MathSystemMethodCall.ExecuteMathAtan(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathAtan2:
+                                MathSystemMethodCall.ExecuteMathAtan2(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathSinh:
+                                MathSystemMethodCall.ExecuteMathSinh(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathCosh:
+                                MathSystemMethodCall.ExecuteMathCosh(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathTanh:
+                                MathSystemMethodCall.ExecuteMathTanh(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathPow:
+                                MathSystemMethodCall.ExecuteMathPow(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathSqrt:
+                                MathSystemMethodCall.ExecuteMathSqrt(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathExp:
+                                MathSystemMethodCall.ExecuteMathExp(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathLog:
+                                MathSystemMethodCall.ExecuteMathLog(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathLog10:
+                                MathSystemMethodCall.ExecuteMathLog10(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathCeil:
+                                MathSystemMethodCall.ExecuteMathCeil(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathFloor:
+                                MathSystemMethodCall.ExecuteMathFloor(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathRound:
+                                MathSystemMethodCall.ExecuteMathRound(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMathTruncate:
+                                MathSystemMethodCall.ExecuteMathTruncate(this, sysPkg);
+                                break;
+                            #endregion
+
                             default:
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
                                 break;
