@@ -55,12 +55,12 @@ namespace SimpleLanguage.VM.Runtime
             }
 
             string result = FormatLikeLegacy(format, parts);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetStringValue(result);
             vm.PushSValueSynced(outv);
         }
 
-        private static string ToInvariantString(ref SValue v)
+        private static string ToInvariantString(ref RuntimeValue v)
         {
             var sv = SystemMethodConvertHelper.ConvertValue(ref v, ESystemMethodCall.SystemConvertString);
             return sv.stringValue ?? sv.GetValueObject()?.ToString() ?? string.Empty;
@@ -141,7 +141,7 @@ namespace SimpleLanguage.VM.Runtime
                 return;
             }
             int take = n > len ? len : n;
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetStringValue(s.Substring(0, take));
             vm.PushSValueSynced(outv);
         }
@@ -164,12 +164,12 @@ namespace SimpleLanguage.VM.Runtime
                 return;
             }
             int take = n > len ? len : n;
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetStringValue(s.Substring(len - take, take));
             vm.PushSValueSynced(outv);
         }
 
-        /// <summary>半开区间 [start, end)，与 C# <c>Substring(start, end - start)</c> 一致。</summary>
+        /// <summary>半开区间 [start, end)，与 C# <c>Substring(start, end - start)</c> 一致�?/summary>
         public static void ExecuteStringRange(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
         {
             int pc = sysPkg.paramCount;
@@ -192,12 +192,12 @@ namespace SimpleLanguage.VM.Runtime
             if (start > len) start = len;
             if (end < start) end = start;
             if (end > len) end = len;
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetStringValue(s.Substring(start, end - start));
             vm.PushSValueSynced(outv);
         }
 
-        /// <summary>UTF-8 编码的字节序列，装入 <c>Array&lt;Byte&gt;</c>。</summary>
+        /// <summary>UTF-8 编码的字节序列，装入 <c>Array&lt;Byte&gt;</c>�?/summary>
         public static void ExecuteStringToByteArray(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
         {
             int pc = sysPkg.paramCount;
@@ -214,7 +214,7 @@ namespace SimpleLanguage.VM.Runtime
             var byteRt = RuntimeTypeManager.uint8RuntimeType;
             if (byteRt == null)
             {
-                var nz = default(SValue);
+                var nz = default(RuntimeValue);
                 nz.SetNull();
                 vm.PushSValueSynced(nz);
                 return;
@@ -225,7 +225,7 @@ namespace SimpleLanguage.VM.Runtime
                 ?? RuntimeClassManager.GetRuntimeClassByName("Array");
             if (arrayRc == null)
             {
-                var nz = default(SValue);
+                var nz = default(RuntimeValue);
                 nz.SetNull();
                 vm.PushSValueSynced(nz);
                 return;
@@ -235,7 +235,7 @@ namespace SimpleLanguage.VM.Runtime
                 ?? RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(arrayRc, new List<RuntimeType> { byteRt });
             if (arrRt == null)
             {
-                var nz = default(SValue);
+                var nz = default(RuntimeValue);
                 nz.SetNull();
                 vm.PushSValueSynced(nz);
                 return;
@@ -246,24 +246,24 @@ namespace SimpleLanguage.VM.Runtime
             ObjectManager.AddClassObject(arr);
             for (int i = 0; i < raw.Length; i++)
             {
-                var sv = default(SValue);
+                var sv = default(RuntimeValue);
                 sv.SetUInt8Value(raw[i]);
                 arr.StoreValue(i, sv);
             }
 
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetValueBySObject(arr);
             vm.PushSValueSynced(outv);
         }
 
         private static void PushEmptyString(RuntimeVM vm)
         {
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetStringValue(string.Empty);
             vm.PushSValueSynced(outv);
         }
 
-        private static int ToInt32Arg(ref SValue v)
+        private static int ToInt32Arg(ref RuntimeValue v)
         {
             var iv = SystemMethodConvertHelper.ConvertValue(ref v, ESystemMethodCall.SystemConvertInt32);
             return iv.int32Value;

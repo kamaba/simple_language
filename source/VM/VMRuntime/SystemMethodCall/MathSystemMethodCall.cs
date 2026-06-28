@@ -11,7 +11,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Sin(val));
             vm.PushSValueSynced(outv);
         }
@@ -20,7 +20,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Cos(val));
             vm.PushSValueSynced(outv);
         }
@@ -29,7 +29,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Tan(val));
             vm.PushSValueSynced(outv);
         }
@@ -38,7 +38,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Asin(val));
             vm.PushSValueSynced(outv);
         }
@@ -47,7 +47,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Acos(val));
             vm.PushSValueSynced(outv);
         }
@@ -56,7 +56,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Atan(val));
             vm.PushSValueSynced(outv);
         }
@@ -66,7 +66,7 @@ namespace SimpleLanguage.VM.Runtime
             if (!vm.TrySystemCallPopArgs(2, out var args)) return;
             float y = ReadFloatArg(ref args[0]);
             float x = ReadFloatArg(ref args[1]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Atan2(y, x));
             vm.PushSValueSynced(outv);
         }
@@ -77,7 +77,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Sinh(val));
             vm.PushSValueSynced(outv);
         }
@@ -86,7 +86,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Cosh(val));
             vm.PushSValueSynced(outv);
         }
@@ -95,7 +95,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Tanh(val));
             vm.PushSValueSynced(outv);
         }
@@ -107,7 +107,7 @@ namespace SimpleLanguage.VM.Runtime
             if (!vm.TrySystemCallPopArgs(2, out var args)) return;
             float baseVal = ReadFloatArg(ref args[0]);
             float exp = ReadFloatArg(ref args[1]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Pow(baseVal, exp));
             vm.PushSValueSynced(outv);
         }
@@ -116,7 +116,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Sqrt(val));
             vm.PushSValueSynced(outv);
         }
@@ -125,7 +125,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Exp(val));
             vm.PushSValueSynced(outv);
         }
@@ -134,7 +134,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Log(val));
             vm.PushSValueSynced(outv);
         }
@@ -143,7 +143,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Log10(val));
             vm.PushSValueSynced(outv);
         }
@@ -154,7 +154,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Ceiling(val));
             vm.PushSValueSynced(outv);
         }
@@ -163,7 +163,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Floor(val));
             vm.PushSValueSynced(outv);
         }
@@ -172,7 +172,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetFloatValue((float)Math.Round(val));
             vm.PushSValueSynced(outv);
         }
@@ -181,14 +181,14 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (!vm.TrySystemCallPopArgs(1, out var args)) return;
             float val = ReadFloatArg(ref args[0]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetInt32Value((int)Math.Truncate(val));
             vm.PushSValueSynced(outv);
         }
         #endregion
 
         #region Helper
-        private static float ReadFloatArg(ref SValue v)
+        private static float ReadFloatArg(ref RuntimeValue v)
         {
             return v.eType switch
             {

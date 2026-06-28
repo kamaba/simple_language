@@ -1,5 +1,5 @@
 //****************************************************************************
-//  File:      SValue.cs
+//  File:      RuntimeValue.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/22 12:00:00
@@ -8,17 +8,16 @@
 
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace SimpleLanguage.VM
 {
-    public partial struct SValue
+    public partial class RuntimeValueMethod
     {
         /// <summary>True if the value is a null reference or the VM <see cref="EVMType.Null"/> token.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsNullLikeForArithmetic(ref SValue v)
+        private static bool IsNullLikeForArithmetic(ref RuntimeValue v)
         {
             if (v.isNull || v.eType == EVMType.Null) return true;
             if (v.eType == EVMType.Object || v.eType == EVMType.Class) return v.sobject == null;
@@ -27,7 +26,7 @@ namespace SimpleLanguage.VM
 
         /// <summary>Primitive / Num not carrying null; excludes null-like references.</summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static bool IsStrictNumericNotNullLike(ref SValue v)
+        private static bool IsStrictNumericNotNullLike(ref RuntimeValue v)
         {
             if (v.isNull || v.eType == EVMType.Null) return false;
             return IsNumericType(v.eType) || v.eType == EVMType.Num;
@@ -51,7 +50,7 @@ namespace SimpleLanguage.VM
             };
 
         /// <summary>Logs and marks result null if one operand is null-like and the other is numeric (e.g. null + 3, 3 + null).</summary>
-        private static bool HandleNullMixedWithNumericOperand(ref SValue left, ref SValue right, int sign)
+        private static bool HandleNullMixedWithNumericOperand(ref RuntimeValue left, ref RuntimeValue right, int sign)
         {
             bool lNull = IsNullLikeForArithmetic(ref left);
             bool rNull = IsNullLikeForArithmetic(ref right);
@@ -61,8 +60,8 @@ namespace SimpleLanguage.VM
             if ((lNull && rNum) || (rNull && lNum))
             {
                 var op = SignToOperatorForLog(sign);
-                var nullSide = lNull && rNum ? "左操作数" : "右操作数";
-                // 在 ComputeValueInline 内直接记 VM 日志，不依赖异常链路。
+                var nullSide = lNull && rNum ? "宸︽搷浣滄暟" : "鍙虫搷浣滄暟";
+                // 锟?ComputeValueInline 鍐呯洿鎺ヨ VM 鏃ュ織锛屼笉渚濊禆寮傚父閾捐矾锟?
                 Log.AddRuntimeLog(LID.VMOperatorNotShouldHaveNull, string.Empty, op, nullSide);
                 left.SetNull();
                 return true;
@@ -72,10 +71,10 @@ namespace SimpleLanguage.VM
 
         // sign 0:+ 1:- 2:* 3:/ 4:% 5:& 6:| 7:^  8:<< 9:>>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ComputeValueInline(ref SValue left, int sign, ref SValue right, bool isUnSign)
+        public static void ComputeValueInline(ref RuntimeValue left, int sign, ref RuntimeValue right, bool isUnSign)
         {
-            SValue leftPrim = left;
-            SValue rightPrim = right;
+            RuntimeValue leftPrim = left;
+            RuntimeValue rightPrim = right;
             leftPrim.TryNormalizeObjectScalarInPlace();
             rightPrim.TryNormalizeObjectScalarInPlace();
 
@@ -113,7 +112,7 @@ namespace SimpleLanguage.VM
             }
 
             // Reject null / null-like reference mixed with a numeric operand for arithmetic
-            // (avoid treating null as 0 — e.g. null + 5 and 5 + null must error).
+            // (avoid treating null as 0 锟?e.g. null + 5 and 5 + null must error).
             if (HandleNullMixedWithNumericOperand(ref leftPrim, ref rightPrim, sign))
             {
                 left = leftPrim;
@@ -188,15 +187,15 @@ namespace SimpleLanguage.VM
                 }
             }
 
-            // try fast path with RawSValue for purely numeric types (treat Num as Float64 in raw path)
+            // try fast path with RawRuntimeValue for purely numeric types (treat Num as Float64 in raw path)
             bool leftNumericRaw = IsNumericType(leftPrim.eType) || leftPrim.eType == EVMType.Num;
             bool rightNumericRaw = IsNumericType(rightPrim.eType) || rightPrim.eType == EVMType.Num;
             if (leftNumericRaw && rightNumericRaw)
             {
-                var rl = RawSValue.FromSValue(ref leftPrim);
-                var rr = RawSValue.FromSValue(ref rightPrim);
+                var rl = RawRuntimeValue.FromRuntimeValue(ref leftPrim);
+                var rr = RawRuntimeValue.FromRuntimeValue(ref rightPrim);
                 ComputeValueInlineRaw(ref rl, sign, ref rr, isUnSign);
-                rl.ApplyToSValue(ref leftPrim);
+                rl.ApplyToRuntimeValue(ref leftPrim);
                 // write back to original left (if it was a class-wrapped numeric, unbox result to primitive)
                 left = leftPrim;
                 return;
@@ -235,8 +234,8 @@ namespace SimpleLanguage.VM
             bool useUnsigned = isUnSign || left.IsUnsignedType(leftPrim.eType) || right.IsUnsignedType(rightPrim.eType);
             if (useUnsigned)
             {
-                ulong a = leftPrim.ConvertToULong();
-                ulong b = rightPrim.ConvertToULong();
+                ulong a = RuntimeValueMethod.ConvertToULong(leftPrim);
+                ulong b = RuntimeValueMethod.ConvertToULong(rightPrim);
                 ulong r = 0;
                 switch (sign)
                 {
@@ -258,8 +257,8 @@ namespace SimpleLanguage.VM
             }
 
             // signed integer
-            long la = leftPrim.ConvertToLong();
-            long lb = rightPrim.ConvertToLong();
+            long la = RuntimeValueMethod.ConvertToLong(leftPrim);
+            long lb = RuntimeValueMethod.ConvertToLong(rightPrim);
             long lr = 0;
             switch (sign)
             {
@@ -278,18 +277,18 @@ namespace SimpleLanguage.VM
             left = leftPrim;
         }
 
-        public void ComputeSVAlue(int sign, ref SValue svalue, bool isUnSign)
+        public static void ComputeSVAlue(ref RuntimeValue _rv, int sign, ref RuntimeValue rightValue, bool isUnSign)
         {
-            ComputeValueInline(ref this, sign, ref svalue, isUnSign);
+            ComputeValueInline(ref _rv, sign, ref rightValue, isUnSign);
         }
 
         /// <summary>
-        /// Integer values in <see cref="RawSValue"/> may occupy only the low bits of <c>u64</c> (e.g. Int32).
-        /// The <see cref="RawSValue.Int64"/> getter reinterpret-casts the whole <c>u64</c> as long, which breaks
+        /// Integer values in <see cref="RawRuntimeValue"/> may occupy only the low bits of <c>u64</c> (e.g. Int32).
+        /// The <see cref="RawRuntimeValue.Int64"/> getter reinterpret-casts the whole <c>u64</c> as long, which breaks
         /// negative Int32 (e.g. -16) and thus signed shifts. Use this for signed arithmetic / comparisons.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static long RawSValueIntegerBitsToSignedLong(ref RawSValue r)
+        private static long RawRuntimeValueIntegerBitsToSignedLong(ref RawRuntimeValue r)
         {
             switch (r.eType)
             {
@@ -307,13 +306,13 @@ namespace SimpleLanguage.VM
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void ComputeValueInlineRaw(ref RawSValue left, int sign, ref RawSValue right, bool isUnSign)
+        public static void ComputeValueInlineRaw(ref RawRuntimeValue left, int sign, ref RawRuntimeValue right, bool isUnSign)
         {
             var promoteType = GetRawBinaryPromotionType(left.eType, right.eType, sign, isUnSign);
             if (promoteType == EVMType.Float64 || promoteType == EVMType.Num)
             {
-                double a = (left.eType == EVMType.Float64 || left.eType == EVMType.Num) ? left.Float64 : (left.eType == EVMType.Float32 ? left.Float32 : (double)RawSValueIntegerBitsToSignedLong(ref left));
-                double b = (right.eType == EVMType.Float64 || right.eType == EVMType.Num) ? right.Float64 : (right.eType == EVMType.Float32 ? right.Float32 : (double)RawSValueIntegerBitsToSignedLong(ref right));
+                double a = (left.eType == EVMType.Float64 || left.eType == EVMType.Num) ? left.Float64 : (left.eType == EVMType.Float32 ? left.Float32 : (double)RawRuntimeValueIntegerBitsToSignedLong(ref left));
+                double b = (right.eType == EVMType.Float64 || right.eType == EVMType.Num) ? right.Float64 : (right.eType == EVMType.Float32 ? right.Float32 : (double)RawRuntimeValueIntegerBitsToSignedLong(ref right));
                 double r = 0;
                 switch (sign)
                 {
@@ -334,10 +333,10 @@ namespace SimpleLanguage.VM
             {
                 float a = left.eType == EVMType.Float32
                     ? left.Float32
-                    : (left.eType == EVMType.Float64 || left.eType == EVMType.Num ? (float)left.Float64 : (float)RawSValueIntegerBitsToSignedLong(ref left));
+                    : (left.eType == EVMType.Float64 || left.eType == EVMType.Num ? (float)left.Float64 : (float)RawRuntimeValueIntegerBitsToSignedLong(ref left));
                 float b = right.eType == EVMType.Float32
                     ? right.Float32
-                    : (right.eType == EVMType.Float64 || right.eType == EVMType.Num ? (float)right.Float64 : (float)RawSValueIntegerBitsToSignedLong(ref right));
+                    : (right.eType == EVMType.Float64 || right.eType == EVMType.Num ? (float)right.Float64 : (float)RawRuntimeValueIntegerBitsToSignedLong(ref right));
                 float r = 0f;
                 switch (sign)
                 {
@@ -386,8 +385,8 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            long la = RawSValueIntegerBitsToSignedLong(ref left);
-            long lb = RawSValueIntegerBitsToSignedLong(ref right);
+            long la = RawRuntimeValueIntegerBitsToSignedLong(ref left);
+            long lb = RawRuntimeValueIntegerBitsToSignedLong(ref right);
             long lr = 0;
             switch (sign)
             {
@@ -475,15 +474,15 @@ namespace SimpleLanguage.VM
             return EVMType.Int32;
         }
 
-        public void AddSValue(ref SValue sval, bool isUnsign, out bool isMethodCall)
+        public static void AddSValue(ref RuntimeValue _rv, ref RuntimeValue sval, bool isUnsign, out bool isMethodCall)
         {
             isMethodCall = false;
             if (sval.eType == EVMType.String)
             {
                 string str = "";
-                if (this.eType == EVMType.Class)
+                if (_rv.eType == EVMType.Class)
                 {
-                    ClassObject co = this.sobject as ClassObject;
+                    ClassObject co = _rv.sobject as ClassObject;
                     if (co != null)
                     {
                         var method = co.runtimeType.runtimeClass.GetNonStaticMethodIndexByName("toString", out int index);
@@ -491,7 +490,7 @@ namespace SimpleLanguage.VM
                         {
                             CLRVM.RunIRMethod(null, method, false);
                             var clrvm = CLRVM.clrRuntimeStack.Peek();
-                            SValue curval = clrvm.GetCurrentIndexValue(clrvm.valueIndex - 1);
+                            RuntimeValue curval = clrvm.GetCurrentIndexValue(clrvm.valueIndex - 1);
                             str = curval.stringValue;
                         }
                     }
@@ -504,10 +503,10 @@ namespace SimpleLanguage.VM
                 {
                     str = sval.GetValueObject().ToString();
                 }
-                stringValue = this.GetValueObject().ToString() + str;
-                this.eType = EVMType.String;
+                _rv.stringValue = _rv.GetValueObject().ToString() + str;
+                _rv.eType = EVMType.String;
             }
-            else if (this.eType == EVMType.String)
+            else if (_rv.eType == EVMType.String)
             {
                 string str = "";
                 if (sval.eType == EVMType.Class)
@@ -520,7 +519,7 @@ namespace SimpleLanguage.VM
                         {
                             CLRVM.RunIRMethod(null, method, false);
                             var clrvm = CLRVM.clrRuntimeStack.Peek();
-                            SValue curval = clrvm.GetCurrentIndexValue(clrvm.valueIndex - 1);
+                            RuntimeValue curval = clrvm.GetCurrentIndexValue(clrvm.valueIndex - 1);
                             str = curval.stringValue;
                             clrvm.SetValueIndex( clrvm.valueIndex-1 );
                         }
@@ -534,15 +533,15 @@ namespace SimpleLanguage.VM
                 {
                     str = sval.GetValueObject().ToString();
                 }
-                stringValue = this.GetValueObject().ToString() + str;
+                _rv.stringValue = _rv.GetValueObject().ToString() + str;
             }
-            else if (this.eType == EVMType.Array)
+            else if (_rv.eType == EVMType.Array)
             {
-                // 处理array1 + array2
+                // 澶勭悊array1 + array2
             }
             else
             {
-                if (this.eType == EVMType.Class)
+                if (_rv.eType == EVMType.Class)
                 {
                     ClassObject co = sval.sobject as ClassObject;
                     if (co != null)
@@ -557,161 +556,161 @@ namespace SimpleLanguage.VM
                 }
                 else
                 {
-                    ComputeSVAlue(0, ref sval, isUnsign);
+                    ComputeSVAlue(ref _rv, 0, ref sval, isUnsign);
                 }
             }
         }
-        public void MinusSValue(SValue sval, bool isUnsign)
+        public static void MinusSValue(ref RuntimeValue _rv, RuntimeValue sval, bool isUnsign)
         {
-            ComputeSVAlue(1, ref sval, isUnsign);
+            ComputeSVAlue(ref _rv, 1, ref sval, isUnsign);
         }
-        public void MultiplySValue(SValue sval, bool isUnsign)
+        public static void MultiplySValue(ref RuntimeValue _rv, RuntimeValue sval, bool isUnsign)
         {
-            ComputeSVAlue(2, ref sval, isUnsign);
+            ComputeSVAlue(ref _rv, 2, ref sval, isUnsign);
         }
-        public void DivSValue(SValue sval, bool isUnsign)
+        public static void DivSValue(ref RuntimeValue _rv, RuntimeValue sval, bool isUnsign)
         {
-            ComputeSVAlue(3, ref sval, isUnsign);
+            ComputeSVAlue(ref _rv, 3, ref sval, isUnsign);
         }
-        public void ModuloSValue(SValue sval, bool isUnsign)
+        public static void ModuloSValue(ref RuntimeValue _rv, RuntimeValue sval, bool isUnsign)
         {
-            ComputeSVAlue(4, ref sval, isUnsign);
+            ComputeSVAlue(ref _rv, 4, ref sval, isUnsign);
         }
-        public void CombineSValue(SValue sval, bool isUnsign)
+        public static void CombineSValue(ref RuntimeValue _rv, RuntimeValue sval, bool isUnsign)
         {
-            ComputeSVAlue(5, ref sval, isUnsign);
+            ComputeSVAlue(ref _rv, 5, ref sval, isUnsign);
         }
-        public void InclusiveOrSValue(SValue sval, bool isUnsign)
+        public static void InclusiveOrSValue(ref RuntimeValue _rv, RuntimeValue sval, bool isUnsign)
         {
-            ComputeSVAlue(6, ref sval, isUnsign);
+            ComputeSVAlue(ref _rv, 6, ref sval, isUnsign);
         }
-        public void XORSValue(SValue sval, bool isUnsign)
+        public static void XORSValue(ref RuntimeValue _rv, RuntimeValue sval, bool isUnsign)
         {
-            ComputeSVAlue(7, ref sval, isUnsign);
+            ComputeSVAlue(ref _rv, 7, ref sval, isUnsign);
         }
-        public void ShrSValue(SValue sval, bool isUnsign)
+        public static void ShrSValue(ref RuntimeValue _rv, RuntimeValue sval, bool isUnsign)
         {
-            ComputeSVAlue(9, ref sval, isUnsign);
+            ComputeSVAlue(ref _rv, 9, ref sval, isUnsign);
         }
-        public void ShiSValue(SValue sval, bool isUnsign)
+        public static void ShiSValue(ref RuntimeValue _rv, RuntimeValue sval, bool isUnsign)
         {
-            ComputeSVAlue(8, ref sval, isUnsign);
+            ComputeSVAlue(ref _rv, 8, ref sval, isUnsign);
         }
-        public void NotSValue()
+        public static void NotSValue(ref RuntimeValue _rv)
         {
-            switch (eType)
+            switch (_rv.eType)
             {
                 case EVMType.UInt8:
                     {
-                        eType = EVMType.Boolean;
-                        uint8Value = (int8Value == 0) ? (byte)1 : (byte)0;
+                        _rv.eType = EVMType.Boolean;
+                        _rv.uint8Value = (_rv.int8Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.Int8:
                     {
-                        eType = EVMType.Boolean;
-                        uint8Value = (int8Value == 0) ? (byte)1 : (byte)0;
+                        _rv.eType = EVMType.Boolean;
+                        _rv.uint8Value = (_rv.int8Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.Boolean:
                     {
-                        uint8Value = (int8Value == 0) ? (byte)1 : (byte)0;
+                        _rv.uint8Value = (_rv.int8Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 //case EVMType.Char:
                 //    {
-                //        eType = EVMType.Boolean;
-                //        int8Value = (charValue == 0) ? (byte)1 : (byte)0;
+                //        _rv.eType = EVMType.Boolean;
+                //        _rv.int8Value = (charValue == 0) ? (byte)1 : (byte)0;
                 //    }
                 //    break;
                 case EVMType.Int16:
                     {
-                        eType = EVMType.Boolean;
-                        uint8Value = (int16Value == 0) ? (byte)1 : (byte)0;
+                        _rv.eType = EVMType.Boolean;
+                        _rv.uint8Value = (_rv.int16Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.UInt16:
                     {
-                        eType = EVMType.Boolean;
-                        uint8Value = (uint16Value == 0) ? (byte)1 : (byte)0;
+                        _rv.eType = EVMType.Boolean;
+                        _rv.uint8Value = (_rv.uint16Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.Int32:
                     {
-                        eType = EVMType.Boolean;
-                        uint8Value = (int32Value == 0) ? (byte)1 : (byte)0;
+                        _rv.eType = EVMType.Boolean;
+                        _rv.uint8Value = (_rv.int32Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.UInt32:
                     {
-                        eType = EVMType.Boolean;
-                        uint8Value = (uint32Value == 0) ? (byte)1 : (byte)0;
+                        _rv.eType = EVMType.Boolean;
+                        _rv.uint8Value = (_rv.uint32Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.Int64:
                     {
-                        eType = EVMType.Boolean;
-                        uint8Value = (int64Value == 0) ? (byte)1 : (byte)0;
+                        _rv.eType = EVMType.Boolean;
+                        _rv.uint8Value = (_rv.int64Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
                 case EVMType.UInt64:
                     {
-                        eType = EVMType.Boolean;
-                        uint8Value = (uint64Value == 0) ? (byte)1 : (byte)0;
+                        _rv.eType = EVMType.Boolean;
+                        _rv.uint8Value = (_rv.uint64Value == 0) ? (byte)1 : (byte)0;
                     }
                     break;
             }
         }
-        public void NegSValue(bool isUnsign)
+        public static void NegSValue(ref RuntimeValue _rv, bool isUnsign)
         {
-            switch (eType)
+            switch (_rv.eType)
             {
                 case EVMType.UInt8:
                     {
-                        eType = EVMType.Int32;
-                        int32Value = -int8Value;
+                        _rv.eType = EVMType.Int32;
+                        _rv.int32Value = -_rv.int8Value;
                     }
                     break;
                 case EVMType.Int8:
                     {
                         // Keep runtime type stable for unary minus.
-                        int8Value = unchecked((sbyte)(-int8Value));
+                        _rv.int8Value = unchecked((sbyte)(-_rv.int8Value));
                     }
                     break;
                 //case EVMType.Char:
                 //    {
-                //        eType = EVMType.Int32;
-                //        int32Value = -charValue;
+                //        _rv.eType = EVMType.Int32;
+                //        _rv.int32Value = -charValue;
                 //    }
                 //    break;
                 case EVMType.Int16:
                     {
                         // Keep runtime type stable for unary minus.
-                        int16Value = unchecked((short)(-int16Value));
+                        _rv.int16Value = unchecked((short)(-_rv.int16Value));
                     }
                     break;
                 case EVMType.UInt16:
                     {
-                        eType = EVMType.Int32;
-                        int32Value = (-uint16Value);
+                        _rv.eType = EVMType.Int32;
+                        _rv.int32Value = (-_rv.uint16Value);
                     }
                     break;
                 case EVMType.Int32:
                     {
                         // Keep runtime type stable for unary minus.
-                        int32Value = unchecked(-int32Value);
+                        _rv.int32Value = unchecked(-_rv.int32Value);
                     }
                     break;
                 case EVMType.UInt32:
                     {
-                        eType = EVMType.Int64;
-                        int64Value = -uint32Value;
+                        _rv.eType = EVMType.Int64;
+                        _rv.int64Value = -_rv.uint32Value;
                     }
                     break;
                 case EVMType.Int64:
                     {
                         // Keep runtime type stable for unary minus.
-                        int64Value = unchecked(-int64Value);
+                        _rv.int64Value = unchecked(-_rv.int64Value);
                     }
                     break;
                 case EVMType.UInt64:
@@ -721,24 +720,24 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Float32:
                     {
-                        float32Value = -float32Value;
+                        _rv.float32Value = -_rv.float32Value;
                     }
                     break;
                 case EVMType.Float64:
                     {
-                        float64Value = -float64Value;
+                        _rv.float64Value = -_rv.float64Value;
                     }
                     break;
                 case EVMType.Num:
                     {
                         // treat Num as double
-                        float64Value = -float64Value;
+                        _rv.float64Value = -_rv.float64Value;
                     }
                     break;
                 case EVMType.Class:
                     {
                         // if wrapped numeric object (NumObject), negate its value
-                        if (sobject is NumObject nobj)
+                        if (_rv.sobject is NumObject nobj)
                         {
                             double val = nobj.ToDouble();
                             nobj.SetValue(-val);

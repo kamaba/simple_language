@@ -6,7 +6,7 @@ namespace SimpleLanguage.VM
 {
     // Blittable raw numeric-only value for unsafe stacks
     [StructLayout(LayoutKind.Sequential)]
-    public unsafe struct RawSValue
+    public unsafe struct RawRuntimeValue
     {
         public EVMType eType; // small, but keep for simplicity
         public ulong u64; // union storage
@@ -35,9 +35,9 @@ namespace SimpleLanguage.VM
             set => u64 = (ulong)BitConverter.DoubleToInt64Bits(value);
         }
 
-        public static RawSValue FromSValue(ref SValue v)
+        public static RawRuntimeValue FromRuntimeValue(ref RuntimeValue v)
         {
-            RawSValue r = new RawSValue();
+            RawRuntimeValue r = new RawRuntimeValue();
             r.eType = v.eType;
             switch (v.eType)
             {
@@ -59,7 +59,7 @@ namespace SimpleLanguage.VM
             }
             return r;
         }
-        public void ApplyToSValue(ref SValue v)
+        public void ApplyToRuntimeValue(ref RuntimeValue v)
         {
             v.eType = eType;
             switch (eType)

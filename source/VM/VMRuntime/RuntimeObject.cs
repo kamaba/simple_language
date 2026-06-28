@@ -16,12 +16,12 @@ namespace SimpleLanguage.VM
         public RuntimeVariable runtimeVariable => m_RuntimeVariable;
         public bool isNull => m_IsNull;
 
-        /// <summary>IR / Meta 渚ф垚鍛樺彉閲?id锛堜笌 <see cref="RuntimeVariable.id"/> 涓€鑷达級锛涙棤鍏宠仈鍙橀噺鏃朵负 0銆?/summary>
+        /// <summary>IR / Meta 渚ф垚鍛樺彉閲?id锛堜�?<see cref="RuntimeVariable.id"/> 涓€鑷达級锛涙棤鍏宠仈鍙橀噺鏃朵负 0�?/summary>
         public int memberVariableId => m_RuntimeVariable?.id ?? 0;
 
         /// <summary>鍦ㄦ墍灞?<see cref="ClassObject"/> 鎴愬憳琛ㄤ腑鐨勪笅鏍囥€?/summary>
         public int memberIndex => m_Index;
-        /// <summary>鍦ㄧ揣鍑戞垚鍛樼紦鍐插尯涓殑璧峰鍋忕Щ锛堝疄渚嬶細<see cref="ClassObject.memberData"/>锛涢潤鎬侊細<see cref="RuntimeType.memberData"/>锛夈€?/summary>
+        /// <summary>鍦ㄧ揣鍑戞垚鍛樼紦鍐插尯涓殑璧峰鍋忕Щ锛堝疄渚嬶細<see cref="ClassObject.memberData"/>锛涢潤鎬侊細<see cref="RuntimeType.memberData"/>锛夈�?/summary>
         public int memberDataStart => m_Start;
         /// <summary>绱у噾鎴愬憳缂撳啿鍖轰腑鏈Ы浣嶅瓧鑺傞暱搴︺€?/summary>
         public int memberDataLength => m_Length;
@@ -152,7 +152,7 @@ namespace SimpleLanguage.VM
             if (sobj.eType != EVMType.Object)
                 return sobj.eType;
 
-            // Core.Object 装箱壳：优先从 payload 反推实体类型。
+            // Core.Object 装箱壳：优先�?payload 反推实体类型�?
             var payload = sobj.value;
             if (payload is SObject inner)
                 return inner.eType;
@@ -401,7 +401,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        public bool TryReadMemberDataToSValue(ref SValue svalue)
+        public bool TryReadMemberDataToSValue(ref RuntimeValue RuntimeValue)
         {
             if (m_MemberDataBuffer == null || m_Length <= 0 || m_RuntimeType == null)
                 return false;
@@ -410,68 +410,68 @@ namespace SimpleLanguage.VM
 
             if( RuntimeTypeManager.IsPureNumericTypeLocal( m_RuntimeType.eType ) )
             {
-                ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), this.m_RuntimeType.eType, ref svalue);
+                ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), this.m_RuntimeType.eType, ref RuntimeValue);
             }
             else if(m_RuntimeType.eType == EVMType.Boolean )
             {
-                ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), this.m_RuntimeType.eType, ref svalue);
+                ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), this.m_RuntimeType.eType, ref RuntimeValue);
             }
             else if( m_RuntimeType.eType == EVMType.Num )
             {
-                //if( RuntimeTypeManager.IsPureNumericTypeLocal(svalue.eType ) )
+                //if( RuntimeTypeManager.IsPureNumericTypeLocal(RuntimeValue.eType ) )
                 //{
-                    ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), EVMType.Float64, ref svalue);
+                    ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), EVMType.Float64, ref RuntimeValue);
                 //}
-                //else if( svalue.eType == EVMType.Null )
+                //else if( RuntimeValue.eType == EVMType.Null )
                 //{
                 //    m_IsNull = true;
                 //}
             }
             else
             {
-                ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), EVMType.Object, ref svalue);
+                ReadSpanToSValue(m_MemberDataBuffer.AsSpan(m_Start, m_Length), EVMType.Object, ref RuntimeValue);
             }
 
             return true;
         }
 
-        private static void ReadSpanToSValue(ReadOnlySpan<byte> span, EVMType evmType, ref SValue svalue)
+        private static void ReadSpanToSValue(ReadOnlySpan<byte> span, EVMType evmType, ref RuntimeValue RuntimeValue)
         {
             switch (evmType)
             {
                 case EVMType.Boolean:
                     byte bv = span.Length > 0 ? unchecked((byte)span[0]) : (byte)0;
-                    svalue.SetBoolValue(bv ==1);
+                    RuntimeValue.SetBoolValue(bv ==1);
                     break;
                 case EVMType.UInt8:
-                    svalue.SetUInt8Value(span.Length > 0 ? span[0] : (byte)0);
+                    RuntimeValue.SetUInt8Value(span.Length > 0 ? span[0] : (byte)0);
                     break;
                 case EVMType.Int8:
-                    svalue.SetInt8Value(span.Length > 0 ? unchecked((sbyte)span[0]) : (sbyte)0);
+                    RuntimeValue.SetInt8Value(span.Length > 0 ? unchecked((sbyte)span[0]) : (sbyte)0);
                     break;
                 case EVMType.Int16:
-                    svalue.SetInt16Value(span.Length >= 2 ? BinaryPrimitives.ReadInt16LittleEndian(span) : (short)0);
+                    RuntimeValue.SetInt16Value(span.Length >= 2 ? BinaryPrimitives.ReadInt16LittleEndian(span) : (short)0);
                     break;
                 case EVMType.UInt16:
-                    svalue.SetUInt16Value(span.Length >= 2 ? BinaryPrimitives.ReadUInt16LittleEndian(span) : (ushort)0);
+                    RuntimeValue.SetUInt16Value(span.Length >= 2 ? BinaryPrimitives.ReadUInt16LittleEndian(span) : (ushort)0);
                     break;
                 case EVMType.Int32:
-                    svalue.SetInt32Value(span.Length >= 4 ? BinaryPrimitives.ReadInt32LittleEndian(span) : 0);
+                    RuntimeValue.SetInt32Value(span.Length >= 4 ? BinaryPrimitives.ReadInt32LittleEndian(span) : 0);
                     break;
                 case EVMType.UInt32:
-                    svalue.SetUInt32Value(span.Length >= 4 ? BinaryPrimitives.ReadUInt32LittleEndian(span) : 0u);
+                    RuntimeValue.SetUInt32Value(span.Length >= 4 ? BinaryPrimitives.ReadUInt32LittleEndian(span) : 0u);
                     break;
                 case EVMType.Int64:
-                    svalue.SetInt64Value(span.Length >= 8 ? BinaryPrimitives.ReadInt64LittleEndian(span) : 0L);
+                    RuntimeValue.SetInt64Value(span.Length >= 8 ? BinaryPrimitives.ReadInt64LittleEndian(span) : 0L);
                     break;
                 case EVMType.UInt64:
-                    svalue.SetUInt64Value(span.Length >= 8 ? BinaryPrimitives.ReadUInt64LittleEndian(span) : 0uL);
+                    RuntimeValue.SetUInt64Value(span.Length >= 8 ? BinaryPrimitives.ReadUInt64LittleEndian(span) : 0uL);
                     break;
                 case EVMType.Float32:
-                    svalue.SetFloatValue(span.Length >= 4 ? BinaryPrimitives.ReadSingleLittleEndian(span) : 0f);
+                    RuntimeValue.SetFloatValue(span.Length >= 4 ? BinaryPrimitives.ReadSingleLittleEndian(span) : 0f);
                     break;
                 case EVMType.Float64:
-                    svalue.SetDoubleValue(span.Length >= 8 ? BinaryPrimitives.ReadDoubleLittleEndian(span) : 0d);
+                    RuntimeValue.SetDoubleValue(span.Length >= 8 ? BinaryPrimitives.ReadDoubleLittleEndian(span) : 0d);
                     break;
                 case EVMType.String:
                 case EVMType.Class:
@@ -484,21 +484,21 @@ namespace SimpleLanguage.VM
                         var sobj = ObjectManager.GetObjectById(pointerId);
                         if (sobj == null)
                         {
-                            svalue.SetNull();
+                            RuntimeValue.SetNull();
                         }
                         else if (evmType == EVMType.String && sobj is StringObject strObj)
                         {
-                            svalue.SetStringValue(strObj.value);
+                            RuntimeValue.SetStringValue(strObj.value);
                         }
                         else
                         {
-                            svalue.SetValueBySObject(sobj);
+                            RuntimeValue.SetValueBySObject(sobj);
                         }
                     }
                     break;
                 default:
                     Log.AddRuntimeLog(LID.ShowMessageAssert, "error");
-                    //svalue.SetInt32Value(span.Length >= 4 ? BinaryPrimitives.ReadInt32LittleEndian(span) : 0);
+                    //RuntimeValue.SetInt32Value(span.Length >= 4 ? BinaryPrimitives.ReadInt32LittleEndian(span) : 0);
                     break;
             }
         }
@@ -506,7 +506,7 @@ namespace SimpleLanguage.VM
         {
             span = default;
 
-            // 延迟分配：优先复用外部 Attach 进来的共享 memberData；仅在未附着时才创建独立槽位。
+            // 延迟分配：优先复用外�?Attach 进来的共�?memberData；仅在未附着时才创建独立槽位�?
             if ((m_MemberDataBuffer == null || m_Length <= 0) && m_RuntimeType != null)
             {
                 EnsureStandaloneMemberDataSlice();
@@ -521,7 +521,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        private static void WriteSValueToMemberDataSpan(Span<byte> span, EVMType evmType, ref SValue sval)
+        private static void WriteSValueToMemberDataSpan(Span<byte> span, EVMType evmType, ref RuntimeValue sval)
         {
             if (span.Length <= 0)
                 return;
@@ -658,7 +658,7 @@ namespace SimpleLanguage.VM
             ClearMemberDataSlice();
             m_IsNull = true;
         }
-        public void SetSObjectBySValue( ref SValue sval )
+        public void SetSObjectBySValue( ref RuntimeValue sval )
         {
             if (m_RuntimeType == null) return;
             if (sval.isNull)
@@ -781,7 +781,7 @@ namespace SimpleLanguage.VM
                     }
                     else
                     {
-                        Log.AddRuntimeLog(LID.ShowMessageAssert, m_RuntimeVariable.debugInfo, "create svalue object failed");
+                        Log.AddRuntimeLog(LID.ShowMessageAssert, m_RuntimeVariable.debugInfo, "create RuntimeValue object failed");
                     }
                 }
                 else
@@ -804,7 +804,7 @@ namespace SimpleLanguage.VM
                                 var incomingRef = sval.GetReferenceSObject(createStringRef: true);
                                 if (incomingRef == null)
                                 {
-                                    Log.AddRuntimeLog(LID.ShowMessageAssert, m_RuntimeVariable.debugInfo, "create svalue object failed");
+                                    Log.AddRuntimeLog(LID.ShowMessageAssert, m_RuntimeVariable.debugInfo, "create RuntimeValue object failed");
                                     return;
                                 }
                                 if (!ValidateGenericReferenceAssignment(incomingRef))
@@ -822,12 +822,12 @@ namespace SimpleLanguage.VM
                 return;
             }
         }
-        public void SetSValueByRuntimeObjct(ref SValue svalue)
+        public void SetSValueByRuntimeObjct(ref RuntimeValue RuntimeValue)
         {
             var etype = m_RuntimeType.eType;
             if ( RuntimeTypeManager.IsMemberDataDirectType(etype) )
             {
-                TryReadMemberDataToSValue(ref svalue);
+                TryReadMemberDataToSValue(ref RuntimeValue);
                 return;
             }
             else
@@ -835,18 +835,18 @@ namespace SimpleLanguage.VM
                 var sobj = this.GetSObject();
                 if (sobj == null)
                 {
-                    svalue.SetNull();
+                    RuntimeValue.SetNull();
                     return;
                 }
                 else
                 {
                     switch (sobj)
                     {
-                        case StringObject so:svalue.SetStringValueByStrinbObject(so);
+                        case StringObject so:RuntimeValue.SetStringValueByStrinbObject(so);
                                 break;
                         default:
-                            svalue.SetRawSObject(sobj);
-                            svalue.eType = etype;
+                            RuntimeValue.SetRawSObject(sobj);
+                            RuntimeValue.eType = etype;
                             break;
                     }
                 }

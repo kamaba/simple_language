@@ -1,5 +1,5 @@
 //****************************************************************************
-//  File:      SValue.cs
+//  File:      RuntimeValue.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/22 12:00:00
@@ -8,13 +8,12 @@
 
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
-using System.Diagnostics;
-using System.Globalization;
+
 namespace SimpleLanguage.VM
 {
-    public partial struct SValue
+    public partial class RuntimeValueMethod
     {
-        public static bool TryGetInt32FromSValue(in SValue source, out int value)
+        public static bool TryGetInt32FromRuntimeValue(in RuntimeValue source, out int value)
         {
             value = 0;
             if (source.isNull)
@@ -81,7 +80,7 @@ namespace SimpleLanguage.VM
             }
             return true;
         }
-        public static bool TryGetInt16FromSValue(in SValue source, out short value)
+        public static bool TryGetInt16FromSValue(in RuntimeValue source, out short value)
         {
             value = 0;
             if (source.isNull)

@@ -289,7 +289,7 @@ namespace SimpleLanguage.VM
             }
         }
         */
-        public System.Object GetObjectByValue( SValue sval, Type type )
+        public System.Object GetObjectByValue( RuntimeValue sval, Type type )
         {
            
             if( type == typeof(bool) )
@@ -466,7 +466,7 @@ namespace SimpleLanguage.VM
                 }
             return sval.sobject;
         }
-        public void CreateSObjectByCSharpObject( ref SValue sva, System.Object obj)
+        public void CreateSObjectByCSharpObject( ref RuntimeValue sva, System.Object obj)
         {
             switch (obj)
             {

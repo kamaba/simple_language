@@ -3,8 +3,8 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime:  2022/11/22 12:00:00
-//  Description: 数组元素使用 byte[] 紧凑存储；
-//                 DEBUG 下额外保留 <see cref="m_DebugArray"/> 便于对照，与存储同步写入；读取走 byte 路径。
+//  Description: 数组元素使用 byte[] 紧凑存储�?
+//                 DEBUG 下额外保�?<see cref="m_DebugArray"/> 便于对照，与存储同步写入；读取走 byte 路径�?
 //****************************************************************************
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
@@ -16,7 +16,7 @@ namespace SimpleLanguage.VM
         public int length => m_Length;
 
 #if DEBUG
-        /// <summary>仅 DEBUG：与旧 <c>Array</c> 相同形状的镜像，供调试对照；生产环境为 null。</summary>
+        /// <summary>�?DEBUG：与�?<c>Array</c> 相同形状的镜像，供调试对照；生产环境�?null�?/summary>
         public Array? array => m_DebugArray;
         private Array? m_DebugArray;
 #endif
@@ -62,7 +62,7 @@ namespace SimpleLanguage.VM
         {
             base.CreateObject();
 
-            var lengthSv = default(SValue);
+            var lengthSv = default(RuntimeValue);
             lengthSv.SetInt32Value(m_Length);
             SetMemberVariableSValue(0, lengthSv);
 
@@ -137,7 +137,7 @@ namespace SimpleLanguage.VM
         }
 #endif
 
-        public void LoadValue( int index, ref SValue sval )
+        public void LoadValue( int index, ref RuntimeValue sval )
         {
             if (index < 0)
             {
@@ -213,11 +213,11 @@ namespace SimpleLanguage.VM
             }
             return GetBoxedValueInternal(index);
         }
-        public void StoreValue(int index, SValue svalue)
+        public void StoreValue(int index, RuntimeValue RuntimeValue)
         {
             if (m_Data == null) return;
 
-            if (TryStoreCoercedNumber(index, svalue, eArrayType.eType))
+            if (TryStoreCoercedNumber(index, RuntimeValue, eArrayType.eType))
             {
 #if DEBUG
                 DebugSyncIndex(index);
@@ -225,7 +225,7 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            if (svalue.eType == EVMType.Null)
+            if (RuntimeValue.eType == EVMType.Null)
             {
                 WriteNullScalar(index, eArrayType.eType);
 #if DEBUG
@@ -234,8 +234,8 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            // 对对象类型存储不再走 anyobj 包装写入，统一按普通对象写入路径处理。
-            StoreFromSValueRaw(index, svalue, eArrayType.eType);
+            // 对对象类型存储不再走 anyobj 包装写入，统一按普通对象写入路径处理�?
+            StoreFromSValueRaw(index, RuntimeValue, eArrayType.eType);
 #if DEBUG
             DebugSyncIndex(index);
 #endif
@@ -320,19 +320,19 @@ namespace SimpleLanguage.VM
             WriteInt32At(index, 0);
         }
 
-        private void StoreFromSValueRaw(int index, SValue svalue, EVMType arrayEvm)
+        private void StoreFromSValueRaw(int index, RuntimeValue RuntimeValue, EVMType arrayEvm)
         {
             if (m_Data == null || (uint)index >= (uint)m_Length) return;
             if (IsRefKind(arrayEvm, out var strKind))
             {
-                if (svalue.isNull)
+                if (RuntimeValue.isNull)
                 {
                     WriteInt32At(index, 0);
                     return;
                 }
                 if (strKind)
                 {
-                    var str = svalue.stringValue;
+                    var str = RuntimeValue.stringValue;
                     if (str == null)
                     {
                         WriteInt32At(index, 0);
@@ -346,8 +346,8 @@ namespace SimpleLanguage.VM
                 }
                 else
                 {
-                    // Object / Class / Array / Type 等引用槽：标量须先装箱（与 RuntimeObject.SetSObjectBySValue 一致）。
-                    var refObj = svalue.GetReferenceSObject(createStringRef: true);
+                    // Object / Class / Array / Type 等引用槽：标量须先装箱（�?RuntimeObject.SetSObjectBySValue 一致）�?
+                    var refObj = RuntimeValue.GetReferenceSObject(createStringRef: true);
                     if (refObj != null)
                     {
                         ObjectManager.RegisterObject(refObj);
@@ -359,13 +359,13 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            if (svalue.isNull)
+            if (RuntimeValue.isNull)
             {
                 WriteNullScalar(index, arrayEvm);
                 return;
             }
 
-            WriteNonNullScalarRaw(index, svalue, arrayEvm);
+            WriteNonNullScalarRaw(index, RuntimeValue, arrayEvm);
         }
 
         private void WriteNullScalar(int index, EVMType t)
@@ -375,7 +375,7 @@ namespace SimpleLanguage.VM
             for (int i = 0; i < m_UnitLength && o + i < m_Data.Length; i++) m_Data[o + i] = 0;
         }
 
-        private void WriteNonNullScalarRaw(int index, SValue s, EVMType t)
+        private void WriteNonNullScalarRaw(int index, RuntimeValue s, EVMType t)
         {
             if (m_Data == null) return;
             int o = index * m_UnitLength;
@@ -397,12 +397,12 @@ namespace SimpleLanguage.VM
             }
         }
 
-        private bool TryStoreCoercedNumber(int index, SValue svalue, EVMType arrayEvm)
+        private bool TryStoreCoercedNumber(int index, RuntimeValue RuntimeValue, EVMType arrayEvm)
         {
-            if (IsRefKind(arrayEvm, out _) || svalue.isNull) return false;
-            if (svalue.eType == EVMType.Null) { WriteNullScalar(index, arrayEvm); return true; }
-            if (!TryGetNumericAsDouble(svalue, out var d)) return false;
-            var tmp = default(SValue);
+            if (IsRefKind(arrayEvm, out _) || RuntimeValue.isNull) return false;
+            if (RuntimeValue.eType == EVMType.Null) { WriteNullScalar(index, arrayEvm); return true; }
+            if (!TryGetNumericAsDouble(RuntimeValue, out var d)) return false;
+            var tmp = default(RuntimeValue);
             switch (arrayEvm)
             {
                 case EVMType.UInt8: tmp.eType = EVMType.UInt8; tmp.uint8Value = (byte)Convert.ToByte(d); break;
@@ -423,40 +423,40 @@ namespace SimpleLanguage.VM
             WriteNonNullScalarRaw(index, tmp, arrayEvm);
             return true;
         }
-        internal static bool TryGetNumericAsDouble(SValue svalue, out double value)
+        internal static bool TryGetNumericAsDouble(RuntimeValue RuntimeValue, out double value)
         {
             value = 0;
-            switch (svalue.eType)
+            switch (RuntimeValue.eType)
             {
                 case EVMType.UInt8:
-                    value = svalue.uint8Value;
+                    value = RuntimeValue.uint8Value;
                     return true;
                 case EVMType.Int8:
-                    value = svalue.int8Value;
+                    value = RuntimeValue.int8Value;
                     return true;
                 case EVMType.Int16:
-                    value = svalue.int16Value;
+                    value = RuntimeValue.int16Value;
                     return true;
                 case EVMType.UInt16:
-                    value = svalue.uint16Value;
+                    value = RuntimeValue.uint16Value;
                     return true;
                 case EVMType.Int32:
-                    value = svalue.int32Value;
+                    value = RuntimeValue.int32Value;
                     return true;
                 case EVMType.UInt32:
-                    value = svalue.uint32Value;
+                    value = RuntimeValue.uint32Value;
                     return true;
                 case EVMType.Int64:
-                    value = svalue.int64Value;
+                    value = RuntimeValue.int64Value;
                     return true;
                 case EVMType.UInt64:
-                    value = svalue.uint64Value;
+                    value = RuntimeValue.uint64Value;
                     return true;
                 case EVMType.Float32:
-                    value = svalue.float32Value;
+                    value = RuntimeValue.float32Value;
                     return true;
                 case EVMType.Float64:
-                    value = svalue.float64Value;
+                    value = RuntimeValue.float64Value;
                     return true;
                 default:
                     return false;

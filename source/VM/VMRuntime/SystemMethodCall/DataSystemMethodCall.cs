@@ -80,7 +80,7 @@ namespace SimpleLanguage.VM
 
             if (TryBuildDataString(ref args[0], out var text))
             {
-                var outv = default(SValue);
+                var outv = default(RuntimeValue);
                 outv.SetStringValue(text);
                 vm.PushSValueSynced(outv);
                 return;
@@ -90,7 +90,7 @@ namespace SimpleLanguage.VM
             vm.PushSValueSynced(fallback);
         }
 
-        public static bool TryBuildDataString(ref SValue value, out string text)
+        public static bool TryBuildDataString(ref RuntimeValue value, out string text)
         {
             text = string.Empty;
             if (value.isNull)
@@ -133,7 +133,7 @@ namespace SimpleLanguage.VM
                         sb.Append(", ");
 
                     var field = fieldList[i];
-                    var memberValue = default(SValue);
+                    var memberValue = default(RuntimeValue);
                     ReadInstanceMemberValueByField(dataObject, field, i, fieldList.Count, ref memberValue);
 
                     sb.Append('"');
@@ -174,7 +174,7 @@ namespace SimpleLanguage.VM
                         sb.Append(", ");
 
                     var field = fieldList[i];
-                    var memberValue = default(SValue);
+                    var memberValue = default(RuntimeValue);
                     ReadStaticMemberValueByField(runtimeType, field, i, fieldList.Count, ref memberValue);
 
                     sb.Append('"');
@@ -205,7 +205,7 @@ namespace SimpleLanguage.VM
                     if (i > 0)
                         sb.Append(", ");
 
-                    var itemValue = default(SValue);
+                    var itemValue = default(RuntimeValue);
                     arrayObject.LoadValue(i, ref itemValue);
                     sb.Append(FormatNestedValue(ref itemValue, visitPath));
                 }
@@ -218,7 +218,7 @@ namespace SimpleLanguage.VM
             }
         }
 
-        private static string FormatNestedValue(ref SValue value, HashSet<int> visitPath)
+        private static string FormatNestedValue(ref RuntimeValue value, HashSet<int> visitPath)
         {
             if (value.isNull)
                 return "null";
@@ -261,7 +261,7 @@ namespace SimpleLanguage.VM
                     {
                         if (sobj.value is SObject nestedObj && !ReferenceEquals(nestedObj, sobj))
                         {
-                            var nestedValue = default(SValue);
+                            var nestedValue = default(RuntimeValue);
                             nestedValue.SetValueBySObject(nestedObj);
                             return FormatNestedValue(ref nestedValue, visitPath);
                         }
@@ -296,7 +296,7 @@ namespace SimpleLanguage.VM
                         sb.Append(", ");
 
                     var field = fieldList[i];
-                    var memberValue = default(SValue);
+                    var memberValue = default(RuntimeValue);
                     ReadInstanceMemberValueByField(classObject, field, i, fieldList.Count, ref memberValue);
 
                     sb.Append('"');
@@ -313,7 +313,7 @@ namespace SimpleLanguage.VM
             }
         }
 
-        private static bool TryUnwrapObjectReferenceValue(ref SValue value, out SValue unwrapped)
+        private static bool TryUnwrapObjectReferenceValue(ref RuntimeValue value, out RuntimeValue unwrapped)
         {
             unwrapped = value;
             if (value.isNull || value.sobject == null)
@@ -361,12 +361,12 @@ namespace SimpleLanguage.VM
             RuntimeVariable? field,
             int fieldOrdinal,
             int memberCount,
-            ref SValue memberValue)
+            ref RuntimeValue memberValue)
         {
             int ordinalIndex = ResolveFieldSlotIndex(null, fieldOrdinal, memberCount);
             int variableIndex = ResolveFieldSlotIndex(field, fieldOrdinal, memberCount);
 
-            SValue byOrdinal = default;
+            RuntimeValue byOrdinal = default;
             bool hasOrdinal = dataObject.TryReadMemberDataAsSValue(ordinalIndex, ref byOrdinal);
             if (hasOrdinal)
             {
@@ -377,7 +377,7 @@ namespace SimpleLanguage.VM
 
             if (variableIndex != ordinalIndex)
             {
-                SValue byVariableIndex = default;
+                RuntimeValue byVariableIndex = default;
                 if (dataObject.TryReadMemberDataAsSValue(variableIndex, ref byVariableIndex))
                 {
                     memberValue = byVariableIndex;
@@ -397,12 +397,12 @@ namespace SimpleLanguage.VM
             RuntimeVariable? field,
             int fieldOrdinal,
             int memberCount,
-            ref SValue memberValue)
+            ref RuntimeValue memberValue)
         {
             int ordinalIndex = ResolveFieldSlotIndex(null, fieldOrdinal, memberCount);
             int variableIndex = ResolveFieldSlotIndex(field, fieldOrdinal, memberCount);
 
-            SValue byOrdinal = default;
+            RuntimeValue byOrdinal = default;
             runtimeType.GetStaticMemberVariableSValue(ordinalIndex, ref byOrdinal);
             memberValue = byOrdinal;
             if (IsValueCompatibleWithField(runtimeType, field, ref byOrdinal))
@@ -410,7 +410,7 @@ namespace SimpleLanguage.VM
 
             if (variableIndex != ordinalIndex)
             {
-                SValue byVariableIndex = default;
+                RuntimeValue byVariableIndex = default;
                 runtimeType.GetStaticMemberVariableSValue(variableIndex, ref byVariableIndex);
                 memberValue = byVariableIndex;
                 if (IsValueCompatibleWithField(runtimeType, field, ref byVariableIndex))
@@ -427,14 +427,14 @@ namespace SimpleLanguage.VM
             int memberCount,
             int excludeIndex1,
             int excludeIndex2,
-            ref SValue memberValue)
+            ref RuntimeValue memberValue)
         {
             for (int i = 0; i < memberCount; i++)
             {
                 if (i == excludeIndex1 || i == excludeIndex2)
                     continue;
 
-                SValue candidate = default;
+                RuntimeValue candidate = default;
                 if (!dataObject.TryReadMemberDataAsSValue(i, ref candidate))
                     continue;
 
@@ -454,14 +454,14 @@ namespace SimpleLanguage.VM
             int memberCount,
             int excludeIndex1,
             int excludeIndex2,
-            ref SValue memberValue)
+            ref RuntimeValue memberValue)
         {
             for (int i = 0; i < memberCount; i++)
             {
                 if (i == excludeIndex1 || i == excludeIndex2)
                     continue;
 
-                SValue candidate = default;
+                RuntimeValue candidate = default;
                 runtimeType.GetStaticMemberVariableSValue(i, ref candidate);
                 if (!IsValueCompatibleWithField(runtimeType, field, ref candidate))
                     continue;
@@ -473,7 +473,7 @@ namespace SimpleLanguage.VM
             return false;
         }
 
-        private static bool IsValueCompatibleWithField(RuntimeType? ownerRuntimeType, RuntimeVariable? field, ref SValue value)
+        private static bool IsValueCompatibleWithField(RuntimeType? ownerRuntimeType, RuntimeVariable? field, ref RuntimeValue value)
         {
             if (ownerRuntimeType == null || field?.runtimeDefType == null)
                 return true;
@@ -537,7 +537,7 @@ namespace SimpleLanguage.VM
 
         static void PushBool(RuntimeVM vm, bool value)
         {
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetBoolValue(value);
             vm.PushSValueSynced(outv);
         }
@@ -561,7 +561,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        static bool TryGetDataInstance(ref SValue value, out ClassObject dataObject)
+        static bool TryGetDataInstance(ref RuntimeValue value, out ClassObject dataObject)
         {
             dataObject = null!;
             if (value.isNull)
@@ -802,8 +802,8 @@ namespace SimpleLanguage.VM
 
                 for (int i = 0; i < fieldsA.Count; i++)
                 {
-                    var va = default(SValue);
-                    var vb = default(SValue);
+                    var va = default(RuntimeValue);
+                    var vb = default(RuntimeValue);
                     a.GetMemberVariableSValue(i, ref va);
                     b.GetMemberVariableSValue(i, ref vb);
                     if (!CompatibleValuesEqual(ref va, ref vb, pairVisit))
@@ -840,7 +840,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        static bool CompatibleValuesEqual(ref SValue a, ref SValue b, HashSet<(int, int)> pairVisit)
+        static bool CompatibleValuesEqual(ref RuntimeValue a, ref RuntimeValue b, HashSet<(int, int)> pairVisit)
         {
             a.TryNormalizeObjectScalarInPlace();
             b.TryNormalizeObjectScalarInPlace();
@@ -869,8 +869,8 @@ namespace SimpleLanguage.VM
 
                 for (int i = 0; i < arrA.length; i++)
                 {
-                    var ea = default(SValue);
-                    var eb = default(SValue);
+                    var ea = default(RuntimeValue);
+                    var eb = default(RuntimeValue);
                     arrA.LoadValue(i, ref ea);
                     arrB.LoadValue(i, ref eb);
                     if (!CompatibleValuesEqual(ref ea, ref eb, pairVisit))
@@ -917,7 +917,7 @@ namespace SimpleLanguage.VM
             return Equals(av, bv);
         }
 
-        static bool NumericValuesEqual(ref SValue a, ref SValue b)
+        static bool NumericValuesEqual(ref RuntimeValue a, ref RuntimeValue b)
         {
             if (IsFloatFamily(a.eType) || IsFloatFamily(b.eType))
             {
@@ -943,7 +943,7 @@ namespace SimpleLanguage.VM
             return t == EVMType.Float32 || t == EVMType.Float64 || t == EVMType.Num;
         }
 
-        static double ToDouble(ref SValue v)
+        static double ToDouble(ref RuntimeValue v)
         {
             return v.eType switch
             {
@@ -953,7 +953,7 @@ namespace SimpleLanguage.VM
             };
         }
 
-        static long ToInt64(ref SValue v)
+        static long ToInt64(ref RuntimeValue v)
         {
             return v.eType switch
             {

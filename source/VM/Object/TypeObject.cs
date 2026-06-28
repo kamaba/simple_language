@@ -35,7 +35,7 @@ namespace SimpleLanguage.VM
             var eTypeIndex = FindMemberIndex(typeRc, "_eType");
             if (eTypeIndex >= 0)
             {
-                var sv = default(SValue);
+                var sv = default(RuntimeValue);
                 sv.SetUInt8Value((byte)m_Rt.eType);
                 SetMemberVariableSValue(eTypeIndex, sv);
             }
@@ -44,7 +44,7 @@ namespace SimpleLanguage.VM
             var metaClassIndex = FindMemberIndex(typeRc, "_metaClass");
             if (metaClassIndex >= 0)
             {
-                var sv = default(SValue);
+                var sv = default(RuntimeValue);
                 if (metaClassObject != null) sv.SetValueBySObject(metaClassObject);
                 else sv.SetNull();
                 SetMemberVariableSValue(metaClassIndex, sv);
@@ -54,7 +54,7 @@ namespace SimpleLanguage.VM
             if (typeListIndex >= 0)
             {
                 var typeListObj = CreateTemplateTypeListObject();
-                var sv = default(SValue);
+                var sv = default(RuntimeValue);
                 if (typeListObj != null) sv.SetValueBySObject(typeListObj);
                 else sv.SetNull();
                 SetMemberVariableSValue(typeListIndex, sv);
@@ -86,14 +86,14 @@ namespace SimpleLanguage.VM
             int nsIndex = FindMemberIndex(metaRc, "_namespaceName");
             if (nsIndex >= 0)
             {
-                var svNs = default(SValue);
+                var svNs = default(RuntimeValue);
                 svNs.SetStringValue(ns);
                 metaObj.SetMemberVariableSValue(nsIndex, svNs);
             }
             int clsIndex = FindMemberIndex(metaRc, "_className");
             if (clsIndex >= 0)
             {
-                var svCls = default(SValue);
+                var svCls = default(RuntimeValue);
                 svCls.SetStringValue(cls);
                 metaObj.SetMemberVariableSValue(clsIndex, svCls);
             }
@@ -121,7 +121,7 @@ namespace SimpleLanguage.VM
             for (int i = 0; i < templates.Count; i++)
             {
                 var child = RuntimeTypeManager.CreateTypeObject(templates[i]);
-                var sv = default(SValue);
+                var sv = default(RuntimeValue);
                 if (child != null) sv.SetValueBySObject(child);
                 else sv.SetNull();
                 arr.StoreValue(i, sv);

@@ -9,7 +9,7 @@ namespace SimpleLanguage.VM.Runtime
         /// <summary>
         /// <see cref="ESystemMethodCall.SystemConvertInt8"/> with a second stack argument (see <see cref="ConvertInt8"/>).
         /// </summary>
-        internal static int ReadInt32ArgLoose(ref SValue v)
+        internal static int ReadInt32ArgLoose(ref RuntimeValue v)
         {
             if (v.isNull)
                 return int.MinValue;
@@ -70,25 +70,25 @@ namespace SimpleLanguage.VM.Runtime
         /// <paramref name="index"/> == -1: legacy <c>Convert.ToByte</c> (full byte, supports string).<br/>
         /// <paramref name="index"/> &gt;= 0: take 4 bits from the unsigned bit pattern of the value, counting from the least significant bit (<c>index</c> is the low bit of the window). Requires <c>index + 4 &lt;=</c> storage width of the numeric type.
         /// </summary>
-        public static SValue ConvertInt8(ref SValue arg, int index)
+        public static RuntimeValue ConvertInt8(ref RuntimeValue arg, int index)
         {
             if (arg.isNull)
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
 
             if (index == int.MinValue)
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
 
             if (index < -1)
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
@@ -98,60 +98,60 @@ namespace SimpleLanguage.VM.Runtime
 
             if (arg.eType == EVMType.String || (arg.sobject is StringObject))
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
 
             if (!TryGetUnsignedBitPattern(ref arg, out ulong bits, out int bitWidth) || index + 4 > bitWidth)
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
 
             byte nibble = (byte)((bits >> index) & 0xFUL);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetUInt8Value(nibble);
             return outv;
         }
 
-        private static SValue ConvertInt8Legacy(ref SValue arg)
+        private static RuntimeValue ConvertInt8Legacy(ref RuntimeValue arg)
         {
             object raw = UnwrapStackValueForSystemConvert(ref arg);
             try
             {
                 byte conv = Convert.ToByte(raw, CultureInfo.InvariantCulture);
-                return SValue.FromClrObject(conv);
+                return RuntimeValue.FromClrObject(conv);
             }
             catch
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
         }
 
         /// <summary>Same rules as <see cref="ConvertInt8"/> but result is <c>sbyte</c> and legacy path uses <c>Convert.ToSByte</c>.</summary>
-        public static SValue ConvertSInt8(ref SValue arg, int index)
+        public static RuntimeValue ConvertSInt8(ref RuntimeValue arg, int index)
         {
             if (arg.isNull)
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
 
             if (index == int.MinValue)
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
 
             if (index < -1)
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
@@ -161,41 +161,41 @@ namespace SimpleLanguage.VM.Runtime
 
             if (arg.eType == EVMType.String || (arg.sobject is StringObject))
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
 
             if (!TryGetUnsignedBitPattern(ref arg, out ulong bits, out int bitWidth) || index + 4 > bitWidth)
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
 
             sbyte nib = unchecked((sbyte)(byte)((bits >> index) & 0xFUL));
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetInt8Value(nib);
             return outv;
         }
 
-        private static SValue ConvertSInt8Legacy(ref SValue arg)
+        private static RuntimeValue ConvertSInt8Legacy(ref RuntimeValue arg)
         {
             object raw = UnwrapStackValueForSystemConvert(ref arg);
             try
             {
                 sbyte conv = Convert.ToSByte(raw, CultureInfo.InvariantCulture);
-                return SValue.FromClrObject(conv);
+                return RuntimeValue.FromClrObject(conv);
             }
             catch
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
         }
 
-        private static bool TryGetUnsignedBitPattern(ref SValue v, out ulong bits, out int bitWidth)
+        private static bool TryGetUnsignedBitPattern(ref RuntimeValue v, out ulong bits, out int bitWidth)
         {
             bits = 0;
             bitWidth = 0;
@@ -307,11 +307,11 @@ namespace SimpleLanguage.VM.Runtime
         }
 
         /// <summary>Pops one stack operand and converts it to the target primitive/string per <see cref="ESystemMethodCall"/>.</summary>
-        public static SValue ConvertValue(ref SValue arg, ESystemMethodCall kind)
+        public static RuntimeValue ConvertValue(ref RuntimeValue arg, ESystemMethodCall kind)
         {
             if (arg.isNull)
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
@@ -335,17 +335,17 @@ namespace SimpleLanguage.VM.Runtime
                     ESystemMethodCall.SystemConvertString => ConvertStringWithDataSupport(ref arg, raw),
                     _ => raw,
                 };
-                return SValue.FromClrObject(conv);
+                return RuntimeValue.FromClrObject(conv);
             }
             catch
             {
-                var z = default(SValue);
+                var z = default(RuntimeValue);
                 z.SetNull();
                 return z;
             }
         }
 
-        private static object UnwrapStackValueForSystemConvert(ref SValue v)
+        private static object UnwrapStackValueForSystemConvert(ref RuntimeValue v)
         {
             if (v.isNull) return 0;
             switch (v.eType)
@@ -388,7 +388,7 @@ namespace SimpleLanguage.VM.Runtime
             return v.GetValueObject() ?? string.Empty;
         }
 
-        private static object ConvertStringWithDataSupport(ref SValue arg, object raw)
+        private static object ConvertStringWithDataSupport(ref RuntimeValue arg, object raw)
         {
             if (DataSystemMethodCall.TryBuildDataString(ref arg, out var dataText))
             {

@@ -1,6 +1,6 @@
 //****************************************************************************
 //  Thrown when VM binary arithmetic (ComputeValueInline) mixes null with a numeric.
-//  LID.VMOperatorNotShouldHaveNull 在 CompareEuqalSValue1AndValue2 / SValueCompute 中先记录再抛出；Run 的 catch 不再打该条。
+//  LID.VMOperatorNotShouldHaveNull 在 CompareEuqalRuntimeValue1AndValue2 / RuntimeValueCompute 中先记录再抛出；Run 的 catch 不再打该条。
 //****************************************************************************
 
 using System;

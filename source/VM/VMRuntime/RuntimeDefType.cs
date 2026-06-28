@@ -9,13 +9,11 @@ namespace SimpleLanguage.VM
         public RuntimeClass ownerRuntimeClass => m_OwnerRuntimeClass;
         public List<RuntimeDefType> runtimeDefTypeList => m_RuntimeDefTypeList;
         public int templateIndex => m_TemplateIndex;
-        //public bool isTemplate => m_IsTemplate;
 
         private RuntimeClass m_RuntimeClass = null;
         private RuntimeClass m_OwnerRuntimeClass = null;
         private List<RuntimeDefType> m_RuntimeDefTypeList = new List<RuntimeDefType>();
         private int m_TemplateIndex = -1;
-        //private bool m_IsTemplate = false;
 
         public RuntimeDefType()
         {

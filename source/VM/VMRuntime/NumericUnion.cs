@@ -1,6 +1,6 @@
 //****************************************************************************
 //  File:      NumericUnion.cs
-//  Description: 与 SValue / SObject 共用的标量联合体（与 SValue 字段布局一致）。
+//  Description: �?RuntimeValue / SObject 共用的标量联合体（与 RuntimeValue 字段布局一致）�?
 //****************************************************************************
 
 using System.Runtime.InteropServices;

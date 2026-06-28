@@ -1,5 +1,5 @@
 //****************************************************************************
-//  File:      SValue.cs
+//  File:      RuntimeValue.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/22 12:00:00
@@ -13,7 +13,7 @@ using System.Globalization;
 using System.Text;
 namespace SimpleLanguage.VM
 {
-    public partial struct SValue
+    public struct RuntimeValue
     {
         public EVMType eType;
         private NumericUnion nv;
@@ -36,9 +36,9 @@ namespace SimpleLanguage.VM
         {
             if (isNull) return null;
 
-            // NativeBridge/BridgeObject 鍙傛暟钀藉湴锛歏M 渚у皢 BridgeObject 瀹炰緥瑙ｆ瀽鎴愮洰鏍?CLR 绫诲瀷銆?
-            // BridgeObject 鍦?Front 閲岄€氳繃 _init_(string type) 浣滀负鈥滃弬鏁版弿杩扮鈥濅紶鍏ワ紝
-            // 鍦?VM 杩愯鏃堕€氬父浼氳鍐欏叆鏌愪釜鍙鎴愬憳鍙橀噺锛堝父瑙佷负 `type`锛夛紝鍥犳杩欓噷鍋氬绉拌浆鎹€?
+            // NativeBridge/BridgeObject 鍙傛暟钀藉湴锛歏M 渚у皢 BridgeObject 瀹炰緥瑙ｆ瀽鎴愮洰�?CLR 绫诲瀷銆?
+            // BridgeObject �?Front 閲岄€氳�?_init_(string type) 浣滀负鈥滃弬鏁版弿杩扮鈥濅紶鍏ワ紝
+            // �?VM 杩愯鏃堕€氬父浼氳鍐欏叆鏌愪釜鍙鎴愬憳鍙橀噺锛堝父瑙佷�?`type`锛夛紝鍥犳杩欓噷鍋氬绉拌浆鎹€?
             if (sobject is ClassObject co && IsBridgeObjectRuntime(co.runtimeClass))
             {
                 if (TryExtractBridgeObjectPayload(co, out var payloadObj))
@@ -50,7 +50,7 @@ namespace SimpleLanguage.VM
 
                     if (targetType.IsInstanceOfType(payloadObj)) return payloadObj;
 
-                    // BridgeObject 閲岀殑鍊煎父甯告槸瀛楃涓插舰寮忥紙渚嬪 BridgeObject(123) 浼氳惤涓?"123"锛?
+                    // BridgeObject 閲岀殑鍊煎父甯告槸瀛楃涓插舰寮忥紙渚嬪 BridgeObject(123) 浼氳惤涓?"123"�?
                     if (payloadObj is string payloadStr)
                     {
                         if (targetType == typeof(int) && int.TryParse(payloadStr, NumberStyles.Integer, CultureInfo.InvariantCulture, out var i))
@@ -117,15 +117,15 @@ namespace SimpleLanguage.VM
             }
             if (index < 0) index = 0;
 
-            var sv = default(SValue);
+            var sv = default(RuntimeValue);
             co.GetMemberVariableSValue(index, ref sv);
             payloadObj = sv.GetValueObject();
             return true;
         }
 
-        public static SValue FromClrObject(object? o)
+        public static RuntimeValue FromClrObject(object? o)
         {
-            var v = default(SValue);
+            var v = default(RuntimeValue);
             if (o == null)
             {
                 v.SetNull();
@@ -297,11 +297,11 @@ namespace SimpleLanguage.VM
 #endif
         }
         // helper conversions used by ComputeSVAlue
-        bool IsUnsignedType(EVMType t)
+        public bool IsUnsignedType(EVMType t)
         {
             return t == EVMType.UInt16 || t == EVMType.UInt32 || t == EVMType.UInt64;
         }
-        double ConvertToDoubleFromIntTypes()
+        public double ConvertToDoubleFromIntTypes()
         {
             switch (eType)
             {
@@ -316,37 +316,7 @@ namespace SimpleLanguage.VM
             }
             return 0.0;
         }
-        ulong ConvertToULong()
-        {
-            switch (eType)
-            {
-                case EVMType.UInt8: return uint8Value;
-                case EVMType.Int8: return (byte)int8Value;
-                case EVMType.Int16: return (ushort)int16Value;
-                case EVMType.UInt16: return uint16Value;
-                case EVMType.Int32: return (uint)int32Value;
-                case EVMType.UInt32: return uint32Value;
-                case EVMType.Int64: return (ulong)int64Value;
-                case EVMType.UInt64: return uint64Value;
-                default: return 0;
-            }
-        }
-        long ConvertToLong()
-        {
-            switch (eType)
-            {
-                case EVMType.UInt8: return uint8Value;
-                case EVMType.Int8: return int8Value;
-                case EVMType.Int16: return int16Value;
-                case EVMType.UInt16: return uint16Value;
-                case EVMType.Int32: return int32Value;
-                case EVMType.UInt32: return uint32Value;
-                case EVMType.Int64: return int64Value;
-                case EVMType.UInt64: return (long)uint64Value;
-                default: return 0;
-            }
-        }
-        void AssignULongToType(ulong v)
+        public void AssignULongToType(ulong v)
         {
             switch (eType)
             {
@@ -361,7 +331,7 @@ namespace SimpleLanguage.VM
                 default: break;
             }
         }
-        void AssignLongToType(long v)
+        public void AssignLongToType(long v)
         {
             switch (eType)
             {
@@ -392,7 +362,7 @@ namespace SimpleLanguage.VM
             sobject = ao;
             isNull = false;
 #if DEBUG
-            Log.AddRuntimeLog(LID.ShowMessageInfo, "SValue.SetArrayValue" + ao );
+            Log.AddRuntimeLog(LID.ShowMessageInfo, "RuntimeValue.SetArrayValue" + ao );
 #endif
         }
         public void SetTypeObject( TypeObject to )
@@ -400,7 +370,7 @@ namespace SimpleLanguage.VM
             eType = EVMType.Type;
             sobject = to;
             isNull = false;
-            Log.AddRuntimeLog(LID.ShowMessageInfo, "SValue.SetTypeValue" + to);
+            Log.AddRuntimeLog(LID.ShowMessageInfo, "RuntimeValue.SetTypeValue" + to);
         }
         public void SetValue(SObject val)
         {
@@ -768,10 +738,6 @@ namespace SimpleLanguage.VM
                     return null;
             }
         }
-        /// <summary>
-        /// 赋值/槽位写入前：在标量/布尔之间做与 <see cref="ConvertByEType"/> 一致的阶兼容（如 Int32 → Int8），
-        /// 行为接近 Dart 中 num 的宽松窄化/拓宽（由 CLR <see cref="Convert"/> 与截断完成）。
-        /// </summary>
         public void TryCoerceScalarForAssignment(EVMType targetEvm)
         {
             if (isNull) return;
@@ -780,16 +746,16 @@ namespace SimpleLanguage.VM
             if (!IsScalarOrNumSlotEvm(eType) && eType != EVMType.Boolean) return;
             try
             {
-                ConvertByEType(targetEvm);
+                RuntimeValueMethod.ConvertByEType( ref this, targetEvm);
             }
             catch (OverflowException)
             {
                 Log.AddRuntimeLog(LID.ShowMessageWarning,
-                    $"数值赋值发生溢出，保持原值: source={eType}, target={targetEvm}, value={GetValueObject()}");
+                    $"数值赋值发生溢出，保持原�? source={eType}, target={targetEvm}, value={GetValueObject()}");
             }
             catch
             {
-                // 保持原值，由后续分支决定失败表现
+                // 保持原值，由后续分支决定失败表�?
             }
         }
 
@@ -814,7 +780,7 @@ namespace SimpleLanguage.VM
                 || t == EVMType.Num;
         }
 
-        private static bool TryUnboxObjectLikeScalar(ref SValue source, out SValue unboxed)
+        private static bool TryUnboxObjectLikeScalar(ref RuntimeValue source, out RuntimeValue unboxed)
         {
             unboxed = source;
             if (source.isNull || source.sobject == null)
@@ -822,7 +788,7 @@ namespace SimpleLanguage.VM
             if (source.eType != EVMType.Object && source.eType != EVMType.Class)
                 return false;
 
-            var temp = default(SValue);
+            var temp = default(RuntimeValue);
             temp.SetValueBySObject(source.sobject);
             if (temp.isNull)
                 return false;
@@ -852,8 +818,8 @@ namespace SimpleLanguage.VM
 
         public void ConvertValueByTargetTypeAndObject( EVMType etype )
         {
-            // 统一值类型路径：Object/Class 中若封装了 Int8Object/UInt8Object/Int16Object/... 等，
-            // 先解包，再按 ConvertByEType 执行升阶/降阶与溢出处理。
+            // 统一值类型路径：Object/Class 中若封装�?Int8Object/UInt8Object/Int16Object/... 等，
+            // 先解包，再按 ConvertByEType 执行升阶/降阶与溢出处理�?
             if (IsValueLikeEvm(etype))
             {
                 TryNormalizeObjectScalarInPlace();
@@ -863,12 +829,12 @@ namespace SimpleLanguage.VM
                     {
                         try
                         {
-                            ConvertByEType(etype);
+                            RuntimeValueMethod.ConvertByEType(ref this, etype);
                         }
                         catch (OverflowException)
                         {
                             Log.AddRuntimeLog(LID.ShowMessageWarning,
-                                $"值类型转换溢出: {eType} -> {etype}, value={GetValueObject()}");
+                                $"值类型转换溢�? {eType} -> {etype}, value={GetValueObject()}");
                             throw;
                         }
                     }
@@ -1013,126 +979,10 @@ namespace SimpleLanguage.VM
                 case EVMType.Type:
                 case EVMType.Object:
                 case EVMType.Class:
-                    // 引用类型保持 sobject 引用，具体约束由上层类型系统处理。
+                    // 引用类型保持 sobject 引用，具体约束由上层类型系统处理�?
                     //Log.AddRuntimeLog(LID.ShowMessageAssert, "");
                     break;
             }
-        }
-
-        public void ConvertByEType(EVMType neType)
-        {
-            // Object/Class slots may carry scalar wrappers (Int32Object/UInt64Object...).
-            // Normalize first so Convert.* paths can work consistently.
-            TryNormalizeObjectScalarInPlace();
-
-            var oldType = eType;
-
-            object? cur = GetValueObject();
-
-            try
-            {
-                switch (neType)
-                {
-                    case EVMType.Boolean:
-                        SetBoolValue(Convert.ToBoolean(cur, CultureInfo.InvariantCulture));
-                        break;
-                    case EVMType.UInt8:
-                        SetUInt8Value(Convert.ToByte(cur, CultureInfo.InvariantCulture));
-                        break;
-                    case EVMType.Int8:
-                        SetInt8Value(Convert.ToSByte(cur, CultureInfo.InvariantCulture));
-                        break;
-                    case EVMType.Int16:
-                        SetInt16Value(Convert.ToInt16(cur, CultureInfo.InvariantCulture));
-                        break;
-                    case EVMType.UInt16:
-                        SetUInt16Value(Convert.ToUInt16(cur, CultureInfo.InvariantCulture));
-                        break;
-                    case EVMType.Int32:
-                        SetInt32Value(Convert.ToInt32(cur, CultureInfo.InvariantCulture));
-                        break;
-                    case EVMType.UInt32:
-                        SetUInt32Value(Convert.ToUInt32(cur, CultureInfo.InvariantCulture));
-                        break;
-                    case EVMType.Int64:
-                        SetInt64Value(Convert.ToInt64(cur, CultureInfo.InvariantCulture));
-                        break;
-                    case EVMType.UInt64:
-                        SetUInt64Value(Convert.ToUInt64(cur, CultureInfo.InvariantCulture));
-                        isNull = false;
-                        break;
-                    case EVMType.Float32:
-                        SetFloatValue(Convert.ToSingle(cur, CultureInfo.InvariantCulture));
-                        break;
-                    case EVMType.Float64:
-                    case EVMType.Num:
-                        float64Value = Convert.ToDouble(cur, CultureInfo.InvariantCulture);
-                        eType = neType;
-                        isNull = false;
-                        break;
-                    case EVMType.String:
-                        SetStringValue(Convert.ToString(cur, CultureInfo.InvariantCulture) ?? string.Empty);
-                        break;
-                    default:
-                        Log.AddRuntimeLog(LID.ShowMessageAssert, "Error 异常类型在ConvertByEType中");
-                        return;
-                }
-
-                if (IsNarrowingConversion(oldType, neType))
-                {
-                    Log.AddRuntimeLog(LID.ShowMessageWarning,
-                        $"数值降阶转换: {oldType} -> {neType}, value={cur}");
-                }
-            }
-            catch (Exception e )
-            {
-                Log.AddRuntimeLog(LID.ShowMessageAssert,
-                    $"数值转换溢出: {oldType} -> {neType}, value={cur} exception: {e}");
-            }
-        }
-
-        private static bool IsNarrowingConversion(EVMType source, EVMType target)
-        {
-            if (source == target) return false;
-            if (!IsNumericEType(source) || !IsNumericEType(target)) return false;
-
-            int srcBits = GetNumericBits(source);
-            int dstBits = GetNumericBits(target);
-
-            if (srcBits > dstBits) return true;
-
-            bool srcFloat = source is EVMType.Float32 or EVMType.Float64 or EVMType.Num;
-            bool dstFloat = target is EVMType.Float32 or EVMType.Float64 or EVMType.Num;
-            if (srcFloat && !dstFloat) return true;
-
-            bool srcUnsigned = source is EVMType.UInt8 or EVMType.UInt16 or EVMType.UInt32 or EVMType.UInt64;
-            bool dstSigned = target is EVMType.Int8 or EVMType.Int16 or EVMType.Int32 or EVMType.Int64;
-            if (srcUnsigned && dstSigned && srcBits >= dstBits) return true;
-
-            return false;
-        }
-
-        private static bool IsNumericEType(EVMType t)
-        {
-            return t is EVMType.Boolean
-                or EVMType.UInt8 or EVMType.Int8
-                or EVMType.Int16 or EVMType.UInt16
-                or EVMType.Int32 or EVMType.UInt32
-                or EVMType.Int64 or EVMType.UInt64
-                or EVMType.Float32 or EVMType.Float64 or EVMType.Num;
-        }
-
-        private static int GetNumericBits(EVMType t)
-        {
-            return t switch
-            {
-                EVMType.Boolean => 1,
-                EVMType.UInt8 or EVMType.Int8 => 8,
-                EVMType.Int16 or EVMType.UInt16 => 16,
-                EVMType.Int32 or EVMType.UInt32 or EVMType.Float32 => 32,
-                EVMType.Int64 or EVMType.UInt64 or EVMType.Float64 or EVMType.Num => 64,
-                _ => 0,
-            };
         }
         public Object GetValueObject()
         {
@@ -1202,7 +1052,7 @@ namespace SimpleLanguage.VM
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append("SValue{");
+            sb.Append("RuntimeValue{");
             sb.Append("Type=");
             sb.Append(eType);
             sb.Append(", IsNull=");

@@ -50,7 +50,7 @@ namespace SimpleLanguage.VM.Runtime
             VmRunResultSink.MirrorConsole(text, newLine: true);
         }
 
-        private static string FormatConsoleValue(ref SValue value)
+        private static string FormatConsoleValue(ref RuntimeValue value)
         {
             if (value.isNull)
                 return string.Empty;
@@ -71,7 +71,7 @@ namespace SimpleLanguage.VM.Runtime
                 return;
             }
             string line = Console.ReadLine() ?? string.Empty;
-            var sv = default(SValue);
+            var sv = default(RuntimeValue);
             sv.SetStringValue(line);
             vm.PushSValueSynced(sv);
         }
@@ -85,7 +85,7 @@ namespace SimpleLanguage.VM.Runtime
                 return;
             }
             var k = Console.ReadKey(intercept: true);
-            var svk = default(SValue);
+            var svk = default(RuntimeValue);
             svk.SetStringValue(k.KeyChar.ToString());
             vm.PushSValueSynced(svk);
         }

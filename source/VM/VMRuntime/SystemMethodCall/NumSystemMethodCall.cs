@@ -7,7 +7,7 @@ namespace SimpleLanguage.VM.Runtime
 {
     internal static class NumSystemMethodCall
     {
-        /// <summary>Numeric <see cref="ESystemMethodCall"/> converts (Int8 â€¦ Float64).</summary>
+        /// <summary>Numeric <see cref="ESystemMethodCall"/> converts (Int8 â€?Float64).</summary>
         public static void ExecuteNumericConvert(RuntimeVM vm, SLSystemMethodCallPackage sysPkg, ESystemMethodCall kind)
         {
             int pc = sysPkg.paramCount;
@@ -19,7 +19,7 @@ namespace SimpleLanguage.VM.Runtime
 
             if (kind == ESystemMethodCall.SystemConvertInt8 || kind == ESystemMethodCall.SystemConvertUInt8)
             {
-                SValue outv;
+                RuntimeValue outv;
                 if (pc == 1)
                     outv = SystemMethodConvertHelper.ConvertInt8(ref args[0], -1);
                 else if (pc == 2)
@@ -27,7 +27,7 @@ namespace SimpleLanguage.VM.Runtime
                 else
                 {
                     Debug.Assert(false, $"SystemConvertInt8/SystemConvertUInt8 expects 1 or 2 args, got {pc}");
-                    var z = default(SValue);
+                    var z = default(RuntimeValue);
                     z.SetNull();
                     outv = z;
                 }
@@ -38,7 +38,7 @@ namespace SimpleLanguage.VM.Runtime
 
             if (kind == ESystemMethodCall.SystemConvertSInt8)
             {
-                SValue outv;
+                RuntimeValue outv;
                 if (pc == 1)
                     outv = SystemMethodConvertHelper.ConvertSInt8(ref args[0], -1);
                 else if (pc == 2)
@@ -46,7 +46,7 @@ namespace SimpleLanguage.VM.Runtime
                 else
                 {
                     Debug.Assert(false, $"SystemConvertSInt8 expects 1 or 2 args, got {pc}");
-                    var z = default(SValue);
+                    var z = default(RuntimeValue);
                     z.SetNull();
                     outv = z;
                 }
@@ -72,13 +72,13 @@ namespace SimpleLanguage.VM.Runtime
             {
                 object? raw = args[0].GetValueObject();
                 int parsed = Convert.ToInt32(raw, CultureInfo.InvariantCulture);
-                var outv = default(SValue);
+                var outv = default(RuntimeValue);
                 outv.SetInt32Value(parsed);
                 vm.PushSValueSynced(outv);
             }
             catch
             {
-                var nz = default(SValue);
+                var nz = default(RuntimeValue);
                 nz.SetNull();
                 vm.PushSValueSynced(nz);
             }
@@ -101,14 +101,14 @@ namespace SimpleLanguage.VM.Runtime
                 double abs = Math.Abs(n);
 
                 // 2) convert back to caller numeric shape (Byte/Int16/Int32/Int64/Float32/...)
-                var absSv = SValue.FromClrObject(abs);
+                var absSv = RuntimeValue.FromClrObject(abs);
                 var preferKind = InferPreferredConvertKind(ref args[0]);
                 var outv = SystemMethodConvertHelper.ConvertValue(ref absSv, preferKind);
                 vm.PushSValueSynced(outv);
             }
             catch
             {
-                var nz = default(SValue);
+                var nz = default(RuntimeValue);
                 nz.SetNull();
                 vm.PushSValueSynced(nz);
             }
@@ -143,17 +143,17 @@ namespace SimpleLanguage.VM.Runtime
             {
                 double n = Convert.ToDouble(args[0].GetValueObject(), CultureInfo.InvariantCulture);
                 double floor = Math.Floor(n);
-                vm.PushSValueSynced(SValue.FromClrObject(floor));
+                vm.PushSValueSynced(RuntimeValue.FromClrObject(floor));
             }
             catch
             {
-                var nz = default(SValue);
+                var nz = default(RuntimeValue);
                 nz.SetNull();
                 vm.PushSValueSynced(nz);
             }
         }
 
-        private static ESystemMethodCall InferPreferredConvertKind(ref SValue arg)
+        private static ESystemMethodCall InferPreferredConvertKind(ref RuntimeValue arg)
         {
             switch (arg.eType)
             {

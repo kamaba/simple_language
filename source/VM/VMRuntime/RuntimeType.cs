@@ -24,13 +24,13 @@ namespace SimpleLanguage.VM
         public int id => m_Id;
         public RuntimeClass runtimeClass => m_RuntimeClass;
         public List<RuntimeType> runtimeTemplateList => m_RuntimeTemplateList;
-        /// <summary>本类型静态成员的紧凑字节块（与实例 <see cref="ClassObject"/> 上逻辑一致）。</summary>
+        /// <summary>本类型静态成员的紧凑字节块（与实�?<see cref="ClassObject"/> 上逻辑一致）�?/summary>
         public byte[]? memberData => m_MemberData;
 
         private RuntimeClass m_RuntimeClass = null;
         private List<RuntimeType> m_RuntimeTemplateList = new List<RuntimeType>();
         private RuntimeObject[] m_StaticMemberRuntimeObjectArray = null;
-        /// <summary>静态字段紧凑布局缓冲区，与 <see cref="m_StaticMemberRuntimeObjectArray"/> 下标一一对应（空槽不占字节）。</summary>
+        /// <summary>静态字段紧凑布局缓冲区，�?<see cref="m_StaticMemberRuntimeObjectArray"/> 下标一一对应（空槽不占字节）�?/summary>
         private byte[] m_MemberData = null;
         private bool m_IsStaticExprBatchApplying = false;
         private int m_Id = 0;
@@ -154,11 +154,11 @@ namespace SimpleLanguage.VM
                 visiting.Remove(rdt);
             }
         }
-        public void GetStaticMemberVariableSValue(int index, ref SValue svalue)
+        public void GetStaticMemberVariableSValue(int index, ref RuntimeValue RuntimeValue)
         {
             if (m_StaticMemberRuntimeObjectArray == null)
             {
-                svalue.SetNull();
+                RuntimeValue.SetNull();
                 Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object list is not initialized for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
                 return;
             }
@@ -170,19 +170,19 @@ namespace SimpleLanguage.VM
             if ( index >= m_StaticMemberRuntimeObjectArray.Length)
             {
                 Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object at index {index} is null for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
-                svalue.SetNull();
+                RuntimeValue.SetNull();
                 return;
             }
             var ro = m_StaticMemberRuntimeObjectArray[index];
             if (ro == null)
             {
-                svalue.SetNull();
+                RuntimeValue.SetNull();
                 return;
             }
-            // 与 ClassObject.GetMemberVariableSValue 一致：优先 m_MemberData 紧凑布局
-            ro.SetSValueByRuntimeObjct(ref svalue);
+            // �?ClassObject.GetMemberVariableSValue 一致：优先 m_MemberData 紧凑布局
+            ro.SetSValueByRuntimeObjct(ref RuntimeValue);
         }
-        public void SetStaticMemberVariableSValue(int index, SValue svalue)
+        public void SetStaticMemberVariableSValue(int index, ref RuntimeValue RuntimeValue)
         {
             if (m_StaticMemberRuntimeObjectArray == null)
             {
@@ -205,12 +205,12 @@ namespace SimpleLanguage.VM
                 Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object at index {index} is null for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
                 return;
             }
-            if (svalue.isNull)
+            if (RuntimeValue.isNull)
             {
                 target.SetNull();
                 return;
             }
-            target.SetSObjectBySValue(ref svalue);
+            target.SetSObjectBySValue(ref RuntimeValue);
         }
         public void EnsureStaticMemberObjectsInitialized()
         {
@@ -245,7 +245,7 @@ namespace SimpleLanguage.VM
             catch (Exception e) { }
         }
 
-        /// <summary>为 <see cref="m_StaticMemberRuntimeObjectArray"/> 分配 <see cref="m_MemberData"/> 并绑定各 <see cref="RuntimeObject"/> 切片（仅首次分配，避免覆盖已写入的静态初值）。</summary>
+        /// <summary>�?<see cref="m_StaticMemberRuntimeObjectArray"/> 分配 <see cref="m_MemberData"/> 并绑定各 <see cref="RuntimeObject"/> 切片（仅首次分配，避免覆盖已写入的静态初值）�?/summary>
         private void BuildStaticMemberDataLayout()
         {
             if (m_StaticMemberRuntimeObjectArray == null || m_StaticMemberRuntimeObjectArray.Length == 0)
@@ -300,9 +300,9 @@ namespace SimpleLanguage.VM
             this.m_IsStaticExprBatchApplying = true;
             try
             {
-                // 按 order（依赖解析次序）收集静态字段初始化指令，而不是按声明顺序。
-                // order 来自 Front 的 MetaMemberVariable.parseOrder：被依赖的成员先获得较小 order，
-                // 必须先执行其初始化。例如 x1 = x2 * 1 + -2、x2 = x3 + 4、x3 = 13 会按 x3 -> x2 -> x1 执行。
+                // �?order（依赖解析次序）收集静态字段初始化指令，而不是按声明顺序�?
+                // order 来自 Front �?MetaMemberVariable.parseOrder：被依赖的成员先获得较小 order�?
+                // 必须先执行其初始化。例�?x1 = x2 * 1 + -2、x2 = x3 + 4、x3 = 13 会按 x3 -> x2 -> x1 执行�?
                 List<Instruction> initIR = SLRuntimeModuleRegistry.GetStaticFieldInitializerExpressionsInOrder(m_RuntimeClass.id);
 
                 if (initIR.Count == 0)

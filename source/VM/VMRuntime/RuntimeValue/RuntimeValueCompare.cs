@@ -1,5 +1,5 @@
 //****************************************************************************
-//  File:      SValue.cs
+//  File:      RuntimeValue.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/22 12:00:00
@@ -13,17 +13,17 @@ using System.Diagnostics;
 
 namespace SimpleLanguage.VM
 {
-    public partial struct SValue
+    public partial class RuntimeValueMethod
     {
-        public void ComputeSValue(SValue sval, bool isUnsignCompute )
+        public static void ComputeRuntimeValue(ref RuntimeValue _rv,  RuntimeValue curval, RuntimeValue sval, bool isUnsignCompute )
         {
-#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
+#pragma warning disable CS0219 // 鍙橀噺宸茶璧嬪€硷紝浣嗕粠鏈娇鐢ㄨ繃瀹冪殑锟?
             bool isNumber = false;
-#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
-#pragma warning disable CS0219 // 变量已被赋值，但从未使用过它的值
+#pragma warning restore CS0219 // 鍙橀噺宸茶璧嬪€硷紝浣嗕粠鏈娇鐢ㄨ繃瀹冪殑锟?
+#pragma warning disable CS0219 // 鍙橀噺宸茶璧嬪€硷紝浣嗕粠鏈娇鐢ㄨ繃瀹冪殑锟?
             bool isUnsign = false;
-#pragma warning restore CS0219 // 变量已被赋值，但从未使用过它的值
-            switch (eType)
+#pragma warning restore CS0219 // 鍙橀噺宸茶璧嬪€硷紝浣嗕粠鏈娇鐢ㄨ繃瀹冪殑锟?
+            switch (_rv.eType)
             {
                 case EVMType.Int32:
                 case EVMType.UInt32:
@@ -37,52 +37,52 @@ namespace SimpleLanguage.VM
                         {
                             case EVMType.UInt8:
                                 {
-                                    stringValue += sval.uint8Value.ToString();
+                                    _rv.stringValue += sval.uint8Value.ToString();
                                 }
                                 break;
                             case EVMType.Int8:
                                 {
-                                    stringValue += sval.int8Value.ToString();
+                                    _rv.stringValue += sval.int8Value.ToString();
                                 }
                                 break;
                             //case EVMType.Char:
                             //    {
-                            //        stringValue += sval.charValue.ToString();
+                            //        _rv.stringValue += sval.charValue.ToString();
                             //    }
                             //    break;
                             case EVMType.Int16:
                                 {
-                                    stringValue += sval.int16Value.ToString();
+                                    _rv.stringValue += sval.int16Value.ToString();
                                 }
                                 break;
                             case EVMType.UInt16:
                                 {
-                                    stringValue += sval.uint16Value.ToString();
+                                    _rv.stringValue += sval.uint16Value.ToString();
                                 }
                                 break;
                             case EVMType.Int32:
                                 {
-                                    stringValue += sval.int32Value.ToString();
+                                    _rv.stringValue += sval.int32Value.ToString();
                                 }
                                 break;
                             case EVMType.UInt32:
                                 {
-                                    stringValue += sval.uint32Value.ToString();
+                                    _rv.stringValue += sval.uint32Value.ToString();
                                 }
                                 break;
                             case EVMType.Int64:
                                 {
-                                    stringValue += sval.int64Value.ToString();
+                                    _rv.stringValue += sval.int64Value.ToString();
                                 }
                                 break;
                             case EVMType.UInt64:
                                 {
-                                    stringValue += sval.uint64Value.ToString();
+                                    _rv.stringValue += sval.uint64Value.ToString();
                                 }
                                 break;
                             case EVMType.String:
                                 {
-                                    stringValue += sval.stringValue;
+                                    _rv.stringValue += sval.stringValue;
                                 }
                                 break;
                         }
@@ -91,160 +91,160 @@ namespace SimpleLanguage.VM
             }
             switch (sval.eType)
             {
-                case EVMType.Int32: int32Value += sval.int32Value; break;
+                case EVMType.Int32: _rv.int32Value += sval.int32Value; break;
                 case EVMType.String:
                     {
-                        SetStringValue(int32Value.ToString() + sval.stringValue);
+                        _rv.SetStringValue(_rv.int32Value.ToString() + sval.stringValue);
                     }
                     break;
             }
         }       
-        public void SetInt8Compare(byte a, byte b, int compareSign, bool isOrEqual)
+        public static void SetInt8Compare(ref RuntimeValue _rv, byte a, byte b, int compareSign, bool isOrEqual)
         {
             if (compareSign == 0)
             {
-                SetBoolValue(a == b);
+                _rv.SetBoolValue(a == b);
 
             }
             else if (compareSign == 1)
             {
-                SetBoolValue(a != b);
+                _rv.SetBoolValue(a != b);
             }
             else if (compareSign == 2)
             {
                 if (isOrEqual)
                 {
-                    SetBoolValue(a >= b);
+                    _rv.SetBoolValue(a >= b);
                 }
                 else
                 {
-                    SetBoolValue(a > b);
+                    _rv.SetBoolValue(a > b);
                 }
             }
             else if (compareSign == 3)
             {
                 if (isOrEqual)
                 {
-                    SetBoolValue(a <= b);
+                    _rv.SetBoolValue(a <= b);
                 }
                 else
                 {
-                    SetBoolValue(a < b);
+                    _rv.SetBoolValue(a < b);
                 }
             }
         }
-        public void SetInt16Compare(short a, short b, int compareSign, bool isOrEqual)
+        public static void SetInt16Compare(ref RuntimeValue _rv, short a, short b, int compareSign, bool isOrEqual)
         {
             if (compareSign == 0)
             {
-                SetBoolValue(a == b);
+                _rv.SetBoolValue(a == b);
 
             }
             else if (compareSign == 1)
             {
-                SetBoolValue(a != b);
+                _rv.SetBoolValue(a != b);
             }
             else if (compareSign == 2)
             {
                 if (isOrEqual)
                 {
-                    SetBoolValue(a >= b);
+                    _rv.SetBoolValue(a >= b);
                 }
                 else
                 {
-                    SetBoolValue(a > b);
+                    _rv.SetBoolValue(a > b);
                 }
             }
             else if (compareSign == 3)
             {
                 if (isOrEqual)
                 {
-                    SetBoolValue(a <= b);
+                    _rv.SetBoolValue(a <= b);
                 }
                 else
                 {
-                    SetBoolValue(a < b);
+                    _rv.SetBoolValue(a < b);
                 }
             }
         }
-        public void SetInt32Compare(int a, int b, int compareSign, bool isOrEqual)
+        public static void SetInt32Compare(ref RuntimeValue _rv, int a, int b, int compareSign, bool isOrEqual)
         {
             if (compareSign == 0)
             {
-                SetBoolValue(a == b);
+                _rv.SetBoolValue(a == b);
 
             }
             else if (compareSign == 1)
             {
-                SetBoolValue(a != b);
+                _rv.SetBoolValue(a != b);
             }
             else if (compareSign == 2)
             {
                 if (isOrEqual)
                 {
-                    SetBoolValue(a >= b);
+                    _rv.SetBoolValue(a >= b);
                 }
                 else
                 {
-                    SetBoolValue(a > b);
+                    _rv.SetBoolValue(a > b);
                 }
             }
             else if (compareSign == 3)
             {
                 if (isOrEqual)
                 {
-                    SetBoolValue(a <= b);
+                    _rv.SetBoolValue(a <= b);
                 }
                 else
                 {
-                    SetBoolValue(a < b);
+                    _rv.SetBoolValue(a < b);
                 }
             }
         }
-        public void SetInt64Compare(long a, long b, int compareSign, bool isOrEqual)
+        public static void SetInt64Compare(ref RuntimeValue _rv, long a, long b, int compareSign, bool isOrEqual)
         {
             if (compareSign == 0)
             {
-                SetBoolValue(a == b);
+                _rv.SetBoolValue(a == b);
 
             }
             else if (compareSign == 1)
             {
-                SetBoolValue(a != b);
+                _rv.SetBoolValue(a != b);
             }
             else if (compareSign == 2)
             {
                 if (isOrEqual)
                 {
-                    SetBoolValue(a >= b);
+                    _rv.SetBoolValue(a >= b);
                 }
                 else
                 {
-                    SetBoolValue(a > b);
+                    _rv.SetBoolValue(a > b);
                 }
             }
             else if (compareSign == 3)
             {
                 if (isOrEqual)
                 {
-                    SetBoolValue(a <= b);
+                    _rv.SetBoolValue(a <= b);
                 }
                 else
                 {
-                    SetBoolValue(a < b);
+                    _rv.SetBoolValue(a < b);
                 }
             }
         }
 
-        /// <summary>与 SValueCompute 中算术 null 检测一致，用于 ==/!= 与数字混合时打 VMOperator 日志。</summary>
-        private static bool IsNullLikeForOperatorVmLog(ref SValue v)
+        /// <summary>锟?SValueCompute 涓畻锟?null 妫€娴嬩竴鑷达紝鐢ㄤ簬 ==/!= 涓庢暟瀛楁贩鍚堟椂锟?VMOperator 鏃ュ織锟?/summary>
+        private static bool IsNullLikeForOperatorVmLog(ref RuntimeValue v)
         {
             if (v.isNull || v.eType == EVMType.Null) return true;
             if (v.eType == EVMType.Object || v.eType == EVMType.Class) return v.sobject == null;
             return false;
         }
 
-        private static bool IsStrictNumericForOperatorVmLog(ref SValue v)
+        private static bool IsStrictNumericForOperatorVmLog(ref RuntimeValue v)
         {
             if (v.isNull || v.eType == EVMType.Null) return false;
             return IsNumericType(v.eType) || v.eType == EVMType.Num;
@@ -269,7 +269,7 @@ namespace SimpleLanguage.VM
                 || rc.name.EndsWith(".Member", StringComparison.Ordinal);
         }
 
-        private static void NormalizeObjectReferenceKindInPlace(ref SValue sval)
+        private static void NormalizeObjectReferenceKindInPlace(ref RuntimeValue sval)
         {
             if (sval.isNull || sval.sobject == null)
                 return;
@@ -288,7 +288,7 @@ namespace SimpleLanguage.VM
             return IsDataRuntimeType(rt) && rt.runtimeClass.isDynamicData;
         }
 
-        private static bool TryGetDataClassObject(ref SValue sval, out ClassObject dataObject)
+        private static bool TryGetDataClassObject(ref RuntimeValue sval, out ClassObject dataObject)
         {
             dataObject = null;
             if (sval.isNull)
@@ -310,7 +310,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        private static bool TryGetClassObject(ref SValue sval, out ClassObject classObject)
+        private static bool TryGetClassObject(ref RuntimeValue sval, out ClassObject classObject)
         {
             classObject = null;
             if (sval.isNull)
@@ -323,7 +323,7 @@ namespace SimpleLanguage.VM
             return classObject != null;
         }
 
-        private static bool TryGetEnumClassObject(ref SValue sval, out ClassObject enumObject)
+        private static bool TryGetEnumClassObject(ref RuntimeValue sval, out ClassObject enumObject)
         {
             enumObject = null;
             if (!TryGetClassObject(ref sval, out var co))
@@ -340,7 +340,7 @@ namespace SimpleLanguage.VM
             return false;
         }
 
-        private static bool TryReadEnumMemberValue(ClassObject enumMemberObject, ref SValue value)
+        private static bool TryReadEnumMemberValue(ClassObject enumMemberObject, ref RuntimeValue value)
         {
             if (enumMemberObject == null)
                 return false;
@@ -379,7 +379,7 @@ namespace SimpleLanguage.VM
                 || type == EVMType.Member;
         }
 
-        private static bool TryCompareReferenceWithoutClass(ref SValue sval1, ref SValue sval2, bool isEqual, out bool handled)
+        private static bool TryCompareReferenceWithoutClass(ref RuntimeValue sval1, ref RuntimeValue sval2, bool isEqual, out bool handled)
         {
             handled = false;
             if (!IsReferenceTypeForEquality(sval1.eType) && !IsReferenceTypeForEquality(sval2.eType))
@@ -401,7 +401,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        private static bool TryCompareEnumValue(ref SValue sval1, ref SValue sval2, bool isEqual)
+        private static bool TryCompareEnumValue(ref RuntimeValue sval1, ref RuntimeValue sval2, bool isEqual)
         {
             bool leftIsEnum = TryGetEnumClassObject(ref sval1, out var leftEnum);
             bool rightIsEnum = TryGetEnumClassObject(ref sval2, out var rightEnum);
@@ -417,8 +417,8 @@ namespace SimpleLanguage.VM
                 }
                 else
                 {
-                    SValue leftValue = default;
-                    SValue rightValue = default;
+                    RuntimeValue leftValue = default;
+                    RuntimeValue rightValue = default;
                     if (TryReadEnumMemberValue(leftEnum, ref leftValue)
                         && TryReadEnumMemberValue(rightEnum, ref rightValue))
                     {
@@ -431,7 +431,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        private static bool TryCompareDataValue(ref SValue sval1, ref SValue sval2, bool isEqual)
+        private static bool TryCompareDataValue(ref RuntimeValue sval1, ref RuntimeValue sval2, bool isEqual)
         {
             bool leftIsData = TryGetDataClassObject(ref sval1, out var leftData);
             bool rightIsData = TryGetDataClassObject(ref sval2, out var rightData);
@@ -475,7 +475,7 @@ namespace SimpleLanguage.VM
             RuntimeClass irc = co.runtimeClass;
             if (irc == null)
             {
-                Log.AddRuntimeLog(LID.ShowMessageError, "IRC是调用虚函数为空!!");
+                Log.AddRuntimeLog(LID.ShowMessageError, "IRC鏄皟鐢ㄨ櫄鍑芥暟涓虹┖!!");
                 return false;
             }
 
@@ -499,7 +499,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        private static bool TryCompareClassValue(ref SValue sval1, ref SValue sval2, bool isEqual, out bool methodCall)
+        private static bool TryCompareClassValue(ref RuntimeValue sval1, ref RuntimeValue sval2, bool isEqual, out bool methodCall)
         {
             methodCall = false;
             bool leftIsClass = TryGetClassObject(ref sval1, out var leftClass);
@@ -524,7 +524,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        private static bool TryCompareNumericValue(ref SValue sval1, ref SValue sval2, bool isEqual)
+        private static bool TryCompareNumericValue(ref RuntimeValue sval1, ref RuntimeValue sval2, bool isEqual)
         {
             if (!((IsNumericType(sval1.eType) || sval1.eType == EVMType.Num) && (IsNumericType(sval2.eType) || sval2.eType == EVMType.Num)))
                 return false;
@@ -542,14 +542,14 @@ namespace SimpleLanguage.VM
             bool useUnsigned = sval1.IsUnsignedType(sval1.eType) || sval2.IsUnsignedType(sval2.eType);
             if (useUnsigned)
             {
-                ulong a = sval1.ConvertToULong();
-                ulong b = sval2.ConvertToULong();
+                ulong a = RuntimeValueMethod.ConvertToULong(sval1);
+                ulong b = RuntimeValueMethod.ConvertToULong(sval2);
                 sval1.SetBoolValue(isEqual ? a == b : a != b);
                 return true;
             }
 
-            long la = sval1.ConvertToLong();
-            long lb = sval2.ConvertToLong();
+            long la = RuntimeValueMethod.ConvertToLong(sval1);
+            long lb = RuntimeValueMethod.ConvertToLong(sval2);
             sval1.SetBoolValue(isEqual ? la == lb : la != lb);
             return true;
         }
@@ -613,7 +613,7 @@ namespace SimpleLanguage.VM
             return IsDataMemberValuesEqual(leftData, rightData);
         }
 
-        private static bool IsSValueEqual(ref SValue left, ref SValue right)
+        private static bool IsSValueEqual(ref RuntimeValue left, ref RuntimeValue right)
         {
             var l = left;
             var r = right;
@@ -637,8 +637,8 @@ namespace SimpleLanguage.VM
 
             for (int i = 0; i < leftMembers.Count; i++)
             {
-                SValue lv = default;
-                SValue rv = default;
+                RuntimeValue lv = default;
+                RuntimeValue rv = default;
                 if (!leftData.TryReadMemberDataAsSValue(i, ref lv))
                     return false;
                 if (!rightData.TryReadMemberDataAsSValue(i, ref rv))
@@ -724,7 +724,7 @@ namespace SimpleLanguage.VM
         }
 
         // compareSign 0:== 1:!= 
-        public static void CompareEuqalSValue1AndValue2( ref SValue sval1, ref SValue sval2, bool isEqual, out bool methodCall )
+        public static void CompareEuqalSValue1AndValue2( ref RuntimeValue sval1, ref RuntimeValue sval2, bool isEqual, out bool methodCall )
         {
             methodCall = false;
 
@@ -780,7 +780,7 @@ namespace SimpleLanguage.VM
             }
 
             sval1.SetBoolValue(!isEqual);
-            Log.AddRuntimeLog(LID.ShowMessageError, "VM Compare SVAlue 比较的低码还没有完善!!");
+            Log.AddRuntimeLog(LID.ShowMessageError, "VM Compare RuntimeValue 姣旇緝鐨勪綆鐮佽繕娌℃湁瀹屽杽!!");
         }
 
         private static void TryInvertTopMethodBoolResult()
@@ -795,7 +795,7 @@ namespace SimpleLanguage.VM
             var cur = vm.GetCurrentIndexValue(topIndex);
             if (cur.eType == EVMType.Boolean)
             {
-                cur.NotSValue();
+                RuntimeValueMethod.NotSValue(ref cur);
             }
             else
             {
@@ -808,7 +808,7 @@ namespace SimpleLanguage.VM
 
 
         //0> 1:>= 2:< 3:<= 
-        public static void CompareSValue1AndValue2(ref SValue sval1, ref SValue sval2, int compareSign)
+        public static void CompareSValue1AndValue2(ref RuntimeValue sval1, ref RuntimeValue sval2, int compareSign)
         {
             sval1.TryNormalizeObjectScalarInPlace();
             sval2.TryNormalizeObjectScalarInPlace();
@@ -854,8 +854,8 @@ namespace SimpleLanguage.VM
                 bool useUnsigned = sval1.IsUnsignedType(sval1.eType) || sval2.IsUnsignedType(sval2.eType);
                 if (useUnsigned)
                 {
-                    ulong a = sval1.ConvertToULong();
-                    ulong b = sval2.ConvertToULong();
+                    ulong a = RuntimeValueMethod.ConvertToULong(sval1);
+                    ulong b = RuntimeValueMethod.ConvertToULong(sval2);
                     switch (compareSign)
                     {
                         case 0: sval1.SetBoolValue(a > b); break;
@@ -866,8 +866,8 @@ namespace SimpleLanguage.VM
                     return;
                 }
 
-                long la = sval1.ConvertToLong();
-                long lb = sval2.ConvertToLong();
+                long la = RuntimeValueMethod.ConvertToLong(sval1);
+                long lb = RuntimeValueMethod.ConvertToLong(sval2);
                 switch (compareSign)
                 {
                     case 0: sval1.SetBoolValue(la > lb); break;
@@ -901,7 +901,7 @@ namespace SimpleLanguage.VM
         }
 
         // logical && and || on truthiness
-        private static bool TryRunClassLogicalOperator(ref SValue left, ref SValue right, string opName)
+        private static bool TryRunClassLogicalOperator(ref RuntimeValue left, ref RuntimeValue right, string opName)
         {
             if (left.eType != EVMType.Class || left.sobject is not ClassObject co)
                 return false;
@@ -914,7 +914,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        public static void LogicalAnd(ref SValue left, ref SValue right, out bool methodCall)
+        public static void LogicalAnd(ref RuntimeValue left, ref RuntimeValue right, out bool methodCall)
         {
             methodCall = TryRunClassLogicalOperator(ref left, ref right, "_and_");
             if (methodCall)
@@ -925,12 +925,12 @@ namespace SimpleLanguage.VM
             left.SetBoolValue(a && b);
         }
 
-        public static void LogicalAnd(ref SValue left, ref SValue right)
+        public static void LogicalAnd(ref RuntimeValue left, ref RuntimeValue right)
         {
             LogicalAnd(ref left, ref right, out _);
         }
 
-        public static void LogicalOr(ref SValue left, ref SValue right, out bool methodCall)
+        public static void LogicalOr(ref RuntimeValue left, ref RuntimeValue right, out bool methodCall)
         {
             methodCall = TryRunClassLogicalOperator(ref left, ref right, "_or_");
             if (methodCall)
@@ -941,11 +941,11 @@ namespace SimpleLanguage.VM
             left.SetBoolValue(a || b);
         }
 
-        public static void LogicalOr(ref SValue left, ref SValue right)
+        public static void LogicalOr(ref RuntimeValue left, ref RuntimeValue right)
         {
             LogicalOr(ref left, ref right, out _);
         }
-        public static bool IsTruthy(ref SValue v)
+        public static bool IsTruthy(ref RuntimeValue v)
         {
             v.TryNormalizeObjectScalarInPlace();
 

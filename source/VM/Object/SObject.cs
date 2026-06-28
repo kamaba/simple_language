@@ -29,9 +29,9 @@ namespace SimpleLanguage.VM
         protected int m_Id = 0;
         protected EVMType m_Type = EVMType.Class;
         protected RuntimeType? m_RuntimeType = null;
-        /// <summary>标量位型数据（布尔用 <see cref="NumericUnion.i8"/> 0/1，与 <see cref="SValue"/> 一致）。</summary>
+        /// <summary>标量位型数据（布尔用 <see cref="NumericUnion.i8"/> 0/1，与 <see cref="RuntimeValue"/> 一致）�?/summary>
         protected NumericUnion m_Numeric;
-        /// <summary>引用型负载：字符串、类实例、MethodHandle 等。</summary>
+        /// <summary>引用型负载：字符串、类实例、MethodHandle 等�?/summary>
         protected object? m_Reference;
 
         protected static int idCount = 10000;
@@ -83,7 +83,7 @@ namespace SimpleLanguage.VM
             }
         }
 
-        /// <summary>写入类型与负载（不修改 <see cref="refCount"/>）。</summary>
+        /// <summary>写入类型与负载（不修�?<see cref="refCount"/>）�?/summary>
         protected void StoreValue(EVMType vmType, object? val)
         {
             m_Type = vmType;

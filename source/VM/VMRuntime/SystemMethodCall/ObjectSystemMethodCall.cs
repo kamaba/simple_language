@@ -21,7 +21,7 @@ namespace SimpleLanguage.VM.Runtime
             SObject? sobj = a.GetReferenceSObject(createStringRef: true);
             RuntimeType? rt = sobj?.runtimeType ?? RuntimeTypeManager.GetRuntimeTypeByEVMType(a.eType) ?? RuntimeTypeManager.objectRuntimeType;
             var tobj = RuntimeTypeManager.CreateTypeObject(rt);
-            var sv = default(SValue);
+            var sv = default(RuntimeValue);
             sv.SetValueBySObject(tobj);
             vm.PushSValueSynced(sv);
         }
@@ -50,7 +50,7 @@ namespace SimpleLanguage.VM.Runtime
                 hash = a.GetValueObject()?.GetHashCode() ?? 0;
             }
 
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetInt32Value(hash);
             vm.PushSValueSynced(outv);
         }
@@ -67,7 +67,7 @@ namespace SimpleLanguage.VM.Runtime
 
         /// <summary>
         /// Strong ref: <see cref="ManualMemory.Retain"/> (ties to <see cref="SObject.refCount"/>).
-        /// Weak ref: no retain â€” object remains subject to SL GC like Dart weak references.
+        /// Weak ref: no retain â€?object remains subject to SL GC like Dart weak references.
         /// </summary>
         private static void ExecuteSystemObjectRefCore(RuntimeVM vm, SLSystemMethodCallPackage sysPkg, bool retainForStrongRef)
         {
@@ -81,13 +81,13 @@ namespace SimpleLanguage.VM.Runtime
             var a = args[0];
             if (a.isNull)
             {
-                var nz = default(SValue);
+                var nz = default(RuntimeValue);
                 nz.SetNull();
                 vm.PushSValueSynced(nz);
                 return;
             }
 
-            var sv = default(SValue);
+            var sv = default(RuntimeValue);
             var sobj = a.GetReferenceSObject(createStringRef: true);
             if (sobj == null)
             {
@@ -119,7 +119,7 @@ namespace SimpleLanguage.VM.Runtime
                 count = a.sobject.refCount;
             }
 
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetInt32Value(count);
             vm.PushSValueSynced(outv);
         }
@@ -166,7 +166,7 @@ namespace SimpleLanguage.VM.Runtime
             }
 
             bool eq = SystemBuiltinEqualObject(ref args[0], ref args[1]);
-            var outv = default(SValue);
+            var outv = default(RuntimeValue);
             outv.SetBoolValue(eq);
             vm.PushSValueSynced(outv);
         }
@@ -183,7 +183,7 @@ namespace SimpleLanguage.VM.Runtime
             var arrObj = args[0].sobject as ArrayObject;
             if (arrObj == null)
             {
-                var nz = default(SValue);
+                var nz = default(RuntimeValue);
                 nz.SetNull();
                 vm.PushSValueSynced(nz);
                 return;
@@ -193,7 +193,7 @@ namespace SimpleLanguage.VM.Runtime
             try { index = Convert.ToInt32(args[1].GetValueObject(), CultureInfo.InvariantCulture); }
             catch { index = 0; }
 
-            var sv = default(SValue);
+            var sv = default(RuntimeValue);
             arrObj.LoadValue(index, ref sv );
             vm.PushSValueSynced(sv);
         }
@@ -229,7 +229,7 @@ namespace SimpleLanguage.VM.Runtime
         }
 
         /// <summary>Fast object equality for system builtin <see cref="ESystemMethodCall.SystemEqualObject"/>.</summary>
-        private static bool SystemBuiltinEqualObject(ref SValue a, ref SValue b)
+        private static bool SystemBuiltinEqualObject(ref RuntimeValue a, ref RuntimeValue b)
         {
             if (a.isNull && b.isNull) return true;
             if (a.isNull || b.isNull) return false;

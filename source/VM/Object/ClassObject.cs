@@ -1,4 +1,4 @@
-ï»¿//****************************************************************************
+//****************************************************************************
 //  File:      ClassObject.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -18,7 +18,7 @@ namespace SimpleLanguage.VM
         protected List<RuntimeType> m_IRTemplateList = new List<RuntimeType>();
         protected byte[] m_MemberData = null;
 
-        /// <summary>å®ä¾‹å­—æ®µç´§å‡‘å¸ƒå±€ï¼ˆé™æ€å­—æ®µè§ <see cref="RuntimeType.memberData"/>ï¼‰ã€‚</summary>
+        /// <summary>ÊµÀı×Ö¶Î½ô´Õ²¼¾Ö£¨¾²Ì¬×Ö¶Î¼û <see cref="RuntimeType.memberData"/>£©¡£</summary>
         public byte[]? memberData => m_MemberData;
 
         protected ClassObject() { }
@@ -43,19 +43,19 @@ namespace SimpleLanguage.VM
         }
         public virtual void CreateObject() { }
 
-        /// <summary>å®ä¾‹æˆå‘˜ä¸ IR éé™æ€å­—æ®µé¡ºåºä¸€è‡´ï¼Œä½¿ç”¨ä¸ <see cref="RuntimeClass.nonStaticIRMetaVariableList"/> ç›¸åŒçš„ä¸‹æ ‡ã€‚</summary>
+        /// <summary>ÊµÀı³ÉÔ±Óë IR ·Ç¾²Ì¬×Ö¶ÎË³ĞòÒ»ÖÂ£¬Ê¹ÓÃÓë <see cref="RuntimeClass.nonStaticIRMetaVariableList"/> ÏàÍ¬µÄÏÂ±ê¡£</summary>
         public RuntimeObject? GetMemberRuntimeObject(int memberIndex)
         {
             if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)
                 return null;
             return m_MemberRuntimeObjectArray[memberIndex];
         }
-        /// <summary>æŒ‰æˆå‘˜ä¸‹æ ‡ä» <see cref="memberData"/> è§£æåˆ° <paramref name="svalue"/>ï¼ˆå¼•ç”¨å‹æ§½ä½ä¸ºå¯¹è±¡æŒ‡é’ˆ Idï¼Œè§ RuntimeObjectï¼‰ã€‚</summary>
-        public bool TryReadMemberDataAsSValue(int memberIndex, ref SValue svalue)
+        /// <summary>°´³ÉÔ±ÏÂ±ê´Ó <see cref="memberData"/> ½âÎöµ½ <paramref name="RuntimeValue"/>£¨ÒıÓÃĞÍ²ÛÎ»Îª¶ÔÏóÖ¸Õë Id£¬¼û RuntimeObject£©¡£</summary>
+        public bool TryReadMemberDataAsSValue(int memberIndex, ref RuntimeValue RuntimeValue)
         {
             if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)
                 return false;
-            return m_MemberRuntimeObjectArray[memberIndex].TryReadMemberDataToSValue(ref svalue);
+            return m_MemberRuntimeObjectArray[memberIndex].TryReadMemberDataToSValue(ref RuntimeValue);
         }
         protected void BuildMemberDataLayout()
         {
@@ -88,36 +88,36 @@ namespace SimpleLanguage.VM
             //m_IsNull = m_Object == null;
             val.refCount++;
         }
-        /// <summary>ä»å®ä¾‹æˆå‘˜è¯»å–åˆ° <paramref name="svalue"/>ï¼›ä¸ <see cref="m_MemberData"/> ä¸€è‡´ï¼ˆåŒ <see cref="RuntimeType.GetStaticMemberVariableSValue"/> é™æ€ä¾§ï¼‰ã€‚</summary>
-        public void GetMemberVariableSValue( int index, ref SValue svalue )
+        /// <summary>´ÓÊµÀı³ÉÔ±¶ÁÈ¡µ½ <paramref name="RuntimeValue"/>£»Óë <see cref="m_MemberData"/> Ò»ÖÂ£¨Í¬ <see cref="RuntimeType.GetStaticMemberVariableSValue"/> ¾²Ì¬²à£©¡£</summary>
+        public void GetMemberVariableSValue( int index, ref RuntimeValue RuntimeValue )
         {
             if (index < 0 )
             {
-                Log.AddRuntimeLog(LID.ShowMessageAssert, "æ‰§è¡Œçš„å‚æ•°è¶…å‡ºèŒƒå›´!! < 0 ");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "Ö´ĞĞµÄ²ÎÊı³¬³ö·¶Î§!! < 0 ");
                 return;
             }
             if (m_MemberRuntimeObjectArray == null || index >= m_MemberRuntimeObjectArray.Length)
             {
-                Log.AddRuntimeLog(LID.ShowMessageAssert, "æ‰§è¡Œçš„å‚æ•°è¶…å‡ºèŒƒå›´!!");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "Ö´ĞĞµÄ²ÎÊı³¬³ö·¶Î§!!");
                 return;
             }
-            m_MemberRuntimeObjectArray[index].SetSValueByRuntimeObjct(ref svalue);
+            m_MemberRuntimeObjectArray[index].SetSValueByRuntimeObjct(ref RuntimeValue);
         }
-        /// <summary>å®ä¾‹æˆå‘˜å†™ç»Ÿä¸€å…¥å£ï¼ŒåŒæ­¥ <see cref="m_MemberData"/>ï¼ˆåŒ <see cref="RuntimeType.SetStaticMemberVariableSValue"/> é™æ€ä¾§ï¼‰ã€‚</summary>
-        public void SetMemberVariableSValue( int index, SValue svalue)
+        /// <summary>ÊµÀı³ÉÔ±Ğ´Í³Ò»Èë¿Ú£¬Í¬²½ <see cref="m_MemberData"/>£¨Í¬ <see cref="RuntimeType.SetStaticMemberVariableSValue"/> ¾²Ì¬²à£©¡£</summary>
+        public void SetMemberVariableSValue( int index, RuntimeValue RuntimeValue)
         {
             if (m_MemberRuntimeObjectArray == null || index < 0 || index >= m_MemberRuntimeObjectArray.Length)
             {
-                Log.AddRuntimeLog(LID.ShowMessageAssert, "æ‰§è¡Œçš„å‚æ•°è¶…å‡ºèŒƒå›´!!");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "Ö´ĞĞµÄ²ÎÊı³¬³ö·¶Î§!!");
                 return;
             }
 
-            int targetIndex = ResolveCompatibleMemberIndex(index, ref svalue);
-            m_MemberRuntimeObjectArray[targetIndex].SetSObjectBySValue(ref svalue);
+            int targetIndex = ResolveCompatibleMemberIndex(index, ref RuntimeValue);
+            m_MemberRuntimeObjectArray[targetIndex].SetSObjectBySValue(ref RuntimeValue);
 
         }
 
-        private int ResolveCompatibleMemberIndex(int preferIndex, ref SValue svalue)
+        private int ResolveCompatibleMemberIndex(int preferIndex, ref RuntimeValue RuntimeValue)
         {
             if (m_RuntimeType?.runtimeClass?.metaClassKind != 2)
                 return preferIndex;
@@ -126,7 +126,7 @@ namespace SimpleLanguage.VM
                 return preferIndex;
 
             var preferRuntimeType = m_MemberRuntimeObjectArray[preferIndex]?.runtimeType;
-            if (IsValueCompatibleWithRuntimeType(ref svalue, preferRuntimeType))
+            if (IsValueCompatibleWithRuntimeType(ref RuntimeValue, preferRuntimeType))
                 return preferIndex;
 
             for (int i = 0; i < m_MemberRuntimeObjectArray.Length; i++)
@@ -135,29 +135,29 @@ namespace SimpleLanguage.VM
                     continue;
 
                 var candidateType = m_MemberRuntimeObjectArray[i]?.runtimeType;
-                if (IsValueCompatibleWithRuntimeType(ref svalue, candidateType))
+                if (IsValueCompatibleWithRuntimeType(ref RuntimeValue, candidateType))
                     return i;
             }
 
             return preferIndex;
         }
 
-        private static bool IsValueCompatibleWithRuntimeType(ref SValue svalue, RuntimeType? expectedType)
+        private static bool IsValueCompatibleWithRuntimeType(ref RuntimeValue RuntimeValue, RuntimeType? expectedType)
         {
             if (expectedType == null)
                 return false;
 
-            if (svalue.isNull)
+            if (RuntimeValue.isNull)
                 return true;
 
             if (expectedType.runtimeClass?.metaClassKind == 2)
-                return svalue.sobject is ClassObject;
+                return RuntimeValue.sobject is ClassObject;
 
             if (expectedType.eType == EVMType.Array)
-                return svalue.sobject is ArrayObject || svalue.eType == EVMType.Array;
+                return RuntimeValue.sobject is ArrayObject || RuntimeValue.eType == EVMType.Array;
 
             if (expectedType.eType == EVMType.String)
-                return svalue.eType == EVMType.String || svalue.sobject is StringObject;
+                return RuntimeValue.eType == EVMType.String || RuntimeValue.sobject is StringObject;
 
             return true;
         }

@@ -62,27 +62,27 @@ namespace SimpleLanguage.VM.Runtime
         {
             return m_ClrRuntimeStack.Pop();
         }
-        //public static void GetStaticVariable( RuntimeType rt, int index, ref SValue val)
+        //public static void GetStaticVariable( RuntimeType rt, int index, ref RuntimeValue val)
         //{
         //    if(staticClassObjectDict.ContainsKey(irmc.id) == false )
         //    {
-        //        Log.AddVM(LID.Unknown, "GetStaticVariable 娌℃湁鎵惧埌鐩稿綋鐨勯潤鎬佺被");
+        //        Log.AddVM(LID.Unknown, "GetStaticVariable 娌℃湁鎵惧埌鐩稿綋鐨勯潤鎬佺�?);
         //        return;
         //    }
         //    ClassObject sobj = staticClassObjectDict[irmc.id];
 
         //    sobj.GetMemberVariableSValue(index, ref val); 
         //}
-        //public static void SetStaticVariable( IRMetaClass irmc, int index, ref SValue svalue)
+        //public static void SetStaticVariable( IRMetaClass irmc, int index, ref RuntimeValue RuntimeValue)
         //{
         //    if (staticClassObjectDict.ContainsKey(irmc.id) == false)
         //    {
-        //        Log.AddVM(LID.Unknown, "SetStaticVariable 娌℃湁鎵惧埌鐩稿綋鐨勯潤鎬佺被");
+        //        Log.AddVM(LID.Unknown, "SetStaticVariable 娌℃湁鎵惧埌鐩稿綋鐨勯潤鎬佺�?);
         //        return;
         //    }
         //    ClassObject sobj = staticClassObjectDict[irmc.id];
 
-        //    sobj.SetMemberVariableSValue(index, svalue );
+        //    sobj.SetMemberVariableSValue(index, RuntimeValue );
         //}
         public static void Init()
         {
@@ -153,7 +153,7 @@ namespace SimpleLanguage.VM.Runtime
             m_GlobalInitInstructionList = instructionList ?? new List<Instruction>();
             m_IsGlobalInitApplied = false;
         }
-        public static void StoreGlobalVariable( uint id, ref SValue savl )
+        public static void StoreGlobalVariable( uint id, ref RuntimeValue savl )
         {
             if (m_GlobalVariableDict.ContainsKey(id))
             {
@@ -161,7 +161,7 @@ namespace SimpleLanguage.VM.Runtime
                 var rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(slot.runtimeDefType);
                 if (rt != null)
                 {
-                    rt.SetStaticMemberVariableSValue((int)id, savl);
+                    rt.SetStaticMemberVariableSValue((int)id, ref savl);
                 }
                 else
                 {
@@ -174,7 +174,7 @@ namespace SimpleLanguage.VM.Runtime
             }
 
         }
-        public static void LoadGlobalVariable( uint id, ref SValue sval )
+        public static void LoadGlobalVariable( uint id, ref RuntimeValue sval )
         {
             if (m_GlobalVariableDict.ContainsKey(id))
             {
