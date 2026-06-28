@@ -425,7 +425,7 @@ ExpressTest
     {
         global.println("----- complexNestedExpressionTest -----")
 
-        #!
+        
         int a = 10
         int b = 20
         int c = 30
@@ -437,11 +437,11 @@ ExpressTest
         
         int nested = ((a + b) * (c - a)) / (b / 2) + (a % b)
         global.println("nested arithmetic = " + nested.toString())
-        !#
+        
         Level<int>.st = 100
         Level<short>.st = 200s
         condition2 = Level<int>.st < 10 || Level<short>.st > 20
-        global.println("complex2 bool expression = " + condition2.toString())
+        global.println("complex2 ${Level<int>.st} < 10 || $Level<short>.st > 20 bool expression = " + condition2.toString())
     }
 
     static classMemberInitTest()

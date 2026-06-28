@@ -98,19 +98,6 @@ namespace SimpleLanguage.VM
             ra.AddModule(rm);
             return rm;
         }
-
-        public RuntimeModule BuildMetaFromCLR(RuntimeModule rm)
-        {
-            throw new NotSupportedException("CLR reflection Type is not used for SimpleLanguage. Use SLModulePackageLoader to import SimpleLanguage module metadata into VM.");
-        }
-
-        // Build metadata from SimpleLanguage internal type system (not CLR reflection).
-        // Front-end should export module/type/method graph into SLModulePackage and VM imports it.
-        public RuntimeModule BuildMetaFromSimpleLanguage(RuntimeModule rm)
-        {
-            throw new NotSupportedException("Use SLModulePackageLoader to import SimpleLanguage module metadata into VM.");
-        }
-
         private static Module ChooseModule(Assembly asm, string moduleName)
         {
             if (asm == null) return null;
@@ -120,7 +107,5 @@ namespace SimpleLanguage.VM
             return modules.FirstOrDefault(m => string.Equals(m.Name, moduleName, StringComparison.OrdinalIgnoreCase))
                    ?? asm.ManifestModule;
         }
-
-        private static MethodBody SafeGetMethodBody(MethodInfo mi) => mi?.GetMethodBody();
     }
 }

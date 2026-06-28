@@ -39,6 +39,7 @@ namespace SimpleLanguage.VM
         private byte[]? m_MemberDataBuffer = null;
         private EVMType m_ObjectActualType = EVMType.Null;
 
+
         public RuntimeObject( RuntimeType rt, RuntimeVariable rv, SObject sobj )
         {
             m_RuntimeVariable = rv;

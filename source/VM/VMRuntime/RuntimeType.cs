@@ -24,13 +24,11 @@ namespace SimpleLanguage.VM
         public int id => m_Id;
         public RuntimeClass runtimeClass => m_RuntimeClass;
         public List<RuntimeType> runtimeTemplateList => m_RuntimeTemplateList;
-        /// <summary>本类型静态成员的紧凑字节块（与实�?<see cref="ClassObject"/> 上逻辑一致）�?/summary>
         public byte[]? memberData => m_MemberData;
 
         private RuntimeClass m_RuntimeClass = null;
         private List<RuntimeType> m_RuntimeTemplateList = new List<RuntimeType>();
         private RuntimeObject[] m_StaticMemberRuntimeObjectArray = null;
-        /// <summary>静态字段紧凑布局缓冲区，�?<see cref="m_StaticMemberRuntimeObjectArray"/> 下标一一对应（空槽不占字节）�?/summary>
         private byte[] m_MemberData = null;
         private bool m_IsStaticExprBatchApplying = false;
         private int m_Id = 0;
@@ -331,6 +329,7 @@ namespace SimpleLanguage.VM
                 {
                     var vm = CLRVM.CreateExeSplite($"__static_field_init__{m_RuntimeClass.name}", this.runtimeTemplateList, initIR);
                     //vm.isPersistent = true;
+                    vm.SetCurrentRuntimeType(this);
                     vm.Run(true);
                     CLRVM.PopCLRRuntime();
                 }

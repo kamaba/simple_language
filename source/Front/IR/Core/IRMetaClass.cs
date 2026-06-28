@@ -579,7 +579,7 @@ namespace SimpleLanguage.IR
                 IRData irdata2 = new IRData();
                 irdata2.id = list.Count;
                 // store static field: opValue carries the field type
-                irdata2.opValue = irmt;
+                irdata2.opValue = "self";
                 irdata2.opCode = EIROpCode.StoreStaticField;
                 irdata2.index = v.index;
                 irdata2.debugStaticOwnerIrName = this.irName;

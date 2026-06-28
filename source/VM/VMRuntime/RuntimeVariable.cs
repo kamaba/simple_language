@@ -24,5 +24,6 @@ namespace SimpleLanguage.VM
             this.m_Name = name ?? string.Empty;
             this.m_DebugInfo = debugInfo;
         }
+
     }
 }

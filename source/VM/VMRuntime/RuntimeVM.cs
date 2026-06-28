@@ -7,18 +7,19 @@
 //****************************************************************************
 
 using SimpleLanguage.Logging;
-using System.Runtime.CompilerServices;
-using System.Reflection;
-using SimpleLanuageVM.Load;
 using SimpleLanguage.Parse;
-using System.Globalization;
 using SimpleLanguage.VM.MemoryManagement;
-using System.Text.Unicode;
+using SimpleLanuageVM.Load;
+using System.Data;
+using System.Globalization;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.Unicode;
 
 namespace SimpleLanguage.VM.Runtime
 {
-    public unsafe class RuntimeVM
+    public class RuntimeVM
     {
         public RuntimeObject[] returnRuntimeObjectArray { get => m_ReturnRuntimeObjectArray; }
         public ushort valueIndex => m_ValueIndex;
@@ -87,56 +88,33 @@ namespace SimpleLanguage.VM.Runtime
                 m_ReturnRuntimeObjectArray = new RuntimeObject[m_Method.methodReturnVariableList.Count];
                 for (int i = 0; i < m_Method.methodReturnVariableList.Count; i++)
                 {
-                    RuntimeDefType imt = m_Method.methodReturnVariableList[i].runtimeDefType;
-                    //SObject sobj = imt != null
-                    //    ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
-                    //    : new SObject(EVMType.Object);
-                    RuntimeType rt = ResolveRuntimeTypeForInit(imt);
-                    m_ReturnRuntimeObjectArray[i] = new RuntimeObject(rt, m_Method.methodReturnVariableList[i], null);
+                    m_ReturnRuntimeObjectArray[i] = CreateRuntimeObject(m_Method.methodReturnVariableList[i], null);
                 }
 
                 m_ArgumentRuntimeObjectArray = new RuntimeObject[m_Method.methodArgumentList.Count];
                 for (int i = 0; i < m_Method.methodArgumentList.Count; i++)
                 {
-                    RuntimeDefType imt = m_Method.methodArgumentList[i].runtimeDefType;
-                    //// Enum-typed parameters use a generic any-object slot (not ClassObject for the enum type).
-                    //SObject sobj = null;
-                    //if (IsEnumDeclaredParameterType(imt))
-                    //{
-                    //    sobj = new SObject(EVMType.Object);
-                    //}
-                    //else
-                    //{
-
-                    //    sobj = imt != null
-                    //        ? CreateObjectByIRMetaType(imt, imt.ownerRuntimeClass, true)
-                    //        : new SObject(EVMType.Object);
-                    //}
-                    RuntimeType rt = ResolveRuntimeTypeForInit(imt);
-                    m_ArgumentRuntimeObjectArray[i] = new RuntimeObject(rt, m_Method.methodArgumentList[i], null);
+                    m_ArgumentRuntimeObjectArray[i] = CreateRuntimeObject(m_Method.methodArgumentList[i], null);
                 }
+#if DEBUG
                 for (int i = 0; i < m_ArgumentRuntimeObjectArray.Length; i++)
                 {
                     Log.AddRuntimeLog(LID.ShowMessageInfo, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentRuntimeObjectArray[i]?.ToString() + "]");
                 }
+#endif
 
                 //灞€閮ㄥ彉閲忓垪�?local variable table
                 m_LocalVariableRuntimeObjectArray = new RuntimeObject[m_Method.methodLocalVariableList.Count];
                 for (int i = 0; i < m_Method.methodLocalVariableList.Count; i++)
                 {
-                    var mev = m_Method.methodLocalVariableList[i];
-                    RuntimeDefType imt = mev.runtimeDefType;
-                    //杩欏潡锛岄渶瑕侊紝濡傛灉鏄ā鏉跨被锛屽厛妫€鏌ユ槸鍚︽湁杈撳叆鐨勬ā鏉跨被鍨嬪垪琛紝濡傛灉鏈夛紝鐩存帴鐢ㄨ緭鍏ョ殑妯℃澘绫诲瀷鍒楄〃鍒涘缓瀵硅薄锛屽鏋滄病鏈夛紝鍐嶇敤imt鍒涘缓瀵硅�?
-                    //SObject sobj = imt != null
-                    //    ? CreateObjectByIRMetaType(imt, m_Method.ownerMetaClass, true)
-                    //    : new SObject(EVMType.Object);
-                    RuntimeType rt = ResolveRuntimeTypeForInit(imt);
-                    m_LocalVariableRuntimeObjectArray[i] = new RuntimeObject(rt, m_Method.methodLocalVariableList[i], null); ;
+                    m_LocalVariableRuntimeObjectArray[i] = CreateRuntimeObject(m_Method.methodLocalVariableList[i], null);
                 }
+#if DEBUG
                 for (int i = 0; i < m_LocalVariableRuntimeObjectArray.Length; i++)
                 {
                     Log.AddRuntimeLog(LID.ShowMessageInfo, "Variable_" + i.ToString() + m_LocalVariableRuntimeObjectArray[i].ToString());
                 }
+#endif
             }
 
             else
@@ -173,27 +151,21 @@ namespace SimpleLanguage.VM.Runtime
 
             SlMemoryManager.Instance.RegisterVmForRootCollection(this);
         }
-
-        private RuntimeType ResolveRuntimeTypeForInit(RuntimeDefType? defType)
+        public RuntimeObject CreateRuntimeObject(RuntimeVariable rv, SObject sobj)
         {
-            if (defType == null)
-            {
-                return RuntimeTypeManager.objectRuntimeType;
-            }
+            RuntimeType rt = null;
 
-            var ownerClass = m_Method?.ownerMetaClass ?? defType.ownerRuntimeClass;
+            var ownerClass = m_Method?.ownerMetaClass ?? rv.runtimeDefType.ownerRuntimeClass;
             if (ownerClass != null && m_CurrentRuntimeType?.runtimeTemplateList != null && m_CurrentRuntimeType?.runtimeTemplateList.Count > 0)
             {
-                var templateRt = GetRuntimeTypeByDefType(defType, ownerClass, m_CurrentRuntimeType.runtimeTemplateList, true);
-                if (templateRt != null)
-                {
-                    return templateRt;
-                }
+                rt = GetRuntimeTypeByDefType(rv.runtimeDefType, ownerClass, m_CurrentRuntimeType.runtimeTemplateList, true);                
             }
-
-            return RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(defType);
+            else
+            {
+                rt = RuntimeTypeManager.GetRuntimeTypeByDefTypeAndAdd(rv.runtimeDefType);
+            }
+            return new RuntimeObject(rt, rv, sobj);
         }
-
         public void SetValueIndex(int vindex) => m_ValueIndex = (ushort)vindex;
         /// <summary>GC roots: value stack and argument/local/return runtime object slots.</summary>
         internal void AppendSlMemoryRoots(HashSet<SObject> roots)
@@ -226,7 +198,6 @@ namespace SimpleLanguage.VM.Runtime
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PushSValueSynced(in RuntimeValue v)
         {
-            if (m_ValueStack == null) m_ValueStack = new RuntimeValue[1024];
             if (m_ValueIndex >= m_ValueStack.Length) return;
             m_ValueStack[m_ValueIndex++] = v;
 #if DEBUG
@@ -236,7 +207,6 @@ namespace SimpleLanguage.VM.Runtime
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryPushStackSlot(out int slotIndex)
         {
-            if (m_ValueStack == null) m_ValueStack = new RuntimeValue[1024];
             if (m_ValueIndex >= m_ValueStack.Length)
             {
                 slotIndex = -1;
@@ -282,12 +252,6 @@ namespace SimpleLanguage.VM.Runtime
                 return rt;
             }
         }
-        public SObject CreateObjectByIRMetaType(RuntimeDefType irmt, RuntimeClass curIrMc, bool isAdd = false)
-        {
-            if (irmt == null) return new SObject(EVMType.Object);
-            var rtbd = GetRuntimeTypeByDefType(irmt, curIrMc, m_CurrentRuntimeType.runtimeTemplateList, isAdd);
-            return ObjectManager.CreateObjectByRuntimeType(rtbd, false);
-        }
         public void AddReturnObjectArray(RuntimeObject[] sobjs)
         {
             //m_ReturnObjectArray = sobjs;
@@ -317,11 +281,18 @@ namespace SimpleLanguage.VM.Runtime
         {
             return m_ValueStack[index];
         }
+        public void SetCurrentRuntimeType( RuntimeType rt )
+        {
+            m_CurrentRuntimeType = rt;
+        }
         public void SetNewObject()
         {
             RuntimeValue sval = CLRVM.topCLRRuntime.GetCurrentIndexValue(CLRVM.topCLRRuntime.m_ValueIndex - 1);
             m_ValueStack[m_ValueIndex++] = sval;
-            m_CurrentRuntimeType = sval.sobject.runtimeType;
+            if( sval.sobject != null )
+            {
+                m_CurrentRuntimeType = sval.sobject.runtimeType;
+            }
         }
         public void ClearNewObject()
         {
@@ -2662,62 +2633,5 @@ namespace SimpleLanguage.VM.Runtime
             left = m_ValueStack[--m_ValueIndex];
             return true;
         }
-        public void SetObjectByValue(int type, uint index, ref RuntimeValue RuntimeValue)
-        {
-
-            RuntimeObject[]? targetArray = type switch
-            {
-                0 => m_ArgumentRuntimeObjectArray,
-                1 => m_LocalVariableRuntimeObjectArray,
-                2 => m_ReturnRuntimeObjectArray,
-                _ => null,
-            };
-
-            if (targetArray == null || index >= targetArray.Length)
-            {
-                Log.AddRuntimeLog(LID.ShowMessageAssert, " runtime object is null for type " + type + " index " + index);
-                return;
-            }
-
-            var robj = targetArray[index];
-            if (robj == null)
-            {
-                Log.AddRuntimeLog(LID.ShowMessageAssert, " runtime object is null for type " + type + " index " + index);
-                return;
-            }
-
-            if (RuntimeValue.isNull)
-            {
-                robj.SetNull();
-                return;
-            }
-
-            //var valueToSet = RuntimeValue;
-            RuntimeValue.TryCoerceScalarForAssignment(robj.eType);
-
-            bool targetUnsigned32OrLess = robj.eType == EVMType.UInt8
-                || robj.eType == EVMType.UInt16
-                || robj.eType == EVMType.UInt32;
-            if (targetUnsigned32OrLess)
-            {
-                bool sourceIsNegativeSigned = (RuntimeValue.eType == EVMType.Int8 && RuntimeValue.int8Value < 0)
-                    || (RuntimeValue.eType == EVMType.Int16 && RuntimeValue.int16Value < 0)
-                    || (RuntimeValue.eType == EVMType.Int32 && RuntimeValue.int32Value < 0);
-                if (sourceIsNegativeSigned)
-                {
-                    Log.AddRuntimeLog(LID.ShowMessageAssert,
-                        $"不能将负值写入无符号类型: target={robj.eType}, source={RuntimeValue.eType}");
-                    return;
-                }
-            }
-
-            if (RuntimeValue.eType == EVMType.Object)
-            {
-                RuntimeValue.ConvertValueByTargetTypeAndObject(robj.eType);
-            }
-
-            robj.SetSObjectBySValue(ref RuntimeValue);
-        }
-
     }
 }

@@ -1244,7 +1244,7 @@ namespace SimpleLanguage.Compile
                 }
                 else if (this.m_TempChar == '\n')
                 {
-                    Log.AddTokenLog(LID.ShowExtendMessage, "other char need handleError NotInterrup " + m_CurChar);
+                    Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "other char need handleError NotInterrup " + m_CurChar);
                     m_Builder.Append(m_TempChar);
                 }
                 else if (m_TempChar == '"')
@@ -1339,7 +1339,61 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        // $name / $score style: identifier expression followed by non-identifier
+                        // no placeholder insertion here anymore; expression will be represented via children tokens
+                        if ((nextChar >= 'a' && nextChar <= 'z')
+                            || (nextChar >= 'A' && nextChar <= 'Z'))
+                        {
+                            // $name / $score style: identifier expression followed by non-identifier
+
+                            // ${ expr } -> extract expression and replace with {}
+                            if (m_Builder.Length > 0)
+                            {
+                                // append accumulated literal to overall lexeme
+                                stringBuilder.Append(m_Builder);
+                                // add the accumulated literal as one child token list
+                                if (m_CurrentToken != null)
+                                {
+                                    var litTok = new Token(m_Path, ETokenType.String, m_Builder.ToString(), m_SourceLine, m_SourceChar);
+                                    m_CurrentToken.AddChildrenTokens(new List<Token>() { litTok });
+                                }
+                                m_Builder.Clear();
+                            }
+                            int startLine = m_SourceLine;
+                            int startChar = m_SourceChar;
+                            var exprBuilder = new StringBuilder();
+                            exprBuilder.Append(nextChar);
+                            bool isEnd = false;
+                            do
+                            {
+                                var tchar = ReadChar();
+                                if (tchar == END_CHAR  || tchar == '"')
+                                {
+                                    UndoChar();
+                                    break;
+                                }
+                                else if (tchar == ' ' )
+                                {
+                                    break;
+                                }
+                                exprBuilder.Append(tchar);
+                            } while (true);
+
+                            LexerParse lp = new LexerParse(m_Path, exprBuilder.ToString().ToCharArray());
+                            lp.SetSourcePosition(startLine, startChar);
+                            lp.ParseInterpolationExpressionToTokenList();
+
+                            // add parsed expression token list as one parameter entry
+                            if (m_CurrentToken != null)
+                                m_CurrentToken.AddChildrenTokens(lp.listTokens);
+                            // include the original ${...} text into the token lexeme
+                            stringBuilder.Append("${" + exprBuilder.ToString() + "}");
+                        }
+                        else
+                        {
+                            m_Builder.Append('$');
+                            m_Builder.Append(nextChar);
+                        }
+                        /*
                         if (m_Builder.Length > 0)
                         {
                             stringBuilder.Append(m_Builder);
@@ -1458,6 +1512,7 @@ namespace SimpleLanguage.Compile
                             m_Builder.Append('$');
                             m_Builder.Append(nextChar);
                         }
+                        */
                     }
                 }
                 else
