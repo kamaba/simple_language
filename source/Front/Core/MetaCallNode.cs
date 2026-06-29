@@ -548,14 +548,15 @@ namespace SimpleLanguage.Core
                 }
                 
                 m_MetaClass = ownerMetaClass;
-                m_MetaVariable = (m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaMemberFunction).thisMetaVariable;
+                MetaMemberFunction mmf = m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaMemberFunction;
+                m_MetaVariable = mmf?.thisMetaVariable;
                 m_CallNodeType = ECallNodeType.This;
                 if (m_MetaVariable == null)
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage,  m_Token, "Error static function cannot use this.");
                     return false;
                 }
-                if (m_OwnerMetaFunctionBlock.ownerMetaFunction.isStatic && m_MetaVariable.isStatic == false)
+                if (mmf?.isStatic == true && m_MetaVariable.isStatic == false)
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error static function cannot use this.");
                     return false;

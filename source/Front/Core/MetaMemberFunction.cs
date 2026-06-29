@@ -238,6 +238,7 @@ namespace SimpleLanguage.Core
         public bool isGet => m_IsGet;
         public bool isSet => m_IsSet;
         public bool isFinal => m_IsFinal;
+        public virtual bool isStatic => m_IsStatic;
         public bool isCanRewrite => m_IsCanRewrite;
         public bool isTemplateInParam => m_IsTemplateInParam;
         public FileMetaMemberFunction fileMetaMemberFunction => m_FileMetaMemberFunction;
@@ -255,6 +256,7 @@ namespace SimpleLanguage.Core
         protected bool m_IsAbstract = false;
         protected bool m_IsGet = false;
         protected bool m_IsSet = false;
+        protected bool m_IsStatic = false;
         protected bool m_IsFinal = false;
         protected bool m_IsCanRewrite = false;
         protected bool m_IsTemplateInParam = false;
@@ -423,7 +425,8 @@ namespace SimpleLanguage.Core
             m_IsOverrideFunction = mmf.m_IsOverrideFunction;
             m_IsOverrideInterface = mmf.isOverrideInterface;
             m_IsAbstract = mmf.isAbstract;
-            m_IsFinal = mmf.isFinal;                 
+            m_IsFinal = mmf.isFinal;
+            m_IsStatic = mmf.isStatic;
         }
         protected void Init()
         {
@@ -485,6 +488,10 @@ namespace SimpleLanguage.Core
         public void SetSourceMetaMemberFunction( MetaMemberFunction mmf )
         {
             this.m_SourceMetaMemberFunction = mmf;
+        }
+        public void SetIsStatic(bool isStatic)
+        {
+            m_IsStatic = isStatic;
         }
         public void SetIsGet(bool isGet)
         {

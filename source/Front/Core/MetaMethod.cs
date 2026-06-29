@@ -30,7 +30,6 @@ namespace SimpleLanguage.Core
         public bool isDefineMetaType => m_IsDefineMetaType;
         public MetaType defineMetaType => m_DefineMetaType;
         public MetaType realMetaType => m_RealMetaType;
-        public virtual bool isStatic => m_IsStatic;
         public virtual bool isParsed => m_IsParsed;
         public bool isHasExpress => m_MetaMemberParamCollection?.isHasExpress == true;
         public virtual string functionAllName {
@@ -98,7 +97,6 @@ namespace SimpleLanguage.Core
         protected MetaDefineTemplateCollection m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection();
         protected EMethodCallType m_MethodCallType = EMethodCallType.Local;
         private List<LabelData> m_LabelDataList = new List<LabelData>();
-        protected bool m_IsStatic = false;
         protected bool m_IsDefineMetaType = false;
         protected int m_Index = -1;
         protected MetaType m_DefineMetaType = null;
@@ -148,7 +146,6 @@ namespace SimpleLanguage.Core
             m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection(mf.m_MetaMemberTemplateCollection);
             m_MethodCallType = mf.m_MethodCallType;
             m_LabelDataList = mf.m_LabelDataList;
-            m_IsStatic = mf.m_IsStatic;
         }
         public override void SetDeep(int deep)
         {
@@ -182,10 +179,6 @@ namespace SimpleLanguage.Core
             {
                 m_MetaMemberParamCollection.SetOwnerMetaBase(ownerBase);
             }
-        }
-        public void SetIsStatic(bool isStatic)
-        {
-            m_IsStatic = isStatic;
         }
         public void SetIndex(int index)
         {

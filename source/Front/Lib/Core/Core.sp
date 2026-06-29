@@ -17,7 +17,7 @@ Project
     }
     _main_()
     {
-        #!
+        
         ObjectTest.fun()
         NumberTest.fun()
         GlobalTest.fun()        
@@ -35,8 +35,7 @@ Project
         ClassAs_IsNS.ClassAs_Is.fun();
         CommitTest.fun();
         ConStrCC.ConstructionTest.fun()
-        ExpressTest.fun()
-        !#
+        ExpressTest.fun()        
         ExtendsClass.fun()     
         
     }

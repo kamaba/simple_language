@@ -108,6 +108,7 @@ namespace SimpleLanguage.IR
                 TryAddDataTypeLiteralFallback(argNode, irexpress);
             }
             MetaFunction mf = mfc.GetTemplateMemberFunction();
+            MetaMemberFunction mmf = mf as MetaMemberFunction;
             
             //MetaMemberFunctionCSharp mmfcsharp = mf as MetaMemberFunctionCSharp;
             //if (mmfcsharp != null)
@@ -128,7 +129,7 @@ namespace SimpleLanguage.IR
             List<IRMetaType> types = new List<IRMetaType>();
 
             int callType = -1;// 0->static call 1->virtual call  2->dynamic call
-            if( mfc.staticCallMetaType != null || mf.isStatic )
+            if( mfc.staticCallMetaType != null || mmf.isStatic || mmf?.isFinal == true )
             {
                 MetaClass scmc = null;
                 MetaType staticMt = mfc.staticCallMetaType;
