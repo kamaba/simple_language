@@ -24,12 +24,80 @@ namespace SimpleLanguage.Core.IR
         public void ParseToIRDataList(IRMethod _irMethod, List<MetaVisitNode> cnlist)
         {
             m_IRMethod = _irMethod;
+            irList.AddRange(ProcessVisitNodeList(_irMethod, cnlist, 0));
+        }
 
-            for (int i = 0; i < cnlist.Count; i++)
+        private static List<IRBase> ProcessVisitNodeList(IRMethod _irMethod, List<MetaVisitNode> cnlist, int startIndex)
+        {
+            List<IRBase> irList = new List<IRBase>();
+
+            for (int i = startIndex; i < cnlist.Count; i++)
             {
                 var cnode = cnlist[i];
+
+                if (cnode.isQuestionMarkDot && i > startIndex)
+                {
+                    var nullCheckIR = BuildNullConditionalCheck(_irMethod, cnode, cnlist, i);
+                    irList.AddRange(nullCheckIR);
+                    return irList;
+                }
+
                 irList.AddRange(ExecOnceCnode(_irMethod, cnode));
             }
+
+            return irList;
+        }
+
+        private static List<IRBase> BuildNullConditionalCheck(IRMethod _irMethod, MetaVisitNode qmdNode, List<MetaVisitNode> cnlist, int qmdIndex)
+        {
+            List<IRBase> irList = new List<IRBase>();
+
+            IRData dupData = new IRData();
+            dupData.opCode = EIROpCode.Dup;
+            dupData.SetDebugInfoByToken(qmdNode.token, "?. dup receiver");
+            irList.Add(new IRBase(dupData));
+
+            IRData nullData = new IRData();
+            nullData.opCode = EIROpCode.LoadConstNull;
+            nullData.SetDebugInfoByToken(qmdNode.token, "?. load null");
+            irList.Add(new IRBase(nullData));
+
+            IRData cneData = new IRData();
+            cneData.opCode = EIROpCode.Cne;
+            cneData.SetDebugInfoByToken(qmdNode.token, "?. Cne (not null check)");
+            irList.Add(new IRBase(cneData));
+
+            IRData elseLabelData = new IRData();
+            IRData endLabelData = new IRData();
+
+            IRBranch ifBranch = new IRBranch(_irMethod, EIROpCode.BrFalse, elseLabelData);
+            irList.Add(ifBranch);
+
+            IRData popDupData = new IRData();
+            popDupData.opCode = EIROpCode.Pop;
+            popDupData.SetDebugInfoByToken(qmdNode.token, "?. pop dup, not null path");
+            irList.Add(new IRBase(popDupData));
+
+            irList.AddRange(ProcessVisitNodeList(_irMethod, cnlist, qmdIndex));
+
+            IRBranch endBranch = new IRBranch(_irMethod, EIROpCode.Br, endLabelData);
+            irList.Add(endBranch);
+
+            irList.Add(new IRBase(elseLabelData));
+
+            IRData popElseData = new IRData();
+            popElseData.opCode = EIROpCode.Pop;
+            popElseData.SetDebugInfoByToken(qmdNode.token, "?. pop receiver, null path");
+            irList.Add(new IRBase(popElseData));
+
+            IRData nullResultData = new IRData();
+            nullResultData.opCode = EIROpCode.LoadConstNull;
+            nullResultData.SetDebugInfoByToken(qmdNode.token, "?. result null");
+            irList.Add(new IRBase(nullResultData));
+
+            irList.Add(new IRBase(endLabelData));
+
+            return irList;
         }
         public static List<IRBase> ExecOnceCnode(IRMethod _irMethod, MetaVisitNode cnode, int dupcount = 0 )
         {

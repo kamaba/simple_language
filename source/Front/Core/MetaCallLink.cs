@@ -381,24 +381,28 @@ namespace SimpleLanguage.Core
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByThis(mcn.metaVariable);
                 mvn.SetToken(mcn.token);
+                mvn.SetQuestionMarkDot(mcn.isQuestionMarkDot);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.Base)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByBase(mcn.metaVariable);
                 mvn.SetToken(mcn.token);
+                mvn.SetQuestionMarkDot(mcn.isQuestionMarkDot);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.FunctionInnerVariableName)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.staticCallMetaType);
                 mvn.SetToken(mcn.token);
+                mvn.SetQuestionMarkDot(mcn.isQuestionMarkDot);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.MemberVariableName)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.staticCallMetaType);
                 mvn.SetToken(mcn.token);
+                mvn.SetQuestionMarkDot(mcn.isQuestionMarkDot);
                 m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.MemberFunctionName)
@@ -469,6 +473,7 @@ namespace SimpleLanguage.Core
                 }
 
                 MetaVisitNode mvn2 = MetaVisitNode.CreateByMethodCall(mmc);
+                mvn2.SetQuestionMarkDot(mcn.isQuestionMarkDot);
                 m_VisitNodeList.Add(mvn2);
             }
             else if (mcn.callNodeType == ECallNodeType.FunctionCall)

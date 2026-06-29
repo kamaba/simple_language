@@ -18,7 +18,7 @@ namespace SimpleLanguage
                 args[1] = "-e";
                 args[2] = "ir";
                 args[3] = "-p";
-                args[4] = "E:\\project\\lang\\simple_language\\source\\Front\\Lib\\Core\\Core";
+                args[4] = "F:\\project\\lang\\simple_language\\source\\Front\\Lib\\Core\\Core";
             }
 #endif
 

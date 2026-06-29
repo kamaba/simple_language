@@ -332,6 +332,7 @@ namespace SimpleLanguage.Core
         public MetaVisitVariable visitVariable => m_VisitVariable;
         public MetaMethodCall methodCall => m_MethodCall;
         public MetaType callMetaType => m_CallMetaType;
+        public bool isQuestionMarkDot => m_IsQuestionMarkDot;
         /// <summary>仅 <see cref="EVisitType.GetTypeValue"/> 等场景填充；可能为 <see cref="MetaData"/>/<see cref="MetaEnum"/>。</summary>
         public MetaBase ownerMetaBase => m_OwnerMetaBase;
         public MetaClass ownerMetaClass => m_OwnerMetaBase as MetaClass;
@@ -349,6 +350,7 @@ namespace SimpleLanguage.Core
         private MetaTemplate m_MetaTemplate = null;
         private MetaType m_CallMetaType = null; //璇ュ彉閲忥紝涓€鑸槸涓?T t = new() 杩欑鎯呭喌鍑嗗鐨?
         private Token m_Token = null;
+        private bool m_IsQuestionMarkDot = false;
 
         public static MetaVisitNode CreateByVisitMetaClass(MetaType mt)
         {
@@ -602,6 +604,10 @@ namespace SimpleLanguage.Core
         public void SetToken( Token token )
         {
             this.m_Token = token;
+        }
+        public void SetQuestionMarkDot(bool isQMD)
+        {
+            this.m_IsQuestionMarkDot = isQMD;
         }
         public void SetMethodCall( MetaMethodCall _methodCall)
         {

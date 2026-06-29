@@ -20,6 +20,7 @@ namespace SimpleLanguage.Core
     {
         Null,
         Period,
+        NullConditional,
         Pointer,
     }
     public enum ECallNodeType
@@ -98,6 +99,8 @@ namespace SimpleLanguage.Core
         public string name => m_Name;
         public Token token => m_Token;
         public ECallNodeType callNodeType => m_CallNodeType;
+        public ECallNodeSign callNodeSign => m_CallNodeSign;
+        public bool isQuestionMarkDot => m_IsQuestionMarkDot;
         public MetaExpressNodeBase metaExpressValue => m_ExpressNode;
         public List<MetaExpressNodeBase> bracketExpressList => m_BracketExpressList;
         public List<MetaType> metaTemplateParamsList => m_MetaTemplateParamsList;
@@ -122,6 +125,7 @@ namespace SimpleLanguage.Core
         private AllowUseSettings m_AllowUseSettings;
         private ECallNodeType m_CallNodeType = ECallNodeType.None;
         private ECallNodeSign m_CallNodeSign = ECallNodeSign.Null;
+        private bool m_IsQuestionMarkDot = false;
         public bool m_IsArray = false;
         public bool m_IsFunction = false;
 
@@ -175,6 +179,16 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = mc;
             m_OwnerMetaFunctionBlock = mbs;
             m_FrontDefineMetaType = fdmt;
+
+            if (fmcn1 != null && fmcn1.token?.type == ETokenType.QuestionMarkDot)
+            {
+                m_IsQuestionMarkDot = true;
+            }
+            if (fmcn2 != null && fmcn2.questionMarkDotToken != null)
+            {
+                m_IsQuestionMarkDot = true;
+            }
+
             // Sometimes the parser keeps the argument parTerm but doesn't set isCallFunction.
             // If this node is an identifier and has parTerm, treat it as a function-call node
             // so we can build MetaInputParamCollection for argument resolution.
