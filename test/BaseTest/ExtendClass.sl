@@ -1,63 +1,67 @@
-import Application.Core
+import Std;
 
-Class1
+namespace ETC1
 {
-    int a = 20
-
-    _init_(int _a)
+    Class1
     {
-        this.a = _a
-    }
-}
+        int a = 20
 
-Class1_1 extends Class1
-{
-    x1 = 0
-    y1 = 0
-    z1 = 0
-
-    _init_(int _x1, int _y1)
-    {
-        base._init_(_x1 + 1)
-        this.x1 = _x1
-        this.y1 = _y1
+        _init_(int _a)
+        {
+            this.a = _a
+        }
     }
 
-    _init_(int z1)
+    Class1_1 extends Class1
     {
-        _init_(1, 2)
-        base._init_(z1 + 10)
-        this.z1 = z1
+        x1 = 0
+        y1 = 0
+        z1 = 0
+
+        _init_(int _x1, int _y1)
+        {
+            base._init_(_x1 + 1)
+            this.x1 = _x1
+            this.y1 = _y1
+        }
+
+        _init_(int z1)
+        {
+            this.x1 = 1
+            this.y1 = 2
+            base._init_(z1 + 10)
+            this.z1 = z1
+        }
+
+        string describe()
+        {
+            ret "Class1_1 a=" + this.a.toString() + " x1=" + this.x1.toString() + " y1=" + this.y1.toString() + " z1=" + this.z1.toString()
+        }
     }
 
-    string describe()
+    ExtendsClass
     {
-        ret "Class1_1 a=" + this.a.toString() + " x1=" + this.x1.toString() + " y1=" + this.y1.toString() + " z1=" + this.z1.toString()
-    }
-}
+        static fun()
+        {
+            global.println("========== ExtendClass / ExtendsClass (start) ==========")
 
-ExtendsClass
-{
-    static Fun()
-    {
-        global.println("========== ExtendClass / ExtendsClass (start) ==========")
+            c11 = Class1_1(20)
+            global.println("c11: " + c11.describe())
 
-        c11 = Class1_1(20)
-        global.println("c11: " + c11.describe())
+            c12 = Class1_1(20, 30)
+            global.println("c12: " + c12.describe())
 
-        c12 = Class1_1(20, 30)
-        global.println("c12: " + c12.describe())
+            c13 = Class1_1(0)
+            global.println("c13 (单参 0): " + c13.describe())
 
-        c13 = Class1_1(0)
-        global.println("c13 (单参 0): " + c13.describe())
+            c14 = Class1(99)
+            global.println("c14 base Class1 a=" + c14.a.toString())
 
-        c14 = Class1(99)
-        global.println("c14 base Class1 a=" + c14.a.toString())
+            c15 = Class1(20)
+            global.println("c15 base Class1 a=" + c15.a.toString())
 
-        c15 = Class1(20)
-        global.println("c15 base Class1 a=" + c15.a.toString())
-
-        global.println("========== ExtendClass / ExtendsClass (end) ==========")
+            global.println("========== ExtendClass / ExtendsClass (end) ==========")
+        }
     }
 }
 

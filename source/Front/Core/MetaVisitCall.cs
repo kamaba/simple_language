@@ -538,6 +538,7 @@ namespace SimpleLanguage.Core
 
             vn.m_VisitType = EVisitType.MethodCall;
             vn.m_MethodCall = _methodCall;
+            vn.SetToken(_methodCall.token);
 
             return vn;
         }

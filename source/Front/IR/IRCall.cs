@@ -123,28 +123,41 @@ namespace SimpleLanguage.IR
 
 
             int callMethodIndex = -1;
-
-
             string fname = "";
             IRMetaClass irmc = null;
             List<IRMetaType> types = new List<IRMetaType>();
-            if ( mf.isStatic )
-            {
-                var scmc = mfc.staticCallMetaType.metaClass;
-                if( scmc != null && scmc is MetaGenTemplateClass mgtc )
-                {
-                    scmc = mgtc.metaTemplateClass;
-                }
-                irmc = IRManager.instance.GetIRMetaClassById(scmc.GetHashCode());
 
-                if ( mf is MetaGenTemplateFunction mgtf )
+            int callType = -1;// 0->static call 1->virtual call  2->dynamic call
+            if( mfc.staticCallMetaType != null || mf.isStatic )
+            {
+                MetaClass scmc = null;
+                MetaType staticMt = mfc.staticCallMetaType;
+                if (staticMt == null )
+                {
+                    staticMt = new MetaType(mf.ownerMetaClass);
+                }
+                if (staticMt.metaClass != null )
+                {
+                    scmc = staticMt.metaClass;
+                    if (scmc != null && scmc is MetaGenTemplateClass mgtc)
+                    {
+                        scmc = mgtc.metaTemplateClass;
+                    }
+                    irmc = IRManager.instance.GetIRMetaClassById(scmc.GetHashCode());
+                }
+                else if(staticMt.metaData != null )
+                {
+                    irmc = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.dataMetaClass.GetHashCode());
+                }
+
+                if (mf is MetaGenTemplateFunction mgtf)
                 {
                     fname = mgtf.sourceMetaMemberFunction.functionAllName;
                     owirmc = IRManager.GetIRMetaClassByMetaOwner(mgtf.sourceMetaMemberFunction.ownerMetaBase);
                 }
-                else if( mf is MetaMemberFunction mmf22 )
+                else if (mf is MetaMemberFunction mmf22)
                 {
-                    if(mmf22.sourceMetaMemberFunction != null )
+                    if (mmf22.sourceMetaMemberFunction != null)
                     {
                         fname = mmf22.sourceMetaMemberFunction.functionAllName;
                         owirmc = IRManager.GetIRMetaClassByMetaOwner(mmf22.sourceMetaMemberFunction.ownerMetaBase);
@@ -163,11 +176,12 @@ namespace SimpleLanguage.IR
 
                 m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(fname);
 
-                var list = mfc.staticCallMetaType.GetGenTemplateMetaTypeList();
+                var list = staticMt.GetGenTemplateMetaTypeList();
                 for (int i = 0; i < list.Count; i++)
                 {
                     types.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(list[i], owirmc));
                 }
+                callType = 0;
             }
             else
             {
@@ -186,6 +200,16 @@ namespace SimpleLanguage.IR
 
 
                 m_IRRuntimeMethod = irmc?.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
+                callType = 1;
+                if (m_IRRuntimeMethod?.interfaceMethod == true)
+                {
+                    callType = 2;
+                }
+            }
+            if (m_IRRuntimeMethod == null)
+            {
+                Log.AddIRLog(LID.ShowExtendMessage, mfc.token, $"ir runtime[{fname}] method not found!!");
+                return;
             }
             irmt = new IRMetaType(irmc, types);
             List<IRMetaType> functionMtList = new List<IRMetaType>();
@@ -194,56 +218,36 @@ namespace SimpleLanguage.IR
                 functionMtList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.metaFunctionInputTemplateList[i], owirmc));
             }
            var irmethodcall = new IRMethodCall(irmt, functionMtList, m_IRRuntimeMethod, paramCount );
-            if ( callMethodIndex == -1 )
+            if(callType == 0 )
             {
-                if( m_IRRuntimeMethod == null )
-                {
-                    Log.AddIRLog(LID.ShowExtendMessage, mfc.token,  $"ir runtime[{fname}] method not found!!");
-                    return;
-                }
-
-                if( mf.isStatic )
-                {
-                    IRData datacall = new IRData();
-                    datacall.opCode = EIROpCode.CallStatic;
-                    datacall.SetOpValue(irmethodcall);
-                    // Keep arg count in index for loader/runtime fallback paths
-                    // when RuntimeCall metadata is missing or downgraded.
-                    datacall.index = paramCount;
-                    ApplyCallInstructionDebug(datacall, mf, mfc);
-                    AddIRData(datacall);
-                }
-                else
-                {
-                    IRData datacall = new IRData();
-                    datacall.opCode = EIROpCode.CallDynamic;
-                    datacall.SetOpValue(irmethodcall);
-                    datacall.index = paramCount + 1;
-                    ApplyCallInstructionDebug(datacall, mf, mfc);
-                    AddIRData(datacall);
-                }
+                IRData datacall = new IRData();
+                datacall.opCode = EIROpCode.CallStatic;
+                datacall.SetOpValue(irmethodcall);
+                datacall.index = paramCount;
+                ApplyCallInstructionDebug(datacall, mf, mfc);
+                AddIRData(datacall);
+            }
+            else if( callType == 1 )
+            {
+                IRData datacall = new IRData();
+                datacall.opCode = EIROpCode.CallVirt;
+                datacall.index = callMethodIndex;
+                datacall.SetOpValue(irmethodcall);
+                ApplyCallInstructionDebug(datacall, mf, mfc);
+                AddIRData(datacall);
+            }
+            else if( callType == 2  )
+            {
+                IRData datacall = new IRData();
+                datacall.opCode = EIROpCode.CallDynamic;
+                datacall.SetOpValue(irmethodcall);
+                datacall.index = paramCount + 1;
+                ApplyCallInstructionDebug(datacall, mf, mfc);
+                AddIRData(datacall);
             }
             else
             {
-                if(m_IRRuntimeMethod.interfaceMethod )
-                {
-                    IRData datacall = new IRData();
-                    datacall.opCode = EIROpCode.CallDynamic;
-                    datacall.SetOpValue(irmethodcall);
-                    datacall.index = paramCount + 1;
-                    ApplyCallInstructionDebug(datacall, mf, mfc);
-                    AddIRData(datacall);
-                }
-                else
-                {
-                    IRData datacall = new IRData();
-                    datacall.opCode = EIROpCode.CallVirt;
-                    datacall.index = callMethodIndex;
-                    datacall.SetOpValue(irmethodcall);
-                    ApplyCallInstructionDebug(datacall, mf, mfc);
-                    AddIRData(datacall);
-                }
-
+                Log.AddIRLog(LID.MetaCoreAssertShowMessage, mfc.token, "aaaa");
             }
 
             if( mfc.isRecieveReturnValue == false )

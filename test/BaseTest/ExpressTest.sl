@@ -285,7 +285,7 @@ ExpressTest
         string result1 = s1 ?? "default"
         string result2 = s2 ?? "default"
         global.println("null ?? default ====:" + result1)
-        global.println("hello ?? default ====:" + result2 + "-----")
+        global.println("hello ?? default ====:" + result2 + "-----")    #有bug
         
         int n1 = null
         int n2 = 10

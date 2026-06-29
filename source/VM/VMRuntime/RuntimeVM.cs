@@ -2238,7 +2238,7 @@ namespace SimpleLanguage.VM.Runtime
                             #endregion
 
                             default:
-                                Log.AddRuntimeLog(LID.ShowMessageAssert, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, iri.debugInfo, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
                                 break;
                         }
                     }

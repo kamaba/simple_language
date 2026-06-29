@@ -1,3 +1,4 @@
+import ETC1
 
 Project
 {
@@ -34,13 +35,14 @@ Project
         ClassAs_IsNS.ClassAs_Is.fun();
         CommitTest.fun();
         ConStrCC.ConstructionTest.fun()
-        !#
         ExpressTest.fun()
+        !#
+        ExtendsClass.fun()     
         
     }
     _test_()
     {
-       EnumTest.fun()
+       ETC1.ExtendsClass.fun()
     }
     CompileBefore()
     {        

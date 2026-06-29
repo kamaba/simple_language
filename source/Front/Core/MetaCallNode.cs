@@ -2091,7 +2091,7 @@ namespace SimpleLanguage.Core
                     }
                 }
                 m_CallNodeType = ECallNodeType.MemberVariableName;
-                if( mmv.isStatic )
+                if( mmv.isStatic || m_CallNodeType == ECallNodeType.Base )
                 {
                     m_StaticCallMetaType = new MetaType(m_FrontCallNode.metaType);
                 }
@@ -2101,7 +2101,7 @@ namespace SimpleLanguage.Core
                 m_MetaFunction = mmf;
                 m_MetaType = mmf.returnMetaVariable.GetFinalMetaType();
                 m_CallNodeType = ECallNodeType.MemberFunctionName;
-                if (mmf.isStatic)
+                if (mmf.isStatic || m_FrontCallNode.m_CallNodeType == ECallNodeType.Base)
                 {
                     m_StaticCallMetaType = new MetaType(m_FrontCallNode.metaType);
                 }

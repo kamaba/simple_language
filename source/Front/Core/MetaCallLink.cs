@@ -449,6 +449,12 @@ namespace SimpleLanguage.Core
                     mmc.SetToken(frontNode.token);
                     mmc.SetDebugInputParTermText(debugParTermText);
                 }
+                else if( frontNode?.callNodeType == ECallNodeType.Base )
+                {
+                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, null, null);
+                    mmc.SetToken(mcn.token);
+                    mmc.SetDebugInputParTermText(debugParTermText);
+                }
                 else
                 {
                     var retmv = frontNode?.metaVariable;

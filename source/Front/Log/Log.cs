@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      Log.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -83,7 +83,7 @@ namespace SimpleLanguage.Logging
     public class Log
     {
         /// <summary>未设置 <c>SIMPLELANG_LOGS_DIR</c> 时的 Front 日志路径（与 Core 默认导出树一致）。</summary>
-        public const string FrontLogDefaultPath = @"E:\project\lang\simple_language\out\export\Core\Logs\Front.txt";
+        public const string FrontLogDefaultPath = @"F:\project\lang\simple_language\out\export\Core\Logs\Front.txt";
 
         /// <summary>Front 编译器文本日志路径；加载 jsonc 后为 <c>{export.outputDir}/{moduleName}/Logs/Front.txt</c>。</summary>
         public static string FrontLogFilePath =>
