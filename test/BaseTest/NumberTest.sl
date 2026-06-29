@@ -86,7 +86,7 @@ NumberTest
         String s = f.toString()
 
         global.println("f = " + f.toString())
-        global.println("f as int = " + i.toString())
+        global.println("f as int = " + i?.toString())
         global.println("f.toString = " + s)
 
         t1 = f.type
