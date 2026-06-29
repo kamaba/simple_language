@@ -136,7 +136,6 @@ ExpressTest
     {
         global.println("========== ExpressTest (start) ==========")
         
-        #!
         ExpressTest.arithmeticExpressionTest()
         ExpressTest.comparisonExpressionTest()
         ExpressTest.logicalExpressionTest()
@@ -150,8 +149,7 @@ ExpressTest
         ExpressTest.arrayIndexExpressionTest()
         ExpressTest.newObjectExpressionTest()
         ExpressTest.staticMemberAccessTest() 
-        !#                      
-        ExpressTest.complexNestedExpressionTest()        
+        ExpressTest.complexNestedExpressionTest()   
         ExpressTest.classMemberInitTest()
 
         global.println("========== ExpressTest (end) ==========")
@@ -308,7 +306,7 @@ ExpressTest
         global.println("Age: $age")
         global.println("Next year: ${age + 1}")
 
-        string complex = "Name: $name, Age: $age , Double: ${age * 2}"
+        string complex = "Name: $name , Age: $age , Double: ${age * 2}"
         global.println("complex = " + complex)
     }
 

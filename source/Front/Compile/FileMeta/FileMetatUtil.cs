@@ -207,8 +207,8 @@ namespace SimpleLanguage.Compile
                     fmn.priority = cnode.priority;
                     commonTermExpressList.Add(fmn);
                 }
-                else if( cnode.nodeType == ENodeType.Key )
-                { 
+                else if (cnode.nodeType == ENodeType.Key)
+                {
                     var ttype = cnode.token?.type;
                     if (ttype == ETokenType.As || ttype == ETokenType.Is || ttype == ETokenType.IsNot)
                     {
@@ -227,11 +227,11 @@ namespace SimpleLanguage.Compile
                     else if (cnode.token.type == ETokenType.New)
                     {
                         Node block = null;
-                        if (index+1 < nodeList.Count)
+                        if (index + 1 < nodeList.Count)
                         {
-                            if (nodeList[index+1].nodeType == ENodeType.Brace)
+                            if (nodeList[index + 1].nodeType == ENodeType.Brace)
                             {
-                                block = nodeList[index+1];
+                                block = nodeList[index + 1];
                                 cnode.SetBlockNode(block);
                                 index++;
                             }
@@ -268,11 +268,11 @@ namespace SimpleLanguage.Compile
                 else if (cnode.nodeType == ENodeType.IdentifierLink)
                 {
                     Node block = null;
-                    if (index+1 < nodeList.Count)
+                    if (index + 1 < nodeList.Count)
                     {
-                        if (nodeList[index+1].nodeType == ENodeType.Brace)
+                        if (nodeList[index + 1].nodeType == ENodeType.Brace)
                         {
-                            block = nodeList[index+1];
+                            block = nodeList[index + 1];
                             cnode.SetBlockNode(block);
                             index++;
                         }
@@ -300,6 +300,10 @@ namespace SimpleLanguage.Compile
                     var fileMetaBracketTerm = new FileMetaBracketTerm(fm, cnode);
                     fileMetaBracketTerm.priority = SignComputePriority.Level1;
                     commonTermExpressList.Add(fileMetaBracketTerm);
+                }
+                else if (cnode.nodeType == ENodeType.Comment)
+                {
+
                 }
                 else
                 {

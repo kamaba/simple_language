@@ -61,7 +61,10 @@ namespace SimpleLanguage.IR
         private void PackOpValue()
         {
             Payload = null;
-            if (opValue == null) return;
+            if (opValue == null)
+            {
+                return;
+            }
 
             if (opValue is SLSystemMethodCallPackage smcp)
             {

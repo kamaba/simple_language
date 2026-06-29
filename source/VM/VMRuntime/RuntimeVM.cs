@@ -641,6 +641,11 @@ namespace SimpleLanguage.VM.Runtime
         }
         static RuntimeType? GetRuntimeTypeByInstruction(Instruction iri, RuntimeType defaultrt)
         {
+            if( iri.Payload == null )
+            {
+                return null;
+            }
+
             string payload = Encoding.UTF8.GetString(iri.Payload);
             if (payload == "self")
             {
