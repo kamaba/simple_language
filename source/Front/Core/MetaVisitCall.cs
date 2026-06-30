@@ -371,6 +371,8 @@ namespace SimpleLanguage.Core
 
             vn.m_VisitType = EVisitType.MetaData;
             vn.m_ReturnMetaType = mt;
+            // 填充 callMetaType，使 IR 层能为 data 类型直接调用（如 Student.toString()）生成 LoadConstType
+            vn.m_CallMetaType = mt;
 
             return vn;
         }

@@ -42,6 +42,19 @@ namespace SimpleLanguage.Core.IR
                     return irList;
                 }
 
+                // MetaData visit 仅在后面紧跟 MethodCall/SystemCall 时才生成 LoadConstType（作为 this 传入）。
+                // 否则跳过（如 GlobalCounter.field 走 LoadStaticField，不需要 TypeObject 压栈，避免栈不平衡）。
+                if (cnode.visitType == MetaVisitNode.EVisitType.MetaData)
+                {
+                    bool hasNextMethodCall = (i + 1 < cnlist.Count) &&
+                        (cnlist[i + 1].visitType == MetaVisitNode.EVisitType.MethodCall ||
+                         cnlist[i + 1].visitType == MetaVisitNode.EVisitType.SystemCall);
+                    if (!hasNextMethodCall)
+                    {
+                        continue;
+                    }
+                }
+
                 irList.AddRange(ExecOnceCnode(_irMethod, cnode));
             }
 
@@ -269,40 +282,19 @@ namespace SimpleLanguage.Core.IR
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MetaData)
             {
-                //MetaVariable mv = cnode.GetOrgTemplateMetaVariable();
+                // 为 data 类型名直接调用（如 Student.toString()）生成 LoadConstType，
+                // 将 data 类型作为 TypeObject 压栈，供后续 SystemBuildDataString 等识别并输出静态字段。
+                IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaType(cnode.callMetaType)
+                    ?? IRManager.instance.GetIRMetaClassByName("Core.Object");
+                IRMetaType irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
 
-                //IRMetaType irmt = null;
-                //IRMetaClass irmc = null;
-                //IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
-                //if (mv.isStatic || mv.isConst)
-                //{
-                //    irmc = IRManager.GetIRMetaClassByMetaVariable(mv);
-                //    // 枚举常量成员运行时存 Core.Member，defineMetaType 为 extends；LoadStaticField 的 opValue 须为 Member 类型。
-                //    if (mv is MetaMemberEnum)
-                //    {
-                //        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(
-                //            new MetaType(CoreMetaClassManager.memberMetaClass), owirmc);
-                //    }
-                //    else if (cnode.callMetaType != null)
-                //    {
-                //        irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
-                //    }
-                //    else
-                //    {
-                //        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.GetFinalMetaType(), owirmc);
-                //    }
-                //}
-                //else
-                //{
-                //    irmc = IRManager.GetIRMetaClassByMetaVariable(mv);
-                //}
-                //IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
-                //if (irVar == null)
-                //{
-                //    Log.AddIRLog(LID.IRMethodNotFoundVariable, cnode.token, $"load variable failed (null IR): {mv?.name}");
-                //}
-                //else
-                //    irList.Add(irVar);
+                IRData irdata = new IRData();
+                irdata.opCode = EIROpCode.LoadConstType;
+                irdata.SetOpValue(irmt);
+                irdata.SetDebugInfoByToken(cnode.token, "Ldc data type literal");
+
+                IRBase irbase = new IRBase(irdata);
+                irList.Add(irbase);
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.Enum )
             {

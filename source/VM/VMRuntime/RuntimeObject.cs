@@ -16,12 +16,12 @@ namespace SimpleLanguage.VM
         public RuntimeVariable runtimeVariable => m_RuntimeVariable;
         public bool isNull => m_IsNull;
 
-        /// <summary>IR / Meta 渚ф垚鍛樺彉閲?id锛堜�?<see cref="RuntimeVariable.id"/> 涓€鑷达級锛涙棤鍏宠仈鍙橀噺鏃朵负 0�?/summary>
+        /// <summary>IR / Meta 渚ф垚鍛樺彉閲?id锛堜�?<see cref="RuntimeVariable.id"/> 涓€鑷达級锛涙棤鍏宠仈鍙橀噺鏃朵负 0�?/summary>
         public int memberVariableId => m_RuntimeVariable?.id ?? 0;
 
         /// <summary>鍦ㄦ墍灞?<see cref="ClassObject"/> 鎴愬憳琛ㄤ腑鐨勪笅鏍囥€?/summary>
         public int memberIndex => m_Index;
-        /// <summary>鍦ㄧ揣鍑戞垚鍛樼紦鍐插尯涓殑璧峰鍋忕Щ锛堝疄渚嬶細<see cref="ClassObject.memberData"/>锛涢潤鎬侊細<see cref="RuntimeType.memberData"/>锛夈�?/summary>
+        /// <summary>鍦ㄧ揣鍑戞垚鍛樼紦鍐插尯涓殑璧峰鍋忕Щ锛堝疄渚嬶細<see cref="ClassObject.memberData"/>锛涢潤鎬侊細<see cref="RuntimeType.memberData"/>锛夈�?/summary>
         public int memberDataStart => m_Start;
         /// <summary>绱у噾鎴愬憳缂撳啿鍖轰腑鏈Ы浣嶅瓧鑺傞暱搴︺€?/summary>
         public int memberDataLength => m_Length;
@@ -153,7 +153,7 @@ namespace SimpleLanguage.VM
             if (sobj.eType != EVMType.Object)
                 return sobj.eType;
 
-            // Core.Object 装箱壳：优先�?payload 反推实体类型�?
+            // Core.Object 装箱壳：优先�?payload 反推实体类型�?
             var payload = sobj.value;
             if (payload is SObject inner)
                 return inner.eType;
@@ -224,6 +224,13 @@ namespace SimpleLanguage.VM
                 return true;
             }
             if( targetType == RuntimeTypeManager.objectRuntimeType )
+            {
+                return true;
+            }
+            // 允许 TypeObject 赋值给 Data 基类或其子类参数
+            // 例如 StudentRecord.toString() 内部 SystemBuildDataString(this) 的 this 为 TypeObject（由 LoadConstType 生成），
+            // TypeObject.currentRT 包装了实际 data 类型（如 StudentRecord），需检查其是否继承自 targetType（如 Core.Data）
+            if (incomingRef is TypeObject typeObj && typeObj.currentRT?.runtimeClass?.IsExtendsRelation(targetType.runtimeClass) == true)
             {
                 return true;
             }
@@ -507,7 +514,7 @@ namespace SimpleLanguage.VM
         {
             span = default;
 
-            // 延迟分配：优先复用外�?Attach 进来的共�?memberData；仅在未附着时才创建独立槽位�?
+            // 延迟分配：优先复用外�?Attach 进来的共�?memberData；仅在未附着时才创建独立槽位�?
             if ((m_MemberDataBuffer == null || m_Length <= 0) && m_RuntimeType != null)
             {
                 EnsureStandaloneMemberDataSlice();
