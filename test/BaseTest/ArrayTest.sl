@@ -424,12 +424,14 @@ ArrayTest
     static arrayForInLiteralIndexTest()
     {
         global.println("========== for-in literal index ==========")
+        #!
         arr = [111,2222,33,44444444444]
         for a in arr
         {
             var forInIdx = arr.index + 1            
-            global.println("=forIndex=" + arr.index )
+            global.println("=forIndex=$forInIdx" + arr.index )
         }
+        !#
 
         for a in [11111111,2222222222,3,4444444444444]
         {
