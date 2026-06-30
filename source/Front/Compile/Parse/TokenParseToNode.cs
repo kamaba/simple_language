@@ -736,6 +736,9 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Out:
                     {
                         AddKeyNodeInAngle(token);
+                        // 清除标识符节点，避免紧跟 in/out 之后的 [ 被误当作索引访问 a[...]
+                        // 例如 for a in [...] 中 in 之前刚解析过标识符 a，残留的 identifierNode 会使 [ 走索引分支
+                        m_CurrentNode.SetIdentifierNode(null);
                     }
                     break;
                 case ETokenType.At:             //@
