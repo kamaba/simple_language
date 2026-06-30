@@ -190,6 +190,12 @@ namespace SimpleLanguage.Core
             m_LeftMetaExpress.Parse(auc);
             m_LeftMetaExpress.CalcReturnType();
 
+            if (m_LeftMetaExpress.metaCallLink.hasNullConditional)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 空条件运算符 ?. 不能用于赋值操作的左值（包括字段赋值和 setter 方法调用）!");
+                return;
+            }
+
             if (m_LeftMetaExpress.metaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.MethodCall)
             {
                 var fun = m_LeftMetaExpress.metaCallLink.finalCallNode.methodCall.function;

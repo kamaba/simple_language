@@ -488,7 +488,7 @@ namespace SimpleLanguage.VM
                         var method = co.runtimeType.runtimeClass.GetNonStaticMethodIndexByName("toString", out int index);
                         if (method != null)
                         {
-                            CLRVM.RunIRMethod(null, method, false);
+                            CLRVM.RunIRMethodByRuntimeType(co.runtimeType, method );
                             var clrvm = CLRVM.clrRuntimeStack.Peek();
                             RuntimeValue curval = clrvm.GetCurrentIndexValue(clrvm.valueIndex - 1);
                             str = curval.stringValue;
@@ -517,7 +517,7 @@ namespace SimpleLanguage.VM
                         var method = co.runtimeType.runtimeClass.GetNonStaticMethodIndexByName("toString", out int index);
                         if (method != null)
                         {
-                            CLRVM.RunIRMethod(null, method, false);
+                            CLRVM.RunIRMethodByRuntimeType(co.runtimeType, method );
                             var clrvm = CLRVM.clrRuntimeStack.Peek();
                             RuntimeValue curval = clrvm.GetCurrentIndexValue(clrvm.valueIndex - 1);
                             str = curval.stringValue;
@@ -549,7 +549,7 @@ namespace SimpleLanguage.VM
                         var method = co.runtimeType.runtimeClass.GetOperatorMethodIndexByMethod("_add_", out int index);
                         if (method != null)
                         {
-                            CLRVM.RunIRMethod(null, method, false);
+                            CLRVM.RunIRMethodByRuntimeType(co.runtimeType, method);
                             isMethodCall = true;
                         }
                     }

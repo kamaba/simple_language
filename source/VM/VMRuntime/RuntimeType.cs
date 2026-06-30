@@ -34,7 +34,7 @@ namespace SimpleLanguage.VM
         private int m_Id = 0;
         public EVMType eType { get; protected set; } = EVMType.Void;
 
-        public RuntimeType( RuntimeClass rc, List<RuntimeType> rtList)
+        public RuntimeType(RuntimeClass rc, List<RuntimeType> rtList)
         {
             ++m_Id;
             m_RuntimeClass = rc;
@@ -42,17 +42,20 @@ namespace SimpleLanguage.VM
             {
                 m_RuntimeTemplateList = rtList;
             }
-            if (Enum.TryParse<EVMType>(m_RuntimeClass.name, true, out var eoutType))
+            if (m_RuntimeClass != null)
             {
-                eType = eoutType;
-            }
-            else
-            {
-                eType = EVMType.Class;
+                if (Enum.TryParse<EVMType>(m_RuntimeClass.name, true, out var eoutType))
+                {
+                    eType = eoutType;
+                }
+                else
+                {
+                    eType = EVMType.Class;
+                }
             }
             //eType = GetVMType(irClass.irName);
         }
-        public void SetEVMType( EVMType evmtype )
+        public void SetEVMType(EVMType evmtype)
         {
             eType = evmtype;
         }
@@ -71,7 +74,7 @@ namespace SimpleLanguage.VM
         //    return EVMType.Class;
         //}
 
-        public RuntimeType GetExtendsTemplateRuntimeType( RuntimeDefType irmt, List<RuntimeType> _runtimeTemplateList)
+        public RuntimeType GetExtendsTemplateRuntimeType(RuntimeDefType irmt, List<RuntimeType> _runtimeTemplateList)
         {
             if (_runtimeTemplateList?.Count > 0)
             {
@@ -79,7 +82,7 @@ namespace SimpleLanguage.VM
             }
             return null;
         }
-        public RuntimeType GetClassRuntimeType( RuntimeDefType rdt, bool isAdd = false)
+        public RuntimeType GetClassRuntimeType(RuntimeDefType rdt, bool isAdd = false)
         {
             return GetClassRuntimeTypeCore(rdt, isAdd,
                 new HashSet<RuntimeDefType>(RuntimeDefTypeReferenceComparer.Instance));
@@ -113,39 +116,39 @@ namespace SimpleLanguage.VM
 
             try
             {
-            var irmc = this.m_RuntimeClass;
-            if (rdt.templateIndex != -1)
-            {
-                if (rdt.ownerRuntimeClass == this.m_RuntimeClass)
+                var irmc = this.m_RuntimeClass;
+                if (rdt.templateIndex != -1)
                 {
-                    return m_RuntimeTemplateList[rdt.templateIndex];
+                    if (rdt.ownerRuntimeClass == this.m_RuntimeClass)
+                    {
+                        return m_RuntimeTemplateList[rdt.templateIndex];
+                    }
+                    else
+                    {
+                        var mt = m_RuntimeClass.GetRuntimeDefTypeByTemplateAndClassRelation(rdt.ownerRuntimeClass, rdt.templateIndex);
+                        if (mt == null) return null;
+
+                        return GetClassRuntimeTypeCore(mt, isAdd, visiting);
+                    }
                 }
                 else
                 {
-                    var mt = m_RuntimeClass.GetRuntimeDefTypeByTemplateAndClassRelation(rdt.ownerRuntimeClass, rdt.templateIndex);
-                    if (mt == null) return null;
-
-                    return GetClassRuntimeTypeCore(mt, isAdd, visiting);
-                }
-            }
-            else
-            {
-                List<RuntimeType> rtList = new List<RuntimeType>();
-                if (rdt.runtimeDefTypeList.Count > 0)
-                {
-                    for (int i = 0; i < rdt.runtimeDefTypeList.Count; i++)
+                    List<RuntimeType> rtList = new List<RuntimeType>();
+                    if (rdt.runtimeDefTypeList.Count > 0)
                     {
-                        var crt = GetClassRuntimeTypeCore(rdt.runtimeDefTypeList[i], isAdd, visiting);
-                        rtList.Add(crt);
+                        for (int i = 0; i < rdt.runtimeDefTypeList.Count; i++)
+                        {
+                            var crt = GetClassRuntimeTypeCore(rdt.runtimeDefTypeList[i], isAdd, visiting);
+                            rtList.Add(crt);
+                        }
                     }
+                    var rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(rdt.runtimeClass, rtList);
+                    if (rt == null && isAdd)
+                    {
+                        rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(rdt.runtimeClass, rtList);
+                    }
+                    return rt;
                 }
-                var rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(rdt.runtimeClass, rtList);
-                if (rt == null && isAdd)
-                {
-                    rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(rdt.runtimeClass, rtList);
-                }
-                return rt;
-            }
             }
             finally
             {
@@ -165,7 +168,7 @@ namespace SimpleLanguage.VM
                 Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object at index {index} is null for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
                 return;
             }
-            if ( index >= m_StaticMemberRuntimeObjectArray.Length)
+            if (index >= m_StaticMemberRuntimeObjectArray.Length)
             {
                 Log.AddRuntimeLog(LID.ShowMessageAssert, $"Static member object at index {index} is null for runtime type {this}. EnsureStaticMemberObjectsInitialized should have been called.");
                 RuntimeValue.SetNull();
@@ -453,10 +456,10 @@ namespace SimpleLanguage.VM
                 sb.Append('<').Append(m_RuntimeClass?.id ?? 0).Append('>');
             else
                 sb.Append(name);
-            if( m_RuntimeTemplateList.Count > 0 )
+            if (m_RuntimeTemplateList.Count > 0)
             {
                 sb.Append("<");
-                for( int i = 0; i < m_RuntimeTemplateList.Count; i++ )
+                for (int i = 0; i < m_RuntimeTemplateList.Count; i++)
                 {
                     sb.Append(m_RuntimeTemplateList[i].ToString());
                 }

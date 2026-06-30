@@ -6,6 +6,7 @@ GlobalTest
     static fun()
     {
         global.println("========== GlobalTest (start) ==========")
+        
         # .sp Project{} static function call chain
         global.print("project static function print -> ok")
         global.println("")
@@ -15,14 +16,14 @@ GlobalTest
         aa = global.vardata2.a
         global.println("jsonc global.var1 -> " + gv1.toString())
         global.println("jsonc global.vardata2.a -> " + aa.toString())
+        
 
         # global.data: array
         arrRef = global.arrvar1
         global.println("global.arrvar1 != null -> " + arrRef.toString())
 
         # global.data: object
-        bb = global.vardata2.b
-        global.println("global.vardata2.a -> " + aa.toString())
+        bb = global.vardata2.b        
         global.println("global.vardata2.b -> " + bb.toString())
         global.println("config data (vardata2.a+b) -> " + (aa + bb).toString())
 

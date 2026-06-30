@@ -20,6 +20,20 @@ namespace SimpleLanguage.Core
         public List<MetaCallNode> callNodeList => m_CallNodeList;
         public MetaVisitNode finalCallNode => m_FinalCallNode;
         public List<MetaVisitNode> visitNodeList => m_VisitNodeList;
+        public bool hasNullConditional
+        {
+            get
+            {
+                for (int i = 0; i < m_VisitNodeList.Count; i++)
+                {
+                    if (m_VisitNodeList[i].isQuestionMarkDot)
+                    {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
         public AllowUseSettings allowUseSettings { get; private set; } = null;
 
         private FileMetaCallLink m_FileMetaCallLink;

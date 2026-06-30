@@ -491,7 +491,7 @@ namespace SimpleLanguage.VM
                 return false;
 
             List<RuntimeType> irmtList = new List<RuntimeType>();
-            CLRVM.RunIRMethod(irmtList, cfc, false);
+            CLRVM.RunIRMethod(irc, irmtList, cfc, false);
             if (needInvert)
             {
                 TryInvertTopMethodBoolResult();
@@ -910,7 +910,7 @@ namespace SimpleLanguage.VM
             if (method == null)
                 return false;
 
-            CLRVM.RunIRMethod(new List<RuntimeType>(), method, false);
+            CLRVM.RunIRMethodByRuntimeType(co.runtimeType, method );
             return true;
         }
 

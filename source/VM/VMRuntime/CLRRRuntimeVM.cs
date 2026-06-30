@@ -33,7 +33,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             return null;
         }
-        public static RuntimeVM CreateCLRRuntime( List<RuntimeType> irmtList, RuntimeMethod method )
+        public static RuntimeVM CreateCLRRuntime(RuntimeClass rc, List<RuntimeType> irmtList, RuntimeMethod method)
         {
             var getrt = GetCLRRuntimeById(method.id);
             //if( getrt != null )
@@ -42,7 +42,21 @@ namespace SimpleLanguage.VM.Runtime
             //}
             //else
             {
-                RuntimeVM clrRuntime = new RuntimeVM( irmtList, method);
+                RuntimeVM clrRuntime = new RuntimeVM(rc, irmtList, method);
+                m_ClrRuntimeStack.Push(clrRuntime);
+                return clrRuntime;
+            }
+        }
+        public static RuntimeVM CreateCLRRuntime(RuntimeType rt, RuntimeMethod method)
+        {
+            var getrt = GetCLRRuntimeById(method.id);
+            //if( getrt != null )
+            //{
+            //    return getrt;
+            //}
+            //else
+            {
+                RuntimeVM clrRuntime = new RuntimeVM(rt, method);
                 m_ClrRuntimeStack.Push(clrRuntime);
                 return clrRuntime;
             }
@@ -195,11 +209,23 @@ namespace SimpleLanguage.VM.Runtime
                 Log.AddRuntimeLog(LID.ShowMessageAssert, $"global is nullglobalId={id} ");
             }
         }
-        public static void RunIRMethod( List<RuntimeType> irmtList, RuntimeMethod _irMethod, bool isDisCountStackCount = true )
+        public static void RunIRMethod( RuntimeClass rc, List<RuntimeType> irmtList, RuntimeMethod _irMethod, bool isDisCountStackCount = true )
         {
             topCLRRuntime = m_ClrRuntimeStack.Peek();
-            RuntimeVM clrRuntime = CreateCLRRuntime( irmtList, _irMethod );
+            RuntimeVM clrRuntime = CreateCLRRuntime( rc, irmtList, _irMethod );
             clrRuntime.Run(isDisCountStackCount);
+            PopCLRRuntime();
+            var topt2 = m_ClrRuntimeStack.Peek();
+            topt2.AddReturnObjectArray(clrRuntime.returnRuntimeObjectArray);
+            //if (!clrRuntime.isPersistent)
+            {
+            }
+        }
+        public static void RunIRMethodByRuntimeType( RuntimeType rt, RuntimeMethod rm )
+        {
+            topCLRRuntime = m_ClrRuntimeStack.Peek();
+            RuntimeVM clrRuntime = CreateCLRRuntime(rt, rm );
+            clrRuntime.Run(true);
             PopCLRRuntime();
             var topt2 = m_ClrRuntimeStack.Peek();
             topt2.AddReturnObjectArray(clrRuntime.returnRuntimeObjectArray);

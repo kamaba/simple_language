@@ -364,7 +364,7 @@ namespace SimpleLanguage.Project
                 if (TryCreateArrayExpressNodeFromJsonArray(projectMc, element, out var arrExpress, out var arrMetaType))
                 {
                     mmv.SetMetaDefineType(arrMetaType);
-                    mmv.SetRealMetaType(new MetaType(arrMetaType));
+                    mmv.SetRealMetaType(arrMetaType);
                     mmv.SetIsDefineMetaType(true);
                     mmv.SetExpress(new MetaNewObjectExpressNode(arrMetaType, arrExpress, projectMc, null ));
                     FinalizeInjectedProjectGlobalMember(projectMc, mmv);

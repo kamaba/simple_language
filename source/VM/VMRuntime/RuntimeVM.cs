@@ -59,7 +59,7 @@ namespace SimpleLanguage.VM.Runtime
 
             Init();
         }
-        public RuntimeVM(List<RuntimeType> rtList, RuntimeMethod rm)
+        public RuntimeVM(RuntimeType rt, RuntimeMethod rm)
         {
             m_Method = rm;
             m_Id = rm.id;
@@ -67,6 +67,18 @@ namespace SimpleLanguage.VM.Runtime
             m_ValueIndex = 0;
             //m_RawCapacity = 1024;
             m_InstructionList = rm.InstructionList.ToArray();
+            m_CurrentRuntimeType = rt;
+            Init();
+        }
+        public RuntimeVM( RuntimeClass rc, List<RuntimeType> rtList, RuntimeMethod rm)
+        {
+            m_Method = rm;
+            m_Id = rm.id;
+            m_ValueStack = new RuntimeValue[1024];
+            m_ValueIndex = 0;
+            //m_RawCapacity = 1024;
+            m_InstructionList = rm.InstructionList.ToArray();
+            m_CurrentRuntimeType = new RuntimeType(rc, rtList);
             Init();
         }
         public RuntimeVM(string id, List<RuntimeType> rtList, List<Instruction> irlist)
@@ -2263,7 +2275,7 @@ namespace SimpleLanguage.VM.Runtime
                                 m_CurrentRuntimeType.runtimeTemplateList, true);
                             classRTList.Add(crt);
                         }
-                        var rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(runtimeCall.runtimeDefType.runtimeClass, classRTList);
+                        var rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(runtimeCall.runtimeDefType.runtimeClass, classRTList);
                         if (rt == null)
                         {
                             rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(runtimeCall.runtimeDefType.runtimeClass, classRTList);
@@ -2281,7 +2293,7 @@ namespace SimpleLanguage.VM.Runtime
                                 var crt = RuntimeTypeManager.GetRuntimeTypeByDefType(runtimeCall.templateRuntimeDefTypeList[i]);
                                 classRTList.Add(crt);
                             }
-                            CLRVM.RunIRMethod(classRTList, runtimeCall.method);
+                            CLRVM.RunIRMethodByRuntimeType(rt, runtimeCall.method);
                         }
                     }
                     break;
@@ -2353,7 +2365,7 @@ namespace SimpleLanguage.VM.Runtime
                                     var irmethod = irc.GetNonStaticMethodIndexByName(mfc.methodName, out int index);
                                     if (irmethod != null)
                                     {
-                                        CLRVM.RunIRMethod(rtList, irmethod);
+                                        CLRVM.RunIRMethodByRuntimeType(rt, irmethod);
                                     }
                                     else
                                     {
@@ -2362,7 +2374,7 @@ namespace SimpleLanguage.VM.Runtime
                                 }
                                 else
                                 {
-                                    CLRVM.RunIRMethod(rtList, mfc.method);
+                                    CLRVM.RunIRMethodByRuntimeType(rt, mfc.method);
                                 }
                             }
                         }
@@ -2431,13 +2443,15 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddRuntimeLog(LID.ShowMessageAssert, "Method index not found: " + iri.index);
                             return;
                         }
-                        List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
-                        for (int i = 0; i < runtimeCall.templateRuntimeDefTypeList.Count; i++)
-                        {
-                            var crt = GetRuntimeTypeByDefType(runtimeCall.templateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
-                            rtList.Add(crt);
-                        }
-                        CLRVM.RunIRMethod(rtList, cfc);
+                        //List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
+                        //for (int i = 0; i < runtimeCall.templateRuntimeDefTypeList.Count; i++)
+                        //{
+                        //    var crt = GetRuntimeTypeByDefType(runtimeCall.templateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
+                        //    rtList.Add(crt);
+                        //}
+
+
+                        CLRVM.RunIRMethodByRuntimeType(rt, cfc);
 
                         var a = ObjectManager.classObjectDict;
                     }

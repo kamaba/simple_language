@@ -21,6 +21,7 @@ Project
         ObjectTest.fun()
         NumberTest.fun()
         GlobalTest.fun()        
+        
         ArrayTest.fun()        
         AssignStatement.fun()
         BoolTest.fun()
@@ -37,6 +38,8 @@ Project
         ConStrCC.ConstructionTest.fun()
         ExpressTest.fun()        
         ExtendsClass.fun()     
+        NCTest.fun()
+        
         
     }
     _test_()

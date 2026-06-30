@@ -136,7 +136,7 @@ namespace SimpleLanguage.VM
                 }
                 else
                 {
-                    var vm = SimpleLanguage.VM.Runtime.CLRVM.CreateCLRRuntime(new List<RuntimeType>(), rm);
+                    var vm = SimpleLanguage.VM.Runtime.CLRVM.CreateCLRRuntime( null, null, rm);
                     vm.Run(true);
                     SimpleLanguage.VM.Runtime.CLRVM.PopCLRRuntime();
                 }
