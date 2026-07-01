@@ -573,3 +573,5 @@
 12269,Error,TRUE,FALSE,0,,"不支持解析该类型",,Auto-generated LID mapping,,
 12270,Error,TRUE,FALSE,2,,"在[{0}]中没有发现[{1}]的元素",,Auto-generated LID mapping,,
 12271,Error,TRUE,FALSE,1,,"没有发现[{0}]的命名空间",,Auto-generated LID mapping,,
+12272,Error,TRUE,FALSE,1,,"字符串解析需要结束符 对[{0}]字符后",,Auto-generated LID mapping,,
+12273,Error,TRUE,FALSE,2,,"[{0}]类的[{1}]函数中，需要增加override关键字，增加函数体的约束",,Auto-generated LID mapping,,

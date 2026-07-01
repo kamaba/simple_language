@@ -1244,7 +1244,7 @@ namespace SimpleLanguage.Compile
                 }
                 else if (this.m_TempChar == '\n')
                 {
-                    Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "other char need handleError NotInterrup " + m_CurChar);
+                    Log.AddTokenByString(LID.TokenParseStringNeedEndSign, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "other char need handleError NotInterrup " + m_CurChar);
                     m_Builder.Append(m_TempChar);
                 }
                 else if (m_TempChar == '"')

@@ -1258,7 +1258,57 @@ namespace SimpleLanguage.Core
             MetaType mitp = new MetaType(CoreMetaClassManager.int32MetaClass);
             metaInputTemplateCollection.AddMetaTemplateParamsList(mitp);
 
-            m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.rangeMetaClass, null, metaInputTemplateCollection);            
+            // 查找实际的 Range<T> 类（来自 Range.sl），而非内置占位 rangeMetaClass
+            // Range 定义在 Core 命名空间下，通过模块层级查找 Core -> Range
+            MetaClass rangeTemplateClass = null;
+            MetaNode rangeNode = null;
+            // 1. 直接在根模块下查找 "Range"
+            rangeNode = ModuleManager.instance.coreModule.metaNode.GetChildrenMetaNodeByName("Range");
+            // 2. 在 "Core" 命名空间下查找 "Range"
+            if (rangeNode == null)
+            {
+                var coreNs = ModuleManager.instance.coreModule.metaNode.GetChildrenMetaNodeByName("Core");
+                if (coreNs != null)
+                {
+                    rangeNode = coreNs.GetChildrenMetaNodeByName("Range");
+                }
+            }
+            // 3. 通过 owner 命名空间链查找
+            if (rangeNode == null && ownerMetaBase?.metaNode != null)
+            {
+                var mb = ownerMetaBase.metaNode;
+                while (mb != null)
+                {
+                    rangeNode = mb.GetChildrenMetaNodeByName("Range");
+                    if (rangeNode == null)
+                    {
+                        var coreChild = mb.GetChildrenMetaNodeByName("Core");
+                        if (coreChild != null)
+                        {
+                            rangeNode = coreChild.GetChildrenMetaNodeByName("Range");
+                        }
+                    }
+                    if (rangeNode != null) break;
+                    mb = mb.parentNode;
+                }
+            }
+            if (rangeNode != null && rangeNode.IsMetaClass())
+            {
+                rangeTemplateClass = rangeNode.GetMetaClassByTemplateCount(1);
+            }
+
+            if (rangeTemplateClass != null)
+            {
+                // 使用实际的 Range<int> 类，与 range() 关键字相同的 MetaType 构造方式
+                m_ExpressReturnMetaType = new MetaType(rangeTemplateClass, new List<MetaType>()
+                {
+                    new MetaType(CoreMetaClassManager.int32MetaClass)
+                });
+            }
+            else
+            {
+                m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.rangeMetaClass, null, metaInputTemplateCollection);
+            }
             m_NewMetaType = m_ExpressReturnMetaType;
 
             MetaInputParamCollection mdpc = new MetaInputParamCollection(ownerMetaBase, mbs);
@@ -1273,26 +1323,30 @@ namespace SimpleLanguage.Core
                     MetaInputParam mip = new MetaInputParam(mcen1);
                     mdpc.AddMetaInputParam(mip);
                 }
-                else
-                {
-                    //??????????
-                }
 
                 int arr1 = 0;
                 if (int.TryParse(arr[1], out arr1))
                 {
-                    MetaConstExpressNode mcen2 = new MetaConstExpressNode(EType.Int32, arr[1]);
+                    // Range.sl 的 moveNext 是开区间（nextValue < _end），所以 end 需要 +1 以包含右端值
+                    MetaConstExpressNode mcen2 = new MetaConstExpressNode(EType.Int32, arr1 + 1);
                     MetaInputParam mip2 = new MetaInputParam(mcen2);
                     mdpc.AddMetaInputParam(mip2);
                 }
-                else
-                {
-                    //??????????
-                }
 
+                // step = 1
                 MetaInputParam mip3 = new MetaInputParam(new MetaConstExpressNode(EType.Int32, 1));
                 mdpc.AddMetaInputParam(mip3);
             }
+
+            // 查找 Range<T> 的 _init_(T, T, T) 构造函数
+            if (rangeTemplateClass != null)
+            {
+                m_MetaMemberFunction = rangeTemplateClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(
+                    "_init_", 0, mdpc);
+            }
+
+            // 设置参数列表（依赖 m_MetaMemberFunction 确定参数个数）
+            SetInputParams(mdpc);
         }
         public MetaNewObjectExpressNode(MetaType mt, MetaBase ownerMC, MetaBlockStatements mbs)
         {
@@ -2171,7 +2225,7 @@ namespace SimpleLanguage.Core
             return "NewObjectExpressNode: " + ToFormatString();
         }
         /// <summary>
-        /// ?? <paramref name="sourceField"/> ??????? <see cref="MetaMemberData.expressNode"/>?????? <see cref="MetaNewObjectExpressNode"/>????????��???��???
+        /// ?? <paramref name="sourceField"/> ??????? <see cref="MetaMemberData.expressNode"/>?????? <see cref="MetaNewObjectExpressNode"/>????????��???��???
         /// </summary>
         //public void FillAnonymousDataAssignStatementsFromMemberDict(
         //    MetaMemberData sourceField,

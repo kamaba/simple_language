@@ -621,7 +621,7 @@ namespace SimpleLanguage.Core
             {
                 MetaClass interfaceMc = it.GetTemplateMetaClass();
 
-                Token token = null;
+                Token token = m_Token;
                 foreach( var interfaceMMF in interfaceMc.m_FileCollectMetaMemberFunctionList )
                 {
                     bool certified = false;
@@ -636,6 +636,12 @@ namespace SimpleLanguage.Core
                             {
                                 certified = true;
                                 selfMMF.SetIsOverrideInterface(true);
+                                break;
+                            }
+                            else
+                            {
+                                certified = true;
+                                Log.AddMetaCoreLog(LID.MetaCoreFunctionNeedOverrideFlag, token, "interface function need override flag", this.allName, interfaceMMF.name );
                                 break;
                             }
                         }

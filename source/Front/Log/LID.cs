@@ -67,5 +67,7 @@
         MetaCoreNotSupportParseType = 12269,
         MetaCoreNotFoundMetaMemberVariable = 12270,
         FileMetaNotFoundNameSpace = 12271,
+        TokenParseStringNeedEndSign = 12272,
+        MetaCoreFunctionNeedOverrideFlag = 12273,
     }
 }

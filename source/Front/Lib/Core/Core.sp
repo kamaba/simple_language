@@ -18,6 +18,7 @@ Project
     _main_()
     {
         
+        #!
         ObjectTest.fun()
         NumberTest.fun()
         GlobalTest.fun()        
@@ -39,6 +40,8 @@ Project
         ExpressTest.fun()        
         ExtendsClass.fun()     
         NCTest.fun()
+        !#
+        ForTest.forfun()
         
         
     }
