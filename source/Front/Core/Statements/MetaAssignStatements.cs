@@ -96,7 +96,7 @@ namespace SimpleLanguage.Core
     public partial class MetaAssignStatements : MetaStatements
     {
         public MetaMethodCall leftMethodCall => m_LeftMethodCall;
-        public EOpSign opSign => m_OpSign;
+        //public EOpSign opSign => m_OpSign;
         public ELeftRightOpSign autoAddExpressOpSign => m_AutoAddExpressOpSign;
         public MetaExpressNodeBase rightMetaExpress => m_RightMetaExpress;
         public MetaVariable metaVariable => m_MetaVariable;
@@ -111,10 +111,8 @@ namespace SimpleLanguage.Core
 
         private MetaCallLinkExpressNode m_LeftMetaExpress;
         private MetaMethodCall m_LeftMethodCall = null;
-        private MetaVisitVariable m_LeftLastVisitVariable = null;
 
         private MetaExpressNodeBase m_RightMetaExpress;
-        private bool m_IsSettings = false;
 
         public MetaAssignStatements( MetaBlockStatements mbs ):base( mbs )
         {
@@ -126,7 +124,6 @@ namespace SimpleLanguage.Core
         }
         public MetaAssignStatements(MetaBlockStatements mbs, FileMetaDefineVariableSyntax fmos) : base(mbs)
         {
-            System.Diagnostics.Debug.Assert(false);
             m_FileMetaDefineVariableSyntax = fmos;
             this.m_MetaVariable = mbs.ownerMetaClass.GetMetaMemberVariableByName(m_FileMetaDefineVariableSyntax.name);
 
@@ -134,15 +131,16 @@ namespace SimpleLanguage.Core
         }
         private void Parse()
         {
-            MetaCallLink metaCallLink = null;
-            bool isRightDirectBraceLiteral = m_FileMetaOpAssignSyntax?.express is FileMetaBraceTerm;
+            MetaType expressMdt = new MetaType(CoreMetaClassManager.objectMetaClass);
 
+            MetaCallLink metaCallLink = null;
+            FileMetaBaseTerm express = null;
             if (m_FileMetaOpAssignSyntax != null)
             {
                 metaCallLink = new MetaCallLink(m_FileMetaOpAssignSyntax.variableRef,
                 m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements, null, null);
                 m_SignToken = m_FileMetaOpAssignSyntax?.assignToken;
-                var callnodelist = m_FileMetaOpAssignSyntax?.variableRef ?. callNodeList;
+                var callnodelist = m_FileMetaOpAssignSyntax?.variableRef?.callNodeList;
                 if( callnodelist != null && callnodelist.Count > 0 )
                 {
                     m_Token = callnodelist[callnodelist.Count - 1].token;
@@ -155,27 +153,27 @@ namespace SimpleLanguage.Core
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 不允许在语句中，出现static字段! " + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
                 }
+                express = m_FileMetaOpAssignSyntax.express;
+                if( express != null && metaCallLink.callNodeList.Count > 1)
+                {
+                    TryParseRightExpress(m_FileMetaOpAssignSyntax.express,null);
+                }
             }
             else if( m_FileMetaDefineVariableSyntax != null)
             {
+                System.Diagnostics.Debug.Assert(false);
                 //metaCallLink = new MetaCallLink(m_FileMetaDefineVariableSyntax.,
                 //m_OwnerMetaBlockStatements?.ownerMetaClass, m_OwnerMetaBlockStatements, null, null);
                 m_SignToken = m_FileMetaDefineVariableSyntax?.assignToken;
                 m_Token = m_FileMetaDefineVariableSyntax?.nameToken;
 
             }
-
-            MetaType expressMdt = new MetaType(CoreMetaClassManager.objectMetaClass);
-            if ( m_FileMetaOpAssignSyntax.express != null
-                && metaCallLink.callNodeList.Count > 1)
-            {
-                TryParseRightExpress(null);
-            }
-            if (metaCallLink == null)
-            {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
-                return;
-            }
+            
+            //if (metaCallLink == null)
+            //{
+            //    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
+            //    return;
+            //}
 
             m_LeftMetaExpress = new MetaCallLinkExpressNode(metaCallLink);
             AllowUseSettings auc = new AllowUseSettings();
@@ -196,47 +194,26 @@ namespace SimpleLanguage.Core
                 return;
             }
 
+            bool IsRightSetLeftValue = false;
             if (m_LeftMetaExpress.metaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.MethodCall)
             {
                 var fun = m_LeftMetaExpress.metaCallLink.finalCallNode.methodCall.function;
-                if (fun is MetaMemberFunction)
+                if (fun is MetaMemberFunction mmf)
                 {
-                    MetaMemberFunction mmf = fun as MetaMemberFunction;
                     if (mmf.isSet)
                     {
-                        m_IsSettings = true;
+                        IsRightSetLeftValue = true;
                         m_LeftMethodCall = m_LeftMetaExpress.metaCallLink.finalCallNode.methodCall;
                         m_RightMetaExpress = null;
 
                         var firstParam = mmf.metaMemberParamCollection.metaDefineParamList[0];
                         if (firstParam?.metaVariable != null)
                         {
-                            expressMdt = firstParam.metaVariable.isDefineMetaType
-                                ? firstParam.metaVariable.defineMetaType
-                                : (firstParam.metaVariable.realMetaType ?? firstParam.metaVariable.defineMetaType);
+                            expressMdt = firstParam.metaVariable.GetFinalMetaType();
                         }
                     }
                 }
             }
-            else if( m_LeftMetaExpress.metaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.VisitVariable )
-            {
-                m_LeftLastVisitVariable = m_LeftMetaExpress.metaCallLink.finalCallNode.visitVariable;
-            }
-
-            // setStatements    Class1{ set void A(int value) { } }  a.A = 10;  => a.A(10);
-            //if (m_LeftMethodCall != null)
-            //{
-            //    if (m_SignToken?.type == ETokenType.Assign)
-            //    {
-            //        m_RightMetaExpress = null;
-            //    }
-            //    else
-            //    {
-            //        //这里只能使用等号进行赋值操作  a.A += 10;  是不允许的
-            //        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error set语句只能使用=号进行赋值操作!!");
-            //        return;
-            //    }
-            //}
 
             ETokenType ett = m_SignToken.type;
             switch( ett )
@@ -332,13 +309,16 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 赋值语句解析符号暂不支持: " + ett.ToString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error not support operator sign " + ett.ToString());
                     }
                     break;
             }
             if(m_OpSign != EOpSign.None )
             {
-                m_LeftLastVisitVariable?.SetNotUseFast();
+                if (m_LeftMetaExpress.metaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.VisitVariable)
+                {
+                    m_LeftMetaExpress.metaCallLink.finalCallNode.visitVariable?.SetNotUseFast();
+                }
             }
 
 
@@ -371,37 +351,23 @@ namespace SimpleLanguage.Core
                 expressMdt = m_MetaVariable.GetFinalMetaType();
             }
 
-            if (m_RightMetaExpress == null
-                && m_FileMetaOpAssignSyntax?.express != null )
+            if (m_RightMetaExpress == null && express != null )
             {
-                var rightPreferredMetaType = expressMdt;
-                if (rightPreferredMetaType == null
-                    || (!rightPreferredMetaType.isData
-                        && !rightPreferredMetaType.isClass
-                        && !rightPreferredMetaType.isMap
-                        && rightPreferredMetaType.eMetaTypeType != EMetaTypeType.MetaGenClass))
-                {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
-                        "右值为 {} 初始化时，左值类型必须是 class/data/array/map，当前类型不支持该写法。");
-                    return;
-                }
-
-                if (!TryParseRightExpress(rightPreferredMetaType))
+                if (!TryParseRightExpress(express, expressMdt ))
                 {
                     return;
                 }
             }
 
-            if( !m_IsSettings )
+            if( !IsRightSetLeftValue )
             {
                 if (m_RightMetaExpress == null)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 解析新建变量语句时，表达式为空!!__2");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error right express is null!");
                     return;
                 }
                 if (m_LeftMethodCall == null)
                 {
-                    //TryCoerceRightArrayLiteralToLeftArrayTypeAfterLeftResolved();
                     CheckLeftAndRightExpress();
                 }
             }
@@ -409,19 +375,14 @@ namespace SimpleLanguage.Core
             return;
         }
 
-        private bool TryParseRightExpress(MetaType rightMetaTypeHint)
+        private bool TryParseRightExpress(FileMetaBaseTerm express, MetaType rightMetaTypeHint)
         {
-            if (m_FileMetaOpAssignSyntax?.express == null)
-            {
-                return true;
-            }
-
             CreateExpressParam cep = new CreateExpressParam()
             {
                 ownerMBS = m_OwnerMetaBlockStatements,
                 metaType = rightMetaTypeHint,
                 ownerMetaBase = ownerMetaClass,
-                fme = m_FileMetaOpAssignSyntax.express,
+                fme = express,
                 isStatic = false,
                 isConst = false,
                 parsefrom = EParseFrom.StatementRightExpress,
@@ -433,65 +394,31 @@ namespace SimpleLanguage.Core
                 Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "MetaAssignStatements", m_FileMetaOpAssignSyntax.express.token);
                 return false;
             }
-
-            this.m_RightMetaExpress.Parse(new AllowUseSettings() { setterFunction = false, getterFunction = true, ifNotVariableThenAddVariable = rightMetaTypeHint!= null } );
-            this.m_RightMetaExpress.CalcReturnType();
-            var newexpress = ExpressManager.ConvertNewExpress(m_RightMetaExpress, rightMetaTypeHint );            
-            if (newexpress != m_RightMetaExpress )
+            var alus = new AllowUseSettings()
             {
-                m_RightMetaExpress = newexpress;
+                setterFunction = false,
+                getterFunction = true,
+                ifNotVariableThenAddVariable = rightMetaTypeHint != null,
+                isTryRightExpress = rightMetaTypeHint == null
+            };
+            this.m_RightMetaExpress.Parse(alus);
+
+            if( this.m_RightMetaExpress.parseSuccessed )
+            {
+                this.m_RightMetaExpress?.CalcReturnType();
+                var newexpress = ExpressManager.ConvertNewExpress(m_RightMetaExpress, rightMetaTypeHint);
+                if (newexpress != m_RightMetaExpress && m_RightMetaExpress != null)
+                {
+                    m_RightMetaExpress = newexpress;
+                }
+            }
+            else
+            {
+                m_RightMetaExpress = null;
+                return false;
             }
             return true;
         }
-        ///// <summary>
-        ///// 赋值常先解析右值再解析左值（例如 setter 需先把右值放入参数再解析左值），故 <c>[1,2,100]</c> 首次推断无左值元素类型。
-        ///// 左值最终类型可用后：若左为具元素模板的数组（非 object 元素）、右为未显式 Array-T-构造调用的数组字面量、且左右元素类型不一致，
-        ///// <see cref="m_IsSettings"/> 或左值非变量访问时跳过。
-        ///// </summary>
-        //private void TryCoerceRightArrayLiteralToLeftArrayTypeAfterLeftResolved()
-        //{
-        //    if (m_IsSettings || m_LeftMethodCall != null || m_RightMetaExpress == null || m_MetaVariable == null)
-        //    {
-        //        return;
-        //    }
-
-        //    if (m_RightMetaExpress is not MetaNewObjectExpressNode mnoe 
-        //        || mnoe.newType != MetaNewObjectExpressNode.ENewType.ArrayClass)
-        //    {
-        //        return;
-        //    }
-
-        //    if (mnoe.usesExplicitArrayElementTypeSyntax)
-        //    {
-        //        return;
-        //    }
-
-        //    var leftMt = m_MetaVariable.GetFinalMetaType();
-        //    if (leftMt == null || !leftMt.IsArray())
-        //    {
-        //        return;
-        //    }
-
-        //    var leftElem = ClassManager.GetSingleTemplateArgMetaType(leftMt);
-        //    if (leftElem?.metaClass == null || leftElem.metaClass == CoreMetaClassManager.objectMetaClass)
-        //    {
-        //        return;
-        //    }
-
-        //    var rightMt = m_RightMetaExpress.GetReturnMetaType();
-        //    if (rightMt == null || !rightMt.IsArray())
-        //    {
-        //        return;
-        //    }
-
-        //    var rightElem = ClassManager.GetSingleTemplateArgMetaType(rightMt);
-        //    if (rightElem != null )
-        //    {
-        //        return;
-        //    }
-        //    mnoe.CalcReturnType();
-        //}
-
         void CheckLeftAndRightExpress()
         {
             if (m_RightMetaExpress == null || m_MetaVariable == null)

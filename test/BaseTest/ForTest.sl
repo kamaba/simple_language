@@ -1,7 +1,7 @@
 ForTest
 {   
     # forfun 作为入口，统一调用所有分类测试
-    static forfun()
+    static fun()
     {
         ForTest.forInMixedArray()
         ForTest.forInEnumBridgeKind()
@@ -229,7 +229,7 @@ ForTest
         for v in [1, 2, 3, 4, 5]
         {
             if v == 3 { continue }
-            if v == 5 { break }
+            if v ==4 { break }
             global.println("1.2 for-in-flow v=$v")
         }
 
@@ -278,7 +278,7 @@ ForTest
         }
         override check()
         {
-
+            global.println("check:" + this._paycash.toString() )
         }
     }
     static forInterface()

@@ -32,6 +32,12 @@ namespace SimpleLanguage.Core
         Not,
         Xor,
     }
+    public enum EParseState
+    {
+        None,
+        ParsedFailed,
+        ParseSuccess ,
+    }
     public  abstract class MetaExpressNodeBase
     {
         public virtual int opLevel
@@ -54,6 +60,7 @@ namespace SimpleLanguage.Core
         /// <summary>原始宿主节点（Class / Data / Enum）。</summary>
         public MetaBase ownerMetaBase => m_OwnerMetaBase;
         public MetaBlockStatements ownerMetaBlockStatements => m_OwnerMetaBlockStatements;
+        public bool parseSuccessed => m_ParsedState == EParseState.ParseSuccess;
 
 
         /// <summary>宿主：<see cref="MetaClass"/> / <see cref="MetaData"/> / <see cref="MetaEnum"/>，与 <see cref="MetaVariable"/> 一致。</summary>
@@ -63,7 +70,7 @@ namespace SimpleLanguage.Core
         protected bool m_ConvertNewExpressNode = false;
         protected bool m_ConvertOpExpressNode = false;
         protected Token m_Token = null;
-        protected bool m_Parsed = false;
+        protected EParseState m_ParsedState = EParseState.None;
 
         public void SetToken(Token token) { m_Token = token; }
         public void SetOwnerBase(MetaBase mb) { m_OwnerMetaBase = mb; }

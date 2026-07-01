@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaCallStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -15,10 +15,12 @@ namespace SimpleLanguage.Core
     public partial class MetaCallStatements : MetaStatements
     {
         public MetaCallLink metaCallLink => m_MetaCallLink;
+        public bool isHasReturnMetaVariable => m_IsHasReturnMetaVariable;
 
         private MetaCallLink m_MetaCallLink = null;
         private FileMetaCallSyntax m_FileMetaCallSyntax = null;
         private AllowUseSettings m_AllowUseSettings = new AllowUseSettings();
+        private bool m_IsHasReturnMetaVariable = false;
         public MetaCallStatements(MetaBlockStatements mbs, FileMetaCallSyntax fmcl) : base(mbs)
         {
             m_FileMetaCallSyntax = fmcl;
@@ -30,6 +32,21 @@ namespace SimpleLanguage.Core
 
             m_MetaCallLink = new MetaCallLink(fmcl.variableRef, mbs.ownerMetaBase, mbs, null, null );
             m_MetaCallLink.Parse(m_AllowUseSettings);
+
+            // Standalone call statements have no receiver for the return value.
+            // If the final call returns a non-void value, mark it so the IR layer
+            // can emit a Pop to discard the unused return value from the stack.
+            var finalNode = m_MetaCallLink.finalCallNode;
+            if (finalNode != null &&
+                (finalNode.visitType == MetaVisitNode.EVisitType.MethodCall ||
+                 finalNode.visitType == MetaVisitNode.EVisitType.SystemCall))
+            {
+                var fun = finalNode.methodCall?.function;
+                if (fun != null && fun.returnMetaVariable?.defineMetaType?.metaClass?.eType != EType.Void)
+                {
+                    m_IsHasReturnMetaVariable = true;
+                }
+            }
         }
         public override void UpdateOwnerMetaClass(MetaBase ownerBase)
         {

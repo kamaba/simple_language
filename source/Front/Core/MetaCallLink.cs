@@ -183,49 +183,6 @@ namespace SimpleLanguage.Core
             }
             m_FinalMetaCallNode.SetStoreMetaVariable(mv);
         }
-        /*
-        void AddMetaArrayNode(FileMetaCallNode cn2, MetaType frontDefineMt, MetaVariable mv, MetaCallNode frontMetaNode )
-        {
-            if( cn2.isArray )
-            {
-                if( cn2.fileMetaBracketTermList.Count > 3 )
-                {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鏁扮粍涓嶈兘瓒呰繃涓夌淮!!");
-                }
-
-                for (int j = 0; j < cn2.fileMetaBracketTermList.Count; j++)
-                {
-                    var arraycontent = cn2.fileMetaBracketTermList[j];
-                    var firstNode = new MetaCallNode(null, fmcn, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
-                    frontMetaNode = firstNode;
-                    m_CallNodeList.Add(firstNode);
-
-                    MetaCallLink cmcl = new MetaCallLink(cn2.fileMetaBracketTermList[j], m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt, mv, frontMetaNode);
-                    for (int i = 0; i < cmcl.m_CallNodeList.Count; i++)
-                    {
-                        cmcl.m_CallNodeList[i].SetVisitFlag(true);
-                    }
-                    m_CallNodeList.AddRange(cmcl.m_CallNodeList);
-                }
-            }
-            //if (cn2.arrayNodeList.Count > 0)
-            //{
-            //    if (cn2.arrayNodeList.Count > 3)
-            //    {
-            //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鏁扮粍涓嶈兘瓒呰繃涓夌淮!!");
-            //    }
-            //    for (int j = 0; j < cn2.arrayNodeList.Count; j++)
-            //    {
-            //        MetaCallLink cmcl = new MetaCallLink(cn2.arrayNodeList[j], m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt, mv, frontMetaNode);
-            //        for( int i = 0; i < cmcl.m_CallNodeList.Count; i++ )
-            //        {
-            //            cmcl.m_CallNodeList[i].SetVisitFlag(true);
-            //        }
-            //        m_CallNodeList.AddRange(cmcl.m_CallNodeList);
-            //    }
-            //}
-        }
-        */
         public bool Parse(AllowUseSettings _useConst)
         {
             if ((m_CallNodeList == null || m_CallNodeList.Count == 0)
@@ -267,7 +224,7 @@ namespace SimpleLanguage.Core
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, "Parse Statement Error 鍦ㄤ娇鐢∟ewClassName鐨勬柟寮忥紝鍚庤竟涓嶅厑璁告湁鍏跺畠鐨勮皟鐢?");
                         }
                     }
-                    if (flag)
+                    if (flag )
                     {
                         newList.Add(m_CallNodeList[i]);
                         var cnt = m_CallNodeList[i];
@@ -310,7 +267,14 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreParseCallNodeLinkFailed, m_CallNodeList[i].token, "callLink", sb.ToString(), m_CallNodeList[i].token.ToLexemeAllString() );
+                        if(allowUseSettings.isTryRightExpress == false)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreParseCallNodeLinkFailed, m_CallNodeList[i].token, "callLink", sb.ToString(), m_CallNodeList[i].token.ToLexemeAllString());                                                     
+                        }
+                        else
+                        {
+                            return false;
+                        }
                     }
                 }
             }

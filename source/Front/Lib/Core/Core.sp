@@ -40,9 +40,10 @@ Project
         ExpressTest.fun()        
         ExtendsClass.fun()     
         NCTest.fun()
-        !#
         ForTest.forfun()
-        
+        GenClass_Interface.fun()
+        !#
+        GenClass.fun()
         
     }
     _test_()

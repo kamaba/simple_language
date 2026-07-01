@@ -1,331 +1,352 @@
 import Std
 
-public class Class1
-{
-    public int a = 20
+# ============================================================
+# 接口测试用例 - 覆盖接口声明、实现、多态、继承等场景
+# ============================================================
 
-    public static Class1 instance = Class1(){a = 0}
+# --- 1. 单接口基本实现 ---
+interface IShape
+{
+    double area()
+    string name()
 }
-List0<T>
+
+class Circle interface IShape
 {
-    List1<List2<T> > List0_list0t = null
-    T List0_list0t1 = null
-    List1<T> List0_list0t2 = null
-    List0<int> List0_list0t3 = null
-    T getA(){ ret null}
+    radius = 0.0d
 
-    _init_()
+    _init_( double r )
     {
-
+        this.radius = r
     }
 
-    _init_( int c )
+    override double area()
     {
+        ret 3.14d * this.radius * this.radius
+    }
 
+    override string name()
+    {
+        ret "Circle"
     }
 }
-List1<T> extends List0<T>
-{
-    T List1_list1t = null
-    T List1_getB(){ ret null}
-}
-List2<T> extends List1<List0<object> >
-{
-    T list2t = null
-    T getC(){ ret null} 
-}
-Map<T1,T2>
-{
-}
 
-public interface IList
+class Rectangle interface IShape
 {
-    int add(object value)
-    void clear( IList<int> a )
-    #interface bool contains( object value )
-    #interface int indexOf( object value )
-    #interface void insert( int index, object val )
-    #interface void remove( object value )
-    #interface void removeAt( int index )
-}
-public interface IList<T>
-{
-    #interface T getValue( int index )
-    void insert( int index, T t )
-}
-public interface ILInstList<T> extends IList<object>
-{
-    void insert2( int index, T t )
-}
-public interface IList2<T>
-{
-    void T getABC()
-}
+    width = 0.0d
+    height = 0.0d
 
-public class List extends List<object> interface IList2<List<int> >    #如果出现T会报错
-{
-    override List<int> getABC(){ ret null }
-}
-
-public class List<T> interface IList<T>, IList
-{
-    List0<List1<T> > _listObj1 = null
-    List<string> _listObj2 = null
-    private Int32 _count = 0;
-    #UInt16 m_Bound1 = 0;
-    #UInt16 m_Bound2 = 0;
-
-    int _index = -1;
-    T _value = null
-
-    int _listPtr = 0;
-
-    _init_( int _count = 0 )
+    _init_( double w, double h )
     {
-        #this.m_Count = _count
-        #this.m_Bound1 = _b1
-        #this._listPtr = ListMetaClass.SetListCount( _count )
+        this.width = w
+        this.height = h
     }
-    #!
-    _init_( short _count = 0s, short _b1 = 0s )
+
+    override double area()
     {
-        #this.m_Count = _count;
-        #this.m_Bound1 = _b1;
-    } 
-    !#   
-    
-    override add( T t )
+        ret this.width * this.height
+    }
+
+    override string name()
     {
-        var Listt_r1 = null;  #CSharp.SL.Core.MetaArrayClass.Add( this, t );
-        if Listt_r1 != null
+        ret "Rectangle"
+    }
+}
+
+# --- 2. 多接口实现 ---
+interface IComparable
+{
+    int compareTo( object other )
+}
+
+interface IDescribable
+{
+    string describe()
+}
+
+class Product interface IComparable, IDescribable
+{
+    pid = 0
+    pname = ""
+    price = 0.0d
+
+    _init_( int id, string n, double p )
+    {
+        this.pid = id
+        this.pname = n
+        this.price = p
+    }
+
+    override int compareTo( object other )
+    {
+        Product o = other as Product
+        if o == null { ret 1 }
+        if this.price > o.price { ret 1 }
+        elif this.price < o.price { ret -1 }
+        else { ret 0 }
+    }
+
+    override string describe()
+    {
+        ret "Product[id=" + this.pid.toString() + ", name=" + this.pname + ", price=" + this.price.toString() + "]"
+    }
+}
+
+# --- 3. 接口继承接口 ---
+interface IAnimal
+{
+    string sound()
+}
+
+interface IPet extends IAnimal
+{
+    string petName()
+}
+
+class Dog interface IPet
+{
+    dogName = ""
+
+    _init_( string n )
+    {
+        this.dogName = n
+    }
+
+    override string sound()
+    {
+        ret "Woof"
+    }
+
+    override string petName()
+    {
+        ret this.dogName
+    }
+}
+
+class Cat interface IPet
+{
+    catName = ""
+
+    _init_( string n )
+    {
+        this.catName = n
+    }
+
+    override string sound()
+    {
+        ret "Meow"
+    }
+
+    override string petName()
+    {
+        ret this.catName
+    }
+}
+
+# --- 4. 接口引用多态调用 ---
+class ShapeFactory
+{
+    static IShape createCircle( double r )
+    {
+        ret Circle( r )
+    }
+
+    static IShape createRectangle( double w, double h )
+    {
+        ret Rectangle( w, h )
+    }
+}
+
+# --- 5. 接口方法带参数和返回值 ---
+interface ICalculator
+{
+    int add( int a, int b )
+    int subtract( int a, int b )
+    int multiply( int a, int b )
+}
+
+class BasicCalculator interface ICalculator
+{
+    override int add( int a, int b )
+    {
+        ret a + b
+    }
+
+    override int subtract( int a, int b )
+    {
+        ret a - b
+    }
+
+    override int multiply( int a, int b )
+    {
+        ret a * b
+    }
+}
+
+# --- 6. 接口与类继承组合 ---
+interface IWalkable
+{
+    void walk()
+}
+
+class AnimalBase
+{
+    legs = 4
+
+    int getLegs()
+    {
+        ret this.legs
+    }
+}
+
+class DogAnimal extends AnimalBase interface IWalkable
+{
+    override void walk()
+    {
+        global.println( "DogAnimal walking on " + this.legs.toString() + " legs" )
+    }
+}
+
+# ============================================================
+# 入口测试类
+# ============================================================
+GenClass_Interface
+{
+    static testBasicInterface()
+    {
+        global.println( "=== testBasicInterface ===" )
+
+        IShape s1 = Circle( 5.0d )
+        IShape s2 = Rectangle( 3.0d, 4.0d )
+
+        global.println( s1.name() + " area=" + s1.area().toString() )
+        global.println( s2.name() + " area=" + s2.area().toString() )
+    }
+
+    static testMultiInterface()
+    {
+        global.println( "=== testMultiInterface ===" )
+
+        Product p1 = Product( 1, "Apple", 5.5d )
+        Product p2 = Product( 2, "Banana", 3.2d )
+        Product p3 = Product( 3, "Cherry", 5.5d )
+
+        IComparable cmp = p1
+        global.println( "p1 vs p2: " + cmp.compareTo( p2 ).toString() )
+        global.println( "p1 vs p3: " + cmp.compareTo( p3 ).toString() )
+
+        IDescribable desc = p1
+        global.println( desc.describe() )
+    }
+
+    static testInterfaceInheritance()
+    {
+        global.println( "=== testInterfaceInheritance ===" )
+
+        IPet dog = Dog( "Buddy" )
+        IPet cat = Cat( "Whiskers" )
+
+        global.println( dog.petName() + " says " + dog.sound() )
+        global.println( cat.petName() + " says " + cat.sound() )
+    }
+
+    static testPolymorphism()
+    {
+        global.println( "=== testPolymorphism ===" )
+
+        IShape[] shapes = [ Circle( 1.0d ), Rectangle( 2.0d, 3.0d ), Circle( 10.0d ) ]
+        for s in shapes
         {
-        #    this.m_Count++
+            global.println( s.name() + " area=" + s.area().toString() )
         }
     }
-    #!
-    bool removeAt( int index )
+
+    static testFactoryPattern()
     {
-        byte ret1 = 1;  #CSharp.SL.Core.MetaArrayClass.RemoveIndex( this, index )
-        if( ret1 == 1 )
+        global.println( "=== testFactoryPattern ===" )
+
+        IShape c = ShapeFactory.createCircle( 7.0d )
+        IShape r = ShapeFactory.createRectangle( 6.0d, 8.0d )
+
+        global.println( "factory circle area=" + c.area().toString() )
+        global.println( "factory rect area=" + r.area().toString() )
+    }
+
+    static testCalculatorInterface()
+    {
+        global.println( "=== testCalculatorInterface ===" )
+
+        ICalculator calc = BasicCalculator()
+        global.println( "add(3,5)=" + calc.add( 3, 5 ).toString() )
+        global.println( "sub(10,4)=" + calc.subtract( 10, 4 ).toString() )
+        global.println( "mul(6,7)=" + calc.multiply( 6, 7 ).toString() )
+    }
+
+    static testInterfaceWithInheritance()
+    {
+        global.println( "=== testInterfaceWithInheritance ===" )
+
+        DogAnimal da = DogAnimal()
+        da.walk()
+        global.println( "legs=" + da.getLegs().toString() )
+    }
+
+    static testInterfaceNullCheck()
+    {
+        global.println( "=== testInterfaceNullCheck ===" )
+
+        Product p = Product( 10, "Test", 1.0d )
+        IComparable cmp = p
+        object obj = p
+
+        global.println( "p is IComparable: true" )
+
+        Product p2 = obj as Product
+        if p2 != null
         {
-            this.m_Count--;
+            global.println( "as Product success: " + p2.describe() )
         }
-        ret true ? ret1 == 1 : false
-    }
-    bool remove( T t )
-    {
-        CSharp.SL.Core.MetaArrayClass.Remove( this, t );
-        ret false
-    }
-    int get index()
-    {
-        ret this.m_Index;
-    }
-    #[index]
-    public T _index_( int _index )
-    {
-        Ptr obj = CSharp.SL.Core.MetaArrayClass.GetValue( this, _index )
-        return obj.cast<T>()
-    }
-    #["index"]
-    public T _index_( string _index )
-    {
-        int index = _index.tryCast<int>(-1);
-        if( index != -1 )
+        else
         {
-            ret this._index_( index );
+            global.println( "as Product failed" )
         }
-        ret T.default;
     }
-    set index( int a )
+
+    static testInterfaceArrayAndLoop()
     {
-        this.m_Index = a;
+        global.println( "=== testInterfaceArrayAndLoop ===" )
+
+        IPet[] pets = [ Dog( "Rex" ), Cat( "Tom" ), Dog( "Max" ) ]
+        for pet in pets
+        {
+            global.println( pet.petName() + " -> " + pet.sound() )
+        }
     }
-    get T value()
+
+    static fun()
     {
-        ret this.m_Value;
-    }
-    public void set value( T t )
-    {
-        this.m_Value = t;
-    }
-    bool contraint( T t )
-    {
-        ret CSharp.SL.Core.MetaArrayClass.In( this, t )
-    }
-    int get count()
-    {
-        ret CSharp.SL.Core.MetaArrayClass.Count( this )
-    }
-    void set count( int _c )
-    {
-        int arr = CSharp.SL.Core.MetaArrayClass.SetArrayCount( this, _c )
-        this.m_Count = arr
-    }
-    !#
-}
-
-public class Level2<T1 ,T2> extends Level1<List0<T2> > interface List1<List2<Map<T2,string> > >, Map<T2,string>
-{
-    T1 Level2_t1_t2_t21 = null
-    T2 Level2_t1_t2_t22 = null
-
-    int x = 30
-    #!
-    {
-        get(){ ret value }
-        set( int v ){ value = v }
-    }
-    !#
-}
-public class Gift
-{
-    _init_( int a )
-    {
-
-    }
-}
-public class Level1<T222> 
-{
-    qqq<T222>
-    {
-    }
-    q2
-    {        
-    }
-    enum q3
-    {
-        v = 0
-    }
-    data q4
-    {
-
-    }
-
-    fn1()
-    {
-
-    }
-    fn2(){
-
-    }
-
-    T222 Level1_t1 = null
-    T222 Level1_t2 = null
-
-    _init_(){
-
-    }
-
-    _init_( T222 it1 )
-    {
-        this.Level1_t1 = it1
-    }
-
-    public T222 add()
-    {
-        T222 Level1t_t = new()
-
-        List0<Map<T222, T222> > Level1t_list = new(1)
-
-        Level2<int,string> Level1t_level222 = {}
-
-        List0<int> Level1t_lint11 = List0<int>()
-
-        Level1t_t250 = Level1<int>.Level1t_test<List0<List1<long> > >( Level1t_t, List0<List1<long> >() )
-
-        ret Level1t_t
-    }
-
-    static T2 Level1t_test<T2>( T222 it1, T2 it2 )
-    {
-        List0<Map< T2, List2<T2> > > Level1t_test_t2n = new()
-
-        ret Level1t_test_t2n
-    }
-    static T222 Level1t_test<T2,T3>( T2 it2, T3 it3 )
-    {
-        ret null
-    }
-
-    public static T2 min<T2>( T2 t1, T2 t2 )
-    {
-        #r1 = t1 ? t1 < t2 && t1 > t2 : t2        
-        #rx1 = if t1 < t2 { tr t1 } else{ tr t2 }
-        #ret r1 
-        #ret t1 ? t1 > t2 : t2
-        ret t2
-    }
-    public TTT GetComponent<TTT>()
-    {
-        TTT t = new()
-        ret t;
-    }
-}
-ClassRoom
-{
-
-}
-
-GenClass
-{
-    cl2<T,T2,T3> extends Level1<int>
-    {
-
-    }
-    Level1<Level2<int,int> > GenClass_ls = new()
-    GenClass_ls_21 = Level1<string>("aaa")   #正常
-    GenClass_ls_22 = Level1<Level2<int,int> >("aaa")    #应该报错，因为"aaa" 不是Level2<int,int> 正确的应该传 Level2<int,int>() 这样的格式
-    GenClass_ls2 = ( GenClass.GenClass_x < 3) == 4 > 3
-    #ls3 = 10 ? x < 11 && x < 3 || 13 > x && 12 > x : 4
-    #a = Level1b < Level2b || Level3b > Level4b
-    static GenClass_x = 100;
-    #Level1<string> ls2 = null
-    #Level1<string> ls3 = new()     #报错，提示，不允许这种形式
-    #Level1<string> ls4 = {}
-    static GenClass_fun()
-    {
-        Level1<int> GenClass_fun_l1 = Level1<int>()
-        GenClass_fun_l2 = GenClass_fun_l1.add()
-        #Debug.Write( "Addresult: " + GenClass_fun_l2 )
-
-        retstr = GenClass_fun_l1.GetComponent<string>()
-
-
-        float32 GenClass_fun_a = Level1<float32>.min<float32>( 1.3, 2.5 )
-
-        #Debug.Write("Flaoat" + a )
+        GenClass_Interface.testBasicInterface()
+        GenClass_Interface.testMultiInterface()
+        GenClass_Interface.testInterfaceInheritance()
+        GenClass_Interface.testPolymorphism()
+        GenClass_Interface.testFactoryPattern()
+        GenClass_Interface.testCalculatorInterface()
+        GenClass_Interface.testInterfaceWithInheritance()
+        GenClass_Interface.testInterfaceNullCheck()
+        GenClass_Interface.testInterfaceArrayAndLoop()
     }
 }
 
-# 关于生成类的规则 
-# 1. 使用T可以定义生成类里边的元素，在检索语句，或者是 其它元素调用时 会生成相关的新类
-
-# 关于生成函数的规则 
-# 关于类模板为直接生成型，在编译时，已经生成了新的类模板
-# 还有一种为，在代码运行时，生成，未来JIT方式，可以在运行时，生成新类
-# 模板函数 默认为不生成新的函数，直接在编译是，把模板编译进代码中，在执行时，再虚拟机中替换运行
-# 如果开启了AOT模式，模板函数，即在编译时生成，这种方式 会生成多种的模板函数，如果检查到代码中包含了类模板，仍然要生成 比如 class C1<T>{ fun(){  T t = null } }仍然会认为是模板类，在后期生成，属于自己的函数体  
-# 如果是类模板，但是普通 函数，则只编译一份，然后类似于继承方式，共同使用。  
-# 如果是纯模板函数  则在最后生成一份属于自己的函数体
-# 未来，在导出C语言的时候，函数体会有所不同。
-
-
-
-#! 解析过程 
-1. 先解析类的 名称，类别(class/enum/data), 绑定模板, 是否内部类
-2. 解析模板的时候，确定该类是否注册过，非模板类，  结构是   类树结构，都为无模板模式，即使没有，有onlyRead标记，告知，只负责查找时候使用，  在该类下边，进行 模板类的查找 
-3. 因为前边注册过所有的类，这时候，先解析第一批，已注册的类，通过 extendlevel排序后，再进行[成员]变量的解析,解析的同时，还会再注册一批新的 注册类
-4. 后边这批都是注册的模板类，肯定是能从类列表找到的，所以类的metatype已关联
-5. 在解析完上边的，剩余一批还没有解析的模板类实体类，然后再去创建该模板实体类
-6. 这时候就解析完了所有的类结构，和接口的结构
-!#
-
-#! 类的查找过程
-1. 可以从 import的方式查找类
-2. 可以从当前类定义位置查找类
-3. 查找到类后，进行模板匹配，匹配的类，是真实的类
-!#
-
-# GenClass_Interface 测试面向：模板类实现泛型接口、static GenClass_fun 与 Level1 系列 API（与 GenFunction 结构相近）。
-# 预期：GenClass_fun 内 add / GetComponent / min 路径无异常；接口 IT1 替换正确。
+# ============================================================
+# 接口规则说明
+# ============================================================
+# 1. 接口声明: interface IName { 方法签名 } —— 无方法体
+# 2. 类实现接口: class X interface IName —— 必须用 override 实现所有接口方法
+# 3. 多接口实现: class X interface IA, IB —— 逗号分隔
+# 4. 接口继承: interface IB extends IA —— 子接口包含父接口方法
+# 5. 接口引用多态: IA a = Impl() —— 运行时按实际类型 CallDynamic 分发
+# 6. 接口方法调用: 通过接口引用调用方法，VM 使用 CallDynamic 按名查找
+# 7. as/is 接口: 支持 obj as IName 类型转换
+# 8. 接口与继承组合: class X extends Base interface IA —— 可同时继承父类和实现接口
+# 9. 方法级 interface 修饰符: class内 interface void foo(){} 提供默认实现
+# 10. 未实现接口方法会报错: CheckInterface 强制校验

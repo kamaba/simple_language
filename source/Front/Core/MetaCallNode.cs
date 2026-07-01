@@ -71,8 +71,8 @@ namespace SimpleLanguage.Core
         public bool callConstructFunction = true;
         public bool setterFunction = false;
         public bool getterFunction = true;
-        public int parseLevel = 0;
         public bool ifNotVariableThenAddVariable = true;
+        public bool isTryRightExpress = false;
         public List<MetaExpressNodeBase> expressNodeList = new List<MetaExpressNodeBase>();
         public EParseFrom parseFrom { get; set; }
 
@@ -90,7 +90,7 @@ namespace SimpleLanguage.Core
             setterFunction = clone.setterFunction;
             getterFunction = clone.getterFunction;
             expressNodeList = clone.expressNodeList;
-            parseLevel = clone.parseLevel;
+            isTryRightExpress = clone.isTryRightExpress;
             ifNotVariableThenAddVariable = clone.ifNotVariableThenAddVariable;
         }
     }
@@ -505,7 +505,10 @@ namespace SimpleLanguage.Core
                 {
                     if (m_FrontDefineMetaType == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error missing front define meta type." + m_Token.ToLexemeAllString());
+                        if( m_AllowUseSettings.isTryRightExpress == false )
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error missing front define meta type." + m_Token.ToLexemeAllString());
+                        }
                         return false;
                     }
                     m_MetaType = m_FrontDefineMetaType;

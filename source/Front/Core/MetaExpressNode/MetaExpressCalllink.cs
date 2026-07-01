@@ -31,51 +31,47 @@ namespace SimpleLanguage.Core
         }
         public override void Parse( AllowUseSettings auc )
         {
-            if( m_Parsed ) { return; }
+            if( m_ParsedState != EParseState.None ) { return; }
 
             if(m_MetaCallLink!= null )
             {
-                m_MetaCallLink.Parse( auc );
+                m_ParsedState = m_MetaCallLink.Parse( auc ) ? EParseState.ParseSuccess : EParseState.ParsedFailed;
 
-                if(m_MetaCallLink.finalCallNode != null
-                    && m_MetaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.New )
+                if(m_ParsedState == EParseState.ParseSuccess)
                 {
-                    m_ConvertNewExpressNode = true;
-                }
-                else
-                {
-                    // Class/Data call-shape like DataHolder(){ ... } / MetaInfo(){ ... } may end as method-call
-                    // (_init_) rather than visit-type New, but semantically still needs NewObject conversion
-                    // so initializer assignStatements are preserved in Meta/IR.
-                    var mmf = m_MetaCallLink.finalCallNode?.methodCall?.function as MetaMemberFunction;
-                    if (mmf != null && mmf.isConstructInitFunction)
+                    if (m_MetaCallLink.finalCallNode != null
+                        && m_MetaCallLink.finalCallNode.visitType == MetaVisitNode.EVisitType.New)
                     {
                         m_ConvertNewExpressNode = true;
                     }
                     else
                     {
-                        // Fallback: if call syntax carries object-initializer braces, force NewObject conversion
-                        // so brace assignments are materialized into MetaNewObjectExpressNode.assignStatementsList.
-                        var nodes = m_MetaCallLink.callNodeList;
-                        if (nodes != null && nodes.Count > 0)
+                        // Class/Data call-shape like DataHolder(){ ... } / MetaInfo(){ ... } may end as method-call
+                        // (_init_) rather than visit-type New, but semantically still needs NewObject conversion
+                        // so initializer assignStatements are preserved in Meta/IR.
+                        var mmf = m_MetaCallLink.finalCallNode?.methodCall?.function as MetaMemberFunction;
+                        if (mmf != null && mmf.isConstructInitFunction)
                         {
-                            var lastNode = nodes[nodes.Count - 1];
-                            if (lastNode?.fileMetaBraceTerm != null)
+                            m_ConvertNewExpressNode = true;
+                        }
+                        else
+                        {
+                            // Fallback: if call syntax carries object-initializer braces, force NewObject conversion
+                            // so brace assignments are materialized into MetaNewObjectExpressNode.assignStatementsList.
+                            var nodes = m_MetaCallLink.callNodeList;
+                            if (nodes != null && nodes.Count > 0)
                             {
-                                m_ConvertNewExpressNode = true;
+                                var lastNode = nodes[nodes.Count - 1];
+                                if (lastNode?.fileMetaBraceTerm != null)
+                                {
+                                    m_ConvertNewExpressNode = true;
+                                }
                             }
                         }
                     }
                 }
             }
-            m_Parsed = true;
         }
-        ///public override int CalcParseLevel(int level)
-        //{
-        //    if (m_MetaCallLink != null)
-        //        level = m_MetaCallLink.CalcParseLevel(level);
-        //    return level;
-        //}
         public override void CalcReturnType()
         {
             if (m_MetaCallLink != null)

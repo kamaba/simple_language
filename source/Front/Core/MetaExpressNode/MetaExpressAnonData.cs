@@ -63,12 +63,12 @@ namespace SimpleLanguage.Core
 
         public override void Parse(AllowUseSettings auc)
         {
-            if (m_Parsed) return;
+            if (m_ParsedState != EParseState.None) return;
             foreach (var v in m_MetaData.metaMemberDataDict)
             {
                 v.Value.ParseMetaExpress();
             }
-            m_Parsed = true;
+            m_ParsedState = EParseState.ParseSuccess;
         }
 
         //public override int CalcParseLevel(int level)

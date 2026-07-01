@@ -274,7 +274,7 @@ namespace SimpleLanguage.Core
                 if (!m_IsParsingExpress)
                 {
                     m_IsParsingExpress = true;
-                    this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress, parseLevel = this.parseLevel });
+                    this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
                     m_IsParsingExpress = false;
                 }
             }

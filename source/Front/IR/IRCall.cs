@@ -250,26 +250,6 @@ namespace SimpleLanguage.IR
             {
                 Log.AddIRLog(LID.MetaCoreAssertShowMessage, mfc.token, "aaaa");
             }
-
-            if( mfc.isRecieveReturnValue == false )
-            {
-                for (int i = 0; i < m_IRRuntimeMethod.methodReturnVariableList.Count; i++ )
-                {
-                    var mrv = m_IRRuntimeMethod.methodReturnVariableList[i];
-                    if( mrv.irMetaType != null )
-                    {
-                        if( mrv.irMetaType.templateIndex > -1 )
-                        {
-
-                        }
-                        else
-                        {
-                            IRPop irpop = new IRPop(m_IRMethod);
-                            //AddIRData(irpop.data);
-                        }
-                    }
-                }
-            }
         }
         public override string ToIRString()
         {

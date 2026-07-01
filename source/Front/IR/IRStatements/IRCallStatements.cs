@@ -25,6 +25,12 @@ namespace SimpleLanguage.IR.Statements
             m_IRMc = new IRMetaCallLink();
             m_IRMc.ParseToIRDataList(irMethod, ms.metaCallLink.visitNodeList);
             m_IRStatements.AddRange(m_IRMc.irList);
+
+            if( ms.isHasReturnMetaVariable )
+            {
+                IRPop irpop = new IRPop(irMethod);
+                m_IRStatements.Add(irpop);
+            }
         }
         public string ToIRString()
         {

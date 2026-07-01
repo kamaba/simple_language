@@ -540,7 +540,6 @@ namespace SimpleLanguage.Compile
                 }
                 else if( cnode2.nodeType == ENodeType.Key && cnode2.token.type == ETokenType.Interface )
                 {
-                    cAddCount++;
                     break;
                 }
                 else
@@ -549,30 +548,6 @@ namespace SimpleLanguage.Compile
                 }
                 cAddCount++;
             }
-            //for( int i = 0; i < rootPST.Count; i++ )
-            //{
-            //    var pst = rootPST[i];
-            //    Node nameNode = pst.nameNode;
-            //    pst.GenFileInputTemplateNode(nameNode, m_FileMeta);
-            //    // detect nullable marker following the type node (e.g. `T?`)
-            //    Node qNode = null;
-            //    if (pst.nameNode.parent != null)
-            //    {
-            //        var siblings = pst.nameNode.parent.childList;
-            //        int idx = siblings.IndexOf(pst.nameNode);
-            //        if (idx >= 0 && idx + 1 < siblings.Count)
-            //        {
-            //            var nextNode = siblings[idx + 1];
-            //            if (nextNode.nodeType == ENodeType.QuestionMark || (nextNode.token != null && nextNode.token.type == ETokenType.QuestionMark))
-            //            {
-            //                qNode = nextNode;
-            //            }
-            //        }
-            //    }
-            //    FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, pst.nameNode, qNode);
-            //    fcdList.Add(fmcd);
-            //}
-
             return cAddCount;
         }
         public void AddFileMemberData(FileMetaMemberData fmmd)

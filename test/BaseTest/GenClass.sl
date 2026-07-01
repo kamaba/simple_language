@@ -1,5 +1,5 @@
 import Std
-import CSharp.System
+
 
 Map<MapT1,MapT2>
 {
@@ -54,7 +54,7 @@ GenClass
 {
     Level1<Map<int,int> > GenClass_ls = new()
     static GenClass_ls_21 = Level1<string>("aaa")   #正常    
-    #GenClass_ls_22 = Level1<Level2<int,int> >("aaa")    #应该报错，因为"aaa" 不是Level2<int,int> 正确的应该传 Level2<int,int>() 这样的格式
+    GenClass_ls_22 = Level1<Level2<int,int> >("aaa")    #应该报错，因为"aaa" 不是Level2<int,int> 正确的应该传 Level2<int,int>() 这样的格式
     GenClass_ls2 = ( GenClass.GenClass_x < 3) == 4 > 3
     #ls3 = 10 ? x < 11 && x < 3 || 13 > x && 12 > x : 4
     #a = Level1b < Level2b || Level3b > Level4b
@@ -64,23 +64,23 @@ GenClass
     #Level1<string> ls4 = {}
     static fun()
     {
-        System.Console.WriteLine("-----------------------------------" + GenClass.GenClass_ls_21.LevelMemValue  )     #静态模板成员还没有生成
-        System.Console.WriteLine("-----------------------------------" + GenClass.GenClass_x  )     #改造无模板静态变量还没有完成
+        global.println("-----------------------------------" + GenClass.GenClass_ls_21.LevelMemValue  )     #静态模板成员还没有生成
+        global.println("-----------------------------------" + GenClass.GenClass_x  )     #改造无模板静态变量还没有完成
 
         Level1<string>.LevelStaticValue = "2000"
-        System.Console.WriteLine("Level1<string>.LevelStaticValue = 2000->" + Level1<string>.LevelStaticValue  )
+        global.println("Level1<string>.LevelStaticValue = 2000->" + Level1<string>.LevelStaticValue  )
 
         Level1<Level1<int> > GenClass_fun_l1 = Level1< Level1<int> >()
         var t3 = GenClass_fun_l1.Level1Fun<Level1<string> >()
         t3.LevelMemValue = "aaaaa"
-        System.Console.WriteLine("-----------------------------------" + t3.LevelMemValue  )
+        global.println("-----------------------------------" + t3.LevelMemValue  )
 
         Level1< Level1<int> > GenClass_fun_l2 = Level1<Level1<int> >()
         GenClass_fun_l2.LevelMemValue.LevelMemValue = 300
-        System.Console.WriteLine("+++++++++++++++++++++" + GenClass_fun_l2.LevelMemValue.LevelMemValue  )      
+        global.println("+++++++++++++++++++++" + GenClass_fun_l2.LevelMemValue.LevelMemValue  )      
 
         var t4 = Level1<string>.Level1SF<int>(100)
-        System.Console.WriteLine("Level1<string>.Level1SF<int>(100)->" + t4  )
+        global.println("Level1<string>.Level1SF<int>(100)->" + t4  )
     }
 }
 
