@@ -1163,15 +1163,15 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < list.Count; i++)
             {
                 var fun = list[i];
-                if (fun.isTemplateFunction)
-                {
-                    return fun;
-                }
-                else
-                {
+                //if (fun.isTemplateFunction)
+                //{
+                //    return fun;
+                //}
+                //else
+                //{
                     if (fun.IsEqualMetaInputParamCollection(inputParam))
                         return fun;
-                }
+                //}
             }
             return null;
         }

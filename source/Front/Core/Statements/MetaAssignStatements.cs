@@ -135,6 +135,7 @@ namespace SimpleLanguage.Core
 
             MetaCallLink metaCallLink = null;
             FileMetaBaseTerm express = null;
+            bool needTryGetRight = false;
             if (m_FileMetaOpAssignSyntax != null)
             {
                 metaCallLink = new MetaCallLink(m_FileMetaOpAssignSyntax.variableRef,
@@ -156,7 +157,15 @@ namespace SimpleLanguage.Core
                 express = m_FileMetaOpAssignSyntax.express;
                 if( express != null && metaCallLink.callNodeList.Count > 1)
                 {
-                    TryParseRightExpress(m_FileMetaOpAssignSyntax.express,null);
+                    needTryGetRight = true;
+                    if ( m_FileMetaOpAssignSyntax.express is FileMetaCallTerm fmct )
+                    {
+                        if( fmct.callLink.callNodeList.Count > 0 && fmct.callLink.callNodeList[0].token.type == ETokenType.New )
+                        {
+                            needTryGetRight = false;
+                        }
+                    }
+
                 }
             }
             else if( m_FileMetaDefineVariableSyntax != null)
@@ -168,7 +177,11 @@ namespace SimpleLanguage.Core
                 m_Token = m_FileMetaDefineVariableSyntax?.nameToken;
 
             }
-            
+            if(needTryGetRight )
+            {
+                TryParseRightExpress(express, null);
+            }
+
             //if (metaCallLink == null)
             //{
             //    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error MetaAssignStatements ParseDefine!!!" + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());

@@ -200,6 +200,31 @@ namespace SimpleLanguage.IR
                 irmc = IRManager.GetIRMetaClassByMetaOwner(ownerBase);
 
 
+                if (mf is MetaGenTemplateFunction mgtf)
+                {
+                    //fname = mgtf.sourceMetaMemberFunction.functionAllName;
+                    owirmc = IRManager.GetIRMetaClassByMetaOwner(mgtf.sourceMetaMemberFunction.ownerMetaBase);
+                }
+                else if (mf is MetaMemberFunction mmf22)
+                {
+                    if (mmf22.sourceMetaMemberFunction != null)
+                    {
+                        //fname = mmf22.sourceMetaMemberFunction.functionAllName;
+                        owirmc = IRManager.GetIRMetaClassByMetaOwner(mmf22.sourceMetaMemberFunction.ownerMetaBase);
+                    }
+                    else
+                    {
+                        //fname = mmf22.functionAllName;
+                        owirmc = IRManager.GetIRMetaClassByMetaOwner(mmf22.ownerMetaBase);
+                    }
+                }
+                else
+                {
+                    //fname = mf.functionAllName;
+                    owirmc = IRManager.GetIRMetaClassByMetaOwner(mf.ownerMetaBase);
+                }
+
+
                 m_IRRuntimeMethod = irmc?.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
                 callType = 1;
                 if (m_IRRuntimeMethod?.interfaceMethod == true)
@@ -209,7 +234,7 @@ namespace SimpleLanguage.IR
             }
             if (m_IRRuntimeMethod == null)
             {
-                Log.AddIRLog(LID.ShowExtendMessage, mfc.token, $"ir runtime[{fname}] method not found!!");
+                Log.AddIRLog(LID.MetaCoreAssertShowMessage, mfc.token, $"ir runtime[{fname}] method not found!!");
                 return;
             }
             irmt = new IRMetaType(irmc, types);
