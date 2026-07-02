@@ -39,6 +39,8 @@ namespace SimpleLanguage.VM.Runtime
         private ushort m_ExecuteIndex;
         private ushort m_ExecuteCount;
         private RuntimeType m_CurrentRuntimeType;
+        private List<RuntimeType> m_RuntimeTemplateRuntimeTypeList;
+        private List<RuntimeType> m_RuntimeTypeList = new List<RuntimeType>();    
         private RuntimeValue[] m_ValueStack;
         private ushort m_ValueIndex;
         //public IntPtr m_RawBuffer;
@@ -59,12 +61,16 @@ namespace SimpleLanguage.VM.Runtime
 
             Init();
         }
-        public RuntimeVM(RuntimeType rt, RuntimeMethod rm)
+        public RuntimeVM(RuntimeType rt, List<RuntimeType> irmtList, RuntimeMethod rm)
         {
             m_Method = rm;
             m_Id = rm.id;
             m_ValueStack = new RuntimeValue[1024];
             m_ValueIndex = 0;
+            m_RuntimeTemplateRuntimeTypeList = irmtList;
+            m_RuntimeTypeList = new List<RuntimeType>(rt.runtimeTemplateList.Count+irmtList.Count);
+            m_RuntimeTypeList.AddRange(rt.runtimeTemplateList);
+            m_RuntimeTypeList.AddRange(irmtList);   
             //m_RawCapacity = 1024;
             m_InstructionList = rm.InstructionList.ToArray();
             m_CurrentRuntimeType = rt;
@@ -94,7 +100,7 @@ namespace SimpleLanguage.VM.Runtime
 
         public void Init()
         {
-            //鍙傛暟鍒楄�?argument variable table
+            //argument variable table
             if (this.m_Method != null)
             {
                 m_ReturnRuntimeObjectArray = new RuntimeObject[m_Method.methodReturnVariableList.Count];
@@ -115,7 +121,7 @@ namespace SimpleLanguage.VM.Runtime
                 }
 #endif
 
-                //灞€閮ㄥ彉閲忓垪�?local variable table
+                //local variable table
                 m_LocalVariableRuntimeObjectArray = new RuntimeObject[m_Method.methodLocalVariableList.Count];
                 for (int i = 0; i < m_Method.methodLocalVariableList.Count; i++)
                 {
@@ -168,9 +174,9 @@ namespace SimpleLanguage.VM.Runtime
             RuntimeType rt = null;
 
             var ownerClass = m_Method?.ownerMetaClass ?? rv.runtimeDefType.ownerRuntimeClass;
-            if (ownerClass != null && m_CurrentRuntimeType?.runtimeTemplateList != null && m_CurrentRuntimeType?.runtimeTemplateList.Count > 0)
+            if (ownerClass != null && m_RuntimeTypeList.Count > 0)
             {
-                rt = GetRuntimeTypeByDefType(rv.runtimeDefType, ownerClass, m_CurrentRuntimeType.runtimeTemplateList, true);                
+                rt = GetRuntimeTypeByDefType(rv.runtimeDefType, ownerClass, m_RuntimeTypeList, true);                
             }
             else
             {
@@ -2298,7 +2304,7 @@ namespace SimpleLanguage.VM.Runtime
                                 var crt = RuntimeTypeManager.GetRuntimeTypeByDefType(runtimeCall.runtimeMethodTemplateRuntimeDefTypeList[i]);
                                 classRTList.Add(crt);
                             }
-                            CLRVM.RunIRMethodByRuntimeType(rt, runtimeCall.method);
+                            CLRVM.RunIRMethodByRuntimeType(rt, classRTList, runtimeCall.method);
                         }
                     }
                     break;
@@ -2370,7 +2376,7 @@ namespace SimpleLanguage.VM.Runtime
                                     var irmethod = irc.GetNonStaticMethodIndexByName(mfc.methodName, out int index);
                                     if (irmethod != null)
                                     {
-                                        CLRVM.RunIRMethodByRuntimeType(rt, irmethod);
+                                        CLRVM.RunIRMethodByRuntimeType(rt, rtList, irmethod);
                                     }
                                     else
                                     {
@@ -2379,7 +2385,7 @@ namespace SimpleLanguage.VM.Runtime
                                 }
                                 else
                                 {
-                                    CLRVM.RunIRMethodByRuntimeType(rt, mfc.method);
+                                    CLRVM.RunIRMethodByRuntimeType(rt, rtList, mfc.method);
                                 }
                             }
                         }
@@ -2456,7 +2462,7 @@ namespace SimpleLanguage.VM.Runtime
                         //}
 
 
-                        CLRVM.RunIRMethodByRuntimeType(rt, cfc);
+                        CLRVM.RunIRMethodByRuntimeType(rt, m_RuntimeTypeList, cfc);
 
                         var a = ObjectManager.classObjectDict;
                     }

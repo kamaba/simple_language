@@ -47,7 +47,7 @@ namespace SimpleLanguage.VM.Runtime
                 return clrRuntime;
             }
         }
-        public static RuntimeVM CreateCLRRuntime(RuntimeType rt, RuntimeMethod method)
+        public static RuntimeVM CreateCLRRuntime(RuntimeType rt, List<RuntimeType> irmtList, RuntimeMethod method)
         {
             var getrt = GetCLRRuntimeById(method.id);
             //if( getrt != null )
@@ -56,7 +56,7 @@ namespace SimpleLanguage.VM.Runtime
             //}
             //else
             {
-                RuntimeVM clrRuntime = new RuntimeVM(rt, method);
+                RuntimeVM clrRuntime = new RuntimeVM(rt, irmtList, method);
                 m_ClrRuntimeStack.Push(clrRuntime);
                 return clrRuntime;
             }
@@ -221,10 +221,10 @@ namespace SimpleLanguage.VM.Runtime
             {
             }
         }
-        public static void RunIRMethodByRuntimeType( RuntimeType rt, RuntimeMethod rm )
+        public static void RunIRMethodByRuntimeType( RuntimeType rt, List<RuntimeType> rtList, RuntimeMethod rm )
         {
             topCLRRuntime = m_ClrRuntimeStack.Peek();
-            RuntimeVM clrRuntime = CreateCLRRuntime(rt, rm );
+            RuntimeVM clrRuntime = CreateCLRRuntime(rt, rtList, rm );
             clrRuntime.Run(true);
             PopCLRRuntime();
             var topt2 = m_ClrRuntimeStack.Peek();
