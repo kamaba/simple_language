@@ -934,7 +934,7 @@ namespace SimpleLanguage.Core
                     {
                         MetaFunction mf = m_FrontCallNode.m_MetaFunction;
                         MetaType retMT = mf.returnMetaVariable.GetFinalMetaType();
-                        MetaClass mc = retMT.GetTemplateMetaClass();
+                        MetaClass mc = retMT.metaClass;
                         if (mc != null )
                         {
                             if (GetFunctionOrVariableByOwnerClass(mc, m_Name) == false)

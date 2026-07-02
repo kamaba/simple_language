@@ -92,7 +92,7 @@ GenClass
     {
         global.println("====== [4] Level1<Level1<int>>.Level1Fun<Level1<string>>() ======" )
         Level1<Level1<int> > GenClass_fun_l1 = Level1<Level1<int>>()
-        global.println("GenClass_fun_l1.LevelMemValue 构造后默认值: " + GenClass_fun_l1.LevelMemValue  )
+        global.println("GenClass_fun_l1.LevelMemValue 构造后默认值: " + GenClass_fun_l1.LevelMemValue.toString()  )
         var t3 = GenClass_fun_l1.Level1Fun<Level1<string> >()
         t3.LevelMemValue = "aaaaa"
         global.println("t3.LevelMemValue 期望: aaaaa  实际: " + t3.LevelMemValue  )
@@ -182,7 +182,7 @@ GenClass
     static testLevel1FunDirect()
     {
         global.println("====== [13] Level1Fun<Level1<string>> 返回值直接链式访问 ======" )
-        Level1<Level1<int> > dl1 = Level1<Level1<int>>()
+        Level1<Level1<int>> dl1 = Level1<Level1<int>>()
         # 直接对返回值赋值并读取
         dl1.Level1Fun<Level1<string>>().LevelMemValue = "direct"
         global.println("直接返回值.LevelMemValue 期望: direct  实际: " + dl1.Level1Fun<Level1<string> >().LevelMemValue  )

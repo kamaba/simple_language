@@ -101,7 +101,7 @@ namespace SimpleLanguage.Compile
         public Node blockNode => m_BlockNode;           //{大括号的节点
         public Node identifierNode => m_IdentifierNode;       //标识符链节点
         public List<Node> bracketNodeList => m_BracketNodeList;
-        public Node lastNode => m_LastNode;         // 最后处理的节点
+        //public Node lastNode => m_LastNode;         // 最后处理的节点
 
         public int parseIndex = 0;
         public ENodeType nodeType { get; set; } =  ENodeType.None;
@@ -113,7 +113,7 @@ namespace SimpleLanguage.Compile
         private Node m_AngleNode = null;            // <>
         private Node m_ParNode = null;              // ()
         private Node m_BlockNode = null;            // {}
-        private Node m_LastNode = null;            // 最后处理的节点
+        //private Node m_LastNode = null;            // 最后处理的节点
         private Node m_IdentifierNode = null;       //标识符链节点
         private Node m_Parent = null;              //父节点
         private Token m_Token = null;                  // 
@@ -138,10 +138,6 @@ namespace SimpleLanguage.Compile
         {
             this.m_IdentifierNode = identifierNode;
         }   
-        public void SetLastNode( Node lastNode )
-        {
-            this.m_LastNode = lastNode;
-        }
         public void SetParentNode(Node parent)
         {
             this.m_Parent = parent;
@@ -163,19 +159,13 @@ namespace SimpleLanguage.Compile
             List<Node> tlist = new List<Node>();
             if (isIncludeSelf) tlist.Add(this);
             tlist.AddRange(m_ExtendLinkNodeList);
-
-            if (this.angleNode != null)
-            {
-                tlist.AddRange(angleNode.extendLinkNodeList);
-            }
-
             return tlist;
         }
         public void AddLinkNode(Node node )
         {
-            if (lastNode == null) return;
+            if (m_IdentifierNode == null) return;
 
-            lastNode.m_ExtendLinkNodeList.Add(node);
+            m_IdentifierNode.m_ExtendLinkNodeList.Add(node);
         }
         public void AddBracketNode( Node bracketNode )
         {
@@ -189,10 +179,8 @@ namespace SimpleLanguage.Compile
         {
             if (setParent)
                 c.m_Parent = this;
-            this.childList.Add(c);
-            m_LastNode = c;
+            this.childList.Add(c);            
         }
-
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();

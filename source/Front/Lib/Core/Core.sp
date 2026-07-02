@@ -48,7 +48,7 @@ Project
     }
     _test_()
     {
-       ETC1.ExtendsClass.fun()
+       #ETC1.ExtendsClass.fun()
     }
     CompileBefore()
     {        

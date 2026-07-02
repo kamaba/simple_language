@@ -122,6 +122,11 @@ namespace SimpleLanguage.Compile
             Node node = new Node(token);
             node.nodeType = ENodeType.Key;
             m_CurrentNode.AddChild(node);
+            if( token.type == ETokenType.Base || token.type == ETokenType.This
+                || token.type == ETokenType.Local || token.type == ETokenType.Global )
+            {
+                m_CurrentNode.SetIdentifierNode(node);
+            }
             m_TokenIndex++;
             return node;
         }
@@ -356,6 +361,8 @@ namespace SimpleLanguage.Compile
             {
                 case ETokenType.Identifier:  //Identifier
                 case ETokenType.Type:
+                case ETokenType.Object:
+                case ETokenType.Boolean:
                     {
                         AddIdentifier(token);
                     }
@@ -687,8 +694,6 @@ namespace SimpleLanguage.Compile
                 //case ETokenType.Operator:
                 case ETokenType.Base:         //base
                 case ETokenType.This:           //this
-                case ETokenType.Object:
-                case ETokenType.Boolean:
                 case ETokenType.Local:
                 case ETokenType.Global:
                 case ETokenType.Range:

@@ -288,6 +288,7 @@ namespace SimpleLanguage.Compile
             }
             if (_node.angleNode != null)      // LinkCall.Call<int,string, NS.Class1>()
             {
+                //Log.AddFileMetaLog( LID.MetaCoreAssertShowMessage, _node.token, $"[DBG FileMetaCallNode] node='{_node.token?.lexeme}' nodeType={_node.nodeType} angleNode children={_node.angleNode.childList.Count}");
                 m_IsTemplate = true;
                 m_BeginAngleToken = _node.angleNode.token;
                 m_EndAngleToken = _node.angleNode.endToken;
