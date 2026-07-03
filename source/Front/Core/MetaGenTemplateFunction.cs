@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaGenTempalteFunction.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -112,10 +112,6 @@ namespace SimpleLanguage.Core
             }
 
             var ownerGenClass = m_OwnerMetaClass as MetaGenTemplateClass;
-            if (ownerGenClass == null)
-            {
-                return;
-            }
 
             if (mv.defineMetaType != null)
             {
@@ -141,7 +137,10 @@ namespace SimpleLanguage.Core
                 mv.SetRealMetaType(new MetaType(mv.defineMetaType));
             }
 
-            mv.SetOwnerMetaBase(ownerGenClass);
+            if (ownerGenClass != null)
+            {
+                mv.SetOwnerMetaBase(ownerGenClass);
+            }
         }
         public MetaGenTemplate GetMetaGenTemplate( string name )
         {

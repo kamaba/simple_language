@@ -331,7 +331,7 @@ namespace SimpleLanguage.Core
             }
             if (mt.isTemplate)
             {
-                MetaGenTemplate gmgt = mgtc.GetMetaGenTemplate(mt.metaTemplate.name);
+                MetaGenTemplate gmgt = mgtc?.GetMetaGenTemplate(mt.metaTemplate.name);
                 if (gmgt != null)
                 {
 

@@ -10,12 +10,10 @@ using SimpleLanguage.Logging;
 using SimpleLanguage.Parse;
 using SimpleLanguage.VM.MemoryManagement;
 using SimpleLanuageVM.Load;
-using System.Data;
 using System.Globalization;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.Unicode;
 
 namespace SimpleLanguage.VM.Runtime
 {
@@ -25,11 +23,8 @@ namespace SimpleLanguage.VM.Runtime
         public ushort valueIndex => m_ValueIndex;
         public string id => m_Id;
         public int level => m_Level;
-        public bool isPersistent => m_IsPersistent;
 
 
-
-        //private List<RuntimeType> m_InputTemplateRuntimeTypeList;
         private RuntimeObject[] m_LocalVariableRuntimeObjectArray;
         private RuntimeObject[] m_ArgumentRuntimeObjectArray;
         private RuntimeObject[] m_ReturnRuntimeObjectArray;
@@ -43,22 +38,23 @@ namespace SimpleLanguage.VM.Runtime
         private List<RuntimeType> m_RuntimeTypeList = new List<RuntimeType>();    
         private RuntimeValue[] m_ValueStack;
         private ushort m_ValueIndex;
-        //public IntPtr m_RawBuffer;
-        //public RawSValue* m_RawPtr;
-        //public int m_RawCapacity;
 
 
         private string m_Id = "";
         private int m_Level = 0;
-        private bool m_IsPersistent = false;
-        public RuntimeVM(string id, List<Instruction> irlist)
+        public RuntimeVM(string id, RuntimeType rt, List<RuntimeType> irmtList, List<Instruction> irlist)
         {
+            m_Method = null;
             m_Id = id;
-            m_InstructionList = irlist?.ToArray();
             m_ValueStack = new RuntimeValue[1024];
             m_ValueIndex = 0;
+            m_RuntimeTemplateRuntimeTypeList = irmtList;
+            m_RuntimeTypeList = new List<RuntimeType>(rt.runtimeTemplateList.Count + irmtList.Count);
+            m_RuntimeTypeList.AddRange(rt.runtimeTemplateList);
+            m_RuntimeTypeList.AddRange(irmtList);
             //m_RawCapacity = 1024;
-
+            m_InstructionList = irlist?.ToArray();
+            m_CurrentRuntimeType = rt;
             Init();
         }
         public RuntimeVM(RuntimeType rt, List<RuntimeType> irmtList, RuntimeMethod rm)
@@ -79,37 +75,10 @@ namespace SimpleLanguage.VM.Runtime
                 m_RuntimeTypeList.AddRange(rt.runtimeTemplateList);
             }
             m_RuntimeTypeList.AddRange(irmtList);
-            //m_RawCapacity = 1024;
             m_InstructionList = rm.InstructionList.ToArray();
             m_CurrentRuntimeType = rt;
             Init();
         }
-        public RuntimeVM( string id, RuntimeType rt, List<RuntimeType> irmtList, List<Instruction> irlist)
-        {
-            m_Method = null;
-            m_Id = id;
-            m_ValueStack = new RuntimeValue[1024];
-            m_ValueIndex = 0;
-            m_RuntimeTemplateRuntimeTypeList = irmtList;
-            m_RuntimeTypeList = new List<RuntimeType>(rt.runtimeTemplateList.Count + irmtList.Count);
-            m_RuntimeTypeList.AddRange(rt.runtimeTemplateList);
-            m_RuntimeTypeList.AddRange(irmtList);
-            //m_RawCapacity = 1024;
-            m_InstructionList = irlist?.ToArray();
-            m_CurrentRuntimeType = rt;
-            Init();
-        }
-        public RuntimeVM(string id, List<RuntimeType> rtList, List<Instruction> irlist)
-        {
-            m_Id = id;
-            m_InstructionList = irlist?.ToArray();
-            m_ValueStack = new RuntimeValue[1024];
-            m_ValueIndex = 0;
-            //m_RawCapacity = 1024;
-
-            Init();
-        }
-
         public void Init()
         {
             //argument variable table
@@ -2309,12 +2278,13 @@ namespace SimpleLanguage.VM.Runtime
                         }
                         else
                         {
+                            List<RuntimeType> classRTList2 = new List<RuntimeType>();
                             for (int i = 0; i < runtimeCall.runtimeMethodTemplateRuntimeDefTypeList.Count; i++)
                             {
                                 var crt = RuntimeTypeManager.GetRuntimeTypeByDefType(runtimeCall.runtimeMethodTemplateRuntimeDefTypeList[i]);
-                                classRTList.Add(crt);
+                                classRTList2.Add(crt);
                             }
-                            CLRVM.RunIRMethodByRuntimeType(rt, classRTList, runtimeCall.method);
+                            CLRVM.RunIRMethodByRuntimeType(rt, classRTList2, runtimeCall.method);
                         }
                     }
                     break;
