@@ -295,7 +295,7 @@ namespace SimpleLanguage.Core
         }
         public void  GetCalcMetaVariableList( List<MetaVariable> list )
         {
-            foreach (var v in m_MetaVariableDict)
+            foreach (var v in this.m_MetaVariableDict)
             {
                 if( !v.Value.isArgument )
                     list.Add(v.Value);

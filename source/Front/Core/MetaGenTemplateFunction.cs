@@ -62,6 +62,34 @@ namespace SimpleLanguage.Core
             return true;
 
         }
+        public bool MatchInputTemplateInsance(List<MetaType> instMtList)
+        {
+            if (m_MetaGenTemplateList.Count != instMtList.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < m_MetaGenTemplateList.Count; i++)
+            {
+                var c1 = m_MetaGenTemplateList[i];
+                var c2 = instMtList[i];
+
+                // 如果两者都是模板类型，按 metaTemplate 比较
+                if (c1.metaType.isTemplate && c2.isTemplate)
+                {
+                    if (c1.metaType.metaTemplate != c2.metaTemplate)
+                    {
+                        return false;
+                    }
+                }
+                // 否则按 metaClass 引用比较
+                else if (c1.metaType.metaClass != c2.metaClass)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
         public void UpdateGenMemberFunctionByTemplateClass(MetaMemberFunction mmf)
         {
             m_MetaMemberParamCollection = new MetaDefineParamCollection(mmf.metaMemberParamCollection);
@@ -165,6 +193,10 @@ namespace SimpleLanguage.Core
 
             List<MetaGenTemplate> mgtList = m_MetaGenTemplateList;
             var curfun = this.m_SourceMetaMemberFunction;
+            if (curfun == null)
+            {
+                return;
+            }
             while (true)
             {
                 if (curfun.sourceMetaMemberFunction == null)

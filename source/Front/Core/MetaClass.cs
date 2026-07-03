@@ -1175,7 +1175,7 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, List<MetaClass> mtList, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true)
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, List<MetaType> mtList, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true)
         {
             if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
             {
