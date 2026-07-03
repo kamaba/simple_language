@@ -180,6 +180,7 @@ namespace SimpleLanguage.Core
                 Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 解析新建变量语句时，表达式返回类型为空!!__2", defineName);
                 return;
             }
+            //if(metaFunction.IsEqualMetaTemplateCollectionAndMetaParamCollection )
             if (!m_DefineVarMetaVariable.isDefineMetaType )
             {
                 m_DefineVarMetaVariable.SetRealMetaType(expressRetMetaDefineType);

@@ -22,11 +22,13 @@ Level1<LevelT1>
         this.LevelMemValue = t1
     }
 
-    Level1Com()
+    LevelT1 Level1Com()
     {
         this.LevelMemValue = new()
 
         LevelT1 lt2 = new()
+
+        ret lt2;
     }
 
     LevelT3 Level1Fun<LevelT3>( )
@@ -77,14 +79,14 @@ GenClass
     static testStaticMember()
     {
         global.println("====== [1] 静态模板成员 GenClass.GenClass_ls_21.LevelMemValue ======" )
-        global.println("期望: aaa  实际: " + GenClass.GenClass_ls_21.LevelMemValue  )     #静态模板成员还没有生成
+        global.println("期望: aaa  实际: " + GenClass.GenClass_ls_21.LevelMemValue.toString()  )     #静态模板成员还没有生成
 
         global.println("====== [2] 无模板静态变量 GenClass.GenClass_x ======" )
-        global.println("期望: 100  实际: " + GenClass.GenClass_x  )     #改造无模板静态变量还没有完成
+        global.println("期望: 100  实际: " + GenClass.GenClass_x.toString()  )     #改造无模板静态变量还没有完成
 
         global.println("====== [3] Level1<string>.LevelStaticValue 赋值与读取 ======" )
         Level1<string>.LevelStaticValue = "2000"
-        global.println("期望: 2000  实际: " + Level1<string>.LevelStaticValue  )
+        global.println("期望: 2000  实际: " + Level1<string>.LevelStaticValue.toString()  )
     }
 
     # [4] 嵌套模板构造 + 泛型方法 Level1Fun<Level1<string>> 调用
@@ -95,17 +97,17 @@ GenClass
         global.println("GenClass_fun_l1.LevelMemValue 构造后默认值: " + GenClass_fun_l1.LevelMemValue.toString()  )
         var t3 = GenClass_fun_l1.Level1Fun<Level1<string> >()
         t3.LevelMemValue = "aaaaa"
-        global.println("t3.LevelMemValue 期望: aaaaa  实际: " + t3.LevelMemValue  )
+        global.println("t3.LevelMemValue 期望: aaaaa  实际: " + t3.LevelMemValue.toString()  )
     }
 
     # [5] 嵌套成员链式赋值 Level1<Level1<int>>.LevelMemValue.LevelMemValue
     static testNestedAssign()
     {
         global.println("====== [5] 嵌套成员链式赋值 Level1<Level1<int>>.LevelMemValue.LevelMemValue ======" )
-        Level1< Level1<int> > GenClass_fun_l2 = Level1<Level1<int> >()
-        global.println("赋值前 GenClass_fun_l2.LevelMemValue.LevelMemValue: " + GenClass_fun_l2.LevelMemValue.LevelMemValue  )
+        Level1<Level1<int>> GenClass_fun_l2 = Level1<Level1<int> >()
+        global.println("赋值前 GenClass_fun_l2.LevelMemValue.LevelMemValue: " + GenClass_fun_l2.LevelMemValue.LevelMemValue.toString()  )
         GenClass_fun_l2.LevelMemValue.LevelMemValue = 300
-        global.println("期望: 300  实际: " + GenClass_fun_l2.LevelMemValue.LevelMemValue  )
+        global.println("期望: 300  实际: " + GenClass_fun_l2.LevelMemValue.LevelMemValue.toString()  )
     }
 
     # [6] 静态泛型方法 Level1SF<int>，内部调用 Map.MapFunc
@@ -113,7 +115,7 @@ GenClass
     {
         global.println("====== [6] Level1<string>.Level1SF<int>(100) ======" )
         var t4 = Level1<string>.Level1SF<int>(100)
-        global.println("期望: 100  实际: " + t4  )
+        global.println("期望: 100  实际: " + t4.toString()  )
     }
 
     # [7] Map<MapT1,MapT2> 静态泛型方法 MapFunc 直接调用
@@ -121,15 +123,15 @@ GenClass
     {
         global.println("====== [7] Map<int,string>.MapFunc<string>(\"MapFuncTest\") ======" )
         var mapRet = Map<int, string>.MapFunc<string>("MapFuncTest")
-        global.println("期望: MapFuncTest  实际: " + mapRet  )
+        global.println("期望: MapFuncTest  实际: " + mapRet.toString()  )
     }
 
     # [8] 实例成员 GenClass_ls（Level1<Map<int,int>>）访问
     static testInstanceMember()
     {
         global.println("====== [8] 实例成员 GenClass.GenClass_ls ======" )
-        global.println("GenClass.GenClass_ls: " + GenClass.GenClass_ls  )
-        global.println("GenClass.GenClass_ls.LevelMemValue: " + GenClass.GenClass_ls.LevelMemValue  )
+        global.println("GenClass.GenClass_ls: " + GenClass.GenClass_ls.toString()  )
+        global.println("GenClass.GenClass_ls.LevelMemValue: " + GenClass.GenClass_ls.LevelMemValue.toString()  )
     }
 
     # [9] Level1<string> 实例方法 Level1Com 调用前后对比
@@ -137,9 +139,9 @@ GenClass
     {
         global.println("====== [9] Level1<string> 实例方法 Level1Com ======" )
         Level1<string> comObj = Level1<string>("comInit")
-        global.println("Level1Com 前 LevelMemValue 期望: comInit  实际: " + comObj.LevelMemValue  )
+        global.println("Level1Com 前 LevelMemValue 期望: comInit  实际: " + comObj.LevelMemValue.toString()  )
         comObj.Level1Com()
-        global.println("Level1Com 后 LevelMemValue（new() 默认值）: " + comObj.LevelMemValue  )
+        global.println("Level1Com 后 LevelMemValue（new() 默认值）: " + comObj.LevelMemValue.toString()  )
     }
 
     # [10] Level1<Level1<int>> 成员 mappp22（Map<LevelT1, Level1<LevelT1>>）访问
@@ -147,7 +149,7 @@ GenClass
     {
         global.println("====== [10] Level1<Level1<int>>.mappp22 成员访问 ======" )
         Level1<Level1<int> > l1 = Level1<Level1<int> >()
-        global.println("l1.mappp22: " + l1.mappp22  )
+        global.println("l1.mappp22: " + l1.mappp22.toString()  )
     }
 
     # [11] Level2<T2,T3> 双模板参数构造与成员访问
@@ -155,14 +157,14 @@ GenClass
     {
         global.println("====== [11] Level2<int,string> 构造与成员访问 ======" )
         Level2<int, string> l2 = Level2<int, string>(100, "l2str")
-        global.println("LevelMemValue 期望: 100  实际: " + l2.LevelMemValue  )
-        global.println("LevelMemValue2 期望: l2str  实际: " + l2.LevelMemValue2  )
+        global.println("LevelMemValue 期望: 100  实际: " + l2.LevelMemValue.toString()  )
+        global.println("LevelMemValue2 期望: l2str  实际: " + l2.LevelMemValue2.toString()  )
 
         # 修改成员后再读
         l2.LevelMemValue = 200
         l2.LevelMemValue2 = "changed"
-        global.println("修改后 LevelMemValue 期望: 200  实际: " + l2.LevelMemValue  )
-        global.println("修改后 LevelMemValue2 期望: changed  实际: " + l2.LevelMemValue2  )
+        global.println("修改后 LevelMemValue 期望: 200  实际: " + l2.LevelMemValue.toString()  )
+        global.println("修改后 LevelMemValue2 期望: changed  实际: " + l2.LevelMemValue2.toString()  )
     }
 
     # [12] Map 成员 m1/m2 读写
@@ -185,7 +187,7 @@ GenClass
         Level1<Level1<int>> dl1 = Level1<Level1<int>>()
         # 直接对返回值赋值并读取
         dl1.Level1Fun<Level1<string>>().LevelMemValue = "direct"
-        global.println("直接返回值.LevelMemValue 期望: direct  实际: " + dl1.Level1Fun<Level1<string> >().LevelMemValue  )
+        global.println("直接返回值.LevelMemValue 期望: direct  实际: " + dl1.Level1Fun<Level1<string> >().LevelMemValue.toString()  )
     }
 
     # [14] 静态泛型方法 Level1SF 多次不同模板参数调用
@@ -193,9 +195,9 @@ GenClass
     {
         global.println("====== [14] Level1<string>.Level1SF 多模板参数 ======" )
         var r1 = Level1<string>.Level1SF<int>(100)
-        global.println("Level1SF<int>(100) 期望: 100  实际: " + r1  )
+        global.println("Level1SF<int>(100) 期望: 100  实际: " + r1.toString()  )
         var r2 = Level1<string>.Level1SF<string>("sfstr")
-        global.println("Level1SF<string>(sfstr) 期望: sfstr  实际: " + r2  )
+        global.println("Level1SF<string>(sfstr) 期望: sfstr  实际: " + r2.toString() )
     }
 
     # [15] 错误场景：类型不匹配赋值（应报错或运行时异常）
@@ -204,16 +206,16 @@ GenClass
         global.println("====== [15] 错误场景：类型不匹配 ======" )
         # 期望：给 Level1<int> 传入 string 应报错
         #Level1<int> err1 = Level1<int>("notInt")     # 错误：构造参数类型不匹配
-        #global.println("err1.LevelMemValue: " + err1.LevelMemValue  )
+        #global.println("err1.LevelMemValue: " + err1.LevelMemValue.toString()  )
 
         # 期望：给 int 成员赋值 string 应报错
         Level1<int> err2 = Level1<int>(10)
         #err2.LevelMemValue = "shouldBeInt"           # 错误：成员类型不匹配
-        global.println("err2.LevelMemValue 期望: 10  实际: " + err2.LevelMemValue  )
+        global.println("err2.LevelMemValue 期望: 10  实际: " + err2.LevelMemValue.toString()  )
 
         # 期望：给 string 静态成员赋值 int 应报错
         #Level1<string>.LevelStaticValue = 999        # 错误：静态成员类型不匹配
-        global.println("Level1<string>.LevelStaticValue 当前值: " + Level1<string>.LevelStaticValue  )
+        global.println("Level1<string>.LevelStaticValue 当前值: " + Level1<string>.LevelStaticValue.toString()  )
     }
 
     # [16] 错误场景：MapFunc 模板参数与实参类型不一致（应报错）
@@ -222,11 +224,11 @@ GenClass
         global.println("====== [16] 错误场景：MapFunc 模板与实参不一致 ======" )
         # 期望：MapFunc<string> 传入 int 应报错
         #var err = Map<int, string>.MapFunc<string>(100)   # 错误：参数应为 string
-        #global.println("err: " + err  )
+        #global.println("err: " + err.toString()  )
 
         # 正确用法对照
         var ok = Map<int, string>.MapFunc<string>("ok")
-        global.println("正确用法 期望: ok  实际: " + ok  )
+        global.println("正确用法 期望: ok  实际: " + ok.toString()  )
     }
 
     # [17] 错误场景：跨模板实例静态成员混用（应报错或类型校验失败）
@@ -246,9 +248,9 @@ GenClass
     {
         global.println("====== [18] null 赋值与读取 ======" )
         Level1<string> nl = Level1<string>("init")
-        global.println("初始 LevelMemValue: " + nl.LevelMemValue  )
+        global.println("初始 LevelMemValue: " + nl.LevelMemValue.toString()  )
         nl.LevelMemValue = null
-        global.println("null 赋值后 LevelMemValue: " + nl.LevelMemValue  )
+        global.println("null 赋值后 LevelMemValue: " + nl.LevelMemValue.toString()  )
 
         # Map 成员置 null
         Map<int, string> nlm = Map<int, string>()
@@ -266,10 +268,10 @@ GenClass
         global.println("====== [19] Level1Fun 对 LevelStaticValue 的副作用 ======" )
         # Level1Fun 内部执行 LevelStaticValue = new()
         Level1<int>.LevelStaticValue = 12345
-        global.println("调用前 Level1<int>.LevelStaticValue: " + Level1<int>.LevelStaticValue  )
+        global.println("调用前 Level1<int>.LevelStaticValue: " + Level1<int>.LevelStaticValue.toString()  )
         Level1<Level1<int> > se = Level1<Level1<int> >()
         se.Level1Fun<Level1<string> >()
-        global.println("调用后 Level1<int>.LevelStaticValue（可能被 new() 覆盖）: " + Level1<int>.LevelStaticValue  )
+        global.println("调用后 Level1<int>.LevelStaticValue（可能被 new() 覆盖）: " + Level1<int>.LevelStaticValue.toString()  )
     }
 
     # [20] 边界场景：Level1Com 重复调用
@@ -277,11 +279,11 @@ GenClass
     {
         global.println("====== [20] Level1Com 重复调用 ======" )
         Level1<string> rc = Level1<string>("first")
-        global.println("第1次 LevelMemValue: " + rc.LevelMemValue  )
+        global.println("第1次 LevelMemValue: " + rc.LevelMemValue.toString()  )
         rc.Level1Com()
-        global.println("Level1Com 后 LevelMemValue: " + rc.LevelMemValue  )
+        global.println("Level1Com 后 LevelMemValue: " + rc.LevelMemValue.toString()  )
         rc.Level1Com()
-        global.println("再次 Level1Com 后 LevelMemValue: " + rc.LevelMemValue  )
+        global.println("再次 Level1Com 后 LevelMemValue: " + rc.LevelMemValue.toString()  )
     }
 
     static fun()

@@ -219,31 +219,27 @@ namespace SimpleLanguage.VM
             if (m_RuntimeClass?.staticIRMetaVariableList == null) return;
 
             //m_IsStaticMemInitializing = true;
-            try
+            if (m_StaticMemberRuntimeObjectArray == null && m_RuntimeClass.staticIRMetaVariableList.Count > 0)
             {
-                if (m_StaticMemberRuntimeObjectArray == null && m_RuntimeClass.staticIRMetaVariableList.Count > 0)
+                m_StaticMemberRuntimeObjectArray = new RuntimeObject[m_RuntimeClass.staticIRMetaVariableList.Count];
+                for (int i = 0; i < m_RuntimeClass.staticIRMetaVariableList.Count; i++)
                 {
-                    m_StaticMemberRuntimeObjectArray = new RuntimeObject[m_RuntimeClass.staticIRMetaVariableList.Count];
-                    for (int i = 0; i < m_RuntimeClass.staticIRMetaVariableList.Count; i++)
-                    {
-                        var field = m_RuntimeClass.staticIRMetaVariableList[i];
-                        if (field == null) continue;
-                        var rt = GetClassRuntimeType(field.runtimeDefType, true);
-                        if (rt == null) return;
+                    var field = m_RuntimeClass.staticIRMetaVariableList[i];
+                    if (field == null) continue;
+                    var rt = GetClassRuntimeType(field.runtimeDefType, true);
+                    if (rt == null) return;
 
-                        m_StaticMemberRuntimeObjectArray[i] = new RuntimeObject(rt, field, null);
+                    m_StaticMemberRuntimeObjectArray[i] = new RuntimeObject(rt, field, null);
 
-                        //if (!m_StaticFieldIndexToSlot.ContainsKey(field.index))
-                        //{
-                        //    m_StaticFieldIndexToSlot[field.index] = i;
-                        //}
-                    }
+                    //if (!m_StaticFieldIndexToSlot.ContainsKey(field.index))
+                    //{
+                    //    m_StaticFieldIndexToSlot[field.index] = i;
+                    //}
                 }
-
-                BuildStaticMemberDataLayout();
-                ApplyStaticMemberExpressionsBatch();
             }
-            catch (Exception e) { }
+
+            BuildStaticMemberDataLayout();
+            ApplyStaticMemberExpressionsBatch();
         }
 
         /// <summary>�?<see cref="m_StaticMemberRuntimeObjectArray"/> 分配 <see cref="m_MemberData"/> 并绑定各 <see cref="RuntimeObject"/> 切片（仅首次分配，避免覆盖已写入的静态初值）�?/summary>
@@ -307,7 +303,7 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            CLRVM.RunIRNewMethod($"__static_field_init__{this.id}", this, initIR);   
+            CLRVM.RunIRNewMethod($"__static_field_init__{this.m_RuntimeClass.name}", this, initIR);   
         }
         private string BuildStaticExprInitKey()
         {

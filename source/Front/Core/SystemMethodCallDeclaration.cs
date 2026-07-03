@@ -145,6 +145,7 @@ namespace SimpleLanguage.Core
             { ESystemMethodCall.SystemNumFloor, new SystemMethodCallDeclaration(ESystemMethodCall.SystemNumFloor, Num, false, Num) },
 
             // string slice / bytes (instance: this + args)
+            { ESystemMethodCall.SystemStringFormat, new SystemMethodCallDeclaration(ESystemMethodCall.SystemStringFormat, Str, false, Str, ArrayObj) },
             { ESystemMethodCall.SystemStringFront, new SystemMethodCallDeclaration(ESystemMethodCall.SystemStringFront, Str, false, Str, I32) },
             { ESystemMethodCall.SystemStringEnd, new SystemMethodCallDeclaration(ESystemMethodCall.SystemStringEnd, Str, false, Str, I32) },
             { ESystemMethodCall.SystemStringRange, new SystemMethodCallDeclaration(ESystemMethodCall.SystemStringRange, Str, false, Str, I32, I32) },

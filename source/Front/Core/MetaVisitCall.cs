@@ -20,6 +20,7 @@ namespace SimpleLanguage.Core
         public bool isRecieveReturnValue => m_IsRecieveReturnValue;
         //public MetaVariable loadMetaVariable => m_LoadMetaVariable;
         public MetaType staticCallMetaType => m_StaticCallerMetaType;
+        public MetaType returnMetaType => m_ReturnMetaType;
         public MetaFunction function => m_VMCallMetaFunction;
         public MetaMemberFunction metaMemberFunction => m_MetaMemberFunction;
         public List<MetaExpressNodeBase> metaInputParamList => m_MetaInputParamList;
@@ -30,6 +31,7 @@ namespace SimpleLanguage.Core
         protected MetaVariable m_LoadMetaVariable = null;
         //protected MetaVariable m_StoreMetaVariable = null;
         protected MetaType m_StaticCallerMetaType = null;
+        protected MetaType m_ReturnMetaType = null;
         protected bool m_IsRecieveReturnValue = true;
         // Debug-only: in some call-site shapes, meta member param count may resolve to 0,
         // which results in empty m_MetaInputParamList and missing args in Meta.txt.
@@ -48,7 +50,8 @@ namespace SimpleLanguage.Core
         private string? m_DebugInputParTermText = null;
         private Token m_Token = null;
         
-        public MetaMethodCall( MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaType staticMt,  MetaFunction _fun, List<MetaType> mpipList, MetaInputParamCollection _paramCollection,
+        public MetaMethodCall( MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaType staticMt,  MetaFunction _fun, List<MetaType> mpipList,
+            MetaInputParamCollection _paramCollection, MetaType returnMt,
             MetaVariable loadMv, MetaVariable storeMv )
         {
             m_OwnerMetaClass = ownerClass;
@@ -56,6 +59,7 @@ namespace SimpleLanguage.Core
             m_InputParamCollectionForDebug = _paramCollection;
             m_StaticCallerMetaType = staticMt;
             m_VMCallMetaFunction = _fun;
+            m_ReturnMetaType = returnMt;
             MetaMemberFunction mmf = _fun as MetaMemberFunction;
             m_MetaMemberFunction = mmf;
             //m_MetaInputParamList = _param;
@@ -135,7 +139,7 @@ namespace SimpleLanguage.Core
         }
 
         public MetaMethodCall(MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaFunction _fun, List<MetaType> mpipList, 
-            MetaInputParamCollection _paramCollection )
+            MetaInputParamCollection _paramCollection, MetaType returnMt )
         {
             m_OwnerMetaClass = ownerClass;
             m_OwnerMetaBlockStatements = ownerMBS;
@@ -143,6 +147,7 @@ namespace SimpleLanguage.Core
             m_VMCallMetaFunction = _fun;
             MetaMemberFunction mmf = _fun as MetaMemberFunction;
             m_MetaMemberFunction = mmf;
+            m_ReturnMetaType = returnMt;
             //m_MetaInputParamList = _param;
             if (mpipList != null)
             {
@@ -397,7 +402,7 @@ namespace SimpleLanguage.Core
             vn.m_VisitType = EVisitType.New;
             vn.m_Variable = mv;
             vn.m_Token = mv.token;
-            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mf, null, null, null, mv);
+            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mf, null, null, null, null, mv);
             return vn;
         }
         public static MetaVisitNode CreateByNewConst(MetaClass ownermc, MetaBlockStatements mbs,
@@ -413,7 +418,7 @@ namespace SimpleLanguage.Core
             {
                 vn.m_ReturnMetaType = new MetaType(mt);
             }
-            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mmf, null, mipc, null, null );
+            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mmf, null, mipc, null, null, null );
 
             return vn;
         }
@@ -641,17 +646,18 @@ namespace SimpleLanguage.Core
                 case EVisitType.MethodCall:
                 case EVisitType.SystemCall:
                     {
-                        if( methodCall.metaMemberFunction != null )
-                        {
-                            return methodCall.metaMemberFunction.returnMetaVariable.GetFinalMetaType()
-                                ?? methodCall.metaMemberFunction.GetFinalMetaType();
-                        }
-                        var finalRetMetaType = methodCall.function.returnMetaVariable.GetFinalMetaType();
-                        if (finalRetMetaType != null)
-                        {
-                            return finalRetMetaType;
-                        }
-                        return methodCall.function.GetFinalMetaType();
+                        return methodCall.returnMetaType;
+                        //if( methodCall.metaMemberFunction != null )
+                        //{
+                        //    return methodCall.metaMemberFunction.returnMetaVariable.GetFinalMetaType()
+                        //        ?? methodCall.metaMemberFunction.GetFinalMetaType();
+                        //}
+                        //var finalRetMetaType = methodCall.function.returnMetaVariable.GetFinalMetaType();
+                        //if (finalRetMetaType != null)
+                        //{
+                        //    return finalRetMetaType;
+                        //}
+                        //return methodCall.function.GetFinalMetaType();
                     }
                     case EVisitType.VisitVariable:
                     {

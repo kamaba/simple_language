@@ -215,6 +215,10 @@ namespace SimpleLanguage.Core
 
             List<MetaGenTemplate> mgtList = m_MetaGenTemplateList;
             var curfun = this.m_SourceMetaMemberFunction;
+            if (curfun == null)
+            {
+                return;
+            }
             while (true)
             {
                 if (curfun.sourceMetaMemberFunction == null)

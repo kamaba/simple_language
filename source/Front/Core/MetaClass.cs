@@ -1175,48 +1175,48 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, List<MetaType> mtList, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true)
-        {
-            if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
-            {
-                return null;
-            }
-            int templateParamCount = 0;
-            if( mtList != null )
-            {
-                templateParamCount = mtList.Count;
-            }
-            var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
-            if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount))
-            {
-                return null;
-            }
-            var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
+        //public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, List<MetaType> mtList, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true)
+        //{
+        //    if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
+        //    {
+        //        return null;
+        //    }
+        //    int templateParamCount = 0;
+        //    if( mtList != null )
+        //    {
+        //        templateParamCount = mtList.Count;
+        //    }
+        //    var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
+        //    if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount))
+        //    {
+        //        return null;
+        //    }
+        //    var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
 
-            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0);
-            if (list == null) return null;
+        //    var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0);
+        //    if (list == null) return null;
 
-            for (int i = 0; i < list.Count; i++)
-            {
-                var fun = list[i];
-                if (fun.isTemplateFunction)
-                {
-                    var gfun = fun.GetGenTemplateFunction(mtList);
+        //    for (int i = 0; i < list.Count; i++)
+        //    {
+        //        var fun = list[i];
+        //        if (fun.isTemplateFunction)
+        //        {
+        //            //var gfun = fun.GetGenTemplateFunction(mtList);
 
-                    if( gfun != null )
-                    {
-                        return gfun;
-                    }
-                    return fun;
-                }
-                else
-                {
-                    if (fun.IsEqualMetaInputParamCollection(inputParam))
-                        return fun;
-                }
-            }
-            return null;
-        }
+        //            //if( gfun != null )
+        //            //{
+        //            //    return gfun;
+        //            //}
+        //            return fun;
+        //        }
+        //        else
+        //        {
+        //            if (fun.IsEqualMetaInputParamCollection(inputParam))
+        //                return fun;
+        //        }
+        //    }
+        //    return null;
+        //}
         public MetaMemberFunction GetMetaMemberConstructDefaultFunction()
         {
             return GetMetaMemberConstructFunction(null);

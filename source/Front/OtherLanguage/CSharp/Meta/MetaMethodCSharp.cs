@@ -12,7 +12,7 @@ namespace SimpleLanguage.Core
         public MethodInfo methodInfo;
         public System.Object instance;
         public MetaMethodCallCSharp(MetaVariable mv, MetaFunction _fun, MetaInputParamCollection _metaInputParamCollection = null) 
-            : base( null, null, null, _fun, null,  _metaInputParamCollection, null, null)
+            : base( null, null, null, _fun, null,  _metaInputParamCollection, null, null, null)
         {
             ParseCSharp();
         }

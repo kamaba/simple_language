@@ -38,13 +38,21 @@ namespace SimpleLanguage.VM.Runtime
         }
         public static void RunIRNewMethod(string id, RuntimeType rt, List<Instruction> irlist)
         {
-            topCLRRuntime = m_ClrRuntimeStack.Peek();
-            RuntimeVM clrRuntime = new RuntimeVM(id, rt, rt?.runtimeTemplateList, irlist);
-            m_ClrRuntimeStack.Push(clrRuntime);
-            clrRuntime.SetNewObject();
-            clrRuntime.Run(true);
-            clrRuntime.ClearNewObject();
-            PopCLRRuntime();
+            try
+            {
+                topCLRRuntime = m_ClrRuntimeStack.Count > 0  ? m_ClrRuntimeStack.Peek() : null;
+                Log.AddVM(LID.ShowMessageInfo, $"RunIRNewMethod id={id} rt={rt} irlist.count={irlist?.Count}");
+                RuntimeVM clrRuntime = new RuntimeVM(id, rt, rt?.runtimeTemplateList, irlist);
+                m_ClrRuntimeStack.Push(clrRuntime);
+                clrRuntime.SetNewObject();
+                clrRuntime.Run(true);
+                clrRuntime.ClearNewObject();
+                PopCLRRuntime();
+            }
+            catch (Exception ex)
+            {
+                Log.AddVM(LID.ShowMessageError, $"RunIRNewMethod id={id} rt={rt} irlist.count={irlist?.Count} exception={ex}");
+            }
         }
         public static void RunIRMethodByRuntimeType(RuntimeType rt, List<RuntimeType> rtList, RuntimeMethod method, bool isDisCountStackCount = true)
         {

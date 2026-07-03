@@ -334,21 +334,13 @@ namespace SimpleLanguage.Core
                 MetaGenTemplate gmgt = mgtc?.GetMetaGenTemplate(mt.metaTemplate.name);
                 if (gmgt != null)
                 {
-
-                    if (gmgt.metaType.metaClass == null)
+                    // 如果绑定的类型本身也是模板类型（如函数级T绑定到类级T），
+                    // 需要保留模板信息，不能只取 metaClass
+                    if (gmgt.metaType.isTemplate)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaClass is Null");
-                        return false;
+                        mt.SetMetaType(gmgt.metaType);
                     }
-
-                    mt.SetMetaClass(gmgt.metaType.metaClass);
-                    //mt.SetGenMetaTemplate(gmgt);
-                    findfn = gmgt.metaType.metaClass;
-                }
-                else
-                {
-                    gmgt = mgtf?.GetMetaGenTemplate(mt.metaTemplate.name);
-                    if (gmgt != null)
+                    else
                     {
                         if (gmgt.metaType.metaClass == null)
                         {
@@ -356,8 +348,29 @@ namespace SimpleLanguage.Core
                             return false;
                         }
                         mt.SetMetaClass(gmgt.metaType.metaClass);
-                        //mt.SetGenMetaTemplate(gmgt);
                         findfn = gmgt.metaType.metaClass;
+                    }
+                }
+                else
+                {
+                    gmgt = mgtf?.GetMetaGenTemplate(mt.metaTemplate.name);
+                    if (gmgt != null)
+                    {
+                        // 同上，保留模板类型信息
+                        if (gmgt.metaType.isTemplate)
+                        {
+                            mt.SetMetaType(gmgt.metaType);
+                        }
+                        else
+                        {
+                            if (gmgt.metaType.metaClass == null)
+                            {
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaClass is Null");
+                                return false;
+                            }
+                            mt.SetMetaClass(gmgt.metaType.metaClass);
+                            findfn = gmgt.metaType.metaClass;
+                        }
                     }
                     else
                     {

@@ -116,8 +116,7 @@ namespace SimpleLanguage.Core
         {
             m_FileMetaMemeberVariable = fmmv;
             m_Name = fmmv.name;
-            AddPingToken( fmmv.nameToken );
-            m_Token = fmmv.nameToken;
+            m_Token = fmmv.token;
             m_FromType = EFromType.Code;
             m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
             m_IsStatic = m_FileMetaMemeberVariable?.staticToken != null;
@@ -309,7 +308,7 @@ namespace SimpleLanguage.Core
                     m_Express = enode;
                     m_Express.CalcReturnType();
                 }
-                m_RealMetaType = m_Express.GetReturnMetaType();
+                m_RealMetaType = this.m_Express.GetReturnMetaType();
                 foreach (var v in m_TemplateChildMetaMemberVariableList)
                 {
                     if (!v.isDefineMetaType)
@@ -318,34 +317,38 @@ namespace SimpleLanguage.Core
                     }
                 }
 
-                var relation = TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_RealMetaType, m_Token, out MetaType convertMt);
-                if (relation == false)
+                //if (this.m_SourceMetaVariable == null)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 表达式中返回定义类型为空 " + m_Express.ToString());
-                    return;
-                }
-                else
-                {
-                    if (m_Express is MetaConstExpressNode mcen && m_IsDefineMetaType )
+                    var relation = TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_RealMetaType, m_Token, out MetaType convertMt);
+                    if (relation == false)
                     {
-                        var t = m_DefineMetaType.eType;
-                        if ( t != m_RealMetaType.eType 
-                            && (t == EType.UInt8
-                            || t == EType.Int8
-                            || t == EType.Int16
-                            || t == EType.UInt16
-                            || t == EType.Int32
-                            || t == EType.UInt32
-                            || t == EType.Int64
-                            || t == EType.UInt64
-                            || t == EType.Float16
-                            || t == EType.Float32
-                            || t == EType.Float64) )
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 表达式中返回定义类型为空 " + m_Express.ToString());
+                        return;
+                    }
+                    else
+                    {
+                        if (m_Express is MetaConstExpressNode mcen && m_IsDefineMetaType)
                         {
-                            mcen.SetNumType(t);
+                            var t = m_DefineMetaType.eType;
+                            if (t != m_RealMetaType.eType
+                                && (t == EType.UInt8
+                                || t == EType.Int8
+                                || t == EType.Int16
+                                || t == EType.UInt16
+                                || t == EType.Int32
+                                || t == EType.UInt32
+                                || t == EType.Int64
+                                || t == EType.UInt64
+                                || t == EType.Float16
+                                || t == EType.Float32
+                                || t == EType.Float64))
+                            {
+                                mcen.SetNumType(t);
+                            }
                         }
                     }
                 }
+
             }
         }
         public MetaExpressNodeBase SimulateExpressRun(MetaExpressNodeBase node)

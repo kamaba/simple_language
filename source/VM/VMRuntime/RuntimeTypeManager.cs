@@ -57,6 +57,9 @@ namespace SimpleLanguage.VM
         // before VM global initialization and object creation.
         public static void EnsureCoreRuntimeTypesRegistered()
         {
+            RuntimeVM firstvm = new RuntimeVM("_first");
+            CLRVM.PushCLRRuntime(firstvm);
+
             EnsureByClassName("Core.Object", ref m_ObjectRuntimeType, true );
             EnsureByClassName("Core.Void", ref m_VoidRuntimeType, true);
             EnsureByClassName("Core.Type", ref m_TypeRuntimeType, true);

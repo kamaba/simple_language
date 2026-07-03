@@ -1068,7 +1068,9 @@ namespace SimpleLanguage.Core
                         if (mgtfind != null)
                         {
                             m_MetaFunction = mgtfind;
+                            m_MetaType = m_MetaFunction.GetFinalMetaType();
                         }
+                        ReCalcReturnMetaType();
                     }
                 }
             }
@@ -1207,6 +1209,27 @@ namespace SimpleLanguage.Core
                 }
             }
             return true;
+        }
+        public void ReCalcReturnMetaType()
+        {
+            if (!m_MetaType.isTemplate) return;
+            List<MetaTemplate> inputTemplateList = new List<MetaTemplate>();
+            if (staticCallMetaType != null)
+            {
+                foreach (var v in staticCallMetaType.GetGenTemplateMetaTypeList())
+                {
+                    inputTemplateList.Add(v.metaTemplate);
+                }
+            }
+            foreach (var v in m_MetaTemplateParamsList)
+            {
+                inputTemplateList.Add(v.metaTemplate);
+            }
+
+            if (m_MetaType.metaTemplate.index < inputTemplateList.Count)
+            {
+                m_MetaType = new MetaType(inputTemplateList[m_MetaType.metaTemplate.index]);
+            }
         }
         bool HandleMetaClass( ECallNodeType frontCNT, int templateCount)
         {
@@ -1788,7 +1811,7 @@ namespace SimpleLanguage.Core
                     m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, call.ToString());
                     m_MetaFunction.SetIndex( (int)call );
                     var retMt = m_MetaFunction.GetFinalMetaType();
-                    m_StaticCallMetaType = retMt != null ? new MetaType(retMt) : new MetaType(mc);
+                    //m_StaticCallMetaType = new MetaType(mc);
                     m_MetaType = retMt != null ? new MetaType(retMt) : null;
                     m_CallNodeType = ECallNodeType.SystemFunctionCall;
                     return true;
