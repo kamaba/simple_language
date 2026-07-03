@@ -472,17 +472,17 @@ namespace SimpleLanguage.VM
             if (co == null)
                 return false;
 
-            RuntimeClass irc = co.runtimeClass;
-            if (irc == null)
+            RuntimeType irt = co.runtimeType;
+            if (irt == null)
             {
                 Log.AddRuntimeLog(LID.ShowMessageError, "IRC鏄皟鐢ㄨ櫄鍑芥暟涓虹┖!!");
                 return false;
             }
 
-            RuntimeMethod cfc = irc.GetOperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
+            RuntimeMethod cfc = irt.runtimeClass.GetOperatorMethodIndexByMethod(isEqual ? "_eq_" : "_ne_", out int index);
             if (cfc == null && !isEqual)
             {
-                cfc = irc.GetOperatorMethodIndexByMethod("_eq_", out index);
+                cfc = irt.runtimeClass.GetOperatorMethodIndexByMethod("_eq_", out index);
                 if (cfc != null)
                     needInvert = true;
             }
@@ -491,7 +491,7 @@ namespace SimpleLanguage.VM
                 return false;
 
             List<RuntimeType> irmtList = new List<RuntimeType>();
-            CLRVM.RunIRMethod(irc, irmtList, cfc, false);
+            CLRVM.RunIRMethodByRuntimeType(irt, irmtList, cfc, false);
             if (needInvert)
             {
                 TryInvertTopMethodBoolResult();
@@ -910,7 +910,7 @@ namespace SimpleLanguage.VM
             if (method == null)
                 return false;
 
-            CLRVM.RunIRMethodByRuntimeType(co.runtimeType, method );
+            CLRVM.RunIRMethodByRuntimeType(co.runtimeType, new List<RuntimeType> {}, method );
             return true;
         }
 

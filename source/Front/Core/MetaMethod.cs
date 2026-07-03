@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MethodMethod.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -9,6 +9,7 @@
 
 using System.Collections.Generic;
 using System.Text;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Core
 {
@@ -113,7 +114,8 @@ namespace SimpleLanguage.Core
             m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
             SetOwnerMetaClass(mc);
 
-            var defaultReturnType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            // 没有显式声明返回类型的函数，默认返回 void
+            var defaultReturnType = new MetaType(CoreMetaClassManager.voidMetaClass);
             m_ReturnMetaVariable = new MetaVariable(
                 (mc != null ? mc.allName : "Global") + "." + (m_Name ?? "func") + ".return",
                 MetaVariable.EVariableFrom.None,
@@ -324,6 +326,117 @@ namespace SimpleLanguage.Core
             //sb.Append(" )");
 
             return sb.ToString();
+        }
+
+        /// <summary>
+        /// 检查非void返回类型的函数是否所有代码路径都有ret返回语句。
+        /// 在ParseStatements处理完语句后调用。
+        /// </summary>
+        public void CheckAllPathsReturn()
+        {
+            // 返回类型尚未解析的不检查
+            if (!m_IsDefineMetaType) return;
+
+            // 只检查有返回类型（非void）的函数
+            MetaType returnType = m_DefineMetaType;
+            if (returnType == null) return;
+            if (returnType.metaClass == CoreMetaClassManager.voidMetaClass) return;
+
+            // 没有函数体的不检查
+            if (m_MetaBlockStatements == null) return;
+            if (m_MetaBlockStatements.nextMetaStatements == null) return;
+
+            if (!IsBlockAlwaysReturn(m_MetaBlockStatements))
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                    $"Error 函数[{functionAllName}] 声明了返回类型[{returnType.ToFormatString()}]，但并非所有代码路径都有ret返回语句!");
+            }
+        }
+
+        /// <summary>
+        /// 判断一个语句块是否所有路径都返回（即块内某条直接子语句保证返回）。
+        /// 遍历块的链表，只检查直接子语句（parentBlockStatements == block）。
+        /// </summary>
+        private static bool IsBlockAlwaysReturn(MetaBlockStatements block)
+        {
+            if (block == null) return false;
+            MetaStatements cur = block.nextMetaStatements;
+            while (cur != null)
+            {
+                if (cur.parentBlockStatements == block)
+                {
+                    if (IsStatementAlwaysReturn(cur)) return true;
+                }
+                cur = cur.nextMetaStatements;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 判断单条语句是否保证返回。
+        /// </summary>
+        private static bool IsStatementAlwaysReturn(MetaStatements stmt)
+        {
+            if (stmt is MetaReturnStatements) return true;
+
+            if (stmt is MetaIfStatements ifStmt)
+            {
+                return IsIfStatementAlwaysReturn(ifStmt);
+            }
+
+            if (stmt is MetaBlockStatements blockStmt)
+            {
+                return IsBlockAlwaysReturn(blockStmt);
+            }
+
+            if (stmt is MetaSwitchStatements switchStmt)
+            {
+                return IsSwitchStatementAlwaysReturn(switchStmt);
+            }
+
+            // for/while/assign/call 等不保证返回
+            return false;
+        }
+
+        /// <summary>
+        /// if/elif/else 语句保证返回的条件：有else分支，且所有分支（if+所有elif+else）都保证返回。
+        /// </summary>
+        private static bool IsIfStatementAlwaysReturn(MetaIfStatements ifStmt)
+        {
+            bool hasElse = false;
+            foreach (var branch in ifStmt.metaElseIfStatements)
+            {
+                if (branch.ifElseState == MetaIfStatements.IfElseState.Else)
+                {
+                    hasElse = true;
+                }
+                if (!IsBlockAlwaysReturn(branch.thenMetaStatements))
+                {
+                    return false;
+                }
+            }
+            return hasElse;
+        }
+
+        /// <summary>
+        /// switch 语句保证返回的条件：有default分支，且所有case和default都保证返回。
+        /// </summary>
+        private static bool IsSwitchStatementAlwaysReturn(MetaSwitchStatements switchStmt)
+        {
+            if (switchStmt.defaultMetaStatements == null) return false;
+
+            foreach (var caseStmt in switchStmt.metaCaseStatements)
+            {
+                if (!IsBlockAlwaysReturn(caseStmt.thenMetaStatements))
+                {
+                    return false;
+                }
+            }
+            if (!IsBlockAlwaysReturn(switchStmt.defaultMetaStatements))
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

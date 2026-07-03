@@ -1,6 +1,7 @@
 
 using SimpleLanguage.Logging;
 using SimpleLanguage.Parse;
+using SimpleLanguage.VM.Runtime;
 using SimpleLanuageVM.Load;
 using System.Collections.Generic;
 
@@ -136,9 +137,10 @@ namespace SimpleLanguage.VM
                 }
                 else
                 {
-                    var vm = SimpleLanguage.VM.Runtime.CLRVM.CreateCLRRuntime( null, null, rm);
+                    RuntimeVM vm = new RuntimeVM(null, new List<RuntimeType>(), rm);
+                    CLRVM.PushCLRRuntime(vm);
                     vm.Run(true);
-                    SimpleLanguage.VM.Runtime.CLRVM.PopCLRRuntime();
+                    CLRVM.PopCLRRuntime();
                 }
             }
         }

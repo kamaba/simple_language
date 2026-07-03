@@ -473,7 +473,7 @@ namespace SimpleLanguage.VM
             // byte/sbyte/short/ushort/int32 -> int32
             return EVMType.Int32;
         }
-
+        /*
         public static void AddSValue(ref RuntimeValue _rv, ref RuntimeValue sval, bool isUnsign, out bool isMethodCall)
         {
             isMethodCall = false;
@@ -560,6 +560,7 @@ namespace SimpleLanguage.VM
                 }
             }
         }
+        */
         public static void MinusSValue(ref RuntimeValue _rv, RuntimeValue sval, bool isUnsign)
         {
             ComputeSVAlue(ref _rv, 1, ref sval, isUnsign);

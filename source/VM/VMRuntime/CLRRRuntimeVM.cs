@@ -22,6 +22,9 @@ namespace SimpleLanguage.VM.Runtime
         {
 
         }
+        public static void Init()
+        {
+        }
         public static RuntimeVM GetCLRRuntimeById( string id )
         {
             foreach( var v in m_ClrRuntimeStack )
@@ -33,41 +36,39 @@ namespace SimpleLanguage.VM.Runtime
             }
             return null;
         }
-        public static RuntimeVM CreateCLRRuntime(RuntimeClass rc, List<RuntimeType> irmtList, RuntimeMethod method)
+        public static void RunIRNewMethod(string id, RuntimeType rt, List<Instruction> irlist)
         {
-            var getrt = GetCLRRuntimeById(method.id);
-            //if( getrt != null )
-            //{
-            //    return getrt;
-            //}
-            //else
-            {
-                RuntimeVM clrRuntime = new RuntimeVM(rc, irmtList, method);
-                m_ClrRuntimeStack.Push(clrRuntime);
-                return clrRuntime;
-            }
-        }
-        public static RuntimeVM CreateCLRRuntime(RuntimeType rt, List<RuntimeType> irmtList, RuntimeMethod method)
-        {
-            var getrt = GetCLRRuntimeById(method.id);
-            //if( getrt != null )
-            //{
-            //    return getrt;
-            //}
-            //else
-            {
-                RuntimeVM clrRuntime = new RuntimeVM(rt, irmtList, method);
-                m_ClrRuntimeStack.Push(clrRuntime);
-                return clrRuntime;
-            }
-        }
-        public static RuntimeVM CreateExeSplite( string id, List<RuntimeType> irmtList, List<Instruction> irlist )
-        {
-            RuntimeVM clrRuntime = new RuntimeVM( id, irmtList, irlist );
+            topCLRRuntime = m_ClrRuntimeStack.Peek();
+            RuntimeVM clrRuntime = new RuntimeVM(id, rt, rt?.runtimeTemplateList, irlist);
             m_ClrRuntimeStack.Push(clrRuntime);
-            return clrRuntime;
+            clrRuntime.SetNewObject();
+            clrRuntime.Run(true);
+            clrRuntime.ClearNewObject();
+            PopCLRRuntime();
         }
+        public static void RunIRMethodByRuntimeType(RuntimeType rt, List<RuntimeType> rtList, RuntimeMethod method, bool isDisCountStackCount = true)
+        {
+            topCLRRuntime = m_ClrRuntimeStack.Peek();
+            RuntimeVM clrRuntime = null;
 
+            var getrt = GetCLRRuntimeById(method.id);
+            //if( getrt != null )
+            //{
+            //    return getrt;
+            //}
+            //else
+            {
+                clrRuntime = new RuntimeVM(rt, rtList, method);
+                m_ClrRuntimeStack.Push(clrRuntime);
+            }
+            clrRuntime.Run(isDisCountStackCount);
+            PopCLRRuntime();
+            var topt2 = m_ClrRuntimeStack.Peek();
+            topt2.AddReturnObjectArray(clrRuntime.returnRuntimeObjectArray);
+            //if (!clrRuntime.isPersistent)
+            {
+            }
+        }
         public static void PushCLRRuntime(RuntimeVM clrRuntime )
         {
             m_ClrRuntimeStack.Push(clrRuntime);
@@ -75,33 +76,6 @@ namespace SimpleLanguage.VM.Runtime
         public static RuntimeVM PopCLRRuntime()
         {
             return m_ClrRuntimeStack.Pop();
-        }
-        //public static void GetStaticVariable( RuntimeType rt, int index, ref RuntimeValue val)
-        //{
-        //    if(staticClassObjectDict.ContainsKey(irmc.id) == false )
-        //    {
-        //        Log.AddVM(LID.Unknown, "GetStaticVariable 娌℃湁鎵惧埌鐩稿綋鐨勯潤鎬佺�?);
-        //        return;
-        //    }
-        //    ClassObject sobj = staticClassObjectDict[irmc.id];
-
-        //    sobj.GetMemberVariableSValue(index, ref val); 
-        //}
-        //public static void SetStaticVariable( IRMetaClass irmc, int index, ref RuntimeValue RuntimeValue)
-        //{
-        //    if (staticClassObjectDict.ContainsKey(irmc.id) == false)
-        //    {
-        //        Log.AddVM(LID.Unknown, "SetStaticVariable 娌℃湁鎵惧埌鐩稿綋鐨勯潤鎬佺�?);
-        //        return;
-        //    }
-        //    ClassObject sobj = staticClassObjectDict[irmc.id];
-
-        //    sobj.SetMemberVariableSValue(index, RuntimeValue );
-        //}
-        public static void Init()
-        {
-            // VM init only; global mapping/execution is triggered explicitly
-            // after IR class/type load and global registration.
         }
         public static void LoadGlobalVariableMapping()
         {
@@ -114,38 +88,9 @@ namespace SimpleLanguage.VM.Runtime
                 m_IsGlobalInitApplied = true;
                 return;
             }
-
-            bool pushedRoot = false;
             m_IsGlobalInitApplying = true;
-            if (m_ClrRuntimeStack.Count == 0)
-            {
-                var root = new RuntimeVM("__global_init_root__",new List<Instruction>());
-                PushCLRRuntime(root);
-                pushedRoot = true;
-            }
-
-            try
-            {
-                var clrRuntime = CreateExeSplite("__global_init__", new List<RuntimeType>(), new List<Instruction>(m_GlobalInitInstructionList));               
-                //clrRuntime.isPersistent = true;
-                clrRuntime.Run(true);
-                PopCLRRuntime();
-                m_IsGlobalInitApplied = true;
-            }
-            finally
-            {
-                m_IsGlobalInitApplying = false;
-                if (pushedRoot && m_ClrRuntimeStack.Count > 0)
-                {
-                    PopCLRRuntime();
-                }
-            }
+            RunIRNewMethod("__global_init__", null, new List<Instruction>(m_GlobalInitInstructionList));           
         }
-        public static void EnsureGlobalVariableMappingInitialized()
-        {
-            LoadGlobalVariableMapping();
-        }
-
         public static void ResetGlobalVariableMapping()
         {
             m_GlobalVariableDict.Clear();
@@ -208,40 +153,6 @@ namespace SimpleLanguage.VM.Runtime
             {
                 Log.AddRuntimeLog(LID.ShowMessageAssert, $"global is nullglobalId={id} ");
             }
-        }
-        public static void RunIRMethod( RuntimeClass rc, List<RuntimeType> irmtList, RuntimeMethod _irMethod, bool isDisCountStackCount = true )
-        {
-            topCLRRuntime = m_ClrRuntimeStack.Peek();
-            RuntimeVM clrRuntime = CreateCLRRuntime( rc, irmtList, _irMethod );
-            clrRuntime.Run(isDisCountStackCount);
-            PopCLRRuntime();
-            var topt2 = m_ClrRuntimeStack.Peek();
-            topt2.AddReturnObjectArray(clrRuntime.returnRuntimeObjectArray);
-            //if (!clrRuntime.isPersistent)
-            {
-            }
-        }
-        public static void RunIRMethodByRuntimeType( RuntimeType rt, List<RuntimeType> rtList, RuntimeMethod rm )
-        {
-            topCLRRuntime = m_ClrRuntimeStack.Peek();
-            RuntimeVM clrRuntime = CreateCLRRuntime(rt, rtList, rm );
-            clrRuntime.Run(true);
-            PopCLRRuntime();
-            var topt2 = m_ClrRuntimeStack.Peek();
-            topt2.AddReturnObjectArray(clrRuntime.returnRuntimeObjectArray);
-            //if (!clrRuntime.isPersistent)
-            {
-            }
-        }
-        public static void RunIRNewMethod( string id, List<RuntimeType> irmtList, List<Instruction> irlist )
-        {
-            topCLRRuntime = m_ClrRuntimeStack.Peek();
-            RuntimeVM clrRuntime = CreateExeSplite(id, irmtList, irlist );
-            clrRuntime.SetNewObject();
-            clrRuntime.Run(true);
-            clrRuntime.ClearNewObject();
-            PopCLRRuntime();
-            
         }
     }
 }

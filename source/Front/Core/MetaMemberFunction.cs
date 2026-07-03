@@ -439,7 +439,8 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                defineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                // 没有显式声明返回类型的函数，默认返回 void
+                defineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
             }
             if( isSet && !isGet )
             {
@@ -628,7 +629,8 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                        // 没有显式声明返回类型的函数，默认返回 void
+                        m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
                     }
                     m_IsDefineMetaType = true;
                     m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
@@ -698,6 +700,13 @@ namespace SimpleLanguage.Core
                         : m_OwnerMetaClass?.name;
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 类[{ownerLabel}] 该函数[{this.functionAllName}] 没有定义函数内容！！");
                 }
+            }
+
+            // 处理完statements后，检查非void返回类型的函数是否所有代码路径都有ret返回
+            // 跳过构造函数和没有函数体的函数
+            if( !m_ConstructInitFunction && !nohasContent )
+            {
+                CheckAllPathsReturn();
             }
         }
         public void UpdateVritualFunctionName()

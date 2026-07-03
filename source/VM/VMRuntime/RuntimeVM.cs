@@ -68,23 +68,35 @@ namespace SimpleLanguage.VM.Runtime
             m_ValueStack = new RuntimeValue[1024];
             m_ValueIndex = 0;
             m_RuntimeTemplateRuntimeTypeList = irmtList;
-            m_RuntimeTypeList = new List<RuntimeType>(rt.runtimeTemplateList.Count+irmtList.Count);
-            m_RuntimeTypeList.AddRange(rt.runtimeTemplateList);
-            m_RuntimeTypeList.AddRange(irmtList);   
+            int count = irmtList.Count;
+            if( rt?.runtimeTemplateList != null )
+            {
+                count += rt.runtimeTemplateList.Count;
+            }
+            m_RuntimeTypeList = new List<RuntimeType>(count);
+            if(rt?.runtimeTemplateList != null )
+            {
+                m_RuntimeTypeList.AddRange(rt.runtimeTemplateList);
+            }
+            m_RuntimeTypeList.AddRange(irmtList);
             //m_RawCapacity = 1024;
             m_InstructionList = rm.InstructionList.ToArray();
             m_CurrentRuntimeType = rt;
             Init();
         }
-        public RuntimeVM( RuntimeClass rc, List<RuntimeType> rtList, RuntimeMethod rm)
+        public RuntimeVM( string id, RuntimeType rt, List<RuntimeType> irmtList, List<Instruction> irlist)
         {
-            m_Method = rm;
-            m_Id = rm.id;
+            m_Method = null;
+            m_Id = id;
             m_ValueStack = new RuntimeValue[1024];
             m_ValueIndex = 0;
+            m_RuntimeTemplateRuntimeTypeList = irmtList;
+            m_RuntimeTypeList = new List<RuntimeType>(rt.runtimeTemplateList.Count + irmtList.Count);
+            m_RuntimeTypeList.AddRange(rt.runtimeTemplateList);
+            m_RuntimeTypeList.AddRange(irmtList);
             //m_RawCapacity = 1024;
-            m_InstructionList = rm.InstructionList.ToArray();
-            m_CurrentRuntimeType = new RuntimeType(rc, rtList);
+            m_InstructionList = irlist?.ToArray();
+            m_CurrentRuntimeType = rt;
             Init();
         }
         public RuntimeVM(string id, List<RuntimeType> rtList, List<Instruction> irlist)
@@ -662,7 +674,7 @@ namespace SimpleLanguage.VM.Runtime
 
             return true;
         }
-        static RuntimeType? GetRuntimeTypeByInstruction(Instruction iri, RuntimeType defaultrt)
+        RuntimeType? GetRuntimeTypeByInstruction(Instruction iri)
         {
             if( iri.Payload == null )
             {
@@ -672,20 +684,18 @@ namespace SimpleLanguage.VM.Runtime
             string payload = Encoding.UTF8.GetString(iri.Payload);
             if (payload == "self")
             {
-                return defaultrt;
+                return m_CurrentRuntimeType;
             }
             var mt = TryGetInstructionRuntimeDefType(iri);
 
             if (mt != null)
             {
-                List<RuntimeType> rtList = null;
                 RuntimeClass rc = mt.ownerRuntimeClass;
-                if (defaultrt != null)
+                if (m_CurrentRuntimeType != null)
                 {
-                    rtList = defaultrt.runtimeTemplateList;
-                    rc = defaultrt.runtimeClass;
+                    rc = m_CurrentRuntimeType.runtimeClass;
                 }
-                return GetRuntimeTypeByDefType(mt, rc, rtList, true);
+                return GetRuntimeTypeByDefType(mt, rc, m_RuntimeTypeList, true);
             }
             return null;
         }
@@ -1439,7 +1449,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadStaticField:
                     {
-                        var rt = GetRuntimeTypeByInstruction(iri, m_CurrentRuntimeType);
+                        var rt = GetRuntimeTypeByInstruction(iri);
                         if (rt == null)
                         {
                             Log.AddRuntimeLog(LID.ShowMessageAssert, iri.debugInfo, "StoreStaticField failed to get runtime type for metadata type: ");
@@ -1451,7 +1461,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.StoreStaticField:
                     {
-                        var rt = GetRuntimeTypeByInstruction(iri, m_CurrentRuntimeType);
+                        var rt = GetRuntimeTypeByInstruction(iri);
                         if (rt == null)
                         {
                             Log.AddRuntimeLog(LID.ShowMessageAssert, iri.debugInfo, "StoreStaticField failed to get runtime type for metadata type: ");
@@ -1604,7 +1614,7 @@ namespace SimpleLanguage.VM.Runtime
                                 var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                                 if (irList.Count > 0)
                                 {
-                                    CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt.runtimeTemplateList, irList);
+                                    CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList);
                                 }
                             }
                             //var sv = default(RuntimeValue);
@@ -1615,7 +1625,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.NewTemplateObject:
                     {
-                        var rt = GetRuntimeTypeByInstruction(iri, m_CurrentRuntimeType);
+                        var rt = GetRuntimeTypeByInstruction(iri);
 
                         if (rt == null)
                         {
@@ -1635,7 +1645,7 @@ namespace SimpleLanguage.VM.Runtime
                         var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                         if (irList.Count > 0)
                         {
-                            CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt.runtimeTemplateList, irList);
+                            CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList);
                         }
                         //if (TryPushStackSlot(out int slot))
                         //    m_ValueStack[slot].SetSObject(sobj);
@@ -1644,7 +1654,7 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.NewArray:
                     {
                         // expects length on stack
-                        var rt = GetRuntimeTypeByInstruction(iri, m_CurrentRuntimeType);
+                        var rt = GetRuntimeTypeByInstruction(iri);
                         if (rt == null)
                         {
                             Log.AddRuntimeLog(LID.ShowMessageAssert, iri.debugInfo, "StoreStaticField failed to get runtime type for metadata type: ");
@@ -2295,7 +2305,7 @@ namespace SimpleLanguage.VM.Runtime
                         if (runtimeCall.method.id == "type")
                         {
                             var sobj = RuntimeTypeManager.CreateTypeObject(rt);
-                            m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
+                            this.m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
                         }
                         else
                         {
@@ -2454,15 +2464,13 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddRuntimeLog(LID.ShowMessageAssert, "Method index not found: " + iri.index);
                             return;
                         }
-                        //List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
-                        //for (int i = 0; i < runtimeCall.templateRuntimeDefTypeList.Count; i++)
-                        //{
-                        //    var crt = GetRuntimeTypeByDefType(runtimeCall.templateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
-                        //    rtList.Add(crt);
-                        //}
-
-
-                        CLRVM.RunIRMethodByRuntimeType(rt, m_RuntimeTypeList, cfc);
+                        List<RuntimeType> rtList = new List<RuntimeType>();
+                        for (int i = 0; i < runtimeCall.runtimeMethodTemplateRuntimeDefTypeList.Count; i++)
+                        {
+                            var crt = GetRuntimeTypeByDefType(runtimeCall.runtimeMethodTemplateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
+                            rtList.Add(crt);
+                        }
+                        CLRVM.RunIRMethodByRuntimeType(rt, rtList, cfc);
 
                         var a = ObjectManager.classObjectDict;
                     }

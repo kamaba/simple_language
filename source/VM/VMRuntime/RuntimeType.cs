@@ -299,56 +299,15 @@ namespace SimpleLanguage.VM
 
             s_StaticExprApplyingByKey.Add(key);
             this.m_IsStaticExprBatchApplying = true;
-            try
+            
+            List<Instruction> initIR = SLRuntimeModuleRegistry.GetStaticFieldInitializerExpressionsInOrder(m_RuntimeClass.id);
+            s_StaticExprAppliedByKey[key] = true;
+            if (initIR.Count == 0)
             {
-                // �?order（依赖解析次序）收集静态字段初始化指令，而不是按声明顺序�?
-                // order 来自 Front �?MetaMemberVariable.parseOrder：被依赖的成员先获得较小 order�?
-                // 必须先执行其初始化。例�?x1 = x2 * 1 + -2、x2 = x3 + 4、x3 = 13 会按 x3 -> x2 -> x1 执行�?
-                List<Instruction> initIR = SLRuntimeModuleRegistry.GetStaticFieldInitializerExpressionsInOrder(m_RuntimeClass.id);
-
-                if (initIR.Count == 0)
-                {
-                    //m_IsStaticExprBatchApplied = true;
-                    s_StaticExprAppliedByKey[key] = true;
-                    return;
-                }
-
-                // Mark as applied BEFORE executing batch to break any recursive re-entry
-                // through LoadStaticField/StoreStaticField paths while vm.Run is active.
-                // If execution fails, static slots still keep default objects and we avoid
-                // infinite initialization loops.
-                //m_IsStaticExprBatchApplied = true;
-                s_StaticExprAppliedByKey[key] = true;
-
-                //bool pushedRoot = false;
-                //if (CLRVM.clrRuntimeStack.Count == 0)
-                //{
-                //    var root = new RuntimeVM("__static_field_init_root__", new List<Instruction>());
-                //    CLRVM.PushCLRRuntime(root);
-                //    pushedRoot = true;
-                //}
-
-                try
-                {
-                    var vm = CLRVM.CreateExeSplite($"__static_field_init__{m_RuntimeClass.name}", this.runtimeTemplateList, initIR);
-                    //vm.isPersistent = true;
-                    vm.SetCurrentRuntimeType(this);
-                    vm.Run(true);
-                    CLRVM.PopCLRRuntime();
-                }
-                catch (Exception e)
-                {
-                    if (CLRVM.clrRuntimeStack.Count > 0)
-                    {
-                        CLRVM.PopCLRRuntime();
-                    }
-                }
+                return;
             }
-            finally
-            {
-                m_IsStaticExprBatchApplying = false;
-                s_StaticExprApplyingByKey.Remove(key);
-            }
+
+            CLRVM.RunIRNewMethod($"__static_field_init__{this.id}", this, initIR);   
         }
         private string BuildStaticExprInitKey()
         {
