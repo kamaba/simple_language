@@ -172,12 +172,14 @@ GenClass
     {
         global.println("====== [12] Map<int,string> 成员 m1/m2 读写 ======" )
         Map<int, string> mm = Map<int, string>()
-        global.println("默认 m1: " + mm.m1  )
-        global.println("默认 m2: " + mm.m2  )
+        mm.m1 = 100;
+        mm.m2 = "mapm1"
+        global.println("默认 m1: " + mm.m1.toString()  )
+        global.println("默认 m2: " + mm.m2.toString()   )
         mm.m1 = 10
         mm.m2 = "mapm2"
-        global.println("m1 期望: 10  实际: " + mm.m1  )
-        global.println("m2 期望: mapm2  实际: " + mm.m2  )
+        global.println("m1 期望: 10  实际: " + mm.m1.toString()   )
+        global.println("m2 期望: mapm2  实际: " + mm.m2.toString()   )
     }
 
     # [13] Level1Fun 返回值直接使用（不经过中间变量）
@@ -187,7 +189,8 @@ GenClass
         Level1<Level1<int>> dl1 = Level1<Level1<int>>()
         # 直接对返回值赋值并读取
         dl1.Level1Fun<Level1<string>>().LevelMemValue = "direct"
-        global.println("直接返回值.LevelMemValue 期望: direct  实际: " + dl1.Level1Fun<Level1<string> >().LevelMemValue.toString()  )
+        global.println("直接返回值.LevelMemValue 期望: direct  实际: " + dl1.Level1Fun<Level1<string> >().LevelMemValue.toString()  ) 
+        #这个有问题
     }
 
     # [14] 静态泛型方法 Level1SF 多次不同模板参数调用
@@ -248,18 +251,18 @@ GenClass
     {
         global.println("====== [18] null 赋值与读取 ======" )
         Level1<string> nl = Level1<string>("init")
-        global.println("初始 LevelMemValue: " + nl.LevelMemValue.toString()  )
+        global.println("初始 LevelMemValue: " + nl.LevelMemValue?.toString()  )
         nl.LevelMemValue = null
-        global.println("null 赋值后 LevelMemValue: " + nl.LevelMemValue.toString()  )
+        global.println("null 赋值后 LevelMemValue: " + nl.LevelMemValue?.toString()  )
 
         # Map 成员置 null
         Map<int, string> nlm = Map<int, string>()
         nlm.m1 = 1
         nlm.m2 = "v"
-        global.println("赋值后 m1: " + nlm.m1 + "  m2: " + nlm.m2  )
+        global.println("赋值后 m1: " + nlm.m1 + "  m2: " + nlm.m2?.toString()  )
         nlm.m1 = null
         nlm.m2 = null
-        global.println("置 null 后 m1: " + nlm.m1 + "  m2: " + nlm.m2  )
+        global.println("置 null 后 m1: " + nlm.m1 + "  m2: " + nlm.m2?.toString()  )
     }
 
     # [19] 边界场景：Level1Fun 内部对 LevelStaticValue 的副作用
@@ -268,10 +271,10 @@ GenClass
         global.println("====== [19] Level1Fun 对 LevelStaticValue 的副作用 ======" )
         # Level1Fun 内部执行 LevelStaticValue = new()
         Level1<int>.LevelStaticValue = 12345
-        global.println("调用前 Level1<int>.LevelStaticValue: " + Level1<int>.LevelStaticValue.toString()  )
+        global.println("调用前 Level1<int>.LevelStaticValue: " + Level1<int>.LevelStaticValue?.toString()  )
         Level1<Level1<int> > se = Level1<Level1<int> >()
         se.Level1Fun<Level1<string> >()
-        global.println("调用后 Level1<int>.LevelStaticValue（可能被 new() 覆盖）: " + Level1<int>.LevelStaticValue.toString()  )
+        global.println("调用后 Level1<int>.LevelStaticValue（可能被 new() 覆盖）: " + Level1<int>.LevelStaticValue?.toString()  )
     }
 
     # [20] 边界场景：Level1Com 重复调用
@@ -279,11 +282,11 @@ GenClass
     {
         global.println("====== [20] Level1Com 重复调用 ======" )
         Level1<string> rc = Level1<string>("first")
-        global.println("第1次 LevelMemValue: " + rc.LevelMemValue.toString()  )
+        global.println("第1次 LevelMemValue: " + rc.LevelMemValue?.toString()  )
         rc.Level1Com()
-        global.println("Level1Com 后 LevelMemValue: " + rc.LevelMemValue.toString()  )
+        global.println("Level1Com 后 LevelMemValue: " + rc.LevelMemValue?.toString()  )
         rc.Level1Com()
-        global.println("再次 Level1Com 后 LevelMemValue: " + rc.LevelMemValue.toString()  )
+        global.println("再次 Level1Com 后 LevelMemValue: " + rc.LevelMemValue?.toString()  )
     }
 
     static fun()

@@ -86,11 +86,8 @@ namespace SimpleLanguage.Core.IR
             IRBranch ifBranch = new IRBranch(_irMethod, EIROpCode.BrFalse, elseLabelData);
             irList.Add(ifBranch);
 
-            IRData popDupData = new IRData();
-            popDupData.opCode = EIROpCode.Pop;
-            popDupData.SetDebugInfoByToken(qmdNode.token, "?. pop dup, not null path");
-            irList.Add(new IRBase(popDupData));
-
+            // Not-null path: receiver is still on the stack (Cne consumed the dup'd copy).
+            // Do NOT pop — the subsequent method call / field access needs the receiver.
             irList.AddRange(ProcessVisitNodeList(_irMethod, cnlist, qmdIndex));
 
             IRBranch endBranch = new IRBranch(_irMethod, EIROpCode.Br, endLabelData);
