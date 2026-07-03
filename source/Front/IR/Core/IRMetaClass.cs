@@ -103,7 +103,7 @@ namespace SimpleLanguage.IR
             m_TypeOwner = owner ?? throw new System.ArgumentNullException(nameof(owner));
             m_MetaClassKind = kind;
             id = owner.GetHashCode();
-            m_IRName = IRManager.GetIRNameByMetaOwner(owner);
+            m_IRName =owner.allName;
 
             try
             {

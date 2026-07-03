@@ -630,7 +630,7 @@ namespace SimpleLanguage.IR
             }
             if (owner is MetaClass mc)
             {
-                return GetIRNameByMetaClass(mc);
+                return mc.allName;
             }
             if (owner is MetaData md)
             {
