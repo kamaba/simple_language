@@ -306,6 +306,7 @@ namespace SimpleLanguage.Core
             if (m_VisitNodeList != null && m_VisitNodeList.Count > 0)
             {
                 m_FinalCallNode = m_VisitNodeList[m_VisitNodeList.Count - 1];
+                ValidateNullConditionalUsage();
             }
             else
             {
@@ -314,6 +315,46 @@ namespace SimpleLanguage.Core
             }
 
             return flag;
+        }
+        /// <summary>
+        /// 校验 ?. (null conditional) 的使用场景：
+        /// 1. 不能用于构造函数 _init_
+        /// 2. 不能用于 set 函数
+        /// 3. 不能用于 void 返回值的函数
+        /// </summary>
+        private void ValidateNullConditionalUsage()
+        {
+            for (int i = 0; i < m_VisitNodeList.Count; i++)
+            {
+                var node = m_VisitNodeList[i];
+                if (!node.isQuestionMarkDot)
+                    continue;
+
+                if (node.visitType != MetaVisitNode.EVisitType.MethodCall &&
+                    node.visitType != MetaVisitNode.EVisitType.SystemCall)
+                    continue;
+
+                var func = node.methodCall?.function;
+                if (!(func is MetaMemberFunction mmf))
+                    continue;
+
+                if (mmf.isConstructInitFunction)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, node.token,
+                        "Error 空条件运算符 ?. 不能用于构造函数 _init_!");
+                }
+                else if (mmf.isSet)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, node.token,
+                        "Error 空条件运算符 ?. 不能用于 set 函数!");
+                }
+                else if (mmf.defineMetaType != null &&
+                         mmf.defineMetaType.metaClass == CoreMetaClassManager.voidMetaClass)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, node.token,
+                        "Error 空条件运算符 ?. 不能用于 void 返回值的函数!");
+                }
+            }
         }
         public List<MetaCallNode> CreateMetaCallNodeList(MetaExpressNodeBase belc)
         {
