@@ -393,7 +393,7 @@ namespace SimpleLanguage.Parse
 
             // class-level template metadata
             rc.templateCount = pkg.templateCount;
-            rc.templateParameterCount = pkg.templateParameterCount;
+            //rc.templateParameterCount = pkg.templateParameterCount;
             rc.templateDefTypeList.Clear();
             if (pkg.templateTypeList != null)
             {
@@ -414,14 +414,10 @@ namespace SimpleLanguage.Parse
                     if (f == null) continue;
 
                     RuntimeDefType rdt = null;
-                    try
-                    {
-                        if (f.typeDef != null)
-                            rdt = ResolveRuntimeDefType(f.typeDef);
-                    }
-                    catch {
-                        Debug.Assert(false, "解析定义类型出错!");
-                    }
+                    
+                    if (f.typeDef != null)
+                        rdt = ResolveRuntimeDefType(f.typeDef);
+
                     if( rdt == null )
                     {
                         Log.AddParseIRLog(LID.ShowMessageAssert, "");

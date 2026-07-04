@@ -109,7 +109,7 @@ namespace SimpleLanuageVM.Load
         /// <summary>IR class ids of implemented interfaces; matches Front <c>SLClassPackage.implementsInterfaceIdList</c>.</summary>
         public List<int> implementsInterfaceIdList { get; set; } = new();
         /// <summary>Declared template arity in source; matches Front <c>SLClassPackage.templateParameterCount</c>.</summary>
-        public int templateParameterCount { get; set; }
+        //public int templateParameterCount { get; set; }
         /// <summary>IR generated template meta type count; matches Front <c>SLClassPackage.templateCount</c>.</summary>
         public int templateCount { get; set; }
         /// <summary>Generated class template type list; matches Front <c>SLClassPackage.templateTypeList</c>.</summary>

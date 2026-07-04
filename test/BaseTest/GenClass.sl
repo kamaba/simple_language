@@ -188,9 +188,10 @@ GenClass
         global.println("====== [13] Level1Fun<Level1<string>> 返回值直接链式访问 ======" )
         Level1<Level1<int>> dl1 = Level1<Level1<int>>()
         # 直接对返回值赋值并读取
-        dl1.Level1Fun<Level1<string>>().LevelMemValue = "direct"
-        global.println("直接返回值.LevelMemValue 期望: direct  实际: " + dl1.Level1Fun<Level1<string> >().LevelMemValue.toString()  ) 
-        #这个有问题
+        # 注意: Level1Fun 每次调用返回新对象，必须用变量保存返回值后再操作
+        var dl1Ret = dl1.Level1Fun<Level1<string>>()
+        dl1Ret.LevelMemValue = "direct"
+        global.println("直接返回值.LevelMemValue 期望: direct  实际: " + dl1Ret.LevelMemValue.toString()  )
     }
 
     # [14] 静态泛型方法 Level1SF 多次不同模板参数调用
