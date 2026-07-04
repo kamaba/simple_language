@@ -15,9 +15,6 @@ namespace SimpleLanguage.VM
 {
     public class RuntimeType
     {
-        // Static field batch init can be re-entered through LoadStaticField while the same
-        // runtime class (or template specialization) is still being resolved/constructed.
-        // Use a shared (class-keyed) guard to prevent cross-instance infinite recursion.
         private static readonly Dictionary<string, bool> s_StaticExprAppliedByKey = new Dictionary<string, bool>();
         private static readonly HashSet<string> s_StaticExprApplyingByKey = new HashSet<string>();
 
@@ -59,21 +56,6 @@ namespace SimpleLanguage.VM
         {
             eType = evmtype;
         }
-        //public static EVMType GetVMType(string irName)
-        //{
-        //    // Minimal mapping by known IR names used by ObjectManager
-        //    if (string.IsNullOrEmpty(irName)) return EVMType.Class;
-        //    if (irName.EndsWith("Int32") || irName.EndsWith("Int16") || irName.EndsWith("Int64") || irName.EndsWith("UInt32") || irName.EndsWith("UInt16") || irName.EndsWith("UInt64") || irName.EndsWith("Byte") || irName.EndsWith("SByte"))
-        //        return EVMType.Num;
-        //    if (irName.EndsWith("Float32") || irName.EndsWith("Float64"))
-        //        return EVMType.Num;
-        //    if (irName.EndsWith("String"))
-        //        return EVMType.String;
-        //    if (irName.EndsWith("Boolean"))
-        //        return EVMType.Boolean;
-        //    return EVMType.Class;
-        //}
-
         public RuntimeType GetExtendsTemplateRuntimeType(RuntimeDefType irmt, List<RuntimeType> _runtimeTemplateList)
         {
             if (_runtimeTemplateList?.Count > 0)

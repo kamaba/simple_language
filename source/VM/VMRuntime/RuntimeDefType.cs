@@ -40,68 +40,6 @@ namespace SimpleLanguage.VM
             m_TemplateIndex = templateIndex;
             //m_IsTemplate = isTemplate;
         }
-        //public static RuntimeDefType CreateIRMetaTypeByGenTemplateMetaTypeList( RuntimeDefType type, RuntimeClass ownerIRMc)
-        //{
-        //    /*
-        //    RuntimeDefType irmt = new();
-        //    irmt.m_OwnerRuntimeClass = RuntimeClassManager.instance.GetRuntimeClassById(ownerIRMc.id);
-
-        //    var gtmc = type.runtimeClass;
-        //    if (type.isTemplate )
-        //    {
-        //        irmt.m_TemplateIndex = type.templateIndex;
-        //    }
-        //    irmt.m_RuntimeClass = RuntimeClassManager.instance.GetRuntimeClassById(type.runtimeClass.id );
-
-        //    var lits = type.GetGenTemplateMetaTypeList();
-        //    for (int i = 0; i < lits.Count; i++)
-        //    {
-        //        irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(lits[i], irmt.m_IROwnerMetaClass));
-        //    }
-        //    //for (int i = 0; i < type.genTemplateMetaTypeList.Count; i++)
-        //    //{
-        //    //    irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(type.genTemplateMetaTypeList[i], irmt.m_IROwnerMetaClass));
-        //    //}
-        //    if (irmt.m_IRMetaClass == null || irmt.m_IROwnerMetaClass == null)
-        //    {
-        //        Debug.Assert(false, "这个不可以为空!");
-        //    }
-        //    return irmt;
-        //    */
-        //    return null;
-        //}
-        //public static RuntimeDefType CreateIRMetaTypeByDefineTemplateMetaTypeList(RuntimeDefType type, RuntimeClass ownerIRMc)
-        //{
-        //    /*
-        //    IRMetaType irmt = new();
-        //    //irmt.m_IsArray = type.IsArray();
-        //    irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id);
-        //    if (type.eType == EMetaTypeType.MetaClass)
-        //    {
-        //        irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-        //    }
-        //    else if (type.eType == EMetaTypeType.Template)
-        //    {
-        //        irmt.m_TemplateIndex = type.metaTemplate.index;
-        //        irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-        //    }
-        //    else
-        //    {
-        //        irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.GetTemplateMetaClass().GetHashCode());
-        //    }
-
-        //    for (int i = 0; i < type.defineTemplateMetaTypeList.Count; i++)
-        //    {
-        //        irmt.m_IRMetaTypeList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(type.defineTemplateMetaTypeList[i], irmt.m_IROwnerMetaClass));
-        //    }
-        //    if (irmt.m_IRMetaClass == null || irmt.m_IROwnerMetaClass == null)
-        //    {
-        //        Debug.Assert(false, "这个不可以为空!");
-        //    }
-        //    return irmt;
-        //    */
-        //    return null;
-        //}
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

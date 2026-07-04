@@ -8,13 +8,11 @@ namespace SimpleLanguage.VM
         public string onlyFunctionName { get; set; } = "";
         public bool interfaceMethod => m_InterfaceMethod;
         public RuntimeClass ownerMetaClass => m_OwnerMetaClass;
-        //private List<IRMetaVariable> methodInputTemplateObject => m_MethodInputTemplateObject;
         public List<RuntimeVariable> methodArgumentList => m_MethodArgumentList;
         public List<RuntimeVariable> methodLocalVariableList => m_MethodLocalVariableList;
         public List<RuntimeVariable> methodReturnVariableList => m_MethodReturnList;
         public List<Instruction> InstructionList => m_InstructionList;
 
-        //private List<IRMetaVariable> m_MethodInputTemplateObject = new List<IRMetaVariable>();
         private List<RuntimeVariable> m_MethodArgumentList = new List<RuntimeVariable>();
         private List<RuntimeVariable> m_MethodLocalVariableList = new List<RuntimeVariable>();
         private List<RuntimeVariable> m_MethodReturnList = new List<RuntimeVariable>();

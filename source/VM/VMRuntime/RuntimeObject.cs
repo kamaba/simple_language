@@ -1,8 +1,6 @@
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
-using System;
 using System.Buffers.Binary;
-using System.Diagnostics;
 using System.Text;
 
 namespace SimpleLanguage.VM
@@ -16,14 +14,9 @@ namespace SimpleLanguage.VM
         public RuntimeVariable runtimeVariable => m_RuntimeVariable;
         public bool isNull => m_IsNull;
 
-        /// <summary>IR / Meta 渚ф垚鍛樺彉閲?id锛堜�?<see cref="RuntimeVariable.id"/> 涓€鑷达級锛涙棤鍏宠仈鍙橀噺鏃朵负 0�?/summary>
         public int memberVariableId => m_RuntimeVariable?.id ?? 0;
-
-        /// <summary>鍦ㄦ墍灞?<see cref="ClassObject"/> 鎴愬憳琛ㄤ腑鐨勪笅鏍囥€?/summary>
         public int memberIndex => m_Index;
-        /// <summary>鍦ㄧ揣鍑戞垚鍛樼紦鍐插尯涓殑璧峰鍋忕Щ锛堝疄渚嬶細<see cref="ClassObject.memberData"/>锛涢潤鎬侊細<see cref="RuntimeType.memberData"/>锛夈�?/summary>
         public int memberDataStart => m_Start;
-        /// <summary>绱у噾鎴愬憳缂撳啿鍖轰腑鏈Ы浣嶅瓧鑺傞暱搴︺€?/summary>
         public int memberDataLength => m_Length;
         public bool hasMemberDataSlice => m_MemberDataBuffer != null && m_Length > 0;
 
@@ -144,71 +137,6 @@ namespace SimpleLanguage.VM
                 }
             }
         }
-
-        private static EVMType DetectObjectActualType(SObject? sobj)
-        {
-            if (sobj == null)
-                return EVMType.Null;
-
-            if (sobj.eType != EVMType.Object)
-                return sobj.eType;
-
-            // Core.Object 装箱壳：优先�?payload 反推实体类型�?
-            var payload = sobj.value;
-            if (payload is SObject inner)
-                return inner.eType;
-            if (payload is bool)
-                return EVMType.Boolean;
-            if (payload is byte)
-                return EVMType.UInt8;
-            if (payload is sbyte)
-                return EVMType.Int8;
-            if (payload is short)
-                return EVMType.Int16;
-            if (payload is ushort)
-                return EVMType.UInt16;
-            if (payload is int)
-                return EVMType.Int32;
-            if (payload is uint)
-                return EVMType.UInt32;
-            if (payload is long)
-                return EVMType.Int64;
-            if (payload is ulong)
-                return EVMType.UInt64;
-            if (payload is float)
-                return EVMType.Float32;
-            if (payload is double)
-                return EVMType.Float64;
-            if (payload is string)
-                return EVMType.String;
-
-            return EVMType.Object;
-        }
-
-        private static bool IsExactRuntimeType(RuntimeType? left, RuntimeType? right)
-        {
-            if (left == null || right == null)
-                return false;
-
-            if (!ReferenceEquals(left.runtimeClass, right.runtimeClass))
-                return false;
-
-            var leftTemplates = left.runtimeTemplateList;
-            var rightTemplates = right.runtimeTemplateList;
-            if (leftTemplates == null || rightTemplates == null)
-                return leftTemplates == rightTemplates;
-            if (leftTemplates.Count != rightTemplates.Count)
-                return false;
-
-            for (int i = 0; i < leftTemplates.Count; i++)
-            {
-                if (!IsExactRuntimeType(leftTemplates[i], rightTemplates[i]))
-                    return false;
-            }
-
-            return true;
-        }
-
         private bool ValidateGenericReferenceAssignment(SObject incomingRef)
         {
             if (incomingRef == null || m_RuntimeType == null)
@@ -356,25 +284,7 @@ namespace SimpleLanguage.VM
 
             return resolved;
         }
-
-        private void ClearObjectScalarValue()
-        {
-            m_ObjectActualType = EVMType.Null;
-        }
-
-        private static int GetObjectScalarTypeByteLength(EVMType t)
-        {
-            return t switch
-            {
-                EVMType.Boolean => 4,
-                EVMType.UInt8 or EVMType.Int8 => 1,
-                EVMType.Int16 or EVMType.UInt16 => 2,
-                EVMType.Int32 or EVMType.UInt32 or EVMType.Float32 => 4,
-                EVMType.Int64 or EVMType.UInt64 or EVMType.Float64 or EVMType.Num => 8,
-                _ => 0,
-            };
-        }
-
+        /*
         private void EnsureObjectScalarMemberDataSlice(int length)
         {
             if (length <= 0)
@@ -408,7 +318,7 @@ namespace SimpleLanguage.VM
             span = m_MemberDataBuffer.AsSpan(m_Start, m_Length);
             return true;
         }
-
+        */
         public bool TryReadMemberDataToSValue(ref RuntimeValue RuntimeValue)
         {
             if (m_MemberDataBuffer == null || m_Length <= 0 || m_RuntimeType == null)
@@ -661,7 +571,7 @@ namespace SimpleLanguage.VM
         }
         public void SetNull()
         {
-            ClearObjectScalarValue();
+            m_ObjectActualType = EVMType.Null;
             SetObjectPointer(null);
             ClearMemberDataSlice();
             m_IsNull = true;
@@ -671,7 +581,7 @@ namespace SimpleLanguage.VM
             if (m_RuntimeType == null) return;
             if (sval.isNull)
             {
-                ClearObjectScalarValue();
+                m_ObjectActualType = EVMType.Null;
                 SetObjectPointer(null);
                 ClearMemberDataSlice();
                 m_IsNull = true;
@@ -859,16 +769,6 @@ namespace SimpleLanguage.VM
                     }
                 }
             }
-        }
-        public SObject CreateObjectByRuntimeType()
-        {
-            var sobj = GetSObject();
-            if (sobj == null)
-            {
-                sobj = ObjectManager.CreateObjectByRuntimeType(m_RuntimeType, true);
-                SetObjectPointer(sobj);
-            }
-            return sobj;
         }
         public override string ToString()
         {

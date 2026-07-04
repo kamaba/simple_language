@@ -512,21 +512,6 @@ namespace SimpleLanguage.Parse
 
             // static methods are not added to instance lists here; they remain in registry
         }
-
-        // Note: binding of instruction call payloads to runtime call objects
-        // moved to the dynamic runtime layer. Runtime should invoke
-        // TryCreateRuntimeCallForInstruction when it needs to resolve an
-        // instruction's opValue into a RuntimeCall. Keeping the helper
-        // here for on-demand use is still possible via TryCreateRuntimeCallForInstruction.
-
-        public static bool TryBindInstructionCall(Instruction? ins)
-        {
-            // Binding logic intentionally moved to the runtime layer.
-            // Runtime code should call TryCreateRuntimeCallForInstruction when
-            // it needs to resolve an instruction's opValue into a RuntimeCall.
-            return false;
-        }
-
         public static RuntimeDefType? TryResolveRuntimeDefTypeFromInstruction(object? opValue, byte[]? payload = null)
         {
             if (opValue is Instruction ins && ins.TryGetRuntimeDefTypePackage(out var pkgFromInstruction))
@@ -626,7 +611,6 @@ namespace SimpleLanguage.Parse
 
             return null;
         }
-
         private static bool TryReadRuntimeDefTypePackage(object? opValue, out SLRuntimeDefTypePackage? pkg)
         {
             pkg = null;
@@ -674,7 +658,6 @@ namespace SimpleLanguage.Parse
 
             return false;
         }
-
         private static RuntimeCall? CreateRuntimeCall(SLRuntimeCallPackage callPkg, int fallbackParamCount)
         {
             if (callPkg == null) return null;
@@ -719,17 +702,6 @@ namespace SimpleLanguage.Parse
             var paramCount = callPkg.paramCount > 0 ? callPkg.paramCount : fallbackParamCount;
             return new RuntimeCall(ownerType, templateList, callee, paramCount);
         }
-
-        private static RuntimeCall? CreateRuntimeCallByMethodId(string methodId, int paramCount)
-        {
-            if (!s_MethodById.TryGetValue(methodId, out var callee) || callee == null) return null;
-
-            var ownerType = ResolveFallbackOwnerType(methodId);
-            if (ownerType == null) return null;
-
-            return new RuntimeCall(ownerType, new List<RuntimeDefType>(), callee, paramCount);
-        }
-
         private static RuntimeDefType? ResolveFallbackOwnerType(string? methodId)
         {
             RuntimeDefType? ownerType = null;
@@ -832,134 +804,6 @@ namespace SimpleLanguage.Parse
             if (rc == null) return null;
             PopulateRuntimeClassFieldsFromPackage(pkg, rc);
             return rc;
-        }
-
-        private static RuntimeDefType? TryBuildRuntimeDefTypeFromTypeName(string? typeName)
-        {
-            if (string.IsNullOrWhiteSpace(typeName)) return null;
-            // reuse existing builder path by using BuildRuntimeDefTypeFromTypeName via string parsing
-            return BuildRuntimeDefTypeFromTypeName(typeName);
-        }
-
-
-
-        private static RuntimeDefType? ResolveRuntimeDefType(string? typeName)
-        {
-            if (string.IsNullOrWhiteSpace(typeName)) return null;
-            return BuildRuntimeDefTypeFromTypeName(typeName);
-        }
-
-        private static RuntimeDefType? BuildRuntimeDefTypeFromTypeName(string? typeName)
-        {
-            if (string.IsNullOrWhiteSpace(typeName)) return null;
-
-            var text = typeName.Trim();
-            int lt = text.IndexOf('<');
-            if (lt < 0)
-            {
-                var rc = ResolveOrCreateRuntimeClass(GetGenericRootName(text));
-                if (rc == null) return null;
-
-                EnsureRuntimeTypeRegistered(rc, new List<RuntimeType>());
-                return new RuntimeDefType(rc);
-            }
-
-            int gt = text.LastIndexOf('>');
-            if (gt <= lt)
-            {
-                var rc = ResolveOrCreateRuntimeClass(GetGenericRootName(text));
-                if (rc == null) return null;
-
-                EnsureRuntimeTypeRegistered(rc, new List<RuntimeType>());
-                return new RuntimeDefType(rc);
-            }
-
-            var rootName = text.Substring(0, lt).Trim();
-            var rcRoot = ResolveOrCreateRuntimeClass(rootName);
-            if (rcRoot == null) return null;
-
-            var argsText = text.Substring(lt + 1, gt - lt - 1);
-            var argNames = SplitGenericArguments(argsText);
-            var rdtArgs = new List<RuntimeDefType>();
-            var rtArgs = new List<RuntimeType>();
-
-            for (int i = 0; i < argNames.Count; i++)
-            {
-                var childRdt = BuildRuntimeDefTypeFromTypeName(argNames[i]);
-                if (childRdt == null) continue;
-                rdtArgs.Add(childRdt);
-
-                var childRt = EnsureRuntimeTypeRegistered(childRdt.runtimeClass, GetTemplateRuntimeTypes(childRdt));
-                if (childRt != null)
-                {
-                    rtArgs.Add(childRt);
-                }
-            }
-
-            EnsureRuntimeTypeRegistered(rcRoot, rtArgs);
-            return new RuntimeDefType(rcRoot, rdtArgs);
-        }
-
-        private static List<string> SplitGenericArguments(string argsText)
-        {
-            var result = new List<string>();
-            if (string.IsNullOrWhiteSpace(argsText)) return result;
-
-            int depth = 0;
-            int start = 0;
-            for (int i = 0; i < argsText.Length; i++)
-            {
-                var ch = argsText[i];
-                if (ch == '<') depth++;
-                else if (ch == '>') depth--;
-                else if (ch == ',' && depth == 0)
-                {
-                    var item = argsText.Substring(start, i - start).Trim();
-                    if (!string.IsNullOrWhiteSpace(item)) result.Add(item);
-                    start = i + 1;
-                }
-            }
-
-            if (start < argsText.Length)
-            {
-                var last = argsText.Substring(start).Trim();
-                if (!string.IsNullOrWhiteSpace(last)) result.Add(last);
-            }
-
-            return result;
-        }
-
-        private static List<RuntimeType> GetTemplateRuntimeTypes(RuntimeDefType rdt)
-        {
-            var list = new List<RuntimeType>();
-            if (rdt?.runtimeDefTypeList == null) return list;
-
-            for (int i = 0; i < rdt.runtimeDefTypeList.Count; i++)
-            {
-                var child = rdt.runtimeDefTypeList[i];
-                if (child == null || child.runtimeClass == null) continue;
-
-                var childRt = EnsureRuntimeTypeRegistered(child.runtimeClass, GetTemplateRuntimeTypes(child));
-                if (childRt != null) list.Add(childRt);
-            }
-
-            return list;
-        }
-
-        private static RuntimeType? EnsureRuntimeTypeRegistered(RuntimeClass rc, List<RuntimeType> templateArgs)
-        {
-            if (rc == null) return null;
-
-            var args = templateArgs ?? new List<RuntimeType>();
-            var existed = RuntimeTypeManager.GetRuntimeTypeByRuntimeClassAndRuntimeTypeList(rc, args);
-            if (existed != null) return existed;
-
-            if (args.Count == 0)
-            {
-                return RuntimeTypeManager.AddRuntimeTypeByClass(rc);
-            }
-
-            return RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(rc, args);
         }
 
         private static string GetGenericRootName(string fullTypeName)
