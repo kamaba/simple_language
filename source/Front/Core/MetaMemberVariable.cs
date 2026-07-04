@@ -68,6 +68,7 @@ namespace SimpleLanguage.Core
             m_IsInnerDefine = mmv.m_IsInnerDefine;
             m_Express = mmv.m_Express;
             m_VariableFrom = EVariableFrom.ClassMember;
+            m_Token = mmv.m_Token;
 
             this.m_FileMetaMemeberVariable = mmv.m_FileMetaMemeberVariable;
             m_Name = mmv.m_Name;

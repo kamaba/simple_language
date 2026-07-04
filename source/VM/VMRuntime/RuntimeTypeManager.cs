@@ -270,7 +270,6 @@ namespace SimpleLanguage.VM
             if (rt == null) return null;
             try
             {
-                EnsureCoreRuntimeTypesRegistered();
                 var tobj = new TypeObject(rt);
                 tobj.CreateObject();
                 if (tobj.refCount == 0)

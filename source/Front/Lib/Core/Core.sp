@@ -42,8 +42,9 @@ Project
         NCTest.fun()
         ForTest.forfun()
         GenClass_Interface.fun()
-        !#
         GenClass.fun()
+        !#
+        GC2.GenClass2.fun()
         
     }
     _test_()

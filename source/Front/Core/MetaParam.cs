@@ -193,7 +193,32 @@ namespace SimpleLanguage.Core
         {
             if (param != null)
             {
-                MetaType md = param.metaVariable.defineMetaType;
+                MetaType left = param.metaVariable.defineMetaType;
+                MetaType right = metaVariable.defineMetaType;
+
+                if( left.isClass && right.isClass )
+                {
+                    if( left.metaClass == right.metaClass )
+                    {
+                        return true;
+                    }
+                }
+                else if( left.isData && right.isData )
+                {
+                    if( left.metaData == right.metaData )
+                    {
+                        return true;
+                    }
+                }
+                else if( left.isEnum && right.isEnum )
+                {
+                    if (left.metaEnum == right.metaEnum )
+                    {
+                        return true;
+                    }
+                }
+                return false;
+                /*
                 // exact match
                 if (TypeManager.CompareMetaType(md, metaVariable.defineMetaType))
                 {
@@ -221,6 +246,7 @@ namespace SimpleLanguage.Core
                         return true;
                     }
                 }
+                */
                 return false;
             }
             return false;

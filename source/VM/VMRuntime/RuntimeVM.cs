@@ -2360,8 +2360,10 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             if (mfc.method.id == "type")
                             {
-                                var sobj = RuntimeTypeManager.CreateTypeObject(rt);
-                                this.m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
+                                //var sobj = RuntimeTypeManager.CreateTypeObject(rt);
+                                //this.m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "type 因为是final 函数，所以应该使用callStatic的方式");
+                                break;
                             }
                             else
                             {

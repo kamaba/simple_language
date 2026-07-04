@@ -1485,6 +1485,8 @@ namespace SimpleLanguage.Core
             }
 
             // ensure variable meta types are calculated
+            mv.CreateMetaExpress();
+            mv.ParseMetaExpress();
             mv.ParseRealMetaType();
 
             //if( frontCNT == ECallNodeType.VisitVariable && (mv is MetaVisitVariable mvv) )
