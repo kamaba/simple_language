@@ -1,3 +1,7 @@
+
+
+namespace GC5
+{
 public class Class1
 {
     public int a = 20
@@ -295,6 +299,8 @@ GenClass
         Float32 GenClass_fun_a = Level1<Float32>.min<Float32>( 1.3, 2.5 )
         System.Console.WriteLine("_this_—————————————————————————————— 3 " + GenClass_fun_a )
     }
+}
+
 }
 
 # 关于生成类的规则 

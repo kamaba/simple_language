@@ -77,6 +77,7 @@ public class Range<T:Num> interface IIterable<T>, IIterator<T>
             }
             ret false
         }
+        ret false
     }
     override T current()
     {

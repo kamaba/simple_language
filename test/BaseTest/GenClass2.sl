@@ -140,8 +140,8 @@ GenClass2{
         Level1<int, int>  GenClass2_fun_l1 = Level1<int, int>(100)
         GenClass2_fun_l1.setLevel1( 200 )
         global.println("====== [4] toString 重写 ======" )
-        # #! ... !# 块为原生代码块，VM 不执行，toString 返回 fallback 值
-        global.println("Level1<int,int> toString 期望: Level1 String----  实际: " + GenClass2_fun_l1.toString() )
+        # #! ... !# 原生代码块: _Level1_t.type == int.type 时返回 "int32"
+        global.println("Level1<int,int> toString 期望: int32  实际: " + GenClass2_fun_l1.toString() )
     }
 }
 

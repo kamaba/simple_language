@@ -1,3 +1,6 @@
+
+namespace GF{
+
 public class Class1
 {
     public int a = 20
@@ -265,7 +268,7 @@ ClassRoom
 
 }
 
-GenClass
+GenFunction
 {
     cl2<T,T2,T3> extends Level1<int>
     {
@@ -281,7 +284,7 @@ GenClass
     #Level1<string> ls2 = null
     #Level1<string> ls3 = new()     #报错，提示，不允许这种形式
     #Level1<string> ls4 = {}
-    static GenClass_fun()
+    static fun()
     {
         Level1<int> GenClass_fun_l1 = Level1<int>()
         GenClass_fun_l2 = GenClass_fun_l1.add()
@@ -294,6 +297,8 @@ GenClass
 
         #Debug.Write("Flaoat" + a )
     }
+}
+
 }
 
 # 关于生成类的规则 

@@ -1,3 +1,7 @@
+
+namesapce GC4
+{
+
 LT
 {
     private _init_()
@@ -89,6 +93,8 @@ GenClass{
         System.Console.WriteLine("_this_333337 " + lll31.Level1_t1.t2.t2 )
         System.Console.WriteLine("_this_333338 " + lll31.Level1_t2.t1 )
     }
+}
+
 }
 
 #!
