@@ -338,7 +338,17 @@ namespace SimpleLanguage.IR
                 }
                 if (cirmc != null)
                 {
-                    index = cirmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
+                    // 优先用实例化后的成员变量哈希查找，找不到再用源模板成员变量哈希
+                    index = cirmc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                    if (index < 0)
+                    {
+                        index = cirmc.GetMetaMemberVariableIndexByHashCode(gmv.GetHashCode());
+                    }
+                    // 哈希查找都失败时，用字段名查找
+                    if (index < 0 && !string.IsNullOrEmpty(gmv.name))
+                    {
+                        index = cirmc.GetMetaMemberVariableIndexByName(gmv.name);
+                    }
                 }
                 if (gmv.isStatic)
                 {

@@ -48,6 +48,7 @@ namespace SimpleLanguage.VM.Runtime
                 clrRuntime.Run(true);
                 clrRuntime.ClearNewObject();
                 PopCLRRuntime();
+                topCLRRuntime = m_ClrRuntimeStack.Count > 0 ? m_ClrRuntimeStack.Peek() : null;
             }
             catch (Exception ex)
             {
@@ -71,6 +72,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             clrRuntime.Run(isDisCountStackCount);
             PopCLRRuntime();
+            topCLRRuntime = m_ClrRuntimeStack.Count > 0 ? m_ClrRuntimeStack.Peek() : null;
             var topt2 = m_ClrRuntimeStack.Peek();
             topt2.AddReturnObjectArray(clrRuntime.returnRuntimeObjectArray);
             //if (!clrRuntime.isPersistent)

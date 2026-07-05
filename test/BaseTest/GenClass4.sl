@@ -65,7 +65,7 @@ Level4<LT41,LT42> extends Level3<LT41, AAAAA<LT42> >
     LT41 Level41_t = new()
 }
 
-GenClass{
+GenClass4{
     static fun()
     {
         Level4<int,string> ll41 = new()

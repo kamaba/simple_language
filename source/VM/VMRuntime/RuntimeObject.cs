@@ -173,6 +173,14 @@ namespace SimpleLanguage.VM
 
             if( targetType.runtimeTemplateList.Count > 0 )  //比较带模板的
             {
+                // 如果 source 的运行时类继承自 target 的运行时类，允许赋值
+                // (类型安全已在编译期由前端检查)
+                if (sourceType.runtimeClass != targetType.runtimeClass &&
+                    sourceType.runtimeClass.IsExtendsRelation(targetType.runtimeClass))
+                {
+                    return true;
+                }
+
                 if( targetType.runtimeTemplateList.Count != sourceType.runtimeTemplateList.Count )
                 {
                     return false;

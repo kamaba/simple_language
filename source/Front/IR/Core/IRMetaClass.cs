@@ -250,6 +250,19 @@ namespace SimpleLanguage.IR
             }
             return -1;
         }
+        public int GetMetaMemberVariableIndexByName( string name )
+        {
+            for (int i = 0; i < m_LocalIRMetaVariableList.Count; i++)
+            {
+                var varName = m_LocalIRMetaVariableList[i].name;
+                if (varName == name)
+                    return m_LocalIRMetaVariableList[i].index;
+                // 匹配简单名称（IRMetaVariable.name 可能包含类前缀）
+                if (varName.EndsWith("." + name))
+                    return m_LocalIRMetaVariableList[i].index;
+            }
+            return -1;
+        }
         public void AddMetaMemberVariableIndexBindHashCode( int id, int newid)
         {
             if( !m_MetaMemberVariableHashCodeDict.ContainsKey( id ) )

@@ -194,26 +194,55 @@ namespace SimpleLanguage.IR
                 }
                 else
                 {
-                    var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(lastCL.callMetaType, owirmc);
-                    int hashcode = 0;
-                    if(mv.sourceMetaVariable != null )
+                    // 使用原始模板变量查找 IRMetaClass，与 Load 路径一致
+                    var orgMv = lastCL.GetOrgTemplateMetaVariable();
+                    var orgOwirmc = orgMv != null ? IRManager.GetIRMetaClassByMetaVariable(orgMv) : owirmc;
+                    var irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(lastCL.callMetaType, orgOwirmc);
+                    int index = -1;
+                    if (orgMv != null)
                     {
-                        hashcode = mv.sourceMetaVariable.GetHashCode();
+                        index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(orgMv.GetHashCode());
                     }
-                    else
+                    if (index < 0)
                     {
-                        hashcode = mv.GetHashCode();
+                        index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
                     }
-                    int index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(hashcode);
                     IRStoreVariable irsv = new IRStoreVariable(irmt, irMethod, index, IRMetaVariableFrom.Static);
                     m_IRStatements.Add(irsv);
                 }
             }
             else
             {
-                var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
+                // 从前一个调用节点获取对象类型的 IRMetaClass（包含所有继承字段）
+                IRMetaClass fieldOwnerIrMc = owirmc;
+                IRMetaType fieldIrmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
+                if (clist.Count >= 2)
+                {
+                    var prevNode = clist[clist.Count - 2];
+                    var prevType = prevNode.GetMetaType();
+                    if (prevType != null)
+                    {
+                        var prevIrmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(prevType, owirmc);
+                        if (prevIrmt?.irMetaClass != null)
+                        {
+                            fieldOwnerIrMc = prevIrmt.irMetaClass;
+                            fieldIrmt = prevIrmt;
+                        }
+                    }
+                }
 
-                IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, owirmc, irMethod, mv);
+                // 在对象类型的 IRMetaClass 上查找字段索引
+                int fieldIndex = -1;
+                if (fieldOwnerIrMc != null)
+                {
+                    fieldIndex = fieldOwnerIrMc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                    if (fieldIndex < 0 && mv.sourceMetaVariable != null)
+                        fieldIndex = fieldOwnerIrMc.GetMetaMemberVariableIndexByHashCode(mv.sourceMetaVariable.GetHashCode());
+                    if (fieldIndex < 0 && !string.IsNullOrEmpty(mv.name))
+                        fieldIndex = fieldOwnerIrMc.GetMetaMemberVariableIndexByName(mv.name);
+                }
+
+                IRStoreVariable irsv = new IRStoreVariable(fieldIrmt, irMethod, fieldIndex, IRMetaVariableFrom.Member);
                 m_IRStatements.Add(irsv);
             }
             //if ( ms.isNewStatements )

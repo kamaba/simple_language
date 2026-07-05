@@ -662,7 +662,7 @@ namespace SimpleLanguage.VM
                     break;
             }
         }
-        public static void NegSValue(ref RuntimeValue _rv, bool isUnsign)
+        public static void NegSValue(ref RuntimeValue _rv)
         {
             switch (_rv.eType)
             {

@@ -25,6 +25,8 @@ namespace SimpleLanguage.VM.Runtime
         public int level => m_Level;
 
 
+        private string m_Id = "";
+        private int m_Level = 0;
         private RuntimeObject[] m_LocalVariableRuntimeObjectArray;
         private RuntimeObject[] m_ArgumentRuntimeObjectArray;
         private RuntimeObject[] m_ReturnRuntimeObjectArray;
@@ -40,8 +42,6 @@ namespace SimpleLanguage.VM.Runtime
         private ushort m_ValueIndex;
 
 
-        private string m_Id = "";
-        private int m_Level = 0; 
         public RuntimeVM(string id)
         {
             m_Method = null;
@@ -101,32 +101,28 @@ namespace SimpleLanguage.VM.Runtime
                 for (int i = 0; i < m_Method.methodReturnVariableList.Count; i++)
                 {
                     m_ReturnRuntimeObjectArray[i] = CreateRuntimeObject(m_Method.methodReturnVariableList[i], null);
+#if DEBUG
+                    Log.AddRuntimeLog(LID.ShowMessageInfo, "Ret_" + i.ToString() + "_Value: [" + m_ReturnRuntimeObjectArray[i]?.ToString() + "]");
+#endif
                 }
 
                 m_ArgumentRuntimeObjectArray = new RuntimeObject[m_Method.methodArgumentList.Count];
                 for (int i = 0; i < m_Method.methodArgumentList.Count; i++)
                 {
                     m_ArgumentRuntimeObjectArray[i] = CreateRuntimeObject(m_Method.methodArgumentList[i], null);
-                }
 #if DEBUG
-                for (int i = 0; i < m_ArgumentRuntimeObjectArray.Length; i++)
-                {
                     Log.AddRuntimeLog(LID.ShowMessageInfo, "Argu_" + i.ToString() + "_Value: [" + m_ArgumentRuntimeObjectArray[i]?.ToString() + "]");
-                }
 #endif
-
+                }
                 //local variable table
                 m_LocalVariableRuntimeObjectArray = new RuntimeObject[m_Method.methodLocalVariableList.Count];
                 for (int i = 0; i < m_Method.methodLocalVariableList.Count; i++)
                 {
                     m_LocalVariableRuntimeObjectArray[i] = CreateRuntimeObject(m_Method.methodLocalVariableList[i], null);
-                }
 #if DEBUG
-                for (int i = 0; i < m_LocalVariableRuntimeObjectArray.Length; i++)
-                {
                     Log.AddRuntimeLog(LID.ShowMessageInfo, "Variable_" + i.ToString() + m_LocalVariableRuntimeObjectArray[i].ToString());
-                }
 #endif
+                }
             }
 
             else
@@ -210,7 +206,13 @@ namespace SimpleLanguage.VM.Runtime
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PushSValueSynced(in RuntimeValue v)
         {
-            if (m_ValueIndex >= m_ValueStack.Length) return;
+            if (m_ValueIndex >= m_ValueStack.Length)
+            {
+#if DEBUG
+            Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue " + v.ToString());
+#endif
+                return;
+            }
             m_ValueStack[m_ValueIndex++] = v;
 #if DEBUG
             Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue " + v.ToString());
@@ -271,8 +273,6 @@ namespace SimpleLanguage.VM.Runtime
         }
         public void AddReturnObjectArray(RuntimeObject[] sobjs)
         {
-            //m_ReturnObjectArray = sobjs;
-
             for (int i = 0; i < sobjs.Length; i++)
             {
                 if (sobjs[i].runtimeType != RuntimeTypeManager.voidRuntimeType)
@@ -307,7 +307,7 @@ namespace SimpleLanguage.VM.Runtime
             if(CLRVM.topCLRRuntime.m_ValueIndex - 1 >= 0 )
             {
                 RuntimeValue sval = CLRVM.topCLRRuntime.GetCurrentIndexValue(CLRVM.topCLRRuntime.m_ValueIndex - 1);
-                m_ValueStack[m_ValueIndex++] = sval;
+                //m_ValueStack[m_ValueIndex++] = sval;
                 if (sval.sobject != null)
                 {
                     m_CurrentRuntimeType = sval.sobject.runtimeType;
@@ -1426,13 +1426,20 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.Pop:
-                    if (m_ValueIndex > 0)
                     {
-                        m_ValueIndex--;
-                    }
-                    else
-                    {
-                        Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", "");
+                        ushort dupCount = 1;
+                        if (iri.Payload != null && iri.Payload.Length >= 4)
+                        {
+                            dupCount = (ushort)BitConverter.ToInt32(iri.Payload, 0);
+                        }
+                        if (m_ValueIndex > dupCount)
+                        {
+                            m_ValueIndex-=dupCount;
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", "");
+                        }
                     }
                     break;
                 case EIROpCode.LoadStaticField:
@@ -1605,9 +1612,6 @@ namespace SimpleLanguage.VM.Runtime
                                     CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList);
                                 }
                             }
-                            //var sv = default(RuntimeValue);
-                            //sv.SetSObject(sobj);
-                            //PushSValueSynced(sv);
                         }
                     }
                     break;
@@ -1635,8 +1639,6 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList);
                         }
-                        //if (TryPushStackSlot(out int slot))
-                        //    m_ValueStack[slot].SetSObject(sobj);
                     }
                     break;
                 case EIROpCode.NewArray:
@@ -1999,7 +2001,7 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "EIROpCode.Neg", 1, m_ValueIndex);
                             break;
                         }
-                        RuntimeValueMethod.NegSValue(ref m_ValueStack[m_ValueIndex - 1], false);
+                        RuntimeValueMethod.NegSValue(ref m_ValueStack[m_ValueIndex - 1]);
                     }
                     break;
                 case EIROpCode.Not:
@@ -2320,7 +2322,7 @@ namespace SimpleLanguage.VM.Runtime
                         RuntimeCall? mfc = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);
                         if (mfc == null)
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "鎵ц鍔ㄦ€佸嚱鏁帮紝娌℃湁鍙戠幇鐩稿叧鍑芥暟�?");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "mfc is null?");
                             return;
                         }
 
@@ -2350,12 +2352,12 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             if (irc == null)
                             {
-                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundRuntimeClass, "");
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundRuntimeClass, " irc is null");
                                 return;
                             }
                             if (mfc.method == null)
                             {
-                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundRuntimeMethod, "mfc.method");
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundRuntimeMethod, "mfc.method is null");
                                 return;
                             }
                             if (mfc.method.id == "type")
