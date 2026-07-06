@@ -587,7 +587,8 @@ namespace SimpleLanguage.Compile
                 {
                     classRef = new FileMetaClassDefine(m_FileMeta, defineNodeList[0]);
                     var node2 = defineNodeList[1];
-                    if (node2.linkTokenList.Count != 1)
+                    var tlist = node2.GetLinkTokenList();
+                    if (tlist.Count != 1)
                     {
                         Log.AddNodeLog(LID.ShowExtendMessage, "Error 定义名称只允许一个字符串!!");
                         return null;

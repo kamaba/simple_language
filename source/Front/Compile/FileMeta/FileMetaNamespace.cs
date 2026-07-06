@@ -90,7 +90,7 @@ namespace SimpleLanguage.Compile
                 m_BraceEndToken = blockNode.endToken;
                 //m_IsSearchNamespace = false;
             }
-            m_NamespaceStateBlock = NamespaceStatementBlock.CreateStateBlock(m_NamespaceNameNode.linkTokenList);
+            m_NamespaceStateBlock = NamespaceStatementBlock.CreateStateBlock(m_NamespaceNameNode.GetLinkTokenList());
 
         }
         public void CreateNamespace(MetaNode metaNode)

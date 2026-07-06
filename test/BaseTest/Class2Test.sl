@@ -51,7 +51,7 @@ namespace N1
             X53 = 100;
             X54 = 100;
 
-            sumX()
+            int sumX()
             {
                 ret this.X41 + this.X42 + this.X52 + this.X53 + this.X54
             }
@@ -72,7 +72,7 @@ namespace N1
             ret "Class6:" + this.X61.toString()
         }
 
-        describe()
+        string describe()
         {
             ret this.name() + ":" + this.sumX().toString()
         }
@@ -96,7 +96,7 @@ namespace N1.N4
             this.X71 = x71
         }
 
-        total()
+        int total()
         {
             ret this.X61 + this.X71 + int(this.sumX())
         }

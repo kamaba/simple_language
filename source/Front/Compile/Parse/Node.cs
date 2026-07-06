@@ -6,6 +6,7 @@
 //  Description: 
 //****************************************************************************
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
@@ -72,19 +73,19 @@ namespace SimpleLanguage.Compile
                 return childList[parseIndex];
             }
         }
-        public List<Token> linkTokenList
-        {
-            get
-            {
-                List<Token> tlist = new List<Token>();
-                tlist.Add(this.token);
-                for (int i = 0; i < m_ExtendLinkNodeList.Count; i++)
-                {
-                    tlist.Add(m_ExtendLinkNodeList[i].token);
-                }
-                return tlist;
-            }
-        }
+        //public List<Token> linkTokenList
+        //{
+        //    get
+        //    {
+        //        List<Token> tlist = new List<Token>();
+        //        tlist.Add(this.token);
+        //        for (int i = 0; i < m_ExtendLinkNodeList.Count; i++)
+        //        {
+        //            tlist.Add(m_ExtendLinkNodeList[i].token);
+        //        }
+        //        return tlist;
+        //    }
+        //}
 
         public List<Node> childList => m_ChildList;
         public List<Node> extendLinkNodeList => m_ExtendLinkNodeList;
@@ -158,9 +159,37 @@ namespace SimpleLanguage.Compile
         {
             List<Node> tlist = new List<Node>();
             if (isIncludeSelf) tlist.Add(this);
-            tlist.AddRange(m_ExtendLinkNodeList);
+            tlist.AddRange(m_ExtendLinkNodeList);     
             return tlist;
         }
+        public List<Token> GetLinkTokenList()
+        {
+            List<Token> tlist = new List<Token>();
+
+            tlist.Add(token);
+            foreach ( var v in m_ExtendLinkNodeList )
+            {
+                tlist.Add(v.token);
+                if( v.extendLinkNodeList.Count > 0 )
+                {
+                    GetLinkTokenByNode(v, tlist);
+                }
+            }
+
+            return tlist;
+        }
+        void GetLinkTokenByNode( Node node, List<Token> tokenList )
+        {
+            foreach (var v in node.m_ExtendLinkNodeList)
+            {
+                tokenList.Add(v.token);
+                if (v.extendLinkNodeList.Count > 0)
+                {
+                    GetLinkTokenByNode(v, tokenList);
+                }
+            }
+        }
+
         public void AddLinkNode(Node node )
         {
             if (m_IdentifierNode == null) return;

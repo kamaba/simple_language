@@ -154,7 +154,7 @@ namespace SimpleLanguage.Compile
                                 Log.AddFileMetaLog(LID.ShowExtendMessage, classNameTokenList[i].lexeme.ToString());
                             }
                         }
-                        classNameTokenList = cnode.linkTokenList;
+                        classNameTokenList = cnode.GetLinkTokenList();
 
                         if(cnode?.angleNode != null)
                         {

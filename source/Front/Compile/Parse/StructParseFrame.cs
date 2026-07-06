@@ -591,8 +591,9 @@ namespace SimpleLanguage.Compile
 
             string aliasName = null;
             var nameNode = ch[i];
-            if (nameNode.nodeType == ENodeType.IdentifierLink && nameNode.linkTokenList != null && nameNode.linkTokenList.Count > 0)
-                aliasName = nameNode.linkTokenList[nameNode.linkTokenList.Count - 1].lexeme.ToString();
+            var tlist = nameNode.GetLinkTokenList();
+            if (nameNode.nodeType == ENodeType.IdentifierLink && tlist != null && tlist.Count > 0)
+                aliasName = tlist[tlist.Count - 1].lexeme.ToString();
             else if (nameNode.token != null && nameNode.token.type == ETokenType.Identifier)
                 aliasName = nameNode.token.lexeme.ToString();
 

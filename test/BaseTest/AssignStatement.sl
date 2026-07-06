@@ -9,7 +9,7 @@ AssignStatement
         Int32 flag = 0b0011
         Int32[] numbers = new(3) { 1, 2, 3 }
 
-        get total()
+        get int total()
         {
             ret this.value + this.numbers[0] + this.numbers[1] + this.numbers[2]
         }

@@ -87,7 +87,7 @@ namespace Class1Expand
             ret "virtualName baseValue:" + this.baseValue.toString() + "  childValue:" + this.childValue.toString()
         }
 
-        sumAll()
+        int sumAll()
         {
             ret int(this.sumBase()) + this.childValue
         }

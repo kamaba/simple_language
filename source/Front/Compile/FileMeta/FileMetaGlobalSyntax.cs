@@ -63,7 +63,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                m_ImportNameListToken = namespaceNameNode.linkTokenList;
+                m_ImportNameListToken = namespaceNameNode.GetLinkTokenList();
                 m_ImportNamespaceName = TokensToNamespaceText(m_ImportNameListToken);
             }
 

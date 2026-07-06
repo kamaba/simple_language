@@ -466,9 +466,9 @@ DataTest
         }
     }
 
-    static calcScoreTotalByParam(ScoreData sd)
+    static int calcScoreTotalByParam(ScoreData sd)
     {
-        ret sd.math + sd.english + sd.physics
+        ret int(sd.math + sd.english + sd.physics)
     }
 
     #!

@@ -1968,6 +1968,7 @@ namespace SimpleLanguage.Core
                             }
                             m_StaticCallMetaType = new MetaType(mmf.ownerMetaClass, mtList);
                             m_CallNodeType = ECallNodeType.MemberFunctionName;
+                            m_MetaType = mmf.GetFinalMetaType();
                             return true;
                         }
                         else

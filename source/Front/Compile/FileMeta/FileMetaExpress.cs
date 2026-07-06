@@ -368,8 +368,9 @@ namespace SimpleLanguage.Compile
                 {
                     var tn = typeNodes[i];
                     if (tn == null) continue;
+                    var tlist = tn.GetLinkTokenList();
                     if (tn.nodeType == ENodeType.IdentifierLink
-                        || (tn.linkTokenList != null && tn.linkTokenList.Count > 0))
+                        || (tlist?.Count > 0))
                     {
                         typeRoot = tn;
                         break;

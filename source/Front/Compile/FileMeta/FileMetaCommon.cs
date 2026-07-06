@@ -589,7 +589,7 @@ namespace SimpleLanguage.Compile
         {
             m_FileMeta = fm;
             // collect tokens that form the type reference (including dotted names)
-            m_TokenList = node?.linkTokenList ?? new List<Token>();
+            m_TokenList = node?.GetLinkTokenList() ?? new List<Token>();
 
             // support nullable type syntax like `T?` (question mark may be part of link tokens
             // or a separate token node immediately following this node in the parent's child list)
