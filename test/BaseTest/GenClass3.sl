@@ -19,7 +19,7 @@ Level1<LT11,LT12>
 {
     LT11 Level1_t1 = new()
     LT12 Level1_t2 = new()
-        
+
     override string toString()
     {
         return "Level1_t1" + this.Level1_t1.toString() + "Level1_t2" + this.Level1_t2.toString()
@@ -92,6 +92,8 @@ GenClass3{
         GenClass3.testGetTest()
         GenClass3.testFields()
         GenClass3.testTemplate<int,int>(300)
+        GenClass3.testTemplate<float,int>(123.45)
+        GenClass3.testTemplate<string,string>("string___string")
         global.println("====== GenClass3: 已知 VM 限制，4层泛型继承链构造未支持 ======" )
     }
     static testConstruct()
