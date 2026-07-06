@@ -19,6 +19,11 @@ Level1<LT11,LT12>
 {
     LT11 Level1_t1 = new()
     LT12 Level1_t2 = new()
+        
+    override string toString()
+    {
+        return "Level1_t1" + this.Level1_t1.toString() + "Level1_t2" + this.Level1_t2.toString()
+    }
 }
 interface Interface1<IT1>
 {
@@ -42,6 +47,10 @@ Level2<LT21, LT22, LT23> extends Level1<LT23,LT22 > interface Interface1<LT23>
 
         ret _test
     }
+    override string toString()
+    {
+        return "Level21_t=" + this.Level21_t.toString() + "\n"  + base.toString()
+    }
 }
 Level3<LT31, LT32> extends Level2<LT32, LT32, LT31>
 {
@@ -54,6 +63,10 @@ Level3<LT31, LT32> extends Level2<LT32, LT32, LT31>
     {
         ret tttt
     }
+    override string toString()
+    {
+        return "Level3_t=" + this.Level3_t.toString() + "\n" + base.toString()
+    }
 }
 
 Level4<LT41,LT42> extends Level3<LT42,LT41>
@@ -61,6 +74,11 @@ Level4<LT41,LT42> extends Level3<LT42,LT41>
     override LT42 add( LT42 tttt )
     {
         ret tttt
+    }
+
+    override string toString()
+    {
+        return "Level4" + "\n" +  base.toString()
     }
 }
 
@@ -90,13 +108,13 @@ GenClass3{
         Level4<string,int> llll3333 = new(300)
         # add 签名为 add(LT23 tttt)，Level4<string,int> 中 LT23=int，传 int 1000 类型匹配
         addval = llll3333.add(1000)
-        global.println("add(1000) 返回值 期望: 1000  实际: " + addval )
+        global.println("add(1000) 返回值 期望: 1000  实际: " + addval.toString() )
     }
     static testGetTest()
     {
         global.println("====== [3] Level2<string,int,int> 静态 getTest ======" )
         addval2 = Level2<string,int,int>.getTest( 2000 )
-        global.println("getTest(2000) 返回值 期望: 2000  实际: " + addval2 )
+        global.println("getTest(2000) 返回值 期望: 2000  实际: " + addval2.toString() )
     }
     static testFields()
     {
@@ -104,11 +122,11 @@ GenClass3{
         Level4<string,int> llll3333 = new(300)
         # Level3_t (直接父类字段) 赋值正常
         llll3333.Level3_t = 999
-        global.println("Level3_t 期望: 999  实际: " + llll3333.Level3_t )
+        global.println("Level3_t 期望: 999  实际: " + llll3333.Level3_t.toString() )
         # 已知限制: 深层继承的泛型字段 (Level1_t2, Level21_t) 的 store 路径
         # callMetaType 为 null 时字段索引解析为 -1，读取正常
-        global.println("Level1_t2 读取 期望: (默认值)  实际: " + llll3333.Level1_t2 )
-        global.println("Level21_t 读取 期望: (默认值)  实际: " + llll3333.Level21_t )
+        global.println("Level1_t2 读取 期望: (默认值)  实际: " + llll3333.Level1_t2?.toString() )
+        global.println("Level21_t 读取 期望: (默认值)  实际: " + llll3333.Level21_t?.toString() )
     }
     static testTemplate<TT1,TT2>( TT1 t1 )
     {
