@@ -55,6 +55,7 @@ namespace SimpleLanguage.Core
         public override void Parse( AllowUseSettings auc)
         {
             m_Value.Parse(auc);
+            m_ParsedState = m_Value.parseSuccessed ? EParseState.ParseSuccess : EParseState.ParsedFailed;
         }
         //public override int CalcParseLevel(int level)
         //{

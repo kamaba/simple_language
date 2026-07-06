@@ -124,6 +124,7 @@ namespace SimpleLanguage.Core
                 var mcac = m_MetaCallArray[i];
                 mcac.Parse(auc);
             }
+            m_ParsedState = EParseState.ParseSuccess;
         }
         //public override int CalcParseLevel(int level)
         //{

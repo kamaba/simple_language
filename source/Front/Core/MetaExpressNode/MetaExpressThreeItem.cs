@@ -73,6 +73,16 @@ namespace SimpleLanguage.Core
             this.m_ConditionExpress.Parse(auc);
             m_Return1Express.Parse(auc);
             m_Return2Express.Parse(auc);
+
+
+            if (m_ConditionExpress.parseSuccessed && m_Return1Express.parseSuccessed && m_Return2Express.parseSuccessed)
+            {
+                m_ParsedState = EParseState.ParseSuccess;
+            }
+            else
+            {
+                m_ParsedState = EParseState.ParsedFailed;
+            }
         }
         //public override int CalcParseLevel(int level)
         //{

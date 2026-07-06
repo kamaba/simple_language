@@ -118,6 +118,7 @@ namespace SimpleLanguage.Core
                     m_OwnerMetaBlockStatements.AddMetaVariable(m_ConvertTargetMetaVariable);
                 }
             }
+            m_ParsedState = EParseState.ParseSuccess;
         }
 
         //public override int CalcParseLevel(int level)

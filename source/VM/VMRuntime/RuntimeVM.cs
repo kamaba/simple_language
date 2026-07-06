@@ -307,7 +307,7 @@ namespace SimpleLanguage.VM.Runtime
             if(CLRVM.topCLRRuntime.m_ValueIndex - 1 >= 0 )
             {
                 RuntimeValue sval = CLRVM.topCLRRuntime.GetCurrentIndexValue(CLRVM.topCLRRuntime.m_ValueIndex - 1);
-                //m_ValueStack[m_ValueIndex++] = sval;
+                m_ValueStack[m_ValueIndex++] = sval;
                 if (sval.sobject != null)
                 {
                     m_CurrentRuntimeType = sval.sobject.runtimeType;
@@ -1432,7 +1432,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             dupCount = (ushort)BitConverter.ToInt32(iri.Payload, 0);
                         }
-                        if (m_ValueIndex > dupCount)
+                        if (m_ValueIndex >= dupCount)
                         {
                             m_ValueIndex-=dupCount;
                         }

@@ -1745,6 +1745,7 @@ namespace SimpleLanguage.Core
             {
                 ParseBraceStatementsContent(auc, null);
             }
+            m_ParsedState = EParseState.ParseSuccess;
         }
         public void SetInputParams(MetaInputParamCollection _paramCollection)
         {
