@@ -368,6 +368,15 @@ namespace SimpleLanguage.Core
             m_Left = ExpressManager.ConvertNewExpress(m_Left, null);
             m_Right.Parse(auc);
             m_Right = ExpressManager.ConvertNewExpress(m_Right, null);
+
+            if( m_Left.parseSuccessed && m_Right.parseSuccessed )
+            {
+                m_ParsedState = EParseState.ParseSuccess;
+            }
+            else
+            {
+                m_ParsedState = EParseState.ParsedFailed;
+            }
         }
         //public override int CalcParseLevel(int level)
         //{

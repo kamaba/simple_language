@@ -76,6 +76,7 @@ ArrayTest
 
     static arrayBasicApiTest()
     {
+        
         global.println("========== Array.basic api ==========")
         Int32[] nums = Array<Int32>.create(3)
         nums.fill(7)
@@ -83,10 +84,12 @@ ArrayTest
         int lenValue = nums.length
         lenValue += 1
 
+        #!
         global.println("nums.length -> " + nums.length.toString())
         global.println("lenValue -> " + lenValue.toString())
         global.println("nums.getValue(0) -> " + nums.getValue(0).toString())
         global.println("nums.getValue(2) -> " + nums.getValue(2).toString())
+        !#
 
         nums.index = 2
         global.println("nums.current() $ index=1 -> " + nums.current().toString())

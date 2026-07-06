@@ -198,103 +198,27 @@ namespace SimpleLanguage.IR
                     var orgMv = lastCL.GetOrgTemplateMetaVariable();
                     var orgOwirmc = orgMv != null ? IRManager.GetIRMetaClassByMetaVariable(orgMv) : owirmc;
                     var irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(lastCL.callMetaType, orgOwirmc);
-                    int index = -1;
-                    if (orgMv != null)
+                    int hashcode = 0;
+                    if (mv.sourceMetaVariable != null)
                     {
-                        index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(orgMv.GetHashCode());
+                        hashcode = mv.sourceMetaVariable.GetHashCode();
                     }
-                    if (index < 0)
+                    else
                     {
-                        index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                        hashcode = mv.GetHashCode();
                     }
+                    int index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(hashcode);
                     IRStoreVariable irsv = new IRStoreVariable(irmt, irMethod, index, IRMetaVariableFrom.Static);
                     m_IRStatements.Add(irsv);
                 }
             }
             else
             {
-                // 从前一个调用节点获取对象类型的 IRMetaClass（包含所有继承字段）
-                IRMetaClass fieldOwnerIrMc = owirmc;
-                IRMetaType fieldIrmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
-                if (clist.Count >= 2)
-                {
-                    var prevNode = clist[clist.Count - 2];
-                    var prevType = prevNode.GetMetaType();
-                    if (prevType != null)
-                    {
-                        var prevIrmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(prevType, owirmc);
-                        if (prevIrmt?.irMetaClass != null)
-                        {
-                            fieldOwnerIrMc = prevIrmt.irMetaClass;
-                            fieldIrmt = prevIrmt;
-                        }
-                    }
-                }
+                var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.GetFinalMetaType(), owirmc);
 
-                // 在对象类型的 IRMetaClass 上查找字段索引
-                int fieldIndex = -1;
-                if (fieldOwnerIrMc != null)
-                {
-                    fieldIndex = fieldOwnerIrMc.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
-                    if (fieldIndex < 0 && mv.sourceMetaVariable != null)
-                        fieldIndex = fieldOwnerIrMc.GetMetaMemberVariableIndexByHashCode(mv.sourceMetaVariable.GetHashCode());
-                    if (fieldIndex < 0 && !string.IsNullOrEmpty(mv.name))
-                        fieldIndex = fieldOwnerIrMc.GetMetaMemberVariableIndexByName(mv.name);
-                }
-
-                IRStoreVariable irsv = new IRStoreVariable(fieldIrmt, irMethod, fieldIndex, IRMetaVariableFrom.Member);
+                IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, owirmc, irMethod, mv);
                 m_IRStatements.Add(irsv);
             }
-            //if ( ms.isNewStatements )
-            //{
-            //    MetaVisitNode finalMVN = null;
-            //    for (int i = 0; i < clist.Count; i++)
-            //    {
-            //        finalMVN = clist[i];
-            //        var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, finalMVN);
-            //        m_IRStatements.AddRange(list);
-            //    }
-
-            //    if (finalMVN == null)
-            //    {
-            //        Log.AddIRLog(LID.ShowExtendMessage, "没有最终表达式，错误处理");
-            //        return;
-            //    }
-
-            //    if (ms.rightMetaExpress != null)
-            //    {
-            //        m_IRExpress = new IRExpress(irMethod, ms.rightMetaExpress );
-            //        m_IRStatements.Add(m_IRExpress);
-
-            //        if (finalMVN.visitType == MetaVisitNode.EVisitType.Variable)
-            //        {
-            //            //这种是  Obja.Objb = new()的方式
-            //            var mv = finalMVN.GetRetMetaVariable();
-
-            //            var irmc = IRManager.instance.GetIRMetaClassById(mv.defineMetaType.GetTemplateMetaClass().GetHashCode());
-            //            var owirmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
-
-            //            IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable( IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc), irmc, irMethod, finalMVN.GetOrgTemplateMetaVariable() );
-            //            m_IRStatements.Add(irsv);
-
-            //        }
-            //        //else if (finalMVN.visitType == MetaVisitNode.EVisitType.MethodCall)
-            //        //{
-            //        //    //这种是  Obja.Objb_set( new() )的方式
-            //        //}
-            //        else
-            //        {
-            //            Debug.Assert(false, "这里应该只有变量和方法调用两种方式");
-            //            Log.AddIRLog(LID.ShowExtendMessage, "------------------------------------------");
-            //        }
-            //    }
-            //    else
-            //    {
-            //        Log.AddIRLog(LID.ShowExtendMessage, "这里应该有一个创建new的过程表达式");
-            //    }
-            //}
-            //else
-            //{
         }
     }
 }
