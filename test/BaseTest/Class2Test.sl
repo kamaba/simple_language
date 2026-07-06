@@ -8,7 +8,7 @@ namespace Class1Expand
     {
         partialValue = 20
 
-        sumBase()
+        int sumBase()
         {
             ret this.baseValue + this.partialValue
         }

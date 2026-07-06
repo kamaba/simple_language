@@ -61,7 +61,7 @@ namespace Class1Expand
             ret this.baseValue
         }
 
-        virtualName()
+        string virtualName()
         {
             ret "base:" + this.baseValue.toString()
         }
@@ -82,7 +82,7 @@ namespace Class1Expand
             this.childValue = child
         }
 
-        override virtualName()
+        override string virtualName()
         {
             ret "virtualName baseValue:" + this.baseValue.toString() + "  childValue:" + this.childValue.toString()
         }
