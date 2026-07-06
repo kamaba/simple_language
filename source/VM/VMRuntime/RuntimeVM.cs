@@ -1609,7 +1609,7 @@ namespace SimpleLanguage.VM.Runtime
                                 var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                                 if (irList.Count > 0)
                                 {
-                                    CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList);
+                                    CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList, true );
                                 }
                             }
                         }
@@ -1637,7 +1637,7 @@ namespace SimpleLanguage.VM.Runtime
                         var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                         if (irList.Count > 0)
                         {
-                            CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList);
+                            CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList, true);
                         }
                     }
                     break;

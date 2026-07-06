@@ -36,7 +36,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             return null;
         }
-        public static void RunIRNewMethod(string id, RuntimeType rt, List<Instruction> irlist)
+        public static void RunIRNewMethod(string id, RuntimeType rt, List<Instruction> irlist, bool isGetStackValue )
         {
             try
             {
@@ -44,7 +44,12 @@ namespace SimpleLanguage.VM.Runtime
                 Log.AddVM(LID.ShowMessageInfo, $"RunIRNewMethod id={id} rt={rt} irlist.count={irlist?.Count}");
                 RuntimeVM clrRuntime = new RuntimeVM(id, rt, rt?.runtimeTemplateList, irlist);
                 m_ClrRuntimeStack.Push(clrRuntime);
-                clrRuntime.SetNewObject();
+                if(isGetStackValue )
+                    clrRuntime.SetNewObject();
+                else
+                {
+                    clrRuntime.SetCurrentRuntimeType(rt);
+                }
                 clrRuntime.Run(true);
                 clrRuntime.ClearNewObject();
                 PopCLRRuntime();
@@ -99,7 +104,7 @@ namespace SimpleLanguage.VM.Runtime
                 return;
             }
             m_IsGlobalInitApplying = true;
-            RunIRNewMethod("__global_init__", null, new List<Instruction>(m_GlobalInitInstructionList));           
+            RunIRNewMethod("__global_init__", null, new List<Instruction>(m_GlobalInitInstructionList), false );           
         }
         public static void ResetGlobalVariableMapping()
         {

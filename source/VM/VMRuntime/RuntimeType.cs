@@ -285,7 +285,7 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            CLRVM.RunIRNewMethod($"__static_field_init__{this.m_RuntimeClass.name}", this, initIR);   
+            CLRVM.RunIRNewMethod($"__static_field_init__{this.m_RuntimeClass.name}", this, initIR, false );   
         }
         private string BuildStaticExprInitKey()
         {
