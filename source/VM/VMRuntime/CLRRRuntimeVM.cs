@@ -42,7 +42,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 topCLRRuntime = m_ClrRuntimeStack.Count > 0  ? m_ClrRuntimeStack.Peek() : null;
                 Log.AddVM(LID.ShowMessageInfo, $"RunIRNewMethod id={id} rt={rt} irlist.count={irlist?.Count}");
-                RuntimeVM clrRuntime = new RuntimeVM(id, rt, rt?.runtimeTemplateList, irlist);
+                RuntimeVM clrRuntime = new RuntimeVM(id, rt, new List<RuntimeType>(), irlist);
                 m_ClrRuntimeStack.Push(clrRuntime);
                 if(isGetStackValue )
                     clrRuntime.SetNewObject();

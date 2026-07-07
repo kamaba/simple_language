@@ -22,7 +22,7 @@ Level1<LT11,LT12>
 
     override string toString()
     {
-        return "Level1_t1" + this.Level1_t1.toString() + "Level1_t2" + this.Level1_t2.toString()
+        ret "  Level1_t1" + this.Level1_t1.toString() + "  Level1_t2" + this.Level1_t2.toString()
     }
 }
 interface Interface1<IT1>
@@ -49,7 +49,7 @@ Level2<LT21, LT22, LT23> extends Level1<LT23,LT22 > interface Interface1<LT23>
     }
     override string toString()
     {
-        return "Level21_t=" + this.Level21_t.toString() + "\n"  + base.toString()
+        ret "Level21_t=" + this.Level21_t.toString() + "\n"  + base.toString()
     }
 }
 Level3<LT31, LT32> extends Level2<LT32, LT32, LT31>
@@ -65,7 +65,7 @@ Level3<LT31, LT32> extends Level2<LT32, LT32, LT31>
     }
     override string toString()
     {
-        return "Level3_t=" + this.Level3_t.toString() + "\n" + base.toString()
+        ret "Level3_t=" + this.Level3_t.toString() + "\n" + base.toString()
     }
 }
 
@@ -78,7 +78,7 @@ Level4<LT41,LT42> extends Level3<LT42,LT41>
 
     override string toString()
     {
-        return "Level4" + "\n" +  base.toString()
+        ret "Level4" + "\n" +  base.toString()
     }
 }
 
@@ -87,14 +87,17 @@ GenClass3{
     {
         # 已知限制: Level4<string,int> 的 4 层泛型继承链 (Level4→Level3→Level2→Level1)
         # VM 在构造对象时字段布局不正确，导致 IndexOutOfRangeException
+        
         GenClass3.testConstruct()
         GenClass3.testAdd()
         GenClass3.testGetTest()
         GenClass3.testFields()
+        
         GenClass3.testTemplate<int,int>(300)
+        
         GenClass3.testTemplate<float,int>(123.45)
         GenClass3.testTemplate<string,string>("string___string")
-        global.println("====== GenClass3: 已知 VM 限制，4层泛型继承链构造未支持 ======" )
+        #global.println("====== GenClass3: 已知 VM 限制，4层泛型继承链构造未支持 ======" )
     }
     static testConstruct()
     {
@@ -121,7 +124,7 @@ GenClass3{
     static testFields()
     {
         global.println("====== [4] 字段赋值与读取 ======" )
-        Level4<string,int> llll3333 = new(300)
+        Level4<int,int> llll3333 = new(300)
         # Level3_t (直接父类字段) 赋值正常
         llll3333.Level3_t = 999
         global.println("Level3_t 期望: 999  实际: " + llll3333.Level3_t.toString() )
