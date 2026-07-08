@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRMethod.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -132,6 +132,8 @@ namespace SimpleLanguage.IR
             m_FunEndLabelData.id = m_IRDataList.Count;
             m_IRDataList.Add(m_FunEndLabelData);
 
+            int nextLabelId = 1; // Label IDs start from 1 (0 reserved for "no label")
+
             for (int i = 0; i < m_LabelList.Count; i++)
             {
                 var defLabel = m_LabelList[i];
@@ -147,18 +149,49 @@ namespace SimpleLanguage.IR
                         {
                             var findex = IRDataList.FindIndex(a => a == defLabel.opValue);
                             defLabel.index = findex;
+                            // Assign label ID to the target IRData for C VM marker-based jumps.
+                            // The target's index becomes the label ID, which FinalizePack
+                            // serializes as the branch instruction's payload. C# VM uses
+                            // defLabel.index (instruction index); C VM uses payload (label ID).
+                            var targetIRData = defLabel.opValue as IRData;
+                            if (targetIRData != null && targetIRData.opCode != EIROpCode.Label)
+                            {
+                                targetIRData.opCode = EIROpCode.Label;
+                                targetIRData.index = nextLabelId;
+                                targetIRData.Payload = BitConverter.GetBytes(nextLabelId);
+                                targetIRData.UpdateByteLength();
+                                nextLabelId++;
+                            }
                         }
                         break;
                     case EIROpCode.BrFalse:
                         {
                             var findex = IRDataList.FindIndex(a => a == defLabel.opValue);
                             defLabel.index = findex;
+                            var targetIRData = defLabel.opValue as IRData;
+                            if (targetIRData != null && targetIRData.opCode != EIROpCode.Label)
+                            {
+                                targetIRData.opCode = EIROpCode.Label;
+                                targetIRData.index = nextLabelId;
+                                targetIRData.Payload = BitConverter.GetBytes(nextLabelId);
+                                targetIRData.UpdateByteLength();
+                                nextLabelId++;
+                            }
                         }
                         break;
                     case EIROpCode.BrTrue:
                         {
                             var findex = IRDataList.FindIndex(a => a == defLabel.opValue);
                             defLabel.index = findex;
+                            var targetIRData = defLabel.opValue as IRData;
+                            if (targetIRData != null && targetIRData.opCode != EIROpCode.Label)
+                            {
+                                targetIRData.opCode = EIROpCode.Label;
+                                targetIRData.index = nextLabelId;
+                                targetIRData.Payload = BitConverter.GetBytes(nextLabelId);
+                                targetIRData.UpdateByteLength();
+                                nextLabelId++;
+                            }
                         }
                         break;
                 }
