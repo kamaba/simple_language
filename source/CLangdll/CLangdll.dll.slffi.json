@@ -1,0 +1,12 @@
+{
+  "baseNamespace": "Native",
+  "functionList": [
+    {
+      "publicName": "Native.add",
+      "entryPoint": "simplelanguage_addtest",
+      "callingConvention": "Cdecl",
+      "returnType": "I32",
+      "parameterTypeList": ["I32", "I32"]
+    }
+  ]
+}

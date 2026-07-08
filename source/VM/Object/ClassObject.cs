@@ -1,4 +1,4 @@
-Ôªø//****************************************************************************
+//****************************************************************************
 //  File:      ClassObject.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -6,550 +6,170 @@
 //  Description: 
 //****************************************************************************
 
-using System.Collections.Generic;
+using SimpleLanguage.Logging;
+using SimpleLanguage.VM.Runtime;
 using System.Text;
-using SimpleLanguage.Core;
-using SimpleLanguage.IR;
-using SimpleLanguage.Parse;
 
 namespace SimpleLanguage.VM
 {
-    public class MemberVariableData
-    {
-        public int index { get; set; } = 0;
-        public int start { get; set; } = 0;
-        public int length { get; set; } = 0;
-    }
     public class ClassObject : SObject
     {
-        public ClassObject value => m_Object;
-        public IRMetaClass irMetaClass=> m_RuntimeType?.irClass;
-
-        private ClassObject m_Object = null;
-        private byte[] m_Data = null;   /*  m_Data  ÁªìÊûÑ  bitÂΩ¢ÔºåÂè™ÊúâËøêÁÆóÊó∂Ë¶ÅÁî® 1-> byte 2->sbyte   3-> int16  4-> uint16    */
-        private short[] m_Type = null;
-        private SObject[] m_MemberObjectArray = null;
-        protected List<IRMetaVariable> m_IRMetaVariableList = null;
+        protected RuntimeObject[] m_MemberRuntimeObjectArray = null;
         protected List<RuntimeType> m_IRTemplateList = new List<RuntimeType>();
+        protected byte[] m_MemberData = null;
 
+        /// <summary> µ¿˝◊÷∂ŒΩÙ¥’≤ºæ÷£®æ≤Ã¨◊÷∂Œº˚ <see cref="RuntimeType.memberData"/>£©°£</summary>
+        public byte[]? memberData => m_MemberData;
 
-        public ClassObject( RuntimeType irmt, bool isStatic = false )
+        protected ClassObject() { }
+
+        public ClassObject( RuntimeType irmt )
         {
+            m_Id = ++idCount;
             m_RuntimeType = irmt;
 
-            int byteCount = m_RuntimeType.irClass.byteCount;
-            m_Data = new byte[byteCount];
-            typeId = (short)m_RuntimeType.irClass.id;
+            typeId = (short)m_RuntimeType.runtimeClass.id;
             m_IRTemplateList = irmt.runtimeTemplateList;
 
-            m_IRMetaVariableList = isStatic ? m_RuntimeType.irClass.staticIRMetaVariableList : m_RuntimeType.irClass.localIRMetaVariableList;
-            m_MemberObjectArray = new SObject[m_IRMetaVariableList.Count];
-            m_Type = new short[m_IRMetaVariableList.Count];
-            m_Object = this;
+            var metaVariableList = m_RuntimeType.runtimeClass.nonStaticIRMetaVariableList;
+            m_MemberRuntimeObjectArray = new RuntimeObject[metaVariableList.Count];
+            for (int i = 0; i < m_MemberRuntimeObjectArray.Length; i++)
+            {
+                var rt = RuntimeVM.GetRuntimeTypeByDefType(metaVariableList[i].runtimeDefType, m_RuntimeType.runtimeClass, m_IRTemplateList, true);
+                m_MemberRuntimeObjectArray[i] = new RuntimeObject( rt, metaVariableList[i], null);
+            }
+            BuildMemberDataLayout();
+            //m_Type = new short[m_IRMetaVariableList.Count];
         }
-        //public RuntimeType GetClassRuntimeType(IRMetaType irmt, IRMetaClass ownerMC, bool isAdd = false)
-        //{
-        //    if (irmt.templateIndex != -1)
-        //    {
-        //        if( irmt.irOwnerMetaClass == irMetaClass )
-        //        {
-        //            return m_IRTemplateList[irmt.templateIndex];
-        //        }
-        //        else
-        //        {
-        //            var mt = irMetaClass.GetIRMetaTypeByTemplateAndClassRelation(irmt.irOwnerMetaClass, irmt.templateIndex);
+        public virtual void CreateObject() { }
 
-        //            return GetClassRuntimeType(mt, isAdd);
-        //        }
-        //    }
-        //    else
-        //    {
-        //        List<RuntimeType> rtList = new List<RuntimeType>();
-        //        if (irmt.irMetaTypeList.Count > 0)
-        //        {
-        //            for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
-        //            {
-        //                var crt = GetClassRuntimeType(irmt.irMetaTypeList[i], isAdd);
-        //                rtList.Add(crt);
-        //            }
-        //        }
-        //        var rt = RuntimeTypeManager.GetRuntimeTypeByMTAndTemplateMT(irmt.irMetaClass, rtList);
-        //        if (rt == null && isAdd)
-        //        {
-        //            rt = RuntimeTypeManager.AddRuntimeTypeByClassAndTemplate(irmt.irMetaClass, rtList);
-        //        }
-        //        return rt;
-        //    }
-        //}
-        public void CreateObject()
+        /// <summary> µ¿˝≥…‘±”Î IR ∑«æ≤Ã¨◊÷∂ŒÀ≥–Ú“ª÷¬£¨ π”√”Î <see cref="RuntimeClass.nonStaticIRMetaVariableList"/> œ‡Õ¨µƒœ¬±Í°£</summary>
+        public RuntimeObject? GetMemberRuntimeObject(int memberIndex)
         {
-            for (int i = 0; i < m_IRMetaVariableList.Count; i++)
-            {
-                var irmv = m_IRMetaVariableList[i].irMetaType;
-                var rt = m_RuntimeType.GetClassRuntimeType( irmv, true );// GetClassRuntimeType(irmv, true );
-                SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt );
-                if(sobj == null )
-                {
-                    continue;
-                }
-                m_Type[i] = sobj.typeId;
-                m_MemberObjectArray[i] = sobj;
-            }
-        }
-        public SObject GetMemberVariable(int index)
-        {
-            if (index > m_MemberObjectArray.Length)
-            {
-                Log.AddVM(EError.None, "ÊâßË°åÁöÑÂèÇÊï∞Ë∂ÖÂá∫ËåÉÂõ¥!!");
+            if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)
                 return null;
-            }
-            return m_MemberObjectArray[index];
+            return m_MemberRuntimeObjectArray[memberIndex];
         }
-        public void SetValue(ClassObject val )
+        /// <summary>∞¥≥…‘±œ¬±Í¥” <see cref="memberData"/> Ω‚ŒˆµΩ <paramref name="RuntimeValue"/>£®“˝”√–Õ≤€ŒªŒ™∂‘œÛ÷∏’Î Id£¨º˚ RuntimeObject£©°£</summary>
+        public bool TryReadMemberDataAsSValue(int memberIndex, ref RuntimeValue RuntimeValue)
         {
-            m_Object = val.m_Object;
+            if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)
+                return false;
+            return m_MemberRuntimeObjectArray[memberIndex].TryReadMemberDataToSValue(ref RuntimeValue);
+        }
+        protected void BuildMemberDataLayout()
+        {
+            if (m_MemberRuntimeObjectArray == null || m_MemberRuntimeObjectArray.Length == 0)
+            {
+                m_MemberData = null;
+                return;
+            }
+
+            int n = m_MemberRuntimeObjectArray.Length;
+            int totalBytes = 0;
+            for (int i = 0; i < n; i++)
+            {
+                totalBytes += MemberDataLayout.GetSlotByteLength(m_MemberRuntimeObjectArray[i].runtimeType);
+            }
+
+            m_MemberData = totalBytes > 0 ? new byte[totalBytes] : null;
+            int offset = 0;
+            for (int i = 0; i < n; i++)
+            {
+                var ro = m_MemberRuntimeObjectArray[i];
+                int len = MemberDataLayout.GetSlotByteLength(ro.runtimeType);
+                ro.AttachMemberDataSlice(m_MemberData, offset, len, i);
+                offset += len;
+            }
+        }
+        public virtual void SetSValue(ClassObject val )
+        {
+            //m_Object = val;
+            //m_IsNull = m_Object == null;
             val.refCount++;
         }
-        public void GetMemberVariableSValue( int index, ref SValue svalue )
+        /// <summary>¥” µ¿˝≥…‘±∂¡»°µΩ <paramref name="RuntimeValue"/>£ª”Î <see cref="m_MemberData"/> “ª÷¬£®Õ¨ <see cref="RuntimeType.GetStaticMemberVariableSValue"/> æ≤Ã¨≤‡£©°£</summary>
+        public void GetMemberVariableSValue( int index, ref RuntimeValue RuntimeValue )
         {
             if (index < 0 )
             {
-                Log.AddVM(EError.None, "ÊâßË°åÁöÑÂèÇÊï∞Ë∂ÖÂá∫ËåÉÂõ¥!! < 0 ");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "÷¥––µƒ≤Œ ˝≥¨≥ˆ∑∂Œß!! < 0 ");
                 return;
             }
-            if (index > m_MemberObjectArray.Length)
+            if (m_MemberRuntimeObjectArray == null || index >= m_MemberRuntimeObjectArray.Length)
             {
-                Log.AddVM(EError.None, "ÊâßË°åÁöÑÂèÇÊï∞Ë∂ÖÂá∫ËåÉÂõ¥!!");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "÷¥––µƒ≤Œ ˝≥¨≥ˆ∑∂Œß!!");
                 return;
             }
-            var mmv = m_MemberObjectArray[index];
-            switch (mmv)
-            {
-                case ByteObject byteob:
-                    {
-                        svalue.SetInt8Value(byteob.value);
-                    }
-                    break;
-                case SByteObject sbyteobj:
-                    {
-                        svalue.SetSInt8Value(sbyteobj.value);
-                    }
-                    break;
-                case Int16Object int16Obj:
-                    {
-                        svalue.SetInt16Value(int16Obj.value);
-                    }
-                    break;
-                case UInt16Object uint16Obj:
-                    {
-                        svalue.SetUInt16Value(uint16Obj.value);
-                    }
-                    break;
-                case Int32Object int32Obj:
-                    {
-                        svalue.SetInt32Value(int32Obj.value);
-                    }
-                    break;
-                case UInt32Object uint32Obj:
-                    {
-                        svalue.SetUInt32Value(uint32Obj.value);
-                    }
-                    break;
-                case Int64Object int64Obj:
-                    {
-                        svalue.SetInt64Value(int64Obj.value);
-                    }
-                    break;
-                case UInt64Object uint64Obj:
-                    {
-                        svalue.SetUInt64Value(uint64Obj.value);
-                    }
-                    break;
-                case FloatObject floatobj:
-                    {
-                        svalue.SetFloatValue(floatobj.value);
-                    }
-                    break;
-                case DoubleObject doubleobj:
-                    {
-                        svalue.SetDoubleValue(doubleobj.value);
-                    }
-                    break;
-                case StringObject stringObj:
-                    {
-                        svalue.SetStringValue( stringObj.value );
-                    }
-                    break;
-                case ClassObject classObj:
-                    {
-                        svalue.SetSObject(classObj);
-                    }
-                    break;
-                case AnyObject anyObj:
-                    {
-                        svalue.SetSObject(anyObj);
-                    }
-                    break;
-                case TemplateObject templateObj:
-                    {
-
-                    }
-                    break;
-            }
+            m_MemberRuntimeObjectArray[index].SetSValueByRuntimeObjct(ref RuntimeValue);
         }
-        public void SetMemberVariableSValue( int index, SValue svalue)
+        /// <summary> µ¿˝≥…‘±–¥Õ≥“ª»Îø⁄£¨Õ¨≤Ω <see cref="m_MemberData"/>£®Õ¨ <see cref="RuntimeType.SetStaticMemberVariableSValue"/> æ≤Ã¨≤‡£©°£</summary>
+        public void SetMemberVariableSValue( int index, RuntimeValue RuntimeValue)
         {
-            if (index > m_MemberObjectArray.Length)
+            if (m_MemberRuntimeObjectArray == null || index < 0 || index >= m_MemberRuntimeObjectArray.Length)
             {
-                Log.AddVM(EError.None, "ÊâßË°åÁöÑÂèÇÊï∞Ë∂ÖÂá∫ËåÉÂõ¥!!");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "÷¥––µƒ≤Œ ˝≥¨≥ˆ∑∂Œß!!");
                 return;
             }
-            AnyObject anyobj = m_MemberObjectArray[index] as AnyObject;
-            switch (svalue.eType)
+
+            int targetIndex = ResolveCompatibleMemberIndex(index, ref RuntimeValue);
+            m_MemberRuntimeObjectArray[targetIndex].SetSObjectBySValue(ref RuntimeValue);
+
+        }
+
+        private int ResolveCompatibleMemberIndex(int preferIndex, ref RuntimeValue RuntimeValue)
+        {
+            if (m_RuntimeType?.runtimeClass?.metaClassKind != 2)
+                return preferIndex;
+
+            if (preferIndex < 0 || preferIndex >= m_MemberRuntimeObjectArray.Length)
+                return preferIndex;
+
+            var preferRuntimeType = m_MemberRuntimeObjectArray[preferIndex]?.runtimeType;
+            if (IsValueCompatibleWithRuntimeType(ref RuntimeValue, preferRuntimeType))
+                return preferIndex;
+
+            for (int i = 0; i < m_MemberRuntimeObjectArray.Length; i++)
             {
-                case EType.Null:
-                    {
-                        m_MemberObjectArray[index].SetNull();
-                        /*
-                        ClassObject classObj = m_MemberObjectArray[index] as ClassObject;
-                        if (classObj == null)
-                        {
-                            Log.AddVM(EError.None, "Null ËØ•Á±ªÂûã‰∏çÊòØInt32Á±ªÂûã!!");
-                            return;
-                        }
-                        classObj.SetNull();
-                        */
-                    }
-                    break;
-                case EType.Boolean:
-                    {
+                if (i == preferIndex)
+                    continue;
 
-                    }
-                    break;
-                case EType.Byte:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValue(EType.Byte, svalue.int8Value );
-                            return;
-                        }
-
-                        ByteObject byteObj = m_MemberObjectArray[index] as ByteObject;
-                        if (byteObj == null)
-                        {
-                            Log.AddVM(EError.None, "Byte ËØ•Á±ªÂûã‰∏çÊòØInt32Á±ªÂûã!!");
-                            return;
-                        }
-                        byteObj.SetValue(svalue.int8Value);
-                    }
-                    break;
-                case EType.SByte:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValue(EType.SByte, svalue.sint8Value);
-                            return;
-                        }
-
-                        SByteObject sbyteObj = m_MemberObjectArray[index] as SByteObject;
-                        if (sbyteObj == null)
-                        {
-                            Log.AddVM(EError.None, "Sbyte ËØ•Á±ªÂûã‰∏çÊòØInt32Á±ªÂûã!!");
-                            return;
-                        }
-                        sbyteObj.SetValue(svalue.sint8Value);
-                    }
-                    break;
-                case EType.Int16:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValue(EType.Int16, svalue.int16Value);
-                            return;
-                        }
-
-                        Int16Object int16Obj = m_MemberObjectArray[index] as Int16Object;
-                        if (int16Obj == null)
-                        {
-                            Log.AddVM(EError.None, "Int16 ËØ•Á±ªÂûã‰∏çÊòØInt32Á±ªÂûã!!");
-                            return;
-                        }
-                        int16Obj.SetValue(svalue.int16Value);
-                    }
-                    break;
-                case EType.UInt16:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValue(EType.UInt16, svalue.uint16Value);
-                            return;
-                        }
-
-                        UInt16Object uint16Obj = m_MemberObjectArray[index] as UInt16Object;
-                        if (uint16Obj == null)
-                        {
-                            Log.AddVM(EError.None, "UInt16 ËØ•Á±ªÂûã‰∏çÊòØInt16Á±ªÂûã!!");
-                            return;
-                        }
-                        uint16Obj.SetValue(svalue.uint16Value);
-                    }
-                    break;
-                case EType.Int32:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValue(EType.Int32, svalue.int32Value);
-                            return;
-                        }
-
-                        Int32Object int32Obj = null;
-                        if (m_MemberObjectArray[index] == null )
-                        {
-                            int32Obj = new Int32Object(0);
-                            m_MemberObjectArray[index] = int32Obj;
-                        }
-                        int32Obj = m_MemberObjectArray[index] as Int32Object;
-                        if (int32Obj == null)
-                        {
-                            Log.AddVM(EError.None, "Int32 ËØ•Á±ªÂûã‰∏çÊòØInt32Á±ªÂûã!!");
-                            return;
-                        }
-                        int32Obj.SetValue(svalue.int32Value);
-                    }
-                    break;
-                case EType.UInt32:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValue(EType.UInt32, svalue.uint32Value);
-                            return;
-                        }
-
-                        UInt32Object uint32Obj = m_MemberObjectArray[index] as UInt32Object;
-                        if (uint32Obj == null)
-                        {
-                            Log.AddVM(EError.None, "UInt32 ËØ•Á±ªÂûã‰∏çÊòØUInt32Á±ªÂûã!!");
-                            return;
-                        }
-                        uint32Obj.SetValue(svalue.uint32Value);
-                    }
-                    break;
-                case EType.Int64:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValue(EType.Int64, svalue.int64Value);
-                            return;
-                        }
-
-                        Int64Object int64Obj = m_MemberObjectArray[index] as Int64Object;
-                        if (int64Obj == null)
-                        {
-                            Log.AddVM(EError.None, "Int64 ËØ•Á±ªÂûã‰∏çÊòØInt32Á±ªÂûã!!");
-                            return;
-                        }
-                        int64Obj.SetValue(svalue.int64Value);
-                    }
-                    break;
-                case EType.UInt64:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValue(EType.UInt64, svalue.uint64Value );
-                            return;
-                        }
-
-                        UInt64Object uint64Obj = m_MemberObjectArray[index] as UInt64Object;
-                        if (uint64Obj == null)
-                        {
-                            Log.AddVM(EError.None, "UInt64 ËØ•Á±ªÂûã‰∏çÊòØInt64Á±ªÂûã!!");
-                            return;
-                        }
-                        uint64Obj.SetValue(svalue.uint64Value);
-                    }
-                    break;
-                case EType.Float32:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValue(EType.Float32, svalue.floatValue);
-                            return;
-                        }
-
-                        FloatObject floatObj = m_MemberObjectArray[index] as FloatObject;
-                        if (floatObj == null)
-                        {
-                            Log.AddVM(EError.None, "Float ËØ•Á±ªÂûã‰∏çÊòØfloatÁ±ªÂûã!!");
-                            return;
-                        }
-                        floatObj.SetValue(svalue.floatValue);
-                    }
-                    break;
-                case EType.Float64:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValue(EType.Float64, svalue.doubleValue);
-                            return;
-                        }
-
-                        DoubleObject doubleObj = m_MemberObjectArray[index] as DoubleObject;
-                        if (doubleObj == null)
-                        {
-                            Log.AddVM(EError.None, "Double ËØ•Á±ªÂûã‰∏çÊòØDoubleÁ±ªÂûã!!");
-                            return;
-                        }
-                        doubleObj.SetValue(svalue.doubleValue);
-                    }
-                    break;
-                case EType.String:
-                    {
-                        if (anyobj != null)
-                        {
-                            anyobj.SetValue(EType.String, svalue.stringValue);
-                            return;
-                        }
-
-                        StringObject stringObj = m_MemberObjectArray[index] as StringObject;
-                        if (stringObj == null)
-                        {
-                            Log.AddVM(EError.None, "String ËØ•Á±ªÂûã‰∏çÊòØInt32Á±ªÂûã!!");
-                            return;
-                        }
-                        stringObj.SetValue(svalue.stringValue);
-                    }
-                    break;
-                case EType.Class:
-                    {
-                        var mva = m_MemberObjectArray[index];
-                        if (mva.eType == EType.Byte)
-                        {
-
-                            ByteObject byteObj = mva as ByteObject;
-                            if (byteObj == null)
-                            {
-                                Log.AddVM(EError.None, "Class ByteObject ËØ•Á±ªÂûã‰∏çÊòØInt32Á±ªÂûã!!");
-                                return;
-                            }
-                            byteObj.SetValue(svalue.int8Value);
-                        }
-                        else if (mva.eType == EType.SByte)
-                        {
-
-                            SByteObject sbyteObj = mva as SByteObject;
-                            if (sbyteObj == null)
-                            {
-                                Log.AddVM(EError.None, "Class SByteObject ËØ•Á±ªÂûã‰∏çÊòØInt32Á±ªÂûã!!");
-                                return;
-                            }
-                            sbyteObj.SetValue(svalue.sint8Value);
-                        }
-                        else if (mva.eType == EType.Int16)
-                        {
-
-                            Int16Object int16Obj = mva as Int16Object;
-                            if (int16Obj == null)
-                            {
-                                Log.AddVM(EError.None, "Class Int16Object ËØ•Á±ªÂûã‰∏çÊòØInt16Á±ªÂûã!!");
-                                return;
-                            }
-                            int16Obj.SetValue(svalue.int16Value);
-                        }
-                        else if (mva.eType == EType.UInt16)
-                        {
-
-                            UInt32Object uint32Obj = mva as UInt32Object;
-                            if (uint32Obj == null)
-                            {
-                                Log.AddVM(EError.None, "Class UInt32Object ËØ•Á±ªÂûã‰∏çÊòØUInt32Á±ªÂûã!!");
-                                return;
-                            }
-                            uint32Obj.SetValue(svalue.uint32Value);
-                        }
-                        else if (mva.eType == EType.Int32)
-                        {
-                            Int32Object int32Obj = mva as Int32Object;
-                            if (int32Obj == null)
-                            {
-                                Log.AddVM(EError.None, "Class Int32Object ËØ•Á±ªÂûã‰∏çÊòØInt32Á±ªÂûã!!");
-                                return;
-                            }
-                            int32Obj.SetValue(svalue.int32Value);
-                        }
-                        else if (mva.eType == EType.UInt32)
-                        {
-
-                            UInt32Object uint32Obj = mva as UInt32Object;
-                            if (uint32Obj == null)
-                            {
-                                Log.AddVM(EError.None, "Class UInt32Object ËØ•Á±ªÂûã‰∏çÊòØInt32Á±ªÂûã!!");
-                                return;
-                            }
-                            uint32Obj.SetValue(svalue.uint32Value);
-                        }
-                        else if (mva.eType == EType.Int64)
-                        {
-
-                            Int64Object int64Obj = mva as Int64Object;
-                            if (int64Obj == null)
-                            {
-                                Log.AddVM(EError.None, "ËØ•Á±ªÂûã‰∏çÊòØInt64Á±ªÂûã!!");
-                                return;
-                            }
-                            int64Obj.SetValue(svalue.int64Value);
-                        }
-                        else if (mva.eType == EType.UInt64)
-                        {
-
-                            UInt64Object uint64Obj = mva as UInt64Object;
-                            if (uint64Obj == null)
-                            {
-                                Log.AddVM(EError.None, "ËØ•Á±ªÂûã‰∏çÊòØInt64Á±ªÂûã!!");
-                                return;
-                            }
-                            uint64Obj.SetValue(svalue.uint64Value);
-                        }
-                        else if (mva.eType == EType.String)
-                        {
-
-                            StringObject stringObj = mva as StringObject;
-                            if (stringObj == null)
-                            {
-                                Log.AddVM(EError.None, "ËØ•Á±ªÂûã‰∏çÊòØstringObjÁ±ªÂûã!!");
-                                return;
-                            }
-                            stringObj.SetValue(svalue.stringValue);
-                        }
-                        else
-                        {
-                            ClassObject classObj = m_MemberObjectArray[index] as ClassObject;
-                            if (classObj == null)
-                            {
-                                AnyObject anyObj = m_MemberObjectArray[index] as AnyObject;
-                                if( anyObj != null )
-                                {
-                                    anyObj.SetValue(EType.Class, svalue.sobject);
-                                    return;
-                                }
-                                Log.AddVM(EError.None, "ËØ•Á±ªÂûã‰∏çÊòØclassObjÁ±ªÂûã!!");
-                                return;
-                            }
-                            //classObj.SetValue(svalue.sobject as ClassObject);
-                            m_MemberObjectArray[index] = svalue.sobject as ClassObject;
-                        }
-                    }
-                    break;
+                var candidateType = m_MemberRuntimeObjectArray[i]?.runtimeType;
+                if (IsValueCompatibleWithRuntimeType(ref RuntimeValue, candidateType))
+                    return i;
             }
+
+            return preferIndex;
+        }
+
+        private static bool IsValueCompatibleWithRuntimeType(ref RuntimeValue RuntimeValue, RuntimeType? expectedType)
+        {
+            if (expectedType == null)
+                return false;
+
+            if (RuntimeValue.isNull)
+                return true;
+
+            if (expectedType.runtimeClass?.metaClassKind == 2)
+                return RuntimeValue.sobject is ClassObject;
+
+            if (expectedType.eType == EVMType.Array)
+                return RuntimeValue.sobject is ArrayObject || RuntimeValue.eType == EVMType.Array;
+
+            if (expectedType.eType == EVMType.String)
+                return RuntimeValue.eType == EVMType.String || RuntimeValue.sobject is StringObject;
+
+            return true;
         }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
 
-            if (m_Object != null )
-            {
-                sb.Append(m_Object.ToFormatString());
-            }
-            sb.Append(m_RuntimeType.irClass.ToString());
+            //if (m_Object != null )
+            //{
+            //    sb.Append(m_Object.ToFormatString());
+            //}
+            sb.Append(m_RuntimeType.runtimeClass.ToString());
             //for( int i = 0; i < m_MemberVariableArray)
 
             return sb.ToString();

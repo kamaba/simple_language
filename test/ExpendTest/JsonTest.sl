@@ -35,7 +35,7 @@ JsonTest
 
         j = Json(js)
 
-        zh = j.@info.@address.@native
+        zh = j.$"info".$"address".@"native"
 
         dzh = j.data.info.address.native
 

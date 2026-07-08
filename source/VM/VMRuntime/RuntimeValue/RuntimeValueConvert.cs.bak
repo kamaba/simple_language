@@ -1,0 +1,163 @@
+//****************************************************************************
+//  File:      RuntimeValue.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/11/22 12:00:00
+//  Description: 
+//****************************************************************************
+
+using SimpleLanguage.Logging;
+using SimpleLanguage.VM.Runtime;
+using System.Globalization;
+
+
+namespace SimpleLanguage.VM
+{
+    public partial class RuntimeValueMethod
+    {
+        ulong ConvertToULong()
+        {
+            switch (eType)
+            {
+                case EVMType.UInt8: return uint8Value;
+                case EVMType.Int8: return (byte)int8Value;
+                case EVMType.Int16: return (ushort)int16Value;
+                case EVMType.UInt16: return uint16Value;
+                case EVMType.Int32: return (uint)int32Value;
+                case EVMType.UInt32: return uint32Value;
+                case EVMType.Int64: return (ulong)int64Value;
+                case EVMType.UInt64: return uint64Value;
+                default: return 0;
+            }
+        }
+        long ConvertToLong()
+        {
+            switch (eType)
+            {
+                case EVMType.UInt8: return uint8Value;
+                case EVMType.Int8: return int8Value;
+                case EVMType.Int16: return int16Value;
+                case EVMType.UInt16: return uint16Value;
+                case EVMType.Int32: return int32Value;
+                case EVMType.UInt32: return uint32Value;
+                case EVMType.Int64: return int64Value;
+                case EVMType.UInt64: return (long)uint64Value;
+                default: return 0;
+            }
+        }
+        public static void ConvertByEType(ref RuntimeValue _rv, EVMType neType)
+        {
+            // Object/Class slots may carry scalar wrappers (Int32Object/UInt64Object...).
+            // Normalize first so Convert.* paths can work consistently.
+            TryNormalizeObjectScalarInPlace();
+
+            var oldType = eType;
+
+            object? cur = GetValueObject();
+
+            try
+            {
+                switch (neType)
+                {
+                    case EVMType.Boolean:
+                        SetBoolValue(Convert.ToBoolean(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.UInt8:
+                        SetUInt8Value(Convert.ToByte(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.Int8:
+                        SetInt8Value(Convert.ToSByte(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.Int16:
+                        SetInt16Value(Convert.ToInt16(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.UInt16:
+                        SetUInt16Value(Convert.ToUInt16(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.Int32:
+                        SetInt32Value(Convert.ToInt32(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.UInt32:
+                        SetUInt32Value(Convert.ToUInt32(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.Int64:
+                        SetInt64Value(Convert.ToInt64(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.UInt64:
+                        SetUInt64Value(Convert.ToUInt64(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.Float32:
+                        SetFloatValue(Convert.ToSingle(cur, CultureInfo.InvariantCulture));
+                        break;
+                    case EVMType.Float64:
+                    case EVMType.Num:
+                        float64Value = Convert.ToDouble(cur, CultureInfo.InvariantCulture);
+                        eType = neType;
+                        isNull = false;
+                        break;
+                    case EVMType.String:
+                        SetStringValue(Convert.ToString(cur, CultureInfo.InvariantCulture) ?? string.Empty);
+                        break;
+                    default:
+                        Log.AddRuntimeLog(LID.ShowMessageAssert, "Error 异常类型在ConvertByEType�?);
+                        return;
+                }
+
+                if (IsNarrowingConversion(oldType, neType))
+                {
+                    Log.AddRuntimeLog(LID.ShowMessageWarning,
+                        $"数值降阶转�?{oldType} -> {neType}, value={cur}");
+                }
+            }
+            catch (Exception e)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageAssert,
+                    $"数值转换溢�?{oldType} -> {neType}, value={cur} exception: {e}");
+            }
+        }
+
+        private static bool IsNarrowingConversion(EVMType source, EVMType target)
+        {
+            if (source == target) return false;
+            if (!IsNumericEType(source) || !IsNumericEType(target)) return false;
+
+            int srcBits = GetNumericBits(source);
+            int dstBits = GetNumericBits(target);
+
+            if (srcBits > dstBits) return true;
+
+            bool srcFloat = source is EVMType.Float32 or EVMType.Float64 or EVMType.Num;
+            bool dstFloat = target is EVMType.Float32 or EVMType.Float64 or EVMType.Num;
+            if (srcFloat && !dstFloat) return true;
+
+            bool srcUnsigned = source is EVMType.UInt8 or EVMType.UInt16 or EVMType.UInt32 or EVMType.UInt64;
+            bool dstSigned = target is EVMType.Int8 or EVMType.Int16 or EVMType.Int32 or EVMType.Int64;
+            if (srcUnsigned && dstSigned && srcBits >= dstBits) return true;
+
+            return false;
+        }
+
+        private static bool IsNumericEType(EVMType t)
+        {
+            return t is EVMType.Boolean
+                or EVMType.UInt8 or EVMType.Int8
+                or EVMType.Int16 or EVMType.UInt16
+                or EVMType.Int32 or EVMType.UInt32
+                or EVMType.Int64 or EVMType.UInt64
+                or EVMType.Float32 or EVMType.Float64 or EVMType.Num;
+        }
+
+        private static int GetNumericBits(EVMType t)
+        {
+            return t switch
+            {
+                EVMType.Boolean => 1,
+                EVMType.UInt8 or EVMType.Int8 => 8,
+                EVMType.Int16 or EVMType.UInt16 => 16,
+                EVMType.Int32 or EVMType.UInt32 or EVMType.Float32 => 32,
+                EVMType.Int64 or EVMType.UInt64 or EVMType.Float64 or EVMType.Num => 64,
+                _ => 0,
+            };
+        }
+    }
+}

@@ -1,0 +1,141 @@
+# 语言的命名空间 
+<b>命名空间</b>设计目 的，是让类的分类更清晰，并且，具体查找导航作用，类名称与不同层级的命名空间使用相同的名称不冲突，但在一个层级内不允许。
+
+—————————————————————————————————————————————————————————
+
+## 命名空间的使用
+1. 命名空间，的使用，在项目配置中分三种模式
+    - 全部在工程内部定义，包括命名空间，类。 该模式下在其它文件内部不允许再次定义命名空间，及类相关，有使用选项 LimitUseNamespaceAndClass
+    - 全在工程内部定义命名空间，但类，可以自由定义，该模式下，其它文件内部，不允许 定义命名空间，只允许定义类相关内容，使用选项LimitUseNamespace
+    - 可以在工程内部定义，但不限在文件中定义，该模式下，可以在工程内部定义，也可以在文件中随意定义命名空间，及类相关内部，使用选项
+
+需要在<b><i> sp </b></i>工程定义中，先预定好一些路径，才可以在代码中，引用使用 例: sp中  namespace[ "Application.Core", "Appcalition.UI", "Application.Logic", "Application.Logic.Net" ] 如果没有定义，则在工程中使用，出现错误报错!!
+2. 在空间中使用,在工程配置中定义命名空间后，需要在使用import 命名空间名称.命名空间子名称;的方式引入, 也可以使用as 关键字，进行命名空间名称替换，防止引导冲突。
+3. 在引导类时，也可以根据全局命名空间引导使用，如果使用外部模块，则要使用模块的名称，再使用命名空间的名称
+
+命名空间配置实例:
+```javascript
+file:test.sp
+
+
+const data ProjectConfig
+{
+    name = "Test1";
+    desc = "这是一个测试用例";    
+    proojectStruct =          #命名空间设计
+    {
+        Std =
+        {
+            type = "namespace"
+            child = 
+            {
+                Collection =
+                {
+                    type = "namespace"
+                }
+                Math =
+                {
+                    type = "class"
+                }
+                Layer1_1 =
+                {
+                    type = "namespace"
+                    child ={
+                        Layer2_1 =
+                        {
+                            type="namespace"
+                        }
+                        Layer2_2 =
+                        {
+                            type="namespace"
+                        }
+                    }
+                }
+                Layer1_1 =
+                {
+                    type = "namespace"
+                }
+            }
+        } 
+    }
+}
+
+```
+
+命名类定义使用实例:
+```csharp
+file:class1.s
+import CSharp.System;
+
+Application.Core.UI.Layout
+{
+    width = 0i;
+    height = 0i;
+    private int count = 0;
+
+    PrintWidthAndHeight()
+    {
+        Console.print("width=$this.width ,height=$this.height " );
+    }
+}
+namespace Application
+{
+    namespace Core
+    {
+        Core1Class
+        {            
+            static PrintCore1Class()
+            {
+                Console.print("Core1Class");
+            }
+        }
+    }
+    UtilClass
+    {
+        static PrintUtilClass()
+        {
+            Console.print("UtilClass");
+        }
+    }
+    HelloClass
+    {
+        static PrintHello()
+        {
+            Console.print("Hello");
+        }
+    }
+}
+Core.MyClass
+{
+    static PrintMyClass()
+    {
+        Console.print("MyClass");
+    }
+}
+
+```
+
+命名空间类引用的实例:
+```csharp
+file:test.sp
+
+import Application;
+import Application.Core as AC;
+
+ProjectEnter
+{
+    static Main()
+    {    
+        layout = Application.Core.UI.Layout();
+        layout.PrintWidthAndHeight();
+
+        UtilClass.PrintUtilClass();
+
+        Application.HelloClass.PrintHello();
+
+        Core.MyClass.PrintMyClass();  #虽然没有引用，但因为Core是第一层级，会自动查找该命名空间
+
+        AC.Core1Class.PrintCore1Class(); #因为使用了import as 所以该语句相当于 Application.Core.Core1Class.PrintCore1Class();
+    }
+}
+```

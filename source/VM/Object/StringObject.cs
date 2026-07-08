@@ -5,34 +5,27 @@
 //  DateTime: 2022/11/22 12:00:00
 //  Description: 
 //****************************************************************************
-using SimpleLanguage.Core;
 
-using System;
-using System.Collections.Generic;
-using System.Text;
+using SimpleLanguage.VM.Runtime;
 
 namespace SimpleLanguage.VM
 {
-    class StringObject : SObject
+    public class StringObject : SObject
     {
-        public string value;
-        public StringObject(string str) : base( EType.String )
-        {
-            value = str;
-        }
-        public void SetValue(String _val)
-        {
-            value = _val;
-        }
-        public static StringObject SetToString( Int32MetaClass mc )
-        {
-            StringObject s = new StringObject("");
+        public new string? value => m_Reference as string;
 
-            return s;
+        public StringObject(string str) : base(EVMType.String)
+        {
+            m_Reference = str;
+            m_RuntimeType = RuntimeTypeManager.stringRuntimeType;
+        }
+        public void SetValue(string _val)
+        {
+            m_Reference = _val;
         }
         public override string ToFormatString()
         {
-            return value;
+            return value ?? "";
         }
     }
 }

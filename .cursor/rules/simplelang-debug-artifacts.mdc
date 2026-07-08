@@ -1,0 +1,16 @@
+---
+description: SimpleLanguage export tree and debug artifact reading order (Logs, DebugCode, module.json)
+alwaysApply: true
+---
+
+# SimpleLanguage 调试目录（必读）
+
+工程加载 `jsonc` 后，产物根目录为 **`{export.outputDir}/{export.moduleName}/`**。
+
+- **`Logs/Result.txt`** — VM 的 `print`/`println` 输出镜像（先看运行结果）。
+- **`Logs/VM.txt`** — VM 运行时日志。
+- **`Logs/Front.txt`** — Front 编译期固定日志。
+- **`*.module.json`** — 从 IR 导出的 VM 指令包，VM 实际执行此文件。
+- **`DebugCode/<源文件路径>/`** — 编译期按文件输出；内含 **`Code.txt`**（源码）→ **`Token.txt`** → **`Node.txt`**（`()[]{}<>`、`.` 链式等结构）→ **`File.txt`**（文件级、初步逻辑、无完整实体语法）→ **`Meta.txt`**（实体语法与语言逻辑关系）→ **`IR.txt`**（可导出 IR）；再经导出写入 **`*.module.json`**。
+
+排查顺序：通常 **`Result.txt` → `VM.txt` → `*.module.json` + 对应 `DebugCode/`**；在 DebugCode 内对单文件多按 **`IR → Meta → File → Node → Token → Code`** 反查。编译错误优先 **`Front.txt`**。详细说明见仓库 **`md/ai/DEBUG_WORKFLOW.md`** 与 **`md/ai/EXPORT_PATHS.md`**。

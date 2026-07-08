@@ -1,0 +1,224 @@
+//****************************************************************************
+//  File:      IRAssignStatements.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/11/11 12:00:00
+//  Description:  handle assign statements syntax to instruction r!
+//****************************************************************************
+
+using SimpleLanguage.Core;
+using SimpleLanguage.Core.IR;
+using SimpleLanguage.Logging;
+using System;
+
+namespace SimpleLanguage.IR
+{
+    public class IRAssignStatements : IRStatements
+    {
+        protected IRExpressBase m_IRExpress = null;
+        protected IRStoreVariable m_StoreVariable = null;
+        public IRAssignStatements(IRMethod method)
+        {
+            this.irMethod = method;
+        }
+        public void ParseIRStatements(MetaAssignStatements ms)
+        {
+            var clist = ms.leftMetaExpress.metaCallLink.visitNodeList;
+            if( clist.Count == 0 )
+            {
+                Log.AddIRLog(LID.ShowExtendMessage, ms.leftMetaExpress.token, "AssignStatement 没有可生成的表达式");
+                return;
+            }
+            if( ms.leftMethodCall != null )
+            {
+                // Setter assignment form: `a.prop = x` already got x into MetaMethodCall's
+                // input parameter list by MetaAssignStatements. So just execute the whole
+                // call-link on the left side and return.
+                for (int i = 0; i < clist.Count; i++)
+                {
+                    var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, clist[i]);
+                    m_IRStatements.AddRange(list);
+                }
+                return;
+            }
+
+
+            MetaVisitNode lastCL = null;
+            for (int i = 0; i < clist.Count; i++)
+            {
+                if (i < clist.Count - 1)
+                {
+                    var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, clist[i]);
+                    m_IRStatements.AddRange(list);
+                }
+                else
+                {
+                    lastCL = clist[i];
+                }
+            }
+
+            var mv = lastCL.GetReturnMetaVariable();
+            if (lastCL.visitType == MetaVisitNode.EVisitType.VisitVariable)
+            {
+                MetaVisitVariable mvv = lastCL.visitVariable;
+                IRExpressBase irexpress = IRExpressManager.CreateExpress(irMethod, mvv.visitExpressNode);
+                m_IRStatements.Add(irexpress);
+
+                if (ms.autoAddExpressOpSign != ELeftRightOpSign.None)
+                {
+                    IRDup irdup = new IRDup(this.irMethod, 2);
+                    m_IRStatements.Add(irdup);
+
+                    //IRMetaClass owirmc1 = IRManager.instance.GetIRMetaClassById(mvv.GetOwnerClassTemplateClass().GetHashCode());
+                    if (mvv.isStatic)
+                    {
+                        Log.AddIRLog(LID.ShowExtendMessage, ms.token, "visit variable is Static");
+                    }
+                    IRLoadVariable irVar = new IRLoadVariable(null, this.irMethod, 0, IRMetaVariableFrom.Array);
+                    m_IRStatements.Add(irVar);
+                }
+            }
+            else if (lastCL.visitType == MetaVisitNode.EVisitType.MethodCall)
+            {
+                var mfc = lastCL.methodCall;
+                IRCallFunction irCallFun = new IRCallFunction(this.irMethod);
+                irCallFun.Parse(mfc);
+                m_IRStatements.Add(irCallFun);
+            }
+            else if (lastCL.visitType == MetaVisitNode.EVisitType.Variable || lastCL.visitType == MetaVisitNode.EVisitType.EnumMember )
+            {
+                if( lastCL.visitType == MetaVisitNode.EVisitType.EnumMember )
+                {
+                    var fieldOwner = IRManager.GetIRMetaClassByMetaVariable(mv);
+                    var index = fieldOwner.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                    var irvar = new IRLoadVariable(new IRMetaType(fieldOwner), irMethod, index, IRMetaVariableFrom.Static);
+
+                    m_IRStatements.Add(irvar);
+                }
+                /*
+                 * 
+                 *
+                 MetaVariable mv22 = lastCL.GetRetMetaVariable();
+
+                IRMetaType irmt2 = null;
+                IRMetaClass irmc2 = null;
+                IRMetaClass owirmc2 = IRManager.instance.GetIRMetaClassById(mv22.GetOwnerClassTemplateClass().GetHashCode());
+                if (mv22.isStatic)
+                {
+                    if (lastCL.callMetaType != null)
+                    {
+                        irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(cnode.callMetaType, owirmc);
+                    }
+                    else
+                    {
+                        irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.defineMetaType, owirmc);
+                    }
+                    irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+                }
+                else
+                {
+                    irmc = IRManager.instance.GetIRMetaClassById(mv.GetOwnerClassTemplateClass().GetHashCode());
+                }
+                IRLoadVariable irVar = IRLoadVariable.CreateLoadVariable(irmt, irmc, _irMethod, mv);
+                irList.Add(irVar);
+                 */
+
+                if (ms.autoAddExpressOpSign != ELeftRightOpSign.None)
+                {
+                    MetaVariable mvtt = lastCL.GetOrgTemplateMetaVariable();
+                    // read-modify-write: keep one instance for StoreNotStaticField2 after the load.
+                    // template-specialized / copied members are still MetaMemberVariable; require dup even if
+                    // variableFrom was not normalized to Member|Global.
+                    bool needInstanceDup = mvtt != null && !mvtt.isStatic
+                        && (mvtt.variableFrom == MetaVariable.EVariableFrom.ClassMember
+                            || mvtt.variableFrom == MetaVariable.EVariableFrom.Global
+                            || mvtt is MetaMemberVariable);
+                    if (needInstanceDup)
+                    {
+                        m_IRStatements.Add(new IRDup(this.irMethod));
+                    }
+
+                    if (lastCL.variable.isStatic)
+                    {
+                        Log.AddIRLog(LID.ShowExtendMessage, lastCL.variable.token, "visit variable is Static");
+                    }
+
+                    var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, lastCL);
+                    if (list == null)
+                    {
+                        Log.AddIRLog(LID.IRMethodNotFoundVariable, ms.leftMetaExpress?.token, "compound assign: lvalue load list is null");
+                    }
+                    else
+                    {
+                        for (int li = 0; li < list.Count; li++)
+                        {
+                            if (list[li] == null)
+                            {
+                                Log.AddIRLog(LID.IRMethodNotFoundVariable, ms.leftMetaExpress?.token, "compound assign: lvalue load IR is null (LoadNotStaticField / load not emitted).");
+                                break;
+                            }
+                        }
+                        m_IRStatements.AddRange(list);
+                    }
+                }
+
+            }
+            else
+            {
+                Log.AddIRLog(LID.IRVisitNodeNotHandleType, "visit variable is Static");
+            }
+
+            //如果不是 a.setValue(xxx)这种方式，那么就执行右边的表达式
+            if (ms.rightMetaExpress != null)
+            {
+                m_IRExpress = IRExpressManager.CreateExpress(irMethod, ms.rightMetaExpress);
+                m_IRStatements.Add(m_IRExpress);
+            }
+
+            IRData irsign = IRUtil.CreateLeftAndRightIRData(ms.autoAddExpressOpSign, out bool flag );
+            if( irsign != null && irsign.opCode != EIROpCode.Nop )
+            {
+                IRBase irbase = new IRBase(irsign);
+                m_IRStatements.Add(irbase);
+            }            
+
+            var owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
+            if ( lastCL.callMetaType != null )
+            {
+                if( lastCL.callMetaType.isEnumMember )
+                {
+                    MetaType mt = new MetaType(CoreMetaClassManager.memberMetaClass);
+                    var irmtsv = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mt, owirmc);
+                    IRStoreVariable irsv = new IRStoreVariable(irmtsv, irMethod, 2, IRMetaVariableFrom.Member );
+                    m_IRStatements.Add(irsv);
+                }
+                else
+                {
+                    // 使用原始模板变量查找 IRMetaClass，与 Load 路径一致
+                    var orgMv = lastCL.GetOrgTemplateMetaVariable();
+                    var orgOwirmc = orgMv != null ? IRManager.GetIRMetaClassByMetaVariable(orgMv) : owirmc;
+                    var irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(lastCL.callMetaType, orgOwirmc);
+                    int hashcode = 0;
+                    if (mv.sourceMetaVariable != null)
+                    {
+                        hashcode = mv.sourceMetaVariable.GetHashCode();
+                    }
+                    else
+                    {
+                        hashcode = mv.GetHashCode();
+                    }
+                    int index = irmt.irMetaClass.GetMetaMemberVariableIndexByHashCode(hashcode);
+                    IRStoreVariable irsv = new IRStoreVariable(irmt, irMethod, index, IRMetaVariableFrom.Static);
+                    m_IRStatements.Add(irsv);
+                }
+            }
+            else
+            {
+                var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.GetFinalMetaType(), owirmc);
+
+                IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(irmt, owirmc, irMethod, mv);
+                m_IRStatements.Add(irsv);
+            }
+        }
+    }
+}

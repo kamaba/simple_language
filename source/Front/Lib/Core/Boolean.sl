@@ -1,0 +1,13 @@
+public class Boolean extends Object
+{
+    bool _value = false
+
+    _init_( bool b )
+    {
+        this._value = b
+    }
+    override string toString()
+    {
+        ret this._value ? "True" : "False"
+    }
+}

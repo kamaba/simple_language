@@ -1,9 +1,14 @@
-﻿using SimpleLanguage.IR;
-using SimpleLanguage.Parse;
-using System;
-using System.Collections.Generic;
+//****************************************************************************
+//  File:      ObjectManager.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/11/22 12:00:00
+//  Description: 
+//****************************************************************************
+
+using SimpleLanguage.VM.MemoryManagement;
+using SimpleLanguage.VM.Runtime;
 using System.Diagnostics;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.VM
 {
@@ -11,6 +16,9 @@ namespace SimpleLanguage.VM
     {
         //public static Dictionary<int, DataObject> dataObjectDict = new Dictionarny<int, DataObject>();
         public static Dictionary<int, ClassObject> classObjectDict = new Dictionary<int, ClassObject>();
+        private static readonly Dictionary<int, SObject> s_ObjectById = new Dictionary<int, SObject>();
+        private static readonly object s_ObjectByIdGate = new object();
+        //public static Dictionary<int, ArrayObject> arrayObjectDict = new Dictionary<int, ArrayObject>();
 
         public static void AddClassObject(ClassObject cl)
         {
@@ -18,473 +26,206 @@ namespace SimpleLanguage.VM
             {
                 classObjectDict.Add(cl.GetHashCode(), cl);
             }
+            RegisterObject(cl);
         }
-        public static SObject CreateObjectByRuntimeType( RuntimeType rt, bool isCreateMemObject = false )
+
+        public static void RegisterObject(SObject obj)
+        {
+            if (obj == null) return;
+            lock (s_ObjectByIdGate)
+            {
+                s_ObjectById[obj.id] = obj;
+            }
+        }
+
+        public static SObject? GetObjectById(int id)
+        {
+            if (id <= 0) return null;
+            lock (s_ObjectByIdGate)
+            {
+                return s_ObjectById.TryGetValue(id, out var obj) ? obj : null;
+            }
+        }
+
+        public static void UnregisterObjectById(int id)
+        {
+            if (id <= 0) return;
+            lock (s_ObjectByIdGate)
+            {
+                s_ObjectById.Remove(id);
+            }
+        }
+
+        /// <summary>Manual strong-reference retain counter (pairs with system Object.ref).</summary>
+        public static void RetainObject(SObject obj)
+        {
+            if (obj == null) return;
+            obj.refCount++;
+        }
+
+        /// <summary>
+        /// Manual release of strong-reference counter.
+        /// When it reaches zero, remove ClassObject registry entry (legacy-compatible behavior).
+        /// </summary>
+        public static void ReleaseObject(SObject obj)
+        {
+            if (obj == null) return;
+            if (obj.refCount <= 0) return;
+            obj.refCount--;
+            if (obj.refCount != 0) return;
+            TryRemoveClassObjectRegistryEntry(obj);
+        }
+
+        /// <summary>For paths that force <see cref="SObject.refCount"/> to zero directly (e.g. SystemObjectFree).</summary>
+        public static void OnManualRefForcedZero(SObject obj)
+        {
+            if (obj == null) return;
+            TryRemoveClassObjectRegistryEntry(obj);
+        }
+
+        private static void TryRemoveClassObjectRegistryEntry(SObject sobj)
+        {
+            if (sobj is not ClassObject co) return;
+            try
+            {
+                UnregisterObjectById(co.id);
+                int key = co.GetHashCode();
+                if (classObjectDict.ContainsKey(key))
+                    classObjectDict.Remove(key);
+            }
+            catch
+            {
+                // Keep legacy behavior: cleanup must never break runtime path.
+            }
+        }
+        //public static void AddArrayObject(ArrayObject cl)
+        //{
+        //    if (!arrayObjectDict.ContainsKey(cl.GetHashCode()))
+        //    {
+        //        arrayObjectDict.Add(cl.GetHashCode(), cl);
+        //    }
+        //}
+        public static SObject CreateObjectByRuntimeType(RuntimeType rt, bool isCreateMemObject = false)
         {
             SObject sobj = null;
-            string name = rt.irClass.irName;
-            if (name == "Core.Boolean" || name == "Boolean")
+            string name = rt.runtimeClass.name;
+            //if (name == "Core.Boolean" || name == "Boolean")
+            if( rt == RuntimeTypeManager.boolRuntimeType )
             {
                 sobj = new BoolObject(false);
                 sobj.typeId = 1;
             }
-            else if (name == "Core.Object" || name == "Object")
+            //else if (name == "Core.Num" || name == "Num")
+            else if (rt == RuntimeTypeManager.numRuntimeType)
             {
-                sobj = new AnyObject();
+                // abstract numeric base: create a Float64Object as default runtime representation
+                sobj = new NumObject();
+                sobj.typeId = 5;
             }
-            else if (name == "Core.Byte" || name == "Byte")
+            else if (rt == RuntimeTypeManager.objectRuntimeType)
+            //else if (name == "Core.Object" || name == "Object")
             {
-                sobj = new ByteObject(0);
+                var ao = new SObject(EVMType.Object);
+                sobj = ao;
+            }
+            else if (rt == RuntimeTypeManager.uint8RuntimeType)
+            //else if (name == "Core.Byte" || name == "Byte")
+            {
+                sobj = new UInt8Object(0);
                 sobj.typeId = 3;
             }
-            else if (name == "Core.SByte" || name == "SByte")
+            else if (rt == RuntimeTypeManager.int8RuntimeType)
+            //else if (name == "Core.SByte" || name == "SByte")
             {
-                sobj = new SByteObject(0);
+                sobj = new Int8Object(0);
                 sobj.typeId = 3;
             }
-            else if (name == "Core.Int16" || name == "Int16")
+            else if (rt == RuntimeTypeManager.int16RuntimeType)
+            //else if (name == "Core.Int16" || name == "Int16")
             {
                 sobj = new Int16Object(0);
                 sobj.typeId = 3;
             }
-            else if (name == "Core.UInt16" || name == "UInt16")
+            else if(rt == RuntimeTypeManager.uint16RuntimeType)
+            //else if (name == "Core.UInt16" || name == "UInt16")
             {
                 sobj = new UInt16Object(0);
                 sobj.typeId = 3;
             }
-            else if (name == "Core.Int32" || name == "Int32")
+            else if (rt == RuntimeTypeManager.int32RuntimeType)
             {
                 sobj = new Int32Object(0);
                 sobj.typeId = 3;
             }
-            else if (name == "Core.UInt32" || name == "UInt32")
+            else if( rt == RuntimeTypeManager.uint32RuntimeType)
+            //else if (name == "Core.UInt32" || name == "UInt32")
             {
                 sobj = new UInt32Object(0);
                 sobj.typeId = 3;
             }
-            else if (name == "Core.Int64" || name == "Int64")
+            else if (rt == RuntimeTypeManager.int64RuntimeType)
             {
                 sobj = new Int64Object(0);
                 sobj.typeId = 3;
             }
-            else if (name == "Core.UInt64" || name == "UInt64")
+            else if (rt == RuntimeTypeManager.uint64RuntimeType)
             {
                 sobj = new UInt64Object(0);
                 sobj.typeId = 3;
             }
-            else if (name == "Core.Float32" || name == "Float32")
+            else if (rt == RuntimeTypeManager.float32RuntimeType)
             {
-                sobj = new FloatObject();
+                sobj = new Float32Object(0.0f);
                 sobj.typeId = 4;
             }
-            else if (name == "Core.Float64" || name == "Float64")
+            else if (rt == RuntimeTypeManager.float64RuntimeType)
             {
-                sobj = new DoubleObject();
+                sobj = new Float64Object(0.0d);
                 sobj.typeId = 5;
             }
-            else if (name == "Core.String" || name == "String")
+            else if (rt == RuntimeTypeManager.stringRuntimeType)
             {
                 sobj = new StringObject("");
                 sobj.typeId = 10;
             }
-            else if (name == "Core.Void" || name == "Void")
+            else if (rt == RuntimeTypeManager.voidRuntimeType)
             {
                 sobj = new VoidObject();
+                sobj.typeId = 0;
+            }
+            else if (name == "Core.Array" || name == "Array"
+                || name == "Core.Array<T>")
+            {
+                //var ao = new ArrayObject( rt, 0);
+                //ao.typeId = 0;
+                //if (isCreateMemObject)
+                //{
+                //    ao.CreateObject();
+                //}
+                //sobj = ao;
+                Debug.Assert(false);
+            }
+            else if (rt == RuntimeTypeManager.typeRuntimeType)
+            {
+                sobj = new TypeObject(rt);
                 sobj.typeId = 0;
             }
             else
             {
                 var co = new ClassObject(rt);
-                if(isCreateMemObject )
+                if (isCreateMemObject)
                 {
                     co.CreateObject();
                 }
                 sobj = co;
             }
+            // Observable refCount for SystemObjectRefCount / Object.refCount: manual Retain adds on top.
+            if (sobj != null && sobj.refCount == 0
+                && (sobj is ClassObject || sobj is TypeObject || sobj is ArrayObject || sobj.eType == EVMType.Object))
+                sobj.refCount = 1;
+            RegisterObject(sobj);
+            SlMemoryManager.Instance.RegisterAllocation(sobj);
             return sobj;
-        }
-        public static void SetObjectByValue(SObject obj, ref SValue svalue)
-        {
-
-            switch (svalue.eType)
-            {
-                case EType.Null:
-                    {
-                        obj.SetNull();
-                    }
-                    break;
-                case EType.Boolean:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if( to != null )
-                        {
-                            to.SetValue(EType.Boolean, svalue.int8Value);
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.Boolean, svalue.int8Value);
-                            return;
-                        }
-                        BoolObject boolObj = obj as BoolObject;
-                        if (boolObj == null)
-                        {
-                            Debug.Write("该类型不是Boolean类型!!");
-                            return;
-                        }
-                        boolObj.SetValue(svalue.int8Value == 1);
-                    }
-                    break;
-                case EType.Byte:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EType.Byte, svalue.int8Value);
-                            return;
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.Byte, svalue.int8Value);
-                            return;
-                        }
-                        ByteObject byteObj = obj as ByteObject;
-                        if (byteObj == null)
-                        {
-                            Debug.Write("该类型不是Byte类型!!");
-                            return;
-                        }
-                        byteObj.SetValue(svalue.int8Value);
-                    }
-                    break;
-                case EType.SByte:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EType.SByte, svalue.sint8Value);
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.SByte, svalue.sint8Value);
-                            return;
-                        }
-                        SByteObject byteObj = obj as SByteObject;
-                        if (byteObj == null)
-                        {
-                            Debug.Write("该类型不是SByte类型!!");
-                            return;
-                        }
-                        byteObj.SetValue(svalue.sint8Value);
-                    }
-                    break;
-                case EType.Int16:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EType.Int16, svalue.int16Value);
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.Int16, svalue.int16Value);
-                            return;
-                        }
-                        Int16Object int16Obj = obj as Int16Object;
-                        if (int16Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        int16Obj.SetValue(svalue.int16Value);
-                    }
-                    break;
-                case EType.UInt16:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EType.UInt16, svalue.uint16Value);
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.UInt16, svalue.uint16Value);
-                            return;
-                        }
-                        UInt16Object uint16Obj = obj as UInt16Object;
-                        if (uint16Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        uint16Obj.SetValue(svalue.uint16Value);
-                    }
-                    break;
-                case EType.Int32:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EType.Int32, svalue.int32Value);
-                            return;
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.Int32, svalue.int32Value);
-                            return;
-                        }
-                        Int32Object int32Obj = obj as Int32Object;
-                        if (int32Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        int32Obj.SetValue(svalue.int32Value);
-                    }
-                    break;
-                case EType.UInt32:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EType.UInt32, svalue.uint32Value);
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.UInt32, svalue.uint32Value);
-                            return;
-                        }
-                        UInt32Object uint32Obj = obj as UInt32Object;
-                        if (uint32Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        uint32Obj.SetValue(svalue.uint32Value);
-                    }
-                    break;
-                case EType.Int64:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EType.Int64, svalue.int64Value);
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.Int64, svalue.int64Value);
-                            return;
-                        }
-                        Int64Object int64Obj = obj as Int64Object;
-                        if (int64Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        int64Obj.SetValue(svalue.int64Value);
-                    }
-                    break;
-                case EType.UInt64:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EType.UInt64, svalue.uint64Value);
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.UInt64, svalue.uint64Value);
-                            return;
-                        }
-                        UInt64Object uint64Obj = obj as UInt64Object;
-                        if (uint64Obj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        uint64Obj.SetValue(svalue.uint64Value);
-                    }
-                    break;
-                case EType.String:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EType.String, svalue.stringValue);
-                            return;
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.String, svalue.stringValue);
-                            return;
-                        }
-                        ClassObject classobj = obj as ClassObject;
-                        if ( classobj != null )
-                        {
-                        }
-                        StringObject stringObj = obj as StringObject;
-                        if (stringObj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        stringObj.SetValue(svalue.stringValue);
-                    }
-                    break;
-                case EType.Float32:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EType.Float32, svalue.floatValue);
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.Float32, svalue.floatValue);
-                            return;
-                        }
-                        FloatObject floatObj = obj as FloatObject;
-                        if (floatObj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        floatObj.SetValue(svalue.floatValue);
-                    }
-                    break;
-                case EType.Float64:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetValue(EType.Float64, svalue.doubleValue);
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            anyObject.SetValue(EType.Float64, svalue.doubleValue);
-                            return;
-                        }
-                        DoubleObject doubleObj = obj as DoubleObject;
-                        if (doubleObj == null)
-                        {
-                            Debug.Write("该类型不是Int32类型!!");
-                            return;
-                        }
-                        doubleObj.SetValue(svalue.doubleValue);
-                    }
-                    break;
-                case EType.Class:
-                    {
-                        TemplateObject to = obj as TemplateObject;
-                        if (to != null)
-                        {
-                            to.SetClassObject(svalue.sobject);
-                            return;
-                        }
-                        AnyObject anyObject = obj as AnyObject;
-                        if (anyObject != null)
-                        {
-                            if( svalue.sobject is ClassObject co )
-                            {
-                                anyObject.SetValue(EType.Class, co.value );
-                            }
-                            return;
-                        }
-                        Int32Object int32Obj = obj as Int32Object;
-                        if (int32Obj != null)
-                        {
-                            int32Obj.SetValue(svalue.int32Value);
-                            return;
-                        }
-                        BoolObject boolObject = obj as BoolObject;
-                        if( boolObject != null )
-                        {
-                            boolObject.SetValue(svalue.int8Value==1 ? true : false);
-                            return;
-                        }
-                        ClassObject classObj = obj as ClassObject;
-                        if (classObj == null)
-                        {
-                            Debug.Write("该类型不是Class类型!!");
-                            return;
-                        }
-                        classObj.SetValue(svalue.sobject);
-                    }
-                    break;
-            }
-        }
-        public static void SetValueByValue(ref SValue target, ref SValue svalue)
-        {
-
-            switch (svalue.eType)
-            {
-                case EType.Null:
-                    {
-                        target.SetNullValue();
-                    }
-                    break;
-                case EType.Byte:
-                    {
-                        target.SetInt8Value(svalue.int8Value);
-                    }
-                    break;
-                case EType.SByte:
-                    {
-                        target.SetSInt8Value(svalue.sint8Value);
-                    }
-                    break;
-                case EType.Int16:
-                    {
-                        target.SetInt16Value(svalue.int16Value);
-                    }
-                    break;
-                case EType.UInt16:
-                    {
-                        target.SetUInt16Value(svalue.uint16Value);
-                    }
-                    break;
-                case EType.Int32:
-                    {
-                        target.SetInt32Value(svalue.int32Value);
-                    }
-                    break;
-                case EType.UInt32:
-                    {
-                        target.SetUInt32Value(svalue.uint32Value);
-                    }
-                    break;
-                case EType.Int64:
-                    {
-                        target.SetInt64Value(svalue.int64Value);
-                    }
-                    break;
-                case EType.UInt64:
-                    {
-                        target.SetUInt64Value(svalue.uint64Value);
-                    }
-                    break;
-                case EType.String:
-                    {
-                        target.SetStringValue(svalue.stringValue);
-                    }
-                    break;
-                case EType.Class:
-                    {
-                        target.SetSObject(svalue.sobject);
-                    }
-                    break;
-            }
         }
     }
 }

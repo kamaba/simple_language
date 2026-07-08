@@ -1,34 +1,32 @@
 ﻿//****************************************************************************
-//  File:      FloatObject.cs
+//  File:      Float32Object.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/22 12:00:00
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.VM.Runtime;
 using System;
-using System.Collections.Generic;
-using System.Text;
-using SimpleLanguage.Core;
-
 namespace SimpleLanguage.VM
 {
-    public class FloatObject : SObject
+    public class Float32Object : NumObject
     {
-        public Single value;
-        public FloatObject() : base(EType.Float32)
-        { }
-        public void SetValue(Single _val)
+        public new float value => m_Numeric.f32;
+        public Float32Object(float _val) : base(EVMType.Float32)
         {
-            value = _val;
+            m_Numeric.f32 = _val;
+            m_RuntimeType = RuntimeTypeManager.float32RuntimeType;
         }
-        public Int32 ToInt()
+    }
+    public class Float64Object : NumObject
+    {
+        public new double value => m_Numeric.f64;
+
+        public Float64Object(double _val) : base(EVMType.Float64)
         {
-            return Int32.Parse( value.ToString() );
-        }
-        public override string ToFormatString()
-        {
-            return value.ToString();
+            m_Numeric.f64 = _val;
+            m_RuntimeType = RuntimeTypeManager.float64RuntimeType;
         }
     }
 }

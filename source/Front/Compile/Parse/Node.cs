@@ -1,0 +1,440 @@
+//****************************************************************************
+//  File:      Node.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/5/12 12:00:00
+//  Description: 
+//****************************************************************************
+
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
+using System.Xml.Linq;
+
+namespace SimpleLanguage.Compile
+{
+    public class SignComputePriority
+    {
+        public const int Level1 = 1;                         //(a+b) [] . 优先操作，对象操作等
+        public const int Level2_LinkOp = 2;                        // -负号 (int)强转 ++x x++ -- ! ~ 
+        public const int Level3_Hight_Compute = 3;                 // / * % 
+        public const int Level3_Low_Compute = 4;                   // + - 
+        public const int Level5_BitMoveOp = 5;              // << >> 
+        public const int Level6_Compare = 6;                //< > <= >=
+        public const int Level7_EqualAb = 7;                // == !=
+        public const int Level8_BitAndOp = 81;           // &
+        public const int Level8_BitXOrOp = 82;            // ^
+        public const int Level8_BitOrOp = 83;               // |
+        public const int Level9_And = 91;                   // &&
+        public const int Level9_Or = 92;                    // ||
+        public const int Level9_AsOsIs = 95;                    // ||
+        public const int Level10_ThirdOp = 100;             // ? : 
+        public const int Level11_Assign = 120;              // = /= *= %= += -= <<= >>= &= ^= |= 
+        public const int Level12_Split = 130;                //,
+    }
+    public enum ENodeType
+    {
+        None,
+        Root,
+        Brace,
+        Angle,
+        Par,
+        Bracket,
+        Symbol,
+        Period,
+        Comma,
+        QuestionMark,
+        DoubleQuestion,
+        Colon,
+        SemiColon,
+        LineEnd,
+        Assign,
+        ConstValue,
+        PrefixAtSymbol,
+        PrefixDollerSymbol,
+        IdentifierLink,
+        Key,
+        Comment,
+        End,
+    }
+        
+    public class Node
+    {
+        /*
+         *   class{ static printf(){} a(){ return a } int b; } printf() a() 和b 就是子内容节点
+         */
+
+        public Node parseCurrent
+        {
+            get
+            {
+                if (parseIndex >= childList.Count)
+                    return null;
+                return childList[parseIndex];
+            }
+        }
+        //public List<Token> linkTokenList
+        //{
+        //    get
+        //    {
+        //        List<Token> tlist = new List<Token>();
+        //        tlist.Add(this.token);
+        //        for (int i = 0; i < m_ExtendLinkNodeList.Count; i++)
+        //        {
+        //            tlist.Add(m_ExtendLinkNodeList[i].token);
+        //        }
+        //        return tlist;
+        //    }
+        //}
+
+        public List<Node> childList => m_ChildList;
+        public List<Node> extendLinkNodeList => m_ExtendLinkNodeList;
+        public int priority { get; set; } = -1;
+        public Token token => m_Token;
+        public Token endToken { get; set; } = null;
+        public Token linkToken { get; set; } = null;         //.节点
+        public Token atToken { get; set; } = null;          // $节点
+
+
+        public Node parent => m_Parent;
+        public Node angleNode => m_AngleNode;           // <>的节点
+        public Node parNode => m_ParNode;             //(小括号的节点
+        public Node blockNode => m_BlockNode;           //{大括号的节点
+        public Node identifierNode => m_IdentifierNode;       //标识符链节点
+        public List<Node> bracketNodeList => m_BracketNodeList;
+        //public Node lastNode => m_LastNode;         // 最后处理的节点
+
+        public int parseIndex = 0;
+        public ENodeType nodeType { get; set; } =  ENodeType.None;
+
+        private List<Node> m_ExtendLinkNodeList = new List<Node>();
+        private List<Node> m_BracketNodeList = new List<Node>();
+        private List<Node> m_ChildList  = new List<Node>();    //子内容节点
+
+        private Node m_AngleNode = null;            // <>
+        private Node m_ParNode = null;              // ()
+        private Node m_BlockNode = null;            // {}
+        //private Node m_LastNode = null;            // 最后处理的节点
+        private Node m_IdentifierNode = null;       //标识符链节点
+        private Node m_Parent = null;              //父节点
+        private Token m_Token = null;                  // 
+
+
+        public Node(Token _token)
+        {
+            m_Token = _token;
+        }
+        public Node GetParseNode(int index = 1, bool isAddIndex = true )
+        {
+            if (parseIndex >= childList.Count)
+                return null;
+            var node = childList[parseIndex];
+            if( isAddIndex )
+            {
+                parseIndex += index;
+            }
+            return node;
+        }
+        public void SetIdentifierNode(Node identifierNode)
+        {
+            this.m_IdentifierNode = identifierNode;
+        }   
+        public void SetParentNode(Node parent)
+        {
+            this.m_Parent = parent;
+        }
+        public void SetParNode( Node parNode )
+        {
+            m_ParNode = parNode;
+        }
+        public void SetBlockNode( Node blockNode )
+        {
+            m_BlockNode = blockNode;
+        }
+        public void SetAngleNode(Node angleNode)
+        {
+            m_AngleNode = angleNode;
+        }
+        public List<Node> GetLinkNodeList(bool isIncludeSelf = true)
+        {
+            List<Node> tlist = new List<Node>();
+            if (isIncludeSelf) tlist.Add(this);
+            tlist.AddRange(m_ExtendLinkNodeList);     
+            return tlist;
+        }
+        public List<Token> GetLinkTokenList()
+        {
+            List<Token> tlist = new List<Token>();
+
+            tlist.Add(token);
+            foreach ( var v in m_ExtendLinkNodeList )
+            {
+                tlist.Add(v.token);
+                if( v.extendLinkNodeList.Count > 0 )
+                {
+                    GetLinkTokenByNode(v, tlist);
+                }
+            }
+
+            return tlist;
+        }
+        void GetLinkTokenByNode( Node node, List<Token> tokenList )
+        {
+            foreach (var v in node.m_ExtendLinkNodeList)
+            {
+                tokenList.Add(v.token);
+                if (v.extendLinkNodeList.Count > 0)
+                {
+                    GetLinkTokenByNode(v, tokenList);
+                }
+            }
+        }
+
+        public void AddLinkNode(Node node )
+        {
+            if (m_IdentifierNode == null) return;
+
+            m_IdentifierNode.m_ExtendLinkNodeList.Add(node);
+        }
+        public void AddBracketNode( Node bracketNode )
+        {
+            m_BracketNodeList.Add(bracketNode);
+        }
+        public void SetLinkNode( List<Node> nodeList )
+        {
+            m_ExtendLinkNodeList = nodeList;
+        }
+        public void AddChild(Node c, bool setParent = true)
+        {
+            if (setParent)
+                c.m_Parent = this;
+            this.childList.Add(c);            
+        }
+        public string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            if( nodeType == ENodeType.IdentifierLink )
+            {
+                sb.Append(this.token?.lexeme.ToString());
+                for( int i = 0; i < m_ExtendLinkNodeList.Count; i++ )
+                {
+                    var tnode = m_ExtendLinkNodeList[i];
+                    sb.Append(m_ExtendLinkNodeList[i].token?.lexeme.ToString());
+                    if ( tnode.parNode != null )
+                    {
+                        sb.Append(tnode.parNode.ToFormatString());
+                    }
+                }
+                if (this.parNode != null)
+                {
+                    sb.Append(this.parNode.ToFormatString());
+                }
+                if (this.blockNode != null)
+                {
+                    sb.Append(" " + this.blockNode.ToFormatString());
+                }
+            }
+            else if( nodeType == ENodeType.ConstValue )
+            {
+                if( this.token.type == ETokenType.String )
+                {
+                    sb.Append("\"" + this.token?.lexeme.ToString() + "\"" );
+                }
+                else
+                {
+                    sb.Append(this.token?.lexeme.ToString());
+                }
+                for (int i = 0; i < m_ExtendLinkNodeList.Count; i++)
+                {
+                    var tnode = m_ExtendLinkNodeList[i];
+                    sb.Append(m_ExtendLinkNodeList[i].token?.lexeme.ToString());
+                    if (tnode.parNode != null)
+                    {
+                        sb.Append(tnode.parNode.ToFormatString());
+                    }
+                }
+            }
+            else if( nodeType == ENodeType.Brace )
+            {
+                sb.Append(token?.lexeme.ToString());
+                if (this.parNode != null)
+                {
+                    sb.Append(this.parNode.ToFormatString());
+                }
+                for (int i = 0; i < childList.Count; i++)
+                {
+                    sb.Append(childList[i].ToFormatString() + " ");
+                }
+                sb.Append(endToken?.lexeme.ToString());
+            }
+            else if( nodeType == ENodeType.Bracket )
+            {
+                sb.Append(token?.lexeme.ToString() + " ");
+                for (int i = 0; i < childList.Count; i++)
+                {
+                    sb.Append(childList[i].ToFormatString() + " ");
+                }
+                sb.Append(endToken?.lexeme.ToString());
+                for (int i = 0; i < m_ExtendLinkNodeList.Count; i++)
+                {
+                    var tnode = m_ExtendLinkNodeList[i];
+                    sb.Append(m_ExtendLinkNodeList[i].token?.lexeme.ToString());
+                    if (tnode.parNode != null)
+                    {
+                        sb.Append(tnode.parNode.ToFormatString());
+                    }
+                }
+            }
+            else if (nodeType == ENodeType.Par)
+            {
+                sb.Append(token?.lexeme.ToString() + " ");
+                for (int i = 0; i < childList.Count; i++)
+                {
+                    sb.Append(childList[i].ToFormatString());
+                }
+                sb.Append(endToken?.lexeme.ToString());
+                for (int i = 0; i < m_ExtendLinkNodeList.Count; i++)
+                {
+                    var tnode = m_ExtendLinkNodeList[i];
+                    sb.Append(m_ExtendLinkNodeList[i].token?.lexeme.ToString());
+                    if (tnode.parNode != null)
+                    {
+                        sb.Append(tnode.parNode.ToFormatString());
+                    }
+                }
+            }
+            else if( nodeType == ENodeType.Angle)
+            {
+                sb.Append(token?.lexeme.ToString() + " ");
+                for (int i = 0; i < childList.Count; i++)
+                {
+                    sb.Append(childList[i].ToFormatString());
+                }
+                sb.Append(endToken?.lexeme.ToString());
+            }
+            else if( nodeType == ENodeType.Key )
+            {
+                sb.Append( this.token?.lexeme.ToString() );
+                if( this.blockNode != null )
+                {
+                    sb.Append( " " + this.blockNode.ToFormatString());
+                }
+                for (int i = 0; i < childList.Count; i++)
+                {
+                    sb.Append(childList[i].ToFormatString());
+                }
+                if( this.extendLinkNodeList?.Count > 0 )
+                {
+                    for( int i = 0; i < this.extendLinkNodeList.Count; i++ )
+                    {
+                        sb.Append(this.extendLinkNodeList[i].token?.lexeme.ToString() );
+                    }
+                }
+            }
+            else if( nodeType == ENodeType.LineEnd )
+            {
+                sb.AppendLine();
+            }
+            else
+            {
+                sb.Append(this.token?.lexeme.ToString() + " ");
+                for (int i = 0; i < childList.Count; i++)
+                {
+                    sb.Append(childList[i].ToFormatString());
+                }
+
+            }
+            sb.Append(" ");
+
+            return sb.ToString();
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            switch (nodeType)
+            {
+                case ENodeType.Root:
+                    {
+                        sb.Append("root");
+                    }
+                    break;
+                case ENodeType.IdentifierLink:
+                    {
+                        sb.Append(token != null ? token.ToString() : base.ToString());
+                    }
+                    break;
+                case ENodeType.Brace:
+                    {
+                        sb.Append("  {    }  ");
+                    }
+                    break;
+                case ENodeType.Bracket:
+                    {
+                        sb.Append("  [   ]  ");
+                    }
+                    break;
+                case ENodeType.Angle:
+                    {
+                        sb.Append("  <   >  ");
+                    }
+                    break;
+                //case ENodeType.LeftAngle:
+                //    {
+                //        sb.Append(" < ");
+                //    }
+                //    break;
+                //case ENodeType.RightAngle:
+                //    {
+                //        sb.Append(" > ");
+                //    }
+                //    break;
+                case ENodeType.Par:
+                    {
+                        sb.Append("   (     )   ");
+                    }
+                    break;
+                case ENodeType.Key:
+                    {
+                        sb.Append(token.ToString());
+                    }
+                    break;
+                case ENodeType.LineEnd:
+                    {
+                        sb.AppendLine("换行");
+                    }
+                    break;
+                case ENodeType.SemiColon:
+                    {
+                        sb.AppendLine(";");
+                    }
+                    break;
+                default:
+                    {
+                        sb.Append(token != null ? token.ToString() : base.ToString());
+                    }
+                    break;
+            }
+            return sb.ToString();
+        }
+        //public void SetParList( List<Node> nodes )
+        //{
+        //    if( nodes.Count == 1 )
+        //    {
+        //        if( nodes[0].nodeType == ENodeType.Par )
+        //        {
+        //            parNode = nodes[0];
+        //            return;
+        //        }
+        //    }
+        //    if (parNode == null)
+        //        parNode = new Node(null);
+        //    parNode.childList = nodes;
+        //}
+        //public void SetPar( Node node )
+        //{
+        //    parNode = node;
+        //}
+    }
+}

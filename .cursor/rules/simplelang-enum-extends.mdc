@@ -1,0 +1,14 @@
+---
+description: SimpleLanguage enum extends — allowed bases and data member rules (MetaEnum)
+alwaysApply: true
+---
+
+# Enum `extends` 语义（Front / `MetaEnum`）
+
+- **`extends` 合法目标**：内置整型族（byte/sbyte/short/ushort/int/uint/long/ulong 等映射到的 `MetaClass`）、`string`、关键字 **`data`**（解析为 `CoreMetaClassManager.dynamicMetaData`，成员可为多种已定义 `data` 的 `new`）、或**具名 `data`**（`MetaNode.isMetaData`，`m_ExtendMetaData` 指向该 `MetaData`）。
+- **禁止**：普通 **`class`**、另一个 **`enum`**、其它未识别节点作为 `extends`（见 `MetaEnum.ParseExtendsRelation`）。
+- **`extends SomeData`（具名 data）**：`MetaEnum.ParseDefineComplete` 中要求成员右侧为 **`SomeData()`** 形式的 data 构造，且 `GetReturnMetaDefineType().metaData` 必须与 `m_ExtendMetaData` 同一实例（`!m_ExtendMetaData.isDynamic` 时严格校验）。
+- **`extends data`（关键字）**：`m_ExtendClass == dynamicMetaData` 且通常 **`m_ExtendMetaData == null`**，成员可为任意已定义 `data` 的 `new`（原 `dynamicMetaData` 分支）。
+- **默认无 `extends`**：底层按 `int32`（`ParseExtendsRelation` 中 `fmcd == null`）。
+
+详细用户文档见 **`md/syntax/enum.md`**。

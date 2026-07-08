@@ -5,7 +5,7 @@ const data ProjectConfig
     compileFileList = 
     [
         {
-            path = "9_ClassAs_Is.sl";
+            path = "12_DynamicClassTest.sl";
             group = "temp";
             tag = "all";
             a = 200
@@ -69,11 +69,18 @@ Project
     }
     !#
     static Main()
-    {        
+    {
+        #typedef Array = Array<Object>
+        #typedef ArrayOK<T> = Array<T>
+        
         #GenClass.fun()
         #GenFunction.fun();
         #TypeTest.fun()
-        ClassAs_Is.fun()
+        #ClassAs_Is.fun()
+        #ArrayTest.fun()
+        #IfelseTest.fun()
+        #ReloadSignTest.fun()
+        DynamicClassTest.fun()
     }
     static Test()
     {

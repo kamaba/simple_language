@@ -1,0 +1,11 @@
+---
+description: Sibling ANSI C99 VM repo (csimple_lang) path and relation to SimpleLanguage.sln / SimpleLanguageVM
+alwaysApply: true
+---
+
+# csimple_lang（C VM）与本仓库的关系
+
+- **用途：** 与 `source/VM`（SimpleLanguageVM）对齐的 **ANSI C99** 虚拟机实现。
+- **典型检出路径（本机参考）：** `F:/project/lang/csimple_lang`
+- **解决方案引用：** `SimpleLanguage.sln` 中的原生工程 `csimple_lang` 指向 **`../csimple_lang/csimple_lang.vcxproj`**。请保持 **`csimple_lang` 与本仓库 `simple_language` 在同一父目录下**（同级目录），否则 Visual Studio 将无法加载该项。
+- **文档：** `.github/copilot-instructions.md` 中有与 SimpleLanguageVM 的对照与目录约定（如 `src/vm`、`src/base`、`lib` 等）。

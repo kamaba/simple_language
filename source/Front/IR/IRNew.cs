@@ -1,0 +1,39 @@
+﻿//****************************************************************************
+//  File:      IRNew.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/11/2 12:00:00
+//  Description: 
+//****************************************************************************
+
+namespace SimpleLanguage.IR
+{
+    public class IRNew : IRBase
+    {
+        public IRNew(IRMethod irMethod, IRMetaClass irmc) : base(irMethod)
+        {
+            IRData data = new IRData();
+            data.opCode = EIROpCode.NewObject;
+            // VM side reads NewObject payload as Int32 classId.
+            data.SetOpValue(irmc != null ? irmc.id : 0);
+            data.debugInfo = new DebugInfo() { name = irmc.irName, info = "IRNew" };
+            AddIRData(data);
+        }
+        public IRNew(IRMethod irMethod, IRMetaType opvalue ) : base(irMethod)
+        {
+            IRData data = new IRData();
+            data.opCode = EIROpCode.NewTemplateObject;
+            data.SetOpValue(opvalue);
+            data.debugInfo = new DebugInfo() { name = "", info = "NewCallClass" };
+            AddIRData(data);
+        }
+        public IRNew(IRMethod irMethod, IRMetaType opvalue, int type ) : base(irMethod)
+        {
+            IRData data = new IRData();
+            data.opCode = EIROpCode.NewArray;
+            data.SetOpValue(opvalue);
+            data.debugInfo = new DebugInfo() { name = "", info = "NewArray" };
+            AddIRData(data);
+        }
+    }
+}

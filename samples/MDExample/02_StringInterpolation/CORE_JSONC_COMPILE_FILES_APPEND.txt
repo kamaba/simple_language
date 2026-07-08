@@ -1,0 +1,1 @@
+      { "path": "../../../../test/MDExample/02_StringInterpolation/Doc02_StringInterpolation.sl", "group": "mdex", "tag": "all", "ignore": false, "priority": 0 },

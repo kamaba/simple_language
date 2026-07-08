@@ -1,0 +1,246 @@
+using System;
+using System.Collections.Generic;
+
+namespace SimpleLanguage
+{
+    public class Token
+    {
+        public string path {get; protected set; }               //文件路径
+        public ETokenType type { get; protected set; }         //标记类型
+        public object lexeme { get; protected set; }          //标记值
+        public object extend { get; protected set; }            //辅助标记，可为空
+        public int sourceBeginLine { get; protected set; }         //开始所在行
+        public int sourceBeginChar { get; protected set; }         //开始所在列
+        public int sourceEndLine { get; protected set; }            //结束所在行
+        public int sourceEndChar { get; protected set; }            //结束所在行
+        public List<List<Token>> childrenTokensList => m_ChildrenTokensList;
+
+        private List<List<Token>> m_ChildrenTokensList = new List<List<Token>>();
+        public Token( string _path, ETokenType tokenType, object _lexeme, int sourceLine, int sourceChar, object _extend = null )
+        {
+            this.path = _path;
+            this.type = tokenType;
+            this.lexeme = _lexeme;
+            this.sourceBeginLine = sourceLine + 1;
+            this.sourceBeginChar = sourceChar;
+            this.extend = _extend;
+        }
+        public Token() { type = ETokenType.None; lexeme = ""; sourceBeginLine = 0; sourceBeginChar = 0; }
+        public Token(Token token)
+        {
+            this.path = token.path;
+            this.type = token.type;
+            this.lexeme = token.lexeme;
+            this.extend = token.extend;
+            this.sourceBeginChar = token.sourceBeginChar;
+            this.sourceBeginLine = token.sourceBeginLine;
+            this.sourceEndChar = token.sourceEndChar;
+            this.sourceEndLine = token.sourceEndLine;
+        }
+        public void SetSrouceEnd( int endSourceLine, int endSourceChar )
+        {
+            this.sourceEndLine = endSourceLine;
+            this.sourceEndChar = endSourceChar;
+        }
+        public void SetType(  ETokenType type )
+        {
+            this.type = type;
+        }
+        public void SetLexeme( object _lexeme )
+        {
+            this.lexeme = _lexeme;
+        }
+        public void SetLexeme( object _lexeme, ETokenType tokenType )
+        {
+            this.lexeme = _lexeme;
+            this.type = tokenType;
+        }
+        public void SetExtend( object _extend )
+        {
+            this.extend = _extend;
+        }
+        public void SetBindFilePath( string _path )
+        {
+            path = _path;
+        }
+        public void AddChildrenToken( Token token )
+        {
+            // each child entry is a list of tokens representing one interpolation parameter
+            var list = new List<Token>();
+            list.Add(token);
+            m_ChildrenTokensList.Add(list);
+        }
+        public void AddChildrenTokens( List<Token> tokens )
+        {
+            if (tokens == null) return;
+            m_ChildrenTokensList.Add(new List<Token>(tokens));
+        }
+        public override string ToString()
+        {
+            return lexeme.ToString();
+        }
+        public string ToAllString()
+        {
+            return $"Path:{ path } Line: { sourceBeginLine } Pos: { sourceBeginChar }  ";
+        }
+        public string ToLexemeAllString()
+        {
+            return $"Lex: { lexeme } Path:{ path } Line: { sourceBeginLine } Pos: { sourceBeginChar }  ";
+        }
+        public EType GetEType()
+        {
+            EType etype = EType.None;
+            switch( type )
+            {
+                case ETokenType.Number:
+                    {
+                        etype = Enum.Parse<EType>( extend.ToString());
+                    }
+                    break;
+                case ETokenType.NumberReal:
+                    {
+                        if (lexeme is sbyte) etype = EType.Int8;
+                        else if (lexeme is byte) etype = EType.UInt8;
+                        else if (lexeme is short) etype = EType.Int16;
+                        else if (lexeme is ushort) etype = EType.UInt16;
+                        else if (lexeme is int) etype = EType.Int32;
+                        else if (lexeme is uint) etype = EType.UInt32;
+                        else if (lexeme is long) etype = EType.Int64;
+                        else if (lexeme is ulong) etype = EType.UInt64;
+                        else if (lexeme is float) etype = EType.Float32;
+                        else if (lexeme is double) etype = EType.Float64;
+                        else etype = EType.Num;
+                    }
+                    break;
+                case ETokenType.Type:
+                    {
+                        etype = Enum.Parse<EType>(extend.ToString()); ;
+                    }
+                    break;
+                case ETokenType.Boolean:
+                case ETokenType.BoolValue:
+                {
+                        etype = EType.Boolean;
+                    }
+                    break;
+                case ETokenType.String:
+                    etype = EType.String;
+                    break;
+                case ETokenType.Null:
+                    etype = EType.Null;
+                    break;
+                case ETokenType.NumberArrayLink:
+                    etype = EType.Array;
+                    break;
+                default:
+                    etype = EType.Class;
+                    break;
+            }
+            return etype;
+        }
+
+        public string ToConstString()
+        {
+            string types = "";
+            string val = "";
+            if (type == ETokenType.Number)
+            {
+                EType etype = (EType)Enum.Parse(typeof(EType), extend?.ToString());
+
+                switch (etype)
+                {
+                    case EType.UInt8:
+                        {
+                            val = lexeme.ToString();
+                        }
+                        break;
+                    case EType.Int8:
+                        {
+                            val = lexeme.ToString();
+                        }
+                        break;
+                        //case EType.Char:
+                        //    {
+                        //        val = '\'' + lexeme.ToString() + '\'';
+                        //    }
+                        break;
+                    case EType.Int16:
+                        {
+                            val = lexeme.ToString();
+                            types = "s";
+                        }
+                        break;
+                    case EType.UInt16:
+                        {
+                            val = lexeme.ToString();
+                            types = "us";
+                        }
+                        break;
+                    case EType.Int32:
+                        {
+                            val = lexeme.ToString();
+                            types = "i";
+                        }
+                        break;
+                    case EType.UInt32:
+                        {
+                            val = lexeme.ToString();
+                            types = "ui";
+                        }
+                        break;
+                    case EType.Int64:
+                        {
+                            val = lexeme.ToString();
+                            types = "uL";
+                        }
+                        break;
+                    case EType.UInt64:
+                        {
+                            val = lexeme.ToString();
+                            types = "L";
+                        }
+                        break;
+                    case EType.Float32:
+                        {
+                            try
+                            {
+                                float f = (float)lexeme;
+                                val = f.ToString("0.0");
+                                types = "f";
+                            }catch( Exception e )
+                            {
+
+                            }
+                        }
+                        break;
+                    case EType.Float64:
+                        {
+                            double d = (double)lexeme;
+                            val = d.ToString("0.00");
+                            types = "d";
+                        }
+                        break;
+                    default:
+                        {
+                            val = lexeme.ToString();
+                        }
+                        break;
+                }
+                return val + types;
+            }
+            if (type == ETokenType.NumberReal )
+            {
+                return extend.ToString();
+            }
+            else if (type == ETokenType.String)
+            {
+                return '\"' + lexeme.ToString() + '\"';
+
+            }
+            else
+            {
+                return lexeme.ToString() + types;
+            }
+        }
+    }
+}

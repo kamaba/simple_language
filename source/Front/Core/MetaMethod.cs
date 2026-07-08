@@ -1,0 +1,442 @@
+//****************************************************************************
+//  File:      MethodMethod.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/5/30 12:00:00
+//  Description: Meta enum's attribute
+//****************************************************************************
+
+
+using System.Collections.Generic;
+using System.Text;
+using SimpleLanguage.Logging;
+
+namespace SimpleLanguage.Core
+{
+    public enum EMethodCallType
+    {
+        Local,
+        CSharp,
+        CPlus,
+    }
+
+    public class LabelData
+    {
+        public string label;
+        public MetaStatements frontStatements;
+        public MetaStatements nextStatements;
+    }
+    public class MetaFunction : MetaBase
+    {
+        public bool isDefineMetaType => m_IsDefineMetaType;
+        public MetaType defineMetaType => m_DefineMetaType;
+        public MetaType realMetaType => m_RealMetaType;
+        public virtual bool isParsed => m_IsParsed;
+        public bool isHasExpress => m_MetaMemberParamCollection?.isHasExpress == true;
+        public virtual string functionAllName {
+            get
+            {
+                if (string.IsNullOrEmpty(m_FunctionAllName))
+                {
+                    StringBuilder sb = new StringBuilder();
+                    if (m_OwnerMetaClass != null)
+                    {
+                        sb.Append(m_OwnerMetaClass is MetaClass oc ? oc.allName
+                            : m_OwnerMetaClass is MetaData od ? od.allName
+                            : m_OwnerMetaClass is MetaEnum oe ? oe.allName
+                            : m_OwnerMetaClass.name);
+                        sb.Append(".");
+                    }
+                    sb.Append(name);
+                    if (m_MetaMemberTemplateCollection.metaTemplateList.Count > 0)
+                    {
+                        sb.Append("<");
+                        for (int i = 0; i < m_MetaMemberTemplateCollection.metaTemplateList.Count; i++)
+                        {
+                            var mtl = m_MetaMemberTemplateCollection.metaTemplateList[i];
+                            sb.Append(mtl.name);
+                            if (i < m_MetaMemberTemplateCollection.metaTemplateList.Count - 1)
+                            {
+                                sb.Append(",");
+                            }
+                        }
+                        sb.Append(">");
+                    }
+                    if (m_MetaMemberParamCollection?.maxParamCount > 0)
+                    {
+                        sb.Append("_");
+                        sb.Append(m_MetaMemberParamCollection.maxParamCount.ToString());
+                        sb.Append("_");
+                        sb.Append(m_MetaMemberParamCollection.ToParamTypeName());
+                    }
+                    m_FunctionAllName = sb.ToString();
+                }
+                return m_FunctionAllName;
+            }
+        }
+        public virtual string virtualFunctionName => m_VirtualFunctionName;
+        public MetaVariable thisMetaVariable => m_ThisMetaVariable;
+        public MetaVariable returnMetaVariable => m_ReturnMetaVariable;
+        public EMethodCallType methodCallType => m_MethodCallType;
+        public MetaClass ownerMetaClass => m_OwnerMetaClass as MetaClass;
+        /// <summary>宿主 <see cref="MetaClass"/> / <see cref="MetaData"/> / <see cref="MetaEnum"/>；与 <see cref="MetaVariable.ownerMetaBase"/> 语义对齐。</summary>
+        public MetaBase ownerMetaBase => m_OwnerMetaClass;
+        public MetaDefineParamCollection metaMemberParamCollection => m_MetaMemberParamCollection;
+        public MetaBlockStatements metaBlockStatements => m_MetaBlockStatements;
+        public MetaDefineTemplateCollection metaMemberTemplateCollection => m_MetaMemberTemplateCollection;
+        public int index => m_Index;
+
+        protected bool m_CanParse = true;
+
+
+        #region 属性
+        protected MetaBase m_OwnerMetaClass = null;
+        protected MetaBlockStatements m_MetaBlockStatements = null;
+        protected MetaVariable m_ThisMetaVariable = null;
+        protected MetaVariable m_ReturnMetaVariable = null;
+        protected MetaDefineParamCollection m_MetaMemberParamCollection = new MetaDefineParamCollection();
+        protected MetaDefineTemplateCollection m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection();
+        protected EMethodCallType m_MethodCallType = EMethodCallType.Local;
+        private List<LabelData> m_LabelDataList = new List<LabelData>();
+        protected bool m_IsDefineMetaType = false;
+        protected int m_Index = -1;
+        protected MetaType m_DefineMetaType = null;
+        protected MetaType m_RealMetaType = null;
+        #endregion
+
+        #region Compile or Debug
+        protected bool m_IsParsed = false;
+        protected string m_FunctionAllName = null;
+        protected string m_VirtualFunctionName = null;
+        #endregion
+        public MetaFunction(MetaClass mc)
+        {
+            m_MetaMemberParamCollection = new MetaDefineParamCollection(false, true);
+            SetOwnerMetaClass(mc);
+
+            // 没有显式声明返回类型的函数，默认返回 void
+            var defaultReturnType = new MetaType(CoreMetaClassManager.voidMetaClass);
+            m_ReturnMetaVariable = new MetaVariable(
+                (mc != null ? mc.allName : "Global") + "." + (m_Name ?? "func") + ".return",
+                MetaVariable.EVariableFrom.None,
+                null,
+                mc,
+                defaultReturnType
+            );
+        }
+        public MetaFunction( MetaFunction mf ):base(mf)
+        {
+            m_IsParsed = mf.m_IsParsed;
+            m_FunctionAllName = null;
+            m_PintTokenList = mf.m_PintTokenList;
+            m_VirtualFunctionName = mf.m_VirtualFunctionName;
+            m_DefineMetaType = mf.m_DefineMetaType != null ? new MetaType(mf.m_DefineMetaType) : null;
+            m_RealMetaType = mf.m_RealMetaType != null ? new MetaType(mf.m_RealMetaType) : null;
+            m_IsDefineMetaType = mf.m_IsDefineMetaType;
+
+            m_OwnerMetaClass = mf.m_OwnerMetaClass; 
+            m_MetaBlockStatements = mf.m_MetaBlockStatements;
+            if( mf.m_ThisMetaVariable != null )
+            {
+                m_ThisMetaVariable = new MetaVariable(mf.m_ThisMetaVariable);
+            }
+            if (mf.m_ReturnMetaVariable != null)
+            {
+                m_ReturnMetaVariable = new MetaVariable(mf.m_ReturnMetaVariable);
+            }
+            m_MetaMemberParamCollection = new MetaDefineParamCollection( mf.m_MetaMemberParamCollection );
+            m_MetaMemberTemplateCollection = new MetaDefineTemplateCollection(mf.m_MetaMemberTemplateCollection);
+            m_MethodCallType = mf.m_MethodCallType;
+            m_LabelDataList = mf.m_LabelDataList;
+        }
+        public override void SetDeep(int deep)
+        {
+            base.SetDeep(deep);
+            m_MetaBlockStatements?.SetDeep(deep);
+        }
+        public void SetCanParse( bool canparse )
+        {
+            this.m_CanParse = canparse;
+        }
+        public virtual void SetOwnerMetaClass(MetaBase ownerBase)
+        {
+            if (ownerBase == null || ownerBase == m_OwnerMetaClass)
+            {
+                return;
+            }
+            m_OwnerMetaClass = ownerBase;
+            if (m_MetaBlockStatements != null )
+            {
+                m_MetaBlockStatements.UpdateOwnerMetaClass(ownerBase);
+            }
+            if (m_ThisMetaVariable != null)
+            {
+                m_ThisMetaVariable.SetOwnerMetaBase(ownerBase);
+            }
+            if (m_ReturnMetaVariable != null)
+            {
+                m_ReturnMetaVariable.SetOwnerMetaBase(ownerBase);
+            }
+            if(m_MetaMemberParamCollection != null )
+            {
+                m_MetaMemberParamCollection.SetOwnerMetaBase(ownerBase);
+            }
+        }
+        public void SetIndex(int index)
+        {
+            m_Index = index;
+        }
+        public void AddFrontMetaStatements(MetaStatements state)
+        {
+            m_MetaBlockStatements.AddFrontStatements(state);
+        }
+        public List<MetaVariable> GetCalcMetaVariableList(bool isIncludeArgument = false)
+        {
+            List<MetaVariable> metaVarList = new List<MetaVariable>();
+            if( isIncludeArgument )
+            {
+                for( int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++ )
+                {
+                    var mdp = m_MetaMemberParamCollection.metaDefineParamList[i];
+                    if( mdp != null )
+                    {
+                        metaVarList.Add(mdp.metaVariable);
+                    }
+                }
+            }
+            m_MetaBlockStatements?.GetCalcMetaVariableList(metaVarList);
+            return metaVarList;
+        }
+        public LabelData GetLabelDataById(string label)
+        {
+            return m_LabelDataList.Find(a => a.label == label);
+        }
+        public LabelData AddLabelData(string label, MetaStatements nextState = null)
+        {
+            var ld = new LabelData() { label = label, nextStatements = nextState };
+            m_LabelDataList.Add(ld);
+            return ld;
+        }
+        public bool IsExtentParams()
+        {
+            if(m_MetaMemberParamCollection != null )
+            {
+                return m_MetaMemberParamCollection.isExtendParams;
+            }
+            return false;
+        }
+        public void UpdateLabelData(LabelData newld)
+        {
+            var ld = m_LabelDataList.Find(a => a.label == newld.label);
+            if (ld != null)
+            {
+                ld.frontStatements = newld.frontStatements;
+                ld.nextStatements = newld.nextStatements;
+            }
+        }
+        public void UpdateFunctionName()
+        {
+            m_FunctionAllName = "";
+            m_FunctionAllName = functionAllName;
+        }
+        public virtual bool Parse()
+        {
+            return true;
+        }
+        public void SetReturnMetaClass( MetaClass metaClass )
+        {
+            if( m_ReturnMetaVariable != null )
+            {
+                m_ReturnMetaVariable.defineMetaType.SetMetaClass(metaClass);
+            }
+        }
+        public MetaDefineParam GetMetaDefineParamByName( string name )
+        {
+            return m_MetaMemberParamCollection.GetMetaDefineParamByName(name);
+        }
+        public MetaType GetFinalMetaType()
+        {
+            if( m_IsDefineMetaType )
+            {
+                return m_DefineMetaType;
+            }
+            else
+            {
+                return m_RealMetaType;
+            }
+        }
+        public bool IsEqualMetaFunction( MetaFunction mf )
+        {
+            if( mf == null )
+            {
+                return false;
+            }
+            if( this.m_Name != mf.m_Name )
+            {
+                return false;
+            }
+            if( !this.m_MetaMemberTemplateCollection.IsEqualMetaDefineTemplateCollection( mf.metaMemberTemplateCollection) )
+            {
+                return false;
+            }
+            if( !this.m_MetaMemberParamCollection.IsEqualMetaDefineParamCollection( mf.metaMemberParamCollection ) )
+            {
+                return false;
+            }
+
+            return true;
+        }
+        public virtual bool IsEqualMetaInputParamCollection(MetaInputParamCollection mpc)
+        {
+            if (m_MetaMemberParamCollection.IsEqualMetaInputParamCollection(mpc))
+            {
+                return true;
+            }
+            return false;
+        }
+        public virtual bool IsEqualMetaDefineParamCollection(MetaDefineParamCollection mdpc)
+        {
+            if (m_MetaMemberParamCollection.IsEqualMetaDefineParamCollection(mdpc))
+            {
+                return true;
+            }
+            return false;
+        }
+        public MetaTemplate GetMetaDefineTemplateByName( string name )
+        {
+            return m_MetaMemberTemplateCollection.GetMetaDefineTemplateByName(name);
+        }
+        public virtual bool IsEqualMetaTemplateCollectionAndMetaParamCollection( MetaInputTemplateCollection mitc, MetaDefineParamCollection mpc )
+        {
+            //if (m_MetaMemberParamCollection.IsEqualMetaTemplateAndParamCollection(mitc, mpc) )
+            //{
+            //    return true;
+            //}
+            return false;
+        }
+        public virtual string ToStatementString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(name);
+
+            sb.Append(m_MetaMemberTemplateCollection?.ToFormatString());
+            //sb.Append("( ");
+            sb.Append(m_MetaMemberParamCollection.ToFormatString());
+            //sb.Append(" )");
+
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// 检查非void返回类型的函数是否所有代码路径都有ret返回语句。
+        /// 在ParseStatements处理完语句后调用。
+        /// </summary>
+        public void CheckAllPathsReturn()
+        {
+            // 返回类型尚未解析的不检查
+            if (!m_IsDefineMetaType) return;
+
+            // 只检查有返回类型（非void）的函数
+            MetaType returnType = m_DefineMetaType;
+            if (returnType == null) return;
+            if (returnType.metaClass == CoreMetaClassManager.voidMetaClass) return;
+
+            // 没有函数体的不检查
+            if (m_MetaBlockStatements == null) return;
+            if (m_MetaBlockStatements.nextMetaStatements == null) return;
+
+            if (!IsBlockAlwaysReturn(m_MetaBlockStatements))
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                    $"Error 函数[{functionAllName}] 声明了返回类型[{returnType.ToFormatString()}]，但并非所有代码路径都有ret返回语句!");
+            }
+        }
+
+        /// <summary>
+        /// 判断一个语句块是否所有路径都返回（即块内某条直接子语句保证返回）。
+        /// 遍历块的链表，只检查直接子语句（parentBlockStatements == block）。
+        /// </summary>
+        private static bool IsBlockAlwaysReturn(MetaBlockStatements block)
+        {
+            if (block == null) return false;
+            MetaStatements cur = block.nextMetaStatements;
+            while (cur != null)
+            {
+                if (cur.parentBlockStatements == block)
+                {
+                    if (IsStatementAlwaysReturn(cur)) return true;
+                }
+                cur = cur.nextMetaStatements;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 判断单条语句是否保证返回。
+        /// </summary>
+        private static bool IsStatementAlwaysReturn(MetaStatements stmt)
+        {
+            if (stmt is MetaReturnStatements) return true;
+
+            if (stmt is MetaIfStatements ifStmt)
+            {
+                return IsIfStatementAlwaysReturn(ifStmt);
+            }
+
+            if (stmt is MetaBlockStatements blockStmt)
+            {
+                return IsBlockAlwaysReturn(blockStmt);
+            }
+
+            if (stmt is MetaSwitchStatements switchStmt)
+            {
+                return IsSwitchStatementAlwaysReturn(switchStmt);
+            }
+
+            // for/while/assign/call 等不保证返回
+            return false;
+        }
+
+        /// <summary>
+        /// if/elif/else 语句保证返回的条件：有else分支，且所有分支（if+所有elif+else）都保证返回。
+        /// </summary>
+        private static bool IsIfStatementAlwaysReturn(MetaIfStatements ifStmt)
+        {
+            bool hasElse = false;
+            foreach (var branch in ifStmt.metaElseIfStatements)
+            {
+                if (branch.ifElseState == MetaIfStatements.IfElseState.Else)
+                {
+                    hasElse = true;
+                }
+                if (!IsBlockAlwaysReturn(branch.thenMetaStatements))
+                {
+                    return false;
+                }
+            }
+            return hasElse;
+        }
+
+        /// <summary>
+        /// switch 语句保证返回的条件：有default分支，且所有case和default都保证返回。
+        /// </summary>
+        private static bool IsSwitchStatementAlwaysReturn(MetaSwitchStatements switchStmt)
+        {
+            if (switchStmt.defaultMetaStatements == null) return false;
+
+            foreach (var caseStmt in switchStmt.metaCaseStatements)
+            {
+                if (!IsBlockAlwaysReturn(caseStmt.thenMetaStatements))
+                {
+                    return false;
+                }
+            }
+            if (!IsBlockAlwaysReturn(switchStmt.defaultMetaStatements))
+            {
+                return false;
+            }
+            return true;
+        }
+    }
+}

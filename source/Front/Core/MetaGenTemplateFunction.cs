@@ -1,0 +1,286 @@
+//****************************************************************************
+//  File:      MetaGenTempalteFunction.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/5/30 12:00:00
+//  Description: Meta enum's attribute
+//****************************************************************************
+
+
+using System.Collections.Generic;
+using System.Text;
+
+namespace SimpleLanguage.Core
+{
+    public class MetaGenTemplateFunction : MetaMemberFunction
+    {
+        public MetaMemberFunction sourceTemplateFunctionMetaMemberFunction => m_SourceTemplateFunctionMetaMemberFunction;
+        public List<MetaGenTemplate> metaGenTemplateList => m_MetaGenTemplateList;
+
+        protected MetaMemberFunction m_SourceTemplateFunctionMetaMemberFunction = null;
+        protected List<MetaGenTemplate> m_MetaGenTemplateList = new List<MetaGenTemplate>();
+        public MetaGenTemplateFunction(MetaMemberFunction mmc, List<MetaGenTemplate> list ) : base(mmc.ownerMetaClass)
+        {
+            m_SourceTemplateFunctionMetaMemberFunction = mmc;
+            UpdateGenMemberFunctionByTemplateClass(mmc);
+            m_MetaGenTemplateList = list;
+        }
+        public MetaGenTemplateFunction(MetaGenTemplateFunction mgtf ) : base(mgtf)
+        {
+            m_SourceMetaMemberFunction = mgtf.m_SourceMetaMemberFunction;
+            m_SourceTemplateFunctionMetaMemberFunction = mgtf.m_SourceTemplateFunctionMetaMemberFunction;
+            m_MetaGenTemplateList = mgtf.m_MetaGenTemplateList;
+        }
+        public MetaGenTemplateFunction(MetaClass mc, string _name) : base(mc)
+        {
+            m_Name = _name;
+            m_IsCanRewrite = true;
+            m_MetaMemberParamCollection.Clear();
+
+            m_MetaBlockStatements = new MetaBlockStatements(this, null);
+            m_MetaBlockStatements.isOnFunction = true;
+
+            Init();
+        }
+        public bool MatchInputTemplateInsance(List<MetaClass> instMcList)
+        {
+            if (m_MetaGenTemplateList.Count != instMcList.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < m_MetaGenTemplateList.Count; i++)
+            {
+                var c1 = m_MetaGenTemplateList[i];
+                var c2 = instMcList[i];
+
+                if (c1.metaType.metaClass != c2 )
+                {
+                    return false;
+                }
+            }
+            return true;
+
+        }
+        public bool MatchInputTemplateInsance(List<MetaType> instMtList)
+        {
+            if (m_MetaGenTemplateList.Count != instMtList.Count)
+            {
+                return false;
+            }
+
+            for (int i = 0; i < m_MetaGenTemplateList.Count; i++)
+            {
+                var c1 = m_MetaGenTemplateList[i];
+                var c2 = instMtList[i];
+
+                // 如果两者都是模板类型，按 metaTemplate 比较
+                if (c1.metaType.isTemplate && c2.isTemplate)
+                {
+                    if (c1.metaType.metaTemplate != c2.metaTemplate)
+                    {
+                        return false;
+                    }
+                }
+                // 否则按 metaClass 引用比较
+                else if (c1.metaType.metaClass != c2.metaClass)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        public void UpdateGenMemberFunctionByTemplateClass(MetaMemberFunction mmf)
+        {
+            m_MetaMemberParamCollection = new MetaDefineParamCollection(mmf.metaMemberParamCollection);
+            m_MetaMemberParamCollection.SetOwnerMetaFunction(this);
+            m_FileMetaMemberFunction = mmf.fileMetaMemberFunction;
+            m_Name = mmf.name;
+
+            m_IsStatic = mmf.isStatic;
+            m_IsGet = mmf.isGet;
+            m_IsSet = mmf.isSet;
+            m_IsFinal = mmf.isFinal;
+            m_MetaBlockStatements = mmf.metaBlockStatements;
+            m_ConstructInitFunction = mmf.isConstructInitFunction;
+            m_SourceMetaMemberFunction = mmf.sourceMetaMemberFunction;
+            m_ReturnMetaVariable = new MetaVariable(mmf.returnMetaVariable);
+
+            //    m_OriginalMetaMemberFunction = mmf;
+            //    m_Name = mmf.m_Name;
+            //    m_FileMetaMemberFunction = mmf.m_FileMetaMemberFunction;
+            //    isStatic = mmf.isStatic;
+            //    isGet = mmf.isGet;
+            //    isSet = mmf.isSet;
+            //    isFinal = mmf.isFinal;
+            //    m_IsMustNeedReturnStatements = mmf.m_IsMustNeedReturnStatements;
+            //    m_MethodCallType = mmf.m_MethodCallType;
+            //    isTemplateInParam = mmf.isTemplateInParam;
+            //    m_IsTemplateFunction = mmf.m_IsTemplateFunction;
+            //    m_DefineMetaType = new MetaType(mmf.m_DefineMetaType);
+            //    m_MetaBlockStatements = new MetaBlockStatements(this);
+            //    m_MetaBlockStatements.isOnFunction = true;
+            //    m_MetaMemberParamCollection = new MetaDefineParamCollection();
+        }
+        private static bool NeedUpdateGenMetaType(MetaType mt)
+        {
+            if (mt == null)
+            {
+                return false;
+            }
+            return !(mt.eMetaTypeType == EMetaTypeType.MetaClass
+                && mt.metaClass != null
+                && mt.metaClass.isTemplateClass == false);
+        }
+        private void UpdateMetaVariableByGenClass(MetaVariable mv)
+        {
+            if (mv == null)
+            {
+                return;
+            }
+
+            var ownerGenClass = m_OwnerMetaClass as MetaGenTemplateClass;
+
+            if (mv.defineMetaType != null)
+            {
+                var defineMetaType = new MetaType(mv.defineMetaType);
+                if (NeedUpdateGenMetaType(defineMetaType))
+                {
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(defineMetaType, ownerGenClass, this);
+                }
+                mv.SetMetaDefineType(defineMetaType);
+            }
+
+            if (mv.realMetaType != null)
+            {
+                var realMetaType = new MetaType(mv.realMetaType);
+                if (NeedUpdateGenMetaType(realMetaType))
+                {
+                    TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(realMetaType, ownerGenClass, this);
+                }
+                mv.SetRealMetaType(realMetaType);
+            }
+            else if (mv.defineMetaType != null)
+            {
+                mv.SetRealMetaType(new MetaType(mv.defineMetaType));
+            }
+
+            if (ownerGenClass != null)
+            {
+                mv.SetOwnerMetaBase(ownerGenClass);
+            }
+        }
+        public MetaGenTemplate GetMetaGenTemplate( string name )
+        {
+            return m_MetaGenTemplateList.Find(a => a.name == name);
+        }
+        void ParseMetaMemberFunctionDefineMetaType()
+        {
+            UpdateMetaVariableByGenClass(m_ReturnMetaVariable);
+            m_IsDefineMetaType = m_ReturnMetaVariable?.isDefineMetaType == true;
+            m_DefineMetaType = m_ReturnMetaVariable?.defineMetaType != null ? new MetaType(m_ReturnMetaVariable.defineMetaType) : null;
+            m_RealMetaType = m_ReturnMetaVariable?.realMetaType != null ? new MetaType(m_ReturnMetaVariable.realMetaType) : null;
+
+            for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
+            {
+                var mdp = m_MetaMemberParamCollection.metaDefineParamList[i];
+                UpdateMetaVariableByGenClass(mdp?.metaVariable);
+            }
+        }
+        public void UpdateRegsterGenMetaFunction()
+        {
+            //这个过程是 绑定 原来注册过来的T的已有的类
+
+            List<MetaGenTemplate> mgtList = m_MetaGenTemplateList;
+            var curfun = this.m_SourceMetaMemberFunction;
+            if (curfun == null)
+            {
+                return;
+            }
+            while (true)
+            {
+                if (curfun.sourceMetaMemberFunction == null)
+                    break;
+                curfun = curfun.sourceMetaMemberFunction;
+            }
+
+            for (int i = 0; i < curfun.bindStructTemplateFunctionMtList.Count; i++)
+            {
+                curfun.bindStructTemplateFunctionMtList[i].UpdateMetaGenTemplate(mgtList);
+            }
+        }
+        public void UpdateRegsterGenMetaFunctionAndClass(List<MetaGenTemplate> classGtList)
+        {
+            //这个过程是 绑定 原来注册过来的T的已有的类
+
+            List<MetaGenTemplate> mgtList = m_MetaGenTemplateList;
+            var curfun = this.m_SourceMetaMemberFunction;
+            if (curfun == null)
+            {
+                return;
+            }
+            while (true)
+            {
+                if (curfun.sourceMetaMemberFunction == null)
+                    break;
+                curfun = curfun.sourceMetaMemberFunction;
+            }
+            if(curfun.bindStructTemplateFunctionAndClassMtList.Count == 0 )
+            {
+                return;
+            }
+
+            mgtList.AddRange(classGtList);
+
+            for (int i = 0; i < curfun.bindStructTemplateFunctionAndClassMtList.Count; i++)
+            {
+                curfun.bindStructTemplateFunctionAndClassMtList[i].UpdateMetaGenTemplate(mgtList);
+            }
+        }
+        public override bool Parse()
+        {
+            UpdateRegsterGenMetaFunction();
+
+            if( this.ownerMetaClass?.isTemplateClass == true )
+            {
+                for( int i = 0; i < this.ownerMetaClass.metaGenTemplateClassList.Count; i++ )
+                {
+                    var mgtc = this.ownerMetaClass.metaGenTemplateClassList[i];
+                    mgtc.UpdateRegisterTemplateFunction();
+                }
+            }
+            ParseMetaMemberFunctionDefineMetaType();
+            UpdateFunctionName();
+
+            return true;
+        }
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(returnMetaVariable?.defineMetaType?.ToFormatString());
+            sb.Append(" ");
+            sb.Append(name);
+            sb.Append("<");
+            for( int i = 0; i < m_MetaGenTemplateList.Count; i++ )
+            {
+                var mgt = m_MetaGenTemplateList[i];
+                sb.Append(mgt.ToString());
+            }
+            sb.Append(">");           
+            sb.Append("(");
+
+            for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
+            {
+                MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
+                sb.Append(mpl.ToString());
+                if (i < m_MetaMemberParamCollection.metaDefineParamList.Count - 1)
+                {
+                    sb.Append(",");
+                }
+            }
+            sb.Append(")");
+
+            return sb.ToString();
+        }
+    }
+}

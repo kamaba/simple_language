@@ -1,0 +1,398 @@
+﻿//****************************************************************************
+//  File:      MetaWhileDoWhileStatements.cs
+// ------------------------------------------------
+//  Copyright (c) kamaba233@gmail.com
+//  DateTime: 2022/8/12 12:00:00
+//  Description:  Handle for loop statements syntax and while/dowhile loop statements syntax !
+//****************************************************************************
+
+using SimpleLanguage.Compile;
+using SimpleLanguage.Parse;
+using System;
+using System.Text;
+
+namespace SimpleLanguage.Core
+{
+    public sealed class MetaForStatements : MetaStatements
+    {
+        private bool m_IsForIn = false;
+        private MetaVariable m_ForMetaVariable;
+        private MetaVariable m_ForInContent = null;
+        private FileMetaKeyForSyntax m_FileMetaKeyForSyntax = null;
+        private MetaBlockStatements m_ThenMetaStatements = null;
+        private MetaDefineVarStatements m_DefineVarStatements = null;
+        private MetaAssignStatements m_AssignStatements = null;
+        private MetaExpressNode m_ConditionExpress = null;
+        private MetaAssignStatements m_StepStatements = null;
+        public MetaForStatements(MetaBlockStatements mbs, FileMetaKeyForSyntax fmkfs ) : base(mbs)
+        {
+            m_FileMetaKeyForSyntax = fmkfs;
+
+            Parse();
+        }
+        private void Parse()
+        {
+            m_IsForIn = m_FileMetaKeyForSyntax.isInFor;
+
+            m_ThenMetaStatements = new MetaBlockStatements(m_OwnerMetaBlockStatements, m_FileMetaKeyForSyntax.executeBlockSyntax);
+            m_ThenMetaStatements.SetOwnerMetaStatements(this);
+
+            if ( m_IsForIn )
+            {
+                if (m_FileMetaKeyForSyntax.conditionExpress == null)
+                {
+                    Log.AddInStructMeta( EError.None, "Error for in express后边没有表达式!!");
+                }
+
+
+                m_ForInContent = null;
+                if (m_FileMetaKeyForSyntax.conditionExpress != null)
+                {
+                    CreateExpressParam cep2 = new CreateExpressParam()
+                    {
+                        ownerMBS = m_OwnerMetaBlockStatements,
+                        metaType = null,
+                        fme = m_FileMetaKeyForSyntax.conditionExpress,
+                        isStatic = false,
+                        isConst = false,
+                        parsefrom = EParseFrom.StatementRightExpress
+                    };
+                    m_ConditionExpress = ExpressManager.CreateExpressNode(cep2);
+                    m_ConditionExpress.CalcReturnType();
+                }
+
+                var mcallEn = m_ConditionExpress as MetaCallLinkExpressNode;
+                var mnoen = m_ConditionExpress as MetaNewObjectExpressNode;
+                if (mcallEn == null && mnoen == null)
+                {
+                    Log.AddInStructMeta(EError.None, "Error For in 表达式，应该是个数组形式");
+                    return;
+                }
+                if( mcallEn != null )
+                {
+                    m_ForInContent = mcallEn.GetMetaVariable();
+                }
+                else
+                {
+                    m_ForInContent = new MetaVariable("forcontent_" + GetHashCode().ToString(), MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, mnoen.GetReturnMetaDefineType() );
+                    m_ThenMetaStatements.UpdateMetaVariableDict(m_ForInContent);
+                }
+                MetaType mdt = m_ForInContent.metaDefineType;
+                if ( !mdt.IsCanForIn() )
+                {
+                    Log.AddInStructMeta(EError.None, "Error For in 表达式，应该是个数组形式!");
+                    return;
+                }
+                var forMVMC = mdt.GetMetaInputTemplateByIndex();
+                if( forMVMC == null )
+                {
+                    forMVMC = m_ForInContent.metaDefineType;
+                }
+
+                var fmcd = m_FileMetaKeyForSyntax.fileMetaClassDefine as FileMetaCallSyntax;
+                if( fmcd == null )
+                {
+                    Log.AddInStructMeta(EError.None, "Error For x in X必须有!!");
+                    return;
+                }
+                string dname = fmcd.variableRef.name;
+                var dmv = m_ThenMetaStatements.GetMetaVariableByName(dname);
+                if (dmv != null )
+                {
+                    Log.AddInStructMeta(EError.None, "Error 在 for .. in 中，不允许从for 外边定义遍历变量!!");
+                    return;
+                }
+                else
+                {
+                    m_ForMetaVariable = new MetaIteratorVariable(dname, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent, forMVMC );
+                }
+
+                m_ThenMetaStatements.UpdateMetaVariableDict(m_ForMetaVariable);
+            }
+            else
+            {
+                var fmcd = m_FileMetaKeyForSyntax.fileMetaClassDefine;
+                switch (fmcd)
+                {
+                    case FileMetaDefineVariableSyntax fmcd1:
+                        {
+                            m_DefineVarStatements = new MetaDefineVarStatements(m_ThenMetaStatements, fmcd1);
+                        }
+                        break;
+                    case FileMetaOpAssignSyntax fmoas:
+                        {
+                            string sname = fmoas.variableRef?.name;
+
+                            if (m_ThenMetaStatements.GetIsMetaVariable(sname))
+                            {
+                                m_AssignStatements = new MetaAssignStatements(m_ThenMetaStatements, fmoas);
+                            }
+                            else
+                            {
+                                m_ThenMetaStatements.AddOnlyNameMetaVariable(sname);
+                                m_DefineVarStatements = new MetaDefineVarStatements(m_ThenMetaStatements, fmoas);
+                            }
+                            break;
+                        }
+                    case FileMetaCallSyntax fmcs:
+                        {
+                            string sname = fmcs.variableRef?.name;
+
+                            if (m_ThenMetaStatements.GetIsMetaVariable(sname))
+                            {
+                                m_AssignStatements = new MetaAssignStatements(m_ThenMetaStatements);
+                            }
+                            else
+                            {
+                                m_ThenMetaStatements.AddOnlyNameMetaVariable(sname);
+                                m_DefineVarStatements = new MetaDefineVarStatements(m_ThenMetaStatements, fmcs);
+                            }
+                        }
+                        break;
+                }
+                if (m_FileMetaKeyForSyntax.stepFileMetaOpAssignSyntax != null)
+                {
+                    m_StepStatements = new MetaAssignStatements(m_ThenMetaStatements, m_FileMetaKeyForSyntax.stepFileMetaOpAssignSyntax);
+                }
+
+                if (m_DefineVarStatements != null)
+                {
+                    m_ForMetaVariable = m_DefineVarStatements.defineVarMetaVariable;
+                }
+                else if ( m_AssignStatements != null)
+                {
+                    m_ForMetaVariable = m_AssignStatements.metaVariable;
+                }
+                if (m_ForMetaVariable == null)
+                {
+                    Log.AddInStructMeta(EError.None, "Error 没有找到相应的变量!!");
+                }
+                m_ThenMetaStatements.UpdateMetaVariableDict(m_ForMetaVariable);
+
+                if (m_FileMetaKeyForSyntax.conditionExpress != null)
+                {
+                    CreateExpressParam cep2 = new CreateExpressParam()
+                    {
+                        ownerMBS = m_ThenMetaStatements,
+                        metaType = m_ForMetaVariable.metaDefineType,
+                        fme = m_FileMetaKeyForSyntax.conditionExpress,
+                        isStatic = false,
+                        isConst = false,
+                        parsefrom = EParseFrom.StatementRightExpress
+                    };
+                    m_ConditionExpress = ExpressManager.CreateExpressNode(cep2);
+                    m_ConditionExpress.CalcReturnType();
+                }
+            }
+            //必须放到最后，因为 前边有变量需要建立
+            MetaMemberFunction.CreateMetaSyntax(m_FileMetaKeyForSyntax.executeBlockSyntax, m_ThenMetaStatements);
+        }
+        public override void SetDeep(int dp)
+        {
+            //m_Deep = dp;
+            m_ThenMetaStatements?.SetDeep(dp);
+            nextMetaStatements?.SetDeep(dp);
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
+            sb.Append("for ");
+            if (m_IsForIn)
+            {
+                sb.Append(m_ForMetaVariable.name);
+                sb.Append(" in ");
+                sb.Append(m_ForInContent.name);
+            }
+            sb.Append(Environment.NewLine);
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
+            sb.Append("{");
+            sb.Append(Environment.NewLine);
+
+            if (!m_IsForIn)
+            {
+                for (int i = 0; i < deep + 1; i++)
+                {
+                    sb.Append(Global.tabChar);
+                }
+                if (m_DefineVarStatements != null)
+                {
+                    sb.Append(m_DefineVarStatements.ToFormatString());
+                }
+                if (m_AssignStatements != null)
+                {
+                    sb.Append(m_AssignStatements.ToFormatString());
+                }
+                if (m_StepStatements != null)
+                {
+                    for (int i = 0; i < deep + 1; i++)
+                    {
+                        sb.Append(Global.tabChar);
+                    }
+                    sb.Append(m_StepStatements.ToFormatString());
+                }
+
+                if (m_ConditionExpress != null)
+                {
+                    sb.Append(Environment.NewLine);
+                    for (int i = 0; i < deep + 1; i++)
+                    {
+                        sb.Append(Global.tabChar);
+                    }
+                    sb.Append("if ");
+                    sb.Append(m_ConditionExpress.ToFormatString());
+                    sb.Append("{break;}");
+                    sb.Append(Environment.NewLine);
+                }
+                sb.Append(m_ThenMetaStatements?.nextMetaStatements?.ToFormatString());
+
+            }
+            else
+            {
+                sb.Append(m_ThenMetaStatements?.nextMetaStatements?.ToFormatString());
+            }
+
+            sb.Append(Environment.NewLine);
+            for (int i = 0; i < deep; i++)
+            {
+                sb.Append(Global.tabChar);
+            }
+            sb.Append("}");
+            sb.Append(Environment.NewLine);
+
+            sb.Append(nextMetaStatements?.ToFormatString());
+            sb.Append(Environment.NewLine);
+
+            return sb.ToString();
+        }
+    }
+    public sealed class MetaWhileDoWhileStatements : MetaStatements
+    {
+        private FileMetaConditionExpressSyntax m_FileMetaKeyWhileSyntax = null;
+        private MetaExpressNode m_ConditionExpress = null;
+        private MetaBlockStatements m_ThenMetaStatements = null;
+        private bool m_IsWhile = false;
+
+        public MetaWhileDoWhileStatements(MetaBlockStatements mbs, FileMetaConditionExpressSyntax whileStatements ):
+            base( mbs )
+        {
+            m_FileMetaKeyWhileSyntax = whileStatements;
+
+            if( m_FileMetaKeyWhileSyntax.token?.type == ETokenType.DoWhile )
+            {
+                m_IsWhile = false;
+            }
+            else
+            {
+                m_IsWhile = true;
+            }
+
+            Parse();
+        }
+        private void Parse()
+        {
+            m_ThenMetaStatements = new MetaBlockStatements(m_OwnerMetaBlockStatements, m_FileMetaKeyWhileSyntax.executeBlockSyntax);
+            m_ThenMetaStatements.SetOwnerMetaStatements(this);
+
+            if (m_FileMetaKeyWhileSyntax.conditionExpress != null)
+            {
+                MetaType mdt = new MetaType(m_OwnerMetaBlockStatements.ownerMetaClass);
+
+                CreateExpressParam cep2 = new CreateExpressParam()
+                {
+                    ownerMBS = m_OwnerMetaBlockStatements,
+                    metaType = mdt,
+                    fme = m_FileMetaKeyWhileSyntax.conditionExpress,
+                    isStatic = false,
+                    isConst = false,
+                    parsefrom = EParseFrom.StatementRightExpress
+                };
+                m_ConditionExpress = ExpressManager.CreateExpressNode(cep2);
+            }
+            MetaMemberFunction.CreateMetaSyntax(m_FileMetaKeyWhileSyntax.executeBlockSyntax, m_ThenMetaStatements );
+
+            if (m_ConditionExpress != null)
+            {
+                AllowUseSettings auc = new AllowUseSettings();
+                m_ConditionExpress.Parse(auc);
+                m_ConditionExpress.CalcReturnType();
+            }
+        }
+        public void SetDeep(int dp)
+        {
+            //m_Deep = dp;
+            m_ThenMetaStatements?.SetDeep(dp);
+            nextMetaStatements?.SetDeep(dp);
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            StringBuilder sb2 = new StringBuilder();
+            //if (m_ConditionExpress != null)
+            //{
+            //    for (int i = 0; i < deep + 1; i++)
+            //    {
+            //        sb2.Append(Global.tabChar);
+            //    }
+            //    sb2.Append("if ");
+            //    sb2.Append(m_ConditionExpress.ToFormatString());
+            //    sb2.Append("{break;}");
+            //}
+
+            //for (int i = 0; i < deep; i++)
+            //{
+            //    sb.Append(Global.tabChar);
+            //}
+            //sb.Append( m_IsWhile ? "while " : "dowhile ");           
+            //sb.Append(Environment.NewLine);
+            //for (int i = 0; i < deep; i++)
+            //{
+            //    sb.Append(Global.tabChar);
+            //}
+            sb.Append("{");
+            sb.Append(Environment.NewLine);
+
+            if( m_IsWhile )
+            {
+                if( !string.IsNullOrEmpty( sb2.ToString() ) )
+                {
+                    sb.Append(sb2.ToString());
+                }
+            }
+            if(m_ThenMetaStatements?.nextMetaStatements != null )
+            {
+                sb.Append(m_ThenMetaStatements?.nextMetaStatements.ToFormatString());
+                sb.Append(Environment.NewLine);
+            }
+
+            if ( !m_IsWhile )
+            {
+                if (!string.IsNullOrEmpty(sb2.ToString()))
+                {
+                    sb.Append(sb2.ToString());
+                    sb.Append(Environment.NewLine);
+                }
+            }
+
+            //for (int i = 0; i < deep; i++)
+            //{
+            //    sb.Append(Global.tabChar);
+            //}
+            sb.Append("}");
+            sb.Append(Environment.NewLine);
+
+            sb.Append(nextMetaStatements?.ToFormatString());
+            sb.Append(Environment.NewLine);
+
+            return sb.ToString();
+        }
+    }
+}
