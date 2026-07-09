@@ -12,20 +12,21 @@ namespace SimpleLanguage.VM
 {
     public class StringObject : SObject
     {
-        public new string value => m_Numeric.str;
+        private string m_Value;
+        public new string value => m_Value;
         public StringObject(string str) : base(EVMType.String)
         {
             m_RuntimeType = RuntimeTypeManager.stringRuntimeType;
-            m_Numeric.str = str;
+            m_Value = str;
 
         }
         public void SetValue(string _val)
         {
-            m_Numeric.str = _val;
+            m_Value = _val;
         }
         public override string ToFormatString()
         {
-            return m_Numeric.str;
+            return m_Value;
         }
     }
 }

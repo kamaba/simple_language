@@ -13,7 +13,7 @@ namespace SimpleLanguage.VM
     public class SObject
     {
         public int id => m_Id;
-        public EVMType eType => m_Type;
+        public EVMType eType => (EVMType)m_Header.EType;
         public virtual object? value => GetBoxedValue();
         public RuntimeClass runtimeClass => m_RuntimeType?.runtimeClass;
         public RuntimeType runtimeType => m_RuntimeType;
