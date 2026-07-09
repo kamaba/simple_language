@@ -113,14 +113,12 @@ namespace SimpleLanguage.VM
             if( rt == RuntimeTypeManager.boolRuntimeType )
             {
                 sobj = new BoolObject(false);
-                sobj.typeId = 1;
             }
             //else if (name == "Core.Num" || name == "Num")
             else if (rt == RuntimeTypeManager.numRuntimeType)
             {
                 // abstract numeric base: create a Float64Object as default runtime representation
                 sobj = new NumObject();
-                sobj.typeId = 5;
             }
             else if (rt == RuntimeTypeManager.objectRuntimeType)
             //else if (name == "Core.Object" || name == "Object")
@@ -132,66 +130,54 @@ namespace SimpleLanguage.VM
             //else if (name == "Core.Byte" || name == "Byte")
             {
                 sobj = new UInt8Object(0);
-                sobj.typeId = 3;
             }
             else if (rt == RuntimeTypeManager.int8RuntimeType)
             //else if (name == "Core.SByte" || name == "SByte")
             {
                 sobj = new Int8Object(0);
-                sobj.typeId = 3;
             }
             else if (rt == RuntimeTypeManager.int16RuntimeType)
             //else if (name == "Core.Int16" || name == "Int16")
             {
                 sobj = new Int16Object(0);
-                sobj.typeId = 3;
             }
             else if(rt == RuntimeTypeManager.uint16RuntimeType)
             //else if (name == "Core.UInt16" || name == "UInt16")
             {
                 sobj = new UInt16Object(0);
-                sobj.typeId = 3;
             }
             else if (rt == RuntimeTypeManager.int32RuntimeType)
             {
                 sobj = new Int32Object(0);
-                sobj.typeId = 3;
             }
             else if( rt == RuntimeTypeManager.uint32RuntimeType)
             //else if (name == "Core.UInt32" || name == "UInt32")
             {
                 sobj = new UInt32Object(0);
-                sobj.typeId = 3;
             }
             else if (rt == RuntimeTypeManager.int64RuntimeType)
             {
                 sobj = new Int64Object(0);
-                sobj.typeId = 3;
             }
             else if (rt == RuntimeTypeManager.uint64RuntimeType)
             {
                 sobj = new UInt64Object(0);
-                sobj.typeId = 3;
             }
             else if (rt == RuntimeTypeManager.float32RuntimeType)
             {
                 sobj = new Float32Object(0.0f);
-                sobj.typeId = 4;
             }
             else if (rt == RuntimeTypeManager.float64RuntimeType)
             {
                 sobj = new Float64Object(0.0d);
-                sobj.typeId = 5;
             }
             else if (rt == RuntimeTypeManager.stringRuntimeType)
             {
                 sobj = new StringObject("");
-                sobj.typeId = 10;
             }
             else if (rt == RuntimeTypeManager.voidRuntimeType)
             {
                 sobj = new VoidObject();
-                sobj.typeId = 0;
             }
             else if (name == "Core.Array" || name == "Array"
                 || name == "Core.Array<T>")
@@ -208,7 +194,6 @@ namespace SimpleLanguage.VM
             else if (rt == RuntimeTypeManager.typeRuntimeType)
             {
                 sobj = new TypeObject(rt);
-                sobj.typeId = 0;
             }
             else
             {

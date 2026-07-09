@@ -20,5 +20,6 @@ namespace SimpleLanguage.VM
         [FieldOffset(0)] public ushort u16;
         [FieldOffset(0)] public byte u8;
         [FieldOffset(0)] public sbyte i8;
+        [FieldOffset(0)] public string str;
     }
 }

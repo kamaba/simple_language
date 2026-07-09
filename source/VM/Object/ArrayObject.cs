@@ -40,12 +40,11 @@ namespace SimpleLanguage.VM
             }
             m_Length = length;
 
-            m_IRTemplateList = rt.runtimeTemplateList;
             var metaVariableList = m_RuntimeType.runtimeClass.nonStaticIRMetaVariableList;
             m_MemberRuntimeObjectArray = new RuntimeObject[metaVariableList.Count];
             for (int i = 0; i < m_MemberRuntimeObjectArray.Length; i++)
             {
-                var rt2 = RuntimeVM.GetRuntimeTypeByDefType(metaVariableList[i].runtimeDefType, m_RuntimeType.runtimeClass, m_IRTemplateList, true);
+                var rt2 = RuntimeVM.GetRuntimeTypeByDefType(metaVariableList[i].runtimeDefType, m_RuntimeType.runtimeClass, rt.runtimeTemplateList, true);
 
                 SObject sobj = null;
                 if( RuntimeTypeManager.IsCoreRuntimeType(rt2) )

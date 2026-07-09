@@ -20,17 +20,6 @@ namespace SimpleLanguage.VM
         public TemplateObject(RuntimeDefType val)
         {
         }
-        public void SetClassObject(ClassObject val)
-        {
-            m_Type = EVMType.Class;
-            m_Numeric = default;
-            m_Reference = val;
-            val.refCount++;
-        }
-        public void SetValue(EVMType _eType, System.Object val)
-        {
-            StoreValue(_eType, val);
-        }
         public override string ToFormatString()
         {
             return "";

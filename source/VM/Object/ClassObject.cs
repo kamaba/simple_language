@@ -14,8 +14,9 @@ namespace SimpleLanguage.VM
 {
     public class ClassObject : SObject
     {
+#if DEBUG
         protected RuntimeObject[] m_MemberRuntimeObjectArray = null;
-        protected List<RuntimeType> m_IRTemplateList = new List<RuntimeType>();
+#endif
         protected byte[] m_MemberData = null;
 
         /// <summary>ÊµÀý×Ö¶Î½ô´Õ²¼¾Ö£¨¾²Ì¬×Ö¶Î¼û <see cref="RuntimeType.memberData"/>£©¡£</summary>
@@ -28,14 +29,11 @@ namespace SimpleLanguage.VM
             m_Id = ++idCount;
             m_RuntimeType = irmt;
 
-            typeId = (short)m_RuntimeType.runtimeClass.id;
-            m_IRTemplateList = irmt.runtimeTemplateList;
-
             var metaVariableList = m_RuntimeType.runtimeClass.nonStaticIRMetaVariableList;
             m_MemberRuntimeObjectArray = new RuntimeObject[metaVariableList.Count];
             for (int i = 0; i < m_MemberRuntimeObjectArray.Length; i++)
             {
-                var rt = RuntimeVM.GetRuntimeTypeByDefType(metaVariableList[i].runtimeDefType, m_RuntimeType.runtimeClass, m_IRTemplateList, true);
+                var rt = RuntimeVM.GetRuntimeTypeByDefType(metaVariableList[i].runtimeDefType, m_RuntimeType.runtimeClass, irmt.runtimeTemplateList, true);
                 m_MemberRuntimeObjectArray[i] = new RuntimeObject( rt, metaVariableList[i], null);
             }
             BuildMemberDataLayout();

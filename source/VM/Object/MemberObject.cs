@@ -13,16 +13,14 @@ namespace SimpleLanguage.VM
 {
     class MemberObject : SObject
     {
-        public new string? value => m_Reference as string;
 
         public MemberObject(string str) : base(EVMType.Member)
         {
-            m_Reference = str;
             m_RuntimeType = RuntimeTypeManager.memberRuntimeType;
         }
         public override string ToFormatString()
         {
-            return value ?? "";
+            return "member";
         }
     }
 }

@@ -18,37 +18,67 @@ namespace SimpleLanguage.VM
         public RuntimeClass runtimeClass => m_RuntimeType?.runtimeClass;
         public RuntimeType runtimeType => m_RuntimeType;
         public short typeId { get; set; } = 0;
-        public int refCount { get; set; } = 0;
+
+        /// <summary>Reference count, stored in the packed header (14 bits, 0–16383).</summary>
+        public int refCount
+        {
+            get => m_Header.RefCount;
+            set => m_Header.RefCount = (ushort)value;
+        }
+
+        /// <summary>Meta-kind: 0=regular, 1=enum, 2=data, 3=type_object.</summary>
+        public byte metaKind
+        {
+            get => m_Header.MetaKind;
+            set => m_Header.MetaKind = value;
+        }
+
+        /// <summary>GC tri-color mark: 0=white, 1=gray, 2=black.</summary>
+        public byte gcColor
+        {
+            get => m_Header.GcColor;
+            set => m_Header.GcColor = value;
+        }
+
+        /// <summary>Packed 64-bit object header (etype, meta_kind, refcount, hash, gc_color).</summary>
+        public VMObjectHeader header => m_Header;
+
         /// <summary>
         /// Dart-style generation: 0 = nursery (new space), 1 = old space.
         /// Updated by <see cref="T:SimpleLanguage.VM.MemoryManagement.SlMemoryManager"/> during SL GC.
         /// </summary>
         public byte SlMemoryGeneration { get; internal set; }
 
-
+        protected VMObjectHeader m_Header;
         protected int m_Id = 0;
-        protected EVMType m_Type = EVMType.Class;
         protected RuntimeType? m_RuntimeType = null;
-        /// <summary>标量位型数据（布尔用 <see cref="NumericUnion.i8"/> 0/1，与 <see cref="RuntimeValue"/> 一致）�?/summary>
+        /// <summary>标量位型数据（布尔用 <see cref="NumericUnion.i8"/> 0/1，与 <see cref="RuntimeValue"/> 一致）</summary>
         protected NumericUnion m_Numeric;
-        /// <summary>引用型负载：字符串、类实例、MethodHandle 等�?/summary>
-        protected object? m_Reference;
+
+        /// <summary>
+        /// Object type, stored in the packed header's etype field (6 bits).
+        /// Routes through m_Header.EType, matching cvm's header.bits.etype.
+        /// </summary>
+        protected EVMType m_Type
+        {
+            get => (EVMType)m_Header.EType;
+            set => m_Header.EType = (byte)value;
+        }
 
         protected static int idCount = 10000;
         protected SObject()
         {
             m_Id = ++idCount;
             m_Numeric = default;
-            m_Reference = this;
             m_RuntimeType = RuntimeTypeManager.objectRuntimeType;
+            m_Header = VMObjectHeader.Make((byte)EVMType.Class, VMObjectHeader.MetaKindRegular, 0);
         }
         public SObject(EVMType etype)
         {
             m_Id = ++idCount;
-            m_Type = etype;
             m_Numeric = default;
-            m_Reference = null;
             m_RuntimeType = RuntimeTypeManager.GetRuntimeTypeByEVMType(etype);
+            m_Header = VMObjectHeader.Make((byte)etype, VMObjectHeader.MetaKindRegular, 0);
         }
 
         protected virtual object? GetBoxedValue()
@@ -79,16 +109,15 @@ namespace SimpleLanguage.VM
                 case EVMType.Num:
                     return m_Numeric.f64;
                 default:
-                    return m_Reference;
+                    return this;
             }
         }
 
-        /// <summary>写入类型与负载（不修�?<see cref="refCount"/>）�?/summary>
+        /// <summary>写入类型与负载（不修�?<see cref="refCount"/>）�?/summary>
         protected void StoreValue(EVMType vmType, object? val)
         {
             m_Type = vmType;
             m_Numeric = default;
-            m_Reference = null;
             if (val == null)
                 return;
 
@@ -140,7 +169,6 @@ namespace SimpleLanguage.VM
                 case EVMType.Object:
                 case EVMType.Type:
                 default:
-                    m_Reference = val;
                     break;
             }
         }
@@ -150,7 +178,6 @@ namespace SimpleLanguage.VM
             if (val == null)
             {
                 m_Numeric = default;
-                m_Reference = null;
                 return;
             }
             switch (val)
@@ -192,7 +219,6 @@ namespace SimpleLanguage.VM
                     StoreValue(EVMType.String, val);
                     return;
                 default:
-                    m_Reference = val;
                     break;
             }
         }
@@ -204,7 +230,7 @@ namespace SimpleLanguage.VM
 
         public virtual string ToFormatString()
         {
-            return $"ID: {m_Id} value:" + m_Reference != null ? m_Reference.ToString() : m_Numeric.ToString();
+            return $"ID: {m_Id} value:" + this != null ? this.ToString() : m_Numeric.ToString();
         }
     }
 }

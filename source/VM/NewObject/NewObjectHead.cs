@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      SObject.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -11,15 +11,7 @@ using System.Runtime.InteropServices;
 
 namespace SimpleLanguage.VM
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct VMObjectHeader
-    {
-        public EVMType eVMType;
-        public int flags;
-        public int refCount;
-        public RuntimeType runtimeType;
-        public int size;
-    }
+    // VMObjectHeader is defined in VMRuntime/VMObjectHeader.cs (packed 64-bit)
     public struct VMBooleanObject
     {
         public VMObjectHeader head;
