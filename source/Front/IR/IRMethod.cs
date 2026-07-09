@@ -199,26 +199,10 @@ namespace SimpleLanguage.IR
                 currentOffset += instrLen;
             }
 
-            // ---- Compute branch index as real byte-offset distance ----
-            // For Br/BrFalse/BrTrue, replace the instruction-list index with the
-            // byte distance from the branch to its target label in the serialized
-            // stream.  This gives the VM a true "stack operation distance" to jump.
-            for (int i = 0; i < m_IRDataList.Count; i++)
-            {
-                var d = m_IRDataList[i];
-                if (d.opCode == EIROpCode.Br
-                    || d.opCode == EIROpCode.BrFalse
-                    || d.opCode == EIROpCode.BrTrue)
-                {
-                    // d.index currently holds the target's list position (set above)
-                    int targetListIdx = d.index;
-                    if (targetListIdx >= 0 && targetListIdx < m_IRDataList.Count)
-                    {
-                        var target = m_IRDataList[targetListIdx];
-                        d.index = target.offset - d.offset;
-                    }
-                }
-            }
+            // NOTE: Branch index remains as instruction-list index (not byte-offset
+            // distance) because the C# VM uses m_ExecuteIndex = iri.index for jumps.
+            // The byte-offset distance is stored in d.offset and can be used by
+            // byte-code VMs (cvm) that jump by byte offset.
         }
         public void AddLabelDict( IRData irdata )
         {

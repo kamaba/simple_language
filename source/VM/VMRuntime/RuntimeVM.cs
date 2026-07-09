@@ -1095,14 +1095,17 @@ namespace SimpleLanguage.VM.Runtime
                         if (m_ValueIndex < m_ValueStack.Length)
                             m_ValueStack[m_ValueIndex++].SetNull();
 #endif
-                        return;
+                        continue;
                     }
-                    ByteStackPushPtr(obj.sobject);
+                    // Read the RuntimeValue from the runtime object, then push to
+                    // byte stack by eType (handles primitives AND objects correctly).
+                    var sval = default(RuntimeValue);
+                    obj.SetSValueByRuntimeObjct(ref sval);
+                    ByteStackPushByEType(ref sval);
 #if DEBUG
                     if (m_ValueIndex < m_ValueStack.Length)
                     {
-                        obj.SetSValueByRuntimeObjct(ref m_ValueStack[m_ValueIndex]);
-                        m_ValueIndex++;
+                        m_ValueStack[m_ValueIndex++] = sval;
                     }
 #endif
                 }
@@ -1125,7 +1128,7 @@ namespace SimpleLanguage.VM.Runtime
             var topRt = CLRVM.topCLRRuntime;
             if (topRt.ByteStackSlotDepthCount > 0)
             {
-                topRt.ByteStackPopToRuntimeValue(out var sval);
+                topRt.ByteStackTryPeekRuntimeValue(1, out var sval);
                 ByteStackPushByEType(ref sval);
                 if (sval.sobject != null)
                 {
@@ -3278,7 +3281,7 @@ namespace SimpleLanguage.VM.Runtime
                             rt = RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(runtimeCall.runtimeTypeDefType.runtimeClass, classRTList);
                         }
 
-                        if (runtimeCall.method.id == "type")
+                        if (runtimeCall.method.onlyFunctionName == "type")
                         {
                             var sobj = RuntimeTypeManager.CreateTypeObject(rt);
                             ByteStackPushPtr(sobj);

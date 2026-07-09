@@ -83,7 +83,7 @@ NumberTest
 
         Num f = 12.75
         Int32 i = f as Int32
-        String s = f.toString()
+        String s = f?.toString()
 
         global.println("f = " + f.toString())
         global.println("f as int = " + i?.toString())
