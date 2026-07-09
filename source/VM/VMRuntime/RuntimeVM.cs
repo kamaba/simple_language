@@ -52,6 +52,12 @@ namespace SimpleLanguage.VM.Runtime
 
         // ---- Byte-level eval stack (mirrors cvm VM.stack / VM.sp) ----
         private const int VM_STACK_SIZE = 8192;
+
+        // VM_PTR_SIZE – byte width of pointer/handle values (PTR/STRING slots).
+        // Must match cvm vm_runtime.h  #define VM_PTR_SIZE
+        // and Frontend Define.cs  VM_PTR_SIZE.
+        // Options: 2 (short), 4 (int), 8 (long).
+        private const int VM_PTR_SIZE = 4;
         private byte[] m_ByteStack = new byte[VM_STACK_SIZE];
         private int m_ByteSp;                              // stack pointer (byte offset)
         // ---- Slot kind tracking (mirrors cvm VM.stack_slot_kind / VM.stack_slot_depth) ----
@@ -302,7 +308,7 @@ namespace SimpleLanguage.VM.Runtime
                     return 8;
                 case VMStackSlotKind.PTR:
                 case VMStackSlotKind.STRING:
-                    return 8; // sizeof(void*) on 64-bit
+                    return VM_PTR_SIZE;
                 default:
                     return 0;
             }
@@ -421,12 +427,17 @@ namespace SimpleLanguage.VM.Runtime
         }
         private unsafe void ByteStackPushPtr(SObject? obj)
         {
-            // Store the object in the pool and push the pool index as 8 bytes,
+            // Store the object in the pool and push the pool index as VM_PTR_SIZE bytes,
             // mirroring cvm vm_eval_push_ptr which stores a void* pointer.
             int idx = m_ObjPool.Count;
             m_ObjPool.Add(obj);
-            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(long*)p = idx;
-            m_ByteSp += 8;
+            fixed (byte* p = &m_ByteStack[m_ByteSp])
+            {
+                if (VM_PTR_SIZE == 8) *(long*)p = idx;
+                else if (VM_PTR_SIZE == 4) *(int*)p = idx;
+                else *(short*)p = (short)idx;
+            }
+            m_ByteSp += VM_PTR_SIZE;
             ByteStackSlotTryPush(VMStackSlotKind.PTR);
         }
         private void ByteStackPushString(string s)
@@ -516,13 +527,17 @@ namespace SimpleLanguage.VM.Runtime
                 var kind = (VMStackSlotKind)k;
                 if (kind != VMStackSlotKind.PTR && kind != VMStackSlotKind.STRING)
                     return false;
-                if (m_ByteSp < 8)
+                if (m_ByteSp < VM_PTR_SIZE)
                     return false;
-                m_ByteSp -= 8;
+                m_ByteSp -= VM_PTR_SIZE;
                 m_StackSlotDepth--;
                 long idx;
                 fixed (byte* p = &m_ByteStack[m_ByteSp])
-                    idx = *(long*)p;
+                {
+                    if (VM_PTR_SIZE == 8) idx = *(long*)p;
+                    else if (VM_PTR_SIZE == 4) idx = *(int*)p;
+                    else idx = *(short*)p;
+                }
                 if (idx >= 0 && idx < m_ObjPool.Count)
                     outObject = m_ObjPool[(int)idx];
                 return true;
@@ -669,7 +684,10 @@ namespace SimpleLanguage.VM.Runtime
                     case VMStackSlotKind.PTR:
                     case VMStackSlotKind.STRING:
                         {
-                            long idx = *(long*)p;
+                            long idx;
+                            if (VM_PTR_SIZE == 8) idx = *(long*)p;
+                            else if (VM_PTR_SIZE == 4) idx = *(int*)p;
+                            else idx = *(short*)p;
                             if (idx >= 0 && idx < m_ObjPool.Count)
                             {
                                 var obj = m_ObjPool[(int)idx];

@@ -446,5 +446,17 @@ namespace SimpleLanguage
     public class Global
     {
         public const string tabChar = "    ";
+
+        /// <summary>
+        /// VM_PTR_SIZE – byte width of pointer/handle values (PTR/STRING slots)
+        /// stored on the eval stack.  Must be kept in sync across all three
+        /// code-bases:
+        ///   - cvm        : vm_runtime.h   #define VM_PTR_SIZE
+        ///   - CSharpVM   : RuntimeVM.cs   VM_PTR_SIZE constant
+        ///   - Frontend   : Define.cs      Global.VM_PTR_SIZE  (this field)
+        ///
+        /// Options: 2 (short), 4 (int), 8 (long).
+        /// </summary>
+        public const int VM_PTR_SIZE = 8;
     }
 }
