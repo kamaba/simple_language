@@ -57,21 +57,6 @@ namespace SimpleLanguage.IR
             {
                 m_InterfaceMethod = mmf.isOverrideInterface;
             }
-            // compute offsets: each instruction's offset = running sum of previous instr lengths
-            int currentOffset = 0;
-            for (int i = 0; i < m_IRDataList.Count; i++)
-            {
-                var d = m_IRDataList[i];
-                d.offset = currentOffset;
-                // instruction length = 1 (opcode byte) + payload length
-                int instrLen = 1 + (d.Payload != null ? d.Payload.Length : 0);
-                currentOffset += instrLen;
-            }
-            // finalize packaging for serialization
-            for (int i = 0; i < m_IRDataList.Count; i++)
-            {
-                try { m_IRDataList[i].FinalizePack(); } catch { }
-            }
             m_FunEndLabelData = new IRData();
             m_FunEndLabelData.opCode = EIROpCode.Label;
         }
@@ -194,6 +179,44 @@ namespace SimpleLanguage.IR
                             }
                         }
                         break;
+                }
+            }
+
+            // ---- Finalize packaging: serialize branch opValue (IRData ref) into Payload ----
+            for (int i = 0; i < m_IRDataList.Count; i++)
+            {
+                try { m_IRDataList[i].FinalizePack(); } catch { }
+            }
+
+            // ---- Compute byte offsets for the serialized instruction stream ----
+            // Each instruction = 1 byte (opcode) + Payload.Length bytes
+            int currentOffset = 0;
+            for (int i = 0; i < m_IRDataList.Count; i++)
+            {
+                var d = m_IRDataList[i];
+                d.offset = currentOffset;
+                int instrLen = 1 + (d.Payload != null ? d.Payload.Length : 0);
+                currentOffset += instrLen;
+            }
+
+            // ---- Compute branch index as real byte-offset distance ----
+            // For Br/BrFalse/BrTrue, replace the instruction-list index with the
+            // byte distance from the branch to its target label in the serialized
+            // stream.  This gives the VM a true "stack operation distance" to jump.
+            for (int i = 0; i < m_IRDataList.Count; i++)
+            {
+                var d = m_IRDataList[i];
+                if (d.opCode == EIROpCode.Br
+                    || d.opCode == EIROpCode.BrFalse
+                    || d.opCode == EIROpCode.BrTrue)
+                {
+                    // d.index currently holds the target's list position (set above)
+                    int targetListIdx = d.index;
+                    if (targetListIdx >= 0 && targetListIdx < m_IRDataList.Count)
+                    {
+                        var target = m_IRDataList[targetListIdx];
+                        d.index = target.offset - d.offset;
+                    }
                 }
             }
         }

@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      RuntimeVM.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -20,7 +20,11 @@ namespace SimpleLanguage.VM.Runtime
     public class RuntimeVM
     {
         public RuntimeObject[] returnRuntimeObjectArray { get => m_ReturnRuntimeObjectArray; }
+#if DEBUG
         public ushort valueIndex => m_ValueIndex;
+#else
+        public ushort valueIndex => (ushort)ByteStackSlotDepthCount;
+#endif
         public string id => m_Id;
         public int level => m_Level;
 
@@ -37,17 +41,52 @@ namespace SimpleLanguage.VM.Runtime
         private ushort m_ExecuteCount;
         private RuntimeType m_CurrentRuntimeType;
         private List<RuntimeType> m_RuntimeTemplateRuntimeTypeList;
-        private List<RuntimeType> m_RuntimeTypeList = new List<RuntimeType>();    
+        private List<RuntimeType> m_RuntimeTypeList = new List<RuntimeType>();
+        // RuntimeValue[] stack - debug mirror of the byte stack.
+        // Operations on this array are guarded by #if DEBUG; the byte-level
+        // m_ByteStack below is the primary eval stack (mirrors cvm VM.stack).
+#if DEBUG
         private RuntimeValue[] m_ValueStack;
         private ushort m_ValueIndex;
+#endif
+
+        // ---- Byte-level eval stack (mirrors cvm VM.stack / VM.sp) ----
+        private const int VM_STACK_SIZE = 8192;
+        private byte[] m_ByteStack = new byte[VM_STACK_SIZE];
+        private int m_ByteSp;                              // stack pointer (byte offset)
+        // ---- Slot kind tracking (mirrors cvm VM.stack_slot_kind / VM.stack_slot_depth) ----
+        private byte[] m_StackSlotKind = new byte[VM_STACK_SIZE];
+        private int m_StackSlotDepth;
+        // ---- Object pool for PTR/STRING references (mirrors cvm VM.obj_pool) ----
+        private List<SObject?> m_ObjPool = new List<SObject?>();
+
+        /** Slot kind enum — mirrors cvm VMStackSlotKind (vm_runtime.h). */
+        private enum VMStackSlotKind : byte
+        {
+            INT32 = 1,
+            UINT32 = 2,
+            INT64 = 3,
+            UINT64 = 4,
+            INT8 = 5,
+            UINT8 = 6,
+            INT16 = 7,
+            UINT16 = 8,
+            FLOAT32 = 9,
+            FLOAT64 = 10,
+            PTR = 11,
+            STRING = 12,
+        }
 
 
         public RuntimeVM(string id)
         {
             m_Method = null;
             m_Id = id;
+#if DEBUG
             m_ValueStack = new RuntimeValue[1024];
             m_ValueIndex = 0;
+#endif
+            ResetByteStack();
             m_RuntimeTemplateRuntimeTypeList = new List<RuntimeType>();
             m_RuntimeTypeList = new List<RuntimeType>(0);
             //m_RawCapacity = 1024;
@@ -59,8 +98,11 @@ namespace SimpleLanguage.VM.Runtime
         {
             m_Method = null;
             m_Id = id;
+#if DEBUG
             m_ValueStack = new RuntimeValue[1024];
             m_ValueIndex = 0;
+#endif
+            ResetByteStack();
             m_RuntimeTemplateRuntimeTypeList = irmtList;
             m_RuntimeTypeList = new List<RuntimeType>(rt.runtimeTemplateList.Count + irmtList.Count);
             m_RuntimeTypeList.AddRange(rt.runtimeTemplateList);
@@ -74,16 +116,19 @@ namespace SimpleLanguage.VM.Runtime
         {
             m_Method = rm;
             m_Id = rm.id;
+#if DEBUG
             m_ValueStack = new RuntimeValue[1024];
             m_ValueIndex = 0;
+#endif
+            ResetByteStack();
             m_RuntimeTemplateRuntimeTypeList = irmtList;
             int count = irmtList.Count;
-            if( rt?.runtimeTemplateList != null )
+            if (rt?.runtimeTemplateList != null)
             {
                 count += rt.runtimeTemplateList.Count;
             }
             m_RuntimeTypeList = new List<RuntimeType>(count);
-            if(rt?.runtimeTemplateList != null )
+            if (rt?.runtimeTemplateList != null)
             {
                 m_RuntimeTypeList.AddRange(rt.runtimeTemplateList);
             }
@@ -132,6 +177,7 @@ namespace SimpleLanguage.VM.Runtime
                 m_LocalVariableRuntimeObjectArray = new RuntimeObject[0];
             }
             var count = m_InstructionList.Length;
+#if DEBUG
             if (count < 48)
             {
                 m_ValueStack = new RuntimeValue[128];
@@ -156,6 +202,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 m_ValueStack = new RuntimeValue[500];
             }
+#endif
 
             SlMemoryManager.Instance.RegisterVmForRootCollection(this);
         }
@@ -166,7 +213,7 @@ namespace SimpleLanguage.VM.Runtime
             var ownerClass = m_Method?.ownerMetaClass ?? rv.runtimeDefType.ownerRuntimeClass;
             if (ownerClass != null && m_RuntimeTypeList.Count > 0)
             {
-                rt = GetRuntimeTypeByDefType(rv.runtimeDefType, ownerClass, m_RuntimeTypeList, true);                
+                rt = GetRuntimeTypeByDefType(rv.runtimeDefType, ownerClass, m_RuntimeTypeList, true);
             }
             else
             {
@@ -174,11 +221,26 @@ namespace SimpleLanguage.VM.Runtime
             }
             return new RuntimeObject(rt, rv, sobj);
         }
-        public void SetValueIndex(int vindex) => m_ValueIndex = (ushort)vindex;
-        /// <summary>GC roots: value stack and argument/local/return runtime object slots.</summary>
+        public void SetValueIndex(int vindex)
+        {
+#if DEBUG
+            m_ValueIndex = (ushort)vindex;
+#endif
+        }
+        /// <summary>GC roots: byte-stack obj pool, debug value stack, and argument/local/return runtime object slots.</summary>
         internal void AppendSlMemoryRoots(HashSet<SObject> roots)
         {
             if (roots == null) return;
+            // Byte-stack object pool (PTR/STRING references)
+            if (m_ObjPool != null)
+            {
+                foreach (var obj in m_ObjPool)
+                {
+                    if (obj != null)
+                        roots.Add(obj);
+                }
+            }
+#if DEBUG
             if (m_ValueStack != null)
             {
                 int n = m_ValueIndex;
@@ -189,6 +251,7 @@ namespace SimpleLanguage.VM.Runtime
                         roots.Add(v.sobject);
                 }
             }
+#endif
             AppendRuntimeObjectRoots(roots, m_ArgumentRuntimeObjectArray);
             AppendRuntimeObjectRoots(roots, m_LocalVariableRuntimeObjectArray);
             AppendRuntimeObjectRoots(roots, m_ReturnRuntimeObjectArray);
@@ -203,33 +266,757 @@ namespace SimpleLanguage.VM.Runtime
                     roots.Add(ro.sobject);
             }
         }
+
+        // =========================================================================
+        // Byte-level eval stack (mirrors cvm vm_runtime.c)
+        // All primitive values are encoded as raw bytes (1/2/4/8) just like the
+        // C VM.  A parallel slot-kind array tracks the type of each logical
+        // operand so that pops can widen / dispatch correctly.
+        // =========================================================================
+
+        private void ResetByteStack()
+        {
+            m_ByteSp = 0;
+            m_StackSlotDepth = 0;
+            m_ObjPool.Clear();
+        }
+
+        /** Mirror cvm vm_stack_slot_byte_len: byte size for a slot kind. */
+        private static int ByteStackSlotByteLen(VMStackSlotKind kind)
+        {
+            switch (kind)
+            {
+                case VMStackSlotKind.INT8:
+                case VMStackSlotKind.UINT8:
+                    return 1;
+                case VMStackSlotKind.INT16:
+                case VMStackSlotKind.UINT16:
+                    return 2;
+                case VMStackSlotKind.INT32:
+                case VMStackSlotKind.UINT32:
+                case VMStackSlotKind.FLOAT32:
+                    return 4;
+                case VMStackSlotKind.INT64:
+                case VMStackSlotKind.UINT64:
+                case VMStackSlotKind.FLOAT64:
+                    return 8;
+                case VMStackSlotKind.PTR:
+                case VMStackSlotKind.STRING:
+                    return 8; // sizeof(void*) on 64-bit
+                default:
+                    return 0;
+            }
+        }
+
+        /** Mirror cvm vm_stack_slot_try_push: push a slot-kind tag. */
+        private bool ByteStackSlotTryPush(VMStackSlotKind kind)
+        {
+            if (m_StackSlotDepth >= m_StackSlotKind.Length)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageError, "eval stack slot tag overflow depth={0}", m_StackSlotDepth);
+                return false;
+            }
+            m_StackSlotKind[m_StackSlotDepth++] = (byte)kind;
+            return true;
+        }
+
+        /** Mirror cvm vm_stack_pop_tags_for_bytes: pop slot tags for byte_count raw bytes. */
+        private void ByteStackPopTagsForBytes(int byteCount)
+        {
+            int left = byteCount;
+            while (left > 0 && m_StackSlotDepth > 0)
+            {
+                byte k = m_StackSlotKind[m_StackSlotDepth - 1];
+                int bl = ByteStackSlotByteLen((VMStackSlotKind)k);
+                if (bl == 0 || bl > left)
+                {
+                    m_StackSlotDepth = 0;
+                    return;
+                }
+                m_StackSlotDepth--;
+                left -= bl;
+            }
+            if (left != 0)
+                m_StackSlotDepth = 0;
+        }
+
+        /** Mirror cvm vm_stack_top_n_slots_byte_sum: sum of byte lengths for top n slots. */
+        private int ByteStackTopNSlotsByteSum(int nSlots)
+        {
+            if (nSlots == 0 || m_StackSlotDepth < nSlots)
+                return 0;
+            int sum = 0;
+            for (int i = 0; i < nSlots; i++)
+            {
+                int bl = ByteStackSlotByteLen((VMStackSlotKind)m_StackSlotKind[m_StackSlotDepth - 1 - i]);
+                if (bl == 0) return 0;
+                sum += bl;
+            }
+            return sum;
+        }
+
+        // ---- Typed push functions (mirror cvm vm_stack_push_i32_slot / vm_eval_push_*) ----
+        // Each writes raw bytes to m_ByteStack, advances m_ByteSp, and pushes a
+        // slot-kind tag — exactly like the C VM.
+
+        private unsafe void ByteStackPushI8(sbyte v)
+        {
+            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(sbyte*)p = v;
+            m_ByteSp += 1;
+            ByteStackSlotTryPush(VMStackSlotKind.INT8);
+        }
+        private unsafe void ByteStackPushU8(byte v)
+        {
+            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(byte*)p = v;
+            m_ByteSp += 1;
+            ByteStackSlotTryPush(VMStackSlotKind.UINT8);
+        }
+        private unsafe void ByteStackPushI16(short v)
+        {
+            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(short*)p = v;
+            m_ByteSp += 2;
+            ByteStackSlotTryPush(VMStackSlotKind.INT16);
+        }
+        private unsafe void ByteStackPushU16(ushort v)
+        {
+            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(ushort*)p = v;
+            m_ByteSp += 2;
+            ByteStackSlotTryPush(VMStackSlotKind.UINT16);
+        }
+        private unsafe void ByteStackPushI32(int v)
+        {
+            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(int*)p = v;
+            m_ByteSp += 4;
+            ByteStackSlotTryPush(VMStackSlotKind.INT32);
+        }
+        private unsafe void ByteStackPushU32(uint v)
+        {
+            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(uint*)p = v;
+            m_ByteSp += 4;
+            ByteStackSlotTryPush(VMStackSlotKind.UINT32);
+        }
+        private unsafe void ByteStackPushI64(long v)
+        {
+            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(long*)p = v;
+            m_ByteSp += 8;
+            ByteStackSlotTryPush(VMStackSlotKind.INT64);
+        }
+        private unsafe void ByteStackPushU64(ulong v)
+        {
+            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(ulong*)p = v;
+            m_ByteSp += 8;
+            ByteStackSlotTryPush(VMStackSlotKind.UINT64);
+        }
+        private unsafe void ByteStackPushF32(float v)
+        {
+            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(float*)p = v;
+            m_ByteSp += 4;
+            ByteStackSlotTryPush(VMStackSlotKind.FLOAT32);
+        }
+        private unsafe void ByteStackPushF64(double v)
+        {
+            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(double*)p = v;
+            m_ByteSp += 8;
+            ByteStackSlotTryPush(VMStackSlotKind.FLOAT64);
+        }
+        private unsafe void ByteStackPushPtr(SObject? obj)
+        {
+            // Store the object in the pool and push the pool index as 8 bytes,
+            // mirroring cvm vm_eval_push_ptr which stores a void* pointer.
+            int idx = m_ObjPool.Count;
+            m_ObjPool.Add(obj);
+            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(long*)p = idx;
+            m_ByteSp += 8;
+            ByteStackSlotTryPush(VMStackSlotKind.PTR);
+        }
+        private void ByteStackPushString(string s)
+        {
+            // Mirror cvm vm_eval_push_string: wrap in an object and push as PTR.
+            var so = new StringObject(s);
+            ByteStackPushPtr(so);
+        }
+        private void ByteStackPushNull()
+        {
+            // Mirror cvm LoadConstNull: push NULL as a PTR slot.
+            ByteStackPushPtr(null);
+        }
+
+        // ---- Typed pop functions (mirror cvm vm_try_pop_i32 / vm_pop_stack_top_to_vmvalue) ----
+
+        /** Mirror cvm vm_try_pop_i32: pop with widening to int32. */
+        private unsafe bool ByteStackTryPopI32(out int outValue)
+        {
+            outValue = 0;
+            if (m_StackSlotDepth > 0)
+            {
+                byte k = m_StackSlotKind[m_StackSlotDepth - 1];
+                var kind = (VMStackSlotKind)k;
+                if (kind == VMStackSlotKind.PTR || kind == VMStackSlotKind.STRING)
+                    return false;
+                int bl = ByteStackSlotByteLen(kind);
+                if (bl == 0 || m_ByteSp < bl)
+                    return false;
+                m_ByteSp -= bl;
+                m_StackSlotDepth--;
+                fixed (byte* p = &m_ByteStack[m_ByteSp])
+                {
+                    switch (kind)
+                    {
+                        case VMStackSlotKind.INT32:
+                        case VMStackSlotKind.UINT32:
+                            outValue = *(int*)p;
+                            return true;
+                        case VMStackSlotKind.INT8:
+                            outValue = *(sbyte*)p;
+                            return true;
+                        case VMStackSlotKind.UINT8:
+                            outValue = *(byte*)p;
+                            return true;
+                        case VMStackSlotKind.INT16:
+                            outValue = *(short*)p;
+                            return true;
+                        case VMStackSlotKind.UINT16:
+                            outValue = *(ushort*)p;
+                            return true;
+                        case VMStackSlotKind.INT64:
+                            outValue = (int)*(long*)p;
+                            return true;
+                        case VMStackSlotKind.UINT64:
+                            outValue = (int)*(ulong*)p;
+                            return true;
+                        case VMStackSlotKind.FLOAT32:
+                            outValue = (int)*(float*)p;
+                            return true;
+                        case VMStackSlotKind.FLOAT64:
+                            outValue = (int)*(double*)p;
+                            return true;
+                        default:
+                            m_StackSlotDepth++;
+                            m_ByteSp += bl;
+                            return false;
+                    }
+                }
+            }
+            // Legacy 4-byte pop (no slot tracking)
+            if (m_ByteSp < 4)
+                return false;
+            m_ByteSp -= 4;
+            fixed (byte* p = &m_ByteStack[m_ByteSp])
+                outValue = *(int*)p;
+            return true;
+        }
+
+        /** Mirror cvm vm_try_pop_object: pop a PTR slot as SObject. */
+        private unsafe bool ByteStackTryPopObject(out SObject? outObject)
+        {
+            outObject = null;
+            if (m_StackSlotDepth > 0)
+            {
+                byte k = m_StackSlotKind[m_StackSlotDepth - 1];
+                var kind = (VMStackSlotKind)k;
+                if (kind != VMStackSlotKind.PTR && kind != VMStackSlotKind.STRING)
+                    return false;
+                if (m_ByteSp < 8)
+                    return false;
+                m_ByteSp -= 8;
+                m_StackSlotDepth--;
+                long idx;
+                fixed (byte* p = &m_ByteStack[m_ByteSp])
+                    idx = *(long*)p;
+                if (idx >= 0 && idx < m_ObjPool.Count)
+                    outObject = m_ObjPool[(int)idx];
+                return true;
+            }
+            return false;
+        }
+
+        /** Mirror cvm vm_pop_stack_top_to_vmvalue: pop with full type dispatch. */
+        private unsafe bool ByteStackPopToRuntimeValue(out RuntimeValue outVal)
+        {
+            outVal = default;
+            if (m_StackSlotDepth > 0)
+            {
+                byte k = m_StackSlotKind[m_StackSlotDepth - 1];
+                var kind = (VMStackSlotKind)k;
+                switch (kind)
+                {
+                    case VMStackSlotKind.PTR:
+                    case VMStackSlotKind.STRING:
+                        if (ByteStackTryPopObject(out var obj))
+                        {
+                            if (obj == null)
+                                outVal.SetNull();
+                            else
+                                outVal.SetValueBySObject(obj);
+                            return true;
+                        }
+                        return false;
+                    case VMStackSlotKind.INT8:
+                        if (ByteStackTryPopI32(out int i8v))
+                        {
+                            outVal.SetInt8Value((sbyte)i8v);
+                            return true;
+                        }
+                        return false;
+                    case VMStackSlotKind.UINT8:
+                        if (ByteStackTryPopI32(out int u8v))
+                        {
+                            outVal.SetUInt8Value((byte)u8v);
+                            return true;
+                        }
+                        return false;
+                    case VMStackSlotKind.INT16:
+                        if (ByteStackTryPopI32(out int i16v))
+                        {
+                            outVal.SetInt16Value((short)i16v);
+                            return true;
+                        }
+                        return false;
+                    case VMStackSlotKind.UINT16:
+                        if (ByteStackTryPopI32(out int u16v))
+                        {
+                            outVal.SetUInt16Value((ushort)u16v);
+                            return true;
+                        }
+                        return false;
+                    case VMStackSlotKind.INT32:
+                        if (ByteStackTryPopI32(out int i32v))
+                        {
+                            outVal.SetInt32Value(i32v);
+                            return true;
+                        }
+                        return false;
+                    case VMStackSlotKind.UINT32:
+                        if (ByteStackTryPopI32(out int ui32v))
+                        {
+                            outVal.SetUInt32Value((uint)ui32v);
+                            return true;
+                        }
+                        return false;
+                    case VMStackSlotKind.INT64:
+                        if (m_ByteSp >= 8)
+                        {
+                            m_ByteSp -= 8;
+                            m_StackSlotDepth--;
+                            fixed (byte* p = &m_ByteStack[m_ByteSp])
+                                outVal.SetInt64Value(*(long*)p);
+                            return true;
+                        }
+                        return false;
+                    case VMStackSlotKind.UINT64:
+                        if (m_ByteSp >= 8)
+                        {
+                            m_ByteSp -= 8;
+                            m_StackSlotDepth--;
+                            fixed (byte* p = &m_ByteStack[m_ByteSp])
+                                outVal.SetUInt64Value(*(ulong*)p);
+                            return true;
+                        }
+                        return false;
+                    case VMStackSlotKind.FLOAT32:
+                        if (m_ByteSp >= 4)
+                        {
+                            m_ByteSp -= 4;
+                            m_StackSlotDepth--;
+                            fixed (byte* p = &m_ByteStack[m_ByteSp])
+                                outVal.SetFloatValue(*(float*)p);
+                            return true;
+                        }
+                        return false;
+                    case VMStackSlotKind.FLOAT64:
+                        if (m_ByteSp >= 8)
+                        {
+                            m_ByteSp -= 8;
+                            m_StackSlotDepth--;
+                            fixed (byte* p = &m_ByteStack[m_ByteSp])
+                                outVal.SetDoubleValue(*(double*)p);
+                            return true;
+                        }
+                        return false;
+                    default:
+                        return false;
+                }
+            }
+            // Legacy 4-byte pop
+            if (ByteStackTryPopI32(out int legacy))
+            {
+                outVal.SetInt32Value(legacy);
+                return true;
+            }
+            return false;
+        }
+
+        /** Peek at the top slot as RuntimeValue WITHOUT popping. slotFromTop=1 means top. */
+        private unsafe bool ByteStackTryPeekRuntimeValue(int slotFromTop, out RuntimeValue outVal)
+        {
+            outVal = default;
+            if (slotFromTop <= 0 || m_StackSlotDepth < slotFromTop)
+                return false;
+            byte k = m_StackSlotKind[m_StackSlotDepth - slotFromTop];
+            var kind = (VMStackSlotKind)k;
+            // Compute byte offset of this slot's data
+            int byteOff = m_ByteSp;
+            for (int i = 1; i < slotFromTop; i++)
+                byteOff -= ByteStackSlotByteLen((VMStackSlotKind)m_StackSlotKind[m_StackSlotDepth - i]);
+            int bl = ByteStackSlotByteLen(kind);
+            byteOff -= bl;
+            if (byteOff < 0)
+                return false;
+            fixed (byte* p = &m_ByteStack[byteOff])
+            {
+                switch (kind)
+                {
+                    case VMStackSlotKind.PTR:
+                    case VMStackSlotKind.STRING:
+                        {
+                            long idx = *(long*)p;
+                            if (idx >= 0 && idx < m_ObjPool.Count)
+                            {
+                                var obj = m_ObjPool[(int)idx];
+                                if (obj == null)
+                                    outVal.SetNull();
+                                else
+                                    outVal.SetValueBySObject(obj);
+                            }
+                            else
+                                outVal.SetNull();
+                            return true;
+                        }
+                    case VMStackSlotKind.INT8:   outVal.SetInt8Value(*(sbyte*)p); return true;
+                    case VMStackSlotKind.UINT8:  outVal.SetUInt8Value(*(byte*)p); return true;
+                    case VMStackSlotKind.INT16:  outVal.SetInt16Value(*(short*)p); return true;
+                    case VMStackSlotKind.UINT16: outVal.SetUInt16Value(*(ushort*)p); return true;
+                    case VMStackSlotKind.INT32:  outVal.SetInt32Value(*(int*)p); return true;
+                    case VMStackSlotKind.UINT32: outVal.SetUInt32Value(*(uint*)p); return true;
+                    case VMStackSlotKind.INT64:  outVal.SetInt64Value(*(long*)p); return true;
+                    case VMStackSlotKind.UINT64: outVal.SetUInt64Value(*(ulong*)p); return true;
+                    case VMStackSlotKind.FLOAT32: outVal.SetFloatValue(*(float*)p); return true;
+                    case VMStackSlotKind.FLOAT64: outVal.SetDoubleValue(*(double*)p); return true;
+                    default: return false;
+                }
+            }
+        }
+
+        /** Replace the top slot's value in-place (for Convert / Neg / Not etc.). */
+        private unsafe bool ByteStackReplaceTop(RuntimeValue v)
+        {
+            if (m_StackSlotDepth <= 0)
+                return false;
+            // Pop old value, push new value
+            ByteStackPopToRuntimeValue(out _);
+            // Push new value by eType
+            if (v.isNull || v.eType == EVMType.Null) { ByteStackPushNull(); return true; }
+            switch (v.eType)
+            {
+                case EVMType.Boolean: ByteStackPushI32(v.uint8Value != 0 ? 1 : 0); return true;
+                case EVMType.UInt8:   ByteStackPushU8(v.uint8Value); return true;
+                case EVMType.Int8:    ByteStackPushI8(v.int8Value); return true;
+                case EVMType.Int16:   ByteStackPushI16(v.int16Value); return true;
+                case EVMType.UInt16:  ByteStackPushU16(v.uint16Value); return true;
+                case EVMType.Int32:   ByteStackPushI32(v.int32Value); return true;
+                case EVMType.UInt32:  ByteStackPushU32(v.uint32Value); return true;
+                case EVMType.Int64:   ByteStackPushI64(v.int64Value); return true;
+                case EVMType.UInt64:  ByteStackPushU64(v.uint64Value); return true;
+                case EVMType.Float32: ByteStackPushF32(v.float32Value); return true;
+                case EVMType.Float64: ByteStackPushF64(v.float64Value); return true;
+                case EVMType.String:  ByteStackPushPtr(v.sobject); return true;
+                default:              ByteStackPushPtr(v.sobject); return true;
+            }
+        }
+
+        /** Discard n slots from the top of the byte stack. */
+        private void ByteStackDiscardN(int nSlots)
+        {
+            for (int i = 0; i < nSlots && m_StackSlotDepth > 0; i++)
+            {
+                byte k = m_StackSlotKind[m_StackSlotDepth - 1];
+                int bl = ByteStackSlotByteLen((VMStackSlotKind)k);
+                m_ByteSp -= bl;
+                m_StackSlotDepth--;
+            }
+        }
+
+        /** Push a RuntimeValue to the byte stack, dispatching by eType. */
+        private void ByteStackPushByEType(ref RuntimeValue v)
+        {
+            if (v.isNull || v.eType == EVMType.Null) { ByteStackPushNull(); return; }
+            switch (v.eType)
+            {
+                case EVMType.Boolean: ByteStackPushI32(v.uint8Value != 0 ? 1 : 0); break;
+                case EVMType.UInt8:   ByteStackPushU8(v.uint8Value); break;
+                case EVMType.Int8:    ByteStackPushI8(v.int8Value); break;
+                case EVMType.Int16:   ByteStackPushI16(v.int16Value); break;
+                case EVMType.UInt16:  ByteStackPushU16(v.uint16Value); break;
+                case EVMType.Int32:   ByteStackPushI32(v.int32Value); break;
+                case EVMType.UInt32:  ByteStackPushU32(v.uint32Value); break;
+                case EVMType.Int64:   ByteStackPushI64(v.int64Value); break;
+                case EVMType.UInt64:  ByteStackPushU64(v.uint64Value); break;
+                case EVMType.Float32: ByteStackPushF32(v.float32Value); break;
+                case EVMType.Float64: ByteStackPushF64(v.float64Value); break;
+                case EVMType.String:  ByteStackPushPtr(v.sobject); break;
+                default:              ByteStackPushPtr(v.sobject); break;
+            }
+        }
+
+        /** Current logical slot depth (number of operands on the eval stack). */
+        private int ByteStackSlotDepthCount => m_StackSlotDepth;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PushSValueSynced(in RuntimeValue v)
         {
-            if (m_ValueIndex >= m_ValueStack.Length)
+            // Push to byte stack (primary)
+            if (v.isNull || v.eType == EVMType.Null) { ByteStackPushNull(); }
+            else
             {
-#if DEBUG
-            Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue " + v.ToString());
-#endif
-                return;
+                switch (v.eType)
+                {
+                    case EVMType.Boolean: ByteStackPushI32(v.uint8Value != 0 ? 1 : 0); break;
+                    case EVMType.UInt8:   ByteStackPushU8(v.uint8Value); break;
+                    case EVMType.Int8:    ByteStackPushI8(v.int8Value); break;
+                    case EVMType.Int16:   ByteStackPushI16(v.int16Value); break;
+                    case EVMType.UInt16:  ByteStackPushU16(v.uint16Value); break;
+                    case EVMType.Int32:   ByteStackPushI32(v.int32Value); break;
+                    case EVMType.UInt32:  ByteStackPushU32(v.uint32Value); break;
+                    case EVMType.Int64:   ByteStackPushI64(v.int64Value); break;
+                    case EVMType.UInt64:  ByteStackPushU64(v.uint64Value); break;
+                    case EVMType.Float32: ByteStackPushF32(v.float32Value); break;
+                    case EVMType.Float64: ByteStackPushF64(v.float64Value); break;
+                    case EVMType.String:  ByteStackPushPtr(v.sobject); break;
+                    default:              ByteStackPushPtr(v.sobject); break;
+                }
             }
-            m_ValueStack[m_ValueIndex++] = v;
 #if DEBUG
-            Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue " + v.ToString());
+            // Debug mirror
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++] = v;
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue " + v.ToString());
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue " + v.ToString());
 #endif
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool TryPushStackSlot(out int slotIndex)
         {
+#if DEBUG
             if (m_ValueIndex >= m_ValueStack.Length)
             {
                 slotIndex = -1;
-                //this block can auto 
                 Log.AddRuntimeLog(LID.ShowMessageAssert, $"SVM Error: Value stack overflow, current index={m_ValueIndex}, stack length={m_ValueStack.Length}");
                 return false;
             }
             slotIndex = m_ValueIndex++;
             return true;
+#else
+            slotIndex = -1;
+            return false;
+#endif
+        }
+
+        // ---- Typed stack push helpers ----
+        // Mirror cvm (vm_runtime.c) vm_stack_push_i32_slot / vm_eval_push_*.
+        // Primary: write raw bytes to m_ByteStack + slot-kind tag.
+        // Debug mirror (#if DEBUG): also write to m_ValueStack for inspection.
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushNullSlot()
+        {
+            ByteStackPushNull();
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetNull();
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <null>");
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <null>");
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushBoolSlot(bool v)
+        {
+            ByteStackPushI32(v ? 1 : 0);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetBoolValue(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <bool> " + v);
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <bool> " + v);
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushI8Slot(sbyte v)
+        {
+            ByteStackPushI8(v);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetInt8Value(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <i8> " + v);
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <i8> " + v);
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushU8Slot(byte v)
+        {
+            ByteStackPushU8(v);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetUInt8Value(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <u8> " + v);
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <u8> " + v);
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushI16Slot(short v)
+        {
+            ByteStackPushI16(v);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetInt16Value(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <i16> " + v);
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <i16> " + v);
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushU16Slot(ushort v)
+        {
+            ByteStackPushU16(v);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetUInt16Value(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <u16> " + v);
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <u16> " + v);
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushI32Slot(int v)
+        {
+            ByteStackPushI32(v);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetInt32Value(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <i32> " + v);
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <i32> " + v);
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushU32Slot(uint v)
+        {
+            ByteStackPushU32(v);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetUInt32Value(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <u32> " + v);
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <u32> " + v);
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushI64Slot(long v)
+        {
+            ByteStackPushI64(v);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetInt64Value(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <i64> " + v);
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <i64> " + v);
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushU64Slot(ulong v)
+        {
+            ByteStackPushU64(v);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetUInt64Value(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <u64> " + v);
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <u64> " + v);
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushF32Slot(float v)
+        {
+            ByteStackPushF32(v);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetFloatValue(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <f32> " + v);
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <f32> " + v);
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushF64Slot(double v)
+        {
+            ByteStackPushF64(v);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetDoubleValue(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <f64> " + v);
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <f64> " + v);
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushStringSlot(string v)
+        {
+            ByteStackPushString(v);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                m_ValueStack[m_ValueIndex++].SetStringValue(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <string> " + v);
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <string> " + v);
+#endif
+        }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void PushPtrSlot(SObject? v)
+        {
+            ByteStackPushPtr(v);
+#if DEBUG
+            if (m_ValueIndex < m_ValueStack.Length)
+            {
+                ref var slot = ref m_ValueStack[m_ValueIndex++];
+                if (v == null)
+                    slot.SetNull();
+                else
+                    slot.SetValueBySObject(v);
+                Log.AddVM(LID.ShowMessageInfo, "push RuntimeValue <ptr> " + (v == null ? "<null>" : v.ToString()));
+            }
+            else
+                Log.AddVM(LID.ShowMessageAssert, "push override RuntimeValue <ptr> " + (v == null ? "<null>" : v.ToString()));
+#endif
         }
         public static RuntimeType GetRuntimeTypeByDefType(RuntimeDefType irmt, RuntimeClass curIRMc, List<RuntimeType> __rtList, bool isAdd = false)
         {
@@ -237,7 +1024,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 if (irmt.ownerRuntimeClass == curIRMc || curIRMc.name == "Core.Object")
                 {
-                    if(__rtList.Count <= irmt.templateIndex)
+                    if (__rtList.Count <= irmt.templateIndex)
                     {
                         Log.AddRuntimeLog(LID.ShowMessageAssert, "template index is out of range");
                         return null;
@@ -277,7 +1064,6 @@ namespace SimpleLanguage.VM.Runtime
             {
                 if (sobjs[i].runtimeType != RuntimeTypeManager.voidRuntimeType)
                 {
-                    //GetObjectByValue(4, i, sobjs, ref m_ValueStack[m_ValueIndex++] );
                     var obj = sobjs[i];
                     if (obj == null)
                     {
@@ -286,32 +1072,50 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     if (obj.eType == EVMType.Null)
                     {
-                        m_ValueStack[m_ValueIndex++].SetNull();
+                        ByteStackPushNull();
+#if DEBUG
+                        if (m_ValueIndex < m_ValueStack.Length)
+                            m_ValueStack[m_ValueIndex++].SetNull();
+#endif
                         return;
                     }
-                    obj.SetSValueByRuntimeObjct(ref m_ValueStack[m_ValueIndex]);
-                    m_ValueIndex++;
+                    ByteStackPushPtr(obj.sobject);
+#if DEBUG
+                    if (m_ValueIndex < m_ValueStack.Length)
+                    {
+                        obj.SetSValueByRuntimeObjct(ref m_ValueStack[m_ValueIndex]);
+                        m_ValueIndex++;
+                    }
+#endif
                 }
             }
         }
         public RuntimeValue GetCurrentIndexValue(int index)
         {
+#if DEBUG
             return m_ValueStack[index];
+#else
+            return default;
+#endif
         }
-        public void SetCurrentRuntimeType( RuntimeType rt )
+        public void SetCurrentRuntimeType(RuntimeType rt)
         {
             m_CurrentRuntimeType = rt;
         }
         public void SetNewObject()
         {
-            if(CLRVM.topCLRRuntime.m_ValueIndex - 1 >= 0 )
+            var topRt = CLRVM.topCLRRuntime;
+            if (topRt.ByteStackSlotDepthCount > 0)
             {
-                RuntimeValue sval = CLRVM.topCLRRuntime.GetCurrentIndexValue(CLRVM.topCLRRuntime.m_ValueIndex - 1);
-                m_ValueStack[m_ValueIndex++] = sval;
+                topRt.ByteStackPopToRuntimeValue(out var sval);
+                ByteStackPushByEType(ref sval);
                 if (sval.sobject != null)
                 {
                     m_CurrentRuntimeType = sval.sobject.runtimeType;
                 }
+#if DEBUG
+                m_ValueStack[m_ValueIndex++] = sval;
+#endif
             }
         }
         public void ClearNewObject()
@@ -338,12 +1142,18 @@ namespace SimpleLanguage.VM.Runtime
                 RuntimeValue sval;
                 if (disStackCount)
                 {
+                    topClrRuntime.ByteStackPopToRuntimeValue(out sval);
+#if DEBUG
                     topClrRuntime.m_ValueIndex--;
                     sval = topClrRuntime.GetCurrentIndexValue(topClrRuntime.m_ValueIndex);
+#endif
                 }
                 else
                 {
+                    topClrRuntime.ByteStackTryPeekRuntimeValue(i + 1, out sval);
+#if DEBUG
                     sval = topClrRuntime.GetCurrentIndexValue(topClrRuntime.m_ValueIndex - 1 - i);
+#endif
                 }
                 uint index = (uint)(m_ArgumentRuntimeObjectArray.Length - i - 1);
                 m_ArgumentRuntimeObjectArray[index].SetSObjectBySValue(ref sval);
@@ -360,18 +1170,18 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 catch (Exception ex)
                 {
-                    // SvmNullNumericArithmeticException：LID.VMOperatorNotShouldHaveNull 已在 SValue（比�?算术）中输出，这里不再打日志
+                    // SvmNullNumericArithmeticException：LID.VMOperatorNotShouldHaveNull 已在 SValue（比�?算术）中输出，这里不再打日志
                     if (ex is SvmNullNumericArithmeticException) throw;
-                    // CompilationAbortException：由 Log 系统统一决定“阻�?取消执行”，此处不重复包装日志�?
+                    // CompilationAbortException：由 Log 系统统一决定“阻�?取消执行”，此处不重复包装日志�?
                     if (ex is CompilationAbortException) throw;
                     var loc2 = iri?.debugInfo?.FormatDiagnosticLine();
                     var detail = string.IsNullOrEmpty(loc2)
                         ? $"VM instruction fault: op={iri?.opCode} ip={m_ExecuteIndex} id={iri?.id} index={iri?.index}"
                         : $"VM instruction fault: op={iri?.opCode} ip={m_ExecuteIndex} id={iri?.id} index={iri?.index} at {loc2}";
                     if (iri?.debugInfo != null)
-                        Log.AddRuntimeLog(LID.ShowMessageError, iri.debugInfo, detail + " �?" + ex.Message);
+                        Log.AddRuntimeLog(LID.ShowMessageError, iri.debugInfo, detail + " �?" + ex.Message);
                     else
-                        Log.AddRuntimeLog(LID.ShowMessageError, detail + " �?" + ex);
+                        Log.AddRuntimeLog(LID.ShowMessageError, detail + " �?" + ex);
                     throw;
                 }
                 m_ExecuteIndex++;
@@ -390,7 +1200,7 @@ namespace SimpleLanguage.VM.Runtime
         {
             if (source == null) return null;
 
-            // BridgeObject 鍙傛暟钀藉湴锛坙egacy bridge 璺緞涔熼渶瑕侊�?
+            // BridgeObject 鍙傛暟钀藉湴锛坙egacy bridge 璺緞涔熼渶瑕侊�?
             if (source is ClassObject co && IsBridgeObjectRuntime(co.runtimeClass))
             {
                 if (TryExtractBridgeObjectPayload(co, out var payloadObj))
@@ -661,7 +1471,7 @@ namespace SimpleLanguage.VM.Runtime
         }
         RuntimeType? GetRuntimeTypeByInstruction(Instruction iri)
         {
-            if( iri.Payload == null )
+            if (iri.Payload == null)
             {
                 return null;
             }
@@ -702,19 +1512,27 @@ namespace SimpleLanguage.VM.Runtime
         {
             args = null!;
             if (paramCount < 0) return false;
-            if (m_ValueIndex < paramCount) return false;
+            if (ByteStackSlotDepthCount < paramCount) return false;
             args = new RuntimeValue[paramCount];
             for (int pi = paramCount - 1; pi >= 0; pi--)
-                args[pi] = m_ValueStack[--m_ValueIndex];
+            {
+                ByteStackPopToRuntimeValue(out args[pi]);
+#if DEBUG
+                args[pi] = m_ValueStack[--m_ValueIndex]; // debug mirror
+#endif
+            }
             return true;
         }
 
         internal bool TrySystemCallPopDiscard(int discardCount)
         {
             if (discardCount < 0) return false;
-            if (m_ValueIndex < discardCount) return false;
+            if (ByteStackSlotDepthCount < discardCount) return false;
+            ByteStackDiscardN(discardCount);
+#if DEBUG
             for (int pi = discardCount - 1; pi >= 0; pi--)
                 _ = m_ValueStack[--m_ValueIndex];
+#endif
             return true;
         }
 
@@ -733,16 +1551,19 @@ namespace SimpleLanguage.VM.Runtime
             }
 
             var pars = methodInfo.GetParameters();
-            if (m_ValueIndex < pars.Length)
+            if (ByteStackSlotDepthCount < pars.Length)
             {
-                Log.AddRuntimeLog(LID.ShowMessageAssert, $"Bridge stack underflow, need={pars.Length}, has={m_ValueIndex}");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, $"Bridge stack underflow, need={pars.Length}, has={ByteStackSlotDepthCount}");
                 return true;
             }
 
             var invokeArgs = new object?[pars.Length];
             for (int i = pars.Length - 1; i >= 0; i--)
             {
-                var sv = m_ValueStack[--m_ValueIndex];
+                ByteStackPopToRuntimeValue(out var sv);
+#if DEBUG
+                sv = m_ValueStack[--m_ValueIndex]; // debug mirror
+#endif
                 var raw = sv.ToClrObject(pars[i].ParameterType);
                 invokeArgs[i] = ConvertInvokeArg(raw, pars[i].ParameterType);
             }
@@ -771,12 +1592,15 @@ namespace SimpleLanguage.VM.Runtime
             var values = new RuntimeValue[paramCountLocal];
             for (int i = paramCountLocal - 1; i >= 0; i--)
             {
-                if (m_ValueIndex == 0)
+                if (ByteStackSlotDepthCount == 0)
                 {
                     Log.AddRuntimeLog(LID.ShowMessageAssert, $"{callName} stack underflow");
                     return true;
                 }
-                values[i] = m_ValueStack[--m_ValueIndex];
+                ByteStackPopToRuntimeValue(out values[i]);
+#if DEBUG
+                values[i] = m_ValueStack[--m_ValueIndex]; // debug mirror
+#endif
             }
 
             string namespaceName = values.Length > 1 ? values[0].GetValueObject()?.ToString() ?? string.Empty : string.Empty;
@@ -910,81 +1734,79 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Nop: break;
                 case EIROpCode.LoadConstNull:
                     {
-                        TryPushStackSlot(out int slot);
-                        m_ValueStack[slot].SetNull();
+                        PushNullSlot();
                     }
                     break;
                 case EIROpCode.LoadConstBoolean:
                     {
-                        if (iri.TryGetBoolean(out bool b) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetBoolValue(b);
+                        if (iri.TryGetBoolean(out bool b))
+                            PushBoolSlot(b);
                     }
                     break;
                 case EIROpCode.LoadConstUInt8:
                     {
-                        if (iri.TryGetUInt8(out byte cb) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetUInt8Value(cb);
+                        if (iri.TryGetUInt8(out byte cb))
+                            PushU8Slot(cb);
                     }
                     break;
                 case EIROpCode.LoadConstInt8:
                     {
-                        if (iri.TryGetInt8(out sbyte sb) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetInt8Value(sb);
+                        if (iri.TryGetInt8(out sbyte sb))
+                            PushI8Slot(sb);
                     }
                     break;
                 case EIROpCode.LoadConstInt16:
                     {
-                        if (iri.TryGetInt16(out short sv) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetInt16Value(sv);
+                        if (iri.TryGetInt16(out short sv))
+                            PushI16Slot(sv);
                     }
                     break;
                 case EIROpCode.LoadConstUInt16:
                     {
-                        if (iri.TryGetUInt16(out ushort usv) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetUInt16Value(usv);
+                        if (iri.TryGetUInt16(out ushort usv))
+                            PushU16Slot(usv);
                     }
                     break;
                 case EIROpCode.LoadConstInt32:
                     {
-                        if (iri.TryGetInt32(out int i32) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetInt32Value(i32);
+                        if (iri.TryGetInt32(out int i32))
+                            PushI32Slot(i32);
                     }
                     break;
                 case EIROpCode.LoadConstUInt32:
                     {
-                        if (iri.TryGetUInt32(out uint ui32) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetUInt32Value(ui32);
+                        if (iri.TryGetUInt32(out uint ui32))
+                            PushU32Slot(ui32);
                     }
                     break;
                 case EIROpCode.LoadConstInt64:
                     {
-                        if (iri.TryGetInt64(out long l) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetInt64Value(l);
+                        if (iri.TryGetInt64(out long l))
+                            PushI64Slot(l);
                     }
                     break;
                 case EIROpCode.LoadConstUInt64:
                     {
-                        if (iri.TryGetUInt64(out ulong ul) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetUInt64Value(ul);
+                        if (iri.TryGetUInt64(out ulong ul))
+                            PushU64Slot(ul);
                     }
                     break;
                 case EIROpCode.LoadConstFloat32:
                     {
-                        if (iri.TryGetFloat32(out float f) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetFloatValue(f);
+                        if (iri.TryGetFloat32(out float f))
+                            PushF32Slot(f);
                     }
                     break;
                 case EIROpCode.LoadConstFloat64:
                     {
-                        if (iri.TryGetFloat64(out double d) && TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetDoubleValue(d);
+                        if (iri.TryGetFloat64(out double d))
+                            PushF64Slot(d);
                     }
                     break;
                 case EIROpCode.LoadConstString:
                     {
                         var resolved = SLAssembly.TryGetConstString(iri.index) ?? string.Empty;
-                        if (TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetStringValue(resolved);
+                        PushStringSlot(resolved);
                     }
                     break;
                 case EIROpCode.LoadConstType:
@@ -992,30 +1814,34 @@ namespace SimpleLanguage.VM.Runtime
                         var mdt = TryGetInstructionRuntimeDefType(iri);
                         if (mdt == null)
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, $"SVM Error: Value stack overflow, current index={m_ValueIndex}, stack length={m_ValueStack.Length}");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, $"SVM Error: Value stack overflow, current index={ByteStackSlotDepthCount}, stack length={VM_STACK_SIZE}");
                             break;
                         }
                         var rt = GetRuntimeTypeByDefType(mdt, m_CurrentRuntimeType != null ? m_CurrentRuntimeType.runtimeClass : mdt.ownerRuntimeClass, m_CurrentRuntimeType.runtimeTemplateList, true);
                         if (rt == null)
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, $"SVM Error: Value stack overflow, current index={m_ValueIndex}, stack length={m_ValueStack.Length}");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, $"SVM Error: Value stack overflow, current index={ByteStackSlotDepthCount}, stack length={VM_STACK_SIZE}");
                             break;
                         }
                         var sobj = new TypeObject(rt);
                         sobj.CreateObject();
-                        if (TryPushStackSlot(out int slot))
-                            m_ValueStack[slot].SetValueBySObject(sobj);                        
+                        PushPtrSlot(sobj);
                     }
                     break;
                 case EIROpCode.Convert_I8:
                     {
-                        if( m_ValueIndex > 0 )
+                        if (ByteStackSlotDepthCount > 0)
                         {
+                            ByteStackTryPeekRuntimeValue(1, out var top);
+                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.UInt8);
+                            ByteStackReplaceTop(top);
+#if DEBUG
                             RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.UInt8);
+#endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert i8.", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert i8.", 1, ByteStackSlotDepthCount);
                         }
 #if DEBUG
                         Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to UInt8");
@@ -1024,13 +1850,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_SI8:
                     {
-                        if( m_ValueIndex > 0 )
+                        if (ByteStackSlotDepthCount > 0)
                         {
+                            ByteStackTryPeekRuntimeValue(1, out var top);
+                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.Int8);
+                            ByteStackReplaceTop(top);
+#if DEBUG
                             RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Int8);
+#endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert si8.", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert si8.", 1, ByteStackSlotDepthCount);
                         }
 #if DEBUG
                         Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to Int8");
@@ -1039,13 +1870,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_I16:
                     {
-                        if (m_ValueIndex > 0)
+                        if (ByteStackSlotDepthCount > 0)
                         {
+                            ByteStackTryPeekRuntimeValue(1, out var top);
+                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.Int16);
+                            ByteStackReplaceTop(top);
+#if DEBUG
                             RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Int16);
+#endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert i16.", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert i16.", 1, ByteStackSlotDepthCount);
                         }
 #if DEBUG
                         Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to Int16");
@@ -1054,13 +1890,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_UI16:
                     {
-                        if (m_ValueIndex > 0)
+                        if (ByteStackSlotDepthCount > 0)
                         {
+                            ByteStackTryPeekRuntimeValue(1, out var top);
+                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.UInt16);
+                            ByteStackReplaceTop(top);
+#if DEBUG
                             RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.UInt16);
+#endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert ui16.", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert ui16.", 1, ByteStackSlotDepthCount);
                         }
 #if DEBUG
                         Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to UInt16");
@@ -1069,13 +1910,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_I32:
                     {
-                        if (m_ValueIndex > 0)
+                        if (ByteStackSlotDepthCount > 0)
                         {
+                            ByteStackTryPeekRuntimeValue(1, out var top);
+                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.Int32);
+                            ByteStackReplaceTop(top);
+#if DEBUG
                             RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Int32);
+#endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert i32.", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert i32.", 1, ByteStackSlotDepthCount);
                         }
 #if DEBUG
                         Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to Int32");
@@ -1084,13 +1930,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_UI32:
                     {
-                        if (m_ValueIndex > 0)
+                        if (ByteStackSlotDepthCount > 0)
                         {
+                            ByteStackTryPeekRuntimeValue(1, out var top);
+                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.UInt32);
+                            ByteStackReplaceTop(top);
+#if DEBUG
                             RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.UInt32);
+#endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert ui32.", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert ui32.", 1, ByteStackSlotDepthCount);
                         }
 #if DEBUG
                         Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to UInt32");
@@ -1099,13 +1950,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_I64:
                     {
-                        if (m_ValueIndex > 0)
+                        if (ByteStackSlotDepthCount > 0)
                         {
+                            ByteStackTryPeekRuntimeValue(1, out var top);
+                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.Int64);
+                            ByteStackReplaceTop(top);
+#if DEBUG
                             RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Int64);
+#endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert i64.", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert i64.", 1, ByteStackSlotDepthCount);
                         }
 #if DEBUG
                         Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to Int64");
@@ -1114,13 +1970,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_UI64:
                     {
-                        if (m_ValueIndex > 0)
+                        if (ByteStackSlotDepthCount > 0)
                         {
+                            ByteStackTryPeekRuntimeValue(1, out var top);
+                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.UInt64);
+                            ByteStackReplaceTop(top);
+#if DEBUG
                             RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.UInt64);
+#endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert ui64.", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert ui64.", 1, ByteStackSlotDepthCount);
                         }
 #if DEBUG
                         Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to UInt64");
@@ -1129,13 +1990,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_R4:
                     {
-                        if (m_ValueIndex > 0)
+                        if (ByteStackSlotDepthCount > 0)
                         {
+                            ByteStackTryPeekRuntimeValue(1, out var top);
+                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.Float32);
+                            ByteStackReplaceTop(top);
+#if DEBUG
                             RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Float32);
+#endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert r4.", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert r4.", 1, ByteStackSlotDepthCount);
                         }
 #if DEBUG
                         Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to Float32");
@@ -1144,13 +2010,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_R8:
                     {
-                        if (m_ValueIndex > 0)
+                        if (ByteStackSlotDepthCount > 0)
                         {
+                            ByteStackTryPeekRuntimeValue(1, out var top);
+                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.Float64);
+                            ByteStackReplaceTop(top);
+#if DEBUG
                             RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Float64);
+#endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert r8.", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert r8.", 1, ByteStackSlotDepthCount);
                         }
 #if DEBUG
                         Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to Float64");
@@ -1159,13 +2030,18 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Convert_ToString:
                     {
-                        if (m_ValueIndex > 0)
+                        if (ByteStackSlotDepthCount > 0)
                         {
+                            ByteStackTryPeekRuntimeValue(1, out var top);
+                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.String);
+                            ByteStackReplaceTop(top);
+#if DEBUG
                             RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.String);
+#endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert string.", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "convert string.", 1, ByteStackSlotDepthCount);
                         }
 #if DEBUG
                         Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "Convert to String");
@@ -1174,92 +2050,101 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadArgument:
                     {
-                        if (TryPushStackSlot(out int slot))
+                        if ((uint)iri.index > m_ArgumentRuntimeObjectArray.Length)
                         {
-                            if ((uint)iri.index > m_ArgumentRuntimeObjectArray.Length)
-                            {
-                                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "LoadArgument", iri.index);
-                                return;
-                            }
-                            m_ArgumentRuntimeObjectArray[(uint)iri.index].SetSValueByRuntimeObjct(ref m_ValueStack[slot]);
-#if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadArgument: index=" + iri.index);
-#endif
+                            Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "LoadArgument", iri.index);
+                            return;
                         }
+                        var temp = default(RuntimeValue);
+                        m_ArgumentRuntimeObjectArray[(uint)iri.index].SetSValueByRuntimeObjct(ref temp);
+                        PushSValueSynced(temp);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadArgument: index=" + iri.index);
+#endif
                     }
                     break;
                 case EIROpCode.LoadLocal:
                     {
-                        if (TryPushStackSlot(out int slot))
+                        if ((uint)iri.index > m_LocalVariableRuntimeObjectArray.Length)
                         {
-                            if ((uint)iri.index > m_LocalVariableRuntimeObjectArray.Length)
-                            {
-                                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "LoadLocal", iri.index);
-                                return;
-                            }
-                            m_LocalVariableRuntimeObjectArray[(uint)iri.index].SetSValueByRuntimeObjct(ref m_ValueStack[slot]);
-#if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadLocal: index=" + iri.index);
-#endif
+                            Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "LoadLocal", iri.index);
+                            return;
                         }
+                        var temp = default(RuntimeValue);
+                        m_LocalVariableRuntimeObjectArray[(uint)iri.index].SetSValueByRuntimeObjct(ref temp);
+                        PushSValueSynced(temp);
+#if DEBUG
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadLocal: index=" + iri.index);
+#endif
                     }
                     break;
                 case EIROpCode.LoadGlobal:
                     {
-                        if (TryPushStackSlot(out int slot))
-                        {
-                            CLRVM.LoadGlobalVariable((uint)iri.index, ref m_ValueStack[slot]);
+                        var temp = default(RuntimeValue);
+                        CLRVM.LoadGlobalVariable((uint)iri.index, ref temp);
+                        PushSValueSynced(temp);
 #if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadGlobal: index=" + iri.index);
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadGlobal: index=" + iri.index);
 #endif
-                        }
                     }
                     break;
                 case EIROpCode.StoreLocal:
                     {
-                        if (m_ValueIndex > 0)
+                        if (ByteStackSlotDepthCount > 0)
                         {
                             if ((uint)iri.index > m_LocalVariableRuntimeObjectArray.Length)
                             {
                                 Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "MethodId:" + id.ToString() + "SetLocalVariableSValue", (uint)iri.index);
                                 return;
                             }
-                            m_LocalVariableRuntimeObjectArray[(uint)iri.index].SetSObjectBySValue(ref m_ValueStack[--m_ValueIndex]);
+                            ByteStackPopToRuntimeValue(out var sv);
+#if DEBUG
+                            sv = m_ValueStack[--m_ValueIndex]; // debug mirror
+#endif
+                            m_LocalVariableRuntimeObjectArray[(uint)iri.index].SetSObjectBySValue(ref sv);
 #if DEBUG
                             Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreLocal: index=" + iri.index);
 #endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "StoreLocal stack underflow at index {iri.index}", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "StoreLocal stack underflow at index {iri.index}", 1, ByteStackSlotDepthCount);
                         }
                     }
                     break;
                 case EIROpCode.StoreGlobal:
                     {
-                        if (m_ValueIndex > 0)
+                        if (ByteStackSlotDepthCount > 0)
                         {
-                            CLRVM.StoreGlobalVariable((uint)iri.index, ref m_ValueStack[--m_ValueIndex]);
+                            ByteStackPopToRuntimeValue(out var sv);
+#if DEBUG
+                            sv = m_ValueStack[--m_ValueIndex]; // debug mirror
+#endif
+                            CLRVM.StoreGlobalVariable((uint)iri.index, ref sv);
 #if DEBUG
                             Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreGlobal: index=" + iri.index);
 #endif
                         }
                         else
                         {
-                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "RuntimeVM LoadArrayIndex", 1, m_ValueIndex);
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "RuntimeVM LoadArrayIndex", 1, ByteStackSlotDepthCount);
                         }
                     }
                     break;
                 case EIROpCode.StoreReturn:
                     {
-                        if (m_ValueIndex > 0)
+                        if (ByteStackSlotDepthCount > 0)
                         {
                             if ((uint)iri.index > m_ReturnRuntimeObjectArray.Length)
                             {
                                 Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "MethodId:" + id.ToString() + "StoreReturn", (uint)iri.index);
                                 return;
                             }
-                            m_ReturnRuntimeObjectArray[(uint)iri.index].SetSObjectBySValue(ref m_ValueStack[--m_ValueIndex]);
+                            ByteStackPopToRuntimeValue(out var sv);
+#if DEBUG
+                            sv = m_ValueStack[--m_ValueIndex]; // debug mirror
+#endif
+                            m_ReturnRuntimeObjectArray[(uint)iri.index].SetSObjectBySValue(ref sv);
 #if DEBUG
                             Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreReturn: index=" + iri.index);
 #endif
@@ -1273,18 +2158,23 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadArrayIndex:
                     {
-                        ref var v = ref m_ValueStack[m_ValueIndex - 1];
-                        if (v.sobject is ArrayObject ao)
+                        if (ByteStackSlotDepthCount > 0)
                         {
-                            ao.LoadValue(iri.index, ref v);
+                            ByteStackTryPeekRuntimeValue(1, out var v);
+                            if (v.sobject is ArrayObject ao)
+                            {
+                                ao.LoadValue(iri.index, ref v);
+                                ByteStackReplaceTop(v);
 #if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadArrayIndex: runtimeclass=" + ao.runtimeClass?.name
-                                            + " objectId=" + ao.id + "index=" + iri.index);
+                                Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadArrayIndex: runtimeclass=" + ao.runtimeClass?.name
+                                                + " objectId=" + ao.id + "index=" + iri.index);
+                                ao.LoadValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
 #endif
-                        }
-                        else
-                        {
-                            Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType,  "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", v.eType.ToString());
+                            }
+                            else
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", v.eType.ToString());
+                            }
                         }
                     }
                     break;
@@ -1310,10 +2200,10 @@ namespace SimpleLanguage.VM.Runtime
                             int2 = 1;
                         }
 
-                        if (m_ValueIndex - int1 >= 0 && m_ValueIndex - int2 >= 0)
+                        if (m_StackSlotDepth >= Math.Max(int1, int2))
                         {
-                            ref RuntimeValue sStore = ref m_ValueStack[m_ValueIndex - int1];
-                            ref RuntimeValue RuntimeValue = ref m_ValueStack[m_ValueIndex - int2];
+                            ByteStackTryPeekRuntimeValue(int1, out var sStore);
+                            ByteStackTryPeekRuntimeValue(int2, out var RuntimeValue);
                             if (sStore.sobject is ArrayObject ao)
                             {
                                 ao.StoreValue(iri.index, RuntimeValue);
@@ -1326,7 +2216,10 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM StoreArrayIndex", sStore.eType.ToString());
                             }
+                            ByteStackDiscardN(2);
+#if DEBUG
                             m_ValueIndex -= 2;
+#endif
                         }
                         else
                         {
@@ -1336,10 +2229,10 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadArrayIndexField:
                     {
-                        if (m_ValueIndex > 1)
+                        if (m_StackSlotDepth > 1)
                         {
-                            ref RuntimeValue arrayref = ref m_ValueStack[m_ValueIndex - 2];
-                            ref RuntimeValue loadindex = ref m_ValueStack[m_ValueIndex - 1];
+                            ByteStackPopToRuntimeValue(out var loadindex);
+                            ByteStackPopToRuntimeValue(out var arrayref);
 
                             if (arrayref.sobject is ArrayObject ao)
                             {
@@ -1360,7 +2253,11 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndexField", arrayref.eType.ToString());
                             }
+                            ByteStackPushByEType(ref arrayref);
+#if DEBUG
+                            m_ValueStack[m_ValueIndex - 2] = arrayref;
                             m_ValueIndex -= 1;
+#endif
                         }
                         else
                         {
@@ -1370,11 +2267,11 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.StoreArrayIndexField:
                     {
-                        if (m_ValueIndex > 2)
+                        if (m_StackSlotDepth > 2)
                         {
-                            ref RuntimeValue arrayref = ref m_ValueStack[m_ValueIndex - 3];
-                            ref RuntimeValue loadindex = ref m_ValueStack[m_ValueIndex - 2];
-                            ref RuntimeValue storevalue = ref m_ValueStack[m_ValueIndex - 1];
+                            ByteStackPopToRuntimeValue(out var storevalue);
+                            ByteStackPopToRuntimeValue(out var loadindex);
+                            ByteStackPopToRuntimeValue(out var arrayref);
 
                             if (arrayref.sobject is ArrayObject ao)
                             {
@@ -1395,7 +2292,9 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "MethodId:" + id.ToString() + "RuntimeVM StoreArrayIndexField", arrayref.eType.ToString());
                             }
+#if DEBUG
                             m_ValueIndex -= 3;
+#endif
                         }
                         else
                         {
@@ -1411,13 +2310,13 @@ namespace SimpleLanguage.VM.Runtime
                             dupCount = BitConverter.ToInt32(iri.Payload, 0);
                         }
 
-                        if (m_ValueIndex >= dupCount)
+                        if (m_StackSlotDepth >= dupCount)
                         {
-                            int baseIndex = m_ValueIndex - dupCount;
+                            var dups = new RuntimeValue[dupCount];
                             for (int i = 0; i < dupCount; i++)
-                            {
-                                PushSValueSynced(m_ValueStack[baseIndex + i]);
-                            }
+                                ByteStackTryPeekRuntimeValue(dupCount - i, out dups[i]);
+                            for (int i = 0; i < dupCount; i++)
+                                PushSValueSynced(dups[i]);
                         }
                         else
                         {
@@ -1432,9 +2331,12 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             dupCount = (ushort)BitConverter.ToInt32(iri.Payload, 0);
                         }
-                        if (m_ValueIndex >= dupCount)
+                        if (m_StackSlotDepth >= dupCount)
                         {
-                            m_ValueIndex-=dupCount;
+                            ByteStackDiscardN(dupCount);
+#if DEBUG
+                            m_ValueIndex -= dupCount;
+#endif
                         }
                         else
                         {
@@ -1450,8 +2352,13 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddRuntimeLog(LID.ShowMessageAssert, iri.debugInfo, "StoreStaticField failed to get runtime type for metadata type: ");
                             break;
                         }
+                        var tempVal = default(RuntimeValue);
+                        rt.GetStaticMemberVariableSValue(iri.index, ref tempVal);
+                        ByteStackPushByEType(ref tempVal);
+#if DEBUG
                         if (TryPushStackSlot(out int slot))
                             rt.GetStaticMemberVariableSValue(iri.index, ref m_ValueStack[slot]);
+#endif
                     }
                     break;
                 case EIROpCode.StoreStaticField:
@@ -1463,9 +2370,13 @@ namespace SimpleLanguage.VM.Runtime
                             break;
                         }
 
-                        if (m_ValueIndex > 0)
+                        if (m_StackSlotDepth > 0)
                         {
-                            rt.SetStaticMemberVariableSValue(iri.index, ref m_ValueStack[--m_ValueIndex]);
+                            ByteStackPopToRuntimeValue(out var sv);
+#if DEBUG
+                            sv = m_ValueStack[--m_ValueIndex];
+#endif
+                            rt.SetStaticMemberVariableSValue(iri.index, ref sv);
                         }
                         else
                         {
@@ -1476,31 +2387,34 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.LoadNotStaticField:
                     {
                         // expects instance on stack
-                        if (m_ValueIndex > 0)
+                        if (m_StackSlotDepth > 0)
                         {
-                            var inst = m_ValueStack[m_ValueIndex - 1];
+                            ByteStackTryPeekRuntimeValue(1, out var inst);
                             if (inst.eType == EVMType.Array
                                 || inst.eType == EVMType.Class
                                 || inst.eType == EVMType.Type
                                 || inst.eType == EVMType.Object
                                 || inst.eType == EVMType.Member)
                             {
+                                ByteStackDiscardN(1);
+#if DEBUG
                                 --m_ValueIndex;
+#endif
                                 if (inst.sobject is ClassObject co)
                                 {
-                                    if (TryPushStackSlot(out int slot))
-                                    {
-                                        co.GetMemberVariableSValue(iri.index, ref m_ValueStack[slot]);
+                                    var tempVal = default(RuntimeValue);
+                                    co.GetMemberVariableSValue(iri.index, ref tempVal);
+                                    ByteStackPushByEType(ref tempVal);
 #if DEBUG
-                                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadNotStaticField: runtimeclass=" + co.runtimeClass?.name
-                                            + " objectId=" + co.id + "index=" + iri.index);
+                                    Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadNotStaticField: runtimeclass=" + co.runtimeClass?.name
+                                        + " objectId=" + co.id + "index=" + iri.index);
+                                    if (TryPushStackSlot(out int slot))
+                                        co.GetMemberVariableSValue(iri.index, ref m_ValueStack[slot]);
 #endif
-                                    }
                                 }
                                 else
                                 {
-                                    if (TryPushStackSlot(out int slot))
-                                        m_ValueStack[slot].SetNull();
+                                    PushNullSlot();
                                 }
                             }
                             //else
@@ -1517,10 +2431,14 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.StoreNotStaticField2:
                     {
                         // expect value then instance on stack (value pushed last)
-                        if (m_ValueIndex >= 2)
+                        if (m_StackSlotDepth >= 2)
                         {
-                            ref var val = ref m_ValueStack[--m_ValueIndex];
-                            ref var inst = ref m_ValueStack[--m_ValueIndex];
+                            ByteStackPopToRuntimeValue(out var val);
+                            ByteStackPopToRuntimeValue(out var inst);
+#if DEBUG
+                            val = m_ValueStack[--m_ValueIndex];
+                            inst = m_ValueStack[--m_ValueIndex];
+#endif
                             if (inst.sobject is ClassObject co)
                             {
                                 co.SetMemberVariableSValue(iri.index, val);
@@ -1540,10 +2458,10 @@ namespace SimpleLanguage.VM.Runtime
 
                 case EIROpCode.StoreNotStaticField1:
                     {
-                        if (m_ValueIndex >= 2)
+                        if (m_StackSlotDepth >= 2)
                         {
-                            ref RuntimeValue val = ref m_ValueStack[m_ValueIndex - 1];
-                            ref RuntimeValue inst = ref m_ValueStack[m_ValueIndex - 2];
+                            ByteStackTryPeekRuntimeValue(1, out var val);
+                            ByteStackTryPeekRuntimeValue(2, out var inst);
                             if (inst.sobject is ClassObject co)
                             {
                                 co.SetMemberVariableSValue(iri.index, val);
@@ -1556,7 +2474,10 @@ namespace SimpleLanguage.VM.Runtime
                             //{
                             //    Log.AddRuntimeLog(LID.RuntimeVMNotFoundHandleEVMType, "RuntimeVM StoreArrayIndex", inst.eType.ToString());
                             //}
+                            ByteStackDiscardN(1);
+#if DEBUG
                             m_ValueIndex -= 1;
+#endif
                         }
                         else
                         {
@@ -1602,14 +2523,17 @@ namespace SimpleLanguage.VM.Runtime
 #endif
 
                             ObjectManager.RegisterObject(sobj);
+                            ByteStackPushPtr(sobj);
+#if DEBUG
                             m_ValueStack[m_ValueIndex++].SetRawSObject(sobj);
+#endif
 
                             if (rt.runtimeClass.metaClassKind == 0)
                             {
                                 var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                                 if (irList.Count > 0)
                                 {
-                                    CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList, true );
+                                    CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList, true);
                                 }
                             }
                         }
@@ -1624,10 +2548,13 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddRuntimeLog(LID.ShowMessageAssert, iri.debugInfo, "StoreStaticField failed to get runtime type for metadata type: ");
                             break;
                         }
-    
+
                         SObject sobj = ObjectManager.CreateObjectByRuntimeType(rt, true);
                         ObjectManager.RegisterObject(sobj);
+                        ByteStackPushPtr(sobj);
+#if DEBUG
                         m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
+#endif
                         var irc = rt.runtimeClass;
 
 #if DEBUG
@@ -1651,9 +2578,9 @@ namespace SimpleLanguage.VM.Runtime
                             break;
                         }
 
-                        if (m_ValueIndex > 0 )
+                        if (m_StackSlotDepth > 0)
                         {
-                            var sval = m_ValueStack[m_ValueIndex - 1];
+                            ByteStackTryPeekRuntimeValue(1, out var sval);
                             if (!RuntimeValueMethod.TryGetInt32FromRuntimeValue(sval, out var arrLength))
                             {
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, "MethodId:" + id.ToString() + "new array get RuntimeValue");
@@ -1671,9 +2598,11 @@ namespace SimpleLanguage.VM.Runtime
                             // Full CreateObject() may require runtime member types that are not guaranteed ready.
                             arr.CreateObject();
                             ObjectManager.AddClassObject(arr);
-                            m_ValueStack[m_ValueIndex - 1].SetArrayObject(arr);
-
+                            var arrVal = default(RuntimeValue);
+                            arrVal.SetArrayObject(arr);
+                            ByteStackReplaceTop(arrVal);
 #if DEBUG
+                            m_ValueStack[m_ValueIndex - 1].SetArrayObject(arr);
                             Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + rt.runtimeClass?.name + " objectId=" + arr.id);
 #endif
 
@@ -1708,9 +2637,12 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.BrFalse:
                     {
-                        if (m_ValueIndex > 0)
+                        if (m_StackSlotDepth > 0)
                         {
-                            var cond = m_ValueStack[--m_ValueIndex];
+                            ByteStackPopToRuntimeValue(out var cond);
+#if DEBUG
+                            cond = m_ValueStack[--m_ValueIndex];
+#endif
                             if (cond.eType == EVMType.Boolean)
                             {
                                 if (cond.int8Value != 1)
@@ -1757,9 +2689,12 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.BrTrue:
                     {
-                        if (m_ValueIndex > 0)
+                        if (m_StackSlotDepth > 0)
                         {
-                            var cond = m_ValueStack[--m_ValueIndex];
+                            ByteStackPopToRuntimeValue(out var cond);
+#if DEBUG
+                            cond = m_ValueStack[--m_ValueIndex];
+#endif
                             if (cond.eType == EVMType.Boolean)
                             {
                                 if (cond.int8Value != 1)
@@ -1806,10 +2741,14 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Switch:
                     {
-                        if (m_ValueIndex >= 2)
+                        if (m_StackSlotDepth >= 2)
                         {
-                            ref var right = ref m_ValueStack[--m_ValueIndex];
-                            ref var left = ref m_ValueStack[m_ValueIndex];
+                            ByteStackPopToRuntimeValue(out var right);
+                            var left = right;
+#if DEBUG
+                            right = m_ValueStack[--m_ValueIndex];
+                            left = m_ValueStack[m_ValueIndex];
+#endif
                             //bool methodCall = false;
                             //RuntimeValue.CompareEuqalSValue1AndValue2(ref left, ref right, true, out methodCall);
                             //PushSValueSynced(left);
@@ -1850,17 +2789,21 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.And:
                     {
-                        if (m_ValueIndex >= 2)
+                        if (m_StackSlotDepth >= 2)
                         {
-                            ref var right = ref m_ValueStack[--m_ValueIndex];
-                            ref var left = ref m_ValueStack[--m_ValueIndex];
+                            ByteStackPopToRuntimeValue(out var right);
+                            ByteStackPopToRuntimeValue(out var left);
+#if DEBUG
+                            right = m_ValueStack[--m_ValueIndex];
+                            left = m_ValueStack[--m_ValueIndex];
+#endif
                             bool methodCall = false;
                             RuntimeValueMethod.LogicalAnd(ref left, ref right, out methodCall);
                             if (methodCall)
                             {
-                                if (m_ValueIndex > 0)
+                                if (m_StackSlotDepth > 0)
                                 {
-                                    var top = m_ValueStack[m_ValueIndex - 1];
+                                    ByteStackTryPeekRuntimeValue(1, out var top);
                                     if (top.eType == EVMType.Boolean)
                                     {
                                         PushSValueSynced(top);
@@ -1890,17 +2833,21 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Or:
                     {
-                        if (m_ValueIndex >= 2)
+                        if (m_StackSlotDepth >= 2)
                         {
-                            ref var right = ref m_ValueStack[--m_ValueIndex];
-                            ref var left = ref m_ValueStack[--m_ValueIndex];
+                            ByteStackPopToRuntimeValue(out var right);
+                            ByteStackPopToRuntimeValue(out var left);
+#if DEBUG
+                            right = m_ValueStack[--m_ValueIndex];
+                            left = m_ValueStack[--m_ValueIndex];
+#endif
                             bool methodCall = false;
                             RuntimeValueMethod.LogicalOr(ref left, ref right, out methodCall);
                             if (methodCall)
                             {
-                                if (m_ValueIndex > 0)
+                                if (m_StackSlotDepth > 0)
                                 {
-                                    var top = m_ValueStack[m_ValueIndex - 1];
+                                    ByteStackTryPeekRuntimeValue(1, out var top);
                                     if (top.eType == EVMType.Boolean)
                                     {
                                         PushSValueSynced(top);
@@ -1996,22 +2943,36 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.Neg:
                     {
-                        if (m_ValueIndex - 1 < 0)
+                        if (m_StackSlotDepth < 1)
                         {
+#if DEBUG
                             Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "EIROpCode.Neg", 1, m_ValueIndex);
+#endif
                             break;
                         }
+                        ByteStackTryPeekRuntimeValue(1, out var negVal);
+                        RuntimeValueMethod.NegSValue(ref negVal);
+                        ByteStackReplaceTop(negVal);
+#if DEBUG
                         RuntimeValueMethod.NegSValue(ref m_ValueStack[m_ValueIndex - 1]);
+#endif
                     }
                     break;
                 case EIROpCode.Not:
                     {
-                        if (m_ValueIndex - 1 < 0)
+                        if (m_StackSlotDepth < 1)
                         {
+#if DEBUG
                             Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "EIROpCode.Not", 1, m_ValueIndex);
+#endif
                             break;
                         }
-                        RuntimeValueMethod.NotSValue( ref m_ValueStack[m_ValueIndex - 1]);
+                        ByteStackTryPeekRuntimeValue(1, out var notVal);
+                        RuntimeValueMethod.NotSValue(ref notVal);
+                        ByteStackReplaceTop(notVal);
+#if DEBUG
+                        RuntimeValueMethod.NotSValue(ref m_ValueStack[m_ValueIndex - 1]);
+#endif
                     }
                     break;
                 case EIROpCode.Add:
@@ -2035,14 +2996,20 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Shr:
                 case EIROpCode.Shr_Un:
                     {
-                        if (m_ValueIndex < 2)
+                        if (m_StackSlotDepth < 2)
                         {
+#if DEBUG
                             Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, $"{opcode} ", 2, m_ValueIndex);
+#endif
                             break;
                         }
-                        
-                        ref var right = ref m_ValueStack[--m_ValueIndex];
-                        ref var left = ref m_ValueStack[--m_ValueIndex];
+
+                        ByteStackPopToRuntimeValue(out var right);
+                        ByteStackPopToRuntimeValue(out var left);
+#if DEBUG
+                        right = m_ValueStack[--m_ValueIndex];
+                        left = m_ValueStack[--m_ValueIndex];
+#endif
                         int sign = 0;
                         bool isUn = iri.opCode == EIROpCode.Add_Un
                             || iri.opCode == EIROpCode.Minus_Un
@@ -2078,7 +3045,7 @@ namespace SimpleLanguage.VM.Runtime
                             case EIROpCode.Shr_Un: sign = 9; break;
                         }
                         RuntimeValueMethod.ComputeValueInline(ref left, sign, ref right, isUn);
-                        PushSValueSynced(left);                        
+                        PushSValueSynced(left);
                     }
                     break;
                 case EIROpCode.CallSystemMethod:
@@ -2275,14 +3242,14 @@ namespace SimpleLanguage.VM.Runtime
                         RuntimeCall? runtimeCall = SLRuntimeModuleRegistry.TryCreateRuntimeCallForInstruction(callPkg, iri.index);
                         if (runtimeCall == null)
                         {
-                            Log.AddRuntimeLog(LID.ShowMessageAssert, "鎵ц闈欐€佸嚱鏁帮紝娌℃湁鍙戠幇鐩稿叧鍑芥暟�?");
+                            Log.AddRuntimeLog(LID.ShowMessageAssert, "鎵ц闈欐€佸嚱鏁帮紝娌℃湁鍙戠幇鐩稿叧鍑芥暟�?");
                             return;
                         }
 
                         List<RuntimeType> classRTList = new List<RuntimeType>();
                         for (int i = 0; i < runtimeCall.runtimeTypeDefType.runtimeDefTypeList.Count; i++)
                         {
-                            var crt = GetRuntimeTypeByDefType(runtimeCall.runtimeTypeDefType.runtimeDefTypeList[i], 
+                            var crt = GetRuntimeTypeByDefType(runtimeCall.runtimeTypeDefType.runtimeDefTypeList[i],
                                 runtimeCall.runtimeTypeDefType.runtimeDefTypeList[i].ownerRuntimeClass,
                                 m_RuntimeTypeList, true);
                             classRTList.Add(crt);
@@ -2296,7 +3263,10 @@ namespace SimpleLanguage.VM.Runtime
                         if (runtimeCall.method.id == "type")
                         {
                             var sobj = RuntimeTypeManager.CreateTypeObject(rt);
+                            ByteStackPushPtr(sobj);
+#if DEBUG
                             this.m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
+#endif
                         }
                         else
                         {
@@ -2304,7 +3274,7 @@ namespace SimpleLanguage.VM.Runtime
                             for (int i = 0; i < runtimeCall.runtimeMethodTemplateRuntimeDefTypeList.Count; i++)
                             {
                                 var crt = GetRuntimeTypeByDefType(runtimeCall.runtimeMethodTemplateRuntimeDefTypeList[i], runtimeCall.runtimeMethodTemplateRuntimeDefTypeList[i].ownerRuntimeClass,
-                                    m_RuntimeTypeList, true );
+                                    m_RuntimeTypeList, true);
                                 classRTList2.Add(crt);
                             }
                             CLRVM.RunIRMethodByRuntimeType(rt, classRTList2, runtimeCall.method);
@@ -2330,13 +3300,12 @@ namespace SimpleLanguage.VM.Runtime
                         RuntimeClass irc = null;
                         if (iri.index > -1)
                         {
-                            int stackIndex = m_ValueIndex - iri.index;
-                            if (stackIndex < 0)
+                            if (m_StackSlotDepth < iri.index)
                             {
                                 Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", "");
                                 return;
                             }
-                            var v = m_ValueStack[stackIndex];
+                            ByteStackTryPeekRuntimeValue(iri.index, out var v);
                             if (v.sobject != null)
                             {
                                 rt = v.sobject.runtimeType;
@@ -2364,12 +3333,12 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 //var sobj = RuntimeTypeManager.CreateTypeObject(rt);
                                 //this.m_ValueStack[m_ValueIndex++].SetValueBySObject(sobj);
-                                Log.AddRuntimeLog(LID.ShowMessageAssert, "type ��Ϊ��final ����������Ӧ��ʹ��callStatic�ķ�ʽ");
+                                Log.AddRuntimeLog(LID.ShowMessageAssert, "type ��Ϊ��final ����������Ӧ��ʹ��callStatic�ķ�ʽ");
                                 break;
                             }
                             else
                             {
-                                // attribute hooks are handled in Front/Core; VM does�?reference Front.
+                                // attribute hooks are handled in Front/Core; VM does�?reference Front.
                                 List<RuntimeType> rtList = new List<RuntimeType>(rt.runtimeTemplateList);
                                 for (int i = 0; i < mfc.runtimeMethodTemplateRuntimeDefTypeList.Count; i++)
                                 {
@@ -2411,16 +3380,17 @@ namespace SimpleLanguage.VM.Runtime
                             Log.AddRuntimeLog(LID.ShowMessageAssert, "Virtual call failed: runtime call metadata not found.");
                             return;
                         }
-                        // attribute hooks are handled in Front/Core; VM does�?reference Front�?
+                        // attribute hooks are handled in Front/Core; VM does�?reference Front�?
 
                         int stackFrontIndex = (int)runtimeCall.paramCount + 1;
-                        int stackIndex = m_ValueIndex - stackFrontIndex;
-                        if (stackIndex < 0)
+                        if (m_StackSlotDepth < stackFrontIndex)
                         {
+#if DEBUG
                             Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "Stack index is negative.", stackFrontIndex, m_ValueIndex);
+#endif
                             return;
                         }
-                        var v = m_ValueStack[stackIndex];
+                        ByteStackTryPeekRuntimeValue(stackFrontIndex, out var v);
 
                         if (v.isNull || v.eType == EVMType.Null)
                         {
@@ -2477,9 +3447,11 @@ namespace SimpleLanguage.VM.Runtime
 
                 case EIROpCode.CastClass:
                     {
-                        if (m_ValueIndex  < 1 )
+                        if (m_StackSlotDepth < 1)
                         {
+#if DEBUG
                             Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "Stack index is negative.", 1, m_ValueIndex);
+#endif
                             break;
                         }
                         var mt = TryGetInstructionRuntimeDefType(iri);
@@ -2498,7 +3470,7 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             break;
                         }
-                        ref var v1 = ref m_ValueStack[m_ValueIndex - 1];
+                        ByteStackTryPeekRuntimeValue(1, out var v1);
                         if (v1.isNull)
                         {
                             break;
@@ -2546,6 +3518,10 @@ namespace SimpleLanguage.VM.Runtime
                             {
                                 v1.SetNull();
                             }
+                            ByteStackReplaceTop(v1);
+#if DEBUG
+                            m_ValueStack[m_ValueIndex - 1] = v1;
+#endif
                             break;
                         }
                         else
@@ -2568,11 +3544,15 @@ namespace SimpleLanguage.VM.Runtime
 
                                     if (!interfaceMatched)
                                     {
-                                        m_ValueStack[m_ValueIndex - 1].SetNull();
+                                        v1.SetNull();
                                     }
                                 }
                             }
                         }
+                        ByteStackReplaceTop(v1);
+#if DEBUG
+                        m_ValueStack[m_ValueIndex - 1] = v1;
+#endif
                     }
                     break;
                 default:
@@ -2596,14 +3576,17 @@ namespace SimpleLanguage.VM.Runtime
             RuntimeValue result = left;
             if (methodCall)
             {
-                if (m_ValueIndex == 0)
+                if (ByteStackSlotDepthCount == 0)
                 {
                     Log.AddRuntimeLog(LID.ShowMessageAssert, "Function" + this.id + "IRData" + iri.id + "  " + iri.opCode + " equality operator has no return value");
                     result.SetBoolValue(false);
                 }
                 else
                 {
-                    result = m_ValueStack[--m_ValueIndex];
+                    ByteStackPopToRuntimeValue(out result);
+#if DEBUG
+                    result = m_ValueStack[--m_ValueIndex]; // debug mirror
+#endif
                 }
             }
 
@@ -2653,17 +3636,21 @@ namespace SimpleLanguage.VM.Runtime
         {
             left = default;
             right = default;
-            if (m_ValueIndex < 2)
+            if (ByteStackSlotDepthCount < 2)
             {
                 if (logStackNotEnough)
                 {
-                    Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri?.opCode.ToString() ?? "Branch", 2, m_ValueIndex);
+                    Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri?.opCode.ToString() ?? "Branch", 2, ByteStackSlotDepthCount);
                 }
                 return false;
             }
 
-            right = m_ValueStack[--m_ValueIndex];
-            left = m_ValueStack[--m_ValueIndex];
+            ByteStackPopToRuntimeValue(out right);
+            ByteStackPopToRuntimeValue(out left);
+#if DEBUG
+            right = m_ValueStack[--m_ValueIndex]; // debug mirror
+            left = m_ValueStack[--m_ValueIndex];  // debug mirror
+#endif
             return true;
         }
     }
