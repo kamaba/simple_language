@@ -8,7 +8,6 @@
 
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
-using System;
 using System.Text;
 
 namespace SimpleLanguage.VM
@@ -58,9 +57,7 @@ namespace SimpleLanguage.VM
         /// <summary>标量位型数据（布尔用 <see cref="NumericUnion.i8"/> 0/1，与 <see cref="RuntimeValue"/> 一致）</summary>
         public NumericUnion m_Numeric;
 
-#if DEBUG
         protected RuntimeObject[] m_MemberRuntimeObjectArray = null;
-#endif
         protected byte[] m_MemberData = null;
 
         /// <summary>实例字段接收部分（静态字段见 <see cref="RuntimeType.memberData"/>）。</summary>
@@ -104,6 +101,7 @@ namespace SimpleLanguage.VM
         /// <summary>实例成员的 IR 都是非静态字段顺序一致，使用或者 <see cref="RuntimeClass.nonStaticIRMetaVariableList"/> 相同下标。</summary>
         public RuntimeObject? GetMemberRuntimeObject(int memberIndex)
         {
+            if (m_MemberRuntimeObjectArray == null) return null;
             if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)
                 return null;
             return m_MemberRuntimeObjectArray[memberIndex];
@@ -111,6 +109,8 @@ namespace SimpleLanguage.VM
         /// <summary>按成员下标从 <see cref="memberData"/> 读取到 <paramref name="RuntimeValue"/>，类型不匹配位为数字指针 Id，否则 RuntimeObject 处理。</summary>
         public bool TryReadMemberDataAsSValue(int memberIndex, ref RuntimeValue RuntimeValue)
         {
+            if( m_MemberRuntimeObjectArray == null )return false;
+
             if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)
                 return false;
             return m_MemberRuntimeObjectArray[memberIndex].TryReadMemberDataToSValue(ref RuntimeValue);
