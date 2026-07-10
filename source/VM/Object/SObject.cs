@@ -17,7 +17,6 @@ namespace SimpleLanguage.VM
         public virtual object? value => GetBoxedValue();
         public RuntimeClass runtimeClass => m_RuntimeType?.runtimeClass;
         public RuntimeType runtimeType => m_RuntimeType;
-        public short typeId { get; set; } = 0;
 
         /// <summary>Reference count, stored in the packed header (14 bits, 0–16383).</summary>
         public int refCount
