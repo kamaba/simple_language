@@ -14,13 +14,13 @@ namespace SimpleLanguage.VM.MemoryManagement
                     VisitArrayElements(ao, visitChild);
                     VisitClassMembers(ao, visitChild);
                     break;
-                case ClassObject co:
+                case SObject co:
                     VisitClassMembers(co, visitChild);
                     break;
             }
         }
 
-        private static void VisitClassMembers(ClassObject co, Action<SObject> visitChild)
+        private static void VisitClassMembers(SObject co, Action<SObject> visitChild)
         {
             var rc = co.runtimeType?.runtimeClass;
             int n = rc?.nonStaticIRMetaVariableList?.Count ?? 0;

@@ -11,7 +11,7 @@ using SimpleLanguage.VM.Runtime;
 using System.Buffers.Binary;
 namespace SimpleLanguage.VM
 {
-    public class ArrayObject : ClassObject
+    public class ArrayObject : SObject
     {
         public int length => m_Length;
 
@@ -124,7 +124,7 @@ namespace SimpleLanguage.VM
                 EVMType.Array => new ArrayObject[length],
                 EVMType.Object => new SObject[length],
                 EVMType.Type => new TypeObject[length],
-                EVMType.Class => new ClassObject[length],
+                EVMType.Class => new SObject[length],
                 _ => null,
             };
         }

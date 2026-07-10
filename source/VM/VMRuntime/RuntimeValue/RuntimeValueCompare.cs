@@ -288,7 +288,7 @@ namespace SimpleLanguage.VM
             return IsDataRuntimeType(rt) && rt.runtimeClass.isDynamicData;
         }
 
-        private static bool TryGetDataClassObject(ref RuntimeValue sval, out ClassObject dataObject)
+        private static bool TryGetDataClassObject(ref RuntimeValue sval, out SObject dataObject)
         {
             dataObject = null;
             if (sval.isNull)
@@ -299,7 +299,7 @@ namespace SimpleLanguage.VM
                 return false;
             }
 
-            var co = sval.sobject as ClassObject;
+            var co = sval.sobject;
             if (co == null)
                 return false;
 
@@ -310,7 +310,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        private static bool TryGetClassObject(ref RuntimeValue sval, out ClassObject classObject)
+        private static bool TryGetClassObject(ref RuntimeValue sval, out SObject classObject)
         {
             classObject = null;
             if (sval.isNull)
@@ -319,11 +319,11 @@ namespace SimpleLanguage.VM
             if (sval.eType != EVMType.Class && sval.eType != EVMType.Object)
                 return false;
 
-            classObject = sval.sobject as ClassObject;
+            classObject = sval.sobject;
             return classObject != null;
         }
 
-        private static bool TryGetEnumClassObject(ref RuntimeValue sval, out ClassObject enumObject)
+        private static bool TryGetEnumClassObject(ref RuntimeValue sval, out SObject enumObject)
         {
             enumObject = null;
             if (!TryGetClassObject(ref sval, out var co))
@@ -340,7 +340,7 @@ namespace SimpleLanguage.VM
             return false;
         }
 
-        private static bool TryReadEnumMemberValue(ClassObject enumMemberObject, ref RuntimeValue value)
+        private static bool TryReadEnumMemberValue(SObject enumMemberObject, ref RuntimeValue value)
         {
             if (enumMemberObject == null)
                 return false;
@@ -466,7 +466,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        private static bool TryRunClassEqualityOperator(ClassObject co, bool isEqual, out bool needInvert)
+        private static bool TryRunClassEqualityOperator(SObject co, bool isEqual, out bool needInvert)
         {
             needInvert = false;
             if (co == null)
@@ -599,7 +599,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        private static bool IsDataValueEqual(ClassObject leftData, ClassObject rightData)
+        private static bool IsDataValueEqual(SObject leftData, SObject rightData)
         {
             if (leftData == null || rightData == null)
                 return false;
@@ -621,7 +621,7 @@ namespace SimpleLanguage.VM
             return !l.isNull && l.eType == EVMType.Boolean && l.uint8Value == 1;
         }
 
-        private static bool IsDataMemberValuesEqual(ClassObject leftData, ClassObject rightData)
+        private static bool IsDataMemberValuesEqual(SObject leftData, SObject rightData)
         {
             if (leftData == null || rightData == null)
                 return false;
@@ -680,7 +680,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        private static bool IsAnonymousDataShapeEqual(ClassObject leftData, ClassObject rightData)
+        private static bool IsAnonymousDataShapeEqual(SObject leftData, SObject rightData)
         {
             if (leftData == null || rightData == null)
                 return false;
@@ -903,9 +903,10 @@ namespace SimpleLanguage.VM
         // logical && and || on truthiness
         private static bool TryRunClassLogicalOperator(ref RuntimeValue left, ref RuntimeValue right, string opName)
         {
-            if (left.eType != EVMType.Class || left.sobject is not ClassObject co)
+            if (left.eType != EVMType.Class || left.sobject == null)
                 return false;
 
+            var co = left.sobject;
             var method = co.runtimeType?.runtimeClass?.GetOperatorMethodIndexByMethod(opName, out _);
             if (method == null)
                 return false;

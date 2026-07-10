@@ -104,16 +104,16 @@ namespace SimpleLanguage.VM
                 return true;
             }
 
-            if (value.sobject is ClassObject dataObject && dataObject.runtimeClass?.metaClassKind == DataMetaClassKind)
+            if (value.sobject != null && value.sobject.runtimeClass?.metaClassKind == DataMetaClassKind)
             {
-                text = FormatDataObject(dataObject, new HashSet<int>());
+                text = FormatDataObject(value.sobject, new HashSet<int>());
                 return true;
             }
 
             return false;
         }
 
-        private static string FormatDataObject(ClassObject dataObject, HashSet<int> visitPath)
+        private static string FormatDataObject(SObject dataObject, HashSet<int> visitPath)
         {
             if (!visitPath.Add(dataObject.hashCode))
                 return QuoteJsonString("<cycle>");
@@ -226,11 +226,11 @@ namespace SimpleLanguage.VM
             if (TryUnwrapObjectReferenceValue(ref value, out var unwrappedValue))
                 value = unwrappedValue;
 
-            if (value.sobject is ClassObject dataObject && dataObject.runtimeClass?.metaClassKind == DataMetaClassKind)
-                return FormatDataObject(dataObject, visitPath);
+            if (value.sobject != null && value.sobject.runtimeClass?.metaClassKind == DataMetaClassKind)
+                return FormatDataObject(value.sobject, visitPath);
 
-            if (value.sobject is ClassObject classObject)
-                return FormatClassObject(classObject, visitPath);
+            if (value.sobject != null)
+                return FormatClassObject(value.sobject, visitPath);
 
             if (value.sobject is TypeObject typeObject && typeObject.currentRT?.runtimeClass?.metaClassKind == DataMetaClassKind)
                 return FormatDataRuntimeType(typeObject.currentRT, visitPath);
@@ -272,7 +272,7 @@ namespace SimpleLanguage.VM
             }
         }
 
-        private static string FormatClassObject(ClassObject classObject, HashSet<int> visitPath)
+        private static string FormatClassObject(SObject classObject, HashSet<int> visitPath)
         {
             if (classObject.runtimeClass?.metaClassKind == DataMetaClassKind)
                 return FormatDataObject(classObject, visitPath);
@@ -357,7 +357,7 @@ namespace SimpleLanguage.VM
         }
 
         private static void ReadInstanceMemberValueByField(
-            ClassObject dataObject,
+            SObject dataObject,
             RuntimeVariable? field,
             int fieldOrdinal,
             int memberCount,
@@ -422,7 +422,7 @@ namespace SimpleLanguage.VM
         }
 
         private static bool TryReadCompatibleInstanceMemberValue(
-            ClassObject dataObject,
+            SObject dataObject,
             RuntimeVariable? field,
             int memberCount,
             int excludeIndex1,
@@ -488,7 +488,7 @@ namespace SimpleLanguage.VM
 
             if (expectedRuntimeType.runtimeClass?.metaClassKind == DataMetaClassKind)
             {
-                return value.sobject is ClassObject;
+                return value.sobject != null && value.sobject.eType == EVMType.Class;
             }
 
             if (expectedRuntimeType.eType == EVMType.Array)
@@ -542,7 +542,7 @@ namespace SimpleLanguage.VM
             vm.PushSValueSynced(outv);
         }
 
-        static bool TryPopTwoDataOperands(RuntimeVM vm, SLSystemMethodCallPackage sysPkg, out ClassObject d1, out ClassObject d2)
+        static bool TryPopTwoDataOperands(RuntimeVM vm, SLSystemMethodCallPackage sysPkg, out SObject d1, out SObject d2)
         {
             d1 = null!;
             d2 = null!;
@@ -561,7 +561,7 @@ namespace SimpleLanguage.VM
             return true;
         }
 
-        static bool TryGetDataInstance(ref RuntimeValue value, out ClassObject dataObject)
+        static bool TryGetDataInstance(ref RuntimeValue value, out SObject dataObject)
         {
             dataObject = null!;
             if (value.isNull)
@@ -569,16 +569,16 @@ namespace SimpleLanguage.VM
                 return false;
             }
 
-            if (value.sobject is ClassObject co && co.runtimeClass?.metaClassKind == DataMetaClassKind)
+            if (value.sobject != null && value.sobject.runtimeClass?.metaClassKind == DataMetaClassKind)
             {
-                dataObject = co;
+                dataObject = value.sobject;
                 return true;
             }
 
             return false;
         }
 
-        static bool MemberDataBuffersEqual(ClassObject a, ClassObject b)
+        static bool MemberDataBuffersEqual(SObject a, SObject b)
         {
             var bufA = a.memberData;
             var bufB = b.memberData;
@@ -595,7 +595,7 @@ namespace SimpleLanguage.VM
             return bufA.AsSpan().SequenceEqual(bufB);
         }
 
-        static bool DataLayoutsShapeEqual(ClassObject a, ClassObject b)
+        static bool DataLayoutsShapeEqual(SObject a, SObject b)
         {
             return string.Equals(
                 BuildLayoutShapeKey(a),
@@ -603,7 +603,7 @@ namespace SimpleLanguage.VM
                 StringComparison.Ordinal);
         }
 
-        static bool DataLayoutsNameAndTypeEqual(ClassObject a, ClassObject b)
+        static bool DataLayoutsNameAndTypeEqual(SObject a, SObject b)
         {
             return string.Equals(
                 BuildLayoutNameAndTypeKey(a),
@@ -611,7 +611,7 @@ namespace SimpleLanguage.VM
                 StringComparison.Ordinal);
         }
 
-        static string BuildLayoutShapeKey(ClassObject dataObject)
+        static string BuildLayoutShapeKey(SObject dataObject)
         {
             var fields = dataObject.runtimeClass.nonStaticIRMetaVariableList;
             var sb = new StringBuilder();
@@ -638,7 +638,7 @@ namespace SimpleLanguage.VM
             return sb.ToString();
         }
 
-        static string BuildLayoutNameAndTypeKey(ClassObject dataObject)
+        static string BuildLayoutNameAndTypeKey(SObject dataObject)
         {
             var fields = dataObject.runtimeClass.nonStaticIRMetaVariableList;
             var sb = new StringBuilder();
@@ -778,7 +778,7 @@ namespace SimpleLanguage.VM
                     && rt.eType == EVMType.Class);
         }
 
-        static bool DataValuesEqual(ClassObject a, ClassObject b, HashSet<(int, int)> pairVisit)
+        static bool DataValuesEqual(SObject a, SObject b, HashSet<(int, int)> pairVisit)
         {
             if (!DataFieldNamesAligned(a, b))
             {
@@ -820,7 +820,7 @@ namespace SimpleLanguage.VM
             }
         }
 
-        static bool DataFieldNamesAligned(ClassObject a, ClassObject b)
+        static bool DataFieldNamesAligned(SObject a, SObject b)
         {
             var fieldsA = a.runtimeClass.nonStaticIRMetaVariableList;
             var fieldsB = b.runtimeClass.nonStaticIRMetaVariableList;

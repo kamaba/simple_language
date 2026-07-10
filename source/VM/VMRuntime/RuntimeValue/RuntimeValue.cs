@@ -39,8 +39,9 @@ namespace SimpleLanguage.VM
             // NativeBridge/BridgeObject 鍙傛暟钀藉湴锛歏M 渚у皢 BridgeObject 瀹炰緥瑙ｆ瀽鎴愮洰�?CLR 绫诲瀷銆?
             // BridgeObject �?Front 閲岄€氳�?_init_(string type) 浣滀负鈥滃弬鏁版弿杩扮鈥濅紶鍏ワ紝
             // �?VM 杩愯鏃堕€氬父浼氳鍐欏叆鏌愪釜鍙鎴愬憳鍙橀噺锛堝父瑙佷�?`type`锛夛紝鍥犳杩欓噷鍋氬绉拌浆鎹€?
-            if (sobject is ClassObject co && IsBridgeObjectRuntime(co.runtimeClass))
+            if (sobject != null && IsBridgeObjectRuntime(sobject.runtimeClass))
             {
+                var co = sobject;
                 if (TryExtractBridgeObjectPayload(co, out var payloadObj))
                 {
                     if (payloadObj == null) return null;
@@ -94,7 +95,7 @@ namespace SimpleLanguage.VM
             return n.EndsWith("BridgeObject", StringComparison.Ordinal) || n.Contains(".BridgeObject", StringComparison.Ordinal);
         }
 
-        private static bool TryExtractBridgeObjectPayload(ClassObject co, out object? payloadObj)
+        private static bool TryExtractBridgeObjectPayload(SObject co, out object? payloadObj)
         {
             payloadObj = null;
             var rc = co.runtimeClass;
@@ -486,7 +487,7 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Class:
                     {
-                        sobject = tobj as ClassObject;
+                        sobject = tobj as SObject;
                         isNull = sobject == null;
                     }
                     break;
@@ -524,135 +525,117 @@ namespace SimpleLanguage.VM
                 return;
             }
             isNull = false;
-            switch (val)
+            switch (val.eType)
             {
-                case VoidObject voidobj:
-                    {
-
-                    }
-                    break;
-                case BoolObject boolobj:
+                case EVMType.Boolean:
                     {
                         eType = EVMType.Boolean;
-                        uint8Value = boolobj.value ? (byte)1 : (byte)0;
+                        uint8Value = val.m_Numeric.u8 != 0 ? (byte)1 : (byte)0;
                     }
                     break;
-                case UInt8Object int8obj:
+                case EVMType.UInt8:
                     {
                         eType = EVMType.UInt8;
-                        uint8Value = (byte)int8obj.value;
+                        uint8Value = val.m_Numeric.u8;
                     }
                     break;
-                case Int8Object sint8obj:
+                case EVMType.Int8:
                     {
                         eType = EVMType.Int8;
-                        int8Value = sint8obj.value;
+                        int8Value = val.m_Numeric.i8;
                     }
                     break;
-                //case CharObject charObj:
-                //    {
-                //        eType = EVMType.Char;
-                //        charValue = charObj.value;
-                //    }
-                //    break;
-                case Int16Object int16obj:
+                case EVMType.Int16:
                     {
                         eType = EVMType.Int16;
-                        int16Value = int16obj.value;
+                        int16Value = val.m_Numeric.i16;
                     }
                     break;
-                case UInt16Object uint16obj:
+                case EVMType.UInt16:
                     {
                         eType = EVMType.UInt16;
-                        uint16Value = uint16obj.value;
+                        uint16Value = val.m_Numeric.u16;
                     }
                     break;
-                case Int32Object int32obj:
+                case EVMType.Int32:
                     {
                         eType = EVMType.Int32;
-                        int32Value = int32obj.value;
+                        int32Value = val.m_Numeric.i32;
                     }
                     break;
-                case UInt32Object uint32obj:
+                case EVMType.UInt32:
                     {
                         eType = EVMType.UInt32;
-                        uint32Value = uint32obj.value;
+                        uint32Value = val.m_Numeric.u32;
                     }
                     break;
-                case Int64Object int64obj:
+                case EVMType.Int64:
                     {
                         eType = EVMType.Int64;
-                        int64Value = int64obj.value;
+                        int64Value = val.m_Numeric.i64;
                     }
                     break;
-                case UInt64Object uint64obj:
+                case EVMType.UInt64:
                     {
                         eType = EVMType.UInt64;
-                        uint64Value = uint64obj.value;
+                        uint64Value = val.m_Numeric.u64;
                     }
                     break;
-                case Float32Object floatobj:
+                case EVMType.Float32:
                     {
                         eType = EVMType.Float32;
-                        float32Value = floatobj.value;
+                        float32Value = val.m_Numeric.f32;
                     }
                     break;
-                case Float64Object doubleobj:
+                case EVMType.Float64:
+                case EVMType.Num:
                     {
                         eType = EVMType.Float64;
-                        float64Value = doubleobj.value;
+                        float64Value = val.m_Numeric.f64;
                     }
                     break;
-                case StringObject stringobj:
+                case EVMType.String:
                     {
                         eType = EVMType.String;
-                        stringValue = stringobj.value;
-                        sobject = stringobj;
+                        if (val is StringObject stringobj)
+                        {
+                            stringValue = stringobj.value;
+                            sobject = stringobj;
+                        }
+                        else
+                        {
+                            stringValue = val.value?.ToString() ?? string.Empty;
+                            sobject = val;
+                        }
                     }
                     break;
-                case ArrayObject arrayobj:
+                case EVMType.Array:
                     {
                         eType = EVMType.Array;
-                        sobject = arrayobj;
+                        sobject = val;
                     }
                     break;
-                case TemplateObject templateobj:
+                case EVMType.Object:
                     {
-                        if (templateobj == null)
-                        {
-                            this.SetNull();
-                            return;
-                        }
-                        eType = templateobj.eType;
-                        SetTypeValue(eType, templateobj.value);
+                        eType = EVMType.Object;
+                        sobject = val;
+                    }
+                    break;
+                case EVMType.Class:
+                    {
+                        eType = EVMType.Class;
+                        sobject = val;
+                    }
+                    break;
+                case EVMType.Type:
+                    {
+                        eType = EVMType.Type;
+                        sobject = val;
                     }
                     break;
                 default:
                     {
-                        if (val.eType == EVMType.Object)
-                        {
-                            eType = EVMType.Object;
-                            sobject = val;
-                        }
-                        else if (val.eType == EVMType.Class)
-                        {
-                            eType = EVMType.Class;
-                            sobject = val;
-                        }
-                        else if (val.eType == EVMType.Array)
-                        {
-                            eType = EVMType.Array;
-                            sobject = val;
-                        }
-                        else if (val.eType == EVMType.Type)
-                        {
-                            eType = EVMType.Type;
-                            sobject = val;
-                        }
-                        else
-                        {
-                            SetRawSObject(val.value as SObject);
-                        }
+                        SetRawSObject(val.value as SObject);
                     }
                     break;
             }
@@ -687,52 +670,70 @@ namespace SimpleLanguage.VM
                     return sobject;
                 case EVMType.UInt8:
                     {
-                        return new UInt8Object(uint8Value);
+                        var num = new SObject(EVMType.UInt8);
+                        num.m_Numeric.u8 = uint8Value;
+                        return num;
                     }
                 case EVMType.Boolean:
                     {
-                        return new BoolObject(uint8Value == 1);
+                        var sobj = new SObject(EVMType.Boolean);
+                        sobj.m_Numeric.u8 = uint8Value;
+                        return sobj;
                     }
                 case EVMType.Int8:
                     {
-                        return new Int8Object(int8Value);
+                        var num = new SObject(EVMType.Int8);
+                        num.m_Numeric.i8 = int8Value;
+                        return num;
                     }
-                //case EVMType.Char:
-                //    {
-                //        return new CharObject(charValue);
-                //    }
                 case EVMType.Int16:
                     {
-                        return new Int16Object(int16Value);
+                        var num = new SObject(EVMType.Int16);
+                        num.m_Numeric.i16 = int16Value;
+                        return num;
                     }
                 case EVMType.UInt16:
                     {
-                        return new UInt16Object(uint16Value);
+                        var num = new SObject(EVMType.UInt16);
+                        num.m_Numeric.u16 = uint16Value;
+                        return num;
                     }
                 case EVMType.Int32:
                     {
-                        return new Int32Object(int32Value);
+                        var num = new SObject(EVMType.Int32);
+                        num.m_Numeric.i32 = int32Value;
+                        return num;
                     }
                 case EVMType.UInt32:
                     {
-                        return new UInt32Object(uint32Value);
+                        var num = new SObject(EVMType.UInt32);
+                        num.m_Numeric.u32 = uint32Value;
+                        return num;
                     }
                 case EVMType.Int64:
                     {
-                        return new Int64Object(int64Value);
+                        var num = new SObject(EVMType.Int64);
+                        num.m_Numeric.i64 = int64Value;
+                        return num;
                     }
                 case EVMType.UInt64:
                     {
-                        return new UInt64Object(uint64Value);
+                        var num = new SObject(EVMType.UInt64);
+                        num.m_Numeric.u64 = uint64Value;
+                        return num;
                     }
                 case EVMType.Float32:
                     {
-                        return new Float32Object(float32Value);
+                        var num = new SObject(EVMType.Float32);
+                        num.m_Numeric.f32 = float32Value;
+                        return num;
                     }
                 case EVMType.Float64:
                 case EVMType.Num:
                     {
-                        return new Float64Object(float64Value);
+                        var num = new SObject(EVMType.Float64);
+                        num.m_Numeric.f64 = float64Value;
+                        return num;
                     }
                 default:
                     return null;
@@ -857,9 +858,9 @@ namespace SimpleLanguage.VM
             {
                 case EVMType.Boolean:
                     {
-                        if (sobject is BoolObject bo)
+                        if (sobject.eType == EVMType.Boolean)
                         {
-                            uint8Value = (byte)(bo.value ? 1 : 0);
+                            uint8Value = (byte)(sobject.m_Numeric.u8 != 0 ? 1 : 0);
                         }
                         else
                         {
@@ -869,25 +870,25 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.UInt8:
                     {
-                        if (sobject is UInt8Object uo)
-                            uint8Value = uo.value;
+                        if (sobject.eType == EVMType.UInt8)
+                            uint8Value = sobject.m_Numeric.u8;
                         else
                             uint8Value = Convert.ToByte(raw, CultureInfo.InvariantCulture);
                     }
                     break;
                 case EVMType.Int8:
                     {
-                        if (sobject is Int8Object io)
-                            int8Value = io.value;
+                        if (sobject.eType == EVMType.Int8)
+                            int8Value = sobject.m_Numeric.i8;
                         else
                             int8Value = Convert.ToSByte(raw, CultureInfo.InvariantCulture);
                     }
                     break;
                 case EVMType.Num:
                     {
-                        if (sobject is NumObject no)
+                        if (sobject != null && sobject.isNumeric)
                         {
-                            float64Value = Convert.ToDouble(no.value);
+                            float64Value = sobject.ToDouble();
                         }
                         else
                         {
@@ -897,9 +898,9 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Int16:
                     {
-                        if (sobject is Int16Object io)
+                        if (sobject.eType == EVMType.Int16)
                         {
-                            int16Value = io.value;
+                            int16Value = sobject.m_Numeric.i16;
                         }
                         else
                         {
@@ -909,56 +910,56 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.UInt16:
                     {
-                        if (sobject is UInt16Object uo)
-                            uint16Value = uo.value;
+                        if (sobject.eType == EVMType.UInt16)
+                            uint16Value = sobject.m_Numeric.u16;
                         else
                             uint16Value = Convert.ToUInt16(raw, CultureInfo.InvariantCulture);
                     }
                     break;
                 case EVMType.Int32:
                     {
-                        if (sobject is Int32Object io)
-                            int32Value = io.value;
+                        if (sobject.eType == EVMType.Int32)
+                            int32Value = sobject.m_Numeric.i32;
                         else
                             int32Value = Convert.ToInt32(raw, CultureInfo.InvariantCulture);
                     }
                     break;
                 case EVMType.UInt32:
                     {
-                        if (sobject is UInt32Object uo)
-                            uint32Value = uo.value;
+                        if (sobject.eType == EVMType.UInt32)
+                            uint32Value = sobject.m_Numeric.u32;
                         else
                             uint32Value = Convert.ToUInt32(raw, CultureInfo.InvariantCulture);
                     }
                     break;
                 case EVMType.Int64:
                     {
-                        if (sobject is Int64Object io)
-                            int64Value = io.value;
+                        if (sobject.eType == EVMType.Int64)
+                            int64Value = sobject.m_Numeric.i64;
                         else
                             int64Value = Convert.ToInt64(raw, CultureInfo.InvariantCulture);
                     }
                     break;
                 case EVMType.UInt64:
                     {
-                        if (sobject is UInt64Object uo)
-                            uint64Value = uo.value;
+                        if (sobject.eType == EVMType.UInt64)
+                            uint64Value = sobject.m_Numeric.u64;
                         else
                             uint64Value = Convert.ToUInt64(raw, CultureInfo.InvariantCulture);
                     }
                     break;
                 case EVMType.Float32:
                     {
-                        if (sobject is Float32Object fo)
-                            float32Value = fo.value;
+                        if (sobject.eType == EVMType.Float32)
+                            float32Value = sobject.m_Numeric.f32;
                         else
                             float32Value = Convert.ToSingle(raw, CultureInfo.InvariantCulture);
                     }
                     break;
                 case EVMType.Float64:
                     {
-                        if (sobject is Float64Object fo)
-                            float64Value = fo.value;
+                        if (sobject.eType == EVMType.Float64 || sobject.eType == EVMType.Num)
+                            float64Value = sobject.m_Numeric.f64;
                         else
                             float64Value = Convert.ToDouble(raw, CultureInfo.InvariantCulture);
                     }

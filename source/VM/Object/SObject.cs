@@ -3,10 +3,13 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2022/11/22 12:00:00
-//  Description: 
+//  Description:
 //****************************************************************************
 
+using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
+using System;
+using System.Text;
 
 namespace SimpleLanguage.VM
 {
@@ -14,9 +17,10 @@ namespace SimpleLanguage.VM
     {
         public int hashCode => (m_Header.Hash);
         public EVMType eType => (EVMType)m_Header.EType;
+        public bool isNumeric => eType >= EVMType.UInt8 && eType <= EVMType.Num;
         public virtual object? value => GetBoxedValue();
         public RuntimeClass runtimeClass => m_RuntimeType?.runtimeClass;
-        public RuntimeType runtimeType => m_RuntimeType;
+        public RuntimeType runtimeType { get => m_RuntimeType; set => m_RuntimeType = value; }
 
         /// <summary>Reference count, stored in the packed header (14 bits, 0–16383).</summary>
         public int refCount
@@ -52,8 +56,15 @@ namespace SimpleLanguage.VM
         protected VMObjectHeader m_Header;
         protected RuntimeType? m_RuntimeType = null;
         /// <summary>标量位型数据（布尔用 <see cref="NumericUnion.i8"/> 0/1，与 <see cref="RuntimeValue"/> 一致）</summary>
-        protected NumericUnion m_Numeric;
+        public NumericUnion m_Numeric;
 
+#if DEBUG
+        protected RuntimeObject[] m_MemberRuntimeObjectArray = null;
+#endif
+        protected byte[] m_MemberData = null;
+
+        /// <summary>实例字段接收部分（静态字段见 <see cref="RuntimeType.memberData"/>）。</summary>
+        public byte[]? memberData => m_MemberData;
 
         protected static int idCount = 10000;
         protected SObject()
@@ -69,6 +80,141 @@ namespace SimpleLanguage.VM
             m_RuntimeType = RuntimeTypeManager.GetRuntimeTypeByEVMType(etype);
             m_Header = VMObjectHeader.Make((byte)etype, VMObjectHeader.MetaKindRegular, 0);
             m_Header.Hash = (int)++idCount;
+        }
+
+        public SObject(RuntimeType irmt)
+        {
+            m_Numeric = default;
+            m_Header = VMObjectHeader.Make((byte)EVMType.Class, VMObjectHeader.MetaKindRegular, 0);
+            m_Header.Hash = (int)++idCount;
+            m_RuntimeType = irmt;
+
+            var metaVariableList = m_RuntimeType.runtimeClass.nonStaticIRMetaVariableList;
+            m_MemberRuntimeObjectArray = new RuntimeObject[metaVariableList.Count];
+            for (int i = 0; i < m_MemberRuntimeObjectArray.Length; i++)
+            {
+                var rt = RuntimeVM.GetRuntimeTypeByDefType(metaVariableList[i].runtimeDefType, m_RuntimeType.runtimeClass, irmt.runtimeTemplateList, true);
+                m_MemberRuntimeObjectArray[i] = new RuntimeObject(rt, metaVariableList[i], null);
+            }
+            BuildMemberDataLayout();
+        }
+
+        public virtual void CreateObject() { }
+
+        /// <summary>实例成员的 IR 都是非静态字段顺序一致，使用或者 <see cref="RuntimeClass.nonStaticIRMetaVariableList"/> 相同下标。</summary>
+        public RuntimeObject? GetMemberRuntimeObject(int memberIndex)
+        {
+            if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)
+                return null;
+            return m_MemberRuntimeObjectArray[memberIndex];
+        }
+        /// <summary>按成员下标从 <see cref="memberData"/> 读取到 <paramref name="RuntimeValue"/>，类型不匹配位为数字指针 Id，否则 RuntimeObject 处理。</summary>
+        public bool TryReadMemberDataAsSValue(int memberIndex, ref RuntimeValue RuntimeValue)
+        {
+            if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)
+                return false;
+            return m_MemberRuntimeObjectArray[memberIndex].TryReadMemberDataToSValue(ref RuntimeValue);
+        }
+        public void BuildMemberDataLayout()
+        {
+            if (m_MemberRuntimeObjectArray == null || m_MemberRuntimeObjectArray.Length == 0)
+            {
+                m_MemberData = null;
+                return;
+            }
+
+            int n = m_MemberRuntimeObjectArray.Length;
+            int totalBytes = 0;
+            for (int i = 0; i < n; i++)
+            {
+                totalBytes += MemberDataLayout.GetSlotByteLength(m_MemberRuntimeObjectArray[i].runtimeType);
+            }
+
+            m_MemberData = totalBytes > 0 ? new byte[totalBytes] : null;
+            int offset = 0;
+            for (int i = 0; i < n; i++)
+            {
+                var ro = m_MemberRuntimeObjectArray[i];
+                int len = MemberDataLayout.GetSlotByteLength(ro.runtimeType);
+                ro.AttachMemberDataSlice(m_MemberData, offset, len, i);
+                offset += len;
+            }
+        }
+        public virtual void SetSValue(SObject val)
+        {
+            val.refCount++;
+        }
+        /// <summary>从实例成员获取到 <paramref name="RuntimeValue"/>，与 <see cref="m_MemberData"/> 一致，同 <see cref="RuntimeType.GetStaticMemberVariableSValue"/> 静态类）。</summary>
+        public void GetMemberVariableSValue(int index, ref RuntimeValue RuntimeValue)
+        {
+            if (index < 0)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "执行的参数超出范围!! < 0 ");
+                return;
+            }
+            if (m_MemberRuntimeObjectArray == null || index >= m_MemberRuntimeObjectArray.Length)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "执行的参数超出范围!!");
+                return;
+            }
+            m_MemberRuntimeObjectArray[index].SetSValueByRuntimeObjct(ref RuntimeValue);
+        }
+        /// <summary>实例成员写统一入口，同步到 <see cref="m_MemberData"/>，同 <see cref="RuntimeType.SetStaticMemberVariableSValue"/> 静态类）。</summary>
+        public void SetMemberVariableSValue(int index, RuntimeValue RuntimeValue)
+        {
+            if (m_MemberRuntimeObjectArray == null || index < 0 || index >= m_MemberRuntimeObjectArray.Length)
+            {
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "执行的参数超出范围!!");
+                return;
+            }
+
+            int targetIndex = ResolveCompatibleMemberIndex(index, ref RuntimeValue);
+            m_MemberRuntimeObjectArray[targetIndex].SetSObjectBySValue(ref RuntimeValue);
+        }
+
+        private int ResolveCompatibleMemberIndex(int preferIndex, ref RuntimeValue RuntimeValue)
+        {
+            if (m_RuntimeType?.runtimeClass?.metaClassKind != 2)
+                return preferIndex;
+
+            if (preferIndex < 0 || preferIndex >= m_MemberRuntimeObjectArray.Length)
+                return preferIndex;
+
+            var preferRuntimeType = m_MemberRuntimeObjectArray[preferIndex]?.runtimeType;
+            if (IsValueCompatibleWithRuntimeType(ref RuntimeValue, preferRuntimeType))
+                return preferIndex;
+
+            for (int i = 0; i < m_MemberRuntimeObjectArray.Length; i++)
+            {
+                if (i == preferIndex)
+                    continue;
+
+                var candidateType = m_MemberRuntimeObjectArray[i]?.runtimeType;
+                if (IsValueCompatibleWithRuntimeType(ref RuntimeValue, candidateType))
+                    return i;
+            }
+
+            return preferIndex;
+        }
+
+        private static bool IsValueCompatibleWithRuntimeType(ref RuntimeValue RuntimeValue, RuntimeType? expectedType)
+        {
+            if (expectedType == null)
+                return false;
+
+            if (RuntimeValue.isNull)
+                return true;
+
+            if (expectedType.runtimeClass?.metaClassKind == 2)
+                return RuntimeValue.sobject != null && RuntimeValue.sobject.eType == EVMType.Class;
+
+            if (expectedType.eType == EVMType.Array)
+                return RuntimeValue.sobject is ArrayObject || RuntimeValue.eType == EVMType.Array;
+
+            if (expectedType.eType == EVMType.String)
+                return RuntimeValue.eType == EVMType.String || RuntimeValue.sobject is StringObject;
+
+            return true;
         }
 
         protected virtual object? GetBoxedValue()
@@ -103,8 +249,8 @@ namespace SimpleLanguage.VM
             }
         }
 
-        /// <summary>写入类型与负载（不修�?<see cref="refCount"/>）�?/summary>
-        protected void StoreValue(EVMType vmType, object? val)
+        /// <summary>写入类型与负载（不修改 <see cref="refCount"/>）。</summary>
+        public void StoreValue(EVMType vmType, object? val)
         {
             m_Header.EType = (byte)vmType;
             m_Numeric = default;
@@ -218,9 +364,184 @@ namespace SimpleLanguage.VM
             refCount++;
         }
 
+        // Convenient setters; payload lives in m_Numeric / SetValueByType.
+        public virtual void SetValue(double v)
+        {
+            SetValueByType(EVMType.Float64, v);
+        }
+
+        public virtual void SetValue(float v)
+        {
+            SetValueByType(EVMType.Float32, v);
+        }
+
+        public virtual void SetValue(long v)
+        {
+            SetValueByType(EVMType.Int64, v);
+        }
+
+        public virtual void SetValue(ulong v)
+        {
+            SetValueByType(EVMType.UInt64, v);
+        }
+
+        public virtual void SetValue(int v)
+        {
+            SetValueByType(EVMType.Int32, v);
+        }
+
+        public virtual void SetValue(uint v)
+        {
+            SetValueByType(EVMType.UInt32, v);
+        }
+
+        public virtual void SetValue(short v)
+        {
+            SetValueByType(EVMType.Int16, v);
+        }
+
+        public virtual void SetValue(ushort v)
+        {
+            SetValueByType(EVMType.UInt16, v);
+        }
+        public virtual void SetValue(byte v)
+        {
+            SetValueByType(EVMType.UInt8, v);
+        }
+
+        public virtual void SetValue(sbyte v)
+        {
+            SetValueByType(EVMType.Int8, v);
+        }
+
+        public virtual double ToDouble()
+        {
+            switch ((EVMType)m_Header.EType)
+            {
+                case EVMType.Float64:
+                case EVMType.Num:
+                    return m_Numeric.f64;
+                case EVMType.Float32:
+                    return (double)m_Numeric.f32;
+                case EVMType.Int64:
+                    return (double)m_Numeric.i64;
+                case EVMType.UInt64:
+                    return (double)m_Numeric.u64;
+                case EVMType.Int32:
+                    return (double)m_Numeric.i32;
+                case EVMType.UInt32:
+                    return (double)m_Numeric.u32;
+                case EVMType.Int16:
+                    return (double)m_Numeric.i16;
+                case EVMType.UInt16:
+                    return (double)m_Numeric.u16;
+                case EVMType.UInt8:
+                    return (double)m_Numeric.u8;
+                case EVMType.Int8:
+                    return (double)m_Numeric.i8;
+                case EVMType.Boolean:
+                    return m_Numeric.u8 != 0 ? 1.0 : 0.0;
+                default:
+                    return 0.0;
+            }
+        }
+
+        public virtual long ToInt64()
+        {
+            switch ((EVMType)m_Header.EType)
+            {
+                case EVMType.Float64:
+                case EVMType.Num:
+                    return (long)m_Numeric.f64;
+                case EVMType.Float32:
+                    return (long)m_Numeric.f32;
+                case EVMType.Int64:
+                    return m_Numeric.i64;
+                case EVMType.UInt64:
+                    return (long)m_Numeric.u64;
+                case EVMType.Int32:
+                    return (long)m_Numeric.i32;
+                case EVMType.UInt32:
+                    return (long)m_Numeric.u32;
+                case EVMType.Int16:
+                    return (long)m_Numeric.i16;
+                case EVMType.UInt16:
+                    return (long)m_Numeric.u16;
+                case EVMType.UInt8:
+                    return (long)m_Numeric.u8;
+                case EVMType.Int8:
+                    return (long)m_Numeric.i8;
+                case EVMType.Boolean:
+                    return m_Numeric.u8 != 0 ? 1L : 0L;
+                default:
+                    return 0;
+            }
+        }
+
+        // perform arithmetic operation with another SObject
+        // sign: 0:+ 1:- 2:* 3:/ 4:%
+        public virtual void Operate(int sign, SObject other, bool isUnsign)
+        {
+            double a = this.ToDouble();
+            double b = other != null ? other.ToDouble() : 0.0;
+            double r = 0.0;
+            switch (sign)
+            {
+                case 0: r = a + b; break;
+                case 1: r = a - b; break;
+                case 2: r = a * b; break;
+                case 3: r = (b == 0.0) ? 0.0 : a / b; break;
+                case 4: r = (b == 0.0) ? 0.0 : a % b; break;
+                default:
+                    r = a;
+                    break;
+            }
+            SetValue(r);
+        }
+
         public virtual string ToFormatString()
         {
-            return $"ID: {hashCode} value:" + this != null ? this.ToString() : m_Numeric.ToString();
+            switch ((EVMType)m_Header.EType)
+            {
+                case EVMType.Class:
+                    {
+                        StringBuilder sb = new StringBuilder();
+                        sb.Append(m_RuntimeType?.runtimeClass?.ToString() ?? m_RuntimeType?.ToString() ?? "");
+                        return sb.ToString();
+                    }
+                case EVMType.Boolean:
+                    return (m_Numeric.u8 != 0).ToString();
+                case EVMType.UInt8:
+                    return m_Numeric.u8.ToString();
+                case EVMType.Int8:
+                    return m_Numeric.i8.ToString();
+                case EVMType.Int16:
+                    return m_Numeric.i16.ToString();
+                case EVMType.UInt16:
+                    return m_Numeric.u16.ToString();
+                case EVMType.Int32:
+                    return m_Numeric.i32.ToString();
+                case EVMType.UInt32:
+                    return m_Numeric.u32.ToString();
+                case EVMType.Int64:
+                    return m_Numeric.i64.ToString();
+                case EVMType.UInt64:
+                    return m_Numeric.u64.ToString();
+                case EVMType.Float32:
+                    return m_Numeric.f32.ToString();
+                case EVMType.Float64:
+                case EVMType.Num:
+                    return m_Numeric.f64.ToString();
+                default:
+                    return $"ID: {hashCode} value:" + (this != null ? this.ToString() : m_Numeric.ToString());
+            }
+        }
+
+        public override string ToString()
+        {
+            if (m_RuntimeType != null)
+                return m_RuntimeType.ToString();
+            return base.ToString();
         }
     }
 }

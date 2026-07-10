@@ -13,13 +13,13 @@ using System.Text;
 
 namespace SimpleLanguage.VM
 {
-    public class TypeObject : ClassObject
+    public class TypeObject : SObject
     {
         public RuntimeType currentRT => m_Rt;
 
         RuntimeType m_Rt = null;
 
-        ClassObject metaClassObject = null;
+        SObject metaClassObject = null;
 
         public TypeObject(RuntimeType rm ) : base(RuntimeTypeManager.typeRuntimeType)
         {
@@ -61,7 +61,7 @@ namespace SimpleLanguage.VM
             }
         }
 
-        private ClassObject? CreateMetaClassObject()
+        private SObject? CreateMetaClassObject()
         {
             var metaRc = TryGetRuntimeClassByNames("Core.MetaClass", "MetaClass");
             if (metaRc == null) return null;
@@ -70,7 +70,7 @@ namespace SimpleLanguage.VM
                          ?? RuntimeTypeManager.AddRuntimeTypeByRuntimeClassAndRuntimeTypeList(metaRc, new List<RuntimeType>());
             if (metaRt == null) return null;
 
-            var metaObj = ObjectManager.CreateObjectByRuntimeType(metaRt, true) as ClassObject;
+            var metaObj = ObjectManager.CreateObjectByRuntimeType(metaRt, true) as SObject;
             if (metaObj == null) return null;
 
             string fullName = m_Rt.runtimeClass?.name ?? string.Empty;

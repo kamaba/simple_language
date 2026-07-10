@@ -15,12 +15,12 @@ namespace SimpleLanguage.VM
     public class ObjectManager
     {
         //public static Dictionary<int, DataObject> dataObjectDict = new Dictionarny<int, DataObject>();
-        public static Dictionary<int, ClassObject> classObjectDict = new Dictionary<int, ClassObject>();
+        public static Dictionary<int, SObject> classObjectDict = new Dictionary<int, SObject>();
         private static readonly Dictionary<int, SObject> s_ObjectById = new Dictionary<int, SObject>();
         private static readonly object s_ObjectByIdGate = new object();
         //public static Dictionary<int, ArrayObject> arrayObjectDict = new Dictionary<int, ArrayObject>();
 
-        public static void AddClassObject(ClassObject cl)
+        public static void AddClassObject(SObject cl)
         {
             if (!classObjectDict.ContainsKey(cl.GetHashCode()))
             {
@@ -85,11 +85,11 @@ namespace SimpleLanguage.VM
 
         private static void TryRemoveClassObjectRegistryEntry(SObject sobj)
         {
-            if (sobj is not ClassObject co) return;
+            if (sobj == null) return;
             try
             {
-                UnregisterObjectById(co.hashCode);
-                int key = co.GetHashCode();
+                UnregisterObjectById(sobj.hashCode);
+                int key = sobj.GetHashCode();
                 if (classObjectDict.ContainsKey(key))
                     classObjectDict.Remove(key);
             }
@@ -112,13 +112,14 @@ namespace SimpleLanguage.VM
             //if (name == "Core.Boolean" || name == "Boolean")
             if( rt == RuntimeTypeManager.boolRuntimeType )
             {
-                sobj = new BoolObject(false);
+                sobj = new SObject(EVMType.Boolean);
             }
             //else if (name == "Core.Num" || name == "Num")
             else if (rt == RuntimeTypeManager.numRuntimeType)
             {
                 // abstract numeric base: create a Float64Object as default runtime representation
-                sobj = new NumObject();
+                sobj = new SObject(EVMType.Float64);
+                sobj.runtimeType = RuntimeTypeManager.numRuntimeType;
             }
             else if (rt == RuntimeTypeManager.objectRuntimeType)
             //else if (name == "Core.Object" || name == "Object")
@@ -129,47 +130,47 @@ namespace SimpleLanguage.VM
             else if (rt == RuntimeTypeManager.uint8RuntimeType)
             //else if (name == "Core.Byte" || name == "Byte")
             {
-                sobj = new UInt8Object(0);
+                sobj = new SObject(EVMType.UInt8);
             }
             else if (rt == RuntimeTypeManager.int8RuntimeType)
             //else if (name == "Core.SByte" || name == "SByte")
             {
-                sobj = new Int8Object(0);
+                sobj = new SObject(EVMType.Int8);
             }
             else if (rt == RuntimeTypeManager.int16RuntimeType)
             //else if (name == "Core.Int16" || name == "Int16")
             {
-                sobj = new Int16Object(0);
+                sobj = new SObject(EVMType.Int16);
             }
             else if(rt == RuntimeTypeManager.uint16RuntimeType)
             //else if (name == "Core.UInt16" || name == "UInt16")
             {
-                sobj = new UInt16Object(0);
+                sobj = new SObject(EVMType.UInt16);
             }
             else if (rt == RuntimeTypeManager.int32RuntimeType)
             {
-                sobj = new Int32Object(0);
+                sobj = new SObject(EVMType.Int32);
             }
             else if( rt == RuntimeTypeManager.uint32RuntimeType)
             //else if (name == "Core.UInt32" || name == "UInt32")
             {
-                sobj = new UInt32Object(0);
+                sobj = new SObject(EVMType.UInt32);
             }
             else if (rt == RuntimeTypeManager.int64RuntimeType)
             {
-                sobj = new Int64Object(0);
+                sobj = new SObject(EVMType.Int64);
             }
             else if (rt == RuntimeTypeManager.uint64RuntimeType)
             {
-                sobj = new UInt64Object(0);
+                sobj = new SObject(EVMType.UInt64);
             }
             else if (rt == RuntimeTypeManager.float32RuntimeType)
             {
-                sobj = new Float32Object(0.0f);
+                sobj = new SObject(EVMType.Float32);
             }
             else if (rt == RuntimeTypeManager.float64RuntimeType)
             {
-                sobj = new Float64Object(0.0d);
+                sobj = new SObject(EVMType.Float64);
             }
             else if (rt == RuntimeTypeManager.stringRuntimeType)
             {
@@ -177,7 +178,8 @@ namespace SimpleLanguage.VM
             }
             else if (rt == RuntimeTypeManager.voidRuntimeType)
             {
-                sobj = new VoidObject();
+                sobj = new SObject(EVMType.Object);
+                sobj.runtimeType = RuntimeTypeManager.voidRuntimeType;
             }
             else if (name == "Core.Array" || name == "Array"
                 || name == "Core.Array<T>")
@@ -197,7 +199,7 @@ namespace SimpleLanguage.VM
             }
             else
             {
-                var co = new ClassObject(rt);
+                var co = new SObject(rt);
                 if (isCreateMemObject)
                 {
                     co.CreateObject();
@@ -206,7 +208,7 @@ namespace SimpleLanguage.VM
             }
             // Observable refCount for SystemObjectRefCount / Object.refCount: manual Retain adds on top.
             if (sobj != null && sobj.refCount == 0
-                && (sobj is ClassObject || sobj is TypeObject || sobj is ArrayObject || sobj.eType == EVMType.Object))
+                && (sobj.eType == EVMType.Class || sobj.eType == EVMType.Type || sobj.eType == EVMType.Array || sobj.eType == EVMType.Object))
                 sobj.refCount = 1;
             RegisterObject(sobj);
             SlMemoryManager.Instance.RegisterAllocation(sobj);

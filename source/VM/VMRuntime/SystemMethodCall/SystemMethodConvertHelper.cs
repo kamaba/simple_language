@@ -250,54 +250,51 @@ namespace SimpleLanguage.VM.Runtime
 
             if (v.sobject != null)
             {
-                switch (v.sobject)
+                switch (v.sobject.eType)
                 {
-                    case BoolObject o:
-                        bits = o.value ? 1UL : 0UL;
+                    case EVMType.Boolean:
+                        bits = v.sobject.m_Numeric.u8 != 0 ? 1UL : 0UL;
                         bitWidth = 8;
                         return true;
-                    case UInt8Object o:
-                        bits = o.value;
+                    case EVMType.UInt8:
+                        bits = v.sobject.m_Numeric.u8;
                         bitWidth = 8;
                         return true;
-                    case Int8Object o:
-                        bits = unchecked((ulong)(byte)(uint)(int)o.value);
+                    case EVMType.Int8:
+                        bits = unchecked((ulong)(byte)(uint)(int)v.sobject.m_Numeric.i8);
                         bitWidth = 8;
                         return true;
-                    case Int16Object o:
-                        bits = unchecked((ulong)(ushort)(uint)(int)o.value);
+                    case EVMType.Int16:
+                        bits = unchecked((ulong)(ushort)(uint)(int)v.sobject.m_Numeric.i16);
                         bitWidth = 16;
                         return true;
-                    case UInt16Object o:
-                        bits = o.value;
+                    case EVMType.UInt16:
+                        bits = v.sobject.m_Numeric.u16;
                         bitWidth = 16;
                         return true;
-                    case Int32Object o:
-                        bits = unchecked((ulong)(uint)o.value);
+                    case EVMType.Int32:
+                        bits = unchecked((ulong)(uint)v.sobject.m_Numeric.i32);
                         bitWidth = 32;
                         return true;
-                    case UInt32Object o:
-                        bits = o.value;
+                    case EVMType.UInt32:
+                        bits = v.sobject.m_Numeric.u32;
                         bitWidth = 32;
                         return true;
-                    case Int64Object o:
-                        bits = unchecked((ulong)o.value);
+                    case EVMType.Int64:
+                        bits = unchecked((ulong)v.sobject.m_Numeric.i64);
                         bitWidth = 64;
                         return true;
-                    case UInt64Object o:
-                        bits = o.value;
+                    case EVMType.UInt64:
+                        bits = v.sobject.m_Numeric.u64;
                         bitWidth = 64;
                         return true;
-                    case Float32Object o:
-                        bits = unchecked((ulong)(uint)BitConverter.SingleToInt32Bits(o.value));
+                    case EVMType.Float32:
+                        bits = unchecked((ulong)(uint)BitConverter.SingleToInt32Bits(v.sobject.m_Numeric.f32));
                         bitWidth = 32;
                         return true;
-                    case Float64Object o:
-                        bits = unchecked((ulong)BitConverter.DoubleToInt64Bits(o.value));
-                        bitWidth = 64;
-                        return true;
-                    case NumObject o:
-                        bits = unchecked((ulong)BitConverter.DoubleToInt64Bits(o.ToDouble()));
+                    case EVMType.Float64:
+                    case EVMType.Num:
+                        bits = unchecked((ulong)BitConverter.DoubleToInt64Bits(v.sobject.m_Numeric.f64));
                         bitWidth = 64;
                         return true;
                 }
@@ -367,22 +364,22 @@ namespace SimpleLanguage.VM.Runtime
             }
             if (v.sobject != null)
             {
-                switch (v.sobject)
+                switch (v.sobject.eType)
                 {
-                    case BoolObject o: return o.value;
-                    case UInt8Object o: return o.value;
-                    case Int8Object o: return o.value;
-                    case Int16Object o: return o.value;
-                    case UInt16Object o: return o.value;
-                    case Int32Object o: return o.value;
-                    case UInt32Object o: return o.value;
-                    case Int64Object o: return o.value;
-                    case UInt64Object o: return o.value;
-                    case Float32Object o: return o.value;
-                    case Float64Object o: return o.value;
-                    case StringObject o: return o.value ?? string.Empty;
-                    case NumObject o: return o.ToDouble();
+                    case EVMType.Boolean: return v.sobject.m_Numeric.u8 != 0;
+                    case EVMType.UInt8: return v.sobject.m_Numeric.u8;
+                    case EVMType.Int8: return v.sobject.m_Numeric.i8;
+                    case EVMType.Int16: return v.sobject.m_Numeric.i16;
+                    case EVMType.UInt16: return v.sobject.m_Numeric.u16;
+                    case EVMType.Int32: return v.sobject.m_Numeric.i32;
+                    case EVMType.UInt32: return v.sobject.m_Numeric.u32;
+                    case EVMType.Int64: return v.sobject.m_Numeric.i64;
+                    case EVMType.UInt64: return v.sobject.m_Numeric.u64;
+                    case EVMType.Float32: return v.sobject.m_Numeric.f32;
+                    case EVMType.Float64:
+                    case EVMType.Num: return v.sobject.m_Numeric.f64;
                 }
+                if (v.sobject is StringObject so) return so.value ?? string.Empty;
                 return v.sobject.value ?? v.sobject.ToString() ?? string.Empty;
             }
             return v.GetValueObject() ?? string.Empty;

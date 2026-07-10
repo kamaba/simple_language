@@ -1222,7 +1222,7 @@ namespace SimpleLanguage.VM.Runtime
             if (source == null) return null;
 
             // BridgeObject 鍙傛暟钀藉湴锛坙egacy bridge 璺緞涔熼渶瑕侊�?
-            if (source is ClassObject co && IsBridgeObjectRuntime(co.runtimeClass))
+            if (source is SObject co && IsBridgeObjectRuntime(co.runtimeClass))
             {
                 if (TryExtractBridgeObjectPayload(co, out var payloadObj))
                 {
@@ -1269,7 +1269,7 @@ namespace SimpleLanguage.VM.Runtime
             return n.EndsWith("BridgeObject", StringComparison.Ordinal) || n.Contains(".BridgeObject", StringComparison.Ordinal);
         }
 
-        private static bool TryExtractBridgeObjectPayload(ClassObject co, out object? payloadObj)
+        private static bool TryExtractBridgeObjectPayload(SObject co, out object? payloadObj)
         {
             payloadObj = null;
             var rc = co.runtimeClass;
@@ -1335,7 +1335,8 @@ namespace SimpleLanguage.VM.Runtime
             if (values == null || values.Length < 4 || retObjValue == null) return false;
 
             var retObjSv = values[3];
-            if (retObjSv.eType != EVMType.Class || retObjSv.sobject is not ClassObject retBridge) return false;
+            if (retObjSv.eType != EVMType.Class || retObjSv.sobject == null) return false;
+            SObject retBridge = retObjSv.sobject;
             if (!IsBridgeObjectRuntime(retBridge.runtimeClass)) return false;
 
             int idxBool = FindBridgeMemberIndexByName(retBridge.runtimeClass, "boolvalue");
@@ -2421,8 +2422,9 @@ namespace SimpleLanguage.VM.Runtime
 #if DEBUG
                                 --m_ValueIndex;
 #endif
-                                if (inst.sobject is ClassObject co)
+                                if (inst.sobject != null)
                                 {
+                                    var co = inst.sobject;
                                     var tempVal = default(RuntimeValue);
                                     co.GetMemberVariableSValue(iri.index, ref tempVal);
                                     ByteStackPushByEType(ref tempVal);
@@ -2460,8 +2462,9 @@ namespace SimpleLanguage.VM.Runtime
                             val = m_ValueStack[--m_ValueIndex];
                             inst = m_ValueStack[--m_ValueIndex];
 #endif
-                            if (inst.sobject is ClassObject co)
+                            if (inst.sobject != null)
                             {
+                                var co = inst.sobject;
                                 co.SetMemberVariableSValue(iri.index, val);
 #if DEBUG
                                 Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField2: runtimeclass=" + co.runtimeClass?.name
@@ -2483,8 +2486,9 @@ namespace SimpleLanguage.VM.Runtime
                         {
                             ByteStackTryPeekRuntimeValue(1, out var val);
                             ByteStackTryPeekRuntimeValue(2, out var inst);
-                            if (inst.sobject is ClassObject co)
+                            if (inst.sobject != null)
                             {
+                                var co = inst.sobject;
                                 co.SetMemberVariableSValue(iri.index, val);
 #if DEBUG
                                 Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + co.runtimeClass?.name
@@ -2680,9 +2684,9 @@ namespace SimpleLanguage.VM.Runtime
 #endif
                                 }
                             }
-                            else if (cond.sobject is BoolObject bl)
+                            else if (cond.sobject != null && cond.sobject.eType == EVMType.Boolean)
                             {
-                                if (!bl.value)
+                                if (cond.sobject.m_Numeric.u8 == 0)
                                 {
                                     m_ExecuteIndex = (ushort)(iri.index - 1);
 #if DEBUG
@@ -2732,9 +2736,9 @@ namespace SimpleLanguage.VM.Runtime
 #endif
                                 }
                             }
-                            else if (cond.sobject is BoolObject bl)
+                            else if (cond.sobject != null && cond.sobject.eType == EVMType.Boolean)
                             {
-                                if (bl.value)
+                                if (cond.sobject.m_Numeric.u8 != 0)
                                 {
                                     m_ExecuteIndex = (ushort)(iri.index - 1);
 #if DEBUG

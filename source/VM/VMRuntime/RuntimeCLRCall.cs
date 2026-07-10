@@ -409,15 +409,21 @@ namespace SimpleLanguage.VM
                     //    }
                     case EVMType.Boolean:
                         {
-                            return new BoolObject(sval.uint8Value == 1);
+                            var sobj = new SObject(EVMType.Boolean);
+                            sobj.m_Numeric.u8 = sval.uint8Value;
+                            return sobj;
                         }
                     case EVMType.UInt8:
                         {
-                            return new UInt8Object(sval.uint8Value);
+                            var num = new SObject(EVMType.UInt8);
+                            num.m_Numeric.u8 = sval.uint8Value;
+                            return num;
                         }
                     case EVMType.Int8:
                         {
-                            return new Int8Object(sval.int8Value);
+                            var num = new SObject(EVMType.Int8);
+                            num.m_Numeric.i8 = sval.int8Value;
+                            return num;
                         }
                     //case EVMType.Char:
                     //    {
@@ -425,35 +431,51 @@ namespace SimpleLanguage.VM
                     //    }
                     case EVMType.Int16:
                         {
-                            return new Int16Object(sval.int16Value);
+                            var num = new SObject(EVMType.Int16);
+                            num.m_Numeric.i16 = sval.int16Value;
+                            return num;
                         }
                     case EVMType.UInt16:
                         {
-                            return new UInt16Object(sval.uint16Value);
+                            var num = new SObject(EVMType.UInt16);
+                            num.m_Numeric.u16 = sval.uint16Value;
+                            return num;
                         }
                     case EVMType.Int32:
                         {
-                            return new Int32Object(sval.int32Value);
+                            var num = new SObject(EVMType.Int32);
+                            num.m_Numeric.i32 = sval.int32Value;
+                            return num;
                         }
                     case EVMType.UInt32:
                         {
-                            return new UInt32Object(sval.uint32Value);
+                            var num = new SObject(EVMType.UInt32);
+                            num.m_Numeric.u32 = sval.uint32Value;
+                            return num;
                         }
                     case EVMType.Int64:
                         {
-                            return new Int64Object(sval.int64Value);
+                            var num = new SObject(EVMType.Int64);
+                            num.m_Numeric.i64 = sval.int64Value;
+                            return num;
                         }
                     case EVMType.UInt64:
                         {
-                            return new UInt64Object(sval.uint64Value);
+                            var num = new SObject(EVMType.UInt64);
+                            num.m_Numeric.u64 = sval.uint64Value;
+                            return num;
                         }
                     case EVMType.Float32:
                         {
-                            return new Float32Object(sval.float32Value);
+                            var num = new SObject(EVMType.Float32);
+                            num.m_Numeric.f32 = sval.float32Value;
+                            return num;
                         }
                     case EVMType.Float64:
                         {
-                            return new Float64Object(sval.float64Value);
+                            var num = new SObject(EVMType.Float64);
+                            num.m_Numeric.f64 = sval.float64Value;
+                            return num;
                         }
                     case EVMType.String:
                         {

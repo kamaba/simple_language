@@ -119,20 +119,20 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            // If either side is a class-wrapped NumObject, prefer NumObject operation methods
-            bool leftIsNumObj = (left.eType == EVMType.Class || left.eType == EVMType.Object) && left.sobject is NumObject;
-            bool rightIsNumObj = (right.eType == EVMType.Class || right.eType == EVMType.Object) && right.sobject is NumObject;
+            // If either side is a class-wrapped numeric SObject, prefer SObject operation methods
+            bool leftIsNumObj = (left.eType == EVMType.Class || left.eType == EVMType.Object) && left.sobject != null && left.sobject.isNumeric;
+            bool rightIsNumObj = (right.eType == EVMType.Class || right.eType == EVMType.Object) && right.sobject != null && right.sobject.isNumeric;
             if (leftIsNumObj || rightIsNumObj)
             {
-                NumObject leftNum = leftIsNumObj ? (NumObject)left.sobject : null;
-                NumObject rightNum = rightIsNumObj ? (NumObject)right.sobject : null;
-                // left is NumObject -> perform operation on it
+                SObject leftNum = leftIsNumObj ? left.sobject : null;
+                SObject rightNum = rightIsNumObj ? right.sobject : null;
+                // left is numeric SObject -> perform operation on it
                 if (leftNum != null)
                 {
                     if (rightNum == null)
                     {
-                        // wrap primitive right into a temporary NumObject
-                        var tmp = new NumObject(EVMType.Float64);
+                        // wrap primitive right into a temporary SObject
+                        var tmp = new SObject(EVMType.Float64);
                         switch (rightPrim.eType)
                         {
                             case EVMType.Float64: tmp.SetValue(rightPrim.float64Value); break;
@@ -161,10 +161,10 @@ namespace SimpleLanguage.VM
                 // Treat any other type as its string representation (ToString)
                 
 
-                // right is NumObject, left is primitive -> compute into left primitive
+                // right is numeric SObject, left is primitive -> compute into left primitive
                 if (rightNum != null)
                 {
-                    var tmpLeft = new NumObject(EVMType.Float64);
+                    var tmpLeft = new SObject(EVMType.Float64);
                     switch (leftPrim.eType)
                     {
                         case EVMType.Float64: tmpLeft.SetValue(leftPrim.float64Value); break;
@@ -737,11 +737,11 @@ namespace SimpleLanguage.VM
                     break;
                 case EVMType.Class:
                     {
-                        // if wrapped numeric object (NumObject), negate its value
-                        if (_rv.sobject is NumObject nobj)
+                        // if wrapped numeric object, negate its value
+                        if (_rv.sobject != null && _rv.sobject.isNumeric)
                         {
-                            double val = nobj.ToDouble();
-                            nobj.SetValue(-val);
+                            double val = _rv.sobject.ToDouble();
+                            _rv.sobject.SetValue(-val);
                         }
                         else
                         {

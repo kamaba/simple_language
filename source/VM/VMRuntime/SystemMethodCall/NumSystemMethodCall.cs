@@ -7,7 +7,7 @@ namespace SimpleLanguage.VM.Runtime
 {
     internal static class NumSystemMethodCall
     {
-        /// <summary>Numeric <see cref="ESystemMethodCall"/> converts (Int8 â€?Float64).</summary>
+        /// <summary>Numeric <see cref="ESystemMethodCall"/> converts (Int8 ï¿½?Float64).</summary>
         public static void ExecuteNumericConvert(RuntimeVM vm, SLSystemMethodCallPackage sysPkg, ESystemMethodCall kind)
         {
             int pc = sysPkg.paramCount;
@@ -172,19 +172,19 @@ namespace SimpleLanguage.VM.Runtime
 
             if (arg.sobject != null)
             {
-                switch (arg.sobject)
+                switch (arg.sobject.eType)
                 {
-                    case UInt8Object: return ESystemMethodCall.SystemConvertUInt8;
-                    case Int8Object: return ESystemMethodCall.SystemConvertSInt8;
-                    case Int16Object: return ESystemMethodCall.SystemConvertInt16;
-                    case UInt16Object: return ESystemMethodCall.SystemConvertUInt16;
-                    case Int32Object: return ESystemMethodCall.SystemConvertInt32;
-                    case UInt32Object: return ESystemMethodCall.SystemConvertUInt32;
-                    case Int64Object: return ESystemMethodCall.SystemConvertInt64;
-                    case UInt64Object: return ESystemMethodCall.SystemConvertUInt64;
-                    case Float32Object: return ESystemMethodCall.SystemConvertFloat32;
-                    case Float64Object:
-                    case NumObject: return ESystemMethodCall.SystemConvertFloat64;
+                    case EVMType.UInt8: return ESystemMethodCall.SystemConvertUInt8;
+                    case EVMType.Int8: return ESystemMethodCall.SystemConvertSInt8;
+                    case EVMType.Int16: return ESystemMethodCall.SystemConvertInt16;
+                    case EVMType.UInt16: return ESystemMethodCall.SystemConvertUInt16;
+                    case EVMType.Int32: return ESystemMethodCall.SystemConvertInt32;
+                    case EVMType.UInt32: return ESystemMethodCall.SystemConvertUInt32;
+                    case EVMType.Int64: return ESystemMethodCall.SystemConvertInt64;
+                    case EVMType.UInt64: return ESystemMethodCall.SystemConvertUInt64;
+                    case EVMType.Float32: return ESystemMethodCall.SystemConvertFloat32;
+                    case EVMType.Float64:
+                    case EVMType.Num: return ESystemMethodCall.SystemConvertFloat64;
                 }
             }
 

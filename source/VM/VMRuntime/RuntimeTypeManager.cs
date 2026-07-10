@@ -265,7 +265,7 @@ namespace SimpleLanguage.VM
         /// Builds a <see cref="TypeObject"/> that <i>describes</i> <paramref name="rt"/> (for <c>GetType()</c> / <c>typeof</c>).
         /// Previous implementation always returned null, so <c>type.toString()</c> was empty and type handles were broken.
         /// </summary>
-        public static ClassObject? CreateTypeObject(RuntimeType? rt)
+        public static SObject? CreateTypeObject(RuntimeType? rt)
         {
             if (rt == null) return null;
             try
