@@ -4,7 +4,8 @@
 //               Mirrors cvm's union _VMObjectHeader in vm_object.h.
 //
 //  Bit layout (64 bits, MSB -> LSB):
-//    [63:58] spare       (6 bits)  reserved
+//    [63]    gc_gen      (1 bit)   GC generation: 0=young 1=old
+//    [62:58] spare       (5 bits)  reserved
 //    [57:56] gc_color    (2 bits)  tri-color GC mark: 0=white 1=gray 2=black
 //    [55:50] etype       (6 bits)  EType enum (0–22, room for 64)
 //    [49:46] meta_kind   (4 bits)  0=regular 1=enum 2=data 3=type_object
@@ -33,6 +34,10 @@ namespace SimpleLanguage.VM
         public const byte GcGray  = 1;
         public const byte GcBlack = 2;
 
+        // --- GC generation values ---
+        public const byte GcGenYoung = 0;
+        public const byte GcGenOld   = 1;
+
         // --- Bit masks and shifts ---
         private const ulong HashMask      = 0xFFFFFFFFUL;        // [31: 0] 32 bits
         private const int   RefcountShift = 32;
@@ -43,6 +48,8 @@ namespace SimpleLanguage.VM
         private const ulong ETypeMask     = 0x3FUL;              // [55:50] 6 bits
         private const int   GcColorShift  = 56;
         private const ulong GcColorMask   = 0x03UL;              // [57:56] 2 bits
+        private const int   GcGenShift    = 63;
+        private const ulong GcGenMask     = 0x01UL;              // [63]    1 bit
 
         // --- Raw 64-bit access ---
         private ulong _raw;
@@ -51,10 +58,10 @@ namespace SimpleLanguage.VM
         public readonly ulong Raw => _raw;
 
         /// <summary>Identity hash code (0 = not yet computed).</summary>
-        public uint Hash
+        public int Hash
         {
-            readonly get => (uint)(_raw & HashMask);
-            set => _raw = (_raw & ~HashMask) | value;
+            readonly get => (int)(_raw & HashMask);
+            set => _raw = (_raw & ~HashMask) | (ulong)value;
         }
 
         /// <summary>Reference count (0–16383).</summary>
@@ -83,6 +90,13 @@ namespace SimpleLanguage.VM
         {
             readonly get => (byte)((_raw >> GcColorShift) & GcColorMask);
             set => _raw = (_raw & ~(GcColorMask << GcColorShift)) | ((ulong)(value & (byte)GcColorMask) << GcColorShift);
+        }
+
+        /// <summary>GC generation: 0=young (nursery), 1=old.</summary>
+        public byte GcGeneration
+        {
+            readonly get => (byte)((_raw >> GcGenShift) & GcGenMask);
+            set => _raw = (_raw & ~(GcGenMask << GcGenShift)) | ((ulong)(value & (byte)GcGenMask) << GcGenShift);
         }
 
         /// <summary>Build a fresh header (hash defaults to 0 = not-yet-computed).</summary>

@@ -84,7 +84,7 @@ namespace SimpleLanguage.VM
         public UInt32Object(uint obj) : base(EVMType.UInt32)
         {
             m_Numeric.u32 = obj;
-            m_Type = EVMType.UInt32;
+            m_Header.EType = (byte)EVMType.UInt32;
             m_RuntimeType = RuntimeTypeManager.uint32RuntimeType;
         }
     }

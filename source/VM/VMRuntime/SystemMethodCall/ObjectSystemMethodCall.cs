@@ -43,7 +43,7 @@ namespace SimpleLanguage.VM.Runtime
             }
             else if (a.sobject != null)
             {
-                hash = a.sobject.id;
+                hash = a.sobject.hashCode;
             }
             else
             {
@@ -67,7 +67,7 @@ namespace SimpleLanguage.VM.Runtime
 
         /// <summary>
         /// Strong ref: <see cref="ManualMemory.Retain"/> (ties to <see cref="SObject.refCount"/>).
-        /// Weak ref: no retain â€?object remains subject to SL GC like Dart weak references.
+        /// Weak ref: no retain ï¿½?object remains subject to SL GC like Dart weak references.
         /// </summary>
         private static void ExecuteSystemObjectRefCore(RuntimeVM vm, SLSystemMethodCallPackage sysPkg, bool retainForStrongRef)
         {

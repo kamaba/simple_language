@@ -115,7 +115,7 @@ namespace SimpleLanguage.VM
 
         private static string FormatDataObject(ClassObject dataObject, HashSet<int> visitPath)
         {
-            if (!visitPath.Add(dataObject.id))
+            if (!visitPath.Add(dataObject.hashCode))
                 return QuoteJsonString("<cycle>");
 
             try
@@ -146,7 +146,7 @@ namespace SimpleLanguage.VM
             }
             finally
             {
-                visitPath.Remove(dataObject.id);
+                visitPath.Remove(dataObject.hashCode);
             }
         }
 
@@ -193,7 +193,7 @@ namespace SimpleLanguage.VM
 
         private static string FormatArrayObject(ArrayObject arrayObject, HashSet<int> visitPath)
         {
-            if (!visitPath.Add(arrayObject.id))
+            if (!visitPath.Add(arrayObject.hashCode))
                 return QuoteJsonString("<cycle>");
 
             try
@@ -214,7 +214,7 @@ namespace SimpleLanguage.VM
             }
             finally
             {
-                visitPath.Remove(arrayObject.id);
+                visitPath.Remove(arrayObject.hashCode);
             }
         }
 
@@ -277,7 +277,7 @@ namespace SimpleLanguage.VM
             if (classObject.runtimeClass?.metaClassKind == DataMetaClassKind)
                 return FormatDataObject(classObject, visitPath);
 
-            if (!visitPath.Add(classObject.id))
+            if (!visitPath.Add(classObject.hashCode))
                 return QuoteJsonString("<cycle>");
 
             try
@@ -309,7 +309,7 @@ namespace SimpleLanguage.VM
             }
             finally
             {
-                visitPath.Remove(classObject.id);
+                visitPath.Remove(classObject.hashCode);
             }
         }
 
@@ -785,7 +785,7 @@ namespace SimpleLanguage.VM
                 return false;
             }
 
-            var key = (Math.Min(a.id, b.id), Math.Max(a.id, b.id));
+            var key = (Math.Min(a.hashCode, b.hashCode), Math.Max(a.hashCode, b.hashCode));
             if (!pairVisit.Add(key))
             {
                 return true;

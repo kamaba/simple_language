@@ -12,7 +12,7 @@ namespace SimpleLanguage.VM
 {
     public class SObject
     {
-        public int id => m_Id;
+        public int hashCode => (m_Header.Hash);
         public EVMType eType => (EVMType)m_Header.EType;
         public virtual object? value => GetBoxedValue();
         public RuntimeClass runtimeClass => m_RuntimeType?.runtimeClass;
@@ -42,47 +42,38 @@ namespace SimpleLanguage.VM
         /// <summary>Packed 64-bit object header (etype, meta_kind, refcount, hash, gc_color).</summary>
         public VMObjectHeader header => m_Header;
 
-        /// <summary>
-        /// Dart-style generation: 0 = nursery (new space), 1 = old space.
-        /// Updated by <see cref="T:SimpleLanguage.VM.MemoryManagement.SlMemoryManager"/> during SL GC.
-        /// </summary>
-        public byte SlMemoryGeneration { get; internal set; }
+        /// <summary>GC generation: 0=young (nursery), 1=old. Stored in header.</summary>
+        public byte gcGeneration
+        {
+            get => m_Header.GcGeneration;
+            set => m_Header.GcGeneration = value;
+        }
 
         protected VMObjectHeader m_Header;
-        protected int m_Id = 0;
         protected RuntimeType? m_RuntimeType = null;
         /// <summary>标量位型数据（布尔用 <see cref="NumericUnion.i8"/> 0/1，与 <see cref="RuntimeValue"/> 一致）</summary>
         protected NumericUnion m_Numeric;
 
-        /// <summary>
-        /// Object type, stored in the packed header's etype field (6 bits).
-        /// Routes through m_Header.EType, matching cvm's header.bits.etype.
-        /// </summary>
-        protected EVMType m_Type
-        {
-            get => (EVMType)m_Header.EType;
-            set => m_Header.EType = (byte)value;
-        }
 
         protected static int idCount = 10000;
         protected SObject()
         {
-            m_Id = ++idCount;
             m_Numeric = default;
             m_RuntimeType = RuntimeTypeManager.objectRuntimeType;
             m_Header = VMObjectHeader.Make((byte)EVMType.Class, VMObjectHeader.MetaKindRegular, 0);
+            m_Header.Hash = (int)++idCount;
         }
         public SObject(EVMType etype)
         {
-            m_Id = ++idCount;
             m_Numeric = default;
             m_RuntimeType = RuntimeTypeManager.GetRuntimeTypeByEVMType(etype);
             m_Header = VMObjectHeader.Make((byte)etype, VMObjectHeader.MetaKindRegular, 0);
+            m_Header.Hash = (int)++idCount;
         }
 
         protected virtual object? GetBoxedValue()
         {
-            switch (m_Type)
+            switch ((EVMType)m_Header.EType)
             {
                 case EVMType.Boolean:
                     return m_Numeric.u8 != 0;
@@ -115,7 +106,7 @@ namespace SimpleLanguage.VM
         /// <summary>写入类型与负载（不修�?<see cref="refCount"/>）�?/summary>
         protected void StoreValue(EVMType vmType, object? val)
         {
-            m_Type = vmType;
+            m_Header.EType = (byte)vmType;
             m_Numeric = default;
             if (val == null)
                 return;
@@ -229,7 +220,7 @@ namespace SimpleLanguage.VM
 
         public virtual string ToFormatString()
         {
-            return $"ID: {m_Id} value:" + this != null ? this.ToString() : m_Numeric.ToString();
+            return $"ID: {hashCode} value:" + this != null ? this.ToString() : m_Numeric.ToString();
         }
     }
 }

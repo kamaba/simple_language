@@ -68,7 +68,7 @@ namespace SimpleLanguage.VM.MemoryManagement
             lock (_gate)
             {
                 _stats.TotalRegisteredAllocations++;
-                obj.SlMemoryGeneration = (byte)GcGeneration.Young;
+                obj.gcGeneration = VMObjectHeader.GcGenYoung;
                 _nursery.Add(obj);
                 _weakAllocs.Add(new WeakReference<SObject>(obj));
                 _allocSinceYoung++;
@@ -145,7 +145,7 @@ namespace SimpleLanguage.VM.MemoryManagement
                 if (o == null) continue;
                 if (marked.Contains(o))
                 {
-                    o.SlMemoryGeneration = (byte)GcGeneration.Old;
+                    o.gcGeneration = VMObjectHeader.GcGenOld;
                 }
                 else
                 {
@@ -177,7 +177,7 @@ namespace SimpleLanguage.VM.MemoryManagement
             {
                 if (o == null) continue;
                 if (marked.Contains(o))
-                    o.SlMemoryGeneration = (byte)GcGeneration.Old;
+                    o.gcGeneration = VMObjectHeader.GcGenOld;
             }
 
             var unreachable = new List<SObject>();

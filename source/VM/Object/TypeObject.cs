@@ -24,7 +24,7 @@ namespace SimpleLanguage.VM
         public TypeObject(RuntimeType rm ) : base(RuntimeTypeManager.typeRuntimeType)
         {
             m_Rt = rm;
-            m_Type = EVMType.Type;
+            m_Header.EType = (byte)EVMType.Type;
         }
         public override void CreateObject()
         {

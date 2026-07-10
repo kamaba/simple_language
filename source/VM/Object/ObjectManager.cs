@@ -34,7 +34,7 @@ namespace SimpleLanguage.VM
             if (obj == null) return;
             lock (s_ObjectByIdGate)
             {
-                s_ObjectById[obj.id] = obj;
+                s_ObjectById[obj.hashCode] = obj;
             }
         }
 
@@ -88,7 +88,7 @@ namespace SimpleLanguage.VM
             if (sobj is not ClassObject co) return;
             try
             {
-                UnregisterObjectById(co.id);
+                UnregisterObjectById(co.hashCode);
                 int key = co.GetHashCode();
                 if (classObjectDict.ContainsKey(key))
                     classObjectDict.Remove(key);

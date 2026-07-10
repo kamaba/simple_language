@@ -3,8 +3,8 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime:  2022/11/22 12:00:00
-//  Description: 数组元素使用 byte[] 紧凑存储�?
-//                 DEBUG 下额外保�?<see cref="m_DebugArray"/> 便于对照，与存储同步写入；读取走 byte 路径�?
+//  Description: 数组元素使用 byte[] 紧凑存储�?
+//                 DEBUG 下额外保�?<see cref="m_DebugArray"/> 便于对照，与存储同步写入；读取走 byte 路径�?
 //****************************************************************************
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM.Runtime;
@@ -16,7 +16,7 @@ namespace SimpleLanguage.VM
         public int length => m_Length;
 
 #if DEBUG
-        /// <summary>�?DEBUG：与�?<c>Array</c> 相同形状的镜像，供调试对照；生产环境�?null�?/summary>
+        /// <summary>�?DEBUG：与�?<c>Array</c> 相同形状的镜像，供调试对照；生产环境�?null�?/summary>
         public Array? array => m_DebugArray;
         private Array? m_DebugArray;
 #endif
@@ -26,7 +26,7 @@ namespace SimpleLanguage.VM
         private int m_Length = 0;
         public ArrayObject(RuntimeType rt, int length )
         {
-            m_Type = EVMType.Array;
+            m_Header.EType = (byte)EVMType.Array;
             m_RuntimeType = rt;
             if (rt?.runtimeTemplateList != null && rt.runtimeTemplateList.Count > 0)
             {
@@ -233,7 +233,7 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            // 对对象类型存储不再走 anyobj 包装写入，统一按普通对象写入路径处理�?
+            // 对对象类型存储不再走 anyobj 包装写入，统一按普通对象写入路径处理�?
             StoreFromSValueRaw(index, RuntimeValue, eArrayType.eType);
 #if DEBUG
             DebugSyncIndex(index);
@@ -312,7 +312,7 @@ namespace SimpleLanguage.VM
                 {
                     var fresh = new SObject(EVMType.Object);
                     ObjectManager.RegisterObject(fresh);
-                    WriteInt32At(index, fresh.id);
+                    WriteInt32At(index, fresh.hashCode);
                 }
                 return;
             }
@@ -340,17 +340,17 @@ namespace SimpleLanguage.VM
                     {
                         var strObj = new StringObject(str);
                         ObjectManager.RegisterObject(strObj);
-                        WriteInt32At(index, strObj.id);
+                        WriteInt32At(index, strObj.hashCode);
                     }
                 }
                 else
                 {
-                    // Object / Class / Array / Type 等引用槽：标量须先装箱（�?RuntimeObject.SetSObjectBySValue 一致）�?
+                    // Object / Class / Array / Type 等引用槽：标量须先装箱（�?RuntimeObject.SetSObjectBySValue 一致）�?
                     var refObj = RuntimeValue.GetReferenceSObject(createStringRef: true);
                     if (refObj != null)
                     {
                         ObjectManager.RegisterObject(refObj);
-                        WriteInt32At(index, refObj.id);
+                        WriteInt32At(index, refObj.hashCode);
                     }
                     else
                         WriteInt32At(index, 0);
@@ -463,7 +463,7 @@ namespace SimpleLanguage.VM
         }
         public override string ToFormatString()
         {
-            return $"Array ID: { m_Id } ";
+            return $"Array ID: { hashCode } ";
         }
     }
 }

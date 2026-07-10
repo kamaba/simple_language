@@ -2188,7 +2188,7 @@ namespace SimpleLanguage.VM.Runtime
                                 ByteStackReplaceTop(v);
 #if DEBUG
                                 Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadArrayIndex: runtimeclass=" + ao.runtimeClass?.name
-                                                + " objectId=" + ao.id + "index=" + iri.index);
+                                                + " objectId=" + ao.hashCode + "index=" + iri.index);
                                 ao.LoadValue(iri.index, ref m_ValueStack[m_ValueIndex - 1]);
 #endif
                             }
@@ -2230,7 +2230,7 @@ namespace SimpleLanguage.VM.Runtime
                                 ao.StoreValue(iri.index, RuntimeValue);
 #if DEBUG
                                 Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreArrayIndex: runtimeclass=" + ao.runtimeClass?.name
-                                            + " objectId=" + ao.id + "index=" + iri.index);
+                                            + " objectId=" + ao.hashCode + "index=" + iri.index);
 #endif
                             }
                             else
@@ -2262,7 +2262,7 @@ namespace SimpleLanguage.VM.Runtime
                                     ao.LoadValue(idx, ref arrayref);
 #if DEBUG
                                     Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadArrayIndexField: runtimeclass=" + ao.runtimeClass?.name
-                                            + " objectId=" + ao.id + "index=" + idx);
+                                            + " objectId=" + ao.hashCode + "index=" + idx);
 #endif
                                 }
                                 else
@@ -2301,7 +2301,7 @@ namespace SimpleLanguage.VM.Runtime
                                     ao.StoreValue(idx, storevalue);
 #if DEBUG
                                     Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreArrayIndexField: runtimeclass=" + ao.runtimeClass?.name
-                                            + " objectId=" + ao.id + "index=" + idx);
+                                            + " objectId=" + ao.hashCode + "index=" + idx);
 #endif
                                 }
                                 else
@@ -2428,7 +2428,7 @@ namespace SimpleLanguage.VM.Runtime
                                     ByteStackPushByEType(ref tempVal);
 #if DEBUG
                                     Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "LoadNotStaticField: runtimeclass=" + co.runtimeClass?.name
-                                        + " objectId=" + co.id + "index=" + iri.index);
+                                        + " objectId=" + co.hashCode + "index=" + iri.index);
                                     if (TryPushStackSlot(out int slot))
                                         co.GetMemberVariableSValue(iri.index, ref m_ValueStack[slot]);
 #endif
@@ -2465,7 +2465,7 @@ namespace SimpleLanguage.VM.Runtime
                                 co.SetMemberVariableSValue(iri.index, val);
 #if DEBUG
                                 Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField2: runtimeclass=" + co.runtimeClass?.name
-                                            + " objectId=" + co.id + "index=" + iri.index);
+                                            + " objectId=" + co.hashCode + "index=" + iri.index);
 #endif
                             }
 
@@ -2488,7 +2488,7 @@ namespace SimpleLanguage.VM.Runtime
                                 co.SetMemberVariableSValue(iri.index, val);
 #if DEBUG
                                 Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + co.runtimeClass?.name
-                                            + " objectId=" + co.id + "index=" + iri.index);
+                                            + " objectId=" + co.hashCode + "index=" + iri.index);
 #endif
                             }
                             //else
@@ -2540,7 +2540,7 @@ namespace SimpleLanguage.VM.Runtime
 
 
 #if DEBUG
-                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + rt.runtimeClass?.name + " objectId=" + sobj.id);
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + rt.runtimeClass?.name + " objectId=" + sobj.hashCode);
 #endif
 
                             ObjectManager.RegisterObject(sobj);
@@ -2579,7 +2579,7 @@ namespace SimpleLanguage.VM.Runtime
                         var irc = rt.runtimeClass;
 
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + rt.runtimeClass?.name + " objectId=" + sobj.id);
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + rt.runtimeClass?.name + " objectId=" + sobj.hashCode);
 #endif
 
                         var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
@@ -2624,7 +2624,7 @@ namespace SimpleLanguage.VM.Runtime
                             ByteStackReplaceTop(arrVal);
 #if DEBUG
                             m_ValueStack[m_ValueIndex - 1].SetArrayObject(arr);
-                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + rt.runtimeClass?.name + " objectId=" + arr.id);
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreNotStaticField1: runtimeclass=" + rt.runtimeClass?.name + " objectId=" + arr.hashCode);
 #endif
 
 

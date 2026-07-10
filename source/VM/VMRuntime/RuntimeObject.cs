@@ -133,7 +133,7 @@ namespace SimpleLanguage.VM
             {
                 if (TryGetMemberDataSpan(out Span<byte> span))
                 {
-                    BinaryPrimitives.WriteInt32LittleEndian(span, sobj?.id ?? 0);
+                    BinaryPrimitives.WriteInt32LittleEndian(span, sobj?.hashCode ?? 0);
                 }
             }
         }

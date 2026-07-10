@@ -19,14 +19,15 @@ namespace SimpleLanguage.VM
 #endif
         protected byte[] m_MemberData = null;
 
-        /// <summary>ÊµÀý×Ö¶Î½ô´Õ²¼¾Ö£¨¾²Ì¬×Ö¶Î¼û <see cref="RuntimeType.memberData"/>£©¡£</summary>
+        /// <summary>Êµï¿½ï¿½ï¿½Ö¶Î½ï¿½ï¿½Õ²ï¿½ï¿½Ö£ï¿½ï¿½ï¿½Ì¬ï¿½Ö¶Î¼ï¿½ <see cref="RuntimeType.memberData"/>ï¿½ï¿½ï¿½ï¿½</summary>
         public byte[]? memberData => m_MemberData;
 
         protected ClassObject() { }
 
         public ClassObject( RuntimeType irmt )
         {
-            m_Id = ++idCount;
+            m_Header = VMObjectHeader.Make((byte)EVMType.Class, VMObjectHeader.MetaKindRegular, 0);
+            m_Header.Hash = (int)++idCount;
             m_RuntimeType = irmt;
 
             var metaVariableList = m_RuntimeType.runtimeClass.nonStaticIRMetaVariableList;
@@ -41,14 +42,14 @@ namespace SimpleLanguage.VM
         }
         public virtual void CreateObject() { }
 
-        /// <summary>ÊµÀý³ÉÔ±Óë IR ·Ç¾²Ì¬×Ö¶ÎË³ÐòÒ»ÖÂ£¬Ê¹ÓÃÓë <see cref="RuntimeClass.nonStaticIRMetaVariableList"/> ÏàÍ¬µÄÏÂ±ê¡£</summary>
+        /// <summary>Êµï¿½ï¿½ï¿½ï¿½Ô±ï¿½ï¿½ IR ï¿½Ç¾ï¿½Ì¬ï¿½Ö¶ï¿½Ë³ï¿½ï¿½Ò»ï¿½Â£ï¿½Ê¹ï¿½ï¿½ï¿½ï¿½ <see cref="RuntimeClass.nonStaticIRMetaVariableList"/> ï¿½ï¿½Í¬ï¿½ï¿½ï¿½Â±ê¡£</summary>
         public RuntimeObject? GetMemberRuntimeObject(int memberIndex)
         {
             if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)
                 return null;
             return m_MemberRuntimeObjectArray[memberIndex];
         }
-        /// <summary>°´³ÉÔ±ÏÂ±ê´Ó <see cref="memberData"/> ½âÎöµ½ <paramref name="RuntimeValue"/>£¨ÒýÓÃÐÍ²ÛÎ»Îª¶ÔÏóÖ¸Õë Id£¬¼û RuntimeObject£©¡£</summary>
+        /// <summary>ï¿½ï¿½ï¿½ï¿½Ô±ï¿½Â±ï¿½ï¿½ <see cref="memberData"/> ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ <paramref name="RuntimeValue"/>ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í²ï¿½Î»Îªï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ Idï¿½ï¿½ï¿½ï¿½ RuntimeObjectï¿½ï¿½ï¿½ï¿½</summary>
         public bool TryReadMemberDataAsSValue(int memberIndex, ref RuntimeValue RuntimeValue)
         {
             if (memberIndex < 0 || memberIndex >= m_MemberRuntimeObjectArray.Length)
@@ -86,27 +87,27 @@ namespace SimpleLanguage.VM
             //m_IsNull = m_Object == null;
             val.refCount++;
         }
-        /// <summary>´ÓÊµÀý³ÉÔ±¶ÁÈ¡µ½ <paramref name="RuntimeValue"/>£»Óë <see cref="m_MemberData"/> Ò»ÖÂ£¨Í¬ <see cref="RuntimeType.GetStaticMemberVariableSValue"/> ¾²Ì¬²à£©¡£</summary>
+        /// <summary>ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½Ô±ï¿½ï¿½È¡ï¿½ï¿½ <paramref name="RuntimeValue"/>ï¿½ï¿½ï¿½ï¿½ <see cref="m_MemberData"/> Ò»ï¿½Â£ï¿½Í¬ <see cref="RuntimeType.GetStaticMemberVariableSValue"/> ï¿½ï¿½Ì¬ï¿½à£©ï¿½ï¿½</summary>
         public void GetMemberVariableSValue( int index, ref RuntimeValue RuntimeValue )
         {
             if (index < 0 )
             {
-                Log.AddRuntimeLog(LID.ShowMessageAssert, "Ö´ÐÐµÄ²ÎÊý³¬³ö·¶Î§!! < 0 ");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "Ö´ï¿½ÐµÄ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î§!! < 0 ");
                 return;
             }
             if (m_MemberRuntimeObjectArray == null || index >= m_MemberRuntimeObjectArray.Length)
             {
-                Log.AddRuntimeLog(LID.ShowMessageAssert, "Ö´ÐÐµÄ²ÎÊý³¬³ö·¶Î§!!");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "Ö´ï¿½ÐµÄ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î§!!");
                 return;
             }
             m_MemberRuntimeObjectArray[index].SetSValueByRuntimeObjct(ref RuntimeValue);
         }
-        /// <summary>ÊµÀý³ÉÔ±Ð´Í³Ò»Èë¿Ú£¬Í¬²½ <see cref="m_MemberData"/>£¨Í¬ <see cref="RuntimeType.SetStaticMemberVariableSValue"/> ¾²Ì¬²à£©¡£</summary>
+        /// <summary>Êµï¿½ï¿½ï¿½ï¿½Ô±Ð´Í³Ò»ï¿½ï¿½Ú£ï¿½Í¬ï¿½ï¿½ <see cref="m_MemberData"/>ï¿½ï¿½Í¬ <see cref="RuntimeType.SetStaticMemberVariableSValue"/> ï¿½ï¿½Ì¬ï¿½à£©ï¿½ï¿½</summary>
         public void SetMemberVariableSValue( int index, RuntimeValue RuntimeValue)
         {
             if (m_MemberRuntimeObjectArray == null || index < 0 || index >= m_MemberRuntimeObjectArray.Length)
             {
-                Log.AddRuntimeLog(LID.ShowMessageAssert, "Ö´ÐÐµÄ²ÎÊý³¬³ö·¶Î§!!");
+                Log.AddRuntimeLog(LID.ShowMessageAssert, "Ö´ï¿½ÐµÄ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î§!!");
                 return;
             }
 

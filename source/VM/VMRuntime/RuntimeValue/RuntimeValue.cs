@@ -508,7 +508,7 @@ namespace SimpleLanguage.VM
             eType = val.eType;
             sobject = val;
 #if DEBUG
-            Log.AddVM(LID.ShowMessageInfo, "SetRawSObject: " + sobject?.id );
+            Log.AddVM(LID.ShowMessageInfo, "SetRawSObject: " + sobject?.hashCode );
 #endif
         }
         public void SetValueBySObject(SObject val)
@@ -1077,7 +1077,7 @@ namespace SimpleLanguage.VM
                         {
                             sb.Append(sobject.ToString());
                             sb.Append(", ObjectId=");
-                            sb.Append(sobject.id);
+                            sb.Append(sobject.hashCode);
                         }
                         else
                         {
