@@ -217,6 +217,26 @@ namespace SimpleLanguage.VM
             return true;
         }
 
+        /// <summary>
+        /// Finds the member index by field name in the non-static member list.
+        /// </summary>
+        protected static int FindMemberIndex(RuntimeClass? rc, string target)
+        {
+            if (rc == null || string.IsNullOrEmpty(target)) return -1;
+            var list = rc.nonStaticIRMetaVariableList;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var rv = list[i];
+                if (rv == null) continue;
+                var n = rv.name ?? string.Empty;
+                if (string.Equals(n, target, StringComparison.Ordinal)
+                    || n.EndsWith(target, StringComparison.Ordinal)
+                    || n.Contains(target, StringComparison.Ordinal))
+                    return rv.index >= 0 ? rv.index : i;
+            }
+            return -1;
+        }
+
         protected virtual object? GetBoxedValue()
         {
             switch ((EVMType)m_Header.EType)

@@ -140,23 +140,6 @@ namespace SimpleLanguage.VM
             }
             return null;
         }
-
-        private static int FindMemberIndex(RuntimeClass? rc, string target)
-        {
-            if (rc == null || string.IsNullOrEmpty(target)) return -1;
-            var list = rc.nonStaticIRMetaVariableList;
-            for (int i = 0; i < list.Count; i++)
-            {
-                var rv = list[i];
-                if (rv == null) continue;
-                var n = rv.name ?? string.Empty;
-                if (string.Equals(n, target, StringComparison.Ordinal)
-                    || n.EndsWith(target, StringComparison.Ordinal)
-                    || n.Contains(target, StringComparison.Ordinal))
-                    return rv.index >= 0 ? rv.index : i;
-            }
-            return -1;
-        }
         public override string ToFormatString()
         {
             return ToString();
