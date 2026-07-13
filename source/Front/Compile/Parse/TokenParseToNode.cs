@@ -57,8 +57,26 @@ namespace SimpleLanguage.Compile
                 Node node2 = new Node(m_CurrentNode.linkToken);
                 node2.nodeType = ENodeType.Period;
 
-                m_CurrentNode.AddLinkNode(node2);
-                m_CurrentNode.AddLinkNode(node);
+                if( m_CurrentNode.identifierNode == null )
+                {
+                    if( m_CurrentNode.childList.Count > 0 )
+                    {
+                        var ccc = m_CurrentNode.childList[m_CurrentNode.childList.Count - 1];
+                        if( ccc.nodeType == ENodeType.Par && ccc?.endToken?.type == ETokenType.RightPar )
+                        {
+                            ccc.extendLinkNodeList.Add(node2);
+                            ccc.extendLinkNodeList.Add(node);
+                        }
+
+                    }
+                }
+                else
+                {
+
+                    m_CurrentNode.AddLinkNode(node2);
+                    m_CurrentNode.AddLinkNode(node);
+                    
+                }
                 if (m_CurrentNode.atToken != null)
                 {
                     node.atToken = m_CurrentNode.atToken;
