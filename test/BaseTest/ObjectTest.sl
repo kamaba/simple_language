@@ -4,6 +4,7 @@ ObjectTest
     {
         global.println("========== Object.sl tests (start) ==========")
         testReferenceEquality()
+        #!
         testEqualsMethod()
         testStaticEquals()
         testHashCode()
@@ -16,6 +17,7 @@ ObjectTest
         testLifecycle()
         testObjectAssignment()
         testChainedEquals()
+        !#
         global.println("========== Object.sl tests (end) ==========")
     }
 

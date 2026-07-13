@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      RuntimeVM.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -81,6 +81,7 @@ namespace SimpleLanguage.VM.Runtime
             FLOAT64 = 10,
             PTR = 11,
             STRING = 12,
+            BOOLEAN = 13,
         }
 
 
@@ -294,6 +295,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 case VMStackSlotKind.INT8:
                 case VMStackSlotKind.UINT8:
+                case VMStackSlotKind.BOOLEAN:
                     return 1;
                 case VMStackSlotKind.INT16:
                 case VMStackSlotKind.UINT16:
@@ -376,6 +378,12 @@ namespace SimpleLanguage.VM.Runtime
             fixed (byte* p = &m_ByteStack[m_ByteSp]) *(byte*)p = v;
             m_ByteSp += 1;
             ByteStackSlotTryPush(VMStackSlotKind.UINT8);
+        }
+        private unsafe void ByteStackPushBool(bool v)
+        {
+            fixed (byte* p = &m_ByteStack[m_ByteSp]) *(byte*)p = v ? (byte)1 : (byte)0;
+            m_ByteSp += 1;
+            ByteStackSlotTryPush(VMStackSlotKind.BOOLEAN);
         }
         private unsafe void ByteStackPushI16(short v)
         {
@@ -483,6 +491,9 @@ namespace SimpleLanguage.VM.Runtime
                         case VMStackSlotKind.UINT8:
                             outValue = *(byte*)p;
                             return true;
+                        case VMStackSlotKind.BOOLEAN:
+                            outValue = *(byte*)p != 0 ? 1 : 0;
+                            return true;
                         case VMStackSlotKind.INT16:
                             outValue = *(short*)p;
                             return true;
@@ -570,6 +581,16 @@ namespace SimpleLanguage.VM.Runtime
                         if (ByteStackTryPopI32(out int i8v))
                         {
                             outVal.SetInt8Value((sbyte)i8v);
+                            return true;
+                        }
+                        return false;
+                    case VMStackSlotKind.BOOLEAN:
+                        if (m_ByteSp >= 1)
+                        {
+                            m_ByteSp -= 1;
+                            m_StackSlotDepth--;
+                            fixed (byte* p = &m_ByteStack[m_ByteSp])
+                                outVal.SetBoolValue(*(byte*)p != 0);
                             return true;
                         }
                         return false;
@@ -701,6 +722,7 @@ namespace SimpleLanguage.VM.Runtime
                             return true;
                         }
                     case VMStackSlotKind.INT8:   outVal.SetInt8Value(*(sbyte*)p); return true;
+                    case VMStackSlotKind.BOOLEAN: outVal.SetBoolValue(*(byte*)p != 0); return true;
                     case VMStackSlotKind.UINT8:  outVal.SetUInt8Value(*(byte*)p); return true;
                     case VMStackSlotKind.INT16:  outVal.SetInt16Value(*(short*)p); return true;
                     case VMStackSlotKind.UINT16: outVal.SetUInt16Value(*(ushort*)p); return true;
@@ -726,7 +748,7 @@ namespace SimpleLanguage.VM.Runtime
             if (v.isNull || v.eType == EVMType.Null) { ByteStackPushNull(); return true; }
             switch (v.eType)
             {
-                case EVMType.Boolean: ByteStackPushI32(v.uint8Value != 0 ? 1 : 0); return true;
+                case EVMType.Boolean: ByteStackPushBool(v.uint8Value != 0); return true;
                 case EVMType.UInt8:   ByteStackPushU8(v.uint8Value); return true;
                 case EVMType.Int8:    ByteStackPushI8(v.int8Value); return true;
                 case EVMType.Int16:   ByteStackPushI16(v.int16Value); return true;
@@ -760,7 +782,7 @@ namespace SimpleLanguage.VM.Runtime
             if (v.isNull || v.eType == EVMType.Null) { ByteStackPushNull(); return; }
             switch (v.eType)
             {
-                case EVMType.Boolean: ByteStackPushI32(v.uint8Value != 0 ? 1 : 0); break;
+                case EVMType.Boolean: ByteStackPushBool(v.uint8Value != 0); break;
                 case EVMType.UInt8:   ByteStackPushU8(v.uint8Value); break;
                 case EVMType.Int8:    ByteStackPushI8(v.int8Value); break;
                 case EVMType.Int16:   ByteStackPushI16(v.int16Value); break;
@@ -788,7 +810,7 @@ namespace SimpleLanguage.VM.Runtime
             {
                 switch (v.eType)
                 {
-                    case EVMType.Boolean: ByteStackPushI32(v.uint8Value != 0 ? 1 : 0); break;
+                    case EVMType.Boolean: ByteStackPushBool(v.uint8Value != 0); break;
                     case EVMType.UInt8:   ByteStackPushU8(v.uint8Value); break;
                     case EVMType.Int8:    ByteStackPushI8(v.int8Value); break;
                     case EVMType.Int16:   ByteStackPushI16(v.int16Value); break;
@@ -853,7 +875,7 @@ namespace SimpleLanguage.VM.Runtime
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void PushBoolSlot(bool v)
         {
-            ByteStackPushI32(v ? 1 : 0);
+            ByteStackPushBool(v);
 #if DEBUG
             if (m_ValueIndex < m_ValueStack.Length)
             {
