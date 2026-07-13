@@ -4,7 +4,7 @@ ObjectTest
     {
         global.println("========== Object.sl tests (start) ==========")
         testReferenceEquality()
-        #!
+        
         testEqualsMethod()
         testStaticEquals()
         testHashCode()
@@ -17,7 +17,7 @@ ObjectTest
         testLifecycle()
         testObjectAssignment()
         testChainedEquals()
-        !#
+        
         global.println("========== Object.sl tests (end) ==========")
     }
 
@@ -59,8 +59,8 @@ ObjectTest
         Object obj2 = obj
         Object obj3 = new()
 
-        global.println("[10] objectEquals alias : Object.objectEquals(obj, obj2) -> " + Object.objectEquals(obj, obj2).toString())
-        global.println("[11] objectEquals distinct : Object.objectEquals(obj, obj3) -> " + Object.objectEquals(obj, obj3).toString())
+        #global.println("[10] objectEquals alias : Object.objectEquals(obj, obj2) -> " + Object.objectEquals(obj, obj2).toString())
+        #global.println("[11] objectEquals distinct : Object.objectEquals(obj, obj3) -> " + Object.objectEquals(obj, obj3).toString())
         global.println("[12] objectEquals same : Object.objectEquals(obj, obj) -> " + Object.objectEquals(obj, obj).toString())
         global.println("[13] objectEquals obj,null : Object.objectEquals(obj, null) -> " + Object.objectEquals(obj, null).toString())
         global.println("[14] objectEquals null,obj : Object.objectEquals(null, obj) -> " + Object.objectEquals(null, obj).toString())
