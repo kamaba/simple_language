@@ -116,7 +116,7 @@ namespace SimpleLanguage.Project
 
             // Load system call declarations from the project .jsonc config.
             {
-                string configPath = path + ".jsonc";
+                string configPath = System.IO.Path.ChangeExtension(path, ".jsonc");
                 if (System.IO.File.Exists(configPath))
                 {
                     SystemMethodCallDeclarationRegistry.LoadFromJsonFile(configPath);
