@@ -17,8 +17,7 @@ Project
     }
     _main_()
     {       
-        ObjectTest.fun()
-        #!
+        ObjectTest.fun()        
         NumberTest.fun()
         GlobalTest.fun()        
         
@@ -43,7 +42,7 @@ Project
         GenClass_Interface.fun()
         GenClass.fun()        
         GC2.GenClass2.fun()
-        !#
+        
         
         #GC3.GenClass3.fun()
         
