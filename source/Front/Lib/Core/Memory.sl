@@ -1,0 +1,208 @@
+import Std;
+
+# =========================================================================
+# Memory - Memory management and garbage collection API.
+#
+# Inspired by:
+#   CLR  : System.GC (Collect, KeepAlive, GetTotalMemory, GetGeneration)
+#   Dart : WeakReference, Finalizer, implicit generational GC
+#   Go   : runtime.GC, SetGCPercent, tri-color mark-sweep
+#
+# The VM supports two per-object management modes:
+#   Manual – the caller controls lifetime via Retain/Release/Free.
+#            The GC will NOT sweep objects marked as manual.
+#   Auto   – the tri-color GC traces and sweeps the object automatically.
+#
+# Free() and Release() require the object to be in Manual mode first
+# (via Memory.Manual(obj)).  Calling them on an Auto-managed object
+# is a no-op and returns false.
+#
+# Global mode (Memory.SetMode) controls whether the GC runs at all.
+#   SetMode(false) – GC disabled (pure manual management).
+#   SetMode(true)  – GC enabled, auto-collects when pool exceeds threshold.
+# =========================================================================
+public class Memory
+{
+    # ---------------------------------------------------------------
+    # Mode constants (mirror VM_MEM_MODE_* in C).
+    # ---------------------------------------------------------------
+    public const Int32 MODE_MANUAL = 0
+    public const Int32 MODE_GC     = 1
+
+    # ---------------------------------------------------------------
+    # Per-object mode control.
+    # ---------------------------------------------------------------
+
+    # Switch an object to manual management.  After this call the GC
+    # will not trace or sweep the object; the caller is responsible for
+    # calling Release() or Free() when done.
+    # Returns 1 on success.
+    public static Int32 Manual( object obj )
+    {
+        ret SystemMemoryManual( obj )
+    }
+
+    # Restore an object to automatic (GC) management.  The GC will
+    # resume tracing and may sweep the object when it becomes unreachable.
+    # Returns 1 on success.
+    public static Int32 Auto( object obj )
+    {
+        ret SystemMemoryAuto( obj )
+    }
+
+    # Check whether an object is currently in manual management mode.
+    # Returns true if manual, false if auto-managed.
+    public static bool IsManual( object obj )
+    {
+        ret SystemMemoryIsManual( obj ) != 0
+    }
+
+    # ---------------------------------------------------------------
+    # Reference counting (manual management).
+    # ---------------------------------------------------------------
+
+    # Get the current reference count of an object.
+    public static Int32 RefCount( object obj )
+    {
+        ret SystemMemoryRefCount( obj )
+    }
+
+    # Increment the reference count (like CLR WeakReference.TrackResurrection
+    # or Objective-C retain).  Returns 1 on success.
+    public static Int32 Retain( object obj )
+    {
+        ret SystemMemoryRetain( obj )
+    }
+
+    # Decrement the reference count; when it reaches 0 the object is freed.
+    # Requires Manual mode.  Returns 1 on success, 0 if rejected (auto mode).
+    public static Int32 Release( object obj )
+    {
+        ret SystemMemoryRelease( obj )
+    }
+
+    # Unconditionally free the object immediately.
+    # Requires Manual mode.  Returns 1 on success, 0 if rejected (auto mode).
+    public static Int32 Free( object obj )
+    {
+        ret SystemMemoryFree( obj )
+    }
+
+    # ---------------------------------------------------------------
+    # GC control (CLR-inspired: GC.Collect, GC.GetTotalMemory).
+    # ---------------------------------------------------------------
+
+    # Force a full GC cycle (stop-the-world tri-color mark-sweep).
+    # Returns the number of objects freed.
+    public static Int32 Collect()
+    {
+        ret SystemMemoryCollect()
+    }
+
+    # Force a GC cycle only if the object pool size is >= threshold.
+    # Returns the number of objects freed (0 if not triggered).
+    public static Int32 Collect( Int32 threshold )
+    {
+        ret SystemMemoryCollectThreshold( threshold )
+    }
+
+    # Set the GC auto-trigger threshold.  When the object pool grows
+    # past this size, a collection is automatically triggered on the
+    # next allocation (only in GC mode).
+    # Returns 1 on success.
+    public static Int32 SetGcThreshold( Int32 threshold )
+    {
+        ret SystemMemorySetGcThreshold( threshold )
+    }
+
+    # Get the current GC auto-trigger threshold.
+    public static Int32 GcThreshold()
+    {
+        ret SystemMemoryGetGcThreshold()
+    }
+
+    # Set the global memory mode.
+    #   Memory.MODE_MANUAL (0) – GC disabled.
+    #   Memory.MODE_GC     (1) – GC enabled.
+    # Returns 1 on success.
+    public static Int32 SetMode( Int32 mode )
+    {
+        ret SystemMemorySetMode( mode )
+    }
+
+    # ---------------------------------------------------------------
+    # Statistics (CLR-inspired: GC.CollectionCount, GC.GetTotalMemory).
+    # ---------------------------------------------------------------
+
+    # Total number of objects currently in the object pool.
+    public static Int32 ObjectCount()
+    {
+        ret SystemMemoryGetObjectCount()
+    }
+
+    # Total number of GC cycles performed.
+    public static Int32 GcCycleCount()
+    {
+        ret SystemMemoryGetGcCycleCount()
+    }
+
+    # Number of objects freed in the most recent GC cycle.
+    public static Int32 GcFreedCount()
+    {
+        ret SystemMemoryGetGcFreedCount()
+    }
+
+    # Total objects ever allocated (cumulative).
+    public static Int32 TotalAllocated()
+    {
+        ret SystemMemoryGetTotalAllocated()
+    }
+
+    # Total objects ever freed, including manual free/release and GC sweep.
+    public static Int32 TotalFreed()
+    {
+        ret SystemMemoryGetTotalFreed()
+    }
+
+    # ---------------------------------------------------------------
+    # Strong / weak references (moved from Object.sl).
+    # ---------------------------------------------------------------
+
+    # Strong reference: increments the refcount and returns the object
+    # identity pointer.  Pairs with Release() for manual lifetime control.
+    public static object Ref( object obj )
+    {
+        ret SystemObjectRef( obj )
+    }
+
+    # ---------------------------------------------------------------
+    # Weak references (Dart-inspired: WeakReference, Finalizer).
+    # ---------------------------------------------------------------
+
+    # Register a weak reference to obj.  The returned handle is the
+    # object pointer itself; use IsWeakRefValid to check if it is
+    # still alive.  When the object is freed, the weak ref is
+    # automatically invalidated.
+    public static object WeakRef( object obj )
+    {
+        ret SystemMemoryWeakRef( obj )
+    }
+
+    # Check whether a weak reference is still valid (the target object
+    # has not been freed).  Returns true if valid.
+    public static bool IsWeakRefValid( object obj )
+    {
+        ret SystemMemoryIsWeakRefValid( obj ) != 0
+    }
+
+    # ---------------------------------------------------------------
+    # CLR-inspired: GC.KeepAlive.
+    # Keeps an object reachable past the call site, preventing the GC
+    # from collecting it before this point.  Increments the refcount
+    # so the object survives even in manual mode until explicitly released.
+    # ---------------------------------------------------------------
+    public static void KeepAlive( object obj )
+    {
+        SystemMemoryKeepAlive( obj )
+    }
+}

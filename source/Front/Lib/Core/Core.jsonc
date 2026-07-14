@@ -24,6 +24,7 @@
   "compileFiles": {
     "files": [
       { "path": "Object.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Memory.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Data.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "CloneIterface.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "IteratorInterface.sl", "group": "core", "tag": "itertor", "ignore": false, "priority": 0 },
@@ -103,6 +104,7 @@
       { "namespace": "Core", "children": 
       [
         { "class": "Object" },
+        { "class": "Memory" },
         { "class": "Data" },
         { "class": "CloneIterface" },
         { "class": "IteratorInterface" },

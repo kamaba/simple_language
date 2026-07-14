@@ -32,33 +32,7 @@ public class Object
     {
         ret SystemEqualObject(this, obj)
     }
-    #runtime internal reference (object identity)
-    final object get ref()
-    {
-        ret SystemObjectRef(this)
-    }
 
-    #weak reference getter
-    final object get refWeak()
-    {
-        ret SystemObjectRefWeak(this)
-    }
-
-    #reference count (for debugging)
-    final public Int32 get refCount()
-    {
-        ret SystemObjectRefCount(this)
-    }
-
-    #free/release placeholders - runtime manages lifecycle, expose for API completeness
-    final public void free()
-    {
-        SystemObjectFree(this)
-    }
-    final public void release()
-    {
-        SystemObjectRelease(this)
-    }
     #string representation
     public string toString()
     {
