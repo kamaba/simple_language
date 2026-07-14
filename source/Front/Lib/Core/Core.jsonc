@@ -100,6 +100,101 @@
     //{ "path": "lib/std","uuid": "321323-123123-123123-123123", "name": "Std" },
     //{ "path": "lib/core","uuid": "321323-123123-123123-123123", "name": "Core" }
   ],
+  // =====================================================================
+  // System function declarations (read by Front compiler at startup).
+  // Each entry registers a builtin VM function with its return type,
+  // parameter types, and variadic flag.  The enum value is resolved
+  // by name from ESystemMethodCall (Define.cs).
+  //
+  // Type names: void, object, string, bool, Num,
+  //   Int8, UInt8, Int16, UInt16, Int32, UInt32, Int64, UInt64,
+  //   Float32, Float64, Type, Array<object>, UInt8Array
+  // =====================================================================
+  "systemCalls": [
+    // ---- Bridge calls ----
+    { "name": "SystemCallCLRMethod",    "returnType": "object", "params": ["object"], "isVariadic": true },
+    { "name": "SystemCallNativeMethod", "returnType": "object", "params": ["object"], "isVariadic": true },
+    { "name": "SystemCallJVMMethod",    "returnType": "object", "params": ["object"], "isVariadic": true },
+
+    // ---- Console I/O ----
+    { "name": "SystemPrint",   "returnType": "void",   "params": ["object"], "isVariadic": true },
+    { "name": "SystemPrintln", "returnType": "void",   "params": ["object"], "isVariadic": true },
+    { "name": "SystemReadLine","returnType": "string", "params": [], "isVariadic": false },
+    { "name": "SystemReadKey", "returnType": "string", "params": [], "isVariadic": false },
+
+    // ---- Parse helpers ----
+    { "name": "SystemInt32Parse", "returnType": "Int32", "params": ["string"], "isVariadic": false },
+
+    // ---- Type conversions ----
+    { "name": "SystemConvertBool",    "returnType": "bool",   "params": ["object"], "isVariadic": false },
+    { "name": "SystemConvertInt8",    "returnType": "Int8",   "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemConvertUInt8",   "returnType": "UInt8",  "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemConvertInt16",   "returnType": "Int16",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemConvertUInt16",  "returnType": "UInt16", "params": ["object"], "isVariadic": false },
+    { "name": "SystemConvertInt32",   "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemConvertUInt32",  "returnType": "UInt32", "params": ["object"], "isVariadic": false },
+    { "name": "SystemConvertInt64",   "returnType": "Int64",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemConvertUInt64",  "returnType": "UInt64", "params": ["object"], "isVariadic": false },
+    { "name": "SystemConvertFloat32", "returnType": "Float32","params": ["object"], "isVariadic": false },
+    { "name": "SystemConvertFloat64", "returnType": "Float64","params": ["object"], "isVariadic": false },
+    { "name": "SystemConvertString",  "returnType": "string", "params": ["object"], "isVariadic": false },
+    { "name": "SystemConvertSInt8",   "returnType": "Int8",   "params": ["object", "Int32"], "isVariadic": false },
+
+    // ---- Object operations ----
+    { "name": "SystemEqualObject",       "returnType": "bool",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemObjectGetType",     "returnType": "Type",   "params": ["object"], "isVariadic": false },
+    { "name": "SystemObjectGetHashCode", "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemObjectRef",         "returnType": "object", "params": ["object"], "isVariadic": false },
+    { "name": "SystemObjectRefWeak",     "returnType": "object", "params": ["object"], "isVariadic": false },
+    { "name": "SystemObjectRefCount",    "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemObjectFree",        "returnType": "void",   "params": ["object"], "isVariadic": false },
+    { "name": "SystemObjectRelease",     "returnType": "void",   "params": ["object"], "isVariadic": false },
+
+    // ---- Array helpers ----
+    { "name": "SystemArrayGetValueThis", "returnType": "object", "params": ["Array<object>", "Int32"], "isVariadic": false },
+    { "name": "SystemArraySetValueThis", "returnType": "void",   "params": ["Array<object>", "Int32", "object"], "isVariadic": false },
+
+    // ---- Num helpers ----
+    { "name": "SystemNumAbs",   "returnType": "Num", "params": ["Num"], "isVariadic": false },
+    { "name": "SystemNumFloor", "returnType": "Num", "params": ["Num"], "isVariadic": false },
+
+    // ---- String operations ----
+    { "name": "SystemStringFormat",      "returnType": "string",    "params": ["string", "Array<object>"], "isVariadic": false },
+    { "name": "SystemStringFront",       "returnType": "string",    "params": ["string", "Int32"], "isVariadic": false },
+    { "name": "SystemStringEnd",         "returnType": "string",    "params": ["string", "Int32"], "isVariadic": false },
+    { "name": "SystemStringRange",       "returnType": "string",    "params": ["string", "Int32", "Int32"], "isVariadic": false },
+    { "name": "SystemStringToUInt8Array","returnType": "UInt8Array","params": ["string"], "isVariadic": false },
+
+    // ---- Data operations ----
+    { "name": "DataAllEqual",          "returnType": "bool",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "DataTypeEqual",         "returnType": "bool",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "DataNameAndTypeEqual",  "returnType": "bool",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "DataDataEqual",         "returnType": "bool",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemBuildDataString", "returnType": "string", "params": ["object"], "isVariadic": false },
+
+    // ---- Memory management (Memory.sl) ----
+    { "name": "SystemMemoryRefCount",         "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemMemoryRetain",           "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemMemoryFree",             "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemMemoryRelease",          "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemMemoryManual",           "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemMemoryAuto",             "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemMemoryIsManual",         "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemMemoryCollect",          "returnType": "Int32",  "params": [], "isVariadic": false },
+    { "name": "SystemMemoryCollectThreshold", "returnType": "Int32",  "params": ["Int32"], "isVariadic": false },
+    { "name": "SystemMemoryGetObjectCount",   "returnType": "Int32",  "params": [], "isVariadic": false },
+    { "name": "SystemMemoryGetGcCycleCount",  "returnType": "Int32",  "params": [], "isVariadic": false },
+    { "name": "SystemMemoryGetGcFreedCount",  "returnType": "Int32",  "params": [], "isVariadic": false },
+    { "name": "SystemMemorySetGcThreshold",   "returnType": "Int32",  "params": ["Int32"], "isVariadic": false },
+    { "name": "SystemMemoryGetGcThreshold",   "returnType": "Int32",  "params": [], "isVariadic": false },
+    { "name": "SystemMemoryKeepAlive",        "returnType": "void",   "params": ["object"], "isVariadic": false },
+    { "name": "SystemMemoryWeakRef",          "returnType": "object", "params": ["object"], "isVariadic": false },
+    { "name": "SystemMemoryIsWeakRefValid",   "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemMemoryGetTotalAllocated","returnType": "Int32",  "params": [], "isVariadic": false },
+    { "name": "SystemMemoryGetTotalFreed",    "returnType": "Int32",  "params": [], "isVariadic": false },
+    { "name": "SystemMemorySetMode",          "returnType": "Int32",  "params": ["Int32"], "isVariadic": false },
+    { "name": "SystemMemoryClone",            "returnType": "object", "params": ["object"], "isVariadic": false }
+  ],
   "struct": [
       { "namespace": "Core", "children": 
       [

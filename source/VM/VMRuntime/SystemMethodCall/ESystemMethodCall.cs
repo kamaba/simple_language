@@ -53,6 +53,29 @@ namespace SimpleLanguage.VM.Runtime
         /// <summary>Convert to signed byte; must match <see cref="SimpleLanguage.ESystemMethodCall.SystemConvertSInt8"/> ordinal.</summary>
         SystemConvertSInt8,
 
+        // Memory management (Memory.sl) – must stay in sync with Front Define.cs
+        SystemMemoryRefCount,
+        SystemMemoryRetain,
+        SystemMemoryFree,
+        SystemMemoryRelease,
+        SystemMemoryManual,
+        SystemMemoryAuto,
+        SystemMemoryIsManual,
+        SystemMemoryCollect,
+        SystemMemoryCollectThreshold,
+        SystemMemoryGetObjectCount,
+        SystemMemoryGetGcCycleCount,
+        SystemMemoryGetGcFreedCount,
+        SystemMemorySetGcThreshold,
+        SystemMemoryGetGcThreshold,
+        SystemMemoryKeepAlive,
+        SystemMemoryWeakRef,
+        SystemMemoryIsWeakRefValid,
+        SystemMemoryGetTotalAllocated,
+        SystemMemoryGetTotalFreed,
+        SystemMemorySetMode,
+        SystemMemoryClone,
+
         #region Math
         SystemMathSin,
         SystemMathCos,

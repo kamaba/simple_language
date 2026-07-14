@@ -3274,6 +3274,72 @@ namespace SimpleLanguage.VM.Runtime
                                 break;
                             #endregion
 
+                            #region Memory management (Memory.sl)
+                            case (int)ESystemMethodCall.SystemMemoryRefCount:
+                                MemorySystemMethodCall.ExecuteMemoryRefCount(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryRetain:
+                                MemorySystemMethodCall.ExecuteMemoryRetain(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryFree:
+                                MemorySystemMethodCall.ExecuteMemoryFree(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryRelease:
+                                MemorySystemMethodCall.ExecuteMemoryRelease(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryManual:
+                                MemorySystemMethodCall.ExecuteMemoryManual(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryAuto:
+                                MemorySystemMethodCall.ExecuteMemoryAuto(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryIsManual:
+                                MemorySystemMethodCall.ExecuteMemoryIsManual(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryCollect:
+                                MemorySystemMethodCall.ExecuteMemoryCollect(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryCollectThreshold:
+                                MemorySystemMethodCall.ExecuteMemoryCollectThreshold(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryGetObjectCount:
+                                MemorySystemMethodCall.ExecuteMemoryGetObjectCount(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryGetGcCycleCount:
+                                MemorySystemMethodCall.ExecuteMemoryGetGcCycleCount(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryGetGcFreedCount:
+                                MemorySystemMethodCall.ExecuteMemoryGetGcFreedCount(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemorySetGcThreshold:
+                                MemorySystemMethodCall.ExecuteMemorySetGcThreshold(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryGetGcThreshold:
+                                MemorySystemMethodCall.ExecuteMemoryGetGcThreshold(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryKeepAlive:
+                                MemorySystemMethodCall.ExecuteMemoryKeepAlive(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryWeakRef:
+                                MemorySystemMethodCall.ExecuteMemoryWeakRef(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryIsWeakRefValid:
+                                MemorySystemMethodCall.ExecuteMemoryIsWeakRefValid(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryGetTotalAllocated:
+                                MemorySystemMethodCall.ExecuteMemoryGetTotalAllocated(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryGetTotalFreed:
+                                MemorySystemMethodCall.ExecuteMemoryGetTotalFreed(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemorySetMode:
+                                MemorySystemMethodCall.ExecuteMemorySetMode(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemMemoryClone:
+                                MemorySystemMethodCall.ExecuteMemoryClone(this, sysPkg);
+                                break;
+                            #endregion
+
                             default:
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, iri.debugInfo, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
                                 break;

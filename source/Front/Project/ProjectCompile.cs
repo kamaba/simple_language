@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ProjectCompile.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -113,6 +113,15 @@ namespace SimpleLanguage.Project
             CSharpManager.InitCanSearchAssemblyList();
 
             CoreMetaClassManager.instance.Init();
+
+            // Load system call declarations from the project .jsonc config.
+            {
+                string configPath = path + ".jsonc";
+                if (System.IO.File.Exists(configPath))
+                {
+                    SystemMethodCallDeclarationRegistry.LoadFromJsonFile(configPath);
+                }
+            }
 
             ProjectClass.ProjectCompileBefore();
 

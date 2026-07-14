@@ -23,7 +23,7 @@ GenClass2
         ref12 = Memory.WeakRef(l1)
         Memory.Free(l1)
 
-        var cl1 = l1.clone()
+        var cl1 = Memory.Clone(l1)
         global.println("clone non-null -> " + (cl1 != null).toString())
         global.println("========== Ref / GenClass2 (end) ==========")
     }

@@ -442,6 +442,29 @@ namespace SimpleLanguage
         /// <summary>Build data/anonymous-data string representation.</summary>
         SystemBuildDataString,
         SystemConvertSInt8,
+
+        // Memory management (Memory.sl)
+        SystemMemoryRefCount,
+        SystemMemoryRetain,
+        SystemMemoryFree,
+        SystemMemoryRelease,
+        SystemMemoryManual,
+        SystemMemoryAuto,
+        SystemMemoryIsManual,
+        SystemMemoryCollect,
+        SystemMemoryCollectThreshold,
+        SystemMemoryGetObjectCount,
+        SystemMemoryGetGcCycleCount,
+        SystemMemoryGetGcFreedCount,
+        SystemMemorySetGcThreshold,
+        SystemMemoryGetGcThreshold,
+        SystemMemoryKeepAlive,
+        SystemMemoryWeakRef,
+        SystemMemoryIsWeakRefValid,
+        SystemMemoryGetTotalAllocated,
+        SystemMemoryGetTotalFreed,
+        SystemMemorySetMode,
+        SystemMemoryClone,
     }
     public class Global
     {

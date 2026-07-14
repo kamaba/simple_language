@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text.Json;
 
 namespace SimpleLanguage.Core
 {
@@ -158,7 +161,145 @@ namespace SimpleLanguage.Core
             { ESystemMethodCall.DataDataEqual, new SystemMethodCallDeclaration(ESystemMethodCall.DataDataEqual, Bool, false, Obj, Obj) },
             { ESystemMethodCall.SystemBuildDataString, new SystemMethodCallDeclaration(ESystemMethodCall.SystemBuildDataString, Str, false, Obj) },
             { ESystemMethodCall.SystemConvertSInt8, new SystemMethodCallDeclaration(ESystemMethodCall.SystemConvertSInt8, I8, false, Obj, I32) },
+
+            // memory management (Memory.sl)
+            { ESystemMethodCall.SystemMemoryRefCount,         new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryRefCount,         I32,  false, Obj) },
+            { ESystemMethodCall.SystemMemoryRetain,           new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryRetain,           I32,  false, Obj) },
+            { ESystemMethodCall.SystemMemoryFree,             new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryFree,             I32,  false, Obj) },
+            { ESystemMethodCall.SystemMemoryRelease,          new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryRelease,          I32,  false, Obj) },
+            { ESystemMethodCall.SystemMemoryManual,           new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryManual,           I32,  false, Obj) },
+            { ESystemMethodCall.SystemMemoryAuto,             new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryAuto,             I32,  false, Obj) },
+            { ESystemMethodCall.SystemMemoryIsManual,         new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryIsManual,         I32,  false, Obj) },
+            { ESystemMethodCall.SystemMemoryCollect,          new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryCollect,          I32,  false) },
+            { ESystemMethodCall.SystemMemoryCollectThreshold, new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryCollectThreshold, I32,  false, I32) },
+            { ESystemMethodCall.SystemMemoryGetObjectCount,   new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryGetObjectCount,   I32,  false) },
+            { ESystemMethodCall.SystemMemoryGetGcCycleCount,  new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryGetGcCycleCount,  I32,  false) },
+            { ESystemMethodCall.SystemMemoryGetGcFreedCount,  new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryGetGcFreedCount,  I32,  false) },
+            { ESystemMethodCall.SystemMemorySetGcThreshold,   new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemorySetGcThreshold,   I32,  false, I32) },
+            { ESystemMethodCall.SystemMemoryGetGcThreshold,   new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryGetGcThreshold,   I32,  false) },
+            { ESystemMethodCall.SystemMemoryKeepAlive,        new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryKeepAlive,        Void, false, Obj) },
+            { ESystemMethodCall.SystemMemoryWeakRef,          new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryWeakRef,          Obj,  false, Obj) },
+            { ESystemMethodCall.SystemMemoryIsWeakRefValid,   new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryIsWeakRefValid,   I32,  false, Obj) },
+            { ESystemMethodCall.SystemMemoryGetTotalAllocated,new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryGetTotalAllocated,I32,  false) },
+            { ESystemMethodCall.SystemMemoryGetTotalFreed,    new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryGetTotalFreed,    I32,  false) },
+            { ESystemMethodCall.SystemMemorySetMode,          new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemorySetMode,          I32,  false, I32) },
+            { ESystemMethodCall.SystemMemoryClone,            new SystemMethodCallDeclaration(ESystemMethodCall.SystemMemoryClone,            Obj,  false, Obj) },
         };
+
+        // ---- JSON config loading ----
+
+        /// <summary>
+        /// Resolves a type name string (from JSON config) to a MetaType singleton.
+        /// </summary>
+        private static MetaType ResolveTypeName(string typeName)
+        {
+            if (string.IsNullOrEmpty(typeName))
+                return Obj;
+            switch (typeName.ToLowerInvariant())
+            {
+                case "void":     return Void;
+                case "object":   return Obj;
+                case "string":   return Str;
+                case "bool":     return Bool;
+                case "num":      return Num;
+                case "int32":    return I32;
+                case "uint32":   return U32;
+                case "int8":     return I8;
+                case "uint8":    return U8;
+                case "int16":    return I16;
+                case "uint16":   return U16;
+                case "int64":    return I64;
+                case "uint64":   return U64;
+                case "float32":  return F32;
+                case "float64":  return F64;
+                case "type":     return Typ;
+                case "array<object>": return ArrayObj;
+                case "uint8array":    return UInt8Array;
+                default:        return Obj;
+            }
+        }
+
+        /// <summary>
+        /// Loads system call declarations from a JSON config file and merges
+        /// them into the registry.  Entries that already exist (by enum value)
+        /// are overridden; new entries are added.
+        ///
+        /// JSON format (see system_calls.jsonc):
+        /// { "systemCalls": [
+        ///     { "name": "SystemFoo", "returnType": "Int32",
+        ///       "params": ["object"], "isVariadic": false }
+        ///   ]
+        /// }
+        /// </summary>
+        public static int LoadFromJsonFile(string configPath)
+        {
+            if (string.IsNullOrEmpty(configPath) || !File.Exists(configPath))
+                return 0;
+
+            string json = File.ReadAllText(configPath);
+            return LoadFromJsonContent(json);
+        }
+
+        /// <summary>
+        /// Loads system call declarations from JSON content and merges them
+        /// into the registry.  Returns the number of entries registered.
+        /// </summary>
+        public static int LoadFromJsonContent(string jsonContent)
+        {
+            if (string.IsNullOrWhiteSpace(jsonContent))
+                return 0;
+
+            int count = 0;
+            try
+            {
+                using (JsonDocument doc = JsonDocument.Parse(jsonContent))
+                {
+                    if (!doc.RootElement.TryGetProperty("systemCalls", out JsonElement callsEl))
+                        return 0;
+
+                    foreach (JsonElement entry in callsEl.EnumerateArray())
+                    {
+                        string name = entry.TryGetProperty("name", out JsonElement nameEl)
+                            ? nameEl.GetString() : null;
+                        if (string.IsNullOrEmpty(name))
+                            continue;
+
+                        // Resolve enum by name (must exist in ESystemMethodCall)
+                        if (!Enum.TryParse(name, true, out ESystemMethodCall callKind))
+                            continue;
+
+                        // Parse return type
+                        MetaType retType = entry.TryGetProperty("returnType", out JsonElement retEl)
+                            ? ResolveTypeName(retEl.GetString()) : Void;
+
+                        // Parse variadic flag
+                        bool variadic = entry.TryGetProperty("isVariadic", out JsonElement varEl)
+                            && varEl.GetBoolean();
+
+                        // Parse parameter types
+                        List<MetaType> paramTypes = new List<MetaType>();
+                        if (entry.TryGetProperty("params", out JsonElement paramsEl)
+                            && paramsEl.ValueKind == JsonValueKind.Array)
+                        {
+                            foreach (JsonElement p in paramsEl.EnumerateArray())
+                            {
+                                paramTypes.Add(ResolveTypeName(p.GetString()));
+                            }
+                        }
+
+                        var decl = new SystemMethodCallDeclaration(
+                            callKind, retType, variadic, paramTypes.ToArray());
+                        s_Decl[callKind] = decl;
+                        count++;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // JSON parse failure is non-fatal; hardcoded defaults remain.
+            }
+            return count;
+        }
 
         public static bool TryGet(ESystemMethodCall call, out SystemMethodCallDeclaration decl)
         {

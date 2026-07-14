@@ -205,4 +205,17 @@ public class Memory
     {
         SystemMemoryKeepAlive( obj )
     }
+
+    # ---------------------------------------------------------------
+    # Object cloning (CLR-inspired: ICloneable, MemberwiseClone).
+    # ---------------------------------------------------------------
+
+    # Creates a shallow copy of the object.  The clone has the same
+    # runtime type and member values as the original.  Reference-type
+    # members share the same targets (shallow copy, not deep).
+    # The clone is added to the GC pool and returned.
+    public static object Clone( object obj )
+    {
+        ret SystemMemoryClone( obj )
+    }
 }
