@@ -173,6 +173,24 @@ namespace SimpleLanguage.IR
             {
                 m_IRExpress = IRExpressManager.CreateExpress(irMethod, ms.rightMetaExpress);
                 m_IRStatements.Add(m_IRExpress);
+
+                // If the RHS expression type differs from the target variable's
+                // type (and both are numeric), emit a Convert before the store.
+                // e.g.  b8 = someInt32Var;  -> LoadLocal + Convert_I8 + StoreLocal
+                var expType = ms.rightMetaExpress.GetReturnMetaType();
+                var varType = mv.GetFinalMetaType();
+                if (expType != null && varType != null)
+                {
+                    var expEType = CoreMetaClassManager.GetETypeByMetaClass(expType.metaClass);
+                    var varEType = CoreMetaClassManager.GetETypeByMetaClass(varType.metaClass);
+                    if (expEType != varEType
+                        && NumberManager.IsNumericEType(expEType)
+                        && NumberManager.IsNumericEType(varEType))
+                    {
+                        IRConvert irconv = new IRConvert(irMethod, expEType, varEType);
+                        m_IRStatements.Add(irconv);
+                    }
+                }
             }
 
             IRData irsign = IRUtil.CreateLeftAndRightIRData(ms.autoAddExpressOpSign, out bool flag );

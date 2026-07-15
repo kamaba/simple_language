@@ -3,7 +3,7 @@ NumberTest
     static baseArithmeticTest()
     {
         global.println("----- baseArithmeticTest -----")
-        #!
+        
         Int32 a = 20
         Int32 b = 7
         global.println("a = " + a.toString() + ", b = " + b.toString())
@@ -12,7 +12,7 @@ NumberTest
         global.println("a * b = " + (a * b).toString())
         global.println("a / b = " + (a / b).toString())
         global.println("a % b = " + (a % b).toString())
-        !#
+        
         Num n1 = 1.5
         Num n2 = 2
         global.println("n1 = " + n1.toString() + ", n2 = " + n2.toString())

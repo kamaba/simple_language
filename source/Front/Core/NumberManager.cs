@@ -270,12 +270,14 @@ namespace SimpleLanguage.Core
                 }
             }
 
+            // Path 1: implicit widening – try unchecked conversion ( widening never overflows )
             if (canConvert && TryConvertConstValueByEType(defineEType, mcen.value, out var convertedValue))
             {
                 mcen.SetConstValue(defineEType, convertedValue);
                 return true;
             }
 
+            // Path 2: implicit widening – try radix-number literal unsigned-to-signed fix-up
             if (canConvert && IsRadixNumberLiteral(mcen)
                 && TryConvertRadixUnsignedToSignedByEType(defineEType, mcen.value, out var radixConvertedValue))
             {
@@ -283,7 +285,19 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
-            Log.AddMetaCoreLog(LID.MetaCoreExpressTypeGEDefineType, token, (mcen.value?.ToString() ?? "null"), defineEType.ToString(), expressEType.ToString());
+            // Path 3: narrowing conversion with range check.
+            // Handles Int32 -> Int8, Int32 -> UInt8, Int64 -> Int16, Float64 -> Float32, etc.
+            // The value must fit within the target type's range; otherwise a warning is emitted.
+            if (TryForceConvertConstValueWithRangeCheck(defineEType, mcen.value, out var narrowedValue))
+            {
+                mcen.SetConstValue(defineEType, narrowedValue);
+                return true;
+            }
+
+            // Value is out of range for the target type.
+            // Emit a warning so the user knows the literal was rejected.
+            Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                $"Warning: value '{mcen.value}' ({expressEType}) is out of range for target type '{defineEType}'.");
             return false;
         }
 

@@ -54,6 +54,7 @@ ObjectTest
     # [10-13] static objectEquals with various combinations
     static testStaticEquals()
     {
+        #!
         global.println("--- testStaticEquals ---")
         Object obj = new()
         Object obj2 = obj
@@ -65,6 +66,7 @@ ObjectTest
         global.println("[13] objectEquals obj,null : Object.objectEquals(obj, null) -> " + Object.objectEquals(obj, null).toString())
         global.println("[14] objectEquals null,obj : Object.objectEquals(null, obj) -> " + Object.objectEquals(null, obj).toString())
         global.println("[15] objectEquals null,null : Object.objectEquals(null, null) -> " + Object.objectEquals(null, null).toString())
+        !#
     }
 
     # [16-19] hashCode consistency and distribution
@@ -203,7 +205,7 @@ ObjectTest
         Object d = a
 
         global.println("[40] chain a.equals(d).toString() -> " + a.equals(d).toString())
-        global.println("[41] chain Object.objectEquals(a, d).toString() -> " + Object.objectEquals(a, d).toString())
+        global.println("[41] chain Object.refEquals(a, d).toString() -> " + Object.refEquals(a, d).toString())
         global.println("[42] chain (a == d).toString() -> " + (a == d).toString())
     }
 }

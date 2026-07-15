@@ -424,6 +424,13 @@ namespace SimpleLanguage.Core
                 {
                     m_RightMetaExpress = newexpress;
                 }
+
+                // Const-fold literal RHS to match the target variable's type,
+                // e.g. b8 = 250 where 250 is Int32 but b8 is Byte -> fold to UInt8.
+                if (m_RightMetaExpress is MetaConstExpressNode mcen && rightMetaTypeHint != null)
+                {
+                    ExpressManager.TryAdjustConstExpressByDefineMetaType(rightMetaTypeHint, mcen);
+                }
             }
             else
             {

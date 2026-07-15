@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaNewStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -172,7 +172,18 @@ namespace SimpleLanguage.Core
                 m_ExpressNode.CalcReturnType();
 
                 m_ExpressNode = ExpressManager.ConvertNewExpress(m_ExpressNode, leftMt );
-                expressRetMetaDefineType = m_ExpressNode.GetReturnMetaType();        
+
+                // If the initializer is a const literal whose type doesn't match the
+                // declared variable type (e.g. Byte b8 = 250 where 250 is Int32),
+                // fold the constant to the target type at compile time so that IR
+                // generation emits the correct LoadConst opcode (e.g. LoadConstUInt8)
+                // instead of LoadConstInt32 + a runtime Convert.
+                if (m_ExpressNode is MetaConstExpressNode mcen)
+                {
+                    ExpressManager.TryAdjustConstExpressByDefineMetaType(leftMt, mcen);
+                }
+
+                expressRetMetaDefineType = m_ExpressNode.GetReturnMetaType();
             }
 
             if (expressRetMetaDefineType == null)
