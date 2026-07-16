@@ -128,6 +128,8 @@ namespace SimpleLanguage.IR
                         {
                             var findLabel = m_LabelList.Find(a => a.opValue == defLabel.opValue);
                             defLabel.opValue = findLabel;
+                            var findex = IRDataList.FindIndex(a => a == findLabel);
+                            defLabel.index = findex;
                         }
                         break;
                     case EIROpCode.Br:
@@ -199,10 +201,10 @@ namespace SimpleLanguage.IR
                 currentOffset += instrLen;
             }
 
-            // NOTE: Branch index remains as instruction-list index (not byte-offset
-            // distance) because the C# VM uses m_ExecuteIndex = iri.index for jumps.
-            // The byte-offset distance is stored in d.offset and can be used by
-            // byte-code VMs (cvm) that jump by byte offset.
+            // NOTE: Branch index holds the target's instruction-list index.
+            // The C# VM uses m_ExecuteIndex = iri.index for jumps.
+            // The C VM computes byte offsets at load time (vm_build_method_code)
+            // and patches branch instructions for O(1) direct jumps.
         }
         public void AddLabelDict( IRData irdata )
         {
