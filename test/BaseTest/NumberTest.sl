@@ -90,7 +90,7 @@ NumberTest
         global.println("f.toString = " + s)
 
         t1 = f.type
-        t2 = i.type
+        t2 = i?.type
         global.println("f.type = " + t1.toString())
         global.println("i.type = " + t2.toString())
         global.println("f.type == i.type -> " + (t1 == t2).toString())

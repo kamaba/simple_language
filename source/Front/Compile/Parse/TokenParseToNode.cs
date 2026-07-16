@@ -262,10 +262,27 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Node node = new Node(token);
-                node.priority = SignComputePriority.Level6_Compare;
-                node.nodeType = ENodeType.Symbol;
-                m_CurrentNode.AddChild(node);
+                int extend = 1;
+                if( int.TryParse( token?.extend?.ToString(), out int oint ) )
+                {
+                    extend = oint;
+                }
+                if(token.extend?.ToString() == "2" )
+                {
+                    Token token2 = new Token(token);
+                    token2.SetLexeme(">>", ETokenType.Shr);
+                    Node node = new Node(token2);
+                    node.priority = SignComputePriority.Level5_BitMoveOp;
+                    node.nodeType = ENodeType.Symbol;
+                    m_CurrentNode.AddChild(node);
+                }
+                else
+                {
+                    Node node = new Node(token);
+                    node.priority = SignComputePriority.Level6_Compare;
+                    node.nodeType = ENodeType.Symbol;
+                    m_CurrentNode.AddChild(node);
+                }
             }
             m_TokenIndex++;
         }
