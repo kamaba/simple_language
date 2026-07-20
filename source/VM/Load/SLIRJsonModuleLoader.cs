@@ -262,6 +262,43 @@ namespace SimpleLanguage.VM
                 }
             }
 
+            // 2.5) Front export embeds the 4-byte index into Payload for every instruction whose
+            // opcode uses index (see IRData.EmbedIndexInPayload). Method bodies are stripped above
+            // in section 2; field initializers and global static variable initializers go through
+            // the same wire format and must be stripped here, otherwise StoreStaticField and
+            // StoreNotStaticField* opcodes fail to resolve their payload ("self" stays prefixed
+            // with 4 NUL bytes, JSON type metadata stays prefixed too).
+            foreach (var module in asm.moduleList)
+            {
+                if (module?.classList != null)
+                {
+                    foreach (var c in module.classList)
+                    {
+                        if (c?.fieldList == null) continue;
+                        foreach (var f in c.fieldList)
+                        {
+                            if (f?.express == null) continue;
+                            foreach (var ins in f.express)
+                            {
+                                ins?.ExtractIndexFromPayload();
+                            }
+                        }
+                    }
+                }
+
+                if (module?.globalStaticVariableList != null)
+                {
+                    foreach (var gv in module.globalStaticVariableList)
+                    {
+                        if (gv?.express == null) continue;
+                        foreach (var ins in gv.express)
+                        {
+                            ins?.ExtractIndexFromPayload();
+                        }
+                    }
+                }
+            }
+
             // 3) Process per-class method reference lists on each module's class packages.
             // These are meta references; method bodies have already been attached via module.methodList above.
             foreach (var module in asm.moduleList)

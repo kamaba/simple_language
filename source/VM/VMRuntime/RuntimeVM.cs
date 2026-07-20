@@ -3413,16 +3413,21 @@ namespace SimpleLanguage.VM.Runtime
                         RuntimeClass irc = null;
                         if (iri.index > -1)
                         {
-                            if (m_StackSlotDepth < iri.index)
+                            // CallDynamic dispatches on the receiver which sits below the
+                            // argument span: [receiver, arg0, arg1, ...] -> peek(paramCount+1).
+                            // Using iri.index here is wrong: iri.index is the embedded method
+                            // slot index (from ExtractIndexFromPayload), not a stack offset.
+                            int peekSlot = (int)mfc.paramCount + 1;
+                            if (m_StackSlotDepth < peekSlot)
                             {
-                                Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "MethodId:" + id.ToString() + "RuntimeVM LoadArrayIndex", "");
+                                Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "MethodId:" + id.ToString() + " CallDynamic", "");
                                 return;
                             }
-                            ByteStackTryPeekRuntimeValue(iri.index, out var v);
+                            ByteStackTryPeekRuntimeValue(peekSlot, out var v);
                             if (v.sobject != null)
                             {
                                 rt = v.sobject.runtimeType;
-                                irc = rt.runtimeClass;
+                                irc = rt?.runtimeClass;
                             }
                             else
                             {
@@ -3434,7 +3439,7 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             if (irc == null)
                             {
-                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundRuntimeClass, " irc is null");
+                                Log.AddRuntimeLog(LID.RuntimeVMNotFoundRuntimeClass, $"eType={v.eType}");
                                 return;
                             }
                             if (mfc.method == null)
@@ -3616,16 +3621,19 @@ namespace SimpleLanguage.VM.Runtime
                                 }
                                 if (rt.eType == EVMType.Num)
                                 {
-
+                                    // Num is the universal numeric type: convert any primitive to Float64/Num.
+                                    if (etype != EVMType.Num)
+                                    {
+                                        RuntimeValueMethod.ConvertByEType(ref v1, EVMType.Num);
+                                    }
                                 }
                                 else if (rt.eType != etype)
                                 {
-                                    v1.SetNull();
+                                    // Primitive "as" must perform a numeric/string conversion
+                                    // (e.g. Float32 -> Int32 truncates). Setting null here breaks
+                                    // every `f as Int32`/`n as UInt8` style expression.
+                                    RuntimeValueMethod.ConvertByEType(ref v1, rt.eType);
                                 }
-                                else
-                                {
-                                }
-                                //v1.ConvertByEType(rt.eType);
                             }
                             catch
                             {
