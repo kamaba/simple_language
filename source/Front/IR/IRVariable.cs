@@ -197,6 +197,7 @@ namespace SimpleLanguage.IR
                         irdata.opValue = index;
                         irdata.index = index;
                         irdata.opCode = EIROpCode.LoadArrayIndex;
+                        irdata.SetDebugInfoByToken(mvv.token ?? mvv.fastVisitConstExpressNode?.token, "LoadArrayIndex");
                         IRBase irbase = new IRBase();
                         irbase.AddIRData(irdata);
                         irVar.m_IRDataList.AddRange(irbase.IRDataList);
@@ -239,6 +240,9 @@ namespace SimpleLanguage.IR
         }
         public IRLoadVariable( IRMetaType irmt, IRMethod _irMethod, int id, IRMetaVariableFrom irmvf ) : base(_irMethod)
         {
+            // Default debug info: derive from method's bound MetaFunction token so even
+            // synthesized load instructions carry a source location.
+            m_LoadVarData.SetDebugInfoByToken(_irMethod?.bindMetaFunction?.token, irmvf.ToString());
             if( irmvf == IRMetaVariableFrom.Global )
             {
                 m_LoadVarData.opCode = EIROpCode.LoadGlobal;
@@ -249,13 +253,10 @@ namespace SimpleLanguage.IR
             {
                 m_LoadVarData.opCode = EIROpCode.LoadArgument;
                 m_LoadVarData.index = id;
-                //data.SetDebugInfoByToken( mv.pingToken );
                 m_IRDataList.Add(m_LoadVarData);
             }
             else if (irmvf == IRMetaVariableFrom.Member)
             {
-                //irmv = _irMethod.GetIRLocalVariableById(id);
-                //data.SetDebugInfoByToken(mv.pingToken);
                 m_LoadVarData.index = id;
                 m_LoadVarData.opCode = EIROpCode.LoadNotStaticField;
                 m_IRDataList.Add(m_LoadVarData);
@@ -269,7 +270,6 @@ namespace SimpleLanguage.IR
             {
                 m_LoadVarData.opCode = EIROpCode.LoadLocal;
                 m_LoadVarData.index = id;
-                //data.SetDebugInfoByToken(mv.pingToken);
                 m_IRDataList.Add(m_LoadVarData);
             }
             else if (irmvf == IRMetaVariableFrom.Static)
@@ -439,6 +439,8 @@ namespace SimpleLanguage.IR
         }
         public IRStoreVariable( IRMetaType irmt, IRMethod _irMethod, int id, IRMetaVariableFrom irmvf) : base(_irMethod)
         {
+            // Default debug info from the bound method's token.
+            m_Data.SetDebugInfoByToken(_irMethod?.bindMetaFunction?.token, irmvf.ToString());
             if( irmvf == IRMetaVariableFrom.Global )
             {
                 m_Data.index = id;
@@ -492,12 +494,13 @@ namespace SimpleLanguage.IR
         {
 
         }
-        public static IRStoreVariable CreateStaticReturnIRSV( )
+        public static IRStoreVariable CreateStaticReturnIRSV(IRMethod irMethod = null, Token token = null)
         {
             IRStoreVariable irsv = new IRStoreVariable( );
             IRData storeNode = new IRData();
             storeNode.opCode = EIROpCode.StoreReturn;
             storeNode.index = 0;
+            storeNode.SetDebugInfoByToken(token ?? irMethod?.bindMetaFunction?.token, "StoreReturn");
             irsv.IRDataList.Add(storeNode);
 
             return irsv;

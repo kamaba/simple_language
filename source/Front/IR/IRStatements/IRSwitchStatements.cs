@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRSwitchStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -63,10 +63,12 @@ namespace SimpleLanguage.IR
                     // Load const type for target class
                     var targetIRMC = IRManager.instance.GetIRMetaClassById(mires.matchTypeClass.GetHashCode());
                     IRData loadType = new IRData { opCode = EIROpCode.LoadConstType, opValue = targetIRMC };
+                    loadType.SetDebugInfoByToken(mires?.token, "SwitchCaseLoadType");
                     conditionStatList.Add(new IRBase(loadType));
 
                     // Compare: use CastClass opcode as an `is` test by convention (VM-side should return bool / null).
                     IRData castData = new IRData { opCode = EIROpCode.CastClass };
+                    castData.SetDebugInfoByToken(mires?.token, "SwitchCaseIs");
                     conditionStatList.Add(new IRBase(castData));
 
                     var brFalse = new IRBranch(_irMethod, EIROpCode.BrFalse, null);
@@ -213,6 +215,7 @@ namespace SimpleLanguage.IR
         {
             IRData insNode = new IRData();
             insNode.opCode = EIROpCode.Nop;
+            insNode.SetDebugInfoByToken(ms?.token, "SwitchStart");
 
             IRBase irbase = new IRBase(insNode);
             m_IRStatements.Add(irbase);

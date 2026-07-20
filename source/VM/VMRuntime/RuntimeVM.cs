@@ -2689,9 +2689,15 @@ namespace SimpleLanguage.VM.Runtime
                 case EIROpCode.Break:
                 case EIROpCode.Jmp:
                     {
-                        m_ExecuteIndex = (ushort)iri.index;
+                        // Mirror cvm vm_jump_to_instruction_index: set ip to the target
+                        // instruction's start. The run loop does m_ExecuteIndex++ after
+                        // RunInstruction, so subtract 1 to land exactly on iri.index.
+                        // (All other branch opcodes – BrFalse/BrTrue/Beq/Switch – already
+                        // use iri.index - 1; this case was the lone exception and skipped
+                        // the target instruction by one.)
+                        m_ExecuteIndex = (ushort)(iri.index - 1);
 #if DEBUG
-                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "jumpto->" + m_ExecuteIndex);
+                        Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "jumpto->" + iri.index);
 #endif
                     }
                     break;

@@ -24,6 +24,8 @@ namespace SimpleLanguage.IR
         public IRManager irManager => m_IRManager;
         public IRData funEndLabelData => m_FunEndLabelData;
         public IRMetaClass irOwnerMetaClass => m_IROwnerMetaClass;
+        /// <summary>Bound MetaFunction; used as fallback source token for synthesized IRData debug info.</summary>
+        public MetaFunction bindMetaFunction => m_BindMetaFunction;
         //private List<IRMetaVariable> methodInputTemplateObject => m_MethodInputTemplateObject;
         public List<IRMetaVariable> methodArgumentList => m_MethodArgumentList;
         public List<IRMetaVariable> methodLocalVariableList => m_MethodLocalVariableList;
@@ -59,6 +61,7 @@ namespace SimpleLanguage.IR
             }
             m_FunEndLabelData = new IRData();
             m_FunEndLabelData.opCode = EIROpCode.Label;
+            m_FunEndLabelData.SetDebugInfoByToken(func?.token, "FunEndLabel");
         }
         public void Parse()
         {

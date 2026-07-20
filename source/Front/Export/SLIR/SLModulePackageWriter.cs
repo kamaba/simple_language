@@ -730,6 +730,7 @@ namespace SimpleLanguage.Export.SLIR
                 opCode = EIROpCode.StoreStaticField,
                 index = v.index,
             };
+            irdata.SetDebugInfoByValue(v.debugInfo);
             irBuf.Add(irdata);
         }
 
@@ -749,6 +750,7 @@ namespace SimpleLanguage.Export.SLIR
                 opCode = EIROpCode.StoreNotStaticField1,
                 index = v.index,
             };
+            irdata.SetDebugInfoByValue(v.debugInfo);
             irBuf.Add(irdata);
         }
 
@@ -766,6 +768,7 @@ namespace SimpleLanguage.Export.SLIR
                 opCode = EIROpCode.StoreGlobal,
                 index = gv.id,
             };
+            irdata.SetDebugInfoByValue(gv.debugInfo);
             irBuf.Add(irdata);
         }
 
@@ -804,6 +807,7 @@ namespace SimpleLanguage.Export.SLIR
                 opValue = v.irMetaType,
                 index = 0,
             };
+            irNew.SetDebugInfoByValue(v.debugInfo);
             irBuf.Add(irNew);
         }
 
@@ -844,29 +848,35 @@ namespace SimpleLanguage.Export.SLIR
             }
 
             List<IRData> rebuilt = new List<IRData>();
-            rebuilt.Add(new IRData
+            var lenData = new IRData
             {
                 id = rebuilt.Count,
                 opCode = EIROpCode.LoadConstInt32,
                 opValue = valueCount,
                 index = 0,
-            });
-            rebuilt.Add(new IRData
+            };
+            lenData.SetDebugInfoByValue(v.debugInfo);
+            rebuilt.Add(lenData);
+            var newArrData = new IRData
             {
                 id = rebuilt.Count,
                 opCode = EIROpCode.NewArray,
                 opValue = v.irMetaType,
                 index = 0,
-            });
+            };
+            newArrData.SetDebugInfoByValue(v.debugInfo);
+            rebuilt.Add(newArrData);
 
             for (int i = 0; i < valueCount; i++)
             {
-                rebuilt.Add(new IRData
+                var dupData = new IRData
                 {
                     id = rebuilt.Count,
                     opCode = EIROpCode.Dup,
                     index = 0,
-                });
+                };
+                dupData.SetDebugInfoByValue(v.debugInfo);
+                rebuilt.Add(dupData);
                 var src = irBuf[i];
                 var copied = new IRData
                 {
@@ -874,6 +884,8 @@ namespace SimpleLanguage.Export.SLIR
                     opCode = src.opCode,
                     index = src.index,
                     opValue = src.opValue,
+                    // Preserve original source location of the constant.
+                    debugInfo = src.debugInfo,
                 };
                 if (src.Payload != null && src.Payload.Length > 0)
                 {
@@ -882,24 +894,28 @@ namespace SimpleLanguage.Export.SLIR
                     copied.ByteLength = src.ByteLength;
                 }
                 rebuilt.Add(copied);
-                rebuilt.Add(new IRData
+                var storeArrData = new IRData
                 {
                     id = rebuilt.Count,
                     opCode = EIROpCode.StoreArrayIndex,
                     opValue = true,
                     index = i,
-                });
+                };
+                storeArrData.SetDebugInfoByValue(v.debugInfo);
+                rebuilt.Add(storeArrData);
             }
 
             if (hasTailStore)
             {
-                rebuilt.Add(new IRData
+                var tailStoreData = new IRData
                 {
                     id = rebuilt.Count,
                     opCode = EIROpCode.StoreStaticField,
                     opValue = ownerType,
                     index = v.index,
-                });
+                };
+                tailStoreData.SetDebugInfoByValue(v.debugInfo);
+                rebuilt.Add(tailStoreData);
             }
 
             irBuf.Clear();

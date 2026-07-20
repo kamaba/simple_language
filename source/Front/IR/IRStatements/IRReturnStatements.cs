@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRReturnStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -29,7 +29,7 @@ namespace SimpleLanguage.IR
                 m_ReturnValueExpress = IRExpressManager.CreateExpress(this.irMethod, ms.express);
                 m_IRStatements.Add(m_ReturnValueExpress);
 
-                IRStoreVariable irsv = IRStoreVariable.CreateStaticReturnIRSV();
+                IRStoreVariable irsv = IRStoreVariable.CreateStaticReturnIRSV(this.irMethod, ms?.token);
                 m_IRStatements.Add(irsv);
 
                 IRBranch irbranch = new IRBranch(this.irMethod, EIROpCode.BrLabel, irMethod.funEndLabelData );

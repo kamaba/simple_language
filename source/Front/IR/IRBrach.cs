@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRBrach.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -40,11 +40,22 @@ namespace SimpleLanguage.IR
     public class IRLabel : IRBase
     {
         IRData data = new IRData();
-        public IRLabel(IRMethod _irMethod, string _label, bool isGogo ):base( _irMethod ) 
+        public IRLabel(IRMethod _irMethod, string _label, bool isGogo ):base( _irMethod )
         {
             data = new IRData();
             data.opCode = isGogo ? EIROpCode.Label : EIROpCode.BrLabel;
             data.SetOpValue(_label);
+        }
+        public IRLabel(IRMethod _irMethod, string _label, bool isGogo, Token token, string info = null) : base(_irMethod)
+        {
+            data = new IRData();
+            data.opCode = isGogo ? EIROpCode.Label : EIROpCode.BrLabel;
+            data.SetOpValue(_label);
+            data.SetDebugInfoByToken(token, info);
+        }
+        public void SetDebugInfoByToken(Token token, string info = null)
+        {
+            data.SetDebugInfoByToken(token, info);
         }
         public override string ToIRString()
         {
