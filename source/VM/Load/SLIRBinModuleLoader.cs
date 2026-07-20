@@ -307,12 +307,11 @@ namespace SimpleLanguage.VM
         //            var ins = new Instruction
         //            {
         //                opCode = (EIROpCode)br.ReadByte(),
-        //                index = br.ReadInt32(),
         //            };
-        //            _ = br.ReadInt32(); // offset
         //            int payloadLen = br.ReadInt32();
         //            ins.Payload = payloadLen == 0 ? Array.Empty<byte>() : br.ReadBytes(payloadLen);
-        //            ins.UpdateByteLength();
+        //            // 新格式：index 内嵌在 Payload 前 4 字节，由 ExtractIndexFromPayload 解析并剥离
+        //            ins.ExtractIndexFromPayload();
         //            //ins.UnpackOpValueFromPayload();
         //            mi.Instructions.Add(ins);
         //        }

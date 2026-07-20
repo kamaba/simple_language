@@ -27,14 +27,13 @@ namespace SimpleLanguage.IR
         public object opValue { get => _opValue; set => SetOpValue(value); }
         // 序列化后的原始数据（仅用于值类型或需要内嵌的常量）
         public byte[]    Payload = null;
-        // 当前 IRData 的字节长度（包括 Payload 的长度）——用于导出序列化时参考
+        // Track whether EmbedIndexInPayload has been applied (prevents double-embedding).
+        private bool _indexEmbedded = false;
+        // 当前 IRData 的字节长度（包括 Payload 的长度）--用于导出序列化时参考
         // ByteLength currently holds the payload length. The final serialized
         // instruction length is computed as (1 + ByteLength) by IRMethod (1 byte for opcode)
-        // The instruction stream offset (start position) is stored in `offset`.
         public int       ByteLength = 0;
-        // byte offset in the serialized instruction stream
-        public int       offset = 0;
-        public int       index;                  //索引
+        public int index { get; set; }                  //索引
         public DebugInfo debugInfo;              //调试信息
 
         /// <summary>
@@ -203,6 +202,76 @@ namespace SimpleLanguage.IR
             ByteLength = (Payload != null) ? Payload.Length : 0;
         }
 
+        // Returns true if this opcode uses the `index` field (slot, target, class id, etc.)
+        // The index is embedded as the first 4 bytes of Payload during finalization.
+        public static bool UsesIndex(EIROpCode opCode)
+        {
+            switch (opCode)
+            {
+                case EIROpCode.LoadConstString:
+                case EIROpCode.LoadArgument:
+                case EIROpCode.LoadLocal:
+                case EIROpCode.StoreLocal:
+                case EIROpCode.StoreReturn:
+                case EIROpCode.LoadGlobal:
+                case EIROpCode.StoreGlobal:
+                case EIROpCode.LoadArrayIndex:
+                case EIROpCode.LoadNotStaticField:
+                case EIROpCode.StoreNotStaticField1:
+                case EIROpCode.StoreNotStaticField2:
+                case EIROpCode.LoadStaticField:
+                case EIROpCode.StoreStaticField:
+                case EIROpCode.CallVirt:
+                case EIROpCode.Jmp:
+                case EIROpCode.Br:
+                case EIROpCode.Break:
+                case EIROpCode.BrFalse:
+                case EIROpCode.BrTrue:
+                case EIROpCode.Beq:
+                case EIROpCode.Beq_Un:
+                case EIROpCode.Bne:
+                case EIROpCode.Bne_Un:
+                case EIROpCode.Bgt:
+                case EIROpCode.Bgt_Un:
+                case EIROpCode.Bge:
+                case EIROpCode.Bge_un:
+                case EIROpCode.Ble:
+                case EIROpCode.Ble_Un:
+                case EIROpCode.BrLabel:
+                case EIROpCode.NewObject:
+                case EIROpCode.NewTemplateObject:
+                case EIROpCode.StoreArrayIndex:
+                case EIROpCode.Switch:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        // Embed the `index` field as the first 4 bytes of Payload.
+        // Idempotent: tracked by _indexEmbedded flag.
+        // Called after FinalizePack() to merge index into payload for serialization.
+        public void EmbedIndexInPayload()
+        {
+            if (!UsesIndex(opCode)) return;
+            if (_indexEmbedded) return;
+
+            byte[] indexBytes = BitConverter.GetBytes(this.index);
+            if (Payload == null || Payload.Length == 0)
+            {
+                Payload = indexBytes;
+            }
+            else
+            {
+                byte[] newPayload = new byte[indexBytes.Length + Payload.Length];
+                indexBytes.CopyTo(newPayload, 0);
+                Payload.CopyTo(newPayload, indexBytes.Length);
+                Payload = newPayload;
+            }
+            _indexEmbedded = true;
+            UpdateByteLength();
+        }
+
         // Finalize packaging for complex opValue types (labels, methods, meta types)
         // Convert remaining opValue into Payload bytes so IRData is self-contained for serialization.
         public void FinalizePack()
@@ -210,12 +279,10 @@ namespace SimpleLanguage.IR
             if (Payload != null) return;
             if (_opValue == null) return;
 
-            // If opValue is an IRData (label reference), serialize its resolved index
+            // If opValue is an IRData (label/branch reference), just clear it.
+            // The index is embedded into Payload by EmbedIndexInPayload() later.
             if (_opValue is IRData idRef)
             {
-                int idx = idRef.index;
-                Payload = BitConverter.GetBytes(idx);
-                UpdateByteLength();
                 _opValue = null;
                 return;
             }
@@ -337,19 +404,6 @@ namespace SimpleLanguage.IR
             {
                 return false;
             }
-        }
-
-        // Get serialized instruction length. If `next` is provided, length is the
-        // distance between this.offset and next.offset (as used by CLR/JVM style
-        // instruction layouts). If `next` is null, fall back to 1 + payload length
-        // (1 byte for opcode + payload bytes).
-        public int GetSerializedLength(IRData next)
-        {
-            if (next != null)
-            {
-                return next.offset - this.offset;
-            }
-            return 1 + (Payload != null ? Payload.Length : 0);
         }
 
         // Helpers to read payload as common types (fall back to opValue if present)

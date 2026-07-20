@@ -246,13 +246,18 @@ namespace SimpleLanguage.VM
 
                     if (tm == null) continue;
 
+                    var loadedInstructions = m.instructionList ?? new List<Instruction>();
+                    foreach (var ins in loadedInstructions)
+                    {
+                        ins.ExtractIndexFromPayload();
+                    }
                     tm.AddMethod(new SLMethodPackage
                     {
                         id = m.id ?? string.Empty,
                         name = m.name ?? string.Empty,
                         interfaceMethod = m.interfaceMethod,
                         irList = new List<object>(),
-                        instructionList = m.instructionList ?? new List<Instruction>(),
+                        instructionList = loadedInstructions,
                     });
                 }
             }

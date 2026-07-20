@@ -188,17 +188,7 @@ namespace SimpleLanguage.IR
             for (int i = 0; i < m_IRDataList.Count; i++)
             {
                 try { m_IRDataList[i].FinalizePack(); } catch { }
-            }
-
-            // ---- Compute byte offsets for the serialized instruction stream ----
-            // Each instruction = 1 byte (opcode) + Payload.Length bytes
-            int currentOffset = 0;
-            for (int i = 0; i < m_IRDataList.Count; i++)
-            {
-                var d = m_IRDataList[i];
-                d.offset = currentOffset;
-                int instrLen = 1 + (d.Payload != null ? d.Payload.Length : 0);
-                currentOffset += instrLen;
+                try { m_IRDataList[i].EmbedIndexInPayload(); } catch { }
             }
 
             // NOTE: Branch index holds the target's instruction-list index.

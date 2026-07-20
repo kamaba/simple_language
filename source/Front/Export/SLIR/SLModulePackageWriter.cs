@@ -913,6 +913,7 @@ namespace SimpleLanguage.Export.SLIR
         {
             if (d == null) throw new ArgumentNullException(nameof(d));
             try { d.FinalizePack(); } catch { /* best-effort */ }
+            try { d.EmbedIndexInPayload(); } catch { /* best-effort */ }
 
             SLInstructionDebugInfo? dbg = null;
             var src = d.debugInfo;
@@ -935,8 +936,6 @@ namespace SimpleLanguage.Export.SLIR
             {
                 id = d.id,
                 opCode = (byte)d.opCode,
-                index = d.index,
-                offset = d.offset,
                 byteLength = d.ByteLength,
                 payload = d.Payload,
                 debugInfo = dbg,

@@ -48,11 +48,9 @@ namespace SimpleLanguage.VM
 
         // 序列化后的原始数据（仅用于值类型或需要内嵌的常量）
         [JsonInclude] public byte[] Payload = null;
-        // 当前 IRData 的字节长度（包括 Payload 的长度）——用于导出序列化时参考
+        // 当前 IRData 的字节长度（包括 Payload 的长度）--用于导出序列化时参考
         [JsonInclude] public int ByteLength = 0;
-        /// <summary>Byte offset in the serialized instruction stream (IR/export).</summary>
-        [JsonInclude] public int offset = 0;
-        [JsonInclude] public int index;                  //索引
+        public int index;                  //索引（从 Payload 前 4 字节解析，见 ExtractIndexFromPayload）
         [JsonInclude] public DebugInfo debugInfo;              //调试信息
 
         public Instruction()
@@ -65,6 +63,74 @@ namespace SimpleLanguage.VM
         {
             _opValue = v;
         }
+
+        /// <summary>
+        /// Front 端不再将 index 序列化到 JSON/binary，而是内嵌为 Payload 的前 4 字节。
+        /// 此方法返回该 opcode 是否携带 index（从而需要从 Payload 中解析）。
+        /// </summary>
+        public static bool UsesIndex(EIROpCode opCode)
+        {
+            switch (opCode)
+            {
+                case EIROpCode.LoadConstString:
+                case EIROpCode.LoadArgument:
+                case EIROpCode.LoadLocal:
+                case EIROpCode.StoreLocal:
+                case EIROpCode.StoreReturn:
+                case EIROpCode.LoadGlobal:
+                case EIROpCode.StoreGlobal:
+                case EIROpCode.LoadArrayIndex:
+                case EIROpCode.LoadNotStaticField:
+                case EIROpCode.StoreNotStaticField1:
+                case EIROpCode.StoreNotStaticField2:
+                case EIROpCode.LoadStaticField:
+                case EIROpCode.StoreStaticField:
+                case EIROpCode.CallVirt:
+                case EIROpCode.Jmp:
+                case EIROpCode.Br:
+                case EIROpCode.Break:
+                case EIROpCode.BrFalse:
+                case EIROpCode.BrTrue:
+                case EIROpCode.Beq:
+                case EIROpCode.Beq_Un:
+                case EIROpCode.Bne:
+                case EIROpCode.Bne_Un:
+                case EIROpCode.Bgt:
+                case EIROpCode.Bgt_Un:
+                case EIROpCode.Bge:
+                case EIROpCode.Bge_un:
+                case EIROpCode.Ble:
+                case EIROpCode.Ble_Un:
+                case EIROpCode.BrLabel:
+                case EIROpCode.NewObject:
+                case EIROpCode.NewTemplateObject:
+                case EIROpCode.StoreArrayIndex:
+                case EIROpCode.Switch:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// 从 Payload 前 4 字节解析出 index，并剥离这 4 字节。
+        /// 仅对 <see cref="UsesIndex"/> 返回 true 的 opcode 生效。
+        /// </summary>
+        public void ExtractIndexFromPayload()
+        {
+            if (!UsesIndex(opCode)) return;
+            if (Payload == null || Payload.Length < 4) return;
+            index = BitConverter.ToInt32(Payload, 0);
+            int remaining = Payload.Length - 4;
+            byte[] stripped = new byte[remaining];
+            if (remaining > 0)
+            {
+                Buffer.BlockCopy(Payload, 4, stripped, 0, remaining);
+            }
+            Payload = stripped;
+            ByteLength = remaining;
+        }
+
         // Try to unpack payload back into opValue for debugging/inspection
         //public void UnpackOpValueFromPayload()
         //{

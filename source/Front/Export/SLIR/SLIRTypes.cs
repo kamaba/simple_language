@@ -50,9 +50,7 @@ namespace SimpleLanguage.Export.SLIR.Types
         public int id { get; set; }
         public byte opCode { get; set; }
         public byte[]? payload { get; set; }
-        public int index { get; set; }
         public int byteLength { get; set; }
-        public int offset { get; set; }
         public SLInstructionDebugInfo? debugInfo { get; set; }
     }
     public sealed class SLVariablePackage 
