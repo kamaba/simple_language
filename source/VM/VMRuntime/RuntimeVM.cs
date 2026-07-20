@@ -82,6 +82,10 @@ namespace SimpleLanguage.VM.Runtime
             PTR = 11,
             STRING = 12,
             BOOLEAN = 13,
+            // Mirror cvm VM_STACK_SLOT_NULL: a dedicated 0-byte slot for null.
+            // Previously C# VM pushed null as PTR(null) which costs VM_PTR_SIZE bytes
+            // and breaks pop-tags-for-bytes (bl==0 clears the whole slot stack).
+            NULL = 14,
         }
 
 
@@ -336,7 +340,13 @@ namespace SimpleLanguage.VM.Runtime
             {
                 byte k = m_StackSlotKind[m_StackSlotDepth - 1];
                 int bl = ByteStackSlotByteLen((VMStackSlotKind)k);
-                if (bl == 0 || bl > left)
+                if (bl == 0)
+                {
+                    // NULL slot occupies 0 bytes but still has a tag – pop and continue.
+                    m_StackSlotDepth--;
+                    continue;
+                }
+                if (bl > left)
                 {
                     m_StackSlotDepth = 0;
                     return;
@@ -357,7 +367,7 @@ namespace SimpleLanguage.VM.Runtime
             for (int i = 0; i < nSlots; i++)
             {
                 int bl = ByteStackSlotByteLen((VMStackSlotKind)m_StackSlotKind[m_StackSlotDepth - 1 - i]);
-                if (bl == 0) return 0;
+                // NULL slots contribute 0 bytes; skip without aborting the sum.
                 sum += bl;
             }
             return sum;
@@ -456,8 +466,9 @@ namespace SimpleLanguage.VM.Runtime
         }
         private void ByteStackPushNull()
         {
-            // Mirror cvm LoadConstNull: push NULL as a PTR slot.
-            ByteStackPushPtr(null);
+            // Mirror cvm vm_eval_push_null: push a dedicated 0-byte NULL slot tag.
+            // Do NOT write any bytes to m_ByteStack; NULL occupies 0 bytes.
+            ByteStackSlotTryPush(VMStackSlotKind.NULL);
         }
 
         // ---- Typed pop functions (mirror cvm vm_try_pop_i32 / vm_pop_stack_top_to_vmvalue) ----
@@ -566,6 +577,11 @@ namespace SimpleLanguage.VM.Runtime
                 var kind = (VMStackSlotKind)k;
                 switch (kind)
                 {
+                    case VMStackSlotKind.NULL:
+                        // Dedicated null slot: 0 bytes on stack, just pop the tag.
+                        m_StackSlotDepth--;
+                        outVal.SetNull();
+                        return true;
                     case VMStackSlotKind.PTR:
                     case VMStackSlotKind.STRING:
                         if (ByteStackTryPopObject(out var obj))
@@ -702,6 +718,10 @@ namespace SimpleLanguage.VM.Runtime
             {
                 switch (kind)
                 {
+                    case VMStackSlotKind.NULL:
+                        // Dedicated null slot: 0 bytes, just set outVal to null.
+                        outVal.SetNull();
+                        return true;
                     case VMStackSlotKind.PTR:
                     case VMStackSlotKind.STRING:
                         {
