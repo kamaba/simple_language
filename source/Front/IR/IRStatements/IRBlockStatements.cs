@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRBlockStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -122,6 +122,20 @@ namespace SimpleLanguage.IR
                             IRCallStatements ircs = new IRCallStatements(irMethod);
                             ircs.ParseIRStatements(mcs);
                             m_IRStatements.AddRange(ircs.irStatements);
+                        }
+                        break;
+                    case MetaTryStatements mts:
+                        {
+                            IRTryStatements irts = new IRTryStatements(irMethod);
+                            irts.ParseIRStatements(mts);
+                            m_IRStatements.AddRange(irts.irStatements);
+                        }
+                        break;
+                    case MetaThrowStatements mthrows:
+                        {
+                            IRThrowStatements irthrows = new IRThrowStatements(irMethod);
+                            irthrows.ParseIRStatements(mthrows);
+                            m_IRStatements.AddRange(irthrows.irStatements);
                         }
                         break;
                     case MetaOtherPlatformStatements mops:

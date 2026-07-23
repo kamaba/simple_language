@@ -289,6 +289,8 @@ namespace SimpleLanguage
         Try,
         /// <summary> catch </summary>
         Catch,
+        /// <summary> finally </summary>
+        Finally,
         /// <summary> throw </summary>
         Throw,
         /// <summary> BoolValue </summary>

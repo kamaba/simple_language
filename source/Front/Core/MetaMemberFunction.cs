@@ -863,6 +863,20 @@ namespace SimpleLanguage.Core
                         beforeStatements = metaIfStatements;
                     }
                     break;
+                case FileMetaKeyTrySyntax fmts:
+                    {
+                        var metaTryStatements = new MetaTryStatements(currentBlockStatements, fmts);
+                        beforeStatements.SetNextStatements(metaTryStatements);
+                        beforeStatements = metaTryStatements;
+                    }
+                    break;
+                case FileMetaKeyThrowSyntax fmtks:
+                    {
+                        var metaThrowStatements = new MetaThrowStatements(currentBlockStatements, fmtks);
+                        beforeStatements.SetNextStatements(metaThrowStatements);
+                        beforeStatements = metaThrowStatements;
+                    }
+                    break;
                 case FileMetaKeySwitchSyntax fmkss:
                     {
                         var metaSwitchStatements = new MetaSwitchStatements(currentBlockStatements, fmkss);

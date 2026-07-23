@@ -1995,6 +1995,9 @@ namespace SimpleLanguage.Compile
                 case "catch":
                     tokenType = ETokenType.Catch;
                     break;
+                case "finally":
+                    tokenType = ETokenType.Finally;
+                    break;
                 case "throw":
                     tokenType = ETokenType.Throw;
                     break;

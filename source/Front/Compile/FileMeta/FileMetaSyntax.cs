@@ -1052,6 +1052,119 @@ namespace SimpleLanguage.Compile
         }
 
     }
+
+    #region Try / Catch / Finally / Throw Syntax
+
+    /// <summary>
+    /// One catch clause: optional type filter, optional variable binding, and a block.
+    /// Supports: catch { }, catch e { }, catch Type e { }, catch (Type e) { }
+    /// </summary>
+    public class FileMetaCatchClause
+    {
+        public Token catchToken => m_CatchToken;
+        public Token typeToken => m_TypeToken;       // null for catch-all
+        public Token varToken => m_VarToken;         // null if no binding
+        public FileMetaBlockSyntax executeBlockSyntax => m_ExecuteBlock;
+
+        private Token m_CatchToken;
+        private Token m_TypeToken = null;
+        private Token m_VarToken = null;
+        private FileMetaBlockSyntax m_ExecuteBlock;
+
+        public FileMetaCatchClause(Token catchToken, Token typeToken, Token varToken, FileMetaBlockSyntax block)
+        {
+            m_CatchToken = catchToken;
+            m_TypeToken = typeToken;
+            m_VarToken = varToken;
+            m_ExecuteBlock = block;
+        }
+    }
+
+    /// <summary>
+    /// try { } catch [Type e] { } ... finally { }
+    /// </summary>
+    public class FileMetaKeyTrySyntax : FileMetaSyntax
+    {
+        public FileMetaBlockSyntax tryBlockSyntax => m_TryBlock;
+        public List<FileMetaCatchClause> catchClauses => m_CatchClauses;
+        public FileMetaBlockSyntax finallyBlockSyntax => m_FinallyBlock;
+
+        private FileMetaBlockSyntax m_TryBlock = null;
+        private List<FileMetaCatchClause> m_CatchClauses = new List<FileMetaCatchClause>();
+        private FileMetaBlockSyntax m_FinallyBlock = null;
+
+        public FileMetaKeyTrySyntax(FileMeta fm)
+        {
+            m_FileMeta = fm;
+        }
+
+        public void SetTryBlock(FileMetaBlockSyntax block) { m_TryBlock = block; }
+        public void AddCatchClause(FileMetaCatchClause clause) { m_CatchClauses.Add(clause); }
+        public void SetFinallyBlock(FileMetaBlockSyntax block) { m_FinallyBlock = block; }
+
+        public override void SetDeep(int _deep)
+        {
+            m_Deep = _deep;
+            m_TryBlock?.SetDeep(_deep);
+            foreach (var c in m_CatchClauses) c.executeBlockSyntax?.SetDeep(_deep);
+            m_FinallyBlock?.SetDeep(_deep);
+        }
+
+        public override string ToFormatString()
+        {
+            var sb = new StringBuilder();
+            for (int i = 0; i < deep; i++) sb.Append(Global.tabChar);
+            sb.Append("try");
+            if (m_TryBlock != null) { sb.Append(Environment.NewLine); sb.Append(m_TryBlock.ToFormatString()); }
+            foreach (var c in m_CatchClauses)
+            {
+                sb.Append(Environment.NewLine);
+                for (int i = 0; i < deep; i++) sb.Append(Global.tabChar);
+                sb.Append("catch");
+                if (c.typeToken != null) sb.Append(" " + c.typeToken.lexeme);
+                if (c.varToken != null) sb.Append(" " + c.varToken.lexeme);
+                if (c.executeBlockSyntax != null) { sb.Append(Environment.NewLine); sb.Append(c.executeBlockSyntax.ToFormatString()); }
+            }
+            if (m_FinallyBlock != null)
+            {
+                sb.Append(Environment.NewLine);
+                for (int i = 0; i < deep; i++) sb.Append(Global.tabChar);
+                sb.Append("finally");
+                sb.Append(Environment.NewLine);
+                sb.Append(m_FinallyBlock.ToFormatString());
+            }
+            return sb.ToString();
+        }
+    }
+
+    /// <summary>
+    /// throw expression  (mirrors FileMetaKeyReturnSyntax)
+    /// </summary>
+    public class FileMetaKeyThrowSyntax : FileMetaSyntax
+    {
+        public FileMetaBaseTerm throwExpress => m_ThrowExpress;
+
+        private FileMetaBaseTerm m_ThrowExpress = null;
+
+        public FileMetaKeyThrowSyntax(FileMeta fm, Token _token, FileMetaBaseTerm _express)
+        {
+            m_FileMeta = fm;
+            m_Token = _token;
+            m_ThrowExpress = _express;
+        }
+
+        public override string ToFormatString()
+        {
+            var sb = new StringBuilder();
+            for (int i = 0; i < deep; i++) sb.Append(Global.tabChar);
+            sb.Append(m_Token?.lexeme.ToString() + " ");
+            sb.Append(m_ThrowExpress?.ToFormatString());
+            return sb.ToString();
+        }
+    }
+
+    #endregion
+
     public class FileMetaBlockSyntax : FileMetaSyntax
     {
         public Token beginBlock => m_BeginBlock;

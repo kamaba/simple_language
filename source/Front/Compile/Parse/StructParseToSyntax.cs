@@ -29,13 +29,13 @@ namespace SimpleLanguage.Compile
             public ENodeType curNodeType = ENodeType.None;
             public int moveIndex = 0;
             public Node keyNode { get; private set; } = null;
-            public List<Node> keyContent = new List<Node>();                //¹Ø¼ü×Öºó¸úÌõ¼şÓï¾ä  if () switch() for()
+            public List<Node> keyContent = new List<Node>();                //å…³é”®å­—åè·Ÿæ¡ä»¶è¯­å¥  if () switch() for()
             public Node blockNode = null;
 
-            public List<Node> commonContent = new List<Node>();             //ÆÕÍ¨Óï¾äÇø¼ä    Class.CalFun()
+            public List<Node> commonContent = new List<Node>();             //æ™®é€šè¯­å¥åŒºé—´    Class.CalFun()
 
-            public List<SyntaxNodeStruct> childrenKeySyntaxStructList = new List<SyntaxNodeStruct>();//¹Ø¼ü×ÖÄÚÇ¶×ÓÓï¾ä, Ïñswitch
-            public List<SyntaxNodeStruct> followKeySyntaxStructList = new List<SyntaxNodeStruct>();//¹Ø¼ü×Ö¸úËæÓï¾äif/elif/elif/else  
+            public List<SyntaxNodeStruct> childrenKeySyntaxStructList = new List<SyntaxNodeStruct>();//å…³é”®å­—å†…åµŒå­è¯­å¥, åƒswitch
+            public List<SyntaxNodeStruct> followKeySyntaxStructList = new List<SyntaxNodeStruct>();//å…³é”®å­—è·Ÿéšè¯­å¥if/elif/elif/else  
 
             public SyntaxNodeStruct()
             {
@@ -56,7 +56,11 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.DoWhile
                     || tokenType == ETokenType.Return
                     || tokenType == ETokenType.Transience
-                    || tokenType == ETokenType.Case)
+                    || tokenType == ETokenType.Case
+                    || tokenType == ETokenType.Try
+                    || tokenType == ETokenType.Catch
+                    || tokenType == ETokenType.Finally
+                    || tokenType == ETokenType.Throw)
                 {
                     keyContent.Add(node);
                 }
@@ -70,7 +74,7 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Break
                     || tokenType == ETokenType.Continue )
                 {
-                    Log.AddNodeLog( LID.ShowExtendMessage, "Error ²»ÔÊĞíÔÚElseºóÔö¼ÓÈÎºÎ´úÂë" + node.token?.ToLexemeAllString() );
+                    Log.AddNodeLog( LID.ShowExtendMessage, "Error ä¸å…è®¸åœ¨Elseåå¢åŠ ä»»ä½•ä»£ç " + node.token?.ToLexemeAllString() );
                 }
                 else if( tokenType == ETokenType.Sharp )
                 {
@@ -96,7 +100,10 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Return
                     || tokenType == ETokenType.Transience
                     || tokenType == ETokenType.Label
-                    || tokenType == ETokenType.Goto)
+                    || tokenType == ETokenType.Goto
+                    || tokenType == ETokenType.Try
+                    || tokenType == ETokenType.Catch
+                    || tokenType == ETokenType.Finally)
                 {
                 }
                 else
@@ -113,7 +120,10 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.For
                     || tokenType == ETokenType.While
                     || tokenType == ETokenType.DoWhile
-                    || tokenType == ETokenType.Label )
+                    || tokenType == ETokenType.Label
+                    || tokenType == ETokenType.Try
+                    || tokenType == ETokenType.Catch
+                    || tokenType == ETokenType.Finally )
                 {
                     if( blockNode == null )
                     {
@@ -159,7 +169,10 @@ namespace SimpleLanguage.Compile
                 || tokenType == ETokenType.DoWhile
                 || tokenType == ETokenType.Case
                 || tokenType == ETokenType.Default
-                || tokenType == ETokenType.Label;
+                || tokenType == ETokenType.Label
+                || tokenType == ETokenType.Try
+                || tokenType == ETokenType.Catch
+                || tokenType == ETokenType.Finally;
         }
         private static bool IsSkippableNodeBetweenKeyAndBrace(Node node)
         {
@@ -257,7 +270,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (ProjectManager.isUseForceSemiColonInLineEnd)
                         {
-                            Log.AddNodeLog(LID.ShowExtendMessage, "warning Ê¹ÓÃµÄÊÇÇ¿ÖÆ·âºÅ½áÊøÓï¾ä·½Ê½£¬×¢ÒâÕâ¸ö½Úµã»á¼Ì³ĞÍùÏÂ²éÕÒÓï¾ä"
+                            Log.AddNodeLog(LID.ShowExtendMessage, "warning ä½¿ç”¨çš„æ˜¯å¼ºåˆ¶å°å·ç»“æŸè¯­å¥æ–¹å¼ï¼Œæ³¨æ„è¿™ä¸ªèŠ‚ç‚¹ä¼šç»§æ‰¿å¾€ä¸‹æŸ¥æ‰¾è¯­å¥"
                                  + curToken?.ToLexemeAllString());
                         }
 
@@ -355,6 +368,10 @@ namespace SimpleLanguage.Compile
                         || ttt == ETokenType.Continue
                         || ttt == ETokenType.Label
                         || ttt == ETokenType.Goto
+                        || ttt == ETokenType.Try
+                        || ttt == ETokenType.Catch
+                        || ttt == ETokenType.Finally
+                        || ttt == ETokenType.Throw
                         || ttt == ETokenType.Const)
                     {
                         keynodeStruct.SetMainKeyNode(curNode);
@@ -406,7 +423,7 @@ namespace SimpleLanguage.Compile
                     //}
                     else
                     {
-                        //Log.AddInHandleNode(curNode.token, 0, "Error ½âÎöÒì³£¹Ø¼ü×Ö");
+                        //Log.AddInHandleNode(curNode.token, 0, "Error è§£æå¼‚å¸¸å…³é”®å­—");
                     }
                 }
                 else
@@ -515,7 +532,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (staticToken != null)
                         {
-                            Log.AddNodeLog(LID.ShowExtendMessage, "Error ¶à¸öStatic!!");
+                            Log.AddNodeLog(LID.ShowExtendMessage, "Error å¤šä¸ªStatic!!");
                         }
                         staticToken = token;
                     }
@@ -523,7 +540,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (constToken != null)
                         {
-                            Log.AddNodeLog(LID.ShowExtendMessage, "Error ¶à¸öConst!!");
+                            Log.AddNodeLog(LID.ShowExtendMessage, "Error å¤šä¸ªConst!!");
                         }
                         constToken = token;
                     }
@@ -536,7 +553,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (varToken != null || dynamicToken != null || dataToken != null)
                         {
-                            Log.AddNodeLog(LID.ShowExtendMessage, "Error ¶à¸öDynamic!!");
+                            Log.AddNodeLog(LID.ShowExtendMessage, "Error å¤šä¸ªDynamic!!");
                         }
                         dynamicToken = token;
                         defineNodeList.Add(cnode);
@@ -545,7 +562,7 @@ namespace SimpleLanguage.Compile
                     {
                         if (varToken != null || dynamicToken != null || dataToken != null )
                         {
-                            Log.AddNodeLog(LID.ShowExtendMessage, "Error ¶à¸öVar!!");
+                            Log.AddNodeLog(LID.ShowExtendMessage, "Error å¤šä¸ªVar!!");
                         }
                         varToken = token;
                         defineNodeList.Add(cnode);
@@ -554,21 +571,21 @@ namespace SimpleLanguage.Compile
                     {
                         if (varToken != null || dynamicToken != null || dataToken != null)
                         {
-                            Log.AddNodeLog(LID.ShowExtendMessage, "Error ¶à¸öData!!");
+                            Log.AddNodeLog(LID.ShowExtendMessage, "Error å¤šä¸ªData!!");
                         }
                         dataToken = token;
                         defineNodeList.Add(cnode);
                     }
                     else
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "Error ½âÎö·¢ÏÖÃ»ÓĞ¸Ã½Úµã!!" + token?.ToLexemeAllString());
-                        //new Exception("Error ½âÎö·¢ÏÖÃ»ÓĞ¸Ã½Úµã");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error è§£æå‘ç°æ²¡æœ‰è¯¥èŠ‚ç‚¹!!" + token?.ToLexemeAllString());
+                        //new Exception("Error è§£æå‘ç°æ²¡æœ‰è¯¥èŠ‚ç‚¹");
                     }
                 }
             }
             if (defineNodeList.Count == 0 || defineNodeList.Count > 3)
             {
-                Log.AddNodeLog(LID.ShowExtendMessage, "Error ¶¨ÒåÀàĞÍÉÙÓÚ1");
+                Log.AddNodeLog(LID.ShowExtendMessage, "Error å®šä¹‰ç±»å‹å°‘äº1");
                 return null;
             }
             else if (defineNodeList.Count == 1  )
@@ -590,7 +607,7 @@ namespace SimpleLanguage.Compile
                     var tlist = node2.GetLinkTokenList();
                     if (tlist.Count != 1)
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "Error ¶¨ÒåÃû³ÆÖ»ÔÊĞíÒ»¸ö×Ö·û´®!!");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error å®šä¹‰åç§°åªå…è®¸ä¸€ä¸ªå­—ç¬¦ä¸²!!");
                         return null;
                     }
                     nameToken = node2.token;
@@ -601,7 +618,7 @@ namespace SimpleLanguage.Compile
             if (assignNode != null && afterNodeList.Count == 0)
             {
                 Log.AddNodeLog(LID.MetaCoreAssertShowMessage, assignNode.token,
-                    "Error '=' ºóÈ±ÉÙ¸³Öµ±í´ïÊ½£»²»Ö§³Ö '=\\n{}' »ò '= ºó×¢ÊÍÔÙ»»ĞĞ { }' ÕâÀàĞ´·¨¡£Çë½«ÓÒÖµÓë '=' ·ÅÔÚÍ¬Ò»ĞĞ¡£");
+                    "Error '=' åç¼ºå°‘èµ‹å€¼è¡¨è¾¾å¼ï¼›ä¸æ”¯æŒ '=\\n{}' æˆ– '= åæ³¨é‡Šå†æ¢è¡Œ { }' è¿™ç±»å†™æ³•ã€‚è¯·å°†å³å€¼ä¸ '=' æ”¾åœ¨åŒä¸€è¡Œã€‚");
                 return null;
             }
             if (assignNode != null && afterNodeList.Count > 0 )
@@ -619,7 +636,7 @@ namespace SimpleLanguage.Compile
                     if (n.nodeType == ENodeType.LineEnd || n.nodeType == ENodeType.SemiColon)
                     {
                         Log.AddNodeLog(LID.ShowExtendMessage, assignNode.token,
-                            "Error '=' ºó²»ÔÊĞíÖ±½Ó»»ĞĞ»ò½áÊø£¬ÓÒÖµ±ØĞëÓë '=' Í¬ĞĞ³öÏÖ£¨ÀıÈç: [ { new() ClassName() µÈ£©");
+                            "Error '=' åä¸å…è®¸ç›´æ¥æ¢è¡Œæˆ–ç»“æŸï¼Œå³å€¼å¿…é¡»ä¸ '=' åŒè¡Œå‡ºç°ï¼ˆä¾‹å¦‚: [ { new() ClassName() ç­‰ï¼‰");
                         return null;
                     }
 
@@ -630,7 +647,7 @@ namespace SimpleLanguage.Compile
                 if (!hasSameLineExpression)
                 {
                     Log.AddNodeLog(LID.ShowExtendMessage, assignNode.token,
-                        "Error '=' ºóÎ´ÕÒµ½Í¬Ò»ĞĞÓÒÖµ±í´ïÊ½");
+                        "Error '=' åæœªæ‰¾åˆ°åŒä¸€è¡Œå³å€¼è¡¨è¾¾å¼");
                     return null;
                 }
 
@@ -641,7 +658,7 @@ namespace SimpleLanguage.Compile
                     && afterNodeList[0].token?.type != ETokenType.Global
                     && afterNodeList[0].token?.type != ETokenType.New )
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error Ôİ²»Ö§³Ö a = if/switch{}Óï·¨");
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error æš‚ä¸æ”¯æŒ a = if/switch{}è¯­æ³•");
                     //var fme22 = HandleCreateFileMetaSyntaxByPNode(afterNodeList);
                     //if ((afterNodeList[0].token.type == ETokenType.If
                     //    || afterNodeList[0].token.type == ETokenType.Switch)
@@ -658,12 +675,12 @@ namespace SimpleLanguage.Compile
                     //    }
                     //    else
                     //    {
-                    //        Debug.Write("Error Éú³Éif/switchÓï¾äÊ§°Ü!!");
+                    //        Debug.Write("Error ç”Ÿæˆif/switchè¯­å¥å¤±è´¥!!");
                     //    }
                     //}
                     //else
                     //{
-                    //    Debug.Write("Error ²»ÔÊĞíÇ¶Ì×³ıif/switchÒÔÍâµÄÓï¾ä!!");
+                    //    Debug.Write("Error ä¸å…è®¸åµŒå¥—é™¤if/switchä»¥å¤–çš„è¯­å¥!!");
                     //}
                 }
             }
@@ -695,7 +712,7 @@ namespace SimpleLanguage.Compile
             {
                 if (varRef == null)
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error µ±Îª¶¨Òå±äÁ¿Ê±£¬Ãû³Æ²»ÄÜÎª¿Õ!!");
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error å½“ä¸ºå®šä¹‰å˜é‡æ—¶ï¼Œåç§°ä¸èƒ½ä¸ºç©º!!");
                     return null;
                 }
                 FileMetaOpAssignSyntax fms = new FileMetaOpAssignSyntax(varRef, opAssignNode.token, dynamicToken, varToken, dataToken, fme);
@@ -800,6 +817,94 @@ namespace SimpleLanguage.Compile
                         m_CurrentNodeInfoStack.Pop();
                     }
                 }
+                else if (akss.tokenType == ETokenType.Try)
+                {
+                    // Gather follow-up catch / finally nodes (like if/elif/else)
+                    while (true)
+                    {
+                        Condition condition = new Condition(ETokenType.Catch);
+                        condition.AddTokenTypeList(ETokenType.Finally);
+                        SyntaxNodeStruct cakss = GetOneSyntax(pnode, condition);
+                        if (cakss == null) break;
+                        pnode.parseIndex += cakss.moveIndex;
+                        akss.followKeySyntaxStructList.Add(cakss);
+                        if (cakss.tokenType == ETokenType.Finally) break;
+                    }
+
+                    // Build FileMetaKeyTrySyntax
+                    FileMetaKeyTrySyntax fmts = new FileMetaKeyTrySyntax(m_FileMeta);
+                    fmts.SetToken(akss.keyNode.token);
+                    FileMetaBlockSyntax tryBlock = new FileMetaBlockSyntax(m_FileMeta, akss.blockNode.token, akss.blockNode.endToken);
+                    fmts.SetTryBlock(tryBlock);
+                    AddParseSyntaxNodeInfo(fmts);
+                    fms = fmts;
+
+                    // Parse try body
+                    ParseCurrentNodeInfo pcnicTry = new ParseCurrentNodeInfo(tryBlock);
+                    m_CurrentNodeInfoStack.Push(pcnicTry);
+                    ParseSyntax(akss.blockNode);
+                    m_CurrentNodeInfoStack.Pop();
+
+                    // Parse each catch / finally follow-key
+                    foreach (var csns in akss.followKeySyntaxStructList)
+                    {
+                        if (csns.tokenType == ETokenType.Catch)
+                        {
+                            // Parse catch clause: optional Type varName
+                            Token typeToken = null;
+                            Token varToken = null;
+                            var catchContent = csns.keyContent;
+                            // Filter out parens, extract type and variable name
+                            for (int ci = 0; ci < catchContent.Count; ci++)
+                            {
+                                var cn = catchContent[ci];
+                                if (cn.token == null) continue;
+                                var tt = cn.token.type;
+                                if (tt == ETokenType.LParen || tt == ETokenType.RParen) continue;
+                                if (typeToken == null && (tt == ETokenType.Identifier || tt == ETokenType.Data))
+                                {
+                                    // First identifier could be type or variable
+                                    typeToken = cn.token;
+                                }
+                                else if (typeToken != null && varToken == null && tt == ETokenType.Identifier)
+                                {
+                                    // Second identifier is the variable name
+                                    varToken = cn.token;
+                                }
+                                else if (typeToken != null && varToken == null)
+                                {
+                                    varToken = cn.token;
+                                }
+                            }
+                            // If only one identifier and next is not identifier, it's a variable name not a type
+                            if (typeToken != null && varToken == null && catchContent.Count == 1)
+                            {
+                                // catch e { } - single identifier is variable, not type
+                                varToken = typeToken;
+                                typeToken = null;
+                            }
+
+                            FileMetaBlockSyntax catchBlock = new FileMetaBlockSyntax(m_FileMeta, csns.blockNode.token, csns.blockNode.endToken);
+                            var clause = new FileMetaCatchClause(csns.keyNode.token, typeToken, varToken, catchBlock);
+                            fmts.AddCatchClause(clause);
+
+                            ParseCurrentNodeInfo pcnicCatch = new ParseCurrentNodeInfo(catchBlock);
+                            m_CurrentNodeInfoStack.Push(pcnicCatch);
+                            ParseSyntax(csns.blockNode);
+                            m_CurrentNodeInfoStack.Pop();
+                        }
+                        else if (csns.tokenType == ETokenType.Finally)
+                        {
+                            FileMetaBlockSyntax finallyBlock = new FileMetaBlockSyntax(m_FileMeta, csns.blockNode.token, csns.blockNode.endToken);
+                            fmts.SetFinallyBlock(finallyBlock);
+
+                            ParseCurrentNodeInfo pcnicFinally = new ParseCurrentNodeInfo(finallyBlock);
+                            m_CurrentNodeInfoStack.Push(pcnicFinally);
+                            ParseSyntax(csns.blockNode);
+                            m_CurrentNodeInfoStack.Pop();
+                        }
+                    }
+                }
                 else if (akss.tokenType == ETokenType.Switch)
                 {
                     var children = ParseSwitchChildren(akss.blockNode);
@@ -858,20 +963,31 @@ namespace SimpleLanguage.Compile
                     }
                     m_CurrentNodeInfoStack.Pop();
                 }
+                else if (akss.tokenType == ETokenType.Throw)
+                {
+                    FileMetaBaseTerm throwExpress = null;
+                    if (akss.keyContent.Count > 0)
+                    {
+                        throwExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, akss.keyContent, FileMetaTermExpress.EExpressType.Common);
+                    }
+                    FileMetaKeyThrowSyntax fmks = new FileMetaKeyThrowSyntax(m_FileMeta, akss.keyNode.token, throwExpress);
+                    AddParseSyntaxNodeInfo(fmks);
+                    fms = fmks;
+                }
                 else if (akss.tokenType == ETokenType.Label
                     || akss.tokenType == ETokenType.Goto)
                 {
                     Token labelToken = null;
                     if (akss.keyContent.Count != 1)
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "Error ½âÎöGoto LabelÓï·¨£¬Ö»Ö§³Ö goto id;µÄÓï·¨!!");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error è§£æGoto Labelè¯­æ³•ï¼Œåªæ”¯æŒ goto id;çš„è¯­æ³•!!");
                     }
                     else
                     {
                         labelToken = akss.keyContent[0].token;
                         if (labelToken.type != ETokenType.Identifier)
                         {
-                            Log.AddNodeLog(LID.ShowExtendMessage, "Error ½âÎöGotoLabelÖĞ ºó±ß±ØĞëÊ¹ÓÃÆÕÍ¨×Ö·û");
+                            Log.AddNodeLog(LID.ShowExtendMessage, "Error è§£æGotoLabelä¸­ åè¾¹å¿…é¡»ä½¿ç”¨æ™®é€šå­—ç¬¦");
                         }
                     }
 
@@ -907,7 +1023,7 @@ namespace SimpleLanguage.Compile
             var parlist = sns.keyContent;
             if (parlist.Count == 0)
             {
-                Log.AddNodeLog(LID.ShowExtendMessage, "Error ForÓï¾äÖĞ£¬Ìõ¼şÇøÓòÃ»ÓĞÏà¹ØµÄÖµ!!");
+                Log.AddNodeLog(LID.ShowExtendMessage, "Error Forè¯­å¥ä¸­ï¼Œæ¡ä»¶åŒºåŸŸæ²¡æœ‰ç›¸å…³çš„å€¼!!");
             }
             List<Node> defineVariableSyntaxNodeList = new List<Node>();
             List<Node> conditionExpressNodeList = new List<Node>();
@@ -965,7 +1081,7 @@ namespace SimpleLanguage.Compile
             }
             if (defineVariableSyntax == null)
             {
-                Log.AddNodeLog(LID.ShowExtendMessage, "Error ½âÎöfor µÚÒ»²¿·Ö´íÎó£¬½âÎöÓï¾ä³ö´í£¬²»ÊÇ¶¨ÒåÀàĞÍÓï¾ä!!");
+                Log.AddNodeLog(LID.ShowExtendMessage, "Error è§£æfor ç¬¬ä¸€éƒ¨åˆ†é”™è¯¯ï¼Œè§£æè¯­å¥å‡ºé”™ï¼Œä¸æ˜¯å®šä¹‰ç±»å‹è¯­å¥!!");
             }
             if (inToken != null)
             {
@@ -974,7 +1090,7 @@ namespace SimpleLanguage.Compile
                     var cfe = FileMetatUtil.CreateFileMetaExpress(fm, conditionExpressNodeList, FileMetaTermExpress.EExpressType.Common);
                     if (cfe == null)
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "Error ½âÎöfor µÚ¶ş²¿·Ö´íÎó!!");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error è§£æfor ç¬¬äºŒéƒ¨åˆ†é”™è¯¯!!");
                     }
                     else
                     {
@@ -989,7 +1105,7 @@ namespace SimpleLanguage.Compile
                     var cfe = FileMetatUtil.CreateFileMetaExpress(fm, conditionExpressNodeList, FileMetaTermExpress.EExpressType.Common);
                     if (cfe == null)
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, conditionExpressNodeList[0]?.token, "Error ½âÎöfor µÚ¶ş²¿·Ö´íÎó!!");
+                        Log.AddNodeLog(LID.ShowExtendMessage, conditionExpressNodeList[0]?.token, "Error è§£æfor ç¬¬äºŒéƒ¨åˆ†é”™è¯¯!!");
                     }
                     else
                     {
@@ -1005,7 +1121,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "Error ½âÎöfor µÚÈı²¿·Ö´íÎó!!");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error è§£æfor ç¬¬ä¸‰éƒ¨åˆ†é”™è¯¯!!");
                     }
                 }
             }
@@ -1092,7 +1208,7 @@ namespace SimpleLanguage.Compile
             }
             if( fmcl == null )
             {
-                Log.AddNodeLog(LID.ShowExtendMessage, "Error ´´½¨ FileMetaCallLink Ê§°Ü");
+                Log.AddNodeLog(LID.ShowExtendMessage, "Error åˆ›å»º FileMetaCallLink å¤±è´¥");
             }
             var fms = new FileMetaKeySwitchSyntax(fm, cnode.token, sns.blockNode.token, sns.blockNode.endToken, fmcl);
 
@@ -1114,7 +1230,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddNodeLog( LID.ShowExtendMessage, "Error switchÖĞ²»ÄÜ³öÏÖ³ıcase/default×ÓÍâµÄÓï¾ä!!");
+                    Log.AddNodeLog( LID.ShowExtendMessage, "Error switchä¸­ä¸èƒ½å‡ºç°é™¤case/defaultå­å¤–çš„è¯­å¥!!");
                 }
             }
 
@@ -1129,7 +1245,7 @@ namespace SimpleLanguage.Compile
             var parlist = caseMS.keyContent;
             if (parlist == null || parlist.Count == 0)
             {
-                Log.AddNodeLog(LID.ShowExtendMessage, "Error CaseÓï¾ä²»ÔÊĞíÃ»ÓĞ¼ì²éÖµ!!");
+                Log.AddNodeLog(LID.ShowExtendMessage, "Error Caseè¯­å¥ä¸å…è®¸æ²¡æœ‰æ£€æŸ¥å€¼!!");
                 return;
             }
 
@@ -1155,7 +1271,7 @@ namespace SimpleLanguage.Compile
                     var type = curNode.token.type;
                     if (type != ETokenType.Number && type != ETokenType.String)
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "Error ¶ººÅ·Ö¸îÖ»ÔÊĞínumber,string");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error é€—å·åˆ†å‰²åªå…è®¸number,string");
                         isSame = false;
                         break;
                     }
@@ -1167,7 +1283,7 @@ namespace SimpleLanguage.Compile
                 }
                 if (!isSame)
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error Ê¹ÓÃ¶ººÅÇĞ¸î¿ªºó£¬ÀàĞÍ²»ÏàÍ¬!!");
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error ä½¿ç”¨é€—å·åˆ‡å‰²å¼€åï¼Œç±»å‹ä¸ç›¸åŒ!!");
                 }
 
                 for (int i = 0; i < childList.Count; i++)
