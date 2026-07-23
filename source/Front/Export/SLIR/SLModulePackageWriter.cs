@@ -263,11 +263,11 @@ namespace SimpleLanguage.Export.SLIR
             var pkg = new SLModulePackage();
             var module = new SLAssemblyPackage(moduleName ?? string.Empty);
 
-            // const strings (IRManager.AddStringIRStack)
-            foreach (var kv in ir.IRStringDict)
-            {
-                module.irStringDict.Add(new IRStringItem { id = kv.Key, value = kv.Value ?? string.Empty });
-            }
+            // const strings (IRManager.AddStringIRStack) — exported AFTER all IR
+            // generation below (instance field initializers, enum members, etc.
+            // call AddStringIRStack during export, so the pool must be serialized
+            // last to capture every string).
+            // (Populated at the end of this method.)
 
             // types
             var classes = ir.GetIRMetaClassList();
@@ -644,6 +644,16 @@ namespace SimpleLanguage.Export.SLIR
             }
 
             module.entryMethodId = bestEntry;
+
+            // const strings (IRManager.AddStringIRStack) - must be populated AFTER
+            // all IR generation (instance field initializers at lines ~380-469,
+            // enum member expressions, method bodies, etc. all call
+            // AddStringIRStack during this Build). Exporting here ensures every
+            // string constant is captured.
+            foreach (var kv in ir.IRStringDict)
+            {
+                module.irStringDict.Add(new IRStringItem { id = kv.Key, value = kv.Value ?? string.Empty });
+            }
 
             // In-memory model; Write() serializes SLPackageRootJson (entryModule + moduleList only).
             pkg.entryModule = module.moduleName;

@@ -51,9 +51,49 @@ namespace SimpleLanguage.IR
         public void SetOpValue(object v)
         {
             // keep a copy for debug but use Payload for runtime consumption
-            _opValue = v;
+            // Cast v to the correct CLR type based on opCode so PackOpValue
+            // produces the right number of bytes (e.g. Int8 -> 1 byte, not 4).
+            _opValue = CastOpValueByOpCode(v);
             PackOpValue();
             UpdateByteLength();
+        }
+
+        /// <summary>
+        /// Cast a boxed numeric value to the CLR type that matches the current
+        /// opCode's LoadConst variant.  C# integer literals default to int,
+        /// so without this cast a LoadConstInt8 with value 1 would pack as
+        /// 4 bytes (Int32) instead of 1 byte (SByte).
+        /// </summary>
+        private object CastOpValueByOpCode(object v)
+        {
+            if (v == null) return null;
+            switch (opCode)
+            {
+                case EIROpCode.LoadConstUInt8:
+                    try { return Convert.ToByte(v); } catch { return v; }
+                case EIROpCode.LoadConstInt8:
+                    try { return Convert.ToSByte(v); } catch { return v; }
+                case EIROpCode.LoadConstInt16:
+                    try { return Convert.ToInt16(v); } catch { return v; }
+                case EIROpCode.LoadConstUInt16:
+                    try { return Convert.ToUInt16(v); } catch { return v; }
+                case EIROpCode.LoadConstInt32:
+                    try { return Convert.ToInt32(v); } catch { return v; }
+                case EIROpCode.LoadConstUInt32:
+                    try { return Convert.ToUInt32(v); } catch { return v; }
+                case EIROpCode.LoadConstInt64:
+                    try { return Convert.ToInt64(v); } catch { return v; }
+                case EIROpCode.LoadConstUInt64:
+                    try { return Convert.ToUInt64(v); } catch { return v; }
+                case EIROpCode.LoadConstFloat32:
+                    try { return Convert.ToSingle(v); } catch { return v; }
+                case EIROpCode.LoadConstFloat64:
+                    try { return Convert.ToDouble(v); } catch { return v; }
+                case EIROpCode.LoadConstBoolean:
+                    try { return Convert.ToBoolean(v); } catch { return v; }
+                default:
+                    return v;
+            }
         }
 
         // 将基础值类型序列化到 Payload（仅支持常见原始类型和字符串）
@@ -90,7 +130,9 @@ namespace SimpleLanguage.IR
             switch (Type.GetTypeCode(opValue.GetType()))
             {
                 case TypeCode.Boolean:
-                    Payload = BitConverter.GetBytes((bool)opValue);
+                    /* C# BitConverter.GetBytes(bool) produces 4 bytes, but the VM
+                       expects 1 byte for LoadConstBoolean. Pack as a single byte. */
+                    Payload = new byte[] { (byte)(((bool)opValue) ? 1 : 0) };
                     break;
                 case TypeCode.Byte:
                     Payload = new byte[] { (byte)opValue };
@@ -238,8 +280,6 @@ namespace SimpleLanguage.IR
                 case EIROpCode.Ble:
                 case EIROpCode.Ble_Un:
                 case EIROpCode.BrLabel:
-                case EIROpCode.NewObject:
-                case EIROpCode.NewTemplateObject:
                 case EIROpCode.StoreArrayIndex:
                 case EIROpCode.Switch:
                     return true;

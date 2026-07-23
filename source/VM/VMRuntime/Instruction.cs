@@ -102,8 +102,6 @@ namespace SimpleLanguage.VM
                 case EIROpCode.Ble:
                 case EIROpCode.Ble_Un:
                 case EIROpCode.BrLabel:
-                case EIROpCode.NewObject:
-                case EIROpCode.NewTemplateObject:
                 case EIROpCode.StoreArrayIndex:
                 case EIROpCode.Switch:
                     return true;
