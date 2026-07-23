@@ -762,6 +762,10 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Var:
                 case ETokenType.Next:
                 case ETokenType.Params:
+                case ETokenType.Try:
+                case ETokenType.Catch:
+                case ETokenType.Finally:
+                case ETokenType.Throw:
                     {
                         AddKeyNode(token);
                     }

@@ -47,6 +47,7 @@
       { "path": "Range.sl", "group": "core", "tag": "itertor", "ignore": false, "priority": 0 },
       { "path": "NativeBridge.sl", "group": "core", "tag": "bridge", "ignore": false, "priority": 0 },
       { "path": "Attribute.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Exception.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/ObjectTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/StringTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/NumberTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
@@ -71,6 +72,7 @@
       { "path": "../../../../test/BaseTest/GenClass_Interface.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/GenClass.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/GenClass2.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "../../../../test/BaseTest/TryTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/GenClass3.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
 
     ]
@@ -221,7 +223,8 @@
         { "class": "Array" },
         { "class": "Range" },
         { "class": "NativeBridge" },
-        { "class": "Attribute" }
+        { "class": "Attribute" },
+        { "class": "Exception" }
       ] },
       { "namespace": "Std", "children": [] },
       { "namespace": "Application", "children": [] },

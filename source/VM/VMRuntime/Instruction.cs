@@ -104,6 +104,7 @@ namespace SimpleLanguage.VM
                 case EIROpCode.BrLabel:
                 case EIROpCode.StoreArrayIndex:
                 case EIROpCode.Switch:
+                case EIROpCode.LeaveTry:
                     return true;
                 default:
                     return false;

@@ -147,7 +147,8 @@ namespace SimpleLanguage.Compile
             public Condition( ETokenType tokenType )
             {
                 eTokenTypeList.Add( tokenType );
-                if( tokenType == ETokenType.Else || tokenType == ETokenType.ElseIf )
+                if( tokenType == ETokenType.Else || tokenType == ETokenType.ElseIf
+                    || tokenType == ETokenType.Catch || tokenType == ETokenType.Finally )
                 {
                     isFirstKey = true;
                 }
@@ -308,7 +309,10 @@ namespace SimpleLanguage.Compile
                                 || ttt == ETokenType.Switch
                                 || ttt == ETokenType.Case
                                 || ttt == ETokenType.Label
-                                || ttt == ETokenType.Default ) // ClassName(){}
+                                || ttt == ETokenType.Default
+                                || ttt == ETokenType.Try
+                                || ttt == ETokenType.Catch
+                                || ttt == ETokenType.Finally ) // ClassName(){}
                     {
 
                         isMustContactBrace = true;
@@ -826,9 +830,19 @@ namespace SimpleLanguage.Compile
                         condition.AddTokenTypeList(ETokenType.Finally);
                         SyntaxNodeStruct cakss = GetOneSyntax(pnode, condition);
                         if (cakss == null) break;
-                        pnode.parseIndex += cakss.moveIndex;
-                        akss.followKeySyntaxStructList.Add(cakss);
-                        if (cakss.tokenType == ETokenType.Finally) break;
+
+                        if (cakss.tokenType == ETokenType.Catch)
+                        {
+                            pnode.parseIndex += cakss.moveIndex;
+                            akss.followKeySyntaxStructList.Add(cakss);
+                            continue;
+                        }
+                        else if (cakss.tokenType == ETokenType.Finally)
+                        {
+                            pnode.parseIndex += cakss.moveIndex;
+                            akss.followKeySyntaxStructList.Add(cakss);
+                        }
+                        break;
                     }
 
                     // Build FileMetaKeyTrySyntax
@@ -850,36 +864,31 @@ namespace SimpleLanguage.Compile
                     {
                         if (csns.tokenType == ETokenType.Catch)
                         {
-                            // Parse catch clause: optional Type varName
+                            // Parse catch clause: only supports "catch e" or "catch Type e" or "catch"
+                            // Parentheses like catch (Type e) are NOT supported
                             Token typeToken = null;
                             Token varToken = null;
                             var catchContent = csns.keyContent;
-                            // Filter out parens, extract type and variable name
                             for (int ci = 0; ci < catchContent.Count; ci++)
                             {
                                 var cn = catchContent[ci];
                                 if (cn.token == null) continue;
                                 var tt = cn.token.type;
-                                if (tt == ETokenType.LParen || tt == ETokenType.RParen) continue;
-                                if (typeToken == null && (tt == ETokenType.Identifier || tt == ETokenType.Data))
+                                // Only accept Identifier or Data tokens as type/var
+                                if (tt != ETokenType.Identifier && tt != ETokenType.Data)
+                                    continue;
+                                if (typeToken == null)
                                 {
-                                    // First identifier could be type or variable
                                     typeToken = cn.token;
                                 }
-                                else if (typeToken != null && varToken == null && tt == ETokenType.Identifier)
-                                {
-                                    // Second identifier is the variable name
-                                    varToken = cn.token;
-                                }
-                                else if (typeToken != null && varToken == null)
+                                else if (varToken == null)
                                 {
                                     varToken = cn.token;
                                 }
                             }
-                            // If only one identifier and next is not identifier, it's a variable name not a type
+                            // If only one identifier, it's a variable name not a type
                             if (typeToken != null && varToken == null && catchContent.Count == 1)
                             {
-                                // catch e { } - single identifier is variable, not type
                                 varToken = typeToken;
                                 typeToken = null;
                             }
@@ -1076,13 +1085,14 @@ namespace SimpleLanguage.Compile
             if (defineVariableSyntaxNodeList.Count > 0)
             {
                 defineVariableSyntax = CrateFileMetaSyntaxNoKey(defineVariableSyntaxNodeList);
-                defineVariableSyntax.isAppendSemiColon = false;
-                fms.SetFileMetaClassDefine(defineVariableSyntax);
             }
             if (defineVariableSyntax == null)
             {
                 Log.AddNodeLog(LID.ShowExtendMessage, "Error 解析for 第一部分错误，解析语句出错，不是定义类型语句!!");
+                return fms;
             }
+            defineVariableSyntax.isAppendSemiColon = false;
+            fms.SetFileMetaClassDefine(defineVariableSyntax);
             if (inToken != null)
             {
                 if(conditionExpressNodeList.Count > 0 )

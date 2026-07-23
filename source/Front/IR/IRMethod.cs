@@ -184,6 +184,21 @@ namespace SimpleLanguage.IR
                             }
                         }
                         break;
+                    case EIROpCode.LeaveTry:
+                        {
+                            var findex = IRDataList.FindIndex(a => a == defLabel.opValue);
+                            defLabel.index = findex;
+                            var targetIRData = defLabel.opValue as IRData;
+                            if (targetIRData != null && targetIRData.opCode != EIROpCode.Label)
+                            {
+                                targetIRData.opCode = EIROpCode.Label;
+                                targetIRData.index = nextLabelId;
+                                targetIRData.Payload = BitConverter.GetBytes(nextLabelId);
+                                targetIRData.UpdateByteLength();
+                                nextLabelId++;
+                            }
+                        }
+                        break;
                 }
             }
 
@@ -211,7 +226,8 @@ namespace SimpleLanguage.IR
             }
             else if( irdata.opCode == EIROpCode.Br
                 || irdata.opCode == EIROpCode.BrFalse
-                || irdata.opCode == EIROpCode.BrTrue )
+                || irdata.opCode == EIROpCode.BrTrue
+                || irdata.opCode == EIROpCode.LeaveTry )
             {
                 m_LabelList.Add(irdata);
             }

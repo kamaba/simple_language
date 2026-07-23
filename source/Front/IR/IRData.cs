@@ -282,6 +282,7 @@ namespace SimpleLanguage.IR
                 case EIROpCode.BrLabel:
                 case EIROpCode.StoreArrayIndex:
                 case EIROpCode.Switch:
+                case EIROpCode.LeaveTry:
                     return true;
                 default:
                     return false;
@@ -323,6 +324,19 @@ namespace SimpleLanguage.IR
             // The index is embedded into Payload by EmbedIndexInPayload() later.
             if (_opValue is IRData idRef)
             {
+                _opValue = null;
+                return;
+            }
+
+            // TryScopeData (BeginTry): serialize catch + finally target indices
+            if (_opValue is TryScopeData tsd)
+            {
+                int catchIdx = tsd.catchTarget != null ? tsd.catchTarget.id : -1;
+                int finallyIdx = tsd.finallyTarget != null ? tsd.finallyTarget.id : -1;
+                Payload = new byte[8];
+                System.BitConverter.GetBytes(catchIdx).CopyTo(Payload, 0);
+                System.BitConverter.GetBytes(finallyIdx).CopyTo(Payload, 4);
+                UpdateByteLength();
                 _opValue = null;
                 return;
             }

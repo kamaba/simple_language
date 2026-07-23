@@ -19,6 +19,16 @@ namespace SimpleLanguage.VM.Runtime
 {
     public class RuntimeVM
     {
+        // ── Exception handling state ──
+        private struct TryFrame
+        {
+            public int catchIndex;       // -1 if no catch handler
+            public int finallyIndex;     // -1 if no finally block
+            public bool hasException;    // true if exception is being propagated through finally
+            public RuntimeValue exceptionValue; // the pending exception (if hasException)
+        }
+        private Stack<TryFrame> m_TryStack = new Stack<TryFrame>();
+
         public RuntimeObject[] returnRuntimeObjectArray { get => m_ReturnRuntimeObjectArray; }
 #if DEBUG
         public ushort valueIndex => m_ValueIndex;
@@ -3589,6 +3599,84 @@ namespace SimpleLanguage.VM.Runtime
                     m_ExecuteIndex = m_ExecuteCount;
                     break;
 
+                #region Exception Handling Opcodes
+
+                case EIROpCode.BeginTry:
+                    {
+                        // Payload: catchIndex(int32) + finallyIndex(int32)
+                        int catchIdx = -1, finallyIdx = -1;
+                        if (iri.Payload != null && iri.Payload.Length >= 8)
+                        {
+                            catchIdx = BitConverter.ToInt32(iri.Payload, 0);
+                            finallyIdx = BitConverter.ToInt32(iri.Payload, 4);
+                        }
+                        m_TryStack.Push(new TryFrame
+                        {
+                            catchIndex = catchIdx,
+                            finallyIndex = finallyIdx,
+                            hasException = false,
+                            exceptionValue = default
+                        });
+                    }
+                    break;
+
+                case EIROpCode.LeaveTry:
+                    {
+                        // Normal exit from try or catch body.
+                        // Pop the current try frame, optionally push a finally frame.
+                        if (m_TryStack.Count > 0)
+                        {
+                            var frame = m_TryStack.Pop();
+                            if (frame.finallyIndex >= 0)
+                            {
+                                // Push a finally-only frame (no catch, no exception)
+                                m_TryStack.Push(new TryFrame
+                                {
+                                    catchIndex = -1,
+                                    finallyIndex = -1,
+                                    hasException = false,
+                                    exceptionValue = default
+                                });
+                            }
+                        }
+                        // Jump to target (finally or end label)
+                        m_ExecuteIndex = (ushort)(iri.index - 1);
+                    }
+                    break;
+
+                case EIROpCode.Throw:
+                    {
+                        // Pop the thrown value from the stack
+                        RuntimeValue thrownVal = default;
+                        if (ByteStackTryPeekRuntimeValue(1, out thrownVal))
+                        {
+                            ByteStackDiscardN(1);
+#if DEBUG
+                            m_ValueIndex -= 1;
+#endif
+                        }
+                        ExecuteThrow(thrownVal);
+                    }
+                    break;
+
+                case EIROpCode.EndFinally:
+                    {
+                        // Pop the finally frame
+                        if (m_TryStack.Count > 0)
+                        {
+                            var frame = m_TryStack.Pop();
+                            if (frame.hasException)
+                            {
+                                // Re-throw the pending exception
+                                ExecuteThrow(frame.exceptionValue);
+                            }
+                            // else: normal completion, fall through to next instruction
+                        }
+                        // else: no try frame, just continue
+                    }
+                    break;
+
+                #endregion
                 case EIROpCode.CastClass:
                     {
                         if (m_StackSlotDepth < 1)
@@ -3751,6 +3839,65 @@ namespace SimpleLanguage.VM.Runtime
             {
                 PushSValueSynced(result);
             }
+        }
+
+        /// <summary>
+        /// Dispatch a thrown exception value to the nearest matching catch handler.
+        /// If no catch matches, execute finally blocks and propagate.
+        /// If no try frame at all, the exception is uncaught (method exits).
+        /// </summary>
+        private void ExecuteThrow(RuntimeValue exceptionValue)
+        {
+            while (m_TryStack.Count > 0)
+            {
+                var frame = m_TryStack.Pop();
+                if (frame.catchIndex >= 0)
+                {
+                    // Caught! Push exception value back onto stack for catch body.
+                    if (exceptionValue.isNull)
+                        ByteStackPushNull();
+                    else if (exceptionValue.sobject != null)
+                        ByteStackPushPtr(exceptionValue.sobject);
+                    else if (exceptionValue.eType == EVMType.String && exceptionValue.stringValue != null)
+                        ByteStackPushString(exceptionValue.stringValue);
+                    else
+                        ByteStackPushPtr(exceptionValue.sobject);
+
+#if DEBUG
+                    m_ValueIndex += 1;
+#endif
+                    // If there's a finally, push a frame so catch's LeaveTry runs it
+                    if (frame.finallyIndex >= 0)
+                    {
+                        m_TryStack.Push(new TryFrame
+                        {
+                            catchIndex = -1,
+                            finallyIndex = frame.finallyIndex,
+                            hasException = false,
+                            exceptionValue = default
+                        });
+                    }
+                    m_ExecuteIndex = (ushort)(frame.catchIndex - 1);
+                    return;
+                }
+                else if (frame.finallyIndex >= 0)
+                {
+                    // No catch, but has finally - execute finally, then propagate
+                    m_TryStack.Push(new TryFrame
+                    {
+                        catchIndex = -1,
+                        finallyIndex = -1,
+                        hasException = true,
+                        exceptionValue = exceptionValue
+                    });
+                    m_ExecuteIndex = (ushort)(frame.finallyIndex - 1);
+                    return;
+                }
+                // No catch and no finally, continue to outer try
+            }
+            // Uncaught exception - log and exit method
+            Log.AddRuntimeLog(LID.ShowMessageAssert, null, "Uncaught exception thrown");
+            m_ExecuteIndex = m_ExecuteCount;
         }
 
         private void ExecuteRelationalOperation(Instruction iri, int compareSign, bool isBranch)

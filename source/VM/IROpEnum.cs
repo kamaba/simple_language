@@ -136,7 +136,14 @@ namespace SimpleLanguage.VM
         Convert_R8,
         Convert_ToString,
 
-        Ret,          
+        Ret,
+
+        // Exception handling opcodes
+        BeginTry,       // Push a try frame. Payload: catchIndex(int32) + finallyIndex(int32)
+        EndTry,         // Pop try frame (normal completion). Branch to finally or end.
+        Throw,          // Throw exception (value on stack)
+        LeaveTry,       // Leave try/catch block. Pop try frame, branch to target.
+        EndFinally,     // End of finally. If exception pending, re-throw; else continue.
     }
 
     /// <summary>

@@ -68,7 +68,7 @@ TryTest
         {
             throw "binding-test"
         }
-        catch (var ex)
+        catch ex
         {
             captured = ex.toString()
         }
@@ -84,7 +84,7 @@ TryTest
         {
             throw new TryError("division by zero", 42)
         }
-        catch (TryError err)
+        catch TryError err
         {
             captured = err.toString()
         }
@@ -184,7 +184,7 @@ TryTest
     {
         global.println("========== try/catch in loop ==========")
         Int32 sum = 0
-        for (Int32 i = 0; i < 5; i = i + 1)
+        for Int32 i = 0, i < 5, i = i + 1
         {
             try
             {
@@ -254,7 +254,7 @@ TryTest
         {
             throw new TryError("multi-catch", 7)
         }
-        catch (TryError err)
+        catch TryError err
         {
             log = "caught-TryError-" + err.code.toString()
         }
@@ -274,7 +274,7 @@ TryTest
         {
             throw "fallback-test"
         }
-        catch (TryError err)
+        catch TryError err
         {
             log = "typed-catch"
         }
@@ -325,6 +325,33 @@ TryTest
         global.println("log = " + log)
     }
 
+    # ── 16. throw built-in Exception with cause chain ──
+    static builtinExceptionTest()
+    {
+        global.println("========== built-in Exception ==========")
+        string log = ""
+        try
+        {
+            try
+            {
+                throw new Exception("low-level error", 10)
+            }
+            catch Exception inner
+            {
+                throw new Exception("operation failed", inner)
+            }
+        }
+        catch Exception e
+        {
+            log = e.toString()
+            if (e.hasCause())
+            {
+                log = log + " -> caused by: " + e.getCause().toString()
+            }
+        }
+        global.println("log = " + log)
+    }
+
     # ── main entry ──
     static _main_()
     {
@@ -343,6 +370,7 @@ TryTest
         catchAllFallbackTest()
         finallyWithoutCatchTest()
         throwInCatchTest()
+        builtinExceptionTest()
         global.println("========== all try/catch tests done ==========")
     }
 }
