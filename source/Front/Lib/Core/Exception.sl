@@ -122,7 +122,7 @@ public class Exception extends Object
             global.println(this.stackTrace)
         }
         Exception c = this.cause
-        while (c != null)
+        while c != null
         {
             global.println("Caused by: " + c.toString())
             if (c.stackTrace.length() > 0)
