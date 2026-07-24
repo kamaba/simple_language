@@ -746,6 +746,75 @@ string content = readFile("").catch FileError.NotFound
 └─────────────────────────────────┘
 ```
 
+### 13.5 Isolate 错误处理示例
+
+```dart
+fn worker() {
+    do {
+        runTask()
+    } catch all err {
+        // 将错误发送给主隔离岛
+        channel.send(errorMsg(err))
+    }
+}
+
+fn main() {
+    // 可恢复错误：通过通道传递
+    let port = Isolate.spawn(worker)
+
+    // panic：子隔离终止，主隔离监听
+    port.onPanic(|panicInfo| {
+        log("子隔离发生 panic，堆栈：{}", panicInfo.stackTrace)
+    })
+}
+```
+
+***
+
+## 14. 对比竞品优势总结
+
+| 对比对象            | 本方案优势                                              |
+| --------------- | -------------------------------------------------- |
+| **比 Dart 强**    | 函数必须声明 `throws`，静态检查，不会凭空出现未知异常；清晰区分 `panic` 和业务错误 |
+| **比 Zig 强**     | 拥有 `do-catch` 块，多层调用可以统一捕获，不用每层转发错误，业务开发更舒服        |
+| **比 Swift 强**   | 增加 `defer`/`errdefer`，资源管理能力更强；搭配 Isolate 适配并发场景   |
+| **比 Java/C# 强** | 错误可以设计为值类型，减少 GC 压力，适合轻量级虚拟机                       |
+
+***
+
+## 15. 可选扩展提案
+
+> 以下特性为后续迭代可选方案，不在核心规范中强制要求。
+
+### 15.1 catch null 语法糖
+
+专门匹配 `error.NullValue`：
+
+```dart
+do {
+    let u = try obj.unwrap()
+} catch null {
+    println("对象为空")
+}
+// 等价于 catch error.NullValue
+```
+
+### 15.2 链式 .catch{} 单行捕获
+
+在函数调用后使用 `.catch{}` 进行链式异常捕获，无需 `do` 块包裹：
+
+```dart
+// 链式捕获，返回回退值
+let result = loadConfig("config.json").catch { return defaultValue }
+
+// 支持模式匹配
+let result = divide(10, 0)
+    .catch MathError.DivErrorOverflow { return -1 }
+    .catch { return 0 }
+```
+
+**执行顺序**：先执行函数内部的 `errdefer`（如果存在），然后错误传播到调用方，再执行 `.catch{}`。
+
 ***
 
 ## 12. VM 底层实现方案
