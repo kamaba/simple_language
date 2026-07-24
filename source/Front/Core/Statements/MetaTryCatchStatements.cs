@@ -82,6 +82,20 @@ namespace SimpleLanguage.Core
                 if (fcc.executeBlockSyntax != null)
                 {
                     var catchBlock = new MetaBlockStatements(m_OwnerMetaBlockStatements, fcc.executeBlockSyntax);
+
+                    // Register catch variable BEFORE parsing catch body so it's in scope
+                    if (fcc.varToken != null)
+                    {
+                        var varName = fcc.varToken.lexeme?.ToString();
+                        if (!string.IsNullOrEmpty(varName))
+                        {
+                            // Use object type for catch variable (type filtering not yet implemented in VM)
+                            MetaType catchType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                            var catchVar = new MetaVariable(varName, MetaVariable.EVariableFrom.LocalStatement, catchBlock, catchBlock.ownerMetaClass, catchType);
+                            catchBlock.UpdateMetaVariableDict(catchVar);
+                        }
+                    }
+
                     MetaMemberFunction.CreateMetaSyntax(fcc.executeBlockSyntax, catchBlock);
                     clause.SetBodyStatements(catchBlock);
                 }
@@ -191,6 +205,93 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(" ");
                 sb.Append(m_Express.ToFormatString());
+            }
+            return sb.ToString();
+        }
+    }
+
+    /// <summary>
+    /// defer { } - registers a block to run at function exit (normal or exceptional).
+    /// Blocks run in LIFO (reverse) order of declaration.
+    /// </summary>
+    public sealed class MetaDeferStatements : MetaStatements
+    {
+        public MetaBlockStatements deferBlockStatements => m_DeferBlock;
+
+        private MetaBlockStatements m_DeferBlock = null;
+
+        public MetaDeferStatements(MetaBlockStatements mbs, FileMetaKeyOnlySyntax fmoks) : base(mbs)
+        {
+            m_Token = fmoks.token;
+            AddPingToken(m_Token);
+            if (fmoks.executeBlockSyntax != null)
+            {
+                m_DeferBlock = new MetaBlockStatements(m_OwnerMetaBlockStatements, fmoks.executeBlockSyntax);
+                MetaMemberFunction.CreateMetaSyntax(fmoks.executeBlockSyntax, m_DeferBlock);
+            }
+        }
+
+        public override void SetDeep(int dp)
+        {
+            m_Deep = dp;
+            m_DeferBlock?.SetDeep(dp);
+            if (m_NextMetaStatements != null)
+                m_NextMetaStatements.SetDeep(dp);
+        }
+
+        public override string ToFormatString()
+        {
+            var sb = new StringBuilder();
+            for (int i = 0; i < realDeep; i++) sb.Append(Global.tabChar);
+            sb.Append("defer");
+            if (m_DeferBlock != null)
+            {
+                sb.Append(Environment.NewLine);
+                sb.Append(m_DeferBlock.ToFormatString());
+            }
+            return sb.ToString();
+        }
+    }
+
+    /// <summary>
+    /// errdefer { } - registers a block to run only when an exception occurs.
+    /// Blocks run in LIFO (reverse) order. If the block contains a ret,
+    /// the exception is swallowed; otherwise the exception propagates after cleanup.
+    /// </summary>
+    public sealed class MetaErrDeferStatements : MetaStatements
+    {
+        public MetaBlockStatements errDeferBlockStatements => m_ErrDeferBlock;
+
+        private MetaBlockStatements m_ErrDeferBlock = null;
+
+        public MetaErrDeferStatements(MetaBlockStatements mbs, FileMetaKeyOnlySyntax fmoks) : base(mbs)
+        {
+            m_Token = fmoks.token;
+            AddPingToken(m_Token);
+            if (fmoks.executeBlockSyntax != null)
+            {
+                m_ErrDeferBlock = new MetaBlockStatements(m_OwnerMetaBlockStatements, fmoks.executeBlockSyntax);
+                MetaMemberFunction.CreateMetaSyntax(fmoks.executeBlockSyntax, m_ErrDeferBlock);
+            }
+        }
+
+        public override void SetDeep(int dp)
+        {
+            m_Deep = dp;
+            m_ErrDeferBlock?.SetDeep(dp);
+            if (m_NextMetaStatements != null)
+                m_NextMetaStatements.SetDeep(dp);
+        }
+
+        public override string ToFormatString()
+        {
+            var sb = new StringBuilder();
+            for (int i = 0; i < realDeep; i++) sb.Append(Global.tabChar);
+            sb.Append("errdefer");
+            if (m_ErrDeferBlock != null)
+            {
+                sb.Append(Environment.NewLine);
+                sb.Append(m_ErrDeferBlock.ToFormatString());
             }
             return sb.ToString();
         }

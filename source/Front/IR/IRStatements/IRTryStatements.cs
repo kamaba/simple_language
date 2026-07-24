@@ -85,6 +85,18 @@ namespace SimpleLanguage.IR
                 // Catch label
                 m_IRStatements.Add(catchNops[ci]);
 
+                // Store caught exception into catch variable (if bound)
+                if (clause.varToken != null && clause.bodyStatements != null)
+                {
+                    var varName = clause.varToken.lexeme?.ToString();
+                    var catchMv = clause.bodyStatements.GetMetaVariableByName(varName, false);
+                    if (catchMv != null)
+                    {
+                        IRStoreVariable irsv = IRStoreVariable.CreateIRStoreVariable(null, null, irMethod, catchMv);
+                        m_IRStatements.Add(irsv);
+                    }
+                }
+
                 // Catch body
                 if (clause.bodyStatements != null)
                 {

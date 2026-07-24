@@ -595,6 +595,8 @@ namespace SimpleLanguage.Compile
                     break;
                 case ETokenType.Not:             // !
                 case ETokenType.Negative:        // ~
+                case ETokenType.TryQuestion:     // try?
+                case ETokenType.TryExclamation:  // try!
                     {
                         var node = AddSymbol(token);
                         node.priority = SignComputePriority.Level2_LinkOp;
@@ -766,6 +768,8 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Catch:
                 case ETokenType.Finally:
                 case ETokenType.Throw:
+                case ETokenType.Defer:
+                case ETokenType.ErrDefer:
                     {
                         AddKeyNode(token);
                     }

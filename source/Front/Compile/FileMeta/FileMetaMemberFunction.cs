@@ -174,12 +174,14 @@ namespace SimpleLanguage.Compile
         public Token getToken => m_GetToken;
         public Token setToken => m_SetToken;
         public Token finalToken => m_FinalToken;
+        public Token throwsToken => m_ThrowsToken;
         public bool canParse => m_CanParse;
 
         private Token m_InterfaceToken = null;
         private Token m_StaticToken = null;
         private Token m_AbstractToken = null;
         private Token m_FinalToken = null;
+        private Token m_ThrowsToken = null;
         private Token m_GetToken = null;
         private Token m_SetToken = null;
         private Token m_OverrideToken = null;
@@ -339,6 +341,15 @@ namespace SimpleLanguage.Compile
                         }
                         finalToken = token;
                     }
+                    else if (token.type == ETokenType.Throws)
+                    {
+                        if (m_ThrowsToken != null)
+                        {
+                            isError = true;
+                            Log.AddFileMetaLog(LID.FileFunctionDefineConflict, token, $"throws:[{m_ThrowsToken.lexeme.ToString()}]");
+                        }
+                        m_ThrowsToken = token;
+                    }
                     else
                     {
                         isError = true;
@@ -488,6 +499,10 @@ namespace SimpleLanguage.Compile
             if ( m_OverrideToken != null)
             {
                 sb.Append(" " + m_OverrideToken.lexeme.ToString());
+            }
+            if ( m_ThrowsToken != null)
+            {
+                sb.Append(" " + m_ThrowsToken.lexeme.ToString());
             }
             if (m_DefineMetaClass != null)
             {

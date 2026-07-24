@@ -227,6 +227,62 @@ namespace SimpleLanguage.IR
                         m_IRDataList.Add(endirdata);
                     }
                     break;
+                case MetaTryExpressNode mten:
+                    {
+                        if (mten.tryMode == ETryMode.TryQuestion)
+                        {
+                            // try? expr: if exception, result is null
+                            // IR: BeginTry(catch=catchNop) <expr> LeaveTry->endNop catchNop: Pop LoadConstNull endNop:
+                            IRData catchNop = new IRData();
+                            catchNop.opCode = EIROpCode.Nop;
+                            IRData endNop = new IRData();
+                            endNop.opCode = EIROpCode.Nop;
+
+                            // BeginTry
+                            IRData beginTryData = new IRData();
+                            beginTryData.opCode = EIROpCode.BeginTry;
+                            TryScopeData tsd = new TryScopeData();
+                            tsd.catchTarget = catchNop;
+                            tsd.finallyTarget = null;
+                            beginTryData.SetOpValue(tsd);
+                            beginTryData.SetDebugInfoByToken(mten.token, "try? BeginTry");
+                            m_IRDataList.Add(beginTryData);
+
+                            // Inner expression
+                            IRExpressBase innerExpress = IRExpressManager.CreateExpress(this.m_IRMethod, mten.innerExpress);
+                            m_IRDataList.AddRange(innerExpress.IRDataList);
+
+                            // LeaveTry -> end
+                            IRData leaveTryData = new IRData();
+                            leaveTryData.opCode = EIROpCode.LeaveTry;
+                            leaveTryData.SetOpValue(endNop);
+                            leaveTryData.SetDebugInfoByToken(mten.token, "try? LeaveTry");
+                            m_IRDataList.Add(leaveTryData);
+
+                            // Catch handler: pop exception, push null
+                            m_IRDataList.Add(catchNop);
+
+                            IRData popData = new IRData();
+                            popData.opCode = EIROpCode.Pop;
+                            popData.SetDebugInfoByToken(mten.token, "try? pop exception");
+                            m_IRDataList.Add(popData);
+
+                            IRData nullData = new IRData();
+                            nullData.opCode = EIROpCode.LoadConstNull;
+                            nullData.SetDebugInfoByToken(mten.token, "try? load null");
+                            m_IRDataList.Add(nullData);
+
+                            // End label
+                            m_IRDataList.Add(endNop);
+                        }
+                        else if (mten.tryMode == ETryMode.TryExclamation)
+                        {
+                            // try! expr: just evaluate, exception propagates normally (crashes if uncaught)
+                            IRExpressBase innerExpress = IRExpressManager.CreateExpress(this.m_IRMethod, mten.innerExpress);
+                            m_IRDataList.AddRange(innerExpress.IRDataList);
+                        }
+                    }
+                    break;
                 case MetaAsIsExpressNode maien:
                     {
                         IRMetaCallLink irmcl = new IRMetaCallLink();

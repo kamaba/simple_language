@@ -141,6 +141,13 @@ namespace SimpleLanguage.VM
                     CLRVM.PushCLRRuntime(vm);
                     vm.Run(true);
                     CLRVM.PopCLRRuntime();
+                    // If the entry point has an uncaught exception, log it
+                    if (vm.hasPendingException)
+                    {
+                        var ex = vm.pendingException;
+                        string exMsg = ex.stringValue ?? ex.ToString();
+                        Log.AddRuntimeLog(LID.ShowMessageAssert, null, "Uncaught exception: " + exMsg);
+                    }
                 }
             }
         }

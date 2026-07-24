@@ -123,3 +123,13 @@
 /test/BaseTest/Class2Test/Token.txt
 /enc_temp_folder/5c44ed9e5b63fc4c426915beebac2fd/vm_runtime.c
 /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/test_run.txt
+/test_run2.txt
+/test_run3.txt
+/test_run4.txt
+/test_try.txt
+/test_trytest.txt
+/test_trytest2.txt
+/test_trytest3.txt
+/test_trytest4.txt
+/test_trytest5.txt

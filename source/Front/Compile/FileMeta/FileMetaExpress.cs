@@ -1398,7 +1398,8 @@ namespace SimpleLanguage.Compile
                             return false;
                         }
                     }
-                    else if( ett == ETokenType.Minus || ett == ETokenType.Plus || ett == ETokenType.Not || ett == ETokenType.Negative )
+                    else if( ett == ETokenType.Minus || ett == ETokenType.Plus || ett == ETokenType.Not || ett == ETokenType.Negative
+                        || ett == ETokenType.TryQuestion || ett == ETokenType.TryExclamation )
                     {
                         if (listNextTerm == null)
                         {
@@ -1502,7 +1503,8 @@ namespace SimpleLanguage.Compile
                                 fmst.priority = SignComputePriority.Level3_Low_Compute; // binary
                         }
                     }
-                    else if (ttoken?.type == ETokenType.Not || ttoken?.type == ETokenType.Negative)
+                    else if (ttoken?.type == ETokenType.Not || ttoken?.type == ETokenType.Negative
+                        || ttoken?.type == ETokenType.TryQuestion || ttoken?.type == ETokenType.TryExclamation)
                     {
                         // ! / ~ are unary-prefix operators in this grammar
                         fmst.priority = SignComputePriority.Level2_LinkOp;

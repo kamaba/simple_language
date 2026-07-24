@@ -313,9 +313,14 @@ namespace SimpleLanguage.Core
                 }
                 else if (leftNode == null && rightNode != null)
                 {
-                    if (root is FileMetaSymbolTerm)
+                    if (root is FileMetaSymbolTerm fmst2)
                     {
-                        return new MetaUnaryOpExpressNode(root as FileMetaSymbolTerm, rightNode);
+                        // try? / try! prefix expressions
+                        if (fmst2.symBolType == ETokenType.TryQuestion || fmst2.symBolType == ETokenType.TryExclamation)
+                        {
+                            return new MetaTryExpressNode(fmst2, rightNode);
+                        }
+                        return new MetaUnaryOpExpressNode(fmst2, rightNode);
                     }
                     else
                     {

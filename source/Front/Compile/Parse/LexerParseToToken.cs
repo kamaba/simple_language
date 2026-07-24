@@ -1990,7 +1990,25 @@ namespace SimpleLanguage.Compile
                     tokenType = ETokenType.Local;
                     break;
                 case "try":
-                    tokenType = ETokenType.Try;
+                    {
+                        char nextCh = PeekChar();
+                        if (nextCh == '?')
+                        {
+                            ReadChar();
+                            m_Builder.Append('?');
+                            tokenType = ETokenType.TryQuestion;
+                        }
+                        else if (nextCh == '!')
+                        {
+                            ReadChar();
+                            m_Builder.Append('!');
+                            tokenType = ETokenType.TryExclamation;
+                        }
+                        else
+                        {
+                            tokenType = ETokenType.Try;
+                        }
+                    }
                     break;
                 case "catch":
                     tokenType = ETokenType.Catch;
@@ -2000,6 +2018,12 @@ namespace SimpleLanguage.Compile
                     break;
                 case "throw":
                     tokenType = ETokenType.Throw;
+                    break;
+                case "defer":
+                    tokenType = ETokenType.Defer;
+                    break;
+                case "errdefer":
+                    tokenType = ETokenType.ErrDefer;
                     break;
                 case "null":
                     tokenType = ETokenType.Null;
@@ -2034,6 +2058,9 @@ namespace SimpleLanguage.Compile
                     break;
                 case "await":
                     tokenType = ETokenType.Await;
+                    break;
+                case "throws":
+                    tokenType = ETokenType.Throws;
                     break;
                 default:
                     tokenType = ETokenType.Identifier;

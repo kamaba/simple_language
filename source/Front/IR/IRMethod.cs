@@ -103,22 +103,140 @@ namespace SimpleLanguage.IR
                 Debug.Write("----------------  Info 空函数!! --------------------");
                 return;
             }
+
+            // ── defer / errdefer wrapping ──
+            bool hasDefer = mf.deferStatementsList != null && mf.deferStatementsList.Count > 0;
+            bool hasErrDefer = mf.errDeferStatementsList != null && mf.errDeferStatementsList.Count > 0;
+
+            // If defer exists, redirect funEndLabelData so all returns jump to defer cleanup first
+            IRData originalFunEndLabel = m_FunEndLabelData;
+            IRNop deferCleanupNop = null;
+            if (hasDefer)
+            {
+                deferCleanupNop = new IRNop(this);
+                m_FunEndLabelData = deferCleanupNop.data;
+            }
+
+            // Generate IR for function body
             IRBlockStatements irbs = new IRBlockStatements(this);
             irbs.ParseAllIRStatements(mbs);
 
+            // Build final IRBase list (optionally wrapped in try/catch for errdefer)
+            List<IRBase> finalStatements = new List<IRBase>();
 
-            for (int i = 0; i < irbs.irStatements.Count; i++)
+            if (hasErrDefer)
             {
-                for (int j = 0; j < irbs.irStatements[i].IRDataList.Count; j++)
+                IRNop errdeferNop = new IRNop(this);
+
+                // BeginTry (catch = errdefer handler, no finally)
+                IRData beginTryData = new IRData();
+                beginTryData.opCode = EIROpCode.BeginTry;
+                TryScopeData tsd = new TryScopeData();
+                tsd.catchTarget = errdeferNop.data;
+                tsd.finallyTarget = null;
+                beginTryData.SetOpValue(tsd);
+                finalStatements.Add(new IRRawData(this, beginTryData));
+
+                // Function body
+                finalStatements.AddRange(irbs.irStatements);
+
+                // LeaveTry (normal exit -> defer cleanup or real end)
+                IRData leaveTryData = new IRData();
+                leaveTryData.opCode = EIROpCode.LeaveTry;
+                leaveTryData.SetOpValue(hasDefer ? deferCleanupNop.data : originalFunEndLabel);
+                finalStatements.Add(new IRRawData(this, leaveTryData));
+
+                // Errdefer handler (catch target)
+                finalStatements.Add(errdeferNop);
+                for (int i = mf.errDeferStatementsList.Count - 1; i >= 0; i--)
                 {
-                    var addIR = irbs.irStatements[i].IRDataList[j];
+                    var ed = mf.errDeferStatementsList[i];
+                    if (ed.errDeferBlockStatements == null) continue;
+                    IRBlockStatements irED = new IRBlockStatements(this);
+                    irED.ParseIRStatements(ed.errDeferBlockStatements);
+                    finalStatements.AddRange(irED.irStatements);
+                }
+
+                // If defer also exists, run defer blocks before re-throwing
+                if (hasDefer)
+                {
+                    for (int i = mf.deferStatementsList.Count - 1; i >= 0; i--)
+                    {
+                        var d = mf.deferStatementsList[i];
+                        if (d.deferBlockStatements == null) continue;
+                        IRBlockStatements irD = new IRBlockStatements(this);
+                        irD.ParseIRStatements(d.deferBlockStatements);
+                        finalStatements.AddRange(irD.irStatements);
+                    }
+                }
+
+                // Re-throw (exception propagates after errdefer cleanup)
+                IRData throwData = new IRData();
+                throwData.opCode = EIROpCode.Throw;
+                finalStatements.Add(new IRRawData(this, throwData));
+            }
+            else
+            {
+                finalStatements.AddRange(irbs.irStatements);
+            }
+
+            // Add all final statements to m_IRDataList
+            for (int i = 0; i < finalStatements.Count; i++)
+            {
+                for (int j = 0; j < finalStatements[i].IRDataList.Count; j++)
+                {
+                    var addIR = finalStatements[i].IRDataList[j];
                     addIR.id = m_IRDataList.Count;
                     AddLabelDict(addIR);
                     m_IRDataList.Add(addIR);
                 }
             }
-            m_FunEndLabelData.id = m_IRDataList.Count;
-            m_IRDataList.Add(m_FunEndLabelData);
+
+            // Defer cleanup section (runs on normal return / function end)
+            if (hasDefer)
+            {
+                // Defer cleanup label
+                for (int j = 0; j < deferCleanupNop.IRDataList.Count; j++)
+                {
+                    var addIR = deferCleanupNop.IRDataList[j];
+                    addIR.id = m_IRDataList.Count;
+                    AddLabelDict(addIR);
+                    m_IRDataList.Add(addIR);
+                }
+
+                // Defer blocks in reverse (LIFO) order
+                for (int i = mf.deferStatementsList.Count - 1; i >= 0; i--)
+                {
+                    var d = mf.deferStatementsList[i];
+                    if (d.deferBlockStatements == null) continue;
+                    IRBlockStatements irD = new IRBlockStatements(this);
+                    irD.ParseIRStatements(d.deferBlockStatements);
+                    for (int si = 0; si < irD.irStatements.Count; si++)
+                    {
+                        for (int j = 0; j < irD.irStatements[si].IRDataList.Count; j++)
+                        {
+                            var addIR = irD.irStatements[si].IRDataList[j];
+                            addIR.id = m_IRDataList.Count;
+                            AddLabelDict(addIR);
+                            m_IRDataList.Add(addIR);
+                        }
+                    }
+                }
+
+                // Jump to real function end
+                IRBranch brToEnd = new IRBranch(this, EIROpCode.BrLabel, originalFunEndLabel);
+                for (int j = 0; j < brToEnd.IRDataList.Count; j++)
+                {
+                    var addIR = brToEnd.IRDataList[j];
+                    addIR.id = m_IRDataList.Count;
+                    AddLabelDict(addIR);
+                    m_IRDataList.Add(addIR);
+                }
+            }
+
+            // Real function end label
+            originalFunEndLabel.id = m_IRDataList.Count;
+            m_IRDataList.Add(originalFunEndLabel);
 
             int nextLabelId = 1; // Label IDs start from 1 (0 reserved for "no label")
 
@@ -129,10 +247,17 @@ namespace SimpleLanguage.IR
                 {
                     case EIROpCode.BrLabel:
                         {
-                            var findLabel = m_LabelList.Find(a => a.opValue == defLabel.opValue);
-                            defLabel.opValue = findLabel;
-                            var findex = IRDataList.FindIndex(a => a == findLabel);
+                            var findex = IRDataList.FindIndex(a => a == defLabel.opValue);
                             defLabel.index = findex;
+                            var targetIRData = defLabel.opValue as IRData;
+                            if (targetIRData != null && targetIRData.opCode != EIROpCode.Label)
+                            {
+                                targetIRData.opCode = EIROpCode.Label;
+                                targetIRData.index = nextLabelId;
+                                targetIRData.Payload = BitConverter.GetBytes(nextLabelId);
+                                targetIRData.UpdateByteLength();
+                                nextLabelId++;
+                            }
                         }
                         break;
                     case EIROpCode.Br:
@@ -225,6 +350,7 @@ namespace SimpleLanguage.IR
                 }
             }
             else if( irdata.opCode == EIROpCode.Br
+                || irdata.opCode == EIROpCode.BrLabel
                 || irdata.opCode == EIROpCode.BrFalse
                 || irdata.opCode == EIROpCode.BrTrue
                 || irdata.opCode == EIROpCode.LeaveTry )

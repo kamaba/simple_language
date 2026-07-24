@@ -60,7 +60,9 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Try
                     || tokenType == ETokenType.Catch
                     || tokenType == ETokenType.Finally
-                    || tokenType == ETokenType.Throw)
+                    || tokenType == ETokenType.Throw
+                    || tokenType == ETokenType.Defer
+                    || tokenType == ETokenType.ErrDefer)
                 {
                     keyContent.Add(node);
                 }
@@ -103,7 +105,9 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Goto
                     || tokenType == ETokenType.Try
                     || tokenType == ETokenType.Catch
-                    || tokenType == ETokenType.Finally)
+                    || tokenType == ETokenType.Finally
+                    || tokenType == ETokenType.Defer
+                    || tokenType == ETokenType.ErrDefer)
                 {
                 }
                 else
@@ -123,7 +127,9 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Label
                     || tokenType == ETokenType.Try
                     || tokenType == ETokenType.Catch
-                    || tokenType == ETokenType.Finally )
+                    || tokenType == ETokenType.Finally
+                    || tokenType == ETokenType.Defer
+                    || tokenType == ETokenType.ErrDefer )
                 {
                     if( blockNode == null )
                     {
@@ -173,7 +179,9 @@ namespace SimpleLanguage.Compile
                 || tokenType == ETokenType.Label
                 || tokenType == ETokenType.Try
                 || tokenType == ETokenType.Catch
-                || tokenType == ETokenType.Finally;
+                || tokenType == ETokenType.Finally
+                || tokenType == ETokenType.Defer
+                || tokenType == ETokenType.ErrDefer;
         }
         private static bool IsSkippableNodeBetweenKeyAndBrace(Node node)
         {
@@ -312,7 +320,9 @@ namespace SimpleLanguage.Compile
                                 || ttt == ETokenType.Default
                                 || ttt == ETokenType.Try
                                 || ttt == ETokenType.Catch
-                                || ttt == ETokenType.Finally ) // ClassName(){}
+                                || ttt == ETokenType.Finally
+                                || ttt == ETokenType.Defer
+                                || ttt == ETokenType.ErrDefer ) // ClassName(){}
                     {
 
                         isMustContactBrace = true;
@@ -376,6 +386,8 @@ namespace SimpleLanguage.Compile
                         || ttt == ETokenType.Catch
                         || ttt == ETokenType.Finally
                         || ttt == ETokenType.Throw
+                        || ttt == ETokenType.Defer
+                        || ttt == ETokenType.ErrDefer
                         || ttt == ETokenType.Const)
                     {
                         keynodeStruct.SetMainKeyNode(curNode);
@@ -982,6 +994,19 @@ namespace SimpleLanguage.Compile
                     FileMetaKeyThrowSyntax fmks = new FileMetaKeyThrowSyntax(m_FileMeta, akss.keyNode.token, throwExpress);
                     AddParseSyntaxNodeInfo(fmks);
                     fms = fmks;
+                }
+                else if (akss.tokenType == ETokenType.Defer
+                    || akss.tokenType == ETokenType.ErrDefer)
+                {
+                    FileMetaBlockSyntax deferBlock = new FileMetaBlockSyntax(m_FileMeta, akss.blockNode.token, akss.blockNode.endToken);
+                    FileMetaKeyOnlySyntax fmkis = new FileMetaKeyOnlySyntax(m_FileMeta, akss.keyNode.token, deferBlock);
+                    AddParseSyntaxNodeInfo(fmkis);
+                    fms = fmkis;
+
+                    ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(deferBlock);
+                    m_CurrentNodeInfoStack.Push(pcnic);
+                    ParseSyntax(akss.blockNode);
+                    m_CurrentNodeInfoStack.Pop();
                 }
                 else if (akss.tokenType == ETokenType.Label
                     || akss.tokenType == ETokenType.Goto)

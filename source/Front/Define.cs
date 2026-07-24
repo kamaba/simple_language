@@ -287,12 +287,20 @@ namespace SimpleLanguage
         Function,
         /// <summary> try </summary>
         Try,
+        /// <summary> try? </summary>
+        TryQuestion,
+        /// <summary> try! </summary>
+        TryExclamation,
         /// <summary> catch </summary>
         Catch,
         /// <summary> finally </summary>
         Finally,
         /// <summary> throw </summary>
         Throw,
+        /// <summary> defer </summary>
+        Defer,
+        /// <summary> errdefer </summary>
+        ErrDefer,
         /// <summary> BoolValue </summary>
         BoolValue,
         /// <summary> number </summary>
@@ -325,6 +333,8 @@ namespace SimpleLanguage
         Async,
         /// <summary> await </summary>
         Await,
+        /// <summary> throws </summary>
+        Throws,
 
         /// <summary> typealias </summary>
         TypeAlias,

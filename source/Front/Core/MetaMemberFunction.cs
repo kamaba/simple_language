@@ -238,6 +238,7 @@ namespace SimpleLanguage.Core
         public bool isGet => m_IsGet;
         public bool isSet => m_IsSet;
         public bool isFinal => m_IsFinal;
+        public bool isThrows => m_IsThrows;
         public virtual bool isStatic => m_IsStatic;
         public bool isCanRewrite => m_IsCanRewrite;
         public bool isTemplateInParam => m_IsTemplateInParam;
@@ -258,6 +259,7 @@ namespace SimpleLanguage.Core
         protected bool m_IsSet = false;
         protected bool m_IsStatic = false;
         protected bool m_IsFinal = false;
+        protected bool m_IsThrows = false;
         protected bool m_IsCanRewrite = false;
         protected bool m_IsTemplateInParam = false;
         protected bool m_ConstructInitFunction = false;
@@ -333,6 +335,7 @@ namespace SimpleLanguage.Core
             m_IsGet = fmmf.getToken != null;
             m_IsSet = fmmf.setToken != null;
             m_IsFinal = fmmf.finalToken != null;
+            m_IsThrows = fmmf.throwsToken != null;
             m_IsAbstract = fmmf.abstractToken != null;
             if ( fmmf.overrideToken != null )
             {
@@ -908,7 +911,21 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaKeyOnlySyntax fmoks:
                     {
-                        if (fmoks.token.type == ETokenType.Break)
+                        if (fmoks.token.type == ETokenType.Defer)
+                        {
+                            var metaDeferStatements = new MetaDeferStatements(currentBlockStatements, fmoks);
+                            currentBlockStatements.ownerMetaFunction?.AddDeferStatements(metaDeferStatements);
+                            beforeStatements.SetNextStatements(metaDeferStatements);
+                            beforeStatements = metaDeferStatements;
+                        }
+                        else if (fmoks.token.type == ETokenType.ErrDefer)
+                        {
+                            var metaErrDeferStatements = new MetaErrDeferStatements(currentBlockStatements, fmoks);
+                            currentBlockStatements.ownerMetaFunction?.AddErrDeferStatements(metaErrDeferStatements);
+                            beforeStatements.SetNextStatements(metaErrDeferStatements);
+                            beforeStatements = metaErrDeferStatements;
+                        }
+                        else if (fmoks.token.type == ETokenType.Break)
                         {
                             var metaBreakStatements = new MetaBreakStatements(currentBlockStatements, fmoks);
                             beforeStatements.SetNextStatements(metaBreakStatements);
@@ -1151,6 +1168,10 @@ namespace SimpleLanguage.Core
             if (isWithInterface)
             {
                 sb.Append(" interface");
+            }
+            if (isThrows)
+            {
+                sb.Append(" throws");
             }
             sb.Append(" ");
             sb.Append( m_ReturnMetaVariable?.GetFinalMetaType().ToFormatString() );

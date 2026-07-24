@@ -78,6 +78,11 @@ namespace SimpleLanguage.VM.Runtime
             clrRuntime.Run(isDisCountStackCount);
             PopCLRRuntime();
             topCLRRuntime = m_ClrRuntimeStack.Count > 0 ? m_ClrRuntimeStack.Peek() : null;
+            // Propagate uncaught VM exception from callee to caller
+            if (clrRuntime.hasPendingException && topCLRRuntime != null)
+            {
+                topCLRRuntime.PropagateException(clrRuntime.pendingException);
+            }
             var topt2 = m_ClrRuntimeStack.Peek();
             topt2.AddReturnObjectArray(clrRuntime.returnRuntimeObjectArray);
             //if (!clrRuntime.isPersistent)

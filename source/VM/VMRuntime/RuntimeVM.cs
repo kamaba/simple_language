@@ -29,6 +29,26 @@ namespace SimpleLanguage.VM.Runtime
         }
         private Stack<TryFrame> m_TryStack = new Stack<TryFrame>();
 
+        // ── Cross-function exception propagation ──
+        // When ExecuteThrow finds no handler in this VM, the exception is stored
+        // here so the caller's VM can re-dispatch it via PropagateException().
+        private RuntimeValue m_PendingException = default;
+        private bool m_HasPendingException = false;
+        public bool hasPendingException => m_HasPendingException;
+        public RuntimeValue pendingException => m_PendingException;
+
+        /// <summary>
+        /// Re-dispatch an exception that was uncaught in a callee VM.
+        /// Called by CLRVM.RunIRMethodByRuntimeType after the callee returns.
+        /// </summary>
+        public void PropagateException(RuntimeValue exceptionValue)
+        {
+            m_HasPendingException = false;
+            m_PendingException = default;
+            ExecuteThrow(exceptionValue);
+        }
+
+
         public RuntimeObject[] returnRuntimeObjectArray { get => m_ReturnRuntimeObjectArray; }
 #if DEBUG
         public ushort valueIndex => m_ValueIndex;
@@ -3895,8 +3915,9 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 // No catch and no finally, continue to outer try
             }
-            // Uncaught exception - log and exit method
-            Log.AddRuntimeLog(LID.ShowMessageAssert, null, "Uncaught exception thrown");
+            // Uncaught in this VM - store for cross-function propagation and exit method
+            m_PendingException = exceptionValue;
+            m_HasPendingException = true;
             m_ExecuteIndex = m_ExecuteCount;
         }
 
