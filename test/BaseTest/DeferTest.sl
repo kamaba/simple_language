@@ -2,7 +2,7 @@ import Std
 
 DeferTest
 {
-    # ── 1. defer runs at function end (normal return) ──
+    # ── 1. defer 在函数正常结束时执行 ──
     static deferBasicTest()
     {
         global.println("========== 1. defer basic ==========")
@@ -16,19 +16,19 @@ DeferTest
         global.println("body: " + log)
     }
 
-    # ── 2. defer runs after return ──
+    # ── 2. defer 在 ret 之后执行 ──
     static deferAfterReturnTest()
     {
-        global.println("========== 2. defer after return ==========")
+        global.println("========== 2. defer after ret ==========")
         defer
         {
-            global.println("defer ran after return")
+            global.println("defer ran after ret")
         }
-        global.println("before return")
+        global.println("before ret")
         ret
     }
 
-    # ── 3. multiple defers run in LIFO order ──
+    # ── 3. 多个 defer 按 LIFO（后进先出）顺序执行 ──
     static deferLifoTest()
     {
         global.println("========== 3. defer LIFO ==========")
@@ -47,71 +47,130 @@ DeferTest
         global.println("body end")
     }
 
-    # ── 4. errdefer runs on exception ──
-    static errdeferOnExceptionTest()
+    # ── 4. 多个 ret 路径，defer 都执行 ──
+    static deferMultiReturnTest()
     {
-        global.println("========== 4. errdefer on exception ==========")
-        string log = "start"
-        errdefer
+        global.println("========== 4. defer multi-return ==========")
+        defer
         {
-            log = log + "-errdefer"
-            global.println("errdefer executed: " + log)
+            global.println("defer ran (multi-return path)")
+        }
+        bool flag = true
+        if (flag)
+        {
+            global.println("taking if branch")
+            ret
+        }
+        global.println("taking else path")
+    }
+
+    # ── 5. defer 可以修改外部变量 ──
+    static deferModifyVarTest()
+    {
+        global.println("========== 5. defer modify var ==========")
+        string log = "start"
+        defer
+        {
+            log = log + "-modified-by-defer"
+            global.println("defer sees: " + log)
         }
         log = log + "-body"
         global.println("body: " + log)
-        throw "test-exception"
     }
 
-    # ── 5. errdefer does NOT run on normal exit ──
-    static errdeferNoRunOnNormalTest()
+    # ── 6. defer 在函数末尾声明（最后一个语句） ──
+    static deferAtEndTest()
     {
-        global.println("========== 5. errdefer no run on normal ==========")
-        errdefer
+        global.println("========== 6. defer at end ==========")
+        global.println("body before defer")
+        defer
         {
-            global.println("ERROR: errdefer should not run on normal exit!")
+            global.println("defer declared at end ran")
         }
-        global.println("normal exit")
     }
 
-    # ── 6. defer runs on exception too ──
-    static deferOnExceptionTest()
+    # ── 7. defer 在 if 块内 ──
+    static deferInIfBlockTest()
     {
-        global.println("========== 6. defer on exception ==========")
+        global.println("========== 7. defer in if block ==========")
+        bool flag = true
+        if (flag)
+        {
+            defer
+            {
+                global.println("defer from if block ran")
+            }
+            global.println("inside if block")
+        }
+        global.println("after if block")
+    }
+
+    # ── 8. defer 调用另一个函数（清理辅助函数） ──
+    static deferCallsFunctionTest()
+    {
+        global.println("========== 8. defer calls function ==========")
+        defer
+        {
+            cleanupHelper()
+        }
+        global.println("body end")
+    }
+
+    static cleanupHelper()
+    {
+        global.println("cleanupHelper called from defer")
+    }
+
+    # ── 9. defer 和 for 循环配合使用 ──
+    static deferInLoopTest()
+    {
+        global.println("========== 9. defer in loop ==========")
+        for Int32 i = 0, i < 3, i = i + 1
+        {
+            defer
+            {
+                global.println("defer in loop, i=" + i.toString())
+            }
+            global.println("loop body i=" + i.toString())
+        }
+        global.println("loop end")
+    }
+
+    # ── 10. defer 内部声明变量 ──
+    static deferLocalVarTest()
+    {
+        global.println("========== 10. defer local var ==========")
+        defer
+        {
+            string msg = "defer-local-msg"
+            global.println("defer local var: " + msg)
+        }
+        global.println("body end")
+    }
+
+    # ── 11. 多个 defer 交替执行（验证 LIFO 和变量捕获） ──
+    static deferCaptureTest()
+    {
+        global.println("========== 11. defer capture ==========")
         string log = "start"
         defer
         {
-            log = log + "-defer"
-            global.println("defer on exception: " + log)
+            global.println("defer 1: " + log)
         }
-        log = log + "-body"
-        throw "defer-on-exception-test"
-    }
-
-    # ── 7. defer + errdefer together on exception ──
-    static deferAndErrdeferTest()
-    {
-        global.println("========== 7. defer + errdefer ==========")
+        log = log + "-mid"
         defer
         {
-            global.println("defer ran")
+            global.println("defer 2: " + log)
         }
-        errdefer
-        {
-            global.println("errdefer ran")
-        }
-        global.println("body")
-        throw "combined-test"
+        log = log + "-end"
+        global.println("body: " + log)
     }
 
-    # ── 8. errdefer runs then exception propagates ──
-    static errdeferWithRetTest()
+    # ── 12. 无 defer 的普通函数（对照基准） ──
+    static noDeferTest()
     {
-        global.println("========== 8. errdefer then propagate ==========")
-        errdefer
-        {
-            global.println("errdefer cleanup before propagation")
-        }
-        throw "will-be-caught"
+        global.println("========== 12. no defer ==========")
+        global.println("plain function, no defer")
     }
 
     # ── main entry ──
@@ -120,50 +179,15 @@ DeferTest
         deferBasicTest()
         deferAfterReturnTest()
         deferLifoTest()
-
-        # Test 4: errdefer on exception (wrapped in try/catch)
-        try
-        {
-            errdeferOnExceptionTest()
-        }
-        catch
-        {
-            global.println("caught exception from test 4")
-        }
-
-        # Test 5: errdefer no run on normal
-        errdeferNoRunOnNormalTest()
-
-        # Test 6: defer on exception (wrapped in try/catch)
-        try
-        {
-            deferOnExceptionTest()
-        }
-        catch
-        {
-            global.println("caught exception from test 6")
-        }
-
-        # Test 7: defer + errdefer (wrapped in try/catch)
-        try
-        {
-            deferAndErrdeferTest()
-        }
-        catch
-        {
-            global.println("caught exception from test 7")
-        }
-
-        # Test 8: errdefer runs then exception propagates (wrapped in try/catch)
-        try
-        {
-            errdeferWithRetTest()
-        }
-        catch
-        {
-            global.println("caught exception from test 8")
-        }
-
-        global.println("========== all defer/errdefer tests done ==========")
+        deferMultiReturnTest()
+        deferModifyVarTest()
+        deferAtEndTest()
+        deferInIfBlockTest()
+        deferCallsFunctionTest()
+        deferInLoopTest()
+        deferLocalVarTest()
+        deferCaptureTest()
+        noDeferTest()
+        global.println("========== all defer tests done ==========")
     }
 }

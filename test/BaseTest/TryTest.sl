@@ -1,85 +1,105 @@
 import Std
 
+# ── 错误类型定义（try.md §3 enum extends Error）──
+enum TestError extends Error
+{
+    TestError1 = { code = 1, message = "test-error" }
+    TestError2 = { code = 2, message = "binding-test" }
+    TestError3 = { code = 3, message = "boom" }
+    InnerError = { code = 4, message = "inner" }
+    RethrowError = { code = 5, message = "rethrow-me" }
+    SkipError = { code = 6, message = "skip-two" }
+    FallbackError = { code = 7, message = "fallback-test" }
+    FirstError = { code = 8, message = "first" }
+    SecondError = { code = 9, message = "second" }
+    CombinedError = { code = 10, message = "combined-test" }
+    FromFuncError = { code = 11, message = "from-throwExceptionFunc" }
+    FromLevel3 = { code = 12, message = "from-level3" }
+}
+
+enum MathError extends Error
+{
+    DivZero = { code = 101, message = "除以零" }
+    Overflow = { code = 102, message = "溢出" }
+}
+
 TryTest
 {
-    # ── 错误类型定义 (try.md §3 enumError) ──
-    # 当前使用 class 模拟，待 enumError 实现后替换
-    TryError
+    # ── 辅助函数 ──
+
+    # throws 标记：可能抛出异常的函数（try.md §2）
+    static string riskyFunc(bool shouldFail) throws
     {
-        string message = ""
-        Int32 code = 0
-
-        _init_(string msg)
+        if (shouldFail)
         {
-            this.message = msg
+            throw TestError.TestError1
         }
-
-        _init_(string msg, Int32 code)
-        {
-            this.message = msg
-            this.code = code
-        }
-
-        override string toString()
-        {
-            ret "TryError(" + this.code.toString() + "): " + this.message
-        }
+        ret "success"
     }
 
-    # ── 1. throws 函数声明 (try.md §2) ──
-    # throws 标记的函数可以被 try 捕获
-    static throwsDeclareTest()
+    # throws 标记但不实际抛异常
+    static string safeThrowsFunc() throws
     {
-        global.println("========== 1. throws declare ==========")
-        string result = "before"
+        ret "safe-ok"
+    }
+
+    # throws 标记的多层调用链
+    static void level1() throws
+    {
+        level2()
+    }
+
+    static void level2() throws
+    {
+        level3()
+    }
+
+    static void level3() throws
+    {
+        throw TestError.FromLevel3
+    }
+
+    # ── 1. 基本try/catch：throws函数异常被捕获 ──
+    static basicTryCatchTest()
+    {
+        global.println("========== 1. basic try/catch ==========")
+        string log = "before"
         try
         {
-            result = throwsFunc()
+            log = "try"
+            throw TestError.TestError1
         }
         catch
         {
-            result = "caught"
+            log = log + "-catch"
         }
-        global.println("result = " + result)
+        global.println("log = " + log)
     }
 
-    # throws 标记：此函数可能抛出异常
-    static string throwsFunc()
+    # ── 2. try正常结束时catch不执行 ──
+    static tryNoExceptionTest()
     {
-        ret "throwsFunc-ok"
-    }
-
-    # ── 2. throws 函数抛出异常被捕获 (try.md §2) ──
-    static throwsAndCatchTest()
-    {
-        global.println("========== 2. throws and catch ==========")
-        string result = "before"
+        global.println("========== 2. try no exception ==========")
+        string log = "before"
         try
         {
-            result = "try-entered"
-            throwExceptionFunc()
-            result = "try-after-call"
+            log = "try"
         }
         catch
         {
-            result = "caught"
+            log = log + "-catch"
         }
-        global.println("result = " + result)
+        global.println("log = " + log)
     }
 
-    static void throwExceptionFunc()
+    # ── 3. catch绑定变量（try.md §6）──
+    static catchBindingTest()
     {
-        throw "something went wrong"
-    }
-
-    # ── 3. catch 绑定变量 (try.md §6) ──
-    static catchWithBindingTest()
-    {
-        global.println("========== 3. catch with binding ==========")
+        global.println("========== 3. catch binding ==========")
         string captured = "none"
         try
         {
-            throw "binding-test"
+            throw TestError.TestError2
         }
         catch ex
         {
@@ -88,26 +108,10 @@ TryTest
         global.println("captured = " + captured)
     }
 
-    # ── 4. throw 类型化对象 + 类型化 catch (try.md §6) ──
-    static throwTypedObjectTest()
-    {
-        global.println("========== 4. throw typed object ==========")
-        string captured = "none"
-        try
-        {
-            throw "typed-throw-test"
-        }
-        catch err
-        {
-            captured = err.toString()
-        }
-        global.println("captured = " + captured)
-    }
-
-    # ── 5. finally 块总是执行 (try.md §5 finally 语义) ──
+    # ── 4. finally块总是执行（try.md §5）──
     static finallyAlwaysRunsTest()
     {
-        global.println("========== 5. finally always runs ==========")
+        global.println("========== 4. finally always runs ==========")
         string log = ""
         try
         {
@@ -120,15 +124,15 @@ TryTest
         global.println("log = " + log)
     }
 
-    # ── 6. 异常时 finally 仍执行 (try.md §5) ──
+    # ── 5. 异常时finally仍执行 ──
     static finallyOnExceptionTest()
     {
-        global.println("========== 6. finally on exception ==========")
+        global.println("========== 5. finally on exception ==========")
         string log = ""
         try
         {
             log = "try"
-            throw "boom"
+            throw TestError.TestError3
         }
         catch
         {
@@ -141,10 +145,10 @@ TryTest
         global.println("log = " + log)
     }
 
-    # ── 7. 嵌套 try/catch ──
+    # ── 6. 嵌套try/catch ──
     static nestedTryCatchTest()
     {
-        global.println("========== 7. nested try/catch ==========")
+        global.println("========== 6. nested try/catch ==========")
         string log = ""
         try
         {
@@ -152,7 +156,7 @@ TryTest
             try
             {
                 log = log + "-inner-try"
-                throw "inner"
+                throw TestError.InnerError
             }
             catch
             {
@@ -167,17 +171,17 @@ TryTest
         global.println("log = " + log)
     }
 
-    # ── 8. 重新抛出 (re-throw) ──
+    # ── 7. 重新抛出（re-throw）──
     static rethrowTest()
     {
-        global.println("========== 8. re-throw ==========")
+        global.println("========== 7. re-throw ==========")
         string log = ""
         try
         {
             try
             {
                 log = "inner-try"
-                throw "rethrow-me"
+                throw TestError.RethrowError
             }
             catch
             {
@@ -192,10 +196,10 @@ TryTest
         global.println("log = " + log)
     }
 
-    # ── 9. try/catch 在循环中 ──
+    # ── 8. try/catch在循环中 ──
     static tryCatchInLoopTest()
     {
-        global.println("========== 9. try/catch in loop ==========")
+        global.println("========== 8. try/catch in loop ==========")
         Int32 sum = 0
         for Int32 i = 0, i < 5, i = i + 1
         {
@@ -203,7 +207,7 @@ TryTest
             {
                 if (i == 2)
                 {
-                    throw "skip-two"
+                    throw TestError.SkipError
                 }
                 sum = sum + i
             }
@@ -215,14 +219,14 @@ TryTest
         global.println("sum = " + sum.toString())
     }
 
-    # ── 10. try 中 ret，finally 仍执行 ──
+    # ── 9. try中ret，finally仍执行 ──
     static tryReturnWithFinallyTest()
     {
-        global.println("========== 10. try ret with finally ==========")
+        global.println("========== 9. try ret with finally ==========")
         global.println("returned = " + doReturnWithFinally().toString())
     }
 
-    static Int32 doReturnWithFinally()
+    static Int32 doReturnWithFinally() throws
     {
         try
         {
@@ -235,76 +239,10 @@ TryTest
         ret 0
     }
 
-    # ── 11. throws 函数异常传播 (try.md §2 throws 传播) ──
-    # throws 函数的异常通过调用链传播到调用方的 catch
-    static exceptionPropagationTest()
-    {
-        global.println("========== 11. throws propagation ==========")
-        string log = "start"
-        try
-        {
-            log = log + "-call"
-            deepThrower()
-            log = log + "-after-call"
-        }
-        catch
-        {
-            log = log + "-caught"
-        }
-        global.println("log = " + log)
-    }
-
-    # throws 标记：此函数会抛出异常
-    static void deepThrower()
-    {
-        throw "from-deep"
-    }
-
-    # ── 12. catch 绑定变量 (try.md §6 模式匹配) ──
-    # 注意：当前 VM 不按类型过滤 catch，第一个 catch 会捕获所有异常
-    static multipleCatchTypesTest()
-    {
-        global.println("========== 12. multiple catch types ==========")
-        string log = ""
-        try
-        {
-            throw "multi-catch-test"
-        }
-        catch err
-        {
-            log = "caught-" + err.toString()
-        }
-        catch
-        {
-            log = "caught-generic"
-        }
-        global.println("log = " + log)
-    }
-
-    # ── 13. catch 兜底捕获 ──
-    static catchAllFallbackTest()
-    {
-        global.println("========== 13. catch-all fallback ==========")
-        string log = ""
-        try
-        {
-            throw "fallback-test"
-        }
-        catch err
-        {
-            log = "first-catch: " + err.toString()
-        }
-        catch
-        {
-            log = "fallback-catch"
-        }
-        global.println("log = " + log)
-    }
-
-    # ── 14. finally 不带 catch ──
+    # ── 10. finally不带catch ──
     static finallyWithoutCatchTest()
     {
-        global.println("========== 14. finally without catch ==========")
+        global.println("========== 10. finally without catch ==========")
         string log = ""
         try
         {
@@ -317,40 +255,15 @@ TryTest
         global.println("log = " + log)
     }
 
-    # ── 15. catch 块中再次 throw ──
-    static throwInCatchTest()
+    # ── 11. 跨函数异常传播（throws函数）（try.md §2）──
+    static crossFunctionPropagationTest()
     {
-        global.println("========== 15. throw in catch ==========")
-        string log = ""
-        try
-        {
-            try
-            {
-                throw "first"
-            }
-            catch
-            {
-                log = "first-catch"
-                throw "second"
-            }
-        }
-        catch
-        {
-            log = log + "-second-catch"
-        }
-        global.println("log = " + log)
-    }
-
-    # ── 16. throws 函数多层传播 (try.md §2) ──
-    # throws 函数 A 调用 throws 函数 B，异常逐层传播
-    static throwsChainPropagationTest()
-    {
-        global.println("========== 16. throws chain propagation ==========")
+        global.println("========== 11. cross-function propagation ==========")
         string log = "start"
         try
         {
             log = log + "-call"
-            level1Throws()
+            throwExceptionFunc()
             log = log + "-after-call"
         }
         catch
@@ -360,25 +273,33 @@ TryTest
         global.println("log = " + log)
     }
 
-    static void level1Throws()
+    static void throwExceptionFunc() throws
     {
-        level2Throws()
+        throw TestError.FromFuncError
     }
 
-    static void level2Throws()
+    # ── 12. 多层调用链异常传播 ──
+    static multiLevelPropagationTest()
     {
-        level3Throws()
+        global.println("========== 12. multi-level propagation ==========")
+        string log = "start"
+        try
+        {
+            log = log + "-call"
+            level1()
+            log = log + "-after-call"
+        }
+        catch
+        {
+            log = log + "-caught"
+        }
+        global.println("log = " + log)
     }
 
-    static void level3Throws()
-    {
-        throw "from-level3"
-    }
-
-    # ── 17. throws 函数正常返回不触发 catch ──
+    # ── 13. throws函数正常返回不触发catch ──
     static throwsNoExceptionTest()
     {
-        global.println("========== 17. throws no exception ==========")
+        global.println("========== 13. throws no exception ==========")
         string log = "start"
         try
         {
@@ -393,33 +314,151 @@ TryTest
         global.println("log = " + log)
     }
 
-    # throws 标记但实际不抛异常
-    static string safeThrowsFunc()
+    # ── 14. catch兜底捕获 ──
+    static catchAllFallbackTest()
     {
-        ret "safe-ok"
+        global.println("========== 14. catch-all fallback ==========")
+        string log = ""
+        try
+        {
+            throw TestError.FallbackError
+        }
+        catch ex
+        {
+            log = "caught: " + ex.toString()
+        }
+        catch
+        {
+            log = "fallback"
+        }
+        global.println("log = " + log)
+    }
+
+    # ── 15. catch块中再次throw ──
+    static throwInCatchTest()
+    {
+        global.println("========== 15. throw in catch ==========")
+        string log = ""
+        try
+        {
+            try
+            {
+                throw TestError.FirstError
+            }
+            catch
+            {
+                log = "first-catch"
+                throw TestError.SecondError
+            }
+        }
+        catch
+        {
+            log = log + "-second-catch"
+        }
+        global.println("log = " + log)
+    }
+
+    # ── 16. try? 对throws函数：异常时返回null（§4.2）──
+    static tryQuestionOnExceptionTest()
+    {
+        global.println("========== 16. try? on throws func (exception) ==========")
+        string result = try? riskyFunc(true)
+        if (result == null)
+        {
+            global.println("try? returned null (expected)")
+        }
+        else
+        {
+            global.println("try? returned: " + result)
+        }
+    }
+
+    # ── 17. try? 对throws函数：正常时返回值（§4.2）──
+    static tryQuestionOnSuccessTest()
+    {
+        global.println("========== 17. try? on throws func (success) ==========")
+        string result = try? riskyFunc(false)
+        if (result == null)
+        {
+            global.println("try? returned null (unexpected)")
+        }
+        else
+        {
+            global.println("try? returned: " + result)
+        }
+    }
+
+    # ── 18. try? 对throws但安全函数 ──
+    static tryQuestionOnSafeThrowsTest()
+    {
+        global.println("========== 18. try? on safe throws func ==========")
+        string result = try? safeThrowsFunc()
+        global.println("try? returned: " + result)
+    }
+
+    # ── 19. try! 对throws函数：异常时传播（§4.3）──
+    static tryExclamationOnExceptionTest()
+    {
+        global.println("========== 19. try! on throws func (exception) ==========")
+        try
+        {
+            string result = try! riskyFunc(true)
+            global.println("try! returned: " + result)
+        }
+        catch
+        {
+            global.println("caught exception from try!")
+        }
+    }
+
+    # ── 20. try! 对throws函数：正常时返回值（§4.3）──
+    static tryExclamationOnSuccessTest()
+    {
+        global.println("========== 20. try! on throws func (success) ==========")
+        string result = try! riskyFunc(false)
+        global.println("try! returned: " + result)
+    }
+
+    # ── 21. try! 对throws但安全函数 ──
+    static tryExclamationOnSafeThrowsTest()
+    {
+        global.println("========== 21. try! on safe throws func ==========")
+        string result = try! safeThrowsFunc()
+        global.println("try! returned: " + result)
     }
 
     # ── main entry ──
     static fun()
     {
-        global.println("========== all try/catch/throws tests start ==========")
-        throwsDeclareTest()
-        throwsAndCatchTest()
-        catchWithBindingTest()
-        throwTypedObjectTest()
+        # try/catch/finally 基础
+        basicTryCatchTest()
+        tryNoExceptionTest()
+        catchBindingTest()
         finallyAlwaysRunsTest()
         finallyOnExceptionTest()
         nestedTryCatchTest()
         rethrowTest()
         tryCatchInLoopTest()
         tryReturnWithFinallyTest()
-        exceptionPropagationTest()
-        multipleCatchTypesTest()
-        catchAllFallbackTest()
         finallyWithoutCatchTest()
-        throwInCatchTest()
-        throwsChainPropagationTest()
+
+        # throws 传播
+        crossFunctionPropagationTest()
+        multiLevelPropagationTest()
         throwsNoExceptionTest()
-        global.println("========== all try/catch/throws tests done ==========")
+
+        # catch 变体
+        catchAllFallbackTest()
+        throwInCatchTest()
+
+        # try? / try! 表达式
+        tryQuestionOnExceptionTest()
+        tryQuestionOnSuccessTest()
+        tryQuestionOnSafeThrowsTest()
+        tryExclamationOnExceptionTest()
+        tryExclamationOnSuccessTest()
+        tryExclamationOnSafeThrowsTest()
+
+        global.println("========== all try tests done ==========")
     }
 }

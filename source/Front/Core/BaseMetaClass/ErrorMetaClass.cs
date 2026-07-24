@@ -1,23 +1,23 @@
 //****************************************************************************
-//  File:      ExceptionMetaClass.cs
+//  File:      ErrorMetaClass.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
-//  DateTime: 2025/07/23 12:00:00
-//  Description: Built-in Exception class for try/catch/throw.
+//  DateTime: 2026/07/24 12:00:00
+//  Description: Built-in Error base class. Only enums extending Error can be thrown.
 //****************************************************************************
 
 namespace SimpleLanguage.Core
 {
-    public class ExceptionMetaClass : MetaClass
+    public class ErrorMetaClass : MetaClass
     {
-        public ExceptionMetaClass() : base(DefaultObject.Exception.ToString())
+        public ErrorMetaClass() : base(DefaultObject.Error.ToString())
         {
             m_InnderDefine = true;
             SetExtendClass(CoreMetaClassManager.objectMetaClass);
         }
         public static MetaClass CreateMetaClass()
         {
-            return new ExceptionMetaClass();
+            return new ErrorMetaClass();
         }
     }
 }

@@ -3224,6 +3224,9 @@ namespace SimpleLanguage.VM.Runtime
                             case (int)ESystemMethodCall.SystemStringToByteArray:
                                 StringSystemMethodCall.ExecuteStringToByteArray(this, sysPkg);
                                 break;
+                            case (int)ESystemMethodCall.SystemStringLength:
+                                StringSystemMethodCall.ExecuteStringLength(this, sysPkg);
+                                break;
                             case (int)ESystemMethodCall.SystemEqualObject:
                                 ObjectSystemMethodCall.ExecuteSystemEqualObject(this, sysPkg);
                                 break;

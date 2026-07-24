@@ -44,10 +44,9 @@ Project
         GenClass.fun()        
         GC2.GenClass2.fun()
         !#
-        DeferTest.fun()
+        #DeferTest.fun()
         
-        #TryExpressionTest.fun()
-        #TryTest.fun()
+        TryTest.fun()
         
         #GC3.GenClass3.fun()
         

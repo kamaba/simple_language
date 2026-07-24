@@ -169,7 +169,7 @@ namespace SimpleLanguage.VM.Runtime
             vm.PushSValueSynced(outv);
         }
 
-        /// <summary>半开区间 [start, end)，与 C# <c>Substring(start, end - start)</c> 一致�?/summary>
+        /// <summary>半开区间 [start, end)，与 C# <c>Substring(start, end - start)</c> 一致�?/summary>
         public static void ExecuteStringRange(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
         {
             int pc = sysPkg.paramCount;
@@ -197,7 +197,7 @@ namespace SimpleLanguage.VM.Runtime
             vm.PushSValueSynced(outv);
         }
 
-        /// <summary>UTF-8 编码的字节序列，装入 <c>Array&lt;Byte&gt;</c>�?/summary>
+        /// <summary>UTF-8 编码的字节序列，装入 <c>Array&lt;Byte&gt;</c>�?/summary>
         public static void ExecuteStringToByteArray(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
         {
             int pc = sysPkg.paramCount;
@@ -253,6 +253,21 @@ namespace SimpleLanguage.VM.Runtime
 
             var outv = default(RuntimeValue);
             outv.SetValueBySObject(arr);
+            vm.PushSValueSynced(outv);
+        }
+
+        public static void ExecuteStringLength(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            int pc = sysPkg.paramCount;
+            if (pc < 1 || !vm.TrySystemCallPopArgs(pc, out var args))
+            {
+                Debug.Assert(false, $"SystemStringLength stack underflow, need={pc}");
+                return;
+            }
+
+            string s = ToInvariantString(ref args[0]) ?? string.Empty;
+            var outv = default(RuntimeValue);
+            outv.SetInt32Value(s.Length);
             vm.PushSValueSynced(outv);
         }
 

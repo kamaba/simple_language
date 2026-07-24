@@ -127,16 +127,11 @@ OK
 {
     code = 0;
 }
-Error
-{
-    code = 0;
-}
 #!
 报错
 enum Res
 {
     OK ok;
-    Error error;
 }
 !#
 

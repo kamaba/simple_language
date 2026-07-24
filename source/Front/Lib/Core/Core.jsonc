@@ -47,7 +47,7 @@
       { "path": "Range.sl", "group": "core", "tag": "itertor", "ignore": false, "priority": 0 },
       { "path": "NativeBridge.sl", "group": "core", "tag": "bridge", "ignore": false, "priority": 0 },
       { "path": "Attribute.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "Exception.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
+      { "path": "Error.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/ObjectTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/StringTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/NumberTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
@@ -72,8 +72,6 @@
       { "path": "../../../../test/BaseTest/GenClass_Interface.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/GenClass.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/GenClass2.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "../../../../test/BaseTest/DeferTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "../../../../test/BaseTest/TryExpressionTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/DeferTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/TryTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "../../../../test/BaseTest/GenClass3.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
@@ -169,6 +167,7 @@
     { "name": "SystemStringEnd",         "returnType": "string",    "params": ["string", "Int32"], "isVariadic": false },
     { "name": "SystemStringRange",       "returnType": "string",    "params": ["string", "Int32", "Int32"], "isVariadic": false },
     { "name": "SystemStringToUInt8Array","returnType": "UInt8Array","params": ["string"], "isVariadic": false },
+    { "name": "SystemStringLength",       "returnType": "Int32",     "params": ["string"], "isVariadic": false },
 
     // ---- Data operations ----
     { "name": "DataAllEqual",          "returnType": "bool",   "params": ["object", "object"], "isVariadic": false },
@@ -227,7 +226,7 @@
         { "class": "Range" },
         { "class": "NativeBridge" },
         { "class": "Attribute" },
-        { "class": "Exception" }
+        { "class": "Error" }
       ] },
       { "namespace": "Std", "children": [] },
       { "namespace": "Application", "children": [] },

@@ -83,52 +83,53 @@ Int32 divide(Int32 a, Int32 b) throws MathError
 
 ---
 
-## 3. enumError — 错误类型定义
+## 3. enum extends Error - 错误类型定义
+
+### 设计理念
+
+使用 `enum` + `extends Error` 定义错误类型。`Error` 是内置基类，只有继承 `Error` 的 enum 才能被 `throw`。
 
 ### 语法
 
-`enumError` 的使用方式与 `enum` 完全一致，但语义上专门用于定义错误类型。支持两种成员形式：**简单值**和**结构化对象**。
-
 ```sl
-enumError 错误类型名 [extends 底层类型]
+enum 错误类型名 extends Error
 {
     # 简单值形式
     错误名 = 整数值
 
-    # 结构化对象形式（含 id、error、msg 等字段）
-    错误名 = { id = 整数值, error = 错误码, msg = "描述信息" }
+    # 结构化对象形式（含 code、message 字段）
+    错误名 = { code = 整数值, message = "描述信息" }
 }
 ```
 
 ### 示例
 
 ```sl
-enumError MathError
+# 定义错误类型，继承 Error
+enum MathError extends Error
 {
-    # 简单值
-    MinusError = 1
+    DivZero = { code = 1, message = "除以零" }
+    Overflow = { code = 2, message = "溢出" }
+}
 
-    # 结构化对象：携带详细错误信息
-    MinusError2 = { id = 2, error = 100, msg = "减法错误" }
-
-    # 结构化对象：除法溢出
-    DivErrorOverflow = { id = 111, error = 101, msg = "除法溢出" }
+# 定义文件错误
+enum FileError extends Error
+{
+    NotFound = { code = 101, message = "文件未找到" }
+    ReadError = { code = 102, message = "读取失败" }
 }
 ```
 
-### 成员访问
+### 规则
 
-- 简单值成员：直接比较整数值，如 `MathError.MinusError`
-- 结构化对象成员：可通过点号访问字段，如 `MathError.MinusError2.msg`、`MathError.DivErrorOverflow.id`
+1. **只有 `extends Error` 的 enum 才能被 `throw`**：普通 enum、字符串、数字等不能直接 throw。
+2. **只有 `throws` 函数才能使用 `throw`**：未声明 `throws` 的函数中使用 `throw` 会被编译器报错。
+3. **`throw` 后只能跟 Error enum 成员**：如 `throw MathError.DivZero`，不能 `throw "字符串"` 或 `throw 123`。
+4. **catch 可按 enum 类型匹配**：`catch MathError.DivZero` 精确匹配，`catch` 兜底。
 
-### 与 enum 的区别
+### Error 基类
 
-| 特性 | `enum` | `enumError` |
-|------|--------|-------------|
-| 用途 | 通用枚举（状态、配置等） | 专用于错误定义 |
-| 成员形式 | 简单值 / data 对象 | 简单值 / 结构化对象 `{ id, error, msg }` |
-| catch 匹配 | 不直接支持 | 原生支持在 `catch` 中进行模式匹配 |
-| throw | 不能直接 throw | 可以直接 `throw MathError.MinusError` |
+`Error` 是内置基类，定义在类型系统中。所有 `extends Error` 的 enum 自动获得 Error 类型身份，可用于 catch 模式匹配和 throw。
 
 ---
 

@@ -75,6 +75,7 @@ namespace SimpleLanguage.VM.Runtime
         SystemMemoryGetTotalFreed,
         SystemMemorySetMode,
         SystemMemoryClone,
+        SystemStringLength,
 
         #region Math
         SystemMathSin,

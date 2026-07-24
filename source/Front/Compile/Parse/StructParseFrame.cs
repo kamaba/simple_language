@@ -1833,9 +1833,16 @@ namespace SimpleLanguage.Compile
                 {
                     nodeList.Add(curNode);
                 }
-                else if (curNode.nodeType == ENodeType.Comment || curNode.nodeType == ENodeType.Brace)
+                else if (curNode.nodeType == ENodeType.Comment)
                 {
 
+                }
+                else if (curNode.nodeType == ENodeType.Brace)
+                {
+                    if (isAssign)
+                    {
+                        nodeList.Add(curNode);
+                    }
                 }
                 else
                 {

@@ -1,7 +1,8 @@
 public class String extends Object
 {
     private String _value = null
-    
+    private Int32 _length = -1
+
     _init_( Int8 aa )
     {
         this._value = aa.toString()
@@ -17,6 +18,14 @@ public class String extends Object
     public string format( params object[] _parmas )
     {
         ret SystemStringFormat(this, _parmas)
+    }
+    public get int length()
+    {
+        if (this._length == -1)
+        {
+            this._length = SystemStringLength(this)
+        }
+        ret this._length
     }
 
     #!

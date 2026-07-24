@@ -768,6 +768,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Catch:
                 case ETokenType.Finally:
                 case ETokenType.Throw:
+                case ETokenType.Throws:
                 case ETokenType.Defer:
                 case ETokenType.ErrDefer:
                     {

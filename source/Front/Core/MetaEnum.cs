@@ -20,6 +20,7 @@ namespace SimpleLanguage.Core
         public override string allName => string.IsNullOrEmpty(m_AllName) ? (m_MetaNode?.GetAllName() ?? m_Name) : m_AllName;
         public MetaClass extendClass => m_ExtendClass;
         public MetaData extendMetaData => m_ExtendMetaData;
+        public bool isErrorEnum => m_ExtendClass == CoreMetaClassManager.errorMetaClass;
         public Dictionary<string, MetaMemberEnum> metaMemberEnumDict => m_MetaMemberEnumDict;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
         /// <summary>源码绑定（用于 IR 导出路径等）。</summary>
@@ -201,6 +202,11 @@ namespace SimpleLanguage.Core
                     // 关键字 extends data → 底层为动态 data，成员可为多种已定义 data 的 new 表达式
                     m_ExtendClass = CoreMetaClassManager.dynamicMetaData;
                 }
+                else if (extMc == CoreMetaClassManager.errorMetaClass)
+                {
+                    // enum extends Error: error enum, members are structured objects
+                    m_ExtendClass = extMc;
+                }
                 else if (IsAllowedEnumUnderlyingMetaClass(extMc))
                 {
                     m_ExtendClass = extMc;
@@ -261,7 +267,7 @@ namespace SimpleLanguage.Core
             {
                 if (string.IsNullOrEmpty(v.name))
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, v.token, "没有找到定义变量名称!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, v.token, "ParseFileMetaEnumMemeberEnum 没有找到定义变量名称!");
                     continue;
                 }
 
@@ -541,37 +547,24 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
-            else
+            else if (m_ExtendClass == CoreMetaClassManager.errorMetaClass)
             {
+                // enum extends Error: members can be simple values or structured objects
                 foreach (var v in m_MetaMemberEnumDict)
                 {
-                    var mmeClass = v.Value;
-                    if (mmeClass == null) continue;
+                    var mme = v.Value;
+                    if (mme == null) continue;
 
-                    if (mmeClass.express == null)
+                    if (mme.express == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, v.Value.token,
-                            "Error Enum extends class: member must have = assignment");
-                        continue;
+                        // auto-assign index for simple members without explicit value
+                        var autoConst = new MetaConstExpressNode(EType.Int32, (long)m_MetaMemberEnumDict.Count);
+                        mme.SetExpress(autoConst);
+                        mme.SetIsExplicitAssign(false);
+                        mme.ParseMetaExpress();
+                        mme.ParseRealMetaType();
                     }
-                    if (mmeClass.express is MetaNewObjectExpressNode mnoeClass)
-                    {
-                        var retType = mnoeClass.GetReturnMetaType();
-                        if (retType?.metaClass != null && retType.metaClass != m_ExtendClass)
-                        {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage,
-                                "Error Enum extends class: member type " + retType.metaClass.allName
-                                + " does not match extends class " + m_ExtendClass.allName);
-                        }
-                    }
-                    else if (mmeClass.constExpressNode != null)
-                    {
-                    }
-                    else
-                    {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage,
-                            "Error Enum extends class: member value must use new expression or const value");
-                    }
+                    // structured objects ({ id = 1, msg = "..." }) and simple values are both accepted
                 }
             }
         }

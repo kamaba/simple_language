@@ -40,7 +40,7 @@ namespace SimpleLanguage.Core
         Data,
         Enum,
         Member,
-        Exception,
+        Error,
     }
     class CoreMetaClassManager
     {
@@ -86,7 +86,7 @@ namespace SimpleLanguage.Core
         public static MetaClass enumMetaData { get; private set; } = null;
         public static MetaClass iteratorMetaClass { get; set; } = null;
         public static MetaClass iterableMetaClass { get; set; } = null;
-        public static MetaClass exceptionMetaClass { get; private set; } = null;
+        public static MetaClass errorMetaClass { get; private set; } = null;
 
         public static List<MetaClass> s_InnerDefineMetaClassList = new List<MetaClass>();
 
@@ -118,7 +118,7 @@ namespace SimpleLanguage.Core
             enumMetaData = EnumMetaClass.CreateMetaClass();
             memberMetaClass = MemberMetaClass.CreateMetaClass();
             typeMetaClass = TypeMetaClass.CreateMetaClass();
-            exceptionMetaClass = ExceptionMetaClass.CreateMetaClass();
+            errorMetaClass = ErrorMetaClass.CreateMetaClass();
 
             s_InnerDefineMetaClassList.Add(objectMetaClass);
             s_InnerDefineMetaClassList.Add(voidMetaClass);
@@ -144,7 +144,7 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(dynamicMetaData);
             s_InnerDefineMetaClassList.Add(enumMetaData);
             s_InnerDefineMetaClassList.Add(typeMetaClass);
-            s_InnerDefineMetaClassList.Add(exceptionMetaClass);
+            s_InnerDefineMetaClassList.Add(errorMetaClass);
             s_InnerDefineMetaClassList.Add(memberMetaClass);
         }
         public void Init()

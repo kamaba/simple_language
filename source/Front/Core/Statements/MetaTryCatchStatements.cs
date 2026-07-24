@@ -192,6 +192,36 @@ namespace SimpleLanguage.Core
                     m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
                     m_Express = ExpressManager.ConvertNewExpress(m_Express, null);
                     m_Express.CalcReturnType();
+
+                    // Validate: only throws functions can use throw
+                    var ownerFunc = m_OwnerMetaBlockStatements?.ownerMetaFunction;
+                    if (ownerFunc is MetaMemberFunction mmf && !mmf.isThrows)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
+                            "Error: throw 只能在声明了 throws 的函数中使用，当前函数未声明 throws: "
+                            + ownerFunc.name);
+                    }
+
+                    // Validate: throw value must be an Error enum member
+                    var retType = m_Express.expressReturnMetaType;
+                    if (retType != null)
+                    {
+                        bool isErrorEnum = false;
+                        if (retType.isEnum && retType.metaEnum != null && retType.metaEnum.isErrorEnum)
+                        {
+                            isErrorEnum = true;
+                        }
+                        else if (retType.isEnumMember && retType.metaEnum != null && retType.metaEnum.isErrorEnum)
+                        {
+                            isErrorEnum = true;
+                        }
+                        if (!isErrorEnum)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
+                                "Error: throw 只能抛出 enum extends Error 类型的值，不能使用: "
+                                + (retType.name ?? retType.ToString()));
+                        }
+                    }
                 }
             }
         }

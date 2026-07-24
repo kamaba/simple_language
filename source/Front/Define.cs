@@ -477,6 +477,7 @@ namespace SimpleLanguage
         SystemMemoryGetTotalFreed,
         SystemMemorySetMode,
         SystemMemoryClone,
+        SystemStringLength,
     }
     public class Global
     {
