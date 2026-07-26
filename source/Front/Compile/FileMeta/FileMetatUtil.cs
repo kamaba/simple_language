@@ -240,6 +240,13 @@ namespace SimpleLanguage.Compile
                         fmbt.priority = int.MaxValue;
                         commonTermExpressList.Add(fmbt);
                     }
+                    else if (cnode.token.type == ETokenType.Try)
+                    {
+                        // try as expression prefix (like try? / try!)
+                        FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
+                        fmn.priority = SignComputePriority.Level2_LinkOp;
+                        commonTermExpressList.Add(fmn);
+                    }
                     else
                     {
                         Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error --------------------------------------!!" + fmbt.ToTokenString());

@@ -150,3 +150,13 @@
 /test_strlen.txt
 /test_trynew.txt
 /test_trythrows.txt
+/run_result.txt
+/stderr.txt
+/stdout.txt
+/tee_output.txt
+/test_catchfix.txt
+/test_catchfix2.txt
+/test_catchfix3.txt
+/test_catchfix4.txt
+/test_catchfix5.txt
+/test_output.txt

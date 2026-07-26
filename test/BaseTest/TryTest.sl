@@ -12,9 +12,8 @@ enum TestError extends Error
     FallbackError = { code = 7, message = "fallback-test" }
     FirstError = { code = 8, message = "first" }
     SecondError = { code = 9, message = "second" }
-    CombinedError = { code = 10, message = "combined-test" }
-    FromFuncError = { code = 11, message = "from-throwExceptionFunc" }
-    FromLevel3 = { code = 12, message = "from-level3" }
+    FromFuncError = { code = 10, message = "from-throwExceptionFunc" }
+    FromLevel3 = { code = 11, message = "from-level3" }
 }
 
 enum MathError extends Error
@@ -59,15 +58,16 @@ TryTest
         throw TestError.FromLevel3
     }
 
-    # ── 1. 基本try/catch：throws函数异常被捕获 ──
-    static basicTryCatchTest()
+    # ── 1. 基本 label{}catch{} + try 表达式 ──
+    static basicTryCatchTest() throws
     {
-        global.println("========== 1. basic try/catch ==========")
+        global.println("========== 1. basic label{}catch{} + try ==========")
         string log = "before"
-        try
+
+        label basicBlock
         {
             log = "try"
-            throw TestError.TestError1
+            try riskyFunc(true)
         }
         catch
         {
@@ -76,14 +76,16 @@ TryTest
         global.println("log = " + log)
     }
 
-    # ── 2. try正常结束时catch不执行 ──
+    # ── 2. 块正常结束时catch不执行 ──
     static tryNoExceptionTest()
     {
-        global.println("========== 2. try no exception ==========")
+        global.println("========== 2. block no exception ==========")
         string log = "before"
-        try
+
+        label noExceptionBlock
         {
             log = "try"
+            try riskyFunc(false)
         }
         catch
         {
@@ -92,30 +94,31 @@ TryTest
         global.println("log = " + log)
     }
 
-    # ── 3. catch绑定变量（try.md §6）──
-    static catchBindingTest()
+    # ── 3. catch绑定变量（try.md §5）──
+    static catchBindingTest() throws
     {
         global.println("========== 3. catch binding ==========")
         string captured = "none"
-        try
+        label bindBlock
         {
-            throw TestError.TestError2
+            try riskyFunc(true)
         }
-        catch ex
+        catch TestError ex
         {
             captured = ex.toString()
         }
         global.println("captured = " + captured)
     }
 
-    # ── 4. finally块总是执行（try.md §5）──
+    # ── 4. finally块总是执行 ──
     static finallyAlwaysRunsTest()
     {
         global.println("========== 4. finally always runs ==========")
         string log = ""
-        try
+        label finallyBlock
         {
             log = "try"
+            try riskyFunc(false)
         }
         finally
         {
@@ -125,14 +128,14 @@ TryTest
     }
 
     # ── 5. 异常时finally仍执行 ──
-    static finallyOnExceptionTest()
+    static finallyOnExceptionTest() throws
     {
         global.println("========== 5. finally on exception ==========")
         string log = ""
-        try
+        label exceptFinallyBlock
         {
             log = "try"
-            throw TestError.TestError3
+            try riskyFunc(true)
         }
         catch
         {
@@ -145,18 +148,18 @@ TryTest
         global.println("log = " + log)
     }
 
-    # ── 6. 嵌套try/catch ──
-    static nestedTryCatchTest()
+    # ── 6. 嵌套 label{}catch{} ──
+    static nestedTryCatchTest() throws
     {
-        global.println("========== 6. nested try/catch ==========")
+        global.println("========== 6. nested label{}catch{} ==========")
         string log = ""
-        try
+        label outerBlock
         {
             log = "outer-try"
-            try
+            label innerBlock
             {
                 log = log + "-inner-try"
-                throw TestError.InnerError
+                try riskyFunc(true)
             }
             catch
             {
@@ -172,16 +175,16 @@ TryTest
     }
 
     # ── 7. 重新抛出（re-throw）──
-    static rethrowTest()
+    static rethrowTest() throws
     {
         global.println("========== 7. re-throw ==========")
         string log = ""
-        try
+        label rethrowOuter
         {
-            try
+            label rethrowInner
             {
                 log = "inner-try"
-                throw TestError.RethrowError
+                try riskyFunc(true)
             }
             catch
             {
@@ -196,14 +199,14 @@ TryTest
         global.println("log = " + log)
     }
 
-    # ── 8. try/catch在循环中 ──
-    static tryCatchInLoopTest()
+    # ── 8. label{}catch{}在循环中 ──
+    static tryCatchInLoopTest() throws
     {
-        global.println("========== 8. try/catch in loop ==========")
+        global.println("========== 8. label{}catch{} in loop ==========")
         Int32 sum = 0
         for Int32 i = 0, i < 5, i = i + 1
         {
-            try
+            label loopBlock
             {
                 if (i == 2)
                 {
@@ -219,16 +222,16 @@ TryTest
         global.println("sum = " + sum.toString())
     }
 
-    # ── 9. try中ret，finally仍执行 ──
+    # ── 9. 块中ret，finally仍执行 ──
     static tryReturnWithFinallyTest()
     {
-        global.println("========== 9. try ret with finally ==========")
+        global.println("========== 9. block ret with finally ==========")
         global.println("returned = " + doReturnWithFinally().toString())
     }
 
     static Int32 doReturnWithFinally() throws
     {
-        try
+        label retBlock
         {
             ret 100
         }
@@ -244,9 +247,10 @@ TryTest
     {
         global.println("========== 10. finally without catch ==========")
         string log = ""
-        try
+        label onlyFinallyBlock
         {
             log = "try"
+            try riskyFunc(false)
         }
         finally
         {
@@ -260,10 +264,10 @@ TryTest
     {
         global.println("========== 11. cross-function propagation ==========")
         string log = "start"
-        try
+        label crossFuncBlock
         {
             log = log + "-call"
-            throwExceptionFunc()
+            try throwExceptionFunc()
             log = log + "-after-call"
         }
         catch
@@ -283,10 +287,10 @@ TryTest
     {
         global.println("========== 12. multi-level propagation ==========")
         string log = "start"
-        try
+        label multiLevelBlock
         {
             log = log + "-call"
-            level1()
+            try level1()
             log = log + "-after-call"
         }
         catch
@@ -301,10 +305,10 @@ TryTest
     {
         global.println("========== 13. throws no exception ==========")
         string log = "start"
-        try
+        label safeThrowsBlock
         {
             log = log + "-call"
-            string result = safeThrowsFunc()
+            string result = try safeThrowsFunc()
             log = log + "-" + result
         }
         catch
@@ -315,15 +319,15 @@ TryTest
     }
 
     # ── 14. catch兜底捕获 ──
-    static catchAllFallbackTest()
+    static catchAllFallbackTest() throws
     {
         global.println("========== 14. catch-all fallback ==========")
         string log = ""
-        try
+        label fallbackBlock
         {
-            throw TestError.FallbackError
+            try riskyFunc(true)
         }
-        catch ex
+        catch TestError ex
         {
             log = "caught: " + ex.toString()
         }
@@ -335,15 +339,15 @@ TryTest
     }
 
     # ── 15. catch块中再次throw ──
-    static throwInCatchTest()
+    static throwInCatchTest() throws
     {
         global.println("========== 15. throw in catch ==========")
         string log = ""
-        try
+        label outerThrowBlock
         {
-            try
+            label innerThrowBlock
             {
-                throw TestError.FirstError
+                try riskyFunc(true)
             }
             catch
             {
@@ -358,7 +362,7 @@ TryTest
         global.println("log = " + log)
     }
 
-    # ── 16. try? 对throws函数：异常时返回null（§4.2）──
+    # ── 16. try? 对throws函数：异常时返回null（§6.2）──
     static tryQuestionOnExceptionTest()
     {
         global.println("========== 16. try? on throws func (exception) ==========")
@@ -373,7 +377,7 @@ TryTest
         }
     }
 
-    # ── 17. try? 对throws函数：正常时返回值（§4.2）──
+    # ── 17. try? 对throws函数：正常时返回值（§6.2）──
     static tryQuestionOnSuccessTest()
     {
         global.println("========== 17. try? on throws func (success) ==========")
@@ -396,11 +400,11 @@ TryTest
         global.println("try? returned: " + result)
     }
 
-    # ── 19. try! 对throws函数：异常时传播（§4.3）──
+    # ── 19. try! 对throws函数：异常时传播（§6.3）──
     static tryExclamationOnExceptionTest()
     {
         global.println("========== 19. try! on throws func (exception) ==========")
-        try
+        label tryExclBlock
         {
             string result = try! riskyFunc(true)
             global.println("try! returned: " + result)
@@ -411,7 +415,7 @@ TryTest
         }
     }
 
-    # ── 20. try! 对throws函数：正常时返回值（§4.3）──
+    # ── 20. try! 对throws函数：正常时返回值（§6.3）──
     static tryExclamationOnSuccessTest()
     {
         global.println("========== 20. try! on throws func (success) ==========")
@@ -427,10 +431,67 @@ TryTest
         global.println("try! returned: " + result)
     }
 
+    # ── 22. 作用域共享：catch/finally 访问 label{} 块内变量 ──
+    static scopeSharingTest() throws
+    {
+        global.println("========== 22. scope sharing ==========")
+        label scopeBlock
+        {
+            string innerLog = "try"
+            Int32 count = 0
+            try riskyFunc(true)
+        }
+        catch
+        {
+            innerLog = innerLog + "-catch"
+            count = count + 1
+            global.println("innerLog = " + innerLog + ", count = " + count.toString())
+        }
+    }
+
+    # ── 23. 作用域共享：finally 也能访问 label{} 块内变量 ──
+    static scopeSharingFinallyTest()
+    {
+        global.println("========== 23. scope sharing finally ==========")
+        label scopeFinallyBlock
+        {
+            string status = "running"
+            try riskyFunc(false)
+            status = "done"
+        }
+        finally
+        {
+            global.println("finally status = " + status)
+        }
+    }
+
+    # ── 24. 作用域共享：catch+finally 同时访问 ──
+    static scopeSharingCatchFinallyTest() throws
+    {
+        global.println("========== 24. scope sharing catch+finally ==========")
+        label scopeCFBlock
+        {
+            string log = "try"
+            Int32 step = 0
+            try riskyFunc(true)
+            step = 1
+        }
+        catch
+        {
+            log = log + "-catch"
+            step = step + 10
+        }
+        finally
+        {
+            log = log + "-finally"
+            global.println("log = " + log + ", step = " + step.toString())
+        }
+    }
+
     # ── main entry ──
     static fun()
     {
-        # try/catch/finally 基础
+        # label{}catch{} + try 基础
         basicTryCatchTest()
         tryNoExceptionTest()
         catchBindingTest()
@@ -458,6 +519,11 @@ TryTest
         tryExclamationOnExceptionTest()
         tryExclamationOnSuccessTest()
         tryExclamationOnSafeThrowsTest()
+
+        # 作用域共享
+        scopeSharingTest()
+        scopeSharingFinallyTest()
+        scopeSharingCatchFinallyTest()
 
         global.println("========== all try tests done ==========")
     }

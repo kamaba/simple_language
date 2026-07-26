@@ -101,6 +101,25 @@ namespace SimpleLanguage.Core
                 return null;
             }
 
+            // Check for try/try?/try! prefix expression at the root
+            // The root may be a FileMetaSymbolTerm (try) or a FileMetaTermExpress whose root is a try symbol
+            FileMetaBaseTerm tryRoot = fmte.root;
+            if (tryRoot != null && tryRoot is FileMetaSymbolTerm trySym
+                && (trySym.symBolType == ETokenType.Try
+                    || trySym.symBolType == ETokenType.TryQuestion
+                    || trySym.symBolType == ETokenType.TryExclamation)
+                && tryRoot.right != null)
+            {
+                CreateExpressParam innerCep = new CreateExpressParam(cep);
+                innerCep.fme = tryRoot.right;
+                MetaExpressNodeBase innerNode = CreateExpressNodeByCEP(innerCep);
+                if (innerNode != null)
+                {
+                    var tryExpress = new MetaTryExpressNode(trySym, innerNode);
+                    return tryExpress;
+                }
+            }
+
 
             FileMetaAsOrIsTerm asOrIsTerm = fmte as FileMetaAsOrIsTerm;
             if (asOrIsTerm != null)
@@ -293,6 +312,13 @@ namespace SimpleLanguage.Core
                 {
                     if (root is FileMetaSymbolTerm fmst)
                     {
+                        // try / try? / try! prefix creates a MetaTryExpressNode
+                        if (fmst.symBolType == ETokenType.Try
+                            || fmst.symBolType == ETokenType.TryQuestion
+                            || fmst.symBolType == ETokenType.TryExclamation)
+                        {
+                            return new MetaTryExpressNode(fmst, rightNode);
+                        }
                         return new MetaOpExpressNode(fmst, cep.metaType, leftNode, rightNode);
                     }
                     else
@@ -315,8 +341,10 @@ namespace SimpleLanguage.Core
                 {
                     if (root is FileMetaSymbolTerm fmst2)
                     {
-                        // try? / try! prefix expressions
-                        if (fmst2.symBolType == ETokenType.TryQuestion || fmst2.symBolType == ETokenType.TryExclamation)
+                        // try / try? / try! prefix expressions
+                        if (fmst2.symBolType == ETokenType.Try
+                            || fmst2.symBolType == ETokenType.TryQuestion
+                            || fmst2.symBolType == ETokenType.TryExclamation)
                         {
                             return new MetaTryExpressNode(fmst2, rightNode);
                         }

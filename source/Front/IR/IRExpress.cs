@@ -275,6 +275,12 @@ namespace SimpleLanguage.IR
                             // End label
                             m_IRDataList.Add(endNop);
                         }
+                        else if (mten.tryMode == ETryMode.Try)
+                        {
+                            // try expr: evaluate, exception caught by surrounding label{}catch{}
+                            IRExpressBase innerExpress = IRExpressManager.CreateExpress(this.m_IRMethod, mten.innerExpress);
+                            m_IRDataList.AddRange(innerExpress.IRDataList);
+                        }
                         else if (mten.tryMode == ETryMode.TryExclamation)
                         {
                             // try! expr: just evaluate, exception propagates normally (crashes if uncaught)

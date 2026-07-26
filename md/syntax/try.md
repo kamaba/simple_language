@@ -1,19 +1,19 @@
-# S语言异常处理（try/catch/throws）重新设计
+# S语言异常处理（throws / throw / try / catch / checked）
 
-> 本文档描述重新设计的异常处理模块，涵盖 `throws` 声明、`try`/`try?`/`try!` 表达式、`errdefer` 延迟错误处理、`enumError` 错误类型定义、块后缀 `catch` 模式匹配、`.catch{}` 后缀链式调用，以及 `checked`/`unchecked` 溢出检测。
+> 本文档描述异常处理模块，涵盖 `throws` 声明、`throw` 抛出、`label{}catch{}` 异常捕获块、`try`/`try?`/`try!` 表达式前缀、以及 `checked` 溢出检测。
 
 ---
 
 ## 目录
 
 1. [概述](#1-概述)
-2. [throws — 函数异常声明](#2-throws--函数异常声明)
-3. [enumError — 错误类型定义](#3-enumerror--错误类型定义)
-4. [try 表达式 — try / try? / try!](#4-try-表达式--try--try-try)
-5. [errdefer — 延迟错误处理](#5-errdefer--延迟错误处理)
-6. [块后缀 catch — {}catch{} 模式匹配](#6-块后缀-catch--catch-模式匹配)
-7. [.catch{} — 后缀链式捕获](#7-catch--后缀链式捕获)
-8. [checked / unchecked — 溢出检测](#8-checked--unchecked--溢出检测)
+2. [throws - 函数异常声明](#2-throws--函数异常声明)
+3. [enum extends Error - 错误类型定义](#3-enum-extends-error--错误类型定义)
+4. [throw - 抛出异常](#4-throw--抛出异常)
+5. [label{}catch{} - 异常捕获块](#5-labelcatch--异常捕获块)
+6. [try 表达式 - try / try? / try!](#6-try-表达式--try--try-try)
+7. [checked / unchecked - 溢出检测](#7-checked--unchecked--溢出检测)
+8. [errdefer - 延迟错误处理](#8-errdefer--延迟错误处理)
 9. [执行流程与语义](#9-执行流程与语义)
 10. [完整示例](#10-完整示例)
 
@@ -21,61 +21,54 @@
 
 ## 1. 概述
 
-重新设计的异常系统围绕以下核心理念：
+异常系统围绕以下核心理念：
 
 | 机制 | 用途 |
 |------|------|
-| `throws` | 函数级声明，标记该函数可能抛出可被捕捉的异常 |
-| `enumError` | 定义错误类型，语法与 `enum` 一致，但专用于错误场景 |
-| `try` / `try?` / `try!` | 表达式级异常控制：普通捕获、可空返回、强制解包 |
-| `errdefer` | 函数内延迟错误处理块，异常发生时优先执行 |
-| `{}catch{}` | 块后缀 catch，对代码块进行模式匹配捕获 |
-| `.catch{}` | 后缀链式调用，在函数调用后链式捕获异常 |
-| `checked` / `unchecked` | 算术溢出检测，`checked` 块内溢出会抛出可捕获异常 |
+| `throws` | 函数级声明，标记该函数可能抛出异常。只有 `throws` 函数才能使用 `throw` |
+| `throw` | 抛出异常，只能在 `throws` 函数中使用 |
+| `enum extends Error` | 定义错误类型，只有继承 `Error` 的 enum 才能被 `throw` |
+| `label Name {} catch {}` | 异常捕获块，对代码块内的异常进行模式匹配捕获 |
+| `try` | 表达式前缀，标记可能抛出异常的调用，异常由周围 `catch` 捕获 |
+| `try?` | 表达式前缀，异常时返回 null，不崩溃 |
+| `try!` | 表达式前缀，异常时程序崩溃（不可恢复） |
+| `checked` | 溢出检测块，溢出时抛出可被 `catch` 捕获的异常 |
 
-### 设计原则
+### 核心规则
 
-- **默认 unchecked**：表达式计算默认不检测溢出，与 C/C++ 行为一致。
-- **错误即值**：`enumError` 将错误定义为可比较的枚举值，catch 中通过模式匹配进行精确捕获。
-- **延迟优先**：`errdefer` 在函数内最先响应异常，做清理或设置回退值，之后异常继续传播。
-- **链式友好**：`.catch{}` 允许在函数调用后直接链式处理异常，无需包裹 try 块。
+1. **函数必须声明 `throws`** 才能使用 `throw`。
+2. **`throw` 后只能跟 `enum extends Error` 的成员**。
+3. **`label Name {} catch {}`** 定义异常捕获块，`catch` 支持按 enum 类型匹配。
+4. **`try expr`** 在 `label{}catch{}` 块内使用，标记可能抛出异常的表达式。
+5. **`try? expr`** 和 **`try! expr`** 可在任何地方使用，不依赖 `label{}catch{}`。
 
 ---
 
-## 2. throws — 函数异常声明
+## 2. throws - 函数异常声明
 
 ### 语法
 
 ```sl
 [修饰符] [返回类型] 函数名(参数列表) throws
 {
-    // 函数体
+    // 函数体：可以使用 throw 抛出异常
 }
 ```
 
-### 语义
+### 规则
 
-- `throws` 关键字放在参数列表之后、函数体之前，声明该函数**可能抛出可被捕捉的异常**。
-- 未声明 `throws` 的函数：内部发生的异常仍会抛出，但调用方是否能通过 `try`/`catch`/`.catch{}` 捕获取决于具体实现策略（建议：所有异常均可被捕获，`throws` 仅作为文档/编译期检查标记）。
-- `throws` 可与 `enumError` 类型配合，声明可能抛出的具体错误类型（可选扩展）：
+- `throws` 关键字放在参数列表之后、函数体之前。
+- **只有 `throws` 函数才能使用 `throw`**：未声明 `throws` 的函数中使用 `throw` 会被编译器报错。
+- `throws` 函数可以被调用方通过 `try`/`try?`/`try!` 或 `label{}catch{}` 处理异常。
+
+### 示例
 
 ```sl
-# 基本形式：声明可抛出异常
 Int32 divide(Int32 a, Int32 b) throws
 {
     if (b == 0)
     {
-        throw MathError.DivErrorOverflow
-    }
-    ret a / b
-}
-
-# 扩展形式（可选）：声明具体错误类型
-Int32 divide(Int32 a, Int32 b) throws MathError
-{
-    if (b == 0)
-    {
-        throw MathError.DivErrorOverflow
+        throw MathError.DivZero
     }
     ret a / b
 }
@@ -85,34 +78,31 @@ Int32 divide(Int32 a, Int32 b) throws MathError
 
 ## 3. enum extends Error - 错误类型定义
 
-### 设计理念
-
-使用 `enum` + `extends Error` 定义错误类型。`Error` 是内置基类，只有继承 `Error` 的 enum 才能被 `throw`。
-
 ### 语法
 
 ```sl
 enum 错误类型名 extends Error
 {
-    # 简单值形式
-    错误名 = 整数值
-
-    # 结构化对象形式（含 code、message 字段）
     错误名 = { code = 整数值, message = "描述信息" }
 }
 ```
 
+### 规则
+
+1. **只有 `extends Error` 的 enum 才能被 `throw`**。
+2. **只有 `throws` 函数才能使用 `throw`**。
+3. **`throw` 后只能跟 Error enum 成员**：如 `throw MathError.DivZero`。
+4. **catch 可按 enum 类型匹配**：`catch MathError e` 匹配 `MathError` 类型的所有错误。
+
 ### 示例
 
 ```sl
-# 定义错误类型，继承 Error
 enum MathError extends Error
 {
     DivZero = { code = 1, message = "除以零" }
     Overflow = { code = 2, message = "溢出" }
 }
 
-# 定义文件错误
 enum FileError extends Error
 {
     NotFound = { code = 101, message = "文件未找到" }
@@ -120,39 +110,195 @@ enum FileError extends Error
 }
 ```
 
+---
+
+## 4. throw - 抛出异常
+
+### 语法
+
+```sl
+throw ErrorEnum.成员名
+```
+
 ### 规则
 
-1. **只有 `extends Error` 的 enum 才能被 `throw`**：普通 enum、字符串、数字等不能直接 throw。
-2. **只有 `throws` 函数才能使用 `throw`**：未声明 `throws` 的函数中使用 `throw` 会被编译器报错。
-3. **`throw` 后只能跟 Error enum 成员**：如 `throw MathError.DivZero`，不能 `throw "字符串"` 或 `throw 123`。
-4. **catch 可按 enum 类型匹配**：`catch MathError.DivZero` 精确匹配，`catch` 兜底。
+- `throw` 只能在 `throws` 函数中使用。
+- `throw` 后只能跟 `enum extends Error` 的成员。
+- `throw`（无参数）表示重新抛出当前捕获的异常，只能在 `catch` 块中使用。
 
-### Error 基类
+### 示例
 
-`Error` 是内置基类，定义在类型系统中。所有 `extends Error` 的 enum 自动获得 Error 类型身份，可用于 catch 模式匹配和 throw。
+```sl
+Int32 safeDivide(Int32 a, Int32 b) throws
+{
+    if (b == 0)
+    {
+        throw MathError.DivZero
+    }
+    ret a / b
+}
+```
 
 ---
 
-## 4. try 表达式 — try / try? / try!
+## 5. label{}catch{} - 异常捕获块
 
-`try` 作为表达式级关键字，直接作用于后续表达式，提供三种模式：
+### 语法
 
-### 4.1 try — 基本捕获
+使用 `label LabelName {}` 定义异常捕获块，后跟 `catch` 进行模式匹配：
 
 ```sl
-# try 后跟表达式，异常会被捕获
-# 需要配合 catch 或 errdefer 使用
-try funcThatMayThrow()
+label LabelName
+{
+    // 异常捕获块
+    // 在这里使用 try expr 标记可能抛出异常的调用
+    try riskyFunc()
+}
+catch EnumType e
+{
+    // 匹配 EnumType 类型的错误，e 为绑定的错误变量
+}
+catch EnumType
+{
+    // 匹配 EnumType 类型的错误，不绑定变量
+}
+catch e
+{
+    // 兜底：捕获所有未匹配的错误，绑定到 e
+}
+catch
+{
+    // 兜底：捕获所有未匹配错误，不绑定变量
+}
+finally
+{
+    // 无论是否异常都会执行
+}
 ```
 
-### 4.2 try? — 可空返回
+### 模式匹配规则
+
+1. catch 按从上到下顺序匹配，命中第一个匹配项后执行对应块，不再继续匹配。
+2. `catch MathError e` 匹配 `MathError` 类型的所有错误，`e` 为绑定的错误变量。
+3. `catch MathError` 匹配 `MathError` 类型的所有错误，不绑定变量。
+4. `catch e`（仅变量名）为兜底块，捕获所有未被上方 catch 匹配的错误，绑定到 `e`。
+5. `catch`（无参数）为兜底块，捕获所有未匹配的错误。
+6. `finally` 块无论是否发生异常都会执行。
+7. 如果没有任何 catch 匹配成功，异常继续向外层传播。
+
+### 关键：try 标记
+
+在 `label{}catch{}` 块内，**只有使用 `try` 前缀标记的调用**，其异常才会被 `catch` 捕获。未使用 `try` 的调用，异常会直接传播。
 
 ```sl
-# try? 表示：如果发生异常，返回 null（结果类型可空）
+label myBlock
+{
+    try riskyFunc()          # 异常被 catch 捕获
+    riskyFunc()              # 异常直接传播，不被 catch 捕获
+}
+catch MathError e
+{
+    global.println("捕获到: " + e.message)
+}
+```
+
+### 作用域共享
+
+`label{}catch{}` 块内的变量在 `catch` 和 `finally` 中可以直接访问和修改。即 `catch`/`finally` 共享 `label {}` 块的作用域：
+
+```sl
+label myBlock
+{
+    string log = "try"       # 在 label {} 块内声明
+    Int32 count = 0
+    try riskyFunc()
+}
+catch MathError e
+{
+    # 可以直接访问和修改 label {} 块内的变量
+    log = log + "-catch"
+    count = count + 1
+}
+finally
+{
+    # finally 也可以访问
+    log = log + "-finally"
+}
+```
+
+> 注意：`catch` 绑定的异常变量（如 `catch MathError e` 中的 `e`）只在 `catch` 块内有效。
+
+### 嵌套
+
+```sl
+label outer
+{
+    label inner
+    {
+        try riskyFunc()
+    }
+    catch MathError e
+    {
+        # 内层 catch 先匹配
+    }
+    # 内层未匹配的异常继续到外层
+}
+catch
+{
+    # 外层兜底
+}
+```
+
+### re-throw
+
+在 catch 块中可以使用 `throw`（无参数）重新抛出当前异常：
+
+```sl
+label myBlock
+{
+    try riskyFunc()
+}
+catch MathError e
+{
+    # 处理后重新抛出，交给外层
+    throw
+}
+```
+
+---
+
+## 6. try 表达式 - try / try? / try!
+
+`try` 作为表达式前缀，作用于后续表达式。三种模式：
+
+### 6.1 try - 标记捕获
+
+```sl
+# 在 label{}catch{} 块内使用
+# 异常被周围 catch 捕获
+label myBlock
+{
+    Int32 result = try divide(10, 0)
+    global.println("结果: " + result.toString())
+}
+catch MathError e
+{
+    global.println("除法错误: " + e.message)
+}
+```
+
+**语义**：
+- `try` 标记表达式为"可被捕获"。
+- 如果表达式抛出异常，异常由周围 `label{}catch{}` 的 `catch` 块处理。
+- `try` 只能在 `label{}catch{}` 块内使用。
+
+### 6.2 try? - 可空返回
+
+```sl
+# 异常时返回 null，不崩溃
 Int32? result = try? divide(10, 0)
 # result 为 null，不崩溃
 
-# 可以配合空值检查使用
 if (result != null)
 {
     global.println("结果: " + result.toString())
@@ -166,283 +312,55 @@ else
 **语义**：
 - `try?` 将表达式结果类型变为可空类型（`T?`）。
 - 异常发生时，表达式求值为 `null`，不抛出、不崩溃。
-- 调用方需处理 `null` 情况。
+- 可在任何地方使用，不依赖 `label{}catch{}`。
 
-### 4.3 try! — 强制解包
+### 6.3 try! - 强制解包
 
 ```sl
-# try! 表示：如果发生异常（结果为空），直接崩溃
+# 异常时程序直接崩溃
 Int32 result = try! divide(10, 0)
-# divide 抛出异常 → try! 检测到 → 程序直接崩溃（panic）
+# divide 抛出异常 -> try! 检测到 -> 程序崩溃
 ```
 
 **语义**：
-- `try!` 表示"我确信不会出错"，如果异常发生则程序直接崩溃（不可恢复）。
-- 适用于调用方有充分理由保证不会异常的场景。
-- 等价于 `try?` + 强制解包 + 空值断言。
+- `try!` 表示"确信不会出错"，如果异常发生则程序直接崩溃。
+- 可在任何地方使用，不依赖 `label{}catch{}`。
+
+### 6.4 链式调用
+
+`try` / `try?` / `try!` 可以作用于链式调用：
+
+```sl
+# try? 作用于整个链式调用
+string result = try? a.fun1().bfun2().cfun3()
+
+# try 作用于链式调用
+label myBlock
+{
+    Int32 val = try a.fun2().bfun3().cfun1()
+}
+catch MathError e
+{
+    global.println("错误: " + e.message)
+}
+```
 
 ### 三种模式对比
 
-| 模式 | 异常时行为 | 返回类型 | 适用场景 |
-|------|-----------|----------|----------|
-| `try` | 异常被抛出，需 catch 捕获 | 原始类型 | 需要精确错误处理的场景 |
-| `try?` | 返回 `null`，不崩溃 | `T?`（可空） | 错误是预期内的，可降级处理 |
-| `try!` | 程序直接崩溃 | 原始类型 | 确信不会出错，出错即 bug |
+| 模式 | 异常时行为 | 返回类型 | 依赖 label{}catch{} | 适用场景 |
+|------|-----------|----------|---------------------|----------|
+| `try` | 异常由 catch 捕获 | 原始类型 | 是 | 在 catch 块内精确处理 |
+| `try?` | 返回 null，不崩溃 | `T?`（可空） | 否 | 错误是预期内的，可降级 |
+| `try!` | 程序直接崩溃 | 原始类型 | 否 | 确信不会出错，出错即 bug |
 
 ---
 
-## 5. errdefer — 延迟错误处理
-
-### 语法
-
-```sl
-[修饰符] [返回类型] 函数名(参数列表) [throws]
-{
-    // 函数体（可能抛出异常的代码）
-
-    errdefer
-    {
-        // 异常发生时执行的延迟处理块
-        // 可以做资源清理、日志记录、设置回退返回值
-        ret 回退值
-    }
-}
-```
-
-### 语义
-
-- `errdefer` 块在函数内**发生异常时**自动执行，类似 Swift 的 `defer` 但仅在错误路径触发。
-- `errdefer` 块内可以使用 `ret` 设置回退返回值。
-- **执行顺序**：异常发生 → `errdefer` 块执行 → 异常继续向调用方传播。
-- `errdefer` 类似 `finally` 但仅对错误路径生效，且可以影响返回值。
-
-### 示例
-
-```sl
-Int32 riskyCompute(Int32 a, Int32 b) throws
-{
-    errdefer
-    {
-        # 异常发生时，先走这里做清理
-        global.println("riskyCompute 发生异常，执行 errdefer")
-        ret 100    # 设置回退返回值
-    }
-
-    Int32 o = null
-    o.toString()    # 此处抛出异常（空指针）
-    # 不会执行到这里
-    ret a + b
-}
-```
-
-**执行流程**：
-1. 调用 `riskyCompute(1, 2)`
-2. 执行到 `o.toString()` → 抛出异常
-3. `errdefer{}` 块被触发 → 打印日志 → `ret 100`
-4. 异常继续向调用方传播（或根据 errdefer 的 ret 决定是否吞掉异常）
-
-> **关于 errdefer 中 ret 的语义**：`errdefer` 中的 `ret` 设置函数的回退返回值。如果 `errdefer` 执行了 `ret`，则函数以该值返回，异常不再向调用方传播（即错误被 errdefer 拦截）。如果 `errdefer` 中没有 `ret`，则仅做清理，异常继续传播。
-
----
-
-## 6. 块后缀 catch — {}catch{} 模式匹配
-
-### 语法
-
-代码块 `{ }` 后紧跟 `catch`，表示该块为 try 块。catch 支持通过 `enumError` 进行模式匹配：
-
-```sl
-{
-    // try 代码块（可能抛出异常的代码）
-}
-catch 错误类型.具体错误
-{
-    // 匹配到特定错误时的处理
-}
-catch 错误类型.另一个错误
-{
-    // 匹配到另一个错误时的处理
-}
-catch
-{
-    // 兜底：捕获所有未匹配的错误
-}
-```
-
-### 模式匹配规则
-
-1. catch 按从上到下的顺序匹配，命中第一个匹配项后执行对应块，不再继续匹配。
-2. `catch MathError.MinusError` 精确匹配 `MathError.MinusError` 错误。
-3. `catch MathError.DivErrorOverflow` 精确匹配 `MathError.DivErrorOverflow` 错误。
-4. `catch`（无参数）为兜底块，捕获所有未被上方 catch 匹配的错误。
-5. 如果没有任何 catch 匹配成功，异常继续向外层传播。
-
-### 示例
-
-```sl
-enumError MathError
-{
-    MinusError = 1
-    MinusError2 = { id = 2, error = 100, msg = "减法错误" }
-    DivErrorOverflow = { id = 111, error = 101, msg = "除法溢出" }
-}
-
-# 块后缀 catch 模式匹配
-{
-    Int32 result = divide(10, 0)    # 抛出 MathError.DivErrorOverflow
-}
-catch MathError.MinusError
-{
-    global.println("捕获到减法错误")
-}
-catch MathError.DivErrorOverflow
-{
-    global.println("捕获到除法溢出错误")
-    # 可以访问结构化字段
-}
-catch
-{
-    global.println("捕获到未知错误")
-}
-```
-
-### catch 绑定变量
-
-catch 也可以绑定异常变量，以便在块内访问错误的详细信息：
-
-```sl
-{
-    riskyOperation()
-}
-catch MathError.DivErrorOverflow e
-{
-    global.println("错误ID: " + e.id.toString())
-    global.println("错误码: " + e.error.toString())
-    global.println("错误信息: " + e.msg)
-}
-catch e
-{
-    global.println("未知错误: " + e.toString())
-}
-```
-
----
-
-## 7. .catch{} — 后缀链式捕获
-
-### 语法
-
-在函数调用后直接使用 `.catch{}` 进行链式异常捕获：
-
-```sl
-返回值 = 函数名(参数).catch
-{
-    // 异常处理逻辑
-    ret 回退值
-}
-```
-
-### 语义
-
-- `.catch{}` 是一种语法糖，将函数调用包裹在隐式 try 块中。
-- **执行流程**（关键）：
-  1. 执行函数调用 `fun1(1, 2, 3)`
-  2. 函数内部发生异常
-  3. **先执行函数内部的 `errdefer{}`**（如果存在）
-  4. 异常传播到调用方
-  5. **再执行 `.catch{}`** 块
-  6. `.catch{}` 中的 `ret` 决定最终返回值
-
-### 示例
-
-```sl
-Int32 fun1(Int32 a, Int32 b, Int32 c) throws
-{
-    errdefer
-    {
-        global.println("fun1 errdefer 执行")
-        ret 100
-    }
-
-    Int32 o = null
-    o.toString()    # 抛出异常
-    ret a + b + c
-}
-
-# 链式捕获
-Int32 result = fun1(1, 2, 3).catch
-{
-    global.println(".catch 执行")
-    ret 10
-}
-# 输出:
-#   fun1 errdefer 执行
-#   .catch 执行
-# result = 10
-```
-
-**执行顺序详解**：
-
-```
-fun1(1,2,3).catch{ ret 10 }
-     │
-     ▼
-  1. 进入 fun1(1, 2, 3)
-     │
-     ▼
-  2. 执行 fun1 函数体
-     │  int o = null
-     │  o.toString()  ──→ 抛出异常
-     │
-     ▼
-  3. fun1 的 errdefer{} 被触发
-     │  打印 "fun1 errdefer 执行"
-     │  ret 100（设置回退值）
-     │
-     ▼
-  4. 异常传播到调用方
-     │
-     ▼
-  5. .catch{ ret 10 } 被触发
-     │  打印 ".catch 执行"
-     │  ret 10
-     │
-     ▼
-  6. 最终 result = 10
-```
-
-### .catch{} 与 try?/try! 的组合
-
-```sl
-# .catch{} 提供回退值
-Int32 r1 = fun1(1, 2, 3).catch { ret 10 }
-
-# try? 返回可空
-Int32? r2 = try? fun1(1, 2, 3)
-
-# try! 强制解包，异常则崩溃
-Int32 r3 = try! fun1(1, 2, 3)
-```
-
-### .catch{} 支持模式匹配
-
-`.catch{}` 同样支持 `enumError` 模式匹配：
-
-```sl
-Int32 result = divide(10, 0)
-    .catch MathError.DivErrorOverflow { ret -1 }
-    .catch MathError.MinusError { ret -2 }
-    .catch { ret 0 }
-```
-
----
-
-## 8. checked / unchecked — 溢出检测
+## 7. checked / unchecked - 溢出检测
 
 ### 概念
 
-- **unchecked（默认）**：表达式计算不检测溢出，溢出时按底层类型回绕（wrap-around），与 C/C++ 行为一致。
-- **checked**：在 `checked` 块内，算术运算（加、减、乘等）如果发生溢出，抛出可被 `catch` 捕获的异常。
+- **unchecked（默认）**：表达式计算不检测溢出，溢出时按底层类型回绕。
+- **checked**：在 `checked` 块内，算术运算溢出时抛出可被 `catch` 捕获的异常。
 
 ### 语法
 
@@ -450,6 +368,7 @@ Int32 result = divide(10, 0)
 checked
 {
     // 受溢出检测保护的计算
+    // 也可以在这里边使用 try
 }
 catch
 {
@@ -457,13 +376,11 @@ catch
 }
 ```
 
+> `checked` 块与 `label{}catch{}` 类似，`checked` 后跟 `catch` 进行异常捕获。`checked` 块内也可以使用 `try` 标记表达式。
+
 ### 示例
 
 ```sl
-# 默认 unchecked：溢出静默回绕
-Int32 a = 100000000000000 + 11111111    # 不检测，结果回绕
-
-# checked 块：溢出抛出异常
 Int32 a = 0
 checked
 {
@@ -476,51 +393,69 @@ catch
 }
 ```
 
-### checked 与 enumError 配合
+### checked 内使用 try
 
 ```sl
-enumError OverflowError
-{
-    AddOverflow = { id = 1, error = 200, msg = "加法溢出" }
-    MulOverflow = { id = 2, error = 201, msg = "乘法溢出" }
-}
-
 checked
 {
-    Int32 big = 1111111111111111 + 1
+    Int32 big = try riskyCompute()
+    big = big + 1111111111111111
 }
-catch OverflowError.AddOverflow e
+catch MathError e
 {
-    global.println("加法溢出: " + e.msg)
+    global.println("计算错误: " + e.message)
 }
 catch
 {
-    global.println("其他溢出")
+    global.println("溢出")
 }
 ```
 
 ### 作用域规则
 
 - `checked` / `unchecked` 块仅影响块内的算术运算。
-- 嵌套时内层覆盖外层：
+- 嵌套时内层覆盖外层。
+
+---
+
+## 8. errdefer - 延迟错误处理
+
+### 语法
 
 ```sl
-checked
+[修饰符] [返回类型] 函数名(参数列表) throws
 {
-    // 此处检测溢出
-    unchecked
+    errdefer
     {
-        // 此处不检测溢出（内层覆盖）
+        // 异常发生时执行的延迟处理块
+        ret 回退值    // 可选：设置回退返回值
     }
-    // 此处恢复检测溢出
+
+    // 函数体（可能抛出异常的代码）
 }
 ```
 
-- 也可作为表达式前缀（扩展形式）：
+### 语义
+
+- `errdefer` 块在函数内**发生异常时**自动执行。
+- `errdefer` 中的 `ret` 设置回退返回值，异常不再传播（错误被拦截）。
+- 如果 `errdefer` 中没有 `ret`，仅做清理，异常继续传播。
+
+### 示例
 
 ```sl
-# 单表达式 checked
-Int32 a = checked(1111111111111111 + 1)
+Int32 riskyCompute(Int32 a, Int32 b) throws
+{
+    errdefer
+    {
+        global.println("riskyCompute 发生异常")
+        ret 100    # 拦截异常，返回 100
+    }
+
+    Int32 o = null
+    o.toString()    # 抛出异常
+    ret a + b
+}
 ```
 
 ---
@@ -530,93 +465,62 @@ Int32 a = checked(1111111111111111 + 1)
 ### 9.1 异常传播路径
 
 ```
-函数内异常发生
+throws 函数内异常发生
        │
        ▼
   errdefer{} 执行（如果存在）
-  ├── 有 ret → 设置回退返回值，错误被拦截（不传播）
-  └── 无 ret → 仅清理，错误继续传播
+  ├── 有 ret -> 设置回退返回值，错误被拦截
+  └── 无 ret -> 仅清理，错误继续传播
        │
        ▼
   调用方捕获
-  ├── try?  → 返回 null
-  ├── try!  → 崩溃
-  ├── try + {}catch{} → 模式匹配捕获
-  ├── .catch{} → 链式捕获
-  └── 未捕获 → 继续向外层调用栈传播
+  ├── try  -> 异常由周围 catch 捕获
+  ├── try? -> 返回 null
+  ├── try! -> 崩溃
+  ├── 未使用 try -> 异常继续传播
+  └── 未捕获 -> 继续向外层调用栈传播
 ```
 
-### 9.2 各机制对比
+### 9.2 try 与 label{}catch{} 的关系
+
+```
+label myBlock
+{
+    try funcA()       # funcA 抛出异常 -> 被 catch 捕获
+    funcB()           # funcB 抛出异常 -> 不被捕获，直接传播
+    try? funcC()      # funcC 抛出异常 -> 返回 null
+    try! funcD()      # funcD 抛出异常 -> 崩溃
+}
+catch MathError e
+{
+    # 捕获 try funcA() 的异常
+}
+```
+
+### 9.3 各机制对比
 
 | 机制 | 触发位置 | 作用 | 是否吞掉异常 |
 |------|----------|------|-------------|
-| `errdefer{}` | 函数内部 | 延迟清理 / 设置回退值 | 有 `ret` 则吞掉，无 `ret` 则传播 |
+| `errdefer{}` | 函数内部 | 延迟清理 / 设置回退值 | 有 `ret` 则吞掉 |
+| `try` | label{}catch{} 块内 | 标记表达式，异常由 catch 捕获 | 是（由 catch 处理） |
 | `try?` | 表达式级 | 异常转 null | 是（转为 null） |
 | `try!` | 表达式级 | 异常则崩溃 | 否（崩溃） |
-| `{}catch{}` | 块级 | 模式匹配捕获 | 是（匹配后处理） |
-| `.catch{}` | 调用级 | 链式捕获 | 是（处理后返回回退值） |
-| `checked{}` | 块级 | 溢出检测 → 抛异常 | 否（抛出异常，需 catch 捕获） |
-
-### 9.3 errdefer 与 .catch{} 的协作
-
-当函数内 `errdefer` 没有 `ret`（仅做清理）时，异常会继续传播到 `.catch{}`：
-
-```sl
-Int32 fun1(Int32 a, Int32 b, Int32 c) throws
-{
-    errdefer
-    {
-        # 仅清理，不 ret → 异常继续传播
-        global.println("清理资源...")
-    }
-
-    Int32 o = null
-    o.toString()    # 抛出异常
-    ret a + b + c
-}
-
-# .catch 会捕获到异常
-Int32 result = fun1(1, 2, 3).catch { ret 10 }
-# 输出: 清理资源...
-# result = 10
-```
-
-当函数内 `errdefer` 有 `ret` 时，异常被拦截，`.catch{}` 不会触发：
-
-```sl
-Int32 fun1(Int32 a, Int32 b, Int32 c) throws
-{
-    errdefer
-    {
-        ret 100    # 拦截异常，函数返回 100
-    }
-
-    Int32 o = null
-    o.toString()    # 抛出异常
-    ret a + b + c
-}
-
-# errdefer 已拦截，函数正常返回 100，.catch 不触发
-Int32 result = fun1(1, 2, 3).catch { ret 10 }
-# result = 100（来自 errdefer 的 ret）
-```
+| `checked{}` | 块级 | 溢出检测 -> 抛异常 | 否（需 catch 捕获） |
 
 ---
 
 ## 10. 完整示例
 
-### 10.1 综合示例：除法运算
+### 10.1 综合示例
 
 ```sl
-# 定义错误类型
-enumError MathError
+enum MathError extends Error
 {
-    MinusError = 1
-    MinusError2 = { id = 2, error = 100, msg = "减法错误" }
-    DivErrorOverflow = { id = 111, error = 101, msg = "除法溢出" }
+    DivZero = { code = 1, message = "除以零" }
+    Overflow = { code = 2, message = "溢出" }
 }
 
-# 声明 throws 的函数
+# throws 函数
 Int32 safeDivide(Int32 a, Int32 b) throws
 {
     errdefer
@@ -626,279 +530,79 @@ Int32 safeDivide(Int32 a, Int32 b) throws
 
     if (b == 0)
     {
-        throw MathError.DivErrorOverflow
+        throw MathError.DivZero
     }
     ret a / b
 }
 
-# 方式1：try? 可空返回
-Int32? r1 = try? safeDivide(10, 0)
-# r1 = null
-
-# 方式2：try! 强制解包（此处会崩溃，仅作演示）
-# Int32 r2 = try! safeDivide(10, 0)
-
-# 方式3：块后缀 catch 模式匹配
-Int32 r3 = 0
+# 方式1：label{}catch{} + try
+Int32 r1 = 0
+label divBlock
 {
-    r3 = safeDivide(10, 0)
+    r1 = try safeDivide(10, 0)
 }
-catch MathError.DivErrorOverflow e
+catch MathError e
 {
-    global.println("除法错误: " + e.msg)
-    r3 = -1
+    global.println("除法错误: " + e.message)
+    r1 = -1
 }
 catch
 {
-    r3 = -2
+    r1 = -2
 }
 
-# 方式4：.catch{} 链式捕获
-Int32 r4 = safeDivide(10, 0).catch { ret -1 }
-```
+# 方式2：try? 可空返回
+Int32? r2 = try? safeDivide(10, 0)
+# r2 = null
 
-### 10.2 综合示例：溢出检测
+# 方式3：try! 强制解包
+Int32 r3 = try! safeDivide(10, 2)
+# r3 = 5（正常）
 
-```sl
-enumError OverflowError
+# 方式4：try 链式调用
+label chainBlock
 {
-    IntOverflow = { id = 1, error = 300, msg = "整数溢出" }
+    Int32 r4 = try safeDivide(100, 2).toString().toInt32()
+}
+catch MathError e
+{
+    global.println("链式调用错误: " + e.message)
 }
 
-Int32 safeAdd(Int32 a, Int32 b) throws
+# 方式5：checked 溢出检测
+Int32 r5 = 0
+checked
 {
-    Int32 result = 0
-    checked
-    {
-        result = a + b
-    }
-    catch OverflowError.IntOverflow e
-    {
-        global.println("溢出: " + e.msg)
-        throw e    # 重新抛出，交给调用方处理
-    }
-    ret result
+    r5 = 1111111111111111 + 1
 }
-
-# 调用方处理
-Int32 r = safeAdd(1111111111111111, 1).catch
+catch
 {
-    ret 10000000000    # 溢出时使用安全值
+    r5 = 10000000000
 }
 ```
 
-### 10.3 综合示例：errdefer 与 .catch 协作
+### 10.2 嵌套与 re-throw
 
 ```sl
-enumError FileError
+label outer
 {
-    NotFound = { id = 1, error = 404, msg = "文件未找到" }
-    ReadError = { id = 2, error = 500, msg = "读取失败" }
-}
-
-string readFile(string path) throws
-{
-    errdefer
+    label inner
     {
-        # 无论是否异常，都先清理打开的文件句柄等资源
-        global.println("清理文件资源")
+        try riskyFunc()
     }
-
-    if (path == "")
+    catch MathError e
     {
-        throw FileError.NotFound
+        global.println("内层捕获: " + e.message)
+        throw        # 重新抛出，交给外层
     }
-
-    # ... 读取文件逻辑 ...
-    ret "file content"
 }
-
-# 链式捕获 + 模式匹配
-string content = readFile("").catch FileError.NotFound
+catch
 {
-    ret "默认内容"
-}
-.catch
-{
-    ret "未知错误"
+    global.println("外层兜底捕获")
 }
 ```
 
 ---
-
-
-
-### Isolate 错误传播模型
-
-```
-┌─────────────────────────────────┐
-│         主 Isolate               │
-│  ┌───────────────────────────┐  │
-│  │    子 Isolate (worker)     │  │
-│  │                           │  │
-│  │  throws 错误               │  │
-│  │    └─> catch 捕获          │  │
-│  │         └─> channel.send() │──┼──> 主 Isolate 收到消息
-│  │                           │  │
-│  │  panic                     │  │
-│  │    └─> 子 Isolate 终止     │  │
-│  │         └─> onPanic 回调   │──┼──> 主 Isolate 收到 panic 信息
-│  └───────────────────────────┘  │
-└─────────────────────────────────┘
-```
-
-### 13.5 Isolate 错误处理示例
-
-```dart
-fn worker() {
-    do {
-        runTask()
-    } catch all err {
-        // 将错误发送给主隔离岛
-        channel.send(errorMsg(err))
-    }
-}
-
-fn main() {
-    // 可恢复错误：通过通道传递
-    let port = Isolate.spawn(worker)
-
-    // panic：子隔离终止，主隔离监听
-    port.onPanic(|panicInfo| {
-        log("子隔离发生 panic，堆栈：{}", panicInfo.stackTrace)
-    })
-}
-```
-
-***
-
-## 14. 对比竞品优势总结
-
-| 对比对象            | 本方案优势                                              |
-| --------------- | -------------------------------------------------- |
-| **比 Dart 强**    | 函数必须声明 `throws`，静态检查，不会凭空出现未知异常；清晰区分 `panic` 和业务错误 |
-| **比 Zig 强**     | 拥有 `do-catch` 块，多层调用可以统一捕获，不用每层转发错误，业务开发更舒服        |
-| **比 Swift 强**   | 增加 `defer`/`errdefer`，资源管理能力更强；搭配 Isolate 适配并发场景   |
-| **比 Java/C# 强** | 错误可以设计为值类型，减少 GC 压力，适合轻量级虚拟机                       |
-
-***
-
-## 15. 可选扩展提案
-
-> 以下特性为后续迭代可选方案，不在核心规范中强制要求。
-
-### 15.1 catch null 语法糖
-
-专门匹配 `error.NullValue`：
-
-```dart
-do {
-    let u = try obj.unwrap()
-} catch null {
-    println("对象为空")
-}
-// 等价于 catch error.NullValue
-```
-
-### 15.2 链式 .catch{} 单行捕获
-
-在函数调用后使用 `.catch{}` 进行链式异常捕获，无需 `do` 块包裹：
-
-```dart
-// 链式捕获，返回回退值
-let result = loadConfig("config.json").catch { return defaultValue }
-
-// 支持模式匹配
-let result = divide(10, 0)
-    .catch MathError.DivErrorOverflow { return -1 }
-    .catch { return 0 }
-```
-
-**执行顺序**：先执行函数内部的 `errdefer`（如果存在），然后错误传播到调用方，再执行 `.catch{}`。
-
-***
-
-## 12. VM 底层实现方案
-
-### 选型：语法糖方案（推荐，不做完整栈展开）
-
-### 底层原理
-
-`do-catch` 只是编译器语法糖，错误底层依然是 `T | Error` 联合体（Zig 思路）。
-
-### 优势
-
-- **不需要复杂异常栈展开逻辑**，VM 大幅简化。
-- GC、Isolate、协程更容易兼容。
-- 性能稳定，无运行时栈回溯开销。
-
-### 编译器 lowering 逻辑
-
-```
-源码:
-    do {
-        let res = try func()
-    } catch IoError.NotFound {
-        handleA()
-    } catch all err {
-        handleB()
-    }
-
-Lowering 后（伪 IR）:
-    %result = call func()           // 返回 T | Error 联合体
-    if %result.isError {
-        %err = %result.error
-        if %err == IoError.NotFound {
-            goto catch_block_1
-        }
-        goto catch_block_2          // catch all
-    }
-    // 正常路径
-    let res = %result.value
-    goto end
-
-catch_block_1:
-    handleA()
-    goto end
-
-catch_block_2:
-    let err = %err
-    handleB()
-    goto end
-
-end:
-    // finally 块（如果有）
-```
-
-### throws 函数的传播逻辑
-
-```
-源码:
-    fn propagationFunc() throws -> Int {
-        let x = try riskyFunc()   // 未被 catch 捕获
-        return x + 1
-    }
-
-Lowering 后（伪 IR）:
-    %result = call riskyFunc()
-    if %result.isError {
-        return %result.error      // 错误作为返回值向上传递
-    }
-    let x = %result.value
-    return x + 1
-```
-
-### 对比原生 Dart
-
-| 维度            | 本方案（语法糖） | Dart（运行时栈展开） |
-| ------------- | -------- | ------------ |
-| VM 复杂度        | 低        | 高            |
-| 栈展开           | 不需要      | 需要           |
-| GC/Isolate 兼容 | 容易       | 复杂           |
-| 运行时开销         | 低（分支判断）  | 高（栈回溯）       |
-| 性能            | 稳定       | 异常路径有开销      |
-
-***
 
 ## 附：语法速查表
 
@@ -907,26 +611,36 @@ Lowering 后（伪 IR）:
 [修饰符] 返回类型 函数名(参数) throws { ... }
 
 # 错误类型定义
-enumError Name { ErrorA = 1, ErrorB = { id = 2, error = 100, msg = "..." } }
+enum Name extends Error { ErrorA = { code = 1, message = "..." } }
 
-# 延迟错误处理
-errdefer { ret 回退值 }        # 有 ret：拦截异常
-errdefer { 清理代码 }          # 无 ret：仅清理，异常传播
+# 抛出异常
+throw ErrorEnum.MemberName        # 抛出指定错误
+throw                             # re-throw（仅在 catch 块内）
 
-# try 表达式
-try? expr                       # 异常 → null
-try! expr                       # 异常 → 崩溃
-try expr                        # 异常 → 需 catch 捕获
-
-# 块后缀 catch
-{ ... } catch Type.Error { ... } catch Type.Error2 { ... } catch { ... }
-
-# 后缀链式 catch
-func(args).catch { ret 回退值 }
-func(args).catch Type.Error { ret 回退值 }.catch { ret 默认值 }
+# 异常捕获块
+label Name
+{
+    try expr                       # 标记表达式，异常由 catch 捕获
+    try? expr                      # 异常 -> null
+    try! expr                      # 异常 -> 崩溃
+}
+catch EnumType e { ... }          # 匹配 EnumType，绑定到 e
+catch EnumType { ... }             # 匹配 EnumType，不绑定
+catch e { ... }                    # 兜底，绑定到 e
+catch { ... }                      # 兜底，不绑定
+finally { ... }                    # 总是执行
 
 # 溢出检测
-checked { ... } catch { ... }           # 块级
-unchecked { ... }                        # 显式不检测
-checked(expr)                            # 表达式级（扩展）
+checked { ... } catch { ... }      # 溢出时抛出异常
+unchecked { ... }                   # 显式不检测
+
+# 延迟错误处理
+errdefer { ret 回退值 }             # 有 ret：拦截异常
+errdefer { 清理代码 }               # 无 ret：仅清理，异常传播
+
+# try 表达式（在 label{}catch{} 块内使用）
+try funcThatMayThrow()              # 异常 -> 需 catch 捕获
+try? expr                           # 异常 -> null（任何地方可用）
+try! expr                           # 异常 -> 崩溃（任何地方可用）
+try a.b().c()                       # 链式调用
 ```

@@ -3,7 +3,7 @@
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2026/07/24 12:00:00
-//  Description: try? / try! expression node
+//  Description: try / try? / try! expression node
 //****************************************************************************
 
 using System.Text;
@@ -15,6 +15,7 @@ namespace SimpleLanguage.Core
     public enum ETryMode
     {
         None,
+        Try,            // try - exception caught by surrounding catch
         TryQuestion,    // try? - returns null on exception
         TryExclamation, // try! - crashes on exception
     }
@@ -33,7 +34,11 @@ namespace SimpleLanguage.Core
             m_Token = fme.token;
             m_InnerExpress = innerExpress;
 
-            if (fme.symBolType == ETokenType.TryQuestion)
+            if (fme.symBolType == ETokenType.Try)
+            {
+                m_TryMode = ETryMode.Try;
+            }
+            else if (fme.symBolType == ETokenType.TryQuestion)
             {
                 m_TryMode = ETryMode.TryQuestion;
             }

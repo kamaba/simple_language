@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRCallStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -22,6 +22,18 @@ namespace SimpleLanguage.IR.Statements
         }
         public void ParseIRStatements(MetaCallStatements ms)
         {
+            if (ms.expressNode != null)
+            {
+                // Expression statement (e.g. "try riskyFunc()")
+                var irExpress = IRExpressManager.CreateExpress(irMethod, ms.expressNode);
+                if (irExpress != null)
+                {
+                    m_IRStatements.Add(irExpress);
+                    // Discard return value if any
+                    m_IRStatements.Add(new IRPop(irMethod));
+                }
+                return;
+            }
             m_IRMc = new IRMetaCallLink();
             m_IRMc.ParseToIRDataList(irMethod, ms.metaCallLink.visitNodeList);
             m_IRStatements.AddRange(m_IRMc.irList);

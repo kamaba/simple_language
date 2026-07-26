@@ -73,6 +73,11 @@ namespace SimpleLanguage.Core
                 MetaMemberFunction.CreateMetaSyntax(m_FileMetaKeyTrySyntax.tryBlockSyntax, m_TryBlock);
             }
 
+            // catch/finally blocks share scope with the try block: their variable
+            // lookups must chain through the try block so that variables declared
+            // inside the label{} body are visible in catch/finally handlers.
+            MetaBlockStatements scopeParent = m_TryBlock ?? m_OwnerMetaBlockStatements;
+
             // --- catch clauses ---
             foreach (var fcc in m_FileMetaKeyTrySyntax.catchClauses)
             {
@@ -81,7 +86,7 @@ namespace SimpleLanguage.Core
 
                 if (fcc.executeBlockSyntax != null)
                 {
-                    var catchBlock = new MetaBlockStatements(m_OwnerMetaBlockStatements, fcc.executeBlockSyntax);
+                    var catchBlock = new MetaBlockStatements(scopeParent, fcc.executeBlockSyntax);
 
                     // Register catch variable BEFORE parsing catch body so it's in scope
                     if (fcc.varToken != null)
@@ -106,7 +111,7 @@ namespace SimpleLanguage.Core
             // --- finally body ---
             if (m_FileMetaKeyTrySyntax.finallyBlockSyntax != null)
             {
-                m_FinallyBlock = new MetaBlockStatements(m_OwnerMetaBlockStatements, m_FileMetaKeyTrySyntax.finallyBlockSyntax);
+                m_FinallyBlock = new MetaBlockStatements(scopeParent, m_FileMetaKeyTrySyntax.finallyBlockSyntax);
                 MetaMemberFunction.CreateMetaSyntax(m_FileMetaKeyTrySyntax.finallyBlockSyntax, m_FinallyBlock);
             }
         }
@@ -212,6 +217,10 @@ namespace SimpleLanguage.Core
                             isErrorEnum = true;
                         }
                         else if (retType.isEnumMember && retType.metaEnum != null && retType.metaEnum.isErrorEnum)
+                        {
+                            isErrorEnum = true;
+                        }
+                        else if (retType.isEnumMember && retType.enumValue?.ownerMetaEnum?.isErrorEnum == true)
                         {
                             isErrorEnum = true;
                         }

@@ -1399,7 +1399,7 @@ namespace SimpleLanguage.Compile
                         }
                     }
                     else if( ett == ETokenType.Minus || ett == ETokenType.Plus || ett == ETokenType.Not || ett == ETokenType.Negative
-                        || ett == ETokenType.TryQuestion || ett == ETokenType.TryExclamation )
+                        || ett == ETokenType.TryQuestion || ett == ETokenType.TryExclamation || ett == ETokenType.Try )
                     {
                         if (listNextTerm == null)
                         {

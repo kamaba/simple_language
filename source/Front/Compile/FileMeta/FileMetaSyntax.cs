@@ -904,11 +904,17 @@ namespace SimpleLanguage.Compile
     public class FileMetaCallSyntax : FileMetaSyntax
     {
         public FileMetaCallLink variableRef => m_FileMetaVariableRef;
+        public FileMetaBaseTerm expressTerm => m_ExpressTerm;
 
-        private FileMetaCallLink m_FileMetaVariableRef;
+        private FileMetaCallLink m_FileMetaVariableRef = null;
+        private FileMetaBaseTerm m_ExpressTerm = null;
         public FileMetaCallSyntax( FileMetaCallLink fmrv )
         {
             m_FileMetaVariableRef = fmrv;
+        }
+        public FileMetaCallSyntax( FileMetaBaseTerm fme )
+        {
+            m_ExpressTerm = fme;
         }
         public override string ToFormatString()
         {

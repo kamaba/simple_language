@@ -85,7 +85,11 @@ namespace SimpleLanguage.Compile
                 else
                 {
                     commonContent.Add(node);
-                    eSyntaxNodeType = ESyntaxNodeStructType.CommonSyntax;
+                    // For Label/Goto, keep KeySyntax type so the Label case is reached
+                    if (tokenType != ETokenType.Label && tokenType != ETokenType.Goto)
+                    {
+                        eSyntaxNodeType = ESyntaxNodeStructType.CommonSyntax;
+                    }
                 }
             }
             public void SetBraceNode( Node node )
@@ -390,6 +394,27 @@ namespace SimpleLanguage.Compile
                         || ttt == ETokenType.ErrDefer
                         || ttt == ETokenType.Const)
                     {
+                        // try without a following {} block is an expression prefix, not a block keyword
+                        if (curNode.token?.type == ETokenType.Try)
+                        {
+                            bool hasBrace = false;
+                            for (int peek = tCurIndex + 1; peek < pnode.childList.Count; peek++)
+                            {
+                                var pn = pnode.childList[peek];
+                                if (pn == null) break;
+                                if (pn.nodeType == ENodeType.LineEnd || pn.nodeType == ENodeType.Comment)
+                                    continue;
+                                if (pn.nodeType == ENodeType.Brace)
+                                    hasBrace = true;
+                                break;
+                            }
+                            if (!hasBrace)
+                            {
+                                keynodeStruct.commonContent.Add(curNode);
+                                keynodeStruct.eSyntaxNodeType = ESyntaxNodeStructType.CommonSyntax;
+                                continue;
+                            }
+                        }
                         keynodeStruct.SetMainKeyNode(curNode);
                     }
                     else if (ttt == ETokenType.Data)
@@ -461,6 +486,18 @@ namespace SimpleLanguage.Compile
 
         private FileMetaSyntax CrateFileMetaSyntaxNoKey(List<Node> pNodeList)
         {
+            // Check if first node is 'try' keyword (expression prefix like "try riskyFunc()")
+            if (pNodeList.Count > 0
+                && pNodeList[0].token?.type == ETokenType.Try)
+            {
+                var tryExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, pNodeList, FileMetaTermExpress.EExpressType.Common);
+                if (tryExpress != null)
+                {
+                    return new FileMetaCallSyntax(tryExpress);
+                }
+                return null;
+            }
+
             List<Node> beforeNodeList = new List<Node>();
             Node assignNode = null;
             Node opAssignNode = null;
@@ -859,7 +896,10 @@ namespace SimpleLanguage.Compile
 
                     // Build FileMetaKeyTrySyntax
                     FileMetaKeyTrySyntax fmts = new FileMetaKeyTrySyntax(m_FileMeta);
-                    fmts.SetToken(akss.keyNode.token);
+                    if (akss.keyNode != null)
+                    {
+                        fmts.SetToken(akss.keyNode.token);
+                    }
                     FileMetaBlockSyntax tryBlock = new FileMetaBlockSyntax(m_FileMeta, akss.blockNode.token, akss.blockNode.endToken);
                     fmts.SetTryBlock(tryBlock);
                     AddParseSyntaxNodeInfo(fmts);
@@ -1012,27 +1052,125 @@ namespace SimpleLanguage.Compile
                     || akss.tokenType == ETokenType.Goto)
                 {
                     Token labelToken = null;
-                    if (akss.keyContent.Count != 1)
+                    // Label name may be in keyContent or commonContent depending on AddContent routing
+                    var labelContent = akss.keyContent.Count > 0 ? akss.keyContent : akss.commonContent;
+                    if (labelContent.Count != 1)
                     {
                         Log.AddNodeLog(LID.ShowExtendMessage, "Error 解析Goto Label语法，只支持 goto id;的语法!!");
                     }
                     else
                     {
-                        labelToken = akss.keyContent[0].token;
+                        labelToken = labelContent[0].token;
                         if (labelToken.type != ETokenType.Identifier)
                         {
                             Log.AddNodeLog(LID.ShowExtendMessage, "Error 解析GotoLabel中 后边必须使用普通字符");
                         }
                     }
 
-                    FileMetaKeyGotoLabelSyntax fmkis = new FileMetaKeyGotoLabelSyntax(m_FileMeta, akss.keyNode.token, labelToken);
-                    AddParseSyntaxNodeInfo(fmkis);
-                    fms = fmkis;
+                    // Check for catch/finally follow-up -> treat as try-catch block
+                    var tryBlockNode = akss.blockNode ?? akss.keyNode?.blockNode;
+                    bool hasCatchFinally = false;
+                    if (tryBlockNode != null && akss.tokenType == ETokenType.Label)
+                    {
+                        Condition catchCondition = new Condition(ETokenType.Catch);
+                        catchCondition.AddTokenTypeList(ETokenType.Finally);
+                        SyntaxNodeStruct cakss = GetOneSyntax(pnode, catchCondition);
+                        if (cakss != null && cakss.moveIndex > 0)
+                        {
+                            hasCatchFinally = true;
 
-                    ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(fms);
-                    m_CurrentNodeInfoStack.Push(pcnic);
-                    ParseSyntax(akss.keyNode.blockNode);
-                    m_CurrentNodeInfoStack.Pop();
+                            // Build FileMetaKeyTrySyntax
+                            FileMetaKeyTrySyntax fmts = new FileMetaKeyTrySyntax(m_FileMeta);
+                            fmts.SetToken(akss.keyNode.token);
+                            FileMetaBlockSyntax tryBlock = new FileMetaBlockSyntax(m_FileMeta, tryBlockNode.token, tryBlockNode.endToken);
+                            fmts.SetTryBlock(tryBlock);
+                            AddParseSyntaxNodeInfo(fmts);
+                            fms = fmts;
+
+                            // Parse try body
+                            ParseCurrentNodeInfo pcnicTry = new ParseCurrentNodeInfo(tryBlock);
+                            m_CurrentNodeInfoStack.Push(pcnicTry);
+                            ParseSyntax(tryBlockNode);
+                            m_CurrentNodeInfoStack.Pop();
+
+                            // Gather remaining catch/finally
+                            akss.followKeySyntaxStructList.Add(cakss);
+                            pnode.parseIndex += cakss.moveIndex;
+                            while (true)
+                            {
+                                Condition cond = new Condition(ETokenType.Catch);
+                                cond.AddTokenTypeList(ETokenType.Finally);
+                                SyntaxNodeStruct cakss2 = GetOneSyntax(pnode, cond);
+                                if (cakss2 == null) break;
+                                if (cakss2.tokenType != ETokenType.Catch && cakss2.tokenType != ETokenType.Finally) break;
+                                pnode.parseIndex += cakss2.moveIndex;
+                                akss.followKeySyntaxStructList.Add(cakss2);
+                                if (cakss2.tokenType == ETokenType.Finally) break;
+                            }
+
+                            // Parse each catch / finally
+                            foreach (var csns in akss.followKeySyntaxStructList)
+                            {
+                                if (csns.tokenType == ETokenType.Catch)
+                                {
+                                    Token typeToken = null;
+                                    Token varToken = null;
+                                    var catchContent = csns.keyContent;
+                                    for (int ci = 0; ci < catchContent.Count; ci++)
+                                    {
+                                        var cn = catchContent[ci];
+                                        if (cn.token == null) continue;
+                                        var tt = cn.token.type;
+                                        if (tt != ETokenType.Identifier && tt != ETokenType.Data)
+                                            continue;
+                                        if (typeToken == null)
+                                            typeToken = cn.token;
+                                        else if (varToken == null)
+                                            varToken = cn.token;
+                                    }
+                                    if (typeToken != null && varToken == null && catchContent.Count == 1)
+                                    {
+                                        varToken = typeToken;
+                                        typeToken = null;
+                                    }
+
+                                    FileMetaBlockSyntax catchBlock = new FileMetaBlockSyntax(m_FileMeta, csns.blockNode.token, csns.blockNode.endToken);
+                                    var clause = new FileMetaCatchClause(csns.keyNode.token, typeToken, varToken, catchBlock);
+                                    fmts.AddCatchClause(clause);
+
+                                    ParseCurrentNodeInfo pcnicCatch = new ParseCurrentNodeInfo(catchBlock);
+                                    m_CurrentNodeInfoStack.Push(pcnicCatch);
+                                    ParseSyntax(csns.blockNode);
+                                    m_CurrentNodeInfoStack.Pop();
+                                }
+                                else if (csns.tokenType == ETokenType.Finally)
+                                {
+                                    FileMetaBlockSyntax finallyBlock = new FileMetaBlockSyntax(m_FileMeta, csns.blockNode.token, csns.blockNode.endToken);
+                                    fmts.SetFinallyBlock(finallyBlock);
+
+                                    ParseCurrentNodeInfo pcnicFinally = new ParseCurrentNodeInfo(finallyBlock);
+                                    m_CurrentNodeInfoStack.Push(pcnicFinally);
+                                    ParseSyntax(csns.blockNode);
+                                    m_CurrentNodeInfoStack.Pop();
+                                }
+                            }
+                        }
+                    }
+
+                    if (!hasCatchFinally)
+                    {
+                        FileMetaKeyGotoLabelSyntax fmkis = new FileMetaKeyGotoLabelSyntax(m_FileMeta, akss.keyNode.token, labelToken);
+                        AddParseSyntaxNodeInfo(fmkis);
+                        fms = fmkis;
+
+                        ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(fms);
+                        m_CurrentNodeInfoStack.Push(pcnic);
+                        if (tryBlockNode != null)
+                        {
+                            ParseSyntax(tryBlockNode);
+                        }
+                        m_CurrentNodeInfoStack.Pop();
+                    }
                 }
                 else if(akss.tokenType == ETokenType.Break 
                     || akss.tokenType == ETokenType.Continue 
