@@ -46,6 +46,12 @@ namespace SimpleLanguage.IR
         private IRData m_FunEndLabelData = null;
         private IRManager m_IRManager = null;
 
+        /// <summary>
+        /// 编译期上下文标记：当前是否在 try 表达式内部生成 IR。
+        /// IRCallFunction.Parse 读取此标记，将 tryCatch 写入 call 指令。
+        /// </summary>
+        public bool isInTryCatch { get; set; } = false;
+
         public IRMethod(IRManager irma, MetaFunction func )
         {
             m_IRManager = irma;

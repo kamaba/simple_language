@@ -17,6 +17,7 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string methodId { get; set; } = string.Empty;
         public string methodName { get; set; } = string.Empty;
         public int paramCount { get; set; }
+        public bool tryCatch { get; set; }
     }
 
     /// <summary>

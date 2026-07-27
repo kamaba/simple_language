@@ -60,7 +60,7 @@ namespace SimpleLanguage.VM.Runtime
                 Log.AddVM(LID.ShowMessageError, $"RunIRNewMethod id={id} rt={rt} irlist.count={irlist?.Count} exception={ex}");
             }
         }
-        public static void RunIRMethodByRuntimeType(RuntimeType rt, List<RuntimeType> rtList, RuntimeMethod method, bool isDisCountStackCount = true)
+        public static void RunIRMethodByRuntimeType(RuntimeType rt, List<RuntimeType> rtList, RuntimeMethod method, bool isDisCountStackCount = true, bool tryCatch = false)
         {
             topCLRRuntime = m_ClrRuntimeStack.Peek();
             RuntimeVM clrRuntime = null;
@@ -73,6 +73,12 @@ namespace SimpleLanguage.VM.Runtime
             //else
             {
                 clrRuntime = new RuntimeVM(rt, rtList, method);
+                // Pass caller's TryStack to callee so ExecuteThrow can check
+                // whether an upstream catch handler exists.
+                if (tryCatch)
+                {
+                    clrRuntime.SetParentTryStack(topCLRRuntime.tryStack);
+                }
                 m_ClrRuntimeStack.Push(clrRuntime);
             }
             clrRuntime.Run(isDisCountStackCount);
@@ -81,10 +87,25 @@ namespace SimpleLanguage.VM.Runtime
             // Propagate uncaught VM exception from callee to caller
             if (clrRuntime.hasPendingException && topCLRRuntime != null)
             {
-                topCLRRuntime.PropagateException(clrRuntime.pendingException);
+                if (tryCatch)
+                {
+                    // try call: caller's m_TryStack has a catch handler - dispatch to it
+                    topCLRRuntime.PropagateException(clrRuntime.pendingException);
+                }
+                else
+                {
+                    // non-try call: skip caller's catch handlers, propagate to outer scope
+                    topCLRRuntime.SetPendingException(clrRuntime.pendingException);
+                }
+                // Do NOT push return values when an exception was thrown -
+                // the callee has no valid return value, and pushing a null
+                // would corrupt the caller's stack (overwriting the exception).
             }
-            var topt2 = m_ClrRuntimeStack.Peek();
-            topt2.AddReturnObjectArray(clrRuntime.returnRuntimeObjectArray);
+            else
+            {
+                var topt2 = m_ClrRuntimeStack.Peek();
+                topt2.AddReturnObjectArray(clrRuntime.returnRuntimeObjectArray);
+            }
             //if (!clrRuntime.isPersistent)
             {
             }

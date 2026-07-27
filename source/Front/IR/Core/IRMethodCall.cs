@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRMethod.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -18,18 +18,20 @@ namespace SimpleLanguage.IR
         public IRMethod irMethod => m_IRMethod;
         public int paramCount => m_ParamCount;
         public string methodName => m_IRMethod != null ? m_IRMethod.onlyFunctionName : "";
+        public bool tryCatch { get; set; } = false;
 
 
         private List<IRMetaType> m_IrTemplateMetaType = null;
         private IRMetaType m_MetaType = null;
         private IRMethod m_IRMethod = null;
         private int m_ParamCount = 0;
-        public IRMethodCall(IRMetaType mt, List<IRMetaType> mtList, IRMethod irmethod, int paramCount)
+        public IRMethodCall(IRMetaType mt, List<IRMetaType> mtList, IRMethod irmethod, int paramCount, bool tryCatch = false)
         {
             m_MetaType = mt;
             m_IrTemplateMetaType = mtList;
             m_IRMethod = irmethod;
             m_ParamCount = paramCount;
+            this.tryCatch = tryCatch;
         }
         public override string ToString()
         {

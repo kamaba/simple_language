@@ -20,14 +20,27 @@ namespace SimpleLanguage.VM.Runtime
     public class RuntimeVM
     {
         // ── Exception handling state ──
-        private struct TryFrame
+        internal struct TryFrame
         {
             public int catchIndex;       // -1 if no catch handler
             public int finallyIndex;     // -1 if no finally block
             public bool hasException;    // true if exception is being propagated through finally
             public RuntimeValue exceptionValue; // the pending exception (if hasException)
+            public int stackSlotDepth;   // m_StackSlotDepth at BeginTry time (for stack restoration on catch)
+            public int byteSp;           // m_ByteSp at BeginTry time (for stack restoration on catch)
         }
         private Stack<TryFrame> m_TryStack = new Stack<TryFrame>();
+        internal Stack<TryFrame> tryStack => m_TryStack;
+
+        // ── Parent try stack (for try calls) ──
+        // When a call has tryCatch=true, the caller's m_TryStack is passed here.
+        // ExecuteThrow checks this after exhausting its own m_TryStack,
+        // so the callee knows whether an upstream catch handler exists.
+        private Stack<TryFrame> m_ParentTryStack = null;
+        internal void SetParentTryStack(Stack<TryFrame> parentTryStack)
+        {
+            m_ParentTryStack = parentTryStack;
+        }
 
         // ── Cross-function exception propagation ──
         // When ExecuteThrow finds no handler in this VM, the exception is stored
@@ -46,6 +59,18 @@ namespace SimpleLanguage.VM.Runtime
             m_HasPendingException = false;
             m_PendingException = default;
             ExecuteThrow(exceptionValue);
+        }
+
+        /// <summary>
+        /// Set a pending exception WITHOUT dispatching to this VM's try/catch.
+        /// Used when a non-try call throws - the exception skips this VM's
+        /// catch handlers and propagates directly to the outer caller.
+        /// </summary>
+        public void SetPendingException(RuntimeValue exceptionValue)
+        {
+            m_PendingException = exceptionValue;
+            m_HasPendingException = true;
+            m_ExecuteIndex = m_ExecuteCount; // exit the Run() loop
         }
 
 
@@ -3449,7 +3474,7 @@ namespace SimpleLanguage.VM.Runtime
                                     m_RuntimeTypeList, true);
                                 classRTList2.Add(crt);
                             }
-                            CLRVM.RunIRMethodByRuntimeType(rt, classRTList2, runtimeCall.method);
+                            CLRVM.RunIRMethodByRuntimeType(rt, classRTList2, runtimeCall.method, true, runtimeCall.tryCatch);
                         }
                     }
                     break;
@@ -3527,7 +3552,7 @@ namespace SimpleLanguage.VM.Runtime
                                     var irmethod = irc.GetNonStaticMethodIndexByName(mfc.methodName, out int index);
                                     if (irmethod != null)
                                     {
-                                        CLRVM.RunIRMethodByRuntimeType(rt, rtList, irmethod);
+                                        CLRVM.RunIRMethodByRuntimeType(rt, rtList, irmethod, true, mfc.tryCatch);
                                     }
                                     else
                                     {
@@ -3536,7 +3561,7 @@ namespace SimpleLanguage.VM.Runtime
                                 }
                                 else
                                 {
-                                    CLRVM.RunIRMethodByRuntimeType(rt, rtList, mfc.method);
+                                    CLRVM.RunIRMethodByRuntimeType(rt, rtList, mfc.method, true, mfc.tryCatch);
                                 }
                             }
                         }
@@ -3612,7 +3637,7 @@ namespace SimpleLanguage.VM.Runtime
                             var crt = GetRuntimeTypeByDefType(runtimeCall.runtimeMethodTemplateRuntimeDefTypeList[i], irc, rt.runtimeTemplateList, true);
                             rtList.Add(crt);
                         }
-                        CLRVM.RunIRMethodByRuntimeType(rt, rtList, cfc);
+                        CLRVM.RunIRMethodByRuntimeType(rt, rtList, cfc, true, runtimeCall.tryCatch);
 
                         var a = ObjectManager.classObjectDict;
                     }
@@ -3638,7 +3663,9 @@ namespace SimpleLanguage.VM.Runtime
                             catchIndex = catchIdx,
                             finallyIndex = finallyIdx,
                             hasException = false,
-                            exceptionValue = default
+                            exceptionValue = default,
+                            stackSlotDepth = m_StackSlotDepth,
+                            byteSp = m_ByteSp
                         });
                     }
                     break;
@@ -3658,7 +3685,9 @@ namespace SimpleLanguage.VM.Runtime
                                     catchIndex = -1,
                                     finallyIndex = -1,
                                     hasException = false,
-                                    exceptionValue = default
+                                    exceptionValue = default,
+                                    stackSlotDepth = m_StackSlotDepth,
+                                    byteSp = m_ByteSp
                                 });
                             }
                         }
@@ -3876,19 +3905,14 @@ namespace SimpleLanguage.VM.Runtime
                 var frame = m_TryStack.Pop();
                 if (frame.catchIndex >= 0)
                 {
-                    // Caught! Push exception value back onto stack for catch body.
-                    if (exceptionValue.isNull)
-                        ByteStackPushNull();
-                    else if (exceptionValue.sobject != null)
-                        ByteStackPushPtr(exceptionValue.sobject);
-                    else if (exceptionValue.eType == EVMType.String && exceptionValue.stringValue != null)
-                        ByteStackPushString(exceptionValue.stringValue);
-                    else
-                        ByteStackPushPtr(exceptionValue.sobject);
-
+                    // Caught! Restore stack to BeginTry state, then push exception for catch body.
+                    m_StackSlotDepth = frame.stackSlotDepth;
+                    m_ByteSp = frame.byteSp;
 #if DEBUG
-                    m_ValueIndex += 1;
+                    m_ValueIndex = (ushort)m_StackSlotDepth;
 #endif
+                    PushSValueSynced(exceptionValue);
+
                     // If there's a finally, push a frame so catch's LeaveTry runs it
                     if (frame.finallyIndex >= 0)
                     {
@@ -3897,7 +3921,9 @@ namespace SimpleLanguage.VM.Runtime
                             catchIndex = -1,
                             finallyIndex = frame.finallyIndex,
                             hasException = false,
-                            exceptionValue = default
+                            exceptionValue = default,
+                            stackSlotDepth = m_StackSlotDepth,
+                            byteSp = m_ByteSp
                         });
                     }
                     m_ExecuteIndex = (ushort)(frame.catchIndex - 1);
@@ -3905,13 +3931,20 @@ namespace SimpleLanguage.VM.Runtime
                 }
                 else if (frame.finallyIndex >= 0)
                 {
-                    // No catch, but has finally - execute finally, then propagate
+                    // No catch, but has finally - restore stack, execute finally, then propagate
+                    m_StackSlotDepth = frame.stackSlotDepth;
+                    m_ByteSp = frame.byteSp;
+#if DEBUG
+                    m_ValueIndex = (ushort)m_StackSlotDepth;
+#endif
                     m_TryStack.Push(new TryFrame
                     {
                         catchIndex = -1,
                         finallyIndex = -1,
                         hasException = true,
-                        exceptionValue = exceptionValue
+                        exceptionValue = exceptionValue,
+                        stackSlotDepth = frame.stackSlotDepth,
+                        byteSp = frame.byteSp
                     });
                     m_ExecuteIndex = (ushort)(frame.finallyIndex - 1);
                     return;

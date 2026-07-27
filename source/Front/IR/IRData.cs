@@ -186,6 +186,7 @@ namespace SimpleLanguage.IR
                 methodId = call.irMethod?.id ?? string.Empty,
                 methodName = call.methodName ?? string.Empty,
                 paramCount = call.paramCount,
+                tryCatch = call.tryCatch,
                 runtimeDefType = CreateRuntimeDefTypeExport(call.metaType),
                 templateRuntimeDefTypeList = CreateRuntimeDefTypeExportList(call.irTemplateMetaType),
             };
@@ -225,6 +226,7 @@ namespace SimpleLanguage.IR
             public string methodId { get; set; } = string.Empty;
             public string methodName { get; set; } = string.Empty;
             public int paramCount { get; set; }
+            public bool tryCatch { get; set; }
         }
 
         private sealed class RuntimeDefTypeExport

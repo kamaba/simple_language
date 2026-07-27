@@ -323,10 +323,10 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                foreach (var v in m_ExtendClass.m_InterfaceMetaType )
-                {
-                    this.m_InterfaceMetaType.Add(new MetaType(v) );
-                }
+                //foreach (var v in m_ExtendClass.m_InterfaceMetaType )
+                //{
+                //    this.m_InterfaceMetaType.Add(new MetaType(v) );
+                //}
                 foreach( var v in m_FileCollectMetaInterfaceList )
                 {
                     this.m_InterfaceMetaType.Add(v);

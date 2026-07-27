@@ -700,7 +700,7 @@ namespace SimpleLanguage.Parse
             }
 
             var paramCount = callPkg.paramCount > 0 ? callPkg.paramCount : fallbackParamCount;
-            return new RuntimeCall(ownerType, templateList, callee, paramCount);
+            return new RuntimeCall(ownerType, templateList, callee, paramCount, callPkg.tryCatch);
         }
         private static RuntimeDefType? ResolveFallbackOwnerType(string? methodId)
         {

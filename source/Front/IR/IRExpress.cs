@@ -248,8 +248,11 @@ namespace SimpleLanguage.IR
                             beginTryData.SetDebugInfoByToken(mten.token, "try? BeginTry");
                             m_IRDataList.Add(beginTryData);
 
-                            // Inner expression
+                            // Inner expression - set tryCatch context so calls are marked
+                            bool savedTryCatch = m_IRMethod.isInTryCatch;
+                            m_IRMethod.isInTryCatch = true;
                             IRExpressBase innerExpress = IRExpressManager.CreateExpress(this.m_IRMethod, mten.innerExpress);
+                            m_IRMethod.isInTryCatch = savedTryCatch;
                             m_IRDataList.AddRange(innerExpress.IRDataList);
 
                             // LeaveTry -> end
@@ -278,13 +281,21 @@ namespace SimpleLanguage.IR
                         else if (mten.tryMode == ETryMode.Try)
                         {
                             // try expr: evaluate, exception caught by surrounding label{}catch{}
+                            // Set tryCatch context so IRCallFunction marks call instructions.
+                            bool savedTryCatch = m_IRMethod.isInTryCatch;
+                            m_IRMethod.isInTryCatch = true;
                             IRExpressBase innerExpress = IRExpressManager.CreateExpress(this.m_IRMethod, mten.innerExpress);
+                            m_IRMethod.isInTryCatch = savedTryCatch;
                             m_IRDataList.AddRange(innerExpress.IRDataList);
                         }
                         else if (mten.tryMode == ETryMode.TryExclamation)
                         {
-                            // try! expr: just evaluate, exception propagates normally (crashes if uncaught)
+                            // try! expr: evaluate, exception caught by surrounding label{}catch{}
+                            // Same tryCatch marking as try - both are caught by enclosing catch
+                            bool savedTryCatch = m_IRMethod.isInTryCatch;
+                            m_IRMethod.isInTryCatch = true;
                             IRExpressBase innerExpress = IRExpressManager.CreateExpress(this.m_IRMethod, mten.innerExpress);
+                            m_IRMethod.isInTryCatch = savedTryCatch;
                             m_IRDataList.AddRange(innerExpress.IRDataList);
                         }
                     }

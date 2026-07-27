@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRMethod.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -17,18 +17,20 @@ namespace SimpleLanguage.VM
         public RuntimeMethod method => m_Method;
         public int paramCount => m_ParamCount;
         public string methodName => m_Method != null ? m_Method.onlyFunctionName : "";
+        public bool tryCatch { get; set; } = false;
 
 
         private List<RuntimeDefType> m_RuntimeMethodTemplateDefTypeList = null;
         private RuntimeDefType m_RuntimeTypeDefType = null;
         private RuntimeMethod m_Method = null;
         private int m_ParamCount = 0;
-        public RuntimeCall(RuntimeDefType mt, List<RuntimeDefType> mtList, RuntimeMethod irmethod, int paramCount)
+        public RuntimeCall(RuntimeDefType mt, List<RuntimeDefType> mtList, RuntimeMethod irmethod, int paramCount, bool tryCatch = false)
         {
             m_RuntimeTypeDefType = mt;
             m_RuntimeMethodTemplateDefTypeList = mtList;
             m_Method = irmethod;
             m_ParamCount = paramCount;
+            this.tryCatch = tryCatch;
         }
         public override string ToString()
         {

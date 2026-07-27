@@ -243,7 +243,8 @@ namespace SimpleLanguage.IR
             {
                 functionMtList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.metaFunctionInputTemplateList[i], owirmc));
             }
-           var irmethodcall = new IRMethodCall(irmt, functionMtList, m_IRRuntimeMethod, paramCount );
+            bool tryCatch = m_IRMethod != null && m_IRMethod.isInTryCatch;
+            var irmethodcall = new IRMethodCall(irmt, functionMtList, m_IRRuntimeMethod, paramCount, tryCatch);
             if(callType == 0 )
             {
                 IRData datacall = new IRData();
