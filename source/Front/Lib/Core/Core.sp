@@ -46,9 +46,10 @@ Project
         DeferTest.fun()
         TryTest.fun()
         CheckedCalcTest.fun()
-        !#   
         GC3.GenClass3.fun()
-        #InterfaceTest.fun()
+        RangeTest.fun()
+        InterfaceTest.fun()
+        !#   
         
     }
     _test_()

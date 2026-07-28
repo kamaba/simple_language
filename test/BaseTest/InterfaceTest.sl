@@ -62,6 +62,7 @@ InterfaceTest
         v2 = c3.interfaceFun2();
         global.println("-------------" + v2 );
 
+        #!
         List<InterfaceClass1> listc1 = new()
         listc1.add(v1)
         listc1.add(c3)
@@ -70,6 +71,7 @@ InterfaceTest
         {
             global.println( "if1" + cc.interfaceFun1() )
         }
+        !#
 
     }
 }
