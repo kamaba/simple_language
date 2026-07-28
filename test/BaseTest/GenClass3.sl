@@ -97,7 +97,7 @@ GenClass3{
         GenClass3.testTemplate<int,int>(300)
         
         global.println("====== [12] testTemplate ======" )
-        GenClass3.testTemplate<int,float>(123.45f)
+        GenClass3.testTemplate<float,int>(123.45f)
 
         global.println("====== [13] testTemplate ======" )
         GenClass3.testTemplate<string,string>("string___string")
@@ -142,7 +142,7 @@ GenClass3{
     static testTemplate<TT1,TT2>( TT1 t1 )
     {
         global.println("====== [5] 模板类 ======" )
-        Level4<TT1,TT2> llll3333 = new(t1)
+        Level4<TT2,TT1> llll3333 = new(t1)
         global.println("llll3333 模板类 输出: " + llll3333.toString() )
     }
 }
