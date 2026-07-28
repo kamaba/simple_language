@@ -1212,6 +1212,25 @@ namespace SimpleLanguage.Compile
             }
             else if (parseType == 2)
             {
+                // Reject `interface` used as a function modifier inside class bodies
+                bool hasInterfaceModifier = false;
+                Token interfaceTok = null;
+                foreach (var n in nodeList)
+                {
+                    if (n.nodeType == ENodeType.Key && n.token?.type == ETokenType.Interface)
+                    {
+                        hasInterfaceModifier = true;
+                        interfaceTok = n.token;
+                        break;
+                    }
+                }
+                if (hasInterfaceModifier)
+                {
+                    Log.AddNodeLog(LID.ShowExtendMessage, interfaceTok, "Error class 内部不允许使用 interface 修饰函数");
+                    m_CurrentNodeInfoStack.Pop();
+                    return;
+                }
+
                 var cpf = new FileMetaMemberFunction(m_FileMeta, block, nodeList);
                 cpf.AddAttributes(attrs);
                 AddParseFunctionNodeInfo(cpf);

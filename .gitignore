@@ -159,5 +159,6 @@
 /test_catchfix4.txt
 /test_catchfix5.txt
 /test_output.txt
-/vm_debug.log
+/vm_debug.log
 /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/vm_debug.log

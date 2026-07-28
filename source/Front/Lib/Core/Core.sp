@@ -43,13 +43,12 @@ Project
         GenClass_Interface.fun()
         GenClass.fun()        
         GC2.GenClass2.fun()
-        !#
-        #DeferTest.fun()
-        
-        #TryTest.fun()
+        DeferTest.fun()
+        TryTest.fun()
         CheckedCalcTest.fun()
-        
-        #GC3.GenClass3.fun()
+        !#   
+        GC3.GenClass3.fun()
+        #InterfaceTest.fun()
         
     }
     _test_()

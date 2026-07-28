@@ -22,7 +22,7 @@ Level1<LT11,LT12>
 
     override string toString()
     {
-        ret "  Level1_t1" + this.Level1_t1.toString() + "  Level1_t2" + this.Level1_t2.toString()
+        ret "  Level1_t1=" + this.Level1_t1.toString() + "  Level1_t2=" + this.Level1_t2.toString()
     }
 }
 interface Interface1<IT1>
@@ -93,9 +93,13 @@ GenClass3{
         GenClass3.testGetTest()
         GenClass3.testFields()
         
+        global.println("====== [11] testTemplate ======" )
         GenClass3.testTemplate<int,int>(300)
         
-        GenClass3.testTemplate<float,int>(123.45)
+        global.println("====== [12] testTemplate ======" )
+        GenClass3.testTemplate<int,float>(123.45f)
+
+        global.println("====== [13] testTemplate ======" )
         GenClass3.testTemplate<string,string>("string___string")
         #global.println("====== GenClass3: 已知 VM 限制，4层泛型继承链构造未支持 ======" )
     }
@@ -130,8 +134,10 @@ GenClass3{
         global.println("Level3_t 期望: 999  实际: " + llll3333.Level3_t.toString() )
         # 已知限制: 深层继承的泛型字段 (Level1_t2, Level21_t) 的 store 路径
         # callMetaType 为 null 时字段索引解析为 -1，读取正常
-        global.println("Level1_t2 读取 期望: (默认值)  实际: " + llll3333.Level1_t2?.toString() )
-        global.println("Level21_t 读取 期望: (默认值)  实际: " + llll3333.Level21_t?.toString() )
+        llll3333.Level1_t2 = 888
+        llll3333.Level21_t = 777
+        global.println("Level1_t2 读取 期望: 888 (默认值)  实际: " + llll3333.Level1_t2?.toString() )
+        global.println("Level21_t 读取 期望: 777 (默认值)  实际: " + llll3333.Level21_t?.toString() )
     }
     static testTemplate<TT1,TT2>( TT1 t1 )
     {

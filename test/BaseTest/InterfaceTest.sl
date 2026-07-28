@@ -1,22 +1,20 @@
-import Application.Core;
-
-#namespace Application.MFC;
+import Std;
 
 
-interface Class1
+interface InterfaceClass1
 {
     string interfaceFun1()  #必须定义返回值
 }
-interface Class2
+interface InterfaceClass2
 {
     int interfaceFun2()
 }
-interface Class3  #如果被接口了，发现没有接口，需要报错
+interface InterfaceClass3  #如果被接口了，发现没有接口，需要报错
 {
     interface3(){};
 }
 
-Class1_1 interface Class1,Class2,Class3
+ImmplementClass1_1 interface InterfaceClass1,InterfaceClass2,InterfaceClass3
 {
     x1 = 0;
     y1 = 0;
@@ -24,56 +22,53 @@ Class1_1 interface Class1,Class2,Class3
 
     _init_( int _x1, int _y1 )
     {
-        base._init_(_x1+1);
+        this._init_(_x1+1);
     }
 
     _init_(int _z1 )
     {
-        z1 = _z1
+        this.z1 = _z1
     }
 
     # 必须实现 Fun函数  自动变成public
     override string interfaceFun1()    
     {  
-        ret (x1 + y1 + z1).toString()
+        ret (this.x1 + this.y1 + this.z1).toString()
     }
     override int interfaceFun2(){
-        ret (x1*y1 + z1);
+        ret int(this.x1*this.y1 + this.z1);
     }
-
-    interface Fun2()
-}
-Class2_1 extends Class1_1
-{
-    override Fun2(){
-        ret "fun2";
+    override string fun2()
+    {
+        ret "fun1";
     }
+    override void interface3(){}
 }
 
 
 InterfaceTest
 {
-    static Fun()
+    static fun()
     {
-        Class1 c1 = Class1_1(1,2);
-        v1 = c1.Fun()
-        CSharp.Debug.Write("-------------" + v1 );
+        InterfaceClass1 c1 = ImmplementClass1_1(1,2);
+        v1 = c1.interfaceFun1()
+        global.println("-------------" + v1 );
 
-        Class1 c2 = Class1_1(100);
-        v2 = c2.Fun()
-        CSharp.Debug.Write("-------------" + v2 );
+        InterfaceClass2 c2 = ImmplementClass1_1(100);
+        v2 = c2.interfaceFun2()
+        global.println("-------------" + v2 );
 
-        Class1 c2 = Class2_1();
-        v2 = c2.Fun2();
-        CSharp.Debug.Write("-------------" + v2 );
+        ImmplementClass1_1 c3 = ImmplementClass1_1(1,2);
+        v2 = c3.interfaceFun2();
+        global.println("-------------" + v2 );
 
-        List<Class1> listc1 = new()
+        List<InterfaceClass1> listc1 = new()
         listc1.add(v1)
-        listc1.add(c2)
+        listc1.add(c3)
 
         for cc in listc1
         {
-            System.Console.WriteLine( "if1" + cc.interfaceFun1() )
+            global.println( "if1" + cc.interfaceFun1() )
         }
 
     }
