@@ -300,6 +300,24 @@ namespace SimpleLanguage.IR
                         }
                     }
                     break;
+                case MetaCheckedExpressNode mcen:
+                    {
+                        // checked(expr): emit BeginChecked, evaluate expr, EndChecked
+                        // On integer overflow, VM throws OverflowException (caught by surrounding label{}catch{})
+                        IRData beginChecked = new IRData();
+                        beginChecked.opCode = EIROpCode.BeginChecked;
+                        beginChecked.SetDebugInfoByToken(mcen.token, "checked BeginChecked");
+                        m_IRDataList.Add(beginChecked);
+
+                        IRExpressBase innerExpress = IRExpressManager.CreateExpress(this.m_IRMethod, mcen.innerExpress);
+                        m_IRDataList.AddRange(innerExpress.IRDataList);
+
+                        IRData endChecked = new IRData();
+                        endChecked.opCode = EIROpCode.EndChecked;
+                        endChecked.SetDebugInfoByToken(mcen.token, "checked EndChecked");
+                        m_IRDataList.Add(endChecked);
+                    }
+                    break;
                 case MetaAsIsExpressNode maien:
                     {
                         IRMetaCallLink irmcl = new IRMetaCallLink();

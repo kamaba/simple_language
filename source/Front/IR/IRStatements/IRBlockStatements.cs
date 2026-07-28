@@ -143,6 +143,44 @@ namespace SimpleLanguage.IR
                         // defer/errdefer blocks are emitted at function level by IRMethod,
                         // not at their in-line position.
                         break;
+                    case MetaCheckedStatements mcs:
+                        {
+                            // Emit BeginChecked, block body, EndChecked
+                            IRData beginChecked = new IRData();
+                            beginChecked.opCode = EIROpCode.BeginChecked;
+                            m_IRStatements.Add(new IRRawData(irMethod, beginChecked));
+
+                            if (mcs.checkedBlockStatements != null)
+                            {
+                                IRBlockStatements irChecked = new IRBlockStatements(irMethod);
+                                irChecked.ParseIRStatements(mcs.checkedBlockStatements);
+                                m_IRStatements.AddRange(irChecked.irStatements);
+                            }
+
+                            IRData endChecked = new IRData();
+                            endChecked.opCode = EIROpCode.EndChecked;
+                            m_IRStatements.Add(new IRRawData(irMethod, endChecked));
+                        }
+                        break;
+                    case MetaUncheckedStatements mus:
+                        {
+                            // Emit BeginUnchecked, block body, EndUnchecked
+                            IRData beginUnchecked = new IRData();
+                            beginUnchecked.opCode = EIROpCode.BeginUnchecked;
+                            m_IRStatements.Add(new IRRawData(irMethod, beginUnchecked));
+
+                            if (mus.uncheckedBlockStatements != null)
+                            {
+                                IRBlockStatements irUnchecked = new IRBlockStatements(irMethod);
+                                irUnchecked.ParseIRStatements(mus.uncheckedBlockStatements);
+                                m_IRStatements.AddRange(irUnchecked.irStatements);
+                            }
+
+                            IRData endUnchecked = new IRData();
+                            endUnchecked.opCode = EIROpCode.EndUnchecked;
+                            m_IRStatements.Add(new IRRawData(irMethod, endUnchecked));
+                        }
+                        break;
                     case MetaOtherPlatformStatements mops:
                         {
                             Debug.Write("------------------没有解析IR的语句类型------------");

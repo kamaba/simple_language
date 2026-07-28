@@ -50,16 +50,19 @@ namespace SimpleLanguage.Core
         public List<MetaCatchClause> catchClauses => m_CatchClauses;
         public MetaBlockStatements finallyBlockStatements => m_FinallyBlock;
         public FileMetaKeyTrySyntax fileMetaKeyTrySyntax => m_FileMetaKeyTrySyntax;
+        public bool isChecked => m_IsChecked;
 
         private FileMetaKeyTrySyntax m_FileMetaKeyTrySyntax = null;
         private MetaBlockStatements m_TryBlock = null;
         private List<MetaCatchClause> m_CatchClauses = new List<MetaCatchClause>();
         private MetaBlockStatements m_FinallyBlock = null;
+        private bool m_IsChecked = false;
 
         public MetaTryStatements(MetaBlockStatements mbs, FileMetaKeyTrySyntax fmts) : base(mbs)
         {
             m_FileMetaKeyTrySyntax = fmts;
             m_Token = fmts.token;
+            m_IsChecked = fmts.isChecked;
             AddPingToken(m_Token);
             Parse();
         }
@@ -331,6 +334,92 @@ namespace SimpleLanguage.Core
             {
                 sb.Append(Environment.NewLine);
                 sb.Append(m_ErrDeferBlock.ToFormatString());
+            }
+            return sb.ToString();
+        }
+    }
+
+    /// <summary>
+    /// checked { } - enables overflow checking for integer arithmetic (+, -, *, /, %).
+    /// On overflow, an OverflowException is thrown via the existing try/catch mechanism.
+    /// </summary>
+    public sealed class MetaCheckedStatements : MetaStatements
+    {
+        public MetaBlockStatements checkedBlockStatements => m_CheckedBlock;
+
+        private MetaBlockStatements m_CheckedBlock = null;
+
+        public MetaCheckedStatements(MetaBlockStatements mbs, FileMetaKeyOnlySyntax fmoks) : base(mbs)
+        {
+            m_Token = fmoks.token;
+            AddPingToken(m_Token);
+            if (fmoks.executeBlockSyntax != null)
+            {
+                m_CheckedBlock = new MetaBlockStatements(m_OwnerMetaBlockStatements, fmoks.executeBlockSyntax);
+                MetaMemberFunction.CreateMetaSyntax(fmoks.executeBlockSyntax, m_CheckedBlock);
+            }
+        }
+
+        public override void SetDeep(int dp)
+        {
+            m_Deep = dp;
+            m_CheckedBlock?.SetDeep(dp);
+            if (m_NextMetaStatements != null)
+                m_NextMetaStatements.SetDeep(dp);
+        }
+
+        public override string ToFormatString()
+        {
+            var sb = new StringBuilder();
+            for (int i = 0; i < realDeep; i++) sb.Append(Global.tabChar);
+            sb.Append("checked");
+            if (m_CheckedBlock != null)
+            {
+                sb.Append(Environment.NewLine);
+                sb.Append(m_CheckedBlock.ToFormatString());
+            }
+            return sb.ToString();
+        }
+    }
+
+    /// <summary>
+    /// unchecked { } - temporarily disables checked context within a checked label block.
+    /// Saves the current checked depth, sets it to 0, then restores after the block.
+    /// </summary>
+    public sealed class MetaUncheckedStatements : MetaStatements
+    {
+        public MetaBlockStatements uncheckedBlockStatements => m_UncheckedBlock;
+
+        private MetaBlockStatements m_UncheckedBlock = null;
+
+        public MetaUncheckedStatements(MetaBlockStatements mbs, FileMetaKeyOnlySyntax fmoks) : base(mbs)
+        {
+            m_Token = fmoks.token;
+            AddPingToken(m_Token);
+            if (fmoks.executeBlockSyntax != null)
+            {
+                m_UncheckedBlock = new MetaBlockStatements(m_OwnerMetaBlockStatements, fmoks.executeBlockSyntax);
+                MetaMemberFunction.CreateMetaSyntax(fmoks.executeBlockSyntax, m_UncheckedBlock);
+            }
+        }
+
+        public override void SetDeep(int dp)
+        {
+            m_Deep = dp;
+            m_UncheckedBlock?.SetDeep(dp);
+            if (m_NextMetaStatements != null)
+                m_NextMetaStatements.SetDeep(dp);
+        }
+
+        public override string ToFormatString()
+        {
+            var sb = new StringBuilder();
+            for (int i = 0; i < realDeep; i++) sb.Append(Global.tabChar);
+            sb.Append("unchecked");
+            if (m_UncheckedBlock != null)
+            {
+                sb.Append(Environment.NewLine);
+                sb.Append(m_UncheckedBlock.ToFormatString());
             }
             return sb.ToString();
         }

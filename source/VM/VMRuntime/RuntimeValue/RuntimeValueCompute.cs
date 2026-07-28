@@ -282,6 +282,105 @@ namespace SimpleLanguage.VM
             ComputeValueInline(ref _rv, sign, ref rightValue, isUnSign);
         }
 
+        // ── Checked context overflow detection ──
+        // Only integer arithmetic (+, -, *, /, %) can overflow. Floats, bitwise,
+        // and shift operations are not affected by checked context.
+
+        /// <summary>
+        /// Checks if an integer arithmetic operation would overflow in checked context.
+        /// Only applies to +, -, *, /, % (sign 0-4). Returns false for non-integer
+        /// types, non-arithmetic operations, or when no overflow would occur.
+        /// </summary>
+        public static bool WouldOverflowIntegerArithmetic(ref RuntimeValue left, int sign, ref RuntimeValue right, bool isUnSign)
+        {
+            if (sign < 0 || sign > 4) return false;
+
+            RuntimeValue leftPrim = left;
+            RuntimeValue rightPrim = right;
+            leftPrim.TryNormalizeObjectScalarInPlace();
+            rightPrim.TryNormalizeObjectScalarInPlace();
+
+            // Only integer types can overflow (floats don't overflow in checked context)
+            if (!IsIntegerType(leftPrim.eType) || !IsIntegerType(rightPrim.eType))
+                return false;
+
+            // Determine promotion type using the same logic as ComputeValueInlineRaw
+            EVMType promoType = GetRawBinaryPromotionType(leftPrim.eType, rightPrim.eType, sign, isUnSign);
+            bool promoUnsigned = IsRawUnsignedInt(promoType);
+
+            try
+            {
+                checked
+                {
+                    if (promoUnsigned)
+                    {
+                        ulong a = RuntimeValueMethod.ConvertToULong(leftPrim);
+                        ulong b = RuntimeValueMethod.ConvertToULong(rightPrim);
+                        ulong r;
+                        switch (sign)
+                        {
+                            case 0: r = a + b; break;
+                            case 1: r = a - b; break;
+                            case 2: r = a * b; break;
+                            case 3: if (b == 0) return false; r = a / b; break;
+                            case 4: if (b == 0) return false; r = a % b; break;
+                            default: return false;
+                        }
+                        return !FitsInUnsignedType(r, promoType);
+                    }
+                    else
+                    {
+                        long a = RuntimeValueMethod.ConvertToLong(leftPrim);
+                        long b = RuntimeValueMethod.ConvertToLong(rightPrim);
+                        long r;
+                        switch (sign)
+                        {
+                            case 0: r = a + b; break;
+                            case 1: r = a - b; break;
+                            case 2: r = a * b; break;
+                            case 3: if (b == 0) return false; r = a / b; break;
+                            case 4: if (b == 0) return false; r = a % b; break;
+                            default: return false;
+                        }
+                        return !FitsInSignedType(r, promoType);
+                    }
+                }
+            }
+            catch (OverflowException)
+            {
+                return true;
+            }
+        }
+
+        private static bool IsIntegerType(EVMType t)
+        {
+            return IsRawSignedInt(t) || IsRawUnsignedInt(t);
+        }
+
+        private static bool FitsInSignedType(long value, EVMType type)
+        {
+            switch (type)
+            {
+                case EVMType.Int8: return value >= sbyte.MinValue && value <= sbyte.MaxValue;
+                case EVMType.Int16: return value >= short.MinValue && value <= short.MaxValue;
+                case EVMType.Int32: return value >= int.MinValue && value <= int.MaxValue;
+                case EVMType.Int64: return true;
+                default: return true;
+            }
+        }
+
+        private static bool FitsInUnsignedType(ulong value, EVMType type)
+        {
+            switch (type)
+            {
+                case EVMType.UInt8: return value <= byte.MaxValue;
+                case EVMType.UInt16: return value <= ushort.MaxValue;
+                case EVMType.UInt32: return value <= uint.MaxValue;
+                case EVMType.UInt64: return true;
+                default: return true;
+            }
+        }
+
         /// <summary>
         /// Integer values in <see cref="RawRuntimeValue"/> may occupy only the low bits of <c>u64</c> (e.g. Int32).
         /// The <see cref="RawRuntimeValue.Int64"/> getter reinterpret-casts the whole <c>u64</c> as long, which breaks

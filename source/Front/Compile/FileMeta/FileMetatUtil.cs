@@ -240,9 +240,10 @@ namespace SimpleLanguage.Compile
                         fmbt.priority = int.MaxValue;
                         commonTermExpressList.Add(fmbt);
                     }
-                    else if (cnode.token.type == ETokenType.Try)
+                    else if (cnode.token.type == ETokenType.Try
+                             || cnode.token.type == ETokenType.Checked)
                     {
-                        // try as expression prefix (like try? / try!)
+                        // try/checked as expression prefix (like try? / try!)
                         FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
                         fmn.priority = SignComputePriority.Level2_LinkOp;
                         commonTermExpressList.Add(fmn);

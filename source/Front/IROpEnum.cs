@@ -60,55 +60,34 @@ namespace SimpleLanguage
 
         //运算指令
         Add,                   // +
-        Add_Un,
         Minus,                  // -
-        Minus_Un,
         Multiply,               // *
-        Multiply_Un,
         Divide,                 // /
-        Divide_Un,              //
         Modulo,                 // %
-        Module_Un,
         InclusiveOr,            // |
-        InclusiveOr_Un,
         Combine,                // &
-        Combine_Un,
         XOR,                    // ^
-        XOR_Un,
         Shr,                    // >>
-        Shr_Un,
         Shi,                    // <<
-        Shi_Un,
         Not,                    //!
         Neg,                    //-
 
         Ceq,                    // == 
-        Ceq_Un,                 // unsign ==
         Cne,                    // !=
-        Cne_Un,                 // unsign !=
         Cgt,                    // >
-        Cgt_Un,                 // unsign >
         Cge,                    // >=
-        Cge_Un,                 // unsign >=
         Clt,                    // <
-        Clt_Un,                 // < unsign 
         Cle,                    // <=
-        Cle_Un,                 // unsign <=
 
         And,                    //&&
         Or,                     //||
 
         Label,   
         Beq,                    // if x1 == x2 then execute(code) equal move instruct index
-        Beq_Un,                 // same top but value is unsign!
         Bge,                    // if x1 >= x2 then execute(code)
-        Bge_un,                 // same top but value is unsign!
         Bgt,                    // if x1 > x2 then execute(code)
-        Bgt_Un,                 // same top but value is unsign!
         Ble,                    // if x1 <= x2 then execute(code)
-        Ble_Un,                 // same top but value is unsign!
         Bne,                    // if x1 != x2 then execute(code)
-        Bne_Un,                 // same top but value is unsign!
         Br,                     // 
         Break,                  //
         Jmp,
@@ -143,6 +122,13 @@ namespace SimpleLanguage
         Throw,          // Throw exception (value on stack)
         LeaveTry,       // Leave try/catch block. Pop try frame, branch to target.
         EndFinally,     // End of finally. If exception pending, re-throw; else continue.
+
+        // Checked context opcodes (overflow checking for integer arithmetic +, -, *, /, %)
+        BeginChecked,   // Enter checked arithmetic context (increment depth)
+        EndChecked,     // Exit checked arithmetic context (decrement depth)
+        // Unchecked context opcodes (temporarily disable checked within a checked scope)
+        BeginUnchecked, // Save current checked depth, set to 0 (opt-out of overflow checking)
+        EndUnchecked,   // Restore saved checked depth
     }
 
     /// <summary>

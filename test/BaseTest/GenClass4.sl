@@ -19,7 +19,7 @@ Level1<LT11,LT12>
     Test2<LT11> Level1_t1 = new()
     LT12 Level1_t2 = new()
 
-    ok()
+    Test2<LT11> ok()
     {
         Test2<LT11> llll = new()
         ret llll
@@ -76,11 +76,11 @@ GenClass4{
         ll41.Level1_t2.t1.t1.aa = "400"
 
         
-        System.Console.WriteLine("_this_333331 " + ll41.Level41_t )
-        System.Console.WriteLine("_this_333332 " + ll41.Level31_t.aa )
-        System.Console.WriteLine("_this_333333 " + ll41.Level21_t.t1.aa  )
-        System.Console.WriteLine("_this_333334 " + ll41.Level1_t1.t2.t2  )
-        System.Console.WriteLine("_this_333335 " + ll41.Level1_t2.t1.t1.aa  )
+        global.println("_this_333331 " + ll41.Level41_t )
+        global.println("_this_333332 " + ll41.Level31_t.aa )
+        global.println("_this_333333 " + ll41.Level21_t.t1.aa  )
+        global.println("_this_333334 " + ll41.Level1_t1.t2.t2  )
+        global.println("_this_333335 " + ll41.Level1_t2.t1.t1.aa  )
 
 
         Level2<string,string,int> lll31 = new()
@@ -89,9 +89,9 @@ GenClass4{
         lll31.Level1_t2.t1 = "1000"
         
 
-        System.Console.WriteLine("_this_333336 " + lll31.Level21_t  )
-        System.Console.WriteLine("_this_333337 " + lll31.Level1_t1.t2.t2 )
-        System.Console.WriteLine("_this_333338 " + lll31.Level1_t2.t1 )
+        global.println("_this_333336 " + lll31.Level21_t  )
+        global.println("_this_333337 " + lll31.Level1_t1.t2.t2 )
+        global.println("_this_333338 " + lll31.Level1_t2.t1 )
     }
 }
 

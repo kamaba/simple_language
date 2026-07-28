@@ -28,6 +28,7 @@ namespace SimpleLanguage.VM.Runtime
             public RuntimeValue exceptionValue; // the pending exception (if hasException)
             public int stackSlotDepth;   // m_StackSlotDepth at BeginTry time (for stack restoration on catch)
             public int byteSp;           // m_ByteSp at BeginTry time (for stack restoration on catch)
+            public int checkedDepth;     // m_CheckedDepth at BeginTry time (for restoration on catch/finally)
         }
         private Stack<TryFrame> m_TryStack = new Stack<TryFrame>();
         internal Stack<TryFrame> tryStack => m_TryStack;
@@ -49,6 +50,43 @@ namespace SimpleLanguage.VM.Runtime
         private bool m_HasPendingException = false;
         public bool hasPendingException => m_HasPendingException;
         public RuntimeValue pendingException => m_PendingException;
+
+        // ── Checked arithmetic context ──
+        // When > 0, integer arithmetic (+, -, *, /, %) checks for overflow.
+        // On overflow, an OverflowException value is thrown via ExecuteThrow.
+        private int m_CheckedDepth = 0;
+        internal bool isCheckedContext => m_CheckedDepth > 0;
+        // Unchecked scope stack: BeginUnchecked saves depth here and sets depth=0;
+        // EndUnchecked restores it. Supports nesting.
+        private Stack<int> m_UncheckedStack = new Stack<int>();
+
+        /// <summary>
+        /// Performs a type conversion with checked-context overflow detection.
+        /// Returns false (and throws via ExecuteThrow) on overflow, true on success.
+        /// </summary>
+        private bool CheckedConvert(ref RuntimeValue rv, EVMType targetType)
+        {
+            if (m_CheckedDepth > 0 && RuntimeValueMethod.WouldOverflowConvert(ref rv, targetType))
+            {
+                var overflowEx = new RuntimeValue();
+                overflowEx.SetStringValue("OverflowException: conversion overflow in checked context");
+                ExecuteThrow(overflowEx);
+                return false;
+            }
+            // Pass checkOverflow so ConvertByEType re-throws OverflowException if WouldOverflowConvert missed it
+            try
+            {
+                RuntimeValueMethod.ConvertByEType(ref rv, targetType, m_CheckedDepth > 0);
+            }
+            catch (OverflowException)
+            {
+                var overflowEx = new RuntimeValue();
+                overflowEx.SetStringValue("OverflowException: conversion overflow in checked context");
+                ExecuteThrow(overflowEx);
+                return false;
+            }
+            return true;
+        }
 
         /// <summary>
         /// Re-dispatch an exception that was uncaught in a callee VM.
@@ -1952,11 +1990,13 @@ namespace SimpleLanguage.VM.Runtime
                         if (ByteStackSlotDepthCount > 0)
                         {
                             ByteStackTryPeekRuntimeValue(1, out var top);
-                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.UInt8);
-                            ByteStackReplaceTop(top);
+                            if (CheckedConvert(ref top, EVMType.UInt8))
+                            {
+                                ByteStackReplaceTop(top);
 #if DEBUG
-                            RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.UInt8);
+                                RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.UInt8);
 #endif
+                            }
                         }
                         else
                         {
@@ -1972,11 +2012,13 @@ namespace SimpleLanguage.VM.Runtime
                         if (ByteStackSlotDepthCount > 0)
                         {
                             ByteStackTryPeekRuntimeValue(1, out var top);
-                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.Int8);
-                            ByteStackReplaceTop(top);
+                            if (CheckedConvert(ref top, EVMType.Int8))
+                            {
+                                ByteStackReplaceTop(top);
 #if DEBUG
-                            RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Int8);
+                                RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Int8);
 #endif
+                            }
                         }
                         else
                         {
@@ -1992,11 +2034,13 @@ namespace SimpleLanguage.VM.Runtime
                         if (ByteStackSlotDepthCount > 0)
                         {
                             ByteStackTryPeekRuntimeValue(1, out var top);
-                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.Int16);
-                            ByteStackReplaceTop(top);
+                            if (CheckedConvert(ref top, EVMType.Int16))
+                            {
+                                ByteStackReplaceTop(top);
 #if DEBUG
-                            RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Int16);
+                                RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Int16);
 #endif
+                            }
                         }
                         else
                         {
@@ -2012,11 +2056,13 @@ namespace SimpleLanguage.VM.Runtime
                         if (ByteStackSlotDepthCount > 0)
                         {
                             ByteStackTryPeekRuntimeValue(1, out var top);
-                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.UInt16);
-                            ByteStackReplaceTop(top);
+                            if (CheckedConvert(ref top, EVMType.UInt16))
+                            {
+                                ByteStackReplaceTop(top);
 #if DEBUG
-                            RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.UInt16);
+                                RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.UInt16);
 #endif
+                            }
                         }
                         else
                         {
@@ -2032,11 +2078,13 @@ namespace SimpleLanguage.VM.Runtime
                         if (ByteStackSlotDepthCount > 0)
                         {
                             ByteStackTryPeekRuntimeValue(1, out var top);
-                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.Int32);
-                            ByteStackReplaceTop(top);
+                            if (CheckedConvert(ref top, EVMType.Int32))
+                            {
+                                ByteStackReplaceTop(top);
 #if DEBUG
-                            RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Int32);
+                                RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Int32);
 #endif
+                            }
                         }
                         else
                         {
@@ -2052,11 +2100,13 @@ namespace SimpleLanguage.VM.Runtime
                         if (ByteStackSlotDepthCount > 0)
                         {
                             ByteStackTryPeekRuntimeValue(1, out var top);
-                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.UInt32);
-                            ByteStackReplaceTop(top);
+                            if (CheckedConvert(ref top, EVMType.UInt32))
+                            {
+                                ByteStackReplaceTop(top);
 #if DEBUG
-                            RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.UInt32);
+                                RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.UInt32);
 #endif
+                            }
                         }
                         else
                         {
@@ -2072,11 +2122,13 @@ namespace SimpleLanguage.VM.Runtime
                         if (ByteStackSlotDepthCount > 0)
                         {
                             ByteStackTryPeekRuntimeValue(1, out var top);
-                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.Int64);
-                            ByteStackReplaceTop(top);
+                            if (CheckedConvert(ref top, EVMType.Int64))
+                            {
+                                ByteStackReplaceTop(top);
 #if DEBUG
-                            RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Int64);
+                                RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.Int64);
 #endif
+                            }
                         }
                         else
                         {
@@ -2092,11 +2144,13 @@ namespace SimpleLanguage.VM.Runtime
                         if (ByteStackSlotDepthCount > 0)
                         {
                             ByteStackTryPeekRuntimeValue(1, out var top);
-                            RuntimeValueMethod.ConvertByEType(ref top, EVMType.UInt64);
-                            ByteStackReplaceTop(top);
+                            if (CheckedConvert(ref top, EVMType.UInt64))
+                            {
+                                ByteStackReplaceTop(top);
 #if DEBUG
-                            RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.UInt64);
+                                RuntimeValueMethod.ConvertByEType(ref m_ValueStack[m_ValueIndex - 1], EVMType.UInt64);
 #endif
+                            }
                         }
                         else
                         {
@@ -3004,67 +3058,56 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.Ceq:
-                case EIROpCode.Ceq_Un:
                     {
                         ExecuteEqualityOperation(iri, true, false);
                     }
                     break;
                 case EIROpCode.Cne:
-                case EIROpCode.Cne_Un:
                     {
                         ExecuteEqualityOperation(iri, false, false);
                     }
                     break;
                 case EIROpCode.Beq:
-                case EIROpCode.Beq_Un:
                     {
                         ExecuteEqualityOperation(iri, true, true);
                     }
                     break;
                 case EIROpCode.Bne:
-                case EIROpCode.Bne_Un:
                     {
                         ExecuteEqualityOperation(iri, false, true);
                     }
                     break;
                 case EIROpCode.Clt:
-                case EIROpCode.Clt_Un:
                     {
                         ExecuteRelationalOperation(iri, 2, false);
                     }
                     break;
                 case EIROpCode.Cgt:
-                case EIROpCode.Cgt_Un:
                     {
                         ExecuteRelationalOperation(iri, 0, false);
                     }
                     break;
                 case EIROpCode.Cge:
-                case EIROpCode.Cge_Un:
                     {
                         ExecuteRelationalOperation(iri, 1, false);
                     }
                     break;
                 case EIROpCode.Cle:
-                case EIROpCode.Cle_Un:
                     {
                         ExecuteRelationalOperation(iri, 3, false);
                     }
                     break;
                 case EIROpCode.Bge:
-                case EIROpCode.Bge_un:
                     {
                         ExecuteRelationalOperation(iri, 1, true);
                     }
                     break;
                 case EIROpCode.Bgt:
-                case EIROpCode.Bgt_Un:
                     {
                         ExecuteRelationalOperation(iri, 0, true);
                     }
                     break;
                 case EIROpCode.Ble:
-                case EIROpCode.Ble_Un:
                     {
                         ExecuteRelationalOperation(iri, 3, true);
                     }
@@ -3104,25 +3147,15 @@ namespace SimpleLanguage.VM.Runtime
                     }
                     break;
                 case EIROpCode.Add:
-                case EIROpCode.Add_Un:
                 case EIROpCode.Minus:
-                case EIROpCode.Minus_Un:
                 case EIROpCode.Multiply:
-                case EIROpCode.Multiply_Un:
                 case EIROpCode.Divide:
-                case EIROpCode.Divide_Un:
                 case EIROpCode.Modulo:
-                case EIROpCode.Module_Un:
                 case EIROpCode.Combine:
-                case EIROpCode.Combine_Un:
                 case EIROpCode.InclusiveOr:
-                case EIROpCode.InclusiveOr_Un:
                 case EIROpCode.XOR:
-                case EIROpCode.XOR_Un:
                 case EIROpCode.Shi:
-                case EIROpCode.Shi_Un:
                 case EIROpCode.Shr:
-                case EIROpCode.Shr_Un:
                     {
                         if (m_StackSlotDepth < 2)
                         {
@@ -3139,40 +3172,31 @@ namespace SimpleLanguage.VM.Runtime
                         left = m_ValueStack[--m_ValueIndex];
 #endif
                         int sign = 0;
-                        bool isUn = iri.opCode == EIROpCode.Add_Un
-                            || iri.opCode == EIROpCode.Minus_Un
-                            || iri.opCode == EIROpCode.Multiply_Un
-                            || iri.opCode == EIROpCode.Divide_Un
-                            || iri.opCode == EIROpCode.Module_Un
-                            || iri.opCode == EIROpCode.Combine_Un
-                            || iri.opCode == EIROpCode.InclusiveOr_Un
-                            || iri.opCode == EIROpCode.XOR_Un
-                            || iri.opCode == EIROpCode.Shi_Un
-                            || iri.opCode == EIROpCode.Shr_Un;
                         switch (iri.opCode)
                         {
                             case EIROpCode.Add: sign = 0; break;
-                            case EIROpCode.Add_Un: sign = 0; break;
                             case EIROpCode.Minus: sign = 1; break;
-                            case EIROpCode.Minus_Un: sign = 1; break;
                             case EIROpCode.Multiply: sign = 2; break;
-                            case EIROpCode.Multiply_Un: sign = 2; break;
                             case EIROpCode.Divide: sign = 3; break;
-                            case EIROpCode.Divide_Un: sign = 3; break;
                             case EIROpCode.Modulo: sign = 4; break;
-                            case EIROpCode.Module_Un: sign = 4; break;
                             case EIROpCode.Combine: sign = 5; break;
-                            case EIROpCode.Combine_Un: sign = 5; break;
                             case EIROpCode.InclusiveOr: sign = 6; break;
-                            case EIROpCode.InclusiveOr_Un: sign = 6; break;
                             case EIROpCode.XOR: sign = 7; break;
-                            case EIROpCode.XOR_Un: sign = 7; break;
                             case EIROpCode.Shi: sign = 8; break;
-                            case EIROpCode.Shi_Un: sign = 8; break;
                             case EIROpCode.Shr: sign = 9; break;
-                            case EIROpCode.Shr_Un: sign = 9; break;
                         }
-                        RuntimeValueMethod.ComputeValueInline(ref left, sign, ref right, isUn);
+                        // Checked context: detect integer overflow for +, -, *, /, %
+                        if (m_CheckedDepth > 0 && sign >= 0 && sign <= 4)
+                        {
+                            if (RuntimeValueMethod.WouldOverflowIntegerArithmetic(ref left, sign, ref right, false))
+                            {
+                                var overflowEx = new RuntimeValue();
+                                overflowEx.SetStringValue("OverflowException: arithmetic overflow in checked context");
+                                ExecuteThrow(overflowEx);
+                                break;
+                            }
+                        }
+                        RuntimeValueMethod.ComputeValueInline(ref left, sign, ref right, false);
                         PushSValueSynced(left);
                     }
                     break;
@@ -3665,7 +3689,8 @@ namespace SimpleLanguage.VM.Runtime
                             hasException = false,
                             exceptionValue = default,
                             stackSlotDepth = m_StackSlotDepth,
-                            byteSp = m_ByteSp
+                            byteSp = m_ByteSp,
+                            checkedDepth = m_CheckedDepth
                         });
                     }
                     break;
@@ -3687,7 +3712,8 @@ namespace SimpleLanguage.VM.Runtime
                                     hasException = false,
                                     exceptionValue = default,
                                     stackSlotDepth = m_StackSlotDepth,
-                                    byteSp = m_ByteSp
+                                    byteSp = m_ByteSp,
+                                    checkedDepth = m_CheckedDepth
                                 });
                             }
                         }
@@ -3729,6 +3755,31 @@ namespace SimpleLanguage.VM.Runtime
                     break;
 
                 #endregion
+
+                #region Checked Context Opcodes
+
+                case EIROpCode.BeginChecked:
+                    m_CheckedDepth++;
+                    break;
+
+                case EIROpCode.EndChecked:
+                    if (m_CheckedDepth > 0)
+                        m_CheckedDepth--;
+                    break;
+
+                case EIROpCode.BeginUnchecked:
+                    m_UncheckedStack.Push(m_CheckedDepth);
+                    m_CheckedDepth = 0;
+                    break;
+
+                case EIROpCode.EndUnchecked:
+                    m_CheckedDepth = m_UncheckedStack.Count > 0
+                        ? m_UncheckedStack.Pop()
+                        : 0;
+                    break;
+
+                #endregion
+
                 case EIROpCode.CastClass:
                     {
                         if (m_StackSlotDepth < 1)
@@ -3908,6 +3959,7 @@ namespace SimpleLanguage.VM.Runtime
                     // Caught! Restore stack to BeginTry state, then push exception for catch body.
                     m_StackSlotDepth = frame.stackSlotDepth;
                     m_ByteSp = frame.byteSp;
+                    m_CheckedDepth = frame.checkedDepth; // restore checked context to BeginTry time
 #if DEBUG
                     m_ValueIndex = (ushort)m_StackSlotDepth;
 #endif
@@ -3923,7 +3975,8 @@ namespace SimpleLanguage.VM.Runtime
                             hasException = false,
                             exceptionValue = default,
                             stackSlotDepth = m_StackSlotDepth,
-                            byteSp = m_ByteSp
+                            byteSp = m_ByteSp,
+                            checkedDepth = m_CheckedDepth
                         });
                     }
                     m_ExecuteIndex = (ushort)(frame.catchIndex - 1);
@@ -3934,6 +3987,7 @@ namespace SimpleLanguage.VM.Runtime
                     // No catch, but has finally - restore stack, execute finally, then propagate
                     m_StackSlotDepth = frame.stackSlotDepth;
                     m_ByteSp = frame.byteSp;
+                    m_CheckedDepth = frame.checkedDepth; // restore checked context to BeginTry time
 #if DEBUG
                     m_ValueIndex = (ushort)m_StackSlotDepth;
 #endif
@@ -3944,7 +3998,8 @@ namespace SimpleLanguage.VM.Runtime
                         hasException = true,
                         exceptionValue = exceptionValue,
                         stackSlotDepth = frame.stackSlotDepth,
-                        byteSp = frame.byteSp
+                        byteSp = frame.byteSp,
+                        checkedDepth = frame.checkedDepth
                     });
                     m_ExecuteIndex = (ushort)(frame.finallyIndex - 1);
                     return;

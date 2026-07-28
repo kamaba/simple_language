@@ -120,6 +120,21 @@ namespace SimpleLanguage.Core
                 }
             }
 
+            // Check for checked(expr) prefix expression at the root
+            if (tryRoot != null && tryRoot is FileMetaSymbolTerm checkedSym
+                && checkedSym.symBolType == ETokenType.Checked
+                && tryRoot.right != null)
+            {
+                CreateExpressParam innerCep = new CreateExpressParam(cep);
+                innerCep.fme = tryRoot.right;
+                MetaExpressNodeBase innerNode = CreateExpressNodeByCEP(innerCep);
+                if (innerNode != null)
+                {
+                    var checkedExpress = new MetaCheckedExpressNode(checkedSym, innerNode);
+                    return checkedExpress;
+                }
+            }
+
 
             FileMetaAsOrIsTerm asOrIsTerm = fmte as FileMetaAsOrIsTerm;
             if (asOrIsTerm != null)
@@ -319,6 +334,11 @@ namespace SimpleLanguage.Core
                         {
                             return new MetaTryExpressNode(fmst, rightNode);
                         }
+                        // checked(expr) prefix creates a MetaCheckedExpressNode
+                        if (fmst.symBolType == ETokenType.Checked)
+                        {
+                            return new MetaCheckedExpressNode(fmst, rightNode);
+                        }
                         return new MetaOpExpressNode(fmst, cep.metaType, leftNode, rightNode);
                     }
                     else
@@ -347,6 +367,11 @@ namespace SimpleLanguage.Core
                             || fmst2.symBolType == ETokenType.TryExclamation)
                         {
                             return new MetaTryExpressNode(fmst2, rightNode);
+                        }
+                        // checked(expr) prefix expression
+                        if (fmst2.symBolType == ETokenType.Checked)
+                        {
+                            return new MetaCheckedExpressNode(fmst2, rightNode);
                         }
                         return new MetaUnaryOpExpressNode(fmst2, rightNode);
                     }

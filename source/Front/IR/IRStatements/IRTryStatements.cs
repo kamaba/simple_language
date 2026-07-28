@@ -63,12 +63,28 @@ namespace SimpleLanguage.IR
             beginTryData.SetOpValue(tsd);
             m_IRStatements.Add(new IRRawData(irMethod, beginTryData));
 
+            // --- BeginChecked (if checked label) ---
+            if (ms.isChecked)
+            {
+                IRData beginChecked = new IRData();
+                beginChecked.opCode = EIROpCode.BeginChecked;
+                m_IRStatements.Add(new IRRawData(irMethod, beginChecked));
+            }
+
             // --- try body ---
             if (ms.tryBlockStatements != null)
             {
                 IRBlockStatements irTry = new IRBlockStatements(irMethod);
                 irTry.ParseIRStatements(ms.tryBlockStatements);
                 m_IRStatements.AddRange(irTry.irStatements);
+            }
+
+            // --- EndChecked (if checked label) ---
+            if (ms.isChecked)
+            {
+                IRData endChecked = new IRData();
+                endChecked.opCode = EIROpCode.EndChecked;
+                m_IRStatements.Add(new IRRawData(irMethod, endChecked));
             }
 
             // --- LeaveTry (try completed normally) ---

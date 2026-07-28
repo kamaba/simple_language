@@ -301,6 +301,10 @@ namespace SimpleLanguage
         Defer,
         /// <summary> errdefer </summary>
         ErrDefer,
+        /// <summary> checked </summary>
+        Checked,
+        /// <summary> unchecked </summary>
+        Unchecked,
         /// <summary> BoolValue </summary>
         BoolValue,
         /// <summary> number </summary>

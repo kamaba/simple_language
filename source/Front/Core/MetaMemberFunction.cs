@@ -270,6 +270,16 @@ namespace SimpleLanguage.Core
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
 
         private readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
+
+        // ── Scope validation context ──
+        // Tracks whether we're currently processing statements inside a label{} block
+        // (try-catch scope) or a checked scope. Used to enforce:
+        //   - try/checked expressions only inside label{} or checked label{}
+        //   - unchecked{} only inside checked{} or checked label{}
+        public static bool isInTryBlock => s_IsInTryBlock;
+        public static bool isInCheckedContext => s_IsInCheckedContext;
+        private static bool s_IsInTryBlock = false;
+        private static bool s_IsInCheckedContext = false;
         //绑定构建 元类型  
         protected List<MetaType> m_BindStructTemplateFunctionMtList = new List<MetaType>();
         protected List<MetaType> m_BindStructTemplateFunctionAndClassMtList = new List<MetaType>();
@@ -868,7 +878,14 @@ namespace SimpleLanguage.Core
                     break;
                 case FileMetaKeyTrySyntax fmts:
                     {
+                        // Set scope context: inside label{} block, and optionally checked
+                        bool savedTry = s_IsInTryBlock;
+                        bool savedChecked = s_IsInCheckedContext;
+                        s_IsInTryBlock = true;
+                        if (fmts.isChecked) s_IsInCheckedContext = true;
                         var metaTryStatements = new MetaTryStatements(currentBlockStatements, fmts);
+                        s_IsInTryBlock = savedTry;
+                        s_IsInCheckedContext = savedChecked;
                         beforeStatements.SetNextStatements(metaTryStatements);
                         beforeStatements = metaTryStatements;
                     }
@@ -924,6 +941,28 @@ namespace SimpleLanguage.Core
                             currentBlockStatements.ownerMetaFunction?.AddErrDeferStatements(metaErrDeferStatements);
                             beforeStatements.SetNextStatements(metaErrDeferStatements);
                             beforeStatements = metaErrDeferStatements;
+                        }
+                        else if (fmoks.token.type == ETokenType.Checked)
+                        {
+                            // Set checked context for the block body
+                            bool savedChecked = s_IsInCheckedContext;
+                            s_IsInCheckedContext = true;
+                            var metaCheckedStatements = new MetaCheckedStatements(currentBlockStatements, fmoks);
+                            s_IsInCheckedContext = savedChecked;
+                            beforeStatements.SetNextStatements(metaCheckedStatements);
+                            beforeStatements = metaCheckedStatements;
+                        }
+                        else if (fmoks.token.type == ETokenType.Unchecked)
+                        {
+                            // unchecked{} can only be used inside a checked context
+                            if (!s_IsInCheckedContext)
+                            {
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, fmoks.token,
+                                    "Error: unchecked{} 只能在 checked 上下文中使用 (checked label{} 或 checked{})");
+                            }
+                            var metaUncheckedStatements = new MetaUncheckedStatements(currentBlockStatements, fmoks);
+                            beforeStatements.SetNextStatements(metaUncheckedStatements);
+                            beforeStatements = metaUncheckedStatements;
                         }
                         else if (fmoks.token.type == ETokenType.Break)
                         {

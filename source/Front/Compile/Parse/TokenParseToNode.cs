@@ -771,6 +771,8 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Throws:
                 case ETokenType.Defer:
                 case ETokenType.ErrDefer:
+                case ETokenType.Checked:
+                case ETokenType.Unchecked:
                     {
                         AddKeyNode(token);
                     }

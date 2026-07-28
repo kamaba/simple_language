@@ -2025,6 +2025,12 @@ namespace SimpleLanguage.Compile
                 case "errdefer":
                     tokenType = ETokenType.ErrDefer;
                     break;
+                case "checked":
+                    tokenType = ETokenType.Checked;
+                    break;
+                case "unchecked":
+                    tokenType = ETokenType.Unchecked;
+                    break;
                 case "null":
                     tokenType = ETokenType.Null;
                     break;

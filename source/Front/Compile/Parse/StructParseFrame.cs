@@ -80,6 +80,9 @@ namespace SimpleLanguage.Compile
         protected FileMeta m_FileMeta;
         protected Node m_RootNode = null;
         protected Stack<ParseCurrentNodeInfo> m_CurrentNodeInfoStack = new Stack<ParseCurrentNodeInfo>();
+        // When 'checked' precedes 'label', this flag is set so the label handler
+        // knows to enable checked context for the try body.
+        protected bool m_PendingCheckedLabel = false;
 
         public StructParse(FileMeta fm, Node node)
         {

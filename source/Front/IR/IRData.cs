@@ -272,15 +272,10 @@ namespace SimpleLanguage.IR
                 case EIROpCode.BrFalse:
                 case EIROpCode.BrTrue:
                 case EIROpCode.Beq:
-                case EIROpCode.Beq_Un:
                 case EIROpCode.Bne:
-                case EIROpCode.Bne_Un:
                 case EIROpCode.Bgt:
-                case EIROpCode.Bgt_Un:
                 case EIROpCode.Bge:
-                case EIROpCode.Bge_un:
                 case EIROpCode.Ble:
-                case EIROpCode.Ble_Un:
                 case EIROpCode.BrLabel:
                 case EIROpCode.StoreArrayIndex:
                 case EIROpCode.Switch:

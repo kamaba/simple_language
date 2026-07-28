@@ -1094,10 +1094,12 @@ namespace SimpleLanguage.Compile
         public FileMetaBlockSyntax tryBlockSyntax => m_TryBlock;
         public List<FileMetaCatchClause> catchClauses => m_CatchClauses;
         public FileMetaBlockSyntax finallyBlockSyntax => m_FinallyBlock;
+        public bool isChecked => m_IsChecked;
 
         private FileMetaBlockSyntax m_TryBlock = null;
         private List<FileMetaCatchClause> m_CatchClauses = new List<FileMetaCatchClause>();
         private FileMetaBlockSyntax m_FinallyBlock = null;
+        private bool m_IsChecked = false;
 
         public FileMetaKeyTrySyntax(FileMeta fm)
         {
@@ -1107,6 +1109,7 @@ namespace SimpleLanguage.Compile
         public void SetTryBlock(FileMetaBlockSyntax block) { m_TryBlock = block; }
         public void AddCatchClause(FileMetaCatchClause clause) { m_CatchClauses.Add(clause); }
         public void SetFinallyBlock(FileMetaBlockSyntax block) { m_FinallyBlock = block; }
+        public void SetIsChecked(bool val) { m_IsChecked = val; }
 
         public override void SetDeep(int _deep)
         {

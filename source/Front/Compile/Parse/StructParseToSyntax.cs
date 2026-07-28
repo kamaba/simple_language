@@ -111,7 +111,9 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Catch
                     || tokenType == ETokenType.Finally
                     || tokenType == ETokenType.Defer
-                    || tokenType == ETokenType.ErrDefer)
+                    || tokenType == ETokenType.ErrDefer
+                    || tokenType == ETokenType.Checked
+                    || tokenType == ETokenType.Unchecked)
                 {
                 }
                 else
@@ -185,7 +187,9 @@ namespace SimpleLanguage.Compile
                 || tokenType == ETokenType.Catch
                 || tokenType == ETokenType.Finally
                 || tokenType == ETokenType.Defer
-                || tokenType == ETokenType.ErrDefer;
+                || tokenType == ETokenType.ErrDefer
+                || tokenType == ETokenType.Checked
+                || tokenType == ETokenType.Unchecked;
         }
         private static bool IsSkippableNodeBetweenKeyAndBrace(Node node)
         {
@@ -392,10 +396,33 @@ namespace SimpleLanguage.Compile
                         || ttt == ETokenType.Throw
                         || ttt == ETokenType.Defer
                         || ttt == ETokenType.ErrDefer
+                        || ttt == ETokenType.Checked
+                        || ttt == ETokenType.Unchecked
                         || ttt == ETokenType.Const)
                     {
-                        // try without a following {} block is an expression prefix, not a block keyword
-                        if (curNode.token?.type == ETokenType.Try)
+                        // checked label Name {} catch{} - checked modifier on label
+                        if (curNode.token?.type == ETokenType.Checked)
+                        {
+                            bool hasNextLabel = false;
+                            for (int peek = tCurIndex + 1; peek < pnode.childList.Count; peek++)
+                            {
+                                var pn = pnode.childList[peek];
+                                if (pn == null) break;
+                                if (pn.nodeType == ENodeType.LineEnd || pn.nodeType == ENodeType.Comment)
+                                    continue;
+                                if (pn.token?.type == ETokenType.Label)
+                                    hasNextLabel = true;
+                                break;
+                            }
+                            if (hasNextLabel)
+                            {
+                                m_PendingCheckedLabel = true;
+                                continue; // skip 'checked', let 'label' handler process it
+                            }
+                        }
+                        // try/checked without a following {} block is an expression prefix, not a block keyword
+                        if (curNode.token?.type == ETokenType.Try
+                            || curNode.token?.type == ETokenType.Checked)
                         {
                             bool hasBrace = false;
                             for (int peek = tCurIndex + 1; peek < pnode.childList.Count; peek++)
@@ -486,9 +513,10 @@ namespace SimpleLanguage.Compile
 
         private FileMetaSyntax CrateFileMetaSyntaxNoKey(List<Node> pNodeList)
         {
-            // Check if first node is 'try' keyword (expression prefix like "try riskyFunc()")
+            // Check if first node is 'try' or 'checked' keyword (expression prefix like "try riskyFunc()" / "checked(a + b)")
             if (pNodeList.Count > 0
-                && pNodeList[0].token?.type == ETokenType.Try)
+                && (pNodeList[0].token?.type == ETokenType.Try
+                    || pNodeList[0].token?.type == ETokenType.Checked))
             {
                 var tryExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, pNodeList, FileMetaTermExpress.EExpressType.Common);
                 if (tryExpress != null)
@@ -709,7 +737,9 @@ namespace SimpleLanguage.Compile
                     && afterNodeList[0].token?.type != ETokenType.Base
                     && afterNodeList[0].token?.type != ETokenType.Local
                     && afterNodeList[0].token?.type != ETokenType.Global
-                    && afterNodeList[0].token?.type != ETokenType.New )
+                    && afterNodeList[0].token?.type != ETokenType.New
+                    && afterNodeList[0].token?.type != ETokenType.Try
+                    && afterNodeList[0].token?.type != ETokenType.Checked )
                 {
                     Log.AddNodeLog(LID.ShowExtendMessage, "Error 暂不支持 a = if/switch{}语法");
                     //var fme22 = HandleCreateFileMetaSyntaxByPNode(afterNodeList);
@@ -1036,7 +1066,9 @@ namespace SimpleLanguage.Compile
                     fms = fmks;
                 }
                 else if (akss.tokenType == ETokenType.Defer
-                    || akss.tokenType == ETokenType.ErrDefer)
+                    || akss.tokenType == ETokenType.ErrDefer
+                    || akss.tokenType == ETokenType.Checked
+                    || akss.tokenType == ETokenType.Unchecked)
                 {
                     FileMetaBlockSyntax deferBlock = new FileMetaBlockSyntax(m_FileMeta, akss.blockNode.token, akss.blockNode.endToken);
                     FileMetaKeyOnlySyntax fmkis = new FileMetaKeyOnlySyntax(m_FileMeta, akss.keyNode.token, deferBlock);
@@ -1082,6 +1114,11 @@ namespace SimpleLanguage.Compile
                             // Build FileMetaKeyTrySyntax
                             FileMetaKeyTrySyntax fmts = new FileMetaKeyTrySyntax(m_FileMeta);
                             fmts.SetToken(akss.keyNode.token);
+                            if (m_PendingCheckedLabel)
+                            {
+                                fmts.SetIsChecked(true);
+                                m_PendingCheckedLabel = false;
+                            }
                             FileMetaBlockSyntax tryBlock = new FileMetaBlockSyntax(m_FileMeta, tryBlockNode.token, tryBlockNode.endToken);
                             fmts.SetTryBlock(tryBlock);
                             AddParseSyntaxNodeInfo(fmts);

@@ -1,9 +1,9 @@
 //****************************************************************************
-//  File:      MetaExpressTry.cs
+//  File:      MetaExpressChecked.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
-//  DateTime: 2026/07/24 12:00:00
-//  Description: try / try? / try! expression node
+//  DateTime: 2026/07/27 12:00:00
+//  Description: checked(expr) expression node — overflow-checked arithmetic
 //****************************************************************************
 
 using System.Text;
@@ -12,46 +12,28 @@ using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.Core
 {
-    public enum ETryMode
-    {
-        None,
-        Try,            // try - exception caught by surrounding catch
-        TryQuestion,    // try? - returns null on exception
-        TryExclamation, // try! - crashes on exception
-    }
-
-    public sealed class MetaTryExpressNode : MetaExpressNodeBase
+    /// <summary>
+    /// checked(expr) — evaluates expr with integer overflow checking enabled.
+    /// On overflow, an OverflowException is thrown via the existing try/catch mechanism.
+    /// Only affects integer arithmetic (+, -, *, /, %).
+    /// </summary>
+    public sealed class MetaCheckedExpressNode : MetaExpressNodeBase
     {
         public override Token token => m_Token;
-        public ETryMode tryMode => m_TryMode;
         public MetaExpressNodeBase innerExpress => m_InnerExpress;
 
-        private ETryMode m_TryMode = ETryMode.None;
         private MetaExpressNodeBase m_InnerExpress = null;
 
-        public MetaTryExpressNode(FileMetaSymbolTerm fme, MetaExpressNodeBase innerExpress)
+        public MetaCheckedExpressNode(FileMetaSymbolTerm fme, MetaExpressNodeBase innerExpress)
         {
             m_Token = fme.token;
             m_InnerExpress = innerExpress;
 
-            if (fme.symBolType == ETokenType.Try)
+            // checked(expr) expressions can only be used inside label{} or checked label{} blocks
+            if (!MetaMemberFunction.isInTryBlock)
             {
-                m_TryMode = ETryMode.Try;
-                // Only plain 'try' requires a surrounding label{} block;
-                // try? is self-contained, try! propagates (both OK outside label)
-                if (!MetaMemberFunction.isInTryBlock)
-                {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, fme.token,
-                        "Error: try 表达式只能在 label{} 或 checked label{} 块内使用");
-                }
-            }
-            else if (fme.symBolType == ETokenType.TryQuestion)
-            {
-                m_TryMode = ETryMode.TryQuestion;
-            }
-            else if (fme.symBolType == ETokenType.TryExclamation)
-            {
-                m_TryMode = ETryMode.TryExclamation;
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, fme.token,
+                    "Error: checked 表达式只能在 label{} 或 checked label{} 块内使用");
             }
         }
 
@@ -80,8 +62,10 @@ namespace SimpleLanguage.Core
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(m_Token.lexeme.ToString());
+            sb.Append("checked");
+            sb.Append("(");
             sb.Append(m_InnerExpress?.ToFormatString() ?? "");
+            sb.Append(")");
             return sb.ToString();
         }
 
