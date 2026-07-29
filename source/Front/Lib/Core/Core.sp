@@ -16,32 +16,31 @@ Project
         SystemPrintln(str)
     }
     _main_()
-    {       
+    {
         #!
-        ObjectTest.fun()        
+        ObjectTest.fun()
         NumberTest.fun()
-        GlobalTest.fun()        
-        
-        ArrayTest.fun()        
+        GlobalTest.fun()
+        ArrayTest.fun()
         AssignStatement.fun()
         BoolTest.fun()
-        StringTest.fun()        
-        TypeTest.fun()        
+        StringTest.fun()
+        TypeTest.fun()
         DataTest.fun()
-        EnumTest.fun();   
-        BlockTest.fun()   
+        EnumTest.fun();
+        BlockTest.fun()
         CallLinkTestNS.CallLinkTest.fun();
         Class1TestSmoke.fun();
         Class2TestSmoke.fun();
         ClassAs_IsNS.ClassAs_Is.fun();
         CommitTest.fun();
         ConStrCC.ConstructionTest.fun()
-        ExpressTest.fun()        
-        ExtendsClass.fun()     
+        ExpressTest.fun()
+        ExtendsClass.fun()
         NCTest.fun()
         ForTest.fun()
         GenClass_Interface.fun()
-        GenClass.fun()        
+        GenClass.fun()
         GC2.GenClass2.fun()
         DeferTest.fun()
         TryTest.fun()
@@ -49,8 +48,9 @@ Project
         GC3.GenClass3.fun()
         RangeTest.fun()
         InterfaceTest.fun()
-        !#   
-        
+        !#
+        MVTest1.fun()
+        MVTest2.fun()
     }
     _test_()
     {

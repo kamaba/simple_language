@@ -2134,6 +2134,14 @@ namespace SimpleLanguage.Core
                         Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到metatype的类型" );
                     }
                 }
+                else
+                {
+                    // Type is already known (e.g. primitive types like int/float),
+                    // but the member's expression might not have been parsed yet.
+                    // Ensure ParseMetaExpress is called so the referenced member
+                    // gets a smaller parseOrder and executes first at runtime.
+                    mmv.ParseMetaExpress();
+                }
                 m_CallNodeType = ECallNodeType.MemberVariableName;
                 if( mmv.isStatic || m_CallNodeType == ECallNodeType.Base )
                 {

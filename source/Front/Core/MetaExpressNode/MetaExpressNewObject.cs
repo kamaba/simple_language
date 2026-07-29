@@ -52,7 +52,7 @@ namespace SimpleLanguage.Core
 
         public MetaBraceAssignStatements(FileMetaOpAssignSyntax fmos, MetaType newmt, MetaBlockStatements mbs, MetaBase owmt )
         {
-            m_DefineMetaType = newmt;
+            m_NewObjectMetaType = newmt;
             m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaBase = owmt;
             if (fmos == null)
@@ -74,14 +74,41 @@ namespace SimpleLanguage.Core
             m_DefineName = fmos.variableRef.name;
             if (m_NewObjectMetaType != null )
             {
-                if(m_NewObjectMetaType.isData )
+                if( m_NewObjectMetaType.isClass && m_NewObjectMetaType.metaClass != null )
+                {
+                    m_AssignTargetType = EAssignTargetType.MemberVariable;
+
+                    var mc = m_NewObjectMetaType.metaClass;
+                    m_MetaMemberVariable = mc.GetMetaMemberVariableByName(m_DefineName);
+                    m_AssignTargetType = EAssignTargetType.MemberVariable;
+                    if (m_MetaMemberVariable == null)
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "member variable not found: " + m_DefineName);
+                        return;
+                    }
+                    m_Id = m_MetaMemberVariable.index;
+                    if (m_MetaMemberVariable.realMetaType == null)
+                    {
+                        m_MetaMemberVariable.CreateMetaExpress();
+                        m_MetaMemberVariable.ParseMetaExpress();
+                        m_MetaMemberVariable.ParseRealMetaType();
+                    }
+                    targetMetaType = m_MetaMemberVariable.GetFinalMetaType();
+                    if (targetMetaType == null)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "member variable type is null");
+                        return;
+                    }
+                    targetMetaVariable = m_MetaMemberVariable;
+                }
+                else if(m_NewObjectMetaType.isData && m_NewObjectMetaType.metaData != null )
                 {
                     var md = m_NewObjectMetaType.metaData;
                     m_MetaMemberData = md.GetMemberDataByName(m_DefineName);
                     m_AssignTargetType = EAssignTargetType.MemberData;
                     if (m_MetaMemberData == null)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "member data not found: " + m_DefineName);
                         return;
                     }
                     m_Id = m_MetaMemberData.GetHashCode();
@@ -95,7 +122,7 @@ namespace SimpleLanguage.Core
                     targetMetaType = m_MetaMemberData.GetFinalMetaType();
                     if (targetMetaType == null)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "????????");
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "member data type is null");
                         return;
                     }
 
@@ -107,35 +134,10 @@ namespace SimpleLanguage.Core
                     m_AssignTargetType = EAssignTargetType.MemberData;
                     targetMetaType = null;
                 }
-                else if( m_NewObjectMetaType.isClass )
-                {
-                    m_AssignTargetType = EAssignTargetType.MemberVariable;
-
-                    m_MetaMemberVariable = m_NewObjectMetaType.metaClass.GetMetaMemberVariableByName(m_DefineName);
-                    m_AssignTargetType = EAssignTargetType.MemberVariable;
-                    if (m_MetaMemberVariable == null)
-                    {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????");
-                        return;
-                    }
-                    m_Id = m_MetaMemberVariable.index;
-                    if (m_MetaMemberVariable.realMetaType == null)
-                    {
-                        m_MetaMemberVariable.CreateMetaExpress();
-                        m_MetaMemberVariable.ParseMetaExpress();
-                        m_MetaMemberVariable.ParseRealMetaType();
-                    }
-                    targetMetaType = m_MetaMemberVariable.GetFinalMetaType();
-                    if (targetMetaType == null)
-                    {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "????????");
-                        return;
-                    }
-                    targetMetaVariable = m_MetaMemberVariable;
-                }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "unresolved type in brace assign: " + m_NewObjectMetaType?.ToString());
+                    return;
                 }
             }
             m_DefineMetaType = targetMetaType;
@@ -1411,44 +1413,46 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                if (m_BraceFileMetaBaseTerm?.fileMetaExpressList?.Count > 0)
+                // Check assignment syntax list first (handles { a = 10, b = "hi" }).
+                // The fileMetaExpressList is always populated (it holds the raw comma-split
+                // segments), so checking it first would skip the assignment path entirely.
+                bool handledAssign = false;
+                if (m_BraceFileMetaBaseTerm is FileMetaBraceTerm braceTerm && braceTerm.fileMetaAssignSyntaxList.Count > 0)
+                {
+                    handledAssign = true;
+                    for (int i = 0; i < braceTerm.fileMetaAssignSyntaxList.Count; i++)
+                    {
+                        if (braceTerm.fileMetaAssignSyntaxList[i] is FileMetaDefineVariableSyntax fmdvs)
+                        {
+                            var mas = new MetaBraceAssignStatements(fmdvs, mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase);
+                            if (mas.expressNode == null)
+                            {
+                                continue;
+                            }
+                            m_AssignStatementsList.Add(mas);
+                            mas.Parse(new AllowUseSettings());
+                            mas.CalcReturnType();
+                        }
+                        else if (braceTerm.fileMetaAssignSyntaxList[i] is FileMetaOpAssignSyntax fmoas)
+                        {
+                            var mas = new MetaBraceAssignStatements(fmoas, mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase);
+                            if (mas.expressNode == null)
+                            {
+                                continue;
+                            }
+                            mas.Parse(new AllowUseSettings());
+                            mas.CalcReturnType();
+                            m_AssignStatementsList.Add(mas);
+                        }
+                    }
+                }
+                if (!handledAssign && m_BraceFileMetaBaseTerm?.fileMetaExpressList?.Count > 0)
                 {
                     //Log.AddMetaCoreLog(LID.ShowExtendMessage, "??????????");
                     for (int i = 0; i < m_BraceFileMetaBaseTerm.fileMetaExpressList.Count; i++)
                     {
                         var fas = m_BraceFileMetaBaseTerm.fileMetaExpressList[i];
                         HandleBraceTermNode(fas, mt, aws);
-                    }
-                }
-                else
-                {
-                    if (m_BraceFileMetaBaseTerm is FileMetaBraceTerm braceTerm && braceTerm.fileMetaAssignSyntaxList.Count > 0)
-                    {
-                        for (int i = 0; i < braceTerm.fileMetaAssignSyntaxList.Count; i++)
-                        {
-                            if (braceTerm.fileMetaAssignSyntaxList[i] is FileMetaDefineVariableSyntax fmdvs)
-                            {
-                                var mas = new MetaBraceAssignStatements(fmdvs, mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase);
-                                if (mas.expressNode == null)
-                                {
-                                    continue;
-                                }
-                                m_AssignStatementsList.Add(mas);
-                                mas.Parse(new AllowUseSettings());
-                                mas.CalcReturnType();
-                            }
-                            else if (braceTerm.fileMetaAssignSyntaxList[i] is FileMetaOpAssignSyntax fmoas)
-                            {
-                                var mas = new MetaBraceAssignStatements(fmoas, mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase);
-                                if (mas.expressNode == null)
-                                {
-                                    continue;
-                                }
-                                mas.Parse(new AllowUseSettings());
-                                mas.CalcReturnType();
-                                m_AssignStatementsList.Add(mas);
-                            }
-                        }
                     }
                 }
             }
