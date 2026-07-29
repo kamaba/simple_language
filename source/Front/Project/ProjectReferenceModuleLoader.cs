@@ -9,6 +9,15 @@ using System.Linq;
 
 namespace SimpleLanguage.Project
 {
+    /// <summary>
+    /// Loads referenced modules declared in the "references" section of a project's .jsonc config.
+    /// Each reference has: path (relative or absolute), uuid (optional), name (the import alias).
+    ///
+    /// Loading strategy (tried in order):
+    ///   1. Compiled package  (.package.json / .module.json) at or near the path
+    ///   2. Source module      (directory containing a .jsonc with struct tree)
+    ///   3. Export output      (look in the referenced module's export outputDir)
+    /// </summary>
     public static class ProjectReferenceModuleLoader
     {
         public static void LoadReferences(ProjectConfig config, string projectDir)
@@ -31,13 +40,30 @@ namespace SimpleLanguage.Project
                 return;
             }
 
-            var modulePath = ResolveReferenceModulePath(reference.Path, projectDir);
-            if (string.IsNullOrWhiteSpace(modulePath) || !File.Exists(modulePath))
+            /* --- Strategy 1: Try compiled package (.package.json / .module.json) --- */
+            var packagePath = ResolveReferenceModulePath(reference.Path, projectDir);
+            if (!string.IsNullOrWhiteSpace(packagePath) && File.Exists(packagePath))
             {
-                Log.AddProjectLog(LID.ShowExtendMessage, "Reference module not found: " + reference.Path);
+                if (TryLoadCompiledPackage(reference, packagePath))
+                {
+                    return;
+                }
+            }
+
+            /* --- Strategy 2: Try source module (.jsonc with struct tree) --- */
+            if (TryLoadSourceModule(reference, projectDir))
+            {
                 return;
             }
 
+            Log.AddProjectLog(LID.ShowExtendMessage,
+                $"Reference module not found or could not be loaded: path={reference.Path}, name={reference.Name}");
+        }
+
+        #region Compiled package loading
+
+        private static bool TryLoadCompiledPackage(ProjectConfig.ReferenceSection reference, string modulePath)
+        {
             SLModulePackage package;
             try
             {
@@ -45,28 +71,26 @@ namespace SimpleLanguage.Project
             }
             catch (Exception ex)
             {
-                Log.AddProjectLog(LID.ShowExtendMessage, "Reference module read failed: " + modulePath + " " + ex.Message);
-                return;
+                Log.AddProjectLog(LID.ShowExtendMessage,
+                    "Reference module read failed: " + modulePath + " " + ex.Message);
+                return false;
             }
 
             if (!ValidateUuid(reference, package, modulePath))
             {
-                return;
+                return false;
             }
 
-            var alias = !string.IsNullOrWhiteSpace(reference.Name)
-                ? reference.Name.Trim()
-                : (!string.IsNullOrWhiteSpace(package.moduleName) ? package.moduleName.Trim() : Path.GetFileNameWithoutExtension(modulePath));
-            if (string.IsNullOrWhiteSpace(alias))
-            {
-                Log.AddProjectLog(LID.ShowExtendMessage, "Reference module alias is empty: " + modulePath);
-                return;
-            }
+            var alias = ResolveModuleName(reference, package, modulePath);
 
             var metaModule = new MetaModule(alias);
             metaModule.SetRefFromType(RefFromType.Local);
             BuildModuleTree(metaModule, package);
             ModuleManager.instance.AddMetaMdoule(metaModule);
+
+            Log.AddProjectLog(LID.ShowExtendMessage,
+                $"Reference module loaded (compiled): name={alias}, path={modulePath}");
+            return true;
         }
 
         private static bool ValidateUuid(ProjectConfig.ReferenceSection reference, SLModulePackage package, string modulePath)
@@ -88,7 +112,8 @@ namespace SimpleLanguage.Project
                 return true;
             }
 
-            Log.AddProjectLog(LID.ShowExtendMessage, $"Reference module uuid mismatch: {modulePath}, expected={expected}, actual={actual}");
+            Log.AddProjectLog(LID.ShowExtendMessage,
+                $"Reference module uuid mismatch: {modulePath}, expected={expected}, actual={actual}");
             return false;
         }
 
@@ -119,6 +144,21 @@ namespace SimpleLanguage.Project
             }
 
             return resolved;
+        }
+
+        private static string ResolveModuleName(ProjectConfig.ReferenceSection reference, SLModulePackage package, string modulePath)
+        {
+            if (!string.IsNullOrWhiteSpace(reference.Name))
+            {
+                return reference.Name.Trim();
+            }
+
+            if (!string.IsNullOrWhiteSpace(package?.moduleName))
+            {
+                return package.moduleName.Trim();
+            }
+
+            return Path.GetFileNameWithoutExtension(modulePath);
         }
 
         private static void BuildModuleTree(MetaModule metaModule, SLModulePackage package)
@@ -237,6 +277,161 @@ namespace SimpleLanguage.Project
                     break;
             }
         }
+
+        #endregion
+
+        #region Source module loading
+
+        /// <summary>
+        /// Loads a reference module from its source .jsonc file (struct tree only).
+        /// This builds a MetaModule with namespace/class/data/enum declarations
+        /// from the "struct" section of the referenced module's .jsonc config.
+        /// No full compilation is performed - only the type structure is loaded
+        /// so that import statements in the main project can resolve correctly.
+        /// </summary>
+        private static bool TryLoadSourceModule(ProjectConfig.ReferenceSection reference, string projectDir)
+        {
+            var resolvedDir = Path.IsPathRooted(reference.Path)
+                ? Path.GetFullPath(reference.Path)
+                : Path.GetFullPath(Path.Combine(projectDir ?? string.Empty, reference.Path));
+
+            if (!Directory.Exists(resolvedDir))
+            {
+                return false;
+            }
+
+            /* Find the .jsonc file in the referenced directory */
+            var jsoncFiles = Directory.GetFiles(resolvedDir, "*.jsonc", SearchOption.TopDirectoryOnly);
+            if (jsoncFiles.Length == 0)
+            {
+                return false;
+            }
+
+            var jsoncPath = jsoncFiles[0];
+            ProjectConfig refConfig;
+            try
+            {
+                var jsoncText = File.ReadAllText(jsoncPath);
+                refConfig = ProjectJsoncLoader.FromJsonc(jsoncText);
+            }
+            catch (Exception ex)
+            {
+                Log.AddProjectLog(LID.ShowExtendMessage,
+                    $"Reference source module .jsonc parse failed: {jsoncPath} {ex.Message}");
+                return false;
+            }
+
+            /* Determine the module name (alias for import) */
+            var alias = !string.IsNullOrWhiteSpace(reference.Name)
+                ? reference.Name.Trim()
+                : (!string.IsNullOrWhiteSpace(refConfig.Export.ModuleName)
+                    ? refConfig.Export.ModuleName.Trim()
+                    : Path.GetFileName(resolvedDir));
+
+            if (string.IsNullOrWhiteSpace(alias))
+            {
+                Log.AddProjectLog(LID.ShowExtendMessage,
+                    $"Reference module alias is empty: {jsoncPath}");
+                return false;
+            }
+
+            /* Build MetaModule from the struct tree */
+            var metaModule = new MetaModule(alias);
+            metaModule.SetRefFromType(RefFromType.Local);
+            BuildModuleTreeFromStructTree(metaModule, refConfig.StructTree);
+            ModuleManager.instance.AddMetaMdoule(metaModule);
+
+            Log.AddProjectLog(LID.ShowExtendMessage,
+                $"Reference module loaded (source): name={alias}, path={jsoncPath}, structCount={refConfig.StructTree.Children.Count}");
+            return true;
+        }
+
+        /// <summary>
+        /// Builds a MetaModule's namespace/class tree from a ProjectConfig.StructTreeNode tree.
+        /// Each node maps to: Namespace -> MetaNamespace, Class -> MetaClass,
+        /// Data -> MetaData, Enum -> MetaEnum.
+        /// </summary>
+        private static void BuildModuleTreeFromStructTree(MetaModule metaModule, ProjectConfig.StructTreeNode root)
+        {
+            if (metaModule == null || root == null)
+            {
+                return;
+            }
+
+            foreach (var child in root.Children)
+            {
+                BuildStructNode(metaModule.metaNode, child);
+            }
+        }
+
+        private static void BuildStructNode(MetaNode parent, ProjectConfig.StructTreeNode node)
+        {
+            if (parent == null || node == null || string.IsNullOrWhiteSpace(node.Name))
+            {
+                return;
+            }
+
+            switch (node.Type)
+            {
+                case ProjectConfig.StructTreeNode.NodeType.Namespace:
+                    {
+                        var existing = parent.GetChildrenMetaNodeByName(node.Name);
+                        if (existing == null)
+                        {
+                            existing = parent.AddMetaNamespace(new MetaNamespace(node.Name));
+                        }
+                        foreach (var child in node.Children)
+                        {
+                            BuildStructNode(existing, child);
+                        }
+                        break;
+                    }
+                case ProjectConfig.StructTreeNode.NodeType.Class:
+                    {
+                        if (parent.GetChildrenMetaNodeByName(node.Name) == null)
+                        {
+                            var mc = new MetaClass(node.Name, EClassDefineType.StructDefine);
+                            parent.AddMetaClass(mc);
+                            mc.UpdateClassAllName();
+                            ClassManager.instance.AddExportMetaClass(mc);
+                        }
+                        break;
+                    }
+                case ProjectConfig.StructTreeNode.NodeType.Data:
+                    {
+                        if (parent.GetChildrenMetaNodeByName(node.Name) == null)
+                        {
+                            var md = new MetaData(node.Name, false, false, false);
+                            md.SetClassDefineType(EClassDefineType.StructDefine);
+                            parent.AddMetaData(md);
+                            ClassManager.instance.AddDefineMetaData(md);
+                        }
+                        break;
+                    }
+                case ProjectConfig.StructTreeNode.NodeType.Enum:
+                    {
+                        if (parent.GetChildrenMetaNodeByName(node.Name) == null)
+                        {
+                            var me = new MetaEnum(node.Name);
+                            me.SetClassDefineType(EClassDefineType.StructDefine);
+                            parent.AddMetaEnum(me);
+                        }
+                        break;
+                    }
+                case ProjectConfig.StructTreeNode.NodeType.Interface:
+                    {
+                        if (parent.GetChildrenMetaNodeByName(node.Name) == null)
+                        {
+                            var mi = new MetaClass(node.Name, EClassDefineType.StructDefine);
+                            parent.AddMetaClass(mi);
+                            mi.UpdateClassAllName();
+                        }
+                        break;
+                    }
+            }
+        }
+
+        #endregion
 
         private static string GetNamespace(string fullName)
         {
