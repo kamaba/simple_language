@@ -1,4 +1,4 @@
-﻿using SimpleLanguage.Logging;
+using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.VM
 {
@@ -10,10 +10,12 @@ namespace SimpleLanguage.VM
         public int metaClassKind { get; set; }
         /// <summary>True when this runtime class comes from anonymous/dynamic data export.</summary>
         public bool isDynamicData { get; set; }
+        /// <summary>IR class id of the base/extend class; 0 if none. Matches Front export.</summary>
+        public int baseClassId { get; set; }
         /// <summary>IR generated template meta type count exported from Front <c>IRMetaClass.templateCount</c>.</summary>
         public int templateCount { get; set; }
         /// <summary>Declared template parameter count in source (e.g. <c>Foo&lt;T,U&gt;</c> => 2).</summary>
-        //public int templateParameterCount { get; set; }
+        public int templateParameterCount { get; set; }
         /// <summary>Set after <c>fieldList</c> from SLIR package is applied to this class (see SLRuntimeModuleRegistry).</summary>
         internal bool fieldsFromPackageApplied { get; set; }
         public List<RuntimeVariable> nonStaticIRMetaVariableList => m_NonStaticIRMetaVariableList;

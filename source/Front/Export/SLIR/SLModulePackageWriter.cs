@@ -58,10 +58,24 @@ namespace SimpleLanguage.Export.SLIR
         }
     }
 
-    // Physical package: root shell (entryModule, moduleList) + per-module SLAssemblyPackage payload.
-    // Full IR payload lives only under moduleList[]; VM merges strings and flattens modules at load time.
+    // Physical package: flat SLModulePackage JSON (moduleName, classList, methodList, ...).
+    // Reads still support legacy SLPackageRootJson (entryModule + moduleList) for backward compat.
     public static class SLModulePackageWriter
     {
+        /// <summary>Removes the module name prefix from a dot-separated full name.
+        /// Since allName is built by walking the MetaNode parent chain to the module root,
+        /// the first segment is always the module name (e.g. "Core.Std.IO" -> "Std.IO",
+        /// "Core.Array&lt;T&gt;" -> "Array&lt;T&gt;").</summary>
+        private static string StripModulePrefix(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return name;
+            var idx = name.IndexOf('.');
+            if (idx <= 0)
+                return name; // no dot: single segment, nothing to strip
+            return name.Substring(idx + 1);
+        }
+
         public static void Write(IRManager ir, string outputPath, string moduleName = "SimpleLanguage")
         {
             if (ir == null) throw new ArgumentNullException(nameof(ir));
@@ -78,14 +92,8 @@ namespace SimpleLanguage.Export.SLIR
             options.Converters.Add(new JsonStringEnumConverter());
             options.Converters.Add(new InstructionPayloadByteArrayJsonConverter());
 
-            var root = new SLPackageRootJson
-            {
-                entryModule = pkg.entryModule ?? pkg.moduleList.FirstOrDefault()?.moduleName ?? moduleName ?? string.Empty,
-                moduleList = pkg.moduleList,
-            };
-
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? ".");
-            File.WriteAllText(outputPath, JsonSerializer.Serialize(root, options));
+            File.WriteAllText(outputPath, JsonSerializer.Serialize(pkg, options));
 
             Log.AddIRLog(LID.ShowExtendMessage, "export module success: " + outputPath);
         }
@@ -124,6 +132,7 @@ namespace SimpleLanguage.Export.SLIR
                 CommentHandling = JsonCommentHandling.Skip,
             });
 
+            // Legacy format: entryModule + moduleList[] wrapper
             if (TryGetJsonArray(doc.RootElement, "moduleList"))
             {
                 var root = JsonSerializer.Deserialize<SLPackageRootJson>(json, options) ?? new SLPackageRootJson();
@@ -160,6 +169,7 @@ namespace SimpleLanguage.Export.SLIR
                 return pkg;
             }
 
+            // New format: flat SLModulePackage (no moduleList wrapper)
             return JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
         }
 
@@ -275,7 +285,7 @@ namespace SimpleLanguage.Export.SLIR
             foreach (var c in classes)
             {
                 if (c == null) continue;
-                var full = NormalizeTypeName(c.irName ?? string.Empty);
+                var full = StripModulePrefix(NormalizeTypeName(c.irName ?? string.Empty));
                 var nsName = GetNamespace(full);
                 var typeName = GetShortName(full);
                 if (!nsMap.TryGetValue(nsName, out var nsPkg))
@@ -294,6 +304,7 @@ namespace SimpleLanguage.Export.SLIR
                     sourcePath = c.sourcePath ?? string.Empty,
                     metaClassKind = (int)c.metaClassKind,
                     isDynamic = c.OwnerMetaData?.isDynamic ?? false,
+                    baseClassId = c.OwnerMetaClass?.extendClass?.GetHashCode() ?? 0,
                 };
                 var implIds = c.GetImplementsInterfaceClassIds();
                 if (implIds != null && implIds.Count > 0)
@@ -562,7 +573,7 @@ namespace SimpleLanguage.Export.SLIR
                 if (m == null) continue;
 
                 var declaringTypeFullName = m.irOwnerMetaClass?.irName ?? string.Empty;
-                declaringTypeFullName = NormalizeTypeName(declaringTypeFullName);
+                declaringTypeFullName = StripModulePrefix(NormalizeTypeName(declaringTypeFullName));
                 var mp = new SLMethodPackage
                 {
                     id = m.id ?? string.Empty,
@@ -655,9 +666,16 @@ namespace SimpleLanguage.Export.SLIR
                 module.irStringDict.Add(new IRStringItem { id = kv.Key, value = kv.Value ?? string.Empty });
             }
 
-            // In-memory model; Write() serializes SLPackageRootJson (entryModule + moduleList only).
-            pkg.entryModule = module.moduleName;
-            pkg.moduleList.Add(module);
+            // Populate flat fields directly on SLModulePackage (no moduleList wrapper).
+            pkg.moduleName = module.moduleName;
+            pkg.uuid = module.uuid;
+            pkg.entryMethodId = module.entryMethodId;
+            pkg.moduleReferences = module.moduleReferences;
+            pkg.irStringDict = module.irStringDict;
+            pkg.namespaceList = module.namespaceList;
+            pkg.classList = module.classList;
+            pkg.globalStaticVariableList = module.globalStaticVariableList;
+            pkg.methodList = module.methodList;
 
             return pkg;
         }
@@ -824,8 +842,8 @@ namespace SimpleLanguage.Export.SLIR
         private static void TryRewriteArrayStaticInitializer(IRMetaVariable v, List<IRData> irBuf, IRMetaType ownerType)
         {
             if (v?.irMetaType?.irMetaClass == null || irBuf == null || irBuf.Count == 0) return;
-            var typeName = v.irMetaType.irMetaClass.irName ?? string.Empty;
-            if (!typeName.StartsWith("Core.Array", StringComparison.Ordinal)) return;
+            var typeName = StripModulePrefix(v.irMetaType.irMetaClass.irName ?? string.Empty);
+            if (!typeName.StartsWith("Array", StringComparison.Ordinal)) return;
 
             bool hasArrayCtor = irBuf.Exists(d => d != null && (d.opCode == EIROpCode.NewArray || d.opCode == EIROpCode.NewTemplateObject));
             if (hasArrayCtor) return;
@@ -1000,9 +1018,9 @@ namespace SimpleLanguage.Export.SLIR
             var ret = new SLRuntimeDefTypePackage
             {
                 classId = isTemplateSlot ? 0 : (mt.irMetaClass?.id ?? 0),
-                className = isTemplateSlot ? ("T[" + mt.templateIndex + "]") : NormalizeTypeName(mt.irMetaClass?.irName ?? string.Empty),
+                className = isTemplateSlot ? ("T[" + mt.templateIndex + "]") : StripModulePrefix(NormalizeTypeName(mt.irMetaClass?.irName ?? string.Empty)),
                 ownerClassId = mt.irOwnerMetaClass?.id ?? 0,
-                ownerClassName = NormalizeTypeName(mt.irOwnerMetaClass?.irName ?? string.Empty),
+                ownerClassName = StripModulePrefix(NormalizeTypeName(mt.irOwnerMetaClass?.irName ?? string.Empty)),
                 templateIndex = mt.templateIndex,
                 isTemplate = isTemplateSlot,
             };

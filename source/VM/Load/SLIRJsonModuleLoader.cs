@@ -84,9 +84,7 @@ namespace SimpleLanguage.VM
         public static SLPackageRootJson ReadModule(string jsonPath)
         {
             if (string.IsNullOrWhiteSpace(jsonPath)) jsonPath = GetDefaultJsonPath();
-            var json = File.ReadAllText(jsonPath);
-            var options = CreateSlirPackageReadOptions();
-            return JsonSerializer.Deserialize<SLPackageRootJson>(json, options) ?? new SLPackageRootJson();
+            return LoadFromJson(jsonPath);
         }
 
         // Merged helpers from SLModulePackageLoader
@@ -116,13 +114,14 @@ namespace SimpleLanguage.VM
                 }
                 else
                 {
-                    // Legacy single-module shape: convert it into canonical root wrapper.
-                    var legacy = JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
-                    NormalizeFieldFlagsForClassList(legacy.classList);
+                    // Flat format (new standard): SLModulePackage directly at root, no moduleList wrapper.
+                    var flat = JsonSerializer.Deserialize<SLModulePackage>(json, options) ?? new SLModulePackage();
+                    NormalizeFieldFlagsForClassList(flat.classList);
                     return new SLPackageRootJson
                     {
-                        entryModule = legacy.moduleName ?? string.Empty,
-                        moduleList = new List<SLModulePackage> { legacy },
+                        entryModule = flat.moduleName ?? string.Empty,
+                        uuid = flat.uuid ?? string.Empty,
+                        moduleList = new List<SLModulePackage> { flat },
                     };
                 }
             }

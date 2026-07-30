@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace SimpleLanguage.Export.SLIR.Types
 {
@@ -97,6 +98,8 @@ namespace SimpleLanguage.Export.SLIR.Types
         public int metaClassKind { get; set; }
         /// <summary>True when this exported data type is anonymous/dynamic data.</summary>
         public bool isDynamic { get; set; }
+        /// <summary>IR class id of the base/extend class (same id scheme as <see cref="id"/>); 0 if none.</summary>
+        public int baseClassId { get; set; }
         /// <summary>IR class ids of interfaces this type implements (same id scheme as <see cref="id"/>), including from the base class chain in Meta.</summary>
         public List<int> implementsInterfaceIdList { get; set; } = new();
         public List<SLFieldPackage> fieldList { get; set; } = new();
@@ -145,8 +148,8 @@ namespace SimpleLanguage.Export.SLIR.Types
     }
 
     /// <summary>
-    /// JSON root written to <c>module.package.json</c>: only <see cref="entryModule"/> and <see cref="moduleList"/>.
-    /// Each item in <see cref="moduleList"/> is a full <see cref="SLAssemblyPackage"/> (legacy module shape).
+    /// Legacy JSON root (entryModule + moduleList). Only used for reading old-format files;
+    /// new exports use flat <see cref="SLModulePackage"/> directly.
     /// </summary>
     public sealed class SLPackageRootJson
     {
@@ -156,16 +159,20 @@ namespace SimpleLanguage.Export.SLIR.Types
     }
 
     /// <summary>
-    /// In-memory / deserialization model: may include legacy top-level fields when reading old files.
+    /// In-memory / deserialization model. Exported as flat JSON (no moduleList wrapper).
+    /// <see cref="moduleList"/> and <see cref="entryModule"/> are JsonIgnored:
+    /// they exist only for in-memory backward compat with old-format readers.
     /// </summary>
     public sealed class SLModulePackage
     {
         public string moduleName { get; set; } = string.Empty;
         public string uuid { get; set; } = string.Empty;
-        /// <summary>Which <see cref="SLAssemblyPackage.moduleName"/> in <see cref="moduleList"/> is the entry module.</summary>
+        /// <summary>Only used in-memory for old-format reads; not serialized.</summary>
+        [JsonIgnore]
         public string? entryModule { get; set; }
+        /// <summary>Only used in-memory for old-format reads; not serialized.</summary>
+        [JsonIgnore]
         public List<SLAssemblyPackage> moduleList { get; set; } = new();
-        /// <summary>Optional copy of the entry module's <c>entryMethodId</c> for loaders that only read the root.</summary>
         public string? entryMethodId { get; set; }
         public List<string> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();

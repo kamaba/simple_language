@@ -30,6 +30,8 @@ namespace SimpleLanguage.Parse
             rc.name = fullName;
             rc.metaClassKind = pkg.metaClassKind;
             rc.isDynamicData = pkg.isDynamic;
+            rc.baseClassId = pkg.baseClassId;
+            rc.templateParameterCount = pkg.templateParameterCount;
             rc.fieldsFromPackageApplied = false;
 
             if (pkg.implementsInterfaceIdList != null)

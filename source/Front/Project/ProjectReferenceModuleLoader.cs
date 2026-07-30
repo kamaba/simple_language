@@ -4,6 +4,7 @@ using SimpleLanguage.Export.SLIR.Types;
 using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -87,7 +88,20 @@ namespace SimpleLanguage.Project
 
             var alias = ResolveModuleName(reference, package, modulePath);
 
-            var metaModule = new MetaModule(alias);
+            /* Skip if module is already loaded (e.g. Core was already loaded as a reference).
+             * When Core is still in inner form (C# layer via CoreMetaClassManager.Init),
+             * "Core" is NOT in m_AllMetaModuleDict, so GetMetaModuleByName returns null
+             * and we proceed with loading (replacing the inner form with the compiled package). */
+            var existingModule = ModuleManager.instance.GetMetaModuleByName(package.moduleName);
+            if (existingModule != null)
+            {
+                Log.AddProjectLog(LID.ShowExtendMessage,
+                    $"Reference module '{package.moduleName}' is already loaded, skipping. path={modulePath}");
+                Console.WriteLine($"[Reference] Module already loaded, skipping: name={package.moduleName}, path={modulePath}");
+                return true;
+            }
+
+            var metaModule = new MetaModule(package.moduleName);
             metaModule.SetRefFromType(RefFromType.Local);
             BuildModuleTree(metaModule, package);
             ModuleManager.instance.AddMetaMdoule(metaModule);
@@ -200,6 +214,29 @@ namespace SimpleLanguage.Project
                 return;
             }
 
+            /* Build method lookup: id -> SLMethodPackage for signature resolution */
+            var methodLookup = new Dictionary<string, SLMethodPackage>();
+            if (package.methodList != null)
+            {
+                foreach (var m in package.methodList)
+                {
+                    if (m != null && !string.IsNullOrWhiteSpace(m.id))
+                    {
+                        methodLookup[m.id] = m;
+                    }
+                }
+            }
+
+            /* Build class lookup: id -> SLClassPackage for interface/inheritance resolution */
+            var classLookup = new Dictionary<int, SLClassPackage>();
+            if (package.classList != null)
+            {
+                foreach (var c in package.classList)
+                {
+                    if (c != null) classLookup[c.id] = c;
+                }
+            }
+
             if (package.namespaceList != null)
             {
                 for (int i = 0; i < package.namespaceList.Count; i++)
@@ -212,7 +249,7 @@ namespace SimpleLanguage.Project
             {
                 for (int i = 0; i < package.classList.Count; i++)
                 {
-                    AddReferenceType(metaModule, package.classList[i]);
+                    AddReferenceType(metaModule, package.classList[i], methodLookup, classLookup);
                 }
             }
         }
@@ -239,7 +276,16 @@ namespace SimpleLanguage.Project
             return current;
         }
 
-        private static void AddReferenceType(MetaModule metaModule, SLClassPackage cls)
+        /// <summary>
+        /// Creates a MetaClass/MetaData/MetaEnum from an exported SLClassPackage,
+        /// restoring: class kind, member variables (with defineMetaType/realMetaType),
+        /// enum members, member function signatures, base class inheritance,
+        /// template definitions, and interface relationships.
+        /// Function instruction bodies and expressions are NOT restored (only signatures/types).
+        /// </summary>
+        private static void AddReferenceType(MetaModule metaModule, SLClassPackage cls,
+            Dictionary<string, SLMethodPackage> methodLookup,
+            Dictionary<int, SLClassPackage> classLookup)
         {
             if (metaModule == null || cls == null)
             {
@@ -263,22 +309,217 @@ namespace SimpleLanguage.Project
             switch ((IRMetaClassKind)cls.metaClassKind)
             {
                 case IRMetaClassKind.Data:
+                {
                     var md = new MetaData(typeName, false, false, cls.isDynamic);
                     md.SetAllName(fullName);
                     md.SetClassDefineType(EClassDefineType.StructDefine);
+                    AddFieldsToData(md, cls.fieldList, metaModule);
                     parent.AddMetaData(md);
+                    ClassManager.instance.AddDefineMetaData(md);
                     break;
+                }
                 case IRMetaClassKind.Enum:
+                {
                     var me = new MetaEnum(typeName);
                     me.SetClassDefineType(EClassDefineType.StructDefine);
+                    AddEnumMembers(me, cls.fieldList, metaModule);
                     parent.AddMetaEnum(me);
+                    me.UpdateAllName();
                     break;
-                default:
+                }
+                case IRMetaClassKind.Interface:
+                {
+                    var mi = new MetaClass(typeName, EClassDefineType.StructDefine);
+                    parent.AddMetaClass(mi);
+                    mi.UpdateClassAllName();
+                    AddFieldsToClass(mi, cls.fieldList, metaModule);
+                    AddMethodsToClass(mi, cls, methodLookup);
+                    break;
+                }
+                default: // Class
+                {
                     var mc = new MetaClass(typeName, EClassDefineType.StructDefine);
                     parent.AddMetaClass(mc);
                     mc.UpdateClassAllName();
+
+                    /* Template class: log template count for diagnostics */
+                    if (cls.templateParameterCount > 0)
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                            $"Reference class '{fullName}' is a template class with {cls.templateParameterCount} type parameters (loaded as struct define).");
+                    }
+
+                    /* Member variables */
+                    AddFieldsToClass(mc, cls.fieldList, metaModule);
+
+                    /* Member functions (signatures only, no instruction bodies) */
+                    AddMethodsToClass(mc, cls, methodLookup);
+
+                    /* Base class relationship */
+                    if (cls.baseClassId != 0)
+                    {
+                        if (classLookup.TryGetValue(cls.baseClassId, out var basePkg))
+                        {
+                            var baseFullName = !string.IsNullOrWhiteSpace(basePkg.fullName)
+                                ? basePkg.fullName : basePkg.name;
+                            var baseType = ResolveTypeByName(metaModule, baseFullName);
+                            if (baseType != null)
+                            {
+                                mc.SetExtendClass(baseType);
+                            }
+                        }
+                    }
+
+                    /* Interface relationships */
+                    if (cls.implementsInterfaceIdList != null)
+                    {
+                        foreach (var ifaceId in cls.implementsInterfaceIdList)
+                        {
+                            if (classLookup.TryGetValue(ifaceId, out var ifacePkg))
+                            {
+                                var ifaceFullName = !string.IsNullOrWhiteSpace(ifacePkg.fullName)
+                                    ? ifacePkg.fullName : ifacePkg.name;
+                                var ifaceType = ResolveTypeByName(metaModule, ifaceFullName);
+                                if (ifaceType != null)
+                                {
+                                    mc.AddInterfaceClass(ifaceType);
+                                }
+                            }
+                        }
+                    }
+
+                    ClassManager.instance.AddExportMetaClass(mc);
                     break;
+                }
             }
+        }
+
+        private static void AddFieldsToClass(MetaClass mc, List<SLFieldPackage> fieldList, MetaModule metaModule)
+        {
+            if (mc == null || fieldList == null) return;
+
+            foreach (var field in fieldList)
+            {
+                if (field == null || string.IsNullOrWhiteSpace(field.name)) continue;
+
+                var mmv = new MetaMemberVariable(mc, field.name);
+                ApplyFieldTypeInfo(mmv, metaModule, field);
+                mc.AddMetaMemberVariable(mmv);
+            }
+        }
+
+        private static void AddFieldsToData(MetaData md, List<SLFieldPackage> fieldList, MetaModule metaModule)
+        {
+            if (md == null || fieldList == null) return;
+
+            foreach (var field in fieldList)
+            {
+                if (field == null || string.IsNullOrWhiteSpace(field.name)) continue;
+
+                var mmv = new MetaMemberVariable(md, field.name);
+                ApplyFieldTypeInfo(mmv, metaModule, field);
+                md.AddMetaMemberVariable(mmv);
+            }
+        }
+
+        /// <summary>
+        /// Restores enum members from the exported fieldList.
+        /// Each field becomes a MetaMemberVariable added to the enum's member dictionary.
+        /// </summary>
+        private static void AddEnumMembers(MetaEnum me, List<SLFieldPackage> fieldList, MetaModule metaModule)
+        {
+            if (me == null || fieldList == null) return;
+
+            foreach (var field in fieldList)
+            {
+                if (field == null || string.IsNullOrWhiteSpace(field.name)) continue;
+
+                var mmv = new MetaMemberVariable(me, field.name);
+                ApplyFieldTypeInfo(mmv, metaModule, field);
+                // Enum members are const by nature
+                mmv.SetIsConst(true);
+                mmv.SetIsStatic(false);
+                mmv.SetVariableFrom(MetaVariable.EVariableFrom.EnumMember);
+                me.metaMemberVariableDict.Add(mmv.name, mmv);
+            }
+        }
+
+        private static void AddMethodsToClass(MetaClass mc, SLClassPackage cls,
+            Dictionary<string, SLMethodPackage> methodLookup)
+        {
+            if (mc == null || cls == null) return;
+
+            /* Non-static (instance) methods */
+            if (cls.nonStaticMethodList != null)
+            {
+                foreach (var meta in cls.nonStaticMethodList)
+                {
+                    AddMethodToClass(mc, meta, methodLookup, isStatic: false);
+                }
+            }
+
+            /* Static methods */
+            if (cls.staticMethodList != null)
+            {
+                foreach (var meta in cls.staticMethodList)
+                {
+                    AddMethodToClass(mc, meta, methodLookup, isStatic: true);
+                }
+            }
+
+            /* Operator methods */
+            if (cls.operatorMethodList != null)
+            {
+                foreach (var meta in cls.operatorMethodList)
+                {
+                    AddMethodToClass(mc, meta, methodLookup, isStatic: false);
+                }
+            }
+        }
+
+        private static void AddMethodToClass(MetaClass mc, SLMethodMeta meta,
+            Dictionary<string, SLMethodPackage> methodLookup, bool isStatic)
+        {
+            if (mc == null || meta == null || string.IsNullOrWhiteSpace(meta.name)) return;
+
+            var mmf = new MetaMemberFunction(mc, meta.name);
+            mmf.SetIsStatic(isStatic);
+
+            mc.AddMetaMemberFunction(mmf);
+        }
+
+        /// <summary>
+        /// Resolves a type by its full name within the module being loaded,
+        /// falling back to CoreMetaClassManager for built-in types.
+        /// </summary>
+        private static MetaClass ResolveTypeByName(MetaModule metaModule, string fullName)
+        {
+            if (string.IsNullOrWhiteSpace(fullName)) return null;
+
+            /* Check built-in core types first */
+            var coreNode = CoreMetaClassManager.GetCoreMetaClass(fullName);
+            if (coreNode != null)
+            {
+                return coreNode.GetMetaClassByTemplateCount(0);
+            }
+
+            /* Search within the module's namespace tree */
+            if (metaModule?.metaNode != null)
+            {
+                var parts = fullName.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                var current = metaModule.metaNode;
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    current = current.GetChildrenMetaNodeByName(parts[i]);
+                    if (current == null) break;
+                }
+                if (current != null && current.IsMetaClass())
+                {
+                    return current.GetMetaClassByTemplateCount(0);
+                }
+            }
+
+            return null;
         }
 
         #endregion
@@ -336,6 +577,16 @@ namespace SimpleLanguage.Project
                 Log.AddProjectLog(LID.ShowExtendMessage,
                     $"Reference module alias is empty: {jsoncPath}");
                 return false;
+            }
+
+            /* Skip if module is already loaded (avoids duplicate loading). */
+            var existingModule = ModuleManager.instance.GetMetaModuleByName(alias);
+            if (existingModule != null)
+            {
+                Log.AddProjectLog(LID.ShowExtendMessage,
+                    $"Reference module '{alias}' is already loaded, skipping. path={jsoncPath}");
+                Console.WriteLine($"[Reference] Module already loaded, skipping: name={alias}, path={jsoncPath}");
+                return true;
             }
 
             /* Build MetaModule from the struct tree */
@@ -432,6 +683,139 @@ namespace SimpleLanguage.Project
                         }
                         break;
                     }
+            }
+        }
+
+        #endregion
+
+        #region Type resolution helpers
+
+        /// <summary>
+        /// Resolves a MetaNode by its full name (dot-separated) within the module's namespace tree.
+        /// </summary>
+        private static MetaNode ResolveMetaNodeByFullName(MetaNode root, string fullName)
+        {
+            if (root == null || string.IsNullOrWhiteSpace(fullName))
+            {
+                return null;
+            }
+
+            var parts = fullName.Split('.', StringSplitOptions.RemoveEmptyEntries);
+            var current = root;
+            for (int i = 0; i < parts.Length; i++)
+            {
+                current = current.GetChildrenMetaNodeByName(parts[i]);
+                if (current == null) break;
+            }
+            return current;
+        }
+
+        /// <summary>
+        /// Converts an <see cref="SLRuntimeDefTypePackage"/> (exported type payload) back to a <see cref="MetaType"/>.
+        /// Resolves built-in core types first, then searches the module's namespace tree.
+        /// Template parameters (isTemplate=true) fall back to object since source context is unavailable.
+        /// Generic types with runtimeDefTypeList are reconstructed with their template arguments.
+        /// </summary>
+        private static MetaType ResolveRuntimeDefType(MetaModule metaModule, SLRuntimeDefTypePackage typeDef)
+        {
+            if (typeDef == null)
+            {
+                return new MetaType(CoreMetaClassManager.objectMetaClass);
+            }
+
+            // Template parameter: cannot resolve without source context
+            if (typeDef.isTemplate)
+            {
+                return new MetaType(CoreMetaClassManager.objectMetaClass);
+            }
+
+            var className = typeDef.className ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(className))
+            {
+                return new MetaType(CoreMetaClassManager.objectMetaClass);
+            }
+
+            // Try built-in core types first
+            var coreNode = CoreMetaClassManager.GetCoreMetaClass(className);
+            if (coreNode != null)
+            {
+                var mc = coreNode.GetMetaClassByTemplateCount(0);
+                if (mc != null)
+                {
+                    return BuildMetaTypeWithTemplateArgs(mc, metaModule, typeDef);
+                }
+                if (coreNode.metaData != null)
+                {
+                    return new MetaType(coreNode.metaData);
+                }
+                if (coreNode.metaEnum != null)
+                {
+                    return new MetaType(coreNode.metaEnum);
+                }
+            }
+
+            // Search within the module's namespace tree
+            if (metaModule?.metaNode != null)
+            {
+                var node = ResolveMetaNodeByFullName(metaModule.metaNode, className);
+                if (node != null)
+                {
+                    if (node.metaData != null)
+                    {
+                        return new MetaType(node.metaData);
+                    }
+                    if (node.metaEnum != null)
+                    {
+                        return new MetaType(node.metaEnum);
+                    }
+                    var mc = node.GetMetaClassByTemplateCount(0);
+                    if (mc != null)
+                    {
+                        return BuildMetaTypeWithTemplateArgs(mc, metaModule, typeDef);
+                    }
+                }
+            }
+
+            return new MetaType(CoreMetaClassManager.objectMetaClass);
+        }
+
+        /// <summary>
+        /// Builds a MetaType from a MetaClass, attaching template type arguments if present.
+        /// </summary>
+        private static MetaType BuildMetaTypeWithTemplateArgs(MetaClass mc, MetaModule metaModule, SLRuntimeDefTypePackage typeDef)
+        {
+            if (typeDef.runtimeDefTypeList != null && typeDef.runtimeDefTypeList.Count > 0)
+            {
+                var templateArgs = new List<MetaType>();
+                foreach (var child in typeDef.runtimeDefTypeList)
+                {
+                    templateArgs.Add(ResolveRuntimeDefType(metaModule, child));
+                }
+                return new MetaType(mc, templateArgs);
+            }
+            return new MetaType(mc);
+        }
+
+        /// <summary>
+        /// Restores field type info (defineMetaType/realMetaType), isStatic, isConst from an SLFieldPackage.
+        /// </summary>
+        private static void ApplyFieldTypeInfo(MetaMemberVariable mmv, MetaModule metaModule, SLFieldPackage field)
+        {
+            // flags bits: 1=private, 2=public, 4=export, 8=protected, 16=const, 32=static
+            mmv.SetIsStatic((field.flags & 32) != 0);
+            mmv.SetIsConst((field.flags & 16) != 0);
+
+            if (field.typeDef != null)
+            {
+                var mt = ResolveRuntimeDefType(metaModule, field.typeDef);
+                mmv.SetMetaDefineType(mt);
+                mmv.SetIsDefineMetaType(true);
+                mmv.SetRealMetaType(new MetaType(mt));
+            }
+
+            if (field.index >= 0)
+            {
+                mmv.SetIndex(field.index);
             }
         }
 

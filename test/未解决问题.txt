@@ -5,16 +5,9 @@
 3. 使用Byte/SByte/Int16/UInt16/Int32/UInt32/
 4. Float32/Float64
 final int/uint/float 等方法 
-toInt32...的方法使用
-parseInt的尝试
 compare的验证
 int x1 = 10 + (1-20) * 33/20 + 10~/20 - 22 * 2/1; 有报错处理
-
-
-
 1. cvm 只使用三色方案
-2. 把VMRUntimeValue 字段合并成一个int32
-
 
 机制差的:
 1. 模块化功能
@@ -22,8 +15,6 @@ int x1 = 10 + (1-20) * 33/20 + 10~/20 - 22 * 2/1; 有报错处理
 3. 优化迭代器，直接写到Array/Range cvm层，还有就是写for循环 使用for i = 0, i < 100; 这种的，也在虚拟机层实现
 4. 增加中断编译，和编译状态的逻辑
 5. 内置action的支持
-
-
 
 1. this的使用，还没有整合
 2. 循环引用 问题
@@ -60,9 +51,6 @@ int x1 = 10 + (1-20) * 33/20 + 10~/20 - 22 * 2/1; 有报错处理
 3. bind的使用     iterface 接口 与bind的使用  如果使用interface的 如果bind过的话，那如果interface后，就相当于bind data了
 4. bind在class上，后，就相当于  给class 添加一个 data DataName 然后把相关的方法进行了封闭  get DataNameVariableName{ DataName.variableName } set ...这种的
 5. 增加协程  await 或者是使用go
-6. 增加 catch的逻辑  数字计算的溢出，空指针等的收集 
-6.1 . 每个溢出都，默认都会进入异常收集系统。
-7 增加?? ?. ? 的语法糖 还有就是是否为空的空整确定
 8. swtich的enum的支持  switch的,逗号的支持
 9. switch的 区间支持 switch的is MetaClass 的支持
 10. 写list,map的支持

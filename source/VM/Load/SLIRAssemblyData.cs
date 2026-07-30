@@ -15,6 +15,7 @@ namespace SimpleLanuageVM.Load
     public sealed class SLPackageRootJson
     {
         public string? entryModule { get; set; } = string.Empty;
+        public string uuid { get; set; } = string.Empty;
         public List<SLModulePackage> moduleList { get; set; } = new();
     }
 
@@ -33,6 +34,7 @@ namespace SimpleLanuageVM.Load
     public sealed class SLModulePackage
     {
         public string moduleName { get; set; } = string.Empty;
+        public string uuid { get; set; } = string.Empty;
         public string? entryMethodId { get; set; }
         public List<string> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
@@ -106,10 +108,12 @@ namespace SimpleLanuageVM.Load
         public int metaClassKind { get; set; }
         /// <summary>True when this type is anonymous/dynamic data exported from Front.</summary>
         public bool isDynamic { get; set; }
+        /// <summary>IR class id of the base/extend class; 0 if none. Matches Front export.</summary>
+        public int baseClassId { get; set; }
         /// <summary>IR class ids of implemented interfaces; matches Front <c>SLClassPackage.implementsInterfaceIdList</c>.</summary>
         public List<int> implementsInterfaceIdList { get; set; } = new();
         /// <summary>Declared template arity in source; matches Front <c>SLClassPackage.templateParameterCount</c>.</summary>
-        //public int templateParameterCount { get; set; }
+        public int templateParameterCount { get; set; }
         /// <summary>IR generated template meta type count; matches Front <c>SLClassPackage.templateCount</c>.</summary>
         public int templateCount { get; set; }
         /// <summary>Generated class template type list; matches Front <c>SLClassPackage.templateTypeList</c>.</summary>
