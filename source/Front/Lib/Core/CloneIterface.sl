@@ -1,21 +1,17 @@
+public interface IClone
+{
+    clone()    
+}
 
-
-
-
-    public interface Core.IClone
+#!
+public class Level<T> interface Core.IClone
+{
+    T _value = null
+    public Level<T> clone()
     {
-        clone()
+        Level<T> newclone = Level<T>()
+        newclone._value = this._value
+        ret newclone
     }
-
-    #!
-    public class Level<T> interface Core.IClone
-    {
-        T _value = null
-        public Level<T> clone()
-        {
-            Level<T> newclone = Level<T>()
-            newclone._value = this._value
-            ret newclone
-        }
-    }
-    !#
+}
+!#
