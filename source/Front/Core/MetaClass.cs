@@ -770,7 +770,6 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-#if EditorMode
         public void BindFileMetaClass(FileMetaClass fmc)
         {
             if (m_FileMetaClassDict.ContainsKey(fmc.token))
@@ -891,7 +890,6 @@ namespace SimpleLanguage.Core
                 m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, defaultFunction.metaBlockStatements );
             }
         }
-#endif        
         public void SetExtendClass(MetaClass sec)
         {
             this.m_ExtendClass = sec;
