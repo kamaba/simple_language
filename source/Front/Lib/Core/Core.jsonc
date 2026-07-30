@@ -64,16 +64,12 @@
   },
   "global": {
     "imports": [
-      "Std.Console",
-      "Std.IO.File"
     ],
     "replace": {
       "DEBUG": "true"
     }
   },
   "references": [
-    //{ "path": "lib/std","uuid": "321323-123123-123123-123123", "name": "Std" },
-    //{ "path": "lib/core","uuid": "321323-123123-123123-123123", "name": "Core" }
   ],
   // =====================================================================
   // System function declarations (read by Front compiler at startup).
@@ -199,11 +195,7 @@
         { "class": "NativeBridge" },
         { "class": "Attribute" },
         { "class": "Error" }
-      ] },
-      { "namespace": "Std", "children": [] },
-      { "namespace": "Application", "children": [] },
-      { "namespace": "ConStrCC", "children": [] },
-      { "class": "Std.Console" }    
+      ] }
   ],
   "export": {
     "moduleName": "Core",

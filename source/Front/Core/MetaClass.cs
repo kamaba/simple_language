@@ -128,6 +128,7 @@ namespace SimpleLanguage.Core
         {
             m_Name = _name;
             m_Type = _type;
+            m_IsPartial = true;
         }
         public MetaClass( MetaClass mc ) : base(mc)
         {

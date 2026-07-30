@@ -1,5 +1,3 @@
-import Std;
-
 # =========================================================================
 # Memory - Memory management and garbage collection API.
 #

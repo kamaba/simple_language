@@ -425,9 +425,17 @@ namespace SimpleLanguage.IR
             //if( OwnerMetaClass != null )
             {
                 List<MetaMemberFunction> merged = new List<MetaMemberFunction>();
+                var seenNames = new HashSet<string>(System.StringComparer.Ordinal);
                 if (nonsmflist != null)
                 {
-                    merged.AddRange(nonsmflist);
+                    for (int i = 0; i < nonsmflist.Count; i++)
+                    {
+                        var mf = nonsmflist[i];
+                        if (mf == null) continue;
+                        mf.UpdateFunctionName();
+                        if (seenNames.Add(mf.functionAllName))
+                            merged.Add(mf);
+                    }
                 }
                 if (fileFuncs != null)
                 {
@@ -436,7 +444,9 @@ namespace SimpleLanguage.IR
                         var mf = fileFuncs[i];
                         if (mf == null) continue;
                         if (mf.isStatic) continue;
-                        merged.Add(mf);
+                        mf.UpdateFunctionName();
+                        if (seenNames.Add(mf.functionAllName))
+                            merged.Add(mf);
                     }
                 }
 

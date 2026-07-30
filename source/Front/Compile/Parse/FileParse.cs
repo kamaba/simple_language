@@ -158,6 +158,11 @@ namespace SimpleLanguage.Compile
             }
         }
 
+        public override string ToString()
+        {
+            return filePath;
+        }
+
         public void ExportMetaDebugData()
         {
             try

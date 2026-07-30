@@ -300,6 +300,17 @@ namespace SimpleLanguage.VM
 
             // 3) Process per-class method reference lists on each module's class packages.
             // These are meta references; method bodies have already been attached via module.methodList above.
+            // Skip methods already added in step 2 to avoid duplicates.
+            var addedMethodIds = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var module in asm.moduleList)
+            {
+                if (module?.methodList == null) continue;
+                foreach (var m in module.methodList)
+                {
+                    if (!string.IsNullOrEmpty(m?.id)) addedMethodIds.Add(m.id);
+                }
+            }
+
             foreach (var module in asm.moduleList)
             {
                 if (module?.classList == null) continue;
@@ -316,6 +327,7 @@ namespace SimpleLanguage.VM
                         {
                             var mm = c.nonStaticMethodList[i];
                             if (mm == null) continue;
+                            if (addedMethodIds.Contains(mm.id ?? string.Empty)) continue;
                             tm.AddMethod(new SLMethodPackage
                             {
                                 id = mm.id ?? string.Empty,
@@ -334,6 +346,7 @@ namespace SimpleLanguage.VM
                         {
                             var mm = c.operatorMethodList[i];
                             if (mm == null) continue;
+                            if (addedMethodIds.Contains(mm.id ?? string.Empty)) continue;
                             tm.AddMethod(new SLMethodPackage
                             {
                                 id = mm.id ?? string.Empty,
@@ -352,6 +365,7 @@ namespace SimpleLanguage.VM
                         {
                             var mm = c.staticMethodList[i];
                             if (mm == null) continue;
+                            if (addedMethodIds.Contains(mm.id ?? string.Empty)) continue;
                             tm.AddMethod(new SLMethodPackage
                             {
                                 id = mm.id ?? string.Empty,

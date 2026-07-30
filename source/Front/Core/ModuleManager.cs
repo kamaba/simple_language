@@ -35,7 +35,14 @@ namespace SimpleLanguage.Core
         public void InitSelfModuleManager( string moduleName )
         {
             m_SelfModule = new MetaModule(moduleName);
-            m_CoreModule = m_SelfModule;
+            if( moduleName == "Core" )
+            {
+                m_CoreModule = m_SelfModule;
+            }
+            else
+            {
+                m_CoreModule = new MetaModule("Core");
+            }
             m_CSharpLangRegisterModule = new MetaModule("CSharp");
             m_CLangRegisterModule = new MetaModule("CLang");
             m_JavaLangRegisterModule = new MetaModule("Java");

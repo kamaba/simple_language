@@ -63,6 +63,21 @@ namespace SimpleLanguage.Core
 
             SetOwnerMetaBase(mc);
         }
+        /// <summary>
+        /// Creates a MetaMemberEnum from IR/slir data (no source FileMetaMemberVariable required).
+        /// </summary>
+        public MetaMemberEnum(MetaEnum mc, string name, int index) : base()
+        {
+            m_OwnerMetaBase = mc;
+            m_Name = name;
+            m_Index = index;
+            m_FromType = EFromType.Code;
+            m_VariableFrom = EVariableFrom.EnumMember;
+            m_Permission = EPermission.Public;
+            m_IsConst = true;
+            m_IsStatic = false;
+            SetOwnerMetaBase(mc);
+        }
         public override void ParseDefineMetaType()
         {
             var me = ownerMetaEnum;

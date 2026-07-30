@@ -23,6 +23,12 @@ namespace SimpleLanguage.Project
     /// </summary>
     public static class ProjectReferenceModuleLoader
     {
+        /// <summary>
+        /// When true, loading is replacing the inner-form Core types in coreModule
+        /// with compiled definitions. Existing types are reused and their members overwritten.
+        /// </summary>
+        private static bool s_isCoreReplacement = false;
+
         public static void LoadReferences(ProjectConfig config, string projectDir)
         {
             if (config?.References == null || config.References.Count == 0)
@@ -88,23 +94,39 @@ namespace SimpleLanguage.Project
 
             var alias = ResolveModuleName(reference, package, modulePath);
 
-            /* Skip if module is already loaded (e.g. Core was already loaded as a reference).
-             * When Core is still in inner form (C# layer via CoreMetaClassManager.Init),
-             * "Core" is NOT in m_AllMetaModuleDict, so GetMetaModuleByName returns null
-             * and we proceed with loading (replacing the inner form with the compiled package). */
-            var existingModule = ModuleManager.instance.GetMetaModuleByName(package.moduleName);
-            if (existingModule != null)
+            /* Core module: reuse the existing coreModule (populated by CoreMetaClassManager.Init)
+             * and overwrite inner-form types with compiled definitions.
+             * Non-Core modules: skip if already loaded. */
+            bool isCore = package.moduleName == "Core";
+            MetaModule metaModule;
+
+            if (isCore)
             {
-                Log.AddProjectLog(LID.ShowExtendMessage,
-                    $"Reference module '{package.moduleName}' is already loaded, skipping. path={modulePath}");
-                Console.WriteLine($"[Reference] Module already loaded, skipping: name={package.moduleName}, path={modulePath}");
-                return true;
+                metaModule = ModuleManager.instance.coreModule;
+                s_isCoreReplacement = true;
+            }
+            else
+            {
+                var existingModule = ModuleManager.instance.GetMetaModuleByName(package.moduleName);
+                if (existingModule != null)
+                {
+                    Log.AddProjectLog(LID.ShowExtendMessage,
+                        $"Reference module '{package.moduleName}' is already loaded, skipping. path={modulePath}");
+                    Console.WriteLine($"[Reference] Module already loaded, skipping: name={package.moduleName}, path={modulePath}");
+                    return true;
+                }
+                metaModule = new MetaModule(package.moduleName);
+                metaModule.SetRefFromType(RefFromType.Local);
+                s_isCoreReplacement = false;
             }
 
-            var metaModule = new MetaModule(package.moduleName);
-            metaModule.SetRefFromType(RefFromType.Local);
             BuildModuleTree(metaModule, package);
-            ModuleManager.instance.AddMetaMdoule(metaModule);
+
+            if (!isCore)
+            {
+                ModuleManager.instance.AddMetaMdoule(metaModule);
+            }
+            s_isCoreReplacement = false;
 
             Log.AddProjectLog(LID.ShowExtendMessage,
                 $"Reference module loaded (compiled): name={alias}, path={modulePath}");
@@ -245,12 +267,28 @@ namespace SimpleLanguage.Project
                 }
             }
 
-            if (package.classList != null)
+            if (package.classList == null) return;
+
+            /* Pass 1: Create all type shells (class/data/enum) without members.
+             * This ensures all types are registered in the namespace tree before
+             * any MetaType resolution happens in pass 2. */
+            var createdTypes = new List<(SLClassPackage cls, MetaBase metaBase)>();
+            for (int i = 0; i < package.classList.Count; i++)
             {
-                for (int i = 0; i < package.classList.Count; i++)
+                var cls = package.classList[i];
+                if (cls == null) continue;
+                var metaBase = CreateReferenceTypeShell(metaModule, cls);
+                if (metaBase != null)
                 {
-                    AddReferenceType(metaModule, package.classList[i], methodLookup, classLookup);
+                    createdTypes.Add((cls, metaBase));
                 }
+            }
+
+            /* Pass 2: Populate members (fields, methods, enum members, base class, interfaces).
+             * Now all types are available for MetaType resolution. */
+            foreach (var (cls, metaBase) in createdTypes)
+            {
+                PopulateReferenceTypeMembers(metaModule, cls, metaBase, methodLookup, classLookup);
             }
         }
 
@@ -277,33 +315,39 @@ namespace SimpleLanguage.Project
         }
 
         /// <summary>
-        /// Creates a MetaClass/MetaData/MetaEnum from an exported SLClassPackage,
-        /// restoring: class kind, member variables (with defineMetaType/realMetaType),
-        /// enum members, member function signatures, base class inheritance,
-        /// template definitions, and interface relationships.
-        /// Function instruction bodies and expressions are NOT restored (only signatures/types).
+        /// Pass 1: Creates an empty type shell (MetaClass/MetaData/MetaEnum) and registers
+        /// it in the namespace tree. No members are populated yet.
+        /// Returns the created MetaBase, or null if skipped.
         /// </summary>
-        private static void AddReferenceType(MetaModule metaModule, SLClassPackage cls,
-            Dictionary<string, SLMethodPackage> methodLookup,
-            Dictionary<int, SLClassPackage> classLookup)
+        private static MetaBase CreateReferenceTypeShell(MetaModule metaModule, SLClassPackage cls)
         {
-            if (metaModule == null || cls == null)
-            {
-                return;
-            }
+            if (metaModule == null || cls == null) return null;
 
             var fullName = !string.IsNullOrWhiteSpace(cls.fullName) ? cls.fullName : cls.name;
-            if (string.IsNullOrWhiteSpace(fullName))
-            {
-                return;
-            }
+            if (string.IsNullOrWhiteSpace(fullName)) return null;
 
             var nsName = GetNamespace(fullName);
             var typeName = !string.IsNullOrWhiteSpace(cls.name) ? cls.name : GetShortName(fullName);
             var parent = EnsureNamespacePath(metaModule.metaNode, nsName);
-            if (parent == null || parent.GetChildrenMetaNodeByName(typeName) != null)
+            if (parent == null) return null;
+
+            /* Core replacement: if a child node already exists (inner-form Core type),
+             * return the existing MetaBase so its members can be overwritten in Pass 2. */
+            var existingChild = parent.GetChildrenMetaNodeByName(typeName);
+            if (existingChild != null)
             {
-                return;
+                if (s_isCoreReplacement)
+                {
+                    if (existingChild.isMetaData) return existingChild.metaData;
+                    if (existingChild.isMetaEnum) return existingChild.metaEnum;
+                    var existingMc = existingChild.GetMetaClassByTemplateCount(cls.templateParameterCount);
+                    if (existingMc != null) return existingMc;
+                    /* Template count mismatch -- fall through to create a new entry. */
+                }
+                else
+                {
+                    return null;
+                }
             }
 
             switch ((IRMetaClassKind)cls.metaClassKind)
@@ -313,47 +357,109 @@ namespace SimpleLanguage.Project
                     var md = new MetaData(typeName, false, false, cls.isDynamic);
                     md.SetAllName(fullName);
                     md.SetClassDefineType(EClassDefineType.StructDefine);
-                    AddFieldsToData(md, cls.fieldList, metaModule);
                     parent.AddMetaData(md);
-                    ClassManager.instance.AddDefineMetaData(md);
-                    break;
+                    return md;
                 }
                 case IRMetaClassKind.Enum:
                 {
                     var me = new MetaEnum(typeName);
                     me.SetClassDefineType(EClassDefineType.StructDefine);
-                    AddEnumMembers(me, cls.fieldList, metaModule);
                     parent.AddMetaEnum(me);
                     me.UpdateAllName();
-                    break;
+                    return me;
                 }
                 case IRMetaClassKind.Interface:
                 {
                     var mi = new MetaClass(typeName, EClassDefineType.StructDefine);
                     parent.AddMetaClass(mi);
                     mi.UpdateClassAllName();
-                    AddFieldsToClass(mi, cls.fieldList, metaModule);
-                    AddMethodsToClass(mi, cls, methodLookup);
-                    break;
+                    return mi;
                 }
                 default: // Class
                 {
                     var mc = new MetaClass(typeName, EClassDefineType.StructDefine);
-                    parent.AddMetaClass(mc);
-                    mc.UpdateClassAllName();
 
-                    /* Template class: log template count for diagnostics */
+                    /* Template class: create MetaTemplate parameters before adding to MetaNode,
+                     * so MetaNode.AddMetaClass registers it with the correct template count
+                     * in m_MetaTemplateClassDict. */
                     if (cls.templateParameterCount > 0)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage,
-                            $"Reference class '{fullName}' is a template class with {cls.templateParameterCount} type parameters (loaded as struct define).");
+                        for (int ti = 0; ti < cls.templateParameterCount; ti++)
+                        {
+                            var tplName = ti == 0 ? "T" : "T" + ti.ToString();
+                            var mt = new MetaTemplate(mc, tplName, CoreMetaClassManager.objectMetaClass, ECovariance.None);
+                            mt.SetIndex(ti);
+                            mc.metaTemplateList.Add(mt);
+                        }
                     }
+
+                    /* AddMetaClass creates the MetaNode and calls mc.SetMetaNode(node),
+                     * so metaNode is set after this call. UpdateClassAllName must come
+                     * after AddMetaClass because it traverses the metaNode parent chain. */
+                    parent.AddMetaClass(mc);
+                    mc.UpdateClassAllName();
+                    return mc;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Pass 2: Populates members (fields, methods, enum members, base class, interfaces)
+        /// on a previously created type shell. All types are now available for MetaType resolution.
+        /// </summary>
+        private static void PopulateReferenceTypeMembers(MetaModule metaModule, SLClassPackage cls,
+            MetaBase metaBase,
+            Dictionary<string, SLMethodPackage> methodLookup,
+            Dictionary<int, SLClassPackage> classLookup)
+        {
+            if (metaModule == null || cls == null || metaBase == null) return;
+
+            /* Core replacement: clear inner-form members before repopulating with compiled data. */
+            if (s_isCoreReplacement)
+            {
+                ClearExistingMembers(metaBase);
+            }
+
+            switch ((IRMetaClassKind)cls.metaClassKind)
+            {
+                case IRMetaClassKind.Data:
+                {
+                    var md = metaBase as MetaData;
+                    if (md != null)
+                    {
+                        AddFieldsToData(md, cls.fieldList, metaModule);
+                    }
+                    break;
+                }
+                case IRMetaClassKind.Enum:
+                {
+                    var me = metaBase as MetaEnum;
+                    if (me != null)
+                    {
+                        AddEnumMembers(me, cls.fieldList, metaModule);
+                    }
+                    break;
+                }
+                case IRMetaClassKind.Interface:
+                {
+                    var mi = metaBase as MetaClass;
+                    if (mi != null)
+                    {
+                        AddFieldsToClass(mi, cls.fieldList, metaModule);
+                        AddMethodsToClass(mi, cls, methodLookup, metaModule);
+                    }
+                    break;
+                }
+                default: // Class
+                {
+                    var mc = metaBase as MetaClass;
+                    if (mc == null) break;
 
                     /* Member variables */
                     AddFieldsToClass(mc, cls.fieldList, metaModule);
 
                     /* Member functions (signatures only, no instruction bodies) */
-                    AddMethodsToClass(mc, cls, methodLookup);
+                    AddMethodsToClass(mc, cls, methodLookup, metaModule);
 
                     /* Base class relationship */
                     if (cls.baseClassId != 0)
@@ -387,10 +493,38 @@ namespace SimpleLanguage.Project
                             }
                         }
                     }
-
-                    ClassManager.instance.AddExportMetaClass(mc);
                     break;
                 }
+            }
+        }
+
+        /// <summary>
+        /// Clears existing members (fields, methods, enum members) from a MetaBase.
+        /// Used during Core replacement to wipe inner-form definitions before
+        /// repopulating with compiled data.
+        /// </summary>
+        private static void ClearExistingMembers(MetaBase metaBase)
+        {
+            if (metaBase is MetaEnum me)
+            {
+                me.metaMemberEnumDict.Clear();
+                me.metaMemberVariableDict.Clear();
+            }
+            else if (metaBase is MetaData md)
+            {
+                md.metaMemberDataDict.Clear();
+                md.nonStaticVirtualMetaMemberFunctionList.Clear();
+                md.staticMetaMemberFunctionList.Clear();
+                md.fileCollectMetaMemberFunctionList.Clear();
+            }
+            else if (metaBase is MetaClass mc)
+            {
+                mc.metaMemberVariableDict.Clear();
+                mc.fileCollectMetaMemberVariable.Clear();
+                mc.nonStaticVirtualMetaMemberFunctionList.Clear();
+                mc.staticMetaMemberFunctionList.Clear();
+                mc.fileCollectMetaMemberFunctionList.Clear();
+                mc.metaMemberFunctionTemplateNodeDict.Clear();
             }
         }
 
@@ -416,15 +550,20 @@ namespace SimpleLanguage.Project
             {
                 if (field == null || string.IsNullOrWhiteSpace(field.name)) continue;
 
-                var mmv = new MetaMemberVariable(md, field.name);
-                ApplyFieldTypeInfo(mmv, metaModule, field);
-                md.AddMetaMemberVariable(mmv);
+                var fieldName = field.name;
+                var fieldIndex = field.index >= 0 ? field.index : md.metaMemberDataDict.Count;
+                MetaType fieldType = null;
+                if (field.typeDef != null)
+                {
+                    fieldType = ResolveRuntimeDefType(metaModule, field.typeDef);
+                }
+                var mmd = MetaMemberData.CreateDeclared(md, fieldName, fieldIndex, fieldType, fieldType != null);
+                md.AddMetaMemberData(mmd);
             }
         }
 
         /// <summary>
-        /// Restores enum members from the exported fieldList.
-        /// Each field becomes a MetaMemberVariable added to the enum's member dictionary.
+        /// Restores enum members from the exported fieldList using MetaMemberEnum.
         /// </summary>
         private static void AddEnumMembers(MetaEnum me, List<SLFieldPackage> fieldList, MetaModule metaModule)
         {
@@ -434,18 +573,31 @@ namespace SimpleLanguage.Project
             {
                 if (field == null || string.IsNullOrWhiteSpace(field.name)) continue;
 
-                var mmv = new MetaMemberVariable(me, field.name);
-                ApplyFieldTypeInfo(mmv, metaModule, field);
-                // Enum members are const by nature
-                mmv.SetIsConst(true);
-                mmv.SetIsStatic(false);
-                mmv.SetVariableFrom(MetaVariable.EVariableFrom.EnumMember);
-                me.metaMemberVariableDict.Add(mmv.name, mmv);
+                var memberName = field.name;
+                var memberIndex = field.index >= 0 ? field.index : me.metaMemberEnumDict.Count;
+                var mme = new MetaMemberEnum(me, memberName, memberIndex);
+
+                /* Set defineMetaType / realMetaType from exported typeDef */
+                if (field.typeDef != null)
+                {
+                    var mt = ResolveRuntimeDefType(metaModule, field.typeDef);
+                    mme.SetMetaDefineType(mt);
+                    mme.SetRealMetaType(new MetaType(mt));
+                    mme.SetIsDefineMetaType(true);
+                }
+                else
+                {
+                    /* Fallback: derive type from enum's extend class/data */
+                    mme.ParseDefineMetaType();
+                }
+
+                me.metaMemberEnumDict.Add(mme.name, mme);
+                me.metaMemberVariableDict.Add(mme.name, mme);
             }
         }
 
         private static void AddMethodsToClass(MetaClass mc, SLClassPackage cls,
-            Dictionary<string, SLMethodPackage> methodLookup)
+            Dictionary<string, SLMethodPackage> methodLookup, MetaModule metaModule)
         {
             if (mc == null || cls == null) return;
 
@@ -454,7 +606,7 @@ namespace SimpleLanguage.Project
             {
                 foreach (var meta in cls.nonStaticMethodList)
                 {
-                    AddMethodToClass(mc, meta, methodLookup, isStatic: false);
+                    AddMethodToClass(mc, meta, methodLookup, metaModule, isStatic: false);
                 }
             }
 
@@ -463,7 +615,7 @@ namespace SimpleLanguage.Project
             {
                 foreach (var meta in cls.staticMethodList)
                 {
-                    AddMethodToClass(mc, meta, methodLookup, isStatic: true);
+                    AddMethodToClass(mc, meta, methodLookup, metaModule, isStatic: true);
                 }
             }
 
@@ -472,18 +624,61 @@ namespace SimpleLanguage.Project
             {
                 foreach (var meta in cls.operatorMethodList)
                 {
-                    AddMethodToClass(mc, meta, methodLookup, isStatic: false);
+                    AddMethodToClass(mc, meta, methodLookup, metaModule, isStatic: false);
                 }
             }
         }
 
         private static void AddMethodToClass(MetaClass mc, SLMethodMeta meta,
-            Dictionary<string, SLMethodPackage> methodLookup, bool isStatic)
+            Dictionary<string, SLMethodPackage> methodLookup, MetaModule metaModule, bool isStatic)
         {
             if (mc == null || meta == null || string.IsNullOrWhiteSpace(meta.name)) return;
 
             var mmf = new MetaMemberFunction(mc, meta.name);
             mmf.SetIsStatic(isStatic);
+
+            /* Look up full method package to restore return type and parameters */
+            if (methodLookup != null && !string.IsNullOrWhiteSpace(meta.id) &&
+                methodLookup.TryGetValue(meta.id, out var mp) && mp != null)
+            {
+                /* Return type */
+                if (mp.returnList != null && mp.returnList.Count > 0)
+                {
+                    var retVar = mp.returnList[0];
+                    if (retVar?.typeDef != null)
+                    {
+                        var retType = ResolveRuntimeDefType(metaModule, retVar.typeDef);
+                        mmf.SetDefineMetaType(retType);
+                        mmf.SetRealMetaType(new MetaType(retType));
+                        mmf.SetIsDefineMetaType(true);
+                        if (mmf.returnMetaVariable != null)
+                        {
+                            mmf.returnMetaVariable.SetMetaDefineType(new MetaType(retType));
+                            mmf.returnMetaVariable.SetRealMetaType(new MetaType(retType));
+                            mmf.returnMetaVariable.SetIsDefineMetaType(true);
+                        }
+                    }
+                }
+
+                /* Parameters */
+                if (mp.argumentList != null)
+                {
+                    foreach (var arg in mp.argumentList)
+                    {
+                        if (arg == null) continue;
+                        var paramName = !string.IsNullOrWhiteSpace(arg.name) ? arg.name : "arg";
+                        var mdp = new MetaDefineParam(paramName, mmf);
+                        if (arg.typeDef != null)
+                        {
+                            var paramType = ResolveRuntimeDefType(metaModule, arg.typeDef);
+                            mdp.metaVariable.SetMetaDefineType(paramType);
+                            mdp.metaVariable.SetRealMetaType(new MetaType(paramType));
+                            mdp.metaVariable.SetIsDefineMetaType(true);
+                        }
+                        mmf.AddMetaDefineParam(mdp);
+                    }
+                }
+            }
 
             mc.AddMetaMemberFunction(mmf);
         }

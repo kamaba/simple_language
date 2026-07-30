@@ -84,7 +84,6 @@ namespace SimpleLanguage.Project
             // Logs / DebugCode / *.module.json 均在 {export.outputDir}/{moduleName}/（见 ProjectOutputEnvironment）。
             ProjectOutputEnvironment.ApplyFromConfig(config, projectDir, projectName);
             Log.AddProjectLog(LID.ProjectShowConfigPath, "", jsoncPath);
-            ProjectReferenceModuleLoader.LoadReferences(config, projectDir);
 
             // 3. 后续逻辑仍然可以保留 m_ProjectFile，用于旧的基于 FileMeta 的流程
             if (m_ProjectFile == null)
@@ -113,6 +112,11 @@ namespace SimpleLanguage.Project
             CSharpManager.InitCanSearchAssemblyList();
 
             CoreMetaClassManager.instance.Init();
+
+            // Load reference modules AFTER Core inner types are built.
+            // This allows a compiled Core reference to replace the C# inner-form
+            // Core types with the code-based definitions.
+            ProjectReferenceModuleLoader.LoadReferences(ProjectManager.config, ProjectManager.projectPath);
 
             // Load system call declarations from the project .jsonc config.
             {

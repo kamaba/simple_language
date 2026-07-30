@@ -262,6 +262,18 @@ namespace SimpleLanguage.Core
                 m_ReturnMetaVariable.defineMetaType.SetMetaClass(metaClass);
             }
         }
+        public void SetDefineMetaType( MetaType mdt )
+        {
+            m_DefineMetaType = mdt;
+        }
+        public void SetRealMetaType( MetaType realMt )
+        {
+            m_RealMetaType = realMt;
+        }
+        public void SetIsDefineMetaType( bool flag )
+        {
+            m_IsDefineMetaType = flag;
+        }
         public MetaDefineParam GetMetaDefineParamByName( string name )
         {
             return m_MetaMemberParamCollection.GetMetaDefineParamByName(name);
