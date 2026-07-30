@@ -14,9 +14,11 @@ namespace SimpleLanguage.Project
     /// Each reference has: path (relative or absolute), uuid (optional), name (the import alias).
     ///
     /// Loading strategy (tried in order):
-    ///   1. Compiled package  (.package.json / .module.json) at or near the path
-    ///   2. Source module      (directory containing a .jsonc with struct tree)
-    ///   3. Export output      (look in the referenced module's export outputDir)
+    ///   1. Source module      (directory containing a .jsonc with struct tree)
+    ///   2. Compiled package   (.package.json / .module.json) as fallback
+    ///
+    /// Source-first: the module's elements are loaded directly from source and
+    /// are only available within the current compilation project (not re-exported).
     /// </summary>
     public static class ProjectReferenceModuleLoader
     {
@@ -40,7 +42,13 @@ namespace SimpleLanguage.Project
                 return;
             }
 
-            /* --- Strategy 1: Try compiled package (.package.json / .module.json) --- */
+            /* --- Strategy 1: Try source module (.jsonc with struct tree) --- */
+            if (TryLoadSourceModule(reference, projectDir))
+            {
+                return;
+            }
+
+            /* --- Strategy 2: Fallback to compiled package (.package.json / .module.json) --- */
             var packagePath = ResolveReferenceModulePath(reference.Path, projectDir);
             if (!string.IsNullOrWhiteSpace(packagePath) && File.Exists(packagePath))
             {
@@ -50,14 +58,10 @@ namespace SimpleLanguage.Project
                 }
             }
 
-            /* --- Strategy 2: Try source module (.jsonc with struct tree) --- */
-            if (TryLoadSourceModule(reference, projectDir))
-            {
-                return;
-            }
-
             Log.AddProjectLog(LID.ShowExtendMessage,
                 $"Reference module not found or could not be loaded: path={reference.Path}, name={reference.Name}");
+            Console.WriteLine($"[Reference] Failed to load module: name={reference.Name}, path={reference.Path}");
+            return;
         }
 
         #region Compiled package loading
@@ -76,10 +80,10 @@ namespace SimpleLanguage.Project
                 return false;
             }
 
-            if (!ValidateUuid(reference, package, modulePath))
-            {
-                return false;
-            }
+            //if (!ValidateUuid(reference, package, modulePath))
+            //{
+            //    return false;
+            //}
 
             var alias = ResolveModuleName(reference, package, modulePath);
 
@@ -90,6 +94,7 @@ namespace SimpleLanguage.Project
 
             Log.AddProjectLog(LID.ShowExtendMessage,
                 $"Reference module loaded (compiled): name={alias}, path={modulePath}");
+            Console.WriteLine($"[Reference] Module loaded (compiled): name={alias}, path={modulePath}");
             return true;
         }
 
@@ -262,7 +267,6 @@ namespace SimpleLanguage.Project
                     md.SetAllName(fullName);
                     md.SetClassDefineType(EClassDefineType.StructDefine);
                     parent.AddMetaData(md);
-                    ClassManager.instance.AddDefineMetaData(md);
                     break;
                 case IRMetaClassKind.Enum:
                     var me = new MetaEnum(typeName);
@@ -273,7 +277,6 @@ namespace SimpleLanguage.Project
                     var mc = new MetaClass(typeName, EClassDefineType.StructDefine);
                     parent.AddMetaClass(mc);
                     mc.UpdateClassAllName();
-                    ClassManager.instance.AddExportMetaClass(mc);
                     break;
             }
         }
@@ -343,6 +346,7 @@ namespace SimpleLanguage.Project
 
             Log.AddProjectLog(LID.ShowExtendMessage,
                 $"Reference module loaded (source): name={alias}, path={jsoncPath}, structCount={refConfig.StructTree.Children.Count}");
+            Console.WriteLine($"[Reference] Module loaded (source): name={alias}, path={jsoncPath}, structs={refConfig.StructTree.Children.Count}");
             return true;
         }
 

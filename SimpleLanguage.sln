@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleLanguageTest", "sourc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleLanguageCompileCore", "source\CompileCore\SimpleLanguageCompileCore.csproj", "{A7B3D1E2-4F5A-6B7C-8D9E-0F1A2B3C4D5E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleLanguageCompileStd", "source\CompileStd\SimpleLanguageCompileStd.csproj", "{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "csimple_lang", "..\csimple_lang\csimple_lang.vcxproj", "{1DE0CC1E-2C43-457C-9B9C-860C54FFA58C}"
 EndProject
 Global
@@ -85,6 +87,18 @@ Global
 		{A7B3D1E2-4F5A-6B7C-8D9E-0F1A2B3C4D5E}.Release|x64.Build.0 = Release|Any CPU
 		{A7B3D1E2-4F5A-6B7C-8D9E-0F1A2B3C4D5E}.Release|x86.ActiveCfg = Release|Any CPU
 		{A7B3D1E2-4F5A-6B7C-8D9E-0F1A2B3C4D5E}.Release|x86.Build.0 = Release|Any CPU
+		{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}.Debug|x64.Build.0 = Debug|Any CPU
+		{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}.Debug|x86.Build.0 = Debug|Any CPU
+		{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}.Release|x64.ActiveCfg = Release|Any CPU
+		{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}.Release|x64.Build.0 = Release|Any CPU
+		{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}.Release|x86.ActiveCfg = Release|Any CPU
+		{B8C4E2F3-5A6B-7C8D-9E0F-1A2B3C4D5E6F}.Release|x86.Build.0 = Release|Any CPU
 		{1DE0CC1E-2C43-457C-9B9C-860C54FFA58C}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{1DE0CC1E-2C43-457C-9B9C-860C54FFA58C}.Debug|Any CPU.Build.0 = Debug|x64
 		{1DE0CC1E-2C43-457C-9B9C-860C54FFA58C}.Debug|x64.ActiveCfg = Debug|x64

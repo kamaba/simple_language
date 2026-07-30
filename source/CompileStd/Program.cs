@@ -1,7 +1,7 @@
 using System.Text;
 using SimpleLanguage.Project;
 
-namespace SimpleLanguageCompileCore;
+namespace SimpleLanguageCompileStd;
 
 internal static class Program
 {
@@ -12,8 +12,8 @@ internal static class Program
 
         string repoRoot = GetRepoRoot();
 
-        // Default: compile Core.sp with IR export
-        string defaultProjectPath = Path.Combine(repoRoot, "source", "Front", "Lib", "Core", "Core");
+        // Default: compile Std.sp with IR export
+        string defaultProjectPath = Path.Combine(repoRoot, "source", "Front", "Lib", "Std", "Std");
         string projectPath = args.Length == 0 ? defaultProjectPath : args[0];
 
         // Build CLI args: compile -e ir -p <path> --no-banner

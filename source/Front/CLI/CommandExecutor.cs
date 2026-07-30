@@ -9,6 +9,8 @@ namespace SimpleLanguage.Project
 {
     public static class CommandExecutor
     {
+        public const string VersionString = "1.0.0";
+
         public static bool Execute(CommandInputArgs inputArgs)
         {
             if (inputArgs == null)
@@ -16,6 +18,11 @@ namespace SimpleLanguage.Project
                 return false;
             }
             LogManager.Initialize("");
+
+            if (!inputArgs.noBanner)
+            {
+                PrintBanner();
+            }
 
             switch (inputArgs.commandType)
             {
@@ -25,16 +32,211 @@ namespace SimpleLanguage.Project
                     return ExecuteNewClassFile(inputArgs);
                 case CommandInputArgs.ECommandType.Compile:
                     return ExecuteCompile(inputArgs);
+                case CommandInputArgs.ECommandType.Run:
+                    return ExecuteRun(inputArgs);
+                case CommandInputArgs.ECommandType.Export:
+                    return ExecuteExport(inputArgs);
+                case CommandInputArgs.ECommandType.Clean:
+                    return ExecuteClean(inputArgs);
+                case CommandInputArgs.ECommandType.Version:
+                    return ExecuteVersion();
+                case CommandInputArgs.ECommandType.Help:
+                    return ExecuteHelp();
                 default:
-                    return false;
+                    return ExecuteHelp();
             }
         }
+
+        #region Banner / Version / Help
+
+        static void PrintBanner()
+        {
+            Console.WriteLine("SimpleLanguage Frontend Compiler v" + VersionString);
+            Console.WriteLine();
+        }
+
+        static bool ExecuteVersion()
+        {
+            Console.WriteLine("SimpleLanguage Frontend Compiler");
+            Console.WriteLine("  Version:    " + VersionString);
+            Console.WriteLine("  Runtime:    " + System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription);
+            Console.WriteLine("  OS:         " + System.Runtime.InteropServices.RuntimeInformation.OSDescription);
+            return true;
+        }
+
+        static bool ExecuteHelp()
+        {
+            Console.WriteLine(@"
+Usage: sl <command> [options]
+
+Commands:
+  compile, c, build, b   Compile a project
+  run, r                 Compile and run (VM not included in Frontend)
+  export, e              Export IR only (no full compile pipeline)
+  clean                  Clean build output directory
+  new project [name]     Create a new project
+  new class [name]       Create a new .sl class file
+  version, v             Show version information
+  help, h                Show this help message
+
+Options:
+  -p, --project <path>   Project path (directory or .sp file)
+  -o, --output <dir>      Output directory
+  -e ir, --export ir      Export IR during compile
+  -t, --test              Run in test mode
+  --release              Build in release mode
+  --debug                Build in debug mode (default)
+  --verbose              Verbose output
+  --no-banner            Suppress banner
+  --token                Print tokens during compile
+
+Examples:
+  sl c -p ../MyProject/MyProject
+  sl compile -p ./Core/Core -e ir
+  sl run -p ./MyProject --test
+  sl new project -p ./projects MyApp
+  sl new class MyClass
+  sl clean -p ./Core/Core
+  sl version
+  sl help
+");
+            return true;
+        }
+
+        #endregion
+
+        #region Compile
+
+        static bool ExecuteCompile(CommandInputArgs inputArgs)
+        {
+            var spPath = ResolveProjectSp(inputArgs.projectSpPath);
+            if (string.IsNullOrWhiteSpace(spPath) || !File.Exists(spPath))
+            {
+                Log.AddProjectLog(LID.ProjectSPFilePathNotFound, "", spPath);
+                return true;
+            }
+
+            Console.WriteLine($"Compiling: {spPath}");
+            ProjectManager.Run(spPath, inputArgs);
+            if (inputArgs.exportIR)
+            {
+                ExportLangManager.Export(ExportKind.SLIR);
+            }
+
+            Console.WriteLine("Compile completed.");
+            return true;
+        }
+
+        static bool ExecuteRun(CommandInputArgs inputArgs)
+        {
+            var spPath = ResolveProjectSp(inputArgs.projectSpPath);
+            if (string.IsNullOrWhiteSpace(spPath) || !File.Exists(spPath))
+            {
+                Log.AddProjectLog(LID.ProjectSPFilePathNotFound, "", spPath);
+                return true;
+            }
+
+            Console.WriteLine($"Compiling: {spPath}");
+            ProjectManager.Run(spPath, inputArgs);
+            if (inputArgs.exportIR)
+            {
+                ExportLangManager.Export(ExportKind.SLIR);
+            }
+
+            Console.WriteLine("Compile completed. (VM run is handled by the host application)");
+            return true;
+        }
+
+        static bool ExecuteExport(CommandInputArgs inputArgs)
+        {
+            var spPath = ResolveProjectSp(inputArgs.projectSpPath);
+            if (string.IsNullOrWhiteSpace(spPath) || !File.Exists(spPath))
+            {
+                Log.AddProjectLog(LID.ProjectSPFilePathNotFound, "", spPath);
+                return true;
+            }
+
+            Console.WriteLine($"Exporting IR: {spPath}");
+            ProjectManager.Run(spPath, inputArgs);
+            ExportLangManager.Export(ExportKind.SLIR);
+            Console.WriteLine("Export completed.");
+            return true;
+        }
+
+        #endregion
+
+        #region Clean
+
+        static bool ExecuteClean(CommandInputArgs inputArgs)
+        {
+            var spPath = ResolveProjectSp(inputArgs.projectSpPath);
+            if (string.IsNullOrWhiteSpace(spPath))
+            {
+                Console.WriteLine("No project specified. Use: sl clean -p <projectPath>");
+                return true;
+            }
+
+            // Determine export directory
+            string exportDir = null;
+            var envExportDir = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.ExportOutDirEnv);
+            if (!string.IsNullOrWhiteSpace(envExportDir))
+            {
+                exportDir = envExportDir;
+            }
+            else
+            {
+                var repoRoot = FindRepoRoot(spPath);
+                if (repoRoot != null)
+                {
+                    exportDir = Path.Combine(repoRoot, "out", "export");
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(exportDir) || !Directory.Exists(exportDir))
+            {
+                Console.WriteLine("Nothing to clean (export directory not found).");
+                return true;
+            }
+
+            var projectName = !string.IsNullOrWhiteSpace(inputArgs.compileProjectName)
+                ? inputArgs.compileProjectName
+                : Path.GetFileNameWithoutExtension(spPath);
+
+            var projectExportDir = Path.Combine(exportDir, projectName);
+            if (Directory.Exists(projectExportDir))
+            {
+                Console.WriteLine($"Cleaning: {projectExportDir}");
+                Directory.Delete(projectExportDir, recursive: true);
+                Console.WriteLine("Clean completed.");
+            }
+            else
+            {
+                Console.WriteLine($"No build output found at: {projectExportDir}");
+            }
+            return true;
+        }
+
+        static string FindRepoRoot(string startPath)
+        {
+            var dir = new DirectoryInfo(Path.GetDirectoryName(startPath) ?? startPath);
+            while (dir != null)
+            {
+                if (File.Exists(Path.Combine(dir.FullName, "SimpleLanguage.sln")))
+                    return dir.FullName;
+                dir = dir.Parent;
+            }
+            return null;
+        }
+
+        #endregion
+
+        #region New Project / New Class
 
         static bool ExecuteNewProject(CommandInputArgs inputArgs)
         {
             if (string.IsNullOrWhiteSpace(inputArgs.newProjectName))
             {
-                Console.WriteLine("Usage: sl new project -p [path] [name]");
+                Console.WriteLine("Usage: sl new project [-p <path>] <name>");
                 return true;
             }
 
@@ -49,7 +251,6 @@ namespace SimpleLanguage.Project
 
             var spPath = Path.Combine(projectDir, projectName + ".sp");
             var jsoncPath = Path.Combine(projectDir, projectName + ".jsonc");
-            //var mainSlPath = Path.Combine(projectDir, "Main.sl");
 
             if (!File.Exists(spPath))
             {
@@ -71,8 +272,7 @@ namespace SimpleLanguage.Project
                     "    \"buildVersion\": 0\n" +
                     "  },\n" +
                     "  \"source\": {\n" +
-                    "    \"root\": \".\",\n" +
-                    "    \"entryFile\": \"Main.sl\"\n" +
+                    "    \"root\": \".\"\n" +
                     "  },\n" +
                     "  \"compile\": {\n" +
                     "    \"optimize\": false,\n" +
@@ -98,15 +298,8 @@ namespace SimpleLanguage.Project
                     new UTF8Encoding(true));
             }
 
-            //if (!File.Exists(mainSlPath))
-            //{
-            //    File.WriteAllText(mainSlPath,
-            //        "Main\n{\n    fun()\n    {\n    }\n}\n",
-            //        new UTF8Encoding(true));
-            //}
-
             ProjectClass.ExportProjectGuideMarkdown(spPath, jsoncPath);
-
+            Console.WriteLine($"Project '{projectName}' created at: {projectDir}");
             return true;
         }
 
@@ -114,7 +307,7 @@ namespace SimpleLanguage.Project
         {
             if (string.IsNullOrWhiteSpace(inputArgs.newClassFileName))
             {
-                Console.WriteLine("Usage: sl new classfile [filename]");
+                Console.WriteLine("Usage: sl new class <filename>");
                 return true;
             }
 
@@ -138,6 +331,7 @@ namespace SimpleLanguage.Project
             var spPath = FindCurrentProjectSp(cwd);
             if (string.IsNullOrWhiteSpace(spPath))
             {
+                Console.WriteLine($"Class file created: {classPath}");
                 return true;
             }
 
@@ -145,6 +339,7 @@ namespace SimpleLanguage.Project
             var jsoncPath = Path.Combine(Path.GetDirectoryName(spPath) ?? cwd, projectName + ".jsonc");
             if (!File.Exists(jsoncPath))
             {
+                Console.WriteLine($"Class file created: {classPath}");
                 return true;
             }
 
@@ -177,32 +372,18 @@ namespace SimpleLanguage.Project
                 }
             }
 
+            Console.WriteLine($"Class file created: {classPath}");
             return true;
         }
 
-        static bool ExecuteCompile(CommandInputArgs inputArgs)
-        {
-            var spPath = ResolveProjectSp(inputArgs.projectSpPath);
-            if (string.IsNullOrWhiteSpace(spPath) || !File.Exists(spPath))
-            {
-                Log.AddProjectLog( LID.ProjectSPFilePathNotFound, "", spPath );
-                return true;
-            }
+        #endregion
 
-            ProjectManager.Run(spPath, inputArgs);
-            if (inputArgs.exportIR)
-            {
-                ExportLangManager.Export(ExportKind.SLIR);
-            }
-
-            return true;
-        }
+        #region Helpers
 
         static string ResolveProjectSp(string explicitSpPath)
         {
             if (!string.IsNullOrWhiteSpace(explicitSpPath))
             {
-                // already normalized by CommandInputArgs (-p parsing) to <dir>/<name>.sp when possible
                 if (File.Exists(explicitSpPath))
                 {
                     return Path.GetFullPath(explicitSpPath);
@@ -260,5 +441,7 @@ namespace SimpleLanguage.Project
             }
             return -1;
         }
+
+        #endregion
     }
 }

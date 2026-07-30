@@ -1,4 +1,4 @@
-﻿extern alias VMRuntime;
+extern alias VMRuntime;
 
 using System.Diagnostics;
 using System.Linq;
@@ -20,8 +20,8 @@ internal static class Program
         // Usage:
         //   dotnet run --project source/Test/SimpleLanguageTest.csproj -- <projectPathWithoutSpOrWithSp> [-test]
         // Example:
-        //   ... -- E:\project\lang\simple_language\source\Front\Lib\Core\Core
-        string defaultProjectPath = Path.Combine(repoRoot, "source", "Front", "Lib", "Core", "Core");
+        //   ... -- E:\project\lang\simple_language\test\BaseTest\ProjectTest
+        string defaultProjectPath = Path.Combine(repoRoot, "test", "BaseTest", "ProjectTest");
         string projectPath = args.Length == 0 ? defaultProjectPath : args[0];
         bool runTestEntry = args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
         // Default to in-process mode for easier single-process debugging.
@@ -40,7 +40,7 @@ internal static class Program
             : RunDotnet(new List<string>
             {
                 "run", "--project", Quote(frontProject), "--",
-                "c", "-e", "ir", "-p", projectPath
+                "compile", "-e", "ir", "-p", projectPath, "--no-banner"
             }, "Front compile", repoRoot);
         if (frontExit != 0)
         {
@@ -131,7 +131,7 @@ internal static class Program
         try
         {
             Console.WriteLine("=== Front compile (in-process) ===");
-            var frontArgs = new[] { "c", "-e", "ir", "-p", projectPath };
+            var frontArgs = new[] { "compile", "-e", "ir", "-p", projectPath, "--no-banner" };
             var inputArgs = new CommandInputArgs(frontArgs);
             _ = CommandExecutor.Execute(inputArgs);
             return 0;
@@ -179,7 +179,6 @@ internal static class Program
 
     static string ResolveModulePackagePath(string repoRoot, string projectPath)
     {
-        _ = projectPath;
         var exportDir = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.ExportOutDirEnv);
         if (!string.IsNullOrWhiteSpace(exportDir))
         {
@@ -192,6 +191,23 @@ internal static class Program
                 if (found.Length > 1)
                     return found.OrderByDescending(File.GetLastWriteTimeUtc).First();
             }
+        }
+
+        // Derive module name from project path
+        var moduleName = !string.IsNullOrWhiteSpace(projectPath)
+            ? Path.GetFileName(projectPath.TrimEnd('\\', '/'))
+            : "Core";
+        var fallback = Path.Combine(repoRoot, "out", "export", moduleName, moduleName + ".module.json");
+        if (File.Exists(fallback))
+            return fallback;
+
+        // Final fallback: search export dir for any module.json
+        var exportRoot = Path.Combine(repoRoot, "out", "export");
+        if (Directory.Exists(exportRoot))
+        {
+            var found = Directory.GetFiles(exportRoot, "*.module.json", SearchOption.AllDirectories);
+            if (found.Length >= 1)
+                return found.OrderByDescending(File.GetLastWriteTimeUtc).First();
         }
 
         return Path.Combine(repoRoot, "out", "export", "Core", "Core.module.json");
