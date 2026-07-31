@@ -63,13 +63,15 @@ namespace SimpleLanguage.Export.SLIR.Types
         public SLRuntimeDefTypePackage? typeDef { get; set; }
         public SLInstructionDebugInfo? debugInfo { get; set; }
     }
-    public sealed class SLMethodPackage 
+    public sealed class SLMethodPackage
     {
-        public string id { get; set; } = string.Empty; 
-        public string name { get; set; } = string.Empty; 
-        public string declaringTypeFullName { get; set; } = string.Empty; 
-        public bool interfaceMethod { get; set; } 
-        public List<SLVariablePackage> returnList { get; set; } = new(); 
+        public string id { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        public string declaringTypeFullName { get; set; } = string.Empty;
+        public bool interfaceMethod { get; set; }
+        /// <summary>Method modifier flags: 1=static, 2=final, 4=abstract, 8=override, 16=interface, 32=canRewrite, 64=constructInit</summary>
+        public int flags { get; set; }
+        public List<SLVariablePackage> returnList { get; set; } = new();
         public List<SLVariablePackage> argumentList { get; set; } = new();
         public List<SLVariablePackage> localList { get; set; } = new();
         public List<SLIRInstructionPackage> instructionList { get; set; } = new();

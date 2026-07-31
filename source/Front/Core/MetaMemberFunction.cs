@@ -515,6 +515,14 @@ namespace SimpleLanguage.Core
         {
             m_IsSet = isSet;
         }
+        public void SetIsFinal(bool flag)
+        {
+            m_IsFinal = flag;
+        }
+        public void SetIsAbstract(bool flag)
+        {
+            m_IsAbstract = flag;
+        }
         public void SetIsOverrideFunction(bool flag )
         {
             m_IsOverrideFunction = flag;

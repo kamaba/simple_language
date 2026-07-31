@@ -146,6 +146,8 @@ namespace SimpleLanuageVM.Load
         // index marks ordering within the specific per-class list
         public int index { get; init; } = 0;
         public bool interfaceMethod { get; set; }
+        /// <summary>Method modifier flags: 1=static, 2=final, 4=abstract, 8=override, 16=interface, 32=canRewrite, 64=constructInit</summary>
+        public int flags { get; set; }
         public string onlyName { get; set; } = string.Empty;
         public string declaringTypeFullName { get; set; } = string.Empty;
         public int ownerClassId { get; set; }

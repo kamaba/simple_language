@@ -155,10 +155,6 @@ namespace SimpleLanguage.Core
                 v.ParseInner();
                 ClassManager.instance.AddMetaClass(v, ModuleManager.instance.coreModule);
                 v.UpdateClassAllName();
-                //if( ProjectManager.config.Project.Name == "Core" )
-                //{
-                //    ClassManager.instance.AddExportMetaClass(v);
-                //}
             }
         }
         public static bool IsIncludeMetaClass( MetaClass metaclass )

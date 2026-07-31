@@ -331,23 +331,27 @@ namespace SimpleLanguage.Project
             var parent = EnsureNamespacePath(metaModule.metaNode, nsName);
             if (parent == null) return null;
 
-            /* Core replacement: if a child node already exists (inner-form Core type),
-             * return the existing MetaBase so its members can be overwritten in Pass 2. */
+            /* Core replacement: first check CoreMetaClassManager for BaseMetaClass-registered
+             * types (Object, Int32, Boolean, etc.). If found, return the existing inner-form
+             * class so its members get overwritten in Pass 2 with the compiled definitions. */
+            if (s_isCoreReplacement)
+            {
+                var coreNode = CoreMetaClassManager.GetCoreMetaClass(typeName);
+                if (coreNode != null)
+                {
+                    if (coreNode.isMetaData) return coreNode.metaData;
+                    if (coreNode.isMetaEnum) return coreNode.metaEnum;
+                    var existingMc = coreNode.GetMetaClassByTemplateCount(cls.templateParameterCount);
+                    if (existingMc != null) return existingMc;
+                }
+            }
+
+            /* Skip if a child node already exists (duplicate, non-Core or Core type
+             * not in BaseMetaClass registry). */
             var existingChild = parent.GetChildrenMetaNodeByName(typeName);
             if (existingChild != null)
             {
-                if (s_isCoreReplacement)
-                {
-                    if (existingChild.isMetaData) return existingChild.metaData;
-                    if (existingChild.isMetaEnum) return existingChild.metaEnum;
-                    var existingMc = existingChild.GetMetaClassByTemplateCount(cls.templateParameterCount);
-                    if (existingMc != null) return existingMc;
-                    /* Template count mismatch -- fall through to create a new entry. */
-                }
-                else
-                {
-                    return null;
-                }
+                return null;
             }
 
             switch ((IRMetaClassKind)cls.metaClassKind)
@@ -606,7 +610,11 @@ namespace SimpleLanguage.Project
             {
                 foreach (var meta in cls.nonStaticMethodList)
                 {
-                    AddMethodToClass(mc, meta, methodLookup, metaModule, isStatic: false);
+                    var mmf = AddMethodToClass(mc, meta, methodLookup, metaModule, isStatic: false);
+                    if (mmf != null)
+                    {
+                        mc.nonStaticVirtualMetaMemberFunctionList.Add(mmf);
+                    }
                 }
             }
 
@@ -615,7 +623,11 @@ namespace SimpleLanguage.Project
             {
                 foreach (var meta in cls.staticMethodList)
                 {
-                    AddMethodToClass(mc, meta, methodLookup, metaModule, isStatic: true);
+                    var mmf = AddMethodToClass(mc, meta, methodLookup, metaModule, isStatic: true);
+                    if (mmf != null)
+                    {
+                        mc.staticMetaMemberFunctionList.Add(mmf);
+                    }
                 }
             }
 
@@ -624,23 +636,34 @@ namespace SimpleLanguage.Project
             {
                 foreach (var meta in cls.operatorMethodList)
                 {
-                    AddMethodToClass(mc, meta, methodLookup, metaModule, isStatic: false);
+                    var mmf = AddMethodToClass(mc, meta, methodLookup, metaModule, isStatic: false);
+                    if (mmf != null)
+                    {
+                        mc.nonStaticVirtualMetaMemberFunctionList.Add(mmf);
+                    }
                 }
             }
         }
 
-        private static void AddMethodToClass(MetaClass mc, SLMethodMeta meta,
+        private static MetaMemberFunction AddMethodToClass(MetaClass mc, SLMethodMeta meta,
             Dictionary<string, SLMethodPackage> methodLookup, MetaModule metaModule, bool isStatic)
         {
-            if (mc == null || meta == null || string.IsNullOrWhiteSpace(meta.name)) return;
+            if (mc == null || meta == null || string.IsNullOrWhiteSpace(meta.name)) return null;
 
             var mmf = new MetaMemberFunction(mc, meta.name);
             mmf.SetIsStatic(isStatic);
 
-            /* Look up full method package to restore return type and parameters */
+            /* Look up full method package to restore return type, parameters, and flags */
             if (methodLookup != null && !string.IsNullOrWhiteSpace(meta.id) &&
                 methodLookup.TryGetValue(meta.id, out var mp) && mp != null)
             {
+                /* Method modifier flags */
+                mmf.SetIsStatic((mp.flags & 1) != 0);
+                mmf.SetIsFinal((mp.flags & 2) != 0);
+                mmf.SetIsAbstract((mp.flags & 4) != 0);
+                mmf.SetIsOverrideFunction((mp.flags & 8) != 0);
+                mmf.SetIsOverrideInterface((mp.flags & 16) != 0);
+
                 /* Return type */
                 if (mp.returnList != null && mp.returnList.Count > 0)
                 {
@@ -681,6 +704,7 @@ namespace SimpleLanguage.Project
             }
 
             mc.AddMetaMemberFunction(mmf);
+            return mmf;
         }
 
         /// <summary>

@@ -580,6 +580,7 @@ namespace SimpleLanguage.Export.SLIR
                     declaringTypeFullName = declaringTypeFullName,
                     name = m.onlyFunctionName ?? string.Empty,
                     interfaceMethod = m.interfaceMethod,
+                    flags = BuildMethodFlags(m),
                 };
 
                 if (m.methodReturnVariableList != null)
@@ -798,6 +799,24 @@ namespace SimpleLanguage.Export.SLIR
             };
             irdata.SetDebugInfoByValue(gv.debugInfo);
             irBuf.Add(irdata);
+        }
+
+        private static int BuildMethodFlags(IRMethod m)
+        {
+            if (m == null || m.bindMetaFunction == null) return 0;
+            int flags = 0;
+
+            if (m.bindMetaFunction is MetaMemberFunction mmf)
+            {
+                if (mmf.isStatic) flags |= 1;
+                if (mmf.isFinal) flags |= 2;
+                if (mmf.isAbstract) flags |= 4;
+                if (mmf.isOverrideFunction) flags |= 8;
+                if (mmf.isOverrideInterface) flags |= 16;
+                if (mmf.isCanRewrite) flags |= 32;
+                if (mmf.isConstructInitFunction) flags |= 64;
+            }
+            return flags;
         }
 
         private static int BuildFieldFlags(IRMetaVariable v)
