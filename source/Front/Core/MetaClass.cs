@@ -85,11 +85,11 @@ namespace SimpleLanguage.Core
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
         protected List<MetaType> m_InterfaceMetaType = new List<MetaType>();
         protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
-        protected List<MetaMemberVariable> m_FileCollectMetaMemberVariable = new List<MetaMemberVariable>();
+        private List<MetaMemberVariable> m_FileCollectMetaMemberVariable = new List<MetaMemberVariable>();
         protected Dictionary<string, MetaMemberVariable> m_MetaExtendMemeberVariableDict = new Dictionary<string, MetaMemberVariable>();
         protected Dictionary<string, MetaMemberFunctionTemplateNode> m_MetaMemberFunctionTemplateNodeDict = new Dictionary<string, MetaMemberFunctionTemplateNode>();
-        protected List<MetaMemberFunction> m_FileCollectMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
-        protected List<MetaType> m_FileCollectMetaInterfaceList = new List<MetaType>();
+        private List<MetaMemberFunction> m_FileCollectMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
+        private List<MetaType> m_FileCollectMetaInterfaceList = new List<MetaType>();
         protected List<MetaMemberFunction> m_NonStaticVirtualMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_StaticMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 

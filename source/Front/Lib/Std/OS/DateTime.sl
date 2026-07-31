@@ -1,15 +1,12 @@
 
-namespace Std.Text
+public class DateTime
 {
-    public class StringBuffer
+     _init_( string text )
     {
-        _init_( string text )
-        {
             
-        }
-        write( string aa )
-        {
-            
-        }
+    }
+    write( string aa )
+    {
+       
     }
 }

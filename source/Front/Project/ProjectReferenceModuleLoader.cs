@@ -290,6 +290,22 @@ namespace SimpleLanguage.Project
             {
                 PopulateReferenceTypeMembers(metaModule, cls, metaBase, methodLookup, classLookup);
             }
+
+            /* Pass 3 (Core replacement only): Re-run extend/interface handling for all
+             * Core types so that inheritance chains are rebuilt after member replacement.
+             * ClearExistingMembers moved own methods to fileCollect; HandleExtendMemberFunction
+             * will re-merge them with inherited methods from the extend class. */
+            if (s_isCoreReplacement)
+            {
+                foreach (var (cls, metaBase) in createdTypes)
+                {
+                    if (metaBase is MetaClass mc)
+                    {
+                        mc.HandleExtendMemberVariable();
+                        mc.HandleExtendMemberFunction();
+                    }
+                }
+            }
         }
 
         private static MetaNode EnsureNamespacePath(MetaNode root, string fullName)
@@ -336,7 +352,16 @@ namespace SimpleLanguage.Project
              * class so its members get overwritten in Pass 2 with the compiled definitions. */
             if (s_isCoreReplacement)
             {
-                var coreNode = CoreMetaClassManager.GetCoreMetaClass(typeName);
+                /* Strip template suffix from typeName for Core lookup:
+                 * JSON exports "Array<T>" but inner-form registers as "Array". */
+                var lookupName = typeName;
+                var ltIdx = lookupName.IndexOf('<');
+                if (ltIdx > 0)
+                {
+                    lookupName = lookupName.Substring(0, ltIdx);
+                }
+
+                var coreNode = CoreMetaClassManager.GetCoreMetaClass(lookupName);
                 if (coreNode != null)
                 {
                     if (coreNode.isMetaData) return coreNode.metaData;
@@ -525,10 +550,22 @@ namespace SimpleLanguage.Project
             {
                 mc.metaMemberVariableDict.Clear();
                 mc.fileCollectMetaMemberVariable.Clear();
+                mc.metaMemberFunctionTemplateNodeDict.Clear();
+                /* Move own methods (not inherited) to fileCollect so HandleExtendMemberFunction
+                  * can re-merge them with inherited methods from the extend class. */
+                mc.fileCollectMetaMemberFunctionList.Clear();
+                foreach (var v in mc.nonStaticVirtualMetaMemberFunctionList)
+                {
+                    if (v != null && v.ownerMetaClass == mc)
+                        mc.fileCollectMetaMemberFunctionList.Add(v);
+                }
+                foreach (var v in mc.staticMetaMemberFunctionList)
+                {
+                    if (v != null && v.ownerMetaClass == mc)
+                        mc.fileCollectMetaMemberFunctionList.Add(v);
+                }
                 mc.nonStaticVirtualMetaMemberFunctionList.Clear();
                 mc.staticMetaMemberFunctionList.Clear();
-                mc.fileCollectMetaMemberFunctionList.Clear();
-                mc.metaMemberFunctionTemplateNodeDict.Clear();
             }
         }
 
@@ -686,8 +723,12 @@ namespace SimpleLanguage.Project
                 /* Parameters */
                 if (mp.argumentList != null)
                 {
-                    foreach (var arg in mp.argumentList)
+                    /* Non-static methods: skip first parameter (implicit 'this' pointer in IR,
+                     * but not needed in MetaCore layer which uses thisMetaVariable separately). */
+                    int startIndex = isStatic ? 0 : 1;
+                    for (int i = startIndex; i < mp.argumentList.Count; i++)
                     {
+                        var arg = mp.argumentList[i];
                         if (arg == null) continue;
                         var paramName = !string.IsNullOrWhiteSpace(arg.name) ? arg.name : "arg";
                         var mdp = new MetaDefineParam(paramName, mmf);

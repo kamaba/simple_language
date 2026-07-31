@@ -1,6 +1,5 @@
-namespace Std.Math
-{
-    public class Random
+
+ public class Random
     {
         private int _seed = 0
 
@@ -92,4 +91,3 @@ namespace Std.Math
             ret r.nextFloat(min, max)
         }
     }
-}

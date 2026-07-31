@@ -31,8 +31,15 @@ namespace SimpleLanguage.Core
             m_MetaNode = mtc.metaNode;
             m_MetaTemplateList = mtc.metaTemplateList;
             m_ExtendClassMetaType = mtc.extendClassMetaType;
-            m_FileCollectMetaMemberVariable = mtc.fileCollectMetaMemberVariable;
-            m_FileCollectMetaMemberFunctionList = mtc.fileCollectMetaMemberFunctionList;
+
+            /* Copy from the already-processed member collections.
+              * For source-compiled types, m_FileCollect* lists are eventually merged into
+              * the non-static/static lists by HandleExtendMemberFunction, so copying the
+              * final lists is correct for both source-compiled and reference-loaded types. */
+            m_NonStaticVirtualMetaMemberFunctionList = new List<MetaMemberFunction>(mtc.nonStaticVirtualMetaMemberFunctionList);
+            m_StaticMetaMemberFunctionList = new List<MetaMemberFunction>(mtc.staticMetaMemberFunctionList);
+            m_MetaMemberFunctionTemplateNodeDict = new Dictionary<string, MetaMemberFunctionTemplateNode>(mtc.metaMemberFunctionTemplateNodeDict);
+            m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>(mtc.metaMemberVariableDict);
 
             foreach( var v in list )
             {
@@ -146,27 +153,36 @@ namespace SimpleLanguage.Core
 
             m_MetaMemberVariableDict.Clear();
             m_MetaMemberFunctionTemplateNodeDict.Clear();
+            m_NonStaticVirtualMetaMemberFunctionList.Clear();
+            m_StaticMetaMemberFunctionList.Clear();
             m_MetaExtendMemeberVariableDict.Clear();
             m_ExtendClass = null;
             m_ExtendClassMetaType = null;
 
             var ecmt = this.m_MetaTemplateClass.extendClassMetaType;
+            /* Fallback: if extendClassMetaType is null (common for inner-form types
+              * like ArrayMetaClass which only set m_ExtendClass via SetExtendClass),
+              * use extendClass directly to build the extend class meta type. */
+            if (ecmt == null && this.m_MetaTemplateClass.extendClass != null)
+            {
+                ecmt = new MetaType(this.m_MetaTemplateClass.extendClass);
+            }
             if (ecmt != null )
             {
                 if( ecmt.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate )
                 {
-                    m_ExtendClassMetaType = this.m_MetaTemplateClass.extendClassMetaType;
+                    m_ExtendClassMetaType = ecmt;
                     TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ExtendClassMetaType, this, null);
                     m_ExtendClass = m_ExtendClassMetaType.metaClass;
                 }
                 else if (ecmt.eMetaTypeType == EMetaTypeType.MetaClass)
                 {
-                    m_ExtendClassMetaType = this.m_MetaTemplateClass.extendClassMetaType;
+                    m_ExtendClassMetaType = ecmt;
                     m_ExtendClass = m_ExtendClassMetaType.metaClass;
                 }
                 else if (ecmt.eMetaTypeType == EMetaTypeType.MetaGenClass)
                 {
-                    m_ExtendClassMetaType = this.m_MetaTemplateClass.extendClassMetaType;
+                    m_ExtendClassMetaType = ecmt;
                     m_ExtendClass = m_ExtendClassMetaType.metaClass;
                 }
                 else
@@ -220,8 +236,8 @@ namespace SimpleLanguage.Core
         }
         public override void HandleExtendMemberFunction()
         {
-            this.m_NonStaticVirtualMetaMemberFunctionList = m_ExtendClass.nonStaticVirtualMetaMemberFunctionList;
-            this.m_StaticMetaMemberFunctionList = m_ExtendClass.staticMetaMemberFunctionList;
+            /* ParseMemberFunctionDefineMetaType already merges extend class methods
+              * with template class methods. Nothing to do here. */
         }
         public override void HandleExtendAndInterfaceMetaTypeInstnace()
         {
@@ -331,8 +347,16 @@ namespace SimpleLanguage.Core
         }
         public void ParseMemberFunctionDefineMetaType()
         {
+            /* Collect methods from the template class's final member lists.
+              * Source-compiled types have methods in fileCollectMetaMemberFunctionList
+              * (pre-merge) OR in nonStatic/static lists (post-merge).
+              * Reference-loaded types have methods only in nonStatic/static lists. */
             List<MetaMemberFunction> mmfList = new();
-            foreach (var it in this.m_MetaTemplateClass.fileCollectMetaMemberFunctionList)
+            foreach (var it in this.m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList)
+            {
+                mmfList.Add(ParseMetaMemberFunctionDefineMetaType(it));
+            }
+            foreach (var it in this.m_MetaTemplateClass.staticMetaMemberFunctionList)
             {
                 mmfList.Add(ParseMetaMemberFunctionDefineMetaType(it));
             }
@@ -401,6 +425,10 @@ namespace SimpleLanguage.Core
             MetaMemberFunction mgmf = new MetaMemberFunction(mmf);
             mgmf.SetSourceMetaMemberFunction(mmf);
             mgmf.SetOwnerMetaClass(this);
+
+            /* Gen template copies must not re-parse from FileMetaMemberFunction:
+              * types are already resolved via UpdateMetaTypeByGenClassAndFunction below. */
+            mgmf.ClearFileMetaMemberFunction();
 
             if (mmf.isTemplateFunction == false)
             {

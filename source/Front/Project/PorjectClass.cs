@@ -158,13 +158,6 @@ namespace SimpleLanguage.Project
                     }
                 }
 
-                if(parMS != null )
-                {
-                    Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类55!!" + node.Name);
-                    return;
-                }
-
-
                 for (int i = 0; i < node.Children.Count; i++)
                 {
                     AddDefineNamespace(parMS, node.Children[i]);

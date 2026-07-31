@@ -103,6 +103,9 @@ namespace SimpleLanguage.Project
 
         public static void Compile( string path )
         {
+            // Disable assert crashes so compilation continues past non-fatal errors.
+            LogManager.Options.EnableAssertFeature = false;
+
             if( !isLoaded )
             {
                 isLoaded = true;

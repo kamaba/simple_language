@@ -69,7 +69,8 @@ namespace SimpleLanguage.Core
         }
         void CreateValues()
         {
-            //鍒涘缓涓€涓狤num 閲岃竟鐨勯潤鎬佸厓绱犲垪琛紝鐢ㄦ潵閬嶅巻 姣斿enum { a = 1; b = 2} 鍒?enum { values = [a,b]
+            if(m_MetaMemberVariableDict == null) return;
+            //鍒涘缓涓€涓狤num 閲岃竟鐨勯潤鎬佸厓绱犲垪琛紝鐢ㄦ潵閬嶅巻 姣斿enum { a = 1; b = 2} 鍒?enum { values = [a,b]
             if(m_ValuesMetaVariable == null )
             {
                 List<MetaType> mtList = new List<MetaType>();
@@ -106,7 +107,11 @@ namespace SimpleLanguage.Core
                 valuesNewExpress.Parse(new AllowUseSettings());
                 valuesNewExpress.CalcReturnType();
                 m_ValuesMetaVariable.SetExpress(valuesNewExpress);
-                m_MetaMemberVariableDict.Add(m_ValuesMetaVariable.name, m_ValuesMetaVariable);
+                if (m_ValuesMetaVariable != null && !string.IsNullOrEmpty(m_ValuesMetaVariable.name)
+                    && !m_MetaMemberVariableDict.ContainsKey(m_ValuesMetaVariable.name))
+                {
+                    m_MetaMemberVariableDict.Add(m_ValuesMetaVariable.name, m_ValuesMetaVariable);
+                }
 
             }
         }

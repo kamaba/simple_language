@@ -56,12 +56,6 @@
     "isAllTag": true
   },
   "data": {
-    "var1": 12,
-    "arrvar1": [1, 2, 3, 4, 5],
-    "vardata2": {
-      "a": 10,
-      "b": 20.1
-    }
   },
   "global": {
     "imports": [

@@ -70,15 +70,21 @@
       "DEBUG": "true"
     }
   },
+  "data": {
+    "var1": 12,
+    "arrvar1": [1, 2, 3, 4, 5],
+    "vardata2": {
+      "a": 10,
+      "b": 20.1
+    }
+  },
   "references": [
     { "path": "../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" }
   ],
   "struct": [
       { "namespace": "ProjectTest", "children": [] },
-      { "namespace": "Std", "children": [] },
       { "namespace": "Application", "children": [] },
-      { "namespace": "ConStrCC", "children": [] },
-      { "class": "Std.Console" }
+      { "namespace": "ConStrCC", "children": [] }
   ],
   "export": {
     "moduleName": "ProjectTest",

@@ -414,6 +414,12 @@ namespace SimpleLanguage.Core
             MetaType leftMt = left.GetReturnMetaType();
             MetaType rightMt = right.GetReturnMetaType();
 
+            if (leftMt == null || rightMt == null)
+            {
+                m_RealMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                return;
+            }
+
             if (leftMt.isEnum || rightMt.isEnum || leftMt.isEnumMember || rightMt.isEnumMember )
             {
                 bool isEnumCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal || m_OpLevelSign == ELeftRightOpSign.NotEqual;

@@ -1,6 +1,4 @@
-namespace Std.Math
-{
-    public class Math
+public class Math
     {
         public const float Pi = 3.141592653589793f
         public const float E = 2.718281828459045f
@@ -285,4 +283,3 @@ namespace Std.Math
             ret degrees * Pi / 180.0f
         }
     }
-}

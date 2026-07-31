@@ -441,6 +441,15 @@ namespace SimpleLanguage.Core
             m_IsFinal = mmf.isFinal;
             m_IsStatic = mmf.isStatic;
         }
+        /// <summary>
+        /// Clears the FileMetaMemberFunction binding so that ParseRealMetaType/ParseStatements
+        /// skip re-parsing from source file data. Used by gen template copies and reference-loaded methods.
+        /// </summary>
+        public void ClearFileMetaMemberFunction()
+        {
+            m_FileMetaMemberFunction = null;
+            m_CanParse = false;
+        }
         protected void Init()
         {
             m_ConstructInitFunction = this.m_Name == "_init_";
@@ -669,6 +678,26 @@ namespace SimpleLanguage.Core
         }
         public void ParseRealMetaType()
         {
+            /* Skip reference-loaded methods: they have no FileMetaParamter/express,
+              * defineMetaType and realMetaType are already set during module loading. */
+            if (m_FileMetaMemberFunction == null)
+            {
+                if (m_MetaMemberParamCollection != null)
+                {
+                    bool allHaveTypes = true;
+                    for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
+                    {
+                        var mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
+                        if (mpl.metaVariable?.defineMetaType == null)
+                        {
+                            allHaveTypes = false;
+                            break;
+                        }
+                    }
+                    if (allHaveTypes) return;
+                }
+            }
+
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
             {
                 MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];

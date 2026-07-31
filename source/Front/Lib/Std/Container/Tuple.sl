@@ -1,23 +1,23 @@
 
-public class Core.Tuple<T1>
+public class Tuple<T1>
 {
     T1 _value1 = null
 }
 
-public class Core.Tuple<T1,T2>
+public class Tuple<T1,T2>
 {
     T1 _value1 = null
     T2 _value2 = null
 }
 
-public class Core.Tuple<T1,T2,T3>
+public class Tuple<T1,T2,T3>
 {
     T1 _value1 = null
     T2 _value2 = null
     T3 _value3 = null
 }
 
-public class Core.Tuple<T1,T2,T3,T4>
+public class Tuple<T1,T2,T3,T4>
 {
     T1 _value1 = null
     T2 _value2 = null
@@ -25,7 +25,7 @@ public class Core.Tuple<T1,T2,T3,T4>
     T4 _value4 = null
 }
 
-public class Core.Tuple
+public class Tuple
 {
     _val1 = null
     _val2 = null

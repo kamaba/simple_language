@@ -1,6 +1,6 @@
 
 
-public class Std.Console
+public class Console
 {
     #Read a line from stdin and return as string
     static string input()

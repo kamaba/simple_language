@@ -115,7 +115,7 @@ namespace SimpleLanguage.Core
             m_Name = mdp.m_Name;
             m_IsFunctionTemplate = mdp.m_IsFunctionTemplate;
             m_FileMetaParamter = mdp.m_FileMetaParamter;
-            m_IsHasExpress = m_FileMetaParamter.express != null;
+            m_IsHasExpress = m_FileMetaParamter != null && m_FileMetaParamter.express != null;
             m_MetaExpressNode = mdp.m_MetaExpressNode;
             m_OwnerMetaFunction = mdp.m_OwnerMetaFunction;
             m_MetaVariable = new MetaVariable( mdp.m_MetaVariable );
