@@ -6,6 +6,7 @@
 //  Description: 
 //****************************************************************************
 
+using SimpleLanguage.Project;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -152,10 +153,12 @@ namespace SimpleLanguage.Core
             foreach( var v in s_InnerDefineMetaClassList )
             {
                 v.ParseInner();
-                //ModuleManager.instance.coreModule.metaNode.AddMetaClass(v);
                 ClassManager.instance.AddMetaClass(v, ModuleManager.instance.coreModule);
                 v.UpdateClassAllName();
-                ClassManager.instance.AddExportMetaClass(v);
+                //if( ProjectManager.config.Project.Name == "Core" )
+                //{
+                //    ClassManager.instance.AddExportMetaClass(v);
+                //}
             }
         }
         public static bool IsIncludeMetaClass( MetaClass metaclass )
