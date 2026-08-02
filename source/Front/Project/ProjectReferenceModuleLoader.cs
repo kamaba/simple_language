@@ -92,6 +92,19 @@ namespace SimpleLanguage.Project
             //    return false;
             //}
 
+            /* Register the referenced module's system call declarations (embedded
+             * verbatim in the package at export time) into the FrontEnd registry. */
+            if (!string.IsNullOrWhiteSpace(package.systemCallsJson))
+            {
+                int sysCount = SystemMethodCallDeclarationRegistry.LoadFromJsonContent(
+                    "{\"systemCalls\":" + package.systemCallsJson + "}");
+                if (sysCount > 0)
+                {
+                    Log.AddProjectLog(LID.ShowExtendMessage,
+                        $"Reference module registered {sysCount} system calls. path={modulePath}");
+                }
+            }
+
             var alias = ResolveModuleName(reference, package, modulePath);
 
             /* Core module: reuse the existing coreModule (populated by CoreMetaClassManager.Init)
@@ -295,17 +308,17 @@ namespace SimpleLanguage.Project
              * Core types so that inheritance chains are rebuilt after member replacement.
              * ClearExistingMembers moved own methods to fileCollect; HandleExtendMemberFunction
              * will re-merge them with inherited methods from the extend class. */
-            if (s_isCoreReplacement)
-            {
-                foreach (var (cls, metaBase) in createdTypes)
-                {
-                    if (metaBase is MetaClass mc)
-                    {
-                        mc.HandleExtendMemberVariable();
-                        mc.HandleExtendMemberFunction();
-                    }
-                }
-            }
+            //if (s_isCoreReplacement)
+            //{
+            //    foreach (var (cls, metaBase) in createdTypes)
+            //    {
+            //        if (metaBase is MetaClass mc)
+            //        {
+            //            mc.HandleExtendMemberVariable();
+            //            mc.HandleExtendMemberFunction();
+            //        }
+            //    }
+            //}
         }
 
         private static MetaNode EnsureNamespacePath(MetaNode root, string fullName)
@@ -578,8 +591,9 @@ namespace SimpleLanguage.Project
                 if (field == null || string.IsNullOrWhiteSpace(field.name)) continue;
 
                 var mmv = new MetaMemberVariable(mc, field.name);
+                mmv.SetRefFromType(RefFromType.RefModule);
                 ApplyFieldTypeInfo(mmv, metaModule, field);
-                mc.AddMetaMemberVariable(mmv);
+                mc.AddMetaMemberVariable(mmv, isAddManager: false);
             }
         }
 
@@ -688,6 +702,7 @@ namespace SimpleLanguage.Project
             if (mc == null || meta == null || string.IsNullOrWhiteSpace(meta.name)) return null;
 
             var mmf = new MetaMemberFunction(mc, meta.name);
+            mmf.SetRefFromType(RefFromType.RefModule);
             mmf.SetIsStatic(isStatic);
 
             /* Look up full method package to restore return type, parameters, and flags */
@@ -721,8 +736,13 @@ namespace SimpleLanguage.Project
                 }
 
                 /* Parameters */
+                bool isExtendParamsMethod = (mp.flags & 128) != 0;
                 if (mp.argumentList != null)
                 {
+                    /* flags bit 128: last parameter is a params variadic array (params object[]).
+                     * Restore the flag on the last define param (before AddMetaDefineParam,
+                     * which latches it into the collection) so call-site variadic matching works. */
+
                     /* Non-static methods: skip first parameter (implicit 'this' pointer in IR,
                      * but not needed in MetaCore layer which uses thisMetaVariable separately). */
                     int startIndex = isStatic ? 0 : 1;
@@ -732,6 +752,10 @@ namespace SimpleLanguage.Project
                         if (arg == null) continue;
                         var paramName = !string.IsNullOrWhiteSpace(arg.name) ? arg.name : "arg";
                         var mdp = new MetaDefineParam(paramName, mmf);
+                        if (isExtendParamsMethod && i == mp.argumentList.Count - 1)
+                        {
+                            mdp.SetExtendParams();
+                        }
                         if (arg.typeDef != null)
                         {
                             var paramType = ResolveRuntimeDefType(metaModule, arg.typeDef);
@@ -813,9 +837,10 @@ namespace SimpleLanguage.Project
 
             var jsoncPath = jsoncFiles[0];
             ProjectConfig refConfig;
+            string jsoncText;
             try
             {
-                var jsoncText = File.ReadAllText(jsoncPath);
+                jsoncText = File.ReadAllText(jsoncPath);
                 refConfig = ProjectJsoncLoader.FromJsonc(jsoncText);
             }
             catch (Exception ex)
@@ -823,6 +848,16 @@ namespace SimpleLanguage.Project
                 Log.AddProjectLog(LID.ShowExtendMessage,
                     $"Reference source module .jsonc parse failed: {jsoncPath} {ex.Message}");
                 return false;
+            }
+
+            /* Register the referenced module's system call declarations (declared in
+             * its .jsonc "systemCalls" section) into the FrontEnd registry.
+             * No-op when the section is absent. */
+            int refSysCallCount = SystemMethodCallDeclarationRegistry.LoadFromJsonContent(jsoncText);
+            if (refSysCallCount > 0)
+            {
+                Log.AddProjectLog(LID.ShowExtendMessage,
+                    $"Reference module registered {refSysCallCount} system calls. path={jsoncPath}");
             }
 
             /* Determine the module name (alias for import) */
@@ -995,11 +1030,27 @@ namespace SimpleLanguage.Project
                 return new MetaType(CoreMetaClassManager.objectMetaClass);
             }
 
+            // Strip generic suffix from className (e.g. "Array<T>" -> "Array").
+            // Template arguments are carried separately in typeDef.runtimeDefTypeList.
+            var baseName = className;
+            int lt = baseName.IndexOf('<');
+            if (lt > 0)
+            {
+                baseName = baseName.Substring(0, lt);
+            }
+            int templateArgCount = (typeDef.runtimeDefTypeList != null) ? typeDef.runtimeDefTypeList.Count : 0;
+
             // Try built-in core types first
-            var coreNode = CoreMetaClassManager.GetCoreMetaClass(className);
+            var coreNode = CoreMetaClassManager.GetCoreMetaClass(baseName);
             if (coreNode != null)
             {
-                var mc = coreNode.GetMetaClassByTemplateCount(0);
+                var mc = coreNode.GetMetaClassByTemplateCount(templateArgCount);
+                if (mc != null)
+                {
+                    return BuildMetaTypeWithTemplateArgs(mc, metaModule, typeDef);
+                }
+                // Fallback: non-generic version (templateArgCount=0 but class may only have generic form)
+                mc = coreNode.GetMetaClassByTemplateCount(0);
                 if (mc != null)
                 {
                     return BuildMetaTypeWithTemplateArgs(mc, metaModule, typeDef);
@@ -1017,7 +1068,7 @@ namespace SimpleLanguage.Project
             // Search within the module's namespace tree
             if (metaModule?.metaNode != null)
             {
-                var node = ResolveMetaNodeByFullName(metaModule.metaNode, className);
+                var node = ResolveMetaNodeByFullName(metaModule.metaNode, baseName);
                 if (node != null)
                 {
                     if (node.metaData != null)
@@ -1028,7 +1079,12 @@ namespace SimpleLanguage.Project
                     {
                         return new MetaType(node.metaEnum);
                     }
-                    var mc = node.GetMetaClassByTemplateCount(0);
+                    var mc = node.GetMetaClassByTemplateCount(templateArgCount);
+                    if (mc != null)
+                    {
+                        return BuildMetaTypeWithTemplateArgs(mc, metaModule, typeDef);
+                    }
+                    mc = node.GetMetaClassByTemplateCount(0);
                     if (mc != null)
                     {
                         return BuildMetaTypeWithTemplateArgs(mc, metaModule, typeDef);

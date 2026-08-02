@@ -84,6 +84,19 @@ namespace SimpleLanguage.Compile
             return char.MinValue;
             //throw new LexerException(this, "End of source reached.");
         }
+        char PeekChar2()
+        {
+            int index = m_Index + 2;
+            if (index < m_Length)
+            {
+                return m_Buffer[index];
+            }
+            else if (index == m_Length)
+            {
+                return END_CHAR;
+            }
+            return char.MinValue;
+        }
         void UndoChar()
         {
             if (m_Index == 0)
@@ -704,63 +717,58 @@ namespace SimpleLanguage.Compile
                     }
                     break;
                 }
-                else
+                else if ((m_TempChar == 'e' || m_TempChar == 'E') && endPoint <= 1)
                 {
-                    if( endPoint > 2 )
+                    // 科学计数法（如 1e5、1.5e+3、2E-8f）：从 token 层识别为浮点数字面量
+                    char peek1 = PeekChar();
+                    bool isExponent = char.IsDigit(peek1);
+                    bool hasExpSign = false;
+                    if (!isExponent && (peek1 == '+' || peek1 == '-'))
                     {
-                        Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "Error ReadNumber ...");                    
-                    }
-                    //else if( endPoint == 3 )
-                    //{
-                    //    AddToken(ETokenType.NumberArrayLink, m_Builder.ToString(), EType.Array);
-                    //}
-                    else if ( endPoint == 2 )
-                    {
-                        AddToken(ETokenType.NumberArrayLink, m_Builder.ToString(), EType.Array );
-                        UndoChar();
-                    }
-                    else if (endPoint == 1 )
-                    {
-                        if( char.IsLetter( m_TempChar ) )
+                        if (char.IsDigit(PeekChar2()))
                         {
-                            var frontChar = m_Builder[m_Builder.Length - 1];
-                            if( frontChar == '.' )
-                            {
-                                Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "char. logic is float format call inner functionname");
-                                //m_Buffer.Remove(m_Buffer.Length - 1, 1);
-                                // 无后缀的小数字面量（含 0.0）默认 float32，extend 须与 lexeme 一致。
-                                AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
-                                AddToken(ETokenType.Period, frontChar );
-                                UndoChar();
-                            }
-                            else
-                            {
-                                AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
-                                UndoChar();
-                            }
+                            isExponent = true;
+                            hasExpSign = true;
+                        }
+                    }
+                    if (isExponent)
+                    {
+                        m_Builder.Append('e');
+                        if (hasExpSign)
+                        {
+                            m_Builder.Append(peek1);
+                            ReadChar();   // 吃掉指数符号位
+                        }
+                        char tailChar;
+                        while (char.IsDigit(tailChar = ReadChar()))
+                        {
+                            m_Builder.Append(tailChar);
+                        }
+                        if (tailChar == 'f' || tailChar == 'F')
+                        {
+                            AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
+                        }
+                        else if (tailChar == 'd' || tailChar == 'D')
+                        {
+                            AddToken(ETokenType.Number, double.Parse(m_Builder.ToString()), EType.Float64);
                         }
                         else
                         {
-                            AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32 );
+                            // 科学计数法必须是浮点类型；无后缀默认 Float32（与无后缀小数字面量约定一致）
+                            AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
                             UndoChar();
                         }
                     }
                     else
                     {
-                        try
-                        {
-                            ulong parsed = Convert.ToUInt64(m_Builder.ToString());
-                            AddIntegerTokenByRange(parsed);
-                        }
-                        catch
-                        {
-                            var ld = Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
-                                , $"Decimal number overflow ({m_Builder}), fallback to UInt64.MaxValue.");
-                            ld.demo = m_Builder.ToString();
-                            AddToken(ETokenType.Number, ulong.MaxValue, EType.UInt64);
-                        }
-                        UndoChar();
+                        // e 后面不是指数（例如标识符），按普通字符结束数字
+                        EndReadNumberByOtherChar(endPoint);
                     }
+                    break;
+                }
+                else
+                {
+                    EndReadNumberByOtherChar(endPoint);
                     break;
                 }
                 tfrontChar = m_TempChar;
@@ -768,6 +776,64 @@ namespace SimpleLanguage.Compile
 
             m_Index++;
             m_SourceChar++;
+        }
+        void EndReadNumberByOtherChar(int endPoint)
+        {
+            if( endPoint > 2 )
+            {
+                Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "Error ReadNumber ...");
+            }
+            //else if( endPoint == 3 )
+            //{
+            //    AddToken(ETokenType.NumberArrayLink, m_Builder.ToString(), EType.Array);
+            //}
+            else if ( endPoint == 2 )
+            {
+                AddToken(ETokenType.NumberArrayLink, m_Builder.ToString(), EType.Array );
+                UndoChar();
+            }
+            else if (endPoint == 1 )
+            {
+                if( char.IsLetter( m_TempChar ) )
+                {
+                    var frontChar = m_Builder[m_Builder.Length - 1];
+                    if( frontChar == '.' )
+                    {
+                        Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "char. logic is float format call inner functionname");
+                        //m_Buffer.Remove(m_Buffer.Length - 1, 1);
+                        // 无后缀的小数字面量（含 0.0）默认 float32，extend 须与 lexeme 一致。
+                        AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
+                        AddToken(ETokenType.Period, frontChar );
+                        UndoChar();
+                    }
+                    else
+                    {
+                        AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
+                        UndoChar();
+                    }
+                }
+                else
+                {
+                    AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32 );
+                    UndoChar();
+                }
+            }
+            else
+            {
+                try
+                {
+                    ulong parsed = Convert.ToUInt64(m_Builder.ToString());
+                    AddIntegerTokenByRange(parsed);
+                }
+                catch
+                {
+                    var ld = Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
+                        , $"Decimal number overflow ({m_Builder}), fallback to UInt64.MaxValue.");
+                    ld.demo = m_Builder.ToString();
+                    AddToken(ETokenType.Number, ulong.MaxValue, EType.UInt64);
+                }
+                UndoChar();
+            }
         }
         void ReadNumberOrHexOrOctOrBinNumber()
         {

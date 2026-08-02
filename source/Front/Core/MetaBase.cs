@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaBase.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
@@ -15,6 +15,7 @@ namespace SimpleLanguage.Core
         Local,
         CSharp,
         Javascript,
+        RefModule,
     }
     public class MetaBase
     {

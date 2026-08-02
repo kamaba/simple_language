@@ -56,3 +56,13 @@ public class Error extends Object
         ret s
     }
 }
+
+public enum MathOpError extends Error
+{
+    Overflow = 1,
+    Underflow = 2,
+    DivisionByZero = 3,
+    InvalidArgument = 4,
+    InvalidOperation = 5
+}
+

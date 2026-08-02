@@ -263,6 +263,10 @@ namespace SimpleLanguage.Core
         }
         public override bool ParseMetaExpress()
         {
+            // ref module 导入的成员变量类型和表达式已在导入时设置完毕，无需解析
+            if (refFromType == RefFromType.RefModule)
+                return true;
+
             // 解析顺序（order）必须在依赖被递归解析之后再分配：
             // 在 MetaCallNode.cs 第 2085 行，解析某成员表达式时若遇到尚未解析类型的其它成员，
             // 会主动调用该成员的 ParseMetaExpress() 提前解析。
@@ -298,6 +302,10 @@ namespace SimpleLanguage.Core
         }
         public override void ParseRealMetaType()
         {
+            // ref module 导入的成员变量 realMetaType 已在导入时设置，无需再从表达式推导
+            if (refFromType == RefFromType.RefModule)
+                return;
+
             if( m_Express != null )
             {
                 m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType);

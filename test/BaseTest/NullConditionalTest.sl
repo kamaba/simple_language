@@ -11,7 +11,7 @@ NCTestClass
     
     int GetVal()
     {
-        return this.val
+        ret this.val
     }
 }
 

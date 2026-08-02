@@ -671,6 +671,9 @@ namespace SimpleLanguage.Export.SLIR
             pkg.moduleName = module.moduleName;
             pkg.uuid = module.uuid;
             pkg.entryMethodId = module.entryMethodId;
+            // Embed the module's own systemCalls verbatim so referencing projects
+            // can register them when loading this package as a reference module.
+            pkg.systemCallsJson = SystemMethodCallDeclarationRegistry.RawSystemCallsJson ?? string.Empty;
             pkg.moduleReferences = module.moduleReferences;
             pkg.irStringDict = module.irStringDict;
             pkg.namespaceList = module.namespaceList;
@@ -816,6 +819,9 @@ namespace SimpleLanguage.Export.SLIR
                 if (mmf.isCanRewrite) flags |= 32;
                 if (mmf.isConstructInitFunction) flags |= 64;
             }
+            // 128: 最后一个参数为 params 可变参数（params object[]），导入端需要还原该标记，
+            // 否则调用侧按可变参数匹配时识别不了该方法。
+            if (m.bindMetaFunction.metaMemberParamCollection?.isExtendParams == true) flags |= 128;
             return flags;
         }
 

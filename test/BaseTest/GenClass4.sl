@@ -1,5 +1,5 @@
 
-namesapce GC4
+namespace GC4
 {
 
 LT

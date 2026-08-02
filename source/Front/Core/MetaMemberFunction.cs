@@ -630,6 +630,10 @@ namespace SimpleLanguage.Core
         }
         public virtual void ParseDefineMetaType()
         {
+            // ref module 导入的函数类型已在导入时设置完毕，无需从 FileMeta 解析
+            if (refFromType == RefFromType.RefModule)
+                return;
+
             if (this.m_FileMetaMemberFunction != null)
             {
                 if (m_FileMetaMemberFunction.defineMetaClass != null)
@@ -678,6 +682,10 @@ namespace SimpleLanguage.Core
         }
         public void ParseRealMetaType()
         {
+            // ref module 导入的函数参数类型已在导入时设置完毕，无需再解析
+            if (refFromType == RefFromType.RefModule)
+                return;
+
             /* Skip reference-loaded methods: they have no FileMetaParamter/express,
               * defineMetaType and realMetaType are already set during module loading. */
             if (m_FileMetaMemberFunction == null)
@@ -709,6 +717,9 @@ namespace SimpleLanguage.Core
         }
         public void ParseStatements()
         {
+            // ref module 导入的函数没有源码语法树，无需解析语句
+            if (refFromType == RefFromType.RefModule)
+                return;
             if (!m_CanParse) return;
 
             // If this function is declared abstract, skip parsing its body/content.

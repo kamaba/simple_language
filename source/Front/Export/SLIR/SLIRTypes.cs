@@ -69,7 +69,7 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string name { get; set; } = string.Empty;
         public string declaringTypeFullName { get; set; } = string.Empty;
         public bool interfaceMethod { get; set; }
-        /// <summary>Method modifier flags: 1=static, 2=final, 4=abstract, 8=override, 16=interface, 32=canRewrite, 64=constructInit</summary>
+        /// <summary>Method modifier flags: 1=static, 2=final, 4=abstract, 8=override, 16=interface, 32=canRewrite, 64=constructInit, 128=extendParams(params 可变参数)</summary>
         public int flags { get; set; }
         public List<SLVariablePackage> returnList { get; set; } = new();
         public List<SLVariablePackage> argumentList { get; set; } = new();
@@ -176,6 +176,10 @@ namespace SimpleLanguage.Export.SLIR.Types
         [JsonIgnore]
         public List<SLAssemblyPackage> moduleList { get; set; } = new();
         public string? entryMethodId { get; set; }
+        /// <summary>Raw JSON array text of the module's "systemCalls" declarations
+        /// (copied verbatim from the module's .jsonc), so referencing projects can
+        /// register them via SystemMethodCallDeclarationRegistry.</summary>
+        public string systemCallsJson { get; set; } = string.Empty;
         public List<string> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();

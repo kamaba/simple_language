@@ -62,7 +62,7 @@ namespace Application
             static m2 = 100
             static Class3 mc2 =new(10, 2, 10.0f - 2.0f, (20 + 12) / Class2.x1)
             static a2 = 20.0f + Class3.m / 30 * 100
-            static Class3 mc33 = { a = 300, b = 400, c = Class222() }
+            static Class3 mc33 = { a = 300, b = 400, m2 = Class222() }
             public int x22 = 0
 
             _init_( int x11)

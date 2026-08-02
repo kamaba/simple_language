@@ -21,12 +21,6 @@ public class Float32 extends Num
         #delegate to CLR Math if available
         ret false;
     }
-    #!
-    public override String toString( string format )
-    {
-        return string.format( format, this._value );
-    }
-    !#
     public override Int32 toInt32()
     {
         ret SystemConvertInt32(this)
@@ -58,5 +52,9 @@ public class Float32 extends Num
     override String toString()
     {
         ret SystemConvertString(this)
+    }
+    public String toString( string format )
+    {
+        ret string.format( format, this._value );
     }
 }

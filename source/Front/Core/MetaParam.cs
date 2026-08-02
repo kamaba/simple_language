@@ -90,9 +90,14 @@ namespace SimpleLanguage.Core
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaExpressNodeBase expressNode => m_MetaExpressNode;
         //public bool isFunctionTemplate => m_IsFunctionTemplate;
-        public bool isMust { get { return m_MetaExpressNode == null; } }           
-        public bool isExtendParams => m_FileMetaParamter?.paramsToken != null;
+        public bool isMust { get { return m_MetaExpressNode == null; } }
+        public bool isExtendParams => m_FileMetaParamter?.paramsToken != null || m_ExtendParamsForced;
         public bool isHasExpress => m_IsHasExpress;
+
+        // 从编译后的引用模块还原方法时没有 FileMeta 语法节点，
+        // 用该标记补上 params 可变参数属性（配合 MetaDefineParamCollection.isExtendParams 参与调用匹配）。
+        protected bool m_ExtendParamsForced = false;
+        public void SetExtendParams() { m_ExtendParamsForced = true; }
 
         protected bool m_IsFunctionTemplate = false;
         protected FileMetaParamterDefine m_FileMetaParamter = null;

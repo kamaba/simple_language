@@ -688,7 +688,7 @@ namespace SimpleLanguage.Compile
                     var tlist = node2.GetLinkTokenList();
                     if (tlist.Count != 1)
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 定义名称只允许一个字符串!!");
+                        Log.AddNodeLog(LID.ShowExtendMessage, defineNodeList[0].token, "Error 定义名称只允许一个字符串!!");
                         return null;
                     }
                     nameToken = node2.token;

@@ -84,7 +84,8 @@
   "struct": [
       { "namespace": "ProjectTest", "children": [] },
       { "namespace": "Application", "children": [] },
-      { "namespace": "ConStrCC", "children": [] }
+      { "namespace": "ConStrCC", "children": [] },
+      { "namespace": "Std", "children": [] }
   ],
   "export": {
     "moduleName": "ProjectTest",

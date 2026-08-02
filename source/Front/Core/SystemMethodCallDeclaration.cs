@@ -108,6 +108,16 @@ namespace SimpleLanguage.Core
         private static Dictionary<ESystemMethodCall, SystemMethodCallDeclaration> s_Decl =
             new Dictionary<ESystemMethodCall, SystemMethodCallDeclaration>();
 
+        // Raw JSON text of the last-loaded "systemCalls" array, kept verbatim so that
+        // module export can embed it into the package without lossy type re-serialization.
+        private static string s_RawSystemCallsJson = null;
+
+        /// <summary>
+        /// Raw JSON array text of the most recently loaded "systemCalls" section
+        /// (null when no module with systemCalls has been loaded).
+        /// </summary>
+        public static string RawSystemCallsJson => s_RawSystemCallsJson;
+
         /// <summary>
         /// Resolves a type name string (from JSON config) to a MetaType singleton.
         /// </summary>
@@ -180,6 +190,8 @@ namespace SimpleLanguage.Core
                 {
                     if (!doc.RootElement.TryGetProperty("systemCalls", out JsonElement callsEl))
                         return 0;
+
+                    s_RawSystemCallsJson = callsEl.GetRawText();
 
                     foreach (JsonElement entry in callsEl.EnumerateArray())
                     {

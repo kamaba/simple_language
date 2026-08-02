@@ -901,7 +901,6 @@ namespace SimpleLanguage.Compile
                     Log.AddNodeLog(LID.ShowExtendMessage, curNode.token, "Error @Attribute 不允许出现在文件头级(只能在 namespace{} / class{} 内)");
                     continue;
                 }
-
                 if (curNode.nodeType == ENodeType.Key)
                 {
                     if (curNode.token.type == ETokenType.Namespace)
