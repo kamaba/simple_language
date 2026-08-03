@@ -54,14 +54,14 @@ namespace SimpleLanguage.IR
                     // Load match source
                     var ownerMetaClass = mires.matchMetaVariable.GetFinalTemplateMetaClass();
                     var owirmc = IRManager.GetIRMetaClassByMetaVariable(mires.matchMetaVariable)
-                        ?? (ownerMetaClass != null ? IRManager.instance.GetIRMetaClassById(ownerMetaClass.GetHashCode()) : null);
+                        ?? (ownerMetaClass != null ? IRManager.instance.GetIRMetaClassById(ownerMetaClass.classId) : null);
                     var srcMt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mires.matchMetaVariable.GetFinalMetaType(), owirmc);
                     var srcMc = IRManager.GetIRMetaClassByMetaVariable(mires.matchMetaVariable);
                     var loadSrc = IRLoadVariable.CreateLoadVariable(srcMt, srcMc, _irMethod, mires.matchMetaVariable);
                     conditionStatList.Add(loadSrc);
 
                     // Load const type for target class
-                    var targetIRMC = IRManager.instance.GetIRMetaClassById(mires.matchTypeClass.GetHashCode());
+                    var targetIRMC = IRManager.instance.GetIRMetaClassById(mires.matchTypeClass.classId);
                     IRData loadType = new IRData { opCode = EIROpCode.LoadConstType, opValue = targetIRMC };
                     loadType.SetDebugInfoByToken(mires?.token, "SwitchCaseLoadType");
                     conditionStatList.Add(new IRBase(loadType));
@@ -88,7 +88,7 @@ namespace SimpleLanguage.IR
                             var bindTpl = mires.defineMetaVariable.GetFinalTemplateMetaClass();
                             if (bindTpl != null)
                             {
-                                bindMc = IRManager.instance.GetIRMetaClassById(bindTpl.GetHashCode());
+                                bindMc = IRManager.instance.GetIRMetaClassById(bindTpl.classId);
                             }
                         }
                         if (bindMc == null)
@@ -153,7 +153,7 @@ namespace SimpleLanguage.IR
 
                     var ownerMetaClass = mires.matchMetaVariable.GetFinalTemplateMetaClass();
                     var owirmc = IRManager.GetIRMetaClassByMetaVariable(mires.matchMetaVariable)
-                        ?? (ownerMetaClass != null ? IRManager.instance.GetIRMetaClassById(ownerMetaClass.GetHashCode()) : null);
+                        ?? (ownerMetaClass != null ? IRManager.instance.GetIRMetaClassById(ownerMetaClass.classId) : null);
 
                     var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mires.matchMetaVariable.GetFinalMetaType(), owirmc);
                     var irmc = IRManager.GetIRMetaClassByMetaVariable(mires.matchMetaVariable);                   
@@ -222,7 +222,7 @@ namespace SimpleLanguage.IR
 
             var ownerMetaClass = ms.matchSourceMv.GetFinalTemplateMetaClass();
             var owirmc = IRManager.GetIRMetaClassByMetaVariable(ms.matchSourceMv)
-                ?? (ownerMetaClass != null ? IRManager.instance.GetIRMetaClassById(ownerMetaClass.GetHashCode()) : null);
+                ?? (ownerMetaClass != null ? IRManager.instance.GetIRMetaClassById(ownerMetaClass.classId) : null);
 
             var irmt = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(ms.matchSourceMv.GetFinalMetaType(), owirmc);
             var irmc = IRManager.GetIRMetaClassByMetaVariable(ms.matchSourceMv);

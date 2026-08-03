@@ -72,7 +72,7 @@ namespace SimpleLanguage.IR
                     var coreMetaBase = TryResolveCoreMetaBase(cls);
                     if (coreMetaBase != null)
                     {
-                        irmc = IRManager.instance.GetIRMetaClassById(coreMetaBase.GetHashCode());
+                        irmc = IRManager.instance.GetIRMetaClassById(coreMetaBase.classId);
                     }
                 }
 

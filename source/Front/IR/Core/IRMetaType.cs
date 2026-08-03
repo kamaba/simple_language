@@ -55,7 +55,7 @@ namespace SimpleLanguage.IR
             }
             else if( type.eMetaTypeType == EMetaTypeType.MetaEnumValue )
             {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.memberMetaClass.GetHashCode());
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.memberMetaClass.classId);
             }
             else if (type.eMetaTypeType == EMetaTypeType.Template)
             {
@@ -98,7 +98,7 @@ namespace SimpleLanguage.IR
             }
             else if( type.eMetaTypeType == EMetaTypeType.MetaEnumValue )
             {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.enumValue.ownerMetaBase.GetHashCode());
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.enumValue.ownerMetaBase.classId);
             }
             else if (type.eMetaTypeType == EMetaTypeType.Template)
             {

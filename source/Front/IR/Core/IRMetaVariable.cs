@@ -110,7 +110,7 @@ namespace SimpleLanguage.IR
             MetaType exportMt = mv.GetFinalMetaType();
             if( exportMt.isEnum )
             {
-                IRMetaClass irmcmm = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.memberMetaClass.GetHashCode());
+                IRMetaClass irmcmm = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.memberMetaClass.classId);
                 m_IRMetaType = new IRMetaType(irmcmm);
             }
             else

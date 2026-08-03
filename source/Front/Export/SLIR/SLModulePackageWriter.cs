@@ -304,7 +304,7 @@ namespace SimpleLanguage.Export.SLIR
                     sourcePath = c.sourcePath ?? string.Empty,
                     metaClassKind = (int)c.metaClassKind,
                     isDynamic = c.OwnerMetaData?.isDynamic ?? false,
-                    baseClassId = c.OwnerMetaClass?.extendClass?.GetHashCode() ?? 0,
+                    baseClassId = c.OwnerMetaClass?.extendClass?.classId ?? 0,
                 };
                 var implIds = c.GetImplementsInterfaceClassIds();
                 if (implIds != null && implIds.Count > 0)

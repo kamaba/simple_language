@@ -144,11 +144,11 @@ namespace SimpleLanguage.IR
                     {
                         scmc = mgtc.metaTemplateClass;
                     }
-                    irmc = IRManager.instance.GetIRMetaClassById(scmc.GetHashCode());
+                    irmc = IRManager.instance.GetIRMetaClassById(scmc.classId);
                 }
                 else if(staticMt.metaData != null )
                 {
-                    irmc = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.dataMetaClass.GetHashCode());
+                    irmc = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.dataMetaClass.classId);
                 }
 
                 if (mf is MetaGenTemplateFunction mgtf)
@@ -314,8 +314,8 @@ namespace SimpleLanguage.IR
                 return;
 
             int ownerHashCode = argNode.ownerMetaBase != null
-                ? argNode.ownerMetaBase.GetHashCode()
-                : targetMetaData.GetHashCode();
+                ? argNode.ownerMetaBase.classId
+                : targetMetaData.classId;
             var ownerIrMetaClass = IRManager.instance.GetIRMetaClassById(ownerHashCode);
             if (ownerIrMetaClass == null)
                 return;

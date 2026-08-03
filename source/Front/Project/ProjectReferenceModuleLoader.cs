@@ -747,6 +747,12 @@ namespace SimpleLanguage.Project
             // 否则 IR 阶段通过 virtualFunctionName 查找方法时会失败
             mmf.ParseDefineMetaType();
 
+            // IRCall 虚调用按 virtualFunctionName 在 IRMetaClass 上查 IRMethod（GetIRNonStaticMethodIndexByMethod）。
+            // 但 IRMethod.virtualFunctionName 由 ComputeVirtualFunctionName 从 package 的 typeDef.className 生成（去模块前缀，如 "Int32"），
+            // 而 MetaMemberFunction.virtualFunctionName 由 UpdateVritualFunctionName 从 MetaType.ToString() 生成（全名，如 "Core.Int32"），
+            // 两者对不上导致虚调用查不到方法。这里用 MetaMemberFunction 的 canonical 名同步回 IRMethod。
+            irm.virtualFunctionName = mmf.virtualFunctionName;
+
             mc.AddMetaMemberFunction(mmf);
             return mmf;
         }

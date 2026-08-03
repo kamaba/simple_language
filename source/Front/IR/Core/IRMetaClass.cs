@@ -125,7 +125,7 @@ namespace SimpleLanguage.IR
         {
             m_TypeOwner = owner ?? throw new System.ArgumentNullException(nameof(owner));
             m_MetaClassKind = kind;
-            id = owner.GetHashCode();
+            id = owner.classId;
             m_IRName =owner.allName;
 
             try
@@ -172,7 +172,7 @@ namespace SimpleLanguage.IR
             {
                 var ic = icl[i];
                 if (ic == null) continue;
-                int iid = ic.GetHashCode();
+                int iid = ic.classId;
                 if (iid == 0) continue;
                 if (!list.Contains(iid)) list.Add(iid);
             }
@@ -572,7 +572,7 @@ namespace SimpleLanguage.IR
 
             foreach ( var v in dict)
             {
-                IRMetaClass cv = IRManager.instance.GetIRMetaClassById(v.Key.GetHashCode() );
+                IRMetaClass cv = IRManager.instance.GetIRMetaClassById(v.Key.classId );
 
                 if( cv == null )
                 {

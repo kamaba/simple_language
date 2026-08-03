@@ -488,14 +488,14 @@ namespace SimpleLanguage.IR
                             mc2 = mnoen.metaMemberFunction.ownerMetaClass;
                         if (mc2 == null)
                             mc2 = mnoen.metaMemberFunction.sourceMetaMemberFunction?.ownerMetaClass;
-                        irmc = mc2 != null ? IRManager.instance.GetIRMetaClassById(mc2.GetHashCode()) : null;
+                        irmc = mc2 != null ? IRManager.instance.GetIRMetaClassById(mc2.classId) : null;
                     }
 
                     var runtimeMethod = irmc?.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
                     if (callMethodIndex == -1 && mnoen.metaMemberFunction.sourceMetaMemberFunction != null)
                     {
                         var sourceMc = mnoen.metaMemberFunction.sourceMetaMemberFunction.ownerMetaClass;
-                        var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.GetHashCode()) : null;
+                        var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.classId) : null;
                         if (sourceIrmc != null)
                         {
                             var sourceMethod = sourceIrmc.GetIRNonStaticMethodIndexByMethod(fname, out var sourceIndex);
@@ -548,7 +548,7 @@ namespace SimpleLanguage.IR
                 {
                     if (mnoen.ownerMetaClass is MetaGenTemplateClass mgtc)
                     {
-                        owirmc = IRManager.instance.GetIRMetaClassById(mgtc.metaTemplateClass.GetHashCode());
+                        owirmc = IRManager.instance.GetIRMetaClassById(mgtc.metaTemplateClass.classId);
                     }
                     newObjectIRMT = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.expressReturnMetaType, owirmc);
                     irmc = IRManager.GetIRMetaClassByMetaType(mnoen.expressReturnMetaType);
@@ -619,14 +619,14 @@ namespace SimpleLanguage.IR
                             mc2 = mnoen.metaMemberFunction.ownerMetaClass;
                         if (mc2 == null)
                             mc2 = mnoen.metaMemberFunction.sourceMetaMemberFunction?.ownerMetaClass;
-                        irmc = mc2 != null ? IRManager.instance.GetIRMetaClassById(mc2.GetHashCode()) : null;
+                        irmc = mc2 != null ? IRManager.instance.GetIRMetaClassById(mc2.classId) : null;
                     }
 
                     var runtimeMethod = irmc?.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
                     if (callMethodIndex == -1 && mnoen.metaMemberFunction.sourceMetaMemberFunction != null)
                     {
                         var sourceMc = mnoen.metaMemberFunction.sourceMetaMemberFunction.ownerMetaClass;
-                        var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.GetHashCode()) : null;
+                        var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.classId) : null;
                         if (sourceIrmc != null)
                         {
                             var sourceMethod = sourceIrmc.GetIRNonStaticMethodIndexByMethod(fname, out var sourceIndex);

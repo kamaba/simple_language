@@ -33,6 +33,12 @@ namespace SimpleLanguage.Core
         public EPermission permission => m_Permission;
         public virtual string name => m_Name;
         public virtual string allName => m_AllName;
+        /// <summary>
+        /// 类身份的确定型 id（按 allName 的 FNV-1a 32-bit 哈希，跨会话稳定）。
+        /// 替代 Object.GetHashCode() 用于 IRMetaClass.id / classId / baseClassId / interfaceId 等，
+        /// 使导出/导入跨会话一致。
+        /// </summary>
+        public int classId => MetaClassIdentity.GetClassId(allName);
         public RefFromType refFromType => m_RefFromType;
         public MetaNode metaNode => m_MetaNode;
         public string pathName => m_MetaNode?.GetAllName();
