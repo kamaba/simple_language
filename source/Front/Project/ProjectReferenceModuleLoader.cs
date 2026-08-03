@@ -282,9 +282,15 @@ namespace SimpleLanguage.Project
 
             if (package.classList == null) return;
 
-            /* Pass 1: Create all type shells (class/data/enum) without members.
-             * This ensures all types are registered in the namespace tree before
-             * any MetaType resolution happens in pass 2. */
+            /* Phase A（IR 层先行）：用导出的逆方法从 SLClassPackage 直接构建 IRMetaClass，
+             * 注册到 IRManager，并填充字段/方法列表。此时不依赖 Meta 层。
+             * IRMetaType.CreateFromPackage 按名查找类型，因此所有 IRMetaClass 注册完成后即可解析类型引用。 */
+            var irMetaModule = new IRMetaModule(metaModule.name, methodLookup, s_isCoreReplacement);
+            irMetaModule.CreateIRMetaClassesFromPackage(package.classList);
+            irMetaModule.BuildAllMembersFromPackage(package.classList);
+
+            /* Phase B1（Meta shell）：IR 全部建完后，生成 MetaClass/MetaData/MetaEnum shell，
+             * 注册到命名空间树。此时不填充成员，保证所有类型 shell 先就位。 */
             var createdTypes = new List<(SLClassPackage cls, MetaBase metaBase)>();
             for (int i = 0; i < package.classList.Count; i++)
             {
@@ -297,19 +303,20 @@ namespace SimpleLanguage.Project
                 }
             }
 
-            /* Pass 2: Populate members (fields, methods, enum members, base class, interfaces).
-             * Now all types are available for MetaType resolution. */
+            /* Phase C（关联）：先 Link，使 IRMetaClass.typeOwner 指向 MetaBase，
+             * 之后 IRMetaType.ToMetaType 才能复原 MetaType。 */
+            irMetaModule.LinkMetaOwners(createdTypes);
+
+            /* Phase B2（反向构建 Meta 成员）：从 IRMetaClass 的 IRMetaVariable/IRMethod
+             * 反向构建 MetaMemberVariable/Data/Enum 与 MetaMemberFunction（导出的逆方法）。
+             * 基类 / 接口仍来自 SLClassPackage（IRMetaClass 不独立承载）。 */
             foreach (var (cls, metaBase) in createdTypes)
             {
-                PopulateReferenceTypeMembers(metaModule, cls, metaBase, methodLookup, classLookup);
+                if (!irMetaModule.TryGetIRMetaClass(cls.id, out var irmc)) continue;
+                PopulateReferenceTypeMembersFromIR(metaModule, irmc, cls, metaBase, classLookup);
             }
 
-            /* Pass 3: Pre-build IRMetaClass for ref module classes.
-             * ref module 的 IR 数据已在编译后的模块中，提前构建 IRMetaClass（含方法列表），
-             * 这样在 TranslateIR 时 ref module 的 IRMetaClass 已经就绪，不需要重新从 MetaFunction 构建。 */
-            BuildRefModuleIRLayer(createdTypes, methodLookup);
-
-            /* Pass 3 (Core replacement only): Re-run extend/interface handling for all
+            /* Core replacement only: re-run extend/interface handling for all
              * Core types so that inheritance chains are rebuilt after member replacement.
              * ClearExistingMembers moved own methods to fileCollect; HandleExtendMemberFunction
              * will re-merge them with inherited methods from the extend class. */
@@ -324,39 +331,6 @@ namespace SimpleLanguage.Project
             //        }
             //    }
             //}
-        }
-
-        /// <summary>
-        /// Pass 3: Pre-register IRMetaClass for ref module classes.
-        /// 提前创建并注册 IRMetaClass 到 IRManager，这样 ParseClass 中会跳过重复创建。
-        /// 字段和方法列表由 ParseClass 的 CreateMemberData/CreateMemberMethod 统一构建
-        /// （CreateMemberMethod 内部对 ref module 函数走 ParseArgumentsOnly 不调 AddIRMethod）。
-        /// </summary>
-        private static void BuildRefModuleIRLayer(
-            List<(SLClassPackage cls, MetaBase metaBase)> createdTypes,
-            Dictionary<string, SLMethodPackage> methodLookup)
-        {
-            foreach (var (cls, metaBase) in createdTypes)
-            {
-                if (metaBase is MetaClass mc)
-                {
-                    var existing = IRManager.instance.GetIRMetaClassById(mc.GetHashCode());
-                    if (existing == null)
-                        IRManager.instance.AddIRMetaClass(new IRMetaClass(mc));
-                }
-                else if (metaBase is MetaData md)
-                {
-                    var existing = IRManager.instance.GetIRMetaClassById(md.GetHashCode());
-                    if (existing == null)
-                        IRManager.instance.AddIRMetaClass(new IRMetaClass(md));
-                }
-                else if (metaBase is MetaEnum me)
-                {
-                    var existing = IRManager.instance.GetIRMetaClassById(me.GetHashCode());
-                    if (existing == null)
-                        IRManager.instance.AddIRMetaClass(new IRMetaClass(me));
-                }
-            }
         }
 
         private static MetaNode EnsureNamespacePath(MetaNode root, string fullName)
@@ -500,15 +474,14 @@ namespace SimpleLanguage.Project
         }
 
         /// <summary>
-        /// Pass 2: Populates members (fields, methods, enum members, base class, interfaces)
-        /// on a previously created type shell. All types are now available for MetaType resolution.
+        /// Phase B2: 从 IRMetaClass 反向构建 Meta 成员（成员变量 / 方法 / 枚举成员 / Data 成员）。
+        /// 类型由 IRMetaType.ToMetaType 复原（需 Phase C LinkMetaOwners 已完成，typeOwner 已关联）。
+        /// 基类 / 接口关系仍来自 SLClassPackage（IRMetaClass 不独立承载这两者）。
         /// </summary>
-        private static void PopulateReferenceTypeMembers(MetaModule metaModule, SLClassPackage cls,
-            MetaBase metaBase,
-            Dictionary<string, SLMethodPackage> methodLookup,
-            Dictionary<int, SLClassPackage> classLookup)
+        private static void PopulateReferenceTypeMembersFromIR(MetaModule metaModule, IRMetaClass irmc,
+            SLClassPackage cls, MetaBase metaBase, Dictionary<int, SLClassPackage> classLookup)
         {
-            if (metaModule == null || cls == null || metaBase == null) return;
+            if (metaModule == null || irmc == null || cls == null || metaBase == null) return;
 
             /* Core replacement: clear inner-form members before repopulating with compiled data. */
             if (s_isCoreReplacement)
@@ -516,14 +489,14 @@ namespace SimpleLanguage.Project
                 ClearExistingMembers(metaBase);
             }
 
-            switch ((IRMetaClassKind)cls.metaClassKind)
+            switch (irmc.metaClassKind)
             {
                 case IRMetaClassKind.Data:
                 {
                     var md = metaBase as MetaData;
                     if (md != null)
                     {
-                        AddFieldsToData(md, cls.fieldList, metaModule);
+                        AddDataFieldsFromIR(md, irmc);
                     }
                     break;
                 }
@@ -532,78 +505,20 @@ namespace SimpleLanguage.Project
                     var me = metaBase as MetaEnum;
                     if (me != null)
                     {
-                        AddEnumMembers(me, cls.fieldList, metaModule);
+                        AddEnumMembersFromIR(me, irmc);
                     }
                     break;
                 }
                 case IRMetaClassKind.Interface:
-                {
-                    var mi = metaBase as MetaClass;
-                    if (mi != null)
-                    {
-                        AddFieldsToClass(mi, cls.fieldList, metaModule);
-                        AddMethodsToClass(mi, cls, methodLookup, metaModule);
-
-                        /* Base class relationship (interfaces extend Object) */
-                        if (cls.baseClassId != 0)
-                        {
-                            if (classLookup.TryGetValue(cls.baseClassId, out var basePkg))
-                            {
-                                var baseFullName = !string.IsNullOrWhiteSpace(basePkg.fullName)
-                                    ? basePkg.fullName : basePkg.name;
-                                var baseType = ResolveTypeByName(metaModule, baseFullName);
-                                if (baseType != null)
-                                {
-                                    mi.SetExtendClass(baseType);
-                                }
-                            }
-                        }
-                    }
-                    break;
-                }
-                default: // Class
+                case IRMetaClassKind.Class:
+                default:
                 {
                     var mc = metaBase as MetaClass;
                     if (mc == null) break;
 
-                    /* Member variables */
-                    AddFieldsToClass(mc, cls.fieldList, metaModule);
-
-                    /* Member functions (signatures only, no instruction bodies) */
-                    AddMethodsToClass(mc, cls, methodLookup, metaModule);
-
-                    /* Base class relationship */
-                    if (cls.baseClassId != 0)
-                    {
-                        if (classLookup.TryGetValue(cls.baseClassId, out var basePkg))
-                        {
-                            var baseFullName = !string.IsNullOrWhiteSpace(basePkg.fullName)
-                                ? basePkg.fullName : basePkg.name;
-                            var baseType = ResolveTypeByName(metaModule, baseFullName);
-                            if (baseType != null)
-                            {
-                                mc.SetExtendClass(baseType);
-                            }
-                        }
-                    }
-
-                    /* Interface relationships */
-                    if (cls.implementsInterfaceIdList != null)
-                    {
-                        foreach (var ifaceId in cls.implementsInterfaceIdList)
-                        {
-                            if (classLookup.TryGetValue(ifaceId, out var ifacePkg))
-                            {
-                                var ifaceFullName = !string.IsNullOrWhiteSpace(ifacePkg.fullName)
-                                    ? ifacePkg.fullName : ifacePkg.name;
-                                var ifaceType = ResolveTypeByName(metaModule, ifaceFullName);
-                                if (ifaceType != null)
-                                {
-                                    mc.AddInterfaceClass(ifaceType);
-                                }
-                            }
-                        }
-                    }
+                    AddClassFieldsFromIR(mc, irmc);
+                    AddClassMethodsFromIR(mc, irmc);
+                    SetBaseAndInterfacesFromPackage(mc, cls, metaModule, classLookup);
                     break;
                 }
             }
@@ -642,68 +557,75 @@ namespace SimpleLanguage.Project
             }
         }
 
-        private static void AddFieldsToClass(MetaClass mc, List<SLFieldPackage> fieldList, MetaModule metaModule)
+        /* ---- 反向：IRMetaVariable -> Meta 成员 ---- */
+
+        private static void AddClassFieldsFromIR(MetaClass mc, IRMetaClass irmc)
         {
-            if (mc == null || fieldList == null) return;
-
-            foreach (var field in fieldList)
+            if (mc == null || irmc == null) return;
+            foreach (var iv in irmc.localIRMetaVariableList)
             {
-                if (field == null || string.IsNullOrWhiteSpace(field.name)) continue;
-
-                var mmv = new MetaMemberVariable(mc, field.name);
-                mmv.SetRefFromType(RefFromType.RefModule);
-                ApplyFieldTypeInfo(mmv, metaModule, field);
-                mc.AddMetaMemberVariable(mmv, isAddManager: false);
+                AddClassFieldFromIR(mc, iv);
+            }
+            foreach (var iv in irmc.staticIRMetaVariableList)
+            {
+                AddClassFieldFromIR(mc, iv);
             }
         }
 
-        private static void AddFieldsToData(MetaData md, List<SLFieldPackage> fieldList, MetaModule metaModule)
+        private static void AddClassFieldFromIR(MetaClass mc, IRMetaVariable iv)
         {
-            if (md == null || fieldList == null) return;
-
-            foreach (var field in fieldList)
+            if (iv == null || string.IsNullOrWhiteSpace(iv.shortName)) return;
+            var mmv = new MetaMemberVariable(mc, iv.shortName);
+            mmv.SetRefFromType(RefFromType.RefModule);
+            mmv.SetIsStatic(iv.isStatic);
+            mmv.SetIsConst(iv.isConst);
+            var mt = IRMetaType.ToMetaType(iv.irMetaType, mc);
+            mmv.SetMetaDefineType(mt);
+            mmv.SetIsDefineMetaType(true);
+            mmv.SetRealMetaType(new MetaType(mt));
+            if (iv.index >= 0)
             {
-                if (field == null || string.IsNullOrWhiteSpace(field.name)) continue;
+                mmv.SetIndex(iv.index);
+            }
+            mc.AddMetaMemberVariable(mmv, isAddManager: false);
+        }
 
-                var fieldName = field.name;
-                var fieldIndex = field.index >= 0 ? field.index : md.metaMemberDataDict.Count;
-                MetaType fieldType = null;
-                if (field.typeDef != null)
-                {
-                    fieldType = ResolveRuntimeDefType(metaModule, field.typeDef);
-                }
+        private static void AddDataFieldsFromIR(MetaData md, IRMetaClass irmc)
+        {
+            if (md == null || irmc == null) return;
+            /* Data 成员在 IR 层同时出现在 local 与 static 列表（forward CreateMemberDataFromMetaData 行为），
+             * 取 localIRMetaVariableList 即可得到每个成员一份。 */
+            foreach (var iv in irmc.localIRMetaVariableList)
+            {
+                if (iv == null || string.IsNullOrWhiteSpace(iv.shortName)) continue;
+                var fieldName = iv.shortName;
+                var fieldIndex = iv.index >= 0 ? iv.index : md.metaMemberDataDict.Count;
+                MetaType fieldType = IRMetaType.ToMetaType(iv.irMetaType, null);
                 var mmd = MetaMemberData.CreateDeclared(md, fieldName, fieldIndex, fieldType, fieldType != null);
                 md.AddMetaMemberData(mmd);
             }
         }
 
-        /// <summary>
-        /// Restores enum members from the exported fieldList using MetaMemberEnum.
-        /// </summary>
-        private static void AddEnumMembers(MetaEnum me, List<SLFieldPackage> fieldList, MetaModule metaModule)
+        private static void AddEnumMembersFromIR(MetaEnum me, IRMetaClass irmc)
         {
-            if (me == null || fieldList == null) return;
-
-            foreach (var field in fieldList)
+            if (me == null || irmc == null) return;
+            /* 枚举成员在 IR 层位于 staticIRMetaVariableList。 */
+            foreach (var iv in irmc.staticIRMetaVariableList)
             {
-                if (field == null || string.IsNullOrWhiteSpace(field.name)) continue;
+                if (iv == null || string.IsNullOrWhiteSpace(iv.shortName)) continue;
 
-                /* "values" 是 Enum 自动生成的静态数组变量（Array<Member>），
-                 * 不是枚举成员，需要作为 MetaMemberVariable 单独导入。 */
-                if (field.name == "values")
+                /* "values" 是 Enum 自动生成的静态数组变量（Array<Member>），不是枚举成员。 */
+                if (iv.shortName == "values")
                 {
                     var mmv = new MetaMemberVariable(me, "values");
                     mmv.SetRefFromType(RefFromType.RefModule);
                     mmv.SetVariableFrom(MetaVariable.EVariableFrom.EnumMember);
                     mmv.SetIsStatic(true);
-                    if (field.typeDef != null)
-                    {
-                        var mt = ResolveRuntimeDefType(metaModule, field.typeDef);
-                        mmv.SetMetaDefineType(mt);
-                        mmv.SetRealMetaType(new MetaType(mt));
-                        mmv.SetIsDefineMetaType(true);
-                    }
-                    mmv.SetIndex(field.index >= 0 ? field.index : me.metaMemberVariableDict.Count);
+                    var mt = IRMetaType.ToMetaType(iv.irMetaType, null);
+                    mmv.SetMetaDefineType(mt);
+                    mmv.SetRealMetaType(new MetaType(mt));
+                    mmv.SetIsDefineMetaType(true);
+                    mmv.SetIndex(iv.index >= 0 ? iv.index : me.metaMemberVariableDict.Count);
                     if (!me.metaMemberVariableDict.ContainsKey("values"))
                     {
                         me.metaMemberVariableDict.Add("values", mmv);
@@ -711,66 +633,51 @@ namespace SimpleLanguage.Project
                     continue;
                 }
 
-                var memberName = field.name;
-                var memberIndex = field.index >= 0 ? field.index : me.metaMemberEnumDict.Count;
+                var memberName = iv.shortName;
+                var memberIndex = iv.index >= 0 ? iv.index : me.metaMemberEnumDict.Count;
                 var mme = new MetaMemberEnum(me, memberName, memberIndex);
-
-                /* Set defineMetaType / realMetaType from exported typeDef */
-                if (field.typeDef != null)
-                {
-                    var mt = ResolveRuntimeDefType(metaModule, field.typeDef);
-                    mme.SetMetaDefineType(mt);
-                    mme.SetRealMetaType(new MetaType(mt));
-                    mme.SetIsDefineMetaType(true);
-                }
-                else
-                {
-                    /* Fallback: derive type from enum's extend class/data */
-                    mme.ParseDefineMetaType();
-                }
-
+                var memberMt = IRMetaType.ToMetaType(iv.irMetaType, null);
+                mme.SetMetaDefineType(memberMt);
+                mme.SetRealMetaType(new MetaType(memberMt));
+                mme.SetIsDefineMetaType(true);
                 me.metaMemberEnumDict.Add(mme.name, mme);
                 me.metaMemberVariableDict.Add(mme.name, mme);
             }
         }
 
-        private static void AddMethodsToClass(MetaClass mc, SLClassPackage cls,
-            Dictionary<string, SLMethodPackage> methodLookup, MetaModule metaModule)
-        {
-            if (mc == null || cls == null) return;
+        /* ---- 反向：IRMethod -> MetaMemberFunction ---- */
 
-            /* Non-static (instance) methods */
-            if (cls.nonStaticMethodList != null)
+        private static void AddClassMethodsFromIR(MetaClass mc, IRMetaClass irmc)
+        {
+            if (mc == null || irmc == null) return;
+
+            if (irmc.nonStaticMethodList != null)
             {
-                foreach (var meta in cls.nonStaticMethodList)
+                foreach (var irm in irmc.nonStaticMethodList)
                 {
-                    var mmf = AddMethodToClass(mc, meta, methodLookup, metaModule, isStatic: false);
+                    var mmf = BuildMetaMemberFunctionFromIR(mc, irm);
                     if (mmf != null)
                     {
                         mc.nonStaticVirtualMetaMemberFunctionList.Add(mmf);
                     }
                 }
             }
-
-            /* Static methods */
-            if (cls.staticMethodList != null)
+            if (irmc.staticMethodList != null)
             {
-                foreach (var meta in cls.staticMethodList)
+                foreach (var irm in irmc.staticMethodList)
                 {
-                    var mmf = AddMethodToClass(mc, meta, methodLookup, metaModule, isStatic: true);
+                    var mmf = BuildMetaMemberFunctionFromIR(mc, irm);
                     if (mmf != null)
                     {
                         mc.staticMetaMemberFunctionList.Add(mmf);
                     }
                 }
             }
-
-            /* Operator methods */
-            if (cls.operatorMethodList != null)
+            if (irmc.operatorMethodList != null)
             {
-                foreach (var meta in cls.operatorMethodList)
+                foreach (var irm in irmc.operatorMethodList)
                 {
-                    var mmf = AddMethodToClass(mc, meta, methodLookup, metaModule, isStatic: false);
+                    var mmf = BuildMetaMemberFunctionFromIR(mc, irm);
                     if (mmf != null)
                     {
                         mc.nonStaticVirtualMetaMemberFunctionList.Add(mmf);
@@ -779,85 +686,105 @@ namespace SimpleLanguage.Project
             }
         }
 
-        private static MetaMemberFunction AddMethodToClass(MetaClass mc, SLMethodMeta meta,
-            Dictionary<string, SLMethodPackage> methodLookup, MetaModule metaModule, bool isStatic)
+        private static MetaMemberFunction BuildMetaMemberFunctionFromIR(MetaClass mc, IRMethod irm)
         {
-            if (mc == null || meta == null || string.IsNullOrWhiteSpace(meta.name)) return null;
+            if (mc == null || irm == null || string.IsNullOrWhiteSpace(irm.onlyFunctionName)) return null;
 
-            var mmf = new MetaMemberFunction(mc, meta.name);
+            var mmf = new MetaMemberFunction(mc, irm.onlyFunctionName);
             mmf.SetRefFromType(RefFromType.RefModule);
-            mmf.SetIsStatic(isStatic);
+            mmf.SetIsStatic(irm.isStatic);
+            mmf.SetIsFinal(irm.isFinal);
+            mmf.SetIsAbstract(irm.isAbstract);
+            mmf.SetIsOverrideFunction(irm.isOverrideFunction);
+            mmf.SetIsOverrideInterface(irm.interfaceMethod);
 
-            /* Look up full method package to restore return type, parameters, and flags */
-            if (methodLookup != null && !string.IsNullOrWhiteSpace(meta.id) &&
-                methodLookup.TryGetValue(meta.id, out var mp) && mp != null)
+            /* 返回值类型 */
+            if (irm.methodReturnVariableList != null && irm.methodReturnVariableList.Count > 0)
             {
-                /* Method modifier flags */
-                mmf.SetIsStatic((mp.flags & 1) != 0);
-                mmf.SetIsFinal((mp.flags & 2) != 0);
-                mmf.SetIsAbstract((mp.flags & 4) != 0);
-                mmf.SetIsOverrideFunction((mp.flags & 8) != 0);
-                mmf.SetIsOverrideInterface((mp.flags & 16) != 0);
-
-                /* Return type */
-                if (mp.returnList != null && mp.returnList.Count > 0)
+                var retVar = irm.methodReturnVariableList[0];
+                if (retVar != null && retVar.irMetaType != null)
                 {
-                    var retVar = mp.returnList[0];
-                    if (retVar?.typeDef != null)
+                    var retType = IRMetaType.ToMetaType(retVar.irMetaType, mc);
+                    mmf.SetDefineMetaType(retType);
+                    mmf.SetRealMetaType(new MetaType(retType));
+                    mmf.SetIsDefineMetaType(true);
+                    if (mmf.returnMetaVariable != null)
                     {
-                        var retType = ResolveRuntimeDefType(metaModule, retVar.typeDef, mc);
-                        mmf.SetDefineMetaType(retType);
-                        mmf.SetRealMetaType(new MetaType(retType));
-                        mmf.SetIsDefineMetaType(true);
-                        if (mmf.returnMetaVariable != null)
-                        {
-                            var defMt = new MetaType(retType);
-                            mmf.returnMetaVariable.SetMetaDefineType(defMt);
-                            mmf.returnMetaVariable.SetRealMetaType(new MetaType(defMt));
-                            mmf.returnMetaVariable.SetIsDefineMetaType(true);
-                        }
-                    }
-                }
-
-                /* Parameters */
-                bool isExtendParamsMethod = (mp.flags & 128) != 0;
-                if (mp.argumentList != null)
-                {
-                    /* flags bit 128: last parameter is a params variadic array (params object[]).
-                     * Restore the flag on the last define param (before AddMetaDefineParam,
-                     * which latches it into the collection) so call-site variadic matching works. */
-
-                    /* Non-static methods: skip first parameter (implicit 'this' pointer in IR,
-                     * but not needed in MetaCore layer which uses thisMetaVariable separately). */
-                    int startIndex = isStatic ? 0 : 1;
-                    for (int i = startIndex; i < mp.argumentList.Count; i++)
-                    {
-                        var arg = mp.argumentList[i];
-                        if (arg == null) continue;
-                        var paramName = !string.IsNullOrWhiteSpace(arg.name) ? arg.name : "arg";
-                        var mdp = new MetaDefineParam(paramName, mmf);
-                        if (isExtendParamsMethod && i == mp.argumentList.Count - 1)
-                        {
-                            mdp.SetExtendParams();
-                        }
-                        if (arg.typeDef != null)
-                        {
-                            var paramType = ResolveRuntimeDefType(metaModule, arg.typeDef, mc);
-                            mdp.metaVariable.SetMetaDefineType(paramType);
-                            mdp.metaVariable.SetRealMetaType(new MetaType(paramType));
-                            mdp.metaVariable.SetIsDefineMetaType(true);
-                        }
-                        mmf.AddMetaDefineParam(mdp);
+                        var defMt = new MetaType(retType);
+                        mmf.returnMetaVariable.SetMetaDefineType(defMt);
+                        mmf.returnMetaVariable.SetRealMetaType(new MetaType(defMt));
+                        mmf.returnMetaVariable.SetIsDefineMetaType(true);
                     }
                 }
             }
 
-            // ref module 函数跳过 ParseDefineMetaType/Parse，需要通过 ParseDefineMetaType 设置 virtualFunctionName，
+            /* 参数：非静态方法第一个参数是隐式 this（IR 层保留），MetaCore 层用 thisMetaVariable 单独处理，跳过。 */
+            if (irm.methodArgumentList != null)
+            {
+                int startIndex = irm.isStatic ? 0 : 1;
+                for (int i = startIndex; i < irm.methodArgumentList.Count; i++)
+                {
+                    var arg = irm.methodArgumentList[i];
+                    if (arg == null) continue;
+                    var paramName = !string.IsNullOrWhiteSpace(arg.name) ? arg.name : "arg";
+                    var mdp = new MetaDefineParam(paramName, mmf);
+                    if (irm.isExtendParams && i == irm.methodArgumentList.Count - 1)
+                    {
+                        mdp.SetExtendParams();
+                    }
+                    if (arg.irMetaType != null)
+                    {
+                        var paramType = IRMetaType.ToMetaType(arg.irMetaType, mc);
+                        mdp.metaVariable.SetMetaDefineType(paramType);
+                        mdp.metaVariable.SetRealMetaType(new MetaType(paramType));
+                        mdp.metaVariable.SetIsDefineMetaType(true);
+                    }
+                    mmf.AddMetaDefineParam(mdp);
+                }
+            }
+
+            // ref module 函数需要通过 ParseDefineMetaType 设置 virtualFunctionName，
             // 否则 IR 阶段通过 virtualFunctionName 查找方法时会失败
             mmf.ParseDefineMetaType();
 
             mc.AddMetaMemberFunction(mmf);
             return mmf;
+        }
+
+        /* ---- 基类 / 接口（仍来自 SLClassPackage，IRMetaClass 不独立承载） ---- */
+
+        private static void SetBaseAndInterfacesFromPackage(MetaClass mc, SLClassPackage cls,
+            MetaModule metaModule, Dictionary<int, SLClassPackage> classLookup)
+        {
+            if (mc == null || cls == null) return;
+
+            if (cls.baseClassId != 0 && classLookup.TryGetValue(cls.baseClassId, out var basePkg))
+            {
+                var baseFullName = !string.IsNullOrWhiteSpace(basePkg.fullName)
+                    ? basePkg.fullName : basePkg.name;
+                var baseType = ResolveTypeByName(metaModule, baseFullName);
+                if (baseType != null)
+                {
+                    mc.SetExtendClass(baseType);
+                }
+            }
+
+            if (cls.implementsInterfaceIdList != null)
+            {
+                foreach (var ifaceId in cls.implementsInterfaceIdList)
+                {
+                    if (classLookup.TryGetValue(ifaceId, out var ifacePkg))
+                    {
+                        var ifaceFullName = !string.IsNullOrWhiteSpace(ifacePkg.fullName)
+                            ? ifacePkg.fullName : ifacePkg.name;
+                        var ifaceType = ResolveTypeByName(metaModule, ifaceFullName);
+                        if (ifaceType != null)
+                        {
+                            mc.AddInterfaceClass(ifaceType);
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -1090,175 +1017,6 @@ namespace SimpleLanguage.Project
                         }
                         break;
                     }
-            }
-        }
-
-        #endregion
-
-        #region Type resolution helpers
-
-        /// <summary>
-        /// Resolves a MetaNode by its full name (dot-separated) within the module's namespace tree.
-        /// </summary>
-        private static MetaNode ResolveMetaNodeByFullName(MetaNode root, string fullName)
-        {
-            if (root == null || string.IsNullOrWhiteSpace(fullName))
-            {
-                return null;
-            }
-
-            var parts = fullName.Split('.', StringSplitOptions.RemoveEmptyEntries);
-            var current = root;
-            for (int i = 0; i < parts.Length; i++)
-            {
-                current = current.GetChildrenMetaNodeByName(parts[i]);
-                if (current == null) break;
-            }
-            return current;
-        }
-
-        /// <summary>
-        /// Converts an <see cref="SLRuntimeDefTypePackage"/> (exported type payload) back to a <see cref="MetaType"/>.
-        /// Resolves built-in core types first, then searches the module's namespace tree.
-        /// Template parameters (isTemplate=true) are resolved to MetaTemplate when ownerClass is provided,
-        /// so MetaGenTemplateClass can substitute them with actual type arguments.
-        /// Generic types with runtimeDefTypeList are reconstructed with their template arguments.
-        /// </summary>
-        private static MetaType ResolveRuntimeDefType(MetaModule metaModule, SLRuntimeDefTypePackage typeDef, MetaClass ownerClass = null)
-        {
-            if (typeDef == null)
-            {
-                return new MetaType(CoreMetaClassManager.objectMetaClass);
-            }
-
-            // Template parameter: resolve to MetaTemplate when ownerClass provides the template list
-            if (typeDef.isTemplate)
-            {
-                if (ownerClass != null && typeDef.templateIndex >= 0 &&
-                    typeDef.templateIndex < ownerClass.metaTemplateList.Count)
-                {
-                    return new MetaType(ownerClass.metaTemplateList[typeDef.templateIndex]);
-                }
-                return new MetaType(CoreMetaClassManager.objectMetaClass);
-            }
-
-            var className = typeDef.className ?? string.Empty;
-            if (string.IsNullOrWhiteSpace(className))
-            {
-                return new MetaType(CoreMetaClassManager.objectMetaClass);
-            }
-
-            // Strip generic suffix from className (e.g. "Array<T>" -> "Array").
-            // Template arguments are carried separately in typeDef.runtimeDefTypeList.
-            var baseName = className;
-            int lt = baseName.IndexOf('<');
-            if (lt > 0)
-            {
-                baseName = baseName.Substring(0, lt);
-            }
-            int templateArgCount = (typeDef.runtimeDefTypeList != null) ? typeDef.runtimeDefTypeList.Count : 0;
-
-            // Try built-in core types first
-            var coreNode = CoreMetaClassManager.GetCoreMetaClass(baseName);
-            if (coreNode != null)
-            {
-                var mc = coreNode.GetMetaClassByTemplateCount(templateArgCount);
-                if (mc != null)
-                {
-                    return BuildMetaTypeWithTemplateArgs(mc, metaModule, typeDef);
-                }
-                // Fallback: non-generic version (templateArgCount=0 but class may only have generic form)
-                mc = coreNode.GetMetaClassByTemplateCount(0);
-                if (mc != null)
-                {
-                    return BuildMetaTypeWithTemplateArgs(mc, metaModule, typeDef);
-                }
-                if (coreNode.metaData != null)
-                {
-                    return new MetaType(coreNode.metaData);
-                }
-                if (coreNode.metaEnum != null)
-                {
-                    return new MetaType(coreNode.metaEnum);
-                }
-            }
-
-            // Search within the module's namespace tree
-            if (metaModule?.metaNode != null)
-            {
-                var node = ResolveMetaNodeByFullName(metaModule.metaNode, baseName);
-                if (node != null)
-                {
-                    if (node.metaData != null)
-                    {
-                        return new MetaType(node.metaData);
-                    }
-                    if (node.metaEnum != null)
-                    {
-                        return new MetaType(node.metaEnum);
-                    }
-                    var mc = node.GetMetaClassByTemplateCount(templateArgCount);
-                    if (mc != null)
-                    {
-                        return BuildMetaTypeWithTemplateArgs(mc, metaModule, typeDef);
-                    }
-                    mc = node.GetMetaClassByTemplateCount(0);
-                    if (mc != null)
-                    {
-                        return BuildMetaTypeWithTemplateArgs(mc, metaModule, typeDef);
-                    }
-                }
-            }
-
-            return new MetaType(CoreMetaClassManager.objectMetaClass);
-        }
-
-        /// <summary>
-        /// Builds a MetaType from a MetaClass, attaching template type arguments if present.
-        /// </summary>
-        private static MetaType BuildMetaTypeWithTemplateArgs(MetaClass mc, MetaModule metaModule, SLRuntimeDefTypePackage typeDef)
-        {
-            if (typeDef.runtimeDefTypeList != null && typeDef.runtimeDefTypeList.Count > 0)
-            {
-                var templateArgs = new List<MetaType>();
-                foreach (var child in typeDef.runtimeDefTypeList)
-                {
-                    if (child.isTemplate && child.templateIndex >= 0 && child.templateIndex < mc.metaTemplateList.Count)
-                    {
-                        // Template parameter (e.g. T): reference the MetaTemplate directly
-                        // so that MetaGenTemplateClass can substitute it with the actual type.
-                        templateArgs.Add(new MetaType(mc.metaTemplateList[child.templateIndex]));
-                    }
-                    else
-                    {
-                        templateArgs.Add(ResolveRuntimeDefType(metaModule, child));
-                    }
-                }
-                return new MetaType(mc, templateArgs);
-            }
-            return new MetaType(mc);
-        }
-
-        /// <summary>
-        /// Restores field type info (defineMetaType/realMetaType), isStatic, isConst from an SLFieldPackage.
-        /// </summary>
-        private static void ApplyFieldTypeInfo(MetaMemberVariable mmv, MetaModule metaModule, SLFieldPackage field, MetaClass ownerClass = null)
-        {
-            // flags bits: 1=private, 2=public, 4=export, 8=protected, 16=const, 32=static
-            mmv.SetIsStatic((field.flags & 32) != 0);
-            mmv.SetIsConst((field.flags & 16) != 0);
-
-            if (field.typeDef != null)
-            {
-                var mt = ResolveRuntimeDefType(metaModule, field.typeDef, ownerClass);
-                mmv.SetMetaDefineType(mt);
-                mmv.SetIsDefineMetaType(true);
-                mmv.SetRealMetaType(new MetaType(mt));
-            }
-
-            if (field.index >= 0)
-            {
-                mmv.SetIndex(field.index);
             }
         }
 

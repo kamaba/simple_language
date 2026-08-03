@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRMetaVariable.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
+using SimpleLanguage.Export.SLIR.Types;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -30,9 +31,12 @@ namespace SimpleLanguage.IR
         public IRMetaType irMetaType => m_IRMetaType;
         public int id => m_Id;
         public string name => m_Name;
+        /// <summary>成员短名（不含 owner 前缀），ref module 反向构建 MetaMemberVariable 时使用。</summary>
+        public string shortName => m_ShortName;
         public int index => m_Index;
         public DebugInfo debugInfo => m_DebugInfo;
         public bool isStatic => m_IsStatic;
+        public bool isConst => m_IsConst;
         public EPermission permission => m_Permission;
         public List<IRData> irDataList => m_IRDataList;
         // 解析顺序：源自 MetaMemberVariable.parseOrder，
@@ -49,8 +53,10 @@ namespace SimpleLanguage.IR
         private int m_Id = -1;
         private int m_Index = -1;
         private string m_Name = "";
+        private string m_ShortName = "";
         private DebugInfo m_DebugInfo;
         private bool m_IsStatic = false;
+        private bool m_IsConst = false;
         private EPermission m_Permission = EPermission.Public;
         private int m_Order = -1;
         //private MetaVariable m_MetaVariable = null;
@@ -171,6 +177,44 @@ namespace SimpleLanguage.IR
         public void AddIRData( IRData irdata )
         {
             m_IRDataList.Add(irdata);
+        }
+
+        /// <summary>
+        /// 从导出的 SLFieldPackage 直接构建，用于 ref module 导入。
+        /// 保留导出端写入的全部信息（权限 / static / const / 短名 / 顺序 / 类型），
+        /// 以便后续反向构建 MetaMemberVariable/Data/Enum 时无损复原。
+        /// </summary>
+        public IRMetaVariable(IRMetaClass owner, SimpleLanguage.Export.SLIR.Types.SLFieldPackage field, IRMetaType irmt, int fieldIndex)
+        {
+            var flags = field?.flags ?? 0;
+            m_Id = (owner?.id ?? 0).GetHashCode() ^ (field?.name ?? "").GetHashCode() ^ fieldIndex;
+            m_Index = fieldIndex;
+            m_ShortName = field?.name ?? "";
+            m_Name = (owner?.irName ?? string.Empty) + "." + m_ShortName;
+            m_DebugInfo = new DebugInfo();
+            // SLFieldPackage flags: 1=private, 2=public, 4=export, 8=protected, 16=const, 32=static
+            m_IsStatic = (flags & 32) != 0;
+            m_IsConst = (flags & 16) != 0;
+            if ((flags & 1) != 0) m_Permission = EPermission.Private;
+            else if ((flags & 4) != 0) m_Permission = EPermission.Export;
+            else if ((flags & 8) != 0) m_Permission = EPermission.Protected;
+            else m_Permission = EPermission.Public;
+            m_Order = field?.order ?? -1;
+            m_IRMetaVariableFrom = m_IsStatic ? IRMetaVariableFrom.Static : IRMetaVariableFrom.Member;
+            m_IRMetaType = irmt ?? new IRMetaType(IRManager.instance.GetIRMetaClassByName("Core.Object"));
+        }
+
+        /// <summary>
+        /// 从导出的 SLVariablePackage 直接构建，用于 ref module IRMethod 参数/返回值/局部变量。
+        /// </summary>
+        public IRMetaVariable(SLVariablePackage var, IRMetaType irmt, IRMetaVariableFrom from)
+        {
+            m_Id = var?.id ?? 0;
+            m_Index = var?.index ?? -1;
+            m_Name = var?.name ?? "";
+            m_DebugInfo = new DebugInfo();
+            m_IRMetaVariableFrom = from;
+            m_IRMetaType = irmt ?? new IRMetaType(IRManager.instance.GetIRMetaClassByName("Core.Object"));
         }
         private void FillDebugInfo(MetaBase mb, string fallbackName, string info)
         {

@@ -61,6 +61,8 @@ namespace SimpleLanguage.IR
         private IRMetaClassKind m_MetaClassKind = IRMetaClassKind.Class;
         private int m_TemplateCount = 0;
         private bool m_NeedInitMemberVariable = false;
+        /// <summary>ref module 的 IRMetaClass 已从包数据直接构建（含字段和方法列表），CreateMemberData/CreateMemberMethod 时跳过。</summary>
+        public bool isRefModulePreBuilt { get; set; } = false;
 
 
         //public int byteCount => m_ByteCount;
@@ -96,6 +98,27 @@ namespace SimpleLanguage.IR
                 throw new System.ArgumentNullException(nameof(me));
             }
             InitFromMetaOwner(me, IRMetaClassKind.Enum);
+        }
+
+        /// <summary>
+        /// 从导出的 SLClassPackage 直接构建 IRMetaClass shell（不含成员），用于 ref module 导入。
+        /// 后续通过 LinkMetaOwner 关联 MetaBase，通过 BuildMembersFromPackage 填充字段和方法。
+        /// </summary>
+        public IRMetaClass(SimpleLanguage.Export.SLIR.Types.SLClassPackage cls)
+        {
+            if (cls == null) throw new System.ArgumentNullException(nameof(cls));
+            m_TypeOwner = null;
+            id = cls.id;
+            m_IRName = cls.fullName ?? cls.name ?? "";
+            m_SourcePath = cls.sourcePath ?? "";
+            m_MetaClassKind = (IRMetaClassKind)cls.metaClassKind;
+            m_TemplateCount = cls.templateCount;
+        }
+
+        /// <summary>关联 MetaBase 宿主（在 Meta 层构建完成后调用）。</summary>
+        public void LinkMetaOwner(MetaBase owner)
+        {
+            m_TypeOwner = owner;
         }
 
         void InitFromMetaOwner(MetaBase owner, IRMetaClassKind kind)
@@ -272,6 +295,7 @@ namespace SimpleLanguage.IR
         }
         public void CreateMemberData()
         {
+            if (isRefModulePreBuilt) return;
             if (OwnerMetaData != null)
             {
                 CreateMemberDataFromMetaData(OwnerMetaData);
@@ -384,6 +408,7 @@ namespace SimpleLanguage.IR
         }
         public void CreateMemberMethod()
         {
+            if (isRefModulePreBuilt) return;
             List<MetaMemberFunction> smflist = new List<MetaMemberFunction>();
             if( OwnerMetaClass != null )
             {

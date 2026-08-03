@@ -366,6 +366,28 @@ namespace SimpleLanguage.IR
         }
 
         /// <summary>
+        /// ref module 的 IRMetaClass 在 IR 先行构建时用包内 cls.id（导出会话 hash）作为 id，
+        /// 与当前会话 MetaBase.GetHashCode() 不一致，按 id 会查不到。此时仅对 ref module 类型
+        /// 回退到按 irName 查找：先试 allName（Core 内建类型 irName 含 "Core." 前缀，可命中），
+        /// 再去掉模块名前缀试一次（非 Core ref module 类型的 irName 是去前缀的，可命中）。
+        /// </summary>
+        private static IRMetaClass FindRefModuleIRMetaClassByName( MetaBase owner )
+        {
+            if (owner == null || instance == null) return null;
+            if (owner.refFromType != RefFromType.RefModule) return null;
+            var name = owner.allName;
+            if (string.IsNullOrEmpty(name)) return null;
+            var irmc = instance.GetIRMetaClassByName(name);
+            if (irmc != null) return irmc;
+            int idx = name.IndexOf('.');
+            if (idx > 0 && idx + 1 < name.Length)
+            {
+                irmc = instance.GetIRMetaClassByName(name.Substring(idx + 1));
+            }
+            return irmc;
+        }
+
+        /// <summary>
         /// 由语义 <see cref="MetaType"/> 解析已导出的 <see cref="IRMetaClass"/>（class / data / enum / 模板实例）。
         /// </summary>
         public static IRMetaClass GetIRMetaClassByMetaType(MetaType type)
@@ -381,6 +403,7 @@ namespace SimpleLanguage.IR
                 if (md != null)
                 {
                     var irmc = instance.GetIRMetaClassById(md.GetHashCode());
+                    if (irmc == null) irmc = FindRefModuleIRMetaClassByName(md);
                     if (irmc == null)
                     {
                         irmc = new IRMetaClass(md);
@@ -396,6 +419,7 @@ namespace SimpleLanguage.IR
                 if (me != null)
                 {
                     var irmc = instance.GetIRMetaClassById(me.GetHashCode());
+                    if (irmc == null) irmc = FindRefModuleIRMetaClassByName(me);
                     if (irmc == null)
                     {
                         irmc = new IRMetaClass(me);
@@ -409,6 +433,7 @@ namespace SimpleLanguage.IR
             if (tmc != null)
             {
                 var irmc = instance.GetIRMetaClassById(tmc.GetHashCode());
+                if (irmc == null) irmc = FindRefModuleIRMetaClassByName(tmc);
                 if (irmc == null && tmc is not MetaGenTemplateClass)
                 {
                     irmc = new IRMetaClass(tmc);
@@ -430,7 +455,8 @@ namespace SimpleLanguage.IR
                 return null;
             }
 
-            return instance.GetIRMetaClassById(owner.GetHashCode());
+            return instance.GetIRMetaClassById(owner.GetHashCode())
+                ?? FindRefModuleIRMetaClassByName(owner);
         }
 
         /// <summary>
@@ -446,7 +472,8 @@ namespace SimpleLanguage.IR
             var ownerClass = mv.GetOwnerClassTemplateClass();
             if (ownerClass != null)
             {
-                return instance.GetIRMetaClassById(ownerClass.GetHashCode());
+                return instance.GetIRMetaClassById(ownerClass.GetHashCode())
+                    ?? FindRefModuleIRMetaClassByName(ownerClass);
             }
 
             return GetIRMetaClassByMetaOwner(mv.ownerMetaBase);

@@ -7,7 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Core;
-
+using SimpleLanguage.Export.SLIR.Types;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -21,6 +21,13 @@ namespace SimpleLanguage.IR
         public string virtualFunctionName { get; set; } = "";
         public string onlyFunctionName { get; set; } = "";
         public bool interfaceMethod => m_InterfaceMethod;
+        /// <summary>ref module 方法修饰符（从 SLMethodPackage.flags 还原），用于反向构建 MetaMemberFunction。
+        /// isOverrideInterface 复用 interfaceMethod（flags bit 16 == isOverrideInterface）。</summary>
+        public bool isStatic => m_IsStatic;
+        public bool isFinal => m_IsFinal;
+        public bool isAbstract => m_IsAbstract;
+        public bool isOverrideFunction => m_IsOverrideFunction;
+        public bool isExtendParams => m_IsExtendParams;
         public IRManager irManager => m_IRManager;
         public IRData funEndLabelData => m_FunEndLabelData;
         public IRMetaClass irOwnerMetaClass => m_IROwnerMetaClass;
@@ -43,6 +50,11 @@ namespace SimpleLanguage.IR
         private MetaFunction m_BindMetaFunction = null;
         private IRMetaClass m_IROwnerMetaClass = null;
         private bool m_InterfaceMethod = false;
+        private bool m_IsStatic = false;
+        private bool m_IsFinal = false;
+        private bool m_IsAbstract = false;
+        private bool m_IsOverrideFunction = false;
+        private bool m_IsExtendParams = false;
         private IRData m_FunEndLabelData = null;
         private IRManager m_IRManager = null;
 
@@ -69,9 +81,110 @@ namespace SimpleLanguage.IR
             m_FunEndLabelData.opCode = EIROpCode.Label;
             m_FunEndLabelData.SetDebugInfoByToken(func?.token, "FunEndLabel");
         }
+
+        /// <summary>
+        /// 从导出的 SLMethodPackage 直接构建 IRMethod，用于 ref module 导入。
+        /// 只构建签名（参数、返回值），不包含函数体 IR 指令。
+        /// </summary>
+        public IRMethod(IRManager irma, SLMethodPackage mp, IRMetaClass ownerIRMc)
+        {
+            m_IRManager = irma;
+            m_BindMetaFunction = null; // ref module 方法不绑定 MetaFunction
+            this.id = mp?.id ?? "";
+            this.onlyFunctionName = mp?.name ?? "";
+            this.virtualFunctionName = ComputeVirtualFunctionName(mp);
+            m_IROwnerMetaClass = ownerIRMc;
+            m_InterfaceMethod = mp?.interfaceMethod ?? false;
+            // SLMethodPackage flags: 1=static, 2=final, 4=abstract, 8=overrideFunction,
+            // 16=overrideInterface(==interfaceMethod), 32=canRewrite, 64=constructInit, 128=extendParams
+            var flags = mp?.flags ?? 0;
+            m_IsStatic = (flags & 1) != 0;
+            m_IsFinal = (flags & 2) != 0;
+            m_IsAbstract = (flags & 4) != 0;
+            m_IsOverrideFunction = (flags & 8) != 0;
+            m_IsExtendParams = (flags & 128) != 0;
+            m_FunEndLabelData = new IRData();
+            m_FunEndLabelData.opCode = EIROpCode.Label;
+
+            // 构建参数列表
+            if (mp?.argumentList != null)
+            {
+                foreach (var vp in mp.argumentList)
+                {
+                    if (vp == null) continue;
+                    var irmt = IRMetaType.CreateFromPackage(vp.typeDef, ownerIRMc);
+                    var imv = new IRMetaVariable(vp, irmt, IRMetaVariableFrom.Argument);
+                    m_MethodArgumentList.Add(imv);
+                }
+            }
+            // 构建返回值列表
+            if (mp?.returnList != null)
+            {
+                foreach (var vp in mp.returnList)
+                {
+                    if (vp == null) continue;
+                    var irmt = IRMetaType.CreateFromPackage(vp.typeDef, ownerIRMc);
+                    var imv = new IRMetaVariable(vp, irmt, IRMetaVariableFrom.Return);
+                    m_MethodReturnList.Add(imv);
+                }
+            }
+            // 构建局部变量列表
+            if (mp?.localList != null)
+            {
+                foreach (var vp in mp.localList)
+                {
+                    if (vp == null) continue;
+                    var irmt = IRMetaType.CreateFromPackage(vp.typeDef, ownerIRMc);
+                    var imv = new IRMetaVariable(vp, irmt, IRMetaVariableFrom.LocalStatement);
+                    m_MethodLocalVariableList.Add(imv);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 从 SLMethodPackage 数据计算 virtualFunctionName，
+        /// 格式与 MetaMemberFunction.UpdateVritualFunctionName 一致：
+        /// {name}_{returnType}_{paramCount}_{paramType1}_{paramType2}...
+        /// </summary>
+        private static string ComputeVirtualFunctionName(SLMethodPackage mp)
+        {
+            if (mp == null) return "";
+            var sb = new StringBuilder();
+            sb.Append(mp.name);
+            sb.Append("_");
+            // 返回类型
+            string retType = "Core.void";
+            if (mp.returnList != null && mp.returnList.Count > 0 && mp.returnList[0]?.typeDef != null)
+                retType = mp.returnList[0].typeDef.className;
+            if (string.IsNullOrEmpty(retType)) retType = "Core.void";
+            sb.Append(retType);
+            sb.Append("_");
+            // 参数数量：非静态方法第一个参数是 this，不计入
+            bool isStatic = (mp.flags & 1) != 0;
+            int argCount = mp.argumentList?.Count ?? 0;
+            int paramCount = isStatic ? argCount : Math.Max(0, argCount - 1);
+            sb.Append(paramCount);
+            if (paramCount > 0)
+            {
+                sb.Append("_");
+                int startIdx = isStatic ? 0 : 1;
+                int added = 0;
+                for (int i = startIdx; i < argCount; i++)
+                {
+                    var arg = mp.argumentList[i];
+                    if (arg?.typeDef == null) continue;
+                    if (added > 0) sb.Append("_");
+                    sb.Append(arg.typeDef.className);
+                    added++;
+                }
+            }
+            return sb.ToString();
+        }
         public void ParseArgumentsOnly()
         {
             var mf = m_BindMetaFunction;
+            // ref module 方法（从 package 直接构建）无需通过 MetaFunction 解析参数
+            if (mf == null) return;
 
             if (mf.thisMetaVariable != null)
             {
@@ -96,6 +209,11 @@ namespace SimpleLanguage.IR
         public void Parse()
         {
             var mf = m_BindMetaFunction;
+
+            // ref module 方法（从 package 直接构建，无 MetaFunction 绑定）不需要解析
+            if (mf == null)
+                return;
+
             var id2 = this.id;
             var vfn = mf.virtualFunctionName;
 
