@@ -160,10 +160,15 @@
 /test_catchfix5.txt
 /test_output.txt
 /vm_debug.log
-/scripts/safe_rm_aliases.ps1
+/scripts/safe_rm_aliases.ps1
 /vm_debug.log
 /source/CompileCore/bin
 /source/CompileCore/obj
 /source/CompileStd/bin
-/source/CompileStd/obj
-/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/source/CompileStd/obj
+/test/BaseTest/c24.txt
+/test/BaseTest/c24_err.txt
+/test/BaseTest/run_c4.txt
+/test/BaseTest/run_c4_err.txt
+/test/BaseTest/run_p4.txt
+/test/BaseTest/run_p4_err.txt

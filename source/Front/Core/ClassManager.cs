@@ -33,6 +33,7 @@ namespace SimpleLanguage.Core
         public List<MetaData> exportMetaDataList => m_ExportMetaDataList;
         public List<MetaEnum> exportMetaEnumList => m_ExportMetaEnumList;
         public MetaClass projectMetaClass => m_ProjectMetaClass;
+        public Dictionary<string, MetaClass> allClassDict => m_AllClassDict;
 
 
         private readonly List<MetaClass> m_ExportMetaClassList = new List<MetaClass>();

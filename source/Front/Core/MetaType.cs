@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaType.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -46,6 +46,9 @@ namespace SimpleLanguage.Core
         public bool isTemplate => m_EMetaTypeType == EMetaTypeType.Template;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData || (m_MetaData != null && m_MetaData.isDynamic);
         public int arrayLength => m_ArrayLength;
+        public int refTemplateIndex => m_RefTemplateIndex;
+        public void SetRefTemplateIndex(int index) { m_RefTemplateIndex = index; }
+        public bool isRefTemplateParam => m_RefTemplateIndex >= 0;
         public EMetaTypeType eMetaTypeType => m_EMetaTypeType;
 
         public MetaBase metaBase => eMetaTypeType switch
@@ -71,6 +74,9 @@ namespace SimpleLanguage.Core
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private int m_ArrayLength = -1;       
         private bool m_IsNullable = false;   // 新增：可空标记
+        // ref module 导入时记录的原始模板参数索引（-1 表示非模板参数）
+        // 用于 UpdateMetaTypeByGenClassAndFunction 在 gen template class 中替换为实际类型
+        private int m_RefTemplateIndex = -1;
 
 
         //public List<MetaType> genTemplateMetaTypeList => m_GenTemplateMetaTypeList;
@@ -192,6 +198,8 @@ namespace SimpleLanguage.Core
             this.m_ArrayLength = mt.m_ArrayLength;
             // 复制 nullable 标记
             this.m_IsNullable = mt.m_IsNullable;
+            // 复制 ref module 模板参数索引
+            this.m_RefTemplateIndex = mt.m_RefTemplateIndex;
             for (int i = 0; i < mt.m_DefineTemplateMetaTypeList.Count; i++)
             {
                 MetaType mtc = new MetaType(mt.m_DefineTemplateMetaTypeList[i]);
@@ -357,6 +365,7 @@ namespace SimpleLanguage.Core
             this.m_DefineTemplateMetaTypeList = mt.m_DefineTemplateMetaTypeList;
             //this.m_GenTemplateMetaTypeList = mt.m_GenTemplateMetaTypeList;
             this.m_IsNullable = mt.m_IsNullable;
+            this.m_RefTemplateIndex = mt.m_RefTemplateIndex;
         }
         public List<MetaType> GetGenTemplateMetaTypeList()
         {

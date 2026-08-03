@@ -571,6 +571,8 @@ namespace SimpleLanguage.Export.SLIR
             {
                 var m = kv.Value;
                 if (m == null) continue;
+                // ref module 函数的 IR body 已在编译后的模块中，不重导出
+                if (m.bindMetaFunction?.refFromType == RefFromType.RefModule) continue;
 
                 var declaringTypeFullName = m.irOwnerMetaClass?.irName ?? string.Empty;
                 declaringTypeFullName = StripModulePrefix(NormalizeTypeName(declaringTypeFullName));

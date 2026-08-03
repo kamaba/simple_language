@@ -38,6 +38,14 @@ namespace SimpleLanguage.IR
         {
             return m_IRMetaClassList;
         }
+        public void AddIRMetaClass(IRMetaClass irmc)
+        {
+            if (irmc == null) return;
+            if (m_IRMetaClassList.Find(a => a.id == irmc.id) == null)
+            {
+                m_IRMetaClassList.Add(irmc);
+            }
+        }
         private List<IRData>  m_IRDataList = new List<IRData>();
         public void TranslateIR()
         {
@@ -372,7 +380,13 @@ namespace SimpleLanguage.IR
                 var md = type.metaData;
                 if (md != null)
                 {
-                    return instance.GetIRMetaClassById(md.GetHashCode());
+                    var irmc = instance.GetIRMetaClassById(md.GetHashCode());
+                    if (irmc == null)
+                    {
+                        irmc = new IRMetaClass(md);
+                        instance.m_IRMetaClassList.Add(irmc);
+                    }
+                    return irmc;
                 }
             }
 
@@ -381,14 +395,26 @@ namespace SimpleLanguage.IR
                 var me = type.metaEnum;
                 if (me != null)
                 {
-                    return instance.GetIRMetaClassById(me.GetHashCode());
+                    var irmc = instance.GetIRMetaClassById(me.GetHashCode());
+                    if (irmc == null)
+                    {
+                        irmc = new IRMetaClass(me);
+                        instance.m_IRMetaClassList.Add(irmc);
+                    }
+                    return irmc;
                 }
             }
 
             var tmc = type.GetTemplateMetaClass();
             if (tmc != null)
             {
-                return instance.GetIRMetaClassById(tmc.GetHashCode());
+                var irmc = instance.GetIRMetaClassById(tmc.GetHashCode());
+                if (irmc == null && tmc is not MetaGenTemplateClass)
+                {
+                    irmc = new IRMetaClass(tmc);
+                    instance.m_IRMetaClassList.Add(irmc);
+                }
+                return irmc;
             }
 
             return null;
@@ -458,7 +484,43 @@ namespace SimpleLanguage.IR
                     exportedOwnerNames.Add(v.allName);
                 }
             }
-            foreach ( var v in m_IRMetaClassList )
+            /* Register built-in core types that are not in exportMetaClassList
+             * but are referenced by metaTemplateMapDict of user-defined classes. */
+            var builtinTypes = new[] {
+                CoreMetaClassManager.objectMetaClass,
+                CoreMetaClassManager.voidMetaClass,
+                CoreMetaClassManager.dataMetaClass,
+                CoreMetaClassManager.memberMetaClass,
+                CoreMetaClassManager.numMetaClass,
+                CoreMetaClassManager.stringMetaClass,
+                CoreMetaClassManager.typeMetaClass,
+            };
+            foreach (var bt in builtinTypes)
+            {
+                if (bt == null) continue;
+                if (m_IRMetaClassList.Find(a => a.id == bt.GetHashCode()) == null)
+                {
+                    m_IRMetaClassList.Add(new IRMetaClass(bt));
+                }
+            }
+            /* Also register ALL classes from ClassManager that are not yet in m_IRMetaClassList.
+             * This includes ref module classes (Core.String, Core.Number, etc.) that are
+             * referenced by user code but not in exportMetaClassList. */
+            foreach (var kv in cm.allClassDict)
+            {
+                var mc = kv.Value;
+                if (mc == null) continue;
+                /* Skip gen template classes (handled separately below) and
+                 * template classes (already in exportMetaClassList if source-compiled). */
+                if (mc is MetaGenTemplateClass) continue;
+                if (m_IRMetaClassList.Find(a => a.id == mc.GetHashCode()) == null)
+                {
+                    m_IRMetaClassList.Add(new IRMetaClass(mc));
+                }
+            }
+            /* Iterate a snapshot since GetIRMetaClassByMetaType may add new
+             * IRMetaClass instances to m_IRMetaClassList during processing. */
+            foreach ( var v in m_IRMetaClassList.ToArray() )
             {
                 v.CreateMemberData();
                 v.CreateMemberMethod();
@@ -470,8 +532,17 @@ namespace SimpleLanguage.IR
                     v.CreateGenMetaTypeTemplateList();
                 }
             }
-            
-            foreach ( var v in m_IRMetaClassList)
+
+            /* Register gen template classes AFTER CreateTemplateRelation (so they don't
+             * get processed by it) but BEFORE CreateStaticMetaMetaVariableIRList (so
+             * static variable initializers can reference them). */
+            foreach (var v in cm.genTemplateMetaClassList)
+            {
+                if (v == null) continue;
+                m_IRMetaClassList.Add(new IRMetaClass(v));
+            }
+
+            foreach ( var v in m_IRMetaClassList.ToArray())
             {
                 foreach( var v2 in v.localIRMetaVariableList )
                 {
@@ -522,10 +593,16 @@ namespace SimpleLanguage.IR
                     }
                 }
             }
-            foreach (var v in m_IRMetaClassList)
+            foreach (var v in m_IRMetaClassList.ToArray())
             {
+                /* Skip gen template classes: they're registered for lookup only,
+                 * not for full IR generation (static variable IR list would crash
+                 * on unresolved type references). */
+                if (v.OwnerMetaClass is MetaGenTemplateClass)
+                    continue;
                 v.CreateStaticMetaMetaVariableIRList();
             }
+
             Log.AddIRLog(LID.ShowExtendMessage, "End translating IRMetaClass...");
         }
         //public void TranslateIRAutoAdd( MetaFunction mf )

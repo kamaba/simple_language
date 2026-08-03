@@ -1,4 +1,3 @@
-import Math
 import Std
 
 namespace Class1Expand

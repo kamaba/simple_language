@@ -399,8 +399,14 @@ namespace SimpleLanguage.IR
                 var mf = smflist[i];
                 mf.UpdateFunctionName();
                 var gmf = IRManager.instance.TranslateIRByFunction(mf);
-                m_IRStaticMethodList.Add(gmf);
+                // ref module 函数：构建签名用于方法查找，加入 IRMethodDict 供静态调用查找，
+                // Parse 时跳过函数体解析，导出时跳过
+                if (mf.refFromType == RefFromType.RefModule)
+                {
+                    gmf.ParseArgumentsOnly();
+                }
                 IRManager.instance.AddIRMethod(gmf);
+                m_IRStaticMethodList.Add(gmf);
             }
 
             List<MetaMemberFunction> nonsmflist = new List<MetaMemberFunction>();
@@ -480,6 +486,12 @@ namespace SimpleLanguage.IR
                     else
                     {
                         m_IRNotStaticMethodList.Add(gmf);
+                    }
+                    // ref module 函数：构建签名用于方法查找，加入 IRMethodDict 供静态调用查找，
+                    // Parse 时跳过函数体解析，导出时跳过
+                    if (mf.refFromType == RefFromType.RefModule)
+                    {
+                        gmf.ParseArgumentsOnly();
                     }
                     IRManager.instance.AddIRMethod(gmf);
                 }

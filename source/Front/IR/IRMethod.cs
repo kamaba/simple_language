@@ -69,11 +69,9 @@ namespace SimpleLanguage.IR
             m_FunEndLabelData.opCode = EIROpCode.Label;
             m_FunEndLabelData.SetDebugInfoByToken(func?.token, "FunEndLabel");
         }
-        public void Parse()
+        public void ParseArgumentsOnly()
         {
             var mf = m_BindMetaFunction;
-            var id2 = this.id;
-            var vfn = mf.virtualFunctionName;
 
             if (mf.thisMetaVariable != null)
             {
@@ -94,6 +92,18 @@ namespace SimpleLanguage.IR
                 IRMetaVariable imp = new IRMetaVariable(tmv, m_MethodArgumentList.Count);
                 m_MethodArgumentList.Add(imp);
             }
+        }
+        public void Parse()
+        {
+            var mf = m_BindMetaFunction;
+            var id2 = this.id;
+            var vfn = mf.virtualFunctionName;
+
+            ParseArgumentsOnly();
+
+            // ref module 函数的 IR body 已在编译后的模块中，不需要重新解析
+            if (mf.refFromType == RefFromType.RefModule)
+                return;
 
             var list = mf.GetCalcMetaVariableList();
             for( int i = 0; i < list.Count; i++ )

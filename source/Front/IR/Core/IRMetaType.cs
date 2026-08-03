@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRMetaType.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -30,7 +30,10 @@ namespace SimpleLanguage.IR
         public IRMetaType(){ }
         public IRMetaType( IRMetaClass _irMetaClass)
         {
-            Debug.Assert(_irMetaClass != null, "");
+            if (_irMetaClass == null)
+            {
+                _irMetaClass = IRManager.instance.GetIRMetaClassByName("Core.Object");
+            }
             m_IRMetaClass = _irMetaClass;
         }
         public IRMetaType(IRMetaClass irmc, List<IRMetaType> irlist)

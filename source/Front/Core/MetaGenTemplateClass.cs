@@ -354,10 +354,18 @@ namespace SimpleLanguage.Core
             List<MetaMemberFunction> mmfList = new();
             foreach (var it in this.m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList)
             {
+                // 跳过继承下来的函数：它们使用父类的模板名称（如 LT31, LT23），
+                // 不在当前 GenTemplateClass 的模板列表（如 LT41, LT42）中，
+                // 用当前模板列表解析会对不上号。继承函数已在 m_ExtendClass 中解析完毕，
+                // 会在下方的循环中添加。
+                if (it.ownerMetaClass != this.m_MetaTemplateClass)
+                    continue;
                 mmfList.Add(ParseMetaMemberFunctionDefineMetaType(it));
             }
             foreach (var it in this.m_MetaTemplateClass.staticMetaMemberFunctionList)
             {
+                if (it.ownerMetaClass != this.m_MetaTemplateClass)
+                    continue;
                 mmfList.Add(ParseMetaMemberFunctionDefineMetaType(it));
             }
 

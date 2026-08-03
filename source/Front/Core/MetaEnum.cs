@@ -64,6 +64,15 @@ namespace SimpleLanguage.Core
         }
         public MetaVariable GetOrCreateValuesVariable()
         {
+            // ref module 导入的枚举已有 values 变量，直接从字典取
+            if (refFromType == RefFromType.RefModule)
+            {
+                if (m_ValuesMetaVariable == null && m_MetaMemberVariableDict.ContainsKey("values"))
+                {
+                    m_ValuesMetaVariable = m_MetaMemberVariableDict["values"];
+                }
+                return m_ValuesMetaVariable;
+            }
             CreateValues();
             return m_ValuesMetaVariable;
         }

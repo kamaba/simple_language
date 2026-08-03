@@ -212,7 +212,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 表达式中返回定义类型为空 " );
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error DefineVarStatement表达式中返回定义类型为空 " );
                 }
             }
             SetTRMetaVariable(m_DefineVarMetaVariable);

@@ -55,6 +55,6 @@ public class Float32 extends Num
     }
     public String toString( string format )
     {
-        ret string.format( format, this._value );
+        ret string.toFormat( format, this._value );
     }
 }

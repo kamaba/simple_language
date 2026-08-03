@@ -59,10 +59,10 @@ public class Error extends Object
 
 public enum MathOpError extends Error
 {
-    Overflow = 1,
-    Underflow = 2,
-    DivisionByZero = 3,
-    InvalidArgument = 4,
-    InvalidOperation = 5
+    Overflow = { code = 1 }
+    Underflow = { code = 2 }
+    DivisionByZero = { code = 3 }
+    InvalidArgument = { code = 4 }
+    InvalidOperation = { code = 4 }
 }
 

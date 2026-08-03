@@ -223,6 +223,12 @@ namespace SimpleLanguage.Core
         }
         public override void CreateMetaExpress()
         {
+            // ref module 导入的成员变量无需创建表达式
+            if (refFromType == RefFromType.RefModule)
+                return;
+            // Core 替换后的孤儿变量跳过
+            if (ownerMetaClass != null && ownerMetaClass.refFromType == RefFromType.RefModule)
+                return;
             //if (m_Express != null)
             //{
             //    ExpressManager.CalcParseLevel(parseLevel, m_Express);
@@ -267,6 +273,11 @@ namespace SimpleLanguage.Core
             if (refFromType == RefFromType.RefModule)
                 return true;
 
+            // Core 替换后，旧内部形态变量可能仍残留在 MetaVariableManager 中，
+            // 但其所属类已被替换为 RefModule。跳过这些孤儿变量的解析。
+            if (ownerMetaClass != null && ownerMetaClass.refFromType == RefFromType.RefModule)
+                return true;
+
             // 解析顺序（order）必须在依赖被递归解析之后再分配：
             // 在 MetaCallNode.cs 第 2085 行，解析某成员表达式时若遇到尚未解析类型的其它成员，
             // 会主动调用该成员的 ParseMetaExpress() 提前解析。
@@ -304,6 +315,9 @@ namespace SimpleLanguage.Core
         {
             // ref module 导入的成员变量 realMetaType 已在导入时设置，无需再从表达式推导
             if (refFromType == RefFromType.RefModule)
+                return;
+            // Core 替换后的孤儿变量跳过
+            if (ownerMetaClass != null && ownerMetaClass.refFromType == RefFromType.RefModule)
                 return;
 
             if( m_Express != null )

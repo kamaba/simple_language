@@ -630,49 +630,50 @@ namespace SimpleLanguage.Core
         }
         public virtual void ParseDefineMetaType()
         {
-            // ref module 导入的函数类型已在导入时设置完毕，无需从 FileMeta 解析
-            if (refFromType == RefFromType.RefModule)
-                return;
-
-            if (this.m_FileMetaMemberFunction != null)
+            // ref module 导入的函数类型已在导入时设置完毕，无需从 FileMeta 解析，
+            // 但仍需走到 UpdateVritualFunctionName 设置虚函数名
+            if (refFromType != RefFromType.RefModule)
             {
-                if (m_FileMetaMemberFunction.defineMetaClass != null)
+                if (this.m_FileMetaMemberFunction != null)
                 {
-                    FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
-                    m_DefineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, this, cmr);
-                    m_IsDefineMetaType = true;
-
-                    if (m_ConstructInitFunction && defineMetaType.metaClass != CoreMetaClassManager.voidMetaClass )
+                    if (m_FileMetaMemberFunction.defineMetaClass != null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 当前类:" + m_AllName + " 是构建Init类，不允许有返回类型 ");
+                        FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
+                        m_DefineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, this, cmr);
+                        m_IsDefineMetaType = true;
+
+                        if (m_ConstructInitFunction && defineMetaType.metaClass != CoreMetaClassManager.voidMetaClass )
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 当前类:" + m_AllName + " 是构建Init类，不允许有返回类型 ");
+                        }
+                        else
+                        {
+                            m_ReturnMetaVariable.SetMetaDefineType(defineMetaType);
+                            m_ReturnMetaVariable.SetRealMetaType(defineMetaType);
+                        }
+                        m_ReturnMetaVariable.SetMetaDefineType(m_DefineMetaType);
+                        m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
                     }
                     else
                     {
-                        m_ReturnMetaVariable.SetMetaDefineType(defineMetaType);
-                        m_ReturnMetaVariable.SetRealMetaType(defineMetaType);
+                        if( m_IsSet )
+                        {
+                            m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
+                        }
+                        else
+                        {
+                            // 没有显式声明返回类型的函数，默认返回 void
+                            m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
+                        }
+                        m_IsDefineMetaType = true;
+                        m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
                     }
-                    m_ReturnMetaVariable.SetMetaDefineType(m_DefineMetaType);
-                    m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
                 }
-                else
+                for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
                 {
-                    if( m_IsSet )
-                    {
-                        m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
-                    }
-                    else
-                    {
-                        // 没有显式声明返回类型的函数，默认返回 void
-                        m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
-                    }
-                    m_IsDefineMetaType = true;
-                    m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
+                    MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
+                    mpl.ParseMetaDefineType();
                 }
-            }
-            for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
-            {
-                MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
-                mpl.ParseMetaDefineType();
             }
             UpdateVritualFunctionName();
         }
