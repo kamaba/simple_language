@@ -794,7 +794,7 @@ namespace SimpleLanguage.Core
         }
         public MetaExpressNodeBase GetMetaExpressNode()
         {
-            if (m_FinalCallNode.visitType ==  MetaVisitNode.EVisitType.ConstValue )
+            if (m_FinalCallNode != null && m_FinalCallNode.visitType ==  MetaVisitNode.EVisitType.ConstValue )
             {
                 return new MetaConstExpressNode(EType.Int32, m_FinalCallNode.constValueExpress );
             }

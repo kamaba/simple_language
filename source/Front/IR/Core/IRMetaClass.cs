@@ -486,6 +486,9 @@ namespace SimpleLanguage.IR
                 {
                     var mf = merged[i];
                     if (mf == null) continue;
+                    // Note: 继承来的方法（含 final）保留在 IRMetaClass 虚表里，但其归属通过
+                    // SLMethodPackage.declaringClassId 标记为声明类；导入侧 BuildMetaMemberFunctionFromIR
+                    // 按 declaringClassId 把 owner 设为声明类（如 Core.Object.type 而非 Num.type）。
                     // Ensure functionAllName/id is recomputed with the latest parsed param types.
                     // Otherwise id may be cached early as Core.Object and overloads may still collide.
                     mf.UpdateFunctionName();

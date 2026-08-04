@@ -194,11 +194,10 @@ namespace SimpleLanguage.Core
                 for( int i = 0; i < m_MetaTemplateList.Count; i++ )
                 {
                     sb.Append(m_MetaTemplateList[i].name);
-                    if(m_MetaTemplateList[i].extendsMetaClass != null )
-                    {
-                        sb.Append(":");
-                        sb.Append(m_MetaTemplateList[i].extendsMetaClass.allName );
-                    }
+                    // 不把模板参数的约束类型（extendsMetaClass）写进 allName：
+                    // 约束不是类型身份的一部分。包含它会导致 inner-form（如 ArrayMetaClass 构造时
+                    // 设了 extendsMetaClass=Object）的 allName 为 "Core.Array<T:Core.Object>"，
+                    // 而源码编译/导出的为 "Core.Array<T>"，两者 classId 不同，产生重复 IRMetaClass。
                     if( i < m_MetaTemplateList.Count - 1 )
                     {
                         sb.Append(",");

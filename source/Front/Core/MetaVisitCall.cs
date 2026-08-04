@@ -73,10 +73,10 @@ namespace SimpleLanguage.Core
             {
                 mpList = m_VMCallMetaFunction.metaMemberParamCollection.metaDefineParamList;
             }
-            int defineCount = m_VMCallMetaFunction.metaMemberParamCollection.maxParamCount;
+            int defineCount = m_VMCallMetaFunction?.metaMemberParamCollection?.maxParamCount ?? 0;
             int inputCount = _paramCollection != null ?_paramCollection.metaInputParamList.Count : 0;
 
-            if( _fun.IsExtentParams() )
+            if( _fun != null && _fun.IsExtentParams() )
             {
                 for (int i = 0; i < defineCount - 1 ; i++)
                 {

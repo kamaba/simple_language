@@ -68,6 +68,10 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string id { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
         public string declaringTypeFullName { get; set; } = string.Empty;
+        /// <summary>声明该方法的类的 classId（按 allName 的确定型哈希）。
+        /// 对于继承到子类的方法，此 id 指向声明类（如 Object），而非当前子类（如 Num）。
+        /// 导入侧据此把 MetaMemberFunction 的 owner 设为声明类。</summary>
+        public int declaringClassId { get; set; }
         public bool interfaceMethod { get; set; }
         /// <summary>Method modifier flags: 1=static, 2=final, 4=abstract, 8=override, 16=interface, 32=canRewrite, 64=constructInit, 128=extendParams(params 可变参数)</summary>
         public int flags { get; set; }

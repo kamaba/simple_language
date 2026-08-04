@@ -28,6 +28,9 @@ namespace SimpleLanguage.IR
         public bool isAbstract => m_IsAbstract;
         public bool isOverrideFunction => m_IsOverrideFunction;
         public bool isExtendParams => m_IsExtendParams;
+        /// <summary>声明该方法的类的 classId（来自 SLMethodPackage.declaringClassId）。
+        /// 对于继承到子类的方法，指向声明类（如 Object）。0 表示未设置（按当前类处理）。</summary>
+        public int declaringClassId => m_DeclaringClassId;
         public IRManager irManager => m_IRManager;
         public IRData funEndLabelData => m_FunEndLabelData;
         public IRMetaClass irOwnerMetaClass => m_IROwnerMetaClass;
@@ -55,6 +58,7 @@ namespace SimpleLanguage.IR
         private bool m_IsAbstract = false;
         private bool m_IsOverrideFunction = false;
         private bool m_IsExtendParams = false;
+        private int m_DeclaringClassId = 0;
         private IRData m_FunEndLabelData = null;
         private IRManager m_IRManager = null;
 
@@ -103,6 +107,7 @@ namespace SimpleLanguage.IR
             m_IsAbstract = (flags & 4) != 0;
             m_IsOverrideFunction = (flags & 8) != 0;
             m_IsExtendParams = (flags & 128) != 0;
+            m_DeclaringClassId = mp?.declaringClassId ?? 0;
             m_FunEndLabelData = new IRData();
             m_FunEndLabelData.opCode = EIROpCode.Label;
 
@@ -317,6 +322,7 @@ namespace SimpleLanguage.IR
             // Add all final statements to m_IRDataList
             for (int i = 0; i < finalStatements.Count; i++)
             {
+                if (finalStatements[i] == null) continue;
                 for (int j = 0; j < finalStatements[i].IRDataList.Count; j++)
                 {
                     var addIR = finalStatements[i].IRDataList[j];

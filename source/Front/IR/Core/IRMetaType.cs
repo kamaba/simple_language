@@ -45,7 +45,9 @@ namespace SimpleLanguage.IR
         public static IRMetaType CreateIRMetaTypeByGenTemplateMetaTypeList( MetaType type, IRMetaClass ownerIRMc)
         {
             IRMetaType irmt = new();
-            irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id);
+            irmt.m_IROwnerMetaClass = ownerIRMc != null
+                ? IRManager.instance.GetIRMetaClassById(ownerIRMc.id)
+                : IRManager.instance.GetIRMetaClassByName("Core.Object");
 
             if (type.eMetaTypeType == EMetaTypeType.MetaClass
                 || type.eMetaTypeType == EMetaTypeType.MetaData

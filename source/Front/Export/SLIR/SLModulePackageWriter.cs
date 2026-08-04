@@ -285,6 +285,11 @@ namespace SimpleLanguage.Export.SLIR
             foreach (var c in classes)
             {
                 if (c == null) continue;
+                // 跳过模板实例化类（MetaGenTemplateClass）：它们是编译时按需生成的，
+                // 不是源码声明的类型。导出它们会产生空壳（无字段/方法），
+                // 导入后主工程按名解析到空壳，方法查找失败。
+                // 模板定义类（Array<T>）正常导出，主工程用时再实例化。
+                if (c.typeOwner is MetaGenTemplateClass) continue;
                 var full = StripModulePrefix(NormalizeTypeName(c.irName ?? string.Empty));
                 var nsName = GetNamespace(full);
                 var typeName = GetShortName(full);
@@ -347,7 +352,9 @@ namespace SimpleLanguage.Export.SLIR
                         cm.templateRelationList.Add(relPkg);
                     }
                 }
-                // export per-class method references: static, non-static and operator methods
+                // export per-class method references: static, non-static and operator methods.
+                // 继承来的方法也写入子类包（虚表需要），但其归属由 SLMethodPackage.declaringClassId
+                // 标记为声明类；导入侧 BuildMetaMemberFunctionFromIR 按 declaringClassId 设置 owner。
                 if (c.nonStaticMethodList != null)
                 {
                     for (int mi = 0; mi < c.nonStaticMethodList.Count; mi++)
@@ -574,12 +581,19 @@ namespace SimpleLanguage.Export.SLIR
                 // ref module 函数的 IR body 已在编译后的模块中，不重导出
                 if (m.bindMetaFunction?.refFromType == RefFromType.RefModule) continue;
 
-                var declaringTypeFullName = m.irOwnerMetaClass?.irName ?? string.Empty;
+                // 声明类：取 bindMetaFunction.ownerMetaBase（方法的真正声明类），
+                // 对于继承到子类的方法，这里指向父类（如 Object）而非当前子类（如 Num）。
+                // 用 ownerMetaBase（MetaBase）而非 ownerMetaClass，Data/Enum 方法也能拿到声明类。
+                var declaringOwner = m.bindMetaFunction?.ownerMetaBase;
+                var declaringTypeFullName = declaringOwner != null
+                    ? StripModulePrefix(NormalizeTypeName(declaringOwner.allName ?? string.Empty))
+                    : (m.irOwnerMetaClass?.irName ?? string.Empty);
                 declaringTypeFullName = StripModulePrefix(NormalizeTypeName(declaringTypeFullName));
                 var mp = new SLMethodPackage
                 {
                     id = m.id ?? string.Empty,
                     declaringTypeFullName = declaringTypeFullName,
+                    declaringClassId = declaringOwner?.classId ?? 0,
                     name = m.onlyFunctionName ?? string.Empty,
                     interfaceMethod = m.interfaceMethod,
                     flags = BuildMethodFlags(m),

@@ -129,7 +129,7 @@ namespace SimpleLanguage.Project
                     return true;
                 }
                 metaModule = new MetaModule(package.moduleName);
-                metaModule.SetRefFromType(RefFromType.Local);
+                metaModule.SetRefFromType(RefFromType.RefModule);
                 s_isCoreReplacement = false;
             }
 
@@ -316,21 +316,6 @@ namespace SimpleLanguage.Project
                 PopulateReferenceTypeMembersFromIR(metaModule, irmc, cls, metaBase, classLookup);
             }
 
-            /* Core replacement only: re-run extend/interface handling for all
-             * Core types so that inheritance chains are rebuilt after member replacement.
-             * ClearExistingMembers moved own methods to fileCollect; HandleExtendMemberFunction
-             * will re-merge them with inherited methods from the extend class. */
-            //if (s_isCoreReplacement)
-            //{
-            //    foreach (var (cls, metaBase) in createdTypes)
-            //    {
-            //        if (metaBase is MetaClass mc)
-            //        {
-            //            mc.HandleExtendMemberVariable();
-            //            mc.HandleExtendMemberFunction();
-            //        }
-            //    }
-            //}
         }
 
         private static MetaNode EnsureNamespacePath(MetaNode root, string fullName)
@@ -564,15 +549,15 @@ namespace SimpleLanguage.Project
             if (mc == null || irmc == null) return;
             foreach (var iv in irmc.localIRMetaVariableList)
             {
-                AddClassFieldFromIR(mc, iv);
+                AddClassFieldFromIR(mc, iv, irmc);
             }
             foreach (var iv in irmc.staticIRMetaVariableList)
             {
-                AddClassFieldFromIR(mc, iv);
+                AddClassFieldFromIR(mc, iv, irmc);
             }
         }
 
-        private static void AddClassFieldFromIR(MetaClass mc, IRMetaVariable iv)
+        private static void AddClassFieldFromIR(MetaClass mc, IRMetaVariable iv, IRMetaClass irmc)
         {
             if (iv == null || string.IsNullOrWhiteSpace(iv.shortName)) return;
             var mmv = new MetaMemberVariable(mc, iv.shortName);
@@ -588,6 +573,10 @@ namespace SimpleLanguage.Project
                 mmv.SetIndex(iv.index);
             }
             mc.AddMetaMemberVariable(mmv, isAddManager: false);
+            /* 注册新建 MetaMemberVariable 的 hash 到 IRMetaClass 的 hash->index 字典，
+             * 这样 CreateLoadVariable 的 GetMetaMemberVariableIndexByHashCode 才能命中。
+             * IRMetaVariable（从 package 构建）的 m_Id 与 MetaMemberVariable.GetHashCode() 不同。 */
+            irmc.AddMetaMemberVariableIndexBindHashCode(mmv.GetHashCode(), iv.index >= 0 ? iv.index : 0);
         }
 
         private static void AddDataFieldsFromIR(MetaData md, IRMetaClass irmc)
@@ -630,6 +619,7 @@ namespace SimpleLanguage.Project
                     {
                         me.metaMemberVariableDict.Add("values", mmv);
                     }
+                    irmc.AddMetaMemberVariableIndexBindHashCode(mmv.GetHashCode(), iv.index >= 0 ? iv.index : 0);
                     continue;
                 }
 
@@ -642,6 +632,8 @@ namespace SimpleLanguage.Project
                 mme.SetIsDefineMetaType(true);
                 me.metaMemberEnumDict.Add(mme.name, mme);
                 me.metaMemberVariableDict.Add(mme.name, mme);
+                /* 注册枚举成员 hash 到 IRMetaClass，CreateLoadVariable EnumMember 路径需要。 */
+                irmc.AddMetaMemberVariableIndexBindHashCode(mme.GetHashCode(), memberIndex);
             }
         }
 
@@ -690,7 +682,18 @@ namespace SimpleLanguage.Project
         {
             if (mc == null || irm == null || string.IsNullOrWhiteSpace(irm.onlyFunctionName)) return null;
 
-            var mmf = new MetaMemberFunction(mc, irm.onlyFunctionName);
+            // 归属：若 declaringClassId 指向声明类（非当前类），owner 用声明类。
+            // 继承来的方法仍加入当前类的虚表（AddClassMethodsFromIR 加入 mc 的列表），
+            // 但 ownerMetaClass 是声明类（如 Core.Object.type 而非 Num.type）。
+            MetaClass ownerClass = mc;
+            if (irm.declaringClassId != 0 && irm.declaringClassId != mc.classId)
+            {
+                if (IRManager.instance.GetIRMetaClassById(irm.declaringClassId)?.typeOwner is MetaClass declMc)
+                {
+                    ownerClass = declMc;
+                }
+            }
+            var mmf = new MetaMemberFunction(ownerClass, irm.onlyFunctionName);
             mmf.SetRefFromType(RefFromType.RefModule);
             mmf.SetIsStatic(irm.isStatic);
             mmf.SetIsFinal(irm.isFinal);

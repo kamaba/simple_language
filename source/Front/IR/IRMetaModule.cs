@@ -65,14 +65,28 @@ namespace SimpleLanguage.IR
                 IRMetaClass irmc = null;
 
                 /* Core 替换：Core 内建类型的 IRMetaClass 在 Core init 时已注册，
-                 * 这里复用已有的（按 metaBase.GetHashCode() 查），不新建。
-                 * 判定走 CoreMetaClassManager（与 CreateReferenceTypeShell 一致）。 */
+                 * 这里复用已有的（按 classId 查），不新建。
+                 * 如果还没注册（ParseClass 尚未运行），从 MetaBase 创建 IRMetaClass
+                 * （不是从 SLClassPackage），这样 typeOwner 会被设置，
+                 * ParseClass 后的 CreateMemberData() 能正常注册成员变量 hash。 */
                 if (m_IsCoreReplacement)
                 {
                     var coreMetaBase = TryResolveCoreMetaBase(cls);
                     if (coreMetaBase != null)
                     {
                         irmc = IRManager.instance.GetIRMetaClassById(coreMetaBase.classId);
+                        if (irmc == null)
+                        {
+                            irmc = coreMetaBase is MetaClass mc ? new IRMetaClass(mc)
+                                : coreMetaBase is MetaData md ? new IRMetaClass(md)
+                                : coreMetaBase is MetaEnum me ? new IRMetaClass(me)
+                                : null;
+                            if (irmc != null)
+                            {
+                                IRManager.instance.AddIRMetaClass(irmc);
+                                m_IRMetaClassList.Add(irmc);
+                            }
+                        }
                     }
                 }
 
@@ -101,6 +115,10 @@ namespace SimpleLanguage.IR
                 if (cls == null) continue;
                 if (!m_IdToIRMetaClass.TryGetValue(cls.id, out var irmc)) continue;
                 if (irmc.isRefModulePreBuilt) continue;
+                /* Core 替换类型（从 MetaBase 创建，typeOwner != null）也运行 BuildFields：
+                 * PopulateReferenceTypeMembersFromIR 的 ClearExistingMembers 清空了
+                 * MetaClass 的字段，这里需要从 package 重新填充 IRMetaVariable 列表。
+                 * 哈希注册在 AddClassFieldFromIR/AddEnumMembersFromIR 中完成。 */
 
                 BuildFields(irmc, cls);
                 BuildMethods(irmc, cls);

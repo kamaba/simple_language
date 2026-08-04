@@ -40,7 +40,7 @@ namespace SimpleLanguage.IR
             else if( mv.variableFrom == MetaVariable.EVariableFrom.EnumMember )
             {
                 var fieldOwner = IRManager.GetIRMetaClassByMetaVariable(mv);
-                var index = fieldOwner.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode());
+                var index = fieldOwner?.GetMetaMemberVariableIndexByHashCode(mv.GetHashCode()) ?? -1;
                 var irvar = new IRLoadVariable(new IRMetaType(fieldOwner), _irMethod, index, IRMetaVariableFrom.Static);
                 return irvar;
             }
@@ -221,6 +221,22 @@ namespace SimpleLanguage.IR
                 {
                     Log.AddIRLog(LID.IRMethodNotFoundVariable, "in array value else branch", _irMethod.id, mv.name);
                 }
+            }
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.None )
+            {
+                /* 返回变量（returnMetaVariable）的 variableFrom 是 None。
+                 * ref module 方法只跑 ParseArgumentsOnly，返回值在 m_MethodReturnList，
+                 * 不在 m_MethodLocalVariableList 中。 */
+                irmv = _irMethod.GetReturnVariableById(mv.GetHashCode());
+                if(irmv == null)
+                    irmv = _irMethod.GetIRLocalVariableById(mv.GetHashCode());
+                if(irmv == null )
+                {
+                    Log.AddIRLog(LID.IRMethodNotFoundVariable, "in array other from", _irMethod.id, mv.name);
+                    return null;
+                }
+                IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, irmv.index, IRMetaVariableFrom.LocalStatement);
+                return irVar;
             }
             else
             {
@@ -430,6 +446,19 @@ namespace SimpleLanguage.IR
             {
                 IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global );
                 return irsv;
+            }
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.None )
+            {
+                // 返回变量（returnMetaVariable）的 variableFrom 是 None。
+                // ref module 方法的返回值在 m_MethodReturnList，不在 m_MethodLocalVariableList 中。
+                irmv = _irMethod.GetReturnVariableById(mv.GetHashCode());
+                if(irmv == null)
+                    irmv = _irMethod.GetIRLocalVariableById(mv.GetHashCode());
+                if(irmv != null)
+                {
+                    IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, irmv.index, IRMetaVariableFrom.LocalStatement);
+                    return irsv;
+                }
             }
             else
             {

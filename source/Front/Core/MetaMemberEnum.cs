@@ -147,7 +147,7 @@ namespace SimpleLanguage.Core
                 m_Express = ExpressManager.ConvertNewExpress(m_Express, null );
 
 
-                if (m_RelationMemberVariable.express is MetaNewObjectExpressNode mnoen)
+                if (m_RelationMemberVariable != null && m_RelationMemberVariable.express is MetaNewObjectExpressNode mnoen)
                 {
                     var valueMv = CoreMetaClassManager.memberMetaClass.GetMetaMemberVariableByName("value");
                     if (valueMv == null)
