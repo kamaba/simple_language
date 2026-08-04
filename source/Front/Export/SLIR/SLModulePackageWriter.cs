@@ -11,6 +11,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 using SimpleLanguage.Export.SLIR.Types;
 using SimpleLanguage.Logging;
+using SimpleLanguage.Project;
 
 namespace SimpleLanguage.Export.SLIR
 {
@@ -155,7 +156,7 @@ namespace SimpleLanguage.Export.SLIR
                 if (entry != null)
                 {
                     pkg.entryMethodId = entry.entryMethodId;
-                    pkg.moduleReferences = entry.moduleReferences ?? new List<string>();
+                    pkg.moduleReferences = entry.moduleReferences ?? new List<SLModuleReferencePackage>();
                     pkg.irStringDict = entry.irStringDict ?? new List<IRStringItem>();
                     pkg.namespaceList = entry.namespaceList ?? new List<SLNamespacePackage>();
                     pkg.classList = entry.classList ?? new List<SLClassPackage>();
@@ -697,7 +698,104 @@ namespace SimpleLanguage.Export.SLIR
             pkg.globalStaticVariableList = module.globalStaticVariableList;
             pkg.methodList = module.methodList;
 
+            // 从项目配置填充版本号
+            var config = Project.ProjectManager.config;
+            if (config != null)
+            {
+                pkg.versionMain = config.Export.VersionMain;
+                pkg.versionSub = config.Export.VersionSub;
+                pkg.versionPatch = config.Export.VersionPatch;
+
+                // 从项目配置的 references 填充引用关系（含 uuid、name、path、版本号）
+                if (config.References != null)
+                {
+                    // 导出文件所在目录（用于计算引用模块的相对路径）
+                    var exportDir = Environment.GetEnvironmentVariable(ProjectOutputEnvironment.ExportOutDirEnv) ?? "";
+                    var projectDir = ProjectManager.projectPath ?? "";
+                    foreach (var refSection in config.References)
+                    {
+                        if (refSection == null || string.IsNullOrWhiteSpace(refSection.Path)) continue;
+                        var refPkg = new SLModuleReferencePackage
+                        {
+                            name = refSection.Name,
+                            uuid = refSection.UUID,
+                        };
+                        // 尝试从已加载的引用模块包中读取版本号和缺失的 uuid/name
+                        TryFillReferenceFromLoadedPackage(refSection, refPkg);
+                        // 计算引用模块的相对路径（相对于导出文件所在目录）
+                        refPkg.path = ResolveReferencePath(refSection.Path, projectDir, exportDir);
+                        pkg.moduleReferences.Add(refPkg);
+                    }
+                }
+            }
+
             return pkg;
+        }
+
+        /// <summary>
+        /// 从已加载的引用模块包中补全引用信息（版本号、缺失的 uuid/name）。
+        /// 引用模块在 ProjectReferenceModuleLoader.LoadReferences 时已加载并缓存。
+        /// </summary>
+        private static void TryFillReferenceFromLoadedPackage(
+            ProjectConfig.ReferenceSection refSection,
+            SLModuleReferencePackage refPkg)
+        {
+            /* 先用配置中的 name 尝试查找；如果没有 name，尝试用路径推断。 */
+            SLModulePackage loadedPkg = null;
+            if (!string.IsNullOrWhiteSpace(refPkg.name))
+            {
+                loadedPkg = ProjectReferenceModuleLoader.GetLoadedPackage(refPkg.name);
+            }
+            /* 如果按 name 没找到，遍历所有已加载的包，用 uuid 匹配。 */
+            if (loadedPkg == null && !string.IsNullOrWhiteSpace(refPkg.uuid))
+            {
+                loadedPkg = ProjectReferenceModuleLoader.GetLoadedPackageByUuid(refPkg.uuid);
+            }
+
+            if (loadedPkg != null)
+            {
+                if (string.IsNullOrWhiteSpace(refPkg.name))
+                    refPkg.name = loadedPkg.moduleName;
+                if (string.IsNullOrWhiteSpace(refPkg.uuid))
+                    refPkg.uuid = loadedPkg.uuid;
+                refPkg.versionMain = loadedPkg.versionMain;
+                refPkg.versionSub = loadedPkg.versionSub;
+                refPkg.versionPatch = loadedPkg.versionPatch;
+            }
+        }
+
+        /// <summary>
+        /// 计算引用模块的 .module.json 文件路径（相对于导出文件所在目录）。
+        /// refPath 是 .jsonc 中相对于项目目录的路径（如 "../../out/export/Core"）。
+        /// 返回从导出目录到引用模块 .module.json 的相对路径。
+        /// </summary>
+        private static string ResolveReferencePath(string refPath, string projectDir, string exportDir)
+        {
+            if (string.IsNullOrWhiteSpace(refPath)) return string.Empty;
+            try
+            {
+                /* 将 refPath 解析为绝对路径 */
+                var refAbsPath = Path.IsPathRooted(refPath)
+                    ? refPath
+                    : Path.GetFullPath(Path.Combine(projectDir, refPath));
+                /* 如果是目录，尝试找到其中的 .module.json */
+                if (Directory.Exists(refAbsPath))
+                {
+                    var files = Directory.GetFiles(refAbsPath, "*.module.json");
+                    if (files.Length > 0) refAbsPath = files[0];
+                }
+                /* 计算从导出目录到引用模块的相对路径 */
+                if (!string.IsNullOrWhiteSpace(exportDir))
+                {
+                    var rel = Path.GetRelativePath(exportDir, refAbsPath);
+                    return rel.Replace('\\', '/');
+                }
+                return refAbsPath.Replace('\\', '/');
+            }
+            catch
+            {
+                return refPath.Replace('\\', '/');
+            }
         }
 
         private static string GetNamespace(string fullType)

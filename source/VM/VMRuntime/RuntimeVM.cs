@@ -129,6 +129,23 @@ namespace SimpleLanguage.VM.Runtime
         private RuntimeObject[] m_ReturnRuntimeObjectArray;
 
         private RuntimeMethod m_Method;
+        /// <summary>UUID of the module currently executing (derived from m_Method.moduleUUID).</summary>
+        private string m_CurrentModuleUUID = "";
+        /// <summary>Name of the module currently executing (derived from m_Method.moduleName).</summary>
+        private string m_CurrentModuleName = "";
+        /// <summary>Public read-only access to the current module UUID.</summary>
+        public string currentModuleUUID => m_CurrentModuleUUID;
+        /// <summary>Public read-only access to the current module name.</summary>
+        public string currentModuleName => m_CurrentModuleName;
+        /// <summary>Allows callers (e.g. CLRVM.RunIRNewMethod) to set the module context after construction.</summary>
+        internal void SetCurrentModuleUUID(string uuid)
+        {
+            m_CurrentModuleUUID = uuid ?? string.Empty;
+        }
+        internal void SetCurrentModuleName(string name)
+        {
+            m_CurrentModuleName = name ?? string.Empty;
+        }
         private Instruction[] m_InstructionList;
         private ushort m_ExecuteIndex;
         private ushort m_ExecuteCount;
@@ -185,6 +202,8 @@ namespace SimpleLanguage.VM.Runtime
         public RuntimeVM(string id)
         {
             m_Method = null;
+            m_CurrentModuleUUID = "";
+            m_CurrentModuleName = "";
             m_Id = id;
 #if DEBUG
             m_ValueStack = new RuntimeValue[1024];
@@ -201,6 +220,8 @@ namespace SimpleLanguage.VM.Runtime
         public RuntimeVM(string id, RuntimeType rt, List<RuntimeType> irmtList, List<Instruction> irlist)
         {
             m_Method = null;
+            m_CurrentModuleUUID = "";
+            m_CurrentModuleName = "";
             m_Id = id;
 #if DEBUG
             m_ValueStack = new RuntimeValue[1024];
@@ -219,6 +240,8 @@ namespace SimpleLanguage.VM.Runtime
         public RuntimeVM(RuntimeType rt, List<RuntimeType> irmtList, RuntimeMethod rm)
         {
             m_Method = rm;
+            m_CurrentModuleUUID = rm?.moduleUUID ?? "";
+            m_CurrentModuleName = rm?.moduleName ?? "";
             m_Id = rm.id;
 #if DEBUG
             m_ValueStack = new RuntimeValue[1024];
@@ -1962,7 +1985,7 @@ namespace SimpleLanguage.VM.Runtime
                     break;
                 case EIROpCode.LoadConstString:
                     {
-                        var resolved = SLAssembly.TryGetConstString(iri.index) ?? string.Empty;
+                        var resolved = SLAssembly.TryGetConstString(m_CurrentModuleUUID, iri.index) ?? string.Empty;
                         PushStringSlot(resolved);
                     }
                     break;
@@ -2709,7 +2732,7 @@ namespace SimpleLanguage.VM.Runtime
                                 var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                                 if (irList.Count > 0)
                                 {
-                                    CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList, true);
+                                    CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList, true, m_CurrentModuleUUID, m_CurrentModuleName);
                                 }
                             }
                         }
@@ -2740,7 +2763,7 @@ namespace SimpleLanguage.VM.Runtime
                         var irList = rt.runtimeClass.nonStaticMemberVariableSetValueList;
                         if (irList.Count > 0)
                         {
-                            CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList, true);
+                            CLRVM.RunIRNewMethod($"__new_object__{rt.runtimeClass.name}", rt, irList, true, m_CurrentModuleUUID, m_CurrentModuleName);
                         }
                     }
                     break;

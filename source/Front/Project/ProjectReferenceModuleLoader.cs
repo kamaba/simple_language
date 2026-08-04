@@ -29,6 +29,34 @@ namespace SimpleLanguage.Project
         /// </summary>
         private static bool s_isCoreReplacement = false;
 
+        /// <summary>
+        /// 已加载的引用模块包（按模块名查），供导出时填充 moduleReferences 使用。
+        /// </summary>
+        private static readonly Dictionary<string, SLModulePackage> s_loadedPackages = new(StringComparer.Ordinal);
+
+        /// <summary>
+        /// 按 moduleName 获取已加载的引用模块包（可能为 null）。
+        /// </summary>
+        public static SLModulePackage GetLoadedPackage(string moduleName)
+        {
+            if (string.IsNullOrWhiteSpace(moduleName)) return null;
+            return s_loadedPackages.TryGetValue(moduleName, out var pkg) ? pkg : null;
+        }
+
+        /// <summary>
+        /// 按 uuid 获取已加载的引用模块包（可能为 null）。
+        /// </summary>
+        public static SLModulePackage GetLoadedPackageByUuid(string uuid)
+        {
+            if (string.IsNullOrWhiteSpace(uuid)) return null;
+            foreach (var kv in s_loadedPackages)
+            {
+                if (kv.Value != null && kv.Value.uuid == uuid)
+                    return kv.Value;
+            }
+            return null;
+        }
+
         public static void LoadReferences(ProjectConfig config, string projectDir)
         {
             if (config?.References == null || config.References.Count == 0)
@@ -106,6 +134,12 @@ namespace SimpleLanguage.Project
             }
 
             var alias = ResolveModuleName(reference, package, modulePath);
+
+            /* 记录已加载的包，供导出时填充 moduleReferences 使用。 */
+            if (!string.IsNullOrWhiteSpace(package.moduleName) && !s_loadedPackages.ContainsKey(package.moduleName))
+            {
+                s_loadedPackages.Add(package.moduleName, package);
+            }
 
             /* Core module: reuse the existing coreModule (populated by CoreMetaClassManager.Init)
              * and overwrite inner-form types with compiled definitions.

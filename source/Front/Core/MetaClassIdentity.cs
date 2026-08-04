@@ -4,7 +4,8 @@
 //  Copyright (c) kamaba233@gmail.com
 //  DateTime: 2026/08/03 12:00:00
 //  Description: 类身份的确定型 Int32 哈希规则。
-//              规则：以类的全名（模块->命名[可选]->类名->子类名[可选]，即 MetaBase.allName）
+//              规则：以类的全名（moduleName.namespaceName.className.childClassName，
+//              即 MetaBase.allName，通过 MetaNode.GetAllName() 构建）
 //              计算 FNV-1a 32-bit 哈希，跨会话稳定。
 //              这样导出端写入包的 classId / baseClassId / interfaceId / relatedClassId
 //              与导入端按 allName 计算的 id 完全一致，不再依赖 Object.GetHashCode()

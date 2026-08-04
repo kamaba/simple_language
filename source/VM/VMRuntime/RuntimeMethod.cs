@@ -1,4 +1,4 @@
-﻿
+
 namespace SimpleLanguage.VM
 {
     public class RuntimeMethod
@@ -6,6 +6,10 @@ namespace SimpleLanguage.VM
         public string id { get; set; } = "";
         public string virtualFunctionName { get; set; } = "";
         public string onlyFunctionName { get; set; } = "";
+        /// <summary>UUID of the module this method belongs to (set during SLRuntimeModuleRegistry Phase C).</summary>
+        public string moduleUUID { get; private set; } = "";
+        /// <summary>Name of the module this method belongs to.</summary>
+        public string moduleName { get; private set; } = "";
         public bool interfaceMethod => m_InterfaceMethod;
         public RuntimeClass ownerMetaClass => m_OwnerMetaClass;
         public List<RuntimeVariable> methodArgumentList => m_MethodArgumentList;
@@ -28,6 +32,16 @@ namespace SimpleLanguage.VM
         internal void SetInterfaceMethodFlag(bool v)
         {
             m_InterfaceMethod = v;
+        }
+
+        internal void SetModuleUUID(string uuid)
+        {
+            moduleUUID = uuid ?? string.Empty;
+        }
+
+        internal void SetModuleName(string name)
+        {
+            moduleName = name ?? string.Empty;
         }
     }
 }

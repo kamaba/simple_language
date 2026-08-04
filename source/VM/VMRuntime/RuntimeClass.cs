@@ -6,6 +6,8 @@ namespace SimpleLanguage.VM
     {
         public int id { get; set; } = 0;
         public string name { get; set; } = "";
+        /// <summary>Name of the module this class belongs to (set during SLRuntimeModuleRegistry registration).</summary>
+        public string moduleName { get; private set; } = "";
         /// <summary>0=Class, 1=Enum, 2=Data 3=Interface from exported SLIR class metadata.</summary>
         public int metaClassKind { get; set; }
         /// <summary>True when this runtime class comes from anonymous/dynamic data export.</summary>
@@ -42,6 +44,11 @@ namespace SimpleLanguage.VM
         {
             if (m == null) return;
             m_NotStaticMethodList.Add(m);
+        }
+
+        internal void SetModuleName(string name)
+        {
+            moduleName = name ?? string.Empty;
         }
 
         internal void ClearBoundMethods()

@@ -13,12 +13,31 @@ namespace SimpleLanguage.Parse
         // Preserve package-level class info so runtime can lookup original exported
         // class metadata on demand (used to register RuntimeClass when missing).
         private static readonly Dictionary<int, SLClassPackage> s_ClassPackageById = new();
+        // Maps classId -> moduleUUID, used by ApplyStaticMemberExpressionsBatch to pass
+        // the correct module context when running static field initializers.
+        private static readonly Dictionary<int, string> s_ClassModuleUUIDById = new();
+        // Maps classId -> moduleName, so RuntimeClass and RuntimeVM can carry the module name concept.
+        private static readonly Dictionary<int, string> s_ClassModuleNameById = new();
 
         public static void Clear()
         {
             s_MethodById.Clear();
             s_MethodDeclaringTypeById.Clear();
             s_ClassPackageById.Clear();
+            s_ClassModuleUUIDById.Clear();
+            s_ClassModuleNameById.Clear();
+        }
+
+        /// <summary>Returns the moduleUUID that owns the given class, or empty string if unknown.</summary>
+        public static string GetModuleUUIDByClassId(int classId)
+        {
+            return s_ClassModuleUUIDById.TryGetValue(classId, out var uuid) ? uuid : string.Empty;
+        }
+
+        /// <summary>Returns the module name that owns the given class, or empty string if unknown.</summary>
+        public static string GetModuleNameByClassId(int classId)
+        {
+            return s_ClassModuleNameById.TryGetValue(classId, out var name) ? name : string.Empty;
         }
 
         private static void ApplyRuntimeClassShellMetadata(RuntimeClass rc, SLClassPackage pkg)
@@ -102,7 +121,7 @@ namespace SimpleLanguage.Parse
         private static void AddFromPackage(SLPackageRootJson pkg)
         {
             // cache class packages from each module node
-            void CacheClassList(List<SLClassPackage>? classList)
+            void CacheClassList(string moduleUUID, string moduleName, List<SLClassPackage>? classList)
             {
                 if (classList == null) return;
                 foreach (var c in classList)
@@ -110,6 +129,10 @@ namespace SimpleLanguage.Parse
                     if (c == null) continue;
                     if (!s_ClassPackageById.ContainsKey(c.id))
                         s_ClassPackageById[c.id] = c;
+                    if (!s_ClassModuleUUIDById.ContainsKey(c.id))
+                        s_ClassModuleUUIDById[c.id] = moduleUUID;
+                    if (!s_ClassModuleNameById.ContainsKey(c.id))
+                        s_ClassModuleNameById[c.id] = moduleName;
                 }
             }
 
@@ -117,7 +140,8 @@ namespace SimpleLanguage.Parse
             {
                 for (int mi = 0; mi < pkg.moduleList.Count; mi++)
                 {
-                    CacheClassList(pkg.moduleList[mi]?.classList);
+                    var mod = pkg.moduleList[mi];
+                    CacheClassList(mod?.uuid ?? string.Empty, mod?.moduleName ?? string.Empty, mod?.classList);
                 }
             }
 
@@ -134,7 +158,9 @@ namespace SimpleLanguage.Parse
                 foreach (var c in module.classList)
                 {
                     if (c == null) continue;
-                    RegisterRuntimeClassShellFromPackage(c);
+                    var rc = RegisterRuntimeClassShellFromPackage(c);
+                    if (rc != null)
+                        rc.SetModuleName(module.moduleName ?? string.Empty);
                 }
             }
 
@@ -195,6 +221,8 @@ namespace SimpleLanguage.Parse
                         onlyFunctionName = m.name ?? string.Empty,
                     };
                     rm.SetInterfaceMethodFlag(m.interfaceMethod);
+                    rm.SetModuleUUID(module.uuid);
+                    rm.SetModuleName(module.moduleName ?? string.Empty);
 
                     // instructions（JSON 仅带 Payload；与 IRData 解包对称）
                     if (m.instructionList != null)

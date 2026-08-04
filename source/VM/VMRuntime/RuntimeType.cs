@@ -162,7 +162,7 @@ namespace SimpleLanguage.VM
                 RuntimeValue.SetNull();
                 return;
             }
-            // �?ClassObject.GetMemberVariableSValue 一致：优先 m_MemberData 紧凑布局
+            // �?ClassObject.GetMemberVariableSValue 一致：优先 m_MemberData 紧凑布局
             ro.SetSValueByRuntimeObjct(ref RuntimeValue);
         }
         public void SetStaticMemberVariableSValue(int index, ref RuntimeValue RuntimeValue)
@@ -224,7 +224,7 @@ namespace SimpleLanguage.VM
             ApplyStaticMemberExpressionsBatch();
         }
 
-        /// <summary>�?<see cref="m_StaticMemberRuntimeObjectArray"/> 分配 <see cref="m_MemberData"/> 并绑定各 <see cref="RuntimeObject"/> 切片（仅首次分配，避免覆盖已写入的静态初值）�?/summary>
+        /// <summary>�?<see cref="m_StaticMemberRuntimeObjectArray"/> 分配 <see cref="m_MemberData"/> 并绑定各 <see cref="RuntimeObject"/> 切片（仅首次分配，避免覆盖已写入的静态初值）�?/summary>
         private void BuildStaticMemberDataLayout()
         {
             if (m_StaticMemberRuntimeObjectArray == null || m_StaticMemberRuntimeObjectArray.Length == 0)
@@ -285,7 +285,9 @@ namespace SimpleLanguage.VM
                 return;
             }
 
-            CLRVM.RunIRNewMethod($"__static_field_init__{this.m_RuntimeClass.name}", this, initIR, false );   
+            string moduleUUID = SLRuntimeModuleRegistry.GetModuleUUIDByClassId(m_RuntimeClass.id);
+            string moduleName = SLRuntimeModuleRegistry.GetModuleNameByClassId(m_RuntimeClass.id);
+            CLRVM.RunIRNewMethod($"__static_field_init_{moduleName}_{this.m_RuntimeClass.name}", this, initIR, false, moduleUUID, moduleName );   
         }
         private string BuildStaticExprInitKey()
         {

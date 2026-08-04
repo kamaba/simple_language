@@ -403,12 +403,12 @@ namespace SimpleLanguage.VM
                 if (!visited.Add(fullPath)) return;
                 var pkgRoot = ReadPackage(fullPath);
                 var dir = Path.GetDirectoryName(fullPath) ?? string.Empty;
-                void LoadRefList(List<string>? list)
+                void LoadRefList(List<SLModuleReferencePackage>? list)
                 {
                     if (list == null) return;
                     for (int i = 0; i < list.Count; i++)
                     {
-                        var rp = list[i];
+                        var rp = list[i]?.path;
                         if (string.IsNullOrWhiteSpace(rp)) continue;
                         var refPath = Path.IsPathRooted(rp) ? rp : Path.Combine(dir, rp);
                         LoadRecursive(refPath);

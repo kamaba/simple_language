@@ -19,6 +19,9 @@ namespace SimpleLanguage.VM
         private readonly List<SLModulePackage> m_ModuleList = new();
 
         private static Dictionary<int, string> s_ConstStringDict = new();
+        // Per-module string tables: moduleUUID -> (stringId -> string value).
+        // Allows LoadConstString to resolve strings scoped to the executing module.
+        private static Dictionary<string, Dictionary<int, string>> s_ModuleStringDicts = new();
 
         public SLAssembly(string id)
         {
@@ -65,6 +68,35 @@ namespace SimpleLanguage.VM
         {
             if (s_ConstStringDict != null && s_ConstStringDict.TryGetValue(id, out var s)) return s;
             return null;
+        }
+
+        /// <summary>Clears all per-module string tables (called before re-integrating packages).</summary>
+        public static void ClearModuleStringDicts()
+        {
+            s_ModuleStringDicts.Clear();
+        }
+
+        /// <summary>Registers a per-module string table keyed by moduleUUID.</summary>
+        public static void SetModuleStringDict(string moduleUUID, Dictionary<int, string>? dict)
+        {
+            if (string.IsNullOrEmpty(moduleUUID)) return;
+            s_ModuleStringDicts[moduleUUID] = dict ?? new Dictionary<int, string>();
+        }
+
+        /// <summary>
+        /// Resolves a const string by moduleUUID + id. Falls back to the global
+        /// dict for backward compatibility (e.g. global init instructions with no
+        /// module context, or modules that share a global string id space).
+        /// </summary>
+        public static string? TryGetConstString(string moduleUUID, int id)
+        {
+            if (!string.IsNullOrEmpty(moduleUUID)
+                && s_ModuleStringDicts.TryGetValue(moduleUUID, out var modDict)
+                && modDict.TryGetValue(id, out var ms))
+            {
+                return ms;
+            }
+            return TryGetConstString(id);
         }
     }
     public sealed class IRStringItem

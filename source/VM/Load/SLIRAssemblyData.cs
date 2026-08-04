@@ -9,6 +9,20 @@ namespace SimpleLanuageVM.Load
         public int id { get; set; } 
         public string value { get; set; } = string.Empty; 
     }
+
+    /// <summary>
+    /// 导出模块的引用关系条目。包含被引用模块的名称、UUID、版本号和路径。
+    /// path 是相对于当前模块文件的相对路径，VM 用它来定位并加载引用的模块。
+    /// </summary>
+    public sealed class SLModuleReferencePackage
+    {
+        public string name { get; set; } = string.Empty;
+        public string uuid { get; set; } = string.Empty;
+        public string path { get; set; } = string.Empty;
+        public int versionMain { get; set; }
+        public int versionSub { get; set; }
+        public int versionPatch { get; set; }
+    }
     /// <summary>
     /// One physical JSON package: optional root lists for legacy; canonical payload is in <see cref="moduleList"/> (each item is a full module).
     /// </summary>
@@ -35,8 +49,11 @@ namespace SimpleLanuageVM.Load
     {
         public string moduleName { get; set; } = string.Empty;
         public string uuid { get; set; } = string.Empty;
+        public int versionMain { get; set; }
+        public int versionSub { get; set; }
+        public int versionPatch { get; set; }
         public string? entryMethodId { get; set; }
-        public List<string> moduleReferences { get; set; } = new();
+        public List<SLModuleReferencePackage> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();
         public List<SLClassPackage> classList { get; set; } = new();

@@ -11,7 +11,16 @@ namespace SimpleLanguage.VM.Runtime
 
         // Fast lookup list for global ids. It only stores slot mapping metadata,
         // actual values are always stored on RuntimeType static fields.
-        private static List<Instruction> m_GlobalInitInstructionList = new List<Instruction>();
+        // Per-module global init entries: each module's static-variable init
+        // instructions are stored with the owning moduleUUID so LoadConstString
+        // and other module-scoped lookups resolve correctly during init.
+        private struct ModuleGlobalInitEntry
+        {
+            public string moduleUUID;
+            public string moduleName;
+            public List<Instruction> instructions;
+        }
+        private static List<ModuleGlobalInitEntry> m_ModuleGlobalInitList = new List<ModuleGlobalInitEntry>();
         private static Dictionary<uint, RuntimeVariable> m_GlobalVariableDict = new Dictionary<uint, RuntimeVariable>();
         private static bool m_IsGlobalInitApplied = false;
         private static bool m_IsGlobalInitApplying = false;
@@ -36,13 +45,15 @@ namespace SimpleLanguage.VM.Runtime
             }
             return null;
         }
-        public static void RunIRNewMethod(string id, RuntimeType rt, List<Instruction> irlist, bool isGetStackValue )
+        public static void RunIRNewMethod(string id, RuntimeType rt, List<Instruction> irlist, bool isGetStackValue, string moduleUUID = "", string moduleName = "" )
         {
             try
             {
                 topCLRRuntime = m_ClrRuntimeStack.Count > 0  ? m_ClrRuntimeStack.Peek() : null;
                 Log.AddVM(LID.ShowMessageInfo, $"RunIRNewMethod id={id} rt={rt} irlist.count={irlist?.Count}");
                 RuntimeVM clrRuntime = new RuntimeVM(id, rt, new List<RuntimeType>(), irlist);
+                clrRuntime.SetCurrentModuleUUID(moduleUUID);
+                clrRuntime.SetCurrentModuleName(moduleName);
                 m_ClrRuntimeStack.Push(clrRuntime);
                 if(isGetStackValue )
                     clrRuntime.SetNewObject();
@@ -124,18 +135,27 @@ namespace SimpleLanguage.VM.Runtime
             {
                 return;
             }
-            if (m_GlobalInitInstructionList == null || m_GlobalInitInstructionList.Count == 0)
+            if (m_ModuleGlobalInitList == null || m_ModuleGlobalInitList.Count == 0)
             {
                 m_IsGlobalInitApplied = true;
                 return;
             }
             m_IsGlobalInitApplying = true;
-            RunIRNewMethod("__global_init__", null, new List<Instruction>(m_GlobalInitInstructionList), false );           
+            // Run each module's init instructions with the correct module UUID
+            // so that module-scoped lookups (e.g. LoadConstString) resolve properly.
+            for (int i = 0; i < m_ModuleGlobalInitList.Count; i++)
+            {
+                var entry = m_ModuleGlobalInitList[i];
+                if (entry.instructions == null || entry.instructions.Count == 0) continue;
+                RunIRNewMethod("__global_init__", null, new List<Instruction>(entry.instructions), false, entry.moduleUUID, entry.moduleName);
+            }
+            m_IsGlobalInitApplied = true;
+            m_IsGlobalInitApplying = false;
         }
         public static void ResetGlobalVariableMapping()
         {
             m_GlobalVariableDict.Clear();
-            m_GlobalInitInstructionList.Clear();
+            m_ModuleGlobalInitList.Clear();
             m_IsGlobalInitApplied = false;
             m_IsGlobalInitApplying = false;
         }
@@ -148,9 +168,19 @@ namespace SimpleLanguage.VM.Runtime
             m_GlobalVariableDict[id] = rv;  
         }
 
-        public static void SetGlobalInitInstructions(List<Instruction> instructionList)
+        /// <summary>
+        /// Adds a module's global static-variable init instructions with the owning
+        /// moduleUUID and moduleName. Each module's instructions are executed separately
+        /// with the correct module context during <see cref="LoadGlobalVariableMapping"/>.
+        /// </summary>
+        public static void AddModuleGlobalInitInstructions(string moduleUUID, string moduleName, List<Instruction> instructionList)
         {
-            m_GlobalInitInstructionList = instructionList ?? new List<Instruction>();
+            m_ModuleGlobalInitList.Add(new ModuleGlobalInitEntry
+            {
+                moduleUUID = moduleUUID ?? string.Empty,
+                moduleName = moduleName ?? string.Empty,
+                instructions = instructionList ?? new List<Instruction>(),
+            });
             m_IsGlobalInitApplied = false;
         }
         public static void StoreGlobalVariable( uint id, ref RuntimeValue savl )

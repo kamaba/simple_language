@@ -6,6 +6,20 @@ namespace SimpleLanguage.Export.SLIR.Types
 {
     public sealed class IRStringItem { public int id { get; set; } public string value { get; set; } = string.Empty; }
 
+    /// <summary>
+    /// 导出模块的引用关系条目。包含被引用模块的名称、UUID、版本号和路径。
+    /// path 是相对于当前模块文件的相对路径，VM 用它来定位并加载引用的模块。
+    /// </summary>
+    public sealed class SLModuleReferencePackage
+    {
+        public string name { get; set; } = string.Empty;
+        public string uuid { get; set; } = string.Empty;
+        public string path { get; set; } = string.Empty;
+        public int versionMain { get; set; }
+        public int versionSub { get; set; }
+        public int versionPatch { get; set; }
+    }
+
     public sealed class SLTemplateRelationEntry { public int index { get; set; } public SLRuntimeDefTypePackage? type { get; set; } }
     public sealed class SLTemplateRelationPackage { public int relatedClassId { get; set; } public List<SLTemplateRelationEntry> mapping { get; set; } = new(); }
 
@@ -140,7 +154,7 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string moduleName { get; set; } = string.Empty;
         public string uuid { get; set; } = string.Empty;
         public string? entryMethodId { get; set; }
-        public List<string> moduleReferences { get; set; } = new();
+        public List<SLModuleReferencePackage> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();
         public List<SLClassPackage> classList { get; set; } = new();
@@ -173,6 +187,9 @@ namespace SimpleLanguage.Export.SLIR.Types
     {
         public string moduleName { get; set; } = string.Empty;
         public string uuid { get; set; } = string.Empty;
+        public int versionMain { get; set; }
+        public int versionSub { get; set; }
+        public int versionPatch { get; set; }
         /// <summary>Only used in-memory for old-format reads; not serialized.</summary>
         [JsonIgnore]
         public string? entryModule { get; set; }
@@ -184,7 +201,7 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// (copied verbatim from the module's .jsonc), so referencing projects can
         /// register them via SystemMethodCallDeclarationRegistry.</summary>
         public string systemCallsJson { get; set; } = string.Empty;
-        public List<string> moduleReferences { get; set; } = new();
+        public List<SLModuleReferencePackage> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();
         public List<SLClassPackage> classList { get; set; } = new();
