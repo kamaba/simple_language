@@ -51,7 +51,9 @@ namespace SimpleLanguage.Parse
             rc.isDynamicData = pkg.isDynamic;
             rc.baseClassId = pkg.baseClassId;
             rc.templateParameterCount = pkg.templateParameterCount;
-            rc.fieldsFromPackageApplied = false;
+            // Do NOT reset fieldsFromPackageApplied here. Resetting it would cause
+            // PopulateRuntimeClassFieldsFromPackage to run again and duplicate field
+            // entries / init instructions in nonStaticMemberVariableSetValueList etc.
 
             if (pkg.implementsInterfaceIdList != null)
             {
@@ -158,9 +160,7 @@ namespace SimpleLanguage.Parse
                 foreach (var c in module.classList)
                 {
                     if (c == null) continue;
-                    var rc = RegisterRuntimeClassShellFromPackage(c);
-                    if (rc != null)
-                        rc.SetModuleName(module.moduleName ?? string.Empty);
+                    var rc = RegisterRuntimeClassShellFromPackage(c, module.moduleName ?? string.Empty);
                 }
             }
 
@@ -228,7 +228,11 @@ namespace SimpleLanguage.Parse
                     if (m.instructionList != null)
                     {
                         //Instruction.UnpackPayloadsFromJson(m.instructionList);
-                        rm.InstructionList.AddRange(m.instructionList);
+                        foreach (var ins in m.instructionList)
+                        {
+                            if (ins != null) ins.ExtractIndexFromPayload();
+                            rm.InstructionList.Add(ins);
+                        }
                     }
 
                     if (m.returnList != null)
@@ -273,7 +277,7 @@ namespace SimpleLanguage.Parse
                     if (c == null) continue;
                     var rc = RuntimeClassManager.GetRuntimeClassById(c.id);
                     if (rc == null)
-                        rc = RegisterRuntimeClassShellFromPackage(c);
+                        rc = RegisterRuntimeClassShellFromPackage(c, module.moduleName ?? string.Empty);
                     if (rc != null)
                         BindRuntimeClassMethodsFromClassPackage(c, rc);
                 }
@@ -281,7 +285,7 @@ namespace SimpleLanguage.Parse
         }
 
         /// <summary>Creates and registers a minimal <see cref="RuntimeClass"/> if missing. Does not touch fields.</summary>
-        private static RuntimeClass? RegisterRuntimeClassShellFromPackage(SLClassPackage pkg)
+        private static RuntimeClass? RegisterRuntimeClassShellFromPackage(SLClassPackage pkg, string moduleName = "")
         {
             if (pkg == null) return null;
 
@@ -290,6 +294,8 @@ namespace SimpleLanguage.Parse
             {
                 // 可能是前序按 id/名称创建的占位壳，这里必须回填完整 class 元信息。
                 ApplyRuntimeClassShellMetadata(existed, pkg);
+                if (!string.IsNullOrEmpty(moduleName))
+                    existed.SetModuleName(moduleName);
                 return existed;
             }
 
@@ -300,7 +306,8 @@ namespace SimpleLanguage.Parse
                 // Core types may already be pre-created by name before package load.
                 // Rebind to exported class id so templateRelationList can attach to the same RuntimeClass instance.
                 ApplyRuntimeClassShellMetadata(existedByName, pkg);
-
+                if (!string.IsNullOrEmpty(moduleName))
+                    existedByName.SetModuleName(moduleName);
                 return existedByName;
             }
 
@@ -311,7 +318,8 @@ namespace SimpleLanguage.Parse
                 if (existedByShortName != null)
                 {
                     ApplyRuntimeClassShellMetadata(existedByShortName, pkg);
-
+                    if (!string.IsNullOrEmpty(moduleName))
+                        existedByShortName.SetModuleName(moduleName);
                     return existedByShortName;
                 }
             }
@@ -324,6 +332,8 @@ namespace SimpleLanguage.Parse
                 isDynamicData = pkg.isDynamic,
                 fieldsFromPackageApplied = false,
             };
+            if (!string.IsNullOrEmpty(moduleName))
+                rc.SetModuleName(moduleName);
             if (pkg.implementsInterfaceIdList != null)
             {
                 for (int i = 0; i < pkg.implementsInterfaceIdList.Count; i++)
@@ -345,7 +355,7 @@ namespace SimpleLanguage.Parse
                 rc = RuntimeClassManager.GetRuntimeClassById(classId);
                 if (rc == null && s_ClassPackageById.TryGetValue(classId, out var pkg) && pkg != null)
                 {
-                    rc = RegisterRuntimeClassShellFromPackage(pkg);
+                    rc = RegisterRuntimeClassShellFromPackage(pkg, s_ClassModuleNameById.TryGetValue(classId, out var mn) ? mn : "");
                 }
             }
 
@@ -493,12 +503,18 @@ namespace SimpleLanguage.Parse
                     if ((f.flags & 32) == 32)
                     {
                         foreach (var ins in f.express)
+                        {
+                            if (ins != null) ins.ExtractIndexFromPayload();
                             rc.staticMemberVariableSetValueList.Add(ins);
+                        }
                     }
                     else
                     {
                         foreach (var ins in f.express)
+                        {
+                            if (ins != null) ins.ExtractIndexFromPayload();
                             rc.AddNonStaticMemberVariableSetValueList(ins);
+                        }
                     }
                 }
             }
@@ -766,7 +782,7 @@ namespace SimpleLanguage.Parse
                     // 这里仅允许建壳，禁止触发字段填充，避免 TypeDef 解析阶段递归读包内容。
                     if (s_ClassPackageById.TryGetValue(classId, out var pkg) && pkg != null)
                     {
-                        rc = RegisterRuntimeClassShellFromPackage(pkg);
+                        rc = RegisterRuntimeClassShellFromPackage(pkg, s_ClassModuleNameById.TryGetValue(classId, out var mn2) ? mn2 : "");
                     }
                 }
             }
@@ -830,7 +846,7 @@ namespace SimpleLanguage.Parse
                 return existed;
             }
 
-            var rc = RegisterRuntimeClassShellFromPackage(pkg);
+            var rc = RegisterRuntimeClassShellFromPackage(pkg, s_ClassModuleNameById.TryGetValue(pkg.id, out var mn3) ? mn3 : "");
             if (rc == null) return null;
             PopulateRuntimeClassFieldsFromPackage(pkg, rc);
             return rc;

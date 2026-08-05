@@ -1,4 +1,5 @@
 using SimpleLanguage.Logging;
+using System.Text;
 
 namespace SimpleLanguage.VM
 {
@@ -244,6 +245,28 @@ namespace SimpleLanguage.VM
             }
 
             return false;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append(moduleName);
+            sb.Append(":");
+            sb.Append(name);
+
+            if(templateCount > 0 )
+            {
+                sb.Append("<");
+                for( int i = 0; i < templateCount; i++ )
+                {
+                    sb.Append(m_TemplateDefTypeList[i].ToString());
+                }
+                sb.Append(">");
+            }
+
+
+            return sb.ToString();
         }
     }
     public class RuntimeClassManager

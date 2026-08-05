@@ -202,3 +202,4 @@
 /source/CompileStd/obj/SimpleLanguageCompileStd.csproj.nuget.g.targets
 /source/CompileStd/obj/project.assets.json
 /source/CompileStd/obj/project.nuget.cache
+/vm_output.txt

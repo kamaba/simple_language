@@ -291,7 +291,12 @@ namespace SimpleLanguage.Export.SLIR
                 // 导入后主工程按名解析到空壳，方法查找失败。
                 // 模板定义类（Array<T>）正常导出，主工程用时再实例化。
                 if (c.typeOwner is MetaGenTemplateClass) continue;
-                var full = StripModulePrefix(NormalizeTypeName(c.irName ?? string.Empty));
+                // 跳过引用模块的类：它们已由被引用模块导出，不应在当前模块中重复导出。
+                if (c.isRefModulePreBuilt) continue;
+                if (c.typeOwner?.refFromType == RefFromType.RefModule) continue;
+                // Keep module prefix in fullName so that classes from different modules
+                // (e.g. Core.Object vs ProjectTest.Object) have distinct fullNames.
+                var full = NormalizeTypeName(c.irName ?? string.Empty);
                 var nsName = GetNamespace(full);
                 var typeName = GetShortName(full);
                 if (!nsMap.TryGetValue(nsName, out var nsPkg))
