@@ -9,6 +9,8 @@ namespace SimpleLanguage.VM
         public string name { get; set; } = "";
         /// <summary>Name of the module this class belongs to (set during SLRuntimeModuleRegistry registration).</summary>
         public string moduleName { get; private set; } = "";
+        /// <summary>完整名称，格式为 moduleName.name，用于 GetRuntimeClassByName 唯一匹配。</summary>
+        public string allName { get; private set; } = "";
         /// <summary>0=Class, 1=Enum, 2=Data 3=Interface from exported SLIR class metadata.</summary>
         public int metaClassKind { get; set; }
         /// <summary>True when this runtime class comes from anonymous/dynamic data export.</summary>
@@ -47,9 +49,16 @@ namespace SimpleLanguage.VM
             m_NotStaticMethodList.Add(m);
         }
 
-        internal void SetModuleName(string name)
+        internal void SetModuleName(string moduleName)
         {
-            moduleName = name ?? string.Empty;
+            this.moduleName = moduleName ?? string.Empty;
+            UpdateAllName();
+        }
+
+        /// <summary>根据当前 moduleName 和 name 重新计算 allName。</summary>
+        internal void UpdateAllName()
+        {
+            allName = string.IsNullOrEmpty(moduleName) ? name : moduleName + "." + name;
         }
 
         internal void ClearBoundMethods()
@@ -281,7 +290,7 @@ namespace SimpleLanguage.VM
         }
         public static RuntimeClass GetRuntimeClassByName(string allname)
         {
-            return m_IRMetaClassList.Find(a => a.name == allname);
+            return m_IRMetaClassList.Find(a => a.allName == allname);
         }
         public static RuntimeClass AddRuntimeClass( RuntimeClass rc )
         {

@@ -99,11 +99,14 @@ namespace SimpleLanguage.VM
             try
             {
                 var irmc = this.m_RuntimeClass;
-                if (rdt.templateIndex != -1)
+                if (rdt.templateIndex >= 0 )
                 {
                     if (rdt.ownerRuntimeClass == this.m_RuntimeClass)
                     {
-                        return m_RuntimeTemplateList[rdt.templateIndex];
+                        if(rdt.templateIndex < m_RuntimeTemplateList.Count)
+                            return m_RuntimeTemplateList[rdt.templateIndex];
+                        else
+                            return null;
                     }
                     else
                     {

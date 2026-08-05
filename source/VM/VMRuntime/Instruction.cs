@@ -51,6 +51,7 @@ namespace SimpleLanguage.VM
         // 当前 IRData 的字节长度（包括 Payload 的长度）--用于导出序列化时参考
         [JsonInclude] public int ByteLength = 0;
         public int index;                  //索引（从 Payload 前 4 字节解析，见 ExtractIndexFromPayload）
+        private bool m_IndexExtracted = false;  // 防止 ExtractIndexFromPayload 被多次调用
         [JsonInclude] public DebugInfo debugInfo;              //调试信息
 
         public Instruction()
@@ -112,6 +113,8 @@ namespace SimpleLanguage.VM
         /// </summary>
         public void ExtractIndexFromPayload()
         {
+            if (m_IndexExtracted) return;
+            m_IndexExtracted = true;
             if (!UsesIndex(opCode)) return;
             if (Payload == null || Payload.Length < 4) return;
             index = BitConverter.ToInt32(Payload, 0);

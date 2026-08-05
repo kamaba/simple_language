@@ -44,13 +44,15 @@ namespace SimpleLanguage.Parse
         {
             if (rc == null || pkg == null) return;
 
-            var fullName = string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName;
             rc.id = pkg.id;
-            rc.name = fullName;
+            rc.name = pkg.name;
             rc.metaClassKind = pkg.metaClassKind;
             rc.isDynamicData = pkg.isDynamic;
             rc.baseClassId = pkg.baseClassId;
             rc.templateParameterCount = pkg.templateParameterCount;
+            // allName 由 SetModuleName 时自动更新为 moduleName.name，
+            // 但此处 name 可能被修改了，所以也要更新 allName
+            rc.UpdateAllName();
             // Do NOT reset fieldsFromPackageApplied here. Resetting it would cause
             // PopulateRuntimeClassFieldsFromPackage to run again and duplicate field
             // entries / init instructions in nonStaticMemberVariableSetValueList etc.
@@ -263,7 +265,16 @@ namespace SimpleLanguage.Parse
                         }
                     }
 
-                    s_MethodById[rm.id] = rm;
+                    // Don't let a method stub (no instructions) overwrite a method body that has instructions.
+                    if (s_MethodById.TryGetValue(rm.id, out var existing) && existing != null
+                        && existing.InstructionList.Count > 0 && rm.InstructionList.Count == 0)
+                    {
+                        // Keep the existing method with instructions.
+                    }
+                    else
+                    {
+                        s_MethodById[rm.id] = rm;
+                    }
                     s_MethodDeclaringTypeById[rm.id] = m.declaringTypeFullName ?? string.Empty;
                 }
             }
@@ -299,8 +310,7 @@ namespace SimpleLanguage.Parse
                 return existed;
             }
 
-            var fullName = string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName;
-            var existedByName = RuntimeClassManager.GetRuntimeClassByName(fullName);
+            var existedByName = RuntimeClassManager.GetRuntimeClassByName(string.IsNullOrEmpty(moduleName) ? pkg.name : moduleName + "." + pkg.name);
             if (existedByName != null)
             {
                 // Core types may already be pre-created by name before package load.
@@ -311,23 +321,14 @@ namespace SimpleLanguage.Parse
                 return existedByName;
             }
 
-            var shortName = GetShortName(fullName);
-            if (!string.IsNullOrWhiteSpace(shortName))
-            {
-                var existedByShortName = RuntimeClassManager.GetRuntimeClassByName(shortName);
-                if (existedByShortName != null)
-                {
-                    ApplyRuntimeClassShellMetadata(existedByShortName, pkg);
-                    if (!string.IsNullOrEmpty(moduleName))
-                        existedByShortName.SetModuleName(moduleName);
-                    return existedByShortName;
-                }
-            }
+            // Do NOT match by short name: different modules may have classes with the same
+            // short name (e.g. Core.Project vs ProjectTest.Project). Matching by short name
+            // would cause one module's class to overwrite another's metadata, losing fields.
 
             var rc = new RuntimeClass
             {
                 id = pkg.id,
-                name = fullName,
+                name = pkg.name,
                 metaClassKind = pkg.metaClassKind,
                 isDynamicData = pkg.isDynamic,
                 fieldsFromPackageApplied = false,
@@ -361,9 +362,8 @@ namespace SimpleLanguage.Parse
 
             if (rc == null && !string.IsNullOrWhiteSpace(className))
             {
-                rc = RuntimeClassManager.GetRuntimeClassByName(className)
-                    ?? RuntimeClassManager.GetRuntimeClassByName(GetShortName(className));
-
+                // className 可能是 "Module.Type" 格式，直接匹配 allName
+                rc = RuntimeClassManager.GetRuntimeClassByName(className);
                 if (rc == null)
                 {
                     // 名称路径仅建立壳，不做字段展开。
@@ -381,8 +381,9 @@ namespace SimpleLanguage.Parse
                 rc = new RuntimeClass
                 {
                     id = classId,
-                    name = string.IsNullOrWhiteSpace(className) ? $"Class_{classId}" : className,
+                    name = string.IsNullOrWhiteSpace(className) ? $"Class_{classId}" : GetShortName(className),
                 };
+                rc.UpdateAllName();
                 RuntimeClassManager.AddRuntimeClass(rc);
             }
 
@@ -407,12 +408,9 @@ namespace SimpleLanguage.Parse
 
             AddUnique(RuntimeClassManager.GetRuntimeClassById(c.id));
 
-            var fullName = string.IsNullOrWhiteSpace(c.fullName) ? c.name : c.fullName;
-            AddUnique(RuntimeClassManager.GetRuntimeClassByName(fullName));
-
-            var shortName = GetShortName(fullName);
-            if (!string.IsNullOrWhiteSpace(shortName))
-                AddUnique(RuntimeClassManager.GetRuntimeClassByName(shortName));
+            // allName 是 moduleName.name 格式
+            var shortName = GetShortName(string.IsNullOrWhiteSpace(c.fullName) ? c.name : c.fullName);
+            AddUnique(RuntimeClassManager.GetRuntimeClassByName(shortName));
 
             return list;
         }
@@ -816,8 +814,7 @@ namespace SimpleLanguage.Parse
 
             typeName = GetGenericRootName(typeName);
 
-            var rc = RuntimeClassManager.GetRuntimeClassByName(typeName)
-                ?? RuntimeClassManager.GetRuntimeClassByName(GetShortName(typeName));
+            var rc = RuntimeClassManager.GetRuntimeClassByName(typeName);
             if (rc != null) return rc;
 
             rc = new RuntimeClass
@@ -825,6 +822,7 @@ namespace SimpleLanguage.Parse
                 id = typeName.GetHashCode(),
                 name = typeName,
             };
+            rc.UpdateAllName();
             RuntimeClassManager.AddRuntimeClass(rc);
             return rc;
         }
@@ -881,8 +879,7 @@ namespace SimpleLanguage.Parse
             typeName = GetGenericRootName(typeName.Trim());
 
             // Fast path: runtime class already registered by some prior resolution.
-            var rcExisting = RuntimeClassManager.GetRuntimeClassByName(typeName)
-                ?? RuntimeClassManager.GetRuntimeClassByName(GetShortName(typeName));
+            var rcExisting = RuntimeClassManager.GetRuntimeClassByName(typeName);
             if (rcExisting != null) return rcExisting;
 
             // Slow path: try to find matching SLClassPackage by name/fullName.
@@ -939,8 +936,13 @@ namespace SimpleLanguage.Parse
                 if (f.index != fieldIndex) continue;
                 if ((f.flags & 32) == 32)
                 {
-                    //Instruction.UnpackPayloadsFromJson(f.express);
-                    return new List<Instruction>(f.express);
+                    var result = new List<Instruction>(f.express.Count);
+                    foreach (var ins in f.express)
+                    {
+                        if (ins != null) ins.ExtractIndexFromPayload();
+                        result.Add(ins);
+                    }
+                    return result;
                 }
             }
 
@@ -980,7 +982,11 @@ namespace SimpleLanguage.Parse
 
             foreach (var (f, _) in orderedFields)
             {
-                result.AddRange(f.express);
+                foreach (var ins in f.express)
+                {
+                    if (ins != null) ins.ExtractIndexFromPayload();
+                    result.Add(ins);
+                }
             }
 
             return result;

@@ -3685,8 +3685,6 @@ namespace SimpleLanguage.VM.Runtime
                             rtList.Add(crt);
                         }
                         CLRVM.RunIRMethodByRuntimeType(rt, rtList, cfc, true, runtimeCall.tryCatch);
-
-                        var a = ObjectManager.classObjectDict;
                     }
                     break;
                 case EIROpCode.Ret:

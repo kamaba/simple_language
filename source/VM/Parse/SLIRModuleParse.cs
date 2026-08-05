@@ -257,7 +257,11 @@ namespace SimpleLanguage.VM
                             if (gv == null) continue;
                             if (gv.express == null || gv.express.Count == 0) continue;
 
-                            moduleInitInstructions.AddRange(gv.express);
+                            foreach (var ins in gv.express)
+                            {
+                                if (ins != null) ins.ExtractIndexFromPayload();
+                                moduleInitInstructions.Add(ins);
+                            }
                             moduleInitInstructions.Add(new Instruction
                             {
                                 opCode = EIROpCode.StoreGlobal,
@@ -286,7 +290,11 @@ namespace SimpleLanguage.VM
                                 if (!globalFieldIdMap.TryGetValue($"{cls.id}:{field.index}", out var gid)) continue;
                                 if (initializedGlobalIds.Contains(gid)) continue;
 
-                                moduleInitInstructions.AddRange(field.express);
+                                foreach (var ins in field.express)
+                                {
+                                    if (ins != null) ins.ExtractIndexFromPayload();
+                                    moduleInitInstructions.Add(ins);
+                                }
                                 moduleInitInstructions.Add(new Instruction
                                 {
                                     opCode = EIROpCode.StoreGlobal,
@@ -335,6 +343,10 @@ namespace SimpleLanguage.VM
 
                         var rc = RuntimeClassManager.GetRuntimeClassById(cls.id);
                         if (rc == null) continue;
+
+                        // 模板类（泛型类）不需要进行静态字段初始化，
+                        // 静态字段属于具体实例化的类型，而非模板定义本身。
+                        if (rc.templateCount > 0) continue;
 
                         // Get or create the RuntimeType, then trigger static field initialization.
                         // ApplyStaticMemberExpressionsBatch uses the moduleUUID from
