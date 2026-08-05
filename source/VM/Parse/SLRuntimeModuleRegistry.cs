@@ -50,9 +50,9 @@ namespace SimpleLanguage.Parse
             rc.isDynamicData = pkg.isDynamic;
             rc.baseClassId = pkg.baseClassId;
             rc.templateParameterCount = pkg.templateParameterCount;
-            // allName 由 SetModuleName 时自动更新为 moduleName.name，
-            // 但此处 name 可能被修改了，所以也要更新 allName
-            rc.UpdateAllName();
+            // allName 优先用 pkg.fullName（包含完整命名空间路径，避免不同命名空间下同名类冲突）
+            var fullName = string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName;
+            rc.SetAllName(fullName);
             // Do NOT reset fieldsFromPackageApplied here. Resetting it would cause
             // PopulateRuntimeClassFieldsFromPackage to run again and duplicate field
             // entries / init instructions in nonStaticMemberVariableSetValueList etc.
@@ -310,7 +310,7 @@ namespace SimpleLanguage.Parse
                 return existed;
             }
 
-            var existedByName = RuntimeClassManager.GetRuntimeClassByName(string.IsNullOrEmpty(moduleName) ? pkg.name : moduleName + "." + pkg.name);
+            var existedByName = RuntimeClassManager.GetRuntimeClassByName(string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName);
             if (existedByName != null)
             {
                 // Core types may already be pre-created by name before package load.
@@ -333,6 +333,7 @@ namespace SimpleLanguage.Parse
                 isDynamicData = pkg.isDynamic,
                 fieldsFromPackageApplied = false,
             };
+            rc.SetAllName(string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName);
             if (!string.IsNullOrEmpty(moduleName))
                 rc.SetModuleName(moduleName);
             if (pkg.implementsInterfaceIdList != null)
@@ -383,7 +384,7 @@ namespace SimpleLanguage.Parse
                     id = classId,
                     name = string.IsNullOrWhiteSpace(className) ? $"Class_{classId}" : GetShortName(className),
                 };
-                rc.UpdateAllName();
+                rc.SetAllName(string.IsNullOrWhiteSpace(className) ? $"Class_{classId}" : className);
                 RuntimeClassManager.AddRuntimeClass(rc);
             }
 
@@ -408,9 +409,10 @@ namespace SimpleLanguage.Parse
 
             AddUnique(RuntimeClassManager.GetRuntimeClassById(c.id));
 
-            // allName 是 moduleName.name 格式
-            var shortName = GetShortName(string.IsNullOrWhiteSpace(c.fullName) ? c.name : c.fullName);
-            AddUnique(RuntimeClassManager.GetRuntimeClassByName(shortName));
+            // allName 是 fullName（含命名空间路径）
+            var fullName = string.IsNullOrWhiteSpace(c.fullName) ? c.name : c.fullName;
+            AddUnique(RuntimeClassManager.GetRuntimeClassByName(fullName));
+            AddUnique(RuntimeClassManager.GetRuntimeClassByShortName(GetShortName(fullName)));
 
             return list;
         }
@@ -822,7 +824,7 @@ namespace SimpleLanguage.Parse
                 id = typeName.GetHashCode(),
                 name = typeName,
             };
-            rc.UpdateAllName();
+            rc.SetAllName(typeName);
             RuntimeClassManager.AddRuntimeClass(rc);
             return rc;
         }

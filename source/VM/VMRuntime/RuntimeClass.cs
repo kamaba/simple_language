@@ -9,8 +9,8 @@ namespace SimpleLanguage.VM
         public string name { get; set; } = "";
         /// <summary>Name of the module this class belongs to (set during SLRuntimeModuleRegistry registration).</summary>
         public string moduleName { get; private set; } = "";
-        /// <summary>完整名称，格式为 moduleName.name，用于 GetRuntimeClassByName 唯一匹配。</summary>
-        public string allName { get; private set; } = "";
+        /// <summary>完整名称（fullName），包含命名空间路径，用于 GetRuntimeClassByName 唯一匹配。</summary>
+        public string allName { get; set; } = "";
         /// <summary>0=Class, 1=Enum, 2=Data 3=Interface from exported SLIR class metadata.</summary>
         public int metaClassKind { get; set; }
         /// <summary>True when this runtime class comes from anonymous/dynamic data export.</summary>
@@ -55,10 +55,17 @@ namespace SimpleLanguage.VM
             UpdateAllName();
         }
 
-        /// <summary>根据当前 moduleName 和 name 重新计算 allName。</summary>
+        /// <summary>根据 moduleName 和 name 重新计算 allName（回退方案，优先用 SetAllName）。</summary>
         internal void UpdateAllName()
         {
-            allName = string.IsNullOrEmpty(moduleName) ? name : moduleName + "." + name;
+            if (string.IsNullOrEmpty(allName))
+                allName = string.IsNullOrEmpty(moduleName) ? name : moduleName + "." + name;
+        }
+
+        /// <summary>直接设置 allName（优先使用 pkg.fullName，包含完整命名空间路径）。</summary>
+        internal void SetAllName(string fullName)
+        {
+            allName = fullName ?? string.Empty;
         }
 
         internal void ClearBoundMethods()
@@ -291,6 +298,12 @@ namespace SimpleLanguage.VM
         public static RuntimeClass GetRuntimeClassByName(string allname)
         {
             return m_IRMetaClassList.Find(a => a.allName == allname);
+        }
+
+        /// <summary>按短名（name 字段）查找，可能匹配到多个，返回第一个。</summary>
+        public static RuntimeClass? GetRuntimeClassByShortName(string shortName)
+        {
+            return m_IRMetaClassList.Find(a => a.name == shortName);
         }
         public static RuntimeClass AddRuntimeClass( RuntimeClass rc )
         {
