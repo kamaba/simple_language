@@ -649,5 +649,10 @@ namespace SimpleLanguage.Core
 
             return stringBuilder.ToString();
         }
+
+        public override string ToString()
+        {
+            return m_AllName;
+        }
     }
 }

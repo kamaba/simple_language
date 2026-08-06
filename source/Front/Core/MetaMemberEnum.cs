@@ -219,15 +219,6 @@ namespace SimpleLanguage.Core
 
             return exportVariable;
         }
-        private void FillMemberNewObjectAssignList(
-            MetaNewObjectExpressNode newMember,
-            MetaBlockStatements mbs,
-            MetaBase owmb,
-            MetaExpressNodeBase valueExpr,
-            string memberName,
-            int memberIndex)
-        {
-        }
         public override string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();
