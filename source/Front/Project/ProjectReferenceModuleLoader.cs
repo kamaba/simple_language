@@ -310,7 +310,19 @@ namespace SimpleLanguage.Project
             {
                 for (int i = 0; i < package.namespaceList.Count; i++)
                 {
-                    EnsureNamespacePath(metaModule.metaNode, package.namespaceList[i]?.fullName);
+                    var nsFullName = package.namespaceList[i]?.fullName;
+                    if (string.IsNullOrWhiteSpace(nsFullName)) continue;
+
+                    // namespaceList 的 fullName 包含模块名前缀（如 "ProjectTest.ConStrCC"），
+                    // 而 metaModule.metaNode 已经代表模块根，需要剥离模块名前缀。
+                    var nsPath = nsFullName;
+                    if (nsPath.StartsWith(metaModule.name + "."))
+                        nsPath = nsPath.Substring(metaModule.name.Length + 1);
+                    else if (nsPath == metaModule.name)
+                        nsPath = string.Empty;  // 模块根命名空间，不需要创建子节点
+
+                    if (!string.IsNullOrEmpty(nsPath))
+                        EnsureNamespacePath(metaModule.metaNode, nsPath);
                 }
             }
 
@@ -387,6 +399,12 @@ namespace SimpleLanguage.Project
             if (string.IsNullOrWhiteSpace(fullName)) return null;
 
             var nsName = GetNamespace(fullName);
+            // 剥离模块名前缀（metaModule.metaNode 已代表模块根）
+            if (!string.IsNullOrEmpty(nsName) && nsName.StartsWith(metaModule.name + "."))
+                nsName = nsName.Substring(metaModule.name.Length + 1);
+            else if (nsName == metaModule.name)
+                nsName = string.Empty;
+
             var typeName = !string.IsNullOrWhiteSpace(cls.name) ? cls.name : GetShortName(fullName);
             var parent = EnsureNamespacePath(metaModule.metaNode, nsName);
             if (parent == null) return null;
@@ -810,6 +828,10 @@ namespace SimpleLanguage.Project
                 {
                     mc.SetExtendClass(baseType);
                 }
+                else
+                {
+                    Log.AddProjectLog(LID.MetaCoreAssertShowMessage, "not find base type");
+                }
             }
 
             if (cls.implementsInterfaceIdList != null)
@@ -824,6 +846,10 @@ namespace SimpleLanguage.Project
                         if (ifaceType != null)
                         {
                             mc.AddInterfaceClass(ifaceType);
+                        }
+                        else
+                        {
+                            Log.AddProjectLog(LID.MetaCoreAssertShowMessage, "not find base type");
                         }
                     }
                 }
@@ -853,6 +879,11 @@ namespace SimpleLanguage.Project
                     var args = fullName.Substring(lt + 1, gt - lt - 1);
                     templateArgCount = string.IsNullOrWhiteSpace(args) ? 0 : args.Split(',').Length;
                 }
+            }
+            int index = baseName.IndexOf(".");
+            if( index != -1 )
+            {
+                baseName = baseName.Substring(index + 1, baseName.Length - index - 1 );
             }
 
             /* Check built-in core types first */

@@ -353,6 +353,7 @@ namespace SimpleLanguage.Core
                     return DefaultObject.Float32.ToString();
                 case "double":
                 case "Float64":
+                case "Core.Float64":
                     return DefaultObject.Float64.ToString();
                 case "range":
                 case "Range":

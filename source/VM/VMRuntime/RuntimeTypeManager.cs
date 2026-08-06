@@ -217,11 +217,14 @@ namespace SimpleLanguage.VM
                 if (rc == null)
                 {
                     // Last resort: create minimal RuntimeClass so ObjectManager can still build primitive objects.
+                    var shortName = runtimeClassName.Contains('.') ? runtimeClassName.Substring(runtimeClassName.LastIndexOf('.') + 1) : runtimeClassName;
                     rc = new RuntimeClass
                     {
                         id = StableId32(runtimeClassName),
-                        name = runtimeClassName,
+                        name = shortName,
                     };
+                    rc.SetAllName(runtimeClassName);
+                    rc.SetModuleName("Core");
                     RuntimeClassManager.AddRuntimeClass(rc);
                 }
             }

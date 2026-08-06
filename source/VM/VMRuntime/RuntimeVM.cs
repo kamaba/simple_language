@@ -3562,7 +3562,9 @@ namespace SimpleLanguage.VM.Runtime
                             }
                             else
                             {
-                                irc = RuntimeClassManager.GetRuntimeClassByName(v.eType.ToString());
+                                irc = RuntimeClassManager.GetRuntimeClassByName("Core." + v.eType.ToString());
+                                if (irc == null)
+                                    irc = RuntimeClassManager.GetRuntimeClassByShortName(v.eType.ToString());
                                 if (irc != null)
                                 {
                                     rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClass(irc);
@@ -3659,6 +3661,8 @@ namespace SimpleLanguage.VM.Runtime
                         else
                         {
                             irc = RuntimeClassManager.GetRuntimeClassByName("Core." + v.eType.ToString());
+                            if (irc == null)
+                                irc = RuntimeClassManager.GetRuntimeClassByShortName(v.eType.ToString());
                             rt = RuntimeTypeManager.GetRuntimeTypeByRuntimeClass(irc);
                             if (rt == null)
                             {
