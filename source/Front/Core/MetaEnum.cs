@@ -53,6 +53,13 @@ namespace SimpleLanguage.Core
                 v.Value.ParseDefineMetaType();
                 v.Value.CreateMetaExpress();
             }
+            // mut 字段也需要解析类型和表达式
+            foreach( var v in m_MetaMemberVariableDict )
+            {
+                if (v.Value is MetaMemberEnum) continue;
+                v.Value.ParseDefineMetaType();
+                v.Value.CreateMetaExpress();
+            }
         }
         public MetaMemberVariable GetMetaMemberVariableByName(string name)
         {
@@ -94,9 +101,10 @@ namespace SimpleLanguage.Core
                 m_ValuesMetaVariable.SetIndex(m_MetaMemberVariableDict.Count);
 
                 MetaArrayExpressNode maen = new MetaArrayExpressNode( this, null, mt, m_ValuesMetaVariable );
-                // values 鏁扮粍鍙簲鍖呭惈鐪熷疄鏋氫妇鎴愬憳锛屼笉搴旀妸 values 鑷繁涔熸斁杩涘幓锛?
-                // 鍚﹀垯 for-in 鏋氫妇閬嶅巻浼氬嚭鐜伴澶栭」骞跺鑷村鍑虹殑 IR 閫昏緫寮傚父銆?
-                var enumMembers = m_MetaMemberVariableDict.Values.Where(v => v.name != "values").ToList();
+                // values 数组只应包含真正的枚举成员（MetaMemberEnum），不包含 mut 字段
+                var enumMembers = m_MetaMemberVariableDict.Values
+                    .Where(v => v.name != "values" && v is MetaMemberEnum)
+                    .ToList();
 
                 foreach (var mme in enumMembers)
                 {
@@ -293,6 +301,26 @@ namespace SimpleLanguage.Core
                 }
                 else
                     isHave = false;
+
+                // mut 字段：作为普通可变静态字段处理，不包装为 Member 对象
+				/*
+                if (v.mutToken != null)
+                {
+                    var mutMv = new MetaMemberVariable(this, v.name);
+                    mutMv.SetFileMetaMemeberVariable(v);
+                    mutMv.SetToken(v.token);
+                    mutMv.SetVariableFrom(MetaVariable.EVariableFrom.ClassMember);
+                    mutMv.SetIndex(m_MetaMemberVariableDict.Count);
+                    mutMv.SetIsStatic(true);
+                    mutMv.SetIsConst(false);
+                    if (!m_MetaMemberVariableDict.ContainsKey(v.name))
+                    {
+                        m_MetaMemberVariableDict.Add(v.name, mutMv);
+                    }
+                    MetaVariableManager.instance.AddMetaMemberVariable(mutMv);
+                    continue;
+                }
+				*/
                 MetaMemberEnum mme = new MetaMemberEnum( this, v );
                 if (isHave)
                 {
