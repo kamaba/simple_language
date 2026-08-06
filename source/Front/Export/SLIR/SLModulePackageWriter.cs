@@ -269,6 +269,16 @@ namespace SimpleLanguage.Export.SLIR
             }
         }
 
+        /// <summary>根据模块名生成稳定的 UUID（SHA256 前 16 字节的十六进制表示）。</summary>
+        private static string GenerateModuleUUID(string moduleName)
+        {
+            var bytes = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(moduleName));
+            var sb = new StringBuilder(32);
+            for (int i = 0; i < 16; i++)
+                sb.Append(bytes[i].ToString("x2"));
+            return sb.ToString();
+        }
+
         internal static SLModulePackage Build(IRManager ir, string moduleName)
         {
             var pkg = new SLModulePackage();
@@ -691,7 +701,10 @@ namespace SimpleLanguage.Export.SLIR
 
             // Populate flat fields directly on SLModulePackage (no moduleList wrapper).
             pkg.moduleName = module.moduleName;
-            pkg.uuid = module.uuid;
+            // 生成基于模块名的稳定 UUID，确保 LoadConstString 的 per-module 字符串表能正确隔离
+            pkg.uuid = string.IsNullOrEmpty(module.uuid)
+                ? GenerateModuleUUID(module.moduleName ?? "module")
+                : module.uuid;
             pkg.entryMethodId = module.entryMethodId;
             // Embed the module's own systemCalls verbatim so referencing projects
             // can register them when loading this package as a reference module.
