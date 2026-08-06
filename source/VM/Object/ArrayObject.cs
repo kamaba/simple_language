@@ -243,7 +243,7 @@ namespace SimpleLanguage.VM
         private static bool IsRefKind(EVMType t, out bool isString)
         {
             isString = t == EVMType.String;
-            return t is EVMType.String or EVMType.Object or EVMType.Type or EVMType.Class or EVMType.Array;
+            return t is EVMType.String or EVMType.Object or EVMType.Type or EVMType.Class or EVMType.Array or EVMType.Member;
         }
 
 
@@ -345,7 +345,6 @@ namespace SimpleLanguage.VM
                 }
                 else
                 {
-                    // Object / Class / Array / Type 等引用槽：标量须先装箱（�?RuntimeObject.SetSObjectBySValue 一致）�?
                     var refObj = RuntimeValue.GetReferenceSObject(createStringRef: true);
                     if (refObj != null)
                     {
