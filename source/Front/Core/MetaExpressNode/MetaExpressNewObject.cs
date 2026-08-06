@@ -1393,9 +1393,9 @@ namespace SimpleLanguage.Core
         {
             // Clear previous entries to prevent duplicates when Parse() is called
             // multiple times (e.g. ParseMetaExpress + ParseRealMetaType pipeline).
-            m_AssignStatementsList.Clear();
             if (m_ArrayExpressNode != null)
             {
+                m_AssignStatementsList.Clear();
                 MetaType cmt = null;
                 if (mt?.IsArray() == true  )
                 {
@@ -1451,6 +1451,7 @@ namespace SimpleLanguage.Core
                 }
                 if (!handledAssign && m_BraceFileMetaBaseTerm?.fileMetaExpressList?.Count > 0)
                 {
+                    m_AssignStatementsList.Clear();
                     //Log.AddMetaCoreLog(LID.ShowExtendMessage, "??????????");
                     for (int i = 0; i < m_BraceFileMetaBaseTerm.fileMetaExpressList.Count; i++)
                     {

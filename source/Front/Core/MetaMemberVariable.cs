@@ -286,11 +286,14 @@ namespace SimpleLanguage.Core
             // m_IsParsingExpress 守卫用于在依赖循环时避免递归重入死循环。
             if (m_Express != null)
             {
-                if (!m_IsParsingExpress)
+                if(m_Express.parseSuccessed == false )
                 {
-                    m_IsParsingExpress = true;
-                    this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
-                    m_IsParsingExpress = false;
+                    if (!m_IsParsingExpress)
+                    {
+                        m_IsParsingExpress = true;
+                        this.m_Express.Parse(new AllowUseSettings() { parseFrom = EParseFrom.MemberVariableExpress });
+                        m_IsParsingExpress = false;
+                    }
                 }
             }
             else
