@@ -31,6 +31,9 @@ namespace SimpleLanuageVM.Load
         public string? entryModule { get; set; } = string.Empty;
         public string uuid { get; set; } = string.Empty;
         public List<SLModulePackage> moduleList { get; set; } = new();
+        /// <summary>JSON 文件的源路径（用于查找 nativeDll）。</summary>
+        [System.Text.Json.Serialization.JsonIgnore]
+        public string? sourcePath { get; set; }
     }
 
     /// <summary>
@@ -53,6 +56,8 @@ namespace SimpleLanuageVM.Load
         public int versionSub { get; set; }
         public int versionPatch { get; set; }
         public string? entryMethodId { get; set; }
+        /// <summary>原生 DLL 文件名。VM 加载时自动在同目录查找并加载。</summary>
+        public string nativeDll { get; set; } = string.Empty;
         public List<SLModuleReferencePackage> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();

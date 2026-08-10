@@ -1,143 +1,124 @@
 public class Math
     {
-        public const float Pi = 3.141592653589793f
-        public const float E = 2.718281828459045f
+        public static float Pi = 3.141592653589793f
+        public static float E = 2.718281828459045f
 
         # Trigonometric functions
         public static float sin(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Sin", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.sin", value)
+            ret r
         }
 
         public static float cos(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Cos", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.cos", value)
+            ret r
         }
 
         public static float tan(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Tan", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.tan", value)
+            ret r
         }
 
         public static float asin(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Asin", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.asin", value)
+            ret r
         }
 
         public static float acos(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Acos", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.acos", value)
+            ret r
         }
 
         public static float atan(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Atan", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.atan", value)
+            ret r
         }
 
         public static float atan2(float y, float x)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Atan2", bo, y, x)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.atan2", y, x)
+            ret r
         }
 
         # Hyperbolic functions
         public static float sinh(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Sinh", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.sinh", value)
+            ret r
         }
 
         public static float cosh(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Cosh", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.cosh", value)
+            ret r
         }
 
         public static float tanh(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Tanh", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.tanh", value)
+            ret r
         }
 
         # Power and logarithm
         public static float pow(float baseValue, float exponent)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Pow", bo, baseValue, exponent)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.pow", baseValue, exponent)
+            ret r
         }
 
         public static float sqrt(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Sqrt", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.sqrt", value)
+            ret r
         }
 
         public static float exp(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Exp", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.exp", value)
+            ret r
         }
 
         public static float log(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Log", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.log", value)
+            ret r
         }
 
         public static float log10(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Log10", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.log10", value)
+            ret r
         }
 
         # Rounding
         public static float ceil(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Ceiling", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.ceil", value)
+            ret r
         }
 
         public static float floor(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Floor", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.floor", value)
+            ret r
         }
 
         public static float round(float value)
         {
-            BridgeObject bo = new("float")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Round", bo, value)
-            ret bo.toFloat32()
+            object r = SystemCallExternalFunction("Math.round", value)
+            ret r
         }
 
-        public static int truncate(float value)
+        public static float truncate(float value)
         {
-            BridgeObject bo = new("int")
-            NativeBridge.Call(BridgeObject.CLR, "System", "Math", "Truncate", bo, value)
-            ret bo.toInt32()
+            object r = SystemCallExternalFunction("Math.truncate", value)
+            ret r
         }
 
         # Absolute value

@@ -60,6 +60,12 @@
   "references": [
     { "path": "../Core", "name": "Core" }
   ],
+  "lib":[
+    {
+      "path": "../Lib/Std.dll",
+      "name": "Std"
+    }
+  ],
   "struct": [     
       {
          "namespace": "IO", "children": 

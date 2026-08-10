@@ -186,6 +186,7 @@ namespace SimpleLanguage.Project
                 cfg.Export.VersionMain = GetInt(exportObj, "versionMain", cfg.Export.VersionMain);
                 cfg.Export.VersionSub = GetInt(exportObj, "versionSub", cfg.Export.VersionSub);
                 cfg.Export.VersionPatch = GetInt(exportObj, "versionPatch", cfg.Export.VersionPatch);
+                cfg.Export.NativeDll = GetStr(exportObj, "nativeDll", cfg.Export.NativeDll);
 
                 if (TryGetObj(exportObj, "debugText", out var debugTextObj))
                 {

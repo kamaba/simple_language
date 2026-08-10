@@ -1,0 +1,41 @@
+{
+  "project":
+  {
+    "name": "Math",
+    "desc": "Math library module",
+    "mainVersion": 0,
+    "subVersion": 1,
+    "buildVersion": 0,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "Math.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 }
+    ]
+  },
+  "references": [
+    { "path": "../Core", "name": "Core" }
+  ],
+  "export": {
+    "moduleName": "Math",
+    "outputDir": "../../out/export/Math",
+    "nativeDll": "MathNativeImpl.dll"
+  },
+  "struct": [
+    { "namespace": "Math", "children": [
+      { "class": "Math" }
+    ]}
+  ]
+}

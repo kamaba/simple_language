@@ -41,6 +41,10 @@ namespace SimpleLanguage.VM
 
             IntegrateConstStringDict(packageList);
 
+            // 加载模块声明的原生 DLL（nativeDll 字段）。
+            // 在模块执行前加载，确保 SystemCallExternalFunction 能找到注册的函数。
+            LoadNativeDllsForModules(packageList, loadModel.rootDirectory);
+
             var currentPkg = loadModel.currentPackage ?? packageList[packageList.Count - 1];
 
             SLRuntimeModuleRegistry.LoadFromPackages(packageList);
@@ -324,6 +328,64 @@ namespace SimpleLanguage.VM
         /// Eagerly initializes class static fields in module dependency order.
         /// Iterates assemblies -> modules -> classes, triggering EnsureStaticMemberObjectsInitialized
         /// on each class's RuntimeType. The dedup in ApplyStaticMemberExpressionsBatch ensures
+        /// <summary>
+        /// 扫描所有已加载模块的 nativeDll 字段，自动加载对应的原生 DLL。
+        /// DLL 中需实现 ISLExternalFunctionModule 接口来注册外部函数。
+        /// DLL 搜索顺序：模块 JSON 文件同目录 -> rootDirectory -> VM 运行目录/external/
+        /// </summary>
+        private static void LoadNativeDllsForModules(List<SLPackageRootJson> packageList, string rootDirectory)
+        {
+            if (packageList == null) return;
+            var loaded = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var root in packageList)
+            {
+                if (root == null) continue;
+                foreach (var mod in root.moduleList)
+                {
+                    if (mod == null || string.IsNullOrWhiteSpace(mod.nativeDll)) continue;
+                    if (loaded.Contains(mod.nativeDll)) continue;
+
+                    var dllPath = ResolveNativeDllPath(mod.nativeDll, root, rootDirectory);
+                    if (dllPath != null)
+                    {
+                        var count = SimpleLanguage.VM.Runtime.VMExternalFunctionRegistry.LoadDll(dllPath);
+                        SimpleLanguage.Logging.Log.AddProjectLog(
+                            SimpleLanguage.Logging.LID.ShowMessageInfo,
+                            $"[NativeDll] Loaded '{mod.nativeDll}' for module '{mod.moduleName}': {count} functions registered");
+                    }
+                    loaded.Add(mod.nativeDll);
+                }
+            }
+        }
+
+        private static string? ResolveNativeDllPath(string dllName, SLPackageRootJson root, string rootDirectory)
+        {
+            // 1. 模块 JSON 文件同目录
+            if (!string.IsNullOrEmpty(root?.sourcePath))
+            {
+                var p = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(root.sourcePath) ?? "", dllName);
+                if (System.IO.File.Exists(p)) return p;
+            }
+            // 2. rootDirectory
+            if (!string.IsNullOrEmpty(rootDirectory))
+            {
+                var p = System.IO.Path.Combine(rootDirectory, dllName);
+                if (System.IO.File.Exists(p)) return p;
+            }
+            // 3. VM 运行目录/external/
+            var autoDir = System.IO.Path.Combine(System.AppContext.BaseDirectory, "external");
+            var autoPath = System.IO.Path.Combine(autoDir, dllName);
+            if (System.IO.File.Exists(autoPath)) return autoPath;
+
+            SimpleLanguage.Logging.Log.AddProjectLog(
+                SimpleLanguage.Logging.LID.ShowMessageWarning,
+                $"[NativeDll] '{dllName}' not found in module dir, rootDirectory, or external/");
+            return null;
+        }
+
+        /// <summary>
+        /// Eagerly initialize class static fields in module dependency order.
         /// each class is initialized exactly once, even if later accessed lazily.
         /// </summary>
         private static void InitializeClassStaticFields(List<SLAssembly> assemblyList)

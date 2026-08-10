@@ -3471,6 +3471,26 @@ namespace SimpleLanguage.VM.Runtime
                                 break;
                             #endregion
 
+                            case (int)ESystemMethodCall.SystemCallExternalFunction:
+                                ExternalFunctionSystemMethodCall.Execute(this, sysPkg);
+                                break;
+
+                            case (int)ESystemMethodCall.SystemListInit:
+                                ListSystemMethodCall.ExecuteListInit(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemListGetValueThis:
+                                ListSystemMethodCall.ExecuteListGetValueThis(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemListSetValueThis:
+                                ListSystemMethodCall.ExecuteListSetValueThis(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemListGetCapacity:
+                                ListSystemMethodCall.ExecuteListGetCapacity(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemListSetCapacity:
+                                ListSystemMethodCall.ExecuteListSetCapacity(this, sysPkg);
+                                break;
+
                             default:
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, iri.debugInfo, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
                                 break;

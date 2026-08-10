@@ -98,5 +98,15 @@ namespace SimpleLanguage.VM.Runtime
         SystemMathRound,
         SystemMathTruncate,
         #endregion
+
+        /// <summary>调用外部 DLL 注册的函数，第一个参数为函数名（字符串），后续为实际参数。</summary>
+        SystemCallExternalFunction,
+
+        // List<T> native container operations (List.sl)
+        SystemListInit,
+        SystemListGetValueThis,
+        SystemListSetValueThis,
+        SystemListGetCapacity,
+        SystemListSetCapacity,
     }
 }

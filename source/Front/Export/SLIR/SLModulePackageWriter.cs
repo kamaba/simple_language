@@ -723,6 +723,7 @@ namespace SimpleLanguage.Export.SLIR
                 pkg.versionMain = config.Export.VersionMain;
                 pkg.versionSub = config.Export.VersionSub;
                 pkg.versionPatch = config.Export.VersionPatch;
+                pkg.nativeDll = config.Export.NativeDll ?? string.Empty;
 
                 // 从项目配置的 references 填充引用关系（含 uuid、name、path、版本号）
                 if (config.References != null)

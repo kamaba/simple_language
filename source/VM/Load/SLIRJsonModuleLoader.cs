@@ -99,6 +99,7 @@ namespace SimpleLanguage.VM
                 {
                     // Front export root: SLPackageRootJson (entryModule + moduleList only).
                     var root = JsonSerializer.Deserialize<SLPackageRootJson>(json, options) ?? new SLPackageRootJson();
+                    root.sourcePath = path;
                     if (string.IsNullOrWhiteSpace(root.entryModule) && root.moduleList.Count > 0)
                     {
                         root.entryModule = root.moduleList[0]?.moduleName ?? string.Empty;
@@ -122,6 +123,7 @@ namespace SimpleLanguage.VM
                         entryModule = flat.moduleName ?? string.Empty,
                         uuid = flat.uuid ?? string.Empty,
                         moduleList = new List<SLModulePackage> { flat },
+                        sourcePath = path,
                     };
                 }
             }

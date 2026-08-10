@@ -1,41 +1,42 @@
 
-
 public class Console
 {
-    #Read a line from stdin and return as string
-    static string input()
-    {     
-        #!   
-        string str = "";
-        BridgeObject bo = new( "string" )
-        NativeBridge.Call( BridgeObject.CLR, "System", "Console", "ReadLine", bo, null )
-        ret bo.toString()
-        !#
-        ret ""
-        #ret CSharp.System.Console.ReadLine();
-    }
-
-   #Alias for input
-    static string readLine()
-    {
-        ret "";
-    }
-
     #Print without newline
     static void write(string text, params object[] param )
     {
-        
+        SystemCallExternalFunction("Console.write", text, param);
     }
 
     #Print without newline (alias)
     static void print(string text, params object[] param )
     {
-        SystemPrint(text, param);
+        SystemCallExternalFunction("Console.print", text, param);
     }
 
     #Print with newline
     static void println(string text, params object[] param )
     {
-        SystemPrintln(text, param);
+        SystemCallExternalFunction("Console.println", text, param);
+    }
+
+    #Read a line from stdin and return as string
+    static string input()
+    {
+        object ret = SystemCallExternalFunction("Console.input");
+        ret ret
+    }
+
+    #Alias for input
+    static string readLine()
+    {
+        object ret = SystemCallExternalFunction("Console.readLine");
+        ret ret
+    }
+
+    #Read a single key
+    static string readKey()
+    {
+        object ret = SystemCallExternalFunction("Console.readKey");
+        ret ret
     }
 }

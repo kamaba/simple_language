@@ -160,7 +160,13 @@
     { "name": "SystemMemoryGetTotalAllocated","returnType": "Int32",  "params": [], "isVariadic": false },
     { "name": "SystemMemoryGetTotalFreed",    "returnType": "Int32",  "params": [], "isVariadic": false },
     { "name": "SystemMemorySetMode",          "returnType": "Int32",  "params": ["Int32"], "isVariadic": false },
-    { "name": "SystemMemoryClone",            "returnType": "object", "params": ["object"], "isVariadic": false }
+    { "name": "SystemMemoryClone",            "returnType": "object", "params": ["object"], "isVariadic": false },
+    { "name": "SystemCallExternalFunction",  "returnType": "object", "params": ["string"], "isVariadic": true },
+    { "name": "SystemListInit",              "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemListGetValueThis",      "returnType": "object", "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemListSetValueThis",      "returnType": "void",   "params": ["object", "Int32", "object"], "isVariadic": false },
+    { "name": "SystemListGetCapacity",       "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemListSetCapacity",       "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false }
   ],
   "struct": [
       { "namespace": "Core", "children": 

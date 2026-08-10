@@ -201,6 +201,11 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// (copied verbatim from the module's .jsonc), so referencing projects can
         /// register them via SystemMethodCallDeclarationRegistry.</summary>
         public string systemCallsJson { get; set; } = string.Empty;
+        /// <summary>
+        /// 原生 DLL 文件名（如 "MathNativeImpl.dll"）。VM 加载模块时
+        /// 自动在模块文件同目录下查找并加载此 DLL（实现 ISLExternalFunctionModule）。
+        /// </summary>
+        public string nativeDll { get; set; } = string.Empty;
         public List<SLModuleReferencePackage> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();

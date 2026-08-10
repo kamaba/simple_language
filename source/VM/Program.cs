@@ -1,8 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
+// See https://aka.ms/new-console-template for more information
 
 
 using SimpleLanguage.Logging;
 using SimpleLanguage.VM;
+using SimpleLanguage.VM.Runtime;
 
 Console.WriteLine("---------------------------SimpleLanguage VM---------------------------");
 
@@ -10,6 +11,9 @@ LogManager.Initialize("");
 Log.ResetFixedLogFileForNewSession();
 
 VmRunResultSink.Initialize();
+
+// 加载外部 DLL（实现 ISLExternalFunctionModule 的模块）
+LoadExternalModules(args);
 
 try
 {
@@ -75,4 +79,43 @@ catch (Exception e)
 finally
 {
     VmRunResultSink.Shutdown();
+}
+
+/// <summary>
+/// 加载外部 DLL 模块。支持以下方式：
+/// 1. 命令行参数 --external-dlls <path> 指定 DLL 目录
+/// 2. 命令行参数 --external-dll <file> 指定单个 DLL 文件
+/// 3. 自动扫描当前目录下的 external/ 文件夹
+/// </summary>
+static void LoadExternalModules(string[] args)
+{
+    // 方式 1/2: 命令行参数
+    for (int i = 0; i < args.Length - 1; i++)
+    {
+        if (args[i] == "--external-dlls" && i + 1 < args.Length)
+        {
+            var dir = args[i + 1];
+            var count = VMExternalFunctionRegistry.LoadDirectory(dir);
+            Log.AddProjectLog(LID.ShowMessageInfo, $"External DLLs loaded from '{dir}': {count} functions registered");
+            i++;
+        }
+        else if (args[i] == "--external-dll" && i + 1 < args.Length)
+        {
+            var dll = args[i + 1];
+            var count = VMExternalFunctionRegistry.LoadDll(dll);
+            Log.AddProjectLog(LID.ShowMessageInfo, $"External DLL loaded '{dll}': {count} functions registered");
+            i++;
+        }
+    }
+
+    // 方式 3: 自动扫描 external/ 目录
+    var autoDir = Path.Combine(AppContext.BaseDirectory, "external");
+    if (Directory.Exists(autoDir))
+    {
+        var count = VMExternalFunctionRegistry.LoadDirectory(autoDir);
+        if (count > 0)
+        {
+            Log.AddProjectLog(LID.ShowMessageInfo, $"External DLLs auto-loaded from '{autoDir}': {count} functions registered");
+        }
+    }
 }

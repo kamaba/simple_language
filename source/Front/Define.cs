@@ -482,6 +482,21 @@ namespace SimpleLanguage
         SystemMemorySetMode,
         SystemMemoryClone,
         SystemStringLength,
+
+        /// <summary>调用外部 DLL 注册的函数，第一个参数为函数名（字符串），后续为实际参数。</summary>
+        SystemCallExternalFunction,
+
+        // List<T> native container operations (List.sl)
+        /// <summary>初始化 List 内部存储，参数: (this, capacity)</summary>
+        SystemListInit,
+        /// <summary>获取 List 内部存储的元素，参数: (this, index)</summary>
+        SystemListGetValueThis,
+        /// <summary>设置 List 内部存储的元素，参数: (this, index, value)</summary>
+        SystemListSetValueThis,
+        /// <summary>获取 List 内部存储容量，参数: (this)</summary>
+        SystemListGetCapacity,
+        /// <summary>设置 List 内部存储容量（扩缩容），参数: (this, newCapacity)</summary>
+        SystemListSetCapacity,
     }
     public class Global
     {

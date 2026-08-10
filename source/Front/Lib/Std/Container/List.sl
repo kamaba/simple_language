@@ -2,8 +2,6 @@
 public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
 {
     int _length = 0
-    Array<T> _items = null
-    Type _type = null;
     int _index = 0;
     T _current = null
 
@@ -16,7 +14,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
     #默认构造，容量为0，首次添加时扩容为4（与 C# List<T> 一致）
     _init_()
     {
-        this._items = Array<T>(0)
+        SystemListInit(this, 0)
     }
     _init_( int capacity )
     {
@@ -24,14 +22,14 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
         {
             capacity = 0
         }
-        this._items = Array<T>(capacity)
+        SystemListInit(this, capacity)
     }
     get int length(){ ret this._length }
 
-    #容量（内部数组长度）
+    #容量（内部存储长度）
     get int capacity()
     {
-        ret this._items.length
+        ret SystemListGetCapacity(this)
     }
     set void capacity( int value )
     {
@@ -39,14 +37,9 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
         {
             ret
         }
-        if value != this._items.length
+        if value != SystemListGetCapacity(this)
         {
-            Array<T> newItems = Array<T>(value)
-            for i = 0, i < this._length, i++
-            {
-                newItems.setValue(i, this._items.getValue(i))
-            }
-            this._items = newItems
+            SystemListSetCapacity(this, value)
         }
     }
 
@@ -54,20 +47,22 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
     void grow()
     {
         int newCapacity = 4
-        if this._items.length > 0
+        int curCap = SystemListGetCapacity(this)
+        if curCap > 0
         {
-            newCapacity = this._items.length * 2
+            newCapacity = curCap * 2
         }
         this.capacity = newCapacity
     }
     void ensureCapacity( int min )
     {
-        if this._items.length < min
+        int curCap = SystemListGetCapacity(this)
+        if curCap < min
         {
             int newCapacity = 4
-            if this._items.length > 0
+            if curCap > 0
             {
-                newCapacity = this._items.length * 2
+                newCapacity = curCap * 2
             }
             if newCapacity < min
             {
@@ -79,11 +74,11 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
 
     public void add( T item )
     {
-        if this._length == this._items.length
+        if this._length == SystemListGetCapacity(this)
         {
             this.grow()
         }
-        this._items.setValue(this._length, item)
+        SystemListSetValueThis(this, this._length, item)
         this._length++
     }
     public void insert( int index, T item )
@@ -92,17 +87,17 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
         {
             ret
         }
-        if this._length == this._items.length
+        if this._length == SystemListGetCapacity(this)
         {
             this.grow()
         }
         int i = this._length
         while i > index
         {
-            this._items.setValue(i, this._items.getValue(i - 1))
+            SystemListSetValueThis(this, i, SystemListGetValueThis(this, i - 1))
             i = i - 1
         }
-        this._items.setValue(index, item)
+        SystemListSetValueThis(this, index, item)
         this._length++
     }
     public void removeAt( int index )
@@ -113,7 +108,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
         }
         for i = index, i < this._length - 1, i++
         {
-            this._items.setValue(i, this._items.getValue(i + 1))
+            SystemListSetValueThis(this, i, SystemListGetValueThis(this, i + 1))
         }
         this._length = this._length - 1
     }
@@ -126,7 +121,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
     {
         for i = 0, i < this._length, i++
         {
-            this._items.setValue(i, value)
+            SystemListSetValueThis(this, i, value)
         }
     }
     Array<T> toArray()
@@ -134,7 +129,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
         Array<T> arr = Array<T>(this._length)
         for i = 0, i < this._length, i++
         {
-            arr.setValue(i, this._items.getValue(i))
+            SystemArraySetValueThis(arr, i, SystemListGetValueThis(this, i))
         }
         ret arr
     }
@@ -151,7 +146,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
         bool hasNext_var = this._index < this._length
         if hasNext_var
         {
-            this._current = this._items.getValue(this._index)
+            this._current = SystemListGetValueThis(this, this._index) as T
         }
         else
         {
@@ -165,7 +160,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
     }
     override set void current( T val )
     {
-        this._items.setValue(this._index, val)
+        SystemListSetValueThis(this, this._index, val)
         this._current = val
     }
     override get Core.IIterator<T> iterator()
@@ -180,31 +175,29 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
     {
         if( ind < 0 )
         {
-            #throw error("");
             ret
         }
         if( ind >= this._length )
         {
-            #throw error("超出了范围")
             ret
         }
         this._index = ind;
-        this._current = this._items.getValue(ind)
+        this._current = SystemListGetValueThis(this, ind) as T
     }
     set setValue( int __index, T val )
     {
-        this._items.setValue(__index, val)
+        SystemListSetValueThis(this, __index, val)
     }
     get T getValue( int __index )
     {
-        ret this._items.getValue(__index)
+        ret SystemListGetValueThis(this, __index) as T
     }
     override string toString()
     {
         string showstr = "["
         for i = 0, i < this._length, i++
         {
-            var cur = this._items.getValue(i)
+            var cur = SystemListGetValueThis(this, i)
             if cur == null
             {
                 showstr = showstr + "null"

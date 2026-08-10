@@ -133,7 +133,7 @@ namespace SimpleLanguage.Project
             public bool IsSupportDoublePlus { get; set; }
 
             /// <summary>
-            /// ? true ???????/¦Ë?????????????????????????? byte+byte??Int32+Int32??????? byte+Int32 ?????
+            /// ? true ???????/ï¿½ï¿½?????????????????????????? byte+byte??Int32+Int32??????? byte+Int32 ?????
             /// ? false??????????? <see cref="MetaTypeFactory.CalcETypeByLeftAndRight"/> ?????????????
             /// </summary>
             public bool RequireSameNumericTypes { get; set; } = false;
@@ -182,7 +182,7 @@ namespace SimpleLanguage.Project
         {
             public List<string> Imports { get; set; } = new List<string>();
             public Dictionary<string, string> Replace { get; set; } = new Dictionary<string, string>();
-            // project jsonc: global.data = { key: primitive|object }£¨¾ÉÎ»ÖÃ£»Óë¸ù¼¶ "data" ºÏ²¢×¢Èë Project£¬¸ù¼¶ÓÅÏÈ£©
+            // project jsonc: global.data = { key: primitive|object }ï¿½ï¿½ï¿½ï¿½Î»ï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ "data" ï¿½Ï²ï¿½×¢ï¿½ï¿½ Projectï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È£ï¿½
             public Dictionary<string, JsonElement> Data { get; set; } = new Dictionary<string, JsonElement>();
         }
 
@@ -202,6 +202,12 @@ namespace SimpleLanguage.Project
             public int VersionMain { get; set; } = 0;
             public int VersionSub { get; set; } = 1;
             public int VersionPatch { get; set; } = 0;
+
+            /// <summary>
+            /// åŸç”Ÿ DLL æ–‡ä»¶åï¼ˆä¸å«è·¯å¾„ï¼‰ã€‚ç¼–è¯‘åå†™å…¥ module.jsonï¼Œ
+            /// VM åŠ è½½æ¨¡å—æ—¶ä¼šè‡ªåŠ¨åœ¨åŒç›®å½•ä¸‹æŸ¥æ‰¾å¹¶åŠ è½½æ­¤ DLLï¼ˆå®ç° ISLExternalFunctionModuleï¼‰ã€‚
+            /// </summary>
+            public string NativeDll { get; set; } = string.Empty;
 
             public DebugTextExportSection DebugText { get; set; } = new DebugTextExportSection();
         }
