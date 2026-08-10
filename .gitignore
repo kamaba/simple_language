@@ -204,3 +204,6 @@
 /source/CompileStd/obj/project.nuget.cache
 /vm_output.txt
 /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/source/CompileMath/bin
+/source/CompileMath/obj
+/source/StdNativeImpl/obj
