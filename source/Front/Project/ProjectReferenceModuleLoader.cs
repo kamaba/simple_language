@@ -310,7 +310,15 @@ namespace SimpleLanguage.Project
         {
             if (!string.IsNullOrWhiteSpace(reference.Name))
             {
-                return reference.Name.Trim();
+                var name = reference.Name.Trim();
+                // Strip file extensions like "Std.module.json" -> "Std"
+                if (name.EndsWith(".module.json", StringComparison.OrdinalIgnoreCase))
+                    name = name.Substring(0, name.Length - ".module.json".Length);
+                else if (name.EndsWith(".package.json", StringComparison.OrdinalIgnoreCase))
+                    name = name.Substring(0, name.Length - ".package.json".Length);
+                else if (name.EndsWith(".json", StringComparison.OrdinalIgnoreCase))
+                    name = name.Substring(0, name.Length - ".json".Length);
+                return name;
             }
 
             if (!string.IsNullOrWhiteSpace(package?.moduleName))
@@ -775,6 +783,7 @@ namespace SimpleLanguage.Project
                     if (mmf != null)
                     {
                         mc.nonStaticVirtualMetaMemberFunctionList.Add(mmf);
+                        mc.AddMetaMemberFunction(mmf);
                     }
                 }
             }
@@ -786,6 +795,7 @@ namespace SimpleLanguage.Project
                     if (mmf != null)
                     {
                         mc.staticMetaMemberFunctionList.Add(mmf);
+                        mc.AddMetaMemberFunction(mmf);
                     }
                 }
             }
@@ -797,6 +807,7 @@ namespace SimpleLanguage.Project
                     if (mmf != null)
                     {
                         mc.nonStaticVirtualMetaMemberFunctionList.Add(mmf);
+                        mc.AddMetaMemberFunction(mmf);
                     }
                 }
             }

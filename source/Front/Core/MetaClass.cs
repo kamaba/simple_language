@@ -1144,6 +1144,10 @@ namespace SimpleLanguage.Core
         }
         public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(string name, int templateParamCount, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )
         {
+            if (this is MetaGenTemplateClass mgtc && name == "add")
+            {
+                System.Console.WriteLine($"[DEBUG GetMethod] cls={this.allName} name={name} dictCount={m_MetaMemberFunctionTemplateNodeDict.Count} nonStaticCount={m_NonStaticVirtualMetaMemberFunctionList.Count}");
+            }
             if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name) )
             {
                 return null;

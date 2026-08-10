@@ -37,6 +37,8 @@ namespace SimpleLanguage.Compile
 
         private List<MetaNamespace> m_ImportMetaNamespaceList = new List<MetaNamespace>();
         private Dictionary<string, MetaNamespace> m_ImportAliasNamespaceDict = new Dictionary<string, MetaNamespace>();
+        // 模块根节点列表（import Std; 注册的是模块根，不是 MetaNamespace）
+        private List<MetaNode> m_ImportMetaNodeList = new List<MetaNode>();
 
         private readonly List<FileMetaTypeAliasDecl> m_TypeAliasDeclList = new List<FileMetaTypeAliasDecl>();
         private readonly Dictionary<string, MetaType> m_FileResolvedTypeAliasDict = new Dictionary<string, MetaType>();
@@ -122,6 +124,12 @@ namespace SimpleLanguage.Compile
                 return;
             }
             m_ImportMetaNamespaceList.Add(mn);
+        }
+        public void AddImportMetaNode(MetaNode mn)
+        {
+            if (mn == null) return;
+            if (m_ImportMetaNodeList.IndexOf(mn) >= 0) return;
+            m_ImportMetaNodeList.Add(mn);
         }
         public void AddImportAliasMetaNamespace(string aliasName, MetaNamespace mn)
         {
@@ -233,6 +241,15 @@ namespace SimpleLanguage.Compile
                 if( mb != null )
                 {
                     break;
+                }
+            }
+            // 也搜索模块根节点（import Std; 注册的是模块根）
+            if (mb == null)
+            {
+                for (int i = 0; i < m_ImportMetaNodeList.Count; i++)
+                {
+                    mb = GetMetaNodeByNamespace(m_ImportMetaNodeList[i], classList);
+                    if (mb != null) break;
                 }
             }
             return mb;

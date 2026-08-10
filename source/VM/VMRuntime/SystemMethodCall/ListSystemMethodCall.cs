@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using SimpleLanuageVM.Load;
+using SimpleLanguage.Logging;
 using SimpleLanguage.VM.MemoryManagement;
 
 namespace SimpleLanguage.VM.Runtime

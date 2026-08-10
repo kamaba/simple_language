@@ -108,6 +108,15 @@
       { "class": "Behaviour" },
       { "class": "Component" },
       { "class": "Node" }
+  ], 
+  "systemCalls": 
+  [
+    // ---- Bridge calls ----   
+    { "name": "SystemListInit",              "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemListGetValueThis",      "returnType": "object", "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemListSetValueThis",      "returnType": "void",   "params": ["object", "Int32", "object"], "isVariadic": false },
+    { "name": "SystemListGetCapacity",       "returnType": "Int32",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemListSetCapacity",       "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false }
   ],
   "export": {
     "moduleName": "Std",

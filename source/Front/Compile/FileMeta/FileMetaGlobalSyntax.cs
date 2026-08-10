@@ -169,6 +169,13 @@ namespace SimpleLanguage.Compile
                 return;
             }
 
+            // import Std; 解析到的是模块根节点（isMetaModule），也注册它
+            if (mb.isMetaModule)
+            {
+                m_FileMeta.AddImportMetaNode(mb);
+                return;
+            }
+
             Log.AddFileMetaLog(LID.ShowExtendMessage, "解析Import语句发生错误，没有找到对应的命名空间路径: " + (m_ImportNamespaceName ?? string.Empty));
         }
 

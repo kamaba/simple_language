@@ -151,6 +151,8 @@ namespace SimpleLanguage.Core
                 return;
             }
 
+            System.Console.WriteLine($"[DEBUG ParseGenTemplateClass] cls={this.allName} template={m_MetaTemplateClass.allName} nonStatic={m_NonStaticVirtualMetaMemberFunctionList.Count} templateNonStatic={m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList.Count}");
+
             m_MetaMemberVariableDict.Clear();
             m_MetaMemberFunctionTemplateNodeDict.Clear();
             m_NonStaticVirtualMetaMemberFunctionList.Clear();

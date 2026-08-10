@@ -2,6 +2,7 @@
 public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
 {
     int _length = 0
+    int _capacity = 0;
     int _index = 0;
     T _current = null
 
@@ -23,6 +24,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
             capacity = 0
         }
         SystemListInit(this, capacity)
+        this._capacity = capacity
     }
     get int length(){ ret this._length }
 
@@ -40,6 +42,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
         if value != SystemListGetCapacity(this)
         {
             SystemListSetCapacity(this, value)
+            this._capacity = value
         }
     }
 
@@ -47,12 +50,12 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
     void grow()
     {
         int newCapacity = 4
-        int curCap = SystemListGetCapacity(this)
-        if curCap > 0
+        if this._capacity > 0
         {
-            newCapacity = curCap * 2
+            newCapacity = this._capacity * 2
         }
-        this.capacity = newCapacity
+        this._capacity = newCapacity
+        SystemListSetCapacity(this, newCapacity )
     }
     void ensureCapacity( int min )
     {
@@ -68,7 +71,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
             {
                 newCapacity = min
             }
-            this.capacity = newCapacity
+            this._capacity = newCapacity
         }
     }
 

@@ -232,3 +232,6 @@
 /source/StdNativeImpl/bin/Debug/net8.0/*.dll
 /source/StdNativeImpl/bin/Debug/net8.0/*.exe
 /source/StdNativeImpl/bin/Debug/net8.0/*.pdb
+/SimpleLanguage.slnLaunch.user
+/source/MathNativeImpl/MathNativeImpl.csproj.user
+/source/MathNativeImpl/obj/Debug/net8.0/MathNativeImpl.csproj.BuildWithSkipAnalyzers

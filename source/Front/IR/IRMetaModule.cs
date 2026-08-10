@@ -20,6 +20,7 @@
 //      LinkMetaOwners: 调用 IRMetaClass.LinkMetaOwner 把 MetaBase 关联到 IRMetaClass。
 //****************************************************************************
 
+using System;
 using System.Collections.Generic;
 using SimpleLanguage.Core;
 using SimpleLanguage.Export.SLIR.Types;
