@@ -1,16 +1,16 @@
 
 
 
-public class Std.Tree
+public class Data.Tree
 {
     public enum ETreeEtype
     {
-        None,
-        BinaryTree,
-        FourForkTree,
-        EightForkTree,
+        None = 0
+        BinaryTree
+        FourForkTree
+        EightForkTree
     }
-    public Node root;
+    public Node root = null;
 
     public static Tree Create( ETreeEtype te )
     {

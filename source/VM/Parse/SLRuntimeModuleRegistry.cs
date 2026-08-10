@@ -126,7 +126,7 @@ namespace SimpleLanguage.Parse
         {
             // cache class packages from each module node
             void CacheClassList(string moduleUUID, string moduleName, List<SLClassPackage>? classList)
-            {
+            {                
                 if (classList == null) return;
                 foreach (var c in classList)
                 {

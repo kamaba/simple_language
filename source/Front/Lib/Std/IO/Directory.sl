@@ -1,10 +1,10 @@
 
-enum Std.IO.SearchOption
+enum IO.SearchOption
 {
     TopDirectoryOnly = 0
 }
 
-public class Std.IO.Directory
+public class IO.Directory
 {
     _init_( string path )
     {

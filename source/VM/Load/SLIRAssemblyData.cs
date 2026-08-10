@@ -175,7 +175,6 @@ namespace SimpleLanuageVM.Load
         public List<SLVariablePackage> localList { get; set; } = new();
         public List<Instruction> instructionList { get; set; } = new();
     }
-
     public sealed class SLTypePackage
     {
         public string fullName { get; set; } = string.Empty;
@@ -191,7 +190,6 @@ namespace SimpleLanuageVM.Load
             methodList.Add(m);
         }
     }
-
     public sealed class SLVariablePackage
     {
         public int id { get; set; }
@@ -200,7 +198,6 @@ namespace SimpleLanuageVM.Load
         public SLRuntimeDefTypePackage? typeDef { get; set; }
         public DebugInfo? debugInfo { get; set; }
     }
-
     public sealed class SLRuntimeCallPackage
     {
         public SLRuntimeDefTypePackage? runtimeDefType { get; set; }
@@ -210,7 +207,6 @@ namespace SimpleLanuageVM.Load
         public int paramCount { get; set; }
         public bool tryCatch { get; set; }
     }
-
     /// <summary>
     /// Wire payload for <see cref="EIROpCode.CallSystemMethod"/> (must match Front export JSON).
     /// </summary>

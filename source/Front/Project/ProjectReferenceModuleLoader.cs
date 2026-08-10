@@ -77,13 +77,9 @@ namespace SimpleLanguage.Project
                 return;
             }
 
-            /* --- Strategy 1: Try source module (.jsonc with struct tree) --- */
-            if (TryLoadSourceModule(reference, projectDir))
-            {
-                return;
-            }
-
-            /* --- Strategy 2: Fallback to compiled package (.package.json / .module.json) --- */
+            /* --- Strategy 1: Try compiled package (.module.json) in the reference
+             * directory or in the export output directory.  Compiled packages have
+             * actual class/interface definitions, not just empty struct shells. --- */
             var packagePath = ResolveReferenceModulePath(reference.Path, projectDir);
             if (!string.IsNullOrWhiteSpace(packagePath) && File.Exists(packagePath))
             {
@@ -93,10 +89,72 @@ namespace SimpleLanguage.Project
                 }
             }
 
+            /* --- Strategy 2: Try compiled package from the reference module's
+             * export outputDir (e.g. out/export/Core/Core.module.json) --- */
+            var exportPackagePath = TryResolveExportModulePath(reference, projectDir);
+            if (!string.IsNullOrWhiteSpace(exportPackagePath) && File.Exists(exportPackagePath))
+            {
+                if (TryLoadCompiledPackage(reference, exportPackagePath))
+                {
+                    return;
+                }
+            }
+
+            /* --- Strategy 3: Fallback to source module (.jsonc with struct tree) --- */
+            if (TryLoadSourceModule(reference, projectDir))
+            {
+                return;
+            }
+
             Log.AddProjectLog(LID.ShowExtendMessage,
                 $"Reference module not found or could not be loaded: path={reference.Path}, name={reference.Name}");
             Console.WriteLine($"[Reference] Failed to load module: name={reference.Name}, path={reference.Path}");
             return;
+        }
+
+        /// <summary>
+        /// 将引用模块名注册为工程级类型别名，指向模块根 MetaNode。
+        /// 这样 "Core.IIterable" 中的 "Core" 能通过 TryResolveTypeAlias 找到模块根节点，
+        /// 再继续解析剩余路径。
+        /// </summary>
+        private static void RegisterModuleAlias(string moduleName, MetaModule metaModule)
+        {
+            if (string.IsNullOrWhiteSpace(moduleName) || metaModule == null)
+                return;
+            var moduleMt = new MetaType(metaModule);
+            TypeManager.instance.AddProjectTypeAlias(moduleName, moduleMt);
+        }
+
+        /// <summary>
+        /// Reads the referenced module's .jsonc to find its export.outputDir and
+        /// constructs the path to the compiled .module.json file.
+        /// </summary>
+        private static string TryResolveExportModulePath(ProjectConfig.ReferenceSection reference, string projectDir)
+        {
+            try
+            {
+                var resolvedDir = Path.IsPathRooted(reference.Path)
+                    ? Path.GetFullPath(reference.Path)
+                    : Path.GetFullPath(Path.Combine(projectDir ?? string.Empty, reference.Path));
+
+                if (!Directory.Exists(resolvedDir))
+                    return null;
+
+                var jsoncFiles = Directory.GetFiles(resolvedDir, "*.jsonc", SearchOption.TopDirectoryOnly);
+                if (jsoncFiles.Length == 0)
+                    return null;
+
+                var refConfig = ProjectJsoncLoader.FromJsonc(File.ReadAllText(jsoncFiles[0]));
+                if (refConfig?.Export == null || string.IsNullOrWhiteSpace(refConfig.Export.OutputDir) || string.IsNullOrWhiteSpace(refConfig.Export.ModuleName))
+                    return null;
+
+                var moduleJsonPath = Path.Combine(refConfig.Export.OutputDir, refConfig.Export.ModuleName, refConfig.Export.ModuleName + ".module.json");
+                return File.Exists(moduleJsonPath) ? moduleJsonPath : null;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         #region Compiled package loading
@@ -173,7 +231,21 @@ namespace SimpleLanguage.Project
             {
                 ModuleManager.instance.AddMetaMdoule(metaModule);
             }
+            else
+            {
+                // Ensure "Core" is discoverable by GetMetaModuleByName so that
+                // qualified names like "Core.IIterable" can be resolved.
+                if (ModuleManager.instance.GetMetaModuleByName("Core") == null)
+                {
+                    ModuleManager.instance.AddMetaMdoule(metaModule);
+                }
+            }
             s_isCoreReplacement = false;
+
+            // 将模块名注册为工程级类型别名，指向模块根节点。
+            // 这样 "Core.IIterable" 中的 "Core" 能通过 TryResolveTypeAlias 找到模块根 MetaNode，
+            // 再继续解析 "IIterable" 等剩余路径。
+            RegisterModuleAlias(alias, metaModule);
 
             Log.AddProjectLog(LID.ShowExtendMessage,
                 $"Reference module loaded (compiled): name={alias}, path={modulePath}");
@@ -406,6 +478,13 @@ namespace SimpleLanguage.Project
                 nsName = string.Empty;
 
             var typeName = !string.IsNullOrWhiteSpace(cls.name) ? cls.name : GetShortName(fullName);
+            // Strip template suffix from typeName so that "IIterator<T>" and "IIterator"
+            // register under the same MetaNode key "IIterator" (with different template counts).
+            var ltIdx = typeName.IndexOf('<');
+            if (ltIdx > 0)
+            {
+                typeName = typeName.Substring(0, ltIdx);
+            }
             var parent = EnsureNamespacePath(metaModule.metaNode, nsName);
             if (parent == null) return null;
 
@@ -414,16 +493,9 @@ namespace SimpleLanguage.Project
              * class so its members get overwritten in Pass 2 with the compiled definitions. */
             if (s_isCoreReplacement)
             {
-                /* Strip template suffix from typeName for Core lookup:
-                 * JSON exports "Array<T>" but inner-form registers as "Array". */
-                var lookupName = typeName;
-                var ltIdx = lookupName.IndexOf('<');
-                if (ltIdx > 0)
-                {
-                    lookupName = lookupName.Substring(0, ltIdx);
-                }
-
-                var coreNode = CoreMetaClassManager.GetCoreMetaClass(lookupName);
+                /* typeName already has template suffix stripped; use it directly
+                 * for CoreMetaClassManager lookup (inner-form registers as "Array", not "Array<T>"). */
+                var coreNode = CoreMetaClassManager.GetCoreMetaClass(typeName);
                 if (coreNode != null)
                 {
                     if (coreNode.isMetaData)
@@ -997,11 +1069,27 @@ namespace SimpleLanguage.Project
                 return true;
             }
 
-            /* Build MetaModule from the struct tree */
-            var metaModule = new MetaModule(alias);
-            metaModule.SetRefFromType(RefFromType.Local);
-            BuildModuleTreeFromStructTree(metaModule, refConfig.StructTree);
-            ModuleManager.instance.AddMetaMdoule(metaModule);
+            /* Build MetaModule from the struct tree.
+             * For "Core", reuse the existing coreModule (already populated by
+             * CoreMetaClassManager.Init with inner-form types) instead of creating
+             * a new empty module that would replace it via AddMetaMdoule. */
+            MetaModule metaModule;
+            bool isCoreRef = alias == "Core";
+            if (isCoreRef)
+            {
+                metaModule = ModuleManager.instance.coreModule;
+                BuildModuleTreeFromStructTree(metaModule, refConfig.StructTree);
+            }
+            else
+            {
+                metaModule = new MetaModule(alias);
+                metaModule.SetRefFromType(RefFromType.Local);
+                BuildModuleTreeFromStructTree(metaModule, refConfig.StructTree);
+                ModuleManager.instance.AddMetaMdoule(metaModule);
+            }
+
+            // 将模块名注册为工程级类型别名，指向模块根节点。
+            RegisterModuleAlias(alias, metaModule);
 
             Log.AddProjectLog(LID.ShowExtendMessage,
                 $"Reference module loaded (source): name={alias}, path={jsoncPath}, structCount={refConfig.StructTree.Children.Count}");

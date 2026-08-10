@@ -451,6 +451,8 @@ namespace SimpleLanguage.Core
                 for (int i = 0; i < mgmf.metaMemberParamCollection.metaDefineParamList.Count; i++)
                 {
                     var mdp = mgmf.metaMemberParamCollection.metaDefineParamList[i];
+                    if (mdp.metaVariable.defineMetaType == null)
+                        continue;
                     if (!(mdp.metaVariable.defineMetaType.eMetaTypeType == EMetaTypeType.MetaClass
                         && mdp.metaVariable.defineMetaType.metaClass.isTemplateClass == false))
                     {

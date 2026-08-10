@@ -283,7 +283,7 @@ namespace SimpleLanguage.Core
             {                
                 if( topLevelClass?.metaClass?.metaNode == null )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, " ??????????????????????????");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, fmc.token, "not found topLevelClass!!!");
                     return null;
                 }
 
@@ -717,6 +717,40 @@ namespace SimpleLanguage.Core
             if ( stringList.Count == 1 )
             {
                 firstName = stringList[0];
+            }
+
+            // If the first element matches a module name (e.g. "Core"), start
+            // resolving from that module's metaNode so qualified names like
+            // "Core.IIterable" work without explicit import statements.
+            if (stringList.Count > 1)
+            {
+                var module = ModuleManager.instance.GetMetaModuleByName(stringList[0]);
+                if (module != null)
+                {
+                    MetaNode moduleMB = module.metaNode;
+                    // Try resolving remaining elements from the module root
+                    MetaNode found = moduleMB;
+                    for (int i = 1; i < stringList.Count && found != null; i++)
+                    {
+                        found = found.GetChildrenMetaNodeByName(stringList[i]);
+                    }
+                    if (found != null && (found.IsMetaClass() || found.isMetaData || found.isMetaEnum || found.isMetaNamespace))
+                        return found;
+
+                    // If not found at root, try within a namespace matching the
+                    // module name (e.g. Core.Core.IIterable -> Core module's "Core" namespace)
+                    var nsNode = moduleMB.GetChildrenMetaNodeByName(stringList[0]);
+                    if (nsNode != null)
+                    {
+                        found = nsNode;
+                        for (int i = 1; i < stringList.Count && found != null; i++)
+                        {
+                            found = found.GetChildrenMetaNodeByName(stringList[i]);
+                        }
+                        if (found != null && (found.IsMetaClass() || found.isMetaData || found.isMetaEnum || found.isMetaNamespace))
+                            return found;
+                    }
+                }
             }
 
             MetaNode mb = ModuleManager.instance.selfModule.metaNode;

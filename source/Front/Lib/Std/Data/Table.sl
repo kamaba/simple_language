@@ -6,6 +6,6 @@
 ### 还可以创建一个多维结构的表结构，比如创建一个 2给的结构 即 横纵两个维度  也可以创建一个3维的   在横纵两个维度下，有一个深度的概念
 !#
 
-public class Std.Table
+public class Data.Table
 {
 }

@@ -1,12 +1,10 @@
-
-public class DateTime
+namespace OS
 {
-     _init_( string text )
+    public class DateTime
     {
-            
-    }
-    write( string aa )
-    {
-       
+        _init_( string text )
+        {
+                
+        }
     }
 }

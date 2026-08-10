@@ -22,6 +22,8 @@
   },
   "compileFiles": {
     "files": [
+      { "path": "Container/List.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Container/Map.sl", "group": "std", "tag": "io", "ignore": true, "priority": 0 },
       { "path": "IO/Console.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/Directory.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/File.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
@@ -31,21 +33,17 @@
       { "path": "Text/StringBuffer.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Xml.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "OS/DateTime.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
-      { "path": "Sys/Time.sl", "group": "std", "tag": "sys", "ignore": false, "priority": 0 },
+      { "path": "OS/Times.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
       { "path": "Net/HttpClient.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/IpProtocal.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/TcpNet.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/UdpNet.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/Uri.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
-      { "path": "Base/Float32_2.sl", "group": "std", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "Base/Float32_3.sl", "group": "std", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "Base/Int32_2.sl", "group": "std", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "Base/Int32_3.sl", "group": "std", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Behaviour.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Component.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Node.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
-      { "path": "Table.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
-      { "path": "Tree.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
+      { "path": "Data/Table.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Data/Tree.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -62,39 +60,48 @@
   "references": [
     { "path": "../Core", "name": "Core" }
   ],
-  "struct": [
-      { "namespace": "Std", "children": [
-          { "namespace": "IO", "children": [
-              { "class": "Console" },
-              { "class": "Directory" },
-              { "class": "File" }
-          ]},
-          { "namespace": "Text", "children": [
-              { "class": "Csv" },
-              { "class": "Json" },
-              { "class": "Json5" },
-              { "class": "StringBuffer" },
-              { "class": "Xml" }
-          ]},
-          { "namespace": "OS", "children": [
-              { "class": "DateTime" }
-          ]},
-          { "namespace": "Sys", "children": [
-              { "class": "Time" }
-          ]},
-          { "namespace": "Net", "children": [
-              { "class": "HttpClient" },
-              { "class": "IpProtocal" },
-              { "class": "TcpNet" },
-              { "class": "UdpNet" },
-              { "class": "Uri" }
-          ]}
-      ]},
+  "struct": [     
+      {
+         "namespace": "IO", "children": 
+         [
+            { "class": "Console" },
+            { "class": "Directory" },
+            { "class": "File" }
+          ]
+      },
+      { "namespace": "Text", "children": 
+         [
+             { "class": "Csv" },
+             { "class": "Json" },
+             { "class": "Json5" },
+             { "class": "StringBuffer" },
+             { "class": "Xml" }
+         ]
+      },
+      { "namespace": "OS", "children": 
+         [
+            { "class": "DateTime" },
+            { "class": "Time" }
+        ]
+      },
+      { "namespace": "Net", "children": 
+            [
+                { "class": "HttpClient" },
+                { "class": "IpProtocal" },
+                { "class": "TcpNet" },
+                { "class": "UdpNet" },
+                { "class": "Uri" }
+            ]
+      },      
+      { "namespace": "Data", "children": 
+         [
+            { "class": "Table" },
+            { "class": "Tree" }
+         ]
+      },
       { "class": "Behaviour" },
       { "class": "Component" },
-      { "class": "Node" },
-      { "class": "Table" },
-      { "class": "Tree" }
+      { "class": "Node" }
   ],
   "export": {
     "moduleName": "Std",

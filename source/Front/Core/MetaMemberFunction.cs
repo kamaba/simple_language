@@ -642,6 +642,11 @@ namespace SimpleLanguage.Core
                         m_DefineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, this, cmr);
                         m_IsDefineMetaType = true;
 
+                        if (m_DefineMetaType == null)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, $"没有找到{cmr.stringList[0]} 的相关返回类型!");
+                            return;
+                        }
                         if (m_ConstructInitFunction && defineMetaType.metaClass != CoreMetaClassManager.voidMetaClass )
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 当前类:" + m_AllName + " 是构建Init类，不允许有返回类型 ");

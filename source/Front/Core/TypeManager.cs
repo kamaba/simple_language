@@ -686,16 +686,48 @@ namespace SimpleLanguage.Core
         {
             if (fmcd == null) return null;
 
-            if (fmcd.stringList != null && fmcd.stringList.Count == 1)
+            // typealias：无论 stringList 有几个元素，都先检查第一个元素是否是已注册的类型别名；
+            // 若是别名且只有 1 个元素，直接返回别名目标（模块别名除外，模块不是类型）；
+            // 若是别名且有多个元素，则从别名目标所在的模块/命名空间继续解析剩余路径。
+            if (fmcd.stringList != null && fmcd.stringList.Count > 0)
             {
                 if (TryResolveTypeAlias(fmcd.stringList[0], fmcd.fileMeta, out MetaType aliasTarget) && aliasTarget != null)
                 {
-                    var retAlias = new MetaType(aliasTarget);
-                    if (fmcd.isNullable)
-                        retAlias.SetNullable(true);
-                    if (fmcd.isArray)
-                        retAlias = AddArrayTemplate(retAlias, fmcd.arrayDimsionLengthList);
-                    return retAlias;
+                    // 模块别名仅在多元素路径时有意义（如 Core.IIterable），单元素时跳过
+                    if (aliasTarget.eMetaTypeType != EMetaTypeType.MetaModule && fmcd.stringList.Count == 1)
+                    {
+                        var retAlias = new MetaType(aliasTarget);
+                        if (fmcd.isNullable)
+                            retAlias.SetNullable(true);
+                        if (fmcd.isArray)
+                            retAlias = AddArrayTemplate(retAlias, fmcd.arrayDimsionLengthList);
+                        return retAlias;
+                    }
+
+                    // 多个元素：第一个是别名，从别名目标所在的命名空间/模块继续解析剩余路径
+                    var startNode = aliasTarget.metaBase?.metaNode;
+                    if (startNode != null)
+                    {
+                        MetaNode foundNode = startNode;
+                        for (int i = 1; i < fmcd.stringList.Count && foundNode != null; i++)
+                        {
+                            foundNode = foundNode.GetChildrenMetaNodeByName(fmcd.stringList[i]);
+                        }
+                        if (foundNode != null && (foundNode.IsMetaClass() || foundNode.isMetaData || foundNode.isMetaEnum))
+                        {
+                            var ret = GetMetaTypeByInputTemplateList(curMc, foundNode, fmcd.inputTemplateNodeList);
+                            if (fmcd.isArray)
+                            {
+                                var rarraymt = AddArrayTemplate(ret, fmcd.arrayDimsionLengthList);
+                                if (fmcd.isNullable)
+                                    rarraymt.SetNullable(true);
+                                return rarraymt;
+                            }
+                            if (fmcd.isNullable && ret != null)
+                                ret.SetNullable(true);
+                            return ret;
+                        }
+                    }
                 }
             }
 
@@ -772,6 +804,11 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < inputTemplateNodeList.Count; i++)
             {
                 MetaType mt2 = GetAndRegisterTemplateDefineMetaTemplateClass(ownerMc, findfn, inputTemplateNodeList[i]);
+                if (mt2 == null)
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"没有找到模板参数{inputTemplateNodeList[i].nameList[0]} 的相关类型!");
+                    continue;
+                }
                 mt.AddDefineTemplateMetaType(new MetaType(mt2));
                 //mt.AddGenTemplateMetaType(new MetaType(mt2));
             }
@@ -878,11 +915,34 @@ namespace SimpleLanguage.Core
             }
 
             // typealias：文件局部 / 工程 / 内置
-            if (fmcd.stringList != null && fmcd.stringList.Count == 1)
+            // 无论 stringList 有几个元素，都先检查第一个元素是否是已注册的类型别名；
+            // 若是别名且只有 1 个元素，直接返回别名目标（模块别名除外，模块不是类型）；
+            // 若是别名且有多个元素，则从别名目标所在的模块/命名空间继续解析剩余路径。
+            if (fmcd.stringList != null && fmcd.stringList.Count > 0)
             {
                 if (TryResolveTypeAlias(fmcd.stringList[0], fmcd.fileMeta, out MetaType aliasTarget) && aliasTarget != null)
                 {
-                    return ApplyFileMetaClassDefineDecorations(aliasTarget);
+                    // 模块别名仅在多元素路径时有意义（如 Core.IIterable），单元素时跳过
+                    if (aliasTarget.eMetaTypeType != EMetaTypeType.MetaModule && fmcd.stringList.Count == 1)
+                    {
+                        return ApplyFileMetaClassDefineDecorations(aliasTarget);
+                    }
+
+                    // 多个元素：第一个是别名，从别名目标所在的命名空间/模块继续解析剩余路径
+                    var startNode = aliasTarget.metaBase?.metaNode;
+                    if (startNode != null)
+                    {
+                        MetaNode foundNode = startNode;
+                        for (int i = 1; i < fmcd.stringList.Count && foundNode != null; i++)
+                        {
+                            foundNode = foundNode.GetChildrenMetaNodeByName(fmcd.stringList[i]);
+                        }
+                        if (foundNode != null && (foundNode.IsMetaClass() || foundNode.isMetaData || foundNode.isMetaEnum))
+                        {
+                            var ret = GetMetaTypeByTemplateList(curMc, foundNode, findFun, fmcd.inputTemplateNodeList);
+                            return ApplyFileMetaClassDefineDecorations(ret);
+                        }
+                    }
                 }
             }
             MetaNode getmc = ClassManager.instance.GetMetaClassByRef(curMc, fmcd);

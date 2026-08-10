@@ -624,14 +624,27 @@ namespace SimpleLanguage.Compile
             else
                 m_ClassNameToken = null;
 
-            if (node.angleNode != null)
+            // For IdentifierLink nodes, the angle node (template args like <T>) may be
+            // set on the last identifier child or extend link node rather than on the link itself.
+            Node angleNode = node.angleNode;
+            if (angleNode == null && node.identifierNode != null)
+                angleNode = node.identifierNode.angleNode;
+            if (angleNode == null && node.extendLinkNodeList != null && node.extendLinkNodeList.Count > 0)
+            {
+                // Check last extend link node and its parNode
+                var lastLink = node.extendLinkNodeList[node.extendLinkNodeList.Count - 1];
+                angleNode = lastLink?.angleNode ?? lastLink?.parNode?.angleNode;
+            }
+            if (angleNode == null && node.parNode != null)
+                angleNode = node.parNode.angleNode;
+            if (angleNode != null)
             {
                 m_IsInputTemplateData = true;
-                m_AngleTokenBegin = node.angleNode.token;
-                m_AngleTokenEnd = node.angleNode.endToken;
-                for (int i = 0; i < node.angleNode.childList.Count; i++)
+                m_AngleTokenBegin = angleNode.token;
+                m_AngleTokenEnd = angleNode.endToken;
+                for (int i = 0; i < angleNode.childList.Count; i++)
                 {
-                    var cnode = node.angleNode.childList[i];
+                    var cnode = angleNode.childList[i];
                     if (cnode.nodeType == ENodeType.Comma)
                         continue;
                     FileInputTemplateNode fmcn = new FileInputTemplateNode(fm, cnode);

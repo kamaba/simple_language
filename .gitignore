@@ -172,7 +172,7 @@
 /test/BaseTest/run_c4_err.txt
 /test/BaseTest/run_p4.txt
 /test/BaseTest/run_p4_err.txt
-/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/scripts/safe_rm_aliases.ps1
 /source/CompileStd/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
 /source/CompileStd/obj/Debug/net8.0/SimpleLa.F8B8D231.Up2Date
 /source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.AssemblyInfo.cs
@@ -203,3 +203,4 @@
 /source/CompileStd/obj/project.assets.json
 /source/CompileStd/obj/project.nuget.cache
 /vm_output.txt
+/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.

@@ -1,111 +1,223 @@
-   
-    public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
+
+public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
+{
+    int _length = 0
+    Array<T> _items = null
+    Type _type = null;
+    int _index = 0;
+    T _current = null
+
+    public static List<T> create( int capacity )
     {
-        int _length = 0
-        int _capitaly = 0
-        Type _type = null;
-        _index = 0;
-        T _current = null
-        long _ptr = 0
+        var list = List<T>(capacity)
+        ret list
+    }
 
+    #默认构造，容量为0，首次添加时扩容为4（与 C# List<T> 一致）
+    _init_()
+    {
+        this._items = Array<T>(0)
+    }
+    _init_( int capacity )
+    {
+        if capacity < 0
+        {
+            capacity = 0
+        }
+        this._items = Array<T>(capacity)
+    }
+    get int length(){ ret this._length }
 
-        _init_( int __capitaly )
+    #容量（内部数组长度）
+    get int capacity()
+    {
+        ret this._items.length
+    }
+    set void capacity( int value )
+    {
+        if value < this._length
         {
-            #uint allSize = __len * 4            
-            this._length = __len
-            #this._ptr = Lib.Array.CreateArray( length, 4 )
-        } 
-        override void reset()
-        {
-            this._index = 0;
+            ret
         }
-        override bool moveNext()
-        {            
-            bool hasNext_var = this._index < this._length 
-            if hasNext_var
+        if value != this._items.length
+        {
+            Array<T> newItems = Array<T>(value)
+            for i = 0, i < this._length, i++
             {
-                this._current = SimpleLanguage.Lib.Array.GetArrayValueThis( this, this._index )
+                newItems.setValue(i, this._items.getValue(i))
             }
-            else
-            {
-                this._current = null
-            }
-            this._index++;
-            System.Console.WriteLine("index=============== " + this._index )
-            ret hasNext_var
-            ret true
-        }
-        override T current()
-        {
-            ret this._current;
-        }
-        override void release()
-        {
-        }
-        override IIterator iterator()
-        {
-            ret this
-        }
-        get int index()
-        {
-            ret this._index;
-        }
-        set void index( int ind )
-        {
-            if( ind < 0 )
-            {
-                #throw error("");
-                ret
-            }
-            if( ind >= this._length )
-            {
-                #throw error("超出了范围")
-                ret 
-            }
-            this._index = ind;
-            var retobj = SimpleLanguage.Lib.Array.GetArrayValueThis( this, ind )
-            this._current = retobj;
-        }
-        set setValue( int __index, object val )
-        {
-            #Lib.Array.SetArrayValue( this._ptr, 5,  index, val )
-            SimpleLanguage.Lib.Array.SetArrayValueThis( this, __index, val )
-        }
-        get object getValue( int __index )
-        {
-            #ret Lib.Array.GetArrayValue( this._ptr, 5,  index )
-            ret SimpleLanguage.Lib.Array.GetArrayValueThis( this, __index )
-        }
-        setValues( Int64 valPtr, int len )
-        {
-            #Lib.Array.SetArrayValue( this._ptr, 1,  valPtr, len )
-        }     
-        public void add(T t )
-        {
-            if this._length < this._capitaly
-            {
-                SimpleLanguage.Lib.Array.SetArrayValueThis( this, this._length, t )
-                this._length++
-            }
-            else
-            {
-                // grow capacity: naive doubling
-                int newCap = this._capitaly == 0 ? 4 : this._capitaly * 2
-                var newArr = Core.List<T>(newCap)
-                for i = 0, i < this._length, i++
-                {
-                    var val = SimpleLanguage.Lib.Array.GetArrayValueThis(this, i)
-                    SimpleLanguage.Lib.Array.SetArrayValueThis(newArr, i, val)
-                }
-                SimpleLanguage.Lib.Array.SetArrayValueThis(newArr, this._length, t)
-                this._length++
-                // replace internal storage pointer
-                this._ptr = newArr._ptr
-                this._capitaly = newCap
-            }
-        }
-        public void remove( T t )
-        {
-
+            this._items = newItems
         }
     }
+
+    #容量扩展：0->4，之后倍增 4->8->16...（与 C# List<T> 一致）
+    void grow()
+    {
+        int newCapacity = 4
+        if this._items.length > 0
+        {
+            newCapacity = this._items.length * 2
+        }
+        this.capacity = newCapacity
+    }
+    void ensureCapacity( int min )
+    {
+        if this._items.length < min
+        {
+            int newCapacity = 4
+            if this._items.length > 0
+            {
+                newCapacity = this._items.length * 2
+            }
+            if newCapacity < min
+            {
+                newCapacity = min
+            }
+            this.capacity = newCapacity
+        }
+    }
+
+    public void add( T item )
+    {
+        if this._length == this._items.length
+        {
+            this.grow()
+        }
+        this._items.setValue(this._length, item)
+        this._length++
+    }
+    public void insert( int index, T item )
+    {
+        if index < 0 || index > this._length
+        {
+            ret
+        }
+        if this._length == this._items.length
+        {
+            this.grow()
+        }
+        int i = this._length
+        while i > index
+        {
+            this._items.setValue(i, this._items.getValue(i - 1))
+            i = i - 1
+        }
+        this._items.setValue(index, item)
+        this._length++
+    }
+    public void removeAt( int index )
+    {
+        if index < 0 || index >= this._length
+        {
+            ret
+        }
+        for i = index, i < this._length - 1, i++
+        {
+            this._items.setValue(i, this._items.getValue(i + 1))
+        }
+        this._length = this._length - 1
+    }
+    public void clear()
+    {
+        this._length = 0
+        this.reset()
+    }
+    public void fill( T value )
+    {
+        for i = 0, i < this._length, i++
+        {
+            this._items.setValue(i, value)
+        }
+    }
+    Array<T> toArray()
+    {
+        Array<T> arr = Array<T>(this._length)
+        for i = 0, i < this._length, i++
+        {
+            arr.setValue(i, this._items.getValue(i))
+        }
+        ret arr
+    }
+
+    #接口层
+    override void reset()
+    {
+        this._index = -1;
+        this._current = null
+    }
+    override bool moveNext()
+    {
+        this._index++;
+        bool hasNext_var = this._index < this._length
+        if hasNext_var
+        {
+            this._current = this._items.getValue(this._index)
+        }
+        else
+        {
+            this._current = null
+        }
+        ret hasNext_var
+    }
+    override get T current()
+    {
+        ret this._current;
+    }
+    override set void current( T val )
+    {
+        this._items.setValue(this._index, val)
+        this._current = val
+    }
+    override get Core.IIterator<T> iterator()
+    {
+        ret this
+    }
+    get int index()
+    {
+        ret this._index;
+    }
+    set void index( int ind )
+    {
+        if( ind < 0 )
+        {
+            #throw error("");
+            ret
+        }
+        if( ind >= this._length )
+        {
+            #throw error("超出了范围")
+            ret
+        }
+        this._index = ind;
+        this._current = this._items.getValue(ind)
+    }
+    set setValue( int __index, T val )
+    {
+        this._items.setValue(__index, val)
+    }
+    get T getValue( int __index )
+    {
+        ret this._items.getValue(__index)
+    }
+    override string toString()
+    {
+        string showstr = "["
+        for i = 0, i < this._length, i++
+        {
+            var cur = this._items.getValue(i)
+            if cur == null
+            {
+                showstr = showstr + "null"
+            }
+            else
+            {
+                showstr = showstr + cur.toString()
+            }
+            if( i < this._length - 1 )
+            {
+                showstr += ","
+            }
+        }
+        ret showstr + "]"
+    }
+}

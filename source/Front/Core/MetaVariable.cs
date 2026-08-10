@@ -80,7 +80,7 @@ namespace SimpleLanguage.Core
         public MetaVariable(MetaVariable mv) : base(mv)
         {
             m_OwnerMetaBase = mv.m_OwnerMetaBase;
-            m_DefineMetaType = new MetaType( mv.m_DefineMetaType );
+            m_DefineMetaType = mv.m_DefineMetaType != null ? new MetaType( mv.m_DefineMetaType ) : null;
             if(mv.m_RealMetaType != null )
                 m_RealMetaType = new MetaType(mv.m_RealMetaType);
             m_VariableFrom = mv.m_VariableFrom;

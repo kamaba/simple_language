@@ -192,8 +192,9 @@ namespace SimpleLanguage.Compile
                 }
                 mb = module.metaNode;
             }
-            else if (m_NodeList.Count > 1 && m_NodeList[1]?.token?.type != ETokenType.String)
+            else
             {
+                // Check if the first token is a module name (e.g. "import Core")
                 var firstName = m_NamespaceStatement.tokenList[0].lexeme.ToString();
                 var module = ModuleManager.instance.GetMetaModuleByName(firstName);
                 if (module != null)
@@ -205,10 +206,6 @@ namespace SimpleLanguage.Compile
                 {
                     mb = ModuleManager.instance.selfModule.metaNode;
                 }
-            }
-            else
-            {
-                mb = ModuleManager.instance.selfModule.metaNode;
             }
 
             if (mb?.name == "CSharp")

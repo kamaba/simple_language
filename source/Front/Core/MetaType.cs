@@ -22,7 +22,8 @@ namespace SimpleLanguage.Core
         MetaEnumValue,
         MetaGenClass,
         Template,
-        TemplateClassWithTemplate
+        TemplateClassWithTemplate,
+        MetaModule,
     }
     public sealed class MetaType : MetaBase
     {
@@ -56,7 +57,8 @@ namespace SimpleLanguage.Core
             EMetaTypeType.MetaData => m_MetaData,
             EMetaTypeType.MetaClass => m_MetaClass,
             EMetaTypeType.MetaEnum => m_MetaEnum,
-            _ => null
+            EMetaTypeType.MetaModule => m_MetaModule,
+            _ => null,
         };
         public MetaClass metaClass => m_MetaClass;
         public MetaEnum metaEnum => m_MetaEnum;
@@ -70,6 +72,7 @@ namespace SimpleLanguage.Core
         private MetaEnum m_MetaEnum = null;
         private MetaData m_MetaData = null;
         private MetaTemplate m_MetaTemplate = null;
+        private MetaModule m_MetaModule = null;
         private MetaMemberVariable m_EnumValue = null;              // Enum{ a = 1; } Enum e = Enum.a(20)=> Enum.a(20)
         private List<MetaType> m_DefineTemplateMetaTypeList = new List<MetaType>();     //  Map<T1,T2> 一般用在返回值类型定义中
         private int m_ArrayLength = -1;       
@@ -146,6 +149,20 @@ namespace SimpleLanguage.Core
             m_MetaEnum = me;
             m_EMetaTypeType = EMetaTypeType.MetaEnum;
         }
+        /// <summary>
+        /// 包装一个模块根节点，用于 refmodule 别名注册。
+        /// 别名解析时通过 metaBase.metaNode 获取模块根 MetaNode，继续解析剩余路径。
+        /// </summary>
+        public MetaType( MetaModule mm )
+        {
+            if (mm == null)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaModule is Null");
+            }
+            m_MetaModule = mm;
+            m_EMetaTypeType = EMetaTypeType.MetaModule;
+            m_Name = mm?.name ?? "";
+        }
         public MetaType(MetaMemberVariable mmv )
         {
             m_EnumValue = mmv;
@@ -192,6 +209,7 @@ namespace SimpleLanguage.Core
             this.m_MetaData = mt.m_MetaData;
             //this.m_TemplateMetaClass = mt.m_TemplateMetaClass;
             this.m_MetaTemplate = mt.m_MetaTemplate;
+            this.m_MetaModule = mt.m_MetaModule;
             this.m_EnumValue = mt.m_EnumValue;
             //this.m_FromName = mt.m_FromName;
             this.m_EMetaTypeType = mt.m_EMetaTypeType;
@@ -289,6 +307,30 @@ namespace SimpleLanguage.Core
         {
             return IsTemplateTypeByNameOrIdentity(CoreMetaClassManager.iterableMetaClass, "Core.IIterable<T>");
         }
+        /// <summary>
+        /// 是否为 List&lt;T&gt; 类型（Std.List 或任何名为 List 且带 1 个模板参数的类）。
+        /// 通过 allName 检查，支持 "Std.List" 和 "List" 两种形式。
+        /// </summary>
+        public bool IsList()
+        {
+            if (m_MetaClass == null) return false;
+            // Check by name: "List", "Std.List", or any class whose short name is "List"
+            // with exactly 1 template parameter
+            var n = m_MetaClass.name;
+            if (n == "List")
+            {
+                // Verify it has 1 template parameter (List<T>)
+                if (m_EMetaTypeType == EMetaTypeType.TemplateClassWithTemplate
+                    || m_EMetaTypeType == EMetaTypeType.MetaGenClass
+                    || m_EMetaTypeType == EMetaTypeType.MetaClass)
+                {
+                    var tplList = GetGenTemplateMetaTypeList();
+                    if (tplList.Count == 1)
+                        return true;
+                }
+            }
+            return false;
+        }
         public void SetNullable(bool v) { m_IsNullable = v; }
         public bool IsNum()
         {
@@ -359,6 +401,7 @@ namespace SimpleLanguage.Core
             this.m_MetaData = mt.m_MetaData;
             //this.m_TemplateMetaClass = mt.m_TemplateMetaClass;
             this.m_MetaTemplate = mt.m_MetaTemplate;
+            this.m_MetaModule = mt.m_MetaModule;
             this.m_EnumValue = mt.m_EnumValue;
             //this.m_FromName = mt.m_FromName;
             this.m_EMetaTypeType = mt.m_EMetaTypeType;

@@ -50,7 +50,7 @@ namespace SimpleLanguage.Compile
             Node typeNode = null;
             if (!GetNameAndTypeNode(listDefieNode, ref nameNode, ref typeNode, ref m_ParamsToken ))
             {
-                Log.AddFileMetaLog( LID.ShowExtendMessage, m_AssignToken, "Error 没有找到该定义名称 必须使用例: X = 102; 的格式");
+                Log.AddFileMetaLog( LID.ShowExtendMessage, m_AssignToken, "ParseBuildMetaParamter Error 定义参数的格式为 TypeName ParamName or param object[] ParamName");
                 return false;
             }
             if (nameNode == null)

@@ -3,14 +3,17 @@ ListTest
     static fun()
     {
         List<int> aalist = new(10)
+        aalist.add(1)
+        aalist.add(2)
+        aalist.add(3)
 
-        
-        #!
-        a34 = List<int>[]{1,2,3,4}
-        aa = 3
-        a34.$aa = 111
-        var aaaa34v = a34.$3
-        System.Console.WriteLine("1111111111= " + aaaa34v )
-        !#
+        # brace-assign initialization
+        List<int> blist = List<int>(){ 10, 20, 30, 40 }
+        Console.println("blist.length = " + blist.length)
+
+        for i = 0, i < blist.length, i++
+        {
+            Console.println("blist[" + i + "] = " + blist.getValue(i))
+        }
     }
 }

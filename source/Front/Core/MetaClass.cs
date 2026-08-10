@@ -276,7 +276,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, this.m_Token, "没有发现继承类的类型!!! " + mc.metaClass.extendClass.name );
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, this.m_Token, "没有发现继承类的类型!!! " + mc.fileMetaExtendClass.name );
                 }
             }
 

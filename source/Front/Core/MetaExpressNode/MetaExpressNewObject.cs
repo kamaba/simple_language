@@ -1159,6 +1159,10 @@ namespace SimpleLanguage.Core
                 {
                     m_NewType = ENewType.ArrayClass;
                 }
+                else if (m_DefineMetaType.IsList())
+                {
+                    m_NewType = ENewType.ListClass;
+                }
                 else
                 {
                     m_NewType = ENewType.CommomClass;
@@ -1228,6 +1232,10 @@ namespace SimpleLanguage.Core
                 if (m_NewMetaType.IsArray())
                 {
                     m_NewType = ENewType.ArrayClass;
+                }
+                else if (m_NewMetaType.IsList())
+                {
+                    m_NewType = ENewType.ListClass;
                 }
             }
             m_BraceFileMetaBaseTerm = lastNode.fileMetaBraceTerm;
@@ -1580,6 +1588,66 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, fmbt.token, "Error ????????FileMetaBracketTerm ??!");
                 }
             }
+            // List<T>(){ val1, val2, ... } -- brace-assign initialization for List
+            else if (mt != null && mt.IsList())
+            {
+                var genList = mt.GetGenTemplateMetaTypeList();
+                if (genList.Count != 1)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "List<T> requires exactly 1 template parameter");
+                    return;
+                }
+                MetaType cmt = genList[0];
+                if (fmbt is FileMetaCallTerm fmct)
+                {
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.ownerMetaBase = m_OwnerMetaBase;
+                    cep.ownerMBS = m_OwnerMetaBlockStatements;
+                    cep.metaType = null;
+                    cep.fme = fmct;
+                    cep.equalMetaVariable = null;
+                    MetaExpressNodeBase men = ExpressManager.CreateExpressNode(cep);
+                    men.Parse(new AllowUseSettings());
+                    var mas = new MetaBraceAssignStatements(mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, men);
+                    mas.Parse(new AllowUseSettings());
+                    mas.CalcReturnType();
+                    m_AssignStatementsList.Add(mas);
+                }
+                else if (fmbt is FileMetaConstValueTerm fmcvt)
+                {
+                    MetaConstExpressNode men = new MetaConstExpressNode(m_OwnerMetaBase, m_OwnerMetaBlockStatements, fmcvt);
+                    men.Parse(new AllowUseSettings());
+                    var mas = new MetaBraceAssignStatements(null, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, men);
+                    mas.CalcReturnType();
+                    m_AssignStatementsList.Add(mas);
+                }
+                else if (fmbt is FileMetaTermExpress termexpress)
+                {
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.ownerMetaBase = m_OwnerMetaBase;
+                    cep.ownerMBS = m_OwnerMetaBlockStatements;
+                    cep.metaType = new MetaType(cmt);
+                    cep.fme = termexpress;
+                    cep.equalMetaVariable = null;
+                    MetaExpressNodeBase men = ExpressManager.CreateExpressNode(cep);
+                    men.Parse(new AllowUseSettings());
+                    men = ExpressManager.ConvertNewExpress(men, cep.metaType);
+                    var mas = new MetaBraceAssignStatements(mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, men);
+                    mas.CalcReturnType();
+                    m_AssignStatementsList.Add(mas);
+                }
+                else if (fmbt is FileMetaSymbolTerm fmst2)
+                {
+                    if (fmst2.symBolType != ETokenType.Comma)
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "List<T> brace-assign: expected comma between elements");
+                    }
+                }
+                else
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, fmbt.token, "Error List<T> brace-assign: unsupported term type");
+                }
+            }
             // Array<Object>(n){ ... } ??? [1,2] ????????? defineMetaType ????? object?? Array??
             // ??????? { ??= }????????????????/??/[]/????
             else if (mt != null && mt.metaClass == CoreMetaClassManager.objectMetaClass && !mt.IsArray())
@@ -1840,7 +1908,7 @@ namespace SimpleLanguage.Core
                     }
 
                 }
-                else if( m_NewType == ENewType.CommomClass )
+                else if( m_NewType == ENewType.CommomClass || m_NewType == ENewType.ListClass )
                 {
                     if(m_DefineMetaType == null && m_NewMetaType == null )
                     {

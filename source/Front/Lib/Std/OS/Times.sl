@@ -1,19 +1,7 @@
-
-!IF WINDOW
-import Window
-!ENDIF
-
-public class Time
+public class OS.Timer
 {
     static int clock()
     {
-!IF WINDOW
-        IntPtr handle = Window.Time();
-
-        int clock = handle.clock();
-
-        return clock;
-!ENDIF
-        return 0;
+        ret 0
     }
 }

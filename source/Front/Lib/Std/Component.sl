@@ -7,10 +7,12 @@ public class Component extends Object
     {
         for v in this._childrensComponents
         {
+            #!
             if v.type == T.type
             {
                 ret v as T
             }
+            !#
         }
         ret null
     }

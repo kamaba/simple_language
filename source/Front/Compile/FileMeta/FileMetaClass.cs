@@ -467,11 +467,11 @@ namespace SimpleLanguage.Compile
                     Log.AddFileMetaLog(LID.ShowExtendMessage, token, "");
                     return false;
                 }
-                if (permissionToken != null)
-                {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，不支持权限的使用!!");
-                    return false;
-                }
+                //if (permissionToken != null)
+                //{
+                //    Log.AddFileMetaLog(LID.ShowExtendMessage, m_EnumToken, "Error Enum方式，不支持权限的使用!!");
+                //    return false;
+                //}
                 if (m_PartialToken != null)
                 {
                     Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，不支持partial的使用!!");
@@ -491,11 +491,11 @@ namespace SimpleLanguage.Compile
                     Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，不支持接口方式");
                     return false;
                 }
-                if (permissionToken != null)
-                {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Data方式，不支持权限的使用!!");
-                    return false;
-                }
+                //if (permissionToken != null)
+                //{
+                //    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Data方式，不支持权限的使用!!");
+                //    return false;
+                //}
                 if (m_PartialToken != null)
                 {
                     Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Data方式，不支持partial的使用!!");

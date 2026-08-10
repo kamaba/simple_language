@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using SimpleLanguage.Parse;
 using SimpleLanuageVM.Load;
 
 namespace SimpleLanguage.VM

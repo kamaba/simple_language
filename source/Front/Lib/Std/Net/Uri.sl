@@ -1,7 +1,7 @@
 
 namespace Std.Text
 {
-    public class StringBuffer
+    public class Uri
     {
         _init_( string text )
         {

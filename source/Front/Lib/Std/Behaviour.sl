@@ -1,5 +1,5 @@
 
-public class Behaviour extends Componnet
+public class Behaviour extends Component
 {
     public void start()
     {

@@ -171,7 +171,8 @@ namespace SimpleLanguage.Logging
         //--------------------------------Token----------------------------------------------
         public static LogData AddTokenByString( LID lid, string path, int sLine, int sChar, int eLine, int eChar, string msg)
         {
-            var token = new Token(path, ETokenType.None, sLine, sChar, eLine, eChar);
+            var token = new Token(path, ETokenType.None, "", sLine, sChar );
+            token.SetSrouceEnd(eLine, eChar);
             return WriteCoreByToken(lid, EErrorType.ParseToken, token, null, msg); ;
         }
         public static LogData AddTokenLog(LID lid, string msg)
