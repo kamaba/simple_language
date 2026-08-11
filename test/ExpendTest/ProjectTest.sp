@@ -1,0 +1,13 @@
+Project
+{
+    _main_()
+    {
+        ListTest.fun()
+    }
+    CompileBefore()
+    {
+    }
+    CompileAfter()
+    {
+    }
+}

@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StdNativeImpl", "source\Std
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MathNativeImpl", "source\MathNativeImpl\MathNativeImpl.csproj", "{CE4CA0A0-F76E-6474-F8CA-9E1D9F501714}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleLanguageTest2", "source\Test2\SimpleLanguageTest2.csproj", "{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -152,6 +154,18 @@ Global
 		{CE4CA0A0-F76E-6474-F8CA-9E1D9F501714}.Release|x64.Build.0 = Release|Any CPU
 		{CE4CA0A0-F76E-6474-F8CA-9E1D9F501714}.Release|x86.ActiveCfg = Release|Any CPU
 		{CE4CA0A0-F76E-6474-F8CA-9E1D9F501714}.Release|x86.Build.0 = Release|Any CPU
+		{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}.Debug|x64.Build.0 = Debug|Any CPU
+		{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}.Debug|x86.Build.0 = Debug|Any CPU
+		{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}.Release|x64.ActiveCfg = Release|Any CPU
+		{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}.Release|x64.Build.0 = Release|Any CPU
+		{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}.Release|x86.ActiveCfg = Release|Any CPU
+		{DB8D562B-DBF5-7268-98E2-C73B0A1D1AC4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
