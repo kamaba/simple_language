@@ -340,12 +340,16 @@ namespace SimpleLanguage.Project
             {
                 for (int i = 0; i < package.moduleList.Count; i++)
                 {
-                    BuildAssemblyModuleTree(metaModule, package.moduleList[i]);
+                    var irMetaModule = BuildIRMetaModuleFromPackage(metaModule, package.moduleList[i]);
+                    if (irMetaModule != null)
+                    {
+                        ProcessMetaModuleFromIR(metaModule, irMetaModule, package.moduleList[i]);
+                    }
                 }
                 return;
             }
 
-            BuildAssemblyModuleTree(metaModule, new SLAssemblyPackage
+            var assemblyPackage = new SLAssemblyPackage
             {
                 moduleName = package.moduleName,
                 uuid = package.uuid,
@@ -353,14 +357,24 @@ namespace SimpleLanguage.Project
                 classList = package.classList,
                 globalStaticVariableList = package.globalStaticVariableList,
                 methodList = package.methodList,
-            });
+            };
+            var irMetaModule2 = BuildIRMetaModuleFromPackage(metaModule, assemblyPackage);
+            if (irMetaModule2 != null)
+            {
+                ProcessMetaModuleFromIR(metaModule, irMetaModule2, assemblyPackage);
+            }
         }
 
-        private static void BuildAssemblyModuleTree(MetaModule metaModule, SLAssemblyPackage package)
+        /// <summary>
+        /// Phase A（IR 层先行）：建立 IRMetaModule，用导出的逆方法从 SLClassPackage 反向读取
+        /// 构建 IRMetaClass（注册到 IRManager）并填充字段/方法列表。此时不依赖 Meta 层。
+        /// 返回 IRMetaModule 供后续 Meta 层处理使用。
+        /// </summary>
+        private static IRMetaModule BuildIRMetaModuleFromPackage(MetaModule metaModule, SLAssemblyPackage package)
         {
             if (metaModule == null || package == null)
             {
-                return;
+                return null;
             }
 
             /* Build method lookup: id -> SLMethodPackage for signature resolution */
@@ -373,16 +387,6 @@ namespace SimpleLanguage.Project
                     {
                         methodLookup[m.id] = m;
                     }
-                }
-            }
-
-            /* Build class lookup: id -> SLClassPackage for interface/inheritance resolution */
-            var classLookup = new Dictionary<int, SLClassPackage>();
-            if (package.classList != null)
-            {
-                foreach (var c in package.classList)
-                {
-                    if (c != null) classLookup[c.id] = c;
                 }
             }
 
@@ -406,14 +410,37 @@ namespace SimpleLanguage.Project
                 }
             }
 
-            if (package.classList == null) return;
+            if (package.classList == null)
+            {
+                return null;
+            }
 
-            /* Phase A（IR 层先行）：用导出的逆方法从 SLClassPackage 直接构建 IRMetaClass，
-             * 注册到 IRManager，并填充字段/方法列表。此时不依赖 Meta 层。
-             * IRMetaType.CreateFromPackage 按名查找类型，因此所有 IRMetaClass 注册完成后即可解析类型引用。 */
             var irMetaModule = new IRMetaModule(metaModule.name, methodLookup, s_isCoreReplacement);
             irMetaModule.CreateIRMetaClassesFromPackage(package.classList);
             irMetaModule.BuildAllMembersFromPackage(package.classList);
+            return irMetaModule;
+        }
+
+        /// <summary>
+        /// Phase B + C（Meta 层处理）：接收 IRMetaModule，处理 MetaModule，
+        /// 查找/创建其中的 MetaClass（Meta shell），进行 IRMetaClass 到 MetaClass 的关联与成员构建。
+        /// B1: 生成 MetaClass/MetaData/MetaEnum shell 并注册到命名空间树。
+        /// C:  Link，使 IRMetaClass.typeOwner 指向 MetaBase。
+        /// B2: 从 IRMetaClass 反向构建 Meta 成员（导出的逆方法）。
+        /// </summary>
+        private static void ProcessMetaModuleFromIR(MetaModule metaModule, IRMetaModule irMetaModule, SLAssemblyPackage package)
+        {
+            if (metaModule == null || irMetaModule == null || package?.classList == null)
+            {
+                return;
+            }
+
+            /* Build class lookup: id -> SLClassPackage for interface/inheritance resolution */
+            var classLookup = new Dictionary<int, SLClassPackage>();
+            foreach (var c in package.classList)
+            {
+                if (c != null) classLookup[c.id] = c;
+            }
 
             /* Phase B1（Meta shell）：IR 全部建完后，生成 MetaClass/MetaData/MetaEnum shell，
              * 注册到命名空间树。此时不填充成员，保证所有类型 shell 先就位。 */
@@ -441,7 +468,6 @@ namespace SimpleLanguage.Project
                 if (!irMetaModule.TryGetIRMetaClass(cls.id, out var irmc)) continue;
                 PopulateReferenceTypeMembersFromIR(metaModule, irmc, cls, metaBase, classLookup);
             }
-
         }
 
         private static MetaNode EnsureNamespacePath(MetaNode root, string fullName)
@@ -891,7 +917,6 @@ namespace SimpleLanguage.Project
             // 两者对不上导致虚调用查不到方法。这里用 MetaMemberFunction 的 canonical 名同步回 IRMethod。
             irm.virtualFunctionName = mmf.virtualFunctionName;
 
-            mc.AddMetaMemberFunction(mmf);
             return mmf;
         }
 

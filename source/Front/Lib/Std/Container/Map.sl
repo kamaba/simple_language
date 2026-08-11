@@ -1,5 +1,5 @@
 
-public class Map<TKey,TValue> extends Object interface Core.IIterable<T>, Core.IIterator<T>
+public class Map<TKey,TValue> extends Object interface Core.IIterable<T>, Core.IIterator<T>, IMap
 {
     private class MapEntity<T,V>
     {

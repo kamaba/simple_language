@@ -87,6 +87,7 @@
     { "name": "SystemPrintln", "returnType": "void",   "params": ["object"], "isVariadic": true },
     { "name": "SystemReadLine","returnType": "string", "params": [], "isVariadic": false },
     { "name": "SystemReadKey", "returnType": "string", "params": [], "isVariadic": false },
+    { "name": "SystemInput",   "returnType": "string", "params": [], "isVariadic": false },
 
     // ---- Parse helpers ----
     { "name": "SystemInt32Parse", "returnType": "Int32", "params": ["string"], "isVariadic": false },

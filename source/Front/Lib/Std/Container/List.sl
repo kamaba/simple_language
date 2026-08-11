@@ -1,5 +1,5 @@
 
-public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
+public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
 {
     int _length = 0
     int _capacity = 0;
@@ -17,7 +17,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
     {
         SystemListInit(this, 0)
     }
-    _init_( int capacity )
+    void override _init_( int capacity )
     {
         if capacity < 0
         {
@@ -29,11 +29,11 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
     get int length(){ ret this._length }
 
     #容量（内部存储长度）
-    get int capacity()
+    override get int capacity()
     {
-        ret SystemListGetCapacity(this)
+        ret this._capacity
     }
-    set void capacity( int value )
+    override set void capacity( int value )
     {
         if value < this._length
         {
@@ -54,10 +54,10 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
         {
             newCapacity = this._capacity * 2
         }
-        this._capacity = newCapacity
         SystemListSetCapacity(this, newCapacity )
+        this._capacity = newCapacity
     }
-    void ensureCapacity( int min )
+    override void ensureCapacity( int min )
     {
         int curCap = SystemListGetCapacity(this)
         if curCap < min
@@ -75,22 +75,22 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
         }
     }
 
-    public void add( T item )
+    public override void add( T item )
     {
-        if this._length == SystemListGetCapacity(this)
+        if this._length == this._capacity
         {
             this.grow()
         }
         SystemListSetValueThis(this, this._length, item)
         this._length++
     }
-    public void insert( int index, T item )
+    public override void insert( int index, T item )
     {
         if index < 0 || index > this._length
         {
             ret
         }
-        if this._length == SystemListGetCapacity(this)
+        if this._length == this._capacity
         {
             this.grow()
         }
@@ -103,19 +103,21 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
         SystemListSetValueThis(this, index, item)
         this._length++
     }
-    public void removeAt( int index )
+    public override void remove( T item )
+    {
+        SystemListRemoveValueThis(this, item )
+        this._length = this._length - 1
+    }
+    public override void removeAt( int index )
     {
         if index < 0 || index >= this._length
         {
             ret
         }
-        for i = index, i < this._length - 1, i++
-        {
-            SystemListSetValueThis(this, i, SystemListGetValueThis(this, i + 1))
-        }
+        SystemListRemoveIndexValueThis(this, index)
         this._length = this._length - 1
     }
-    public void clear()
+    public override void clear()
     {
         this._length = 0
         this.reset()
@@ -127,7 +129,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
             SystemListSetValueThis(this, i, value)
         }
     }
-    Array<T> toArray()
+    override Array<T> toArray()
     {
         Array<T> arr = Array<T>(this._length)
         for i = 0, i < this._length, i++
@@ -138,10 +140,11 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>
     }
 
     #接口层
-    override void reset()
+    override override void reset()
     {
         this._index = -1;
         this._current = null
+        SystemListClearValueThis(this)
     }
     override bool moveNext()
     {

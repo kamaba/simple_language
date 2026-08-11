@@ -1973,7 +1973,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "绗竴浣嶇殑鎴愬憳鍑芥暟鍚嶇О蹇呴』鏄釜闈欐€佸嚱鏁版墠鍙互鍝?");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "not found functon by [" + inputname + "]" );
                             return false;
                         }
                     }

@@ -301,9 +301,7 @@ namespace SimpleLanguage.Core
                 this.m_Name = name;
                 this.m_IsStatic = true;
 
-                if (SystemMethodCallDeclarationRegistry.TryResolveName(name, out var call)
-                    && SystemMethodCallDeclarationRegistry.TryGet(call, out var decl)
-                    && decl != null)
+                if (SystemMethodCallDeclarationRegistry.TryGetDeclaration(name, out var decl) )
                 {
                     m_MetaMemberParamCollection.Clear();
                     for (int i = 0; i < decl.paramMetaTypeList.Count; i++)

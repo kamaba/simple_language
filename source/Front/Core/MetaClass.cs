@@ -280,9 +280,15 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            if(m_ExtendClassMetaType == null && this != CoreMetaClassManager.objectMetaClass )
+            if(m_ExtendClassMetaType == null && this != CoreMetaClassManager.objectMetaClass && !m_IsInterfaceClass )
             {
                 m_ExtendClassMetaType = new MetaType( CoreMetaClassManager.objectMetaClass );
+            }
+
+            // 接口类不需要继承自 Object，m_ExtendClassMetaType 保持 null，直接返回
+            if (m_ExtendClassMetaType == null)
+            {
+                return;
             }
 
             if (!m_ExtendClassMetaType.DefineTemplateIsIncludeTemplate())
@@ -622,7 +628,10 @@ namespace SimpleLanguage.Core
                 MetaClass interfaceMc = it.GetTemplateMetaClass();
 
                 Token token = m_Token;
-                foreach( var interfaceMMF in interfaceMc.m_FileCollectMetaMemberFunctionList )
+                List<MetaMemberFunction> forlist = new List<MetaMemberFunction>(interfaceMc.staticMetaMemberFunctionList.Count+ interfaceMc.nonStaticVirtualMetaMemberFunctionList.Count);
+                forlist.AddRange(interfaceMc.staticMetaMemberFunctionList);
+                forlist.AddRange(interfaceMc.nonStaticVirtualMetaMemberFunctionList);
+                foreach ( var interfaceMMF in forlist )
                 {
                     bool certified = false;
                     foreach ( var selfMMF in this.m_FileCollectMetaMemberFunctionList )
@@ -641,7 +650,7 @@ namespace SimpleLanguage.Core
                             else
                             {
                                 certified = true;
-                                Log.AddMetaCoreLog(LID.MetaCoreFunctionNeedOverrideFlag, token, "interface function need override flag", this.allName, interfaceMMF.name );
+                                Log.AddMetaCoreLog(LID.MetaCoreFunctionNeedOverrideFlag, interfaceMMF.token, "interface function need override flag", this.allName, interfaceMMF.name );
                                 break;
                             }
                         }

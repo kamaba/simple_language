@@ -22,6 +22,8 @@
   },
   "compileFiles": {
     "files": [
+      { "path": "Container/IList.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Container/IMap.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Container/List.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Container/Map.sl", "group": "std", "tag": "io", "ignore": true, "priority": 0 },
       { "path": "IO/Console.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
@@ -116,7 +118,10 @@
     { "name": "SystemListGetValueThis",      "returnType": "object", "params": ["object", "Int32"], "isVariadic": false },
     { "name": "SystemListSetValueThis",      "returnType": "void",   "params": ["object", "Int32", "object"], "isVariadic": false },
     { "name": "SystemListGetCapacity",       "returnType": "Int32",  "params": ["object"], "isVariadic": false },
-    { "name": "SystemListSetCapacity",       "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false }
+    { "name": "SystemListSetCapacity",       "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemListRemoveValueThis",       "returnType": "void",  "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemListRemoveIndexValueThis",       "returnType": "void",  "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemListClearValueThis",       "returnType": "void",  "params": ["object"], "isVariadic": false }
   ],
   "export": {
     "moduleName": "Std",

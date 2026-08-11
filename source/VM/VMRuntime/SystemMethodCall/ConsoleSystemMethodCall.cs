@@ -89,5 +89,23 @@ namespace SimpleLanguage.VM.Runtime
             svk.SetStringValue(k.KeyChar.ToString());
             vm.PushSValueSynced(svk);
         }
+
+        /// <summary>
+        /// SystemInput: 从标准输入读取一行（直到回车），返回 string。
+        /// 与 SystemReadLine 行为一致，语义上强调"读到回车为止"。
+        /// </summary>
+        public static void ExecuteSystemInput(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            int pc = sysPkg.paramCount;
+            if (!vm.TrySystemCallPopDiscard(pc))
+            {
+                Debug.Assert(false, $"SystemInput stack underflow, need={pc}");
+                return;
+            }
+            string line = Console.ReadLine() ?? string.Empty;
+            var sv = default(RuntimeValue);
+            sv.SetStringValue(line);
+            vm.PushSValueSynced(sv);
+        }
     }
 }

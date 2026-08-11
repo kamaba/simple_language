@@ -31,13 +31,15 @@ namespace SimpleLanguage.Core
 
     public sealed class SystemMethodCallDeclaration
     {
+        public string name { get; }
         public ESystemMethodCall method { get; }
         public MetaType returnMetaType { get; }
         public List<MetaType> paramMetaTypeList { get; }
         public bool isVariadic { get; }
 
-        public SystemMethodCallDeclaration(ESystemMethodCall method, MetaType ret, bool variadic, params MetaType[] paramTypes)
+        public SystemMethodCallDeclaration( string name, ESystemMethodCall method, MetaType ret, bool variadic, params MetaType[] paramTypes)
         {
+            this.name = name;
             this.method = method;
             returnMetaType = ret;
             isVariadic = variadic;
@@ -105,8 +107,8 @@ namespace SimpleLanguage.Core
         private static readonly MetaType F64 = SystemMethodCallTypes.Of(CoreMetaClassManager.float64MetaClass);
 
         // Populated dynamically by LoadFromJsonFile / LoadFromJsonContent.
-        private static Dictionary<ESystemMethodCall, SystemMethodCallDeclaration> s_Decl =
-            new Dictionary<ESystemMethodCall, SystemMethodCallDeclaration>();
+        private static Dictionary<string, SystemMethodCallDeclaration> s_Decl =
+            new Dictionary<string, SystemMethodCallDeclaration>();
 
         // Raw JSON text of the last-loaded "systemCalls" array, kept verbatim so that
         // module export can embed it into the package without lossy type re-serialization.
@@ -200,10 +202,6 @@ namespace SimpleLanguage.Core
                         if (string.IsNullOrEmpty(name))
                             continue;
 
-                        // Resolve enum by name (must exist in ESystemMethodCall)
-                        if (!Enum.TryParse(name, true, out ESystemMethodCall callKind))
-                            continue;
-
                         // Parse return type
                         MetaType retType = entry.TryGetProperty("returnType", out JsonElement retEl)
                             ? ResolveTypeName(retEl.GetString()) : Void;
@@ -223,9 +221,14 @@ namespace SimpleLanguage.Core
                             }
                         }
 
+                        // Resolve name to ESystemMethodCall enum value.
+                        // Must exist in the enum; skip entries that don't match.
+                        if (!Enum.TryParse(name, true, out ESystemMethodCall callKind))
+                            continue;
+
                         var decl = new SystemMethodCallDeclaration(
-                            callKind, retType, variadic, paramTypes.ToArray());
-                        s_Decl[callKind] = decl;
+                            name, callKind, retType, variadic, paramTypes.ToArray());
+                        s_Decl[name] = decl;
                         count++;
                     }
                 }
@@ -237,16 +240,29 @@ namespace SimpleLanguage.Core
             return count;
         }
 
-        public static bool TryGet(ESystemMethodCall call, out SystemMethodCallDeclaration decl)
-        {
-            return s_Decl.TryGetValue(call, out decl);
-        }
-
         public static bool TryResolveName(string name, out ESystemMethodCall call)
         {
             if (!string.IsNullOrEmpty(name) && s_Alias.TryGetValue(name, out call))
                 return true;
+            if (!string.IsNullOrEmpty(name) && s_Decl.TryGetValue(name, out var call1))
+            {
+                call = call1.method;
+                return true;
+            }
             return System.Enum.TryParse(name, true, out call);
+        }
+
+        /// <summary>
+        /// 通过 string name 查找 SystemMethodCallDeclaration（含返回类型、参数类型等元数据）。
+        /// </summary>
+        public static bool TryGetDeclaration(string name, out SystemMethodCallDeclaration decl)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                decl = null;
+                return false;
+            }
+            return s_Decl.TryGetValue(name, out decl);
         }
     }
 }

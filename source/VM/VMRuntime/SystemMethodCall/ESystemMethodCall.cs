@@ -108,5 +108,9 @@ namespace SimpleLanguage.VM.Runtime
         SystemListSetValueThis,
         SystemListGetCapacity,
         SystemListSetCapacity,
+
+        // ---- Console I/O (input) – must stay in sync with Front Define.cs ----
+        /// <summary>从标准输入读取一行（直到回车），返回 string。</summary>
+        SystemInput,
     }
 }
