@@ -16,7 +16,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
     #默认构造，容量为0，首次添加时扩容为4（与 C# List<T> 一致）
     _init_()
     {
-        SystemListInit(this, 0)
+        this._list = Array<T>(0)
     }
     void override _init_( int capacity )
     {
@@ -24,7 +24,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         {
             capacity = 0
         }
-        SystemListInit(this, capacity)
+        this._list = Array<T>(capacity)
         this._capacity = capacity
     }
     get int length(){ ret this._length }
@@ -40,9 +40,9 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         {
             ret
         }
-        if value != SystemListGetCapacity(this)
+        if value != this._list.length
         {
-            SystemListSetCapacity(this, value)
+            this.resizeArray(value)
             this._capacity = value
         }
     }
@@ -55,12 +55,12 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         {
             newCapacity = this._capacity * 2
         }
-        SystemListSetCapacity(this, newCapacity )
+        this.resizeArray(newCapacity)
         this._capacity = newCapacity
     }
     override void ensureCapacity( int min )
     {
-        int curCap = SystemListGetCapacity(this)
+        int curCap = this._list.length
         if curCap < min
         {
             int newCapacity = 4
@@ -72,8 +72,20 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
             {
                 newCapacity = min
             }
+            this.resizeArray(newCapacity)
             this._capacity = newCapacity
         }
+    }
+
+    #内部方法：重新分配 _list Array 并拷贝已有元素
+    void resizeArray( int newCapacity )
+    {
+        Array<T> newList = Array<T>(newCapacity)
+        for i = 0, i < this._length, i++
+        {
+            SystemArraySetValueThis(newList, i, SystemArrayGetValueThis(this._list, i))
+        }
+        this._list = newList
     }
 
     public override void add( T item )
@@ -82,7 +94,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         {
             this.grow()
         }
-        SystemListSetValueThis(this, this._length, item)
+        SystemArraySetValueThis(this._list, this._length, item)
         this._length++
     }
     public override void insert( int index, T item )
@@ -98,16 +110,29 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         int i = this._length
         while i > index
         {
-            SystemListSetValueThis(this, i, SystemListGetValueThis(this, i - 1))
+            SystemArraySetValueThis(this._list, i, SystemArrayGetValueThis(this._list, i - 1))
             i = i - 1
         }
-        SystemListSetValueThis(this, index, item)
+        SystemArraySetValueThis(this._list, index, item)
         this._length++
     }
     public override void remove( T item )
     {
-        SystemListRemoveValueThis(this, item )
-        this._length = this._length - 1
+        for i = 0, i < this._length, i++
+        {
+            if SystemArrayGetValueThis(this._list, i) == item
+            {
+                int j = i
+                while j < this._length - 1
+                {
+                    SystemArraySetValueThis(this._list, j, SystemArrayGetValueThis(this._list, j + 1))
+                    j = j + 1
+                }
+                SystemArraySetValueThis(this._list, this._length - 1, null)
+                this._length--
+                ret
+            }
+        }
     }
     public override void removeAt( int index )
     {
@@ -115,19 +140,28 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         {
             ret
         }
-        SystemListRemoveIndexValueThis(this, index)
-        this._length = this._length - 1
+        int j = index
+        while j < this._length - 1
+        {
+            SystemArraySetValueThis(this._list, j, SystemArrayGetValueThis(this._list, j + 1))
+            j = j + 1
+        }
+        SystemArraySetValueThis(this._list, this._length - 1, null)
+        this._length--
     }
     public override void clear()
     {
         this._length = 0
-        this.reset()
+        this._capacity = 0
+        this._list = Array<T>(0)
+        this._index = -1
+        this._current = null
     }
     public void fill( T value )
     {
         for i = 0, i < this._length, i++
         {
-            SystemListSetValueThis(this, i, value)
+            SystemArraySetValueThis(this._list, i, value)
         }
     }
     override Array<T> toArray()
@@ -135,7 +169,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         Array<T> arr = Array<T>(this._length)
         for i = 0, i < this._length, i++
         {
-            SystemArraySetValueThis(arr, i, SystemListGetValueThis(this, i))
+            SystemArraySetValueThis(arr, i, SystemArrayGetValueThis(this._list, i))
         }
         ret arr
     }
@@ -145,7 +179,6 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
     {
         this._index = -1;
         this._current = null
-        SystemListClearValueThis(this)
     }
     override bool moveNext()
     {
@@ -153,7 +186,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         bool hasNext_var = this._index < this._length
         if hasNext_var
         {
-            this._current = SystemListGetValueThis(this, this._index) as T
+            this._current = SystemArrayGetValueThis(this._list, this._index) as T
         }
         else
         {
@@ -167,7 +200,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
     }
     override set void current( T val )
     {
-        SystemListSetValueThis(this, this._index, val)
+        SystemArraySetValueThis(this._list, this._index, val)
         this._current = val
     }
     override get Core.IIterator<T> iterator()
@@ -189,22 +222,22 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
             ret
         }
         this._index = ind;
-        this._current = SystemListGetValueThis(this, ind) as T
+        this._current = SystemArrayGetValueThis(this._list, ind) as T
     }
     set setValue( int __index, T val )
     {
-        SystemListSetValueThis(this, __index, val)
+        SystemArraySetValueThis(this._list, __index, val)
     }
     get T getValue( int __index )
     {
-        ret SystemListGetValueThis(this, __index) as T
+        ret SystemArrayGetValueThis(this._list, __index) as T
     }
     override string toString()
     {
         string showstr = "["
         for i = 0, i < this._length, i++
         {
-            var cur = SystemListGetValueThis(this, i)
+            var cur = SystemArrayGetValueThis(this._list, i)
             if cur == null
             {
                 showstr = showstr + "null"
