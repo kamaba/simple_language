@@ -140,7 +140,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
     }
 
     #接口层
-    override override void reset()
+    override void reset()
     {
         this._index = -1;
         this._current = null

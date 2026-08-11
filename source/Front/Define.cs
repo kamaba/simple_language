@@ -498,6 +498,10 @@ namespace SimpleLanguage
         /// <summary>设置 List 内部存储容量（扩缩容），参数: (this, newCapacity)</summary>
         SystemListSetCapacity,
 
+        SystemListRemoveValueThis,
+        SystemListRemoveIndexValueThis,
+        SystemListClearValueThis,
+
         // ---- Console I/O (input) ----
         /// <summary>从标准输入读取一行（直到回车），返回 string。</summary>
         SystemInput,
