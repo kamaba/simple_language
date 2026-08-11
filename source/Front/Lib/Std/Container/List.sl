@@ -18,7 +18,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
     {
         this._list = Array<T>(0)
     }
-    void override _init_( int capacity )
+    override void _init_( int capacity )
     {
         if capacity < 0
         {

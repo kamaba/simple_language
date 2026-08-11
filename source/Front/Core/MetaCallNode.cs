@@ -721,7 +721,7 @@ namespace SimpleLanguage.Core
                                 }
                                 else if (mn.IsMetaClass())
                                 {
-                                    m_MetaClass = mn.GetMetaClassByTemplateCount(this.metaTemplateParamsList.Count);
+                                    m_MetaClass = mn.GetMetaClassByTemplateCount(this.m_FileMetaCallNode.inputTemplateNodeList.Count);
                                     m_MetaType = new MetaType(m_MetaClass);
                                 }
                                 else
