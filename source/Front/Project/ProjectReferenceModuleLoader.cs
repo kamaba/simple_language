@@ -33,6 +33,7 @@ namespace SimpleLanguage.Project
         /// 已加载的引用模块包（按模块名查），供导出时填充 moduleReferences 使用。
         /// </summary>
         private static readonly Dictionary<string, SLModulePackage> s_loadedPackages = new(StringComparer.Ordinal);
+        private static Dictionary<int,SLClassPackage> s_ClassLookup = new Dictionary<int, SLClassPackage>();
 
         /// <summary>
         /// 按 moduleName 获取已加载的引用模块包（可能为 null）。
@@ -436,10 +437,9 @@ namespace SimpleLanguage.Project
             }
 
             /* Build class lookup: id -> SLClassPackage for interface/inheritance resolution */
-            var classLookup = new Dictionary<int, SLClassPackage>();
             foreach (var c in package.classList)
             {
-                if (c != null) classLookup[c.id] = c;
+                if (c != null) s_ClassLookup[c.id] = c;
             }
 
             /* Phase B1（Meta shell）：IR 全部建完后，生成 MetaClass/MetaData/MetaEnum shell，
@@ -466,7 +466,7 @@ namespace SimpleLanguage.Project
             foreach (var (cls, metaBase) in createdTypes)
             {
                 if (!irMetaModule.TryGetIRMetaClass(cls.id, out var irmc)) continue;
-                PopulateReferenceTypeMembersFromIR(metaModule, irmc, cls, metaBase, classLookup);
+                PopulateReferenceTypeMembersFromIR(metaModule, irmc, cls, metaBase );
             }
         }
 
@@ -622,7 +622,7 @@ namespace SimpleLanguage.Project
         /// 基类 / 接口关系仍来自 SLClassPackage（IRMetaClass 不独立承载这两者）。
         /// </summary>
         private static void PopulateReferenceTypeMembersFromIR(MetaModule metaModule, IRMetaClass irmc,
-            SLClassPackage cls, MetaBase metaBase, Dictionary<int, SLClassPackage> classLookup)
+            SLClassPackage cls, MetaBase metaBase )
         {
             if (metaModule == null || irmc == null || cls == null || metaBase == null) return;
 
@@ -661,7 +661,7 @@ namespace SimpleLanguage.Project
 
                     AddClassFieldsFromIR(mc, irmc);
                     AddClassMethodsFromIR(mc, irmc);
-                    SetBaseAndInterfacesFromPackage(mc, cls, metaModule, classLookup);
+                    SetBaseAndInterfacesFromPackage(mc, cls, metaModule);
                     break;
                 }
             }
@@ -922,19 +922,111 @@ namespace SimpleLanguage.Project
 
         /* ---- 基类 / 接口（仍来自 SLClassPackage，IRMetaClass 不独立承载） ---- */
 
+        /// <summary>
+        /// 从 SLClassPackage 的 templateRelationList 构建 baseClass 的 MetaType（含模板参数），
+        /// 而不是直接读 MetaClass。对于带模板的继承（如 List&lt;T&gt; : IIterable&lt;T&gt;），
+        /// 需要通过 templateRelation 还原模板参数映射，生成 MetaGenTemplateClass 实例。
+        /// </summary>
+        private static MetaType BuildExtendClassMetaType(MetaClass mc, SLClassPackage cls, MetaModule metaModule )
+        {
+            if (cls.baseClassId == 0) return null;
+            if (!s_ClassLookup.TryGetValue(cls.baseClassId, out var basePkg)) return null;
+
+            var baseFullName = !string.IsNullOrWhiteSpace(basePkg.fullName)
+                ? basePkg.fullName : basePkg.name;
+            var baseMetaClass = ResolveTypeByName(metaModule, baseFullName);
+            if (baseMetaClass == null) return null;
+
+            // 基类无模板参数 — 简单 MetaType
+            if (basePkg.templateParameterCount == 0)
+                return new MetaType(baseMetaClass);
+
+            // 在 templateRelationList 中查找 baseClassId 对应的模板映射
+            SLTemplateRelationPackage relation = null;
+            if (cls.templateRelationList != null)
+            {
+                foreach (var rel in cls.templateRelationList)
+                {
+                    if (rel.relatedClassId == cls.baseClassId)
+                    {
+                        relation = rel;
+                        break;
+                    }
+                }
+            }
+
+            if (relation?.mapping == null || relation.mapping.Count == 0)
+                return new MetaType(baseMetaClass);
+
+            // 按 index 排序，确保模板参数顺序正确
+            var sortedMapping = relation.mapping.OrderBy(e => e.index).ToList();
+            var argList = new List<MetaType>();
+            foreach (var entry in sortedMapping)
+            {
+                var argType = ResolveRuntimeDefTypeToMetaType(entry.type, mc, metaModule );
+                argList.Add(argType ?? new MetaType(CoreMetaClassManager.objectMetaClass));
+            }
+
+            // 构建带模板参数的 MetaType，并注册为 MetaGenTemplateClass 实例
+            var mt = new MetaType(baseMetaClass, argList);
+            return baseMetaClass.AddMetaPreTemplateClass(mt, false, out _);
+        }
+
+        /// <summary>
+        /// 递归将 SLRuntimeDefTypePackage 转换为 MetaType。
+        /// - isTemplate=true: 引用当前类的模板参数（如 T），通过 templateIndex 获取 MetaTemplate
+        /// - isTemplate=false: 普通类，按 className/classId 解析；如有 runtimeDefTypeList 则递归构建模板参数
+        /// </summary>
+        private static MetaType ResolveRuntimeDefTypeToMetaType(SLRuntimeDefTypePackage rdt,
+            MetaClass ownerClass, MetaModule metaModule )
+        {
+            if (rdt == null) return new MetaType(CoreMetaClassManager.objectMetaClass);
+
+            // 模板参数引用（如 T、T0）
+            if (rdt.isTemplate && rdt.templateIndex >= 0)
+            {
+                if (ownerClass != null && rdt.templateIndex < ownerClass.metaTemplateList.Count)
+                {
+                    return new MetaType(ownerClass.metaTemplateList[rdt.templateIndex]);
+                }
+                return new MetaType(CoreMetaClassManager.objectMetaClass);
+            }
+
+            // 普通类 — 按 className 解析
+            var resolvedMc = ResolveTypeByName(metaModule, rdt.className);
+            if (resolvedMc == null && rdt.classId != 0 && s_ClassLookup.TryGetValue(rdt.classId, out var pkg))
+            {
+                var fullName = !string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.fullName : pkg.name;
+                resolvedMc = ResolveTypeByName(metaModule, fullName);
+            }
+            if (resolvedMc == null)
+                return new MetaType(CoreMetaClassManager.objectMetaClass);
+
+            // 无嵌套模板参数 — 简单 MetaType
+            if (rdt.runtimeDefTypeList == null || rdt.runtimeDefTypeList.Count == 0)
+                return new MetaType(resolvedMc);
+
+            // 有嵌套模板参数（如 Array&lt;T&gt;）— 递归构建
+            var nestedArgs = new List<MetaType>();
+            foreach (var nested in rdt.runtimeDefTypeList)
+            {
+                nestedArgs.Add(ResolveRuntimeDefTypeToMetaType(nested, ownerClass, metaModule ));
+            }
+            var nestedMt = new MetaType(resolvedMc, nestedArgs);
+            return resolvedMc.AddMetaPreTemplateClass(nestedMt, false, out _);
+        }
+
         private static void SetBaseAndInterfacesFromPackage(MetaClass mc, SLClassPackage cls,
-            MetaModule metaModule, Dictionary<int, SLClassPackage> classLookup)
+            MetaModule metaModule )
         {
             if (mc == null || cls == null) return;
 
-            if (cls.baseClassId != 0 && classLookup.TryGetValue(cls.baseClassId, out var basePkg))
+            if (cls.baseClassId != 0 && s_ClassLookup.TryGetValue(cls.baseClassId, out var basePkg))
             {
-                var baseFullName = !string.IsNullOrWhiteSpace(basePkg.fullName)
-                    ? basePkg.fullName : basePkg.name;
-                var baseType = ResolveTypeByName(metaModule, baseFullName);
-                if (baseType != null)
+                var extendMt = BuildExtendClassMetaType(mc, cls, metaModule );
+                if (extendMt != null)
                 {
-                    mc.SetExtendClass(baseType);
+                    mc.SetExtendClassMetaType(extendMt);
                 }
                 else
                 {
@@ -946,7 +1038,7 @@ namespace SimpleLanguage.Project
             {
                 foreach (var ifaceId in cls.implementsInterfaceIdList)
                 {
-                    if (classLookup.TryGetValue(ifaceId, out var ifacePkg))
+                    if (s_ClassLookup.TryGetValue(ifaceId, out var ifacePkg))
                     {
                         var ifaceFullName = !string.IsNullOrWhiteSpace(ifacePkg.fullName)
                             ? ifacePkg.fullName : ifacePkg.name;

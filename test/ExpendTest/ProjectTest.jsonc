@@ -51,10 +51,6 @@
     { "path": "../../out/export/Std", "uuid":"456456456456", "name": "Std.module.json" }
   ],
   "struct": [
-      { "namespace": "ProjectTest", "children": [] },
-      { "namespace": "Application", "children": [] },
-      { "namespace": "ConStrCC", "children": [] },
-      { "namespace": "Std", "children": [] }
   ],
   "export": {
     "moduleName": "ProjectTest2",

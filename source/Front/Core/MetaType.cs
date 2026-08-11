@@ -785,7 +785,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_MetaClass != null)
                 {
-                    sb.Append(m_MetaClass.allName);
+                    sb.Append(m_MetaClass.metaNode.allNameIncludeModule);
                 }
                 if (m_DefineTemplateMetaTypeList.Count > 0)
                 {
@@ -833,7 +833,7 @@ namespace SimpleLanguage.Core
             {
                 if (m_MetaClass is MetaGenTemplateClass mgtc)
                 {
-                    sb.Append(mgtc.metaTemplateClass.metaNode.allName);
+                    sb.Append(mgtc.metaTemplateClass.metaNode.allNameIncludeModule );
 
                     if (mgtc.genMetaClassTemplateList.Count > 0)
                     {

@@ -1,6 +1,5 @@
-import Std
 
-namespace Std
+namespace NSLog
 {
     enum ELevel
     {

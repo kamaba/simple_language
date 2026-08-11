@@ -1,6 +1,5 @@
-import Std
 
-namespace Std
+namespace NSDebug
 {
     public class Log
     {

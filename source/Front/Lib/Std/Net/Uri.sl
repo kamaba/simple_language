@@ -1,5 +1,5 @@
 
-namespace Std.Text
+namespace Text
 {
     public class Uri
     {

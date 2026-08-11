@@ -5,6 +5,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
     int _capacity = 0;
     int _index = 0;
     T _current = null
+    Array<T> _list = null
 
     public static List<T> create( int capacity )
     {

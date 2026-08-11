@@ -903,6 +903,18 @@ namespace SimpleLanguage.Core
         {
             this.m_ExtendClass = sec;
         }
+        /// <summary>
+        /// 设置继承类的 MetaType（含模板参数），并从中派生 m_ExtendClass。
+        /// 用于 ref module 加载时恢复带模板的继承关系。
+        /// </summary>
+        public void SetExtendClassMetaType(MetaType mt)
+        {
+            this.m_ExtendClassMetaType = mt;
+            if (mt != null)
+            {
+                this.m_ExtendClass = mt.metaClass;
+            }
+        }
         public void CalcExtendLevel()
         {
             if( this.m_ExtendClass == null )
@@ -1153,10 +1165,10 @@ namespace SimpleLanguage.Core
         }
         public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(string name, int templateParamCount, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )
         {
-            if (this is MetaGenTemplateClass mgtc && name == "add")
-            {
-                System.Console.WriteLine($"[DEBUG GetMethod] cls={this.allName} name={name} dictCount={m_MetaMemberFunctionTemplateNodeDict.Count} nonStaticCount={m_NonStaticVirtualMetaMemberFunctionList.Count}");
-            }
+            //if (this is MetaGenTemplateClass mgtc && name == "add")
+            //{
+            //    System.Console.WriteLine($"[DEBUG GetMethod] cls={this.allName} name={name} dictCount={m_MetaMemberFunctionTemplateNodeDict.Count} nonStaticCount={m_NonStaticVirtualMetaMemberFunctionList.Count}");
+            //}
             if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name) )
             {
                 return null;

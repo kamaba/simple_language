@@ -188,5 +188,120 @@ namespace SimpleLanguage.VM.Runtime
             s_listStorage.Clear();
         }
         #endregion
+
+        #region Remove / Clear operations
+
+        /// <summary>
+        /// SystemListRemoveValueThis(this, item): 在内部存储中查找第一个等于 item 的元素，
+        /// 将其后所有元素左移一位覆盖，末尾清空。SL 层负责递减 _length。
+        /// </summary>
+        public static void ExecuteListRemoveValueThis(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            int pc = sysPkg.paramCount;
+            if (pc < 2 || !vm.TrySystemCallPopArgs(pc, out var args))
+            {
+                Debug.Assert(false, $"SystemListRemoveValueThis stack underflow, need={pc}");
+                return;
+            }
+
+            var listObj = args[0].sobject;
+            if (listObj == null || !s_listStorage.TryGetValue(listObj, out var arrObj))
+                return;
+
+            var targetValue = args[1];
+
+            for (int i = 0; i < arrObj.length; i++)
+            {
+                var element = default(RuntimeValue);
+                arrObj.LoadValue(i, ref element);
+
+                // 比较 element 与 targetValue 是否相等
+                var cmpLeft = element;
+                var cmpRight = targetValue;
+                RuntimeValueMethod.CompareEuqalSValue1AndValue2(ref cmpLeft, ref cmpRight, true, out _);
+                if (cmpLeft.eType == EVMType.Boolean && cmpLeft.int8Value != 0)
+                {
+                    // 找到匹配，左移后续元素
+                    ShiftLeft(arrObj, i);
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// SystemListRemoveIndexValueThis(this, index): 将 index 之后所有元素左移一位覆盖，
+        /// 末尾清空。SL 层负责递减 _length。
+        /// </summary>
+        public static void ExecuteListRemoveIndexValueThis(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            int pc = sysPkg.paramCount;
+            if (pc < 2 || !vm.TrySystemCallPopArgs(pc, out var args))
+            {
+                Debug.Assert(false, $"SystemListRemoveIndexValueThis stack underflow, need={pc}");
+                return;
+            }
+
+            var listObj = args[0].sobject;
+            if (listObj == null || !s_listStorage.TryGetValue(listObj, out var arrObj))
+                return;
+
+            int index = 0;
+            try { index = Convert.ToInt32(args[1].GetValueObject(), CultureInfo.InvariantCulture); }
+            catch { index = 0; }
+
+            if (index < 0 || index >= arrObj.length)
+                return;
+
+            ShiftLeft(arrObj, index);
+        }
+
+        /// <summary>
+        /// SystemListClearValueThis(this): 清空内部存储所有元素（置 null/default），
+        /// 但保留容量不变。SL 层负责重置 _length。
+        /// </summary>
+        public static void ExecuteListClearValueThis(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            int pc = sysPkg.paramCount;
+            if (pc < 1 || !vm.TrySystemCallPopArgs(pc, out var args))
+            {
+                Debug.Assert(false, $"SystemListClearValueThis stack underflow, need={pc}");
+                return;
+            }
+
+            var listObj = args[0].sobject;
+            if (listObj == null || !s_listStorage.TryGetValue(listObj, out var arrObj))
+                return;
+
+            var nullVal = default(RuntimeValue);
+            nullVal.SetNull();
+            for (int i = 0; i < arrObj.length; i++)
+            {
+                arrObj.StoreValue(i, nullVal);
+            }
+        }
+
+        /// <summary>
+        /// 将 arrObj 中从 startIndex+1 开始的元素左移一位，覆盖 startIndex，
+        /// 末尾位置（length-1）清空。
+        /// </summary>
+        private static void ShiftLeft(ArrayObject arrObj, int startIndex)
+        {
+            int last = arrObj.length - 1;
+            for (int i = startIndex; i < last; i++)
+            {
+                var val = default(RuntimeValue);
+                arrObj.LoadValue(i + 1, ref val);
+                arrObj.StoreValue(i, val);
+            }
+            // 清空末尾
+            if (last >= 0)
+            {
+                var nullVal = default(RuntimeValue);
+                nullVal.SetNull();
+                arrObj.StoreValue(last, nullVal);
+            }
+        }
+
+        #endregion
     }
 }

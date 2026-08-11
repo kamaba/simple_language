@@ -32,15 +32,6 @@ namespace SimpleLanguage.Core
             m_MetaTemplateList = mtc.metaTemplateList;
             m_ExtendClassMetaType = mtc.extendClassMetaType;
 
-            /* Copy from the already-processed member collections.
-              * For source-compiled types, m_FileCollect* lists are eventually merged into
-              * the non-static/static lists by HandleExtendMemberFunction, so copying the
-              * final lists is correct for both source-compiled and reference-loaded types. */
-            m_NonStaticVirtualMetaMemberFunctionList = new List<MetaMemberFunction>(mtc.nonStaticVirtualMetaMemberFunctionList);
-            m_StaticMetaMemberFunctionList = new List<MetaMemberFunction>(mtc.staticMetaMemberFunctionList);
-            m_MetaMemberFunctionTemplateNodeDict = new Dictionary<string, MetaMemberFunctionTemplateNode>(mtc.metaMemberFunctionTemplateNodeDict);
-            m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>(mtc.metaMemberVariableDict);
-
             foreach( var v in list )
             {
                 m_GenMetaClassTemplateList.Add(v.metaType.metaClass);
@@ -153,13 +144,14 @@ namespace SimpleLanguage.Core
 
             System.Console.WriteLine($"[DEBUG ParseGenTemplateClass] cls={this.allName} template={m_MetaTemplateClass.allName} nonStatic={m_NonStaticVirtualMetaMemberFunctionList.Count} templateNonStatic={m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList.Count}");
 
-            m_MetaMemberVariableDict.Clear();
-            m_MetaMemberFunctionTemplateNodeDict.Clear();
-            m_NonStaticVirtualMetaMemberFunctionList.Clear();
-            m_StaticMetaMemberFunctionList.Clear();
-            m_MetaExtendMemeberVariableDict.Clear();
-            m_ExtendClass = null;
-            m_ExtendClassMetaType = null;
+            //this.m_MetaMemberVariableDict.Clear();
+            //this.m_MetaMemberVariableDict.Clear();
+            //m_MetaMemberFunctionTemplateNodeDict.Clear();
+            //m_NonStaticVirtualMetaMemberFunctionList.Clear();
+            //m_StaticMetaMemberFunctionList.Clear();
+            //m_MetaExtendMemeberVariableDict.Clear();
+            //m_ExtendClass = null;
+            //m_ExtendClassMetaType = null;
 
             var ecmt = this.m_MetaTemplateClass.extendClassMetaType;
             /* Fallback: if extendClassMetaType is null (common for inner-form types
@@ -256,27 +248,42 @@ namespace SimpleLanguage.Core
         }
         public void ParseMemberVariableDefineMetaType()
         {
-            List<MetaMemberVariable> mmvList = new List<MetaMemberVariable>();
-            foreach (var v in m_ExtendClass.metaExtendMemeberVariableDict)
-            {
-                mmvList.Add(v.Value);
-            }
-            foreach (var v in m_ExtendClass.metaMemberVariableDict)
-            {
-                mmvList.Add(v.Value);
-            }
-            foreach (var it in mmvList)
-            {
-                MetaMemberVariable mgmv = new MetaMemberVariable(it);
-                mgmv.SetOwnerMetaBase(this);
-                this.m_MetaExtendMemeberVariableDict.Add(mgmv.name, mgmv);
-            }
+            //List<MetaMemberVariable> mmvList = new List<MetaMemberVariable>();
+            //foreach (var v in m_ExtendClass.metaExtendMemeberVariableDict)
+            //{
+            //    mmvList.Add(v.Value);
+            //}
+            //foreach (var v in m_ExtendClass.metaMemberVariableDict)
+            //{
+            //    mmvList.Add(v.Value);
+            //}
+            //foreach (var it in mmvList)
+            //{
+            //    MetaMemberVariable mgmv = new MetaMemberVariable(it);
+            //    mgmv.SetOwnerMetaBase(this);
+            //    if(!m_MetaMemberVariableDict.ContainsKey(mgmv.name))
+            //    {
+            //        this.m_MetaExtendMemeberVariableDict.Add(mgmv.name, mgmv);
+            //    }
+            //    else
+            //    {
 
+            //    }
+            //}
+
+            m_MetaMemberVariableDict.Clear();
             foreach (var it in this.m_MetaTemplateClass.metaMemberVariableDict)
             {
                 var mmv = ParseMetaMemberVariableDefineMetaType(it.Value);
 
-                m_MetaMemberVariableDict.Add(mmv.name, mmv);
+                if( !m_MetaMemberVariableDict.ContainsKey(mmv.name))
+                {
+                    m_MetaMemberVariableDict.Add(mmv.name, mmv);
+                }
+                else
+                {
+
+                }
             }
         }
         //public bool UpdateMetaTypeByGenClassAndFunction( MetaType mt )
@@ -353,81 +360,22 @@ namespace SimpleLanguage.Core
               * Source-compiled types have methods in fileCollectMetaMemberFunctionList
               * (pre-merge) OR in nonStatic/static lists (post-merge).
               * Reference-loaded types have methods only in nonStatic/static lists. */
-            List<MetaMemberFunction> mmfList = new();
+            this.m_MetaMemberFunctionTemplateNodeDict.Clear();
             foreach (var it in this.m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList)
             {
-                // 跳过继承下来的函数：它们使用父类的模板名称（如 LT31, LT23），
-                // 不在当前 GenTemplateClass 的模板列表（如 LT41, LT42）中，
-                // 用当前模板列表解析会对不上号。继承函数已在 m_ExtendClass 中解析完毕，
-                // 会在下方的循环中添加。
                 if (it.ownerMetaClass != this.m_MetaTemplateClass)
                     continue;
-                mmfList.Add(ParseMetaMemberFunctionDefineMetaType(it));
+                var fun = ParseMetaMemberFunctionDefineMetaType(it);
+                this.m_NonStaticVirtualMetaMemberFunctionList.Add(fun);
+                AddMetaMemberFunction(fun);
             }
             foreach (var it in this.m_MetaTemplateClass.staticMetaMemberFunctionList)
             {
                 if (it.ownerMetaClass != this.m_MetaTemplateClass)
                     continue;
-                mmfList.Add(ParseMetaMemberFunctionDefineMetaType(it));
-            }
-
-            bool canAdd = false;
-            foreach (var v in this.m_ExtendClass.nonStaticVirtualMetaMemberFunctionList)
-            {
-                canAdd = true;
-                var efun = v;
-                //if (efun.isConstructInitFunction) { continue; }
-
-                foreach (var v2 in mmfList )
-                {
-                    //if (v2.isConstructInitFunction) continue;
-                    if (efun.IsEqualMetaFunction(v2))
-                    {
-                        canAdd = false;
-                        m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
-                        continue;
-                    }
-                }
-                if (canAdd)
-                {
-                    m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
-                }
-            }
-
-            foreach (var v2 in mmfList )
-            {
-                if (v2.isStatic)
-                {
-                    var find = m_StaticMetaMemberFunctionList.Find(a => a == v2);
-                    if (find != null) continue;
-
-                    m_StaticMetaMemberFunctionList.Add(v2);
-                }
-                else
-                {
-                    var find = m_NonStaticVirtualMetaMemberFunctionList.Find(a => a == v2);
-                    if (find != null) continue;
-
-                    m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
-                }
-            }
-
-
-            foreach (var v2 in m_NonStaticVirtualMetaMemberFunctionList)
-            {
-                //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
-                //if (find != null) continue;
-
-                AddMetaMemberFunction(v2);
-                //m_AllMetaMemberFunctionList.Add(v2);
-            }
-            foreach (var v2 in m_StaticMetaMemberFunctionList)
-            {
-                //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
-                //if (find != null) continue;
-
-                AddMetaMemberFunction(v2);
-                //m_AllMetaMemberFunctionList.Add(v2);
+                var fun = ParseMetaMemberFunctionDefineMetaType(it);
+                this.m_StaticMetaMemberFunctionList.Add(fun);
+                AddMetaMemberFunction(fun);
             }
         }
         MetaMemberFunction ParseMetaMemberFunctionDefineMetaType(MetaMemberFunction mmf)

@@ -3493,6 +3493,15 @@ namespace SimpleLanguage.VM.Runtime
                             case (int)ESystemMethodCall.SystemListSetCapacity:
                                 ListSystemMethodCall.ExecuteListSetCapacity(this, sysPkg);
                                 break;
+                            case (int)ESystemMethodCall.SystemListRemoveValueThis:
+                                ListSystemMethodCall.ExecuteListRemoveValueThis(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemListRemoveIndexValueThis:
+                                ListSystemMethodCall.ExecuteListRemoveIndexValueThis(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemListClearValueThis:
+                                ListSystemMethodCall.ExecuteListClearValueThis(this, sysPkg);
+                                break;
 
                             default:
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, iri.debugInfo, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
