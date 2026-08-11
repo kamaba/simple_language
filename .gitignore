@@ -235,3 +235,6 @@
 /SimpleLanguage.slnLaunch.user
 /source/MathNativeImpl/MathNativeImpl.csproj.user
 /source/MathNativeImpl/obj/Debug/net8.0/MathNativeImpl.csproj.BuildWithSkipAnalyzers
+/source/Test2/.vs
+/source/Test2/bin
+/source/Test2/obj
