@@ -13,7 +13,7 @@ ListTest
         Console.println("length = " + list.length)
         for i = 0, i < list.length, i++
         {
-            Console.println("list[" + i + "] = " + list.getValue(i))
+            Console.println("list[" + i + "] = " + list._getItem_(i))
         }
     }
 
@@ -43,7 +43,7 @@ ListTest
         Console.println("after 10 adds, capacity = " + list.capacity)
         for i = 0, i < list.length, i++
         {
-            Console.println("list[" + i + "] = " + list.getValue(i))
+            Console.println("list[" + i + "] = " + list._getItem_(i))
         }
     }
 
@@ -59,7 +59,7 @@ ListTest
         Console.println("after insert at 1, length = " + list.length)
         for i = 0, i < list.length, i++
         {
-            Console.println("list[" + i + "] = " + list[$i])
+            Console.println("list[" + i + "] = " + list[i].toString() )
         }
     }
 
@@ -67,7 +67,7 @@ ListTest
     static testRemoveAt()
     {
         Console.println("===== testRemoveAt =====")
-        Std.List<int> list = new()
+        Std.List<int> list = new(6)
         list.add(10)
         list.add(20)
         list.add(30)
@@ -76,7 +76,7 @@ ListTest
         Console.println("after removeAt(1), length = " + list.length)
         for i = 0, i < list.length, i++
         {
-            Console.println("list[" + i + "] = " + list.getValue(i))
+            Console.println("list[" + i + "] = " + list._getItem_(i))
         }
     }
 
@@ -84,7 +84,7 @@ ListTest
     static testClear()
     {
         Console.println("===== testClear =====")
-        Std.List<int> list = new()
+        List<int> list = Std.List<int>()
         list.add(1)
         list.add(2)
         list.add(3)
@@ -97,14 +97,14 @@ ListTest
     static testFill()
     {
         Console.println("===== testFill =====")
-        Std.List<int> list = Std.List<int>(5)
+        List<int> list = Std.List<int>(5)
         list.add(0)
         list.add(0)
         list.add(0)
         list.fill(99)
         for i = 0, i < list.length, i++
         {
-            Console.println("list[" + i + "] = " + list.getValue(i))
+            Console.println("list[" + i + "] = " + list.$i )
         }
     }
 
@@ -125,9 +125,10 @@ ListTest
         List<int> list = Std.List<int>(5)
         list.add(100)
         list.add(200)
-        list.setValue(0, 999)
-        Console.println("list.getValue(0) = " + list.getValue(0))
-        Console.println("list.getValue(1) = " + list.getValue(1))
+        list._setItem_(0, 999)
+        list[4] = 888
+        Console.println("list.getValue(0) = " + list._getItem_(0))
+        Console.println("list.getValue(1) = " + list[1] )
     }
 
     # 测试迭代器 (IIterable/IIterator)
@@ -169,7 +170,7 @@ ListTest
         Console.println("length = " + list.length)
         for i = 0, i < list.length, i++
         {
-            Console.println("list[" + i + "] = " + list.getValue(i))
+            Console.println("list[" + i + "] = " + list._getItem_(i))
         }
     }
 
@@ -185,7 +186,7 @@ ListTest
         Console.println("arr.length = " + arr.length)
         for i = 0, i < arr.length, i++
         {
-            Console.println("arr[" + i + "] = " + arr.getValue(i))
+            Console.println("arr[" + i + "] = " + arr[i] )
         }
     }
 

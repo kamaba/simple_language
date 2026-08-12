@@ -108,6 +108,10 @@ namespace SimpleLanguage.Core
         protected Token m_Token = null;
         protected bool m_IsHasExpress = false;
 
+        public MetaDefineParam()
+        {
+
+        }
         public MetaDefineParam( string _name, MetaFunction mf )
         {
             m_Name = _name;
@@ -513,7 +517,7 @@ namespace SimpleLanguage.Core
 
             if (m_MetaDefineParamList.Count == mdpc.m_MetaDefineParamList.Count)
             {
-                if(m_MetaDefineParamList.Count == 0 )
+                if (m_MetaDefineParamList.Count == 0)
                 {
                     return true;
                 }
@@ -524,6 +528,55 @@ namespace SimpleLanguage.Core
                     var b = mdpc.m_MetaDefineParamList[i];
                     if (!CheckDefineMetaParam(a, b))
                         return false;
+                }
+                return true;
+            }
+            return false;
+        }
+        public bool IsEqualMetaTypeList(List<MetaType> mtList )
+        {
+
+            if (m_MetaDefineParamList.Count == mtList.Count)
+            {
+                if (m_MetaDefineParamList.Count == 0)
+                {
+                    return true;
+                }
+
+                for (int i = 0; i < m_MetaDefineParamList.Count; i++)
+                {
+                    var left = m_MetaDefineParamList[i]?.metaVariable?.GetFinalMetaType();
+                    var right = mtList[i];
+                    if (left == null || right == null ) return false;
+
+                    if(left.isClass && right.isClass )
+                    {
+                        if( left.metaClass == right.metaClass )
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                    else if (left.isData && right.isData )
+                    {
+                        if (left.metaData == right.metaData )
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                    else if( left.isEnum && right.isEnum )
+                    {
+                        if( left.metaEnum == right.metaEnum )
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+                    else
+                    {
+                        return false;
+                    }
                 }
                 return true;
             }

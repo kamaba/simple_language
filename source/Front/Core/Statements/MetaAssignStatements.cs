@@ -225,6 +225,51 @@ namespace SimpleLanguage.Core
                             expressMdt = firstParam.metaVariable.GetFinalMetaType();
                         }
                     }
+                    else if (mmf.isGet && mmf.name == "_getItem_")
+                    {
+                        // _getItem_ 调用用于赋值场景：转换为 _setItem_ 调用
+                        var ownerMc = mmf.ownerMetaClass;
+                        if (ownerMc != null)
+                        {
+                            // 先解析右值（needTryGetRight=false 时还未解析）
+                            if (m_RightMetaExpress == null && m_FileMetaOpAssignSyntax?.express != null)
+                            {
+                                TryParseRightExpress(m_FileMetaOpAssignSyntax.express, null);
+                            }
+
+                            if (m_RightMetaExpress != null)
+                            {
+                                // 构建 _setItem_ 参数：index（来自 _getItem_）+ value（来自右值）
+                                var setItemParam = new MetaInputParamCollection(ownerMc, m_OwnerMetaBlockStatements);
+                                var leftMc = m_LeftMetaExpress.metaCallLink.finalCallNode.methodCall;
+                                foreach (var ep in leftMc.metaInputParamList)
+                                {
+                                    setItemParam.AddMetaInputParam(new MetaInputParam(ep));
+                                }
+                                setItemParam.AddMetaInputParam(new MetaInputParam(m_RightMetaExpress));
+
+                                var setItemMethod = ownerMc.GetMetaDefineGetSetMemberFunctionByName("_setItem_", setItemParam, false, true);
+                                if (setItemMethod != null)
+                                {
+                                    IsRightSetLeftValue = true;
+                                    var newMethodCall = new MetaMethodCall(ownerMc, m_OwnerMetaBlockStatements, null,
+                                        setItemMethod, null, setItemParam, null, null, null);
+                                    m_LeftMethodCall = newMethodCall;
+                                    m_RightMetaExpress = null;
+
+                                    // 获取 value 参数类型用于类型检查
+                                    if (setItemMethod.metaMemberParamCollection.metaDefineParamList.Count > 1)
+                                    {
+                                        var valueParam = setItemMethod.metaMemberParamCollection.metaDefineParamList[1];
+                                        if (valueParam?.metaVariable != null)
+                                        {
+                                            expressMdt = valueParam.metaVariable.GetFinalMetaType();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

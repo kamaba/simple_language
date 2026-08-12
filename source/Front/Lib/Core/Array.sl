@@ -81,11 +81,11 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         this._index = ind;
         this._current = SystemArrayGetValueThis(this, ind) as T
     }
-    set setValue( int __index, T val )
+    _setItem_( int __index, T val )
     {
         SystemArraySetValueThis(this, __index, val)
     }
-    get T getValue( int __index )
+    T _getItem_( int __index )
     {
         ret SystemArrayGetValueThis(this, __index) as T
     }

@@ -363,12 +363,19 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Debug.Assert(false);
+                    HandleVisit();
+                    //if (fn.metaClass is MetaGenTemplateClass mgtc )
+                    //{
+                    //}
+                    //else
+                    //{
+                    //    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error is fained11 ");
+                    //}
                 }
             }
             else
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 涓嶆敮鎸佽〃杈惧紡绫诲瀷!!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error is fained222 " );
             }
             return true;
         }
@@ -1611,21 +1618,6 @@ namespace SimpleLanguage.Core
         {
             if (m_FrontCallNode?.m_MetaVariable != null)
             {
-                /*
-                string tname = "";
-                if (m_FrontCallNode?.metaExpressValue is MetaConstExpressNode mce)       //arr[0]
-                {
-                    tname = mce.value.ToString();
-                }
-                else
-                {
-                    if(m_FrontCallNode != null )
-                    {
-                        var gmv = m_FrontCallNode?.metaVariable;
-                        tname = "VarName_" + gmv.name;
-                    }
-                }
-                */
                 var variable = m_FrontCallNode.m_MetaVariable;
                 if (m_FileMetaCallNode?.atToken != null || m_VisitFlag)
                 {
@@ -1659,16 +1651,52 @@ namespace SimpleLanguage.Core
                                     return;
                                 }
                             }
+
+                            m_MetaVariable = new MetaVisitVariable("Visit_" + mcen.value.ToString(), ownerMetaClass, m_OwnerMetaFunctionBlock, variable, mcen);
+
+                            m_CallNodeType = ECallNodeType.VisitVariable;
                         }
                         else
                         {
+                            // 非数组类型：检查是否支持 _getItem_/_setItem_ 下标访问
+                            MetaClass visitMc = fmt.metaClass;
+                            if (visitMc == null)
+                                visitMc = fmt.GetTemplateMetaClass();
+                            if (visitMc != null)
+                            {
+                                var inputParam = new MetaInputParamCollection(ownerMetaBase, m_OwnerMetaFunctionBlock);
+                                inputParam.AddMetaInputParam(new MetaInputParam(mcen));
+
+                                // 赋值场景（setterFunction=true）查找 _setItem_，否则查找 _getItem_
+                                MetaMemberFunction visitMethod = null;
+                                if (m_AllowUseSettings?.setterFunction == true
+                                    && m_AllowUseSettings.expressNodeList.Count > 0)
+                                {
+                                    inputParam.AddMetaInputParam(new MetaInputParam(m_AllowUseSettings.expressNodeList[0]));
+                                    visitMethod = visitMc.GetMetaDefineGetSetMemberFunctionByName("_setItem_", inputParam, false, true);
+                                }
+                                else
+                                {
+                                    visitMethod = visitMc.GetMetaDefineGetSetMemberFunctionByName("_getItem_", inputParam, true, false);
+                                }
+
+                                if (visitMethod != null)
+                                {
+                                    // 创建 MethodCall 模式的 MetaVisitVariable
+                                    var methodCall = new MetaMethodCall(visitMc, m_OwnerMetaFunctionBlock, null,
+                                        visitMethod, null, inputParam, null, null, null);
+
+                                    string visitName = "Visit_" + mcen.value.ToString();
+                                    m_MetaVariable = new MetaVisitVariable(visitName, ownerMetaClass, m_OwnerMetaFunctionBlock, variable, methodCall);
+                                    m_CallNodeType = ECallNodeType.VisitVariable;
+                                    m_MetaType = visitMethod.returnMetaVariable?.GetFinalMetaType();
+                                    return;
+                                }
+                            }
+
                             Log.AddMetaCoreLog(LID.MetaCoreVisitTypeShouldIsArray, mcen.token, variable.realMetaType.ToString(), variable.name);
                             return;
                         }
-
-                        m_MetaVariable = new MetaVisitVariable("Visit_" + mcen.value.ToString(), ownerMetaClass, m_OwnerMetaFunctionBlock, variable, mcen);
-
-                        m_CallNodeType = ECallNodeType.VisitVariable;
                     }
                     else if (m_ExpressNode is MetaOpExpressNode moen)
                     {

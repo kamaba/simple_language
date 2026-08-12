@@ -326,6 +326,26 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
+        public bool IsEqualMetaDefineMetaTypeList( List<MetaType> metatypeList )
+        {
+
+            if (m_MetaMemberParamCollection.metaDefineParamList.Count == metatypeList.Count)
+            {
+                if (m_MetaMemberParamCollection.metaDefineParamList.Count == 0)
+                {
+                    return true;
+                }
+
+                for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
+                {
+                    var a = m_MetaMemberParamCollection.metaDefineParamList[i];
+                    var b = metatypeList[i];
+                    
+                }
+                return true;
+            }
+            return false;
+        }
         public MetaTemplate GetMetaDefineTemplateByName( string name )
         {
             return m_MetaMemberTemplateCollection.GetMetaDefineTemplateByName(name);

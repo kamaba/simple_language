@@ -238,11 +238,11 @@ namespace SimpleLanguage.Core
                             if (cnt.metaVariable != null)
                             {
                                 var frontcn = cnt;
-                                if (cnt.metaVariable.isArray)
+                                if (cnt.metaVariable.IsSupportItemByIndex(true) || cnt.metaVariable.IsSupportItemByIndex(false) )
                                 {
                                     //arryobject.@i arrayobject.@1
                                     MetaType mtt = cnt.metaVariable.GetFinalMetaType();
-                                    if (cnt.bracketExpressList.Count <= mtt.ArrayDimension() )
+                                    if( mtt.IsArray() && cnt.bracketExpressList.Count <= mtt.ArrayDimension() )                                   
                                     {
                                         for (int j = 0; j < cnt.bracketExpressList.Count; j++)
                                         {
@@ -259,7 +259,18 @@ namespace SimpleLanguage.Core
                                     }
                                     else
                                     {
-                                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Parse 浣跨敤[][][] 璁块棶瓒呰繃浜嗘暟缁勭殑缁村害!");
+                                        for (int j = 0; j < cnt.bracketExpressList.Count; j++)
+                                        {
+                                            MetaCallNode mcn = new MetaCallNode(cnt.bracketExpressList[j], cnt.ownerMetaFunctionBlock.ownerMetaClass, cnt.ownerMetaFunctionBlock, cnt.metaType);
+                                            mcn.SetFrontCallNode(frontcn);
+                                            mcn.ParseNode(allowUseSettings);
+                                            newList.Add(mcn);
+                                            frontcn = mcn;
+                                        }
+                                        if (m_CallNodeList.Count > i + 1)
+                                        {
+                                            m_CallNodeList[i + 1].SetFrontCallNode(frontcn);
+                                        }
                                     }
                                 }
                             }

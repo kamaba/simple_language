@@ -1163,24 +1163,24 @@ namespace SimpleLanguage.Core
             }            
             return null;
         }
-        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(string name, int templateParamCount, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(string name, int templateParamCount, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true)
         {
             //if (this is MetaGenTemplateClass mgtc && name == "add")
             //{
             //    System.Console.WriteLine($"[DEBUG GetMethod] cls={this.allName} name={name} dictCount={m_MetaMemberFunctionTemplateNodeDict.Count} nonStaticCount={m_NonStaticVirtualMetaMemberFunctionList.Count}");
             //}
-            if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name) )
+            if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
             {
                 return null;
             }
             var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
-            if( !tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount) )
+            if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount))
             {
                 return null;
             }
             var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
 
-            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0 );
+            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0);
             if (list == null) return null;
 
             for (int i = 0; i < list.Count; i++)
@@ -1192,54 +1192,88 @@ namespace SimpleLanguage.Core
                 //}
                 //else
                 //{
-                    if (fun.IsEqualMetaInputParamCollection(inputParam))
-                        return fun;
+                if (fun.IsEqualMetaInputParamCollection(inputParam))
+                    return fun;
                 //}
             }
             return null;
         }
-        //public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, List<MetaType> mtList, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true)
-        //{
-        //    if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
-        //    {
-        //        return null;
-        //    }
-        //    int templateParamCount = 0;
-        //    if( mtList != null )
-        //    {
-        //        templateParamCount = mtList.Count;
-        //    }
-        //    var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
-        //    if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount))
-        //    {
-        //        return null;
-        //    }
-        //    var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
+        /// <summary>
+        /// 检查当前类是否支持 _getItem_/_setItem_ 下标访问。
+        /// </summary>
+        public bool HasIndexerMethod()
+        {
+            return GetMetaDefineGetSetMemberFunctionByName("_getItem_", null, true, false) != null
+                || GetMetaDefineGetSetMemberFunctionByName("_setItem_", null, false, true) != null;
+        }
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndDefineTemplateInputParamCount(string name, int templateParamCount, MetaDefineParamCollection defineParam, bool isIncludeExtendClass = true)
+        {
+            if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
+            {
+                return null;
+            }
+            var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
+            if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount))
+            {
+                return null;
+            }
+            var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
 
-        //    var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0);
-        //    if (list == null) return null;
+            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(defineParam != null ? defineParam.maxParamCount : 0);
+            if (list == null) return null;
 
-        //    for (int i = 0; i < list.Count; i++)
-        //    {
-        //        var fun = list[i];
-        //        if (fun.isTemplateFunction)
-        //        {
-        //            //var gfun = fun.GetGenTemplateFunction(mtList);
+            for (int i = 0; i < list.Count; i++)
+            {
+                var fun = list[i];
+                //if (fun.isTemplateFunction)
+                //{
+                //    return fun;
+                //}
+                //else
+                //{
+                if (fun.IsEqualMetaDefineParamCollection(defineParam))
+                    return fun;
+                //}
+            }
+            return null;
+        }
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateAndMetaType(string name, int templateParamCount, List<MetaType> mtList, bool isIncludeExtendClass = true)
+        {
+            if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
+            {
+                return null;
+            }
+            var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
+            if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount))
+            {
+                return null;
+            }
+            var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
 
-        //            //if( gfun != null )
-        //            //{
-        //            //    return gfun;
-        //            //}
-        //            return fun;
-        //        }
-        //        else
-        //        {
-        //            if (fun.IsEqualMetaInputParamCollection(inputParam))
-        //                return fun;
-        //        }
-        //    }
-        //    return null;
-        //}
+            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(mtList != null ? mtList.Count : 0);
+            if (list == null) return null;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var fun = list[i];
+                if (fun.isTemplateFunction)
+                {
+                    //var gfun = fun.GetGenTemplateFunction(mtList);
+
+                    //if( gfun != null )
+                    //{
+                    //    return gfun;
+                    //}
+                    return fun;
+                }
+                else
+                {
+                    if (fun.metaMemberParamCollection.IsEqualMetaTypeList(mtList))
+                        return fun;
+                }
+            }
+            return null;
+        }
         public MetaMemberFunction GetMetaMemberConstructDefaultFunction()
         {
             return GetMetaMemberConstructFunction(null);
@@ -1251,6 +1285,26 @@ namespace SimpleLanguage.Core
         public MetaMemberFunction GetFirstMetaMemberFunctionByName( string name )
         {
             return GetMetaMemberFunctionByNameAndInputTemplateInputParamCount( name, 0, null );
+        }
+        public MetaMemberFunction GetOperatorMetaMemberFunctionByName(string name)
+        {
+            switch( name)
+            {
+                case "_getItem_":
+                    {
+                        List<MetaType> mtlist = new List<MetaType>();
+                        mtlist.Add(new MetaType(CoreMetaClassManager.int32MetaClass));
+                        return GetMetaMemberFunctionByNameAndInputTemplateAndMetaType("_getItem_", 0, mtlist );
+                    }
+                case "_setItem_":
+                    {
+                        List<MetaType> mtlist = new List<MetaType>();
+                        mtlist.Add(new MetaType(CoreMetaClassManager.int32MetaClass));
+                        mtlist.Add(new MetaType(CoreMetaClassManager.objectMetaClass));
+                        return GetMetaMemberFunctionByNameAndInputTemplateAndMetaType("_setItem_", 0, mtlist );
+                    }
+            }
+            return null;
         }
         public List<MetaMemberFunction> GetMemberInterfaceFunction()
         {

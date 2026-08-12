@@ -224,13 +224,13 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         this._index = ind;
         this._current = SystemArrayGetValueThis(this._list, ind) as T
     }
-    set setValue( int __index, T val )
+    void _setItem_( int _index, T _value )
     {
-        SystemArraySetValueThis(this._list, __index, val)
+        SystemArraySetValueThis(this._list, _index, _value)
     }
-    get T getValue( int __index )
+    T _getItem_( int _index )
     {
-        ret SystemArrayGetValueThis(this._list, __index) as T
+        ret SystemArrayGetValueThis(this._list, _index) as T
     }
     override string toString()
     {
