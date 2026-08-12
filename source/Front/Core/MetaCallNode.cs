@@ -1682,13 +1682,10 @@ namespace SimpleLanguage.Core
 
                                 if (visitMethod != null)
                                 {
-                                    // 创建 MethodCall 模式的 MetaVisitVariable
-                                    var methodCall = new MetaMethodCall(visitMc, m_OwnerMetaFunctionBlock, null,
-                                        visitMethod, null, inputParam, null, null, null);
-
-                                    string visitName = "Visit_" + mcen.value.ToString();
-                                    m_MetaVariable = new MetaVisitVariable(visitName, ownerMetaClass, m_OwnerMetaFunctionBlock, variable, methodCall);
-                                    m_CallNodeType = ECallNodeType.VisitVariable;
+                                    m_MetaFunction = visitMethod;
+                                    m_MetaClass = visitMc;
+                                    m_MetaInputParamCollection = inputParam;
+                                    m_CallNodeType = ECallNodeType.MemberFunctionName;
                                     m_MetaType = visitMethod.returnMetaVariable?.GetFinalMetaType();
                                     return;
                                 }

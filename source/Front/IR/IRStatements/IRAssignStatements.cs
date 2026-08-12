@@ -23,7 +23,7 @@ namespace SimpleLanguage.IR
         }
         public void ParseIRStatements(MetaAssignStatements ms)
         {
-            var clist = ms.leftMetaExpress.metaCallLink.visitNodeList;
+            var clist = ms.leftMetaExpress.visitNodeList;
             if( clist.Count == 0 )
             {
                 Log.AddIRLog(LID.ShowExtendMessage, ms.leftMetaExpress.token, "AssignStatement 没有可生成的表达式");
@@ -77,21 +77,42 @@ namespace SimpleLanguage.IR
             if (lastCL.visitType == MetaVisitNode.EVisitType.VisitVariable)
             {
                 MetaVisitVariable mvv = lastCL.visitVariable;
-                IRExpressBase irexpress = IRExpressManager.CreateExpress(irMethod, mvv.visitExpressNode);
-                m_IRStatements.Add(irexpress);
 
-                if (ms.autoAddExpressOpSign != ELeftRightOpSign.None)
+                // MethodCall 模式：_getItem_/_setItem_ 下标访问
+                if (mvv.visitType == MetaVisitVariable.EVisitType.MethodCall)
                 {
-                    IRDup irdup = new IRDup(this.irMethod, 2);
-                    m_IRStatements.Add(irdup);
+                    // 赋值场景：_setItem_ 已经包含 value 参数，直接执行方法调用
+                    // 读取场景：_getItem_ 需要执行方法调用并保留返回值
+                    IRCallFunction irCallFun = new IRCallFunction(this.irMethod);
+                    irCallFun.Parse(mvv.methodCall);
+                    m_IRStatements.Add(irCallFun);
 
-                    //IRMetaClass owirmc1 = IRManager.instance.GetIRMetaClassById(mvv.GetOwnerClassTemplateClass().GetHashCode());
-                    if (mvv.isStatic)
+                    // 读取场景：返回值已在栈上，不需要额外处理
+                    // 赋值场景：m_RightMetaExpress 已被消费（在 MetaAssignStatements 中设置），直接返回
+                    if (ms.rightMetaExpress == null)
                     {
-                        Log.AddIRLog(LID.ShowExtendMessage, ms.token, "visit variable is Static");
+                        return;
                     }
-                    IRLoadVariable irVar = new IRLoadVariable(null, this.irMethod, 0, IRMetaVariableFrom.Array);
-                    m_IRStatements.Add(irVar);
+                }
+                else
+                {
+                    // 原有数组访问逻辑
+                    IRExpressBase irexpress = IRExpressManager.CreateExpress(irMethod, mvv.visitExpressNode);
+                    m_IRStatements.Add(irexpress);
+
+                    if (ms.autoAddExpressOpSign != ELeftRightOpSign.None)
+                    {
+                        IRDup irdup = new IRDup(this.irMethod, 2);
+                        m_IRStatements.Add(irdup);
+
+                        //IRMetaClass owirmc1 = IRManager.instance.GetIRMetaClassById(mvv.GetOwnerClassTemplateClass().GetHashCode());
+                        if (mvv.isStatic)
+                        {
+                            Log.AddIRLog(LID.ShowExtendMessage, ms.token, "visit variable is Static");
+                        }
+                        IRLoadVariable irVar = new IRLoadVariable(null, this.irMethod, 0, IRMetaVariableFrom.Array);
+                        m_IRStatements.Add(irVar);
+                    }
                 }
             }
             else if (lastCL.visitType == MetaVisitNode.EVisitType.MethodCall)

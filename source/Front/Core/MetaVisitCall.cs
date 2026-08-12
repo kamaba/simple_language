@@ -566,6 +566,7 @@ namespace SimpleLanguage.Core
 
             vn.m_VisitType = EVisitType.VisitVariable;
             vn.m_VisitVariable = _variale;
+            //vn.SetMethodCall(_variale.methodCall);
 
             return vn;
         }

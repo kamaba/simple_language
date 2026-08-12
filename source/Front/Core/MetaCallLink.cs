@@ -35,6 +35,7 @@ namespace SimpleLanguage.Core
             }
         }
         public AllowUseSettings allowUseSettings { get; private set; } = null;
+        public Token token => m_Token;
 
         private FileMetaCallLink m_FileMetaCallLink;
         private MetaBase m_OwnerMetaClass = null;
@@ -48,6 +49,17 @@ namespace SimpleLanguage.Core
         public MetaData ownerMetaData => m_OwnerMetaClass as MetaData;
         public MetaEnum ownerMetaEnum => m_OwnerMetaClass as MetaEnum;
         public MetaBase ownerMetaBase => m_OwnerMetaClass;
+        private Token m_Token = null;
+
+        public MetaCallLink( MetaBase ownerMetaClass, MetaBlockStatements ownerMetaBlockStatements,
+            List<MetaCallNode> callNodeList, MetaVariable storeMetaVariable, Token token)
+        {
+            m_OwnerMetaClass = ownerMetaClass;
+            m_OwnerMetaBlockStatements = ownerMetaBlockStatements;
+            m_CallNodeList = callNodeList;
+            m_StoreMetaVariable = storeMetaVariable;
+            m_Token = token;
+        }
 
         public MetaCallLink(FileMetaCallLink fmcl, MetaBase metaOwner, MetaBlockStatements mbs, MetaType frontDefineMt, MetaVariable mv)
         {
@@ -121,6 +133,7 @@ namespace SimpleLanguage.Core
                 frontMetaNode = firstNode;
                 m_CallNodeList.Add(firstNode);
                 firstNode.SetStoreMetaVariable(mv);
+                m_Token = firstNode.token;
                 //AddMetaArrayNode(fmcn, frontDefineMt, mv, frontMetaNode);
             }
 
@@ -195,7 +208,7 @@ namespace SimpleLanguage.Core
 
             allowUseSettings = new AllowUseSettings(_useConst);
             allowUseSettings.setterFunction = false;
-            allowUseSettings.getterFunction = true;
+            allowUseSettings.getterFunction = false;
             bool flag = true;
             List<MetaCallNode> newList = new List<MetaCallNode>();
             StringBuilder sb = new StringBuilder();
@@ -238,7 +251,8 @@ namespace SimpleLanguage.Core
                             if (cnt.metaVariable != null)
                             {
                                 var frontcn = cnt;
-                                if (cnt.metaVariable.IsSupportItemByIndex(true) || cnt.metaVariable.IsSupportItemByIndex(false) )
+                                if ( (allowUseSettings.getterFunction&&cnt.metaVariable.IsSupportItemByIndex(true))
+                                    || (allowUseSettings.setterFunction &&cnt.metaVariable.IsSupportItemByIndex(false)) )
                                 {
                                     //arryobject.@i arrayobject.@1
                                     MetaType mtt = cnt.metaVariable.GetFinalMetaType();
@@ -273,6 +287,10 @@ namespace SimpleLanguage.Core
                                         }
                                     }
                                 }
+                                else
+                                {
+                                    return false;
+                                }
                             }
                         }
                     }
@@ -294,25 +312,7 @@ namespace SimpleLanguage.Core
             if (flag)
             {
                 m_VisitNodeList.Clear();
-                int i = 0;
-                MetaCallNode frontNode = null;
-                while (true)
-                {
-                    if (i >= newList.Count)
-                    {
-                        break;
-                    }
-                    MetaCallNode mcn = newList[i++];
-                    if (mcn == null)
-                    {
-                        break;
-                    }
-                    AddVisitNodeList(i, mcn, frontNode);
-
-                    sb.Append($"[Pos:{i} Name:{mcn.name} Status:{"OK"}");
-
-                    frontNode = mcn;
-                }
+                AddVisitNodeListByNewList(newList);
             }
             if (m_VisitNodeList != null && m_VisitNodeList.Count > 0)
             {
@@ -326,6 +326,29 @@ namespace SimpleLanguage.Core
             }
 
             return flag;
+        }
+        public void AddVisitNodeListByNewList( List<MetaCallNode> newList)
+        {
+            StringBuilder sb = new StringBuilder();
+            int i = 0;
+            MetaCallNode frontNode = null;
+            while (true)
+            {
+                if (i >= newList.Count)
+                {
+                    break;
+                }
+                MetaCallNode mcn = newList[i++];
+                if (mcn == null)
+                {
+                    break;
+                }
+                AddVisitNodeList(i, mcn, frontNode);
+
+                sb.Append($"[Pos:{i} Name:{mcn.name} Status:{"OK"}");
+
+                frontNode = mcn;
+            }
         }
         /// <summary>
         /// 校验 ?. (null conditional) 的使用场景：

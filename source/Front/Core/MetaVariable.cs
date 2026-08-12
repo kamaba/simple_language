@@ -412,9 +412,9 @@ namespace SimpleLanguage.Core
         public MetaExpressNodeBase visitExpressNode => m_VisitExpressNode;
         public MetaConstExpressNode fastVisitConstExpressNode => m_VisitExpressNode as MetaConstExpressNode;
         public MetaMethodCall methodCall => m_MethodCall;
+        public EVisitType visitType => m_VisitType;
 
         private EVisitType m_VisitType = EVisitType.AT;
-        //private MetaCallLink m_TargetMetaVisitCallLink = null;
         string m_AtName = "";
         private bool m_FastVisit = false;
         private MetaExpressNodeBase m_VisitExpressNode = null;
@@ -467,6 +467,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_SourceMetaVariable = lmv;
             m_FastVisit = false;
+            m_IsDefineMetaType = lmv.isDefineMetaType;
             if (lmv.isArray)
             {
                 if (mvv == null && string.IsNullOrEmpty(m_AtName))
@@ -495,11 +496,16 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
-                m_VisitExpressNode = new MetaCallLinkExpressNode(mvv);
+                var ven = new MetaCallLinkExpressNode(mvv);
+
+                MetaInputParamCollection mipc = new MetaInputParamCollection(lmv.GetFinalTemplateMetaClass(), m_OwnerMetaBlockStatements);
+                mipc.AddMetaInputParam(new MetaInputParam(ven) );
+                MetaMemberFunction mmf = lmv.GetFinalTemplateMetaClass().GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_getItem_", 0, mipc, true);
+
+                m_MethodCall = new MetaMethodCall(lmv.GetFinalTemplateMetaClass(), m_OwnerMetaBlockStatements, mmf, new List<MetaType>(), mipc, null);
                 m_FastVisit = false;
 
             }
-            m_IsDefineMetaType = lmv.isDefineMetaType;
         }
         public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaOpExpressNode moe )
         {

@@ -9,6 +9,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
@@ -204,16 +205,29 @@ namespace SimpleLanguage.IR
                     }
                     else
                     {
-                        IRExpressBase irexpress = IRExpressManager.CreateExpress(_irMethod, mvv.visitExpressNode );
-                        irVar.m_IRDataList.AddRange(irexpress.IRDataList);
+                        if(mvv.visitExpressNode != null )
+                        {
+                            IRExpressBase irexpress = IRExpressManager.CreateExpress(_irMethod, mvv.visitExpressNode);
+                            irVar.m_IRDataList.AddRange(irexpress.IRDataList);
 
 
-                        IRData irdata = new IRData();
-                        irdata.opCode = EIROpCode.LoadArrayIndexField;
-                        irdata.SetDebugInfoByToken(mvv.token ?? mvv.visitExpressNode?.token);
-                        IRBase irbase = new IRBase();
-                        irbase.AddIRData(irdata);
-                        irVar.m_IRDataList.AddRange(irbase.IRDataList);
+                            IRData irdata = new IRData();
+                            irdata.opCode = EIROpCode.LoadArrayIndexField;
+                            irdata.SetDebugInfoByToken(mvv.token ?? mvv.visitExpressNode?.token);
+                            IRBase irbase = new IRBase();
+                            irbase.AddIRData(irdata);
+                            irVar.m_IRDataList.AddRange(irbase.IRDataList);
+                        }
+                        else if( mvv.methodCall != null )
+                        {                            
+                            IRCallFunction irCallFun = new IRCallFunction(_irMethod);
+                            irCallFun.Parse(mvv.methodCall);
+                            irVar.m_IRDataList.AddRange(irCallFun.IRDataList);
+                        }
+                        else
+                        {
+                            Log.AddIRLog(LID.IRMethodNotFoundVariable, "in array value else branch", _irMethod.id, mv.name);
+                        }
                     }
                     return irVar;
                 }
@@ -439,6 +453,13 @@ namespace SimpleLanguage.IR
             }
             else if (mv.variableFrom == MetaVariable.EVariableFrom.ArrayValue)
             {
+                if (mv is MetaVisitVariable mvv && mvv.visitType == MetaVisitVariable.EVisitType.MethodCall)
+                {
+                    // MethodCall 模式：_setItem_ 方法调用
+                    // 左侧已经执行了 _setItem_ 方法调用（在 IRAssignStatements 中处理）
+                    // 这里不需要生成额外的 store 指令，直接返回空
+                    return new IRStoreVariable();
+                }
                 IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Array );
                 return irsv;
             }

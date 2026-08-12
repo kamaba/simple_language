@@ -450,11 +450,31 @@ namespace SimpleLanguage.Core
                 {
                     return false;
                 }
+
+
+                if (inputCount <= m_MetaDefineParamList.Count )
+                {
+                    for (int i = 0; i < inputCount; i++)
+                    {
+                        MetaDefineParam a = m_MetaDefineParamList[i];
+                        if (a == null)
+                            return false;
+                        //if( a.metaDefineTypeName )
+                        MetaInputParam b = null;
+                        if (mpc != null && i < inputCount)
+                        {
+                            b = mpc.metaInputParamList[i];
+                        }
+                        if (!MetaInputParamCollection.CheckInputMetaParam(a, b))
+                            return false;
+                    }
+                }
+
                 var lastMdp = m_MetaDefineParamList[m_MetaDefineParamList.Count - 1];
                 if(lastMdp.isExtendParams && lastMdp.metaVariable.isArray )
                 {
                     var mdt = lastMdp.metaVariable.isDefineMetaType ? lastMdp.metaVariable.defineMetaType : lastMdp.metaVariable.realMetaType;
-                    for( int i = 0; i < m_MetaDefineParamList.Count - 1; i++ ) 
+                    for( int i = inputCount; i < m_MetaDefineParamList.Count - 1; i++ ) 
                     {
                         var mdp_metaType = m_MetaDefineParamList[i].metaVariable.GetFinalMetaType();
                         var mip = mpc.metaInputParamList[i];
