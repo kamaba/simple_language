@@ -58,6 +58,25 @@ namespace SimpleLanguage.IR
             }
 
             var mv = lastCL.GetReturnMetaVariable();
+
+
+            if( lastCL.methodCall != null && lastCL.methodCall.function.name == "_setItem_" )
+            {
+                // 赋值场景：_setItem_ 已经包含 value 参数，直接执行方法调用
+                // 读取场景：_getItem_ 需要执行方法调用并保留返回值
+                IRCallFunction irCallFun = new IRCallFunction(this.irMethod);
+                irCallFun.Parse(lastCL.methodCall);
+                m_IRStatements.Add(irCallFun);
+
+                // 读取场景：返回值已在栈上，不需要额外处理
+                // 赋值场景：m_RightMetaExpress 已被消费（在 MetaAssignStatements 中设置），直接返回
+                if (ms.rightMetaExpress == null)
+                {
+                    return;
+                }
+                return;
+            }
+
             // 如果左侧最后一个访问节点是方法调用且返回 void（返回类型为 void），
             // 则不应该继续处理赋值（没有可存储的返回值）。
             // void 方法的 returnMetaVariable 不为 null，但其类型是 void。

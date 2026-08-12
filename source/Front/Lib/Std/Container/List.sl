@@ -157,7 +157,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         this._index = -1
         this._current = null
     }
-    public void fill( T value )
+    public void fill( T value, int startIndex = 0, int count = -1 )
     {
         for i = 0, i < this._length, i++
         {

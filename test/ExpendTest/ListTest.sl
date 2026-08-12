@@ -104,7 +104,7 @@ ListTest
         list.fill(99)
         for i = 0, i < list.length, i++
         {
-            Console.println("list[" + i + "] = " + list.$i )
+            Console.println("list[" + i + "] = " + list.$i.toString() )
         }
     }
 
@@ -122,13 +122,17 @@ ListTest
     static testSetGetValue()
     {
         Console.println("===== testSetGetValue =====")
-        List<int> list = Std.List<int>(5)
+        List<int> list = Std.List<int>(10)
         list.add(100)
         list.add(200)
         list._setItem_(0, 999)
         list[4] = 888
-        Console.println("list.getValue(0) = " + list._getItem_(0))
-        Console.println("list.getValue(1) = " + list[1] )
+        list.$3 = 777
+        Console.println("list.getValue(0) = " + list._getItem_(0)?.toString() )
+        Console.println("list.getValue(1) = " + list._getItem_(1)?.toString() )
+        Console.println("list.getValue(2) = " + list.[2]?.toString() )
+        Console.println("list.getValue(3) = " + list[3].toString() )
+        Console.println("list.getValue(4) = " + list.$4.toString() )
     }
 
     # 测试迭代器 (IIterable/IIterator)
@@ -189,6 +193,20 @@ ListTest
             Console.println("arr[" + i + "] = " + arr[i] )
         }
     }
+    # 测试 object
+    static testForObject()
+    {
+        Console.println("===== testToArray =====")
+        Std.List<object> list = new()
+        list.add(10)
+        list.add("aaa")
+        list.add([1,2,3])
+       
+        for i = 0, i < list.length, i++
+        {
+            Console.println("list[" + i + "] = " + list[i].toString() )
+        }
+    }
 
     static fun()
     {
@@ -205,5 +223,6 @@ ListTest
         testToString()
         testStringList()
         testToArray()
+        testForObject();
     }
 }

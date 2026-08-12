@@ -1589,6 +1589,7 @@ namespace SimpleLanguage.Core
                     MetaClass mc = mtt.metaClass == null ? mv.GetTemplateMetaClass() : mtt.metaClass;
                     if (isAt)
                     {
+                        HandleVisit();
                     }
                     else
                     {
@@ -1673,11 +1674,11 @@ namespace SimpleLanguage.Core
                                     && m_AllowUseSettings.expressNodeList.Count > 0)
                                 {
                                     inputParam.AddMetaInputParam(new MetaInputParam(m_AllowUseSettings.expressNodeList[0]));
-                                    visitMethod = visitMc.GetMetaDefineGetSetMemberFunctionByName("_setItem_", inputParam, false, true);
+                                    visitMethod = visitMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_setItem_", 0, inputParam );
                                 }
                                 else
                                 {
-                                    visitMethod = visitMc.GetMetaDefineGetSetMemberFunctionByName("_getItem_", inputParam, true, false);
+                                    visitMethod = visitMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_getItem_", 0, inputParam );
                                 }
 
                                 if (visitMethod != null)
