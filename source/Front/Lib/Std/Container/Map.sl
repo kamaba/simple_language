@@ -1,5 +1,5 @@
 
-public class Map<TKey,TValue> extends Object interface Core.IIterable<T>, Core.IIterator<T>, IMap
+public class Map<TKey,TValue> extends Object interface IMap,Core.IIterable<T>, Core.IIterator<T>
 {
     private class MapEntity<T,V>
     {
@@ -8,8 +8,77 @@ public class Map<TKey,TValue> extends Object interface Core.IIterable<T>, Core.I
         public V value = null
     }
 
-    List<MapEntity<TKey,TValue> > m_MapContent = List<MapEntity<TKey,TValue> >()
+    private Array<MapEntity<TKey,TValue>> m_MapContent = new()
+    private int _length = 0
+    private int _capacity = 0
+    private int _index = 0;
+    private MapEntity<TKey,TValue> _current = null
 
+    void _init_()
+    {
+        this._list = Array<MapEntity<TKey,TValue>>(0)
+    }
+    override void _init_( int capacity )
+    {
+        this._list = Array<MapEntity<TKey,TValue>>(capacity)
+    }    
+    override get int capacity()
+    {
+        ret this._capacity
+    }
+    override set void capacity( int value )
+    {
+        if value < this._length
+        {
+            ret
+        }
+        if value != this._list.length
+        {
+            this.resizeArray(value)
+            this._capacity = value
+        }
+    }
+
+    #容量扩展：0->4，之后倍增 4->8->16...（与 C# List<T> 一致）
+    void grow()
+    {
+        int newCapacity = 4
+        if this._capacity > 0
+        {
+            newCapacity = this._capacity * 2
+        }
+        this.resizeArray(newCapacity)
+        this._capacity = newCapacity
+    }
+    override void ensureCapacity( int min )
+    {
+        int curCap = this._list.length
+        if curCap < min
+        {
+            int newCapacity = 4
+            if curCap > 0
+            {
+                newCapacity = curCap * 2
+            }
+            if newCapacity < min
+            {
+                newCapacity = min
+            }
+            this.resizeArray(newCapacity)
+            this._capacity = newCapacity
+        }
+    }
+
+    #内部方法：重新分配 _list Array 并拷贝已有元素
+    void resizeArray( int newCapacity )
+    {
+        Array<T> newList = Array<T>(newCapacity)
+        for i = 0, i < this._length, i++
+        {
+            SystemArraySetValueThis(newList, i, SystemArrayGetValueThis(this._list, i))
+        }
+        this._list = newList
+    }
 
     void add( TKey key, TValue value )
     {
@@ -19,11 +88,23 @@ public class Map<TKey,TValue> extends Object interface Core.IIterable<T>, Core.I
         me.hashId = key.hashCode
         m_MapContent.add(me)
     }
-    get TValue getValue( TKey key )
+    TValue _getItem_( TKey key )
     {
         for i = 0, i < m_MapContent.length, i++
         {
-            var ent = m_MapContent.getValue(i)
+            var ent = m_MapContent._getItem_(i)
+            if ent != null && ent.key.equals(key)
+            {
+                ret ent.value
+            }
+        }
+        ret TValue.default
+    }
+    void _setItem_( TKey key, TValue value )
+    {
+        for i = 0, i < m_MapContent.length, i++
+        {
+            var ent = m_MapContent._getItem_(i)
             if ent != null && ent.key.equals(key)
             {
                 ret ent.value
@@ -43,21 +124,100 @@ public class Map<TKey,TValue> extends Object interface Core.IIterable<T>, Core.I
         }
         ret false
     }    
-}
-
-MapTest
-{
-    static fun()
+    public override void clear()
     {
-        Map map = Map<stringt, string>(20);
-        map.add( "xx", "20" );
+        this._length = 0
+        this._capacity = 0
+        this._list = Array<T>(0)
+        this._index = -1
+        this._current = null
+    }
+    public void fill( T value, int startIndex = 0, int count = -1 )
+    {
+        for i = 0, i < this._length, i++
+        {
+            SystemArraySetValueThis(this._list, i, value)
+        }
+    }
+    override Array<T> toArray()
+    {
+        Array<T> arr = Array<T>(this._length)
+        for i = 0, i < this._length, i++
+        {
+            SystemArraySetValueThis(arr, i, SystemArrayGetValueThis(this._list, i))
+        }
+        ret arr
+    }
 
-        xx = "xx"
-
-        Map map2 = Map<Class1, int>();
-        Class1 c1 = Class1(20);
-        map2.add(c1, 20);
-
-        var mapv = map.$xx;  #这样是读取上边的变量  $变量  $"xx"  $c1 $0 
+    #接口层
+    override void reset()
+    {
+        this._index = -1;
+        this._current = null
+    }
+    override bool moveNext()
+    {
+        this._index++;
+        bool hasNext_var = this._index < this._length
+        if hasNext_var
+        {
+            this._current = SystemArrayGetValueThis(this._list, this._index) as T
+        }
+        else
+        {
+            this._current = null
+        }
+        ret hasNext_var
+    }
+    override get T current()
+    {
+        ret this._current;
+    }
+    override set void current( T val )
+    {
+        SystemArraySetValueThis(this._list, this._index, val)
+        this._current = val
+    }
+    override get Core.IIterator<T> iterator()
+    {
+        ret this
+    }
+    get int index()
+    {
+        ret this._index;
+    }
+    set void index( int ind )
+    {
+        if( ind < 0 )
+        {
+            ret
+        }
+        if( ind >= this._length )
+        {
+            ret
+        }
+        this._index = ind;
+        this._current = SystemArrayGetValueThis(this._list, ind) as T
+    }
+    override string toString()
+    {
+        string showstr = "["
+        for i = 0, i < this._length, i++
+        {
+            var cur = SystemArrayGetValueThis(this._list, i)
+            if cur == null
+            {
+                showstr = showstr + "null"
+            }
+            else
+            {
+                showstr = showstr + cur.toString()
+            }
+            if( i < this._length - 1 )
+            {
+                showstr += ","
+            }
+        }
+        ret showstr + "]"
     }
 }

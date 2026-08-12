@@ -2,6 +2,8 @@
 
 1. 优化迭代器，直接写到Array/Range cvm层，还有就是写for循环 使用for i = 0, i < 100; 这种的，也在虚拟机层实现
 2. 把数组操作的尽量都系统函数化  包括fill
+3. 增加数组的内部方法
+4. 写list,map的支持
 
 最近要解决的:
 1. 基础类的相关写作 Object
@@ -56,7 +58,6 @@ int x1 = 10 + (1-20) * 33/20 + 10~/20 - 22 * 2/1; 有报错处理
 5. 增加协程  await 或者是使用go
 8. swtich的enum的支持  switch的,逗号的支持
 9. switch的 区间支持 switch的is MetaClass 的支持
-10. 写list,map的支持
 11. 写json的支持 与data的联动
 12. 快速返回 对=> 的支持
 

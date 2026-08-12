@@ -16,6 +16,15 @@ ListTest
             Console.println("list[" + i + "] = " + list._getItem_(i))
         }
     }
+    static testBasicInitializer()
+    { 
+         Console.println("===== testBasicInitializer =====")        
+        list = List<int>(4){123,456,789}
+         for i = 0, i < list.length, i++
+         {
+            Console.println("list[" + i + "] = " + list._getItem_(i))
+         }     
+    }
 
     # 测试带初始容量的构造
     static testCapacityConstructor()
@@ -211,6 +220,7 @@ ListTest
     static fun()
     {
         testBasicAdd()
+        testBasicInitializer();
         testCapacityConstructor()
         testGrow()
         testInsert()
