@@ -890,9 +890,12 @@ namespace SimpleLanguage.Compile
             Node nextNode = null;
             Node block = null;
 
+            List<FileMetaAttributeSyntax> attrs = new List<FileMetaAttributeSyntax>();
             int isClass = 0;        //0 unknows 1 class 2namespace
             for (index = pnode.parseIndex; index < pnode.childList.Count;)
             {
+                ParseLeadingAttributes(pnode, ref index, attrs);
+
                 curNode = pnode.childList[index++];
 
                 if (curNode.token?.type == ETokenType.At)
@@ -975,7 +978,7 @@ namespace SimpleLanguage.Compile
             {
                 if (isClass == 1)
                 {
-                    AddFileMetaClasss(block, nodeList);
+                    AddFileMetaClasss(block, nodeList, attrs);
                     ParseNamespaceOrTopClass(pnode);
                 }
                 else if (isClass == 2)
@@ -1000,6 +1003,10 @@ namespace SimpleLanguage.Compile
                                 Log.AddNodeLog(LID.ShowExtendMessage, nodeList[0].token, "现在不允许 namespace N1;这种的语法了");
                             }
 
+                        }
+                        if(attrs.Count > 0 )
+                        {
+                            Log.AddNodeLog(LID.ShowExtendMessage, nodeList[0].token, "在namespace不允许有attribute");
                         }
                         m_CurrentNodeInfoStack.Pop();
                         ParseNamespaceOrTopClass(pnode);
@@ -1930,9 +1937,10 @@ namespace SimpleLanguage.Compile
                 #endregion
             }
         }
-        void AddFileMetaClasss(Node blockNode, List<Node> nodeList)
+        void AddFileMetaClasss(Node blockNode, List<Node> nodeList, List<FileMetaAttributeSyntax> attri )
         {
             FileMetaClass cpc = new FileMetaClass(m_FileMeta, nodeList);
+            cpc.AddAttributes(attri);
 
             AddParseClassNodeInfo(cpc);
 

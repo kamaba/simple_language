@@ -1,12 +1,12 @@
 
- public class Random
-    {
-        private int _seed = 0
+public class Random extends Object
+{
+    private int _seed = 0
 
-        _init_()
-        {
-            this._seed = System.currentTimeMillis()
-        }
+    _init_()
+    {
+        this._seed = SystemGeneralRandomSeed()
+    }
 
         _init_(int initialSeed)
         {
@@ -90,4 +90,4 @@
             Random r = new()
             ret r.nextFloat(min, max)
         }
-    }
+}

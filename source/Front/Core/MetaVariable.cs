@@ -503,6 +503,7 @@ namespace SimpleLanguage.Core
                 MetaMemberFunction mmf = lmv.GetFinalTemplateMetaClass().GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_getItem_", 0, mipc, true);
 
                 m_MethodCall = new MetaMethodCall(lmv.GetFinalTemplateMetaClass(), m_OwnerMetaBlockStatements, mmf, new List<MetaType>(), mipc, null);
+                m_VisitType = EVisitType.MethodCall;
                 m_FastVisit = false;
 
             }
@@ -558,7 +559,7 @@ namespace SimpleLanguage.Core
                         visitMc = fmt.GetTemplateMetaClass();
                     if (visitMc != null)
                     {
-                        var getItemMethod = visitMc.GetMetaDefineGetSetMemberFunctionByName("_getItem_", null, true, false);
+                        var getItemMethod = visitMc.GetFirstMetaMemberFunctionByName("_getItem_");
                         if (getItemMethod != null && getItemMethod.returnMetaVariable != null)
                         {
                             getMt = getItemMethod.returnMetaVariable.GetFinalMetaType();
@@ -617,7 +618,7 @@ namespace SimpleLanguage.Core
                     visitMc = fmt.GetTemplateMetaClass();
                 if (visitMc != null)
                 {
-                    var getItemMethod = visitMc.GetMetaDefineGetSetMemberFunctionByName("_getItem_", null, true, false);
+                    var getItemMethod = visitMc.GetFirstMetaMemberFunctionByName("_getItem_");
                     if (getItemMethod != null && getItemMethod.returnMetaVariable != null)
                     {
                         m_RealMetaType = getItemMethod.returnMetaVariable.GetFinalMetaType();

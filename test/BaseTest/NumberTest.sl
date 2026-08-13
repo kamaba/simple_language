@@ -76,6 +76,17 @@ NumberTest
         global.println("a != b = " + (a != b).toString())
         global.println("a >= b = " + (a >= b).toString())
         global.println("a <= b = " + (a <= b).toString())
+
+        global.println("a.compareTo(b) = " + a.compareTo(b).toString())
+        global.println("a.compareTo(b) = " + b.compareTo(20).toString())
+
+        int a20 = 20
+        global.println("a20 > b  = " + a20.compareTo(30.0f).toString())
+        global.println("a20 < b  = " + a20.compareTo(1s).toString())
+        global.println("a20 == b = " + a20.compareTo(100us).toString())
+        global.println("a20 != b = " + a20.compareTo(323232uL).toString())
+        global.println("a20 >= b = " + a20.compareTo(3L).toString())
+
     }
     static convertAndTypeTest()
     {

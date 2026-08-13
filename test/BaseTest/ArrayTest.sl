@@ -80,21 +80,21 @@ ArrayTest
         global.println("========== Array.basic api ==========")
         Int32[] nums = Array<Int32>.create(3)
         nums.fill(7)
-        nums.setValue(2, 99)
+        nums._setItem_(2, 99)
         int lenValue = nums.length
         lenValue += 1
 
         
         global.println("nums.length -> " + nums.length.toString())
         global.println("lenValue -> " + lenValue.toString())
-        global.println("nums.getValue(0) -> " + nums.getValue(0).toString())
-        global.println("nums.getValue(2) -> " + nums.getValue(2).toString())
+        global.println("nums._getItem_(0) -> " + nums._getItem_(0).toString())
+        global.println("nums._getItem_(2) -> " + nums._getItem_(2).toString())
         
 
         nums.index = 2
         global.println("nums.current() $ index=1 -> " + nums.current().toString())
         nums.current = 123
-        global.println("nums.getValue(1) after set current -> " + nums.getValue(2).toString())
+        global.println("nums._getItem_(1) after set current -> " + nums._getItem_(2).toString())
     }
 
     static arrayGenericElementTest()
@@ -247,7 +247,7 @@ ArrayTest
         jagged2.$0.$2 = 997
         jagged2.$0.$3 = 996
         jagged2[1] = [1,100,1000]
-        jagged2[1].setValue( 0, 2222 );
+        jagged2[1]._setItem_( 0, 2222 );
         forIIterator(jagged2)
     }
 

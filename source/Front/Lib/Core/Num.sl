@@ -14,18 +14,18 @@ public abstract class Num extends Object
     public abstract Num ceil();
 
     #compare to another numeric value: -1,0,1
-    public abstract Byte compareTo( Num other );
+    public abstract Int8 compareTo( Num other );
 
     
     bool toBool()
     {
         ret SystemConvertBool(this)
     }
-    Int8 toInt8( byte index = 0 )
+    Int8 toInt8( Int8 index = 0 )
     {
         ret SystemConvertInt8(this, index)
     }
-    UInt8 toUInt8( byte index = 0 )
+    UInt8 toUInt8( Int8 index = 0 )
     {
         ret SystemConvertUInt8(this, index)
     }

@@ -159,6 +159,14 @@ namespace SimpleLanguage.Compile
                    (c >= 'A' && c <= 'Z') ||
                    c == '_';
         }
+        bool IsIdentifier3(char c)
+        {
+            return (c >= '0' && c <= '9') ||
+                   (c >= 'a' && c <= 'z') ||
+                   (c >= 'A' && c <= 'Z') ||
+                   c == '_' || c == '(' || c == ')' ||
+                   c == ',' || c == '"';
+        }
         private bool IsIdentifier(char ch)
         {
             return (ch == '_' || char.IsLetterOrDigit(ch));
@@ -979,12 +987,12 @@ namespace SimpleLanguage.Compile
                 while (true)
                 {
                     var n = ReadChar();
-                    if (IsIdentifier2(n))
+                    if (IsIdentifier3(n))
                     {
                         ident.Append(n);
                         continue;
                     }
-                    UndoChar();
+                    //UndoChar();
                     break;
                 }
                 // For attribute syntax: store attribute name in extend.

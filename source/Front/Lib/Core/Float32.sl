@@ -41,7 +41,7 @@ public class Float32 extends Num
     {
         ret this
     }
-    public override Int32 compareTo( Num other )
+    public override Int8 compareTo( Num other )
     {
         if (other == null){ret 1} 
         Float64 ov = other.toFloat64()

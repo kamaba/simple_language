@@ -459,7 +459,7 @@ namespace SimpleLanguage.Core
                         MetaDefineParam a = m_MetaDefineParamList[i];
                         if (a == null)
                             return false;
-                        //if( a.metaDefineTypeName )
+                        if (a.isExtendParams) break;
                         MetaInputParam b = null;
                         if (mpc != null && i < inputCount)
                         {
@@ -470,40 +470,40 @@ namespace SimpleLanguage.Core
                     }
                 }
 
-                var lastMdp = m_MetaDefineParamList[m_MetaDefineParamList.Count - 1];
-                if(lastMdp.isExtendParams && lastMdp.metaVariable.isArray )
-                {
-                    var mdt = lastMdp.metaVariable.isDefineMetaType ? lastMdp.metaVariable.defineMetaType : lastMdp.metaVariable.realMetaType;
-                    for( int i = inputCount; i < m_MetaDefineParamList.Count - 1; i++ ) 
-                    {
-                        var mdp_metaType = m_MetaDefineParamList[i].metaVariable.GetFinalMetaType();
-                        var mip = mpc.metaInputParamList[i];
-                        var retmt = mip.GetRetMetaType();
+                //var lastMdp = m_MetaDefineParamList[m_MetaDefineParamList.Count - 1];
+                //if(lastMdp.isExtendParams && lastMdp.metaVariable.isArray )
+                //{
+                //    var mdt = lastMdp.metaVariable.isDefineMetaType ? lastMdp.metaVariable.defineMetaType : lastMdp.metaVariable.realMetaType;
+                //    for( int i = inputCount; i < m_MetaDefineParamList.Count - 1; i++ ) 
+                //    {
+                //        var mdp_metaType = m_MetaDefineParamList[i].metaVariable.GetFinalMetaType();
+                //        var mip = mpc.metaInputParamList[i];
+                //        var retmt = mip.GetRetMetaType();
 
-                        if (retmt.isData)
-                        { 
-                        }
-                        else if( retmt.isEnum )
-                        {
+                //        if (retmt.isData)
+                //        { 
+                //        }
+                //        else if( retmt.isEnum )
+                //        {
 
-                        }
-                        else
-                        {
-                            var retmc = retmt.metaClass;
-                            if (retmc is MetaGenTemplateClass mgtc)
-                            {
-                                retmc = mgtc.metaTemplateClass;
-                            }
-                            if (retmc != mdp_metaType.metaClass)
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                    return true;
-                }
+                //        }
+                //        else
+                //        {
+                //            var retmc = retmt.metaClass;
+                //            if (retmc is MetaGenTemplateClass mgtc)
+                //            {
+                //                retmc = mgtc.metaTemplateClass;
+                //            }
+                //            if (retmc != mdp_metaType.metaClass)
+                //            {
+                //                return false;
+                //            }
+                //        }
+                //    }
+                //    return true;
+                //}
 
-                return false;
+                return true;
             }
             else
             {

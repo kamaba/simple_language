@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\csimple_lang\csimple_lang.vcxproj" />
     <ProjectReference Include="..\Front\SimpleLanguageFront.csproj" />
   </ItemGroup>
 

@@ -21,7 +21,7 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     }
     get int length(){ ret this._length }
 
-    public void fill(T value)
+    public void fill(T value, int startIndex = 0, int endIndex = -1) 
     {
         for i = 0, i < this._length, i++
         {
@@ -88,10 +88,6 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     T _getItem_( int __index )
     {
         ret SystemArrayGetValueThis(this, __index) as T
-    }
-    setValues( Int64 valPtr, int len )
-    {
-        #Lib.ArrayClass.SetArrayValue( this._ptr, 1,  valPtr, len )
     }
     override string toString()
     {            

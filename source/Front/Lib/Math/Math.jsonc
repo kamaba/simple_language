@@ -11,6 +11,11 @@
   "source": {
     "root": "."
   },
+  "systemCalls": 
+  [
+    // ---- Bridge calls ----   
+    { "name": "SystemGeneralRandomSeed", "returnType": "Int32",   "params": [], "isVariadic": false }
+  ],
   "compile": {
     "optimize": false,
     "target": "x64",
@@ -22,7 +27,15 @@
   },
   "compileFiles": {
     "files": [
-      { "path": "Math.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 }
+      { "path": "Math.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 },
+      { "path": "Float32_2.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 },
+      { "path": "Float32_3.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 },
+      { "path": "Float32_3x3.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 },
+      { "path": "Float32_4.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 },
+      { "path": "Float32_4x4.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 },
+      { "path": "Int32_2.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 },
+      { "path": "Random.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 },
+      { "path": "Rect.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 }
     ]
   },
   "references": [

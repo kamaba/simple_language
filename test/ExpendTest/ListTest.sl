@@ -139,7 +139,7 @@ ListTest
         list.$3 = 777
         Console.println("list.getValue(0) = " + list._getItem_(0)?.toString() )
         Console.println("list.getValue(1) = " + list._getItem_(1)?.toString() )
-        Console.println("list.getValue(2) = " + list.[2]?.toString() )
+        Console.println("list.getValue(2) = " + list._getItem_(2)?.toString() )
         Console.println("list.getValue(3) = " + list[3].toString() )
         Console.println("list.getValue(4) = " + list.$4.toString() )
     }

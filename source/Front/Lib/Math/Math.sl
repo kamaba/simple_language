@@ -1,5 +1,5 @@
 public class Math
-    {
+{
         public static float Pi = 3.141592653589793f
         public static float E = 2.718281828459045f
 
@@ -263,4 +263,4 @@ public class Math
         {
             ret degrees * Pi / 180.0f
         }
-    }
+}

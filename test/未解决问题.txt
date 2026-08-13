@@ -1,9 +1,10 @@
 
-
+0. CVMTest1/2 也是先编译包括 C的工程，然后尽量可以debug在C端的工程，而不是直接运行  在MetaDefineParam的引入的时候，需要把表达式也导入进来，要不会引起Must的错误
 1. 优化迭代器，直接写到Array/Range cvm层，还有就是写for循环 使用for i = 0, i < 100; 这种的，也在虚拟机层实现
-2. 把数组操作的尽量都系统函数化  包括fill
+2. 把数组操作的尽量都系统函数化  包括fill 移除通过下标，移植通过元素 插入
 3. 增加数组的内部方法
 4. 写list,map的支持
+5. 对别一个调用类的 Core.global.var1 Std.global.aaa
 
 最近要解决的:
 1. 基础类的相关写作 Object
@@ -11,8 +12,6 @@
 3. 使用Byte/SByte/Int16/UInt16/Int32/UInt32/
 4. Float32/Float64
 final int/uint/float 等方法 
-compare的验证
-int x1 = 10 + (1-20) * 33/20 + 10~/20 - 22 * 2/1; 有报错处理
 1. cvm 只使用三色方案  然后使用 引用计数的方案，在结尾 后把内存收集
 
 机制差的:
@@ -44,6 +43,8 @@ int x1 = 10 + (1-20) * 33/20 + 10~/20 - 22 * 2/1; 有报错处理
 6. 如果继续的extends Object 的toString() 没有override 需要报错
 7. 增加基础库的一些函数
 8. import 导入错误的显示
+9. 使用nickname 需要注册到全局的typealias里边
+10. 全局的typealias里边需要读取后，继承
 
 现在要增加多线程编译，嗯，并且增加那个log里边儿取消编译的字段。如果当前的进程编译私有文件的时候出错了，那就取消当前进程编译。并且会影响到metal的编译方式啊，每个都这样做，如果metal中出错了，那就影响I2的输出。
 

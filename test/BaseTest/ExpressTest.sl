@@ -423,6 +423,7 @@ ExpressTest
     {
         global.println("----- complexNestedExpressionTest -----")
 
+        int x1 = 10 + (1-20) * 33/20 + 10/20 - 22 * 2/1
         
         int a = 10
         int b = 20

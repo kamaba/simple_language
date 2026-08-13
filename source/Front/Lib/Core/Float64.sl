@@ -28,7 +28,7 @@ public class Float64 extends Num
     {
         ret this
     }
-    public override Int32 compareTo(Num other)
+    public override Int8 compareTo(Num other)
     {
         if (other == null) { ret 1 }
         Float64 ov = other.toFloat64()
@@ -54,5 +54,9 @@ public class Float64 extends Num
     override String toString()
     {
         ret SystemConvertString(this)
+    }
+    public String toString( string format )
+    {
+        ret string.toFormat( format, this._value );
     }
 }
