@@ -24,12 +24,16 @@ namespace SimpleLanguage.Core
             MemberData,
             ArrayValue,
             AnonVariable,
+            /// <summary>List/Map 初始化调用 add 方法</summary>
+            AddMethodCall,
         }
 
         public int opLevel => m_MetaExpress.opLevel;
         public MetaExpressNodeBase expressNode => m_MetaExpress;
         public int id => m_Id;
         public string defineName => m_DefineName;
+        public EAssignTargetType assignTargetType => m_AssignTargetType;
+        internal void SetAssignTargetType(EAssignTargetType t) => m_AssignTargetType = t;
 
         private MetaMemberVariable m_MetaMemberVariable;
         private MetaMemberData m_MetaMemberData;
@@ -1598,7 +1602,23 @@ namespace SimpleLanguage.Core
                     return;
                 }
                 MetaType cmt = genList[0];
-                if (fmbt is FileMetaCallTerm fmct)
+                if (fmbt is FileMetaBracketTerm fmst_list)
+                {
+                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmst_list, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements);
+                    mnoe.Parse(aws);
+                    mnoe.CalcReturnType();
+                    var mas = new MetaBraceAssignStatements(mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, mnoe);
+                    m_AssignStatementsList.Add(mas);
+                }
+                else if (fmbt is FileMetaBraceTerm fmbrt_list)
+                {
+                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode(fmbrt_list, cmt, m_OwnerMetaBase, m_OwnerMetaBlockStatements);
+                    mnoe.Parse(aws);
+                    mnoe.CalcReturnType();
+                    var mas = new MetaBraceAssignStatements(mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase, cmt, mnoe);
+                    m_AssignStatementsList.Add(mas);
+                }
+                else if (fmbt is FileMetaCallTerm fmct)
                 {
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.ownerMetaBase = m_OwnerMetaBase;

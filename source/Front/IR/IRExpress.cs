@@ -650,7 +650,58 @@ namespace SimpleLanguage.IR
                     datacall.SetDebugInfoByToken(mnoen.token);
                     AddIRData(datacall);
                 }
-                if(irmc.metaClassKind == IRMetaClassKind.Data )
+                // List/IList/IMap 初始化: { val1, val2, ... } 通过调用 add 方法
+                // 判断依据：新创建对象的类型是否有 add 方法
+                int addMethodIndex = -1;
+                IRMethod addMethod = irmc?.GetIRNonStaticMethodIndexByName("add", out addMethodIndex);
+                if (addMethodIndex == -1 && irmc != null)
+                {
+                    var ownerMc = irmc.OwnerMetaClass;
+                    if (ownerMc != null)
+                    {
+                        var baseMc = ownerMc.extendClass;
+                        while (baseMc != null && addMethodIndex == -1)
+                        {
+                            var baseIrmc = IRManager.instance.GetIRMetaClassById(baseMc.classId);
+                            if (baseIrmc != null)
+                            {
+                                addMethod = baseIrmc.GetIRNonStaticMethodIndexByName("add", out addMethodIndex);
+                                if (addMethodIndex >= 0)
+                                {
+                                    irmc = baseIrmc;
+                                    break;
+                                }
+                            }
+                            baseMc = baseMc.extendClass;
+                        }
+                    }
+                }
+                if (addMethodIndex != -1 && mnoen.assignStatementsList?.Count > 0)
+                {
+                    for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
+                    {
+                        var asl = mnoen.assignStatementsList[y];
+
+                        // Dup: 复制对象引用到栈顶
+                        IRDup irdup = new IRDup(irMethod);
+                        AddIRRangeData(irdup.IRDataList);
+
+                        // 生成值表达式 IR
+                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
+                        AddIRRangeData(irexp.IRDataList);
+
+                        // 调用 add 方法 (CallVirt)
+                        IRData calldata = new IRData();
+                        calldata.opCode = EIROpCode.CallVirt;
+                        calldata.index = addMethodIndex;
+                        var paramTypes = new List<IRMetaType>();
+                        var irmc_add = new IRMethodCall(newObjectIRMT, paramTypes, addMethod, 1);
+                        calldata.opValue = irmc_add;
+                        calldata.SetDebugInfoByToken(asl.expressNode.token);
+                        AddIRData(calldata);
+                    }
+                }
+                else if (irmc.metaClassKind == IRMetaClassKind.Data )
                 {
                     for (int x = 0; x < irmc.localIRMetaVariableList.Count; x++)
                     {
@@ -678,8 +729,7 @@ namespace SimpleLanguage.IR
                         irdata.opCode = EIROpCode.StoreNotStaticField1;
                         irdata.SetDebugInfoByToken(lirmv.express.token);
                         m_IRDataList.Add(irdata);
-                    }                    
-
+                    }
                 }
                 else
                 {
