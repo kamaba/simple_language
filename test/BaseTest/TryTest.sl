@@ -1,5 +1,3 @@
-import Std
-
 # ── 错误类型定义（try.md §3 enum extends Error）──
 enum TestError extends Error
 {

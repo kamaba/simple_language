@@ -1,6 +1,3 @@
-import Std
-import CSharp.SimpleLanguage
-import CSharp.System
 
 IfelseTest
 {

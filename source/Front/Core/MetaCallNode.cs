@@ -29,13 +29,11 @@ namespace SimpleLanguage.Core
         MetaNode,
         MetaType,
         ClassName,
-        //GenClassName,
-        //TypeName,
         TemplateName,
         EnumName,
         EnumMember,
         DataName,
-        DataValue,
+        //DataValue,
         FunctionInnerVariableName,
         VisitVariable,
         IteratorVariable,
@@ -73,7 +71,6 @@ namespace SimpleLanguage.Core
         public bool getterFunction = true;
         public bool ifNotVariableThenAddVariable = true;
         public bool isTryRightExpress = false;
-        public List<MetaExpressNodeBase> expressNodeList = new List<MetaExpressNodeBase>();
         public EParseFrom parseFrom { get; set; }
 
         public AllowUseSettings()
@@ -89,7 +86,6 @@ namespace SimpleLanguage.Core
             callConstructFunction = clone.callConstructFunction;
             setterFunction = clone.setterFunction;
             getterFunction = clone.getterFunction;
-            expressNodeList = clone.expressNodeList;
             isTryRightExpress = clone.isTryRightExpress;
             ifNotVariableThenAddVariable = clone.ifNotVariableThenAddVariable;
         }
@@ -100,6 +96,7 @@ namespace SimpleLanguage.Core
         public Token token => m_Token;
         public ECallNodeType callNodeType => m_CallNodeType;
         public ECallNodeSign callNodeSign => m_CallNodeSign;
+        public List<MetaCallNode> metaCallNodeList => m_MetaCallNodeList;
         public bool isQuestionMarkDot => m_IsQuestionMarkDot;
         public MetaExpressNodeBase metaExpressValue => m_ExpressNode;
         public List<MetaExpressNodeBase> bracketExpressList => m_BracketExpressList;
@@ -155,7 +152,10 @@ namespace SimpleLanguage.Core
         private MetaVariable m_MetaVariable = null;
         private MetaFunction m_MetaFunction = null;
         private string m_Name;
-        //private bool m_NextNotAllowParse = false;
+        private FileMetaBaseTerm m_FileRightExpress = null;
+        private MetaExpressNodeBase m_RightExpress = null;
+        private List<MetaCallNode> m_MetaCallNodeList = new List<MetaCallNode>();
+
         private bool m_VisitFlag = false;
 
         public MetaCallNode()
@@ -171,7 +171,7 @@ namespace SimpleLanguage.Core
         {
 
         }
-        public MetaCallNode(FileMetaCallNode fmcn1, FileMetaCallNode fmcn2, MetaBase mc, MetaBlockStatements mbs, MetaType fdmt)
+        public MetaCallNode(FileMetaCallNode fmcn1, FileMetaCallNode fmcn2, MetaBase mc, MetaBlockStatements mbs, MetaType fdmt, FileMetaBaseTerm rightExpress = null )
         {
             m_FileMetaCallSign = fmcn1;
             m_FileMetaCallNode = fmcn2;
@@ -179,6 +179,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = mc;
             m_OwnerMetaFunctionBlock = mbs;
             m_FrontDefineMetaType = fdmt;
+            m_FileRightExpress = rightExpress;
 
             if (fmcn1 != null && fmcn1.token?.type == ETokenType.QuestionMarkDot)
             {
@@ -246,6 +247,25 @@ namespace SimpleLanguage.Core
                 }
             }
 
+
+            if (m_FileRightExpress != null)
+            {
+                CreateExpressParam cep = new CreateExpressParam();
+                cep.fme = m_FileRightExpress;
+                cep.equalMetaVariable = null;
+                cep.metaType = m_MetaType;
+                cep.ownerMBS = m_OwnerMetaFunctionBlock;
+                cep.ownerMetaBase = m_OwnerMetaFunctionBlock.ownerMetaBase;
+
+                m_RightExpress = ExpressManager.CreateExpressNodeByCEP(cep);
+                m_RightExpress.Parse(_auc);
+                if (!m_RightExpress.parseSuccessed)
+                {
+                    m_RightExpress = null;
+                    return false;
+                }
+            }
+
             if (m_InputExpressNode != null)
             {
                 flag = FindArrayNode();
@@ -254,14 +274,14 @@ namespace SimpleLanguage.Core
             {
                 if (m_FileMetaCallNode == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 瀹氫箟鍘熸暟鎹负绌?! " + m_Token.ToLexemeAllString());
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 111111! " + m_Token.ToLexemeAllString());
                 }
                 if (m_FileMetaCallNode != null && m_FileMetaCallNode.fileMetaParTerm != null && !m_IsFunction)
                 {
                     var firstNode = m_FileMetaCallNode.fileMetaParTerm.fileMetaExpressList[0];
                     if (firstNode == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 涓嶈兘浣跨敤杈撳叆()涓殑鍐呭 0鍙蜂綅鐨勬病鏈夊唴瀹?!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 123123123!");
                     }
                     else
                     {
@@ -277,6 +297,7 @@ namespace SimpleLanguage.Core
                         m_ExpressNode.CalcReturnType();
                         m_MetaType = m_ExpressNode.GetReturnMetaType();
                         m_CallNodeType = ECallNodeType.Express;
+                        m_MetaCallNodeList.Add(this);
                         return true;
                     }
                 }
@@ -284,31 +305,43 @@ namespace SimpleLanguage.Core
                 {
                     flag = CreateCallNode();
                 }
-                if (this.m_FileMetaCallNode.fileMetaBracketTermList.Count > 0)
-                {
-                    MetaType mt = null;
-                    if (m_MetaVariable != null)
-                    {
-                        var fmt = m_MetaVariable.GetFinalMetaType();
-                        if (fmt.IsArray())
-                        {
-                            mt = new MetaType(CoreMetaClassManager.arrayMetaClass);
-                            mt.AddDefineTemplateMetaType(new MetaType(CoreMetaClassManager.int32MetaClass));
-                            //mt = new MetaType( CoreMetaClassManager.int32MetaClass );
-                        }
-                    }
-                    for (int i = 0; i < m_FileMetaCallNode.fileMetaBracketTermList.Count; i++)
-                    {
-                        CreateExpressParam cep = new CreateExpressParam();
-                        cep.fme = m_FileMetaCallNode.fileMetaBracketTermList[i];
-                        cep.equalMetaVariable = null;
-                        cep.metaType = mt;
-                        cep.ownerMBS = m_OwnerMetaFunctionBlock;
-                        cep.ownerMetaBase = m_OwnerMetaFunctionBlock.ownerMetaBase;
+                if (!flag) return false;
+                m_MetaCallNodeList.Add(this);
 
-                        var en = ExpressManager.CreateExpressNodeByCEP(cep);
-                        en.Parse(_auc);
-                        m_BracketExpressList.Add(en);
+
+                var frontcn = this;
+                for (int i = 0; i < m_FileMetaCallNode.fileMetaBracketTermList.Count; i++)
+                {
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.fme = m_FileMetaCallNode.fileMetaBracketTermList[i];
+                    cep.equalMetaVariable = null;
+                    cep.metaType = m_MetaType;
+                    cep.ownerMBS = m_OwnerMetaFunctionBlock;
+                    cep.ownerMetaBase = m_OwnerMetaFunctionBlock.ownerMetaBase;
+
+                    var en = ExpressManager.CreateExpressNodeByCEP(cep);
+                    en.Parse(_auc);
+                    if (!en.parseSuccessed )
+                    {
+                        return false;
+                    }
+                    m_BracketExpressList.Add(en);
+
+                    if (frontcn.callNodeType == ECallNodeType.MemberVariableName
+                      || frontcn.callNodeType == ECallNodeType.FunctionInnerVariableName
+                      || frontcn.callNodeType == ECallNodeType.VisitVariable
+                            )
+                    {
+                        MetaCallNode mcn = new MetaCallNode(en, m_OwnerMetaFunctionBlock.ownerMetaClass,
+                        m_OwnerMetaFunctionBlock, m_MetaType);
+                        mcn.SetFrontCallNode(frontcn);
+                        if (!mcn.ParseNode(_auc))
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "bracket express parse failed!");
+                            return false;
+                        }
+                        m_MetaCallNodeList.Add(mcn);
+                        frontcn = mcn;
                     }
                 }
             }
@@ -1671,9 +1704,9 @@ namespace SimpleLanguage.Core
                                 // 赋值场景（setterFunction=true）查找 _setItem_，否则查找 _getItem_
                                 MetaMemberFunction visitMethod = null;
                                 if (m_AllowUseSettings?.setterFunction == true
-                                    && m_AllowUseSettings.expressNodeList.Count > 0)
+                                    && m_RightExpress != null )
                                 {
-                                    inputParam.AddMetaInputParam(new MetaInputParam(m_AllowUseSettings.expressNodeList[0]));
+                                    inputParam.AddMetaInputParam(new MetaInputParam(m_RightExpress));
                                     visitMethod = visitMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_setItem_", 0, inputParam );
                                 }
                                 else
@@ -2123,8 +2156,11 @@ namespace SimpleLanguage.Core
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "set 的方法  不应该有参数，而是通过外部传入");
                             m_MetaInputParamCollection.Clear();
                         }
-                        MetaInputParam mip = new MetaInputParam(m_AllowUseSettings.expressNodeList[0]);
-                        m_MetaInputParamCollection.AddMetaInputParam(mip);
+                        if(m_RightExpress != null )
+                        {
+                            MetaInputParam mip = new MetaInputParam(m_RightExpress);
+                            m_MetaInputParamCollection.AddMetaInputParam(mip);
+                        }
                     }
                     if( !m_AllowUseSettings.setterFunction && m_AllowUseSettings.getterFunction)
                     {

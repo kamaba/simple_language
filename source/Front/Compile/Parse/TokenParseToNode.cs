@@ -166,6 +166,49 @@ namespace SimpleLanguage.Compile
 
             return null;
         }
+        private Node AddDollerOpSign(Token token)
+        {
+            if (m_CurrentNode.linkToken != null)
+            {
+                var ntoken = new Token(token);
+                string nvar = token.extend.ToString();
+
+                Node node = new Node(ntoken);
+                if (Regex.IsMatch(nvar, @"^\d+$"))
+                {
+                    int lex = 0;
+                    int.TryParse(nvar, out lex);
+                    ntoken.SetLexeme(lex);
+                    ntoken.SetType(ETokenType.Number);
+                    ntoken.SetExtend(EType.Int32);
+                    node.nodeType = ENodeType.ConstValue;
+                }
+                else
+                {
+                    ntoken.SetLexeme(token.extend);
+                    ntoken.SetType(ETokenType.Identifier);
+                    node.nodeType = ENodeType.IdentifierLink;
+                }
+
+
+                Node node2 = new Node(m_CurrentNode.linkToken);
+                node2.nodeType = ENodeType.Period;
+
+                m_CurrentNode.AddLinkNode(node2);
+                m_CurrentNode.AddLinkNode(node);
+                node.atToken = token;
+
+                m_CurrentNode.linkToken = null;
+                //tempNode.lastNode = node;
+
+            }
+            else
+            {
+                Log.AddTokenLog(LID.ShowExtendMessage, "现在$符必须使用.$方式!!");
+            }
+            m_TokenIndex++;
+            return null;
+        }
         private Node AddSymbol(Token token )
         {
             if (m_CurrentNode.nodeType == ENodeType.Angle)
@@ -756,7 +799,7 @@ namespace SimpleLanguage.Compile
                     break;
                 case ETokenType.Dollar:
                     {
-                        AddAtOpSign(token);
+                        AddDollerOpSign(token);
                     }
                     break;
                 case ETokenType.Space:

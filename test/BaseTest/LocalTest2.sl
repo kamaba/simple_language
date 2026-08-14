@@ -4,8 +4,6 @@
 # 2) local{} 执行顺序在 LocalTest1 之后
 # 3) local.xxx 绑定的是当前文件自己的 local instance
 
-import Core.Debug
-import Std
 
 local
 {

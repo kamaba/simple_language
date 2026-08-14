@@ -1,5 +1,3 @@
-import Std
-
 
 Map<MapT1,MapT2>
 {

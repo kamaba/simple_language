@@ -1,5 +1,3 @@
-import Std
-
 namespace Std.Layer1_1;    #这种方式 只适合于在外屋已经定义类名后，然后在该节点下有类名的前缀
 
 namespace Std.Layer1_1

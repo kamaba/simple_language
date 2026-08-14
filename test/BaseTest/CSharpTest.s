@@ -1,6 +1,3 @@
-import CSharp.System;
-import CSharp.System.Text;
-
 C1
 {
     b = 20;

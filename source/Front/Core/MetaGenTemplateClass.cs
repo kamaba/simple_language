@@ -198,11 +198,10 @@ namespace SimpleLanguage.Core
             {
                 return;
             }
-            if(this.m_ExtendClass == null )
+            if(this.m_ExtendClass != null )
             {
-                return;
+                m_ExtendClass.ParseGenMemberVarible();
             }
-            m_ExtendClass.ParseGenMemberVarible();
 
             //这个函数主要是用来生成模板实体的
 
@@ -363,16 +362,12 @@ namespace SimpleLanguage.Core
             this.m_MetaMemberFunctionTemplateNodeDict.Clear();
             foreach (var it in this.m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList)
             {
-                if (it.ownerMetaClass != this.m_MetaTemplateClass)
-                    continue;
                 var fun = ParseMetaMemberFunctionDefineMetaType(it);
                 this.m_NonStaticVirtualMetaMemberFunctionList.Add(fun);
                 AddMetaMemberFunction(fun);
             }
             foreach (var it in this.m_MetaTemplateClass.staticMetaMemberFunctionList)
             {
-                if (it.ownerMetaClass != this.m_MetaTemplateClass)
-                    continue;
                 var fun = ParseMetaMemberFunctionDefineMetaType(it);
                 this.m_StaticMetaMemberFunctionList.Add(fun);
                 AddMetaMemberFunction(fun);
@@ -382,7 +377,7 @@ namespace SimpleLanguage.Core
         {
             MetaMemberFunction mgmf = new MetaMemberFunction(mmf);
             mgmf.SetSourceMetaMemberFunction(mmf);
-            mgmf.SetOwnerMetaClass(this);
+            //mgmf.SetOwnerMetaClass(this);
 
             /* Gen template copies must not re-parse from FileMetaMemberFunction:
               * types are already resolved via UpdateMetaTypeByGenClassAndFunction below. */

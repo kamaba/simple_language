@@ -4,9 +4,6 @@
 # 2) local{} 中的变量/函数只在当前文件可见
 # 3) local{} 的执行顺序按工程编译文件顺序：LocalTest1 -> LocalTest2
 
-import Core.Debug
-import Std
-
 local
 {
     # 变量定义 + 初始化

@@ -1452,7 +1452,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, extendMessage + "Error BuildTst 表达式解析错误!! 604");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, currentTerm.token, "Error BuildTst 表达式解析错误!! 604 [" + extendMessage+"]" );
                         return false;
                     }
                 }

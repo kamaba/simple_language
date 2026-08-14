@@ -1,5 +1,3 @@
-import Std
-
 # ── 错误类型定义 ──
 enum CheckedError extends Error
 {

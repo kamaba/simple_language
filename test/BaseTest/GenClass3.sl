@@ -1,6 +1,4 @@
 
-import Std
-
 namespace GC3{
 
 LT

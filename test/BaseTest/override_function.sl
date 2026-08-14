@@ -1,6 +1,3 @@
-import Std
-import CSharp.System
-
 class Core.Object
 {
     string toString()

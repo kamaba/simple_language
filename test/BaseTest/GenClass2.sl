@@ -1,4 +1,3 @@
-import Std
 
 namespace GC2
 {

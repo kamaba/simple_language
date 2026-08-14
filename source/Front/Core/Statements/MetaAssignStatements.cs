@@ -135,11 +135,12 @@ namespace SimpleLanguage.Core
             MetaType expressMdt = new MetaType(CoreMetaClassManager.objectMetaClass);
 
             FileMetaBaseTerm rightExpress = null;
-            List<FileMetaCallNode> leftCallNodeList = null;
+            FileMetaCallLink fmcl = null;
             if (m_FileMetaOpAssignSyntax != null)
             {
+                fmcl = m_FileMetaOpAssignSyntax?.variableRef;
                 m_SignToken = m_FileMetaOpAssignSyntax?.assignToken;
-                leftCallNodeList = m_FileMetaOpAssignSyntax?.variableRef?.callNodeList;
+                var leftCallNodeList = m_FileMetaOpAssignSyntax?.variableRef?.callNodeList;
                 if (leftCallNodeList != null && leftCallNodeList.Count > 0)
                 {
                     m_Token = leftCallNodeList[leftCallNodeList.Count - 1].token;
@@ -275,233 +276,194 @@ namespace SimpleLanguage.Core
                     }
                     break;
             }
-            if (leftCallNodeList.Count == 0)
-            {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "leftCallNodeList.Count == 0");
-                return;
-            }
-            List<MetaCallNode> mcnList = new List<MetaCallNode>();
-            FileMetaCallNode fmcn1 = leftCallNodeList[0];
-            var firstNode = new MetaCallNode(null, fmcn1, m_OwnerMetaBlockStatements.ownerMetaBase, m_OwnerMetaBlockStatements, null);
 
-            var _auc = new AllowUseSettings() { setterFunction = true };
-            if (firstNode.ParseNode(_auc) == false)
-            {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "firstNode.ParseNode is failed" );
-                return;
-            }
-            mcnList.Add(firstNode);
+            m_LeftMetaExpress = new MetaCallLink(fmcl, m_OwnerMetaBlockStatements.ownerMetaBase, m_OwnerMetaBlockStatements, isAssignSign ?  rightExpress : null );
+            m_LeftMetaExpress.Parse(new AllowUseSettings());
 
-
-            bool leftHasNullConditional = false;
-            MetaType leftMt = firstNode.metaType;
-            MetaType frontDefineMt = leftMt;
-            var frontcn = firstNode;
-            List <MetaExpressNodeBase> bracketExpressList = new List<MetaExpressNodeBase>();
-            if (leftCallNodeList.Count == 1)
+            if( isAssignSign == false && m_RightMetaExpress == null)
             {
-                var mtt = firstNode.metaVariable.GetFinalMetaType();
-                if ((firstNode.callNodeType == ECallNodeType.MemberVariableName
-                            || firstNode.callNodeType == ECallNodeType.FunctionInnerVariableName
-                            || firstNode.callNodeType == ECallNodeType.ClassName)
-                            && firstNode.bracketExpressList.Count > 0)
+                if (TryParseRightExpress(rightExpress, null ) == false)
                 {
-                    MetaMemberFunction mmf = mtt.metaClass?.GetOperatorMetaMemberFunctionByName("_setItem_");
-                    if( mmf == null )
-                    {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "GetOperatorMetaMemberFunctionByName _setItem_ is null");
-                        return;
-                    }
-                    else
-                    { 
-                        if(!isAssignSign)
-                        {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "GetOperatorMetaMemberFunctionByName _setItem_ need a=b is null");
-                            return;
-                        }
-                    }
-                    
-                    if (mtt.IsArray() && frontcn.bracketExpressList.Count <= mtt.ArrayDimension())
-                    {
-                        for (int j = 0; j < frontcn.bracketExpressList.Count; j++)
-                        {
-                            MetaCallNode mcn = new MetaCallNode(frontcn.bracketExpressList[j], firstNode.ownerMetaFunctionBlock.ownerMetaClass,
-                                firstNode.ownerMetaFunctionBlock, firstNode.metaType);
-                            mcn.SetFrontCallNode(frontcn);
-                            if( mcn.ParseNode(_auc) )
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "bracket express parse failed!");
-                                return;
-                            }
-                            mcnList.Add(mcn);
-                            frontcn = mcn;
-                        }
-                    }
-                    else
-                    {
-                        if (frontcn.bracketExpressList.Count != 1)
-                        {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "firstNode.ParseNode bracket express List need equal 1");
-                            return;
-                        }
-                        MetaCallNode mcn = new MetaCallNode(frontcn.bracketExpressList[0], frontcn.ownerMetaFunctionBlock.ownerMetaClass,
-                            frontcn.ownerMetaFunctionBlock, frontcn.metaType);
-                        mcn.SetFrontCallNode(frontcn);
-                        if (m_RightMetaExpress == null)
-                        {
-                            if (TryParseRightExpress(rightExpress, leftMt) == false)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
-                                return;
-                            }
-                        }
-                        _auc.expressNodeList.Add(m_RightMetaExpress);
-                        _auc.getterFunction = false;
-                        if ( mcn.ParseNode(_auc) == false )
-                        {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "bracket express parse failed!");
-                            return;
-                        }
-                        mcnList.Add(mcn);
-                        leftMt = mcn.metaType;
-                        frontcn = mcn;                            
-                    }
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
+                    return;
                 }
-                m_LeftMetaExpress = new MetaCallLink(m_OwnerMetaBlockStatements.ownerMetaBase,
-                    m_OwnerMetaBlockStatements, mcnList, mcnList[mcnList.Count - 1].metaVariable, m_Token);
-                m_LeftMetaExpress.AddVisitNodeListByNewList(mcnList);
-                if (m_RightMetaExpress == null )
-                {
-                    if (TryParseRightExpress(rightExpress, leftMt) == false)
-                    {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
-                        return;
-                    }
-                }                
+
             }
-            else
-            {
-                for (int i = 1; i < leftCallNodeList.Count;)
-                {
-                    var cn1 = leftCallNodeList[i++];
-
-                    if (cn1.token.type == ETokenType.Period)
-                    {
-                        FileMetaCallNode cn2 = null;
-                        if (i < leftCallNodeList.Count)
-                        {
-                            cn2 = leftCallNodeList[i++];
-                        }
-                        if (cn2 == null)
-                        {
-                            var fmn1 = new MetaCallNode(null, cn1, m_OwnerMetaBlockStatements.ownerMetaBase, m_OwnerMetaBlockStatements,
-                                frontDefineMt);
-                            fmn1.SetFrontCallNode(frontcn);
-                            frontcn = fmn1;
-                        }
-                        else
-                        {
-                            var fmn2 = new MetaCallNode(cn1, cn2, m_OwnerMetaBlockStatements.ownerMetaBase, m_OwnerMetaBlockStatements,
-                                frontDefineMt);
-                            fmn2.SetFrontCallNode(frontcn);
-                            if( i == leftCallNodeList.Count )
-                            {
-                                if (m_RightMetaExpress == null)
-                                {
-                                    if (TryParseRightExpress(rightExpress, null ) == false)
-                                    {
-                                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
-                                        return;
-                                    }
-                                }
-                                _auc.expressNodeList.Add(m_RightMetaExpress);
-                            }
-
-                            if(fmn2.ParseNode(_auc) == false) 
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "bracket express parse failed!");
-                                return;
-                            }
-                            leftMt = fmn2.metaType;
-                            mcnList.Add(fmn2);
-                            frontcn = fmn2;
-                        }
 
 
-                        if ((frontcn.callNodeType == ECallNodeType.MemberVariableName
-                                || frontcn.callNodeType == ECallNodeType.FunctionInnerVariableName
-                                || frontcn.callNodeType == ECallNodeType.ClassName )
-                                && frontcn.bracketExpressList.Count > 0)
-                        {
-                            if (frontcn.metaVariable != null)
-                            {
-                                if( i == leftCallNodeList.Count && frontcn.metaVariable.IsSupportItemByIndex(true) )
-                                {
-                                    if (m_RightMetaExpress == null)
-                                    {
-                                        if (TryParseRightExpress(rightExpress, leftMt) == false)
-                                        {
-                                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
-                                            return;
-                                        }
-                                    }
-                                }
-                                else if(frontcn.metaVariable.IsSupportItemByIndex(false) )
-                                {
-                                    //arryobject.@i arrayobject.@1
-                                    MetaType mtt = frontcn.metaVariable.GetFinalMetaType();
-                                    if (mtt.IsArray() && frontcn.bracketExpressList.Count <= mtt.ArrayDimension())
-                                    {
-                                        for (int j = 0; j < frontcn.bracketExpressList.Count; j++)
-                                        {
-                                            MetaCallNode mcn = new MetaCallNode(frontcn.bracketExpressList[j], frontcn.ownerMetaFunctionBlock.ownerMetaClass,
-                                                frontcn.ownerMetaFunctionBlock, frontcn.metaType);
-                                            mcn.SetFrontCallNode(frontcn);
-                                            mcn.ParseNode(_auc);
-                                            mcnList.Add(mcn);
-                                            frontcn = mcn;
-                                        }
-                                        if (mcnList.Count > i + 1)
-                                        {
-                                            mcnList[i + 1].SetFrontCallNode(frontcn);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        for (int j = 0; j < frontcn.bracketExpressList.Count; j++)
-                                        {
-                                            MetaCallNode mcn = new MetaCallNode(frontcn.bracketExpressList[j],
-                                                frontcn.ownerMetaFunctionBlock.ownerMetaClass, frontcn.ownerMetaFunctionBlock,
-                                                frontcn.metaType);
-                                            mcn.SetFrontCallNode(frontcn);
-                                            mcn.ParseNode(_auc);
-                                            mcnList.Add(mcn);
-                                            frontcn = mcn;
-                                        }
-                                        if (mcnList.Count > i + 1)
-                                        {
-                                            mcnList[i + 1].SetFrontCallNode(frontcn);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    return;
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "MetaAssignStatement build call node List!");
-                        return;
-                    }
+            //if (leftCallNodeList.Count == 0)
+            //{
+            //    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "leftCallNodeList.Count == 0");
+            //    return;
+            //}
+            //List<MetaCallNode> mcnList = new List<MetaCallNode>();
+            //FileMetaCallNode fmcn1 = leftCallNodeList[0];
+            //FileMetaBaseTerm fmte = null;
+            //if( leftCallNodeList.Count == 1 && isAssignSign )
+            //{
+            //    fmte = rightExpress;
+            //}
+            //var firstNode = new MetaCallNode(null, fmcn1, m_OwnerMetaBlockStatements.ownerMetaBase, m_OwnerMetaBlockStatements, null, fmte);
 
-                }
-                m_LeftMetaExpress = new MetaCallLink(m_OwnerMetaBlockStatements.ownerMetaBase,
-                    m_OwnerMetaBlockStatements, mcnList, mcnList[mcnList.Count - 1].metaVariable, m_Token);
-                m_LeftMetaExpress.AddVisitNodeListByNewList(mcnList);
-            }
+            //var _auc = new AllowUseSettings();
+            //if (firstNode.ParseNode(_auc) == false)
+            //{
+            //    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "firstNode.ParseNode is failed" );
+            //    return;
+            //}
+            //mcnList.AddRange(firstNode.metaCallNodeList);
+
+
+            //bool leftHasNullConditional = false;
+            //MetaType leftMt = firstNode.metaType;
+            //MetaType frontDefineMt = leftMt;
+            //var frontcn = firstNode.metaCallNodeList[firstNode.metaCallNodeList.Count-1];
+            //if (leftCallNodeList.Count == 1)
+            //{
+            //    //var mtt = firstNode.metaVariable.GetFinalMetaType();
+            //    //if ((firstNode.callNodeType == ECallNodeType.MemberVariableName
+            //    //            || firstNode.callNodeType == ECallNodeType.FunctionInnerVariableName
+            //    //            || firstNode.callNodeType == ECallNodeType.ClassName)
+            //    //            && firstNode.bracketExpressList.Count > 0)
+            //    //{
+            //    //    MetaMemberFunction mmf = mtt.metaClass?.GetOperatorMetaMemberFunctionByName("_setItem_");
+            //    //    if( mmf == null )
+            //    //    {
+            //    //        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "GetOperatorMetaMemberFunctionByName _setItem_ is null");
+            //    //        return;
+            //    //    }
+            //    //    else
+            //    //    { 
+            //    //        if(!isAssignSign)
+            //    //        {
+            //    //            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "GetOperatorMetaMemberFunctionByName _setItem_ need a=b is null");
+            //    //            return;
+            //    //        }
+            //    //    }
+
+            //        //if (mtt.IsArray() && frontcn.bracketExpressList.Count <= mtt.ArrayDimension())
+            //        //{
+            //        //    for (int j = 0; j < frontcn.bracketExpressList.Count; j++)
+            //        //    {
+            //        //        MetaCallNode mcn = new MetaCallNode(frontcn.bracketExpressList[j], firstNode.ownerMetaFunctionBlock.ownerMetaClass,
+            //        //            firstNode.ownerMetaFunctionBlock, firstNode.metaType);
+            //        //        mcn.SetFrontCallNode(frontcn);
+            //        //        if( mcn.ParseNode(_auc) )
+            //        //        {
+            //        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "bracket express parse failed!");
+            //        //            return;
+            //        //        }
+            //        //        mcnList.Add(mcn);
+            //        //        frontcn = mcn;
+            //        //    }
+            //        //}
+            //        //else
+            //        //{
+            //        //    if (frontcn.bracketExpressList.Count != 1)
+            //        //    {
+            //        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "firstNode.ParseNode bracket express List need equal 1");
+            //        //        return;
+            //        //    }
+            //        //    MetaCallNode mcn = new MetaCallNode(frontcn.bracketExpressList[0], frontcn.ownerMetaFunctionBlock.ownerMetaClass,
+            //        //        frontcn.ownerMetaFunctionBlock, frontcn.metaType);
+            //        //    mcn.SetFrontCallNode(frontcn);
+            //        //    if (m_RightMetaExpress == null)
+            //        //    {
+            //        //        if (TryParseRightExpress(rightExpress, leftMt) == false)
+            //        //        {
+            //        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
+            //        //            return;
+            //        //        }
+            //        //    }
+            //        //    _auc.expressNodeList.Add(m_RightMetaExpress);
+            //        //    _auc.getterFunction = false;
+            //        //    if ( mcn.ParseNode(_auc) == false )
+            //        //    {
+            //        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "bracket express parse failed!");
+            //        //        return;
+            //        //    }
+            //        //    mcnList.Add(mcn);
+            //        //    leftMt = mcn.metaType;
+            //        //    frontcn = mcn;                            
+            //        //}
+            //    }
+            //    m_LeftMetaExpress = new MetaCallLink(m_OwnerMetaBlockStatements.ownerMetaBase,
+            //        m_OwnerMetaBlockStatements, mcnList, mcnList[mcnList.Count - 1].metaVariable, m_Token);
+            //    m_LeftMetaExpress.AddVisitNodeListByNewList(mcnList);
+            //    if (m_RightMetaExpress == null )
+            //    {
+            //        if (TryParseRightExpress(rightExpress, leftMt) == false)
+            //        {
+            //            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
+            //            return;
+            //        }
+            //    }                
+            //}
+            //else
+            //{
+            //    for (int i = 1; i < leftCallNodeList.Count;)
+            //    {
+            //        var cn1 = leftCallNodeList[i++];
+
+            //        if (cn1.token.type == ETokenType.Period)
+            //        {
+            //            FileMetaCallNode cn2 = null;
+            //            if (i < leftCallNodeList.Count)
+            //            {
+            //                cn2 = leftCallNodeList[i++];
+            //            }
+            //            if (cn2 == null)
+            //            {
+            //                var fmn1 = new MetaCallNode(null, cn1, m_OwnerMetaBlockStatements.ownerMetaBase, m_OwnerMetaBlockStatements,
+            //                    frontDefineMt);
+            //                fmn1.SetFrontCallNode(frontcn);
+            //                frontcn = fmn1;
+            //            }
+            //            else
+            //            {
+            //                if (leftCallNodeList.Count == i && isAssignSign)
+            //                {
+            //                    fmte = rightExpress;
+            //                }
+            //                var fmn2 = new MetaCallNode(cn1, cn2, m_OwnerMetaBlockStatements.ownerMetaBase, m_OwnerMetaBlockStatements,
+            //                    frontDefineMt, fmte);
+            //                fmn2.SetFrontCallNode(frontcn);
+            //                if( i == leftCallNodeList.Count )
+            //                {
+            //                    if (m_RightMetaExpress == null)
+            //                    {
+            //                        if (TryParseRightExpress(rightExpress, null ) == false)
+            //                        {
+            //                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
+            //                            return;
+            //                        }
+            //                    }
+            //                    _auc.expressNodeList.Add(m_RightMetaExpress);
+            //                }
+
+            //                if(fmn2.ParseNode(_auc) == false) 
+            //                {
+            //                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "bracket express parse failed!");
+            //                    return;
+            //                }
+            //                leftMt = fmn2.metaType;
+            //                mcnList.AddRange(fmn2.metaCallNodeList);
+            //                frontcn = fmn2;
+            //            }
+
+
+            //        }
+            //        else
+            //        {
+            //            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "MetaAssignStatement build call node List!");
+            //            return;
+            //        }
+
+            //    }
+            //    m_LeftMetaExpress = new MetaCallLink(m_OwnerMetaBlockStatements.ownerMetaBase,
+            //        m_OwnerMetaBlockStatements, mcnList, mcnList[mcnList.Count - 1].metaVariable, m_Token);
+            //    m_LeftMetaExpress.AddVisitNodeListByNewList(mcnList);
+            //}
 
             //m_LeftMetaExpress = new MetaCallLinkExpressNode(metaCallLink);
             //AllowUseSettings auc = new AllowUseSettings();
@@ -593,7 +555,7 @@ namespace SimpleLanguage.Core
             //if (m_LeftMetaExpress != null)
             //{
             //    m_MetaVariable = m_LeftMetaExpress.GetDefineMetaVariable();     //这里要使用定义时的变量，因为可能存在 a.b.c += 10; 这种情况，a.b.c 可能在之前被解析成一个临时变量了，这时候就需要回到定义时的变量上去进行类型检查和后续的赋值操作
-                
+
             //    if(m_MetaVariable != null )
             //    {
             //        if (m_MetaVariable.isConst)

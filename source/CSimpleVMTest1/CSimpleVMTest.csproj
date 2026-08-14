@@ -8,15 +8,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- VS 内: 引用 C++ 项目, 可以直接断点调试 C 代码 -->
+    <ProjectReference Include="..\..\..\csimple_lang\project\vs\vm_lib\csimple_lang_lib.vcxproj" />
     <ProjectReference Include="..\Front\SimpleLanguageFront.csproj" />
   </ItemGroup>
 
-  <!-- Pre-build: compile C VM (csimple_lang) via CMake -->
-  <Target Name="BuildCVM" BeforeTargets="Build">
+  <!-- 命令行 (dotnet build): 用 CMake 构建 C VM + DLL -->
+  <Target Name="BuildCVM" BeforeTargets="Build" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
     <PropertyGroup>
       <CVMRoot>$(MSBuildThisFileDirectory)..\..\..\csimple_lang</CVMRoot>
     </PropertyGroup>
-    <!-- Always run cmake configure (fast if unchanged, reconfigures if CMakeLists.txt changed) -->
     <Exec Command="cmake -B &quot;$(CVMRoot)\build&quot; -S &quot;$(CVMRoot)&quot;" />
     <Exec Command="cmake --build &quot;$(CVMRoot)\build&quot; --config Debug" />
   </Target>
