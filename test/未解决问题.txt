@@ -5,6 +5,7 @@
 3. 增加数组的内部方法
 4. 写list,map的支持
 5. 对别一个调用类的 Core.global.var1 Std.global.aaa
+6. 数学库的集成
 
 最近要解决的:
 1. 基础类的相关写作 Object

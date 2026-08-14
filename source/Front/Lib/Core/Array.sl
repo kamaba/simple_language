@@ -21,7 +21,7 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     }
     get int length(){ ret this._length }
 
-    public void fill(T value, int startIndex = 0, int endIndex = -1) 
+    public void fill(T value ) 
     {
         for i = 0, i < this._length, i++
         {

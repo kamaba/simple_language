@@ -11,4 +11,13 @@
     <ProjectReference Include="..\Front\SimpleLanguageFront.csproj" />
   </ItemGroup>
 
+  <!-- Pre-build: compile C VM (csimple_lang) via CMake -->
+  <Target Name="BuildCVM" BeforeTargets="Build">
+    <PropertyGroup>
+      <CVMRoot>$(MSBuildThisFileDirectory)..\..\..\csimple_lang</CVMRoot>
+    </PropertyGroup>
+    <Exec Command="cmake -B &quot;$(CVMRoot)\build&quot; -S &quot;$(CVMRoot)&quot;" Condition="!Exists('$(CVMRoot)\build\CMakeCache.txt')" />
+    <Exec Command="cmake --build &quot;$(CVMRoot)\build&quot; --config Debug" />
+  </Target>
+
 </Project>

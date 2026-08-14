@@ -160,6 +160,7 @@ namespace SimpleLanguage.Compile
         private Node AddAtOpSign(Token token)
         {
             Node node = new Node(token);
+            node.nodeType = ENodeType.Key;
             m_CurrentNode.AddChild(node);
             m_TokenIndex++;
 

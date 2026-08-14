@@ -208,6 +208,7 @@ namespace SimpleLanguage.IR
                 if (mdp == null) continue;
                 var tmv = mdp.metaVariable;
                 IRMetaVariable imp = new IRMetaVariable(tmv, m_MethodArgumentList.Count);
+                imp.SetHasExpress(mdp.isHasExpress);
                 m_MethodArgumentList.Add(imp);
             }
         }

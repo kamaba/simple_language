@@ -1,6 +1,5 @@
-@Nickname("Point")
-@nickname("Vector2")
-@nickname("Vec2")
+@Nickname("Point") @Nickname("Vector2") @Condition()
+@Nickname("Vec2")
 public class Float32_2 extends Object
 {
     public Float32 x = 0.0f

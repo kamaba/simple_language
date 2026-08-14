@@ -39,6 +39,9 @@ namespace SimpleLanguage.IR
         public bool isConst => m_IsConst;
         public EPermission permission => m_Permission;
         public List<IRData> irDataList => m_IRDataList;
+        /// <summary>方法参数是否有默认表达式（影响 isMust 匹配）。</summary>
+        public bool isHasExpress => m_HasExpress;
+        public void SetHasExpress(bool value) { m_HasExpress = value; }
         // 解析顺序：源自 MetaMemberVariable.parseOrder，
         // 用于 IR 导出 / VM 加载阶段按依赖解析次序排序初始化表达式。
         // -1 表示该 IRMetaVariable 不参与解析顺序排序（例如局部变量、参数）。
@@ -58,6 +61,7 @@ namespace SimpleLanguage.IR
         private bool m_IsStatic = false;
         private bool m_IsConst = false;
         private EPermission m_Permission = EPermission.Public;
+        private bool m_HasExpress = false;
         private int m_Order = -1;
         //private MetaVariable m_MetaVariable = null;
 
@@ -215,6 +219,7 @@ namespace SimpleLanguage.IR
             m_DebugInfo = new DebugInfo();
             m_IRMetaVariableFrom = from;
             m_IRMetaType = irmt ?? new IRMetaType(IRManager.instance.GetIRMetaClassByName("Core.Object"));
+            m_HasExpress = var?.hasExpress ?? false;
         }
         private void FillDebugInfo(MetaBase mb, string fallbackName, string info)
         {

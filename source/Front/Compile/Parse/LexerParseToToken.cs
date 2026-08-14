@@ -987,7 +987,7 @@ namespace SimpleLanguage.Compile
                 while (true)
                 {
                     var n = ReadChar();
-                    if (IsIdentifier3(n))
+                    if (IsIdentifier2(n))
                     {
                         ident.Append(n);
                         continue;

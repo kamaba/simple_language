@@ -335,6 +335,7 @@ namespace SimpleLanguage.Compile
                         case ETokenType.Private:
                         case ETokenType.Projected:
                         case ETokenType.Partial:
+                        case ETokenType.At:
                             {
                                 hasNamespaceOrClass = true;
                                 ParseNamespaceOrTopClass(pnode);
@@ -397,7 +398,8 @@ namespace SimpleLanguage.Compile
                     break;
 
                 // only allow in namespace/class blocks
-                if (currentNodeInfo == null || (currentNodeInfo.parseType != EParseNodeType.Namespace && currentNodeInfo.parseType != EParseNodeType.Class))
+                if (currentNodeInfo == null &&
+                    (currentNodeInfo.parseType == EParseNodeType.Function))
                 {
                     Log.AddFileMetaLog(LID.ShowExtendMessage, "Error @Attribute 只允许写在 namespace{} / class{} 内");
                     // do not consume; let outer parser handle as error or normal token
@@ -898,12 +900,12 @@ namespace SimpleLanguage.Compile
 
                 curNode = pnode.childList[index++];
 
-                if (curNode.token?.type == ETokenType.At)
-                {
-                    // attributes at file root are not allowed
-                    Log.AddNodeLog(LID.ShowExtendMessage, curNode.token, "Error @Attribute 不允许出现在文件头级(只能在 namespace{} / class{} 内)");
-                    continue;
-                }
+                //if (curNode.token?.type == ETokenType.At)
+                //{
+                //    // attributes at file root are not allowed
+                //    Log.AddNodeLog(LID.ShowExtendMessage, curNode.token, "Error @Attribute 不允许出现在文件头级(只能在 namespace{} / class{} 内)");
+                //    continue;
+                //}
                 if (curNode.nodeType == ENodeType.Key)
                 {
                     if (curNode.token.type == ETokenType.Namespace)

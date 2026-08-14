@@ -22,6 +22,7 @@ internal static class Program
         string projectPath = args.Length == 0 ? defaultProjectPath : args[0];
         bool runTestEntry = args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
         bool start = TryGetBoolArg(args, "start", defaultValue: true);
+        bool debug = args.Any(a => string.Equals(a, "-debug", StringComparison.OrdinalIgnoreCase));
 
         if (args.Length == 0)
         {
@@ -55,7 +56,7 @@ internal static class Program
         Console.WriteLine($"Package: {packagePath}");
 
         // Step 3: Run C VM (csimple_lang.exe) as external process
-        int cvmExit = RunCVM(packagePath, runTestEntry, repoRoot);
+        int cvmExit = RunCVM(packagePath, runTestEntry, repoRoot, debug);
         if (cvmExit != 0)
         {
             Console.WriteLine($"C VM run failed, exit code: {cvmExit}");
@@ -66,7 +67,7 @@ internal static class Program
         return 0;
     }
 
-    static int RunCVM(string packagePath, bool runTestEntry, string repoRoot)
+    static int RunCVM(string packagePath, bool runTestEntry, string repoRoot, bool debug = false)
     {
         // Resolve csimple_lang.exe path
         string cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "build", "Debug", "bin"));
@@ -92,7 +93,35 @@ internal static class Program
             cvmArgs.Add("-test");
         }
 
+        if (debug)
+        {
+            // Debug mode: print command line, wait for debugger attach, no I/O redirection
+            Console.WriteLine("=== C VM debug mode (csimple_lang) ===");
+            Console.WriteLine($"{cvmExe} {string.Join(" ", cvmArgs)}");
+            Console.WriteLine("Press Enter to start C VM (set breakpoints / attach debugger now)...");
+            Console.ReadLine();
+            return RunProcessDirect(cvmExe, cvmArgs, cvmDir);
+        }
+
         return RunProcess(cvmExe, cvmArgs, "C VM run (csimple_lang)", cvmDir);
+    }
+
+    static int RunProcessDirect(string fileName, List<string> args, string workingDirectory)
+    {
+        var psi = new ProcessStartInfo
+        {
+            FileName = fileName,
+            Arguments = string.Join(" ", args),
+            WorkingDirectory = workingDirectory,
+            UseShellExecute = false,
+            RedirectStandardOutput = false,
+            RedirectStandardError = false,
+            CreateNoWindow = false
+        };
+        using var p = new Process { StartInfo = psi };
+        p.Start();
+        p.WaitForExit();
+        return p.ExitCode;
     }
 
     static int RunProcess(string fileName, List<string> args, string stepName, string? workingDirectory = null)

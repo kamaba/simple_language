@@ -645,6 +645,7 @@ namespace SimpleLanguage.Export.SLIR
                             name = NormalizeVariableName(v.name ?? string.Empty),
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                             debugInfo = CreateVariableDebugInfo(v),
+                            hasExpress = v.isHasExpress,
                         });
                     }
                 }

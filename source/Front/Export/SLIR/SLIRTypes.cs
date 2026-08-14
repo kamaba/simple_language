@@ -76,6 +76,8 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string name { get; set; } = string.Empty; 
         public SLRuntimeDefTypePackage? typeDef { get; set; }
         public SLInstructionDebugInfo? debugInfo { get; set; }
+        /// <summary>方法参数是否有默认表达式（影响 isMust 匹配）。</summary>
+        public bool hasExpress { get; set; }
     }
     public sealed class SLMethodPackage
     {

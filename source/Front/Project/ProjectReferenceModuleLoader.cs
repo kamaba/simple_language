@@ -892,6 +892,10 @@ namespace SimpleLanguage.Project
                     if (arg == null) continue;
                     var paramName = !string.IsNullOrWhiteSpace(arg.name) ? arg.name : "arg";
                     var mdp = new MetaDefineParam(paramName, mmf);
+                    if (arg.isHasExpress)
+                    {
+                        mdp.SetHasExpress();
+                    }
                     if (irm.isExtendParams && i == irm.methodArgumentList.Count - 1)
                     {
                         mdp.SetExtendParams();
