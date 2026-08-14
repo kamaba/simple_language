@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using SimpleLanguage.Project;
 
@@ -69,13 +70,12 @@ internal static class Program
 
     static int RunCVM(string packagePath, bool runTestEntry, string repoRoot, bool debug = false)
     {
-        // Resolve csimple_lang.exe path
+        // Resolve csimple_lang exe/dll path
         string cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "build", "Debug", "bin"));
         string cvmExe = Path.Combine(cvmDir, "csimple_lang.exe");
 
         if (!File.Exists(cvmExe))
         {
-            // Try Release build
             cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "build", "Release", "bin"));
             cvmExe = Path.Combine(cvmDir, "csimple_lang.exe");
         }
@@ -93,18 +93,75 @@ internal static class Program
             cvmArgs.Add("-test");
         }
 
+#if DEBUG
+        // Debug: P/Invoke into csimple_lang_dll.dll (in-process, can attach C debugger)
+        string dllPath = Path.Combine(cvmDir, "csimple_lang_dll.dll");
+        if (!File.Exists(dllPath))
+        {
+            Console.WriteLine($"csimple_lang_dll.dll not found at {dllPath}, falling back to process mode.");
+            return RunProcess(cvmExe, cvmArgs, "C VM run (csimple_lang)", cvmDir);
+        }
+
+        Console.WriteLine("=== C VM run (P/Invoke) ===");
+        Console.WriteLine($"DLL: {dllPath}");
+
+        // Add DLL directory to search path so DllImport can find it
+        if (OperatingSystem.IsWindows())
+            SetDllDirectory(cvmDir);
+
+        // Build argv: ["csimple_lang", "run", packagePath, ...]
+        var argv = new List<string> { "csimple_lang" };
+        argv.AddRange(cvmArgs);
+        return CallCliMain(argv.ToArray());
+#else
+        // Release: process invocation
         if (debug)
         {
-            // Debug mode: print command line, wait for debugger attach, no I/O redirection
             Console.WriteLine("=== C VM debug mode (csimple_lang) ===");
             Console.WriteLine($"{cvmExe} {string.Join(" ", cvmArgs)}");
-            Console.WriteLine("Press Enter to start C VM (set breakpoints / attach debugger now)...");
+            Console.WriteLine("Press Enter to start C VM...");
             Console.ReadLine();
             return RunProcessDirect(cvmExe, cvmArgs, cvmDir);
         }
-
         return RunProcess(cvmExe, cvmArgs, "C VM run (csimple_lang)", cvmDir);
+#endif
     }
+
+#if DEBUG
+    [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+    static extern bool SetDllDirectory(string lpPathName);
+
+    [DllImport("csimple_lang_dll.dll", CallingConvention = CallingConvention.Cdecl)]
+    static extern int cli_main(int argc, IntPtr argv);
+
+    static int CallCliMain(string[] args)
+    {
+        int argc = args.Length;
+        var argvPtrs = new IntPtr[argc];
+        try
+        {
+            for (int i = 0; i < argc; i++)
+            {
+                byte[] bytes = Encoding.UTF8.GetBytes(args[i] + "\0");
+                argvPtrs[i] = Marshal.AllocHGlobal(bytes.Length);
+                Marshal.Copy(bytes, 0, argvPtrs[i], bytes.Length);
+            }
+            IntPtr nativeArgv = Marshal.AllocHGlobal(IntPtr.Size * argc);
+            Marshal.Copy(argvPtrs, 0, nativeArgv, argc);
+            int ret = cli_main(argc, nativeArgv);
+            Marshal.FreeHGlobal(nativeArgv);
+            return ret;
+        }
+        finally
+        {
+            for (int i = 0; i < argc; i++)
+            {
+                if (argvPtrs[i] != IntPtr.Zero)
+                    Marshal.FreeHGlobal(argvPtrs[i]);
+            }
+        }
+    }
+#endif
 
     static int RunProcessDirect(string fileName, List<string> args, string workingDirectory)
     {

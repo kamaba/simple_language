@@ -16,7 +16,8 @@
     <PropertyGroup>
       <CVMRoot>$(MSBuildThisFileDirectory)..\..\..\csimple_lang</CVMRoot>
     </PropertyGroup>
-    <Exec Command="cmake -B &quot;$(CVMRoot)\build&quot; -S &quot;$(CVMRoot)&quot;" Condition="!Exists('$(CVMRoot)\build\CMakeCache.txt')" />
+    <!-- Always run cmake configure (fast if unchanged, reconfigures if CMakeLists.txt changed) -->
+    <Exec Command="cmake -B &quot;$(CVMRoot)\build&quot; -S &quot;$(CVMRoot)&quot;" />
     <Exec Command="cmake --build &quot;$(CVMRoot)\build&quot; --config Debug" />
   </Target>
 
