@@ -142,7 +142,7 @@ namespace SimpleLanguage.Core
                 return;
             }
 
-            System.Console.WriteLine($"[DEBUG ParseGenTemplateClass] cls={this.allName} template={m_MetaTemplateClass.allName} nonStatic={m_NonStaticVirtualMetaMemberFunctionList.Count} templateNonStatic={m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList.Count}");
+            //Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, $"meta gentemplate class cls={this.allName} template={m_MetaTemplateClass.allName} nonStatic={m_NonStaticVirtualMetaMemberFunctionList.Count} templateNonStatic={m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList.Count}");
 
             //this.m_MetaMemberVariableDict.Clear();
             //this.m_MetaMemberVariableDict.Clear();

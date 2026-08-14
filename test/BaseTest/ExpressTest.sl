@@ -79,7 +79,7 @@ namespace Application
                     int b1 = 21
                     Class3 mc22 = new(pppp1, b1, 10.0f - 2.0f, 20 + 12)
                     Class3 m0 = new(20)
-                    Class3 mc1 = { a = 30, b = 30, c = Class222() }
+                    Class3 mc1 = { a = 30, b = 30 }
                     Class3 mc3 = Class3(20)
                     Class222.a = 10
                     Class3.m += 10

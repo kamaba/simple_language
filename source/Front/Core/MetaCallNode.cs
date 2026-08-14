@@ -137,7 +137,6 @@ namespace SimpleLanguage.Core
         private MetaBase m_OwnerMetaBase = null;
         private MetaInputParamCollection m_MetaInputParamCollection = null;
         private List<MetaType> m_MetaTemplateParamsList = new List<MetaType>();
-        private MetaType m_FrontDefineMetaType = null;
         private MetaExpressNodeBase m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 涓殑3+20+10.f灏辨槸琛ㄧず寮?, fun(expressNode)
         private MetaVariable m_StoreMetaVariable = null;        // store metaVariable 像 a.val = new(){} val就是store 
         private MetaVariable m_DefineMetaVariable = null;       // define variable 定义变量，是比如 像set方法，对解析有约束作用 比如 a.set( value ); value的函数定义就是定义变量 是要传进来的，而不用自己再创建一个变量
@@ -154,6 +153,7 @@ namespace SimpleLanguage.Core
         private string m_Name;
         private FileMetaBaseTerm m_FileRightExpress = null;
         private MetaExpressNodeBase m_RightExpress = null;
+        private MetaType m_FrontDefineMetaType = null;
         private List<MetaCallNode> m_MetaCallNodeList = new List<MetaCallNode>();
 
         private bool m_VisitFlag = false;
@@ -204,6 +204,10 @@ namespace SimpleLanguage.Core
             }
             */
         }
+        public void SetFrontDefineMetaType(MetaType frontDMT)
+        {
+            m_FrontDefineMetaType = frontDMT;
+        }
         public void SetAllowUseSettings( AllowUseSettings alus )
         {
             m_AllowUseSettings = alus;
@@ -237,34 +241,17 @@ namespace SimpleLanguage.Core
                 else if (m_FileMetaCallSign.token.type == ETokenType.And)
                 {
                     m_CallNodeSign = ECallNodeSign.Pointer;
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaStatements Parse  涓嶅厑璁镐娇鐢ㄥ叾瀹冭繛鎺ョ!!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaCallSign.token, "Error MetaStatements Parse  token == And !");
                     return false;
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaStatements Parse  涓嶅厑璁镐娇鐢ㄥ叾瀹冭繛鎺ョ!!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaCallSign.token, "Error MetaStatements Parse  token !!");
                     return false;
                 }
             }
 
-
-            if (m_FileRightExpress != null)
-            {
-                CreateExpressParam cep = new CreateExpressParam();
-                cep.fme = m_FileRightExpress;
-                cep.equalMetaVariable = null;
-                cep.metaType = m_MetaType;
-                cep.ownerMBS = m_OwnerMetaFunctionBlock;
-                cep.ownerMetaBase = m_OwnerMetaFunctionBlock.ownerMetaBase;
-
-                m_RightExpress = ExpressManager.CreateExpressNodeByCEP(cep);
-                m_RightExpress.Parse(_auc);
-                if (!m_RightExpress.parseSuccessed)
-                {
-                    m_RightExpress = null;
-                    return false;
-                }
-            }
+            TryGetRightExpress(null);
 
             if (m_InputExpressNode != null)
             {
@@ -315,7 +302,7 @@ namespace SimpleLanguage.Core
                     CreateExpressParam cep = new CreateExpressParam();
                     cep.fme = m_FileMetaCallNode.fileMetaBracketTermList[i];
                     cep.equalMetaVariable = null;
-                    cep.metaType = m_MetaType;
+                    cep.metaType = null;
                     cep.ownerMBS = m_OwnerMetaFunctionBlock;
                     cep.ownerMetaBase = m_OwnerMetaFunctionBlock.ownerMetaBase;
 
@@ -343,9 +330,32 @@ namespace SimpleLanguage.Core
                         m_MetaCallNodeList.Add(mcn);
                         frontcn = mcn;
                     }
+
+
+                    TryGetRightExpress(frontcn?.metaType);
                 }
             }
             return flag;
+        }
+        void TryGetRightExpress( MetaType mt )
+        {
+            if (m_FileRightExpress != null )
+            {
+                CreateExpressParam cep = new CreateExpressParam();
+                cep.fme = m_FileRightExpress;
+                cep.equalMetaVariable = null;
+                cep.metaType = mt;
+                cep.ownerMBS = m_OwnerMetaFunctionBlock;
+                cep.ownerMetaBase = m_OwnerMetaFunctionBlock.ownerMetaBase;
+
+                m_RightExpress = ExpressManager.CreateExpressNodeByCEP(cep);
+                m_RightExpress.Parse(new AllowUseSettings() { isTryRightExpress = mt == null });
+                if (!m_RightExpress.parseSuccessed)
+                {
+                    m_RightExpress = null;
+                    return;
+                }
+            }
         }
         bool FindArrayNode()
         {
@@ -545,7 +555,7 @@ namespace SimpleLanguage.Core
                 {
                     if (m_FrontDefineMetaType == null)
                     {
-                        if( m_AllowUseSettings.isTryRightExpress == false )
+                        if (m_AllowUseSettings.isTryRightExpress == false)
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error missing front define meta type." + m_Token.ToLexemeAllString());
                         }

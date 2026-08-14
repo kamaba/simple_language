@@ -227,6 +227,7 @@ namespace SimpleLanguage.Core
                         allowUseSettings.getterFunction = true;
                     }
                     m_CallNodeList[i].SetFrontCallNode(frontMCN);
+                    m_CallNodeList[i].SetFrontDefineMetaType(frontMCN?.metaType);
                     flag = m_CallNodeList[i].ParseNode(allowUseSettings);
 
                     if (m_CallNodeList[i].callNodeType == ECallNodeType.NewClass
