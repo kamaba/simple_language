@@ -52,7 +52,7 @@ namespace SimpleLanguage.Core
         
         public MetaMethodCall( MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaType staticMt,  MetaFunction _fun, List<MetaType> mpipList,
             MetaInputParamCollection _paramCollection, MetaType returnMt,
-            MetaVariable loadMv, MetaVariable storeMv )
+            MetaVariable loadMv )
         {
             m_OwnerMetaClass = ownerClass;
             m_OwnerMetaBlockStatements = ownerMBS;
@@ -134,7 +134,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                m_IsRecieveReturnValue = storeMv != null;
+                m_IsRecieveReturnValue = false;
             }
         }
 
@@ -402,7 +402,7 @@ namespace SimpleLanguage.Core
             vn.m_VisitType = EVisitType.New;
             vn.m_Variable = mv;
             vn.m_Token = mv.token;
-            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mf, null, null, null, null, mv);
+            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mf, null, null, null, null);
             return vn;
         }
         public static MetaVisitNode CreateByNewConst(MetaClass ownermc, MetaBlockStatements mbs,
@@ -418,7 +418,7 @@ namespace SimpleLanguage.Core
             {
                 vn.m_ReturnMetaType = new MetaType(mt);
             }
-            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mmf, null, mipc, null, null, null );
+            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mmf, null, mipc, null, null );
 
             return vn;
         }

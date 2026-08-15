@@ -279,8 +279,9 @@ namespace SimpleLanguage.Core
 
             m_LeftMetaExpress = new MetaCallLink(fmcl, m_OwnerMetaBlockStatements.ownerMetaBase, m_OwnerMetaBlockStatements, isAssignSign ?  rightExpress : null );
             m_LeftMetaExpress.Parse(new AllowUseSettings());
+            m_MetaVariable = m_LeftMetaExpress.GetStoreMetaVariable();
 
-            if( isAssignSign == false && m_RightMetaExpress == null)
+            if ( isAssignSign == false && m_RightMetaExpress == null)
             {
                 if (TryParseRightExpress(rightExpress, null ) == false)
                 {

@@ -108,6 +108,7 @@ namespace SimpleLanguage.Core
         public MetaBase ownerMetaBase => m_OwnerMetaBase;
         public MetaBlockStatements ownerMetaFunctionBlock => m_OwnerMetaFunctionBlock;
         public MetaVariable storeMetaVariable => m_StoreMetaVariable;
+        public MetaVariable defineMetaVariable => m_DefineMetaVariable; 
         public FileMetaBraceTerm fileMetaBraceTerm => m_FileMetaCallNode != null ? m_FileMetaCallNode.fileMetaBraceTerm : null;
         public FileMetaParTerm fileMetaParTerm => m_FileMetaCallNode != null ? m_FileMetaCallNode.fileMetaParTerm : null;
         public MetaType staticCallMetaType => m_StaticCallMetaType;
@@ -153,32 +154,26 @@ namespace SimpleLanguage.Core
         private string m_Name;
         private FileMetaBaseTerm m_FileRightExpress = null;
         private MetaExpressNodeBase m_RightExpress = null;
-        private MetaType m_FrontDefineMetaType = null;
         private List<MetaCallNode> m_MetaCallNodeList = new List<MetaCallNode>();
 
         private bool m_VisitFlag = false;
 
         public MetaCallNode()
         { }
-        public MetaCallNode(MetaExpressNodeBase mcen, MetaBase mc, MetaBlockStatements mbs, MetaType fdmt)
+        public MetaCallNode(MetaExpressNodeBase mcen, MetaBase owmc, MetaBlockStatements mbs)
         {
             m_InputExpressNode = mcen;
-            m_OwnerMetaBase = mc;
+            m_OwnerMetaBase = owmc;
             m_OwnerMetaFunctionBlock = mbs;
-            m_FrontDefineMetaType = fdmt;
         }
-        public MetaCallNode( MetaBase mb, MetaBlockStatements mbs )
-        {
-
-        }
-        public MetaCallNode(FileMetaCallNode fmcn1, FileMetaCallNode fmcn2, MetaBase mc, MetaBlockStatements mbs, MetaType fdmt, FileMetaBaseTerm rightExpress = null )
+        public MetaCallNode(FileMetaCallNode fmcn1, FileMetaCallNode fmcn2, MetaBase owmc, MetaBlockStatements mbs, 
+            FileMetaBaseTerm rightExpress = null )
         {
             m_FileMetaCallSign = fmcn1;
             m_FileMetaCallNode = fmcn2;
             m_Token = m_FileMetaCallNode?.token;
-            m_OwnerMetaBase = mc;
+            m_OwnerMetaBase = owmc;
             m_OwnerMetaFunctionBlock = mbs;
-            m_FrontDefineMetaType = fdmt;
             m_FileRightExpress = rightExpress;
 
             if (fmcn1 != null && fmcn1.token?.type == ETokenType.QuestionMarkDot)
@@ -203,10 +198,6 @@ namespace SimpleLanguage.Core
                 m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
             }
             */
-        }
-        public void SetFrontDefineMetaType(MetaType frontDMT)
-        {
-            m_FrontDefineMetaType = frontDMT;
         }
         public void SetAllowUseSettings( AllowUseSettings alus )
         {
@@ -251,7 +242,7 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            TryGetRightExpress(null);
+            TryGetRightExpress(null, null);
 
             if (m_InputExpressNode != null)
             {
@@ -319,8 +310,7 @@ namespace SimpleLanguage.Core
                       || frontcn.callNodeType == ECallNodeType.VisitVariable
                             )
                     {
-                        MetaCallNode mcn = new MetaCallNode(en, m_OwnerMetaFunctionBlock.ownerMetaClass,
-                        m_OwnerMetaFunctionBlock, m_MetaType);
+                        MetaCallNode mcn = new MetaCallNode(en, m_OwnerMetaFunctionBlock.ownerMetaClass, m_OwnerMetaFunctionBlock);
                         mcn.SetFrontCallNode(frontcn);
                         if (!mcn.ParseNode(_auc))
                         {
@@ -332,18 +322,30 @@ namespace SimpleLanguage.Core
                     }
 
 
-                    TryGetRightExpress(frontcn?.metaType);
+                    TryGetRightExpress(frontcn?.metaType, frontcn?.metaVariable );
                 }
             }
             return flag;
         }
-        void TryGetRightExpress( MetaType mt )
+        void TryGetRightExpress( MetaType mt, MetaVariable mv )
         {
             if (m_FileRightExpress != null )
             {
+                if(m_FileRightExpress is FileMetaCallTerm fmct && mv == null )
+                {
+                    if(fmct.callLink?.callNodeList?.Count == 1 )
+                    {
+                        var token = fmct.callLink.callNodeList[0].token;
+                        if (token?.type == ETokenType.New )
+                        {
+                            return;
+                        }
+                    }
+                }
+
                 CreateExpressParam cep = new CreateExpressParam();
                 cep.fme = m_FileRightExpress;
-                cep.equalMetaVariable = null;
+                cep.equalMetaVariable = mv;
                 cep.metaType = mt;
                 cep.ownerMBS = m_OwnerMetaFunctionBlock;
                 cep.ownerMetaBase = m_OwnerMetaFunctionBlock.ownerMetaBase;
@@ -553,7 +555,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    if (m_FrontDefineMetaType == null)
+                    if ( m_DefineMetaVariable == null)
                     {
                         if (m_AllowUseSettings.isTryRightExpress == false)
                         {
@@ -561,34 +563,34 @@ namespace SimpleLanguage.Core
                         }
                         return false;
                     }
-                    m_MetaType = m_FrontDefineMetaType;
-                    if (m_FrontDefineMetaType.eMetaTypeType == EMetaTypeType.Template)
+                    m_MetaType = m_DefineMetaVariable.GetFinalMetaType();
+                    if (m_MetaType.eMetaTypeType == EMetaTypeType.Template)
                     {
-                        m_MetaTemplate = m_FrontDefineMetaType.metaTemplate;
-                        m_MetaType = new MetaType(m_MetaTemplate, "");
+                        m_MetaTemplate = m_MetaType.metaTemplate;
                         m_CallNodeType = ECallNodeType.NewTemplate;
-                        MetaMemberFunction mmf = m_FrontDefineMetaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_MetaInputParamCollection);
+                        MetaMemberFunction mmf = m_MetaType.metaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_MetaInputParamCollection);
                         if (mmf == null)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 111" + m_FrontDefineMetaType.metaClass.allName + "init!)", m_Token);
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 111" + m_MetaType.metaClass.allName + "init!)", m_Token);
                             return false;
                         }
+                        m_MetaType = new MetaType(m_MetaTemplate, "");
                         this.m_MetaFunction = mmf;
                     }
-                    else if (m_FrontDefineMetaType.eMetaTypeType == EMetaTypeType.MetaClass)
+                    else if (m_MetaType.eMetaTypeType == EMetaTypeType.MetaClass)
                     {
-                        m_MetaClass = m_FrontDefineMetaType.metaClass;
+                        m_MetaClass = m_MetaType.metaClass;
                         m_CallNodeType = ECallNodeType.NewClass;
                     }
-                    else if( m_FrontDefineMetaType.eMetaTypeType == EMetaTypeType.MetaData )
+                    else if(m_MetaType.eMetaTypeType == EMetaTypeType.MetaData )
                     {
-                        m_MetaData = m_FrontDefineMetaType.metaData;
+                        m_MetaData = m_MetaType.metaData;
                         m_CallNodeType = ECallNodeType.NewData;
                     }
                     else
                     {
                         m_CallNodeType = ECallNodeType.NewTemplate;
-                        m_MetaClass = m_FrontDefineMetaType.metaClass;
+                        m_MetaClass = m_MetaType.metaClass;
                     }
                 }
             }

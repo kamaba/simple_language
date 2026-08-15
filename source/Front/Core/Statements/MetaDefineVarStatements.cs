@@ -81,7 +81,7 @@ namespace SimpleLanguage.Core
                 }
                 Node node = new Node(m_Token);
                 FileMetaCallNode fmcn = new FileMetaCallNode(m_FileMetaDefineVariableSyntax.fileMeta, node);
-                MetaCallNode mcn = new MetaCallNode(null, fmcn, ownerMetaBase, m_OwnerMetaBlockStatements, leftMt);
+                MetaCallNode mcn = new MetaCallNode(null, fmcn, ownerMetaBase, m_OwnerMetaBlockStatements );
                 mcn.SetAllowUseSettings(new AllowUseSettings());
                 mcn.SetToken(m_Token);
                 mcn.GetFirstNode(m_Name, ownerMetaBase, 0);
@@ -123,7 +123,7 @@ namespace SimpleLanguage.Core
                         Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "call node list is not count equal 1");
                         return;
                     }
-                    MetaCallNode mcn = new MetaCallNode( null, m_FileMetaOpAssignSyntax.variableRef.callNodeList[0],ownerMetaBase, m_OwnerMetaBlockStatements, leftMt);
+                    MetaCallNode mcn = new MetaCallNode( null, m_FileMetaOpAssignSyntax.variableRef.callNodeList[0],ownerMetaBase, m_OwnerMetaBlockStatements );
                     mcn.SetAllowUseSettings(new AllowUseSettings());
                     mcn.SetToken(m_Token);
                     mcn.GetFirstNode(m_Name, ownerMetaBase, 0);

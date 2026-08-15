@@ -52,17 +52,16 @@ namespace SimpleLanguage.Core
         public MetaBase ownerMetaBase => m_OwnerMetaClass;
         private Token m_Token = null;
 
-        public MetaCallLink( MetaBase ownerMetaClass, MetaBlockStatements ownerMetaBlockStatements,
-            List<MetaCallNode> callNodeList, MetaVariable storeMetaVariable, Token token)
-        {
-            m_OwnerMetaClass = ownerMetaClass;
-            m_OwnerMetaBlockStatements = ownerMetaBlockStatements;
-            m_CallNodeList = callNodeList;
-            m_StoreMetaVariable = storeMetaVariable;
-            m_Token = token;
-        }
-        public MetaCallLink( FileMetaCallLink fmcl, MetaBase metaOwner, MetaBlockStatements mbs, 
-            FileMetaBaseTerm fileRightExpress )
+        //public MetaCallLink( MetaBase ownerMetaClass, MetaBlockStatements ownerMetaBlockStatements,
+        //    List<MetaCallNode> callNodeList, MetaVariable storeMetaVariable, Token token)
+        //{
+        //    m_OwnerMetaClass = ownerMetaClass;
+        //    m_OwnerMetaBlockStatements = ownerMetaBlockStatements;
+        //    m_CallNodeList = callNodeList;
+        //    m_StoreMetaVariable = storeMetaVariable;
+        //    m_Token = token;
+        //}
+        public MetaCallLink( FileMetaCallLink fmcl, MetaBase metaOwner, MetaBlockStatements mbs, FileMetaBaseTerm fileRightExpress )
         {
             m_FileMetaCallLink = RewriteLocalCallLinkIfNeed(fmcl, metaOwner);
             m_OwnerMetaClass = metaOwner;
@@ -76,15 +75,14 @@ namespace SimpleLanguage.Core
             m_FileMetaCallLink = RewriteLocalCallLinkIfNeed(fmcl, metaOwner);
             m_OwnerMetaClass = metaOwner;
             m_OwnerMetaBlockStatements = mbs;
-            m_StoreMetaVariable = mv;
             CreateCallLinkNode(frontDefineMt, mv);
         }
-        public MetaCallLink(MetaBase omc, MetaType frontDefineMt, MetaVariable mv)
-        {
-            m_OwnerMetaClass = omc;
-            m_OwnerMetaBlockStatements = null;
-            CreateCallLinkNode(frontDefineMt, mv);
-        }
+        //public MetaCallLink(MetaBase omc, MetaType frontDefineMt, MetaVariable mv)
+        //{
+        //    m_OwnerMetaClass = omc;
+        //    m_OwnerMetaBlockStatements = null;
+        //    CreateCallLinkNode(frontDefineMt, mv);
+        //}
 
         private static FileMetaCallLink RewriteLocalCallLinkIfNeed(FileMetaCallLink fmcl, MetaBase ownerMc)
         {
@@ -138,10 +136,9 @@ namespace SimpleLanguage.Core
             if (m_FileMetaCallLink.callNodeList.Count > 0)
             {
                 FileMetaCallNode fmcn = m_FileMetaCallLink.callNodeList[0];
-                var firstNode = new MetaCallNode(null, fmcn, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt,
+                var firstNode = new MetaCallNode(null, fmcn, m_OwnerMetaClass, m_OwnerMetaBlockStatements, 
                     m_FileMetaCallLink.callNodeList.Count == 1 ? m_RightBaseTerm : null);
                 m_CallNodeList.Add(firstNode);
-                firstNode.SetStoreMetaVariable(mv);
                 m_Token = firstNode.token;
             }
 
@@ -159,22 +156,20 @@ namespace SimpleLanguage.Core
                     }
                     if (cn2 == null)
                     {
-                        var fmn1 = new MetaCallNode(null, cn1, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
+                        var fmn1 = new MetaCallNode(null, cn1, m_OwnerMetaClass, m_OwnerMetaBlockStatements);
                     }
                     else
                     {
-                        var fmn2 = new MetaCallNode(cn1, cn2, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt,
+                        var fmn2 = new MetaCallNode(cn1, cn2, m_OwnerMetaClass, m_OwnerMetaBlockStatements, 
                         m_FileMetaCallLink.callNodeList.Count == i ? m_RightBaseTerm : null);
+                        fmn2.SetDefineMetaVariable(mv);
                         m_CallNodeList.Add(fmn2);
                     }
                 }
                 else
                 {
-                    var fmn1 = new MetaCallNode(null, cn1, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
-                    fmn1.SetStoreMetaVariable(mv);
+                    var fmn1 = new MetaCallNode(null, cn1, m_OwnerMetaClass, m_OwnerMetaBlockStatements );
                     m_CallNodeList.Add(fmn1);
-                    //AddMetaArrayNode(cn1, frontDefineMt, mv, frontMetaNode);
-
                     FileMetaCallNode cn2 = null;
                     if (i < m_FileMetaCallLink.callNodeList.Count)
                     {
@@ -182,10 +177,9 @@ namespace SimpleLanguage.Core
                     }
                     if (cn2 == null) continue;
 
-                    var fmn2 = new MetaCallNode(null, cn2, m_OwnerMetaClass, m_OwnerMetaBlockStatements, frontDefineMt);
+                    var fmn2 = new MetaCallNode(null, cn2, m_OwnerMetaClass, m_OwnerMetaBlockStatements);
                     fmn2.SetFrontCallNode(fmn1);
                     m_CallNodeList.Add(fmn2);
-                    //AddMetaArrayNode(cn2, frontDefineMt, mv, frontMetaNode  );
                 }
             }
 
@@ -194,7 +188,7 @@ namespace SimpleLanguage.Core
             {
                 Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 杩炴帴涓叉病鏈夋壘鍒板悎閫傜殑鑺傜偣  360!!!");
             }
-            m_FinalMetaCallNode.SetStoreMetaVariable(mv);
+            m_FinalMetaCallNode.SetDefineMetaVariable(mv);
         }
         public bool Parse(AllowUseSettings _useConst)
         {
@@ -227,7 +221,6 @@ namespace SimpleLanguage.Core
                         allowUseSettings.getterFunction = true;
                     }
                     m_CallNodeList[i].SetFrontCallNode(frontMCN);
-                    m_CallNodeList[i].SetFrontDefineMetaType(frontMCN?.metaType);
                     flag = m_CallNodeList[i].ParseNode(allowUseSettings);
 
                     if (m_CallNodeList[i].callNodeType == ECallNodeType.NewClass
@@ -259,7 +252,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.MetaCoreParseCallLinkFailed, m_Token, "Call link parse failed!" );
+                Log.AddMetaCoreLog(LID.MetaCoreParseCallLinkFailed, m_Token, "Call link parse failed!", m_CallNodeList[0].token.ToLexemeAllString() );
                 flag = false;
             }
 
@@ -335,7 +328,7 @@ namespace SimpleLanguage.Core
             {
                 case MetaConstExpressNode mcen:
                     {
-                        var newmcn = new MetaCallNode(mcen, m_OwnerMetaClass, m_OwnerMetaBlockStatements, mcen.expressReturnMetaType);
+                        var newmcn = new MetaCallNode(mcen, m_OwnerMetaClass, m_OwnerMetaBlockStatements);
                         bracketCNList.Add(newmcn);
                     }
                     break;
@@ -440,13 +433,13 @@ namespace SimpleLanguage.Core
                     mvn1.SetToken(frontNode.token);
                     m_VisitNodeList.Add(mvn1);
 
-                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, mcn.metaType, null, null);
+                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, mcn.metaType, null);
                     mmc.SetToken(frontNode.token);
                     mmc.SetDebugInputParTermText(debugParTermText);
                 }
                 else if( frontNode?.callNodeType == ECallNodeType.Base )
                 {
-                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, mcn.metaType, null, null);
+                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, mcn.metaType, null);
                     mmc.SetToken(mcn.token);
                     mmc.SetDebugInputParTermText(debugParTermText);
                 }
@@ -458,7 +451,7 @@ namespace SimpleLanguage.Core
                     //    m_VisitNodeList.RemoveAt(m_VisitNodeList.Count - 1);
                     //}
                     mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType,
-                        mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, mcn.metaType, retmv, mcn.storeMetaVariable);
+                        mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, mcn.metaType, retmv);
                     mmc.SetToken(mcn.token);
                     mmc.SetDebugInputParTermText(debugParTermText);
                 }
@@ -498,7 +491,7 @@ namespace SimpleLanguage.Core
                         frontNode.metaInputParamCollection );
                     m_VisitNodeList.Add(mvn1);
 
-                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, mcn.metaType, null, null);
+                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, mcn.metaType, null);
                     mmc.SetToken(mcn.token);
                     mmc.SetDebugInputParTermText(debugParTermText);
                 }
@@ -509,7 +502,7 @@ namespace SimpleLanguage.Core
                     {
                         m_VisitNodeList.RemoveAt(m_VisitNodeList.Count - 1);
                     }
-                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, mcn.metaType, retmv, mcn.storeMetaVariable);
+                    mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.staticCallMetaType, mcn.metaFunction, mcn.metaTemplateParamsList, paramCollection, mcn.metaType, retmv);
                     mmc.SetToken(mcn.token);
                     mmc.SetDebugInputParTermText(debugParTermText);
                 }
@@ -582,7 +575,7 @@ namespace SimpleLanguage.Core
                         m_VisitNodeList.Add(mvn);
                         if (mcn.metaFunction != null)
                         {
-                            MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, null, mcn.metaInputParamCollection, mcn.metaType, null, mcn.storeMetaVariable);
+                            MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, null, mcn.metaInputParamCollection, mcn.metaType, null);
                             mvn.SetMethodCall(mmc);
                         }
                     }
@@ -643,7 +636,7 @@ namespace SimpleLanguage.Core
 
                     if (mcn.metaFunction != null)
                     {
-                        MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, null, mcn.metaInputParamCollection, mcn.metaType, null, mcn.storeMetaVariable);
+                        MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, null, mcn.metaInputParamCollection, mcn.metaType, null);
 
                         mmc.SetToken(mcn.token);
                         mvn.SetMethodCall(mmc);
@@ -656,11 +649,11 @@ namespace SimpleLanguage.Core
             }
             else if (mcn.callNodeType == ECallNodeType.NewTemplate)
             {
-                MetaVisitNode mvn = MetaVisitNode.CreateByNewTemplate(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, mcn.storeMetaVariable);
+                MetaVisitNode mvn = MetaVisitNode.CreateByNewTemplate(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, mcn.defineMetaVariable );
 
                 mvn.SetToken(mcn.token);
                 MetaClass cmc = mcn.metaType.metaClass;
-                MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, null, mcn.metaInputParamCollection, mcn.metaType, null, mcn.storeMetaVariable);
+                MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, null, mcn.metaInputParamCollection, mcn.metaType, null);
 
                 mmc.SetToken(mcn.token);
                 mvn.SetMethodCall(mmc);
