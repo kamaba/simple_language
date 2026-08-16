@@ -107,14 +107,9 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
     }
     public override void remove( T item )
     {
-        for i = 0, i < this._length, i++
+        if SystemArrayRemoveValue(this._list, item, this._length) >= 0
         {
-            if SystemArrayGetValueThis(this._list, i) == item
-            {
-                SystemArrayRemoveAtValue(this._list, i, this._length)
-                this._length--
-                ret
-            }
+            this._length--
         }
     }
     public override void removeAt( int index )

@@ -82,6 +82,7 @@ ListTest
         list.add(30)
         list.add(40)
         list.removeAt(1)
+        list.remove(40 );
         Console.println("after removeAt(1), length = " + list.length)
         for i = 0, i < list.length, i++
         {
