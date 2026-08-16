@@ -115,5 +115,18 @@ namespace SimpleLanguage.VM.Runtime
         // ---- Console I/O (input) – must stay in sync with Front Define.cs ----
         /// <summary>从标准输入读取一行（直到回车），返回 string。</summary>
         SystemInput,
+
+        /// <summary>数组区间填充，参数: (this, startIndex, length, value)；must stay in sync with Front Define.cs。</summary>
+        SystemArrayFillValue,
+        /// <summary>数组扩缩容并拷贝已有元素，参数: (this, newCapacity)，返回新数组；must stay in sync with Front Define.cs。</summary>
+        SystemArrayResize,
+        /// <summary>数组区间右移一位并插入元素，参数: (this, index, length, value)；must stay in sync with Front Define.cs。</summary>
+        SystemArrayInsertValue,
+        /// <summary>数组区间左移一位并清空末位，参数: (this, index, length)；must stay in sync with Front Define.cs。</summary>
+        SystemArrayRemoveAtValue,
+        /// <summary>数组前 length 个元素拷贝到新数组，参数: (this, length)，返回新数组；must stay in sync with Front Define.cs。</summary>
+        SystemArrayCopy,
+        /// <summary>数组按值查找并移除首个匹配元素（左移补位），参数: (this, item, length)，返回被移除的索引（-1 未找到）；must stay in sync with Front Define.cs。</summary>
+        SystemArrayRemoveValue,
     }
 }

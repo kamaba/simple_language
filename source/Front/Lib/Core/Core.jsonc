@@ -121,6 +121,12 @@
     // ---- Array helpers ----
     { "name": "SystemArrayGetValueThis", "returnType": "object", "params": ["Array<object>", "Int32"], "isVariadic": false },
     { "name": "SystemArraySetValueThis", "returnType": "void",   "params": ["Array<object>", "Int32", "object"], "isVariadic": false },
+    { "name": "SystemArrayFillValue",   "returnType": "void",   "params": ["Array<object>", "Int32", "Int32", "object"], "isVariadic": false },
+    { "name": "SystemArrayResize",      "returnType": "Array<object>", "params": ["Array<object>", "Int32"], "isVariadic": false },
+    { "name": "SystemArrayInsertValue", "returnType": "void",   "params": ["Array<object>", "Int32", "Int32", "object"], "isVariadic": false },
+    { "name": "SystemArrayRemoveAtValue","returnType": "void",  "params": ["Array<object>", "Int32", "Int32"], "isVariadic": false },
+    { "name": "SystemArrayRemoveValue", "returnType": "Int32",  "params": ["Array<object>", "object", "Int32"], "isVariadic": false },
+    { "name": "SystemArrayCopy",        "returnType": "Array<object>", "params": ["Array<object>", "Int32"], "isVariadic": false },
 
     // ---- Num helpers ----
     { "name": "SystemNumAbs",   "returnType": "Num", "params": ["Num"], "isVariadic": false },

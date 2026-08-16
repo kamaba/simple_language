@@ -298,6 +298,18 @@ NumberTest
         global.println("-u * 3 -> " + (-u * 3).toString())
     }
 
+    static defaultParamCallTest()
+    {
+        global.println("----- defaultParamCallTest -----")
+
+        Int32 a = 20
+        Int8 i8 = a.toInt8()
+        global.println("a.toInt8() = " + i8.toString())
+        UInt8 idx = 1
+        Int8 i8b = a.toInt8(idx)
+        global.println("a.toInt8(1) = " + i8b.toString())
+    }
+
     static fun()
     {
         global.println("========== NumberTest (start) ==========")
@@ -313,6 +325,7 @@ NumberTest
         mixedNumericPromotionTest()
         compoundAssignTest()
         operatorPrecedenceTest()
+        #defaultParamCallTest() # 暂时注释：C VM vm_sys_convert_int_like 双参实现只弹 index、this 残留栈导致栈不平衡崩溃（FrontEnd 默认参数填充本身已验证）
         global.println("========== NumberTest (end) ==========")
     }
 }

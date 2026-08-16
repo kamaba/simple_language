@@ -3347,6 +3347,24 @@ namespace SimpleLanguage.VM.Runtime
                             case (int)ESystemMethodCall.SystemArraySetValueThis:
                                 ObjectSystemMethodCall.ExecuteSystemArraySetValueThis(this, sysPkg);
                                 break;
+                            case (int)ESystemMethodCall.SystemArrayFillValue:
+                                ObjectSystemMethodCall.ExecuteSystemArrayFillValue(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemArrayResize:
+                                ObjectSystemMethodCall.ExecuteSystemArrayResize(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemArrayInsertValue:
+                                ObjectSystemMethodCall.ExecuteSystemArrayInsertValue(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemArrayRemoveAtValue:
+                                ObjectSystemMethodCall.ExecuteSystemArrayRemoveAtValue(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemArrayRemoveValue:
+                                ObjectSystemMethodCall.ExecuteSystemArrayRemoveValue(this, sysPkg);
+                                break;
+                            case (int)ESystemMethodCall.SystemArrayCopy:
+                                ObjectSystemMethodCall.ExecuteSystemArrayCopy(this, sysPkg);
+                                break;
 
                             #region Math
                             case (int)ESystemMethodCall.SystemMathSin:

@@ -16,7 +16,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
     #默认构造，容量为0，首次添加时扩容为4（与 C# List<T> 一致）
     _init_()
     {
-        this._list = Array<T>(0)
+        this._list = Array<T>(4)
     }
     override void _init_( int capacity )
     {
@@ -80,17 +80,12 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
     #内部方法：重新分配 _list Array 并拷贝已有元素
     void resizeArray( int newCapacity )
     {
-        Array<T> newList = Array<T>(newCapacity)
-        for i = 0, i < this._length, i++
-        {
-            SystemArraySetValueThis(newList, i, SystemArrayGetValueThis(this._list, i))
-        }
-        this._list = newList
+        this._list = SystemArrayResize(this._list, newCapacity)
     }
 
     public override void add( T item )
     {
-        if this._length == this._capacity
+        if this._length <= this._capacity
         {
             this.grow()
         }
@@ -107,13 +102,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         {
             this.grow()
         }
-        int i = this._length
-        while i > index
-        {
-            SystemArraySetValueThis(this._list, i, SystemArrayGetValueThis(this._list, i - 1))
-            i = i - 1
-        }
-        SystemArraySetValueThis(this._list, index, item)
+        SystemArrayInsertValue(this._list, index, this._length, item)
         this._length++
     }
     public override void remove( T item )
@@ -122,13 +111,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         {
             if SystemArrayGetValueThis(this._list, i) == item
             {
-                int j = i
-                while j < this._length - 1
-                {
-                    SystemArraySetValueThis(this._list, j, SystemArrayGetValueThis(this._list, j + 1))
-                    j = j + 1
-                }
-                SystemArraySetValueThis(this._list, this._length - 1, null)
+                SystemArrayRemoveAtValue(this._list, i, this._length)
                 this._length--
                 ret
             }
@@ -140,13 +123,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         {
             ret
         }
-        int j = index
-        while j < this._length - 1
-        {
-            SystemArraySetValueThis(this._list, j, SystemArrayGetValueThis(this._list, j + 1))
-            j = j + 1
-        }
-        SystemArraySetValueThis(this._list, this._length - 1, null)
+        SystemArrayRemoveAtValue(this._list, index, this._length)
         this._length--
     }
     public override void clear()
@@ -159,19 +136,11 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
     }
     public void fill( T value )
     {
-        for i = 0, i < this._length, i++
-        {
-            SystemArraySetValueThis(this._list, i, value)
-        }
+        SystemArrayFillValue(this._list, 0, this._length, value)
     }
     override Array<T> toArray()
     {
-        Array<T> arr = Array<T>(this._length)
-        for i = 0, i < this._length, i++
-        {
-            SystemArraySetValueThis(arr, i, SystemArrayGetValueThis(this._list, i))
-        }
-        ret arr
+        ret SystemArrayCopy(this._list, this._length)
     }
 
     #接口层

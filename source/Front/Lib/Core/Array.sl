@@ -21,12 +21,9 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     }
     get int length(){ ret this._length }
 
-    public void fill(T value ) 
+    public void fill(T value )
     {
-        for i = 0, i < this._length, i++
-        {
-            SystemArraySetValueThis(this, i, value)
-        }
+        SystemArrayFillValue(this, 0, this._length, value)
     }
     #接口层
     override void reset()

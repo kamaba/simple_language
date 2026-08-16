@@ -119,7 +119,38 @@ namespace SimpleLanguage.Core
                         MetaDefineParam mdp = mpList[i];
                         if (mdp != null)
                         {
-                            m_MetaInputParamList.Add(mdp.expressNode);
+                            if (mdp.expressNode != null)
+                            {
+                                m_MetaInputParamList.Add(mdp.expressNode);
+                            }
+                            else if (mdp.isHasExpress)
+                            {
+                                // ref module 导入的函数：默认参数只保留 hasExpress 标记（无表达式 AST），
+                                // 省略参数时用参数声明类型的零值常量填充，保证实参数量与定义一致。
+                                var pet = mdp.metaVariable?.defineMetaType?.eType ?? EType.None;
+                                MetaConstExpressNode zeroNode;
+                                if (pet == EType.Boolean)
+                                {
+                                    zeroNode = new MetaConstExpressNode(EType.Boolean, false);
+                                }
+                                else if (pet == EType.String)
+                                {
+                                    zeroNode = new MetaConstExpressNode(EType.String, string.Empty);
+                                }
+                                else if (pet >= EType.UInt8 && pet <= EType.UInt128)
+                                {
+                                    zeroNode = new MetaConstExpressNode(pet, 0);
+                                }
+                                else
+                                {
+                                    zeroNode = new MetaConstExpressNode(EType.Null, "null");
+                                }
+                                m_MetaInputParamList.Add(zeroNode);
+                            }
+                            else
+                            {
+                                m_MetaInputParamList.Add(mdp.expressNode);
+                            }
                         }
                     }
                 }

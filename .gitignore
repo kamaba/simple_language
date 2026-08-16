@@ -203,7 +203,6 @@
 /source/CompileStd/obj/project.assets.json
 /source/CompileStd/obj/project.nuget.cache
 /vm_output.txt
-/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
 /source/CompileMath/bin
 /source/CompileMath/obj
 /source/StdNativeImpl/obj
@@ -246,3 +245,4 @@
 /source/MathNativeImpl/obj
 /source/CSimpleVMTest1/CSimpleVMTest.csproj.Backup.tmp
 /build/logs/VM.txt
+/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
