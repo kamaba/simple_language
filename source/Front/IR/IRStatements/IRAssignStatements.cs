@@ -127,7 +127,7 @@ namespace SimpleLanguage.IR
                         //IRMetaClass owirmc1 = IRManager.instance.GetIRMetaClassById(mvv.GetOwnerClassTemplateClass().GetHashCode());
                         if (mvv.isStatic)
                         {
-                            Log.AddIRLog(LID.ShowExtendMessage, ms.token, "visit variable is Static");
+                            Log.AddIRLog(LID.ShowExtendMessage, ms.token, "IRAssignStatement visit variable is Static");
                         }
                         IRLoadVariable irVar = new IRLoadVariable(null, this.irMethod, 0, IRMetaVariableFrom.Array);
                         m_IRStatements.Add(irVar);
@@ -194,10 +194,10 @@ namespace SimpleLanguage.IR
                         m_IRStatements.Add(new IRDup(this.irMethod));
                     }
 
-                    if (lastCL.variable.isStatic)
-                    {
-                        Log.AddIRLog(LID.ShowExtendMessage, lastCL.variable.token, "visit variable is Static");
-                    }
+                    //if (lastCL.variable.isStatic)
+                    //{
+                    //    Log.AddIRLog(LID.ShowExtendMessage, ms.token, "IRAssignStatement visit variable is Static2");
+                    //}
 
                     var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, lastCL);
                     if (list == null)

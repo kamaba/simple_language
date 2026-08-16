@@ -44,7 +44,7 @@ public class Int32 extends Num
     {
         ret SystemConvertBool(this)
     }
-    override Int8 toInt8( byte index = 0 )
+    override Int8 toInt8( UInt8 index = 0 )
     {
         ret SystemConvertInt8(this, index)
     }

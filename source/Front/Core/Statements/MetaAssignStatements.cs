@@ -290,6 +290,32 @@ namespace SimpleLanguage.Core
                 }
 
             }
+            else if (isAssignSign && m_RightMetaExpress == null && rightExpress != null)
+            {
+                // 普通赋值语句( a = b / this.a = b )：右值 FileMetaBaseTerm 已传给左值链解析
+                // (供 setter/_setItem_ 场景把右值消费为方法参数)，但普通变量/成员赋值时解析结果
+                // 只留在 MetaCallNode 内部，m_RightMetaExpress 一直为 null，导致 IRAssignStatements
+                // 生成 IR 时右值表达式整体丢失(只剩 LoadArgument + Store)。
+                // 这里在左值解析完成后回填右值表达式；左值链结尾是 MethodCall/SystemCall 说明右值
+                // 已被 setter/_setItem_ 消费为调用参数，不回填，避免 IR 重复生成右值。
+                var lastVN = m_LeftMetaExpress.finalCallNode;
+                if (lastVN == null
+                    || (lastVN.visitType != MetaVisitNode.EVisitType.MethodCall
+                        && lastVN.visitType != MetaVisitNode.EVisitType.SystemCall))
+                {
+                    var leftMt = m_MetaVariable?.GetFinalMetaType();
+                    if (leftMt != null && leftMt.metaClass == CoreMetaClassManager.memberMetaClass
+                        && m_MetaVariable.sourceMetaVariable != null)
+                    {
+                        leftMt = m_MetaVariable.sourceMetaVariable.realMetaType;
+                    }
+                    if (TryParseRightExpress(rightExpress, leftMt) == false)
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
+                        return;
+                    }
+                }
+            }
 
 
             //if (leftCallNodeList.Count == 0)

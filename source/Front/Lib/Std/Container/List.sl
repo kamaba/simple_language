@@ -97,7 +97,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         SystemArraySetValueThis(this._list, this._length, item)
         this._length++
     }
-    public override void insert( int index, T item )
+    public void insert( int index, T item )
     {
         if index < 0 || index > this._length
         {
