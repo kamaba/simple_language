@@ -8,8 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- VS 内: 引用 C++ 项目, 可以直接断点调试 C 代码 -->
-    <ProjectReference Include="..\..\..\csimple_lang\project\vs\vm_lib\csimple_lang_lib.vcxproj" />
+    <!-- VS 内: 引用 C++ 项目, 可以直接断点调试 C 代码 (dotnet CLI 下跳过, 由 BuildCVM 用 CMake 构建) -->
+    <ProjectReference Include="..\..\..\csimple_lang\project\vs\vm_lib\csimple_lang_lib.vcxproj" Condition="'$(BuildingInsideVisualStudio)' == 'true'" />
     <ProjectReference Include="..\Front\SimpleLanguageFront.csproj" />
   </ItemGroup>
 

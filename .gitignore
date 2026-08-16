@@ -245,3 +245,4 @@
 /source/CSimpleVMTest1/obj
 /source/MathNativeImpl/obj
 /source/CSimpleVMTest1/CSimpleVMTest.csproj.Backup.tmp
+/build/logs/VM.txt

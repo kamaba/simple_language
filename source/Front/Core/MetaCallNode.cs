@@ -6,9 +6,7 @@
 //  Description:  this's a calllink's node handle
 //****************************************************************************
 using SimpleLanguage.Compile;
-using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
-using SimpleLanguage.Project;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -207,6 +205,10 @@ namespace SimpleLanguage.Core
         {
             this.m_Token = token;
         }
+        public void SetRightExpress(MetaExpressNodeBase menb )
+        {
+            this.m_RightExpress = menb;
+        }
         public void SetFrontCallNode(MetaCallNode mcn)
         {
             m_FrontCallNode = mcn;
@@ -312,6 +314,7 @@ namespace SimpleLanguage.Core
                     {
                         MetaCallNode mcn = new MetaCallNode(en, m_OwnerMetaFunctionBlock.ownerMetaClass, m_OwnerMetaFunctionBlock);
                         mcn.SetFrontCallNode(frontcn);
+                        mcn.SetRightExpress(m_RightExpress);
                         if (!mcn.ParseNode(_auc))
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "bracket express parse failed!");
@@ -329,6 +332,8 @@ namespace SimpleLanguage.Core
         }
         void TryGetRightExpress( MetaType mt, MetaVariable mv )
         {
+            if (m_RightExpress != null) return;
+
             if (m_FileRightExpress != null )
             {
                 if(m_FileRightExpress is FileMetaCallTerm fmct && mv == null )
