@@ -37,7 +37,7 @@ Level2<LT21, LT22, LT23> extends Level1<Test2<LT23>,Test1<LT22> >
 {
     LT22 Level21_t = new()  # Test1<AAAAA<string>> l2
 
-    override LT22 add( LT22 tttt )
+    LT22 add( LT22 tttt )
     {
         LT22 llevel11sx = new()
 

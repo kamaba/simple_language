@@ -36,7 +36,7 @@ ImmplementClass1_1 interface InterfaceClass1,InterfaceClass2,InterfaceClass3
     override int interfaceFun2(){
         ret int(this.x1*this.y1 + this.z1);
     }
-    override string fun2()
+    string fun2()
     {
         ret "fun1";
     }

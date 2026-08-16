@@ -413,6 +413,7 @@ namespace SimpleLanguage.Core
             }
         }
         // 检查方法是否为本类所实现接口中声明的方法 (override标记也用于接口实现)
+        // 使用名字匹配: 接口模板参数名可能不同(如 IT1 vs LT23)，且接口类可能尚未完成自身解析
         private bool IsMatchInterfaceMemberFunction(MetaMemberFunction mmf)
         {
             foreach (var it in this.m_InterfaceMetaType)
@@ -420,17 +421,33 @@ namespace SimpleLanguage.Core
                 MetaClass interfaceMc = it.GetTemplateMetaClass();
                 if (interfaceMc == null || interfaceMc == this) continue;
 
-                List<MetaMemberFunction> forlist = new List<MetaMemberFunction>(
-                    interfaceMc.staticMetaMemberFunctionList.Count + interfaceMc.nonStaticVirtualMetaMemberFunctionList.Count);
-                forlist.AddRange(interfaceMc.staticMetaMemberFunctionList);
-                forlist.AddRange(interfaceMc.nonStaticVirtualMetaMemberFunctionList);
-                foreach (var interfaceMMF in forlist)
-                {
-                    if (mmf.IsEqualMetaFunction(interfaceMMF))
-                    {
-                        return true;
-                    }
-                }
+                var visited = new HashSet<MetaClass>();
+                if (IsInterfaceContainsFunction(interfaceMc, mmf.name, visited)) return true;
+            }
+            return false;
+        }
+        // 递归遍历接口继承链 (interface IPet extends IAnimal, 方法可能在父接口中)
+        private static bool IsInterfaceContainsFunction(MetaClass interfaceMc, string name, HashSet<MetaClass> visited)
+        {
+            if (interfaceMc == null || !visited.Add(interfaceMc)) return false;
+
+            if (ContainsFunctionByName(interfaceMc.nonStaticVirtualMetaMemberFunctionList, name)) return true;
+            if (ContainsFunctionByName(interfaceMc.staticMetaMemberFunctionList, name)) return true;
+            if (ContainsFunctionByName(interfaceMc.fileCollectMetaMemberFunctionList, name)) return true;
+
+            foreach (var it in interfaceMc.interfaceMetaType)
+            {
+                var parentMc = it.GetTemplateMetaClass();
+                if (IsInterfaceContainsFunction(parentMc, name, visited)) return true;
+            }
+            if (IsInterfaceContainsFunction(interfaceMc.extendClass, name, visited)) return true;
+            return false;
+        }
+        private static bool ContainsFunctionByName(List<MetaMemberFunction> list, string name)
+        {
+            foreach (var f in list)
+            {
+                if (f.name == name) return true;
             }
             return false;
         }

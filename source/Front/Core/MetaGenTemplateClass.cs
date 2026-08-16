@@ -284,6 +284,29 @@ namespace SimpleLanguage.Core
 
                 }
             }
+
+            /* Inherit member variables from the parent entity (gen entity or
+              * concrete class) whose types are already substituted. Same
+              * reference-sharing semantics as MetaClass.HandleExtendMemberVariable. */
+            if (this.m_ExtendClass != null && this.m_ExtendClass != this)
+            {
+                foreach (var v in this.m_ExtendClass.metaExtendMemeberVariableDict)
+                {
+                    if (!this.m_MetaMemberVariableDict.ContainsKey(v.Value.name)
+                        && !this.m_MetaExtendMemeberVariableDict.ContainsKey(v.Value.name))
+                    {
+                        this.m_MetaExtendMemeberVariableDict.Add(v.Key, v.Value);
+                    }
+                }
+                foreach (var v in this.m_ExtendClass.metaMemberVariableDict)
+                {
+                    if (!this.m_MetaMemberVariableDict.ContainsKey(v.Value.name)
+                        && !this.m_MetaExtendMemeberVariableDict.ContainsKey(v.Value.name))
+                    {
+                        this.m_MetaExtendMemeberVariableDict.Add(v.Key, v.Value);
+                    }
+                }
+            }
         }
         //public bool UpdateMetaTypeByGenClassAndFunction( MetaType mt )
         //{
@@ -355,22 +378,60 @@ namespace SimpleLanguage.Core
         }
         public void ParseMemberFunctionDefineMetaType()
         {
-            /* Collect methods from the template class's final member lists.
-              * Source-compiled types have methods in fileCollectMetaMemberFunctionList
-              * (pre-merge) OR in nonStatic/static lists (post-merge).
-              * Reference-loaded types have methods only in nonStatic/static lists. */
+            /* Only methods defined by the template class itself are substituted here.
+              * Inherited methods in the template class's member lists reference the
+              * PARENT template class's parameter names (e.g. Level3<LT31,LT32>.add(LT31)
+              * inside Level4<LT41,LT42>) which do NOT exist in this gen class's template
+              * map ({LT41,LT42}) - substitution would fail to find the template.
+              * Inherited methods come from the parent gen entity (m_ExtendClass,
+              * e.g. Level3<int,string>) where they are already substituted. */
             this.m_MetaMemberFunctionTemplateNodeDict.Clear();
             foreach (var it in this.m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList)
             {
+                if (it.ownerMetaClass != this.m_MetaTemplateClass)
+                {
+                    continue; // 继承的方法: 由父类生成实体提供
+                }
                 var fun = ParseMetaMemberFunctionDefineMetaType(it);
                 this.m_NonStaticVirtualMetaMemberFunctionList.Add(fun);
                 AddMetaMemberFunction(fun);
             }
             foreach (var it in this.m_MetaTemplateClass.staticMetaMemberFunctionList)
             {
+                if (it.ownerMetaClass != this.m_MetaTemplateClass)
+                {
+                    continue;
+                }
                 var fun = ParseMetaMemberFunctionDefineMetaType(it);
                 this.m_StaticMetaMemberFunctionList.Add(fun);
                 AddMetaMemberFunction(fun);
+            }
+
+            /* Inherit methods from the parent entity (gen entity or concrete class).
+              * They are already resolved/substituted. */
+            if (this.m_ExtendClass != null && this.m_ExtendClass != this)
+            {
+                foreach (var it in this.m_ExtendClass.nonStaticVirtualMetaMemberFunctionList)
+                {
+                    var find = this.m_NonStaticVirtualMetaMemberFunctionList.Find(a => a.IsEqualMetaFunction(it));
+                    if (find != null)
+                    {
+                        // 子类override了父类方法: 建立 override 链，供 base.xxx() 调用解析
+                        find.SetOverrideMetaMemberFunction(it);
+                        continue;
+                    }
+                    this.m_NonStaticVirtualMetaMemberFunctionList.Add(it);
+                    AddMetaMemberFunction(it);
+                }
+                foreach (var it in this.m_ExtendClass.staticMetaMemberFunctionList)
+                {
+                    var find = this.m_StaticMetaMemberFunctionList.Find(a => a.IsEqualMetaFunction(it));
+                    if (find == null)
+                    {
+                        this.m_StaticMetaMemberFunctionList.Add(it);
+                        AddMetaMemberFunction(it);
+                    }
+                }
             }
         }
         MetaMemberFunction ParseMetaMemberFunctionDefineMetaType(MetaMemberFunction mmf)
