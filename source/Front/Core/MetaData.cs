@@ -1,4 +1,4 @@
-﻿using SimpleLanguage.Compile;
+using SimpleLanguage.Compile;
 
 using SimpleLanguage.Logging;
 using System;
@@ -256,13 +256,39 @@ namespace SimpleLanguage.Core
         }
         public void HandleExtendMemberFunction()
         {
-            bool canAdd = false;
             foreach (var v in this.m_ExtendClass.nonStaticVirtualMetaMemberFunctionList)
             {
-                canAdd = true;
-                var efun = v;
-                //if (efun.isConstructInitFunction) { continue; }
-                m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
+                // 在子类定义的方法中查找与父类方法签名相同的方法
+                MetaMemberFunction matchedChild = null;
+                foreach (var v2 in this.m_FileCollectMetaMemberFunctionList)
+                {
+                    if (v.IsEqualMetaFunction(v2))
+                    {
+                        matchedChild = v2;
+                        break;
+                    }
+                }
+
+                if (matchedChild != null)
+                {
+                    // 子类方法替换父类方法，记录override链供 base 调用解析
+                    if (!v.isStatic)
+                    {
+                        if (v.isFinal && !v.isAbstract)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                                "Error 子data[" + this.m_AllName + "] 方法: " + matchedChild.name +
+                                " 不能override父类的final方法: " + this.m_ExtendClass.allName + "." + v.name);
+                        }
+                        matchedChild.SetOverrideMetaMemberFunction(v);
+                    }
+                    m_NonStaticVirtualMetaMemberFunctionList.Add(matchedChild);
+                }
+                else
+                {
+                    // 子类没有重写该方法: 直接继承父类方法
+                    m_NonStaticVirtualMetaMemberFunctionList.Add(v);
+                }
             }
 
             foreach (var v2 in this.m_FileCollectMetaMemberFunctionList)
@@ -272,6 +298,12 @@ namespace SimpleLanguage.Core
                     var find = m_StaticMetaMemberFunctionList.Find(a => a == v2);
                     if (find != null) continue;
 
+                    // static方法不支持override标记
+                    if (v2.isOverrideFunction)
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, v2.token,
+                            "Error data[" + this.m_AllName + "] 的static方法: " + v2.name + " 不能使用override标记");
+                    }
                     m_StaticMetaMemberFunctionList.Add(v2);
                 }
                 else
@@ -279,9 +311,12 @@ namespace SimpleLanguage.Core
                     var find = m_NonStaticVirtualMetaMemberFunctionList.Find(a => a == v2);
                     if (find != null) continue;
 
-                    if (v2.isOverrideFunction && v2.overrideMetaMemberFunction != null)
+                    // 有override标记，但父类中不存在签名相同的方法
+                    if (v2.isOverrideFunction && v2.overrideMetaMemberFunction == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, find.token, "有override标记，但没有父类 ");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, v2.token,
+                            "Error data[" + this.m_AllName + "] 方法: " + v2.name +
+                            " 有override标记，但没有找到父类中相同签名的方法");
                     }
                     m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
                 }

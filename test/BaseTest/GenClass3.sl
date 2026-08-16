@@ -18,6 +18,23 @@ Level1<LT11,LT12>
     LT11 Level1_t1 = new()
     LT12 Level1_t2 = new()
 
+    LT12 level1Fun( LT11 t1, LT12 t2 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t2
+    }
+    static LT12 level1staticFun( LT11 t1, LT12 t2 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t2
+    }
+
     override string toString()
     {
         ret "  Level1_t1=" + this.Level1_t1.toString() + "  Level1_t2=" + this.Level1_t2.toString()
@@ -36,6 +53,15 @@ Level2<LT21, LT22, LT23> extends Level1<LT23,LT22 > interface Interface1<LT23>
         LT23 llevel11sx = new()
 
         ret tttt
+    }
+    
+    LT23 level2un( LT21 t1, LT22 t2, LT23 t3 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t3
     }
 
     static LT23 _test = new()
@@ -61,6 +87,27 @@ Level3<LT31, LT32> extends Level2<LT32, LT32, LT31>
     {
         ret tttt
     }
+    
+    LT32 level3Fun( LT31 t1, LT32 t2 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t2
+    }
+
+    
+    
+    static LT32 level3staticFun( LT31 t1, LT32 t2 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t2
+    }
+
     override string toString()
     {
         ret "Level3_t=" + this.Level3_t.toString() + "\n" + base.toString()
@@ -72,6 +119,23 @@ Level4<LT41,LT42> extends Level3<LT42,LT41>
     override LT42 add( LT42 tttt )
     {
         ret tttt
+    }
+    
+    LT42 level4Fun( LT41 t1, LT42 t2 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t2
+    }
+    static LT42 level4staticFun( LT41 t1, LT42 t2 )
+    {
+        string ret1 = "  t1=" + t1.toString()
+
+        global.println(ret1)
+
+        ret t2
     }
 
     override string toString()

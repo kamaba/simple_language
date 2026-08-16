@@ -412,109 +412,163 @@ namespace SimpleLanguage.Core
                 }
             }
         }
+        // 检查方法是否为本类所实现接口中声明的方法 (override标记也用于接口实现)
+        private bool IsMatchInterfaceMemberFunction(MetaMemberFunction mmf)
+        {
+            foreach (var it in this.m_InterfaceMetaType)
+            {
+                MetaClass interfaceMc = it.GetTemplateMetaClass();
+                if (interfaceMc == null || interfaceMc == this) continue;
+
+                List<MetaMemberFunction> forlist = new List<MetaMemberFunction>(
+                    interfaceMc.staticMetaMemberFunctionList.Count + interfaceMc.nonStaticVirtualMetaMemberFunctionList.Count);
+                forlist.AddRange(interfaceMc.staticMetaMemberFunctionList);
+                forlist.AddRange(interfaceMc.nonStaticVirtualMetaMemberFunctionList);
+                foreach (var interfaceMMF in forlist)
+                {
+                    if (mmf.IsEqualMetaFunction(interfaceMMF))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
         public virtual void HandleExtendMemberFunction()
         {
+            List<MetaMemberFunction> addmmfList = new List<MetaMemberFunction>();
             if (this.m_ExtendClass == null)
             {
                 foreach (var v in m_FileCollectMetaMemberFunctionList)
                 {
                     if (v.isStatic)
                     {
-                        m_StaticMetaMemberFunctionList.Add(v);
+                        addmmfList.Add(v);
                     }
                     else
                     {
                         if (v.isWithInterface) continue;
                         //if (v.isConstructInitFunction) continue;
-                        if( v.isOverrideFunction )
+                        if( v.isOverrideFunction && !IsMatchInterfaceMemberFunction(v) )
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, v.token, "有override标记，但没有父类 ");                            
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, v.token,
+                                "Error 类[" + this.m_AllName + "] 的方法: " + v.name + " 有override标记，但没有父类");
                         }
-                        m_NonStaticVirtualMetaMemberFunctionList.Add(v);
+                        addmmfList.Add(v);
                     }
                 }
             }
             else
             {
-                bool canAdd = false;
-                foreach (var v in this.m_ExtendClass.m_NonStaticVirtualMetaMemberFunctionList)
-                {
-                    canAdd = true;
-                    var efun = v;
-                    //if (efun.isConstructInitFunction) { continue; }
+                List<MetaMemberFunction> mmfList = new List<MetaMemberFunction>();
+                mmfList.AddRange(this.m_ExtendClass.m_NonStaticVirtualMetaMemberFunctionList);
+                mmfList.AddRange(this.m_ExtendClass.m_StaticMetaMemberFunctionList);
 
+                foreach (var v in mmfList)
+                {
+                    // 在子类定义的方法中查找与父类方法签名相同的方法
+                    MetaMemberFunction matchedChild = null;
                     foreach (var v2 in m_FileCollectMetaMemberFunctionList)
                     {
                         //if (v2.isConstructInitFunction) continue;
-                        if (efun.IsEqualMetaFunction(v2))
+                        if (v.IsEqualMetaFunction(v2))
                         {
-                            // child provides an implementation
-                            // if parent is abstract, child must mark method with 'override'
-                            if (efun.isAbstract && !v2.isOverrideFunction)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 子类[" + this.m_AllName + "] 方法: " + v2.name + " 实现了抽象父方法但未使用 override 标记");
-                            }
-                            v2.SetOverrideMetaMemberFunction(efun);
-                            canAdd = false;
-                            m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
-                            continue;
+                            matchedChild = v2;
+                            break;
                         }
                     }
-                    if (canAdd)
+
+                    if (matchedChild == null)
                     {
-                        // If parent function is abstract and current class is concrete, require override
-                        if (efun.isAbstract && !this.m_IsAbstractClass)
+                        // 子类没有重写该方法: 直接继承父类方法
+                        // 如果父类方法是abstract方法，且当前类不是abstract类，则必须实现
+                        if (v.isAbstract && !this.m_IsAbstractClass)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAbstractFunctionNeedInstance, this.token, "", this.m_ExtendClass.allName, efun.name, this.allName);
+                            Log.AddMetaCoreLog(LID.MetaCoreAbstractFunctionNeedInstance, this.token, "",
+                                this.m_ExtendClass.allName, v.name, this.allName);
                         }
-                        m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
+                        addmmfList.Add(v);
+                        continue;
                     }
-                }
 
-                foreach (var v2 in this.m_FileCollectMetaMemberFunctionList)
-                {
-                    if (v2.isStatic)
+                    // 子类存在签名相同的方法: 用子类方法替换父类方法
+                    if (v.isStatic != matchedChild.isStatic)
                     {
-                        var find = m_StaticMetaMemberFunctionList.Find(a => a == v2);
-                        if (find != null) continue;
+                        // static声明不匹配: 不能替换，父类方法与子类方法都保留
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                            "Error 子类[" + this.m_AllName + "] 方法: " + matchedChild.name +
+                            " 与父类方法: " + this.m_ExtendClass.m_AllName + "." + v.name + " 的static声明不匹配");
+                        addmmfList.Add(v);
+                        addmmfList.Add(matchedChild);
+                        continue;
+                    }
 
-                        m_StaticMetaMemberFunctionList.Add(v2);
+                    if (!v.isStatic)
+                    {
+                        // final方法不允许被override
+                        if (v.isFinal && !v.isAbstract)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                                "Error 子类[" + this.m_AllName + "] 方法: " + matchedChild.name +
+                                " 不能override父类的final方法: " + this.m_ExtendClass.m_AllName + "." + v.name);
+                        }
+                        // 实现抽象父方法时必须使用override标记
+                        if (v.isAbstract && !matchedChild.isOverrideFunction)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                                "Error 子类[" + this.m_AllName + "] 方法: " + matchedChild.name +
+                                " 实现了抽象父方法但未使用 override 标记");
+                        }
+                        // 记录override链，供 base.xxx() 调用解析使用
+                        matchedChild.SetOverrideMetaMemberFunction(v);
                     }
                     else
                     {
-                        var find = m_NonStaticVirtualMetaMemberFunctionList.Find(a => a == v2);
-                        if (find != null) continue;
-
-                        if (v2.isOverrideFunction && v2.overrideMetaMemberFunction != null)
+                        // static方法不支持override标记 (只能隐藏)
+                        if (matchedChild.isOverrideFunction)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, find.token, "有override标记，但没有父类 ");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                                "Error 子类[" + this.m_AllName + "] 的static方法: " + matchedChild.name +
+                                " 不能使用override标记");
                         }
-
-                        m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
                     }
+                    addmmfList.Add(matchedChild);
+                }
+
+                // 添加子类中新增的方法 (没有与父类方法匹配的)
+                foreach (var v2 in this.m_FileCollectMetaMemberFunctionList)
+                {
+                    if (addmmfList.Contains(v2))
+                    {
+                        continue;
+                    }
+                    // 有override标记，但父类中不存在签名相同的方法 (排除接口实现)
+                    if (!v2.isStatic && v2.isOverrideFunction && v2.overrideMetaMemberFunction == null
+                        && !IsMatchInterfaceMemberFunction(v2))
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, v2.token,
+                            "Error 类[" + this.m_AllName + "] 方法: " + v2.name +
+                            " 有override标记，但没有找到父类中相同签名的方法");
+                    }
+                    addmmfList.Add(v2);
                 }
             }
 
 
 
-
-            foreach (var v2 in m_NonStaticVirtualMetaMemberFunctionList)
+            foreach (var v2 in addmmfList)
             {
-                //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
-                //if (find != null) continue;
-
                 AddMetaMemberFunction(v2);
-                //m_AllMetaMemberFunctionList.Add(v2);
-            }
-            foreach (var v2 in m_StaticMetaMemberFunctionList)
-            {
-                //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
-                //if (find != null) continue;
+                if (v2.isStatic)
+                {
+                    m_StaticMetaMemberFunctionList.Add(v2);
 
-                AddMetaMemberFunction(v2);
-                //m_AllMetaMemberFunctionList.Add(v2);
+                }
+                else
+                {
+                    m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
+                }
             }
-
 
             List<MetaMemberFunction> addList = new List<MetaMemberFunction>();
             for (int i = 0; i < this.m_TempInnerFunctionList.Count; i++)

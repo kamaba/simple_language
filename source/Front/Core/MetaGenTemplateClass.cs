@@ -377,7 +377,10 @@ namespace SimpleLanguage.Core
         {
             MetaMemberFunction mgmf = new MetaMemberFunction(mmf);
             mgmf.SetSourceMetaMemberFunction(mmf);
-            //mgmf.SetOwnerMetaClass(this);
+            if( mgmf.ownerMetaClass == this.metaTemplateClass )
+            {
+                mgmf.SetOwnerMetaClass(this);
+            }
 
             /* Gen template copies must not re-parse from FileMetaMemberFunction:
               * types are already resolved via UpdateMetaTypeByGenClassAndFunction below. */
