@@ -99,7 +99,7 @@ public class Int32 extends Num
     }
     public String toRadixString(int radix)
     {
-        ret "";
+        ret SystemConvertInt32ToRadixString(this, radix)
     }
     public String toBinaryString()
     {

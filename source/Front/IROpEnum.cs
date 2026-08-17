@@ -129,6 +129,10 @@ namespace SimpleLanguage
         // Unchecked context opcodes (temporarily disable checked within a checked scope)
         BeginUnchecked, // Save current checked depth, set to 0 (opt-out of overflow checking)
         EndUnchecked,   // Restore saved checked depth
+
+        // Parameter slot store: argument/local use independent index spaces,
+        // assigning to a parameter must write the argument slot (not StoreLocal).
+        StoreArgument,  // = 95
     }
 
     /// <summary>

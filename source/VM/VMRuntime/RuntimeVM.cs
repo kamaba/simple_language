@@ -2284,6 +2284,30 @@ namespace SimpleLanguage.VM.Runtime
 #endif
                     }
                     break;
+                case EIROpCode.StoreArgument:
+                    {
+                        if (ByteStackSlotDepthCount > 0)
+                        {
+                            if ((uint)iri.index >= m_ArgumentRuntimeObjectArray.Length)
+                            {
+                                Log.AddRuntimeLog(LID.RuntimeArrayIndexOutOfRange, "MethodId:" + id.ToString() + "SetArgumentVariableSValue", (uint)iri.index);
+                                return;
+                            }
+                            ByteStackPopToRuntimeValue(out var sv);
+#if DEBUG
+                            sv = m_ValueStack[--m_ValueIndex]; // debug mirror
+#endif
+                            m_ArgumentRuntimeObjectArray[(uint)iri.index].SetSObjectBySValue(ref sv);
+#if DEBUG
+                            Log.AddVM(LID.ShowMessageInfo, "MethodId:" + id.ToString() + "StoreArgument: index=" + iri.index);
+#endif
+                        }
+                        else
+                        {
+                            Log.AddRuntimeLog(LID.RuntimeVMStackIndexNotEnough, iri.debugInfo, "StoreArgument stack underflow at index {iri.index}", 1, ByteStackSlotDepthCount);
+                        }
+                    }
+                    break;
                 case EIROpCode.StoreLocal:
                     {
                         if (ByteStackSlotDepthCount > 0)

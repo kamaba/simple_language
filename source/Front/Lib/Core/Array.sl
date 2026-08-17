@@ -5,7 +5,6 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     Type _type = null;
     int _index = 0;
     T _current = null
-    long _ptr = 0
        
     public static Array<T> create( int length )
     {
@@ -14,16 +13,37 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     }
 
     _init_( int __len )
-    {
-        #uint allSize = __len * 4            
+    {         
         this._length = __len
-        #this._ptr = Lib.ArrayClass.CreateArray( length, 4 )
     }
     get int length(){ ret this._length }
 
-    public void fill(T value )
+    public void fill(T value, int startIndex = 0, int count = -1 )
     {
-        SystemArrayFillValue(this, 0, this._length, value)
+        if startIndex < 0 || startIndex >= this._length
+        {
+            ret
+        }
+        #count==0：默认从 startIndex 填到 _length 末尾；
+        #count>0：精确填 count 个（超过 capacity 剩余槽位则截断），
+        #此前 elif 把 count 覆盖成 capacity-startIndex，导致 fill(33,2,3) 填到 capacity 末尾。
+        if( count == 0 )
+        {
+            count = this._length - startIndex
+        }
+        elif count > 0
+        {
+            if count > this._length - startIndex
+            {
+                count = this._length - startIndex
+            }
+        }
+        else
+        {
+            SystemPrint("Array.fill: index out of range")
+            ret
+        }
+        SystemArrayFillValue(this, startIndex, count, value )        
     }
     #接口层
     override void reset()

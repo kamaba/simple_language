@@ -31,10 +31,11 @@ namespace SimpleLanguage.IR
 
                 IRStoreVariable irsv = IRStoreVariable.CreateStaticReturnIRSV(this.irMethod, ms?.token);
                 m_IRStatements.Add(irsv);
-
-                IRBranch irbranch = new IRBranch(this.irMethod, EIROpCode.BrLabel, irMethod.funEndLabelData );
-                m_IRStatements.Add(irbranch);
             }
+            // 裸 ret（void 函数）也必须生成跳转到函数结束，
+            // 否则块内的提前返回会退化为顺序执行后续语句。
+            IRBranch irbranch = new IRBranch(this.irMethod, EIROpCode.BrLabel, irMethod.funEndLabelData );
+            m_IRStatements.Add(irbranch);
         }
     }
 

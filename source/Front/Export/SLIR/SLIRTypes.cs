@@ -133,6 +133,11 @@ namespace SimpleLanguage.Export.SLIR.Types
         public int templateCount { get; set; }
         /// <summary>Declared template arity in source (e.g. <c>Foo&lt;T,U&gt;</c> → 2). <see cref="templateCount"/> is IR-generated template meta type count.</summary>
         public int templateParameterCount { get; set; }
+        /// <summary>Declared template parameter names in source (e.g. Map&lt;TKey,TValue&gt; -> ["TKey","TValue"]).
+        /// The importer must rebuild MetaTemplate with these exact names so that allName
+        /// (e.g. "Std.Map&lt;TKey,TValue&gt;") and its FNV classId match the exporter;
+        /// normalizing to T/T1 would break classId-based method lookup for multi-parameter templates.</summary>
+        public List<string> templateParameterNames { get; set; } = new();
         public List<SLRuntimeDefTypePackage> templateTypeList { get; set; } = new();
         public List<SLTemplateRelationPackage> templateRelationList { get; set; } = new();
 

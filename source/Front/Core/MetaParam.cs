@@ -131,6 +131,10 @@ namespace SimpleLanguage.Core
             m_IsFunctionTemplate = mdp.m_IsFunctionTemplate;
             m_FileMetaParamter = mdp.m_FileMetaParamter;
             m_IsHasExpress = m_FileMetaParamter != null && m_FileMetaParamter.express != null;
+            // 从引用模块导入的参数没有 FileMeta / 表达式 AST，只有标志位，拷贝时必须保留，
+            // 否则 isMust 判定回退为 true，省略默认参数的调用会匹配失败（模板实例化 / MetaMethod 复制路径）。
+            m_HasExpressImported = mdp.m_HasExpressImported;
+            m_ExtendParamsForced = mdp.m_ExtendParamsForced;
             m_MetaExpressNode = mdp.m_MetaExpressNode;
             m_OwnerMetaFunction = mdp.m_OwnerMetaFunction;
             m_MetaVariable = new MetaVariable( mdp.m_MetaVariable );
@@ -425,21 +429,23 @@ namespace SimpleLanguage.Core
 
             if(isHaveDefaultParamExpress)
             {
-                if (metaMemberParam.expressNode == null)
+                // 已进入默认参数段：后续参数必须带默认值。
+                // 注意导入（ref module）函数没有表达式 AST（expressNode 恒为 null），
+                // 只保留 isHasExpress 标志，因此必须用标志判断而不能用 expressNode。
+                if (!metaMemberParam.isHasExpress)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error AddMetaDefineParam ???????????????????????????????????!!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error AddMetaDefineParam 参数前边已定义默认值，后边必须跟进默认值表达式!!");
                 }
+            }
+            else if (metaMemberParam.isMust)
+            {
+                // 必须参数段：最小调用实参数 = 必须参数个数（最大形式即全部参数，见 maxParamCount）。
+                m_MinParamCount++;
             }
             else
             {
-                if (metaMemberParam.expressNode != null)
-                {
-                    m_IsHaveDefaultParamExpress = true;
-                }      
-                else
-                {
-                    m_MinParamCount++;
-                }
+                // 首个默认参数：进入默认参数段。
+                m_IsHaveDefaultParamExpress = true;
             }
         }
         public bool IsEqualMetaInputParamCollection(MetaInputParamCollection mpc)

@@ -2,7 +2,8 @@ Project
 {
     _main_()
     {
-        ListTest.fun()
+        #ListTest.fun()
+        MapTest.fun()
     }
     CompileBefore()
     {

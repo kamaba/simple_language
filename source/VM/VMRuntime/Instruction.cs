@@ -77,6 +77,7 @@ namespace SimpleLanguage.VM
                 case EIROpCode.LoadArgument:
                 case EIROpCode.LoadLocal:
                 case EIROpCode.StoreLocal:
+                case EIROpCode.StoreArgument:
                 case EIROpCode.StoreReturn:
                 case EIROpCode.LoadGlobal:
                 case EIROpCode.StoreGlobal:

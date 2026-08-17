@@ -1,11 +1,11 @@
 
-0. CVMTest1/2 也是先编译包括 C的工程，然后尽量可以debug在C端的工程，而不是直接运行  在MetaDefineParam的引入的时候，需要把表达式也导入进来，要不会引起Must的错误
-1. 优化迭代器，直接写到Array/Range cvm层，还有就是写for循环 使用for i = 0, i < 100; 这种的，也在虚拟机层实现
-2. 把数组操作的尽量都系统函数化  包括fill 移除通过下标，移植通过元素 插入
-3. 增加数组的内部方法
-4. 写list,map的支持
-5. 对别一个调用类的 Core.global.var1 Std.global.aaa
-6. 数学库的集成
+1. 写list,map的支持
+2. 数学库的集成
+3. 对别一个调用类的 Core.global.var1 Std.global.aaa
+4. 写Console的实例，输入的计算器功能
+5. 实现别名的功能，Nickname的使用，让查找Class/MemeberVar|functoin/
+6. SystemConvertInt32ToRadixString 这个的cvm实现 public override Num floor()ceil()的实现 isFinite  Num继承的abstract的方法，需要实现
+7. 指针的增加与处理. 
 
 最近要解决的:
 1. 基础类的相关写作 Object
@@ -16,8 +16,6 @@ final int/uint/float 等方法
 1. cvm 只使用三色方案  然后使用 引用计数的方案，在结尾 后把内存收集
 
 机制差的:
-1. 模块化功能
-2. 指针的增加与处理. 
 4. 增加中断编译，和编译状态的逻辑
 5. 内置action的支持
 

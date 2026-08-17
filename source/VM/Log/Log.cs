@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      Log.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -119,13 +119,21 @@ namespace SimpleLanguage.Logging
                 if (!string.IsNullOrEmpty(dir))
                     Directory.CreateDirectory(dir);
 
-                if (s_ResetFileBeforeNextWrite)
+                //常驻 StreamWriter 替代逐行 File.AppendAllText：后者每行日志都 open/close
+                //文件句柄，VM 指令级日志在磁盘繁忙时极易被阻塞挂起。
+                if (s_VmLogWriter == null || s_ResetFileBeforeNextWrite
+                    || !string.Equals(s_VmLogWriterPath, path, StringComparison.OrdinalIgnoreCase))
                 {
-                    File.WriteAllText(path, string.Empty, Encoding.UTF8);
+                    s_VmLogWriter?.Dispose();
+                    s_VmLogWriter = new StreamWriter(path, append: !s_ResetFileBeforeNextWrite, Encoding.UTF8)
+                    {
+                        AutoFlush = true,
+                    };
+                    s_VmLogWriterPath = path;
                     s_ResetFileBeforeNextWrite = false;
                 }
 
-                File.AppendAllText(path, line + Environment.NewLine, Encoding.UTF8);
+                s_VmLogWriter.WriteLine(line);
                 if (!s_LogPathPrinted)
                 {
                     Console.WriteLine($"[VMLog] OutputPath: {path}");
@@ -133,6 +141,9 @@ namespace SimpleLanguage.Logging
                 }
             }
         }
+
+        static StreamWriter? s_VmLogWriter;
+        static string? s_VmLogWriterPath;
 
         public static void AddLog( LogData data )
         {

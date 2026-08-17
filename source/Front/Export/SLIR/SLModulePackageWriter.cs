@@ -336,6 +336,20 @@ namespace SimpleLanguage.Export.SLIR
                 // export template count
                 cm.templateCount = c.templateCount;
                 cm.templateParameterCount = c.templateParameterCount;
+                // export real declared template parameter names (e.g. TKey/TValue of Map<TKey,TValue>).
+                // The importer rebuilds MetaTemplate with these names so that allName and its FNV
+                // classId match on both sides; a T/T1 fallback would break classId-based lookup.
+                var expTplNames = c.OwnerMetaClass?.metaTemplateList;
+                if (expTplNames != null)
+                {
+                    for (int ti = 0; ti < expTplNames.Count; ti++)
+                    {
+                        var tn = expTplNames[ti]?.name;
+                        cm.templateParameterNames.Add(string.IsNullOrWhiteSpace(tn)
+                            ? (ti == 0 ? "T" : "T" + ti.ToString())
+                            : tn);
+                    }
+                }
                 // export template (generated) meta types for the class
                 if (c.templateTypeList != null)
                 {

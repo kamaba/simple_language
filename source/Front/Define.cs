@@ -483,6 +483,28 @@ namespace SimpleLanguage
         SystemMemoryClone,
         SystemStringLength,
 
+        // Math – must stay in sync with VM ESystemMethodCall.cs (ordinal parity;
+        // the C# VM dispatches CallSystemMethod by systemMethodKind number).
+        SystemMathSin,
+        SystemMathCos,
+        SystemMathTan,
+        SystemMathAsin,
+        SystemMathAcos,
+        SystemMathAtan,
+        SystemMathAtan2,
+        SystemMathSinh,
+        SystemMathCosh,
+        SystemMathTanh,
+        SystemMathPow,
+        SystemMathSqrt,
+        SystemMathExp,
+        SystemMathLog,
+        SystemMathLog10,
+        SystemMathCeil,
+        SystemMathFloor,
+        SystemMathRound,
+        SystemMathTruncate,
+
         /// <summary>调用外部 DLL 注册的函数，第一个参数为函数名（字符串），后续为实际参数。</summary>
         SystemCallExternalFunction,
 

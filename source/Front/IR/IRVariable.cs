@@ -524,7 +524,9 @@ namespace SimpleLanguage.IR
             }
             else if( irmvf == IRMetaVariableFrom.Argument )
             {
-                m_Data.opCode = EIROpCode.StoreLocal;
+                // 参数槽与局部槽编号空间独立（Argument #0..N / Local #0..M），
+                // 参数赋值必须写入参数槽：StoreLocal 只写局部槽，idx 越界时赋值会被丢弃。
+                m_Data.opCode = EIROpCode.StoreArgument;
                 m_Data.index = id;
                 m_IRDataList.Add(m_Data);
             }

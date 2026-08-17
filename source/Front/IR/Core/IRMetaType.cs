@@ -177,10 +177,17 @@ namespace SimpleLanguage.IR
             else
             {
                 var name = string.IsNullOrEmpty(typeDef.className) ? "Core.Object" : typeDef.className;
+                // classId 为确定型哈希，与 Phase A 注册的 IRMetaClass.id 一致，优先按 id 查。
+                //（className 带泛型后缀如 "List<T>" 时按名查不到，会错误回退 Core.Object，
+                //  导致 getRange 这类自引用泛型返回类型丢失）
+                var found = typeDef.classId != 0
+                    ? IRManager.instance.GetIRMetaClassById(typeDef.classId)
+                    : null;
                 // 导出端 StripModulePrefix 去掉了模块前缀，而 Core 内建类型的 IRMetaClass.irName
                 // 仍带 "Core." 前缀（如 "Core.Int32"）。因此先按去前缀名查（非 Core ref module 命中），
                 // 再按 "Core."+name 查（Core 内建类型命中），最后回退 Core.Object。
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassByName(name)
+                irmt.m_IRMetaClass = found
+                    ?? IRManager.instance.GetIRMetaClassByName(name)
                     ?? IRManager.instance.GetIRMetaClassByName("Core." + name)
                     ?? IRManager.instance.GetIRMetaClassByName("Core.Object");
             }

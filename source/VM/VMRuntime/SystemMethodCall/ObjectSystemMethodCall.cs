@@ -261,7 +261,9 @@ namespace SimpleLanguage.VM.Runtime
                 value.TryCoerceScalarForAssignment(targetEvm);
             }
 
-            if (startIndex < 0) startIndex = 0;
+            // 与 List.fill( value, startIndex, count ) 的区间语义对应：
+            // startIndex 越界或 count 无效时不填充；count 超出数组剩余槽位时截断到数组末尾。
+            if (startIndex < 0 || startIndex >= arrObj.length || length <= 0) return;
             int end = startIndex + length;
             if (end > arrObj.length) end = arrObj.length;
             for (int i = startIndex; i < end; i++)

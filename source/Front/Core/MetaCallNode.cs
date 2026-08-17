@@ -95,7 +95,7 @@ namespace SimpleLanguage.Core
         public ECallNodeType callNodeType => m_CallNodeType;
         public ECallNodeSign callNodeSign => m_CallNodeSign;
         public List<MetaCallNode> metaCallNodeList => m_MetaCallNodeList;
-        public bool isQuestionMarkDot => m_IsQuestionMarkDot;
+        public bool isQuestionMarkDot => m_CallNodeSign == ECallNodeSign.NullConditional;
         public MetaExpressNodeBase metaExpressValue => m_ExpressNode;
         public List<MetaExpressNodeBase> bracketExpressList => m_BracketExpressList;
         public List<MetaType> metaTemplateParamsList => m_MetaTemplateParamsList;
@@ -105,13 +105,10 @@ namespace SimpleLanguage.Core
         public MetaEnum ownerMetaEnum => m_OwnerMetaBase as MetaEnum;
         public MetaBase ownerMetaBase => m_OwnerMetaBase;
         public MetaBlockStatements ownerMetaFunctionBlock => m_OwnerMetaFunctionBlock;
-        public MetaVariable storeMetaVariable => m_StoreMetaVariable;
         public MetaVariable defineMetaVariable => m_DefineMetaVariable; 
         public FileMetaBraceTerm fileMetaBraceTerm => m_FileMetaCallNode != null ? m_FileMetaCallNode.fileMetaBraceTerm : null;
         public FileMetaParTerm fileMetaParTerm => m_FileMetaCallNode != null ? m_FileMetaCallNode.fileMetaParTerm : null;
         public MetaType staticCallMetaType => m_StaticCallMetaType;
-        //public MetaGenTemplateClass genMetaClass => m_GenMetaClass;
-        //public MetaData metaData => m_MetaData;
         public MetaEnum metaEnum => m_MetaEnum;
         public MetaVariable metaVariable => m_MetaVariable;
         public MetaTemplate metaTemplate => m_MetaTemplate;
@@ -121,10 +118,8 @@ namespace SimpleLanguage.Core
         private AllowUseSettings m_AllowUseSettings;
         private ECallNodeType m_CallNodeType = ECallNodeType.None;
         private ECallNodeSign m_CallNodeSign = ECallNodeSign.Null;
-        private bool m_IsQuestionMarkDot = false;
         public bool m_IsArray = false;
         public bool m_IsFunction = false;
-
         private Token m_Token = null;
 
         private MetaCallNode m_FrontCallNode = null;
@@ -174,13 +169,33 @@ namespace SimpleLanguage.Core
             m_OwnerMetaFunctionBlock = mbs;
             m_FileRightExpress = rightExpress;
 
-            if (fmcn1 != null && fmcn1.token?.type == ETokenType.QuestionMarkDot)
+            if (m_FileMetaCallSign != null)
             {
-                m_IsQuestionMarkDot = true;
-            }
-            if (fmcn2 != null && fmcn2.questionMarkDotToken != null)
-            {
-                m_IsQuestionMarkDot = true;
+                if (m_FileMetaCallSign.token.type == ETokenType.Period)
+                {
+                    m_CallNodeSign = ECallNodeSign.Period;
+                }
+                else if (m_FileMetaCallSign.token?.type == ETokenType.QuestionMarkDot)
+                {
+                    m_CallNodeSign = ECallNodeSign.NullConditional;
+                }
+                else if (m_FileMetaCallSign.questionMarkDotToken != null)
+                {
+                    m_CallNodeSign = ECallNodeSign.NullConditional;
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaCallSign.token, "Error MetaStatements Parse  token == questionMarkDotToken !");
+                    return;
+                }
+                else if (m_FileMetaCallSign.token.type == ETokenType.And)
+                {
+                    m_CallNodeSign = ECallNodeSign.Pointer;
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaCallSign.token, "Error MetaStatements Parse  token == And !");
+                    return;
+                }
+                else
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaCallSign.token, "Error MetaStatements Parse  token !!");
+                    return;
+                }
             }
 
             // Sometimes the parser keeps the argument parTerm but doesn't set isCallFunction.
@@ -225,24 +240,6 @@ namespace SimpleLanguage.Core
         {
             bool flag = false;
             m_AllowUseSettings = _auc;
-            if (m_FileMetaCallSign != null)
-            {
-                if (m_FileMetaCallSign.token.type == ETokenType.Period)
-                {
-                    m_CallNodeSign = ECallNodeSign.Period;
-                }
-                else if (m_FileMetaCallSign.token.type == ETokenType.And)
-                {
-                    m_CallNodeSign = ECallNodeSign.Pointer;
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaCallSign.token, "Error MetaStatements Parse  token == And !");
-                    return false;
-                }
-                else
-                {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaCallSign.token, "Error MetaStatements Parse  token !!");
-                    return false;
-                }
-            }
 
             TryGetRightExpress(null, null);
 
@@ -779,6 +776,19 @@ namespace SimpleLanguage.Core
                                 else if (mn.IsMetaClass())
                                 {
                                     m_MetaClass = mn.GetMetaClassByTemplateCount(this.m_FileMetaCallNode.inputTemplateNodeList.Count);
+                                    // Keep in sync with GetFirstNode's class branch: a mid-link element
+                                    // that resolves to a class (e.g. `Map` in `Std.Map<int,int>(8)`) must
+                                    // also be flagged ClassName when it carries template args. Otherwise
+                                    // callNodeType stays MetaNode, the generic instantiation branch below
+                                    // (ClassName + metaTemplateParamsList) never runs, and New falls back
+                                    // to the raw template class id; the VM then resolves that id to the
+                                    // FIRST registered instantiation (e.g. Map<Int32,String>) and builds
+                                    // an object with wrong generic arguments.
+                                    if (m_MetaClass != null
+                                        && this.m_FileMetaCallNode.inputTemplateNodeList.Count > 0)
+                                    {
+                                        m_CallNodeType = ECallNodeType.ClassName;
+                                    }
                                     m_MetaType = new MetaType(m_MetaClass);
                                 }
                                 else
@@ -1084,7 +1094,6 @@ namespace SimpleLanguage.Core
                 if (m_MetaTemplateParamsList.Count > 0)
                 {
                     var ngmc = m_MetaClass.AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList(m_MetaTemplateParamsList);
-
                     if (ngmc is MetaGenTemplateClass mgtc)
                     {
                         mgtc.ParseGenTemplateClass(mgtc);
@@ -1672,6 +1681,40 @@ namespace SimpleLanguage.Core
                 var variable = m_FrontCallNode.m_MetaVariable;
                 if (m_FileMetaCallNode?.atToken != null || m_VisitFlag)
                 {
+                    // Variable-key subscript write on a non-array container
+                    // (e.g. `map[k] = v`): resolve directly to a _setItem_
+                    // method call so the right-hand value becomes the value
+                    // argument. Otherwise the subscript resolves to a
+                    // _getItem_ read (see MetaVisitVariable) and the
+                    // assignment silently stores nothing.
+                    if (m_VisitFlag
+                        && m_AllowUseSettings?.setterFunction == true
+                        && m_RightExpress != null
+                        && m_ExpressNode is MetaCallLinkExpressNode keyExpr)
+                    {
+                        var fmtSet = variable.GetFinalMetaType();
+                        if (fmtSet != null && !fmtSet.IsArray())
+                        {
+                            MetaClass visitMcSet = fmtSet.metaClass != null ? fmtSet.metaClass : fmtSet.GetTemplateMetaClass();
+                            if (visitMcSet != null)
+                            {
+                                var setParams = new MetaInputParamCollection(ownerMetaBase, m_OwnerMetaFunctionBlock);
+                                setParams.AddMetaInputParam(new MetaInputParam(keyExpr));
+                                setParams.AddMetaInputParam(new MetaInputParam(m_RightExpress));
+                                var setMethod = visitMcSet.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_setItem_", 0, setParams);
+                                if (setMethod != null)
+                                {
+                                    m_MetaFunction = setMethod;
+                                    m_MetaClass = visitMcSet;
+                                    m_MetaInputParamCollection = setParams;
+                                    m_CallNodeType = ECallNodeType.MemberFunctionName;
+                                    m_MetaType = setMethod.returnMetaVariable?.GetFinalMetaType();
+                                    return;
+                                }
+                            }
+                        }
+                    }
+
                     // Array1.$i.x   Array1.$mmq.x;
                     var getmv2 = m_OwnerMetaFunctionBlock.GetMetaVariableByName(m_Name);
                     if (getmv2 != null)    //鏌ユ壘鏄惁宸插畾涔夎繃鍙橀噺
@@ -1689,7 +1732,13 @@ namespace SimpleLanguage.Core
                     }
                     else if (m_ExpressNode is MetaConstExpressNode mcen)
                     {
-                        var index = Convert.ToInt32(mcen.value);
+                        // Numeric const subscripts are parsed into an index for the
+                        // array bounds check below. Non-numeric const keys (e.g. a
+                        // string key of Map) must skip that check and fall through
+                        // to the _getItem_/_setItem_ lookup; converting them with
+                        // Convert.ToInt32 would throw a FormatException.
+                        int index = -1;
+                        int.TryParse(mcen.value?.ToString(), out index);
                         var fmt = variable.GetFinalMetaType();
                         if (fmt.IsArray() )
                         {
@@ -2231,6 +2280,7 @@ namespace SimpleLanguage.Core
             {
                 m_MetaFunction = mmf;
                 m_MetaType = mmf.returnMetaVariable.GetFinalMetaType();
+                m_MetaType = TryBindReceiverTemplateArgs(m_MetaType, mmf);
                 m_CallNodeType = ECallNodeType.MemberFunctionName;
                 if (mmf.isStatic || m_FrontCallNode.m_CallNodeType == ECallNodeType.Base)
                 {
@@ -2238,6 +2288,48 @@ namespace SimpleLanguage.Core
                 }
             }
             return true;
+        }
+
+        /// <summary>
+        /// 跨模块（ref module）导入的泛型类：泛型实例不会克隆成员函数，
+        /// 成员函数返回类型中可能残留声明类的未绑定模板参数（如 List<T> 的 getRange 返回 List<T>）。
+        /// 当接收者是泛型实例（如 List<int>）时，用接收者的模板实参替换返回类型中的未绑定模板，
+        /// 使 `Std.List<int> sub = list.getRange(2,2)` 这类赋值的类型比较通过。
+        /// </summary>
+        private MetaType TryBindReceiverTemplateArgs(MetaType retMt, MetaMemberFunction mmf)
+        {
+            if (retMt == null || mmf?.ownerMetaClass == null || m_FrontCallNode == null)
+                return retMt;
+
+            var recvMt = m_FrontCallNode.metaType;
+            var recvMgtc = recvMt?.metaClass as MetaGenTemplateClass;
+            if (recvMgtc == null)
+                return retMt;
+
+            // 只处理返回类型中残留了接收者声明类的未绑定模板的情况
+            if (!MetaTypeContainsOwnerTemplate(retMt, recvMgtc.metaTemplateClass))
+                return retMt;
+
+            // 拷贝后替换，避免污染共享的函数返回类型定义
+            var boundMt = new MetaType(retMt);
+            if (TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(boundMt, recvMgtc, null))
+                return boundMt;
+            return retMt;
+        }
+
+        private static bool MetaTypeContainsOwnerTemplate(MetaType mt, MetaClass ownerClass)
+        {
+            if (mt == null) return false;
+            if (mt.isTemplate && mt.metaTemplate?.ownerClass == ownerClass)
+                return true;
+            var childList = mt.GetGenTemplateMetaTypeList();
+            if (childList == null) return false;
+            for (int i = 0; i < childList.Count; i++)
+            {
+                if (MetaTypeContainsOwnerTemplate(childList[i], ownerClass))
+                    return true;
+            }
+            return false;
         }
 
         public string ToFormatString()

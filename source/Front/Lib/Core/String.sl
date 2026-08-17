@@ -5,11 +5,11 @@ public class String extends Object
 
     _init_( Int8 aa )
     {
-        this._value = aa.toString()
+        this._value = SystemConvertString( aa )
     }
     _init_( Int32 aa )
     {
-        this._value = aa.toString()
+        this._value = SystemConvertString( aa )
     }
     _init_( String aa )
     {
@@ -27,18 +27,6 @@ public class String extends Object
         }
         ret this._length
     }
-
-    #!
-    Int32 toInt32()
-    {
-        if( Int32.tryInt32( this._value, Int32 int32val ) )
-        {
-            ret int32val
-        }
-        ret null
-    }
-    !#    
-
     String toString()
     {
         ret this;

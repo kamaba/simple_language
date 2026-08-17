@@ -1,15 +1,8 @@
 
-Core.Ptr<T>
+Ptr<T>
 {    
     T classT = null
-
-    Byte pointter8
-    UShort pointer16
-    UInt32 pointer32
-    UInt64 pointer64
-
-    int pointerLength = 4
-
+    UInt32 pointer32 = 0
     UInt32 currentMovePoint = 0;
 
     public Ptr<T> readPtr<T>( int offset = -1 )
