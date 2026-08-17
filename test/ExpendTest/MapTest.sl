@@ -240,7 +240,7 @@ MapTest
         map.add("banana", 2)
         map.add("cherry", 3)
         Console.println("length = " + map.length)
-        Console.println("map[banana] = " + map._getItem_("banana"))
+        Console.println("map[banana] = " + map["banana"].toString() )
         map["banana"] = 20
         Console.println("after overwrite, map[banana] = " + map["banana"])
         Console.println("containsKey(cherry) = " + map.containsKey("cherry"))
@@ -313,7 +313,7 @@ MapTest
             map[i] = -1
         }
         Console.println("after overwrite, length = " + map.length)
-        Console.println("map[10] = " + map._getItem_(10))
+        Console.println("map[10] = " + map[10].toString() )
         Console.println("map[60] = " + map._getItem_(60))
         # 删一半
         for i = 50, i < 100, i++

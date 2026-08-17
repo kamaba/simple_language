@@ -14,10 +14,17 @@ namespace SimpleLanguage.Core
     {
         public string name { get; }
         public FileMetaAttributeSyntax fileMetaAttribute { get; }
+
+        private MetaClass m_AttributeMetaClass = null;
         public MetaAttribute(FileMetaAttributeSyntax attr)
         {
             fileMetaAttribute = attr;
             name = attr?.name;
+        }
+
+        public void Parse()
+        {
+            // 这里查找Attribute类是否有相关的所属类 然后注册后
         }
     }
 }

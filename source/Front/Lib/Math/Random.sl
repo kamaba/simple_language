@@ -63,7 +63,7 @@ public class Random extends Object
         public void shuffle<T>(T[] array)
         {
             int n = array.length
-            for int i = n - 1; i > 0; i--
+            for int i = n - 1, i > 0, i--
             {
                 int j = nextInt(i + 1)
                 T temp = array[i]

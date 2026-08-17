@@ -1,6 +1,6 @@
 @Nickname("Point") @Nickname("Vector2") @Condition()
 @Nickname("Vec2")
-public class Float32_2 extends Object
+public class Float32_2 extends Num
 {
     public Float32 x = 0.0f
     public Float32 y = 0.0f;
@@ -10,7 +10,7 @@ public class Float32_2 extends Object
         this.x = _x;
         this.y = _y;
     }
-    Int32 _getItem_( int index )
+    Float32 _getItem_( int index )
     {
         if( index == 0 )
         {
@@ -21,7 +21,7 @@ public class Float32_2 extends Object
             ret this.y
         }
     }
-    void _setItem_( int index, Int32 value )
+    void _setItem_( int index, Float32 value )
     {
         if( index == 0 )
         {
@@ -33,7 +33,7 @@ public class Float32_2 extends Object
         }
     }
 
-    publci override string toString()
+    publci string toString()
     {
         ret string.toFormat( "x={0} y ={1}", this.x, this.y )
     }
