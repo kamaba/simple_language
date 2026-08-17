@@ -92,6 +92,7 @@
 
     // ---- Parse helpers ----
     { "name": "SystemInt32Parse", "returnType": "Int32", "params": ["string"], "isVariadic": false },
+    { "name": "SystemConvertInt32ToRadixString", "returnType": "string", "params": ["Int32", "Int32"], "isVariadic": false },
 
     // ---- Type conversions ----
     { "name": "SystemConvertBool",    "returnType": "bool",   "params": ["object"], "isVariadic": false },

@@ -3299,6 +3299,9 @@ namespace SimpleLanguage.VM.Runtime
                             case (int)ESystemMethodCall.SystemInt32Parse:
                                 NumSystemMethodCall.ExecuteSystemInt32Parse(this, sysPkg);
                                 break;
+                            case (int)ESystemMethodCall.SystemConvertInt32ToRadixString:
+                                NumSystemMethodCall.ExecuteSystemConvertInt32ToRadixString(this, sysPkg);
+                                break;
                             case (int)ESystemMethodCall.SystemNumAbs:
                                 NumSystemMethodCall.ExecuteSystemNumAbs(this, sysPkg);
                                 break;

@@ -250,7 +250,7 @@
 /chk12.txt
 /chk6.txt
 /chk8.txt
-/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/scripts/safe_rm_aliases.ps1
 /ctor2_status.txt
 /ctor_chk10.txt
 /ctor_chk11.txt
@@ -276,3 +276,4 @@
 /run_listtest.txt
 /source/CSimpleVMTest1/Properties/launchSettings.json
 /source/CSimpleVMTest2/Properties/launchSettings.json
+/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.

@@ -541,6 +541,8 @@ namespace SimpleLanguage
         SystemArrayCopy,
         /// <summary>数组按值查找并移除首个匹配元素（左移补位），参数: (this, item, length)，返回被移除的索引（-1 未找到）</summary>
         SystemArrayRemoveValue,
+        /// <summary>Int32 按指定进制(2-36)转字符串，参数: (this, radix)，返回 string</summary>
+        SystemConvertInt32ToRadixString,
     }
     public class Global
     {

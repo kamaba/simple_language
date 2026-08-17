@@ -84,6 +84,59 @@ namespace SimpleLanguage.VM.Runtime
             }
         }
 
+        public static void ExecuteSystemConvertInt32ToRadixString(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
+        {
+            int pc = sysPkg.paramCount;
+            if (!vm.TrySystemCallPopArgs(pc, out var args))
+            {
+                Debug.Assert(false, $"SystemConvertInt32ToRadixString stack underflow, need={pc}");
+                return;
+            }
+
+            int value = SystemMethodConvertHelper.ReadInt32ArgLoose(ref args[0]);
+            int radix = pc > 1 ? SystemMethodConvertHelper.ReadInt32ArgLoose(ref args[1]) : 10;
+
+            string result = ConvertInt32ToRadixString(value, radix);
+            var outv = default(RuntimeValue);
+            outv.SetStringValue(result);
+            vm.PushSValueSynced(outv);
+        }
+
+        /// <summary>Convert a signed 32-bit integer to its string in the given radix (2..36).
+        /// Radix 10 keeps the natural signed representation (e.g. -5 -> "-5"); other radices
+        /// treat the value as an unsigned bit pattern (e.g. -1 in hex -> "ffffffff"), matching
+        /// the conventional semantics of <c>Convert.ToString(int, int)</c>.</summary>
+        private static string ConvertInt32ToRadixString(int value, int radix)
+        {
+            if (radix < 2 || radix > 36)
+            {
+                return value.ToString(CultureInfo.InvariantCulture);
+            }
+            if (radix == 10)
+            {
+                return value.ToString(CultureInfo.InvariantCulture);
+            }
+
+            const string digits = "0123456789abcdefghijklmnopqrstuvwxyz";
+            // For non-decimal radices use the raw bit pattern as an unsigned magnitude so
+            // negative values render as two's-complement (e.g. -1 -> "1111..1" / "ffffffff").
+            uint mag = unchecked((uint)value);
+
+            char[] buf = new char[32];
+            int pos = 32;
+            while (mag != 0)
+            {
+                uint rem = mag % (uint)radix;
+                buf[--pos] = digits[(int)rem];
+                mag /= (uint)radix;
+            }
+            if (pos == 32)
+            {
+                buf[--pos] = '0';
+            }
+            return new string(buf, pos, 32 - pos);
+        }
+
         public static void ExecuteSystemNumAbs(RuntimeVM vm, SLSystemMethodCallPackage sysPkg)
         {
             int pc = sysPkg.paramCount;

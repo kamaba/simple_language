@@ -80,6 +80,42 @@ MapTest
         Console.println("smap[three] = " + smap["three"])
     }
 
+    # 测试循环变量 key 与负数字面量写入（定位 map[i] = -1 失效问题）
+    static testSubscriptWrite2()
+    {
+        Console.println("===== testSubscriptWrite2 =====")
+        Std.Map<int,int> m = new()
+        m.add(0, 100)
+        m.add(1, 200)
+        m.add(2, 300)
+        # 局部变量 + 负数字面量
+        int k = 1
+        m[k] = -5
+        Console.println("local k=-5: m[1] = " + m[1].toString())
+        # 循环变量 + 正数字面量
+        for j = 0, j < 3, j++
+        {
+            m[j] = 7
+        }
+        Console.println("loop pos 7: m[0] = " + m[0].toString() + ", m[2] = " + m.$2.toString())
+        # 循环变量 + 负数字面量
+        for i = 0, i < 3, i++
+        {
+            m[i] = -1
+        }
+        Console.println("loop neg -1: m[0] = " + m[0].toString() + ", m[1] = " + m[1].toString())
+        # 常量 key + 负数字面量
+        m[2] = -9
+        Console.println("const neg -9: m[2] = " + m[2].toString())
+        # 循环变量 key 读取
+        int sum = 0
+        for i = 0, i < 3, i++
+        {
+            sum += m[i]
+        }
+        Console.println("loop read sum = " + sum.toString())
+    }
+
     # 测试 containsKey / containsValue
     static testContains()
     {
@@ -265,7 +301,6 @@ MapTest
         Console.println("after remove, length = " + map.length)
     }
 
-    # 测试 toString（{key=value} Java 风格）
     static testToString()
     {
         Console.println("===== testToString =====")
@@ -338,6 +373,7 @@ MapTest
         testDuplicateKey()
         testSetGetValue()
         testSubscript()
+        testSubscriptWrite2()
         testContains()
         testCapacityConstructor()
         testGrow()

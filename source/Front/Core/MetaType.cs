@@ -43,7 +43,6 @@ namespace SimpleLanguage.Core
         public bool isData => m_MetaData != null || m_EMetaTypeType == EMetaTypeType.MetaData;
         public bool isClass => m_MetaClass != null || m_EMetaTypeType == EMetaTypeType.MetaClass;
         public bool isNull => m_MetaClass == CoreMetaClassManager.nullMetaClass;
-        public bool isMap => m_MetaClass == CoreMetaClassManager.mapMetaClass;
         public bool isTemplate => m_EMetaTypeType == EMetaTypeType.Template;
         public bool isDynamicData => m_MetaClass == CoreMetaClassManager.dynamicMetaData || (m_MetaData != null && m_MetaData.isDynamic);
         public int arrayLength => m_ArrayLength;
@@ -318,6 +317,30 @@ namespace SimpleLanguage.Core
             // with exactly 1 template parameter
             var n = m_MetaClass.name;
             if (n == "List")
+            {
+                // Verify it has 1 template parameter (List<T>)
+                if (m_EMetaTypeType == EMetaTypeType.TemplateClassWithTemplate
+                    || m_EMetaTypeType == EMetaTypeType.MetaGenClass
+                    || m_EMetaTypeType == EMetaTypeType.MetaClass)
+                {
+                    var tplList = GetGenTemplateMetaTypeList();
+                    if (tplList.Count == 1)
+                        return true;
+                }
+            }
+            return false;
+        }
+        /// <summary>
+        /// 是否为 List&lt;T&gt; 类型（Std.List 或任何名为 List 且带 1 个模板参数的类）。
+        /// 通过 allName 检查，支持 "Std.List" 和 "List" 两种形式。
+        /// </summary>
+        public bool IsMap()
+        {
+            if (m_MetaClass == null) return false;
+            // Check by name: "List", "Std.List", or any class whose short name is "List"
+            // with exactly 1 template parameter
+            var n = m_MetaClass.name;
+            if (n == "Map")
             {
                 // Verify it has 1 template parameter (List<T>)
                 if (m_EMetaTypeType == EMetaTypeType.TemplateClassWithTemplate

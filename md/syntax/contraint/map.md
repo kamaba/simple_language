@@ -30,8 +30,8 @@
 
 增删改查：
 
-- `map.add(key, value)`：put 语义（同 Java `HashMap.put` / Dart `m[k]=v`）--key 已存在则更新 value，不存在则追加；插入顺序保留。
-- `map[key] = value`：等价 `add`（`_setItem_`）。
+- `map.add(key, value)`：add 语义（同 C# `Dictionary.Add` 的无异常版 / `TryAdd`）--key 已存在时不修改原值并返回 `false`，新插入返回 `true`。需要覆盖旧值请用 `map[key] = value`（put 语义）。
+- `map[key] = value`：put 语义（同 Java `HashMap.put` / Dart `m[k]=v`），key 已存在则更新 value，不存在则插入；内部走 `_setItem_`。
 - `map[key]`：读取（`_getItem_`），key 不存在返回 null（Dart Map 语义）。
 - `map.remove(key)`：删除并返回旧值（Java / Dart remove 语义），key 不存在返回 null。
 - `map.removeAt(index)`：按实体下标删除（非法下标静默忽略）。
@@ -63,24 +63,27 @@
 
 ```s
 Std.Map<int,string> map = new();
-map.add(1, "one");
-map.add(2, "two");
+map.add(1, "one");                  # true（新插入）
+map.add(1, "uno");                  # false（key 已存在，不覆盖）
 
-Console.println(map.length);            # 2
-Console.println(map[1]);                # one
-Console.println(map[99]);               # null（key 不存在）
+map[2] = "two";                     # put 语义，插入
+map[2] = "TWO";                     # put 语义，覆盖
+int k = 3
+map[k] = "three";                   # 变量 key 写入
 
-map.add(1, "ONE");                      # put 语义，覆盖
-map[3] = "three";                       # 等价 add
+Console.println(map.length);        # 3
+Console.println(map[1]);            # one（add 未覆盖）
+Console.println(map[2]);            # TWO
+Console.println(map[k]);            # three（变量 key 读取）
+Console.println(map[99]);           # null（key 不存在）
 
 Console.println(map.containsKey(2));    # true
 Console.println(map.getOrDefault(9, "n/a"));  # n/a
 Console.println(map.putIfAbsent(9, "nine"));  # null（已插入）
 
-var old = map.remove(2);                # 返回 "two"
-List<int> ks = map.keys;                # [1,3,9]
-List<string> vs = map.values;
-Console.println(map.toString());        # {1=ONE,3=three,9=nine}
+var old = map.remove(2);                # 返回 "TWO"
+List<int> ks = map.keys;
+Console.println(map.toString());
 
 for e in map
 {

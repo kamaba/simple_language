@@ -223,7 +223,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = owmb;
             m_Token = fmst.token;
 
-            if (m_DefineMetaType.isMap )
+            if (m_DefineMetaType.IsMap() )
             {
                 if( fmst.symBolType != ETokenType.Colon )
                 {
@@ -1167,6 +1167,10 @@ namespace SimpleLanguage.Core
                 {
                     m_NewType = ENewType.ListClass;
                 }
+                else if( m_DefineMetaType.IsMap() )
+                {
+                    m_NewType = ENewType.MapClass;
+                }
                 else
                 {
                     m_NewType = ENewType.CommomClass;
@@ -1741,7 +1745,7 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Array<Object> ???????????!");
                 }
             }
-            else if (mt.isMap)   // ??????? ??   a:10, b:20  20:"aa" ?????
+            else if (mt.IsMap() )   // ??????? ??   a:10, b:20  20:"aa" ?????
             {
                 if (fmbt is FileMetaSymbolTerm fmst)
                 {

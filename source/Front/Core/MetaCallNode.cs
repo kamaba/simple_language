@@ -359,6 +359,14 @@ namespace SimpleLanguage.Core
                     m_RightExpress = null;
                     return;
                 }
+                // Compute the return type right after parsing (same as
+                // MetaAssignStatements.TryParseRightExpress does). Lazy nodes
+                // such as MetaUnaryOpExpressNode (e.g. `-9`) keep
+                // m_ExpressReturnMetaType null until CalcReturnType() runs;
+                // _setItem_ parameter matching reads GetReturnMetaType(), and
+                // a null there makes the match fail so a subscript write with
+                // a negative literal silently mis-binds.
+                m_RightExpress.CalcReturnType();
             }
         }
         bool FindArrayNode()
