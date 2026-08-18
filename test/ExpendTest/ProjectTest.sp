@@ -3,7 +3,8 @@ Project
     _main_()
     {
         #ListTest.fun()
-        MapTest.fun()
+        #MapTest.fun()
+        ConsoleTest.fun()
     }
     CompileBefore()
     {

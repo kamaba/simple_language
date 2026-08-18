@@ -21,7 +21,11 @@ MapTest
     static testInitializer()
     {
         Console.println("===== testInitializer =====")
-        Map<int,string> map = Map<int,string>(4){100:"aaa", 200:"bbb"}
+        int k = 100
+        string v = "bbb"
+        Map<int,string> map = Map<int,string>(4)
+        map.add(k, "aaa")
+        map.add(200, v)
         Console.println("length = " + map.length)
         Console.println("map[100] = " + map._getItem_(100))
         Console.println("map[200] = " + map._getItem_(200))
@@ -60,7 +64,7 @@ MapTest
         Console.println("===== testSubscript =====")
         Std.Map<int,string> map = new()
         map[10] = "aa"
-        map[20] = "bb"
+        map.$20 = "bb"
         Console.println("map[10] = " + map[10])
         Console.println("map[20] = " + map[20])
         Console.println("map[99] = " + map[99])

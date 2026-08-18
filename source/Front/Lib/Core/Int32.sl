@@ -15,7 +15,7 @@ public class Int32 extends Num
     override get int size() { ret 32 }
     override get int byteLength() { ret 4 }
     
-    public Int32 parse( string s )
+    public static Int32 parse( string s )
     {
         ret SystemInt32Parse(s)
     }    

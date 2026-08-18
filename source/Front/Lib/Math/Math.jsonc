@@ -27,7 +27,7 @@
   },
   "compileFiles": {
     "files": [
-      { "path": "Math.sl", "group": "math", "tag": "math", "ignore": true, "priority": 0 },
+      { "path": "Math.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 },
       { "path": "Float32_2.sl", "group": "math", "tag": "math", "ignore": false, "priority": 0 },
       { "path": "Float32_3.sl", "group": "math", "tag": "math", "ignore": true, "priority": 0 },
       { "path": "Float32_3x3.sl", "group": "math", "tag": "math", "ignore": true, "priority": 0 },

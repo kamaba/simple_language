@@ -1,11 +1,12 @@
 
-1. 写list,map的支持
+1. 写list,map的支持  map 的 { k:v, k2:v2 } 的形式 
 2. 数学库的集成
 3. 对别一个调用类的 Core.global.var1 Std.global.aaa
-4. 写Console的实例，输入的计算器功能
 5. 实现别名的功能，Nickname的使用，让查找Class/MemeberVar|functoin/
-6. SystemConvertInt32ToRadixString 这个的cvm实现 public override Num floor()ceil()的实现 isFinite  Num继承的abstract的方法，需要实现
+6. 这个的cvm实现 public override Num floor()ceil()的实现 isFinite  Num继承的abstract的方法，需要实现
 7. 指针的增加与处理. 
+8. 如果继续的extends Object 的toString() 没有override 需要报错
+9. 是否不能 new int() 这种的，直接变成栈的方式
 
 最近要解决的:
 1. 基础类的相关写作 Object
@@ -37,10 +38,7 @@ final int/uint/float 等方法
 优化：
 1. 去掉int32/int64/...的一些初始化方法
 2. 去掉无用的init
-3. 是否不能 new int() 这种的，直接变成栈的方式
 3. math库的处理
-6. 如果继续的extends Object 的toString() 没有override 需要报错
-7. 增加基础库的一些函数
 8. import 导入错误的显示
 9. 使用nickname 需要注册到全局的typealias里边
 10. 全局的typealias里边需要读取后，继承
