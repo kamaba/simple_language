@@ -69,7 +69,7 @@ MapTest
         Console.println("map[10] = " + map.$10 )
         Console.println("map[20] = " + map.$k )
         Console.println("map[99] = " + map[99])
-        int k = 20
+        k = 10
         map[k] = "BB"
         Console.println("after map[k=20] = BB, map[20] = " + map[20])
         int k2 = 30

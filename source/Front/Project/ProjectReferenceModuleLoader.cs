@@ -583,7 +583,27 @@ namespace SimpleLanguage.Project
                 {
                     var mi = new MetaClass(typeName, EClassDefineType.StructDefine);
                     mi.SetRefFromType(RefFromType.RefModule);
+
+                    if (cls.templateParameterCount > 0)
+                    {
+                        for (int ti = 0; ti < cls.templateParameterCount; ti++)
+                        {
+                            /* Reuse the exporter's real declared template parameter names
+                             * (e.g. TKey/TValue of Map<TKey,TValue>): allName and its FNV
+                             * classId must match the exporter, otherwise classId-based
+                             * IRMetaClass lookup (IRCall virtual dispatch) fails.
+                             * Fallback T/T1 only for old modules without exported names. */
+                            var tplName = ti < cls.templateParameterNames.Count
+                                          && !string.IsNullOrWhiteSpace(cls.templateParameterNames[ti])
+                                ? cls.templateParameterNames[ti]
+                                : (ti == 0 ? "T" : "T" + ti.ToString());
+                            var mt = new MetaTemplate(mi, tplName, CoreMetaClassManager.objectMetaClass, ECovariance.None);
+                            mt.SetIndex(ti);
+                            mi.metaTemplateList.Add(mt);
+                        }
+                    }
                     parent.AddMetaClass(mi);
+
                     mi.UpdateClassAllName();
                     return mi;
                 }

@@ -122,6 +122,10 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
     #需要覆盖旧值请用 m[key] = value（put 语义）
     public override bool add( TKey key, TValue value )
     {
+        if key == null
+        {
+            ret false
+        }
         int idx = SystemMapIndexOfKey(this._list, key, this._length)
         if idx >= 0
         {
@@ -134,10 +138,8 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
         MapEntity<TKey,TValue> me = new()
         me.key = key
         me.value = value
-        if key != null
-        {
-            me.hashId = key.hashCode
-        }
+        me.hashId = key.hashCode
+
         SystemArraySetValueThis(this._list, this._length, me)
         this._length++
         ret true
