@@ -374,7 +374,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到模板中定义的模板内容![" + mt.metaTemplate.name + "]");
                     }
                 }
             }

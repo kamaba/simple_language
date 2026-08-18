@@ -24,7 +24,7 @@ namespace ETC1
             this.y1 = _y1
         }
 
-        _init_(int z1)
+        override _init_(int z1)
         {
             this.x1 = 1
             this.y1 = 2

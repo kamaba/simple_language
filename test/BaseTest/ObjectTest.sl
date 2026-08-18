@@ -208,6 +208,11 @@ ObjectTest
         global.println("[41] chain Object.refEquals(a, d).toString() -> " + Object.refEquals(a, d).toString())
         global.println("[42] chain (a == d).toString() -> " + (a == d).toString())
     }
+
+    override string toString()
+    {
+        ret "ObjectTest"
+    }
 }
 
 # 测试用例说明：

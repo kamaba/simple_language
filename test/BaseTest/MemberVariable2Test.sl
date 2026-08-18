@@ -36,7 +36,7 @@ class MVDataHolder
     int px = 0
     int py = 0
 
-    _init_()
+    override _init_()
     {
         this.px = 1
         this.py = 2
@@ -49,7 +49,7 @@ class MVArrayMember
     int n1 = 2
     int n2 = 3
 
-    _init_()
+    override _init_()
     {
         this.n0 = 100
     }
@@ -64,7 +64,7 @@ class MVOuter
 {
     MVInner inner = new()
 
-    _init_()
+    override _init_()
     {
         this.inner.val = 10
     }
@@ -100,7 +100,7 @@ class MVExtendChild extends MVChild
 {
     int xVal = 50
 
-    _init_()
+    override _init_()
     {
         this.pVal = 801
         this.cVal = 802
@@ -118,7 +118,7 @@ class MVExtendGrand extends MVGrandChild
 {
     int exVal = 60
 
-    _init_()
+    override _init_()
     {
         this.exVal = 999
     }

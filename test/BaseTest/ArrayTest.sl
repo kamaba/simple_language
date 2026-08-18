@@ -24,7 +24,7 @@ ArrayTest
     Level<T>
     {
         T t = new()
-        _init_()
+        override _init_()
         {
 
         }

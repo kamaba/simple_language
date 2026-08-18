@@ -3,7 +3,7 @@ namespace GC2
 {
 LT
 {
-    private _init_()
+    private override _init_()
     {
 
     }

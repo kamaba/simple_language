@@ -2288,7 +2288,6 @@ namespace SimpleLanguage.Core
             {
                 m_MetaFunction = mmf;
                 m_MetaType = mmf.returnMetaVariable.GetFinalMetaType();
-                m_MetaType = TryBindReceiverTemplateArgs(m_MetaType, mmf);
                 m_CallNodeType = ECallNodeType.MemberFunctionName;
                 if (mmf.isStatic || m_FrontCallNode.m_CallNodeType == ECallNodeType.Base)
                 {

@@ -27,20 +27,20 @@ NumberTest
     # 测试 Int32 进制转换（toRadixString / toBinaryString / toHexString / toOctalString）
     static testRadix()
     {
-        Console.println("===== testRadix =====")
+        global.println("===== testRadix =====")
         int a = 255
-        Console.println("255.toHexString() = " + a.toHexString())
-        Console.println("255.toBinaryString() = " + a.toBinaryString())
-        Console.println("255.toOctalString() = " + a.toOctalString())
-        Console.println("255.toRadixString(10) = " + a.toRadixString(10))
+        global.println("255.toHexString() = " + a.toHexString())
+        global.println("255.toBinaryString() = " + a.toBinaryString())
+        global.println("255.toOctalString() = " + a.toOctalString())
+        global.println("255.toRadixString(10) = " + a.toRadixString(10))
         int zero = 0
-        Console.println("0.toRadixString(16) = " + zero.toRadixString(16))
+        global.println("0.toRadixString(16) = " + zero.toRadixString(16))
         int ten = 10
-        Console.println("10.toRadixString(2) = " + ten.toRadixString(2))
+        global.println("10.toRadixString(2) = " + ten.toRadixString(2))
         int neg = 0 - 1
-        Console.println("-1.toHexString() = " + neg.toHexString())
+        global.println("-1.toHexString() = " + neg.toHexString())
         int n35 = 35
-        Console.println("35.toRadixString(36) = " + n35.toRadixString(36))
+        global.println("35.toRadixString(36) = " + n35.toRadixString(36))
     }
 
     static integerTypeTest()

@@ -48,7 +48,7 @@ MVObjectMember
     MVBase obj2 = MVBase()
     MVBase nullObj = null
 
-    _init_()
+    override _init_()
     {
         this.obj.id = 999
     }
@@ -77,7 +77,7 @@ MVGrandChild extends MVChild
 {
     int gVal = 30
 
-    _init_()
+    override _init_()
     {
         this.pVal = 111
         this.cVal = 222

@@ -536,6 +536,13 @@ namespace SimpleLanguage.Core
                                 "Error 子类[" + this.m_AllName + "] 方法: " + matchedChild.name +
                                 " 实现了抽象父方法但未使用 override 标记");
                         }
+                        // 子类重写了父类的非abstract、非final方法但未使用override标记
+                        if (!v.isAbstract && !v.isFinal && !matchedChild.isOverrideFunction)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                                "Warning 类[" + this.m_AllName + "] 方法: " + matchedChild.name +
+                                " 重写了父类方法但未使用 override 标记: " + this.m_ExtendClass.m_AllName + "." + v.name);
+                        }
                         // 记录override链，供 base.xxx() 调用解析使用
                         matchedChild.SetOverrideMetaMemberFunction(v);
                     }
