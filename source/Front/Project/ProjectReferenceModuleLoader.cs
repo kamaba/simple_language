@@ -985,6 +985,57 @@ namespace SimpleLanguage.Project
         }
 
         /// <summary>
+        /// 从 SLClassPackage 的 templateRelationList 构建接口的 MetaType（含模板参数）。
+        /// 与 BuildExtendClassMetaType 类似，但针对 implementsInterfaceIdList 中的每个接口。
+        /// 对于带模板的接口（如 IIterable&lt;T&gt;），通过 templateRelation 还原模板参数映射。
+        /// </summary>
+        private static MetaType BuildInterfaceMetaType(MetaClass mc, SLClassPackage cls,
+            int ifaceId, MetaModule metaModule )
+        {
+            if (ifaceId == 0) return null;
+            if (!s_ClassLookup.TryGetValue(ifaceId, out var ifacePkg)) return null;
+
+            var ifaceFullName = !string.IsNullOrWhiteSpace(ifacePkg.fullName)
+                ? ifacePkg.fullName : ifacePkg.name;
+            var ifaceMetaClass = ResolveTypeByName(metaModule, ifaceFullName);
+            if (ifaceMetaClass == null) return null;
+
+            // 接口无模板参数 - 简单 MetaType
+            if (ifacePkg.templateParameterCount == 0)
+                return new MetaType(ifaceMetaClass);
+
+            // 在 templateRelationList 中查找 ifaceId 对应的模板映射
+            SLTemplateRelationPackage relation = null;
+            if (cls.templateRelationList != null)
+            {
+                foreach (var rel in cls.templateRelationList)
+                {
+                    if (rel.relatedClassId == ifaceId)
+                    {
+                        relation = rel;
+                        break;
+                    }
+                }
+            }
+
+            if (relation?.mapping == null || relation.mapping.Count == 0)
+                return new MetaType(ifaceMetaClass);
+
+            // 按 index 排序，确保模板参数顺序正确
+            var sortedMapping = relation.mapping.OrderBy(e => e.index).ToList();
+            var argList = new List<MetaType>();
+            foreach (var entry in sortedMapping)
+            {
+                var argType = ResolveRuntimeDefTypeToMetaType(entry.type, mc, metaModule );
+                argList.Add(argType ?? new MetaType(CoreMetaClassManager.objectMetaClass));
+            }
+
+            // 构建带模板参数的 MetaType，并注册为 MetaGenTemplateClass 实例
+            var mt = new MetaType(ifaceMetaClass, argList);
+            return ifaceMetaClass.AddMetaPreTemplateClass(mt, false, out _);
+        }
+
+        /// <summary>
         /// 递归将 SLRuntimeDefTypePackage 转换为 MetaType。
         /// - isTemplate=true: 引用当前类的模板参数（如 T），通过 templateIndex 获取 MetaTemplate
         /// - isTemplate=false: 普通类，按 className/classId 解析；如有 runtimeDefTypeList 则递归构建模板参数
@@ -1050,19 +1101,14 @@ namespace SimpleLanguage.Project
             {
                 foreach (var ifaceId in cls.implementsInterfaceIdList)
                 {
-                    if (s_ClassLookup.TryGetValue(ifaceId, out var ifacePkg))
+                    var ifaceMt = BuildInterfaceMetaType(mc, cls, ifaceId, metaModule );
+                    if (ifaceMt != null)
                     {
-                        var ifaceFullName = !string.IsNullOrWhiteSpace(ifacePkg.fullName)
-                            ? ifacePkg.fullName : ifacePkg.name;
-                        var ifaceType = ResolveTypeByName(metaModule, ifaceFullName);
-                        if (ifaceType != null)
-                        {
-                            mc.AddInterfaceClass(ifaceType);
-                        }
-                        else
-                        {
-                            Log.AddProjectLog(LID.MetaCoreAssertShowMessage, "not find base type");
-                        }
+                        mc.AddInterfaceMetaType(ifaceMt);
+                    }
+                    else
+                    {
+                        Log.AddProjectLog(LID.MetaCoreAssertShowMessage, "not find interface type");
                     }
                 }
             }
@@ -1092,6 +1138,10 @@ namespace SimpleLanguage.Project
                     templateArgCount = string.IsNullOrWhiteSpace(args) ? 0 : args.Split(',').Length;
                 }
             }
+
+            // 保留带模块前缀的原始名，用于跨模块查找
+            var qualifiedName = baseName;
+
             int index = baseName.IndexOf(".");
             if( index != -1 )
             {
@@ -1125,6 +1175,32 @@ namespace SimpleLanguage.Project
                     if (mc != null) return mc;
                     mc = current.GetMetaClassByTemplateCount(0);
                     if (mc != null) return mc;
+                }
+            }
+
+            /* Cross-module fallback: search by qualified name (e.g. "Core.IIterable")
+               using ModuleManager to find the referenced module's namespace tree. */
+            if (qualifiedName != baseName)
+            {
+                var qParts = qualifiedName.Split('.', StringSplitOptions.RemoveEmptyEntries);
+                if (qParts.Length > 1)
+                {
+                    var module = ModuleManager.instance.GetMetaModuleByName(qParts[0]);
+                    if (module?.metaNode != null)
+                    {
+                        var current = module.metaNode;
+                        for (int i = 1; i < qParts.Length && current != null; i++)
+                        {
+                            current = current.GetChildrenMetaNodeByName(qParts[i]);
+                        }
+                        if (current != null && current.IsMetaClass())
+                        {
+                            var mc = current.GetMetaClassByTemplateCount(templateArgCount);
+                            if (mc != null) return mc;
+                            mc = current.GetMetaClassByTemplateCount(0);
+                            if (mc != null) return mc;
+                        }
+                    }
                 }
             }
 

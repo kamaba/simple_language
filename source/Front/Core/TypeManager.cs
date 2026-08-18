@@ -323,7 +323,7 @@ namespace SimpleLanguage.Core
                 var newmc = mt.metaClass.AddInstanceMetaClass(regMCList, true);
                 if (newmc == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaClass is Null");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "metaClass.AddInstanceMetaClass MetaClass is Null");
                     return false;
                 }
                 mt.SetGenMetaClass(newmc);
@@ -344,7 +344,7 @@ namespace SimpleLanguage.Core
                     {
                         if (gmgt.metaType.metaClass == null)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaClass is Null");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "in MetaGenTemplate notfind MetaClass is Null");
                             return false;
                         }
                         mt.SetMetaClass(gmgt.metaType.metaClass);
@@ -365,7 +365,7 @@ namespace SimpleLanguage.Core
                         {
                             if (gmgt.metaType.metaClass == null)
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaClass is Null");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "in MetaGenTemplate notfind MetaClass is Null");
                                 return false;
                             }
                             mt.SetMetaClass(gmgt.metaType.metaClass);

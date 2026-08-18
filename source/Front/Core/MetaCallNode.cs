@@ -2084,7 +2084,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "绗竴浣嶇殑鎴愬憳鍙橀噺鍚嶇О蹇呴』鏄釜闈欐€佸彉閲忔墠鍙互鍝?");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, $"find meta member variable by name{inputname}");
                             return false;
                         }
                     }

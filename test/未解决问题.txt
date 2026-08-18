@@ -40,7 +40,7 @@ final int/uint/float 等方法
 优化：
 1. 去掉int32/int64/...的一些初始化方法
 2. 去掉无用的init
-3. math库的处理
+3. math库的处理  看_add_ _minus_ 等的方法是否能在虚拟机里边正常跑
 8. import 导入错误的显示
 9. 使用nickname 需要注册到全局的typealias里边
 10. 全局的typealias里边需要读取后，继承

@@ -9,7 +9,7 @@ public class MapEntity<TKey,TValue>
 
     public override string toString()
     {
-        ret "MapEntity{hashId:" + hashId + ",key:" + key + ",value:" + value + "}"
+        ret "MapEntity{hashId:" + this.hashId.toString() + ",key:" + this.key.toString() + ",value:" + this.value.toString() + "}"
     }
 }
 
@@ -116,21 +116,13 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
     #（== 为值比较：数值/字符串/布尔按值，类按 equals 语义，与 List.indexOf 一致）
     public int indexOfKey( TKey key )
     {
-        for i = 0, i < this._length, i++
-        {
-            var ent = SystemArrayGetValueThis(this._list, i) as MapEntity<TKey,TValue>
-            if ent != null && ent.key == key
-            {
-                ret i
-            }
-        }
-        ret -1
+        ret SystemMapIndexOfKey(this._list, key, this._length)
     }
     #add 语义（同 C# Dictionary.Add 的无异常版 / TryAdd）：key 已存在时不修改原值并返回 false，新插入返回 true
     #需要覆盖旧值请用 m[key] = value（put 语义）
     public override bool add( TKey key, TValue value )
     {
-        int idx = this.indexOfKey(key)
+        int idx = SystemMapIndexOfKey(this._list, key, this._length)
         if idx >= 0
         {
             ret false
@@ -153,7 +145,7 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
     #m[key] = value 写入语义（put，同 Java HashMap.put / Dart m[k]=v）：key 已存在则更新 value，不存在则插入
     public override void _setItem_( TKey key, TValue value )
     {
-        int idx = this.indexOfKey(key)
+        int idx = SystemMapIndexOfKey(this._list, key, this._length)
         if idx >= 0
         {
             MapEntity<TKey,TValue> ent = SystemArrayGetValueThis(this._list, idx) as MapEntity<TKey,TValue>
@@ -165,7 +157,7 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
     #m[key] 读取语义：key 不存在返回 null（Dart Map 语义）
     public override TValue _getItem_( TKey key )
     {
-        int idx = this.indexOfKey(key)
+        int idx = SystemMapIndexOfKey(this._list, key, this._length)
         if idx < 0
         {
             ret null
@@ -176,7 +168,7 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
     #是否包含指定 key
     public bool containsKey( TKey key )
     {
-        if this.indexOfKey(key) >= 0
+        if SystemMapIndexOfKey(this._list, key, this._length) >= 0
         {
             ret true
         }
@@ -198,7 +190,7 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
     #读取指定 key 的值，不存在返回 defaultValue（Java 8 getOrDefault）
     public TValue getOrDefault( TKey key, TValue defaultValue )
     {
-        int idx = this.indexOfKey(key)
+        int idx = SystemMapIndexOfKey(this._list, key, this._length)
         if idx < 0
         {
             ret defaultValue
@@ -209,7 +201,7 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
     #key 不存在时才插入（Java 8 putIfAbsent）：返回已存在的值，原本不存在则插入并返回 null
     public TValue putIfAbsent( TKey key, TValue value )
     {
-        int idx = this.indexOfKey(key)
+        int idx = SystemMapIndexOfKey(this._list, key, this._length)
         if idx >= 0
         {
             MapEntity<TKey,TValue> ent = SystemArrayGetValueThis(this._list, idx) as MapEntity<TKey,TValue>
@@ -221,7 +213,7 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
     #删除指定 key 并返回其旧值（Java remove / Dart remove 语义），key 不存在返回 null
     public override TValue remove( TKey key )
     {
-        int idx = this.indexOfKey(key)
+        int idx = SystemMapIndexOfKey(this._list, key, this._length)
         if idx < 0
         {
             ret null

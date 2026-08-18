@@ -8,7 +8,7 @@ public class Nickname extends Attribute
         this._attributeHandleType = 0
     }
 
-    public string nickname
+    public get string nickname()
     {
         ret this._nickname
     }

@@ -1075,6 +1075,18 @@ namespace SimpleLanguage.Core
                 Log.AddMetaCoreLog(LID.ShowExtendMessage, "重复添加接口");
             }
         }
+        public void AddInterfaceMetaType(MetaType mt)
+        {
+            if (mt == null) return;
+            if (!m_InterfaceMetaType.Contains(mt))
+            {
+                m_InterfaceMetaType.Add(mt);
+            }
+            if (mt.metaClass != null && !m_InterfaceClass.Contains(mt.metaClass))
+            {
+                m_InterfaceClass.Add(mt.metaClass);
+            }
+        }
         public void AddMetaMemberVariable( MetaMemberVariable mmv, bool isAddManager = true )
         {
             if( m_MetaMemberVariableDict.ContainsKey( mmv.name ) )

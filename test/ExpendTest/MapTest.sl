@@ -139,7 +139,7 @@ MapTest
     {
         Console.println("===== testCapacityConstructor =====")
         var v = 2
-        Std.Map<int,int> map = Std.Map<int,int>(8){1:1,2:v, 3:3, 4:4, 5:5, 6:6, 7:7}
+        Std.Map<int,int> map = Std.Map<int,int>(8){1:1,2:v, 3:3, v:4, 5:5, 6:6, 7:7}
         Console.println("capacity = " + map.capacity)
         map.add(1, 10)
         map.$2 = 20

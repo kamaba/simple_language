@@ -35,7 +35,7 @@ public class Memory
     # will not trace or sweep the object; the caller is responsible for
     # calling Release() or Free() when done.
     # Returns 1 on success.
-    public static Int32 Manual( object obj )
+    public static Int32 manual( object obj )
     {
         ret SystemMemoryManual( obj )
     }
@@ -43,14 +43,14 @@ public class Memory
     # Restore an object to automatic (GC) management.  The GC will
     # resume tracing and may sweep the object when it becomes unreachable.
     # Returns 1 on success.
-    public static Int32 Auto( object obj )
+    public static Int32 auto( object obj )
     {
         ret SystemMemoryAuto( obj )
     }
 
     # Check whether an object is currently in manual management mode.
     # Returns true if manual, false if auto-managed.
-    public static bool IsManual( object obj )
+    public static bool isManual( object obj )
     {
         ret SystemMemoryIsManual( obj ) != 0
     }
@@ -60,28 +60,28 @@ public class Memory
     # ---------------------------------------------------------------
 
     # Get the current reference count of an object.
-    public static Int32 RefCount( object obj )
+    public static Int32 refCount( object obj )
     {
         ret SystemMemoryRefCount( obj )
     }
 
     # Increment the reference count (like CLR WeakReference.TrackResurrection
     # or Objective-C retain).  Returns 1 on success.
-    public static Int32 Retain( object obj )
+    public static Int32 retain( object obj )
     {
         ret SystemMemoryRetain( obj )
     }
 
     # Decrement the reference count; when it reaches 0 the object is freed.
     # Requires Manual mode.  Returns 1 on success, 0 if rejected (auto mode).
-    public static Int32 Release( object obj )
+    public static Int32 release( object obj )
     {
         ret SystemMemoryRelease( obj )
     }
 
     # Unconditionally free the object immediately.
     # Requires Manual mode.  Returns 1 on success, 0 if rejected (auto mode).
-    public static Int32 Free( object obj )
+    public static Int32 free( object obj )
     {
         ret SystemMemoryFree( obj )
     }
@@ -92,14 +92,14 @@ public class Memory
 
     # Force a full GC cycle (stop-the-world tri-color mark-sweep).
     # Returns the number of objects freed.
-    public static Int32 Collect()
+    public static Int32 collect()
     {
         ret SystemMemoryCollect()
     }
 
     # Force a GC cycle only if the object pool size is >= threshold.
     # Returns the number of objects freed (0 if not triggered).
-    public static Int32 Collect( Int32 threshold )
+    public static Int32 collect( Int32 threshold )
     {
         ret SystemMemoryCollectThreshold( threshold )
     }
@@ -108,13 +108,13 @@ public class Memory
     # past this size, a collection is automatically triggered on the
     # next allocation (only in GC mode).
     # Returns 1 on success.
-    public static Int32 SetGcThreshold( Int32 threshold )
+    public static Int32 setGcThreshold( Int32 threshold )
     {
         ret SystemMemorySetGcThreshold( threshold )
     }
 
     # Get the current GC auto-trigger threshold.
-    public static Int32 GcThreshold()
+    public static Int32 gcThreshold()
     {
         ret SystemMemoryGetGcThreshold()
     }
@@ -123,7 +123,7 @@ public class Memory
     #   Memory.MODE_MANUAL (0) – GC disabled.
     #   Memory.MODE_GC     (1) – GC enabled.
     # Returns 1 on success.
-    public static Int32 SetMode( Int32 mode )
+    public static Int32 setMode( Int32 mode )
     {
         ret SystemMemorySetMode( mode )
     }
@@ -133,7 +133,7 @@ public class Memory
     # ---------------------------------------------------------------
 
     # Total number of objects currently in the object pool.
-    public static Int32 ObjectCount()
+    public static Int32 objectCount()
     {
         ret SystemMemoryGetObjectCount()
     }
@@ -145,19 +145,19 @@ public class Memory
     }
 
     # Number of objects freed in the most recent GC cycle.
-    public static Int32 GcFreedCount()
+    public static Int32 gcFreedCount()
     {
         ret SystemMemoryGetGcFreedCount()
     }
 
     # Total objects ever allocated (cumulative).
-    public static Int32 TotalAllocated()
+    public static Int32 totalAllocated()
     {
         ret SystemMemoryGetTotalAllocated()
     }
 
     # Total objects ever freed, including manual free/release and GC sweep.
-    public static Int32 TotalFreed()
+    public static Int32 totalFreed()
     {
         ret SystemMemoryGetTotalFreed()
     }
@@ -168,7 +168,7 @@ public class Memory
 
     # Strong reference: increments the refcount and returns the object
     # identity pointer.  Pairs with Release() for manual lifetime control.
-    public static object Ref( object obj )
+    public static object ref( object obj )
     {
         ret SystemObjectRef( obj )
     }
@@ -181,14 +181,14 @@ public class Memory
     # object pointer itself; use IsWeakRefValid to check if it is
     # still alive.  When the object is freed, the weak ref is
     # automatically invalidated.
-    public static object WeakRef( object obj )
+    public static object weakRef( object obj )
     {
         ret SystemMemoryWeakRef( obj )
     }
 
     # Check whether a weak reference is still valid (the target object
     # has not been freed).  Returns true if valid.
-    public static bool IsWeakRefValid( object obj )
+    public static bool isWeakRefValid( object obj )
     {
         ret SystemMemoryIsWeakRefValid( obj ) != 0
     }
@@ -199,7 +199,7 @@ public class Memory
     # from collecting it before this point.  Increments the refcount
     # so the object survives even in manual mode until explicitly released.
     # ---------------------------------------------------------------
-    public static void KeepAlive( object obj )
+    public static void keepAlive( object obj )
     {
         SystemMemoryKeepAlive( obj )
     }
@@ -212,7 +212,7 @@ public class Memory
     # runtime type and member values as the original.  Reference-type
     # members share the same targets (shallow copy, not deep).
     # The clone is added to the GC pool and returned.
-    public static object Clone( object obj )
+    public static object clone( object obj )
     {
         ret SystemMemoryClone( obj )
     }

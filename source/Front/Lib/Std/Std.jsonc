@@ -121,7 +121,8 @@
     { "name": "SystemListSetCapacity",       "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false },
     { "name": "SystemListRemoveValueThis",       "returnType": "void",  "params": ["object", "object"], "isVariadic": false },
     { "name": "SystemListRemoveIndexValueThis",       "returnType": "void",  "params": ["object", "Int32"], "isVariadic": false },
-    { "name": "SystemListClearValueThis",       "returnType": "void",  "params": ["object"], "isVariadic": false }
+    { "name": "SystemListClearValueThis",       "returnType": "void",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemMapIndexOfKey",           "returnType": "Int32", "params": ["object", "object", "Int32"], "isVariadic": false }
   ],
   "export": {
     "moduleName": "Std",

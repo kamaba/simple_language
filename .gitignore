@@ -278,3 +278,4 @@
 /source/CSimpleVMTest2/Properties/launchSettings.json
 /scripts/safe_rm_aliases.ps1
 /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/source/CompileStd/obj

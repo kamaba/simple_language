@@ -9,6 +9,7 @@
 using SimpleLanguage.Compile;
 using SimpleLanguage.Logging;
 using System;
+using System.Collections.Generic;
 using System.Text;
 
 namespace SimpleLanguage.Core
@@ -111,18 +112,63 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.MetaCoreParseForNotSuppoertIterator, m_Token, "", m_ForInContent.name );
                     return;
                 }
+
+                // 从content实现的IIterable<T>接口中取出模板参数T，
+                // 用T构造IIterator<T>作为迭代器类型，再从IIterator<T>中取出T作为v的类型
+                MetaType iterableInterfaceMT = null;
+                MetaClass searchMC = mdt.metaClass;
+                if (searchMC != null)
+                {
+                    MetaClass cur = searchMC;
+                    while (cur != null)
+                    {
+                        foreach (var it in cur.interfaceMetaType)
+                        {
+                            if (it.GetTemplateMetaClass() == CoreMetaClassManager.iterableMetaClass)
+                            {
+                                iterableInterfaceMT = it;
+                                break;
+                            }
+                        }
+                        if (iterableInterfaceMT != null) break;
+                        cur = cur.extendClass;
+                    }
+                }
+
                 MetaClass iterMT = CoreMetaClassManager.iteratorMetaClass;
-                m_ForInContentIterator = new MetaVariable("for_iterator_" + GetHashCode().ToString(), 
-                    MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass, 
-                    new MetaType( iterMT, mdt.GetGenTemplateMetaTypeList() ) );
+                List<MetaType> iteratorTemplateList = new List<MetaType>();
+                if (iterableInterfaceMT != null)
+                {
+                    var iterTplList = iterableInterfaceMT.GetGenTemplateMetaTypeList();
+                    if (iterTplList != null && iterTplList.Count > 0)
+                    {
+                        iteratorTemplateList.Add(iterTplList[0]);
+                    }
+                    else
+                    {
+                        // 非泛型IIterable: current()返回object
+                        iteratorTemplateList.Add(new MetaType(CoreMetaClassManager.objectMetaClass));
+                    }
+                }
+                else
+                {
+                    // 回退: 使用content自身的模板参数
+                    var contentTplList = mdt.GetGenTemplateMetaTypeList();
+                    if (contentTplList != null && contentTplList.Count > 0)
+                    {
+                        iteratorTemplateList.Add(contentTplList[0]);
+                    }
+                    else
+                    {
+                        iteratorTemplateList.Add(new MetaType(CoreMetaClassManager.objectMetaClass));
+                    }
+                }
+
+                m_ForInContentIterator = new MetaVariable("for_iterator_" + GetHashCode().ToString(),
+                    MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass,
+                    new MetaType( iterMT, iteratorTemplateList ) );
                 m_ThenMetaStatements.UpdateMetaVariableDict(m_ForInContentIterator);
 
-                var forMVMC = mdt.GetMetaInputTemplateByIndex();
-                if( forMVMC == null )
-                {
-                    forMVMC = m_ForInContent.defineMetaType;
-                }
-                var mc = mdt.GetTemplateMetaClass();
                 if ( m_FileMetaKeyForSyntax.fileMetaClassDefine is FileMetaDefineVariableSyntax fmcd )
                 {
                     string dname = fmcd.name;
@@ -134,7 +180,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        m_ForIterateVariable = new MetaIteratorVariable(fmcd.fileMetaClassDefine, fmcd.nameToken, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent);
+                        m_ForIterateVariable = new MetaIteratorVariable(fmcd.fileMetaClassDefine, fmcd.nameToken, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContentIterator);
                     }
                 }
                 else if( m_FileMetaKeyForSyntax.fileMetaClassDefine is FileMetaCallSyntax fmcs )
@@ -148,7 +194,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        m_ForIterateVariable = new MetaIteratorVariable( null, fmcs.variableRef.callNodeList[0].token, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContent);
+                        m_ForIterateVariable = new MetaIteratorVariable( null, fmcs.variableRef.callNodeList[0].token, ownerMetaClass, m_OwnerMetaBlockStatements, m_ForInContentIterator);
                     }
                 }
                 if(m_ForIterateVariable == null )

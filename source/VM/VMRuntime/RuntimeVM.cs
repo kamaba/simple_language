@@ -3548,6 +3548,10 @@ namespace SimpleLanguage.VM.Runtime
                                 ListSystemMethodCall.ExecuteListClearValueThis(this, sysPkg);
                                 break;
 
+                            case (int)ESystemMethodCall.SystemMapIndexOfKey:
+                                MapSystemMethodCall.ExecuteSystemMapIndexOfKey(this, sysPkg);
+                                break;
+
                             default:
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, iri.debugInfo, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
                                 break;
@@ -4044,6 +4048,35 @@ namespace SimpleLanguage.VM.Runtime
             {
                 PushSValueSynced(result);
             }
+        }
+
+        /// <summary>
+        /// 系统函数可用的相等比较包装：复用 <see cref="RuntimeValueMethod.CompareEuqalSValue1AndValue2"/>
+        /// 完整 == 语义（含类键的 _eq_/_ne_ 回调），并正确处理 methodCall 时结果压在 byte stack 的弹栈。
+        /// 参数按值传递（RuntimeValue 为 struct），不会破坏调用方持有的待比较值。
+        /// </summary>
+        public bool TryRuntimeValueEqual(RuntimeValue left, RuntimeValue right, bool equalCompare)
+        {
+            bool methodCall = false;
+            RuntimeValueMethod.CompareEuqalSValue1AndValue2(ref left, ref right, equalCompare, out methodCall);
+
+            RuntimeValue result = left;
+            if (methodCall)
+            {
+                if (ByteStackSlotDepthCount == 0)
+                {
+                    result.SetBoolValue(false);
+                }
+                else
+                {
+                    ByteStackPopToRuntimeValue(out result);
+#if DEBUG
+                    result = m_ValueStack[--m_ValueIndex]; // debug mirror
+#endif
+                }
+            }
+
+            return RuntimeValueMethod.IsTruthy(ref result);
         }
 
         /// <summary>

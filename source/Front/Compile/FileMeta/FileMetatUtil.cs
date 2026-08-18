@@ -191,7 +191,9 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
+                        FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
+                        fmn.priority = cnode.priority;
+                        commonTermExpressList.Add(fmn);
                     }
                 }
                 else if (cnode.nodeType == ENodeType.DoubleQuestion)

@@ -1,4 +1,5 @@
-@Nickname("Point") @Nickname("Vector2") @Condition()
+@Nickname("Point") 
+@Nickname("Vector2") @Condition()
 @Nickname("Vec2")
 public class Float32_2 extends Num
 {
@@ -33,7 +34,7 @@ public class Float32_2 extends Num
         }
     }
 
-    publci string toString()
+    publci override string toString()
     {
         ret string.toFormat( "x={0} y ={1}", this.x, this.y )
     }
