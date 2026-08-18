@@ -6,6 +6,11 @@ public class MapEntity<TKey,TValue>
     public int hashId = 0
     public TKey key = null
     public TValue value = null
+
+    public override string toString()
+    {
+        ret "MapEntity{hashId:" + hashId + ",key:" + key + ",value:" + value + "}"
+    }
 }
 
 #字典容器：仿 Java HashMap / CLR Dictionary / Dart Map。

@@ -65,8 +65,9 @@ MapTest
         Std.Map<int,string> map = new()
         map[10] = "aa"
         map.$20 = "bb"
-        Console.println("map[10] = " + map[10])
-        Console.println("map[20] = " + map[20])
+        int k = 20
+        Console.println("map[10] = " + map.$10 )
+        Console.println("map[20] = " + map.$k )
         Console.println("map[99] = " + map[99])
         int k = 20
         map[k] = "BB"
@@ -137,12 +138,18 @@ MapTest
     static testCapacityConstructor()
     {
         Console.println("===== testCapacityConstructor =====")
-        Std.Map<int,int> map = Std.Map<int,int>(8)
+        var v = 2
+        Std.Map<int,int> map = Std.Map<int,int>(8){1:1,2:v, 3:3, 4:4, 5:5, 6:6, 7:7}
         Console.println("capacity = " + map.capacity)
         map.add(1, 10)
-        map.add(2, 20)
+        map.$2 = 20
         Console.println("length = " + map.length)
         Console.println("capacity = " + map.capacity)
+
+        for v2 in map
+        {
+            Console.println("map[" + v2.key.toString() + "] = " + v2.toString())
+        }
     }
 
     # 测试扩容 (0->4->8->16)
@@ -341,7 +348,7 @@ MapTest
         Std.Map<int,int> map = new()
         for i = 0, i < 100, i++
         {
-            map.add(i, i * i)
+            Console.println("mapAdd[$i ]" + map.add(i, i * i) );
         }
         Console.println("length = " + map.length)
         Console.println("map[50] = " + map._getItem_(50))
@@ -350,6 +357,7 @@ MapTest
         for i = 0, i < 50, i++
         {
             map[i] = -1
+            Console.println("map=-1");
         }
         Console.println("after overwrite, length = " + map.length)
         Console.println("map[10] = " + map[10].toString() )
@@ -358,6 +366,7 @@ MapTest
         for i = 50, i < 100, i++
         {
             map.remove(i)
+            Console.println("map.remove");
         }
         Console.println("after removes, length = " + map.length)
         Console.println("containsKey(60) = " + map.containsKey(60))
