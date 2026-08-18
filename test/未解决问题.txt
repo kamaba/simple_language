@@ -5,7 +5,6 @@
 5. 实现别名的功能，Nickname的使用，让查找Class/MemeberVar|functoin/
 6. 这个的cvm实现 public override Num floor()ceil()的实现 isFinite  Num继承的abstract的方法，需要实现
 7. 指针的增加与处理. 
-8. 如果继续的extends Object 的toString() 没有override 需要报错
 9. 是否不能 new int() 这种的，直接变成栈的方式
 
 最近要解决的:

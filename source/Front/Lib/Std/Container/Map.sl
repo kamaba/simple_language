@@ -21,7 +21,7 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
     MapEntity<TKey,TValue> _current = null
 
     #默认构造，容量为0，首次添加时扩容为4（与 C# Dictionary 一致）
-    _init_()
+    override  _init_()
     {
         this._list = Array<MapEntity<TKey,TValue>>(4)
     }

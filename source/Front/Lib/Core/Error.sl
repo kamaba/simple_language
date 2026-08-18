@@ -10,7 +10,7 @@ public class Error extends Object
 
     # ── Constructors ──
 
-    _init_()
+    override _init_()
     {
         this.code = 0
         this.message = ""

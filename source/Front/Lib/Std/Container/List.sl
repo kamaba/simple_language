@@ -14,7 +14,7 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
     }
 
     #默认构造，容量为0，首次添加时扩容为4（与 C# List<T> 一致）
-    _init_()
+    override _init_()
     {
         this._list = Array<T>(4)
     }

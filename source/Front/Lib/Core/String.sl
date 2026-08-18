@@ -27,7 +27,7 @@ public class String extends Object
         }
         ret this._length
     }
-    String toString()
+    override String toString()
     {
         ret this;
     }

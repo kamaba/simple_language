@@ -18,7 +18,7 @@ TypeTest
             this.value = v
         }
 
-        string toString()
+        override string toString()
         {
             ret "Box(" + this.value.toString() + ")"
         }

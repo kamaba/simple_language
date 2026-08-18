@@ -642,7 +642,7 @@ namespace SimpleLanguage.Core
 
                         if (m_DefineMetaType == null)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, $"没有找到{cmr.stringList[0]} 的相关返回类型!");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, this.m_FileMetaMemberFunction.token, $"没有找到{cmr.stringList[0]} 的相关返回类型!");
                             return;
                         }
                         if (m_ConstructInitFunction && defineMetaType.metaClass != CoreMetaClassManager.voidMetaClass )

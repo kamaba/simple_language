@@ -525,8 +525,8 @@ namespace SimpleLanguage.Core
                         // final方法不允许被override
                         if (v.isFinal && !v.isAbstract)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
-                                "Error 子类[" + this.m_AllName + "] 方法: " + matchedChild.name +
+                            Log.AddMetaCoreLog(LID.MetaCoreFinalFunctionCannotOverride, matchedChild.token,
+                                "子类[" + this.m_AllName + "] 方法: " + matchedChild.name +
                                 " 不能override父类的final方法: " + this.m_ExtendClass.m_AllName + "." + v.name);
                         }
                         // 实现抽象父方法时必须使用override标记
