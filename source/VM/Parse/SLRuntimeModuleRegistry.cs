@@ -344,7 +344,41 @@ namespace SimpleLanguage.Parse
             RuntimeClassManager.AddRuntimeClass(rc);
             s_ClassPackageById[pkg.id] = pkg;
 
+            // 注册 @Nickname 别名：按逗号拆分 exportNames，每个别名指向同一个 RuntimeClass
+            RegisterExportNameAliases(pkg, rc, moduleName);
+
             return rc;
+        }
+
+        /// <summary>
+        /// 注册 @Nickname 别名：按逗号拆分 exportNames，跳过第一个（原名称已注册），
+        /// 为每个别名构造全限定名并注册到 RuntimeClassManager.m_AliasDict。
+        /// </summary>
+        private static void RegisterExportNameAliases(SLClassPackage pkg, RuntimeClass rc, string moduleName)
+        {
+            if (pkg == null || rc == null) return;
+            if (string.IsNullOrWhiteSpace(pkg.exportNames)) return;
+
+            var names = pkg.exportNames.Split(',');
+            if (names.Length <= 1) return; // 只有一个名称，无需注册别名
+
+            var fullName = string.IsNullOrWhiteSpace(pkg.fullName) ? pkg.name : pkg.fullName;
+            var shortName = pkg.name ?? string.Empty;
+
+            for (int i = 1; i < names.Length; i++)
+            {
+                var alias = names[i].Trim();
+                if (string.IsNullOrWhiteSpace(alias)) continue;
+
+                // 构造别名全限定名：将 fullName 末尾的 shortName 替换为 alias
+                string aliasFullName;
+                if (!string.IsNullOrEmpty(shortName) && fullName.EndsWith(shortName))
+                    aliasFullName = fullName.Substring(0, fullName.Length - shortName.Length) + alias;
+                else
+                    aliasFullName = alias;
+
+                RuntimeClassManager.RegisterClassAlias(aliasFullName, rc);
+            }
         }
 
         // TypeDef 解析专用：只保证 RuntimeClass 壳存在，不触发字段填充。
@@ -472,6 +506,21 @@ namespace SimpleLanguage.Parse
                     {
                         rc.AddNonStaticIRMetaVariableList(rv);
                     }
+
+                    // 注册字段别名（@Nickname exportNames，跳过第一个原名称）
+                    if (!string.IsNullOrWhiteSpace(f.exportNames))
+                    {
+                        var fNames = f.exportNames.Split(',');
+                        if (fNames.Length > 1)
+                        {
+                            for (int ai = 1; ai < fNames.Length; ai++)
+                            {
+                                var alias = fNames[ai].Trim();
+                                if (!string.IsNullOrWhiteSpace(alias))
+                                    rc.RegisterFieldAlias(alias, rv);
+                            }
+                        }
+                    }
                 }
 
                 // Phase 2: 按 order 升序注入初始化表达式指令。
@@ -541,6 +590,21 @@ namespace SimpleLanguage.Parse
                     runtimeMethod.SetOwner(rc);
                     int idx = mm.index;
                     rc.AddNonStaticMethod(runtimeMethod);
+
+                    // 注册方法别名（@Nickname exportNames，跳过第一个原名称）
+                    if (!string.IsNullOrWhiteSpace(mm.exportNames))
+                    {
+                        var mNames = mm.exportNames.Split(',');
+                        if (mNames.Length > 1)
+                        {
+                            for (int ai = 1; ai < mNames.Length; ai++)
+                            {
+                                var alias = mNames[ai].Trim();
+                                if (!string.IsNullOrWhiteSpace(alias))
+                                    rc.RegisterMethodAlias(alias, runtimeMethod);
+                            }
+                        }
+                    }
                 }
             }
 

@@ -68,6 +68,9 @@ namespace SimpleLanguage.VM
 
             var (globalVarCount, globalInitCount) = InitializeGlobalVariables(asmList);
 
+            // Register runtime attributes (Route, Condition, etc.) from loaded packages.
+            VMRuntimeAttributeRegistry.instance.RegisterFromPackages(packageList);
+
             var entryId = ResolveEntryMethodId(currentPkg, args);
 
             return new SLIRModuleParseResult

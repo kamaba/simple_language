@@ -246,6 +246,11 @@ namespace SimpleLanguage.Project
 
             ClassManager.instance.CheckInterfaces();
 
+            // Parse and process attributes after inheritance/interface resolution.
+            // Compile-time attributes (e.g. Nickname) are applied here so that
+            // subsequent member parsing and IR generation can use alias lookups.
+            ClassManager.instance.ParseAttributes();
+
             MetaVariableManager.instance.ParseMetaMemberExpress();
             MethodManager.instance.ParseMetaMethodExpress();
 

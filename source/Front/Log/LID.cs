@@ -69,5 +69,7 @@
         FileMetaNotFoundNameSpace = 12271,
         TokenParseStringNeedEndSign = 12272,
         MetaCoreFunctionNeedOverrideFlag = 12273,
+
+        MetaCoreFinalFunctionCannotOverride = 12274,
     }
 }

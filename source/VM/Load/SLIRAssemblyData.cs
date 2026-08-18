@@ -121,10 +121,12 @@ namespace SimpleLanuageVM.Load
     }
 
     public sealed class SLClassPackage
-    { 
+    {
         public int id { get; set; }
         public string name { get; set; } = string.Empty;
         public string fullName { get; set; } = string.Empty;
+        /// <summary>多个导出名称时用逗号分隔（含 @Nickname 别名）；为 null 或空时回退到 name。</summary>
+        public string? exportNames { get; set; }
         public string sourcePath { get; set; } = string.Empty;
         /// <summary>0=Class, 1=Enum, 2=Data, 3=Interface — matches Front <c>IRMetaClassKind</c>.</summary>
         public int metaClassKind { get; set; }
@@ -147,10 +149,24 @@ namespace SimpleLanuageVM.Load
         public List<SLMethodPackage> nonStaticMethodList { get; set; } = new();
         public List<SLMethodPackage> operatorMethodList { get; set; } = new();
         public List<SLMethodPackage> staticMethodList { get; set; } = new();
+        /// <summary>Class-level attributes (Route, Condition, Nickname, etc.)</summary>
+        public List<SLAttributePackage> attributeList { get; set; } = new();
     }
+
+    /// <summary>Serialized attribute data matching Front SLAttributePackage.</summary>
+    public sealed class SLAttributePackage
+    {
+        public string name { get; set; } = string.Empty;
+        public List<string> args { get; set; } = new();
+        /// <summary>0=Compile, 1=Runtime - mirrors EAttributeHandleType from SL</summary>
+        public int handleType { get; set; }
+    }
+
     public sealed class SLFieldPackage
     {
         public string name { get; set; } = string.Empty;
+        /// <summary>多个导出名称时用逗号分隔（含 @Nickname 别名）；为 null 或空时回退到 name。</summary>
+        public string? exportNames { get; set; }
         // structured type definition
         public SLRuntimeDefTypePackage? typeDef { get; set; }
         // flags: 1(private),2(public),4(export),8(protected),16(const),32(static)
@@ -165,6 +181,8 @@ namespace SimpleLanuageVM.Load
     {
         public string id { get; init; } = string.Empty;
         public string name { get; init; } = string.Empty;
+        /// <summary>多个导出名称时用逗号分隔（含 @Nickname 别名）；为 null 或空时回退到 name。</summary>
+        public string? exportNames { get; set; }
         // index marks ordering within the specific per-class list
         public int index { get; init; } = 0;
         public bool interfaceMethod { get; set; }
@@ -179,6 +197,8 @@ namespace SimpleLanuageVM.Load
         public List<SLVariablePackage> argumentList { get; set; } = new();
         public List<SLVariablePackage> localList { get; set; } = new();
         public List<Instruction> instructionList { get; set; } = new();
+        /// <summary>Method-level attributes (Route, Condition, etc.)</summary>
+        public List<SLAttributePackage> attributeList { get; set; } = new();
     }
     public sealed class SLTypePackage
     {

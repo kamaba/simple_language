@@ -249,6 +249,37 @@ namespace SimpleLanguage.Core
         {
             return m_ChildrenMetaNodeDict.ContainsKey(name);
         }
+
+        /// <summary>
+        /// 在当前节点下注册一个别名类节点。
+        /// 用于 @Nickname 机制：在父命名空间下创建一个新名称的节点，
+        /// 指向同一个 MetaClass，但不改变原类的 metaNode 关联。
+        /// 例如 Float32_2 的 @Nickname("Vector2") 会在同一父节点下创建 Vector2 节点，
+        /// 通过 GetMetaClassByTemplateCount 可以查到同一个 MetaClass。
+        /// </summary>
+        public MetaNode AddMetaClassAlias(string aliasName, MetaClass mc)
+        {
+            if (string.IsNullOrEmpty(aliasName) || mc == null) return null;
+
+            // 如果已存在同名子节点，直接将类注册到该节点
+            if (m_ChildrenMetaNodeDict.TryGetValue(aliasName, out var existing))
+            {
+                if (!existing.m_MetaTemplateClassDict.ContainsKey(mc.metaTemplateList.Count))
+                {
+                    existing.m_MetaTemplateClassDict.Add(mc.metaTemplateList.Count, mc);
+                }
+                return existing;
+            }
+
+            // 创建新节点，将类加入模板字典，但不调用 mc.SetMetaNode
+            var node = new MetaNode();
+            node.m_Name = aliasName;
+            node.m_EStructNodeType = EStructNodeType.Class;
+            node.m_ParentNode = this;
+            node.m_MetaTemplateClassDict.Add(mc.metaTemplateList.Count, mc);
+            m_ChildrenMetaNodeDict.Add(aliasName, node);
+            return node;
+        }
         public virtual MetaNode GetChildrenMetaNodeByName(string name)
         {
             if (m_ChildrenMetaNodeDict.ContainsKey(name))

@@ -50,5 +50,23 @@
     { "namespace": "Math", "children": [
       { "class": "Math" }
     ]}
-  ]
+  ],
+  "export": {
+    "moduleName": "Math",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "versionMain": 1,
+    "versionSub": 0,
+    "versionPatch": 0,
+    "includeMetadata": true,
+    // Front 调试文本实际目录：{export.outputDir}/{export.moduleName}/DebugCode/；以下 outputDir 仅兼容旧字段，可为空。
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  }
 }

@@ -68,6 +68,16 @@ namespace SimpleLanguage.IR
         /// </summary>
         public bool isInTryCatch { get; set; } = false;
 
+        /// <summary>
+        /// 导出名称列表（含原名 + Nickname 别名）。
+        /// 从 MetaMemberFunction 的 attribute 中收集 @Nickname 得到。
+        /// </summary>
+        public List<string> exportNameList => m_ExportNameList;
+        private List<string> m_ExportNameList = new List<string>();
+
+        /// <summary>导出用的合并名称（逗号分隔），供 SLIR 序列化使用。</summary>
+        public string exportNames => m_ExportNameList.Count <= 1 ? null : string.Join(",", m_ExportNameList);
+
         public IRMethod(IRManager irma, MetaFunction func )
         {
             m_IRManager = irma;
@@ -84,6 +94,33 @@ namespace SimpleLanguage.IR
             m_FunEndLabelData = new IRData();
             m_FunEndLabelData.opCode = EIROpCode.Label;
             m_FunEndLabelData.SetDebugInfoByToken(func?.token, "FunEndLabel");
+
+            // 收集成员函数的 @Nickname 别名
+            if (func is MetaMemberFunction mmf2)
+                CollectExportNames(mmf2);
+        }
+
+        /// <summary>
+        /// 从 MetaMemberFunction 的 attribute 中收集 @Nickname 别名，
+        /// 加上原名组成 exportNameList。
+        /// </summary>
+        private void CollectExportNames(MetaMemberFunction mmf)
+        {
+            m_ExportNameList.Clear();
+            if (mmf == null) return;
+            // 原名（短名）
+            if (!string.IsNullOrEmpty(mmf.name))
+                m_ExportNameList.Add(mmf.name);
+            // 收集 @Nickname
+            var attrs = mmf.attributeList;
+            if (attrs == null) return;
+            foreach (var attr in attrs)
+            {
+                if (attr == null || attr.name != "Nickname") continue;
+                string nickname = attr.GetStringArg(0);
+                if (!string.IsNullOrEmpty(nickname) && !m_ExportNameList.Contains(nickname))
+                    m_ExportNameList.Add(nickname);
+            }
         }
 
         /// <summary>

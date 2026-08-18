@@ -1,11 +1,15 @@
 
-1. 写list,map的支持  map 的 { k:v, k2:v2 } 的形式 
+1. 写list,map的支持  map 的 { k:v, k2:v2 } 的形式   手动
+3. 对别一个调用类的 Core.global.var1 Std.global.aaa  手动
+4. 增加中断编译，和编译状态的逻辑  手动
+
 2. 数学库的集成
-3. 对别一个调用类的 Core.global.var1 Std.global.aaa
 5. 实现别名的功能，Nickname的使用，让查找Class/MemeberVar|functoin/
 6. 这个的cvm实现 public override Num floor()ceil()的实现 isFinite  Num继承的abstract的方法，需要实现
 7. 指针的增加与处理. 
 9. 是否不能 new int() 这种的，直接变成栈的方式
+
+
 
 最近要解决的:
 1. 基础类的相关写作 Object
@@ -16,7 +20,6 @@ final int/uint/float 等方法
 1. cvm 只使用三色方案  然后使用 引用计数的方案，在结尾 后把内存收集
 
 机制差的:
-4. 增加中断编译，和编译状态的逻辑
 5. 内置action的支持
 
 1. this的使用，还没有整合

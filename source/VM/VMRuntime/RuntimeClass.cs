@@ -42,6 +42,10 @@ namespace SimpleLanguage.VM
         private List<RuntimeMethod> m_OperatorMethodList = new List<RuntimeMethod>();
         private Dictionary<int, Dictionary<int, RuntimeDefType>> m_IRMetaClassMapTemplateDict = new Dictionary<int, Dictionary<int, RuntimeDefType>>();
         private readonly List<int> m_ImplementsInterfaceIdList = new List<int>();
+        /// <summary>字段别名（@Nickname），alias name -> RuntimeVariable。</summary>
+        private Dictionary<string, RuntimeVariable> m_FieldAliasDict = new Dictionary<string, RuntimeVariable>(System.StringComparer.Ordinal);
+        /// <summary>方法别名（@Nickname），alias name -> RuntimeMethod。</summary>
+        private Dictionary<string, RuntimeMethod> m_MethodAliasDict = new Dictionary<string, RuntimeMethod>(System.StringComparer.Ordinal);
 
         internal void AddNonStaticMethod(RuntimeMethod m)
         {
@@ -72,6 +76,7 @@ namespace SimpleLanguage.VM
         {
             m_NotStaticMethodList.Clear();
             m_OperatorMethodList.Clear();
+            m_MethodAliasDict.Clear();
         }
 
         internal void ClearFieldRuntimeState()
@@ -80,6 +85,7 @@ namespace SimpleLanguage.VM
             m_StaticIRMetaVariableList.Clear();
             m_NonStaticMemberVariableSetValueList.Clear();
             m_StaticMemberVariableSetValueList.Clear();
+            m_FieldAliasDict.Clear();
         }
         internal void AddNonStaticMemberVariableSetValueList(Instruction item)
         {
@@ -99,6 +105,23 @@ namespace SimpleLanguage.VM
             if (m == null) return;
             m_OperatorMethodList.Add(m);
         }
+
+        /// <summary>注册字段别名（@Nickname），使通过别名也能查到同一个 RuntimeVariable。</summary>
+        internal void RegisterFieldAlias(string aliasName, RuntimeVariable rv)
+        {
+            if (string.IsNullOrEmpty(aliasName) || rv == null) return;
+            if (!m_FieldAliasDict.ContainsKey(aliasName))
+                m_FieldAliasDict[aliasName] = rv;
+        }
+
+        /// <summary>注册方法别名（@Nickname），使通过别名也能查到同一个 RuntimeMethod。</summary>
+        internal void RegisterMethodAlias(string aliasName, RuntimeMethod rm)
+        {
+            if (string.IsNullOrEmpty(aliasName) || rm == null) return;
+            if (!m_MethodAliasDict.ContainsKey(aliasName))
+                m_MethodAliasDict[aliasName] = rm;
+        }
+
         public RuntimeMethod GetNonStaticMethodByIndex(int index)
         {
             if (index >= m_NotStaticMethodList.Count || index < 0)
@@ -130,6 +153,18 @@ namespace SimpleLanguage.VM
                 {
                     index = i;
                     return m_NotStaticMethodList[i];
+                }
+            }
+            // Check method aliases (@Nickname)
+            if (m_MethodAliasDict.TryGetValue(name, out var aliased) && aliased != null)
+            {
+                for (int i = 0; i < m_NotStaticMethodList.Count; i++)
+                {
+                    if (ReferenceEquals(m_NotStaticMethodList[i], aliased))
+                    {
+                        index = i;
+                        return aliased;
+                    }
                 }
             }
             return null;
@@ -288,6 +323,8 @@ namespace SimpleLanguage.VM
     public class RuntimeClassManager
     {
         private static List<RuntimeClass> m_IRMetaClassList = new List<RuntimeClass>();
+        /// <summary>别名到 RuntimeClass 的映射（@Nickname），同一个 RuntimeClass 可有多个名称。</summary>
+        private static Dictionary<string, RuntimeClass> m_AliasDict = new Dictionary<string, RuntimeClass>(System.StringComparer.Ordinal);
         public static void RegisterDymnicClass()
         {
         }
@@ -297,6 +334,8 @@ namespace SimpleLanguage.VM
         }
         public static RuntimeClass GetRuntimeClassByName(string allname)
         {
+            if (m_AliasDict.TryGetValue(allname, out var aliased))
+                return aliased;
             return m_IRMetaClassList.Find(a => a.allName == allname);
         }
 
@@ -309,6 +348,14 @@ namespace SimpleLanguage.VM
         {
             m_IRMetaClassList.Add(rc);
             return rc;
+        }
+
+        /// <summary>注册别名（@Nickname），使通过别名也能查到同一个 RuntimeClass。</summary>
+        public static void RegisterClassAlias(string aliasFullName, RuntimeClass rc)
+        {
+            if (string.IsNullOrEmpty(aliasFullName) || rc == null) return;
+            if (!m_AliasDict.ContainsKey(aliasFullName))
+                m_AliasDict[aliasFullName] = rc;
         }
     }
 }

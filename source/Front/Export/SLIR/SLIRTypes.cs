@@ -83,6 +83,8 @@ namespace SimpleLanguage.Export.SLIR.Types
     {
         public string id { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
+        /// <summary>多个导出名称时用逗号分隔（含 @Nickname 别名）；为 null 或空时回退到 name。</summary>
+        public string? exportNames { get; set; }
         public string declaringTypeFullName { get; set; } = string.Empty;
         /// <summary>声明该方法的类的 classId（按 allName 的确定型哈希）。
         /// 对于继承到子类的方法，此 id 指向声明类（如 Object），而非当前子类（如 Num）。
@@ -95,10 +97,27 @@ namespace SimpleLanguage.Export.SLIR.Types
         public List<SLVariablePackage> argumentList { get; set; } = new();
         public List<SLVariablePackage> localList { get; set; } = new();
         public List<SLIRInstructionPackage> instructionList { get; set; } = new();
+        public List<SLAttributePackage> attributeList { get; set; } = new();
     }
-    public sealed class SLFieldPackage
-    { 
+    /// <summary>
+    /// Serialized attribute data for export/import.
+    /// Carries the attribute name and extracted string arguments so that
+    /// the VM loader can reconstruct runtime attributes (Route, Condition, etc.)
+    /// without needing the full MetaCore/FileMeta parse tree.
+    /// </summary>
+    public sealed class SLAttributePackage
+    {
         public string name { get; set; } = string.Empty;
+        public List<string> args { get; set; } = new();
+        /// <summary>0=Compile, 1=Runtime - mirrors EAttributeHandleType from SL</summary>
+        public int handleType { get; set; }
+    }
+
+    public sealed class SLFieldPackage
+    {
+        public string name { get; set; } = string.Empty;
+        /// <summary>多个导出名称时用逗号分隔（含 @Nickname 别名）；为 null 或空时回退到 name。</summary>
+        public string? exportNames { get; set; }
         public SLRuntimeDefTypePackage? typeDef { get; set; } 
         public int flags { get; set; } public int index { get; set; }
         /// <summary>
@@ -107,7 +126,8 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// -1 means unspecified; loaders should treat it as "no order" and keep declaration order as fallback.
         /// </summary>
         public int order { get; set; } = -1;
-        public List<SLIRInstructionPackage> express { get; set; } = new(); 
+        public List<SLIRInstructionPackage> express { get; set; } = new();
+        public List<SLAttributePackage> attributeList { get; set; } = new();
     }
 
     public sealed class SLClassPackage
@@ -115,6 +135,8 @@ namespace SimpleLanguage.Export.SLIR.Types
         public int id { get; set; }
         public string name { get; set; } = string.Empty;
         public string fullName { get; set; } = string.Empty;
+        /// <summary>多个导出名称时用逗号分隔（含 @Nickname 别名）；为 null 或空时回退到 name。</summary>
+        public string? exportNames { get; set; }
         public string sourcePath { get; set; } = string.Empty;
         /// <summary>Matches <see cref="SimpleLanguage.IR.IRMetaClassKind"/> (0=Class, 1=Enum, 2=Data, 3=Interface).</summary>
         public int metaClassKind { get; set; }
@@ -140,6 +162,9 @@ namespace SimpleLanguage.Export.SLIR.Types
         public List<string> templateParameterNames { get; set; } = new();
         public List<SLRuntimeDefTypePackage> templateTypeList { get; set; } = new();
         public List<SLTemplateRelationPackage> templateRelationList { get; set; } = new();
+
+        /// <summary>Class-level attributes exported for runtime use (Route, Condition, Nickname, etc.)</summary>
+        public List<SLAttributePackage> attributeList { get; set; } = new();
 
     }
 

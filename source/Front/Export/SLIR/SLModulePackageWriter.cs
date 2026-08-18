@@ -322,11 +322,15 @@ namespace SimpleLanguage.Export.SLIR
                     id = c.id,
                     fullName = full,
                     name = typeName,
+                    exportNames = c.exportNames,
                     sourcePath = c.sourcePath ?? string.Empty,
                     metaClassKind = (int)c.metaClassKind,
                     isDynamic = c.OwnerMetaData?.isDynamic ?? false,
                     baseClassId = c.OwnerMetaClass?.extendClass?.classId ?? 0,
                 };
+                // export class-level attributes
+                ExportAttributes(cm.attributeList, c.OwnerMetaClass?.attributeList);
+                // export field-level attributes
                 var implIds = c.GetImplementsInterfaceClassIds();
                 if (implIds != null && implIds.Count > 0)
                 {
@@ -420,6 +424,7 @@ namespace SimpleLanguage.Export.SLIR
                         var fieldPkgLocal = new SLFieldPackage
                         {
                             name = GetShortName(v.name ?? string.Empty),
+                            exportNames = v.exportNames,
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                             flags = BuildFieldFlags(v),
                             index = v.index,
@@ -524,6 +529,7 @@ namespace SimpleLanguage.Export.SLIR
                         var fieldPkgStatic = new SLFieldPackage
                         {
                             name = GetShortName(v.name ?? string.Empty),
+                            exportNames = v.exportNames,
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                             flags = BuildFieldFlags(v) | 32,
                             index = v.index,
@@ -625,6 +631,7 @@ namespace SimpleLanguage.Export.SLIR
                     declaringTypeFullName = declaringTypeFullName,
                     declaringClassId = declaringOwner?.classId ?? 0,
                     name = m.onlyFunctionName ?? string.Empty,
+                    exportNames = m.exportNames,
                     interfaceMethod = m.interfaceMethod,
                     flags = BuildMethodFlags(m),
                 };
@@ -691,6 +698,12 @@ namespace SimpleLanguage.Export.SLIR
 
                         mp.instructionList.Add(CreateInstructionPackage(d));
                     }
+                }
+
+                // export method-level attributes
+                if (m.bindMetaFunction is MetaMemberFunction mmf)
+                {
+                    ExportAttributes(mp.attributeList, mmf.attributeList);
                 }
 
                 module.methodList.Add(mp);
@@ -1181,6 +1194,29 @@ namespace SimpleLanguage.Export.SLIR
                 endChar = src.endChar,
                 info = src.info ?? string.Empty,
             };
+        }
+
+        /// <summary>
+        /// Exports MetaAttribute list to SLAttributePackage list for JSON serialization.
+        /// Each attribute's name and extracted string arguments are preserved so the VM
+        /// loader can reconstruct runtime attributes (Route, Condition, etc.).
+        /// </summary>
+        private static void ExportAttributes(List<SLAttributePackage> dest, List<Core.MetaAttribute>? src)
+        {
+            if (dest == null || src == null) return;
+            foreach (var attr in src)
+            {
+                if (attr == null || string.IsNullOrEmpty(attr.name)) continue;
+                // Ensure Parse() has been called so stringArgs is populated
+                attr.Parse();
+                var pkg = new SLAttributePackage { name = attr.name, handleType = attr.handleType };
+                if (attr.stringArgs != null)
+                {
+                    foreach (var arg in attr.stringArgs)
+                        pkg.args.Add(arg ?? string.Empty);
+                }
+                dest.Add(pkg);
+            }
         }
 
         private static SLRuntimeDefTypePackage? CreateRuntimeDefTypePackage(IRMetaType? mt)

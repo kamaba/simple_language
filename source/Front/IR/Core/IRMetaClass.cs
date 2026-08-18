@@ -64,6 +64,18 @@ namespace SimpleLanguage.IR
         /// <summary>ref module 的 IRMetaClass 已从包数据直接构建（含字段和方法列表），CreateMemberData/CreateMemberMethod 时跳过。</summary>
         public bool isRefModulePreBuilt { get; set; } = false;
 
+        /// <summary>
+        /// 导出名称列表（含原名 + Nickname 别名）。
+        /// 在 IR 翻译时从 MetaClass 的 attribute 中收集 @Nickname 得到。
+        /// 导出时：如果只有 1 个名称则用原 name，多个则用逗号分隔。
+        /// 导入时：按逗号拆分，分别注册到 MetaNode。
+        /// </summary>
+        public List<string> exportNameList => m_ExportNameList;
+        private List<string> m_ExportNameList = new List<string>();
+
+        /// <summary>导出用的合并名称（逗号分隔），供 SLIR 序列化使用。</summary>
+        public string exportNames => m_ExportNameList.Count <= 1 ? null : string.Join(",", m_ExportNameList);
+
 
         //public int byteCount => m_ByteCount;
         //public int templateCount => m_TemplateCount;
@@ -158,6 +170,38 @@ namespace SimpleLanguage.IR
             catch
             {
                 m_SourcePath = "";
+            }
+
+            // 收集类级别的 @Nickname 别名到 exportNameList
+            CollectExportNames(owner);
+        }
+
+        /// <summary>
+        /// 从 MetaBase 的 attributeList 中收集 @Nickname 别名，
+        /// 加上原名组成 exportNameList。
+        /// </summary>
+        private void CollectExportNames(MetaBase owner)
+        {
+            m_ExportNameList.Clear();
+            if (owner == null) return;
+
+            // 原名（短名，不含命名空间前缀）
+            string shortName = owner.name;
+            if (!string.IsNullOrEmpty(shortName))
+                m_ExportNameList.Add(shortName);
+
+            // 从 attributeList 中收集 @Nickname（MetaClass/MetaMemberFunction/MetaMemberVariable 各自持有）
+            List<MetaAttribute> attrs = null;
+            if (owner is MetaClass mc) attrs = mc.attributeList;
+            else if (owner is MetaMemberFunction mmf) attrs = mmf.attributeList;
+            else if (owner is MetaMemberVariable mmv) attrs = mmv.attributeList;
+            if (attrs == null) return;
+            foreach (var attr in attrs)
+            {
+                if (attr == null || attr.name != "Nickname") continue;
+                string nickname = attr.GetStringArg(0);
+                if (!string.IsNullOrEmpty(nickname) && !m_ExportNameList.Contains(nickname))
+                    m_ExportNameList.Add(nickname);
             }
         }
         /// <summary>Ids of interface types this class is declared to implement (stable hash = IR class id), including those merged from the base class.</summary>

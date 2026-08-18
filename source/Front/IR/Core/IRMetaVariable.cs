@@ -47,6 +47,16 @@ namespace SimpleLanguage.IR
         // -1 表示该 IRMetaVariable 不参与解析顺序排序（例如局部变量、参数）。
         public int order => m_Order;
 
+        /// <summary>
+        /// 导出名称列表（含原名 + Nickname 别名）。
+        /// 从 MetaMemberVariable 的 attribute 中收集 @Nickname 得到。
+        /// </summary>
+        public List<string> exportNameList => m_ExportNameList;
+        private List<string> m_ExportNameList = new List<string>();
+
+        /// <summary>导出用的合并名称（逗号分隔），供 SLIR 序列化使用。</summary>
+        public string exportNames => m_ExportNameList.Count <= 1 ? null : string.Join(",", m_ExportNameList);
+
 
         private MetaExpressNodeBase m_ExpressNode = null;
         private List<IRData> m_IRDataList = new List<IRData>();
@@ -169,6 +179,9 @@ namespace SimpleLanguage.IR
 
             IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaVariable(mmv);
             m_IRMetaType = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mmv.GetFinalMetaType(), owirmc);
+
+            // 收集成员变量的 @Nickname 别名
+            CollectExportNames(mmv);
         }
         public void SetIsStatic( bool iss )
         {
@@ -181,6 +194,29 @@ namespace SimpleLanguage.IR
         public void AddIRData( IRData irdata )
         {
             m_IRDataList.Add(irdata);
+        }
+
+        /// <summary>
+        /// 从 MetaMemberVariable 的 attribute 中收集 @Nickname 别名，
+        /// 加上原名组成 exportNameList。
+        /// </summary>
+        private void CollectExportNames(MetaMemberVariable mmv)
+        {
+            m_ExportNameList.Clear();
+            if (mmv == null) return;
+            // 原名（短名）
+            if (!string.IsNullOrEmpty(mmv.name))
+                m_ExportNameList.Add(mmv.name);
+            // 收集 @Nickname
+            var attrs = mmv.attributeList;
+            if (attrs == null) return;
+            foreach (var attr in attrs)
+            {
+                if (attr == null || attr.name != "Nickname") continue;
+                string nickname = attr.GetStringArg(0);
+                if (!string.IsNullOrEmpty(nickname) && !m_ExportNameList.Contains(nickname))
+                    m_ExportNameList.Add(nickname);
+            }
         }
 
         /// <summary>
