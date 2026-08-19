@@ -110,9 +110,9 @@ ObjectTest
         global.println("--- testRefCount ---")
         Object obj = new()
         Object obj2 = obj
-        int refc = Memory.RefCount(obj2)
+        int refc = Memory.refCount(obj2)
         global.println("[24] refCount (alias obj2) : " + refc.toString())
-        int refcSelf = Memory.RefCount(obj)
+        int refcSelf = Memory.refCount(obj)
         global.println("[25] refCount (obj self) : " + refcSelf.toString())
     }
 
@@ -122,10 +122,10 @@ ObjectTest
         global.println("--- testRefWeak ---")
         Object obj = new()
         Object obj3 = new()
-        object rwA = Memory.WeakRef(obj)
-        object rwB = Memory.WeakRef(obj3)
+        object rwA = Memory.weakRef(obj)
+        object rwB = Memory.weakRef(obj3)
         global.println("[26] refWeak distinct : Object.refEquals(rwA, rwB) -> " + Object.refEquals(rwA, rwB).toString())
-        object rwSelf = Memory.WeakRef(obj)
+        object rwSelf = Memory.weakRef(obj)
         global.println("[27] refWeak self stable : Object.refEquals(rwA, rwSelf) -> " + Object.refEquals(rwA, rwSelf).toString())
     }
 
@@ -156,10 +156,10 @@ ObjectTest
         global.println("--- testRefProperty ---")
         Object obj = new()
         Object obj2 = obj
-        object r1 = Memory.Ref(obj)
-        object r2 = Memory.Ref(obj2)
+        object r1 = Memory.ref(obj)
+        object r2 = Memory.ref(obj2)
         global.println("[33] ref alias same : Object.refEquals(r1, r2) -> " + Object.refEquals(r1, r2).toString())
-        global.println("[34] ref self same : Object.refEquals(r1, Memory.Ref(obj)) -> " + Object.refEquals(r1, Memory.Ref(obj)).toString())
+        global.println("[34] ref self same : Object.refEquals(r1, Memory.ref(obj)) -> " + Object.refEquals(r1, Memory.ref(obj)).toString())
     }
 
     # [35] lifecycle: free + release should not crash
@@ -169,16 +169,16 @@ ObjectTest
         global.println("--- testLifecycle ---")
         Object tmp = new()
         global.println("[35] tmp.hashCode before free -> " + tmp.hashCode.toString())
-        Memory.Manual(tmp)
-        global.println("    called Memory.Manual(tmp)")
-        Memory.Free(tmp)
-        global.println("    called Memory.Free(tmp)")
+        Memory.manual(tmp)
+        global.println("    called Memory.manual(tmp)")
+        Memory.free(tmp)
+        global.println("    called Memory.free(tmp)")
 
         Object tmp2 = new()
-        Memory.Manual(tmp2)
-        Memory.Retain(tmp2)
-        Memory.Release(tmp2)
-        global.println("    called Memory.Release(tmp2)")
+        Memory.manual(tmp2)
+        Memory.retain(tmp2)
+        Memory.release(tmp2)
+        global.println("    called Memory.release(tmp2)")
     }
 
     # [36-38] object assignment and reassignment

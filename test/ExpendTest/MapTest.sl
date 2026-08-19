@@ -146,6 +146,7 @@ MapTest
         Console.println("length = " + map.length)
         Console.println("capacity = " + map.capacity)
 
+        Console.println("v2 in map" )
         for v2 in map
         {
             Console.println("map[" + v2.key.toString() + "] = " + v2.toString())
@@ -305,8 +306,8 @@ MapTest
         map.add(k1, "first")
         map.add(k2, "second")
         Console.println("length = " + map.length)
-        Console.println("map[k1] = " + map._getItem_(k1))
-        Console.println("map[k2] = " + map._getItem_(k2))
+        Console.println("map[k1] = " + map._getItem_(k1)?.toString())
+        Console.println("map[k2] = " + map._getItem_(k2)?.toString())
         Console.println("containsKey(k2) = " + map.containsKey(k2))
         Console.println("remove(k1) = " + map.remove(k1))
         Console.println("after remove, length = " + map.length)
