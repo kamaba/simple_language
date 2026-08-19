@@ -35,7 +35,7 @@
       { "path": "Text/StringBuffer.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Xml.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "OS/DateTime.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
-      { "path": "OS/Times.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
+      { "path": "OS/Timer.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
       { "path": "Net/HttpClient.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/IpProtocal.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/TcpNet.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
@@ -89,7 +89,7 @@
       { "namespace": "OS", "children": 
          [
             { "class": "DateTime" },
-            { "class": "Time" }
+            { "class": "Timer" }
         ]
       },
       { "namespace": "Net", "children": 
@@ -122,7 +122,10 @@
     { "name": "SystemListRemoveValueThis",       "returnType": "void",  "params": ["object", "object"], "isVariadic": false },
     { "name": "SystemListRemoveIndexValueThis",       "returnType": "void",  "params": ["object", "Int32"], "isVariadic": false },
     { "name": "SystemListClearValueThis",       "returnType": "void",  "params": ["object"], "isVariadic": false },
-    { "name": "SystemMapIndexOfKey",           "returnType": "Int32", "params": ["object", "object", "Int32"], "isVariadic": false }
+    { "name": "SystemMapIndexOfKey",           "returnType": "Int32", "params": ["object", "object", "Int32"], "isVariadic": false },
+    { "name": "SystemTimerClock",              "returnType": "Int64", "params": [], "isVariadic": false },
+    { "name": "SystemTimerNowMillis",          "returnType": "Int64", "params": [], "isVariadic": false },
+    { "name": "SystemSleep",                   "returnType": "void",  "params": ["Int32"], "isVariadic": false }
   ],
   "export": {
     "moduleName": "Std",

@@ -550,6 +550,14 @@ namespace SimpleLanguage
         SystemMapIndexOfKey,
         /// <summary>Map findEntry 哈希表查找：从 buckets[bucket] 读取链头，遍历 entries 桶链，按 entity.hashId + entity.key 比较定位，参数(entries, buckets, key, hash, bucket)，返回匹配下标（-1 未找到）</summary>
         SystemMapFindEntry,
+
+        // ---- Timer / time (Timer.sl) ----
+        /// <summary>高精度单调时钟（毫秒），用于 Stopwatch / Timer 场景，参数: 无，返回: int64</summary>
+        SystemTimerClock,
+        /// <summary>Unix 时间戳（毫秒），参数: 无，返回: int64</summary>
+        SystemTimerNowMillis,
+        /// <summary>睡眠指定毫秒数，参数: (int32 milliseconds)，返回: void</summary>
+        SystemSleep,
     }
     public class Global
     {

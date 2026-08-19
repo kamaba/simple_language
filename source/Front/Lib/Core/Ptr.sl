@@ -16,17 +16,6 @@ Ptr<T>
 
     public Ptr<T> readPtr<T>( int offset = -1 )
     {
-        if offset = -1 
-        {
-            offset = currentMovePoint;
-        }
-
-        int newpoint = pointer32 + pointerLength * offset
-
-        length = T.length
-
-        byte[] bytes = GetPtr( newpoint, length )        
-
         ret null
     }
 

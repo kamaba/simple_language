@@ -49,6 +49,8 @@
       { "path": "NativeBridge.sl", "group": "core", "tag": "bridge", "ignore": false, "priority": 0 },
       { "path": "Attribute.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Nickname.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Ptr.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Result.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Error.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },

@@ -138,6 +138,10 @@ MapTest
     static testCapacityConstructor()
     {
         Console.println("===== testCapacityConstructor =====")
+
+        OS.Timer t = new()
+        t.start()
+
         var v = 200
         Map<int,int> map = Std.Map<int,int>(8){1:1 ,2:v, 3:3, v:4, 5:5, 6:6, 7:7}
         Console.println("capacity = " + map.capacity)
@@ -146,12 +150,12 @@ MapTest
         Console.println("length = " + map.length)
         Console.println("capacity = " + map.capacity)
 
-        Console.println("for v2 in map" )
+        Console.println("for v2 in map 耗时:" + t.elapsed.toString() + "ms")
         for v2 in map
         {
             Console.println("map[" + v2.key.toString() + "] = " + v2.toString())
         }
-        Console.println("for i = 0, i < map.length, i++" )
+        Console.println("for i = 0, i < map.length, i++耗时:" + t.elapsed.toString() + "ms" )
         for i = 0, i < map.length, i++
         {
             Console.println("map[" + i.toString() + "] = " + map[i].toString())
