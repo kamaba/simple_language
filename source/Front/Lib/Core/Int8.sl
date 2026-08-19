@@ -11,13 +11,7 @@ public class Int8 extends Num
     _init_( Int8 _val )
     {
         this._value = _val
-    }
-    
-    public static Int8 parse( string s )
-    {
-        ret SystemConvertInt8(s, 0-1)
     }    
-
     public override Num abs()
     {
         ret SystemConvertInt8(SystemNumAbs(this), 0-1)

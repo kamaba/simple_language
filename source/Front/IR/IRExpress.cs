@@ -691,6 +691,12 @@ namespace SimpleLanguage.IR
                         {
                             // 生成 key 表达式 IR
                             IRExpressBase keyIrexp = IRExpressManager.CreateExpress(irMethod, asl.keyExpressNode);
+
+                            if(keyIrexp.IRDataList.Count == 0 )
+                            {
+                                Log.AddIRLog(LID.MetaCoreAssertShowMessage, asl.keyExpressNode?.token, "notfound owner mc !");
+                                return;
+                            }
                             AddIRRangeData(keyIrexp.IRDataList);
                             count++;
                         }
@@ -698,6 +704,11 @@ namespace SimpleLanguage.IR
                         // 生成值表达式 IR
                         IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.valueExpressNode);
                         AddIRRangeData(irexp.IRDataList);
+                        if (irexp.IRDataList.Count == 0)
+                        {
+                            Log.AddIRLog(LID.MetaCoreAssertShowMessage, asl.valueExpressNode?.token, "notfound owner mc !");
+                            return;
+                        }
 
                         // 调用 add 方法 (CallVirt)
                         IRData calldata = new IRData();
@@ -708,6 +719,25 @@ namespace SimpleLanguage.IR
                         calldata.opValue = irmc_add;
                         calldata.SetDebugInfoByToken(asl.valueExpressNode.token);
                         AddIRData(calldata);
+
+                        // Pop: 丢弃 add 方法的非 void 返回值（如 bool），保持栈上只有对象引用
+                        bool isNonVoidReturn = false;
+                        if (addMethod.methodReturnVariableList != null && addMethod.methodReturnVariableList.Count > 0)
+                        {
+                            var retIrMt = addMethod.methodReturnVariableList[0].irMetaType;
+                            if (retIrMt != null && retIrMt.irMetaClass != null)
+                            {
+                                var retOwnerMc = retIrMt.irMetaClass;
+                                isNonVoidReturn = retOwnerMc.irName != "Core.Void";
+                            }
+                        }
+                        if (isNonVoidReturn)
+                        {
+                            IRData popData = new IRData();
+                            popData.opCode = EIROpCode.Pop;
+                            popData.SetDebugInfoByToken(asl.valueExpressNode.token);
+                            AddIRData(popData);
+                        }
                     }
                 }
                 else if (irmc.metaClassKind == IRMetaClassKind.Data )

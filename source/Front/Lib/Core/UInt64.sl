@@ -9,10 +9,6 @@ public class UInt64 extends Num
     override get int size() { ret 64 }
     override get int byteLength() { ret 8 }
 
-    public static UInt64 parse( string s )
-    {
-        ret SystemConvertUInt64(s)
-    }
     _init_( UInt64 _val )
     {
         this._value = _val

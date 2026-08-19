@@ -13,10 +13,6 @@ public class UInt8 extends Num
     override get int size() { ret 8 }
     override get int byteLength() { ret 1 }
 
-    public static UInt8 parse(string s)
-    {
-        ret SystemConvertUInt8(s)
-    }
     public override Num abs()
     {
         ret this

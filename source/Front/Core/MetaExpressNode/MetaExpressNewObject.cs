@@ -26,7 +26,7 @@ namespace SimpleLanguage.Core
             AnonVariable,
             /// <summary>List/Map 初始化调用 add 方法</summary>
             AddMethodCall,
-            MapKeyValue,
+            KeyValue,
         }
         public MetaExpressNodeBase keyExpressNode => m_KeyMetaExpress;
         public MetaExpressNodeBase valueExpressNode => m_ValueMetaExpress;
@@ -83,23 +83,23 @@ namespace SimpleLanguage.Core
                 valueExpressMt = m_NewObjectMetaType.GetMetaInputTemplateByIndex(1);
             }
 
-            m_AssignTargetType = EAssignTargetType.MapKeyValue;
+            m_AssignTargetType = EAssignTargetType.KeyValue;
             CreateExpressParam cep = new CreateExpressParam();
             cep.fme = fmos.fileMetaExpressList[0];
             cep.equalMetaVariable = null;
-            cep.metaType = m_NewObjectMetaType.GetMetaInputTemplateByIndex(0);
+            cep.metaType = keyExpressMt;
             cep.ownerMBS = mbs;
             cep.ownerMetaBase = owmt;
             m_KeyMetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
 
 
             CreateExpressParam cep2 = new CreateExpressParam();
-            cep.fme = fmos.fileMetaExpressList[2];
-            cep.equalMetaVariable = null;
-            cep.metaType = m_NewObjectMetaType.GetMetaInputTemplateByIndex(1);
-            cep.ownerMBS = mbs;
-            cep.ownerMetaBase = owmt;
-            m_ValueMetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
+            cep2.fme = fmos.fileMetaExpressList[2];
+            cep2.equalMetaVariable = null;
+            cep2.metaType = valueExpressMt;
+            cep2.ownerMBS = mbs;
+            cep2.ownerMetaBase = owmt;
+            m_ValueMetaExpress = ExpressManager.CreateExpressNodeByCEP(cep2);
         }
         public MetaBraceAssignStatements(FileMetaOpAssignSyntax fmos, MetaType newmt, MetaBlockStatements mbs, MetaBase owmt)
         {
@@ -1811,6 +1811,7 @@ namespace SimpleLanguage.Core
                 if (fmbt.fileMetaExpressList.Count == 3)
                 {
                     MetaBraceAssignStatements mas = new MetaBraceAssignStatements(fmbt, mt, m_OwnerMetaBlockStatements, m_OwnerMetaBase);
+                    mas.Parse(new AllowUseSettings());
                     mas.CalcReturnType();
                     m_AssignStatementsList.Add(mas);
                     //m_StatementsContentType = EStatementsContentType.ClassValueAssign;
@@ -1993,7 +1994,9 @@ namespace SimpleLanguage.Core
                     }
 
                 }
-                else if (m_NewType == ENewType.CommomClass || m_NewType == ENewType.ListClass)
+                else if (m_NewType == ENewType.CommomClass 
+                    || m_NewType == ENewType.ListClass 
+                    || m_NewType == ENewType.MapClass )
                 {
                     if (m_DefineMetaType == null && m_NewMetaType == null)
                     {

@@ -3,14 +3,7 @@ public class Int16 extends Num
     const static Int16 MaxValue = 0x7fff;
     const static Int16 MinValue = -32768;
 
-    Int16 _value = 0;
-    
-
-    public static Int16 parse( string s )
-    {
-        ret SystemConvertInt16(s)
-    }
-
+    Int16 _value = 0;   
 
     _init_( Int16 _val )
     {

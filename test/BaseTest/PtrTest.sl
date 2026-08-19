@@ -24,7 +24,7 @@ PtrTest
     {
         Ptr<Node> p = Node()
     }
-    static Fun()
+    static fun()
     {
         Ptr<Node> front = null
         Ptr<Node> next = null

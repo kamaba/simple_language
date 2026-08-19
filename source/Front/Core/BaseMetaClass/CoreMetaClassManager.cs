@@ -6,10 +6,8 @@
 //  Description: 
 //****************************************************************************
 
-using SimpleLanguage.Project;
 using System.Collections.Generic;
 using System.Diagnostics;
-
 
 namespace SimpleLanguage.Core
 {
@@ -42,6 +40,7 @@ namespace SimpleLanguage.Core
         Enum,
         Member,
         Error,
+        Ptr,
     }
     class CoreMetaClassManager
     {
@@ -88,6 +87,7 @@ namespace SimpleLanguage.Core
         public static MetaClass iteratorMetaClass { get; set; } = null;
         public static MetaClass iterableMetaClass { get; set; } = null;
         public static MetaClass errorMetaClass { get; private set; } = null;
+        public static MetaClass ptrMetaClass { get; private set; } = null;
 
         public static List<MetaClass> s_InnerDefineMetaClassList = new List<MetaClass>();
 
@@ -120,6 +120,7 @@ namespace SimpleLanguage.Core
             memberMetaClass = MemberMetaClass.CreateMetaClass();
             typeMetaClass = TypeMetaClass.CreateMetaClass();
             errorMetaClass = ErrorMetaClass.CreateMetaClass();
+            ptrMetaClass = PtrMetaClass.CreateMetaClass();
 
             s_InnerDefineMetaClassList.Add(objectMetaClass);
             s_InnerDefineMetaClassList.Add(voidMetaClass);
@@ -147,6 +148,7 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(typeMetaClass);
             s_InnerDefineMetaClassList.Add(errorMetaClass);
             s_InnerDefineMetaClassList.Add(memberMetaClass);
+            s_InnerDefineMetaClassList.Add(ptrMetaClass); 
         }
         public void Init()
         {
@@ -244,6 +246,10 @@ namespace SimpleLanguage.Core
             {
                 return EType.Range;
             }
+            else if( mc == ptrMetaClass)
+            {
+                return EType.Ptr;
+            }
             else
             {
                 return EType.Class;
@@ -289,6 +295,8 @@ namespace SimpleLanguage.Core
                     return arrayMetaClass;
                 case EType.Range:
                     return rangeMetaClass;
+                case EType.Ptr:
+                    return ptrMetaClass;
                 default:
                     {
                         Debug.WriteLine("Warning ClassManager GetMetaClassByEType 1111");

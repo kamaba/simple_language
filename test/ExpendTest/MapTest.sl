@@ -125,7 +125,7 @@ MapTest
     static testContains()
     {
         Console.println("===== testContains =====")
-        Std.Map<int,string> map = new()
+        Map<int,string> map = new()
         map.add(1, "one")
         map.add(2, "two")
         Console.println("containsKey(1) = " + map.containsKey(1))
@@ -138,8 +138,8 @@ MapTest
     static testCapacityConstructor()
     {
         Console.println("===== testCapacityConstructor =====")
-        var v = 2
-        Std.Map<int,int> map = Std.Map<int,int>(8){1:1 } #,2:v } #, 3:3, v:4, 5:5, 6:6, 7:7}
+        var v = 200
+        Map<int,int> map = Std.Map<int,int>(8){1:1 ,2:v, 3:3, v:4, 5:5, 6:6, 7:7}
         Console.println("capacity = " + map.capacity)
         map.add(1, 10)
         map.$2 = 20
@@ -151,13 +151,17 @@ MapTest
         {
             Console.println("map[" + v2.key.toString() + "] = " + v2.toString())
         }
+        for i = 0, i < map.length, i++
+        {
+            Console.println("map[" + i.toString() + "] = " + map[i].toString())
+        }
     }
 
     # 测试扩容 (0->4->8->16)
     static testGrow()
     {
         Console.println("===== testGrow =====")
-        Std.Map<int,int> map = new()
+        Map<int,int> map = new()
         Console.println("init capacity = " + map.capacity)
         for i = 0, i < 10, i++
         {
