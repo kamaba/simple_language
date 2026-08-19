@@ -167,6 +167,7 @@ namespace SimpleLanguage.Core
                 m_ForInContentIterator = new MetaVariable("for_iterator_" + GetHashCode().ToString(),
                     MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, ownerMetaClass,
                     new MetaType( iterMT, iteratorTemplateList ) );
+                m_ForInContentIterator.SetToken(m_ForInContent.token);
                 m_ThenMetaStatements.UpdateMetaVariableDict(m_ForInContentIterator);
 
                 if ( m_FileMetaKeyForSyntax.fileMetaClassDefine is FileMetaDefineVariableSyntax fmcd )

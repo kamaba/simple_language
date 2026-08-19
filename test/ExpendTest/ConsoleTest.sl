@@ -53,7 +53,7 @@ ConsoleTest
         Console.println("===== testReadParse =====")
         # 模拟 readInt：用 Int32.parse 解析字符串
         string intStr = "42"
-        int parsed = Int32.parse(intStr)
+        int parsed = Int32(intStr)
         Console.println("Int32.parse(\"" + intStr + "\") = " + parsed)
 
         # 模拟 readDouble：用 SystemConvertFloat64 解析字符串
@@ -62,7 +62,7 @@ ConsoleTest
         Console.println("SystemConvertFloat64(\"" + dblStr + "\") = " + dbl.toString())
 
         # 负数解析
-        int neg = Int32.parse("-100")
+        int neg = Int32("-100")
         Console.println("parse(\"-100\") = " + neg)
     }
 
@@ -134,7 +134,7 @@ ConsoleTest
             {
                 break
             }
-            int a = Int32.parse(aStr)
+            int a = Int32(aStr)
 
             string op = Console.input("运算符 (+ - * /): ")
             if (op == "q")
@@ -147,7 +147,7 @@ ConsoleTest
             {
                 break
             }
-            int b = Int32.parse(bStr)
+            int b = Int32(bStr)
 
             string result = calc(a, op, b)
             Console.println(aStr + " " + op + " " + bStr + " = " + result)

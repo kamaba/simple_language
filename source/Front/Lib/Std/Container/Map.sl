@@ -167,22 +167,16 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
         this._buckets = newBuckets
         this._entries = newEntries
     }
-
-    #计算 key 的非负哈希值
+    #计算 key 的哈希值
     int getHash( TKey key )
     {
-        int hash = key.hashCode
-        if hash < 0
-        {
-            hash = -hash
-        }
-        ret hash
+        ret key.hashCode()
     }
 
     #查找 key 在 entries 中的下标，未找到返回 -1
     #通过 SystemMapFindEntry 系统调用在 VM 层完成桶链遍历（while 循环），
     #避免 SL 层多次 SystemArrayGetValueThis + 成员访问的开销
-    int findEntry( TKey key )
+    int indexOfKey( TKey key )
     {
         if this._entries == null || this._count == 0
         {
@@ -196,6 +190,16 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
         int bucketSize = this._entries.length
         int bucket = hash % bucketSize
         ret SystemMapFindEntry(this._entries, this._buckets, key, hash, bucket)
+    }
+
+    
+    public bool TryAdd(TKey key, TValue value)
+    {
+        ret true;
+    }
+    public bool TryGetValue(TKey key, TValue value)
+    {
+        ret true;
     }
 
     #插入新 entry（不复用空闲槽时在 _count 位置追加，必要时扩容）
@@ -251,7 +255,7 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
         {
             ret false
         }
-        int idx = this.findEntry(key)
+        int idx = this.indexOfKey(key)
         if idx >= 0
         {
             ret false
@@ -266,7 +270,7 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
         {
             ret
         }
-        int idx = this.findEntry(key)
+        int idx = this.indexOfKey(key)
         if idx >= 0
         {
             var ent = SystemArrayGetValueThis(this._entries, idx) as MapEntity<TKey,TValue>
@@ -278,7 +282,7 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
     #m[key] 读取语义：key 不存在返回 null（Dart Map 语义）
     public override TValue _getItem_( TKey key )
     {
-        int idx = this.findEntry(key)
+        int idx = this.indexOfKey(key)
         if idx < 0
         {
             ret null
@@ -287,16 +291,10 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
         ret ent.value
     }
 
-    #查找 key 首次出现的实体下标，未找到返回 -1
-    public int indexOfKey( TKey key )
-    {
-        ret this.findEntry(key)
-    }
-
     #是否包含指定 key
     public bool containsKey( TKey key )
     {
-        if this.findEntry(key) >= 0
+        if this.indexOfKey(key) >= 0
         {
             ret true
         }
@@ -322,7 +320,7 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
     #读取指定 key 的值，不存在返回 defaultValue（Java 8 getOrDefault）
     public TValue getOrDefault( TKey key, TValue defaultValue )
     {
-        int idx = this.findEntry(key)
+        int idx = this.indexOfKey(key)
         if idx < 0
         {
             ret defaultValue
@@ -333,7 +331,7 @@ public class Map<TKey,TValue> extends Object interface IMap<TKey,TValue>, Core.I
     #key 不存在时才插入（Java 8 putIfAbsent）：返回已存在的值，原本不存在则插入并返回 null
     public TValue putIfAbsent( TKey key, TValue value )
     {
-        int idx = this.findEntry(key)
+        int idx = this.indexOfKey(key)
         if idx >= 0
         {
             var ent = SystemArrayGetValueThis(this._entries, idx) as MapEntity<TKey,TValue>

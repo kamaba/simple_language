@@ -52,6 +52,8 @@ namespace SimpleLanguage
         Float2,
         Member,
         Ptr,
+        Result,
+        ResultT,
     }
     //token类型
     public enum ETokenType : byte

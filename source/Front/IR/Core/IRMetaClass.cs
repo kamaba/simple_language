@@ -616,7 +616,6 @@ namespace SimpleLanguage.IR
                 return;
             }
 
-
             foreach ( var v in dict)
             {
                 IRMetaClass cv = IRManager.instance.GetIRMetaClassById(v.Key.classId );

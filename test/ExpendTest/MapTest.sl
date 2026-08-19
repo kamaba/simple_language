@@ -146,11 +146,12 @@ MapTest
         Console.println("length = " + map.length)
         Console.println("capacity = " + map.capacity)
 
-        Console.println("v2 in map" )
+        Console.println("for v2 in map" )
         for v2 in map
         {
             Console.println("map[" + v2.key.toString() + "] = " + v2.toString())
         }
+        Console.println("for i = 0, i < map.length, i++" )
         for i = 0, i < map.length, i++
         {
             Console.println("map[" + i.toString() + "] = " + map[i].toString())

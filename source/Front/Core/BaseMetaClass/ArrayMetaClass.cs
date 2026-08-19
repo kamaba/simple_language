@@ -18,6 +18,7 @@ namespace SimpleLanguage.Core
 
             // 源码声明为 IIterator<out T>，协变
             var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass, ECovariance.Out);
+            mt.SetIndex(0);
             m_MetaTemplateList.Add(mt);
         }
         public static MetaClass CreateMetaClass()
@@ -35,6 +36,7 @@ namespace SimpleLanguage.Core
             m_IsInterfaceClass = true;
 
             var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass, ECovariance.None);
+            mt.SetIndex(0);
             m_MetaTemplateList.Add(mt);
         }
         public static MetaClass CreateMetaClass()
@@ -53,6 +55,7 @@ namespace SimpleLanguage.Core
 
 
             var mt = new MetaTemplate(this, "T", CoreMetaClassManager.objectMetaClass, ECovariance.None);
+            mt.SetIndex(0);
             m_MetaTemplateList.Add(mt);
         }
         public static MetaClass CreateMetaClass()

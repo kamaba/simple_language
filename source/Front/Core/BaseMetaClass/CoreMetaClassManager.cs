@@ -41,6 +41,8 @@ namespace SimpleLanguage.Core
         Member,
         Error,
         Ptr,
+        Result,
+        ResultT,
     }
     class CoreMetaClassManager
     {
@@ -88,6 +90,8 @@ namespace SimpleLanguage.Core
         public static MetaClass iterableMetaClass { get; set; } = null;
         public static MetaClass errorMetaClass { get; private set; } = null;
         public static MetaClass ptrMetaClass { get; private set; } = null;
+        public static MetaClass resultMetaClass { get; private set; } = null;
+        public static MetaClass resultTMetaClass { get; private set; } = null;
 
         public static List<MetaClass> s_InnerDefineMetaClassList = new List<MetaClass>();
 
@@ -121,6 +125,8 @@ namespace SimpleLanguage.Core
             typeMetaClass = TypeMetaClass.CreateMetaClass();
             errorMetaClass = ErrorMetaClass.CreateMetaClass();
             ptrMetaClass = PtrMetaClass.CreateMetaClass();
+            resultMetaClass = ResultMetaClass.CreateMetaClass();
+            resultTMetaClass = ResultTMetaClass.CreateMetaClass();
 
             s_InnerDefineMetaClassList.Add(objectMetaClass);
             s_InnerDefineMetaClassList.Add(voidMetaClass);
@@ -148,7 +154,9 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(typeMetaClass);
             s_InnerDefineMetaClassList.Add(errorMetaClass);
             s_InnerDefineMetaClassList.Add(memberMetaClass);
-            s_InnerDefineMetaClassList.Add(ptrMetaClass); 
+            s_InnerDefineMetaClassList.Add(ptrMetaClass);
+            s_InnerDefineMetaClassList.Add(resultMetaClass);
+            s_InnerDefineMetaClassList.Add(resultTMetaClass);
         }
         public void Init()
         {
@@ -246,9 +254,17 @@ namespace SimpleLanguage.Core
             {
                 return EType.Range;
             }
-            else if( mc == ptrMetaClass)
+            else if (mc == ptrMetaClass)
             {
                 return EType.Ptr;
+            }
+            else if (mc == resultMetaClass)
+            {
+                return EType.Result;
+            }
+            else if (mc == resultTMetaClass)
+            {
+                return EType.ResultT;
             }
             else
             {

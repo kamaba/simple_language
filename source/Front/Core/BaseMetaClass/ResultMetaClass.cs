@@ -10,9 +10,23 @@ using System;
 
 namespace SimpleLanguage.Core
 {
-    public class PtrMetaClass : MetaClass
+    public class ResultMetaClass : MetaClass
     {
-        public PtrMetaClass() : base( DefaultObject.Ptr.ToString())
+        public ResultMetaClass() : base(DefaultObject.Result.ToString())
+        {
+            m_Type = EType.Class;
+            m_InnderDefine = true;
+            SetExtendClass(CoreMetaClassManager.objectMetaClass);
+        }
+        public static MetaClass CreateMetaClass()
+        {
+            MetaClass mc = new ResultMetaClass();
+            return mc;
+        }
+    }
+    public class ResultTMetaClass : MetaClass
+    {
+        public ResultTMetaClass() : base(DefaultObject.ResultT.ToString())
         {
             m_Type = EType.Class;
             m_InnderDefine = true;
@@ -25,7 +39,7 @@ namespace SimpleLanguage.Core
         }
         public static MetaClass CreateMetaClass()
         {
-            MetaClass mc = new PtrMetaClass();
+            MetaClass mc = new ResultTMetaClass();
             return mc;
         }
     }

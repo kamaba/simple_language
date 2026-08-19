@@ -73,14 +73,14 @@ public class Console
     #Read line and parse to Int32 (C# int.Parse(Console.ReadLine()))
     static int readInt()
     {
-        ret Int32.parse(SystemReadLine());
+        ret Int32(SystemReadLine());
     }
 
     #Read line with prompt and parse to Int32
     static int readInt(string prompt)
     {
         SystemPrint(prompt, null);
-        ret Int32.parse(SystemReadLine());
+        ret Int32(SystemReadLine());
     }
 
     #Read line and parse to Float64 (C# double.Parse(Console.ReadLine()))
