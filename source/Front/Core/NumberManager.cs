@@ -483,12 +483,12 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < list.Count; i++)
             {
                 var mas = list[i];
-                if (mas?.expressNode == null)
+                if (mas?.valueExpressNode == null)
                 {
                     continue;
                 }
 
-                var expr = mas.expressNode;
+                var expr = mas.valueExpressNode;
                 if (expr is MetaConstExpressNode c)
                 {
                     var targetEt = CoreMetaClassManager.GetETypeByMetaClass(elemType.metaClass);

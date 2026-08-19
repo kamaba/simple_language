@@ -3552,6 +3552,10 @@ namespace SimpleLanguage.VM.Runtime
                                 MapSystemMethodCall.ExecuteSystemMapIndexOfKey(this, sysPkg);
                                 break;
 
+                            case (int)ESystemMethodCall.SystemMapFindEntry:
+                                MapSystemMethodCall.ExecuteSystemMapFindEntry(this, sysPkg);
+                                break;
+
                             default:
                                 Log.AddRuntimeLog(LID.ShowMessageAssert, iri.debugInfo, "CallSystemMethod: unknown systemMethodKind " + kind + " name=" + sysPkg.name);
                                 break;

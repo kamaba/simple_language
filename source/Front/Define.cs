@@ -545,6 +545,8 @@ namespace SimpleLanguage
         SystemConvertInt32ToRadixString,
         /// <summary>Map indexOfKey 原生查找：遍历内部数组，按 entity.key 比较定位，参数(this._list, key, length)，返回首个匹配下标（-1 未找到）</summary>
         SystemMapIndexOfKey,
+        /// <summary>Map findEntry 哈希表查找：从 buckets[bucket] 读取链头，遍历 entries 桶链，按 entity.hashId + entity.key 比较定位，参数(entries, buckets, key, hash, bucket)，返回匹配下标（-1 未找到）</summary>
+        SystemMapFindEntry,
     }
     public class Global
     {

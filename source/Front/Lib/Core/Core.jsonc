@@ -171,6 +171,7 @@
     { "name": "SystemMemorySetMode",          "returnType": "Int32",  "params": ["Int32"], "isVariadic": false },
     { "name": "SystemMemoryClone",            "returnType": "object", "params": ["object"], "isVariadic": false },
     { "name": "SystemCallExternalFunction",  "returnType": "object", "params": ["string"], "isVariadic": true },
+    { "name": "SystemMapFindEntry",  "returnType": "Int32", "params": ["Array<object>", "Array<object>", "object", "Int32", "Int32"], "isVariadic": false },
   ],
   "struct": [
       { "namespace": "Core", "children": 

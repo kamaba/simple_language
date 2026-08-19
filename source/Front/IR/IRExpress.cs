@@ -529,7 +529,7 @@ namespace SimpleLanguage.IR
                         IRDup irdup = new IRDup(irMethod);
                         AddIRRangeData(irdup.IRDataList);
 
-                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
+                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.valueExpressNode);
                         AddIRRangeData(irexp.IRDataList);
 
                         IRData irdatastore = new IRData();
@@ -686,8 +686,17 @@ namespace SimpleLanguage.IR
                         IRDup irdup = new IRDup(irMethod);
                         AddIRRangeData(irdup.IRDataList);
 
+                        int count = 1;
+                        if( asl.keyExpressNode != null )
+                        {
+                            // 生成 key 表达式 IR
+                            IRExpressBase keyIrexp = IRExpressManager.CreateExpress(irMethod, asl.keyExpressNode);
+                            AddIRRangeData(keyIrexp.IRDataList);
+                            count++;
+                        }
+
                         // 生成值表达式 IR
-                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
+                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.valueExpressNode);
                         AddIRRangeData(irexp.IRDataList);
 
                         // 调用 add 方法 (CallVirt)
@@ -695,9 +704,9 @@ namespace SimpleLanguage.IR
                         calldata.opCode = EIROpCode.CallVirt;
                         calldata.index = addMethodIndex;
                         var paramTypes = new List<IRMetaType>();
-                        var irmc_add = new IRMethodCall(newObjectIRMT, paramTypes, addMethod, 1);
+                        var irmc_add = new IRMethodCall(newObjectIRMT, paramTypes, addMethod, count);
                         calldata.opValue = irmc_add;
-                        calldata.SetDebugInfoByToken(asl.expressNode.token);
+                        calldata.SetDebugInfoByToken(asl.valueExpressNode.token);
                         AddIRData(calldata);
                     }
                 }
@@ -715,7 +724,7 @@ namespace SimpleLanguage.IR
 
                             if( asl.id == lirmv.id )
                             {
-                                menb = asl.expressNode;
+                                menb = asl.valueExpressNode;
                                 mnoen.assignStatementsList.Remove(asl);
                                 break;
                             }
@@ -740,7 +749,7 @@ namespace SimpleLanguage.IR
                         IRDup irdup = new IRDup(irMethod);
                         AddIRRangeData(irdup.IRDataList);
 
-                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
+                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.valueExpressNode);
                         AddIRRangeData(irexp.IRDataList);
 
                         var storeField = new IRStoreVariable(newObjectIRMT, irMethod, asl.id, IRMetaVariableFrom.Member);

@@ -2086,7 +2086,7 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < list.Count; i++)
             {
                 var item = list[i];
-                var expr = item?.expressNode;
+                var expr = item?.valueExpressNode;
                 if (expr == null) continue;
 
                 if (expr is MetaConstExpressNode c)

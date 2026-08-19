@@ -1,5 +1,5 @@
 
-1. 写list,map的支持  map 的 { k:v, k2:v2 } 的形式   手动
+1. 写list,map的支持  map 的 { k:v, k2:v2 } 的形式   手动  内存resize的时候，需要释放原来的内存
 3. 对别一个调用类的 Core.global.var1 Std.global.aaa  手动
 4. 增加中断编译，和编译状态的逻辑  手动
 

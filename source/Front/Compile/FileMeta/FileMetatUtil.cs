@@ -283,7 +283,8 @@ namespace SimpleLanguage.Compile
                         if (nodeList[index + 1].nodeType == ENodeType.Brace)
                         {
                             block = nodeList[index + 1];
-                            cnode.SetBlockNode(block);
+                            var lastNodeList = cnode.GetLinkNodeList(true);
+                            lastNodeList[lastNodeList.Count - 1].SetBlockNode(block);
                             index++;
                         }
                     }

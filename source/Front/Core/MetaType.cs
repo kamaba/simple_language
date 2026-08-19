@@ -348,7 +348,7 @@ namespace SimpleLanguage.Core
                     || m_EMetaTypeType == EMetaTypeType.MetaClass)
                 {
                     var tplList = GetGenTemplateMetaTypeList();
-                    if (tplList.Count == 1)
+                    if (tplList.Count == 2)
                         return true;
                 }
             }
