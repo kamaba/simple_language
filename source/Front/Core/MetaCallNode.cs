@@ -1152,7 +1152,8 @@ namespace SimpleLanguage.Core
             //涓嬭竟鐨勪唬鐮佹湭閲嶆瀯鍚庯紝鏈粡杩囬獙璇侊紝闇€瑕侀獙璇?
             if (m_IsFunction)
             {
-                if (m_CallNodeType == ECallNodeType.MemberFunctionName)
+                if (m_CallNodeType == ECallNodeType.MemberFunctionName
+                    || m_CallNodeType == ECallNodeType.SystemFunctionCall)
                 {
                     return true;
                 }
@@ -1950,7 +1951,6 @@ namespace SimpleLanguage.Core
                     m_MetaType = retMt != null ? new MetaType(retMt) : null;
                     m_CallNodeType = ECallNodeType.SystemFunctionCall;
                     return true;
-                }
 
                 //if (mb != null && Enum.TryParse<ESystemMethodCall>(inputname, true, out var inputindex))
                 //{
@@ -1962,6 +1962,7 @@ namespace SimpleLanguage.Core
                 //    m_CallNodeType = ECallNodeType.SystemFunctionCall;
                 //    return true;
                 //}
+            }
             }
 
             MetaNode retMC = null;

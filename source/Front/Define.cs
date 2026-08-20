@@ -558,6 +558,52 @@ namespace SimpleLanguage
         SystemTimerNowMillis,
         /// <summary>睡眠指定毫秒数，参数: (int32 milliseconds)，返回: void</summary>
         SystemSleep,
+
+        // ---- File operations (File.sl) ----
+        /// <summary>判断文件是否存在，参数: (string path)，返回: bool</summary>
+        SystemFileExists,
+        /// <summary>删除文件，参数: (string path)，返回: bool</summary>
+        SystemFileDelete,
+        /// <summary>复制文件，参数: (string src, string dst)，返回: bool</summary>
+        SystemFileCopy,
+        /// <summary>移动/重命名文件，参数: (string src, string dst)，返回: bool</summary>
+        SystemFileMove,
+        /// <summary>获取文件大小（字节），参数: (string path)，返回: Int64</summary>
+        SystemFileGetSize,
+        /// <summary>读取文件全部文本，参数: (string path)，返回: string</summary>
+        SystemFileReadAllText,
+        /// <summary>写入文件全部文本，参数: (string path, string content)，返回: bool</summary>
+        SystemFileWriteAllText,
+        /// <summary>追加文本到文件，参数: (string path, string content)，返回: bool</summary>
+        SystemFileAppendText,
+
+        // ---- Directory operations (Directory.sl) ----
+        /// <summary>判断目录是否存在，参数: (string path)，返回: bool</summary>
+        SystemDirectoryExists,
+        /// <summary>创建目录（含父目录），参数: (string path)，返回: bool</summary>
+        SystemDirectoryCreate,
+        /// <summary>删除空目录，参数: (string path)，返回: bool</summary>
+        SystemDirectoryDelete,
+        /// <summary>获取当前工作目录，参数: 无，返回: string</summary>
+        SystemDirectoryGetCurrent,
+        /// <summary>设置当前工作目录，参数: (string path)，返回: bool</summary>
+        SystemDirectorySetCurrent,
+        /// <summary>列出目录下的文件/子目录名（换行分隔），参数: (string path)，返回: string</summary>
+        SystemDirectoryGetFiles,
+
+        // ---- Path operations ----
+        /// <summary>合并两个路径，参数: (string path1, string path2)，返回: string</summary>
+        SystemPathCombine,
+        /// <summary>获取路径中的目录部分，参数: (string path)，返回: string</summary>
+        SystemPathGetDirectory,
+        /// <summary>获取路径中的文件名部分，参数: (string path)，返回: string</summary>
+        SystemPathGetFilename,
+        /// <summary>获取路径中的扩展名，参数: (string path)，返回: string</summary>
+        SystemPathGetExtension,
+        /// <summary>获取绝对路径，参数: (string path)，返回: string</summary>
+        SystemPathGetFull,
+        /// <summary>判断是否为绝对路径，参数: (string path)，返回: bool</summary>
+        SystemPathIsAbsolute,
     }
     public class Global
     {

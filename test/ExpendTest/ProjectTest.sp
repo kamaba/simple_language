@@ -3,7 +3,9 @@ Project
     _main_()
     {
         #ListTest.fun()
-        MapTest.fun()
+        #MapTest.fun()
+        FileTest.fun()
+        DirectoryTest.fun()
         #ConsoleTest.fun()
     }
     CompileBefore()

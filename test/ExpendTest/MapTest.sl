@@ -355,12 +355,16 @@ MapTest
     static testManyEntries()
     {
         Console.println("===== testManyEntries =====")
+
+        
+        OS.Timer t = new()
+        t.start()
         Std.Map<int,int> map = new()
         for i = 0, i < 100, i++
         {
             Console.println("mapAdd[$i ]" + map.add(i, i * i) );
         }
-        Console.println("length = " + map.length)
+        Console.println("length = " + map.length + "add 100次的时间" + t.elapsed.toString() + "ms" ) 
         Console.println("map[50] = " + map._getItem_(50))
         Console.println("map[99] = " + map._getItem_(99))
         # 覆盖一半（put 语义用下标写入）
@@ -369,7 +373,8 @@ MapTest
             map[i] = -1
             Console.println("map=-1");
         }
-        Console.println("after overwrite, length = " + map.length)
+        t.restart()
+        Console.println("after overwrite, length = " + map.length+ "setItem 50次的时间" + t.elapsed.toString() + "ms" )
         Console.println("map[10] = " + map[10].toString() )
         Console.println("map[60] = " + map._getItem_(60))
         # 删一半
@@ -378,7 +383,8 @@ MapTest
             map.remove(i)
             Console.println("map.remove");
         }
-        Console.println("after removes, length = " + map.length)
+        t.restart()
+        Console.println("after removes, length = " + map.length+ "remove 50次的时间" + t.elapsed.toString() + "ms" )
         Console.println("containsKey(60) = " + map.containsKey(60))
         Console.println("containsKey(10) = " + map.containsKey(10))
     }
