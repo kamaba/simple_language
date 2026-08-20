@@ -9,6 +9,10 @@
 7. 指针的增加与处理. 
 9. 是否不能 new int() 这种的，直接变成栈的方式
 
+use_runtime_variable_slots 是否要使用slots这个
+
+
+1. cvm优化system method 动态加载
 llvm初试
 
 

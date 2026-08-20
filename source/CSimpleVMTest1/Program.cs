@@ -36,7 +36,7 @@ internal static class Program
             ? RunFrontInProcess(projectPath)
             : RunDotnet(new List<string>
             {
-                "run", "--project", Quote(Path.Combine(repoRoot, "source", "Front", "SimpleLanguageFront.csproj")), "--",
+                "run", "--project", Path.Combine(repoRoot, "source", "Front", "SimpleLanguageFront.csproj"), "--",
                 "compile", "-e", "ir", "-p", projectPath, "--no-banner"
             }, "Front compile", repoRoot);
         if (frontExit != 0)
@@ -88,7 +88,7 @@ internal static class Program
         //    return 4;
         //}
 
-        var cvmArgs = new List<string> { "run", Quote(packagePath) };
+        var cvmArgs = new List<string> { "run", packagePath };
         if (runTestEntry)
         {
             cvmArgs.Add("-test");
@@ -134,7 +134,7 @@ internal static class Program
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     static extern bool SetDllDirectory(string lpPathName);
 
-    [DllImport("csimple_lang_dll.dll", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport("csimple_lang_lib.dll", CallingConvention = CallingConvention.Cdecl)]
     static extern int cli_main(int argc, IntPtr argv);
 
     static int CallCliMain(string[] args)
@@ -171,7 +171,7 @@ internal static class Program
         var psi = new ProcessStartInfo
         {
             FileName = fileName,
-            Arguments = string.Join(" ", args),
+            Arguments = JoinArguments(args),
             WorkingDirectory = workingDirectory,
             UseShellExecute = false,
             RedirectStandardOutput = false,
@@ -189,7 +189,7 @@ internal static class Program
         var psi = new ProcessStartInfo
         {
             FileName = fileName,
-            Arguments = string.Join(" ", args),
+            Arguments = JoinArguments(args),
             WorkingDirectory = string.IsNullOrWhiteSpace(workingDirectory) ? Environment.CurrentDirectory : workingDirectory,
             UseShellExecute = false,
             RedirectStandardOutput = true,
@@ -301,6 +301,11 @@ internal static class Program
         if (s.Contains(' ') || s.Contains('\t') || s.Contains('"'))
             return "\"" + s.Replace("\"", "\\\"") + "\"";
         return s;
+    }
+
+    static string JoinArguments(List<string> args)
+    {
+        return string.Join(" ", args.Select(Quote));
     }
 
     static bool TryGetBoolArg(string[] args, string key, bool defaultValue)
