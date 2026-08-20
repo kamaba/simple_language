@@ -23,6 +23,7 @@ final int/uint/float 等方法
 
 机制差的:
 5. 内置action的支持
+6. 传参的时候，需要把定义名称也付入
 
 1. this的使用，还没有整合
 2. 循环引用 问题
@@ -52,13 +53,12 @@ final int/uint/float 等方法
 
 以后要实现的:
 
-1. 增加result关键字
-2. 现在我要增加 ?符号的引入 ，其实代码里边已经 有一部分的处理了， 他的概念就是 如果定义一个类型，如果使用的是  type? 则这个结果是可以为空的，如果没有设置 则不可以为空    比如 int? 这个int就可以是空类型，如果没有带? 则走默认的值，所以在引入?前，要有一个概念 就是默认值概念，如果没有?的话，那必须这个要有默认值 ，包括 各种类，所以在类中，有一个默认值的概念后，主可以对?的处理了，如果定义过? 后，在传参，还有参考赋值的过程，就要考滤是否可为空的概念，如果不可为空，那在编译层就直接可以否定掉好多的逻辑，节省掉很多的空间 
-3. bind的使用     iterface 接口 与bind的使用  如果使用interface的 如果bind过的话，那如果interface后，就相当于bind data了
-4. bind在class上，后，就相当于  给class 添加一个 data DataName 然后把相关的方法进行了封闭  get DataNameVariableName{ DataName.variableName } set ...这种的
-5. 增加协程  await 或者是使用go
-8. swtich的enum的支持  switch的,逗号的支持
-9. switch的 区间支持 switch的is MetaClass 的支持
+1. 增加result关键字  
+2. bind的使用     iterface 接口 与bind的使用  如果使用interface的 如果bind过的话，那如果interface后，就相当于bind data了
+3. bind在class上，后，就相当于  给class 添加一个 data DataName 然后把相关的方法进行了封闭  get DataNameVariableName{ DataName.variableName } set ...这种的
+4. 增加协程  await 或者是使用go
+5. swtich的enum的支持  switch的,逗号的支持
+6. switch的 区间支持 switch的is MetaClass 的支持
 11. 写json的支持 与data的联动
 12. 快速返回 对=> 的支持
 
