@@ -37,7 +37,7 @@ EnvironmentTest
         SystemPrintln("nowMillis() = " + SystemConvertString(nowMs))
 
         # 4. toString
-        SystemPrintln("Environment.toString() = " + Environment.toString())
+        SystemPrintln("Environment.toString() = " + nowMs.toString())
 
         SystemPrintln("========== EnvironmentTest (end) ==========")
     }

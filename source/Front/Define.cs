@@ -618,6 +618,52 @@ namespace SimpleLanguage
         // ---- Random operations (Random.sl) ----
         /// <summary>获取随机种子，参数: 无，返回: Int32</summary>
         SystemGeneralRandomSeed,
+
+        // ---- Ptr operations (Ptr.sl) ----
+        /// <summary>获取指针大小，参数: 无，返回: Int32</summary>
+        SystemPtrSize,
+        /// <summary>分配内存，参数: Int32(size)，返回: Int64(address)</summary>
+        SystemPtrAlloc,
+        /// <summary>释放内存，参数: Int64(address)，返回: Int32(1=success)</summary>
+        SystemPtrFree,
+        /// <summary>读取字节，参数: Int64(addr), Int32(offset)，返回: Int32</summary>
+        SystemPtrReadByte,
+        /// <summary>写入字节，参数: Int64(addr), Int32(offset), Int32(val)，返回: Int32(1=success)</summary>
+        SystemPtrWriteByte,
+        /// <summary>读取Int32，参数: Int64(addr), Int32(offset)，返回: Int32</summary>
+        SystemPtrReadInt32,
+        /// <summary>写入Int32，参数: Int64(addr), Int32(offset), Int32(val)，返回: Int32(1=success)</summary>
+        SystemPtrWriteInt32,
+        /// <summary>读取Int64，参数: Int64(addr), Int32(offset)，返回: Int64</summary>
+        SystemPtrReadInt64,
+        /// <summary>写入Int64，参数: Int64(addr), Int32(offset), Int64(val)，返回: Int32(1=success)</summary>
+        SystemPtrWriteInt64,
+        /// <summary>读取Float64，参数: Int64(addr), Int32(offset)，返回: Float64</summary>
+        SystemPtrReadFloat64,
+        /// <summary>写入Float64，参数: Int64(addr), Int32(offset), Float64(val)，返回: Int32(1=success)</summary>
+        SystemPtrWriteFloat64,
+
+        // ---- Ptr<T> typed object pointer operations (Ptr.sl) ----
+        /// <summary>从对象获取内部地址，参数: object，返回: Int64</summary>
+        SystemPtrFromObject,
+        /// <summary>从地址恢复对象，参数: Int64(addr)，返回: object</summary>
+        SystemPtrToObject,
+        /// <summary>读取对象字段字节，参数: Int64(addr), Int32(offset)，返回: Int32</summary>
+        SystemPtrObjReadByte,
+        /// <summary>写入对象字段字节，参数: Int64(addr), Int32(offset), Int32(val)，返回: Int32(1=success)</summary>
+        SystemPtrObjWriteByte,
+        /// <summary>读取对象字段Int32，参数: Int64(addr), Int32(offset)，返回: Int32</summary>
+        SystemPtrObjReadInt32,
+        /// <summary>写入对象字段Int32，参数: Int64(addr), Int32(offset), Int32(val)，返回: Int32(1=success)</summary>
+        SystemPtrObjWriteInt32,
+        /// <summary>读取对象字段Int64，参数: Int64(addr), Int32(offset)，返回: Int64</summary>
+        SystemPtrObjReadInt64,
+        /// <summary>写入对象字段Int64，参数: Int64(addr), Int32(offset), Int64(val)，返回: Int32(1=success)</summary>
+        SystemPtrObjWriteInt64,
+        /// <summary>读取对象字段Float64，参数: Int64(addr), Int32(offset)，返回: Float64</summary>
+        SystemPtrObjReadFloat64,
+        /// <summary>写入对象字段Float64，参数: Int64(addr), Int32(offset), Float64(val)，返回: Int32(1=success)</summary>
+        SystemPtrObjWriteFloat64,
     }
     public class Global
     {

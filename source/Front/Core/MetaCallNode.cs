@@ -1356,7 +1356,7 @@ namespace SimpleLanguage.Core
                 {
                     if (!mmf.isStatic)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 璋冪敤闈為潤鎬佹垚鍛樺嚱鏁帮紝涓嶈兘浣跨敤Class.Variable鐨勬柟寮?");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Class.MemeberFunction not should non static");
                         return false;
                     }
                     if (mmf.isConstructInitFunction && !m_AllowUseSettings.callConstructFunction)

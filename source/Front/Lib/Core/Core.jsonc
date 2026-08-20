@@ -194,7 +194,32 @@
     { "name": "SystemEnvironmentSetVariable", "returnType": "bool",   "params": ["string", "string"], "isVariadic": false },
 
     // ---- Guid operations (Guid.sl) ----
-    { "name": "SystemGuidNewGuid", "returnType": "string", "params": [], "isVariadic": false }
+    { "name": "SystemGuidNewGuid", "returnType": "string", "params": [], "isVariadic": false },
+
+    // ---- Ptr operations (Ptr.sl) ----
+    { "name": "SystemPtrSize",        "returnType": "Int32",  "params": [], "isVariadic": false },
+    { "name": "SystemPtrAlloc",       "returnType": "Int64",  "params": ["Int32"], "isVariadic": false },
+    { "name": "SystemPtrFree",        "returnType": "Int32",  "params": ["Int64"], "isVariadic": false },
+    { "name": "SystemPtrReadByte",    "returnType": "Int32",  "params": ["Int64", "Int32"], "isVariadic": false },
+    { "name": "SystemPtrWriteByte",   "returnType": "Int32",  "params": ["Int64", "Int32", "Int32"], "isVariadic": false },
+    { "name": "SystemPtrReadInt32",   "returnType": "Int32",  "params": ["Int64", "Int32"], "isVariadic": false },
+    { "name": "SystemPtrWriteInt32",  "returnType": "Int32",  "params": ["Int64", "Int32", "Int32"], "isVariadic": false },
+    { "name": "SystemPtrReadInt64",   "returnType": "Int64",  "params": ["Int64", "Int32"], "isVariadic": false },
+    { "name": "SystemPtrWriteInt64",  "returnType": "Int32",  "params": ["Int64", "Int32", "Int64"], "isVariadic": false },
+    { "name": "SystemPtrReadFloat64", "returnType": "Float64","params": ["Int64", "Int32"], "isVariadic": false },
+    { "name": "SystemPtrWriteFloat64","returnType": "Int32",  "params": ["Int64", "Int32", "Float64"], "isVariadic": false },
+
+    // ---- Ptr<T> typed object pointer operations (Ptr.sl) ----
+    { "name": "SystemPtrFromObject",    "returnType": "Int64",  "params": ["object"], "isVariadic": false },
+    { "name": "SystemPtrToObject",     "returnType": "object",  "params": ["Int64"], "isVariadic": false },
+    { "name": "SystemPtrObjReadByte",   "returnType": "Int32",  "params": ["Int64", "Int32"], "isVariadic": false },
+    { "name": "SystemPtrObjWriteByte",  "returnType": "Int32",  "params": ["Int64", "Int32", "Int32"], "isVariadic": false },
+    { "name": "SystemPtrObjReadInt32",  "returnType": "Int32",  "params": ["Int64", "Int32"], "isVariadic": false },
+    { "name": "SystemPtrObjWriteInt32", "returnType": "Int32",  "params": ["Int64", "Int32", "Int32"], "isVariadic": false },
+    { "name": "SystemPtrObjReadInt64",  "returnType": "Int64",  "params": ["Int64", "Int32"], "isVariadic": false },
+    { "name": "SystemPtrObjWriteInt64", "returnType": "Int32",  "params": ["Int64", "Int32", "Int64"], "isVariadic": false },
+    { "name": "SystemPtrObjReadFloat64",  "returnType": "Float64","params": ["Int64", "Int32"], "isVariadic": false },
+    { "name": "SystemPtrObjWriteFloat64", "returnType": "Int32",  "params": ["Int64", "Int32", "Float64"], "isVariadic": false }
   ],
   "struct": [
       { "namespace": "Core", "children": 
@@ -226,6 +251,7 @@
         { "class": "Environment" },
         { "class": "Guid" },
         { "class": "Ptr" },
+        { "class": "Ptr<T>" },
         { "class": "Result" },
         { "class": "Result<T>" },
         { "class": "NativeBridge" },

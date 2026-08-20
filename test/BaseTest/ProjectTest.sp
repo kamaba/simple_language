@@ -50,6 +50,7 @@ Project
         GuidTest.fun()
         !#
         RandomTest.fun()
+        PtrTest.fun()
         SystemPrintln("===== ProjectTest _main_ end =====")
     }
     CompileBefore()
