@@ -2,11 +2,11 @@ Project
 {
     _main_()
     {
-        #ListTest.fun()
-        #MapTest.fun()
+        ListTest.fun()
+        MapTest.fun()
         FileTest.fun()
         DirectoryTest.fun()
-        #ConsoleTest.fun()
+        ConsoleTest.fun()
     }
     CompileBefore()
     {

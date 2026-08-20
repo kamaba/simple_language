@@ -1,4 +1,9 @@
 
+public enum FileError extends Error
+{
+    NotFound = { code = 1 }
+}
+
 public class File
 {
     # 判断文件是否存在

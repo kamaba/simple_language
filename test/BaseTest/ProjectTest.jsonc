@@ -56,7 +56,8 @@
       { "path": "MemberVariable2Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "GenClass4.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "EnvironmentTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "GuidTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "GuidTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "RandomTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {

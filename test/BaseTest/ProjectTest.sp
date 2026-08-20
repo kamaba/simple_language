@@ -44,12 +44,12 @@ Project
         GC3.GenClass3.fun()
         RangeTest.fun()
         InterfaceTest.fun()
-
         MVTest1.fun()
-        MVTest2.fun()
-        !#
+        MVTest2.fun()        
         EnvironmentTest.fun()
         GuidTest.fun()
+        !#
+        RandomTest.fun()
         SystemPrintln("===== ProjectTest _main_ end =====")
     }
     CompileBefore()

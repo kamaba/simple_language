@@ -57,6 +57,11 @@ public class Error extends Object
     }
 }
 
+public enum CoreError extends Error
+{
+    None = { code = 1 }
+}
+
 public enum MathOpError extends Error
 {
     Overflow = { code = 1 }

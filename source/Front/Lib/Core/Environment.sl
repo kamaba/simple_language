@@ -2,12 +2,13 @@
 # Environment - Environment variable and runtime information API.
 #
 # Inspired by:
-#   CLR  : System.Environment (GetEnvironmentVariable, SetEnvironmentVariable)
+#   CLR  : System.Environment (GetEnvironmentVariable, SetEnvironmentVariable,
+#          TickCount, TickCount64, NewLine, CurrentDirectory)
 #   Go   : os.Getenv, os.Setenv, os.Getwd
 #   Rust : std::env
 #
 # Provides access to process environment variables, the current working
-# directory, and a high-resolution tick counter for timing.
+# directory, platform newline, and timing counters.
 # =========================================================================
 public class Environment extends Object
 {
@@ -47,17 +48,36 @@ public class Environment extends Object
     }
 
     # ---------------------------------------------------------------
+    # Platform properties
+    # ---------------------------------------------------------------
+
+    # The platform newline string ("\n").
+    public static get string newLine()
+    {
+        ret "\n"
+    }
+
+    # ---------------------------------------------------------------
     # Timing
     # ---------------------------------------------------------------
 
-    # High-resolution monotonic clock in milliseconds.
-    # Useful for measuring elapsed time.
-    public static Int64 tickCount()
+    # Monotonic tick count in milliseconds, as a 32-bit integer.
+    # Wraps around every ~24.8 days (same semantics as C#
+    # Environment.TickCount). Use tickCount64() if you need the
+    # full 64-bit value without overflow.
+    public static Int32 tickCount()
+    {
+        ret SystemConvertInt32( SystemTimerClock() )
+    }
+
+    # Monotonic tick count in milliseconds, as a 64-bit integer.
+    # No overflow (same semantics as C# Environment.TickCount64).
+    public static Int64 tickCount64()
     {
         ret SystemTimerClock()
     }
 
-    # Unix timestamp in milliseconds since epoch.
+    # Unix timestamp in milliseconds since epoch (1970-01-01 UTC).
     public static Int64 nowMillis()
     {
         ret SystemTimerNowMillis()
@@ -67,8 +87,10 @@ public class Environment extends Object
     # Object overrides
     # ---------------------------------------------------------------
 
+    # Returns the current working directory so that
+    # println(Environment) shows something useful.
     override string toString()
     {
-        ret "Environment"
+        ret SystemDirectoryGetCurrent()
     }
 }

@@ -614,6 +614,10 @@ namespace SimpleLanguage
         // ---- Guid operations (Guid.sl) ----
         /// <summary>生成新 GUID 字符串，参数: 无，返回: string</summary>
         SystemGuidNewGuid,
+
+        // ---- Random operations (Random.sl) ----
+        /// <summary>获取随机种子，参数: 无，返回: Int32</summary>
+        SystemGeneralRandomSeed,
     }
     public class Global
     {

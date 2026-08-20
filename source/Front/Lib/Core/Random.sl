@@ -1,78 +1,72 @@
 public class Random extends Object
 {
-    private int _seed = 0
-    _init_()
+    Int32 _seed = 0
+
+    override _init_()
     {
         this._seed = SystemGeneralRandomSeed()
     }
-    _init_(int initialSeed)
+
+    _init_( Int32 initialSeed )
     {
         this._seed = initialSeed
-    }    
+    }
+
+    # Advance the linear congruential generator and return the new state.
+    public Int32 advance()
+    {
+        this._seed = (this._seed * 1103515245 + 12345) & 2147483647
+        ret this._seed
+    }
+
     # Generate random int in range [0, max)
-    public int nextInt(int max)
+    public Int32 nextInt( Int32 max )
     {
-        this._seed = (this._seed * 1103515245 + 12345) & 0x7fffffff
-        ret seed % max
-    }    
+        if (max <= 0) { ret 0 }
+        ret this.advance() % max
+    }
+
     # Generate random int in range [min, max)
-    public int nextInt(int min, int max)
+    public Int32 nextInt( Int32 min, Int32 max )
     {
-        if min >= max
-        {
-            ret min
-        }
-        ret min + nextInt(max - min)
-    }    
-    # Generate random float in range [0.0, 1.0)
-    public float nextFloat()
+        if (min >= max) { ret min }
+        ret min + this.nextInt(max - min)
+    }
+
+    # Generate random Num in range [0.0, 1.0)
+    public Num nextFloat()
     {
-        seed = (seed * 1103515245 + 12345) & 0x7fffffff
-        ret float(seed) / float(0x7fffffff)
-    }    
-    # Generate random float in range [min, max)
-    public float nextFloat(float min, float max)
+        Int32 s = this.advance()
+        Num v = SystemConvertFloat64(s)
+        ret v / 2147483647.0
+    }
+
+    # Generate random Num in range [min, max)
+    public Num nextFloat( Num min, Num max )
     {
-        ret min + nextFloat() * (max - min)
-    }    
+        ret min + this.nextFloat() * (max - min)
+    }
+
     # Generate random bool
     public bool nextBool()
     {
-        ret nextInt(2) == 1
-    }    
-    # Pick random element from array
-    public T nextElement<T>(T[] array)
-    {
-        if array.length == 0
-        {
-            ret default
-        }
-        ret array[nextInt(array.length)]
-    }    
-    # Shuffle array in place
-    public void shuffle<T>(T[] array)
-    {
-        int n = array.length
-        for int i = n - 1, i > 0, i--
-        {
-            int j = nextInt(i + 1)
-            T temp = array[i]
-            array[i] = array[j]
-            array[j] = temp
-        }
-    }    
+        ret this.nextInt(2) == 1
+    }
+
     # Static convenience methods
-    public static int randomInt(int max)
+    public static Int32 randomInt( Int32 max )
     {
         Random r = new()
         ret r.nextInt(max)
-    }    
-    public static float randomFloat()
+    }
+
+    public static Num randomFloat()
     {
         Random r = new()
         ret r.nextFloat()
-    }    
-    public static float randomFloat(float min, float max)
+    }
+
+    public static Num randomFloat( Num min, Num max )
     {
         Random r = new()
         ret r.nextFloat(min, max)
