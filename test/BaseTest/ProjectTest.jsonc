@@ -54,7 +54,9 @@
       { "path": "RangeTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "MemberVariable1Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "MemberVariable2Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "GenClass4.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "GenClass4.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "EnvironmentTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "GuidTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {

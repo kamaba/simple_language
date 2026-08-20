@@ -11,7 +11,8 @@ Project
         SystemPrint( text )
     }
     _main_()
-    {
+    {     
+        SystemPrintln("===== ProjectTest _main_ start =====")   
         #!
         ObjectTest.fun()
         StringTest.fun()
@@ -47,6 +48,9 @@ Project
         MVTest1.fun()
         MVTest2.fun()
         !#
+        EnvironmentTest.fun()
+        GuidTest.fun()
+        SystemPrintln("===== ProjectTest _main_ end =====")
     }
     CompileBefore()
     {

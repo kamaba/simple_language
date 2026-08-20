@@ -2,8 +2,8 @@
 # Guid - Globally Unique Identifier.
 #
 # Inspired by:
-#   CLR  : System.Guid (NewGuid, Parse, ToString, Equals)
-#   Rust : uuid::Uuid (new_v4, to_string, parse)
+#   CLR  : System.Guid (NewGuid, ToString)
+#   Rust : uuid::Uuid (new_v4, to_string)
 #   Go   : google/uuid (New, String)
 #
 # Represents a 128-bit unique identifier stored as a string in standard
@@ -18,7 +18,7 @@ public class Guid extends Object
     # ---------------------------------------------------------------
 
     # Default constructor: generate a new GUID.
-    _init_()
+    override _init_()
     {
         this._value = SystemGuidNewGuid()
     }
@@ -57,33 +57,8 @@ public class Guid extends Object
     }
 
     # ---------------------------------------------------------------
-    # Equality
-    # ---------------------------------------------------------------
-
-    # Compare this Guid with another object.
-    # Returns true if the other is a Guid with the same value.
-    override bool equals( object obj )
-    {
-        if (obj == null)
-        {
-            ret false
-        }
-        Guid other = obj as Guid
-        if (other == null)
-        {
-            ret false
-        }
-        ret this._value == other._value
-    }
-
-    # ---------------------------------------------------------------
     # Object overrides
     # ---------------------------------------------------------------
-
-    override Int32 get hashCode()
-    {
-        ret SystemObjectGetHashCode(this._value)
-    }
 
     override string toString()
     {
