@@ -778,7 +778,7 @@ namespace SimpleLanguage.Core
                                 else if (mn.isMetaEnum)
                                 {
                                     m_MetaEnum = mn.metaEnum;
-                                    m_MetaType = new MetaType(CoreMetaClassManager.enumMetaData);
+                                    m_MetaType = new MetaType(m_MetaEnum);
                                     m_CallNodeType = ECallNodeType.EnumName;
                                 }
                                 else if (mn.IsMetaClass())

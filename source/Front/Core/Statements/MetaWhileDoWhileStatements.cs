@@ -142,7 +142,24 @@ namespace SimpleLanguage.Core
                     var iterTplList = iterableInterfaceMT.GetGenTemplateMetaTypeList();
                     if (iterTplList != null && iterTplList.Count > 0)
                     {
-                        iteratorTemplateList.Add(iterTplList[0]);
+                        // 当content类型为TemplateClassWithTemplate时（如Array<Member>直接构造），
+                        // 接口上的模板参数可能是泛型T（默认为Object），应优先使用content自身的模板参数
+                        if (mdt.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate)
+                        {
+                            var contentTplList = mdt.GetGenTemplateMetaTypeList();
+                            if (contentTplList != null && contentTplList.Count > 0)
+                            {
+                                iteratorTemplateList.Add(contentTplList[0]);
+                            }
+                            else
+                            {
+                                iteratorTemplateList.Add(iterTplList[0]);
+                            }
+                        }
+                        else
+                        {
+                            iteratorTemplateList.Add(iterTplList[0]);
+                        }
                     }
                     else
                     {
