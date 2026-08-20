@@ -71,21 +71,22 @@ internal static class Program
     static int RunCVM(string packagePath, bool runTestEntry, string repoRoot, bool debug = false)
     {
         // Resolve csimple_lang exe/dll path
-        string cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "build", "Debug", "bin"));
+        string cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "project", "vs", "vm_lib",
+            "build", "Debug", "bin" ));
         string cvmExe = Path.Combine(cvmDir, "csimple_lang.exe");
 
-        if (!File.Exists(cvmExe))
-        {
-            cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "build", "Release", "bin"));
-            cvmExe = Path.Combine(cvmDir, "csimple_lang.exe");
-        }
+        //if (!File.Exists(cvmExe))
+        //{
+        //    cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "build", "Release", "bin"));
+        //    cvmExe = Path.Combine(cvmDir, "csimple_lang.exe");
+        //}
 
-        if (!File.Exists(cvmExe))
-        {
-            Console.WriteLine("csimple_lang.exe not found. Build the C VM first:");
-            Console.WriteLine("  cd ../csimple_lang && cmake -B build && cmake --build build --config Debug");
-            return 4;
-        }
+        //if (!File.Exists(cvmExe))
+        //{
+        //    Console.WriteLine("csimple_lang.exe not found. Build the C VM first:");
+        //    Console.WriteLine("  cd ../csimple_lang && cmake -B build && cmake --build build --config Debug");
+        //    return 4;
+        //}
 
         var cvmArgs = new List<string> { "run", Quote(packagePath) };
         if (runTestEntry)
@@ -95,7 +96,7 @@ internal static class Program
 
 #if DEBUG
         // Debug: P/Invoke into csimple_lang_dll.dll (in-process, can attach C debugger)
-        string dllPath = Path.Combine(cvmDir, "csimple_lang_dll.dll");
+        string dllPath = Path.Combine(cvmDir, "csimple_lang_lib.dll");
         if (!File.Exists(dllPath))
         {
             Console.WriteLine($"csimple_lang_dll.dll not found at {dllPath}, falling back to process mode.");
@@ -114,6 +115,8 @@ internal static class Program
         argv.AddRange(cvmArgs);
         return CallCliMain(argv.ToArray());
 #else
+        cvmExe = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "project", "vs", "vm_lib",
+            "build", "Release", "bin", "csimple_lang_lib.exe"));
         // Release: process invocation
         if (debug)
         {
