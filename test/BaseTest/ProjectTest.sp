@@ -12,6 +12,7 @@ Project
     }
     _main_()
     {
+        #!
         ObjectTest.fun()
         StringTest.fun()
         NumberTest.fun()
@@ -45,6 +46,7 @@ Project
 
         MVTest1.fun()
         MVTest2.fun()
+        !#
     }
     CompileBefore()
     {

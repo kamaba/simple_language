@@ -41,6 +41,7 @@
       { "path": "UInt64.sl", "group": "core", "tag": "num", "ignore": false, "priority": 0 },
       { "path": "Float32.sl", "group": "core", "tag": "num", "ignore": false, "priority": 0 },
       { "path": "Float64.sl", "group": "core", "tag": "num", "ignore": false, "priority": 0 },
+      { "path": "Random.sl", "group": "core", "tag": "num", "ignore": false, "priority": 0 },
       { "path": "String.sl", "group": "core", "tag": "string", "ignore": false, "priority": 0 },
       { "path": "Type.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Member.sl", "group": "core", "tag": "itertor", "ignore": false, "priority": 0 },
@@ -49,6 +50,7 @@
       { "path": "NativeBridge.sl", "group": "core", "tag": "bridge", "ignore": false, "priority": 0 },
       { "path": "Attribute.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Nickname.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Environment.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Guid.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Ptr.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Result.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
@@ -150,6 +152,9 @@
     { "name": "DataNameAndTypeEqual",  "returnType": "bool",   "params": ["object", "object"], "isVariadic": false },
     { "name": "DataDataEqual",         "returnType": "bool",   "params": ["object", "object"], "isVariadic": false },
     { "name": "SystemBuildDataString", "returnType": "string", "params": ["object"], "isVariadic": false },
+    
+    // ---- Random ----
+    { "name": "SystemGeneralRandomSeed", "returnType": "Int32",   "params": [], "isVariadic": false },
 
     // ---- Memory management (Memory.sl) ----
     { "name": "SystemMemoryRefCount",         "returnType": "Int32",  "params": ["object"], "isVariadic": false },
@@ -175,6 +180,21 @@
     { "name": "SystemMemoryClone",            "returnType": "object", "params": ["object"], "isVariadic": false },
     { "name": "SystemCallExternalFunction",  "returnType": "object", "params": ["string"], "isVariadic": true },
     { "name": "SystemMapFindEntry",  "returnType": "Int32", "params": ["Array<object>", "Array<object>", "object", "Int32", "Int32"], "isVariadic": false },
+
+    // ---- Directory operations (Environment.sl uses these) ----
+    { "name": "SystemDirectoryGetCurrent", "returnType": "string", "params": [], "isVariadic": false },
+    { "name": "SystemDirectorySetCurrent", "returnType": "bool",   "params": ["string"], "isVariadic": false },
+
+    // ---- Timer / time (Environment.sl uses these) ----
+    { "name": "SystemTimerClock",     "returnType": "Int64", "params": [], "isVariadic": false },
+    { "name": "SystemTimerNowMillis", "returnType": "Int64", "params": [], "isVariadic": false },
+
+    // ---- Environment operations (Environment.sl) ----
+    { "name": "SystemEnvironmentGetVariable", "returnType": "string", "params": ["string"], "isVariadic": false },
+    { "name": "SystemEnvironmentSetVariable", "returnType": "bool",   "params": ["string", "string"], "isVariadic": false },
+
+    // ---- Guid operations (Guid.sl) ----
+    { "name": "SystemGuidNewGuid", "returnType": "string", "params": [], "isVariadic": false }
   ],
   "struct": [
       { "namespace": "Core", "children": 
@@ -202,6 +222,8 @@
         { "class": "Member" },
         { "class": "Array" },
         { "class": "Range" },
+        { "class": "Environment" },
+        { "class": "Guid" },
         { "class": "Ptr" },
         { "class": "Result" },
         { "class": "Result<T>" },

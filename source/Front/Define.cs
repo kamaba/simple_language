@@ -604,6 +604,16 @@ namespace SimpleLanguage
         SystemPathGetFull,
         /// <summary>判断是否为绝对路径，参数: (string path)，返回: bool</summary>
         SystemPathIsAbsolute,
+
+        // ---- Environment operations (Environment.sl) ----
+        /// <summary>获取环境变量值，参数: (string name)，返回: string</summary>
+        SystemEnvironmentGetVariable,
+        /// <summary>设置环境变量，参数: (string name, string value)，返回: bool</summary>
+        SystemEnvironmentSetVariable,
+
+        // ---- Guid operations (Guid.sl) ----
+        /// <summary>生成新 GUID 字符串，参数: 无，返回: string</summary>
+        SystemGuidNewGuid,
     }
     public class Global
     {
