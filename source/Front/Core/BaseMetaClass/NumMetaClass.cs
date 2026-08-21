@@ -190,21 +190,19 @@ namespace SimpleLanguage.Core
             return mc;
         }
     }
-    public class Float16BrainMetaClass : MetaClass
+    public class Float16_BrainMetaClass : MetaClass
     {
-        public Float16BrainMetaClass() : base(DefaultObject.Float16Brain.ToString())
+        public Float16_BrainMetaClass() : base(DefaultObject.Float16_Brain.ToString())
         {
             SetExtendClass(CoreMetaClassManager.numMetaClass);
-            m_Type = EType.Float16Brain;
+            m_Type = EType.Float16_Brain;
             m_InnderDefine = true;
-            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float16Brain, 0.0f);
+            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float16_Brain, 0.0f);
             SetDefaultExpressNode(mcen);
-
-
         }
         public static MetaClass CreateMetaClass()
         {
-            MetaClass mc = new Float16BrainMetaClass();
+            MetaClass mc = new Float16_BrainMetaClass();
             return mc;
         }
     }

@@ -375,7 +375,7 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("[" + m_DefineMetaType.ToFormatString() + "]");
+            sb.Append("[" + m_DefineMetaType?.ToFormatString() + "]");
             sb.Append(m_Name);
             return sb.ToString();
         }

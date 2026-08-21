@@ -474,25 +474,6 @@ namespace SimpleLanguage.IR
                 m_IRMetaClassList.Add(irmc);
                 exportIRMetaClassList.Add(irmc);
             }
-            /* Register built-in core types that are not in exportMetaClassList
-             * but are referenced by metaTemplateMapDict of user-defined classes. */
-            //var builtinTypes = new[] {
-            //    CoreMetaClassManager.objectMetaClass,
-            //    CoreMetaClassManager.voidMetaClass,
-            //    CoreMetaClassManager.dataMetaClass,
-            //    CoreMetaClassManager.memberMetaClass,
-            //    CoreMetaClassManager.numMetaClass,
-            //    CoreMetaClassManager.stringMetaClass,
-            //    CoreMetaClassManager.typeMetaClass,
-            //};
-            //foreach (var bt in builtinTypes)
-            //{
-            //    if (bt == null) continue;
-            //    if (m_IRMetaClassList.Find(a => a.id == bt.classId) == null)
-            //    {
-            //        m_IRMetaClassList.Add(new IRMetaClass(bt));
-            //    }
-            //}            
             /* Iterate a snapshot since GetIRMetaClassByMetaType may add new
              * IRMetaClass instances to m_IRMetaClassList during processing. */
             foreach ( var v in exportIRMetaClassList.ToArray() )
@@ -507,59 +488,6 @@ namespace SimpleLanguage.IR
                     v.CreateGenMetaTypeTemplateList();
                 }
             }
-
-            /* Register gen template classes AFTER CreateTemplateRelation (so they don't
-             * get processed by it) but BEFORE CreateStaticMetaMetaVariableIRList (so
-             * static variable initializers can reference them). */
-            //foreach (var v in cm.genTemplateMetaClassList)
-            //{
-            //    if (v == null) continue;
-            //    m_IRMetaClassList.Add(new IRMetaClass(v));
-            //}
-
-            //foreach ( var v in exportClassList )
-            //{
-            //    if (v.isTemplateClass)
-            //    {
-            //        continue;
-            //    }
-            //    var irmc = m_IRMetaClassList.Find(a => a.irName == v.allName);
-            //    if (irmc == null)
-            //        continue;
-
-            //    if (v != null && ClassManager.instance.FindMetaDataByName(v.allName) is MetaData md)
-            //    {
-            //        var mmvd = md.metaMemberDataDict;
-            //        foreach (var v2 in mmvd)
-            //        {
-            //            if (v2.Value.isStatic)
-            //            {
-            //                IRMetaVariable irMV = new IRMetaVariable(v2.Value);
-            //                //irMV.index = m_StaticVariableList.Count;
-            //                ////irMV.SetExpress(v2.Value.express);
-            //                //m_StaticVariableList.Add(irMV);
-            //            }
-            //        }
-            //    }
-            //    else
-            //    {
-            //        var mmvd = v.metaMemberVariableDict;
-            //        foreach (var v2 in mmvd)
-            //        {
-            //            if (v2.Value.isStatic)
-            //            {
-            //                IRMetaVariable irMV = new IRMetaVariable(v2.Value);
-            //                if( v2.Value.sourceMetaMemberVariable != null )
-            //                {
-            //                    //irmc.AddMetaMemberVariableHashCode(v2.Value.sourceMetaMemberVariable.GetHashCode(), v2.Value.GetHashCode());
-            //                }
-            //                //irMV.index = m_StaticVariableList.Count;
-            //                //irMV.SetExpress(v2.Value.express);
-            //                //m_StaticVariableList.Add(irMV);
-            //            }
-            //        }
-            //    }
-            //}
             foreach (var v in exportIRMetaClassList.ToArray())
             {
                 /* Skip gen template classes: they're registered for lookup only,

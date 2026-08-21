@@ -182,22 +182,11 @@
     { "name": "SystemMemoryClone",            "returnType": "object", "params": ["object"], "isVariadic": false },
     { "name": "SystemCallExternalFunction",  "returnType": "object", "params": ["string"], "isVariadic": true },
     { "name": "SystemMapFindEntry",  "returnType": "Int32", "params": ["Array<object>", "Array<object>", "object", "Int32", "Int32"], "isVariadic": false },
-
-    // ---- Directory operations (Environment.sl uses these) ----
-    { "name": "SystemDirectoryGetCurrent", "returnType": "string", "params": [], "isVariadic": false },
-    { "name": "SystemDirectorySetCurrent", "returnType": "bool",   "params": ["string"], "isVariadic": false },
-
-    // ---- Timer / time (Environment.sl uses these) ----
-    { "name": "SystemTimerClock",     "returnType": "Int64", "params": [], "isVariadic": false },
-    { "name": "SystemTimerNowMillis", "returnType": "Int64", "params": [], "isVariadic": false },
-
     // ---- Environment operations (Environment.sl) ----
     { "name": "SystemEnvironmentGetVariable", "returnType": "string", "params": ["string"], "isVariadic": false },
     { "name": "SystemEnvironmentSetVariable", "returnType": "bool",   "params": ["string", "string"], "isVariadic": false },
-
     // ---- Guid operations (Guid.sl) ----
     { "name": "SystemGuidNewGuid", "returnType": "string", "params": [], "isVariadic": false },
-
     // ---- Ptr operations (Ptr.sl) ----
     { "name": "SystemPtrSize",        "returnType": "Int32",  "params": [], "isVariadic": false },
     { "name": "SystemPtrAlloc",       "returnType": "Int64",  "params": ["Int32"], "isVariadic": false },
@@ -210,7 +199,6 @@
     { "name": "SystemPtrWriteInt64",  "returnType": "Int32",  "params": ["Int64", "Int32", "Int64"], "isVariadic": false },
     { "name": "SystemPtrReadFloat64", "returnType": "Float64","params": ["Int64", "Int32"], "isVariadic": false },
     { "name": "SystemPtrWriteFloat64","returnType": "Int32",  "params": ["Int64", "Int32", "Float64"], "isVariadic": false },
-
     // ---- Ptr<T> typed object pointer operations (Ptr.sl) ----
     { "name": "SystemPtrFromObject",    "returnType": "Int64",  "params": ["object"], "isVariadic": false },
     { "name": "SystemPtrToObject",     "returnType": "object",  "params": ["Int64"], "isVariadic": false },

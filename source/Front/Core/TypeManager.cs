@@ -1977,7 +1977,7 @@ namespace SimpleLanguage.Core
                             if (rightmc.eType == EType.Float8
                                 || rightmc.eType == EType.Float8_E5M2
                                 || rightmc.eType == EType.Float16
-                                || rightmc.eType == EType.Float16Brain
+                                || rightmc.eType == EType.Float16_Brain
                                 || rightmc.eType == EType.Float32
                                 || rightmc.eType == EType.Float64)
                             {
@@ -1987,7 +1987,7 @@ namespace SimpleLanguage.Core
                             return false;
                         }
                         else if (leftmc.eType == EType.Float16
-                           || leftmc.eType == EType.Float16Brain)
+                           || leftmc.eType == EType.Float16_Brain)
                         {
                             if (rightmc.eType == EType.Float8
                                 || rightmc.eType == EType.Float8_E5M2)
@@ -1995,7 +1995,7 @@ namespace SimpleLanguage.Core
                                 return true;
                             }
                             else if (rightmc.eType == EType.Float16
-                                || rightmc.eType == EType.Float16Brain
+                                || rightmc.eType == EType.Float16_Brain
                                 || rightmc.eType == EType.Float32
                                 || rightmc.eType == EType.Float64)
                             {

@@ -2,6 +2,7 @@
 1. 内存resize的时候，需要释放原来的内存
 3. 对别一个调用类的 Core.global.var1 Std.global.aaa  手动
 4. 增加中断编译，和编译状态的逻辑  手动
+5. template_runtime_def_type_capacity这个字段是干什么的，是不是没什么用
 
 2. 数学库的集成
 5. 实现别名的功能，Nickname的使用，让查找Class/MemeberVar|functoin/

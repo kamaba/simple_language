@@ -174,6 +174,11 @@ namespace SimpleLanguage.Core
             {
                 m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(ownerMetaClass, m_FileMetaMemeberVariable.classDefineRef);                
                 m_IsDefineMetaType = true;
+                if( m_DefineMetaType == null )
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreDefineTypeIsNull, m_Token, "get define meta type is failed!");
+                    return;
+                }
             }
             else
             {

@@ -416,7 +416,7 @@ namespace SimpleLanguage.Core
                                 }
                                 catch (Exception ex)
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum [" + ex.Message + "]");
                                     continue;
                                 }
                             }
@@ -429,7 +429,7 @@ namespace SimpleLanguage.Core
                                     }
                                     catch (Exception ex)
                                     {
-                                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum [" + ex.Message + "]");
                                         continue;
                                     }
                                 }
@@ -442,7 +442,7 @@ namespace SimpleLanguage.Core
                                         }
                                         catch (Exception ex)
                                         {
-                                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum [" + ex.Message + "]");
                                             continue;
                                         }
                                     }
@@ -455,7 +455,7 @@ namespace SimpleLanguage.Core
                                             }
                                             catch (Exception ex)
                                             {
-                                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum [" + ex.Message + "]");
                                                 continue;
                                             }
                                         }
@@ -468,7 +468,7 @@ namespace SimpleLanguage.Core
                                                 }
                                                 catch (Exception ex)
                                                 {
-                                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum 鍐呴儴int杞琤yte鍑洪敊");
+                                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error Enum Member Enum [" + ex.Message + "]");
                                                     continue;
                                                 }
                                             }

@@ -30,7 +30,7 @@ namespace SimpleLanguage.Core
         Float8,
         Float8_E5M2,
         Float16,
-        Float16Brain,
+        Float16_Brain,
         Float32,
         Float64,
         String,
@@ -82,7 +82,7 @@ namespace SimpleLanguage.Core
         public static MetaClass uint64MetaClass { get; private set; } = null;
         public static MetaClass float8MetaClass { get; private set; } = null;
         public static MetaClass float8_E5M2MetaClass { get; private set; } = null;
-        public static MetaClass float16BrainMetaClass { get; private set; } = null;
+        public static MetaClass float16_BrainMetaClass { get; private set; } = null;
         public static MetaClass float16MetaClass { get; private set; } = null;
         public static MetaClass float32MetaClass { get; private set; } = null;
         public static MetaClass float64MetaClass { get; private set; } = null;
@@ -123,7 +123,7 @@ namespace SimpleLanguage.Core
             float8MetaClass = Float8MetaClass.CreateMetaClass();
             float8_E5M2MetaClass = Float8_E5M2MetaClass.CreateMetaClass();
             float16MetaClass = Float16MetaClass.CreateMetaClass();
-            float16BrainMetaClass = Float16BrainMetaClass.CreateMetaClass();
+            float16_BrainMetaClass = Float16_BrainMetaClass.CreateMetaClass();
             float32MetaClass = Float32MetaClass.CreateMetaClass();
             float64MetaClass = Float64MetaClass.CreateMetaClass();
             stringMetaClass = StringMetaClass.CreateMetaClass();
@@ -157,7 +157,7 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(float8MetaClass);
             s_InnerDefineMetaClassList.Add(float8_E5M2MetaClass);
             s_InnerDefineMetaClassList.Add(float16MetaClass);
-            s_InnerDefineMetaClassList.Add(float16BrainMetaClass);
+            s_InnerDefineMetaClassList.Add(float16_BrainMetaClass);
             s_InnerDefineMetaClassList.Add(float32MetaClass);
             s_InnerDefineMetaClassList.Add(float64MetaClass);
             s_InnerDefineMetaClassList.Add(stringMetaClass);
