@@ -1894,138 +1894,138 @@ namespace SimpleLanguage.Core
                             return true;
                         }
 
-                        if (leftMt.eType == EType.Int8
-                           || leftMt.eType == EType.UInt8)
+                        if (leftmc.eType == EType.Int8
+                           || leftmc.eType == EType.UInt8)
                         {
-                            if (rightMt.eType == EType.Int8
-                                || rightMt.eType == EType.UInt8
-                                || rightMt.eType == EType.Int16
-                                || rightMt.eType == EType.UInt16
-                                || rightMt.eType == EType.Int32
-                                || rightMt.eType == EType.UInt32
-                                || rightMt.eType == EType.Int64
-                                || rightMt.eType == EType.UInt64)
+                            if (rightmc.eType == EType.Int8
+                                || rightmc.eType == EType.UInt8
+                                || rightmc.eType == EType.Int16
+                                || rightmc.eType == EType.UInt16
+                                || rightmc.eType == EType.Int32
+                                || rightmc.eType == EType.UInt32
+                                || rightmc.eType == EType.Int64
+                                || rightmc.eType == EType.UInt64)
                             {
                                 convertMt = leftMt;
                                 return true;
                             }
                             return false;
                         }
-                        else if (leftMt.eType == EType.Int16
-                           || leftMt.eType == EType.UInt16 )
+                        else if (leftmc.eType == EType.Int16
+                           || leftmc.eType == EType.UInt16 )
                         {
-                            if (rightMt.eType == EType.Int8
-                                || rightMt.eType == EType.UInt8 )
+                            if (rightmc.eType == EType.Int8
+                                || rightmc.eType == EType.UInt8 )
                             {
                                 return true;
                             }
-                            else if (rightMt.eType == EType.Int16
-                                || rightMt.eType == EType.UInt16
-                                || rightMt.eType == EType.Int32
-                                || rightMt.eType == EType.UInt32
-                                || rightMt.eType == EType.Int64
-                                || rightMt.eType == EType.UInt64 )
+                            else if (rightmc.eType == EType.Int16
+                                || rightmc.eType == EType.UInt16
+                                || rightmc.eType == EType.Int32
+                                || rightmc.eType == EType.UInt32
+                                || rightmc.eType == EType.Int64
+                                || rightmc.eType == EType.UInt64 )
                             {
                                 convertMt = leftMt;
                                 return true;
                             }
                             return false;
                         }
-                        else if (leftMt.eType == EType.Int32
-                           || leftMt.eType == EType.UInt32 )
+                        else if (leftmc.eType == EType.Int32
+                           || leftmc.eType == EType.UInt32 )
                         {
-                            if (rightMt.eType == EType.Int8
-                                || rightMt.eType == EType.UInt8
-                                || rightMt.eType == EType.Int16
-                                || rightMt.eType == EType.UInt16
-                                || rightMt.eType == EType.Int32
-                                || rightMt.eType == EType.UInt32 )
+                            if (rightmc.eType == EType.Int8
+                                || rightmc.eType == EType.UInt8
+                                || rightmc.eType == EType.Int16
+                                || rightmc.eType == EType.UInt16
+                                || rightmc.eType == EType.Int32
+                                || rightmc.eType == EType.UInt32 )
                             {
                                 return true;
                             }
-                            else if ( rightMt.eType == EType.Int64
-                                || rightMt.eType == EType.UInt64)
+                            else if (rightmc.eType == EType.Int64
+                                || rightmc.eType == EType.UInt64)
                             {
                                 convertMt = leftMt;
                                 return true;
                             }
-                            else if (rightMt.eType == leftMt.eType)
+                            else if (rightmc.eType == leftmc.eType)
                             {
                                 return true;
                             }
                             return false;
                         }
-                        else if (leftMt.eType == EType.Int64
-                           || leftMt.eType == EType.UInt64)
+                        else if (leftmc.eType == EType.Int64
+                           || leftmc.eType == EType.UInt64)
                         {
-                            if (rightMt.eType == EType.Int8
-                                || rightMt.eType == EType.UInt8
-                                || rightMt.eType == EType.Int16
-                                || rightMt.eType == EType.UInt16
-                                || rightMt.eType == EType.Int32
-                                || rightMt.eType == EType.UInt32
-                                || rightMt.eType == EType.Int64
-                                || rightMt.eType == EType.UInt64 )
+                            if (rightmc.eType == EType.Int8
+                                || rightmc.eType == EType.UInt8
+                                || rightmc.eType == EType.Int16
+                                || rightmc.eType == EType.UInt16
+                                || rightmc.eType == EType.Int32
+                                || rightmc.eType == EType.UInt32
+                                || rightmc.eType == EType.Int64
+                                || rightmc.eType == EType.UInt64 )
                             {
                                 return true;
                             }
                             return false;
                         }
-                        else if( leftMt.eType == EType.Float8
-                           || leftMt.eType == EType.Float8_E5M2)
+                        else if(leftmc.eType == EType.Float8
+                           || leftmc.eType == EType.Float8_E5M2)
                         {
-                            if (rightMt.eType == EType.Float8
-                                || rightMt.eType == EType.Float8_E5M2
-                                || rightMt.eType == EType.Float16
-                                || rightMt.eType == EType.Float16Brain
-                                || rightMt.eType == EType.Float32
-                                || rightMt.eType == EType.Float64)
-                            {
-                                convertMt = leftMt;
-                                return true;
-                            }
-                            return false;
-                        }
-                        else if (leftMt.eType == EType.Float16
-                           || leftMt.eType == EType.Float16Brain)
-                        {
-                            if (rightMt.eType == EType.Float8
-                                || rightMt.eType == EType.Float8_E5M2)
-                            {
-                                return true;
-                            }
-                            else if ( rightMt.eType == EType.Float16
-                                || rightMt.eType == EType.Float16Brain
-                                || rightMt.eType == EType.Float32
-                                || rightMt.eType == EType.Float64)
+                            if (rightmc.eType == EType.Float8
+                                || rightmc.eType == EType.Float8_E5M2
+                                || rightmc.eType == EType.Float16
+                                || rightmc.eType == EType.Float16Brain
+                                || rightmc.eType == EType.Float32
+                                || rightmc.eType == EType.Float64)
                             {
                                 convertMt = leftMt;
                                 return true;
                             }
                             return false;
                         }
-                        else if (leftMt.eType == EType.Float32)
+                        else if (leftmc.eType == EType.Float16
+                           || leftmc.eType == EType.Float16Brain)
                         {
-                            if (rightMt.eType == EType.Float32)
+                            if (rightmc.eType == EType.Float8
+                                || rightmc.eType == EType.Float8_E5M2)
                             {
                                 return true;
                             }
-                            else if ( rightMt.eType == EType.Float64)
+                            else if (rightmc.eType == EType.Float16
+                                || rightmc.eType == EType.Float16Brain
+                                || rightmc.eType == EType.Float32
+                                || rightmc.eType == EType.Float64)
+                            {
+                                convertMt = leftMt;
+                                return true;
+                            }
+                            return false;
+                        }
+                        else if (leftmc.eType == EType.Float32)
+                        {
+                            if (rightmc.eType == EType.Float32)
+                            {
+                                return true;
+                            }
+                            else if (rightmc.eType == EType.Float64)
                             {
                                 convertMt = leftMt;
                                 return true;
                             }
                             return true;
                         }
-                        else if (leftMt.eType == EType.Float64)
+                        else if (leftmc.eType == EType.Float64)
                         {
-                            if ( rightMt.eType == EType.Float32 )
+                            if (rightmc.eType == EType.Float32 )
                             {
                                 return true;
                             }
                             return true;
                         }
-                        else if (leftMt.eType == EType.Num )
+                        else if (leftmc.eType == EType.Num )
                         {
                             if (rightMt.IsNum())
                             {

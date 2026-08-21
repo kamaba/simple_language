@@ -91,9 +91,6 @@ namespace SimpleLanguage.Core
                     Log.AddMetaCoreLog(LID.ShowExtendMessage,
                         $"Nickname: registered alias '{nickname}' -> '{mc.allName}' under '{parentNode.allName}'");
                 }
-
-                // 同时注册到 NicknameManager（用于运行时查询）
-                NicknameManager.instance.RegisterNickname(owner, nickname);
             });
         }
 
