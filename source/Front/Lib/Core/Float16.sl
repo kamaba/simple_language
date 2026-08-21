@@ -57,15 +57,15 @@ public class Float16 extends Num
     }
 }
 
-public class BrainFloat16 extends Num
+public class Float16Brain extends Num
 {
-    public const static BrainFloat16 Epsilen = 4.9123213f;
-    public const static BrainFloat16 MaxValue = 20.0f;
-    public const static BrainFloat16 MinValue = -1.0f;
+    public const static Float16Brain Epsilen = 4.9123213f;
+    public const static Float16Brain MaxValue = 20.0f;
+    public const static Float16Brain MinValue = -1.0f;
 
-    BrainFloat16 _value = 0.0f
+    Float16Brain _value = 0.0f
 
-    public void _init_( BrainFloat16 f )
+    public void _init_( Float16Brain f )
     {
         this._value = f
     }
@@ -73,7 +73,7 @@ public class BrainFloat16 extends Num
     override get int size() { ret 16 }
     override get int byteLength() { ret 2 }
     
-    public static bool isFinite( BrainFloat16 f )
+    public static bool isFinite( Float16Brain f )
     {
         #delegate to CLR Math if available
         ret false;

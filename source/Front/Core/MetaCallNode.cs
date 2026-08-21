@@ -1942,12 +1942,10 @@ namespace SimpleLanguage.Core
                 // Treat runtime/native bridge calls as system functions.
                 // Accept either exact enum name or literal string.
 
-                if( SystemMethodCallDeclarationRegistry.TryResolveName( inputname, out ESystemMethodCall call ) )
+                if( SystemMethodCallDeclarationRegistry.TryGetDeclaration( inputname, out SystemMethodCallDeclaration decl ) )
                 {
-                    m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, call.ToString());
-                    m_MetaFunction.SetIndex( (int)call );
+                    m_MetaFunction = new MetaMemberFunction.MetaBuiltinFunction(mc, decl);
                     var retMt = m_MetaFunction.GetFinalMetaType();
-                    //m_StaticCallMetaType = new MetaType(mc);
                     m_MetaType = retMt != null ? new MetaType(retMt) : null;
                     m_CallNodeType = ECallNodeType.SystemFunctionCall;
                     return true;

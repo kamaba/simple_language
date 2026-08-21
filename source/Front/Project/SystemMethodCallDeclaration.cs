@@ -1,3 +1,4 @@
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,7 +19,6 @@ namespace SimpleLanguage.Core
             mt.AddDefineTemplateMetaType(new MetaType(elementClass));
             return CoreMetaClassManager.arrayMetaClass.AddMetaPreTemplateClass(mt, false, out _);
         }
-
         /// <summary>Builds <c>Array&lt;T&gt;</c> where <paramref name="elementType"/> may include templates/nullability (copied into the array signature).</summary>
         public static MetaType ArrayOf(MetaType elementType)
         {
@@ -32,15 +32,18 @@ namespace SimpleLanguage.Core
     public sealed class SystemMethodCallDeclaration
     {
         public string name { get; }
-        public ESystemMethodCall method { get; }
         public MetaType returnMetaType { get; }
         public List<MetaType> paramMetaTypeList { get; }
         public bool isVariadic { get; }
 
-        public SystemMethodCallDeclaration( string name, ESystemMethodCall method, MetaType ret, bool variadic, params MetaType[] paramTypes)
+        public int Index()
+        {
+            return CommonFunction.StringToIntHash(name);
+        }
+
+        public SystemMethodCallDeclaration( string name, MetaType ret, bool variadic, params MetaType[] paramTypes)
         {
             this.name = name;
-            this.method = method;
             returnMetaType = ret;
             isVariadic = variadic;
             paramMetaTypeList = new List<MetaType>();
@@ -57,33 +60,33 @@ namespace SimpleLanguage.Core
     /// <summary>
     /// Registry for system method call declarations.
     /// Declarations are loaded dynamically from the project .jsonc config file
-    /// (see the "systemCalls" section in Core.jsonc) via <see cref="LoadFromJsonFile"/>.
     /// </summary>
     public static class SystemMethodCallDeclarationRegistry
     {
+        public static List<SystemMethodCallDeclaration> projectDefine => s_ProjectDefine;
         // Type aliases for C-style shorthand names (e.g. "int" -> SystemConvertInt32).
-        private static readonly Dictionary<string, ESystemMethodCall> s_Alias = new Dictionary<string, ESystemMethodCall>
+        private static readonly Dictionary<string, string> s_Alias = new Dictionary<string, string>
         {
-            { "byte", ESystemMethodCall.SystemConvertUInt8 },
-            { "sbyte", ESystemMethodCall.SystemConvertSInt8 },
-            { "short", ESystemMethodCall.SystemConvertInt16 },
-            { "ushort", ESystemMethodCall.SystemConvertUInt16 },
-            { "int", ESystemMethodCall.SystemConvertInt32 },
-            { "uint", ESystemMethodCall.SystemConvertUInt32 },
-            { "long", ESystemMethodCall.SystemConvertInt64 },
-            { "ulong", ESystemMethodCall.SystemConvertUInt64 },
-            { "float", ESystemMethodCall.SystemConvertFloat32 },
-            { "double", ESystemMethodCall.SystemConvertFloat64 },
-            { "Int8", ESystemMethodCall.SystemConvertSInt8 },
-            { "UInt8", ESystemMethodCall.SystemConvertUInt8 },
-            { "Int16", ESystemMethodCall.SystemConvertInt16 },
-            { "UInt16", ESystemMethodCall.SystemConvertUInt16 },
-            { "Int32", ESystemMethodCall.SystemConvertInt32 },
-            { "UInt32", ESystemMethodCall.SystemConvertUInt32 },
-            { "Int64", ESystemMethodCall.SystemConvertInt64 },
-            { "UInt64", ESystemMethodCall.SystemConvertUInt64 },
-            { "Float32", ESystemMethodCall.SystemConvertFloat32 },
-            { "Float64", ESystemMethodCall.SystemConvertFloat64 },
+            { "byte", "SystemConvertUInt8" },
+            { "sbyte", "SystemConvertSInt8" },
+            { "short", "SystemConvertInt16" },
+            { "ushort", "SystemConvertUInt16" },
+            { "int", "SystemConvertInt32" },
+            { "uint", "SystemConvertUInt32" },
+            { "long", "SystemConvertInt64" },
+            { "ulong", "SystemConvertUInt64" },
+            { "float", "SystemConvertFloat32" },
+            { "double", "SystemConvertFloat64" },
+            { "Int8", "SystemConvertSInt8" },
+            { "UInt8", "SystemConvertUInt8" },
+            { "Int16", "SystemConvertInt16" },
+            { "UInt16", "SystemConvertUInt16" },
+            { "Int32", "SystemConvertInt32" },
+            { "UInt32", "SystemConvertUInt32" },
+            { "Int64", "SystemConvertInt64" },
+            { "UInt64", "SystemConvertUInt64" },
+            { "Float32", "SystemConvertFloat32" },
+            { "Float64", "SystemConvertFloat64" },
         };
 
         // MetaType singletons used by ResolveTypeName to map JSON type strings.
@@ -103,6 +106,8 @@ namespace SimpleLanguage.Core
         private static readonly MetaType U16 = SystemMethodCallTypes.Of(CoreMetaClassManager.uint16MetaClass);
         private static readonly MetaType I64 = SystemMethodCallTypes.Of(CoreMetaClassManager.int64MetaClass);
         private static readonly MetaType U64 = SystemMethodCallTypes.Of(CoreMetaClassManager.uint64MetaClass);
+        private static readonly MetaType F8 = SystemMethodCallTypes.Of(CoreMetaClassManager.float8MetaClass);
+        private static readonly MetaType F16 = SystemMethodCallTypes.Of(CoreMetaClassManager.float16MetaClass);
         private static readonly MetaType F32 = SystemMethodCallTypes.Of(CoreMetaClassManager.float32MetaClass);
         private static readonly MetaType F64 = SystemMethodCallTypes.Of(CoreMetaClassManager.float64MetaClass);
 
@@ -110,23 +115,14 @@ namespace SimpleLanguage.Core
         private static Dictionary<string, SystemMethodCallDeclaration> s_Decl =
             new Dictionary<string, SystemMethodCallDeclaration>();
 
-        // Raw JSON text of the last-loaded "systemCalls" array, kept verbatim so that
-        // module export can embed it into the package without lossy type re-serialization.
-        private static string s_RawSystemCallsJson = null;
-
-        /// <summary>
-        /// Raw JSON array text of the most recently loaded "systemCalls" section
-        /// (null when no module with systemCalls has been loaded).
-        /// </summary>
-        public static string RawSystemCallsJson => s_RawSystemCallsJson;
-
+        private static List<SystemMethodCallDeclaration> s_ProjectDefine = new List<SystemMethodCallDeclaration>();
         /// <summary>
         /// Resolves a type name string (from JSON config) to a MetaType singleton.
         /// </summary>
         private static MetaType ResolveTypeName(string typeName)
         {
             if (string.IsNullOrEmpty(typeName))
-                return Obj;
+                return null;
             switch (typeName.ToLowerInvariant())
             {
                 case "void":     return Void;
@@ -142,116 +138,54 @@ namespace SimpleLanguage.Core
                 case "uint16":   return U16;
                 case "int64":    return I64;
                 case "uint64":   return U64;
-                case "float32":  return F32;
+                case "float8": return F8;
+                case "float16": return F16;
+                case "float32": return F32;
                 case "float64":  return F64;
                 case "type":     return Typ;
                 case "array<object>": return ArrayObj;
                 case "uint8array":    return UInt8Array;
-                default:        return Obj;
+                default:        return null;
             }
         }
-
-        /// <summary>
-        /// Loads system call declarations from a JSON config file (the project
-        /// .jsonc, e.g. Core.jsonc).  Called by ProjectCompile after
-        /// CoreMetaClassManager.Init().
-        ///
-        /// JSON format:
-        /// { "systemCalls": [
-        ///     { "name": "SystemFoo", "returnType": "Int32",
-        ///       "params": ["object"], "isVariadic": false }
-        ///   ]
-        /// }
-        /// </summary>
-        public static int LoadFromJsonFile(string configPath)
+        public static void AddDecl(string name, MetaType retType, List<MetaType> paramTypes, bool variadic)
         {
-            if (string.IsNullOrEmpty(configPath) || !File.Exists(configPath))
-                return 0;
-
-            string json = File.ReadAllText(configPath);
-            return LoadFromJsonContent(json);
+            var decl = new SystemMethodCallDeclaration(
+                name, retType, variadic, paramTypes.ToArray());
+            s_Decl[name] = decl;
         }
-
-        /// <summary>
-        /// Loads system call declarations from JSON content and merges them
-        /// into the registry.  Returns the number of entries registered.
-        /// </summary>
-        public static int LoadFromJsonContent(string jsonContent)
+        public static void AddDeclByMt(string name, string rt, List<string> mtList, bool variadic, bool isProjectDefine)
         {
-            if (string.IsNullOrWhiteSpace(jsonContent))
-                return 0;
-
-            int count = 0;
-            try
+            var retType = ResolveTypeName(rt);
+            var paramTypes = new List<MetaType>();
+            if (paramTypes == null)
             {
-                using (JsonDocument doc = JsonDocument.Parse(jsonContent, new JsonDocumentOptions
+                Log.AddProcessLog(LID.MetaCoreAssertShowMessage, $"import system method call param type not found! name={name}, paramType={paramTypes}");
+                return;
+            }
+            foreach (var mt in mtList)
+            {
+                var mtadc = ResolveTypeName(mt);
+                if( mtadc == null)
                 {
-                    CommentHandling = JsonCommentHandling.Skip,
-                    AllowTrailingCommas = true
-                }))
-                {
-                    if (!doc.RootElement.TryGetProperty("systemCalls", out JsonElement callsEl))
-                        return 0;
-
-                    s_RawSystemCallsJson = callsEl.GetRawText();
-
-                    foreach (JsonElement entry in callsEl.EnumerateArray())
-                    {
-                        string name = entry.TryGetProperty("name", out JsonElement nameEl)
-                            ? nameEl.GetString() : null;
-                        if (string.IsNullOrEmpty(name))
-                            continue;
-
-                        // Parse return type
-                        MetaType retType = entry.TryGetProperty("returnType", out JsonElement retEl)
-                            ? ResolveTypeName(retEl.GetString()) : Void;
-
-                        // Parse variadic flag
-                        bool variadic = entry.TryGetProperty("isVariadic", out JsonElement varEl)
-                            && varEl.GetBoolean();
-
-                        // Parse parameter types
-                        List<MetaType> paramTypes = new List<MetaType>();
-                        if (entry.TryGetProperty("params", out JsonElement paramsEl)
-                            && paramsEl.ValueKind == JsonValueKind.Array)
-                        {
-                            foreach (JsonElement p in paramsEl.EnumerateArray())
-                            {
-                                paramTypes.Add(ResolveTypeName(p.GetString()));
-                            }
-                        }
-
-                        // Resolve name to ESystemMethodCall enum value.
-                        // Must exist in the enum; skip entries that don't match.
-                        if (!Enum.TryParse(name, true, out ESystemMethodCall callKind))
-                            continue;
-
-                        var decl = new SystemMethodCallDeclaration(
-                            name, callKind, retType, variadic, paramTypes.ToArray());
-                        s_Decl[name] = decl;
-                        count++;
-                    }
+                    Log.AddProcessLog(LID.MetaCoreAssertShowMessage, $"import system method call param type not found! name={name}, paramType={mt}");
+                    return;
                 }
+                paramTypes.Add(mtadc);
             }
-            catch (Exception)
+            var decl = new SystemMethodCallDeclaration(
+                name, retType, variadic, paramTypes.ToArray());
+            if( s_Decl.ContainsKey(name ) )
             {
-                // JSON parse failure is non-fatal.
+                Log.AddProcessLog(LID.MetaCoreAssertShowMessage, "import system method call name had define!");
+                return;
             }
-            return count;
-        }
-
-        public static bool TryResolveName(string name, out ESystemMethodCall call)
-        {
-            if (!string.IsNullOrEmpty(name) && s_Alias.TryGetValue(name, out call))
-                return true;
-            if (!string.IsNullOrEmpty(name) && s_Decl.TryGetValue(name, out var call1))
+            s_Decl[name] = decl;
+            if (isProjectDefine)
             {
-                call = call1.method;
-                return true;
+                s_ProjectDefine.Add(decl);
             }
-            return System.Enum.TryParse(name, true, out call);
         }
-
         /// <summary>
         /// 通过 string name 查找 SystemMethodCallDeclaration（含返回类型、参数类型等元数据）。
         /// </summary>
@@ -261,6 +195,10 @@ namespace SimpleLanguage.Core
             {
                 decl = null;
                 return false;
+            }
+            if(s_Alias.TryGetValue(name, out string aliasName))
+            {
+                name = aliasName;
             }
             return s_Decl.TryGetValue(name, out decl);
         }

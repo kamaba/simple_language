@@ -1,4 +1,6 @@
+using SimpleLanguage.Core;
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace SimpleLanguage.Project
@@ -215,6 +217,31 @@ namespace SimpleLanguage.Project
                     {
                         cfg.References.Add(new ProjectConfig.ReferenceSection() { Path = path, UUID = uuid, Name = name });
                     }
+                }
+            }
+
+            if( root.TryGetProperty("systemCalls", out var systemCalls ) && refs.ValueKind == JsonValueKind.Array )
+            {
+                foreach (var r in systemCalls.EnumerateArray())
+                {
+                    if (r.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+                    var name = GetStr(r, "name", string.Empty);
+                    var returnType = GetStr(r, "returnType", string.Empty);
+                    r.TryGetProperty("params", out var @params);
+                    List<String> mtStr = new List<string>();
+                    if ( @params.ValueKind == JsonValueKind.Array )
+                    {
+                        foreach (var r2 in @params.EnumerateArray())
+                        {
+                            mtStr.Add(r2.GetString() ?? string.Empty);
+                        }
+                    }
+                    var isVariadic = GetBool(r, "isVariadic", true );
+
+                    SystemMethodCallDeclarationRegistry.AddDeclByMt( name, returnType, mtStr, isVariadic, true );
                 }
             }
 

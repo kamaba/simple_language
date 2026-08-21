@@ -28,7 +28,9 @@ namespace SimpleLanguage.Core
         Int64,
         UInt64,
         Float8,
+        Float8_E5M2,
         Float16,
+        Float16Brain,
         Float32,
         Float64,
         String,
@@ -79,6 +81,8 @@ namespace SimpleLanguage.Core
         public static MetaClass int64MetaClass { get; private set; } = null;
         public static MetaClass uint64MetaClass { get; private set; } = null;
         public static MetaClass float8MetaClass { get; private set; } = null;
+        public static MetaClass float8_E5M2MetaClass { get; private set; } = null;
+        public static MetaClass float16BrainMetaClass { get; private set; } = null;
         public static MetaClass float16MetaClass { get; private set; } = null;
         public static MetaClass float32MetaClass { get; private set; } = null;
         public static MetaClass float64MetaClass { get; private set; } = null;
@@ -117,7 +121,9 @@ namespace SimpleLanguage.Core
             int64MetaClass = Int64MetaClass.CreateMetaClass();
             uint64MetaClass = UInt64MetaClass.CreateMetaClass();
             float8MetaClass = Float8MetaClass.CreateMetaClass();
+            float8_E5M2MetaClass = Float8_E5M2MetaClass.CreateMetaClass();
             float16MetaClass = Float16MetaClass.CreateMetaClass();
+            float16BrainMetaClass = Float16BrainMetaClass.CreateMetaClass();
             float32MetaClass = Float32MetaClass.CreateMetaClass();
             float64MetaClass = Float64MetaClass.CreateMetaClass();
             stringMetaClass = StringMetaClass.CreateMetaClass();
@@ -147,9 +153,11 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(int32MetaClass);
             s_InnerDefineMetaClassList.Add(uint32MetaClass);
             s_InnerDefineMetaClassList.Add(int64MetaClass);
-            s_InnerDefineMetaClassList.Add(uint64MetaClass);            
+            s_InnerDefineMetaClassList.Add(uint64MetaClass);
             s_InnerDefineMetaClassList.Add(float8MetaClass);
+            s_InnerDefineMetaClassList.Add(float8_E5M2MetaClass);
             s_InnerDefineMetaClassList.Add(float16MetaClass);
+            s_InnerDefineMetaClassList.Add(float16BrainMetaClass);
             s_InnerDefineMetaClassList.Add(float32MetaClass);
             s_InnerDefineMetaClassList.Add(float64MetaClass);
             s_InnerDefineMetaClassList.Add(stringMetaClass);

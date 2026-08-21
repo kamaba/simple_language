@@ -156,6 +156,22 @@ namespace SimpleLanguage.Core
             return mc;
         }
     }
+    public class Float8_E5M2MetaClass : MetaClass
+    {
+        public Float8_E5M2MetaClass() : base(DefaultObject.Float8_E5M2.ToString())
+        {
+            SetExtendClass(CoreMetaClassManager.numMetaClass);
+            m_Type = EType.Float8_E5M2;
+            m_InnderDefine = true;
+            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float8_E5M2, 0.0f);
+            SetDefaultExpressNode(mcen);
+        }
+        public static MetaClass CreateMetaClass()
+        {
+            MetaClass mc = new Float8_E5M2MetaClass();
+            return mc;
+        }
+    }
     public class Float16MetaClass : MetaClass
     {
         public Float16MetaClass() : base(DefaultObject.Float16.ToString())
@@ -171,6 +187,24 @@ namespace SimpleLanguage.Core
         public static MetaClass CreateMetaClass()
         {
             MetaClass mc = new Float16MetaClass();
+            return mc;
+        }
+    }
+    public class Float16BrainMetaClass : MetaClass
+    {
+        public Float16BrainMetaClass() : base(DefaultObject.Float16Brain.ToString())
+        {
+            SetExtendClass(CoreMetaClassManager.numMetaClass);
+            m_Type = EType.Float16Brain;
+            m_InnderDefine = true;
+            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float16Brain, 0.0f);
+            SetDefaultExpressNode(mcen);
+
+
+        }
+        public static MetaClass CreateMetaClass()
+        {
+            MetaClass mc = new Float16BrainMetaClass();
             return mc;
         }
     }

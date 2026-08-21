@@ -178,18 +178,18 @@ namespace SimpleLanguage.Project
             //{
             //    return false;
             //}
+            if(package == null )
+            {
+                Log.AddProjectLog(LID.MetaCoreAssertShowMessage,
+                    "Reference module read failed: " + modulePath + " ");
+                return false;
+            }
 
             /* Register the referenced module's system call declarations (embedded
              * verbatim in the package at export time) into the FrontEnd registry. */
-            if (!string.IsNullOrWhiteSpace(package.systemCallsJson))
+            foreach( var v in package.systemCalls )
             {
-                int sysCount = SystemMethodCallDeclarationRegistry.LoadFromJsonContent(
-                    "{\"systemCalls\":" + package.systemCallsJson + "}");
-                if (sysCount > 0)
-                {
-                    Log.AddProjectLog(LID.ShowExtendMessage,
-                        $"Reference module registered {sysCount} system calls. path={modulePath}");
-                }
+                SystemMethodCallDeclarationRegistry.AddDeclByMt(v.name, v.returnType, v.@params, v.isVariadic, false );
             }
 
             var alias = ResolveModuleName(reference, package, modulePath);
@@ -1304,12 +1304,12 @@ namespace SimpleLanguage.Project
             /* Register the referenced module's system call declarations (declared in
              * its .jsonc "systemCalls" section) into the FrontEnd registry.
              * No-op when the section is absent. */
-            int refSysCallCount = SystemMethodCallDeclarationRegistry.LoadFromJsonContent(jsoncText);
-            if (refSysCallCount > 0)
-            {
-                Log.AddProjectLog(LID.ShowExtendMessage,
-                    $"Reference module registered {refSysCallCount} system calls. path={jsoncPath}");
-            }
+            //int refSysCallCount = SystemMethodCallDeclarationRegistry.LoadFromJsonContent(jsoncText);
+            //if (refSysCallCount > 0)
+            //{
+            //    Log.AddProjectLog(LID.ShowExtendMessage,
+            //        $"Reference module registered {refSysCallCount} system calls. path={jsoncPath}");
+            //}
 
             /* Determine the module name (alias for import) */
             var alias = !string.IsNullOrWhiteSpace(reference.Name)

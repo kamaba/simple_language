@@ -65,12 +65,6 @@ namespace SimpleLanguage.IR
             var mf = mfc.GetTemplateMemberFunction();
             string systemName = mf?.name ?? string.Empty;
             int systemKind = -1;
-            if (!string.IsNullOrEmpty(systemName)
-                && SystemMethodCallDeclarationRegistry.TryResolveName(systemName, out var sysEnum))
-            {
-                systemKind = (int)sysEnum;
-            }
-
             var sysPkg = new SLSystemMethodCallPackage
             {
                 name = systemName,

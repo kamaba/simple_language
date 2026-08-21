@@ -296,32 +296,29 @@ namespace SimpleLanguage.Core
         // Lightweight builtin wrapper for functions provided by the LocalRuntimeVM (native lib)
         public class MetaBuiltinFunction : MetaMemberFunction
         {
-            public MetaBuiltinFunction(MetaClass mc, string name) : base(mc)
+            public MetaBuiltinFunction(MetaClass mc, SystemMethodCallDeclaration decl ) : base(mc)
             {
-                this.m_Name = name;
+                this.m_Name = decl.name;
                 this.m_IsStatic = true;
-
-                if (SystemMethodCallDeclarationRegistry.TryGetDeclaration(name, out var decl) )
+                m_Index = (int)decl.Index();
+                m_MetaMemberParamCollection.Clear();
+                for (int i = 0; i < decl.paramMetaTypeList.Count; i++)
                 {
-                    m_MetaMemberParamCollection.Clear();
-                    for (int i = 0; i < decl.paramMetaTypeList.Count; i++)
-                    {
-                        var p = new MetaDefineParam("p" + i.ToString(), this);
-                        p.SetDefineMetaType(new MetaType(decl.paramMetaTypeList[i]));
-                        m_MetaMemberParamCollection.AddMetaDefineParam(p);
-                    }
+                    var p = new MetaDefineParam("p" + i.ToString(), this);
+                    p.SetDefineMetaType(new MetaType(decl.paramMetaTypeList[i]));
+                    m_MetaMemberParamCollection.AddMetaDefineParam(p);
+                }
 
-                    var ret = new MetaType(decl.returnMetaType);
-                    m_IsDefineMetaType = true;
-                    m_DefineMetaType = ret;
-                    m_RealMetaType = new MetaType(ret);
+                var ret = new MetaType(decl.returnMetaType);
+                m_IsDefineMetaType = true;
+                m_DefineMetaType = ret;
+                m_RealMetaType = new MetaType(ret);
 
-                    if (m_ReturnMetaVariable != null)
-                    {
-                        m_ReturnMetaVariable.SetMetaDefineType(new MetaType(ret));
-                        m_ReturnMetaVariable.SetRealMetaType(new MetaType(ret));
-                        m_ReturnMetaVariable.SetIsDefineMetaType(true);
-                    }
+                if (m_ReturnMetaVariable != null)
+                {
+                    m_ReturnMetaVariable.SetMetaDefineType(new MetaType(ret));
+                    m_ReturnMetaVariable.SetRealMetaType(new MetaType(ret));
+                    m_ReturnMetaVariable.SetIsDefineMetaType(true);
                 }
             }
         }

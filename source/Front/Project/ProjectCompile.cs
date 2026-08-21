@@ -10,7 +10,6 @@ using SimpleLanguage.Compile;
 using SimpleLanguage.Core;
 using SimpleLanguage.CSharp;
 using SimpleLanguage.IR;
-using SimpleLanguage.Lib;
 using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
 using SimpleLanguage.Export;
@@ -121,17 +120,7 @@ namespace SimpleLanguage.Project
             // Core types with the code-based definitions.
             ProjectReferenceModuleLoader.LoadReferences(ProjectManager.config, ProjectManager.projectPath);
 
-            // Load system call declarations from the project .jsonc config.
-            {
-                string configPath = System.IO.Path.ChangeExtension(path, ".jsonc");
-                if (System.IO.File.Exists(configPath))
-                {
-                    SystemMethodCallDeclarationRegistry.LoadFromJsonFile(configPath);
-                }
-            }
-
             ProjectClass.ProjectCompileBefore();
-
 
             structParseCount = 0;
             buildParseCount = 0;

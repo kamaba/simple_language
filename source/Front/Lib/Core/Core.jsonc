@@ -39,6 +39,8 @@
       { "path": "UInt32.sl", "group": "core", "tag": "num", "ignore": false, "priority": 0 },
       { "path": "Int64.sl", "group": "core", "tag": "num", "ignore": false, "priority": 0 },
       { "path": "UInt64.sl", "group": "core", "tag": "num", "ignore": false, "priority": 0 },
+      { "path": "Float8.sl", "group": "core", "tag": "num", "ignore": false, "priority": 0 },
+      { "path": "Float16.sl", "group": "core", "tag": "num", "ignore": false, "priority": 0 },
       { "path": "Float32.sl", "group": "core", "tag": "num", "ignore": false, "priority": 0 },
       { "path": "Float64.sl", "group": "core", "tag": "num", "ignore": false, "priority": 0 },
       { "path": "Random.sl", "group": "core", "tag": "num", "ignore": false, "priority": 0 },

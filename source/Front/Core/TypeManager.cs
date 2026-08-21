@@ -1971,6 +1971,39 @@ namespace SimpleLanguage.Core
                             }
                             return false;
                         }
+                        else if( leftMt.eType == EType.Float8
+                           || leftMt.eType == EType.Float8_E5M2)
+                        {
+                            if (rightMt.eType == EType.Float8
+                                || rightMt.eType == EType.Float8_E5M2
+                                || rightMt.eType == EType.Float16
+                                || rightMt.eType == EType.Float16Brain
+                                || rightMt.eType == EType.Float32
+                                || rightMt.eType == EType.Float64)
+                            {
+                                convertMt = leftMt;
+                                return true;
+                            }
+                            return false;
+                        }
+                        else if (leftMt.eType == EType.Float16
+                           || leftMt.eType == EType.Float16Brain)
+                        {
+                            if (rightMt.eType == EType.Float8
+                                || rightMt.eType == EType.Float8_E5M2)
+                            {
+                                return true;
+                            }
+                            else if ( rightMt.eType == EType.Float16
+                                || rightMt.eType == EType.Float16Brain
+                                || rightMt.eType == EType.Float32
+                                || rightMt.eType == EType.Float64)
+                            {
+                                convertMt = leftMt;
+                                return true;
+                            }
+                            return false;
+                        }
                         else if (leftMt.eType == EType.Float32)
                         {
                             if (rightMt.eType == EType.Float32)

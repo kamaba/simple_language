@@ -41,6 +41,7 @@ namespace SimpleLanguage.Project
         public Dictionary<string, JsonElement> JsoncProjectData { get; set; } = new Dictionary<string, JsonElement>();
         public StructTreeNode StructTree { get; set; } = new StructTreeNode();
         public List<ReferenceSection> References { get; set; } = new List<ReferenceSection>();
+        public List<SystemCallItem> systemCalls { get; set; } = new List<SystemCallItem>();
         public ExportSection Export { get; set; } = new ExportSection();
 
         public class ProjectSection
@@ -54,6 +55,16 @@ namespace SimpleLanguage.Project
         {
             public string Root { get; set; } = "source";
             public string EntryFile { get; set; } = "Main.sl";
+        }
+
+        public class SystemCallItem
+        {
+            public string name;
+            public string returnType;
+
+            public string[] @params;
+
+            public bool isVariadic;
         }
 
         public class StructTreeNode

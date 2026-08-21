@@ -1,4 +1,5 @@
 #nullable enable
+using SimpleLanguage.Core;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
@@ -204,6 +205,14 @@ namespace SimpleLanguage.Export.SLIR.Types
         }
     }
 
+    public sealed class SLSystemCallPackage
+    {
+        public string name { get; set; } = string.Empty;
+        public string returnType { get; set; } = string.Empty;
+        public List<string> @params { get; set; } = new();
+        public bool isVariadic { get; set; } = false;
+    } 
+
     /// <summary>
     /// Legacy JSON root (entryModule + moduleList). Only used for reading old-format files;
     /// new exports use flat <see cref="SLModulePackage"/> directly.
@@ -237,7 +246,7 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// <summary>Raw JSON array text of the module's "systemCalls" declarations
         /// (copied verbatim from the module's .jsonc), so referencing projects can
         /// register them via SystemMethodCallDeclarationRegistry.</summary>
-        public string systemCallsJson { get; set; } = string.Empty;
+        public List<SLSystemCallPackage> systemCalls { get; set; } = new();
         /// <summary>
         /// 原生 DLL 文件名（如 "MathNativeImpl.dll"）。VM 加载模块时
         /// 自动在模块文件同目录下查找并加载此 DLL（实现 ISLExternalFunctionModule）。

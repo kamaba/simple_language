@@ -738,7 +738,22 @@ namespace SimpleLanguage.Export.SLIR
             pkg.entryMethodId = module.entryMethodId;
             // Embed the module's own systemCalls verbatim so referencing projects
             // can register them when loading this package as a reference module.
-            pkg.systemCallsJson = SystemMethodCallDeclarationRegistry.RawSystemCallsJson ?? string.Empty;
+
+            foreach( var v in SystemMethodCallDeclarationRegistry.projectDefine)
+            {
+                if (v == null) continue;
+                var decl = new SLSystemCallPackage
+                {
+                    name = v.name ?? string.Empty,
+                    returnType = v.returnMetaType?.metaClass?.name ?? string.Empty,
+                    isVariadic = v.isVariadic,
+                };
+                foreach( var v2 in v.paramMetaTypeList )
+                {
+                    decl.@params.Add(v2.metaClass?.name);
+                }
+                pkg.systemCalls.Add(decl);
+            }
             pkg.moduleReferences = module.moduleReferences;
             pkg.irStringDict = module.irStringDict;
             pkg.namespaceList = module.namespaceList;
