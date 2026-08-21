@@ -294,12 +294,12 @@ PtrTest
         }
         else
         {
-            SystemPrintln("ERROR: object does not reflect changes! a=" + SystemConvertString(data.a) + " b=" + SystemConvertString(data.b))
+            SystemPrintln("ERROR: object does not reflect changes! a=" + SystemConvertString(pdata.a) + " b=" + SystemConvertString(pdata.b))
         }
 
         # 16. Recover object from typed pointer
         SystemPrintln("--- get() recover object ---")
-        recovered = ptp.get()
+        recovered = ptp.getObject()
         SystemPrintln("recovered.a = " + SystemConvertString(recovered.a))
         if (recovered.a == 42)
         {
@@ -323,6 +323,82 @@ PtrTest
             SystemPrintln("ERROR: Ptr<T> toString too short!")
         }
 
+        # 18. getMemberVar<T2> - get nested member object
+        SystemPrintln("--- getMemberVar<T2> ---")
+        data2 = PtrData()
+        data2.a = 100
+        data2.b = 200
+        data2.c = 300
+        pp = Ptr<PtrData>( data2 )
+
+        # Get the pmd member (PtrDataM2) from PtrData
+        # Field layout: a(0,4) b(4,4) c(8,8) pmd(16,8)
+        m2 = pp.getMemberVar<PtrDataM2>( 16 )
+        if (m2 != null)
+        {
+            SystemPrintln("getMemberVar<PtrDataM2>(16) = non-null: OK")
+            SystemPrintln("m2.a = " + SystemConvertString(m2.a))
+            if (m2.a == 20)
+            {
+                SystemPrintln("m2.a == 20 (default): OK")
+            }
+            else
+            {
+                SystemPrintln("ERROR: m2.a expected 20, got " + SystemConvertString(m2.a))
+            }
+        }
+        else
+        {
+            SystemPrintln("ERROR: getMemberVar returned null!")
+        }
+
+        # 19. Modify member through getMemberVar and verify
+        SystemPrintln("--- modify via getMemberVar ---")
+        m2.a = 999
+        if (data2.pmd.a == 999)
+        {
+            SystemPrintln("data2.pmd.a == 999 after modify: OK")
+        }
+        else
+        {
+            SystemPrintln("ERROR: data2.pmd.a expected 999, got " + SystemConvertString(data2.pmd.a))
+        }
+
+        # 20. Nested getMemberVar: get PtrDataM2M1 from PtrDataM2
+        SystemPrintln("--- nested getMemberVar ---")
+        pm2 = Ptr<PtrDataM2>( m2 )
+        # PtrDataM2 layout: a(0,4) pmd(8,8) - pointer aligned to 8
+        m1 = pm2.getMemberVar<PtrDataM2M1>( 8 )
+        if (m1 != null)
+        {
+            SystemPrintln("nested getMemberVar<PtrDataM2M1>(8) = non-null: OK")
+            SystemPrintln("m1.a = " + SystemConvertString(m1.a))
+            if (m1.a == 30)
+            {
+                SystemPrintln("m1.a == 30 (default): OK")
+            }
+            else
+            {
+                SystemPrintln("ERROR: m1.a expected 30, got " + SystemConvertString(m1.a))
+            }
+        }
+        else
+        {
+            SystemPrintln("ERROR: nested getMemberVar returned null!")
+        }
+
+        # 21. Nested modify and verify
+        SystemPrintln("--- nested modify ---")
+        m1.a = 555
+        if (data2.pmd.pmd.a == 555)
+        {
+            SystemPrintln("data2.pmd.pmd.a == 555: OK")
+        }
+        else
+        {
+            SystemPrintln("ERROR: data2.pmd.pmd.a expected 555, got " + SystemConvertString(data2.pmd.pmd.a))
+        }
+
         SystemPrintln("========== Ptr<T> (typed) end ==========")
     }
 }
@@ -337,4 +413,15 @@ PtrData
     Int32 a = 0
     Int32 b = 0
     Int64 c = 0
+    pmd = PtrDataM2()
+    
+}
+PtrDataM2
+{
+    int a = 20
+    pmd = PtrDataM2M1()
+}
+PtrDataM2M1
+{
+    int a = 30
 }

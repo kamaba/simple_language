@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      NumMetaClass.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -138,7 +138,42 @@ namespace SimpleLanguage.Core
             return mc;
         }
     }
+    public class Float8MetaClass : MetaClass
+    {
+        public Float8MetaClass() : base(DefaultObject.Float8.ToString())
+        {
+            SetExtendClass(CoreMetaClassManager.numMetaClass);
+            m_Type = EType.Float8;
+            m_InnderDefine = true;
+            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float8, 0.0f);
+            SetDefaultExpressNode(mcen);
 
+
+        }
+        public static MetaClass CreateMetaClass()
+        {
+            MetaClass mc = new Float8MetaClass();
+            return mc;
+        }
+    }
+    public class Float16MetaClass : MetaClass
+    {
+        public Float16MetaClass() : base(DefaultObject.Float16.ToString())
+        {
+            SetExtendClass(CoreMetaClassManager.numMetaClass);
+            m_Type = EType.Float16;
+            m_InnderDefine = true;
+            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float16, 0.0f);
+            SetDefaultExpressNode(mcen);
+
+
+        }
+        public static MetaClass CreateMetaClass()
+        {
+            MetaClass mc = new Float16MetaClass();
+            return mc;
+        }
+    }
     public class Float32MetaClass : MetaClass
     {
         public Float32MetaClass() : base(DefaultObject.Float32.ToString())
@@ -157,6 +192,7 @@ namespace SimpleLanguage.Core
             return mc;
         }
     }
+
     public class Float64MetaClass : MetaClass
     {
         public Float64MetaClass() : base(DefaultObject.Float64.ToString())

@@ -153,8 +153,9 @@ namespace SimpleLanguage.IR
 
                 if (mf is MetaGenTemplateFunction mgtf)
                 {
-                    fname = mgtf.sourceMetaMemberFunction.functionAllName;
-                    owirmc = IRManager.GetIRMetaClassByMetaOwner(mgtf.sourceMetaMemberFunction.ownerMetaBase);
+                    var srcFn = mgtf.sourceMetaMemberFunction ?? mgtf.sourceTemplateFunctionMetaMemberFunction;
+                    fname = (srcFn ?? mgtf).functionAllName;
+                    owirmc = IRManager.GetIRMetaClassByMetaOwner(srcFn?.ownerMetaBase ?? mgtf.ownerMetaBase);
                 }
                 else if (mf is MetaMemberFunction mmf22)
                 {
@@ -203,7 +204,8 @@ namespace SimpleLanguage.IR
                 if (mf is MetaGenTemplateFunction mgtf)
                 {
                     //fname = mgtf.sourceMetaMemberFunction.functionAllName;
-                    owirmc = IRManager.GetIRMetaClassByMetaOwner(mgtf.sourceMetaMemberFunction.ownerMetaBase);
+                    var srcFn = mgtf.sourceMetaMemberFunction ?? mgtf.sourceTemplateFunctionMetaMemberFunction;
+                    owirmc = IRManager.GetIRMetaClassByMetaOwner(srcFn?.ownerMetaBase ?? mgtf.ownerMetaBase);
                 }
                 else if (mf is MetaMemberFunction mmf22)
                 {

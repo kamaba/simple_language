@@ -31,6 +31,11 @@ namespace SimpleLanguage.IR
         /// <summary>声明该方法的类的 classId（来自 SLMethodPackage.declaringClassId）。
         /// 对于继承到子类的方法，指向声明类（如 Object）。0 表示未设置（按当前类处理）。</summary>
         public int declaringClassId => m_DeclaringClassId;
+        /// <summary>是否为模板函数（fun&lt;T&gt;()）。导出时从 MetaMemberFunction.isTemplateFunction 读取，
+        /// 导入时从 SLMethodPackage.isTemplateFunction 还原。</summary>
+        public bool isTemplateFunction => m_IsTemplateFunction;
+        /// <summary>模板函数的模板参数名列表，导入时用于重建 MetaTemplate。</summary>
+        public List<string> templateParameterNames => m_TemplateParameterNames;
         public IRManager irManager => m_IRManager;
         public IRData funEndLabelData => m_FunEndLabelData;
         public IRMetaClass irOwnerMetaClass => m_IROwnerMetaClass;
@@ -59,6 +64,8 @@ namespace SimpleLanguage.IR
         private bool m_IsOverrideFunction = false;
         private bool m_IsExtendParams = false;
         private int m_DeclaringClassId = 0;
+        private bool m_IsTemplateFunction = false;
+        private List<string> m_TemplateParameterNames = new List<string>();
         private IRData m_FunEndLabelData = null;
         private IRManager m_IRManager = null;
 
@@ -90,6 +97,14 @@ namespace SimpleLanguage.IR
             if( func is MetaMemberFunction mmf )
             {
                 m_InterfaceMethod = mmf.isOverrideInterface;
+                m_IsTemplateFunction = mmf.isTemplateFunction;
+                if (m_IsTemplateFunction && mmf.metaMemberTemplateCollection?.metaTemplateList != null)
+                {
+                    foreach (var mt in mmf.metaMemberTemplateCollection.metaTemplateList)
+                    {
+                        m_TemplateParameterNames.Add(mt?.name ?? string.Empty);
+                    }
+                }
             }
             m_FunEndLabelData = new IRData();
             m_FunEndLabelData.opCode = EIROpCode.Label;
@@ -145,6 +160,14 @@ namespace SimpleLanguage.IR
             m_IsOverrideFunction = (flags & 8) != 0;
             m_IsExtendParams = (flags & 128) != 0;
             m_DeclaringClassId = mp?.declaringClassId ?? 0;
+            m_IsTemplateFunction = mp?.isTemplateFunction ?? false;
+            if (m_IsTemplateFunction && mp?.templateParameterNames != null)
+            {
+                foreach (var tn in mp.templateParameterNames)
+                {
+                    m_TemplateParameterNames.Add(tn ?? string.Empty);
+                }
+            }
             m_FunEndLabelData = new IRData();
             m_FunEndLabelData.opCode = EIROpCode.Label;
 

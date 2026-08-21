@@ -176,6 +176,11 @@ public class Ptr extends Object
         ret SystemPtrWriteFloat64( this._address, offset, value )
     }
 
+    public T2 getMemberVar<T2>( Int32 offset )
+    {
+        ret SystemPtrObjReadObject( this._address, offset )
+    }
+
     # ---------------------------------------------------------------
     # Object overrides
     # ---------------------------------------------------------------
@@ -245,9 +250,22 @@ public class Ptr<T> extends Object
     # ---------------------------------------------------------------
 
     # Recover the original typed object from the pointer.
-    public T get()
+    public T getObject()
     {
         ret SystemPtrToObject( this._objAddr )
+    }
+
+    # Get a member object at the given field offset as type T2.
+    # Reads the VMObject* pointer stored in member_data at (offset)
+    # and returns it as the specified type T2.
+    #
+    # Usage:
+    #   class Outer { Inner inner = Inner() }   # inner at offset 0 (ptr)
+    #   p = Ptr<Outer>( obj )
+    #   inner = p.getMemberVar<Inner>( 0 )        # get the Inner object
+    public T2 getMemberVar<T2>( Int32 offset )
+    {
+        ret SystemPtrObjReadObject( this._objAddr, offset )
     }
 
     # ---------------------------------------------------------------

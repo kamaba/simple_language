@@ -93,6 +93,11 @@ namespace SimpleLanguage.Export.SLIR.Types
         public bool interfaceMethod { get; set; }
         /// <summary>Method modifier flags: 1=static, 2=final, 4=abstract, 8=override, 16=interface, 32=canRewrite, 64=constructInit, 128=extendParams(params 可变参数)</summary>
         public int flags { get; set; }
+        /// <summary>是否为模板函数（fun&lt;T&gt;()）。导入侧据此恢复 MetaTemplate 参数。</summary>
+        public bool isTemplateFunction { get; set; }
+        /// <summary>模板函数声明的模板参数名列表（如 fun&lt;TKey,TValue&gt;() -> ["TKey","TValue"]）。
+        /// 导入侧用这些名称重建 MetaTemplate，使 functionAllName 和 classId 匹配导出端。</summary>
+        public List<string> templateParameterNames { get; set; } = new();
         public List<SLVariablePackage> returnList { get; set; } = new();
         public List<SLVariablePackage> argumentList { get; set; } = new();
         public List<SLVariablePackage> localList { get; set; } = new();

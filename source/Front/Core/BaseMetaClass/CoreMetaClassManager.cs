@@ -27,6 +27,8 @@ namespace SimpleLanguage.Core
         UInt32,
         Int64,
         UInt64,
+        Float8,
+        Float16,
         Float32,
         Float64,
         String,
@@ -76,6 +78,8 @@ namespace SimpleLanguage.Core
         public static MetaClass uint32MetaClass { get; private set; } = null;
         public static MetaClass int64MetaClass { get; private set; } = null;
         public static MetaClass uint64MetaClass { get; private set; } = null;
+        public static MetaClass float8MetaClass { get; private set; } = null;
+        public static MetaClass float16MetaClass { get; private set; } = null;
         public static MetaClass float32MetaClass { get; private set; } = null;
         public static MetaClass float64MetaClass { get; private set; } = null;
         public static MetaClass arrayMetaClass { get; private set; } = null;
@@ -112,6 +116,8 @@ namespace SimpleLanguage.Core
             uint32MetaClass = UInt32MetaClass.CreateMetaClass();
             int64MetaClass = Int64MetaClass.CreateMetaClass();
             uint64MetaClass = UInt64MetaClass.CreateMetaClass();
+            float8MetaClass = Float8MetaClass.CreateMetaClass();
+            float16MetaClass = Float16MetaClass.CreateMetaClass();
             float32MetaClass = Float32MetaClass.CreateMetaClass();
             float64MetaClass = Float64MetaClass.CreateMetaClass();
             stringMetaClass = StringMetaClass.CreateMetaClass();
@@ -141,7 +147,9 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(int32MetaClass);
             s_InnerDefineMetaClassList.Add(uint32MetaClass);
             s_InnerDefineMetaClassList.Add(int64MetaClass);
-            s_InnerDefineMetaClassList.Add(uint64MetaClass);
+            s_InnerDefineMetaClassList.Add(uint64MetaClass);            
+            s_InnerDefineMetaClassList.Add(float8MetaClass);
+            s_InnerDefineMetaClassList.Add(float16MetaClass);
             s_InnerDefineMetaClassList.Add(float32MetaClass);
             s_InnerDefineMetaClassList.Add(float64MetaClass);
             s_InnerDefineMetaClassList.Add(stringMetaClass);
@@ -222,6 +230,14 @@ namespace SimpleLanguage.Core
             {
                 return EType.UInt64;
             }
+            else if (mc == float8MetaClass)
+            {
+                return EType.Float8;
+            }
+            else if (mc == float16MetaClass)
+            {
+                return EType.Float16;
+            }
             else if (mc == float32MetaClass)
             {
                 return EType.Float32;
@@ -301,6 +317,10 @@ namespace SimpleLanguage.Core
                     return int64MetaClass;
                 case EType.UInt64:
                     return uint64MetaClass;
+                case EType.Float8:
+                    return float8MetaClass;
+                case EType.Float16:
+                    return float16MetaClass;
                 case EType.Float32:
                     return float32MetaClass;
                 case EType.Float64:
@@ -371,7 +391,7 @@ namespace SimpleLanguage.Core
                 case "SByte":
                     return DefaultObject.Int8.ToString();
                 case "half":
-                    return null;
+                    return DefaultObject.Float16.ToString();
                 case "float":
                 case "Float32":
                     return DefaultObject.Float32.ToString();

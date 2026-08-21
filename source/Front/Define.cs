@@ -37,10 +37,11 @@ namespace SimpleLanguage
         UInt16,
         Int32,
         UInt32,
-        Float16,
-        Float32,
         Int64,
         UInt64,
+        Float8,
+        Float16,
+        Float32,
         Float64,
         Int128,
         UInt128,
@@ -664,6 +665,10 @@ namespace SimpleLanguage
         SystemPtrObjReadFloat64,
         /// <summary>写入对象字段Float64，参数: Int64(addr), Int32(offset), Float64(val)，返回: Int32(1=success)</summary>
         SystemPtrObjWriteFloat64,
+
+        // ---- Ptr<T> member access (Ptr.sl) ----
+        /// <summary>读取对象成员引用，参数: Int64(objAddr), Int32(offset)，返回: object</summary>
+        SystemPtrObjReadObject,
     }
     public class Global
     {

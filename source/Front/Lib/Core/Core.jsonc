@@ -219,7 +219,10 @@
     { "name": "SystemPtrObjReadInt64",  "returnType": "Int64",  "params": ["Int64", "Int32"], "isVariadic": false },
     { "name": "SystemPtrObjWriteInt64", "returnType": "Int32",  "params": ["Int64", "Int32", "Int64"], "isVariadic": false },
     { "name": "SystemPtrObjReadFloat64",  "returnType": "Float64","params": ["Int64", "Int32"], "isVariadic": false },
-    { "name": "SystemPtrObjWriteFloat64", "returnType": "Int32",  "params": ["Int64", "Int32", "Float64"], "isVariadic": false }
+    { "name": "SystemPtrObjWriteFloat64", "returnType": "Int32",  "params": ["Int64", "Int32", "Float64"], "isVariadic": false },
+
+    // ---- Ptr<T> member access (Ptr.sl) ----
+    { "name": "SystemPtrObjReadObject",  "returnType": "object",  "params": ["Int64", "Int32"], "isVariadic": false }
   ],
   "struct": [
       { "namespace": "Core", "children": 

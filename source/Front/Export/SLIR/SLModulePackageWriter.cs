@@ -634,6 +634,8 @@ namespace SimpleLanguage.Export.SLIR
                     exportNames = m.exportNames,
                     interfaceMethod = m.interfaceMethod,
                     flags = BuildMethodFlags(m),
+                    isTemplateFunction = m.isTemplateFunction,
+                    templateParameterNames = m.isTemplateFunction ? new List<string>(m.templateParameterNames) : new List<string>(),
                 };
 
                 if (m.methodReturnVariableList != null)

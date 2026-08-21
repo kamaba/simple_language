@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaTypeFactory.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -23,6 +23,8 @@ namespace SimpleLanguage.Core
             UInt32,
             Int64,
             UInt64,
+            Float8,
+            Float16,
             Float32,
             Float64,
             String,
@@ -74,6 +76,14 @@ namespace SimpleLanguage.Core
             else if (mt.metaClass == CoreMetaClassManager.uint64MetaClass)
             {
                 return (int)EMetaClassLevel.UInt64;
+            }
+            else if (mt.metaClass == CoreMetaClassManager.float8MetaClass)
+            {
+                return (int)EMetaClassLevel.Float8;
+            }
+            else if (mt.metaClass == CoreMetaClassManager.float16MetaClass)
+            {
+                return (int)EMetaClassLevel.Float16;
             }
             else if (mt.metaClass == CoreMetaClassManager.float32MetaClass)
             {

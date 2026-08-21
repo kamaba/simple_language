@@ -205,8 +205,9 @@ namespace SimpleLanguage.IR
         /// 反向：IRMetaType -> MetaType（ref module 导入时从 IR 层复原 Meta 层类型）。
         /// 需要 IRMetaClass.typeOwner 已通过 LinkMetaOwner 关联（Phase C 之后调用）。
         /// 模板参数还原为 ownerClass 的 MetaTemplate；泛型参数递归复原。
+        /// functionTemplates 用于解析函数级模板参数（templateIndex 偏移了 class 模板数）。
         /// </summary>
-        public static MetaType ToMetaType(IRMetaType irmt, MetaClass ownerClass)
+        public static MetaType ToMetaType(IRMetaType irmt, MetaClass ownerClass, List<MetaTemplate> functionTemplates = null)
         {
             if (irmt == null)
             {
@@ -217,6 +218,16 @@ namespace SimpleLanguage.IR
                 if (ownerClass != null && irmt.templateIndex < ownerClass.metaTemplateList.Count)
                 {
                     return new MetaType(ownerClass.metaTemplateList[irmt.templateIndex]);
+                }
+                // Check function-level templates (templateIndex is offset by class template count)
+                if (functionTemplates != null)
+                {
+                    int classCount = ownerClass?.metaTemplateList?.Count ?? 0;
+                    int funcIdx = irmt.templateIndex - classCount;
+                    if (funcIdx >= 0 && funcIdx < functionTemplates.Count)
+                    {
+                        return new MetaType(functionTemplates[funcIdx]);
+                    }
                 }
                 return new MetaType(CoreMetaClassManager.objectMetaClass);
             }

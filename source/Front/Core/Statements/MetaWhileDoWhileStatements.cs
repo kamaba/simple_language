@@ -142,9 +142,14 @@ namespace SimpleLanguage.Core
                     var iterTplList = iterableInterfaceMT.GetGenTemplateMetaTypeList();
                     if (iterTplList != null && iterTplList.Count > 0)
                     {
-                        // 当content类型为TemplateClassWithTemplate时（如Array<Member>直接构造），
-                        // 接口上的模板参数可能是泛型T（默认为Object），应优先使用content自身的模板参数
-                        if (mdt.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate)
+                        // 当content类型为TemplateClassWithTemplate或MetaGenClass时，
+                        // 接口上的模板参数可能是泛型T（默认为Object），应优先使用content自身的模板参数。
+                        // 两种情况：
+                        //   1) MetaGenClass：继承的类已经是MetaGenTemplateClass，模板内容包含在类里边；
+                        //   2) TemplateClassWithTemplate：在生成MetaType时构造的模板参数，存放在MetaType上。
+                        // GetGenTemplateMetaTypeList() 会根据 eMetaTypeType 自动取类内或MetaType上的模板参数。
+                        if (mdt.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate
+                            || mdt.eMetaTypeType == EMetaTypeType.MetaGenClass)
                         {
                             var contentTplList = mdt.GetGenTemplateMetaTypeList();
                             if (contentTplList != null && contentTplList.Count > 0)

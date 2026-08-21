@@ -551,12 +551,23 @@ namespace SimpleLanguage.Project
                 }
             }
 
-            /* Skip if a child node already exists (duplicate, non-Core or Core type
-             * not in BaseMetaClass registry). */
+            /* Check if a child node with the same base name already exists.
+             * If it does, check whether the exact template-parameter-count variant
+             * is already registered. Only skip true duplicates (same name AND same
+             * template count); different template counts (e.g. "Ptr" vs "Ptr<T>")
+             * should coexist in m_MetaTemplateClassDict on the same MetaNode. */
             var existingChild = parent.GetChildrenMetaNodeByName(typeName);
             if (existingChild != null)
             {
-                return null;
+                var existingMc = existingChild.GetMetaClassByTemplateCount(cls.templateParameterCount);
+                if (existingMc != null)
+                {
+                    /* True duplicate: same name and same template count. */
+                    return null;
+                }
+                /* Different template count variant: fall through to create a new
+                 * MetaClass and add it via parent.AddMetaClass, which will register
+                 * it in the existing node's m_MetaTemplateClassDict. */
             }
 
             switch ((IRMetaClassKind)cls.metaClassKind)
@@ -890,13 +901,31 @@ namespace SimpleLanguage.Project
             mmf.SetIsOverrideFunction(irm.isOverrideFunction);
             mmf.SetIsOverrideInterface(irm.interfaceMethod);
 
+            /* 模板函数参数恢复：从 IRMethod.templateParameterNames 重建 MetaTemplate，
+             * 使 functionAllName（含 <TKey,TValue>）与导出端匹配，classId 一致。 */
+            if (irm.isTemplateFunction && irm.templateParameterNames != null)
+            {
+                mmf.SetIsTemplateFunction(true);
+                int classTplCount = ownerClass.metaTemplateList?.Count ?? 0;
+                for (int ti = 0; ti < irm.templateParameterNames.Count; ti++)
+                {
+                    var tplName = !string.IsNullOrWhiteSpace(irm.templateParameterNames[ti])
+                        ? irm.templateParameterNames[ti]
+                        : (ti == 0 ? "T" : "T" + ti.ToString());
+                    var mt = new MetaTemplate(ownerClass, tplName, CoreMetaClassManager.objectMetaClass, ECovariance.None);
+                    mt.SetIndex(classTplCount + ti);
+                    mmf.AddMetaDefineTemplate(mt);
+                }
+            }
+
             /* 返回值类型 */
             if (irm.methodReturnVariableList != null && irm.methodReturnVariableList.Count > 0)
             {
                 var retVar = irm.methodReturnVariableList[0];
                 if (retVar != null && retVar.irMetaType != null)
                 {
-                    var retType = IRMetaType.ToMetaType(retVar.irMetaType, mc);
+                    var funcTemplates = mmf.isTemplateFunction ? mmf.metaMemberTemplateCollection.metaTemplateList : null;
+                    var retType = IRMetaType.ToMetaType(retVar.irMetaType, mc, funcTemplates);
                     mmf.SetDefineMetaType(retType);
                     mmf.SetRealMetaType(new MetaType(retType));
                     mmf.SetIsDefineMetaType(true);
@@ -930,7 +959,8 @@ namespace SimpleLanguage.Project
                     }
                     if (arg.irMetaType != null)
                     {
-                        var paramType = IRMetaType.ToMetaType(arg.irMetaType, mc);
+                        var funcTemplates2 = mmf.isTemplateFunction ? mmf.metaMemberTemplateCollection.metaTemplateList : null;
+                        var paramType = IRMetaType.ToMetaType(arg.irMetaType, mc, funcTemplates2);
                         mdp.metaVariable.SetMetaDefineType(paramType);
                         mdp.metaVariable.SetRealMetaType(new MetaType(paramType));
                         mdp.metaVariable.SetIsDefineMetaType(true);

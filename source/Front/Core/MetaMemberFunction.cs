@@ -538,6 +538,10 @@ namespace SimpleLanguage.Core
         {
             this.m_IsOverrideInterface = flag;
         }
+        public void SetIsTemplateFunction(bool flag)
+        {
+            this.m_IsTemplateFunction = flag;
+        }
         public bool IsEqualWithMMFByNameAndParam( MetaMemberFunction mmf )
         {
             if (mmf.name != m_Name) return false;

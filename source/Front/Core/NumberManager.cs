@@ -66,6 +66,8 @@ namespace SimpleLanguage.Core
                 || curClass == CoreMetaClassManager.uint32MetaClass
                 || curClass == CoreMetaClassManager.int64MetaClass
                 || curClass == CoreMetaClassManager.uint64MetaClass
+                || curClass == CoreMetaClassManager.float8MetaClass
+                || curClass == CoreMetaClassManager.float16MetaClass
                 || curClass == CoreMetaClassManager.float32MetaClass
                 || curClass == CoreMetaClassManager.float64MetaClass)
             {
@@ -94,14 +96,16 @@ namespace SimpleLanguage.Core
             }
             if (mc == CoreMetaClassManager.uint8MetaClass) { rank = 0; return true; }
             if (mc == CoreMetaClassManager.int8MetaClass) { rank = 1; return true; }
-            if (mc == CoreMetaClassManager.int16MetaClass) { rank = 2; return true; }
-            if (mc == CoreMetaClassManager.uint16MetaClass) { rank = 3; return true; }
-            if (mc == CoreMetaClassManager.int32MetaClass) { rank = 4; return true; }
-            if (mc == CoreMetaClassManager.uint32MetaClass) { rank = 5; return true; }
-            if (mc == CoreMetaClassManager.float32MetaClass) { rank = 6; return true; }
-            if (mc == CoreMetaClassManager.int64MetaClass) { rank = 7; return true; }
-            if (mc == CoreMetaClassManager.uint64MetaClass) { rank = 8; return true; }
-            if (mc == CoreMetaClassManager.float64MetaClass) { rank = 9; return true; }
+            if (mc == CoreMetaClassManager.float8MetaClass) { rank = 2; return true; }
+            if (mc == CoreMetaClassManager.int16MetaClass) { rank = 3; return true; }
+            if (mc == CoreMetaClassManager.uint16MetaClass) { rank = 4; return true; }
+            if (mc == CoreMetaClassManager.float16MetaClass) { rank = 5; return true; }
+            if (mc == CoreMetaClassManager.int32MetaClass) { rank = 6; return true; }
+            if (mc == CoreMetaClassManager.uint32MetaClass) { rank = 7; return true; }
+            if (mc == CoreMetaClassManager.float32MetaClass) { rank = 8; return true; }
+            if (mc == CoreMetaClassManager.int64MetaClass) { rank = 9; return true; }
+            if (mc == CoreMetaClassManager.uint64MetaClass) { rank = 10; return true; }
+            if (mc == CoreMetaClassManager.float64MetaClass) { rank = 11; return true; }
             if (IsNumberClass(mc))
             {
                 rank = -1;
@@ -117,14 +121,16 @@ namespace SimpleLanguage.Core
                 -1 => CoreMetaClassManager.numMetaClass,
                 0 => CoreMetaClassManager.uint8MetaClass,
                 1 => CoreMetaClassManager.int8MetaClass,
-                2 => CoreMetaClassManager.int16MetaClass,
-                3 => CoreMetaClassManager.uint16MetaClass,
-                4 => CoreMetaClassManager.int32MetaClass,
-                5 => CoreMetaClassManager.uint32MetaClass,
-                6 => CoreMetaClassManager.float32MetaClass,
-                7 => CoreMetaClassManager.int64MetaClass,
-                8 => CoreMetaClassManager.uint64MetaClass,
-                9 => CoreMetaClassManager.float64MetaClass,
+                2 => CoreMetaClassManager.float8MetaClass,
+                3 => CoreMetaClassManager.int16MetaClass,
+                4 => CoreMetaClassManager.uint16MetaClass,
+                5 => CoreMetaClassManager.float16MetaClass,
+                6 => CoreMetaClassManager.int32MetaClass,
+                7 => CoreMetaClassManager.uint32MetaClass,
+                8 => CoreMetaClassManager.float32MetaClass,
+                9 => CoreMetaClassManager.int64MetaClass,
+                10 => CoreMetaClassManager.uint64MetaClass,
+                11 => CoreMetaClassManager.float64MetaClass,
                 _ => null,
             };
         }
@@ -139,6 +145,7 @@ namespace SimpleLanguage.Core
                 || t == EType.UInt32
                 || t == EType.Int64
                 || t == EType.UInt64
+                || t == EType.Float8
                 || t == EType.Float16
                 || t == EType.Float32
                 || t == EType.Float64
@@ -178,6 +185,9 @@ namespace SimpleLanguage.Core
                         return true;
                     case EType.UInt64:
                         converted = Convert.ToUInt64(input);
+                        return true;
+                    case EType.Float8:
+                        converted = (Half)Convert.ToSingle(input);
                         return true;
                     case EType.Float16:
                         converted = (Half)Convert.ToSingle(input);
@@ -245,18 +255,20 @@ namespace SimpleLanguage.Core
                 {
                     case EType.Int8:
                     case EType.UInt8:
+                    case EType.Float8:
                         canConvert = expressEType == EType.UInt8 || expressEType == EType.Int8;
                         break;
                     case EType.Int16:
                     case EType.UInt16:
-                        canConvert = expressEType == EType.UInt8 || expressEType == EType.Int8
+                    case EType.Float16:
+                        canConvert = expressEType == EType.UInt8 || expressEType == EType.Int8 || expressEType == EType.Float8
                             || expressEType == EType.UInt16 || expressEType == EType.Int16;
                         break;
                     case EType.Int32:
                     case EType.UInt32:
                     case EType.Float32:
-                        canConvert = expressEType == EType.UInt8 || expressEType == EType.Int8
-                            || expressEType == EType.UInt16 || expressEType == EType.Int16
+                        canConvert = expressEType == EType.UInt8 || expressEType == EType.Int8 || expressEType == EType.Float8
+                            || expressEType == EType.UInt16 || expressEType == EType.Int16 || expressEType == EType.Float16
                             || expressEType == EType.Int32 || expressEType == EType.UInt32;
                         break;
                     case EType.Int64:

@@ -502,6 +502,11 @@ namespace SimpleLanguage.Core
                     i++;
                 }
             }
+            else if ( m_ExtendClass == CoreMetaClassManager.float8MetaClass
+               || m_ExtendClass == CoreMetaClassManager.float16MetaClass )
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error Enum extends float8 or float16 is not support");
+            }
             else if (m_ExtendClass == CoreMetaClassManager.stringMetaClass
                || m_ExtendClass == CoreMetaClassManager.float32MetaClass
                || m_ExtendClass == CoreMetaClassManager.float64MetaClass)

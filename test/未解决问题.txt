@@ -9,6 +9,8 @@
 7. 指针的增加与处理. 
 9. 是否不能 new int() 这种的，直接变成栈的方式
 
+增加float16（half) 类型，未来，还要增加float8  和int4类型
+
 use_runtime_variable_slots 是否要使用slots这个
 
 

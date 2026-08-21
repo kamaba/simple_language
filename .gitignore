@@ -280,3 +280,4 @@
 # Fixed malformed line that was blocking ripgrep
 /source/CompileStd/obj
 /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/core_compile.log
