@@ -10,9 +10,13 @@
 7. 指针的增加与处理. 
 9. 是否不能 new int() 这种的，直接变成栈的方式
 
-增加float16（half) 类型，未来，还要增加float8  和int4类型
+增加float16（half) 类型，未来，还要增加float8 
 
 use_runtime_variable_slots 是否要使用slots这个
+vm_try_pop_i32 是否要分离成自己的方法
+把runtime.c 里边的方法，分散到不同的文件中
+看那些要使用宏定义的方式
+直接使用memcpy
 
 
 1. cvm优化system method 动态加载

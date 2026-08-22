@@ -220,7 +220,7 @@ namespace SimpleLanguage.Project
                 }
             }
 
-            if( root.TryGetProperty("systemCalls", out var systemCalls ) && refs.ValueKind == JsonValueKind.Array )
+            if( root.TryGetProperty("systemCalls", out var systemCalls ) && systemCalls.ValueKind == JsonValueKind.Array )
             {
                 foreach (var r in systemCalls.EnumerateArray())
                 {
@@ -230,9 +230,8 @@ namespace SimpleLanguage.Project
                     }
                     var name = GetStr(r, "name", string.Empty);
                     var returnType = GetStr(r, "returnType", string.Empty);
-                    r.TryGetProperty("params", out var @params);
                     List<String> mtStr = new List<string>();
-                    if ( @params.ValueKind == JsonValueKind.Array )
+                    if (r.TryGetProperty("params", out var @params) && @params.ValueKind == JsonValueKind.Array)
                     {
                         foreach (var r2 in @params.EnumerateArray())
                         {

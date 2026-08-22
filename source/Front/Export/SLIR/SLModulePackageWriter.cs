@@ -162,6 +162,7 @@ namespace SimpleLanguage.Export.SLIR
                     pkg.classList = entry.classList ?? new List<SLClassPackage>();
                     pkg.globalStaticVariableList = entry.globalStaticVariableList ?? new List<SLGlobalStaticVariablePackage>();
                     pkg.methodList = entry.methodList ?? new List<SLMethodPackage>();
+                    pkg.systemCalls = entry.systemCalls ?? new List<SLSystemCallPackage>();
                     if (string.IsNullOrWhiteSpace(pkg.moduleName))
                     {
                         pkg.moduleName = entry.moduleName ?? string.Empty;
@@ -738,21 +739,39 @@ namespace SimpleLanguage.Export.SLIR
             pkg.entryMethodId = module.entryMethodId;
             // Embed the module's own systemCalls verbatim so referencing projects
             // can register them when loading this package as a reference module.
+            // Write to both SLModulePackage (new flat format) and SLAssemblyPackage (legacy format)
 
-            foreach( var v in SystemMethodCallDeclarationRegistry.projectDefine)
+            string getMetaTypeString(MetaType mt)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append(mt.metaClass.name);
+                if(mt.GetGenTemplateMetaTypeList().Count > 0 )
+                {
+                    sb.Append("<");
+                    for (int i = 0; i < mt.GetGenTemplateMetaTypeList().Count; i++)
+                    {
+                        sb.Append("object");
+                    }
+                    sb.Append(">");
+                }
+                return sb.ToString();
+            }
+
+            foreach ( var v in SystemMethodCallDeclarationRegistry.projectDefine)
             {
                 if (v == null) continue;
                 var decl = new SLSystemCallPackage
                 {
                     name = v.name ?? string.Empty,
-                    returnType = v.returnMetaType?.metaClass?.name ?? string.Empty,
+                    returnType = getMetaTypeString(v.returnMetaType),
                     isVariadic = v.isVariadic,
                 };
                 foreach( var v2 in v.paramMetaTypeList )
                 {
-                    decl.@params.Add(v2.metaClass?.name);
+                    decl.@params.Add(getMetaTypeString(v2));
                 }
                 pkg.systemCalls.Add(decl);
+                module.systemCalls.Add(decl);
             }
             pkg.moduleReferences = module.moduleReferences;
             pkg.irStringDict = module.irStringDict;

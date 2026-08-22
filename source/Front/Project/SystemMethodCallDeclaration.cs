@@ -126,24 +126,27 @@ namespace SimpleLanguage.Core
                 return null;
             switch (typeName.ToLowerInvariant())
             {
-                case "void":     return Void;
-                case "object":   return Obj;
-                case "string":   return Str;
-                case "bool":     return Bool;
-                case "num":      return Num;
-                case "int32":    return I32;
-                case "uint32":   return U32;
-                case "int8":     return I8;
-                case "uint8":    return U8;
-                case "int16":    return I16;
-                case "uint16":   return U16;
-                case "int64":    return I64;
-                case "uint64":   return U64;
+                case "void":
+                    return Void;
+                case "object": return Obj;
+                case "string": return Str;
+                case "bool":
+                case "boolean":
+                    return Bool;
+                case "num":return Num;
+                case "int32": return I32;
+                case "uint32": return U32;
+                case "int8": return I8;
+                case "uint8": return U8;
+                case "int16": return I16;
+                case "uint16":return U16;
+                case "int64":return I64;
+                case "uint64": return U64;
                 case "float8": return F8;
                 case "float16": return F16;
                 case "float32": return F32;
-                case "float64":  return F64;
-                case "type":     return Typ;
+                case "float64":return F64;
+                case "type":return Typ;
                 case "array<object>": return ArrayObj;
                 case "uint8array":    return UInt8Array;
                 default:        return null;

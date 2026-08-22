@@ -199,6 +199,7 @@ namespace SimpleLanguage.Export.SLIR.Types
         public List<SLClassPackage> classList { get; set; } = new();
         public List<SLGlobalStaticVariablePackage> globalStaticVariableList { get; set; } = new();
         public List<SLMethodPackage> methodList { get; set; } = new();
+        public List<SLSystemCallPackage> systemCalls { get; set; } = new();
         public SLAssemblyPackage() { }
         public SLAssemblyPackage(string moduleName)
         {

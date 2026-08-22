@@ -70,9 +70,10 @@ internal static class Program
 
     static int RunCVM(string packagePath, bool runTestEntry, string repoRoot, bool debug = false)
     {
-        // Resolve csimple_lang exe/dll path
-        string cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "project", "vs", "vm_lib",
-            "build", "Debug", "bin" ));
+        // Resolve csimple_lang exe/dll path (CMake output: csimple_lang\build\Debug\bin,
+        // produced by the BuildCVM target in CSimpleVMTest.csproj)
+        string cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang",
+            "build", "Debug", "bin"));
         string cvmExe = Path.Combine(cvmDir, "csimple_lang.exe");
 
         //if (!File.Exists(cvmExe))
@@ -96,10 +97,16 @@ internal static class Program
 
 #if DEBUG
         // Debug: P/Invoke into csimple_lang_dll.dll (in-process, can attach C debugger)
-        string dllPath = Path.Combine(cvmDir, "csimple_lang_lib.dll");
+        string dllPath = Path.Combine(cvmDir, "csimple_lang_dll.dll");
         if (!File.Exists(dllPath))
         {
             Console.WriteLine($"csimple_lang_dll.dll not found at {dllPath}, falling back to process mode.");
+            if (!File.Exists(cvmExe))
+            {
+                Console.WriteLine("csimple_lang.exe not found either. Build the C VM first:");
+                Console.WriteLine("  cd ../csimple_lang && cmake -B build && cmake --build build --config Debug --target csimple_lang_dll");
+                return 4;
+            }
             return RunProcess(cvmExe, cvmArgs, "C VM run (csimple_lang)", cvmDir);
         }
 
@@ -134,7 +141,7 @@ internal static class Program
     [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
     static extern bool SetDllDirectory(string lpPathName);
 
-    [DllImport("csimple_lang_lib.dll", CallingConvention = CallingConvention.Cdecl)]
+    [DllImport("csimple_lang_dll.dll", CallingConvention = CallingConvention.Cdecl)]
     static extern int cli_main(int argc, IntPtr argv);
 
     static int CallCliMain(string[] args)
