@@ -241,7 +241,9 @@ namespace SimpleLanguage.Project
                     }
                     var isVariadic = GetBool(r, "isVariadic", true );
 
-                    SystemMethodCallDeclarationRegistry.AddDeclByMt( name, returnType, mtStr, isVariadic, true );
+                    cfg.systemCalls.Add(new ProjectConfig.SystemCallItem() { name = name, returnType = returnType, @params = mtStr.ToArray(), isVariadic = isVariadic });
+
+                    //SystemMethodCallDeclarationRegistry.AddDeclByMt( name, returnType, mtStr, isVariadic, true );
                 }
             }
 

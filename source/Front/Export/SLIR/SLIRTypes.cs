@@ -1,6 +1,7 @@
 #nullable enable
 using SimpleLanguage.Core;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.Json.Serialization;
 
 namespace SimpleLanguage.Export.SLIR.Types
@@ -211,6 +212,13 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string returnType { get; set; } = string.Empty;
         public List<string> @params { get; set; } = new();
         public bool isVariadic { get; set; } = false;
+
+        public override string ToString()
+        {
+            //StringBuilder sb = new StringBuilder();
+            //sb.Append(name);
+            return name;
+        }
     } 
 
     /// <summary>

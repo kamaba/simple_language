@@ -1,4 +1,5 @@
 using SimpleLanguage.Logging;
+using SimpleLanguage.Project;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -153,6 +154,13 @@ namespace SimpleLanguage.Core
             var decl = new SystemMethodCallDeclaration(
                 name, retType, variadic, paramTypes.ToArray());
             s_Decl[name] = decl;
+        }
+        public static void LoadConfigSystemCall()
+        {
+            foreach( var sc in ProjectManager.config.systemCalls )
+            {
+                AddDeclByMt(sc.name, sc.returnType, new List<string>(sc.@params), sc.isVariadic, true);
+            }
         }
         public static void AddDeclByMt(string name, string rt, List<string> mtList, bool variadic, bool isProjectDefine)
         {

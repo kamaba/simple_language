@@ -185,6 +185,10 @@
     // ---- Environment operations (Environment.sl) ----
     { "name": "SystemEnvironmentGetVariable", "returnType": "string", "params": ["string"], "isVariadic": false },
     { "name": "SystemEnvironmentSetVariable", "returnType": "bool",   "params": ["string", "string"], "isVariadic": false },
+    { "name": "SystemTimerNowMillis",          "returnType": "Int64", "params": [], "isVariadic": false },
+    { "name": "SystemTimerClock",              "returnType": "Int64", "params": [], "isVariadic": false },
+    { "name": "SystemDirectoryGetCurrent", "returnType": "string", "params": [], "isVariadic": false },
+    { "name": "SystemDirectorySetCurrent", "returnType": "bool",   "params": ["string"], "isVariadic": false },
     // ---- Guid operations (Guid.sl) ----
     { "name": "SystemGuidNewGuid", "returnType": "string", "params": [], "isVariadic": false },
     // ---- Ptr operations (Ptr.sl) ----

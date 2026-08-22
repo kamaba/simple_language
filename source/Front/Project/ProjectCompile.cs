@@ -114,6 +114,7 @@ namespace SimpleLanguage.Project
             CSharpManager.InitCanSearchAssemblyList();
 
             CoreMetaClassManager.instance.Init();
+            SystemMethodCallDeclarationRegistry.LoadConfigSystemCall();
 
             // Load reference modules AFTER Core inner types are built.
             // This allows a compiled Core reference to replace the C# inner-form
