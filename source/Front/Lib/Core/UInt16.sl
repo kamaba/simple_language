@@ -1,6 +1,6 @@
 public class UInt16 extends Num
 {
-    const static  UInt16 MaxValue = 0xffff;
+    const static UInt16 MaxValue = 0xffff;
     const static UInt16 MinValue = 0;
     UInt16 _value = 0;
 
@@ -40,14 +40,74 @@ public class UInt16 extends Num
         ret this._value > ov ? 1 : 0-1
     }
 
+    override bool toBool()
+    {
+        ret SystemConvertBool(this)
+    }
+    override Int8 toInt8( UInt8 index = 0 )
+    {
+        ret SystemConvertInt8(this, index)
+    }
+    override UInt8 toUInt8( UInt8 index = 0 )
+    {
+        ret SystemConvertUInt8(this, index)
+    }
+    override Int16 toInt16()
+    {
+        ret SystemConvertInt16(this)
+    }
+    override UInt16 toUInt16()
+    {
+        ret this._value
+    }
     override Int32 toInt32()
     {
         ret SystemConvertInt32(this)
     }
-
+    override UInt32 toUInt32()
+    {
+        ret SystemConvertUInt32(this)
+    }
+    override Int64 toInt64()
+    {
+        ret SystemConvertInt64(this)
+    }
+    override Int64 toUInt64()
+    {
+        ret SystemConvertUInt64(this)
+    }
+    override Float32 toFloat32()
+    {
+        ret SystemConvertFloat32(this)
+    }
     override Float64 toFloat64()
     {
         ret SystemConvertFloat64(this)
+    }
+
+    public bool isEven()
+    {
+        ret (this.toInt32() & 1) == 0
+    }
+    public bool isOdd()
+    {
+        ret (this.toInt32() & 1) != 0
+    }
+    public String toRadixString(int radix)
+    {
+        ret SystemConvertInt32ToRadixString(this.toInt32(), radix)
+    }
+    public String toBinaryString()
+    {
+        ret this.toRadixString(2)
+    }
+    public String toHexString()
+    {
+        ret this.toRadixString(16)
+    }
+    public String toOctalString()
+    {
+        ret this.toRadixString(8)
     }
 
     override String toString()
