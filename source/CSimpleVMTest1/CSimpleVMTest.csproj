@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="CSimpleVMTest.csproj.Backup.tmp" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Front\SimpleLanguageFront.csproj" />
   </ItemGroup>
 
