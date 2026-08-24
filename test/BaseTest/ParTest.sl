@@ -14,7 +14,7 @@ Class1
 {   
     ClassX xx; 
     int x = 20;
-    Class1( ix )
+    _init_( ix )
     {
         #x1 = x;
         this.xx = ix;
@@ -115,7 +115,7 @@ namespace Application
         }
         M2.Class3
         {
-            Class3( x )
+            _init_( x )
             {
                 this.a = x;
             }
