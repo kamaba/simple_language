@@ -13,7 +13,7 @@ Project
     _main_()
     {     
         SystemPrintln("===== ProjectTest _main_ start =====")   
-        #!
+        nowMs = Environment.nowMillis()
         ObjectTest.fun()
         StringTest.fun()
         NumberTest.fun()
@@ -48,12 +48,15 @@ Project
         MVTest2.fun()        
         EnvironmentTest.fun()
         GuidTest.fun()        
+        RandomTest.fun()        
+        EnvironmentTest.fun()
+        GuidTest.fun()
         RandomTest.fun()
-        !#
         Float8Test.fun()
         Float16Test.fun()
         #PtrTest.fun()
-        SystemPrintln("===== ProjectTest _main_ end =====")
+        nowMs = Environment.nowMillis() - nowMs
+        SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")
     }
     CompileBefore()
     {

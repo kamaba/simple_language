@@ -46,6 +46,7 @@
 | 文档 | 说明 |
 |------|------|
 | [syntax/number.md](./syntax/number.md) | 数值类型：字面量、内置类型词法、`Num` 语义 |
+| [syntax/float8_16.md](./syntax/float8_16.md) | 低精度浮点类型：`Float8`/`Float8_E5M2`/`Float16`/`Float16_Brain` 字面量后缀、存储约定、转换与运算语义 |
 | [syntax/string.md](./syntax/string.md) | 字符串 |
 | [syntax/data.md](./syntax/data.md) | 数据类型 |
 | [syntax/type.md](./syntax/type.md) | 类型 |

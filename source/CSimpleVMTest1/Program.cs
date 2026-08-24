@@ -70,24 +70,30 @@ internal static class Program
 
     static int RunCVM(string packagePath, bool runTestEntry, string repoRoot, bool debug = false)
     {
-        // Resolve csimple_lang exe/dll path (CMake output: csimple_lang\build\Debug\bin,
+        // Resolve csimple_lang exe/dll path (CMake output: csimple_lang\build\<Config>\bin,
         // produced by the BuildCVM target in CSimpleVMTest.csproj)
+#if DEBUG
         string cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang",
             "build", "Debug", "bin"));
         string cvmExe = Path.Combine(cvmDir, "csimple_lang.exe");
-
-        //if (!File.Exists(cvmExe))
-        //{
-        //    cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "build", "Release", "bin"));
-        //    cvmExe = Path.Combine(cvmDir, "csimple_lang.exe");
-        //}
-
-        //if (!File.Exists(cvmExe))
-        //{
-        //    Console.WriteLine("csimple_lang.exe not found. Build the C VM first:");
-        //    Console.WriteLine("  cd ../csimple_lang && cmake -B build && cmake --build build --config Debug");
-        //    return 4;
-        //}
+#else
+        string cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang",
+            "build", "Release", "bin"));
+        string cvmExe = Path.Combine(cvmDir, "csimple_lang.exe");
+        if (!File.Exists(cvmExe))
+        {
+            // vcxproj Release|x64 (Application) outputs csimple_lang_lib.exe into the same bin dir
+            string libExe = Path.Combine(cvmDir, "csimple_lang_lib.exe");
+            if (File.Exists(libExe))
+                cvmExe = libExe;
+        }
+        if (!File.Exists(cvmExe))
+        {
+            Console.WriteLine("csimple_lang.exe not found in Release output. Build the C VM first:");
+            Console.WriteLine("  cd ../csimple_lang && cmake -B build && cmake --build build --config Release --target csimple_lang");
+            return 4;
+        }
+#endif
 
         var cvmArgs = new List<string> { "run", packagePath };
         if (runTestEntry)
@@ -122,8 +128,6 @@ internal static class Program
         argv.AddRange(cvmArgs);
         return CallCliMain(argv.ToArray());
 #else
-        cvmExe = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang",
-            "build", "Release", "bin", "csimple_lang_lib.exe"));
         // Release: process invocation
         if (debug)
         {
