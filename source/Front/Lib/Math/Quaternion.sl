@@ -1,19 +1,19 @@
-@Nickname("Point") 
-@Nickname("Vector2") @Condition()
-@Nickname("Vec2")
-public class Float32_2 extends Num
+@nickname("Quat")
+public class Quaternion extends Object
 {
-    @Nickname("a")
-    public Float32 x = 0.0f    
-    @Nickname("b")
-    public Float32 y = 0.0f;
+    @nickname("a")
+    public Int32 x = 0
+    
+    @nickname("b")
+    public Int32 y = 0;
 
-    public void _init_( Float32 _x, Float32 _y )
+    public void _init_( Int32 _x, Int32 _y )
     {
         this.x = _x;
         this.y = _y;
     }
-    Float32 _getItem_( int index )
+
+    Int32 _getItem_( int index )
     {
         if( index == 0 )
         {
@@ -24,7 +24,7 @@ public class Float32_2 extends Num
             ret this.y
         }
     }
-    void _setItem_( int index, Float32 value )
+    void _setItem_( int index, Int32 value )
     {
         if( index == 0 )
         {

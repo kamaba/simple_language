@@ -59,7 +59,7 @@ public class Float16 extends Num
 
 public class Float16_Brain extends Num
 {
-    public const static Float16_Brain Epsilen = 4.9123213f;
+    public const static Float16_Brain Epsilen = 4.9123f;
     public const static Float16_Brain MaxValue = 20.0f;
     public const static Float16_Brain MinValue = -1.0f;
 

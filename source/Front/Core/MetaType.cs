@@ -123,7 +123,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass A\r\n" + System.Environment.StackTrace);
             }
             m_Type = CoreMetaClassManager.GetETypeByMetaClass(mc);
             m_MetaClass = mc;
@@ -171,7 +171,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass B\r\n" + System.Environment.StackTrace);
             }
             //m_TemplateMetaClass = templatemc;
             m_MetaClass = mc;
@@ -184,7 +184,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass C\r\n" + System.Environment.StackTrace);
             }
             if ( mitc == null)
             {

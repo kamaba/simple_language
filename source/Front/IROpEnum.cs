@@ -22,7 +22,11 @@ namespace SimpleLanguage
         LoadConstInt32,
         LoadConstUInt32,
         LoadConstInt64,         
-        LoadConstUInt64,  
+        LoadConstUInt64,
+        LoadConstFloat8_E4M3,
+        LoadConstFloat8_E5M2,
+        LoadConstFloat16,
+        LoadConstFloat16_Brain,
         LoadConstFloat32,
         LoadConstFloat64,
         LoadConstBoolean,
@@ -132,7 +136,13 @@ namespace SimpleLanguage
 
         // Parameter slot store: argument/local use independent index spaces,
         // assigning to a parameter must write the argument slot (not StoreLocal).
-        StoreArgument,  // = 95
+        StoreArgument,  // = 99
+
+        // Low-precision float conversions (stack top value -> target float bit pattern)
+        Convert_F8E4M3, // = 100 float -> float8(e4m3) bits(byte)
+        Convert_F8E5M2, // = 101 float -> float8(e5m2) bits(byte)
+        Convert_F16,    // = 102 float -> float16 bits(ushort)
+        Convert_F16B,   // = 103 float -> float16brain(bfloat16) bits(ushort)
     }
 
     /// <summary>

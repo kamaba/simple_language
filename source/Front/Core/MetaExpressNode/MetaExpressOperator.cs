@@ -120,6 +120,16 @@ namespace SimpleLanguage.Core
                                         mcen.value = -(long)mcen.value;
                                         return mcen;
                                     }
+                                case EType.Float8:
+                                case EType.Float8_E5M2:
+                                case EType.Float16:
+                                case EType.Float16_Brain:
+                                    {
+                                        // 低精度浮点存储为位模式：先解码取负再重新编码
+                                        var v = Float816Convert.BitsToDoubleByEType(eType, mcen.value);
+                                        mcen.value = Float816Convert.ToBitsByEType(eType, -v);
+                                        return mcen;
+                                    }
 
                             }
                         }
@@ -620,7 +630,7 @@ namespace SimpleLanguage.Core
                                         }
 
                                         EType etype = MetaTypeFactory.CalcETypeByLeftAndRight(leftMc.eType, rightMc.eType, m_OpLevelSign, out int error);
-                                        if (error == 0)
+                                        if (error == 0 && etype != EType.None)
                                         {
                                             if (etype != rightMc.eType)
                                             {

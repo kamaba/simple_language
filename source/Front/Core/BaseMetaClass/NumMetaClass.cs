@@ -145,7 +145,7 @@ namespace SimpleLanguage.Core
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.Float8;
             m_InnderDefine = true;
-            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float8, 0.0f);
+            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float8, (byte)0);
             SetDefaultExpressNode(mcen);
 
 
@@ -163,7 +163,7 @@ namespace SimpleLanguage.Core
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.Float8_E5M2;
             m_InnderDefine = true;
-            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float8_E5M2, 0.0f);
+            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float8_E5M2, (byte)0);
             SetDefaultExpressNode(mcen);
         }
         public static MetaClass CreateMetaClass()
@@ -179,7 +179,7 @@ namespace SimpleLanguage.Core
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.Float16;
             m_InnderDefine = true;
-            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float16, 0.0f);
+            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float16, (ushort)0);
             SetDefaultExpressNode(mcen);
 
 
@@ -197,7 +197,7 @@ namespace SimpleLanguage.Core
             SetExtendClass(CoreMetaClassManager.numMetaClass);
             m_Type = EType.Float16_Brain;
             m_InnderDefine = true;
-            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float16_Brain, 0.0f);
+            MetaConstExpressNode mcen = new MetaConstExpressNode(EType.Float16_Brain, (ushort)0);
             SetDefaultExpressNode(mcen);
         }
         public static MetaClass CreateMetaClass()

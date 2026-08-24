@@ -4,6 +4,8 @@
 4. 增加中断编译，和编译状态的逻辑  手动
 5. template_runtime_def_type_capacity这个字段是干什么的，是不是没什么用
 
+float8 16 需要在定义类型，必须使用类型定义，只能小兼容大
+
 2. 数学库的集成
 5. 实现别名的功能，Nickname的使用，让查找Class/MemeberVar|functoin/
 6. 这个的cvm实现 public override Num floor()ceil()的实现 isFinite  Num继承的abstract的方法，需要实现
@@ -12,11 +14,16 @@
 
 增加float16（half) 类型，未来，还要增加float8 
 
+对了，现在要在cvm里边的  先把FrontOpEnum里边的EIROpCode 
 use_runtime_variable_slots 是否要使用slots这个
 vm_try_pop_i32 是否要分离成自己的方法
 把runtime.c 里边的方法，分散到不同的文件中
 看那些要使用宏定义的方式
 直接使用memcpy
+
+payload_length 是否可以省掉判断
+vm_stack_slot_try_push尽量改造成宏标记
+优化system_method里边调用到的平台涉及到的函数，需要放到lib文件夹下，就是time_system_method.h .c的处理方式 ，他的具体平台函数，是在lib/time/sys_time.h里边的函数，而不是在system_method里边放着
 
 
 1. cvm优化system method 动态加载

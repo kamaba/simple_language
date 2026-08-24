@@ -122,7 +122,7 @@ internal static class Program
         argv.AddRange(cvmArgs);
         return CallCliMain(argv.ToArray());
 #else
-        cvmExe = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "project", "vs", "vm_lib",
+        cvmExe = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang",
             "build", "Release", "bin", "csimple_lang_lib.exe"));
         // Release: process invocation
         if (debug)

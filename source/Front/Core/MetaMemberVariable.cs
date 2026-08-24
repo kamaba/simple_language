@@ -20,7 +20,7 @@ namespace SimpleLanguage.Core
         Code = 1,         //写的.s代码
         Manual = 2,         //手动，通过c#代码
         CodeAndManual = 3,  //
-        CSharp= 4,              //通过c#的dll文件，或者是编译完的代码的识别
+        CSharp = 4,              //通过c#的dll文件，或者是编译完的代码的识别
         ManualAndCSharp = 6,     //手动注入的c#代码进逻辑解析
         All = 7
     }
@@ -31,7 +31,7 @@ namespace SimpleLanguage.Core
         public MetaClass sourceMetaClass => m_SourceMetaClass;
         public EFromType fromType => m_FromType;
         public MetaExpressNodeBase express => m_Express;
-        public MetaConstExpressNode constExpressNode => m_Express as MetaConstExpressNode;  
+        public MetaConstExpressNode constExpressNode => m_Express as MetaConstExpressNode;
         public bool isInnerDefine => m_IsInnerDefine;
         public int index => m_Index;
         public FileMetaMemberVariable fileMetaMemeberVariable => m_FileMetaMemeberVariable;
@@ -55,14 +55,14 @@ namespace SimpleLanguage.Core
 
         private readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
         //private Dictionary< string, MetaGenTemplate> m_MetaGenTemplateDict = new Dictionary<string, MetaGenTemplate>();
-        
+
 
 #pragma warning disable CS0414 // 字段“MetaMemberVariable.m_MemberDataType”已被赋值，但从未使用过它的值
         private EMemberDataType m_MemberDataType = EMemberDataType.None;
 #pragma warning restore CS0414 // 字段“MetaMemberVariable.m_MemberDataType”已被赋值，但从未使用过它的值
 
 
-        public MetaMemberVariable( MetaMemberVariable mmv ) : base( mmv )
+        public MetaMemberVariable(MetaMemberVariable mmv) : base(mmv)
         {
             m_FromType = EFromType.Manual;
             m_IsInnerDefine = mmv.m_IsInnerDefine;
@@ -74,7 +74,7 @@ namespace SimpleLanguage.Core
             m_Name = mmv.m_Name;
             this.m_PintTokenList = mmv.m_PintTokenList;
             m_Index = mmv.m_Index;
-            m_FromType = mmv.m_FromType;  
+            m_FromType = mmv.m_FromType;
             m_IsStatic = mmv.m_IsStatic;
             m_Permission = mmv.m_Permission;
             mmv.m_TemplateChildMetaMemberVariableList.Add(this);
@@ -113,7 +113,7 @@ namespace SimpleLanguage.Core
 
             SetOwnerMetaBase(me);
         }
-        public MetaMemberVariable( MetaClass mc, FileMetaMemberVariable fmmv )
+        public MetaMemberVariable(MetaClass mc, FileMetaMemberVariable fmmv)
         {
             m_FileMetaMemeberVariable = fmmv;
             m_Name = fmmv.name;
@@ -124,18 +124,18 @@ namespace SimpleLanguage.Core
             m_IsConst = m_FileMetaMemeberVariable?.constToken != null;
             m_VariableFrom = EVariableFrom.ClassMember;
 
-            if( string.IsNullOrEmpty( m_Name ) )
+            if (string.IsNullOrEmpty(m_Name))
             {
                 Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到定义变量名称!");
                 m_Name = "Error_" + GetHashCode().ToString();
             }
             if (m_FileMetaMemeberVariable.permissionToken?.type != null)
             {
-                m_Permission = CompilerUtil.GetPerMissionByType(m_FileMetaMemeberVariable.permissionToken.type );
+                m_Permission = CompilerUtil.GetPerMissionByType(m_FileMetaMemeberVariable.permissionToken.type);
             }
             else
             {
-                if(m_Name[0] == '_' )
+                if (m_Name[0] == '_')
                 {
                     m_Permission = EPermission.Private;
                 }
@@ -151,11 +151,11 @@ namespace SimpleLanguage.Core
                 }
             }
         }
-        public void SetFileMetaMemeberVariable(FileMetaMemberVariable fmmv )
+        public void SetFileMetaMemeberVariable(FileMetaMemberVariable fmmv)
         {
             m_FileMetaMemeberVariable = fmmv;
         }
-        public void SetVariableFrom(EVariableFrom vfrom )
+        public void SetVariableFrom(EVariableFrom vfrom)
         {
             m_VariableFrom = vfrom;
         }
@@ -172,9 +172,9 @@ namespace SimpleLanguage.Core
         {
             if (m_FileMetaMemeberVariable?.classDefineRef != null)
             {
-                m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(ownerMetaClass, m_FileMetaMemeberVariable.classDefineRef);                
+                m_DefineMetaType = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(ownerMetaClass, m_FileMetaMemeberVariable.classDefineRef);
                 m_IsDefineMetaType = true;
-                if( m_DefineMetaType == null )
+                if (m_DefineMetaType == null)
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreDefineTypeIsNull, m_Token, "get define meta type is failed!");
                     return;
@@ -238,7 +238,7 @@ namespace SimpleLanguage.Core
             //{
             //    ExpressManager.CalcParseLevel(parseLevel, m_Express);
             //}
-            if ( this.m_FileMetaMemeberVariable != null )
+            if (this.m_FileMetaMemeberVariable != null)
             {
                 var express = this.m_FileMetaMemeberVariable?.express;
                 if (express == null)
@@ -262,12 +262,12 @@ namespace SimpleLanguage.Core
 
                 this.m_Express = ExpressManager.CreateExpressNode(cep);
             }
-            if( this.m_Express == null )
+            if (this.m_Express == null)
             {
                 Token token = null;
-                if ( this.m_FileMetaMemeberVariable?.express != null )
+                if (this.m_FileMetaMemeberVariable?.express != null)
                 {
-                    token = this.m_FileMetaMemeberVariable?.express.token;                   
+                    token = this.m_FileMetaMemeberVariable?.express.token;
                 }
                 Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, $"Error [{this.ownerMetaClass.allName + "." + this.m_Name} ]配置成员变量时，必须需要有等号及后续的表达式!!");
             }
@@ -291,7 +291,7 @@ namespace SimpleLanguage.Core
             // m_IsParsingExpress 守卫用于在依赖循环时避免递归重入死循环。
             if (m_Express != null)
             {
-                if(m_Express.parseSuccessed == false )
+                if (m_Express.parseSuccessed == false)
                 {
                     if (!m_IsParsingExpress)
                     {
@@ -328,7 +328,7 @@ namespace SimpleLanguage.Core
             if (ownerMetaClass != null && ownerMetaClass.refFromType == RefFromType.RefModule)
                 return;
 
-            if( m_Express != null )
+            if (m_Express != null)
             {
                 m_Express = ExpressManager.ConvertNewExpress(m_Express, m_DefineMetaType);
                 m_Express.CalcReturnType();
@@ -348,73 +348,72 @@ namespace SimpleLanguage.Core
                     }
                 }
 
-                //if (this.m_SourceMetaVariable == null)
+                var relation = TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_RealMetaType, m_Token, out MetaType convertMt);
+                if (relation == false)
                 {
-                    var relation = TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_RealMetaType, m_Token, out MetaType convertMt);
-                    if (relation == false)
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 表达式中返回定义类型为空 " + m_Express.ToString());
+                    return;
+                }
+                else
+                {
+                    if (m_Express is MetaConstExpressNode mcen && m_IsDefineMetaType)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 表达式中返回定义类型为空 " + m_Express.ToString());
-                        return;
-                    }
-                    else
-                    {
-                        if (m_Express is MetaConstExpressNode mcen && m_IsDefineMetaType)
+                        var t = m_DefineMetaType.eType;
+                        if (t != m_RealMetaType.eType
+                            && (t == EType.UInt8
+                            || t == EType.Int8
+                            || t == EType.Int16
+                            || t == EType.UInt16
+                            || t == EType.Int32
+                            || t == EType.UInt32
+                            || t == EType.Int64
+                            || t == EType.UInt64
+                            || t == EType.Float8
+                            || t == EType.Float8_E5M2
+                            || t == EType.Float16
+                            || t == EType.Float16_Brain
+                            || t == EType.Float32
+                            || t == EType.Float64))
                         {
-                            var t = m_DefineMetaType.eType;
-                            if (t != m_RealMetaType.eType
-                                && (t == EType.UInt8
-                                || t == EType.Int8
-                                || t == EType.Int16
-                                || t == EType.UInt16
-                                || t == EType.Int32
-                                || t == EType.UInt32
-                                || t == EType.Int64
-                                || t == EType.UInt64
-                                || t == EType.Float16
-                                || t == EType.Float32
-                                || t == EType.Float64))
-                            {
-                                mcen.SetNumType(t);
-                            }
+                            mcen.SetNumType(t);
                         }
                     }
                 }
-
             }
         }
         public MetaExpressNodeBase SimulateExpressRun(MetaExpressNodeBase node)
         {
             MetaExpressNodeBase newnode = node;
-            if ( node is MetaCallLinkExpressNode )
+            if (node is MetaCallLinkExpressNode)
             {
                 MetaCallLinkExpressNode mcen = node as MetaCallLinkExpressNode;
-                if( mcen != null )
+                if (mcen != null)
                 {
                     newnode = mcen.ConvertConstExpressNode();
                 }
             }
-            else if( node is MetaOpExpressNode )
+            else if (node is MetaOpExpressNode)
             {
                 MetaOpExpressNode moen = node as MetaOpExpressNode;
                 var left = SimulateExpressRun(moen.left);
                 var right = SimulateExpressRun(moen.right);
                 if (left != null)
                 {
-                    moen.SetLeft( left );
+                    moen.SetLeft(left);
                 }
                 if (right != null)
                 {
-                    moen.SetRight( right );
+                    moen.SetRight(right);
                 }
                 newnode = node;
             }
-            else if( node is MetaUnaryOpExpressNode )
+            else if (node is MetaUnaryOpExpressNode)
             {
                 MetaUnaryOpExpressNode muoen = node as MetaUnaryOpExpressNode;
                 var v = SimulateExpressRun(muoen.value);
                 if (v != null)
                 {
-                    muoen.SetValue( v );
+                    muoen.SetValue(v);
                 }
                 newnode = node;
             }

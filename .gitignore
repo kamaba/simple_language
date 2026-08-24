@@ -277,8 +277,8 @@
 /source/CSimpleVMTest1/Properties/launchSettings.json
 /source/CSimpleVMTest2/Properties/launchSettings.json
 /scripts/safe_rm_aliases.ps1
-# Fixed malformed line that was blocking ripgrep
-/source/CompileStd/obj
-/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+# Fixed malformed line that was blocking ripgrep
+/source/CompileStd/obj
 /core_compile.log
 /test_run.log
+/source/CompileStd/obj

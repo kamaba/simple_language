@@ -242,9 +242,17 @@ namespace SimpleLanguage.Core
             {
                 return EType.Float8;
             }
+            else if (mc == float8_E5M2MetaClass)
+            {
+                return EType.Float8_E5M2;
+            }
             else if (mc == float16MetaClass)
             {
                 return EType.Float16;
+            }
+            else if (mc == float16_BrainMetaClass)
+            {
+                return EType.Float16_Brain;
             }
             else if (mc == float32MetaClass)
             {
@@ -327,8 +335,12 @@ namespace SimpleLanguage.Core
                     return uint64MetaClass;
                 case EType.Float8:
                     return float8MetaClass;
+                case EType.Float8_E5M2:
+                    return float8_E5M2MetaClass;
                 case EType.Float16:
                     return float16MetaClass;
+                case EType.Float16_Brain:
+                    return float16_BrainMetaClass;
                 case EType.Float32:
                     return float32MetaClass;
                 case EType.Float64:

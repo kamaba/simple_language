@@ -1,5 +1,8 @@
 
 
+@Nickname("Point3D") 
+@Nickname("Vector3")
+@Nickname("Vec3")
 public class Float32_3
 {
     public Float32 x = 0.0f

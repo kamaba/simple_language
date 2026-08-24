@@ -192,6 +192,26 @@ namespace SimpleLanguage.Core
                             value = Convert.ToUInt64(value);
                         }
                         break;
+                    case EType.Float8:
+                        {
+                            value = Convert.ToByte(value);
+                        }
+                        break;
+                    case EType.Float8_E5M2:
+                        {
+                            value = Convert.ToByte(value);
+                        }
+                        break;
+                    case EType.Float16:
+                        {
+                            value = Convert.ToUInt16(value);
+                        }
+                        break;
+                    case EType.Float16_Brain:
+                        {
+                            value = Convert.ToUInt16(value);
+                        }
+                        break;
                     case EType.Float32:
                         {
                             value = Convert.ToSingle(value);
@@ -422,6 +442,28 @@ namespace SimpleLanguage.Core
                     eType = EType.Float64;
                     value = Convert.ToDouble(value);
                 }
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.float8MetaClass)
+                {
+                    // float8 常量存储为 byte 位模式
+                    eType = EType.Float8;
+                    value = Convert.ToByte(value);
+                }
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.float8_E5M2MetaClass)
+                {
+                    eType = EType.Float8_E5M2;
+                    value = Convert.ToByte(value);
+                }
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.float16MetaClass)
+                {
+                    // float16/bfloat16 常量存储为 ushort 位模式
+                    eType = EType.Float16;
+                    value = Convert.ToUInt16(value);
+                }
+                else if (m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.float16_BrainMetaClass)
+                {
+                    eType = EType.Float16_Brain;
+                    value = Convert.ToUInt16(value);
+                }
                 else if(m_ExpressReturnMetaType.metaClass == CoreMetaClassManager.numMetaClass )
                 {
                     eType = EType.Num;
@@ -497,6 +539,17 @@ namespace SimpleLanguage.Core
                         value = value.ToString() + (string)right.value;
                     }
                     break;
+                case EType.Float8:
+                case EType.Float8_E5M2:
+                case EType.Float16:
+                case EType.Float16_Brain:
+                    {
+                        // 位模式解码为数值运算后再编码回位模式
+                        double fa = Float816Convert.BitsToDoubleByEType(eType, value);
+                        double fb = Float816Convert.BitsToDoubleByEType(right.eType, right.value);
+                        value = Float816Convert.ToBitsByEType(eType, fa + fb);
+                    }
+                    break;
                 case EType.Float32:
                     value = (float)value + (float)right.value;
                     break;
@@ -530,6 +583,16 @@ namespace SimpleLanguage.Core
                     break;
                 case EType.UInt64:
                     value = (ulong)value - (ulong)right.value;
+                    break;
+                case EType.Float8:
+                case EType.Float8_E5M2:
+                case EType.Float16:
+                case EType.Float16_Brain:
+                    {
+                        double fa = Float816Convert.BitsToDoubleByEType(eType, value);
+                        double fb = Float816Convert.BitsToDoubleByEType(right.eType, right.value);
+                        value = Float816Convert.ToBitsByEType(eType, fa - fb);
+                    }
                     break;
                 case EType.Float32:
                     value = (float)value - (float)right.value;
@@ -565,6 +628,16 @@ namespace SimpleLanguage.Core
                 case EType.UInt64:
                     value = (ulong)value * (ulong)right.value;
                     break;
+                case EType.Float8:
+                case EType.Float8_E5M2:
+                case EType.Float16:
+                case EType.Float16_Brain:
+                    {
+                        double fa = Float816Convert.BitsToDoubleByEType(eType, value);
+                        double fb = Float816Convert.BitsToDoubleByEType(right.eType, right.value);
+                        value = Float816Convert.ToBitsByEType(eType, fa * fb);
+                    }
+                    break;
                 case EType.Float32:
                     value = (float)value * (float)right.value;
                     break;
@@ -599,6 +672,16 @@ namespace SimpleLanguage.Core
                 case EType.UInt64:
                     value = (ulong)value / (ulong)right.value;
                     break;
+                case EType.Float8:
+                case EType.Float8_E5M2:
+                case EType.Float16:
+                case EType.Float16_Brain:
+                    {
+                        double fa = Float816Convert.BitsToDoubleByEType(eType, value);
+                        double fb = Float816Convert.BitsToDoubleByEType(right.eType, right.value);
+                        value = Float816Convert.ToBitsByEType(eType, fa / fb);
+                    }
+                    break;
                 case EType.Float32:
                     value = (float)value / (float)right.value;
                     break;
@@ -632,6 +715,16 @@ namespace SimpleLanguage.Core
                     break;
                 case EType.UInt64:
                     value = (ulong)value % (ulong)right.value;
+                    break;
+                case EType.Float8:
+                case EType.Float8_E5M2:
+                case EType.Float16:
+                case EType.Float16_Brain:
+                    {
+                        double fa = Float816Convert.BitsToDoubleByEType(eType, value);
+                        double fb = Float816Convert.BitsToDoubleByEType(right.eType, right.value);
+                        value = Float816Convert.ToBitsByEType(eType, fa % fb);
+                    }
                     break;
                 case EType.Float32:
                     value = (float)value % (float)right.value;
@@ -867,6 +960,44 @@ namespace SimpleLanguage.Core
                             break;
                     }
                     break;
+                case EType.Float8:
+                case EType.Float8_E5M2:
+                case EType.Float16:
+                case EType.Float16_Brain:
+                    {
+                        // 位模式先解码为数值再比较
+                        var lt = eType;
+                        double ca = Float816Convert.BitsToDoubleByEType(lt, value);
+                        double cb = Float816Convert.BitsToDoubleByEType(right.eType, right.value);
+                        switch (opSign)
+                        {
+                            case ELeftRightOpSign.Equal:
+                                eType = EType.Boolean;
+                                value = ca == cb;
+                                break;
+                            case ELeftRightOpSign.NotEqual:
+                                eType = EType.Boolean;
+                                value = ca != cb;
+                                break;
+                            case ELeftRightOpSign.Greater:
+                                eType = EType.Boolean;
+                                value = ca > cb;
+                                break;
+                            case ELeftRightOpSign.GreaterOrEqual:
+                                eType = EType.Boolean;
+                                value = ca >= cb;
+                                break;
+                            case ELeftRightOpSign.Less:
+                                eType = EType.Boolean;
+                                value = ca < cb;
+                                break;
+                            case ELeftRightOpSign.LessOrEqual:
+                                eType = EType.Boolean;
+                                value = ca <= cb;
+                                break;
+                        }
+                    }
+                    break;
                 case EType.Float32:
                     switch (opSign)
                     {
@@ -977,6 +1108,30 @@ namespace SimpleLanguage.Core
                 case EType.UInt64:
                     {
                         signEn = "uL";
+                    }
+                    break;
+                case EType.Float8:
+                    {
+                        str = Float816Convert.BitsToDoubleByEType(EType.Float8, value).ToString();
+                        signEn = "fe4";
+                    }
+                    break;
+                case EType.Float8_E5M2:
+                    {
+                        str = Float816Convert.BitsToDoubleByEType(EType.Float8_E5M2, value).ToString();
+                        signEn = "fe5";
+                    }
+                    break;
+                case EType.Float16:
+                    {
+                        str = Float816Convert.BitsToDoubleByEType(EType.Float16, value).ToString();
+                        signEn = "h";
+                    }
+                    break;
+                case EType.Float16_Brain:
+                    {
+                        str = Float816Convert.BitsToDoubleByEType(EType.Float16_Brain, value).ToString();
+                        signEn = "hb";
                     }
                     break;
                 case EType.Float32:

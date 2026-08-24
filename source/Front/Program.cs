@@ -24,7 +24,18 @@ namespace SimpleLanguage
 #endif
 
             var inputArgs = new CommandInputArgs(args);
-            _ = CommandExecutor.Execute(inputArgs);
+            try
+            {
+                _ = CommandExecutor.Execute(inputArgs);
+            }
+            catch (Exception ex)
+            {
+                Console.Out.Flush();
+                Console.Error.WriteLine("=== UNHANDLED EXCEPTION ===");
+                Console.Error.WriteLine(ex.ToString());
+                Console.Error.Flush();
+                Environment.ExitCode = 42;
+            }
         }
     }
 }

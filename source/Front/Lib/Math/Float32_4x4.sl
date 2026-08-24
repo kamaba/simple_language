@@ -7,7 +7,7 @@ public class Float32_4x4
     {
         for (int i = 0; i < 16; i++)
         {
-            _mat4x4[i] = 0.0f;
+            this._mat4x4[i] = 0.0f;
         }
     }
 

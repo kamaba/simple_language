@@ -599,6 +599,29 @@ namespace SimpleLanguage.Compile
                 }
                 else if( m_TempChar == 'f' )
                 {
+                    // fe4/fe5 后缀：float8(e4m3)/float8(e5m2) 字面量，token 中保存 byte 位模式
+                    if (endPoint <= 1 && PeekChar() == 'e' && (PeekChar2() == '4' || PeekChar2() == '5'))
+                    {
+                        char ebitsChar = PeekChar2();
+                        ReadChar();   // 吃掉 'e'
+                        ReadChar();   // 吃掉 '4'/'5'
+                        if (endPoint == 1 && !Char.IsNumber(tfrontChar))    // 2.fe4 -> 按 2 . fe4 解析
+                        {
+                            m_Builder.Remove(m_Builder.Length - 1, 1);
+                            AddToken(ETokenType.Number, Int32.Parse(m_Builder.ToString()), EType.Int32);
+                            UndoChar();
+                            UndoChar();
+                            UndoChar();
+                            UndoChar();
+                            break;
+                        }
+                        float fv8 = float.Parse(m_Builder.ToString());
+                        byte bits8 = ebitsChar == '4'
+                            ? Float816Convert.Float32ToFloat8E4M3Bits(fv8)
+                            : Float816Convert.Float32ToFloat8E5M2Bits(fv8);
+                        AddToken(ETokenType.Number, bits8, ebitsChar == '4' ? EType.Float8 : EType.Float8_E5M2);
+                        break;
+                    }
                     if( endPoint == 0 )     // 2f
                     {
                         var ld = Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "" );
@@ -641,6 +664,36 @@ namespace SimpleLanguage.Compile
                             UndoChar();
                             break;
                         }
+                    }
+                }
+                else if (m_TempChar == 'h')
+                {
+                    // h/hb 后缀：float16 / float16brain(bfloat16) 字面量，token 中保存 ushort 位模式
+                    if (endPoint <= 1)
+                    {
+                        bool isBrain = PeekChar() == 'b';
+                        if (isBrain)
+                        {
+                            ReadChar();   // 吃掉 'b'
+                        }
+                        if (endPoint == 1 && !Char.IsNumber(tfrontChar))    // 2.h / 2.hb -> 按 2 . h(b) 解析
+                        {
+                            m_Builder.Remove(m_Builder.Length - 1, 1);
+                            AddToken(ETokenType.Number, Int32.Parse(m_Builder.ToString()), EType.Int32);
+                            UndoChar();
+                            UndoChar();
+                            if (isBrain)
+                            {
+                                UndoChar();
+                            }
+                            break;
+                        }
+                        float fv16 = float.Parse(m_Builder.ToString());
+                        ushort bits16 = isBrain
+                            ? Float816Convert.Float32ToBFloat16Bits(fv16)
+                            : Float816Convert.Float32ToFloat16Bits(fv16);
+                        AddToken(ETokenType.Number, bits16, isBrain ? EType.Float16_Brain : EType.Float16);
+                        break;
                     }
                 }
                 else if (m_TempChar == 'L' || m_TempChar == 'l')
@@ -754,7 +807,36 @@ namespace SimpleLanguage.Compile
                         }
                         if (tailChar == 'f' || tailChar == 'F')
                         {
-                            AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
+                            // fe4/fe5 后缀：科学计数法 float8 字面量
+                            if (PeekChar() == 'e' && (PeekChar2() == '4' || PeekChar2() == '5'))
+                            {
+                                char ebitsChar = PeekChar2();
+                                ReadChar();   // 吃掉 'e'
+                                ReadChar();   // 吃掉 '4'/'5'
+                                float fv8 = float.Parse(m_Builder.ToString());
+                                byte bits8 = ebitsChar == '4'
+                                    ? Float816Convert.Float32ToFloat8E4M3Bits(fv8)
+                                    : Float816Convert.Float32ToFloat8E5M2Bits(fv8);
+                                AddToken(ETokenType.Number, bits8, ebitsChar == '4' ? EType.Float8 : EType.Float8_E5M2);
+                            }
+                            else
+                            {
+                                AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
+                            }
+                        }
+                        else if (tailChar == 'h')
+                        {
+                            // h/hb 后缀：科学计数法 float16 / float16brain 字面量
+                            bool isBrain = PeekChar() == 'b';
+                            if (isBrain)
+                            {
+                                ReadChar();   // 吃掉 'b'
+                            }
+                            float fv16 = float.Parse(m_Builder.ToString());
+                            ushort bits16 = isBrain
+                                ? Float816Convert.Float32ToBFloat16Bits(fv16)
+                                : Float816Convert.Float32ToFloat16Bits(fv16);
+                            AddToken(ETokenType.Number, bits16, isBrain ? EType.Float16_Brain : EType.Float16);
                         }
                         else if (tailChar == 'd' || tailChar == 'D')
                         {

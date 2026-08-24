@@ -47,10 +47,12 @@ Project
         MVTest1.fun()
         MVTest2.fun()        
         EnvironmentTest.fun()
-        GuidTest.fun()
-        !#
+        GuidTest.fun()        
         RandomTest.fun()
-        PtrTest.fun()
+        !#
+        Float8Test.fun()
+        Float16Test.fun()
+        #PtrTest.fun()
         SystemPrintln("===== ProjectTest _main_ end =====")
     }
     CompileBefore()

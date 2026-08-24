@@ -1,5 +1,8 @@
 
 
+@Nickname("F4") 
+@Nickname("Vector4")
+@Nickname("Vec4")
 public class Float32_4
 {
     public float x = 0.0f;

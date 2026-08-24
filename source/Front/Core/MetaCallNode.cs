@@ -1572,7 +1572,8 @@ namespace SimpleLanguage.Core
             if (mv.isArray)
             {
                 if (isAt)
-                {
+                { 
+
                     HandleVisit();
                 }
                 //if (mv.realMetaType.isGenTemplateClass)

@@ -85,6 +85,14 @@ namespace SimpleLanguage.IR
                     try { return Convert.ToInt64(v); } catch { return v; }
                 case EIROpCode.LoadConstUInt64:
                     try { return Convert.ToUInt64(v); } catch { return v; }
+                case EIROpCode.LoadConstFloat8_E4M3:
+                case EIROpCode.LoadConstFloat8_E5M2:
+                    // float8 常量保存位模式（byte）
+                    try { return Convert.ToByte(v); } catch { return v; }
+                case EIROpCode.LoadConstFloat16:
+                case EIROpCode.LoadConstFloat16_Brain:
+                    // float16/bfloat16 常量保存位模式（ushort）
+                    try { return Convert.ToUInt16(v); } catch { return v; }
                 case EIROpCode.LoadConstFloat32:
                     try { return Convert.ToSingle(v); } catch { return v; }
                 case EIROpCode.LoadConstFloat64:
@@ -413,6 +421,14 @@ namespace SimpleLanguage.IR
                     break;
                 case EIROpCode.LoadConstUInt64:
                     if (TryGetUInt64(out var ui64)) { _opValue = ui64; return; }
+                    break;
+                case EIROpCode.LoadConstFloat8_E4M3:
+                case EIROpCode.LoadConstFloat8_E5M2:
+                    if (TryGetByte(out var f8bits)) { _opValue = f8bits; return; }
+                    break;
+                case EIROpCode.LoadConstFloat16:
+                case EIROpCode.LoadConstFloat16_Brain:
+                    if (TryGetUInt16(out var f16bits)) { _opValue = f16bits; return; }
                     break;
                 case EIROpCode.LoadConstFloat32:
                     if (TryGetSingle(out var f)) { _opValue = f; return; }
