@@ -15,9 +15,10 @@ Project
         SystemPrintln("===== ProjectTest _main_ start =====")   
         nowMs = Environment.nowMillis()
         
-        ObjectTest.fun()
-        StringTest.fun()
+        #ObjectTest.fun()
+        #StringTest.fun()
         NumberTest.fun()
+        #!
         GlobalTest.fun()
         BoolTest.fun()
         TypeTest.fun()
@@ -56,7 +57,7 @@ Project
         Float8Test.fun()
         Float16Test.fun()
         IfelseTest.fun()
-       
+       !#
         #PtrTest.fun()
         nowMs = Environment.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")

@@ -1,7 +1,7 @@
 public class UInt16 extends Num
 {
-    const static UInt16 MaxValue = 0xffff;
-    const static UInt16 MinValue = 0;
+    public const static UInt16 MaxValue = 0xffff;
+    public const static UInt16 MinValue = 0;
     UInt16 _value = 0;
 
     _init_(UInt16 _val)

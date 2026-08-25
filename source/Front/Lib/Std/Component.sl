@@ -5,6 +5,7 @@ public class Component extends Object
 
     public T GetComponent<T:Component>()
     {
+        #!
         for v in this._childrensComponents
         {
             if v.type == T.type
@@ -12,6 +13,7 @@ public class Component extends Object
                 ret v as T
             }
         }
+        !#
         ret null
     }
 }

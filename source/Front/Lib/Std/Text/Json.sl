@@ -1,7 +1,7 @@
 
 public class Json interface IDataStruct
 {
-    override _init()
+    override _init_()
     {
         
     }    

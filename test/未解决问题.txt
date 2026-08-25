@@ -1,5 +1,4 @@
 
-1. 内存resize的时候，需要释放原来的内存
 3. 对别一个调用类的 Core.global.var1 Std.global.aaa  手动
 4. 增加中断编译，和编译状态的逻辑  手动
 5. template_runtime_def_type_capacity这个字段是干什么的，是不是没什么用
@@ -19,10 +18,8 @@
 导出阶段，基本就是对IR的逻辑，进行Module的导出
 这些阶段定义三个大阶段，每个阶段，又有自己的小阶段， 比如 在文件阶段 又分Token->node->File 三个。
 
-float8 16 需要把常数变正确
+
 DateTime.sl 
-vm_try_pop_i32 是否要分离成自己的方法  和peek重复的部分，只用一个方法，而不是代码写两次
-vm_stack_slot_try_push尽量改造成宏标记
 1. cvm优化system method 动态加载
 llvm初试
 

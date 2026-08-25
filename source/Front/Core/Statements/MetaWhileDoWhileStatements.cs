@@ -148,8 +148,11 @@ namespace SimpleLanguage.Core
                         //   1) MetaGenClass：继承的类已经是MetaGenTemplateClass，模板内容包含在类里边；
                         //   2) TemplateClassWithTemplate：在生成MetaType时构造的模板参数，存放在MetaType上。
                         // GetGenTemplateMetaTypeList() 会根据 eMetaTypeType 自动取类内或MetaType上的模板参数。
-                        if (mdt.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate
-                            || mdt.eMetaTypeType == EMetaTypeType.MetaGenClass)
+                        if(mdt.eMetaTypeType == EMetaTypeType.MetaGenClass)
+                        {
+                            iteratorTemplateList.Add(iterTplList[0]);
+                        }
+                        else if (mdt.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate )
                         {
                             var contentTplList = mdt.GetGenTemplateMetaTypeList();
                             if (contentTplList != null && contentTplList.Count > 0)

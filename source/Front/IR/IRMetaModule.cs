@@ -158,17 +158,24 @@ namespace SimpleLanguage.IR
         private void BuildFields(IRMetaClass irmc, SLClassPackage cls)
         {
             if (cls.fieldList == null) return;
-            int fieldIndex = 0;
+            /* 导出端（SLModulePackageWriter）与本地模块路径（IRMetaClass.CreateMemberData）
+             * 均按"实例字段 / 静态字段"两个独立 index 空间编号（各自从 0 开始）。
+             * fieldList 数组位置把两类字段混在一起计数，不能直接当 index 用，
+             * 否则跨模块静态字段访问索引会整体错位（偏移量 = 实例字段数量）。 */
+            int localIndex = 0;
+            int staticIndex = 0;
             foreach (var fp in cls.fieldList)
             {
                 if (fp == null) continue;
                 var irmt = IRMetaType.CreateFromPackage(fp.typeDef, irmc);
+                // SLFieldPackage flags: 32 = static（与 IRMetaVariable 构造函数判定一致）
+                bool isStatic = (fp.flags & 32) != 0;
+                int fieldIndex = isStatic ? staticIndex++ : localIndex++;
                 var imv = new IRMetaVariable(irmc, fp, irmt, fieldIndex);
                 if (imv.isStatic)
                     irmc.staticIRMetaVariableList.Add(imv);
                 else
                     irmc.localIRMetaVariableList.Add(imv);
-                fieldIndex++;
             }
         }
 

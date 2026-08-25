@@ -189,9 +189,16 @@ namespace SimpleLanguage
                 return signShifted | ((uint)et << mbits) | m;
             }
 
-            // 次正规数或更小：M = (2^23 + mant) * 2^(et - 24 + mbits)
-            uint significand = mant | 0x800000u;
-            int shift = 24 - mbits - et;             // et <= 0 时 shift >= 1
+            // 次正规数或更小。
+            // 公式 M = (2^23 + mant) * 2^(et - 24 + mbits) 仅当输入是 float32 常规数
+            // （exp >= 1，隐含位 2^23 真实存在）时成立。
+            // bf16 与 float32 共享 8 位指数（bias=127），bf16 的次正规值域
+            // [2^(-bias-mbits), 2^(1-bias)) = [2^-133, 2^-126) 整体落在 float32
+            // 次正规区间（exp == 0，无隐含位）之内，此时真实值 = mant * 2^-149，
+            // 对应 mm = mant >> (23 - mbits - et)。
+            bool inputNormal = exp >= 1;
+            uint significand = inputNormal ? (mant | 0x800000u) : mant;
+            int shift = (inputNormal ? 24 : 23) - mbits - et;   // et <= 0 时 shift >= 1
             if (shift >= 32)
             {
                 // 远小于最小次正规数的一半（significand < 2^24），round-to-nearest -> 0
