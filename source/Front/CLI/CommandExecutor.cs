@@ -1,4 +1,4 @@
-using SimpleLanguage.ExportLanguage;
+using SimpleLanguage.Compile.Process;
 using SimpleLanguage.Logging;
 using System;
 using System.IO;
@@ -120,7 +120,8 @@ Examples:
             ProjectManager.Run(spPath, inputArgs);
             if (inputArgs.exportIR)
             {
-                ExportLangManager.Export(ExportKind.SLIR);
+                // 导出阶段：前置阶段(RefModule/File/MetaCore/IR)全部成功才会执行，否则被跳过
+                ProcessManager.instance.RunPhase(ECompilePhase.Export);
             }
 
             Console.WriteLine("Compile completed.");
@@ -140,7 +141,8 @@ Examples:
             ProjectManager.Run(spPath, inputArgs);
             if (inputArgs.exportIR)
             {
-                ExportLangManager.Export(ExportKind.SLIR);
+                // 导出阶段：前置阶段(RefModule/File/MetaCore/IR)全部成功才会执行，否则被跳过
+                ProcessManager.instance.RunPhase(ECompilePhase.Export);
             }
 
             Console.WriteLine("Compile completed. (VM run is handled by the host application)");
@@ -158,7 +160,8 @@ Examples:
 
             Console.WriteLine($"Exporting IR: {spPath}");
             ProjectManager.Run(spPath, inputArgs);
-            ExportLangManager.Export(ExportKind.SLIR);
+            // 导出阶段：前置阶段(RefModule/File/MetaCore/IR)全部成功才会执行，否则被跳过
+            ProcessManager.instance.RunPhase(ECompilePhase.Export);
             Console.WriteLine("Export completed.");
             return true;
         }

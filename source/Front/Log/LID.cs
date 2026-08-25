@@ -1,4 +1,4 @@
-﻿namespace SimpleLanguage.Logging
+namespace SimpleLanguage.Logging
 {
     public enum LID
     {
@@ -71,5 +71,15 @@
         MetaCoreFunctionNeedOverrideFlag = 12273,
 
         MetaCoreFinalFunctionCannotOverride = 12274,
+
+        // 编译过程管理（Process 阶段/步骤状态）
+        ProcessPhaseStart = 11034,
+        ProcessPhaseEnd = 11035,
+        ProcessPhaseFailed = 11036,
+        ProcessPhaseSkipped = 11037,
+        ProcessPhaseErrorNotified = 11038,
+        ProcessStepFailed = 11039,
+        ProcessCompileFileFailed = 11040,
+        ProcessSummary = 11041,
     }
 }

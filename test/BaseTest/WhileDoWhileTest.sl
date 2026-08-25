@@ -3,7 +3,7 @@ WhileTest
     static whilefun()
     {
         int i = 0;
-        #!
+        
         while i < 14
         {
             i++
@@ -12,7 +12,7 @@ WhileTest
             if i > 10{ break;}
             global.println(" ioooo = $i ");
         }
-        !#
+        global.println(" ioooo = $i ");
         i = 10
         while
         {

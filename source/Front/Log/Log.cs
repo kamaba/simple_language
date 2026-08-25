@@ -103,6 +103,14 @@ namespace SimpleLanguage.Logging
         static bool m_ResetFileBeforeNextWrite = true;
         static string s_LastResolvedFrontLogPath = string.Empty;
 
+        static int s_ErrorCount = 0;
+        static int s_WarningCount = 0;
+
+        /// <summary>本次会话累计的 Error/Assert 日志条数（过程管理用于阶段错误判定）。</summary>
+        public static int errorCount => s_ErrorCount;
+        /// <summary>本次会话累计的 Warning 日志条数。</summary>
+        public static int warningCount => s_WarningCount;
+
         /// <summary>在每次完整 Front 编译开始前调用，清空当前 <see cref="FrontLogFilePath"/> 并重新记录本会话。</summary>
         public static void ResetFixedLogFileForNewSession()
         {
@@ -145,6 +153,14 @@ namespace SimpleLanguage.Logging
         public static void AddLog( LogData data )
         {
             m_LogDataList.Enqueue(data);
+            if (data.logType == LogType.Error || data.logType == LogType.Assert)
+            {
+                System.Threading.Interlocked.Increment(ref s_ErrorCount);
+            }
+            else if (data.logType == LogType.Warning)
+            {
+                System.Threading.Interlocked.Increment(ref s_WarningCount);
+            }
             var line = data.ToString();
             Console.WriteLine(line);
             WriteLineToFile(line);

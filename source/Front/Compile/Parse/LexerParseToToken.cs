@@ -101,7 +101,7 @@ namespace SimpleLanguage.Compile
         {
             if (m_Index == 0)
             {
-                CompileManager.instance.AddCompileError("Error Cannot undo char beyond start of source.");
+                Log.AddTokenLog(LID.ShowExtendMessage, "Error Cannot undo char beyond start of source.");
                 return;
             }
             --m_Index;

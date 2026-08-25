@@ -13,12 +13,11 @@ using SimpleLanguage.IR;
 using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
 using SimpleLanguage.Export;
+using SimpleLanguage.ExportLanguage;
+using CompileProcess = SimpleLanguage.Compile.Process;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
-using System.Timers;
 
 namespace SimpleLanguage.Project
 {
@@ -28,10 +27,6 @@ namespace SimpleLanguage.Project
         public static bool isLoaded = false;
         public static FileMeta projectFileMeta => m_ProjectFile;
 
-        public static int structParseCount = 0;
-        public static int buildParseCount = 0;
-        public static int grammerParseCount = 0;
-        public static int parseListCount = 0;
         public static List<FileParse> fileParseList = new List<FileParse>();
 
         private static FileMeta m_ProjectFile = null;
@@ -116,28 +111,166 @@ namespace SimpleLanguage.Project
             CoreMetaClassManager.instance.Init();
             SystemMethodCallDeclarationRegistry.LoadConfigSystemCall();
 
-            // Load reference modules AFTER Core inner types are built.
-            // This allows a compiled Core reference to replace the C# inner-form
-            // Core types with the code-based definitions.
-            ProjectReferenceModuleLoader.LoadReferences(ProjectManager.config, ProjectManager.projectPath);
+            // 注册五个大阶段的所有小步骤
+            InitCompileProcess();
 
-            ProjectClass.ProjectCompileBefore();
+            // 依次执行：RefModule -> File -> MetaCore -> IR
+            // 导出阶段(Export)由调用方按需触发 RunPhase(Export)
+            CompileProcess.ProcessManager.instance.RunToPhase(CompileProcess.ECompilePhase.IR);
 
-            structParseCount = 0;
-            buildParseCount = 0;
-            grammerParseCount = 0;
+            CompileProcess.ProcessManager.instance.PrintSummary();
+        }
 
-            parseListCount = fileParseList.Count;
+        /// <summary>向过程管理器注册五个大阶段（RefModule/File/MetaCore/IR/Export）的所有小步骤</summary>
+        private static void InitCompileProcess()
+        {
+            var pm = CompileProcess.ProcessManager.instance;
+            pm.Reset();
 
-            FileListStructParse();
+            // ============ 阶段1 RefModule：读取外部引入的 Module（错误只提示，不影响后续编译） ============
+            pm.AddStep(CompileProcess.ECompilePhase.RefModule, "LoadRefModules", () =>
+            {
+                // Load reference modules AFTER Core inner types are built.
+                // This allows a compiled Core reference to replace the C# inner-form
+                // Core types with the code-based definitions.
+                ProjectReferenceModuleLoader.LoadReferences(ProjectManager.config, ProjectManager.projectPath);
+                return true;
+            });
 
-            ClassManager.instance.AddMetaData( ProjectManager.globalData );
+            // ============ 阶段2 File：文件编译（Token -> Node -> File），单文件错误只影响当前文件 ============
+            pm.AddStep(CompileProcess.ECompilePhase.File, "PrepareFiles", () =>
+            {
+                Log.ResetFixedLogFileForNewSession();
+                ProjectClass.ProjectCompileBefore();
+                return CheckFileList();
+            });
+            pm.AddStep(CompileProcess.ECompilePhase.File, "Token", () => RunFileStep(fp => fp.ParseTokenStep()));
+            pm.AddStep(CompileProcess.ECompilePhase.File, "Node", () => RunFileStep(fp => fp.ParseNodeStep()));
+            pm.AddStep(CompileProcess.ECompilePhase.File, "File", () => RunFileStep(fp => fp.ParseFileStep()));
 
-            //ProjectClass.ParseProjectClass();
+            // ============ 阶段3 MetaCore：全工程(含 RefModule)逻辑整合与编译 ============
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "CreateNamespace", () =>
+            {
+                for (int i = 0; i < fileParseList.Count; i++)
+                {
+                    fileParseList[i].CreateNamespace();
+                }
+                return true;
+            });
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "CombineFileMeta", () =>
+            {
+                for (int i = 0; i < fileParseList.Count; i++)
+                {
+                    fileParseList[i].CombineFileMeta();
+                }
+                return true;
+            });
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "ParseMetaClassLink", () =>
+            {
+                // 类结构 + 继承/接口与 extend 序就绪后注册 typealias，再收集成员定义类型（见 ClassManager 分步注释）
+                TypeManager.instance.ClearProjectTypeAliases();
+                ClassManager.instance.ParseInitMetaClassListThroughInheritance();
+                TypeManager.instance.ResolveAllDeclaredTypeAliases(fileParseList);
+                ClassManager.instance.ParseInitMetaListCollectMemberDefineMetaTypes();
 
-            ProjectClass.ProjectCompileAfter();
+                ClassManager.instance.CheckInterfaces();
+                return true;
+            });
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "ParseAttributes", () =>
+            {
+                // Parse and process attributes after inheritance/interface resolution.
+                // Compile-time attributes (e.g. Nickname) are applied here so that
+                // subsequent member parsing and IR generation can use alias lookups.
+                ClassManager.instance.ParseAttributes();
+                return true;
+            });
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "ParseMemberExpress", () =>
+            {
+                MetaVariableManager.instance.ParseMetaMemberExpress();
+                MethodManager.instance.ParseMetaMethodExpress();
 
-            IRManager.instance.TranslateIR();
+                ClassManager.instance.ParseDefineComplete();
+                return true;
+            });
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "InjectProjectData", () =>
+            {
+                // Inject jsonc data (root "data" + legacy global.data) into Project meta members before statements parse.
+                ProjectClass.InjectProjectGlobalDataFromConfig();
+                return true;
+            });
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "BuildLocalClass", () =>
+            {
+                // Build per-file local{} classes after member express parsed but before statements parsing.
+                LocalManager.instance.BuildFileLocalClasses(fileParseList);
+                return true;
+            });
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "ParseStatements", () =>
+            {
+                MethodManager.instance.ParseStatements();
+                return true;
+            });
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "InjectInitCall", () =>
+            {
+                // After all methods parsed, inject local{} initialization calls in compile-file order.
+                GlobalManager.instance.InjectGlobalInitCall();
+                LocalManager.instance.InjectLocalInitCalls(fileParseList);
+                return true;
+            });
+#if DEBUG
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "ExportMetaDebug", () =>
+            {
+                // Export per-file MetaCore debug data after logic parsing is complete.
+                ModuleManager.instance.selfModule.metaNode.SetDeep(0);
+                ModuleManager.instance.coreModule.metaNode.SetDeep(-1);
+                for (int i = 0; i < fileParseList.Count; i++)
+                {
+                    fileParseList[i].ExportMetaDebugData();
+                }
+                return true;
+            });
+#endif
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "AddGlobalData", () =>
+            {
+                ClassManager.instance.AddMetaData( ProjectManager.globalData );
+                return true;
+            });
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "ProjectCompileAfter", () =>
+            {
+                ProjectClass.ProjectCompileAfter();
+                return true;
+            });
+
+            // ============ 阶段4 IR：编译成 IR 逻辑，供导出使用 ============
+            pm.AddStep(CompileProcess.ECompilePhase.IR, "TranslateIR", () =>
+            {
+                IRManager.instance.TranslateIR();
+                return true;
+            });
+
+            // ============ 阶段5 Export：对 IR 逻辑进行 Module 导出 ============
+            pm.AddStep(CompileProcess.ECompilePhase.Export, "ExportModule", () =>
+            {
+                ExportLangManager.Export(ExportKind.SLIR);
+                return true;
+            });
+        }
+
+        /// <summary>
+        /// 对文件列表执行文件阶段的某个小步骤：
+        /// 单个文件失败(异常/错误)只影响该文件(后续小步骤会跳过它)，不影响其它文件。
+        /// 返回是否全部文件成功。
+        /// </summary>
+        private static bool RunFileStep( Func<FileParse, bool> stepFunc )
+        {
+            bool allSuccess = true;
+            foreach ( var fp in fileParseList )
+            {
+                if ( !stepFunc( fp ) )
+                {
+                    allSuccess = false;
+                }
+            }
+            return allSuccess;
         }
 
         public static void AddFileParse( string path )
@@ -168,108 +301,6 @@ namespace SimpleLanguage.Project
                 }
             }
             return isSuccess;
-        }
-        public static void FileListStructParse()
-        {
-            Log.ResetFixedLogFileForNewSession();
-            if (!CheckFileList()) return;
-            // Pre-FileMeta stage: process each source file in parallel.
-            //Parallel.ForEach(fileParseList, fp =>
-            //{
-            //    fp.StructParse();
-            //});
-            foreach( var v in fileParseList )
-            {
-                v.StructParse();
-            }
-
-            // After all FileMeta-pre stages are complete, continue with unified main-thread MetaCore pipeline.
-            CompileFileAllEnd();
-        }
-        public static void StructParseComplete()
-        {
-            structParseCount++;
-            if(structParseCount >= parseListCount)
-            {
-                CompileFileAllEnd();
-            }
-        }
-        public static void BuildParseComplete()
-        {
-            buildParseCount++;
-            if( buildParseCount < parseListCount )
-            {
-                return;
-            }
-        }
-        public static void GrammerParseComplete()
-        {
-            grammerParseCount++;
-            if (grammerParseCount < parseListCount)
-                return;
-
-            Debug.Write("");
-        }
-        public static void Update(object sender, ElapsedEventArgs e)
-        {
-            //timeAdd += 100;
-            //Debug.Write("currentTime: " + timeAdd.ToString());
-        }
-        public static void CompileFileAllEnd()
-        {
-            Log.AddProcessLog(LID.ProcessCompileMetaStart, "");
-            for ( int i = 0; i < fileParseList.Count; i++ )
-            {
-                fileParseList[i].CreateNamespace();
-            }
-
-            for (int i = 0; i < fileParseList.Count; i++)
-            {
-                fileParseList[i].CombineFileMeta();
-            }
-
-            // 类结构 + 继承/接口与 extend 序就绪后注册 typealias，再收集成员定义类型（见 ClassManager 分步注释）
-            TypeManager.instance.ClearProjectTypeAliases();
-            ClassManager.instance.ParseInitMetaClassListThroughInheritance();
-            TypeManager.instance.ResolveAllDeclaredTypeAliases(fileParseList);
-            ClassManager.instance.ParseInitMetaListCollectMemberDefineMetaTypes();
-
-            ClassManager.instance.CheckInterfaces();
-
-            // Parse and process attributes after inheritance/interface resolution.
-            // Compile-time attributes (e.g. Nickname) are applied here so that
-            // subsequent member parsing and IR generation can use alias lookups.
-            ClassManager.instance.ParseAttributes();
-
-            MetaVariableManager.instance.ParseMetaMemberExpress();
-            MethodManager.instance.ParseMetaMethodExpress();
-
-            ClassManager.instance.ParseDefineComplete();
-
-            // Inject jsonc data (root "data" + legacy global.data) into Project meta members before statements parse.
-            ProjectClass.InjectProjectGlobalDataFromConfig();
-
-            // Build per-file local{} classes after member express parsed but before statements parsing.
-            LocalManager.instance.BuildFileLocalClasses(fileParseList);
-
-            MethodManager.instance.ParseStatements();
-
-            // After all methods parsed, inject local{} initialization calls in compile-file order.
-            GlobalManager.instance.InjectGlobalInitCall();
-            LocalManager.instance.InjectLocalInitCalls(fileParseList);
-
-            // Export per-file MetaCore debug data after logic parsing is complete.
-#if DEBUG
-            //ClassManager.instance.UpdateMetaGenTemplateClassHandle();
-            ModuleManager.instance.selfModule.metaNode.SetDeep(0);
-            ModuleManager.instance.coreModule.metaNode.SetDeep(-1);
-            for (int i = 0; i < fileParseList.Count; i++)
-            {
-                fileParseList[i].ExportMetaDebugData();
-            }
-#endif
-
-            Log.AddProcessLog(LID.ProcessCompileMetaEnd, "");
         }
     }
 }

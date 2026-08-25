@@ -1,4 +1,4 @@
-﻿id,logType,enableAssert,blockOnErrorAssert,paramCount,domestic_tips,cn_message,,cn_fixed_tips,en_message,en_fixed_tips
+id,logType,enableAssert,blockOnErrorAssert,paramCount,domestic_tips,cn_message,,cn_fixed_tips,en_message,en_fixed_tips
 10000,Error,TRUE,TRUE,,,"Error,上级类中的MetaClass没有绑定!!",,检查类定义关键字、继承/接口与成员声明顺序。,,
 10001,Error,TRUE,FALSE,,,已添加了空间命名节点，不允许有重复名称的类节点再次添加,,检查类定义关键字、继承/接口与成员声明顺序。,,
 10002,Error,TRUE,FALSE,,,Error 查到内部不是内部内，可能有相同成员,,根据错误位置检查语法与类型约束，必要时参考 DebugCode 输出链路定位。,,
@@ -546,6 +546,14 @@
 11031,Error,TRUE,FALSE,1,,解析的for结构的时候，对in Content:[{0}]不支持迭代,可以尝试使用 var as IIterable<Object>强制转化再进行读取,,
 11032,Error,TRUE,FALSE,1,,在类[{0}]中，成员变量[{1}] 只允许static/const的变量初始化自己，其它的不允许创建自己的变量，只允许为null,,,
 11033,Error,TRUE,FALSE,2,,构造动态数据实例的时候，需要 使用 命名[{0}]=内容实例[{1}] 的格式进行初始化,,,
+11034,Info,FALSE,FALSE,1,,开始编译阶段: {0},,,
+11035,Info,FALSE,FALSE,1,,编译阶段[{0}]完成,,,
+11036,Error,FALSE,FALSE,2,,编译阶段[{0}]失败: {1},,,
+11037,Warning,FALSE,FALSE,1,,编译阶段[{0}]被跳过，前置阶段未成功完成,,,
+11038,Warning,FALSE,FALSE,2,,编译阶段[{0}]产生了[{1}]个错误，仅提示，不阻止后续编译,,,
+11039,Error,FALSE,FALSE,2,,编译步骤[{0}]执行失败: {1},,,
+11040,Error,FALSE,FALSE,2,,编译文件[{0}]失败: {1},,,
+11041,Info,FALSE,FALSE,1,,编译过程汇总: {0},,,
 12157,Error,FALSE,FALSE,0,,global的值，只允许在Project.sp文件中，进行赋值，而不允许在其它函数中进行调用,,Auto-generated LID mapping,,
 12158,Error,TRUE,FALSE,0,,处理右置表达式[{0}]失败,,Auto-generated LID mapping,,
 12247,Error,TRUE,FALSE,0,," 定义变量NameToken没有发现",,Auto-generated LID mapping,,

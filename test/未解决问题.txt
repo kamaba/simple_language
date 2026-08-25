@@ -1,7 +1,6 @@
 
 3. 对别一个调用类的 Core.global.var1 Std.global.aaa  手动
 4. 增加中断编译，和编译状态的逻辑  手动
-5. template_runtime_def_type_capacity这个字段是干什么的，是不是没什么用
 2. 数学库的集成
 5. 实现别名的功能，Nickname的使用，让查找Class/MemeberVar|functoin/
 6. 这个的cvm实现 public override Num floor()ceil()的实现 isFinite  Num继承的abstract的方法，需要实现
@@ -19,14 +18,14 @@
 这些阶段定义三个大阶段，每个阶段，又有自己的小阶段， 比如 在文件阶段 又分Token->node->File 三个。
 
 
-DateTime.sl 
+sqlite的client
+WhileDoWhileTest 跑起来 MemberVariable1Test MemberVariable2Test 的测试
 1. cvm优化system method 动态加载
 llvm初试
 
 
 
 最近要解决的:
-1. 基础类的相关写作 Object
 2. 使用Num的完整
 3. 使用Byte/SByte/Int16/UInt16/Int32/UInt32/
 4. Float32/Float64

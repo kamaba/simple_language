@@ -2,7 +2,12 @@ Project
 {
     _main_()
     {
-        # 只跑 DateTimeTest，避免 ConsoleTest 的交互式 calculator 阻塞
+        # 只跑 DateTimeTest，避免 ConsoleTest 的交互式 calculator 阻塞 
+        ListTest.fun()
+        MapTest.fun()
+        FileTest.fun()
+        DirectoryTest.fun()
+        ConsoleTest.fun()
         DateTimeTest.fun()
     }
     CompileBefore()
