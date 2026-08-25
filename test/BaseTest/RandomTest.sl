@@ -214,8 +214,8 @@ RandomTest
         {
             Int32 v = dr.nextInt(3)
             if (v == 0) { count0 = count0 + 1 }
-            else if (v == 1) { count1 = count1 + 1 }
-            else if (v == 2) { count2 = count2 + 1 }
+            elif (v == 1) { count1 = count1 + 1 }
+            elif (v == 2) { count2 = count2 + 1 }
             else { countOther = countOther + 1 }
             i = i + 1
         }

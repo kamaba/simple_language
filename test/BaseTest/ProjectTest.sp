@@ -14,12 +14,11 @@ Project
     {     
         SystemPrintln("===== ProjectTest _main_ start =====")   
         nowMs = Environment.nowMillis()
-        
-        #ObjectTest.fun()
-        #StringTest.fun()
-        NumberTest.fun()
-        #WhileTest.fun()
         #!
+        ObjectTest.fun()
+        StringTest.fun()
+        NumberTest.fun()
+        WhileTest.fun()        
         GlobalTest.fun()
         BoolTest.fun()
         TypeTest.fun()
@@ -47,8 +46,10 @@ Project
         GC3.GenClass3.fun()
         RangeTest.fun()
         InterfaceTest.fun()
+        !#
         MVTest1.fun()
         MVTest2.fun()        
+        !#
         EnvironmentTest.fun()
         GuidTest.fun()        
         RandomTest.fun()        
@@ -58,7 +59,7 @@ Project
         Float8Test.fun()
         Float16Test.fun()
         IfelseTest.fun()
-       !#
+        !#
         #PtrTest.fun()
         nowMs = Environment.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")

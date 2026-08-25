@@ -28,6 +28,23 @@ MVModifier
     public static int pubStVal = 400
     private static int priStVal = 500
     static public int stPubVal = 700
+
+    # private 成员在类内方法中访问
+    int getPriVal()
+    {
+        ret this.priVal
+    }
+
+    int setPriVal(int v)
+    {
+        this.priVal = v
+        ret this.priVal
+    }
+
+    static int getPriStVal()
+    {
+        ret MVModifier.priStVal
+    }
 }
 
 MVExprInit
@@ -71,6 +88,12 @@ MVChild extends MVParent
         this.pVal = pv
         this.cVal = cv
     }
+
+    # 子类方法中引用基类成员
+    int sumPC()
+    {
+        ret this.pVal + this.cVal
+    }
 }
 
 MVGrandChild extends MVChild
@@ -83,6 +106,12 @@ MVGrandChild extends MVChild
         this.cVal = 222
         this.gVal = 333
     }
+
+    # 孙类方法中引用多层继承的基类成员
+    int sumAll()
+    {
+        ret this.pVal + this.cVal + this.gVal
+    }
 }
 
 MVStaticRef
@@ -91,6 +120,45 @@ MVStaticRef
     static int s2 = MVStaticRef.s1 + 2
     static int s3 = MVStaticRef.s2 + 3
     static int s4 = MVStaticRef.s3 * 2
+}
+
+# ---- 构造链：基类成员由基类构造初始化 ----
+MVCtorBase
+{
+    int v = 0
+
+    _init_(int v)
+    {
+        this.v = v
+    }
+}
+
+MVCtorDerived extends MVCtorBase
+{
+    int w = 0
+
+    _init_(int a, int b)
+    {
+        base._init_(a + 100)
+        this.w = b
+    }
+
+    int sum()
+    {
+        ret this.v + this.w
+    }
+}
+
+# ---- 自引用成员（链表节点，注意 next 是保留字，用 nextNode） ----
+MVNode
+{
+    int val = 0
+    MVNode nextNode = null
+
+    _init_(int v)
+    {
+        this.val = v
+    }
 }
 
 partial MVPartialTarget
@@ -111,6 +179,14 @@ MVTest1
         MVTest1.testInheritModify()
         MVTest1.testStaticRef()
         MVTest1.testPartial()
+        MVTest1.testCtorChain()
+        MVTest1.testMethodBaseRef()
+        MVTest1.testBaseClassRef()
+        MVTest1.testPrivateMember()
+        MVTest1.testInstanceIsolation()
+        MVTest1.testSelfRefChain()
+        MVTest1.testGrandStatic()
+        MVTest1.testLiteralInherit()
         global.println("========== MemberVariable1Test (end) ==========")
     }
 
@@ -213,5 +289,118 @@ MVTest1
         global.println("----- testPartial -----")
         C2 c = C2(7, 2.0f)
         global.println("x=" + c.x + " x2=" + C2.x2)
+    }
+
+    # 构造链：base._init_ 传参初始化基类成员，子类构造初始化自身成员
+    static testCtorChain()
+    {
+        global.println("----- testCtorChain -----")
+        MVCtorBase b = MVCtorBase(5)
+        global.println("base: v=" + b.v)
+
+        MVCtorDerived d = MVCtorDerived(11, 22)
+        global.println("derived: v=" + d.v + " w=" + d.w)
+        global.println("derived.sum()=" + d.sum())
+    }
+
+    # 子类/孙类方法中引用基类成员
+    static testMethodBaseRef()
+    {
+        global.println("----- testMethodBaseRef -----")
+        MVChild c = MVChild(30, 40)
+        global.println("c.sumPC()=" + c.sumPC() + " (pVal + cVal)")
+
+        MVGrandChild gc = MVGrandChild()
+        global.println("gc.sumAll()=" + gc.sumAll() + " (pVal + cVal + gVal)")
+    }
+
+    # 基类引用指向子类对象，读/写继承的基类成员
+    static testBaseClassRef()
+    {
+        global.println("----- testBaseClassRef -----")
+
+        MVChild c = MVChild(7, 8)
+        MVParent p = c as MVParent
+        global.println("p.pVal=" + p.pVal + " p.pName=" + p.pName + " (read via base ref)")
+
+        # 通过基类引用写继承成员，子类引用读回（同一存储）
+        p.pVal = 500
+        global.println("c.pVal=" + c.pVal + " (after write via base ref)")
+
+        # 基类引用指向孙类对象
+        MVGrandChild gc2 = MVGrandChild()
+        MVParent p2 = gc2 as MVParent
+        global.println("p2.pVal=" + p2.pVal + " p2.pName=" + p2.pName)
+    }
+
+    # private 成员在类内方法中可读写
+    static testPrivateMember()
+    {
+        global.println("----- testPrivateMember -----")
+        MVModifier m = MVModifier()
+        global.println("getPriVal=" + m.getPriVal())
+        global.println("setPriVal(250)=" + m.setPriVal(250))
+        global.println("getPriVal(after)=" + m.getPriVal())
+        global.println("getPriStVal=" + MVModifier.getPriStVal())
+    }
+
+    # 实例成员相互隔离，静态成员全局共享
+    static testInstanceIsolation()
+    {
+        global.println("----- testInstanceIsolation -----")
+        MVModifier m1 = MVModifier()
+        MVModifier m2 = MVModifier()
+        m1.pubVal = 111
+        m2.pubVal = 222
+        global.println("m1.pubVal=" + m1.pubVal + " m2.pubVal=" + m2.pubVal + " (isolated)")
+
+        MVModifier.stVal = 3000
+        global.println("stVal(via m1 read)=" + MVModifier.stVal)
+        global.println("stVal(static shared)=" + MVModifier.stVal)
+    }
+
+    # 自引用成员构成链表，遍历读取
+    static testSelfRefChain()
+    {
+        global.println("----- testSelfRefChain -----")
+        MVNode n1 = MVNode(1)
+        MVNode n2 = MVNode(2)
+        MVNode n3 = MVNode(3)
+        n1.nextNode = n2
+        n2.nextNode = n3
+
+        global.println("n1.val=" + n1.val + " n1.nextNode.val=" + n1.nextNode.val + " n1.nextNode.nextNode.val=" + n1.nextNode.nextNode.val)
+        global.println("n3.nextNode=" + n3.nextNode)
+
+        n2.nextNode = null
+        global.println("after n2.nextNode=null, n1.nextNode.nextNode=" + n1.nextNode.nextNode)
+    }
+
+    # 静态继承语义：静态成员经继承扁平化后每个类持有自己的静态槽副本，
+    # 经某类名读写只操作该类自己的槽，父类槽保持独立
+    static testGrandStatic()
+    {
+        global.println("----- testGrandStatic -----")
+        global.println("pStatic(via GrandChild)=" + MVGrandChild.pStatic)
+
+        MVChild.pStatic = 5000
+        global.println("pStatic(via Child after Child write)=" + MVChild.pStatic)
+        global.println("pStatic(via Parent after Child write)=" + MVParent.pStatic)
+        global.println("pStatic(via GrandChild after Child write)=" + MVGrandChild.pStatic)
+
+        # 还原子类自己的槽，避免影响其他测试段
+        MVChild.pStatic = 1000
+        global.println("pStatic(restored via Child)=" + MVChild.pStatic)
+    }
+
+    # 继承类的字面量初始化：直接设置基类+子类成员
+    static testLiteralInherit()
+    {
+        global.println("----- testLiteralInherit -----")
+        MVChild lc = MVChild(){ pVal = 55, cVal = 66 }
+        global.println("lc: pVal=" + lc.pVal + " pName=" + lc.pName + " cVal=" + lc.cVal + " cName=" + lc.cName)
+
+        MVGrandChild lgc = MVGrandChild(){ pVal = 77, gVal = 88 }
+        global.println("lgc: pVal=" + lgc.pVal + " cVal=" + lgc.cVal + " gVal=" + lgc.gVal)
     }
 }

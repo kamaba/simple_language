@@ -1,14 +1,11 @@
 
 3. 对别一个调用类的 Core.global.var1 Std.global.aaa  手动
-4. 增加中断编译，和编译状态的逻辑  手动
 2. 数学库的集成
-5. 实现别名的功能，Nickname的使用，让查找Class/MemeberVar|functoin/
-6. 这个的cvm实现 public override Num floor()ceil()的实现 isFinite  Num继承的abstract的方法，需要实现
 7. 指针的增加与处理. 
 9. 是否不能 new int() 这种的，直接变成栈的方式
 sqlite的client
-WhileDoWhileTest 跑起来 MemberVariable1Test MemberVariable2Test 的测试
-float的number输出与预期是否相符
+WhileDoWhileTest 跑起来 MemberVariable1Test MemberVariable2Test 的测试  MemberFunction1Test 2Test
+
 1. cvm优化system method 动态加载
 llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后在虚拟机中，有对应的调用
 增加FFI接口, 加载第三方库，然后可以运行起来，然后通过FFI的load,然后调用

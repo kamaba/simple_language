@@ -33,6 +33,8 @@ namespace SimpleLanguage.Core
         public int id => m_Id;
         public string defineName => m_DefineName;
         public EAssignTargetType assignTargetType => m_AssignTargetType;
+        /// <summary>赋值目标成员变量（类成员为 MetaMemberVariable，data 成员为 MetaMemberData）。</summary>
+        public MetaVariable targetMetaVariable => m_MetaMemberVariable != null ? m_MetaMemberVariable : (MetaVariable)m_MetaMemberData;
         internal void SetAssignTargetType(EAssignTargetType t) => m_AssignTargetType = t;
 
         private MetaMemberVariable m_MetaMemberVariable;

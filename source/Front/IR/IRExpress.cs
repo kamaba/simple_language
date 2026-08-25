@@ -782,7 +782,29 @@ namespace SimpleLanguage.IR
                         IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.valueExpressNode);
                         AddIRRangeData(irexp.IRDataList);
 
-                        var storeField = new IRStoreVariable(newObjectIRMT, irMethod, asl.id, IRMetaVariableFrom.Member);
+                        // asl.id 捕获的是成员在声明类内的局部索引（继承场景下与扁平化索引不一致），
+                        // 需按新对象类型的 IRMetaClass 重新解析扁平化字段索引（与普通赋值路径一致）。
+                        int storeIndex = asl.id;
+                        var targetMv = asl.targetMetaVariable;
+                        var targetIrmc = newObjectIRMT?.irMetaClass ?? irmc;
+                        if (targetMv != null && targetIrmc != null)
+                        {
+                            int resolved = targetIrmc.GetMetaMemberVariableIndexByHashCode(targetMv.GetHashCode());
+                            if (resolved < 0 && targetMv.sourceMetaVariable != null)
+                            {
+                                resolved = targetIrmc.GetMetaMemberVariableIndexByHashCode(targetMv.sourceMetaVariable.GetHashCode());
+                            }
+                            if (resolved < 0 && !string.IsNullOrEmpty(asl.defineName))
+                            {
+                                resolved = targetIrmc.GetMetaMemberVariableIndexByName(asl.defineName);
+                            }
+                            if (resolved >= 0)
+                            {
+                                storeIndex = resolved;
+                            }
+                        }
+
+                        var storeField = new IRStoreVariable(newObjectIRMT, irMethod, storeIndex, IRMetaVariableFrom.Member);
                         if (storeField != null)
                         {
                             AddIRRangeData(storeField.IRDataList);
