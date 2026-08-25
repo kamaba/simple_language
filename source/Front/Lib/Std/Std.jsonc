@@ -42,7 +42,6 @@
       { "path": "Net/TcpNet.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/UdpNet.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/Uri.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
-      { "path": "Behaviour.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Component.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Node.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Data/Table.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
@@ -108,7 +107,6 @@
             { "class": "Tree" }
          ]
       },
-      { "class": "Behaviour" },
       { "class": "Component" },
       { "class": "Node" }
   ], 

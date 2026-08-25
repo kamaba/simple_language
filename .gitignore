@@ -282,5 +282,7 @@
 /core_compile.log
 /test_run.log
 /source/CompileStd/obj
-/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+# Fixed malformed line that was blocking ripgrep (commented out: accidental shell fragment)
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.}
 /source/CSimpleVMTest1/build/logs/VM.txt
+/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.

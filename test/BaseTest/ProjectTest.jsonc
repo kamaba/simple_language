@@ -25,6 +25,7 @@
       { "path": "ObjectTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "StringTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "NumberTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "WhileDoWhileTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "GlobalTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "BoolTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "TypeTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },

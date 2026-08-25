@@ -250,8 +250,20 @@ namespace SimpleLanguage
                 }
                 m &= mantMask;
                 int f32Exp = e + mbits - shift + 127;
-                int f32Bits = resultSign | (f32Exp << 23) | (m << (23 - mbits));
-                return Int32BitsToFloat(f32Bits);
+                if (f32Exp > 0)
+                {
+                    int f32Bits = resultSign | (f32Exp << 23) | (m << (23 - mbits));
+                    return Int32BitsToFloat(f32Bits);
+                }
+                // 结果在 float32 中同样是次正规数（仅 bf16 会到达：其最小步长 2^-133
+                // 落在 float32 次正规栅格 2^-149 之上，value = mant * 2^e
+                // 对应 f32 次正规位 = mant << (e + 149)）。
+                {
+                    int fs = e + 149;
+                    if (fs < 0) fs = 0; // 防御：当前格式不会触发
+                    int subBits = resultSign | (mant << fs);
+                    return Int32BitsToFloat(subBits);
+                }
             }
 
             if (exp == maxExpField)

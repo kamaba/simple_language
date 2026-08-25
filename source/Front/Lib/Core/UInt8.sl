@@ -30,7 +30,7 @@ public class UInt8 extends Num
     {
         ret this
     }
-    public override Num compareTo(Num other)
+    public override Int8 compareTo(Num other)
     {
         if (other == null) { ret 1 }
         UInt8 ov = SystemConvertUInt8(other)

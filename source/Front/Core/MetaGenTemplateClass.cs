@@ -30,7 +30,10 @@ namespace SimpleLanguage.Core
             m_MetaGenTemplateList = list;
             m_MetaNode = mtc.metaNode;
             m_MetaTemplateList = mtc.metaTemplateList;
-            m_ExtendClassMetaType = mtc.extendClassMetaType;
+            // 拷贝而不是共享模板类的父类型引用：
+            // 后续 UpdateMetaTypeByGenClassAndFunction 会就地替换模板实参，
+            // 共享引用会把某个实例的实参污染到模板类与其它实例上
+            m_ExtendClassMetaType = mtc.extendClassMetaType == null ? null : new MetaType(mtc.extendClassMetaType);
 
             foreach( var v in list )
             {
@@ -165,7 +168,9 @@ namespace SimpleLanguage.Core
             {
                 if( ecmt.eMetaTypeType == EMetaTypeType.TemplateClassWithTemplate )
                 {
-                    m_ExtendClassMetaType = ecmt;
+                    // 拷贝后再做模板实参替换：ecmt 来自模板类，被所有实例共享，
+                    // 就地替换会让后续实例拿到第一个实例替换后的父类（类型污染）
+                    m_ExtendClassMetaType = new MetaType(ecmt);
                     TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(m_ExtendClassMetaType, this, null);
                     m_ExtendClass = m_ExtendClassMetaType.metaClass;
                 }

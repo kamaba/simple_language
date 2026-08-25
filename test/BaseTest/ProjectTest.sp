@@ -1,4 +1,4 @@
-﻿import ETC1
+import ETC1
 
 Project
 {
@@ -18,6 +18,7 @@ Project
         #ObjectTest.fun()
         #StringTest.fun()
         NumberTest.fun()
+        #WhileTest.fun()
         #!
         GlobalTest.fun()
         BoolTest.fun()

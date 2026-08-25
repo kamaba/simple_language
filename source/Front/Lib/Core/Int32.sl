@@ -1,7 +1,7 @@
 public class Int32 extends Num
 {
-    const static  int MaxValue = 0x7fff;
-    const static int MinValue = 0x8000;
+    const static  int MaxValue = 0x7fffffff;
+    const static int MinValue = -2147483648;
 
     Int32 _value = 0i;
     
@@ -27,14 +27,12 @@ public class Int32 extends Num
     {
         ret this
     }
-    public override Byte compareTo(Num value)
+    public override Int8 compareTo(Num other)
     {
-        if (value == null)
-        {
-            ret 1;
-        }
-        if (this._value == value ){ ret 0; }
-        ret this._value > this._value ? 1 : 0-1
+        if (other == null) { ret 1 }
+        Int32 ov = SystemConvertInt32(other)
+        if (this._value == ov) { ret 0 }
+        ret this._value > ov ? 1 : 0-1
     }
     override bool toBool()
     {

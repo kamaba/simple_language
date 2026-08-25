@@ -24,7 +24,7 @@ public class Int64 extends Num
     {
         ret this
     }
-    public override Int32 compareTo(Num other)
+    public override Int8 compareTo(Num other)
     {
         if (other == null) { ret 1 }
         Int64 ov = SystemConvertInt64(other)

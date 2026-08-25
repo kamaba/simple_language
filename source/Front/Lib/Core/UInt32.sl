@@ -12,7 +12,7 @@ public class UInt32 extends Num
     {
         this._value = _val
     }
-    public override Byte compareTo( Num other )
+    public override Int8 compareTo( Num other )
     {
         if (other == null) { ret 1 }
         UInt32 ov = SystemConvertUInt32(other)

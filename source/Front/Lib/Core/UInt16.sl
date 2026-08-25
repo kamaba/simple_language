@@ -32,7 +32,7 @@ public class UInt16 extends Num
         ret this
     }
 
-    public override Int32 compareTo(Num other)
+    public override Int8 compareTo(Num other)
     {
         if (other == null) { ret 1 }
         UInt16 ov = SystemConvertUInt16(other)
