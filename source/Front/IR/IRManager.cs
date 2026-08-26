@@ -406,13 +406,26 @@ namespace SimpleLanguage.IR
             var tmc = type.GetTemplateMetaClass();
             if (tmc != null)
             {
-                var irmc = instance.GetIRMetaClassById(tmc.classId);
-                if (irmc == null && tmc is not MetaGenTemplateClass)
+                // FunctionSignatureMetaClass 在 IR 层映射回 functionMetaClass 的 IRMetaClass，
+                // 避免为函数签名类型创建空壳 IRMetaClass。
+                if (tmc is FunctionSignatureMetaClass)
                 {
-                    irmc = new IRMetaClass(tmc);
-                    instance.m_IRMetaClassList.Add(irmc);
+                    var funcMc = CoreMetaClassManager.functionMetaClass;
+                    var irmc = instance.GetIRMetaClassById(funcMc.classId);
+                    if (irmc == null)
+                    {
+                        irmc = new IRMetaClass(funcMc);
+                        instance.m_IRMetaClassList.Add(irmc);
+                    }
+                    return irmc;
                 }
-                return irmc;
+                var irmc2 = instance.GetIRMetaClassById(tmc.classId);
+                if (irmc2 == null && tmc is not MetaGenTemplateClass)
+                {
+                    irmc2 = new IRMetaClass(tmc);
+                    instance.m_IRMetaClassList.Add(irmc2);
+                }
+                return irmc2;
             }
 
             return null;

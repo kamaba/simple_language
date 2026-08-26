@@ -29,6 +29,8 @@ namespace SimpleLanguage.Core
             ClassMember,
             EnumMember,
             DataMember,
+            ClosureContext,     // 闭包捕获的宿主作用域变量(存放在 context 数组中)
+            ClosureVariable,    // 闭包变量本身(函数对象)
         }
 
         public const int s_ConstLevel = 100000;

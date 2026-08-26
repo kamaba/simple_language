@@ -50,6 +50,7 @@ namespace SimpleLanguage.Core
         Global,
         Express,
         GetType,
+        ClosureCall,
     }
     public enum EParseFrom
     {
@@ -628,17 +629,30 @@ namespace SimpleLanguage.Core
                 
                 m_MetaClass = ownerMetaClass;
                 MetaMemberFunction mmf = m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaMemberFunction;
-                m_MetaVariable = mmf?.thisMetaVariable;
                 m_CallNodeType = ECallNodeType.This;
-                if (m_MetaVariable == null)
+                // 闭包函数: this 从宿主实例方法捕获的 this 获取
+                if (mmf != null && mmf.isClosureFunction)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage,  m_Token, "Error static function cannot use this.");
-                    return false;
+                    m_MetaVariable = mmf.capturedThis;
+                    if (m_MetaVariable == null)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 闭包在静态方法中定义, 不能使用 this!");
+                        return false;
+                    }
                 }
-                if (mmf?.isStatic == true && m_MetaVariable.isStatic == false)
+                else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error static function cannot use this.");
-                    return false;
+                    m_MetaVariable = mmf?.thisMetaVariable;
+                    if (m_MetaVariable == null)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage,  m_Token, "Error static function cannot use this.");
+                        return false;
+                    }
+                    if (mmf?.isStatic == true && m_MetaVariable.isStatic == false)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error static function cannot use this.");
+                        return false;
+                    }
                 }
                 m_MetaType = new MetaType(m_MetaVariable.GetFinalMetaType());
             }
@@ -940,6 +954,26 @@ namespace SimpleLanguage.Core
                     {
                         HandleMetaVariable(m_FrontCallNode.m_MetaVariable, isAt );
                     }
+                    else if (frontCNT == ECallNodeType.ClosureCall)
+                    {
+                        // 闭包调用结果的链式访问: 按闭包返回类型解析成员 (与普通函数调用返回值链式访问一致)
+                        MetaType closureRetMT = m_FrontCallNode.m_MetaType;
+                        MetaClass closureRetMC = closureRetMT?.metaClass;
+                        if (closureRetMC != null)
+                        {
+                            if (GetFunctionOrVariableByOwnerClass(closureRetMC, m_Name) == false)
+                            {
+                                return false;
+                            }
+                            var cv = MetaClosureVariable.ResolveClosureVariable(m_FrontCallNode.m_MetaVariable);
+                            m_StoreMetaVariable = cv?.closureDefineStatements?.closureFunction?.returnMetaVariable;
+                        }
+                        else
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 闭包调用没有返回类型!");
+                            return false;
+                        }
+                    }
                     else if (frontCNT == ECallNodeType.Local)
                     {
                         HandleMetaVariable(m_FrontCallNode.m_MetaVariable, isAt);
@@ -1157,6 +1191,31 @@ namespace SimpleLanguage.Core
                 {
                     return true;
                 }
+                else if (MetaClosureVariable.ResolveClosureVariable(m_MetaVariable) != null)
+                {
+                    // 闭包变量被调用: funname( xx ) -> 生成 ClosureCall 访问节点
+                    m_CallNodeType = ECallNodeType.ClosureCall;
+                    var cv = MetaClosureVariable.ResolveClosureVariable(m_MetaVariable);
+                    var funcRet = cv?.closureDefineStatements?.closureFunction?.returnMetaVariable?.defineMetaType;
+                    m_MetaType = funcRet ?? new MetaType(CoreMetaClassManager.objectMetaClass);
+                    return true;
+                }
+                else if ( IsFunctionTypeVariable( m_MetaVariable ) )
+                {
+                    // Function 类型变量被调用: 间接闭包调用 (typealias 定义的函数签名类型变量等)
+                    m_CallNodeType = ECallNodeType.ClosureCall;
+                    // 若变量类型为 FunctionSignatureMetaClass，则从签名取返回类型
+                    var fmt = m_MetaVariable?.GetFinalMetaType();
+                    if ( fmt?.metaClass is FunctionSignatureMetaClass fsmc )
+                    {
+                        m_MetaType = fsmc.returnMetaType ?? new MetaType(CoreMetaClassManager.objectMetaClass);
+                    }
+                    else
+                    {
+                        m_MetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                    }
+                    return true;
+                }
                 else if (m_MetaTemplate != null)
                 {
                     m_CallNodeType = ECallNodeType.NewTemplate;
@@ -1285,6 +1344,21 @@ namespace SimpleLanguage.Core
             }
             return true;
         }
+
+        /// <summary>
+        /// 判断变量是否为 Function 类型 (用于间接闭包调用检测)。
+        /// </summary>
+        private bool IsFunctionTypeVariable( MetaVariable mv )
+        {
+            if ( mv == null )
+                return false;
+            var mt = mv.GetFinalMetaType();
+            if ( mt == null || mt.metaClass == null )
+                return false;
+            // 兼容 FunctionMetaClass 及其子类 (如 FunctionSignatureMetaClass)
+            return mt.metaClass is FunctionMetaClass;
+        }
+
         public void ReCalcReturnMetaType()
         {
             if (!m_MetaType.isTemplate) return;

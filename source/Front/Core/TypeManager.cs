@@ -220,7 +220,15 @@ namespace SimpleLanguage.Core
                         if (!decl.IsProjectScope) continue;
                         if (TryGetProjectTypeAlias(decl.AliasName, out _))
                             continue;
-                        var mt = GetMetaTypeByTemplateFunction(null, null, decl.TargetDefine);
+                        MetaType mt;
+                        if (decl.IsFunctionType)
+                        {
+                            mt = ResolveFunctionTypeAlias(decl, fm);
+                        }
+                        else
+                        {
+                            mt = GetMetaTypeByTemplateFunction(null, null, decl.TargetDefine);
+                        }
                         if (mt == null)
                             continue;
                         if (AddProjectTypeAlias(decl.AliasName, mt))
@@ -246,7 +254,15 @@ namespace SimpleLanguage.Core
                         if (decl.IsProjectScope) continue;
                         if (fm.TryGetFileTypeAlias(decl.AliasName, out _))
                             continue;
-                        var mt = GetMetaTypeByTemplateFunction(null, null, decl.TargetDefine);
+                        MetaType mt;
+                        if (decl.IsFunctionType)
+                        {
+                            mt = ResolveFunctionTypeAlias(decl, fm);
+                        }
+                        else
+                        {
+                            mt = GetMetaTypeByTemplateFunction(null, null, decl.TargetDefine);
+                        }
                         if (mt == null)
                             continue;
                         fm.InternalSetFileTypeAlias(decl.AliasName, new MetaType(mt));
@@ -256,6 +272,26 @@ namespace SimpleLanguage.Core
                         break;
                 }
             }
+        }
+
+        /// <summary>
+        /// 解析函数类型 typealias: typealias Name = RetType Function( ParamType, ... )
+        /// 返回指向 FunctionSignatureMetaClass 的 MetaType, 携带返回类型与参数类型签名。
+        /// </summary>
+        private MetaType ResolveFunctionTypeAlias(FileMetaTypeAliasDecl decl, FileMeta fm)
+        {
+            if (decl == null || !decl.IsFunctionType) return null;
+            var retMt = GetMetaTypeByTemplateFunction(null, null, decl.FunctionReturnTypeDefine);
+            if (retMt == null) return null;
+            var paramMtList = new List<MetaType>();
+            for (int i = 0; i < decl.FunctionParamTypeDefineList.Count; i++)
+            {
+                var pmt = GetMetaTypeByTemplateFunction(null, null, decl.FunctionParamTypeDefineList[i]);
+                if (pmt == null) return null;
+                paramMtList.Add(pmt);
+            }
+            var fsmc = new FunctionSignatureMetaClass(decl.AliasName, retMt, paramMtList);
+            return new MetaType(fsmc);
         }
 
         /// <summary>

@@ -327,7 +327,7 @@ namespace SimpleLanguage.Core
             m_MetaVariableDict.Add(name, null);
             return true;
         }
-        public MetaVariable GetMetaVariableByName(string name, bool isFromParent = true )
+        public virtual MetaVariable GetMetaVariableByName(string name, bool isFromParent = true )
         {
             if (m_MetaVariableDict.ContainsKey(name))
                 return m_MetaVariableDict[name];

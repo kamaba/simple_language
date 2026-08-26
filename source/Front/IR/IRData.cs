@@ -289,6 +289,7 @@ namespace SimpleLanguage.IR
                 case EIROpCode.StoreArrayIndex:
                 case EIROpCode.Switch:
                 case EIROpCode.LeaveTry:
+                case EIROpCode.AllocClosureContext:
                     return true;
                 default:
                     return false;

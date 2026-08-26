@@ -42,8 +42,11 @@ namespace SimpleLanguage.IR
                 {
                     case MetaBlockStatements mbs:
                         {
+                            // 嵌套块的内容已经 splice 进外层语句链 (见 MetaMemberFunction.HandleMetaSyntax
+                            // 的 FileMetaBlockSyntax 分支: beforeStatements.SetNextStatements(block) 且
+                            // beforeStatements = 块内最后一条语句)。这里只发块起始 Nop 标记，
+                            // 内容由循环继续走链解析, 否则会把块内容重复生成两遍 (嵌套时指数级放大)。
                             IRBlockStatements ibs = new IRBlockStatements(irMethod);
-                            ibs.ParseIRStatements(mbs);
                             m_IRStatements.AddRange(ibs.m_IRStatements);
                         }
                         break;
@@ -122,6 +125,13 @@ namespace SimpleLanguage.IR
                             IRCallStatements ircs = new IRCallStatements(irMethod);
                             ircs.ParseIRStatements(mcs);
                             m_IRStatements.AddRange(ircs.irStatements);
+                        }
+                        break;
+                    case MetaClosureDefineStatements mcds:
+                        {
+                            IRClosureDefineStatements ircds = new IRClosureDefineStatements(irMethod);
+                            ircds.ParseIRStatements(mcds);
+                            m_IRStatements.AddRange(ircds.irStatements);
                         }
                         break;
                     case MetaTryStatements mts:

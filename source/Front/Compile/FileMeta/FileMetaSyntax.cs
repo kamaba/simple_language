@@ -1059,6 +1059,72 @@ namespace SimpleLanguage.Compile
 
     }
 
+    /// <summary>
+    /// 闭包定义语法:
+    ///   具名: function name( params ) { body }
+    ///   匿名: var name = ( params ) { body }
+    /// </summary>
+    public class FileMetaDefineClosureSyntax : FileMetaSyntax
+    {
+        public Token nameToken => m_Token;
+        public Token functionToken => m_FunctionToken;
+        public bool isAnonymous => m_IsAnonymous;
+        public List<FileMetaParamterDefine> paramList => m_ParamList;
+        public FileMetaBlockSyntax blockSyntax => m_BlockSyntax;
+
+        private Token m_FunctionToken = null;
+        private bool m_IsAnonymous = false;
+        private List<FileMetaParamterDefine> m_ParamList = new List<FileMetaParamterDefine>();
+        private FileMetaBlockSyntax m_BlockSyntax = null;
+
+        public FileMetaDefineClosureSyntax( FileMeta fm, Token functionToken, Token nameToken,
+            bool isAnonymous, List<FileMetaParamterDefine> paramList, FileMetaBlockSyntax block )
+        {
+            m_FileMeta = fm;
+            m_FunctionToken = functionToken;
+            m_Token = nameToken;
+            m_IsAnonymous = isAnonymous;
+            if( paramList != null )
+            {
+                m_ParamList = paramList;
+            }
+            m_BlockSyntax = block;
+        }
+        public void AddParam( FileMetaParamterDefine fmp )
+        {
+            m_ParamList.Add( fmp );
+            fmp.SetFileMeta( m_FileMeta );
+        }
+        public override void SetDeep(int _deep)
+        {
+            m_Deep = _deep;
+            m_BlockSyntax?.SetDeep( m_Deep + 1 );
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < deep; i++)
+                sb.Append(Global.tabChar);
+            if (m_IsAnonymous)
+            {
+                sb.Append("var " + m_Token?.lexeme.ToString() + " = function( ");
+            }
+            else
+            {
+                sb.Append("function " + m_Token?.lexeme.ToString() + "( ");
+            }
+            for (int i = 0; i < m_ParamList.Count; i++)
+            {
+                sb.Append(m_ParamList[i].ToFormatString());
+                if (i < m_ParamList.Count - 1)
+                    sb.Append(", ");
+            }
+            sb.Append(" )" + Environment.NewLine);
+            sb.Append(m_BlockSyntax?.ToFormatString());
+            return sb.ToString();
+        }
+    }
+
     #region Try / Catch / Finally / Throw Syntax
 
     /// <summary>

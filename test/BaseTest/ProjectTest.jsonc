@@ -62,7 +62,8 @@
       { "path": "PtrTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Float8Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Float16Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "IfelseTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "IfelseTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "ClosureTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {

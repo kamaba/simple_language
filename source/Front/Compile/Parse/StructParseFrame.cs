@@ -635,8 +635,52 @@ namespace SimpleLanguage.Compile
                 i++;
             }
 
-            //var handled = FileMetatUtil.HandleClassDefineNodes(typeNodes);
-            //typeNodes = typeNodes;
+            // 函数类型别名检测: [IdentifierLink(returnType), IdentifierLink("Function")(parNode)]
+            // 语法: typealias Name = ReturnType Function( ParamType, ... );
+            if (typeNodes.Count >= 2
+                && typeNodes[0]?.nodeType == ENodeType.IdentifierLink
+                && typeNodes[1]?.nodeType == ENodeType.IdentifierLink
+                && typeNodes[1].parNode != null)
+            {
+                string funcKeyword = typeNodes[1].GetLinkTokenList()?.Count > 0
+                    ? typeNodes[1].GetLinkTokenList()[typeNodes[1].GetLinkTokenList().Count - 1].lexeme.ToString()
+                    : typeNodes[1].token?.lexeme?.ToString();
+                if (funcKeyword == "Function" || funcKeyword == "function")
+                {
+                    var retFmcd = new FileMetaClassDefine(m_FileMeta, typeNodes[0]);
+                    var paramList = new List<FileMetaClassDefine>();
+                    var parChildren = typeNodes[1].parNode.childList;
+                    List<Node> currentParamNodes = new List<Node>();
+                    for (int pi = 0; pi < parChildren.Count; pi++)
+                    {
+                        var pn = parChildren[pi];
+                        if (pn == null) continue;
+                        if (pn.nodeType == ENodeType.Comma)
+                        {
+                            if (currentParamNodes.Count > 0)
+                            {
+                                var paramRoot = FindFirstIdentifierLink(currentParamNodes);
+                                if (paramRoot != null)
+                                    paramList.Add(new FileMetaClassDefine(m_FileMeta, paramRoot));
+                                currentParamNodes.Clear();
+                            }
+                            continue;
+                        }
+                        if (pn.nodeType == ENodeType.LineEnd || pn.nodeType == ENodeType.Comment)
+                            continue;
+                        currentParamNodes.Add(pn);
+                    }
+                    if (currentParamNodes.Count > 0)
+                    {
+                        var paramRoot = FindFirstIdentifierLink(currentParamNodes);
+                        if (paramRoot != null)
+                            paramList.Add(new FileMetaClassDefine(m_FileMeta, paramRoot));
+                    }
+                    m_FileMeta.AddTypeAliasDecl(new FileMetaTypeAliasDecl(aliasName, projectScope, retFmcd, paramList));
+                    return i;
+                }
+            }
+
             Node typeRoot = null;
             for (int h = 0; h < typeNodes.Count; h++)
             {
@@ -655,6 +699,16 @@ namespace SimpleLanguage.Compile
             var fmcd = new FileMetaClassDefine(m_FileMeta, typeRoot);
             m_FileMeta.AddTypeAliasDecl(new FileMetaTypeAliasDecl(aliasName, fmcd, projectScope));
             return i;
+        }
+
+        private static Node FindFirstIdentifierLink(List<Node> nodes)
+        {
+            for (int i = 0; i < nodes.Count; i++)
+            {
+                if (nodes[i]?.nodeType == ENodeType.IdentifierLink)
+                    return nodes[i];
+            }
+            return null;
         }
         private void ParseLocalContent(FileMetaLocalSyntax syntax, Node blockNode, bool isLocal)
         {

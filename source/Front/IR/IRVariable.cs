@@ -22,6 +22,41 @@ namespace SimpleLanguage.IR
         public static IRLoadVariable CreateLoadVariable(IRMetaType irmt, IRMetaClass irmc, IRMethod _irMethod,  MetaVariable mv )
         {
             IRMetaVariable irmv = null;
+            // ── 闭包共享捕获上下文拦截 ──
+            // 宿主函数体内读取被闭包捕获的变量时, 路由到共享上下文数组槽,
+            // 与闭包体 (经代理变量) 读写同一份数据, 实现"捕获即共享"语义。
+            // 闭包函数自身生成 IR 时 bindMetaFunction 是闭包函数 (hasClosureContext=false), 不触发;
+            // 代理变量自身不拦截 (直接经 arg0 读上层 ctx, 保持嵌套闭包的直通语义);
+            // __closure_ctx__ 不在注册表, 走下方正常 LoadLocal 分支。
+            if (_irMethod != null
+                && _irMethod.bindMetaFunction is MetaMemberFunction hostMmf
+                && hostMmf.hasClosureContext
+                && !(mv is MetaClosureContextVariable))
+            {
+                var cap = hostMmf.GetClosureCapture(mv);
+                if (cap != null)
+                {
+                    var ctxIrmv = _irMethod.GetIRLocalVariableById(hostMmf.closureContextVariable.GetHashCode());
+                    if (ctxIrmv != null)
+                    {
+                        IRLoadVariable irVar = new IRLoadVariable();
+
+                        IRData loadCtx = new IRData();
+                        loadCtx.opCode = EIROpCode.LoadLocal;
+                        loadCtx.index = ctxIrmv.index;
+                        loadCtx.SetDebugInfoByToken(mv.token, "LoadLocal __closure_ctx__");
+                        irVar.m_IRDataList.Add(loadCtx);
+
+                        IRData loadIdx = new IRData();
+                        loadIdx.opCode = EIROpCode.LoadArrayIndex;
+                        loadIdx.index = cap.slotIndex;
+                        loadIdx.SetDebugInfoByToken(mv.token, "LoadArrayIndex shared capture:" + mv.name);
+                        irVar.m_IRDataList.Add(loadIdx);
+
+                        return irVar;
+                    }
+                }
+            }
             if (mv.variableFrom == MetaVariable.EVariableFrom.Global)
             {
                 IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Global );
@@ -178,7 +213,28 @@ namespace SimpleLanguage.IR
                     return irVar;
                 }
             }
-            else if(mv.variableFrom == MetaVariable.EVariableFrom.ArrayValue )
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.ClosureContext )
+            {
+                // 闭包捕获变量读取: LoadArgument 0 (context 数组) + LoadArrayIndex slot
+                if( mv is MetaClosureContextVariable ccv )
+                {
+                    IRLoadVariable irVar = new IRLoadVariable();
+                    IRData loadArg = new IRData();
+                    loadArg.opCode = EIROpCode.LoadArgument;
+                    loadArg.index = 0;
+                    loadArg.SetDebugInfoByToken( mv.token, "LoadArgument closure context" );
+                    irVar.m_IRDataList.Add( loadArg );
+
+                    IRData loadIdx = new IRData();
+                    loadIdx.opCode = EIROpCode.LoadArrayIndex;
+                    loadIdx.index = ccv.slotIndex;
+                    loadIdx.SetDebugInfoByToken( mv.token, "LoadArrayIndex closure capture:" + mv.name );
+                    irVar.m_IRDataList.Add( loadIdx );
+                    return irVar;
+                }
+                return null;
+            }
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.ArrayValue )
             {
                 if( mv is MetaVisitVariable mvv )
                 {
@@ -344,6 +400,40 @@ namespace SimpleLanguage.IR
         public static IRStoreVariable CreateIRStoreVariable( IRMetaType irmt, IRMetaClass irmc, IRMethod _irMethod, MetaVariable mv )
         {
             IRMetaVariable irmv = null;
+            // ── 闭包共享捕获上下文拦截 ── (与 Load 侧对称, 值已在栈上)
+            // 栈序 [..., value] -> [LoadLocal __ctx__] -> [..., value, array]
+            // -> StoreArrayIndex slot (StoreTopMinus1_ValueTopMinus2: 数组 top-1, 值 top-2)
+            // 拦截范围与 Load 侧一致: 仅宿主函数内的注册表变量, 代理变量不拦截。
+            if (_irMethod != null
+                && _irMethod.bindMetaFunction is MetaMemberFunction hostMmf
+                && hostMmf.hasClosureContext
+                && !(mv is MetaClosureContextVariable))
+            {
+                var cap = hostMmf.GetClosureCapture(mv);
+                if (cap != null)
+                {
+                    var ctxIrmv = _irMethod.GetIRLocalVariableById(hostMmf.closureContextVariable.GetHashCode());
+                    if (ctxIrmv != null)
+                    {
+                        IRStoreVariable irsv = new IRStoreVariable();
+
+                        IRData loadCtx = new IRData();
+                        loadCtx.opCode = EIROpCode.LoadLocal;
+                        loadCtx.index = ctxIrmv.index;
+                        loadCtx.SetDebugInfoByToken(mv.token, "LoadLocal __closure_ctx__");
+                        irsv.IRDataList.Add(loadCtx);
+
+                        IRData storeIdx = new IRData();
+                        storeIdx.opCode = EIROpCode.StoreArrayIndex;
+                        storeIdx.index = cap.slotIndex;
+                        storeIdx.SetOpValue((byte)EStoreArrayIndexFlag.StoreTopMinus1_ValueTopMinus2);
+                        storeIdx.SetDebugInfoByToken(mv.token, "StoreArrayIndex shared capture:" + mv.name);
+                        irsv.IRDataList.Add(storeIdx);
+
+                        return irsv;
+                    }
+                }
+            }
             if (mv.variableFrom == MetaVariable.EVariableFrom.Argument )
             {
                 irmv = _irMethod.GetIRArgumentById(mv.GetHashCode());
@@ -461,6 +551,42 @@ namespace SimpleLanguage.IR
                     return new IRStoreVariable();
                 }
                 IRStoreVariable irsv = new IRStoreVariable(irmt, _irMethod, mv.GetHashCode(), IRMetaVariableFrom.Array );
+                return irsv;
+            }
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.ClosureContext )
+            {
+                // 闭包捕获变量写入: 值已在栈上 -> LoadArgument 0 (context) -> StoreArrayIndex slot
+                // 栈序 [..., value, array] -> StoreTopMinus1_ValueTopMinus2 (数组 top-1, 值 top-2)
+                if( mv is MetaClosureContextVariable ccv )
+                {
+                    IRStoreVariable irsv = new IRStoreVariable();
+
+                    IRData loadArg = new IRData();
+                    loadArg.opCode = EIROpCode.LoadArgument;
+                    loadArg.index = 0;
+                    loadArg.SetDebugInfoByToken( mv.token, "LoadArgument closure context" );
+                    irsv.IRDataList.Add( loadArg );
+
+                    IRData storeIdx = new IRData();
+                    storeIdx.opCode = EIROpCode.StoreArrayIndex;
+                    storeIdx.index = ccv.slotIndex;
+                    storeIdx.SetOpValue( (byte)EStoreArrayIndexFlag.StoreTopMinus1_ValueTopMinus2 );
+                    storeIdx.SetDebugInfoByToken( mv.token, "StoreArrayIndex closure capture:" + mv.name );
+                    irsv.IRDataList.Add( storeIdx );
+                    return irsv;
+                }
+                return null;
+            }
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.ClosureVariable )
+            {
+                // 闭包变量本身是宿主函数局部变量
+                irmv = _irMethod.GetIRLocalVariableById( mv.GetHashCode() );
+                if( irmv == null )
+                {
+                    Log.AddIRLog( LID.IRMethodNotFoundVariable, mv.token, "in closure variable", _irMethod.id, mv.name );
+                    return null;
+                }
+                IRStoreVariable irsv = new IRStoreVariable( irmt, _irMethod, irmv.index, IRMetaVariableFrom.LocalStatement );
                 return irsv;
             }
             else if( mv.variableFrom == MetaVariable.EVariableFrom.Global )

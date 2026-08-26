@@ -143,6 +143,11 @@ namespace SimpleLanguage
         Convert_F8E5M2, // = 101 float -> float8(e5m2) bits(byte)
         Convert_F16,    // = 102 float -> float16 bits(ushort)
         Convert_F16B,   // = 103 float -> float16brain(bfloat16) bits(ushort)
+
+        // Closure opcodes (FrontEnd-only emit, CVM executes)
+        NewClosure,     // = 104 stack: [..., ctxArray] -> closure object; payload: JSON SLRuntimeCallPackage (methodId)
+        CallClosure,    // = 105 stack: [..., closure, arg0, arg1, ...] -> ret; payload: JSON SLRuntimeCallPackage (paramCount, methodId)
+        AllocClosureContext, // = 106 stack: [] -> Object[N] null-filled array (shared capture context); payload: count(int32)
     }
 
     /// <summary>

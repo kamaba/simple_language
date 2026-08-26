@@ -106,6 +106,14 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     {
         ret SystemArrayGetValueThis(this, __index) as T
     }
+    public void forEach( Function callback )
+    {
+        for i = 0, i < this._length, i++
+        {
+            var item = SystemArrayGetValueThis(this, i) as T
+            callback( item )
+        }
+    }
     override string toString()
     {            
         string showstr = "["

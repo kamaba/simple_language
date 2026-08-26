@@ -47,6 +47,7 @@ namespace SimpleLanguage.Core
         Ptr,
         Result,
         ResultT,
+        Function,
     }
     class CoreMetaClassManager
     {
@@ -100,6 +101,7 @@ namespace SimpleLanguage.Core
         public static MetaClass ptrMetaClass { get; private set; } = null;
         public static MetaClass resultMetaClass { get; private set; } = null;
         public static MetaClass resultTMetaClass { get; private set; } = null;
+        public static MetaClass functionMetaClass { get; private set; } = null;
 
         public static List<MetaClass> s_InnerDefineMetaClassList = new List<MetaClass>();
 
@@ -139,6 +141,7 @@ namespace SimpleLanguage.Core
             ptrMetaClass = PtrMetaClass.CreateMetaClass();
             resultMetaClass = ResultMetaClass.CreateMetaClass();
             resultTMetaClass = ResultTMetaClass.CreateMetaClass();
+            functionMetaClass = FunctionMetaClass.CreateMetaClass();
 
             s_InnerDefineMetaClassList.Add(objectMetaClass);
             s_InnerDefineMetaClassList.Add(voidMetaClass);
@@ -173,6 +176,7 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(ptrMetaClass);
             s_InnerDefineMetaClassList.Add(resultMetaClass);
             s_InnerDefineMetaClassList.Add(resultTMetaClass);
+            s_InnerDefineMetaClassList.Add(functionMetaClass);
         }
         public void Init()
         {
@@ -298,6 +302,10 @@ namespace SimpleLanguage.Core
             {
                 return EType.ResultT;
             }
+            else if (mc is FunctionMetaClass) // 兼容 FunctionSignatureMetaClass 子类
+            {
+                return EType.Function;
+            }
             else
             {
                 return EType.Class;
@@ -353,6 +361,8 @@ namespace SimpleLanguage.Core
                     return rangeMetaClass;
                 case EType.Ptr:
                     return ptrMetaClass;
+                case EType.Function:
+                    return functionMetaClass;
                 default:
                     {
                         Debug.WriteLine("Warning ClassManager GetMetaClassByEType 1111");
@@ -428,6 +438,9 @@ namespace SimpleLanguage.Core
                     return DefaultObject.Data.ToString();
                 case "array":
                     return DefaultObject.Array.ToString();
+                case "Function":
+                case "function":
+                    return DefaultObject.Function.ToString();
                 default:return name;
             }
         }

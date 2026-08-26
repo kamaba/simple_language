@@ -2069,6 +2069,9 @@ namespace SimpleLanguage.Compile
                 case "for":
                     tokenType = ETokenType.For;
                     break;
+                case "function":
+                    tokenType = ETokenType.Function;
+                    break;
                 case "in":
                     tokenType = ETokenType.In;
                     break;

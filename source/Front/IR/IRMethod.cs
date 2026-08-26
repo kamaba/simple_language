@@ -321,6 +321,17 @@ namespace SimpleLanguage.IR
             IRBlockStatements irbs = new IRBlockStatements(this);
             irbs.ParseAllIRStatements(mbs);
 
+            // ── 闭包共享捕获上下文 prologue ──
+            // 宿主函数体内定义过闭包时, 在函数体最前部插入:
+            //   AllocClosureContext N -> StoreLocal __closure_ctx__
+            //   + 参数型捕获(参数/this)初始化: LoadArgument argIdx -> LoadLocal ctx -> StoreArrayIndex slot
+            // 局部变量捕获的槽位保持 null, 其声明/赋值语句经 IRVariable 拦截后自然写入数组槽
+            List<IRBase> closurePrologue = GenerateClosureContextPrologue();
+            if (closurePrologue != null && closurePrologue.Count > 0)
+            {
+                irbs.irStatements.InsertRange(0, closurePrologue);
+            }
+
             // Build final IRBase list (optionally wrapped in try/catch for errdefer)
             List<IRBase> finalStatements = new List<IRBase>();
 
@@ -562,6 +573,82 @@ namespace SimpleLanguage.IR
         public IRMetaVariable GetIRLocalVariableById( int id )
         {
             return m_MethodLocalVariableList.Find(a => a.id == id);
+        }
+
+        /// <summary>
+        /// 生成宿主函数的闭包共享捕获上下文 prologue:
+        ///   1. AllocClosureContext N + StoreLocal __closure_ctx__  (分配共享数组存入隐藏局部变量)
+        ///   2. 参数型捕获(参数/this)初始化: [LoadArgument argIdx][LoadLocal ctx][StoreArrayIndex slot flag=0]
+        ///      参数有实参槽现值, 必须在函数入口拷入数组; 局部变量捕获槽保持 null,
+        ///      由其声明/赋值语句(经 IRVariable 拦截路由)写入。
+        /// 仅当 bindMetaFunction 是含 __closure_ctx__ 的宿主函数时生成 (闭包函数自身不生成)。
+        /// </summary>
+        private List<IRBase> GenerateClosureContextPrologue()
+        {
+            var mmf = m_BindMetaFunction as MetaMemberFunction;
+            if (mmf == null || !mmf.hasClosureContext)
+            {
+                return null;
+            }
+
+            var ctxMv = mmf.closureContextVariable;
+            var ctxIrmv = GetIRLocalVariableById(ctxMv.GetHashCode());
+            if (ctxIrmv == null)
+            {
+                return null;
+            }
+
+            var prologue = new List<IRBase>();
+
+            // 1. AllocClosureContext N (N = 注册表捕获总数, 0 捕获也分配空数组) + StoreLocal
+            var allocData = new IRData();
+            allocData.opCode = EIROpCode.AllocClosureContext;
+            allocData.index = mmf.closureCaptureList.Count;
+            allocData.SetDebugInfoByToken(mmf.token, "AllocClosureContext " + mmf.closureCaptureList.Count);
+            prologue.Add(new IRBase(allocData));
+
+            var storeCtxData = new IRData();
+            storeCtxData.opCode = EIROpCode.StoreLocal;
+            storeCtxData.index = ctxIrmv.index;
+            storeCtxData.SetDebugInfoByToken(mmf.token, "StoreLocal __closure_ctx__");
+            prologue.Add(new IRBase(storeCtxData));
+
+            // 2. 参数型捕获初始化 (栈序 [..., value, array] -> flag = StoreTopMinus1_ValueTopMinus2)
+            for (int i = 0; i < mmf.closureCaptureList.Count; i++)
+            {
+                var cap = mmf.closureCaptureList[i];
+                var hostMv = cap?.hostMetaVariable;
+                if (hostMv == null || hostMv.variableFrom != MetaVariable.EVariableFrom.Argument)
+                {
+                    continue;
+                }
+                var argIrmv = GetIRArgumentById(hostMv.GetHashCode());
+                if (argIrmv == null)
+                {
+                    continue;
+                }
+
+                var loadArgData = new IRData();
+                loadArgData.opCode = EIROpCode.LoadArgument;
+                loadArgData.index = argIrmv.index;
+                loadArgData.SetDebugInfoByToken(mmf.token, "LoadArgument capture:" + hostMv.name);
+                prologue.Add(new IRBase(loadArgData));
+
+                var loadCtxData = new IRData();
+                loadCtxData.opCode = EIROpCode.LoadLocal;
+                loadCtxData.index = ctxIrmv.index;
+                loadCtxData.SetDebugInfoByToken(mmf.token, "LoadLocal __closure_ctx__");
+                prologue.Add(new IRBase(loadCtxData));
+
+                var storeSlotData = new IRData();
+                storeSlotData.opCode = EIROpCode.StoreArrayIndex;
+                storeSlotData.index = cap.slotIndex;
+                storeSlotData.SetOpValue((byte)EStoreArrayIndexFlag.StoreTopMinus1_ValueTopMinus2);
+                storeSlotData.SetDebugInfoByToken(mmf.token, "StoreArrayIndex capture:" + hostMv.name);
+                prologue.Add(new IRBase(storeSlotData));
+            }
+
+            return prologue;
         }
         public IRMetaVariable GetIRArgumentById( int id )
         {

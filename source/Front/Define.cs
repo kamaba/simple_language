@@ -57,6 +57,7 @@ namespace SimpleLanguage
         Ptr,
         Result,
         ResultT,
+        Function,
     }
     //token类型
     public enum ETokenType : byte

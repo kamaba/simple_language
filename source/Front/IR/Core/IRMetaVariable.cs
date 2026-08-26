@@ -115,6 +115,11 @@ namespace SimpleLanguage.IR
             {
                 m_IRMetaVariableFrom = IRMetaVariableFrom.Array;
             }
+            else if( mv.variableFrom == MetaVariable.EVariableFrom.ClosureVariable
+                   || mv.variableFrom == MetaVariable.EVariableFrom.ClosureContext )
+            {
+                m_IRMetaVariableFrom = IRMetaVariableFrom.LocalStatement;
+            }
             else
             {
                 Log.AddIRLog(LID.IRNotFoundVariableFrom, mv.token, "", mv.variableFrom.ToString() );

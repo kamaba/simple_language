@@ -4,7 +4,7 @@
 7. 指针的增加与处理. 
 9. 是否不能 new int() 这种的，直接变成栈的方式
 sqlite的client
-WhileDoWhileTest 跑起来 MemberVariable1Test MemberVariable2Test 的测试  MemberFunction1Test 2Test
+MemberFunction1Test 2Test
 
 1. cvm优化system method 动态加载
 llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后在虚拟机中，有对应的调用
@@ -18,6 +18,14 @@ llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后�
 4. Float32/Float64
 final int/uint/float 等方法 
 1. cvm 只使用三色方案  然后使用 引用计数的方案，在结尾 后把内存收集
+
+RuntimeClass* vm_find_runtime_class_by_id_local(int32 class_id);
+RuntimeClass* vm_find_runtime_class_by_name_local(const char* class_name);
+
+RuntimeClass* runtime_class_manager_get_runtime_class_by_id(int32 class_id);
+RuntimeClass* runtime_class_manager_get_runtime_class_by_name(const char* class_name); 这两个是不是重复了， 合并成一个
+
+vm_push_vmvalue_from_runtimevalue 78 79删除掉
 
 机制差的:
 5. 内置action的支持

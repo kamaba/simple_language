@@ -54,9 +54,26 @@ namespace SimpleLanguage.Core
                 m_ReturnMetaDefineType = new MetaType(CoreMetaClassManager.voidMetaClass);
             }
 
-            if( !TypeManager.CompareLeftRightMetaType(mdt, m_ReturnMetaDefineType, m_Token, out MetaType convertMt  ) )
+            // 闭包函数返回类型推断: 首次遇到带返回值的 ret 语句时, 将返回类型从 Void 更新为实际类型
+            var ownerFunc = mbs.ownerMetaFunction as MetaMemberFunction;
+            if( ownerFunc != null && ownerFunc.isClosureFunction )
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left compare right " + m_ReturnMetaDefineType?.ToString(), mdt?.ToString() ?? "null");
+                if( m_ReturnMetaDefineType != null
+                    && m_ReturnMetaDefineType.metaClass != CoreMetaClassManager.voidMetaClass )
+                {
+                    var curType = ownerFunc.returnMetaVariable.defineMetaType;
+                    if( curType != null && curType.metaClass == CoreMetaClassManager.voidMetaClass )
+                    {
+                        ownerFunc.returnMetaVariable.SetMetaDefineType( m_ReturnMetaDefineType );
+                    }
+                }
+            }
+            else
+            {
+                if( !TypeManager.CompareLeftRightMetaType(mdt, m_ReturnMetaDefineType, m_Token, out MetaType convertMt  ) )
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left compare right " + m_ReturnMetaDefineType?.ToString(), mdt?.ToString() ?? "null");
+                }
             }
         }        
         public override string ToFormatString()

@@ -241,6 +241,68 @@ namespace SimpleLanguage.Core
         public bool isThrows => m_IsThrows;
         public virtual bool isStatic => m_IsStatic;
         public bool isCanRewrite => m_IsCanRewrite;
+        public bool isClosureFunction => m_IsClosureFunction;
+        public MetaVariable capturedThis => m_CapturedThis;
+        public void SetCapturedThis( MetaVariable mv ) { m_CapturedThis = mv; }
+
+        /// <summary>
+        /// 获取或登记宿主变量的捕获代理。同一宿主变量在多个闭包中被捕获时复用同一代理/槽位,
+        /// 这是共享捕获语义的关键 (闭包A与闭包B共享同一槽位, 宿主也读写同一槽位)。
+        /// </summary>
+        public MetaClosureContextVariable GetOrAddClosureCapture( MetaVariable hostMv )
+        {
+            if( hostMv == null )
+            {
+                return null;
+            }
+            if( m_ClosureCaptureDict.TryGetValue( hostMv, out var proxy ) )
+            {
+                return proxy;
+            }
+            var p = new MetaClosureContextVariable( hostMv, m_ClosureCaptureList.Count );
+            m_ClosureCaptureList.Add( p );
+            m_ClosureCaptureDict[hostMv] = p;
+            return p;
+        }
+
+        public MetaClosureContextVariable GetClosureCapture( MetaVariable hostMv )
+        {
+            if( hostMv == null )
+            {
+                return null;
+            }
+            m_ClosureCaptureDict.TryGetValue( hostMv, out var proxy );
+            return proxy;
+        }
+
+        /// <summary>
+        /// 确保宿主函数持有共享捕获数组隐藏局部变量 __closure_ctx__。
+        /// 只要函数体内定义了闭包(即使 0 捕获)就创建, 统一 NewClosure 的传参协议。
+        /// 加入宿主函数顶块变量字典后, IR 阶段 GetCalcMetaVariableList 会自动收集为局部变量。
+        /// </summary>
+        public MetaVariable EnsureClosureContext()
+        {
+            if( m_ClosureContextVariable != null )
+            {
+                return m_ClosureContextVariable;
+            }
+            var mt = new MetaType( CoreMetaClassManager.objectMetaClass );
+            m_ClosureContextVariable = new MetaVariable( functionAllName + ".__closure_ctx__",
+                MetaVariable.EVariableFrom.LocalStatement, null, ownerMetaClass, mt );
+            m_ClosureContextVariable.SetMetaDefineType( new MetaType( mt ) );
+            m_ClosureContextVariable.SetIsDefineMetaType( true );
+            m_ClosureContextVariable.SetRealMetaType( new MetaType( mt ) );
+            m_MetaBlockStatements?.UpdateMetaVariableDict( m_ClosureContextVariable );
+            return m_ClosureContextVariable;
+        }
+        // ── 闭包共享捕获上下文 (shared capture context) ──
+        // 宿主函数持有捕获注册表: 同一宿主函数内多个闭包捕获同一变量时复用同一槽位代理,
+        // 宿主与所有闭包全程通过同一个共享 Object[] 数组读写 (Dart 式捕获语义)。
+        // IR 层: 宿主函数 prologue 用 AllocClosureContext 分配数组存入隐藏局部变量 __closure_ctx__,
+        //        宿主体内对被捕获变量的读写被拦截路由到数组槽; NewClosure 只传数组引用。
+        public List<MetaClosureContextVariable> closureCaptureList => m_ClosureCaptureList;
+        public MetaVariable closureContextVariable => m_ClosureContextVariable;
+        public bool hasClosureContext => m_ClosureContextVariable != null;
         public bool isTemplateInParam => m_IsTemplateInParam;
         public FileMetaMemberFunction fileMetaMemberFunction => m_FileMetaMemberFunction;
         public MetaMemberFunction sourceMetaMemberFunction => m_SourceMetaMemberFunction;
@@ -261,9 +323,15 @@ namespace SimpleLanguage.Core
         protected bool m_IsFinal = false;
         protected bool m_IsThrows = false;
         protected bool m_IsCanRewrite = false;
+        protected bool m_IsClosureFunction = false;
         protected bool m_IsTemplateInParam = false;
         protected bool m_ConstructInitFunction = false;
         protected bool m_IsWithInterface = false;
+        protected MetaVariable m_CapturedThis = null; // 闭包函数: 从宿主实例方法捕获的 this
+        // ── 闭包共享捕获上下文注册表 ──
+        private List<MetaClosureContextVariable> m_ClosureCaptureList = new List<MetaClosureContextVariable>();
+        private Dictionary<MetaVariable, MetaClosureContextVariable> m_ClosureCaptureDict = new Dictionary<MetaVariable, MetaClosureContextVariable>();
+        private MetaVariable m_ClosureContextVariable = null; // 隐藏局部变量 __closure_ctx__ (Object 类型, 存共享数组)
         protected MetaMemberFunction m_SourceMetaMemberFunction = null; //模板里边的源函数
         protected MetaMemberFunction m_OverrideMetaMemberFunction = null;           //override member function的函数
 
@@ -413,6 +481,23 @@ namespace SimpleLanguage.Core
         {
             m_Name = _name;
             m_IsCanRewrite = true;
+            m_MetaMemberParamCollection.Clear();
+
+            m_MetaBlockStatements = new MetaBlockStatements(this, null);
+            m_MetaBlockStatements.isOnFunction = true;
+
+            Init();
+        }
+        /// <summary>
+        /// 合成函数构造器(闭包等): isStatic 必须在 Init() 之前设置,
+        /// 否则 Init 会为非静态函数创建 thisMetaVariable 占据 Argument 0。
+        /// </summary>
+        public MetaMemberFunction( MetaClass mc, string _name, bool isStatic ) : base( mc )
+        {
+            m_Name = _name;
+            m_IsCanRewrite = true;
+            m_IsStatic = isStatic;
+            m_IsClosureFunction = true;
             m_MetaMemberParamCollection.Clear();
 
             m_MetaBlockStatements = new MetaBlockStatements(this, null);
@@ -1064,6 +1149,22 @@ namespace SimpleLanguage.Core
                                     if (mb == null)
                                     {
                                         isDefineVarStatements = true;
+                                        // 闭包体内: 名字也可能来自宿主函数作用域(需捕获)
+                                        // 闭包块的块链不含宿主块, GetIsMetaVariable 查不到,
+                                        // 沿块链向上找到闭包块后再从宿主作用域解析一次(触发捕获注册)
+                                        var walkBlock = currentBlockStatements;
+                                        while (walkBlock != null)
+                                        {
+                                            if (walkBlock is MetaClosureBlockStatements mcbs)
+                                            {
+                                                if (mcbs.GetMetaVariableByName(name1) != null)
+                                                {
+                                                    isDefineVarStatements = false;
+                                                }
+                                                break;
+                                            }
+                                            walkBlock = walkBlock.parentBlockStatements;
+                                        }
                                     }
                                 }
                             }
@@ -1162,6 +1263,13 @@ namespace SimpleLanguage.Core
                         beforeStatements = metaGotoStatements;
                         return metaGotoStatements;
                     }
+                case FileMetaDefineClosureSyntax fmdcs: //闭包定义: function name(){...} / var name = (...){...}
+                    {
+                        var metaClosureStatements = new MetaClosureDefineStatements(currentBlockStatements, fmdcs);
+                        beforeStatements.SetNextStatements(metaClosureStatements);
+                        beforeStatements = metaClosureStatements;
+                    }
+                    break;
                 default:
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, "Waning 还有没有解析的语句!! MetaMemberFunction 314");
                     break;

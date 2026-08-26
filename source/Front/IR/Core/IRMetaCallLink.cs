@@ -243,6 +243,60 @@ namespace SimpleLanguage.Core.IR
                 irCallFun.Parse(mfc);
                 irList.Add(irCallFun);
             }
+            else if (cnode.visitType == MetaVisitNode.EVisitType.ClosureCall)
+            {
+                // 闭包调用: 压闭包变量 -> 依序压实参 -> CallClosure
+                var mcc = cnode.closureCall;
+                if (mcc == null)
+                {
+                    Log.AddIRLog(LID.MetaCoreAssertShowMessage, cnode.token, "closure call node is null");
+                    return irList;
+                }
+
+                // 1. 压闭包变量 (宿主上下文: 局部加载; 闭包嵌套上下文: 经捕获代理 LoadArgument0+LoadArrayIndex)
+                var loadMv = mcc.loadMetaVariable ?? (MetaVariable)mcc.closureVariable;
+                if (loadMv != null)
+                {
+                    var irVar = IRLoadVariable.CreateLoadVariable(null, null, _irMethod, loadMv);
+                    if (irVar == null)
+                    {
+                        Log.AddIRLog(LID.IRMethodNotFoundVariable, cnode.token, "load closure variable failed (null IR)", loadMv?.name);
+                        return irList;
+                    }
+                    irList.Add(irVar);
+                    for (int i = 0; i < irVar.IRDataList.Count; i++)
+                    {
+                        irVar.IRDataList[i].SetDebugInfoByToken(cnode.token);
+                    }
+                }
+
+                // 2. 依序压实参表达式
+                var plist = mcc.inputParamExpressList;
+                for (int i = 0; i < plist.Count; i++)
+                {
+                    if (plist[i] == null) continue;
+                    IRExpressBase irexpress = IRExpressManager.CreateExpress(_irMethod, plist[i]);
+                    irList.Add(irexpress);
+                }
+
+                // 3. CallClosure: 弹 [closure, arg...] -> 压返回值
+                IRMethod closureIRM = null;
+                if ( mcc.closureFunction != null )
+                {
+                    closureIRM = IRClosureDefineStatements.ResolveClosureIRMethod( mcc.closureFunction, cnode.token );
+                    if ( closureIRM == null )
+                    {
+                        return irList;
+                    }
+                }
+                var imc = new IRMethodCall( null, null, closureIRM, plist.Count );
+                IRData dataCall = new IRData();
+                dataCall.opCode = EIROpCode.CallClosure;
+                dataCall.SetOpValue( imc );
+                dataCall.index = plist.Count;
+                dataCall.SetDebugInfoByToken( cnode.token, "CallClosure " + ( mcc.closureFunction?.name ?? "indirect" ) + " params:" + plist.Count );
+                irList.Add( new IRBase( dataCall ) );
+            }
             else if (cnode.visitType == MetaVisitNode.EVisitType.SystemCall)
             {
                 var mfc = cnode.methodCall;

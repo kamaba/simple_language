@@ -62,7 +62,8 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Finally
                     || tokenType == ETokenType.Throw
                     || tokenType == ETokenType.Defer
-                    || tokenType == ETokenType.ErrDefer)
+                    || tokenType == ETokenType.ErrDefer
+                    || tokenType == ETokenType.Function)
                 {
                     keyContent.Add(node);
                 }
@@ -113,7 +114,8 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Defer
                     || tokenType == ETokenType.ErrDefer
                     || tokenType == ETokenType.Checked
-                    || tokenType == ETokenType.Unchecked)
+                    || tokenType == ETokenType.Unchecked
+                    || tokenType == ETokenType.Function)
                 {
                 }
                 else
@@ -135,7 +137,8 @@ namespace SimpleLanguage.Compile
                     || tokenType == ETokenType.Catch
                     || tokenType == ETokenType.Finally
                     || tokenType == ETokenType.Defer
-                    || tokenType == ETokenType.ErrDefer )
+                    || tokenType == ETokenType.ErrDefer
+                    || tokenType == ETokenType.Function )
                 {
                     if( blockNode == null )
                     {
@@ -189,7 +192,8 @@ namespace SimpleLanguage.Compile
                 || tokenType == ETokenType.Defer
                 || tokenType == ETokenType.ErrDefer
                 || tokenType == ETokenType.Checked
-                || tokenType == ETokenType.Unchecked;
+                || tokenType == ETokenType.Unchecked
+                || tokenType == ETokenType.Function;
         }
         private static bool IsSkippableNodeBetweenKeyAndBrace(Node node)
         {
@@ -199,6 +203,40 @@ namespace SimpleLanguage.Compile
             }
             return node.nodeType == ENodeType.Comment
                 || node.nodeType == ENodeType.LineEnd;
+        }
+        /// <summary>
+        /// 匿名闭包跨行前瞻: 当前语句已含 '=' 与 '(' 参数列表节点, 且换行后紧跟 '{' 块,
+        /// 则语句不结束, 继续读取闭包体 (var name = ( params ) \n { ... })
+        /// </summary>
+        private static bool IsAnonymousClosurePending(Node pnode, int curIndex, SyntaxNodeStruct keynodeStruct)
+        {
+            if (pnode == null || keynodeStruct == null)
+            {
+                return false;
+            }
+            bool hasAssign = false;
+            bool hasPar = false;
+            var content = keynodeStruct.commonContent;
+            for (int i = 0; i < content.Count; i++)
+            {
+                var n = content[i];
+                if (n == null) continue;
+                if (n.nodeType == ENodeType.Assign) hasAssign = true;
+                else if (n.nodeType == ENodeType.Par) hasPar = true;
+            }
+            if (!hasAssign || !hasPar)
+            {
+                return false;
+            }
+            for (int peek = curIndex + 1; peek < pnode.childList.Count; peek++)
+            {
+                var pn = pnode.childList[peek];
+                if (pn == null) break;
+                if (pn.nodeType == ENodeType.Comment || pn.nodeType == ENodeType.LineEnd)
+                    continue;
+                return pn.nodeType == ENodeType.Brace;
+            }
+            return false;
         }
         private static int AttachTrailingBraceNode(Node pnode, int startIndex, SyntaxNodeStruct keynodeStruct)
         {
@@ -285,6 +323,12 @@ namespace SimpleLanguage.Compile
 
                     if (keynodeStruct.IsLineEndBreak())
                     {
+                        // 匿名闭包: var name = ( params ) 换行后紧跟 { 闭包体, 语句继续
+                        if (IsAnonymousClosurePending(pnode, tCurIndex, keynodeStruct))
+                        {
+                            continue;
+                        }
+
                         if (ProjectManager.isUseForceSemiColonInLineEnd)
                         {
                             Log.AddNodeLog(LID.ShowExtendMessage, "warning 使用的是强制封号结束语句方式，注意这个节点会继承往下查找语句"
@@ -330,7 +374,8 @@ namespace SimpleLanguage.Compile
                                 || ttt == ETokenType.Catch
                                 || ttt == ETokenType.Finally
                                 || ttt == ETokenType.Defer
-                                || ttt == ETokenType.ErrDefer ) // ClassName(){}
+                                || ttt == ETokenType.ErrDefer
+                                || ttt == ETokenType.Function ) // ClassName(){}
                     {
 
                         isMustContactBrace = true;
@@ -398,8 +443,17 @@ namespace SimpleLanguage.Compile
                         || ttt == ETokenType.ErrDefer
                         || ttt == ETokenType.Checked
                         || ttt == ETokenType.Unchecked
-                        || ttt == ETokenType.Const)
+                        || ttt == ETokenType.Const
+                        || ttt == ETokenType.Function)
                     {
+                        // 匿名闭包: var name = function( params ) { body }
+                        // 当 function 出现在语句中间 (commonContent 已有内容如 var/name/=) 时,
+                        // 不抢占主关键字, 而是作为普通内容节点继续收集, 后续由 CrateFileMetaSyntaxNoKey 拦截
+                        if (ttt == ETokenType.Function && keynodeStruct.commonContent.Count > 0)
+                        {
+                            keynodeStruct.AddContent(curNode);
+                            continue;
+                        }
                         // checked label Name {} catch{} - checked modifier on label
                         if (curNode.token?.type == ETokenType.Checked)
                         {
@@ -732,6 +786,44 @@ namespace SimpleLanguage.Compile
                     return null;
                 }
 
+                // 匿名闭包拦截 (新语法): var name = function( 参数列表 ) { 闭包体 }
+                if (varToken != null
+                    && afterNodeList.Count >= 3
+                    && afterNodeList[0].nodeType == ENodeType.Key
+                    && afterNodeList[0].token?.type == ETokenType.Function
+                    && afterNodeList[1].nodeType == ENodeType.Par
+                    && afterNodeList[2].nodeType == ENodeType.Brace)
+                {
+                    // 闭包只能出现在方法体内
+                    var curInfo = currentNodeInfo;
+                    if (curInfo == null ||
+                        (curInfo.parseType != EParseNodeType.Statements && curInfo.parseType != EParseNodeType.Function))
+                    {
+                        Log.AddNodeLog(LID.ShowExtendMessage, nameToken, "Error 闭包只能定义在方法体内!");
+                        return null;
+                    }
+                    List<FileMetaParamterDefine> paramList = ParseClosureParamList(afterNodeList[1]);
+                    Node braceNode = afterNodeList[2];
+                    FileMetaBlockSyntax closureBlock = new FileMetaBlockSyntax(m_FileMeta, braceNode.token, braceNode.endToken);
+                    FileMetaDefineClosureSyntax fmdcs = new FileMetaDefineClosureSyntax(m_FileMeta,
+                        afterNodeList[0].token, nameToken, true, paramList, closureBlock);
+                    ParseCurrentNodeInfo pcnicClosure = new ParseCurrentNodeInfo(closureBlock);
+                    m_CurrentNodeInfoStack.Push(pcnicClosure);
+                    ParseSyntax(braceNode);
+                    m_CurrentNodeInfoStack.Pop();
+                    return fmdcs;
+                }
+                // 旧语法报错: var name = ( 参数列表 ) { 闭包体 } (需使用 function 关键字)
+                if (varToken != null
+                    && afterNodeList.Count >= 2
+                    && afterNodeList[0].nodeType == ENodeType.Par
+                    && afterNodeList[1].nodeType == ENodeType.Brace)
+                {
+                    Log.AddNodeLog(LID.ShowExtendMessage, nameToken,
+                        "Error 匿名闭包需使用 function 关键字: var name = function( 参数 ) { 闭包体 }");
+                    return null;
+                }
+
                 if(afterNodeList[0].nodeType == ENodeType.Key
                     && afterNodeList[0].token?.type != ETokenType.This
                     && afterNodeList[0].token?.type != ETokenType.Base
@@ -821,6 +913,47 @@ namespace SimpleLanguage.Compile
                 }
             }
             return null;
+        }
+        // 闭包参数解析: 把 Par 节点 childList 按逗号切分, 每段生成 FileMetaParamterDefine
+        private List<FileMetaParamterDefine> ParseClosureParamList( Node parNode )
+        {
+            List<FileMetaParamterDefine> paramList = new List<FileMetaParamterDefine>();
+            if (parNode == null) return paramList;
+
+            List<List<Node>> tparamList = new List<List<Node>>();
+            List<Node> tempList = new List<Node>();
+            for (int i = 0; i < parNode.childList.Count; i++)
+            {
+                var pnode = parNode.childList[i];
+                if (pnode == null) continue;
+                if (pnode.nodeType == ENodeType.Comma)
+                {
+                    if (tempList.Count > 0)
+                    {
+                        tparamList.Add(tempList);
+                        tempList = new List<Node>();
+                    }
+                }
+                else if (pnode.nodeType == ENodeType.Comment || pnode.nodeType == ENodeType.LineEnd)
+                {
+                    continue;
+                }
+                else
+                {
+                    tempList.Add(pnode);
+                }
+            }
+            if (tempList.Count > 0)
+            {
+                tparamList.Add(tempList);
+            }
+
+            for (int i = 0; i < tparamList.Count; i++)
+            {
+                FileMetaParamterDefine fmp = new FileMetaParamterDefine(m_FileMeta, tparamList[i]);
+                paramList.Add(fmp);
+            }
+            return paramList;
         }
         public FileMetaSyntax HandleCreateFileMetaSyntaxByPNode( Node pnode )
         {
@@ -1031,6 +1164,56 @@ namespace SimpleLanguage.Compile
                     m_CurrentNodeInfoStack.Push(pcnic);
                     ParseSyntax(akss.blockNode);
                     m_CurrentNodeInfoStack.Pop();
+                }
+                else if (akss.tokenType == ETokenType.Function)
+                {
+                    // 具名闭包: function name( 参数列表 ) { 闭包体 }
+                    // 闭包只能出现在方法体内
+                    var curInfo = currentNodeInfo;
+                    if (curInfo == null ||
+                        (curInfo.parseType != EParseNodeType.Statements && curInfo.parseType != EParseNodeType.Function))
+                    {
+                        Log.AddNodeLog(LID.ShowExtendMessage, akss.keyNode?.token, "Error 闭包(function)只能定义在方法体内!");
+                    }
+
+                    Token closureNameToken = null;
+                    Node closureParNode = null;
+                    foreach (var cnode in akss.keyContent)
+                    {
+                        if (cnode == null) continue;
+                        if (cnode.nodeType == ENodeType.IdentifierLink)
+                        {
+                            closureNameToken = cnode.token;
+                            closureParNode = cnode.parNode;
+                        }
+                        else if (cnode.nodeType == ENodeType.Comment || cnode.nodeType == ENodeType.LineEnd
+                            || cnode.nodeType == ENodeType.SemiColon)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            Log.AddNodeLog(LID.ShowExtendMessage, cnode.token, "Error 闭包定义语法不正确 应为 function name( 参数 ) { 闭包体 }");
+                        }
+                    }
+                    if (closureNameToken == null)
+                    {
+                        Log.AddNodeLog(LID.ShowExtendMessage, akss.keyNode?.token, "Error 闭包定义缺少名称");
+                    }
+                    else if (akss.blockNode != null)
+                    {
+                        List<FileMetaParamterDefine> paramList = ParseClosureParamList(closureParNode);
+                        FileMetaBlockSyntax closureBlock = new FileMetaBlockSyntax(m_FileMeta, akss.blockNode.token, akss.blockNode.endToken);
+                        FileMetaDefineClosureSyntax fmdcs = new FileMetaDefineClosureSyntax(m_FileMeta,
+                            akss.keyNode.token, closureNameToken, false, paramList, closureBlock);
+                        AddParseSyntaxNodeInfo(fmdcs);
+                        fms = fmdcs;
+
+                        ParseCurrentNodeInfo pcnicClosure = new ParseCurrentNodeInfo(closureBlock);
+                        m_CurrentNodeInfoStack.Push(pcnicClosure);
+                        ParseSyntax(akss.blockNode);
+                        m_CurrentNodeInfoStack.Pop();
+                    }
                 }
                 else if (akss.tokenType == ETokenType.Return
                     || akss.tokenType == ETokenType.Transience)

@@ -382,6 +382,16 @@ namespace SimpleLanguage.Core
                 mvn.SetQuestionMarkDot(mcn.isQuestionMarkDot);
                 m_VisitNodeList.Add(mvn);
             }
+            else if (mcn.callNodeType == ECallNodeType.ClosureCall)
+            {
+                // 闭包调用: funname( xx ) -> 生成 ClosureCall 访问节点
+                var mcc = new MetaClosureCall(mcn.metaVariable, MetaClosureVariable.ResolveClosureVariable(mcn.metaVariable), mcn.metaInputParamCollection);
+                mcc.SetToken(mcn.token);
+                MetaVisitNode mvnClosure = MetaVisitNode.CreateByClosureCall(mcc);
+                mvnClosure.SetToken(mcn.token);
+                mvnClosure.SetQuestionMarkDot(mcn.isQuestionMarkDot);
+                m_VisitNodeList.Add(mvnClosure);
+            }
             else if (mcn.callNodeType == ECallNodeType.MemberVariableName)
             {
                 MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.staticCallMetaType);

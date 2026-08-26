@@ -340,6 +340,66 @@ namespace SimpleLanguage.Core
         }
     }
 
+    /// <summary>
+    /// 闭包调用: 通过闭包变量 funname( xx ) 进行调用。
+    /// 不复用 MetaMethodCall (其按定义参数数填充实参, 闭包函数多一个隐藏 context 参数会错位)。
+    /// </summary>
+    public class MetaClosureCall
+    {
+        public MetaClosureVariable closureVariable => m_ClosureVariable;
+        public MetaVariable loadMetaVariable => m_LoadMetaVariable;
+        public MetaMemberFunction closureFunction => m_ClosureVariable?.closureDefineStatements?.closureFunction;
+        public List<MetaExpressNodeBase> inputParamExpressList => m_InputParamExpressList;
+        public MetaType returnMetaType => m_ReturnMetaType;
+        public Token token => m_Token;
+
+        private MetaVariable m_LoadMetaVariable = null;
+        private MetaClosureVariable m_ClosureVariable = null;
+        private List<MetaExpressNodeBase> m_InputParamExpressList = new List<MetaExpressNodeBase>();
+        private MetaType m_ReturnMetaType = null;
+        private Token m_Token = null;
+
+        /// <summary>
+        /// loadMv: IR 生成时实际加载的变量(闭包变量本身或其捕获代理)。
+        /// cv: 解析出的闭包变量(经 ResolveClosureVariable, 用于取闭包函数)。
+        /// </summary>
+        public MetaClosureCall( MetaVariable loadMv, MetaClosureVariable cv, MetaInputParamCollection paramCollection )
+        {
+            m_LoadMetaVariable = loadMv;
+            m_ClosureVariable = cv;
+            // 闭包调用返回类型: 优先使用闭包函数推断出的返回类型, 无法确定时回退 object
+            var funcRet = cv?.closureDefineStatements?.closureFunction?.returnMetaVariable?.defineMetaType;
+            m_ReturnMetaType = funcRet ?? new MetaType( CoreMetaClassManager.objectMetaClass );
+            if( paramCollection != null )
+            {
+                var mipList = paramCollection.metaInputParamList;
+                for( int i = 0; i < mipList.Count; i++ )
+                {
+                    m_InputParamExpressList.Add( mipList[i].express );
+                }
+            }
+        }
+        public void SetToken( Token token )
+        {
+            m_Token = token;
+        }
+        public string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append( m_ClosureVariable?.name ?? "closure" );
+            sb.Append( "(" );
+            for( int i = 0; i < m_InputParamExpressList.Count; i++ )
+            {
+                sb.Append( m_InputParamExpressList[i]?.ToFormatString() );
+                if( i < m_InputParamExpressList.Count - 1 )
+                    sb.Append( "," );
+            }
+            sb.Append( ")" );
+            return sb.ToString();
+        }
+        public override string ToString() { return ToFormatString(); }
+    }
+
     public class MetaVisitNode
     {
         public enum EVisitType
@@ -360,6 +420,7 @@ namespace SimpleLanguage.Core
             TemplateName,
             GetTypeValue,
             SystemCall,
+            ClosureCall,
         }
         public MetaConstExpressNode constValueExpress => m_Express as MetaConstExpressNode;
         public MetaExpressNodeBase express => m_Express;
@@ -367,6 +428,7 @@ namespace SimpleLanguage.Core
         public MetaVariable variable => m_Variable;
         public MetaVisitVariable visitVariable => m_VisitVariable;
         public MetaMethodCall methodCall => m_MethodCall;
+        public MetaClosureCall closureCall => m_ClosureCall;
         public MetaType callMetaType => m_CallMetaType;
         public bool isQuestionMarkDot => m_IsQuestionMarkDot;
         /// <summary>仅 <see cref="EVisitType.GetTypeValue"/> 等场景填充；可能为 <see cref="MetaData"/>/<see cref="MetaEnum"/>。</summary>
@@ -378,6 +440,7 @@ namespace SimpleLanguage.Core
 
         private EVisitType m_VisitType = EVisitType.None;
         private MetaMethodCall m_MethodCall = null;
+        private MetaClosureCall m_ClosureCall = null;
         private MetaVisitVariable m_VisitVariable = null;
         private MetaVariable m_Variable  = null;
         private MetaExpressNodeBase m_Express  = null;
@@ -591,6 +654,16 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
+        public static MetaVisitNode CreateByClosureCall(MetaClosureCall _closureCall)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.m_VisitType = EVisitType.ClosureCall;
+            vn.m_ClosureCall = _closureCall;
+            vn.SetToken(_closureCall?.token);
+
+            return vn;
+        }
         public static MetaVisitNode CreateByVisitVariable(MetaVisitVariable _variale)
         {
             MetaVisitNode vn = new MetaVisitNode();
@@ -691,6 +764,10 @@ namespace SimpleLanguage.Core
                         //}
                         //return methodCall.function.GetFinalMetaType();
                     }
+                case EVisitType.ClosureCall:
+                    {
+                        return closureCall?.returnMetaType;
+                    }
                     case EVisitType.VisitVariable:
                     {
                         if( this.visitVariable.isDefineMetaType )
@@ -765,6 +842,10 @@ namespace SimpleLanguage.Core
                     {
                         return variable;
                     }
+                case EVisitType.ClosureCall:
+                    {
+                        return closureCall?.closureFunction?.returnMetaVariable;
+                    }
                 case EVisitType.MethodCall:
                 case EVisitType.SystemCall:
                     {
@@ -828,6 +909,10 @@ namespace SimpleLanguage.Core
                     {
                         return variable;
                     }
+                case EVisitType.ClosureCall:
+                    {
+                        return closureCall?.closureFunction?.returnMetaVariable;
+                    }
                 case EVisitType.MethodCall:
                 case EVisitType.SystemCall:
                     {
@@ -868,6 +953,10 @@ namespace SimpleLanguage.Core
                 case EVisitType.Variable:
                     {
                         return variable;
+                    }
+                case EVisitType.ClosureCall:
+                    {
+                        return closureCall?.closureFunction?.returnMetaVariable;
                     }
                 case EVisitType.MethodCall:
                 case EVisitType.SystemCall:
@@ -932,6 +1021,14 @@ namespace SimpleLanguage.Core
                 case EVisitType.SystemCall:
                     {
                         sb.Append(this.methodCall.ToFormatString());
+                    }
+                    break;
+                case EVisitType.ClosureCall:
+                    {
+                        if (this.closureCall != null)
+                        {
+                            sb.Append(this.closureCall.ToFormatString());
+                        }
                     }
                     break;
                 case EVisitType.MetaClass:
@@ -1053,6 +1150,12 @@ namespace SimpleLanguage.Core
                 case MetaVisitNode.EVisitType.EnumMember:
                     {
                         sb.Append(this.variable.ToFormatString());
+                    }
+                    break;
+                case EVisitType.ClosureCall:
+                    {
+                        if (this.closureCall != null)
+                            sb.Append(this.closureCall.ToFormatString());
                     }
                     break;
                 default:
