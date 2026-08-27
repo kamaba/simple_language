@@ -25,6 +25,7 @@
       { "path": "Container/IList.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Container/IMap.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Container/List.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Container/LinkedList.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Container/Map.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/Console.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/Directory.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },

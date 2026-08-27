@@ -9,6 +9,7 @@ Project
         DirectoryTest.fun()
         ConsoleTest.fun()
         DateTimeTest.fun()
+        LinkedListTest.fun()
     }
     CompileBefore()
     {

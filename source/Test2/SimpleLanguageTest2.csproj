@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,6 +9,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Front\SimpleLanguageFront.csproj" />
+    <ProjectReference Include="..\VM\SimpleLanuageVM.csproj">
+      <Aliases>global,VMRuntime</Aliases>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>
