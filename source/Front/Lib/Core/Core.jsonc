@@ -103,8 +103,8 @@
 
     // ---- Type conversions ----
     { "name": "SystemConvertBool",    "returnType": "bool",   "params": ["object"], "isVariadic": false },
-    { "name": "SystemConvertInt8",    "returnType": "Int8",   "params": ["object", "Int32"], "isVariadic": false },
-    { "name": "SystemConvertUInt8",   "returnType": "UInt8",  "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemConvertInt8",    "returnType": "Int8",   "params": ["object"], "isVariadic": false },
+    { "name": "SystemConvertUInt8",   "returnType": "UInt8",  "params": ["object"], "isVariadic": false },
     { "name": "SystemConvertInt16",   "returnType": "Int16",  "params": ["object"], "isVariadic": false },
     { "name": "SystemConvertUInt16",  "returnType": "UInt16", "params": ["object"], "isVariadic": false },
     { "name": "SystemConvertInt32",   "returnType": "Int32",  "params": ["object"], "isVariadic": false },
@@ -114,7 +114,7 @@
     { "name": "SystemConvertFloat32", "returnType": "Float32","params": ["object"], "isVariadic": false },
     { "name": "SystemConvertFloat64", "returnType": "Float64","params": ["object"], "isVariadic": false },
     { "name": "SystemConvertString",  "returnType": "string", "params": ["object"], "isVariadic": false },
-    { "name": "SystemConvertSInt8",   "returnType": "Int8",   "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemConvertSInt8",   "returnType": "Int8",   "params": ["object"], "isVariadic": false },
 
     // ---- Object operations ----
     { "name": "SystemEqualObject",       "returnType": "bool",   "params": ["object", "object"], "isVariadic": false },

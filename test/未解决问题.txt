@@ -19,9 +19,7 @@ final int/uint/float 等方法
 
 机制差的:
 6. 传参的时候，需要把定义名称也付入
-使用接口，必须使用interface 的类，才可以使用interface 
 函数名称和类名冲突时候的处理
-把sys_io.h .c 的逻辑 合并到console.h .c 里边吧，我看了下，有一些是重复的 
 data.h .c 的逻辑，直接合并到data_system_method.h .c里边吧 因为data.h .c 没有和平台相关的逻辑 直接写到data_system_method就可以
 完善tulple, set , 然后写一个sqlite3的标准库  然后再把local的逻辑测试了.
 
