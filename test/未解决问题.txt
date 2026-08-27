@@ -18,10 +18,9 @@ final int/uint/float 等方法
 1. cvm 只使用三色方案  然后使用 引用计数的方案，在结尾 后把内存收集
 
 机制差的:
-6. 传参的时候，需要把定义名称也付入
 函数名称和类名冲突时候的处理
-data.h .c 的逻辑，直接合并到data_system_method.h .c里边吧 因为data.h .c 没有和平台相关的逻辑 直接写到data_system_method就可以
-完善tulple, set , 然后写一个sqlite3的标准库  然后再把local的逻辑测试了.
+
+完善tulple, linkedList, set, queue stack, buffer, builder , 然后写一个sqlite3的标准库  然后再把local的逻辑测试了.
 
 1. this的使用，还没有整合
 2. 循环引用 问题

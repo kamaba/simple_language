@@ -292,3 +292,4 @@
 /source/MathNativeImpl/bin
 /source/CSimpleVMTest1/build_cvm.bat
 /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/source/VM
