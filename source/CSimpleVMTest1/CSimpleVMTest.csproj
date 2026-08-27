@@ -15,20 +15,20 @@
     <ProjectReference Include="..\Front\SimpleLanguageFront.csproj" />
   </ItemGroup>
 
-  <!-- 用 CMake 构建 C VM（产物目录：csimple_lang\build\<Config>\bin）：
+  <!-- 用 VS 工具链构建 C VM（产物目录：csimple_lang\build\<Config>\bin）：
        Debug 构建 -> csimple_lang_dll.dll，Program.cs P/Invoke 加载的就是它
                     （VS 内构建也走这里，保证断点行号与加载的 PDB 一致）；
-       Release 构建 -> csimple_lang.exe，Program.cs Release 分支进程调用的就是它 -->
+       Release 构建 -> csimple_lang.exe，Program.cs Release 分支进程调用的就是它。
+       注意：.NET SDK 的 MSBuild（dotnet run 使用的）无法构建 C++ vcxproj，
+       所以通过 build_cvm.bat 调用 vswhere 找到 VS 的 MSBuild 来构建。 -->
   <Target Name="BuildCVM" BeforeTargets="Build">
     <PropertyGroup>
       <CVMRoot>$(MSBuildThisFileDirectory)..\..\..\csimple_lang</CVMRoot>
+      <CVMVcxProj>$(CVMRoot)\project\vs\vm_lib\csimple_lang_lib.vcxproj</CVMVcxProj>
       <CVMConfig Condition="'$(Configuration)' == 'Release'">Release</CVMConfig>
       <CVMConfig Condition="'$(Configuration)' != 'Release'">Debug</CVMConfig>
-      <CVMTarget Condition="'$(Configuration)' == 'Release'">csimple_lang</CVMTarget>
-      <CVMTarget Condition="'$(Configuration)' != 'Release'">csimple_lang_dll</CVMTarget>
     </PropertyGroup>
-    <Exec Command="cmake -B &quot;$(CVMRoot)\build&quot; -S &quot;$(CVMRoot)&quot;" />
-    <Exec Command="cmake --build &quot;$(CVMRoot)\build&quot; --config $(CVMConfig) --target $(CVMTarget)" />
+    <Exec Command="$(MSBuildThisFileDirectory)build_cvm.bat &quot;$(CVMVcxProj)&quot; $(CVMConfig)" />
   </Target>
 
 </Project>

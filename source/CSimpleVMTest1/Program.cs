@@ -70,7 +70,7 @@ internal static class Program
 
     static int RunCVM(string packagePath, bool runTestEntry, string repoRoot, bool debug = false)
     {
-        // Resolve csimple_lang exe/dll path (CMake output: csimple_lang\build\<Config>\bin,
+        // Resolve csimple_lang exe/dll path (VS output: csimple_lang\build\<Config>\bin,
         // produced by the BuildCVM target in CSimpleVMTest.csproj)
 #if DEBUG
         string cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang",
@@ -90,7 +90,7 @@ internal static class Program
         if (!File.Exists(cvmExe))
         {
             Console.WriteLine("csimple_lang.exe not found in Release output. Build the C VM first:");
-            Console.WriteLine("  cd ../csimple_lang && cmake -B build && cmake --build build --config Release --target csimple_lang");
+            Console.WriteLine("  MSBuild ..\\csimple_lang\\project\\vs\\vm_lib\\csimple_lang_lib.vcxproj /p:Configuration=Release /p:Platform=x64");
             return 4;
         }
 #endif
@@ -110,7 +110,7 @@ internal static class Program
             if (!File.Exists(cvmExe))
             {
                 Console.WriteLine("csimple_lang.exe not found either. Build the C VM first:");
-                Console.WriteLine("  cd ../csimple_lang && cmake -B build && cmake --build build --config Debug --target csimple_lang_dll");
+                Console.WriteLine("  MSBuild ..\\csimple_lang\\project\\vs\\vm_lib\\csimple_lang_lib.vcxproj /p:Configuration=Debug /p:Platform=x64");
                 return 4;
             }
             return RunProcess(cvmExe, cvmArgs, "C VM run (csimple_lang)", cvmDir);

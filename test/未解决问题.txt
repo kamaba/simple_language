@@ -19,12 +19,6 @@ llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后�
 final int/uint/float 等方法 
 1. cvm 只使用三色方案  然后使用 引用计数的方案，在结尾 后把内存收集
 
-RuntimeClass* vm_find_runtime_class_by_id_local(int32 class_id);
-RuntimeClass* vm_find_runtime_class_by_name_local(const char* class_name);
-
-RuntimeClass* runtime_class_manager_get_runtime_class_by_id(int32 class_id);
-RuntimeClass* runtime_class_manager_get_runtime_class_by_name(const char* class_name); 这两个是不是重复了， 合并成一个
-
 vm_push_vmvalue_from_runtimevalue 78 79删除掉
 
 机制差的:
