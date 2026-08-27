@@ -342,17 +342,26 @@ namespace SimpleLanguage.Core
                     }
                 }
 
+                // Step 1: resolve the full dotted-name namespace block from the
+                // module root (absolute resolution, e.g. "Application" -> root.Application)
+                bool nsResolvedByDottedName = false;
                 if (finalTopMetaNode == null && fmc.namespaceBlock?.namespaceList?.Count > 0 )
                 {
                     finalTopMetaNode = NamespaceManager.instance.FindFinalMetaNamespaceByNSBlock(fmc.namespaceBlock);
-                   
+                    nsResolvedByDottedName = (finalTopMetaNode != null);
+
                     if (finalTopMetaNode == null )
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, "???????????????????????????????????????!!");
                         return null;
                     }
                 }
-                if (finalTopMetaNode != null
+                // Step 2: when the enclosing namespace was found via topLevelFileMetaNamespace
+                // (line 332), resolve the dotted-name namespace block relative to that context.
+                // Skip this if Step 1 already resolved the full namespace from root — otherwise
+                // it would re-search for "Application" inside root.Application and return null.
+                if (!nsResolvedByDottedName
+                    && finalTopMetaNode != null
                     && (finalTopMetaNode.isMetaModule || finalTopMetaNode.isMetaNamespace)
                     && fmc.namespaceBlock?.namespaceList?.Count > 0)
                 {

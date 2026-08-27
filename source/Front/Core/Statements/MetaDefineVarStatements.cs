@@ -70,7 +70,7 @@ namespace SimpleLanguage.Core
                 leftMt = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, m_OwnerMetaBlockStatements.ownerMetaFunction as MetaMemberFunction, fmcd);
                 if(leftMt == null )
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreNotFoundMetaTypeByFMClassDefine, fmcd.classNameToken, "DefineStatements", fmcd.name );
+                    Log.AddMetaCoreLog(LID.MetaCoreNotFoundMetaTypeByFMClassDefine, fmcd.classNameToken, "DefineStatements Parse", fmcd.name );
                     return;
                 }
 

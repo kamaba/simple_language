@@ -18,17 +18,20 @@ namespace SimpleLanguage.Core
     {
         public MetaExpressNodeBase express => m_Express;
         public Token token => m_Token;
+        public string paramName => m_ParamName;
 
         protected FileInputParamNode m_FileInputParamNode;
         protected MetaExpressNodeBase m_Express = null;
         protected MetaBlockStatements m_OwnerMetaBlockStatements;
         protected MetaBase m_OwnerMetaBase = null;
         protected Token m_Token;
-        public MetaInputParam( FileInputParamNode fipn, MetaBase mc, MetaBlockStatements mbs )
+        protected string m_ParamName = null;
+        public MetaInputParam( FileInputParamNode fipn, MetaBase mc, MetaBlockStatements mbs, string keywordName = null )
         {
             m_FileInputParamNode = fipn;
             m_OwnerMetaBlockStatements = mbs;
             m_OwnerMetaBase = mc;
+            m_ParamName = keywordName;
 
             CreateExpressParam cep = new CreateExpressParam()
             {
@@ -455,6 +458,11 @@ namespace SimpleLanguage.Core
             {
                 inputCount = mpc.metaInputParamList.Count;
             }
+            // 关键字（命名）参数：按定义名称匹配，不要求实参顺序与形参定义顺序一致
+            if( mpc != null && mpc.hasKeywordParam )
+            {
+                return IsEqualKeywordMetaInputParamCollection(mpc, inputCount);
+            }
             if ( m_IsExtendParams )
             {
                 //??????????????????????????params ?????????????????????????????????????????                
@@ -539,6 +547,80 @@ namespace SimpleLanguage.Core
                 }
                 return false;
             }
+        }
+        /// <summary>
+        /// 关键字（命名）参数匹配：位置实参按顺序填充形参槽位，命名实参按名称填充槽位，
+        /// 因此实参顺序不必与形参定义顺序一致（与 MetaMethodCall.ReorderKeywordArgs 语义保持一致）。
+        /// </summary>
+        private bool IsEqualKeywordMetaInputParamCollection(MetaInputParamCollection mpc, int inputCount)
+        {
+            int defineCount = m_MetaDefineParamList.Count;
+            MetaInputParam[] matched = new MetaInputParam[defineCount];
+            // params 可变参数槽位（最后一个），允许多余的位置实参进入
+            int extendParamIndex = m_IsExtendParams ? defineCount - 1 : -1;
+            int positionalSlot = 0;
+
+            for (int i = 0; i < inputCount; i++)
+            {
+                MetaInputParam mip = mpc.metaInputParamList[i];
+                if (string.IsNullOrEmpty(mip.paramName))
+                {
+                    // 位置参数：按顺序填充槽位
+                    if (positionalSlot < defineCount)
+                    {
+                        if (matched[positionalSlot] != null)
+                            return false;
+                        matched[positionalSlot] = mip;
+                        positionalSlot++;
+                    }
+                    else if (extendParamIndex >= 0)
+                    {
+                        // 多余的位置参数进入 params 可变参数
+                        if (matched[extendParamIndex] == null)
+                            matched[extendParamIndex] = mip;
+                    }
+                    else
+                    {
+                        return false; // 实参数量超过形参数量
+                    }
+                }
+                else
+                {
+                    // 命名参数：按名称查找形参槽位
+                    int targetIndex = -1;
+                    for (int j = 0; j < defineCount; j++)
+                    {
+                        var mdp = m_MetaDefineParamList[j];
+                        if (mdp == null)
+                            return false;
+                        if (mdp.name == mip.paramName)
+                        {
+                            targetIndex = j;
+                            break;
+                        }
+                    }
+                    if (targetIndex < 0)
+                        return false; // 不存在该名称的形参
+                    if (targetIndex == extendParamIndex)
+                        return false; // params 可变参数不支持命名传参
+                    if (matched[targetIndex] != null)
+                        return false; // 该参数被重复赋值
+                    matched[targetIndex] = mip;
+                }
+            }
+
+            // 逐槽位检查类型匹配 / 缺省参数
+            for (int i = 0; i < defineCount; i++)
+            {
+                MetaDefineParam a = m_MetaDefineParamList[i];
+                if (a == null)
+                    return false;
+                if (i == extendParamIndex)
+                    continue; // params 槽位由剩余位置实参填充，不做类型强校验
+                if (!MetaInputParamCollection.CheckInputMetaParam(a, matched[i]))
+                    return false;
+            }
+            return true;
         }
         public bool IsEqualMetaDefineParamCollection(MetaDefineParamCollection mdpc)
         {
@@ -655,6 +737,22 @@ namespace SimpleLanguage.Core
     {
         public List<MetaInputParam> metaInputParamList => m_MetaInputParamList;
         public int count { get { return m_MetaInputParamList.Count; } }
+        /// <summary>
+        /// 是否存在关键字（命名）参数（如 foo( name = "x", id = 1 )）。
+        /// 存在时函数匹配需要按参数名称匹配，而不依赖实参顺序。
+        /// </summary>
+        public bool hasKeywordParam
+        {
+            get
+            {
+                for (int i = 0; i < m_MetaInputParamList.Count; i++)
+                {
+                    if (!string.IsNullOrEmpty(m_MetaInputParamList[i].paramName))
+                        return true;
+                }
+                return false;
+            }
+        }
         private MetaBase m_OwnerMetaBase = null;
         private MetaBlockStatements m_MetaBlockStatements = null;
         private List<MetaInputParam> m_MetaInputParamList = new List<MetaInputParam>();
@@ -669,13 +767,78 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = mc;
             m_MetaBlockStatements = mbs;
             var splitList = fmpt.SplitParamList();
-            List<FileInputParamNode> list = new List<FileInputParamNode>();
             for (int i = 0; i < splitList.Count; i++)
             {
-                FileInputParamNode fnpn = new FileInputParamNode(splitList[i]);
-                list.Add(fnpn);
+                var term = splitList[i];
+                string keywordName = TryExtractKeywordArg(ref term);
+                FileInputParamNode fnpn = new FileInputParamNode(term);
+                MetaInputParam mp = new MetaInputParam(fnpn, m_OwnerMetaBase, m_MetaBlockStatements, keywordName);
+                AddMetaInputParam(mp);
             }
-            ParseList(list);
+        }
+        /// <summary>
+        /// Detects "name = expr" pattern in a FileMetaBaseTerm and extracts
+        /// the keyword name and expression-only term. Returns the param name
+        /// or null if no keyword arg is present.
+        /// </summary>
+        private static string TryExtractKeywordArg(ref FileMetaBaseTerm term)
+        {
+            if (term is FileMetaTermExpress fmte)
+            {
+                var subList = fmte.fileMetaExpressList;
+                int assignIndex = -1;
+                for (int j = 0; j < subList.Count; j++)
+                {
+                    if (subList[j] is FileMetaSymbolTerm fst && fst.symBolType == ETokenType.Assign)
+                    {
+                        assignIndex = j;
+                        break;
+                    }
+                }
+                if (assignIndex > 0 && assignIndex < subList.Count - 1)
+                {
+                    var nameTerm = subList[assignIndex - 1];
+                    // 关键字参数名必须是单个纯标识符（如 foo( name = expr ) 中的 name）。
+                    // 标识符被包装为 FileMetaCallTerm，而 FileMetaCallTerm 自身不持有 token，
+                    // 必须从 callLink 的首节点取名称；链式（a.b）、数组、泛型、带 brace 的形式不算关键字名。
+                    string paramName = null;
+                    if (nameTerm is FileMetaCallTerm fmct
+                        && fmct.callLink != null
+                        && fmct.callLink.isOnlyName)
+                    {
+                        var kcn = fmct.callLink.callNodeList[0];
+                        if (!kcn.isArray
+                            && kcn.fileMetaBraceTerm == null
+                            && kcn.inputTemplateNodeList.Count == 0)
+                        {
+                            paramName = fmct.callLink.name;
+                        }
+                    }
+                    if (string.IsNullOrEmpty(paramName))
+                    {
+                        // 左侧不是合法的参数名标识符：不作为关键字参数处理，保留原表达式
+                        return null;
+                    }
+
+                    var afterTerms = new List<FileMetaBaseTerm>();
+                    for (int j = assignIndex + 1; j < subList.Count; j++)
+                    {
+                        afterTerms.Add(subList[j]);
+                    }
+
+                    if (afterTerms.Count == 1)
+                    {
+                        term = afterTerms[0];
+                    }
+                    else
+                    {
+                        term = new FileMetaTermExpress(fmte.fileMeta, afterTerms, FileMetaTermExpress.EExpressType.Common);
+                    }
+
+                    return paramName;
+                }
+            }
+            return null;
         }
         public void Clear()
         {

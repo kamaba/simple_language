@@ -30,6 +30,7 @@ namespace SimpleLanguage.Core
             m_MetaGenTemplateList = list;
             m_MetaNode = mtc.metaNode;
             m_MetaTemplateList = mtc.metaTemplateList;
+            m_IsInterfaceClass = mtc.isInterfaceClass;
             // 拷贝而不是共享模板类的父类型引用：
             // 后续 UpdateMetaTypeByGenClassAndFunction 会就地替换模板实参，
             // 共享引用会把某个实例的实参污染到模板类与其它实例上
@@ -435,6 +436,39 @@ namespace SimpleLanguage.Core
                     {
                         this.m_StaticMetaMemberFunctionList.Add(it);
                         AddMetaMemberFunction(it);
+                    }
+                }
+            }
+
+            // 接口类: 收集自身声明的接口函数，供 CheckInterface 使用
+            if (m_MetaTemplateClass.isInterfaceClass)
+            {
+                // 父接口声明的接口函数
+                if (this.m_ExtendClass != null && this.m_ExtendClass.isInterfaceClass)
+                {
+                    foreach (var v in this.m_ExtendClass.interfaceDeclareMetaMemberFunctionList)
+                    {
+                        if (!m_InterfaceDeclareMetaMemberFunctionList.Contains(v))
+                        {
+                            m_InterfaceDeclareMetaMemberFunctionList.Add(v);
+                        }
+                    }
+                }
+                // 自身声明的接口函数（ownerMetaClass == this 的方法）
+                foreach (var it in this.m_NonStaticVirtualMetaMemberFunctionList)
+                {
+                    if (it.ownerMetaClass == this)
+                    {
+                        if (!m_InterfaceDeclareMetaMemberFunctionList.Contains(it))
+                            m_InterfaceDeclareMetaMemberFunctionList.Add(it);
+                    }
+                }
+                foreach (var it in this.m_StaticMetaMemberFunctionList)
+                {
+                    if (it.ownerMetaClass == this)
+                    {
+                        if (!m_InterfaceDeclareMetaMemberFunctionList.Contains(it))
+                            m_InterfaceDeclareMetaMemberFunctionList.Add(it);
                     }
                 }
             }

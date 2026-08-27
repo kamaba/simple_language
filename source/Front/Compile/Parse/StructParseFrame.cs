@@ -1289,7 +1289,10 @@ namespace SimpleLanguage.Compile
                 if (hasInterfaceModifier)
                 {
                     Log.AddNodeLog(LID.ShowExtendMessage, interfaceTok, "Error class 内部不允许使用 interface 修饰函数");
-                    m_CurrentNodeInfoStack.Pop();
+                    // 注意: 此处没有调用 AddParseFunctionNodeInfo(即没有 Push)，
+                    // 因此不能 Pop，否则会破坏 m_CurrentNodeInfoStack 平衡导致后续解析 NRE。
+                    // 继续解析类内剩余成员后直接返回。
+                    ParseClassNode(pnode);
                     return;
                 }
 

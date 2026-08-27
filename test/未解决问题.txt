@@ -3,8 +3,6 @@
 2. 数学库的集成
 7. 指针的增加与处理. 
 9. 是否不能 new int() 这种的，直接变成栈的方式
-sqlite的client
-MemberFunction1Test 2Test
 
 1. cvm优化system method 动态加载
 llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后在虚拟机中，有对应的调用
@@ -21,10 +19,11 @@ final int/uint/float 等方法
 
 机制差的:
 6. 传参的时候，需要把定义名称也付入
-
+使用接口，必须使用interface 的类，才可以使用interface 
+函数名称和类名冲突时候的处理
 把sys_io.h .c 的逻辑 合并到console.h .c 里边吧，我看了下，有一些是重复的 
 data.h .c 的逻辑，直接合并到data_system_method.h .c里边吧 因为data.h .c 没有和平台相关的逻辑 直接写到data_system_method就可以
-完善tulple, set 
+完善tulple, set , 然后写一个sqlite3的标准库  然后再把local的逻辑测试了.
 
 1. this的使用，还没有整合
 2. 循环引用 问题

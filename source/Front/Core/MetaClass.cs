@@ -60,6 +60,7 @@ namespace SimpleLanguage.Core
         public List<MetaClass> genMetaClassTemplateList => m_GenMetaClassTemplateList;
         public List<MetaMemberFunction> nonStaticVirtualMetaMemberFunctionList => m_NonStaticVirtualMetaMemberFunctionList;
         public List<MetaMemberFunction> staticMetaMemberFunctionList => m_StaticMetaMemberFunctionList;
+        public List<MetaMemberFunction> interfaceDeclareMetaMemberFunctionList => m_InterfaceDeclareMetaMemberFunctionList;
         public List<MetaMemberVariable> fileCollectMetaMemberVariable => m_FileCollectMetaMemberVariable;
         public List<MetaMemberFunction> fileCollectMetaMemberFunctionList => m_FileCollectMetaMemberFunctionList;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
@@ -92,6 +93,7 @@ namespace SimpleLanguage.Core
         private List<MetaType> m_FileCollectMetaInterfaceList = new List<MetaType>();
         protected List<MetaMemberFunction> m_NonStaticVirtualMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_StaticMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
+        protected List<MetaMemberFunction> m_InterfaceDeclareMetaMemberFunctionList = new List<MetaMemberFunction>();// 接口类自身声明的接口函数（不含从Object继承的函数）
         protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected MetaExpressNodeBase m_DefaultExpressNode = null;
         protected bool m_IsInterfaceClass = false;
@@ -158,6 +160,7 @@ namespace SimpleLanguage.Core
             m_StaticMetaMemberFunctionList = mc.m_StaticMetaMemberFunctionList;
             m_DefaultExpressNode = mc.m_DefaultExpressNode;
             m_IsAbstractClass = mc.m_IsAbstractClass;
+            m_IsInterfaceClass = mc.m_IsInterfaceClass;
             m_IsPartial = mc.m_IsPartial;
         }
         public override void SetDeep( int deep )
@@ -389,8 +392,13 @@ namespace SimpleLanguage.Core
                     {
                         if( !this.innderDefine )
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, c.token, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
                         }
+                        continue;
+                    }
+                    if( this.m_MetaExtendMemeberVariableDict.ContainsKey( c.name ) )
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, c.token, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
                         continue;
                     }
                     this.m_MetaMemberVariableDict.Add(c.name, c);
@@ -594,6 +602,30 @@ namespace SimpleLanguage.Core
                 }
             }
 
+            // 接口类: 收集自身声明的接口函数，供 CheckInterface 使用
+            // 只收集接口类自身声明的方法和父接口声明的接口函数，不含从Object继承的函数
+            if (m_IsInterfaceClass)
+            {
+                m_InterfaceDeclareMetaMemberFunctionList.Clear();
+                // 父接口声明的接口函数
+                if (m_ExtendClass != null && m_ExtendClass.m_IsInterfaceClass)
+                {
+                    foreach (var v in m_ExtendClass.m_InterfaceDeclareMetaMemberFunctionList)
+                    {
+                        m_InterfaceDeclareMetaMemberFunctionList.Add(v);
+                    }
+                }
+                // 自身声明的接口函数（排除带默认实现的 isWithInterface 方法）
+                foreach (var v in m_FileCollectMetaMemberFunctionList)
+                {
+                    if (!v.isStatic && v.isWithInterface) continue;
+                    if (!m_InterfaceDeclareMetaMemberFunctionList.Contains(v))
+                    {
+                        m_InterfaceDeclareMetaMemberFunctionList.Add(v);
+                    }
+                }
+            }
+
             List<MetaMemberFunction> addList = new List<MetaMemberFunction>();
             for (int i = 0; i < this.m_TempInnerFunctionList.Count; i++)
             {
@@ -706,9 +738,7 @@ namespace SimpleLanguage.Core
                 MetaClass interfaceMc = it.GetTemplateMetaClass();
 
                 Token token = m_Token;
-                List<MetaMemberFunction> forlist = new List<MetaMemberFunction>(interfaceMc.staticMetaMemberFunctionList.Count+ interfaceMc.nonStaticVirtualMetaMemberFunctionList.Count);
-                forlist.AddRange(interfaceMc.staticMetaMemberFunctionList);
-                forlist.AddRange(interfaceMc.nonStaticVirtualMetaMemberFunctionList);
+                List<MetaMemberFunction> forlist = new List<MetaMemberFunction>(interfaceMc.interfaceDeclareMetaMemberFunctionList);
                 foreach ( var interfaceMMF in forlist )
                 {
                     bool certified = false;

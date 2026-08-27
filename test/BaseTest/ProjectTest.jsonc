@@ -96,7 +96,12 @@
   "struct": [
       { "namespace": "ProjectTest", "children": [] },
       { "namespace": "Application", "children": [] },
-      { "namespace": "ConStrCC", "children": [] }
+      { "namespace": "ConStrCC", "children": [] },
+      { "namespace": "MFT", "children": 
+        [
+          { "namespace": "Application", "children": [] }
+        ]
+     }
   ],
   "export": {
     "moduleName": "ProjectTest",

@@ -146,35 +146,7 @@ namespace SimpleLanguage.Project
             if (root.TryGetProperty( "struct", out var structObj)
                 && structObj.ValueKind == JsonValueKind.Array)
             {
-                foreach (var item in structObj.EnumerateArray())
-                {
-                    if (item.ValueKind != JsonValueKind.Object)
-                    {
-                        continue;
-                    }
-
-                    var ns = GetStr(item, "namespace", null);
-                    if (!string.IsNullOrWhiteSpace(ns))
-                    {
-                        cfg.StructTree.EnsurePath(ns, ProjectConfig.StructTreeNode.NodeType.Namespace);
-                    }
-
-                    var cls = GetStr(item, "class", null);
-                    if (!string.IsNullOrWhiteSpace(cls))
-                    {
-                        cfg.StructTree.EnsurePath(cls, ProjectConfig.StructTreeNode.NodeType.Class);
-                    }
-                    var dls = GetStr(item, "data", null);
-                    if (!string.IsNullOrWhiteSpace(dls))
-                    {
-                        cfg.StructTree.EnsurePath(dls, ProjectConfig.StructTreeNode.NodeType.Data);
-                    }
-                    var els = GetStr(item, "enum", null);
-                    if (!string.IsNullOrWhiteSpace(els))
-                    {
-                        cfg.StructTree.EnsurePath(els, ProjectConfig.StructTreeNode.NodeType.Enum);
-                    }
-                }
+                ParseStructNodes(structObj, cfg.StructTree);
             }
 
             if (TryGetObj(root, "export", out var exportObj))
@@ -287,6 +259,60 @@ namespace SimpleLanguage.Project
                 }
             }
             return @default;
+        }
+
+        // Recursively walks the "struct" tree. Each item may carry one of
+        // namespace/class/data/enum to identify a node under the current parent;
+        // an optional "children" array is parsed the same way, allowing arbitrary
+        // nesting depth.
+        static void ParseStructNodes(JsonElement array, ProjectConfig.StructTreeNode parent)
+        {
+            if (array.ValueKind != JsonValueKind.Array || parent == null)
+            {
+                return;
+            }
+
+            foreach (var item in array.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                // Register each identifier present on the item as a child of the
+                // current parent. `node` tracks the most recently registered child
+                // and serves as the parent for any nested `children`.
+                ProjectConfig.StructTreeNode node = parent;
+
+                var ns = GetStr(item, "namespace", null);
+                if (!string.IsNullOrWhiteSpace(ns))
+                {
+                    node = parent.EnsurePath(ns, ProjectConfig.StructTreeNode.NodeType.Namespace);
+                }
+
+                var cls = GetStr(item, "class", null);
+                if (!string.IsNullOrWhiteSpace(cls))
+                {
+                    node = parent.EnsurePath(cls, ProjectConfig.StructTreeNode.NodeType.Class);
+                }
+
+                var dls = GetStr(item, "data", null);
+                if (!string.IsNullOrWhiteSpace(dls))
+                {
+                    node = parent.EnsurePath(dls, ProjectConfig.StructTreeNode.NodeType.Data);
+                }
+
+                var els = GetStr(item, "enum", null);
+                if (!string.IsNullOrWhiteSpace(els))
+                {
+                    node = parent.EnsurePath(els, ProjectConfig.StructTreeNode.NodeType.Enum);
+                }
+
+                if (item.TryGetProperty("children", out var childArr) && childArr.ValueKind == JsonValueKind.Array)
+                {
+                    ParseStructNodes(childArr, node);
+                }
+            }
         }
     }
 }

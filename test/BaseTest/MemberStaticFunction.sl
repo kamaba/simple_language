@@ -13,7 +13,7 @@ VClass
 {
     fun()
     {
-        System.Console.Write( "vclass fun" )
+        global.println( "vclass fun" )
     }
 
     override get int hashCode()
@@ -40,7 +40,7 @@ OClass extends VClass
 {
     override fun()
     {
-        System.Console.Write( "oclass fun" )
+        global.println( "oclass fun" )
     }
 
     override get int hashCode()
@@ -252,9 +252,9 @@ class StaticKeyword
     }
 
     # 静态函数调用其他静态函数时使用关键字参数
-    static int calc( int base, int tax = 0, int discount = 0 )
+    static int calc( int base111, int tax = 0, int discount = 0 )
     {
-        ret StaticKeyword.add( a = base, b = tax, c = -discount )
+        ret StaticKeyword.add( a = base111, b = tax, c = -discount )
     }
 
     # 静态函数调用实例方法(通过对象参数)
@@ -317,9 +317,9 @@ class StaticChild extends StaticBase
 # ============================================================
 data ProductData
 {
-    int id = 0
-    string name = ""
-    double price = 0.0d
+    id = 0
+    name = ""
+    price = 0.0d
 }
 
 class ProductFactory
@@ -525,8 +525,8 @@ MemberStaticFunction
         global.println( "compute(1, y=2) -> " + StaticKeyword.compute( 1, y = 2 ).toString() )
 
         # --- 静态函数间调用使用关键字参数 ---
-        global.println( "calc(base=100, tax=10, discount=5) -> " + StaticKeyword.calc( base = 100, tax = 10, discount = 5 ).toString() )
-        global.println( "calc(discount=50, base=200) -> " + StaticKeyword.calc( discount = 50, base = 200 ).toString() )
+        global.println( "calc(base=100, tax=10, discount=5) -> " + StaticKeyword.calc( base111 = 100, tax = 10, discount = 5 ).toString() )
+        global.println( "calc(discount=50, base=200) -> " + StaticKeyword.calc( discount = 50, base111 = 200 ).toString() )
 
         # --- 静态函数调用实例方法(通过对象参数) ---
         StaticBasic obj = StaticBasic()

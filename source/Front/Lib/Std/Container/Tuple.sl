@@ -27,23 +27,24 @@ public class Tuple<T1,T2,T3,T4>
 
 public class Tuple
 {
-    _val1 = null
-    _val2 = null
-    _val3 = null
-    _val4 = null
-    _val5 = null
-    _val6 = null
-
-    _length = 0
+    Array<object> _values = null
     _init_( val1 )
     {
-        this._val1 = val1
-        this._length = 1
     }
     _init_( val1, val2 )
     {
-        this._val1 = val1
-        this._val2 = val2
-        this._length = 2
+    }
+    _init_( val1, val2, val2 )
+    {
+    }
+
+    override string toString()
+    {
+        if( this._values == null ){
+            ret "Tuple()"
+        }
+        else{
+            ret "Tuple( " + this._values + " )"
+        }
     }
 }

@@ -9,30 +9,32 @@
 # ============================================================
 # Section 1: 原有 override/final/static 测试 (保留并扩展)
 # ============================================================
+namespace MFT
+{
 Class1
 {
     a1func(){ }
     b1func(){ }
     c1func(){}
-    override d1func(){}
+    d1func(){}
 }
 
 Class2 extends Class1
 {
-    _init_()
+    override _init_()
     {
     }
     # 以下两个与类名不同，验证不允许与类名同名的构造
     # Class1() { }    # 不允许
     # Class3() { }    # 不允许与类名相同
 
-    a1func(){ }
+    override a1func(){ }
 
-    final b1func(){ }
+    final override b1func(){ }
 
-    c1func(){}
+    override c1func(){}
 
-    d1func(){}
+    override d1func(){}
 }
 
 Class3 extends Class2
@@ -68,7 +70,7 @@ class ML_Base
         ret "ML_Base"
     }
 
-    override int calc()
+    int calc()
     {
         ret 100
     }
@@ -76,7 +78,7 @@ class ML_Base
 
 class ML_Mid extends ML_Base
 {
-    int level = 2
+    int level2 = 2
 
     override string name()
     {
@@ -91,7 +93,7 @@ class ML_Mid extends ML_Base
 
 class ML_Child extends ML_Mid
 {
-    int level = 3
+    int level3 = 3
 
     override string name()
     {
@@ -106,7 +108,7 @@ class ML_Child extends ML_Mid
 
 class ML_GrandChild extends ML_Child
 {
-    int level = 4
+    int level4 = 4
 
     override string name()
     {
@@ -134,14 +136,12 @@ class AbsBase
 {
     int baseVal = 50
 
-    # interface 方法: 有默认实现, 子类可覆盖
-    interface int getValue()
+    int getValue()
     {
         ret this.baseVal
     }
 
-    # interface 方法: 无默认实现 (纯抽象)
-    interface string describe()
+    string describe(){ ret ""}
 
     # 普通方法
     int doubled()
@@ -155,13 +155,13 @@ class AbsChild extends AbsBase
     int childVal = 200
 
     # 覆盖 interface 方法
-    interface int getValue()
+    override int getValue()
     {
         ret this.childVal
     }
 
     # 实现抽象 interface 方法
-    interface string describe()
+    override string describe()
     {
         ret "AbsChild childVal=" + this.childVal.toString() + " baseVal=" + base.baseVal.toString()
     }
@@ -172,12 +172,12 @@ class AbsGrandChild extends AbsChild
     int grandVal = 500
 
     # 再次覆盖
-    interface int getValue()
+    override int getValue()
     {
         ret this.grandVal
     }
 
-    interface string describe()
+    override string describe()
     {
         ret "AbsGrandChild grand=" + this.grandVal.toString()
     }
@@ -189,7 +189,7 @@ class AbsGrandChild extends AbsChild
 # ============================================================
 class FinalBase
 {
-    override int process()
+    int process()
     {
         ret 10
     }
@@ -291,12 +291,12 @@ class PolyBase
         this.val = v
     }
 
-    override string tag()
+    string tag()
     {
         ret "PolyBase"
     }
 
-    override int calc()
+    int calc()
     {
         ret this.val
     }
@@ -304,7 +304,7 @@ class PolyBase
 
 class PolyChild1 extends PolyBase
 {
-    _init_( int v )
+    override _init_( int v )
     {
         base._init_( v )
     }
@@ -322,7 +322,7 @@ class PolyChild1 extends PolyBase
 
 class PolyChild2 extends PolyBase
 {
-    _init_( int v )
+    override _init_( int v )
     {
         base._init_( v )
     }
@@ -375,15 +375,13 @@ class CtorBase
 class CtorChild extends CtorBase
 {
     int z = 0
-    string tag = "CtorChild"
-
     _init_( int _x, int _y, int _z )
     {
         base._init_( _x, _y )
         this.z = _z
     }
 
-    _init_( int _x )
+    override _init_( int _x )
     {
         base._init_( _x )
         this.z = -1
@@ -405,7 +403,7 @@ namespace NS_MF2.Base
     {
         static int count = 0
 
-        int get()
+        int get111()
         {
             ret NS_MF2.Base.Counter.count
         }
@@ -415,7 +413,7 @@ namespace NS_MF2.Base
             NS_MF2.Base.Counter.count = NS_MF2.Base.Counter.count + 1
         }
 
-        virtual string label()
+        string labelbb()  #virtual这标记要报错
         {
             ret "Counter"
         }
@@ -433,7 +431,7 @@ namespace NS_MF2.Derived
             NS_MF2.Base.Counter.count = NS_MF2.Base.Counter.count + this.step
         }
 
-        override string label()
+        override string labelbb()
         {
             ret "FastCounter(step=" + this.step.toString() + ")"
         }
@@ -446,7 +444,7 @@ namespace NS_MF2.Derived
 # ============================================================
 class ChainBase
 {
-    override string build()
+    string build()
     {
         ret "B"
     }
@@ -612,8 +610,8 @@ MemberFunction2Test
         NS_MF2.Base.Counter counter = NS_MF2.Derived.FastCounter()
         counter.inc()
         counter.inc()
-        global.println( "counter.label -> " + counter.label() )
-        global.println( "counter.get -> " + counter.get().toString() )
+        global.println( "counter.label -> " + counter.labelbb() )
+        global.println( "counter.get -> " + counter.get111().toString() )
     }
 
     static testMethodChain()
@@ -638,7 +636,7 @@ MemberFunction2Test
         global.println( "========== MemberFunction2Test (end) ==========" )
     }
 }
-
+}
 #!
 测试规则说明：
 

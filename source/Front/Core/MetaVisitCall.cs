@@ -74,82 +74,95 @@ namespace SimpleLanguage.Core
                 mpList = m_VMCallMetaFunction.metaMemberParamCollection.metaDefineParamList;
             }
             int defineCount = m_VMCallMetaFunction?.metaMemberParamCollection?.maxParamCount ?? 0;
-            int inputCount = _paramCollection != null ?_paramCollection.metaInputParamList.Count : 0;
-
             if( _fun != null && _fun.IsExtentParams() )
             {
-                for (int i = 0; i < defineCount - 1 ; i++)
+                var reordered = ReorderKeywordArgs(_paramCollection, mpList, defineCount - 1, out var leftoverPositional);
+                if (reordered != null)
                 {
-                    MetaInputParam dmip = _paramCollection.metaInputParamList[i];
-                    m_MetaInputParamList.Add(dmip.express);
+                    for (int i = 0; i < defineCount - 1; i++)
+                    {
+                        if (reordered[i] != null)
+                        {
+                            m_MetaInputParamList.Add(reordered[i]);
+                        }
+                        else
+                        {
+                            MetaDefineParam mdp = (i < mpList.Count) ? mpList[i] : null;
+                            if (mdp != null && mdp.expressNode != null)
+                            {
+                                m_MetaInputParamList.Add(mdp.expressNode);
+                            }
+                        }
+                    }
+
+                    var mgobj = new MetaType(CoreMetaClassManager.objectMetaClass);
+                    List<MetaClass> ilist = new List<MetaClass>();
+                    ilist.Add(CoreMetaClassManager.objectMetaClass);
+                    var newarray = CoreMetaClassManager.arrayMetaClass.AddInstanceMetaClass(ilist, true);
+                    var mt = new MetaType(newarray);
+
+                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode( mt, m_OwnerMetaClass, m_OwnerMetaBlockStatements );
+
+                    MetaType cmt = new MetaType(CoreMetaClassManager.objectMetaClass);
+                    for( int i = 0; i < leftoverPositional.Count; i++ )
+                    {
+                        MetaBraceAssignStatements mbas = new MetaBraceAssignStatements(null, m_OwnerMetaBlockStatements, m_OwnerMetaClass, cmt, leftoverPositional[i]);
+                        mnoe.assignStatementsList.Add(mbas);
+                    }
+                    mnoe.Parse(new AllowUseSettings());
+                    mnoe.CalcReturnType();
+
+                    m_MetaInputParamList.Add(mnoe);
                 }
-
-                var mgobj = new MetaType(CoreMetaClassManager.objectMetaClass);
-                List<MetaClass> ilist = new List<MetaClass>();
-                ilist.Add(CoreMetaClassManager.objectMetaClass);
-                var newarray = CoreMetaClassManager.arrayMetaClass.AddInstanceMetaClass(ilist, true);
-                var mt = new MetaType(newarray);
-
-                MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode( mt, m_OwnerMetaClass, m_OwnerMetaBlockStatements );
-
-                MetaType cmt = new MetaType(CoreMetaClassManager.objectMetaClass);
-                for( int i = defineCount - 1; i < inputCount; i++ )
-                {
-                    var express = _paramCollection.metaInputParamList[i].express;
-                    MetaBraceAssignStatements mbas = new MetaBraceAssignStatements(null, m_OwnerMetaBlockStatements, m_OwnerMetaClass, cmt, express);
-                    mnoe.assignStatementsList.Add(mbas);
-
-                }
-                mnoe.Parse(new AllowUseSettings());
-                mnoe.CalcReturnType();
-
-                m_MetaInputParamList.Add(mnoe);
             }
             else
             {
-                for (int i = 0; i < defineCount; i++)
+                var reordered = ReorderKeywordArgs(_paramCollection, mpList, defineCount, out var _);
+                if (reordered != null)
                 {
-                    if (i < inputCount)
+                    for (int i = 0; i < defineCount; i++)
                     {
-                        MetaInputParam mip = _paramCollection.metaInputParamList[i];
-                        m_MetaInputParamList.Add(mip.express);
-                    }
-                    else
-                    {
-                        MetaDefineParam mdp = mpList[i];
-                        if (mdp != null)
+                        if (reordered[i] != null)
                         {
-                            if (mdp.expressNode != null)
+                            m_MetaInputParamList.Add(reordered[i]);
+                        }
+                        else
+                        {
+                            MetaDefineParam mdp = mpList[i];
+                            if (mdp != null)
                             {
-                                m_MetaInputParamList.Add(mdp.expressNode);
-                            }
-                            else if (mdp.isHasExpress)
-                            {
-                                // ref module 导入的函数：默认参数只保留 hasExpress 标记（无表达式 AST），
-                                // 省略参数时用参数声明类型的零值常量填充，保证实参数量与定义一致。
-                                var pet = mdp.metaVariable?.defineMetaType?.eType ?? EType.None;
-                                MetaConstExpressNode zeroNode;
-                                if (pet == EType.Boolean)
+                                if (mdp.expressNode != null)
                                 {
-                                    zeroNode = new MetaConstExpressNode(EType.Boolean, false);
+                                    m_MetaInputParamList.Add(mdp.expressNode);
                                 }
-                                else if (pet == EType.String)
+                                else if (mdp.isHasExpress)
                                 {
-                                    zeroNode = new MetaConstExpressNode(EType.String, string.Empty);
-                                }
-                                else if (pet >= EType.UInt8 && pet <= EType.UInt128)
-                                {
-                                    zeroNode = new MetaConstExpressNode(pet, 0);
+                                    // ref module 导入的函数：默认参数只保留 hasExpress 标记（无表达式 AST），
+                                    // 省略参数时用参数声明类型的零值常量填充，保证实参数量与定义一致。
+                                    var pet = mdp.metaVariable?.defineMetaType?.eType ?? EType.None;
+                                    MetaConstExpressNode zeroNode;
+                                    if (pet == EType.Boolean)
+                                    {
+                                        zeroNode = new MetaConstExpressNode(EType.Boolean, false);
+                                    }
+                                    else if (pet == EType.String)
+                                    {
+                                        zeroNode = new MetaConstExpressNode(EType.String, string.Empty);
+                                    }
+                                    else if (pet >= EType.UInt8 && pet <= EType.UInt128)
+                                    {
+                                        zeroNode = new MetaConstExpressNode(pet, 0);
+                                    }
+                                    else
+                                    {
+                                        zeroNode = new MetaConstExpressNode(EType.Null, "null");
+                                    }
+                                    m_MetaInputParamList.Add(zeroNode);
                                 }
                                 else
                                 {
-                                    zeroNode = new MetaConstExpressNode(EType.Null, "null");
+                                    m_MetaInputParamList.Add(mdp.expressNode);
                                 }
-                                m_MetaInputParamList.Add(zeroNode);
-                            }
-                            else
-                            {
-                                m_MetaInputParamList.Add(mdp.expressNode);
                             }
                         }
                     }
@@ -190,21 +203,24 @@ namespace SimpleLanguage.Core
             {
                 mpList = m_VMCallMetaFunction.metaMemberParamCollection.metaDefineParamList;
             }
-            int inputCount = _paramCollection != null ? _paramCollection.metaInputParamList.Count : 0;
+            int defineCount = m_VMCallMetaFunction?.metaMemberParamCollection?.maxParamCount ?? 0;
 
-            for (int i = 0; i < inputCount; i++)
+            var reordered = ReorderKeywordArgs(_paramCollection, mpList, defineCount, out var _);
+            if (reordered != null)
             {
-                if (i < inputCount)
+                for (int i = 0; i < defineCount; i++)
                 {
-                    MetaInputParam mip = _paramCollection.metaInputParamList[i];
-                    m_MetaInputParamList.Add(mip.express);
-                }
-                else
-                {
-                    MetaDefineParam mdp = mpList[i];
-                    if (mdp != null)
+                    if (reordered[i] != null)
                     {
-                        m_MetaInputParamList.Add(mdp.expressNode);
+                        m_MetaInputParamList.Add(reordered[i]);
+                    }
+                    else
+                    {
+                        MetaDefineParam mdp = (i < mpList.Count) ? mpList[i] : null;
+                        if (mdp != null)
+                        {
+                            m_MetaInputParamList.Add(mdp.expressNode);
+                        }
                     }
                 }
             }
@@ -220,6 +236,84 @@ namespace SimpleLanguage.Core
         public void SetDebugInputParTermText(string? text)
         {
             m_DebugInputParTermText = text;
+        }
+
+        /// <summary>
+        /// Reorders call-site arguments to match target method parameter slots.
+        /// Handles Python-style keyword arguments (name = expr).
+        /// Returns array where index = param slot, value = expression (null for default).
+        /// Leftover positional args (beyond named slots) go to leftoverPositional.
+        /// Returns null on error.
+        /// </summary>
+        private MetaExpressNodeBase[] ReorderKeywordArgs(
+            MetaInputParamCollection _paramCollection,
+            List<MetaDefineParam> mpList,
+            int slotCount,
+            out List<MetaExpressNodeBase> leftoverPositional)
+        {
+            leftoverPositional = new List<MetaExpressNodeBase>();
+            if (_paramCollection == null || slotCount <= 0)
+            {
+                return new MetaExpressNodeBase[slotCount > 0 ? slotCount : 0];
+            }
+
+            var inputList = _paramCollection.metaInputParamList;
+            int inputCount = inputList.Count;
+            var resultArgs = new MetaExpressNodeBase[slotCount];
+            int positionalSlot = 0;
+            bool seenKeyword = false;
+
+            for (int i = 0; i < inputCount; i++)
+            {
+                var mip = inputList[i];
+                if (string.IsNullOrEmpty(mip.paramName))
+                {
+                    if (seenKeyword)
+                    {
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, mip.token,
+                            "Error: positional argument follows keyword argument");
+                        return null;
+                    }
+                    if (positionalSlot < slotCount)
+                    {
+                        resultArgs[positionalSlot] = mip.express;
+                        positionalSlot++;
+                    }
+                    else
+                    {
+                        leftoverPositional.Add(mip.express);
+                    }
+                }
+                else
+                {
+                    seenKeyword = true;
+                    string name = mip.paramName;
+                    int targetIndex = -1;
+                    for (int j = 0; j < mpList.Count; j++)
+                    {
+                        if (mpList[j].name == name)
+                        {
+                            targetIndex = j;
+                            break;
+                        }
+                    }
+                    if (targetIndex < 0 || targetIndex >= slotCount)
+                    {
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, mip.token,
+                            "Error: no parameter named '" + name + "'");
+                        continue;
+                    }
+                    if (resultArgs[targetIndex] != null)
+                    {
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, mip.token,
+                            "Error: multiple values for parameter '" + name + "'");
+                        continue;
+                    }
+                    resultArgs[targetIndex] = mip.express;
+                }
+            }
+
+            return resultArgs;
         }
         public MetaType GeMetaDefineType()
         {

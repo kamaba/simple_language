@@ -1,7 +1,7 @@
 local
 {
     #!
-    sqlite = Std.Sql.Sqlite3("d:/file.db")
+    sqlite = Std.DB.Sqlite3("d:/file.db")
 
     if( sqlite == null )
     {

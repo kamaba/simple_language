@@ -9,6 +9,7 @@
 # ============================================================
 # Section 1: 基础函数定义与调用
 # ============================================================
+namespace MFT{
 class BasicFuncClass
 {
     int val = 0
@@ -135,16 +136,16 @@ class DefaultParamClass
     }
 
     # 多个默认参数
-    int power( int base = 2, int exp = 3 )
+    int power( int base222 = 2, int exp = 3 )
     {
-        int result = 1
+        int resu = 1
         int i = 0
         while i < exp
         {
-            result = result * base
+            resu = resu * base222
             i = i + 1
         }
-        ret result
+        ret resu
     }
 
     # 默认参数为字符串字面量
@@ -221,9 +222,9 @@ class KeywordArgClass
     }
 
     # 方法间调用使用关键字参数
-    int calcTotal( int base, int tax = 0, int discount = 0 )
+    int calcTotal( int base11, int tax = 0, int discount = 0 )
     {
-        ret base + tax - discount
+        ret base11 + tax - discount
     }
 
     # 嵌套调用验证
@@ -279,7 +280,7 @@ class CallStyleChild extends CallStyleBase
     int combinedCompute()
     {
         # 直接调用本类方法
-        int v1 = getValue()
+        int v1 = this.getValue()
         # 通过 this 调用本类方法
         int v2 = this.getValue()
         # 通过 base 调用父类方法
@@ -332,10 +333,10 @@ class RecursiveClass
     }
 
     # 递归幂运算
-    int pow( int base, int exp )
+    int pow( int base111, int exp )
     {
         if exp <= 0 { ret 1 }
-        ret base * this.pow( base, exp - 1 )
+        ret base111 * this.pow( base111, exp - 1 )
     }
 }
 
@@ -347,32 +348,33 @@ Application.CI2
 {
 }
 
-C22 extend Application.CI2
+C22 extends Application.CI2
 {
     Y = 10
     int getback(){ ret 100 }
-    int C2(){ ret Y }
+    int C22222b(){ ret this.Y }
 }
 
-C23 extend C22
+C23 extends C22
 {
     M = 100
-    int C2(){ ret M }
+    override int C22222b(){ ret this.M }
 }
 
-CI3
+interface CI3
 {
-    object C3()
+    object C32222()
 }
 
-Applicaction.C3 extend C22 interface Application.CI2, CI3
+Application.C3 extends C22 interface Application.CI2, CI3
 {
-    interface int C2(){ ret 100 }
-    object C3(){ ret Object.New() }
+    int C2(){ ret 100 }
+    override object C32222(){ ret Object() }
 }
 
-Application.C34 extend C22 interface CI3
+Application.C34 extends C22 interface CI3
 {
+    override object C32222(){ ret null }
 }
 
 
@@ -497,8 +499,8 @@ MemberFunction1Test
         global.println( "compute(1, y=2) -> " + obj.compute( 1, y = 2 ).toString() )
 
         # --- 关键字参数在方法间调用 ---
-        global.println( "calcTotal(base=100, tax=10, discount=5) -> " + obj.calcTotal( base = 100, tax = 10, discount = 5 ).toString() )
-        global.println( "calcTotal(discount=20, base=200) -> " + obj.calcTotal( discount = 20, base = 200 ).toString() )
+        global.println( "calcTotal(base=100, tax=10, discount=5) -> " + obj.calcTotal( base11 = 100, tax = 10, discount = 5 ).toString() )
+        global.println( "calcTotal(discount=20, base=200) -> " + obj.calcTotal( discount = 20, base11 = 200 ).toString() )
         global.println( "calcTotal(150, discount=10) -> " + obj.calcTotal( 150, discount = 10 ).toString() )
 
         # --- 嵌套调用中使用关键字参数 ---
@@ -546,12 +548,12 @@ MemberFunction1Test
     {
         global.println( "----- testInterfaceMethod -----" )
         C22 c22 = C22()
-        global.println( "C22.C2 -> " + c22.C2().toString() )
+        global.println( "C22.C2 -> " + c22.C22222b().toString() )
         global.println( "C22.getback -> " + c22.getback().toString() )
         C23 c23 = C23()
-        global.println( "C23.C2 -> " + c23.C2().toString() )
-        Applicaction.C3 ac3 = Applicaction.C3()
-        global.println( "App.C3.C2 -> " + ac3.C2().toString() )
+        global.println( "C23.C2 -> " + c23.C22222b().toString() )
+        Application.C3 ac3 = Application.C3()
+        global.println( "App.C3.C2 -> " + ac3.C22222b().toString() )
     }
 
     static fun()
@@ -568,7 +570,7 @@ MemberFunction1Test
         global.println( "========== MemberFunction1Test (end) ==========" )
     }
 }
-
+}
 #!
 测试规则说明：
 

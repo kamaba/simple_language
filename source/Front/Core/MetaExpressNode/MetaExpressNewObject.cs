@@ -1925,11 +1925,51 @@ namespace SimpleLanguage.Core
             }
 
             int inputCount = _paramCollection != null ? _paramCollection.metaInputParamList.Count : 0;
+
+            // 关键字（命名）参数：按名称重排到形参槽位，实参顺序不必与形参定义顺序一致
+            MetaInputParam[] matched = null;
+            if (_paramCollection != null && _paramCollection.hasKeywordParam && defineCount > 0)
+            {
+                matched = new MetaInputParam[defineCount];
+                int positionalSlot = 0;
+                for (int i = 0; i < inputCount; i++)
+                {
+                    var mip = _paramCollection.metaInputParamList[i];
+                    if (string.IsNullOrEmpty(mip.paramName))
+                    {
+                        if (positionalSlot < defineCount)
+                        {
+                            matched[positionalSlot] = mip;
+                            positionalSlot++;
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 0; j < mpList.Count; j++)
+                        {
+                            if (mpList[j] != null && mpList[j].name == mip.paramName)
+                            {
+                                matched[j] = mip;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
             for (int i = 0; i < defineCount; i++)
             {
-                if (i < inputCount)
+                MetaInputParam mip = null;
+                if (matched != null)
                 {
-                    MetaInputParam mip = _paramCollection.metaInputParamList[i];
+                    mip = matched[i];
+                }
+                else if (i < inputCount)
+                {
+                    mip = _paramCollection.metaInputParamList[i];
+                }
+                if (mip != null)
+                {
                     m_MetaInputParamList.Add(mip.express);
                 }
                 else
