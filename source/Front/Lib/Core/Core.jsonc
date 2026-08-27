@@ -56,7 +56,8 @@
       { "path": "Guid.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Ptr.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Result.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "Error.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "Error.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Tuple.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -254,7 +255,16 @@
         { "class": "NativeBridge" },
         { "class": "Attribute" },
         { "class": "Nickname" },
-        { "class": "Error" }
+        { "class": "Error" },
+        { "class": "Tuple" },
+        { "class": "Tuple<T1>" },
+        { "class": "Tuple<T1,T2>" },
+        { "class": "Tuple<T1,T2,T3>" },
+        { "class": "Tuple<T1,T2,T3,T4>" },
+        { "class": "Tuple<T1,T2,T3,T4,T5>" },
+        { "class": "Tuple<T1,T2,T3,T4,T5,T6>" },
+        { "class": "Tuple<T1,T2,T3,T4,T5,T6,T7>" },
+        { "class": "Tuple<T1,T2,T3,T4,T5,T6,T7,T8>" }
       ] }
   ],
   "export": {

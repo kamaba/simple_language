@@ -66,6 +66,8 @@ Project
         MemberFunction2Test.fun()
         MemberStaticFunction.fun()
 
+        TupleTest.fun()
+
 
         nowMs = Environment.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")

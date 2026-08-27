@@ -7,8 +7,4 @@
     <OutputType>Library</OutputType>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\VM\SimpleLanuageVM.csproj" />
-  </ItemGroup>
-
 </Project>
