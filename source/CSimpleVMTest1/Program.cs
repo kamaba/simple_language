@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
 
 namespace CSimpleVMTest;
@@ -246,7 +247,12 @@ internal static class Program
             Console.WriteLine("=== Front compile (in-process) ===");
             var frontArgs = new[] { "compile", "-e", "ir", "-p", projectPath, "--no-banner" };
             var inputArgs = new CommandInputArgs(frontArgs);
-            _ = CommandExecutor.Execute(inputArgs);
+            bool ok = CommandExecutor.Execute(inputArgs);
+            if (!ok || Log.errorCount > 0)
+            {
+                Console.WriteLine($"Front compile failed, error count: {Log.errorCount}");
+                return 1;
+            }
             return 0;
         }
         catch (Exception ex)

@@ -19,11 +19,12 @@ llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后�
 final int/uint/float 等方法 
 1. cvm 只使用三色方案  然后使用 引用计数的方案，在结尾 后把内存收集
 
-vm_push_vmvalue_from_runtimevalue 78 79删除掉
-
 机制差的:
-5. 内置action的支持
 6. 传参的时候，需要把定义名称也付入
+
+把sys_io.h .c 的逻辑 合并到console.h .c 里边吧，我看了下，有一些是重复的 
+data.h .c 的逻辑，直接合并到data_system_method.h .c里边吧 因为data.h .c 没有和平台相关的逻辑 直接写到data_system_method就可以
+完善tulple, set 
 
 1. this的使用，还没有整合
 2. 循环引用 问题

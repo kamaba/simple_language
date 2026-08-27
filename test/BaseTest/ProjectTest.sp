@@ -14,6 +14,7 @@ Project
     {     
         SystemPrintln("===== ProjectTest _main_ start =====")   
         nowMs = Environment.nowMillis()
+        #!
         ObjectTest.fun()
         StringTest.fun()
         NumberTest.fun()
@@ -58,6 +59,13 @@ Project
         IfelseTest.fun()
         NSClosureTest.ClosureTest.fun()
         #PtrTest.fun()
+        !#
+
+        MemberFunction1Test.fun()
+        MemberFunction2Test.fun()
+        MemberStaticFunction.fun()
+
+
         nowMs = Environment.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")
     }
