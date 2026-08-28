@@ -313,8 +313,10 @@ namespace SimpleLanguage.Core
             {
                 Log.AddMetaCoreLog(LID.MetaCoreDefineTypeIsNull, m_Token, "Error 表达式为空 或者 表达示必须有返回值", "express");
             }
-            if (m_Express == null)
+            if (m_Express == null && m_FileMetaMemeberVariable != null)
             {
+                // 仅在有源表达式却创建失败时报错；
+                // 合成成员变量（如 local{} 块生成的 _Local 类成员）没有源表达式，属合法情况
                 Log.AddMetaCoreLog(LID.MetaCoreExpressIsNull, m_Token, "express");
             }
             return true;

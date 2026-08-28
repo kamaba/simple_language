@@ -12,7 +12,7 @@ local
     # 依赖初始化顺序的累加测试
     order = "L1"
 
-    Add(x)
+    Add(int x)
     {
         ret x + local.a
     }

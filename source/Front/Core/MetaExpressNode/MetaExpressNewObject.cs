@@ -26,6 +26,8 @@ namespace SimpleLanguage.Core
             AnonVariable,
             /// <summary>List/Map 初始化调用 add 方法</summary>
             AddMethodCall,
+            /// <summary>bind data 展开的类：字段是 set 访问器函数，brace 初始化转为 setter 调用</summary>
+            SetMethodCall,
             KeyValue,
         }
         public MetaExpressNodeBase keyExpressNode => m_KeyMetaExpress;
@@ -33,12 +35,15 @@ namespace SimpleLanguage.Core
         public int id => m_Id;
         public string defineName => m_DefineName;
         public EAssignTargetType assignTargetType => m_AssignTargetType;
+        /// <summary>SetMethodCall 目标的 set 访问器函数（bind data 展开生成或手写 set）。</summary>
+        public MetaMemberFunction setMetaMemberFunction => m_SetMetaMemberFunction;
         /// <summary>赋值目标成员变量（类成员为 MetaMemberVariable，data 成员为 MetaMemberData）。</summary>
         public MetaVariable targetMetaVariable => m_MetaMemberVariable != null ? m_MetaMemberVariable : (MetaVariable)m_MetaMemberData;
         internal void SetAssignTargetType(EAssignTargetType t) => m_AssignTargetType = t;
 
         private MetaMemberVariable m_MetaMemberVariable;
         private MetaMemberData m_MetaMemberData;
+        private MetaMemberFunction m_SetMetaMemberFunction = null;
         private MetaExpressNodeBase m_KeyMetaExpress = null;
         private MetaExpressNodeBase m_ValueMetaExpress;
         private MetaBase m_OwnerMetaBase = null;
@@ -129,30 +134,53 @@ namespace SimpleLanguage.Core
             {
                 if (m_NewObjectMetaType.isClass && m_NewObjectMetaType.metaClass != null)
                 {
-                    m_AssignTargetType = EAssignTargetType.MemberVariable;
-
                     var mc = m_NewObjectMetaType.metaClass;
                     m_MetaMemberVariable = mc.GetMetaMemberVariableByName(m_DefineName);
-                    m_AssignTargetType = EAssignTargetType.MemberVariable;
                     if (m_MetaMemberVariable == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "member variable not found: " + m_DefineName);
-                        return;
+                        // bind data 展开的类：字段不是成员变量而是 set 访问器函数
+                        // （如 class Vector2 bind VecData2 展开出 set x(float)），
+                        // brace 初始化 { x = 1.0f } 需转为 setter 调用。
+                        m_SetMetaMemberFunction = mc.GetSetMemberFunctionByNameAndParamCount(m_DefineName, 1);
+                        if (m_SetMetaMemberFunction == null)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "member variable not found: " + m_DefineName);
+                            return;
+                        }
+                        m_AssignTargetType = EAssignTargetType.SetMethodCall;
+                        var paramList = m_SetMetaMemberFunction.metaMemberParamCollection.metaDefineParamList;
+                        if (paramList == null || paramList.Count != 1 || paramList[0].metaVariable == null)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
+                                "set accessor param invalid: " + m_DefineName);
+                            return;
+                        }
+                        targetMetaType = paramList[0].metaVariable.GetFinalMetaType();
+                        if (targetMetaType == null)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
+                                "set accessor param type is null: " + m_DefineName);
+                            return;
+                        }
                     }
-                    m_Id = m_MetaMemberVariable.index;
-                    if (m_MetaMemberVariable.realMetaType == null)
+                    else
                     {
-                        m_MetaMemberVariable.CreateMetaExpress();
-                        m_MetaMemberVariable.ParseMetaExpress();
-                        m_MetaMemberVariable.ParseRealMetaType();
+                        m_AssignTargetType = EAssignTargetType.MemberVariable;
+                        m_Id = m_MetaMemberVariable.index;
+                        if (m_MetaMemberVariable.realMetaType == null)
+                        {
+                            m_MetaMemberVariable.CreateMetaExpress();
+                            m_MetaMemberVariable.ParseMetaExpress();
+                            m_MetaMemberVariable.ParseRealMetaType();
+                        }
+                        targetMetaType = m_MetaMemberVariable.GetFinalMetaType();
+                        if (targetMetaType == null)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "member variable type is null");
+                            return;
+                        }
+                        targetMetaVariable = m_MetaMemberVariable;
                     }
-                    targetMetaType = m_MetaMemberVariable.GetFinalMetaType();
-                    if (targetMetaType == null)
-                    {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "member variable type is null");
-                        return;
-                    }
-                    targetMetaVariable = m_MetaMemberVariable;
                 }
                 else if (m_NewObjectMetaType.isData && m_NewObjectMetaType.metaData != null)
                 {
@@ -474,8 +502,16 @@ namespace SimpleLanguage.Core
                 {
                     case EAssignTargetType.MemberVariable:
                         {
-                            MetaType retMetaType = m_MetaMemberVariable.GetFinalMetaType();
-                            MetaClass ownerMetaClass = m_MetaMemberVariable.ownerMetaClass;
+                            if (m_MetaMemberVariable != null)
+                            {
+                                MetaType retMetaType = m_MetaMemberVariable.GetFinalMetaType();
+                                MetaClass ownerMetaClass = m_MetaMemberVariable.ownerMetaClass;
+                            }
+                        }
+                        break;
+                    case EAssignTargetType.SetMethodCall:
+                        {
+                            // setter 调用：返回类型无意义，常量调整由 m_DefineMetaType（set 参数类型）完成
                         }
                         break;
                     case EAssignTargetType.MemberData:
@@ -847,6 +883,19 @@ namespace SimpleLanguage.Core
                         else
                         {
                             ValidateCommon(defineMt, "MemberVariable");
+                        }
+                    }
+                    break;
+                case EAssignTargetType.SetMethodCall:
+                    {
+                        // setter 调用：按 set 函数参数类型（m_DefineMetaType）校验值兼容性
+                        if (m_DefineMetaType != null && m_DefineMetaType.IsArray())
+                        {
+                            ValidateArrayElement(m_DefineMetaType, "SetMethodCall");
+                        }
+                        else
+                        {
+                            ValidateCommon(m_DefineMetaType, "SetMethodCall");
                         }
                     }
                     break;

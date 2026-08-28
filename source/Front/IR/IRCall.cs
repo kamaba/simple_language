@@ -230,7 +230,7 @@ namespace SimpleLanguage.IR
             }
             if (m_IRRuntimeMethod == null)
             {
-                Log.AddIRLog(LID.MetaCoreAssertShowMessage, mfc.token, $"ir runtime[{fname}] method not found!!");
+                Log.AddIRLog(LID.MetaCoreAssertShowMessage, mfc.token, $"ir runtime[{fname}] method not found!! func: {mf?.functionAllName ?? "null"}");
                 return;
             }
             irmt = new IRMetaType(irmc, types);

@@ -1134,6 +1134,19 @@ namespace SimpleLanguage.Core
         {
             m_TempInnerFunctionList.Add(mmf);
         }
+        /// <summary>
+        /// 运行期动态添加的非静态虚函数（如 local{} 块生成的 _Local 类函数）。
+        /// HandleExtendMemberFunction 只在文件合并阶段收集函数列表，
+        /// 之后动态添加的函数必须同时进入 nonStaticVirtualMetaMemberFunctionList，
+        /// 否则 IR 翻译阶段不会为其生成 IRMethod，虚调用将找不到方法。
+        /// </summary>
+        public void AddDynamicNonStaticMemberFunction( MetaMemberFunction mmf )
+        {
+            if (mmf == null) return;
+            if (mmf.isStatic) return;
+            if (m_NonStaticVirtualMetaMemberFunctionList.Contains(mmf)) return;
+            m_NonStaticVirtualMetaMemberFunctionList.Add(mmf);
+        }
         public bool AddMetaMemberFunction( MetaMemberFunction mmf )
         {
             MetaMemberFunctionTemplateNode find = null;
@@ -1281,6 +1294,40 @@ namespace SimpleLanguage.Core
                         return fun;
                 }
             }            
+            return null;
+        }
+        /// <summary>
+        /// 按名字和参数个数查找非静态 set 访问器函数（如 bind data 展开生成的 set x(T)）。
+        /// 不依赖值表达式即可完成的查找，供 brace 初始化构造期使用。
+        /// </summary>
+        public virtual MetaMemberFunction GetSetMemberFunctionByNameAndParamCount(string name, int paramCount)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+            if (!m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
+            {
+                return null;
+            }
+            var tnode = m_MetaMemberFunctionTemplateNodeDict[name];
+            if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(0))
+            {
+                return null;
+            }
+            var tfunctionNode = tnode.metaTemplateFunctionNodeDict[0];
+
+            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(paramCount);
+            if (list == null) return null;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var fun = list[i];
+                if (fun.isSet && !fun.isStatic && !fun.isTemplateFunction)
+                {
+                    return fun;
+                }
+            }
             return null;
         }
         public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(string name, int templateParamCount, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true)

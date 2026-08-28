@@ -12,7 +12,7 @@ local
     # 顺序标记
     order = "L2"
 
-    int Add(x)
+    int Add(int x)
     {
         ret x + local.a
     }

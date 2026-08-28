@@ -86,6 +86,10 @@ namespace SimpleLanguage.Core
 
                 var localMc = new MetaClass(localClassName);
                 root.AddMetaClass(localMc);
+                // 动态创建的 local 类必须加入导出列表，
+                // 否则 IR 翻译阶段（ParseClass 遍历 exportMetaClassList）不会为其创建 IRMetaClass，
+                // 导致 __local_init__ 等虚调用在 IR 阶段找不到方法。
+                ClassManager.instance.AddExportMetaClass(localMc);
 
                 // Create static `instance` member on the _Local class itself.
                 // Initialized via MetaNewObjectExpressNode so the instance is created
@@ -104,12 +108,21 @@ namespace SimpleLanguage.Core
                     }
                     var mmf = new MetaMemberFunction(localMc, fmmf);
                     localMc.AddMetaMemberFunction(mmf);
+                    // BuildLocalClass 在 ParseMetaClassLink 之后运行，动态创建的 local 函数
+                    // 不会经过该阶段，需补解析参数/返回类型，否则 IR 阶段参数类型为空
+                    mmf.ParseDefineMetaType();
+                    // 注册到 MethodManager，让主 ParseStatements 解析其函数体
+                    MethodManager.instance.AddOriginalMemeberFunction(mmf);
+                    // 动态添加的函数需进入虚函数列表，否则 IR 翻译阶段不生成 IRMethod
+                    localMc.AddDynamicNonStaticMemberFunction(mmf);
                 }
 
                 // Create __local_init__ instance function (holds the local{} statements)
                 var initFun = CreateLocalInitFunction(localMc, localSyntax);
                 if (initFun != null)
                 {
+                    initFun.ParseDefineMetaType();
+                    localMc.AddDynamicNonStaticMemberFunction(initFun);
                     initFun.ParseStatements();
                     RegisterLocalInitDefinedMemberVariables(localMc, initFun);
                 }

@@ -776,11 +776,77 @@ namespace SimpleLanguage.IR
                     {
                         var asl = mnoen.assignStatementsList[y];
 
-                        IRDup irdup = new IRDup(irMethod);
-                        AddIRRangeData(irdup.IRDataList);
+                        // bind data 展开的类：brace 赋值目标是 set 访问器函数，
+                        // 生成 [Dup obj] [value] [CallVirt set_x] (+Pop) 而非 StoreField。
+                        if (asl.assignTargetType == MetaBraceAssignStatements.EAssignTargetType.SetMethodCall
+                            && asl.setMetaMemberFunction != null)
+                        {
+                            IRDup irdup = new IRDup(irMethod);
+                            AddIRRangeData(irdup.IRDataList);
 
-                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.valueExpressNode);
-                        AddIRRangeData(irexp.IRDataList);
+                            IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.valueExpressNode);
+                            AddIRRangeData(irexp.IRDataList);
+
+                            var setFunc = asl.setMetaMemberFunction;
+                            string setVName = setFunc.virtualFunctionName;
+                            var callIrmc = newObjectIRMT?.irMetaClass ?? irmc;
+                            int callMethodIndex = -1;
+                            var runtimeMethod = callIrmc?.GetIRNonStaticMethodIndexByMethod(setVName, out callMethodIndex);
+                            if (callMethodIndex == -1 && setFunc.sourceMetaMemberFunction != null)
+                            {
+                                var sourceMc = setFunc.sourceMetaMemberFunction.ownerMetaClass;
+                                var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.classId) : null;
+                                if (sourceIrmc != null)
+                                {
+                                    var sourceMethod = sourceIrmc.GetIRNonStaticMethodIndexByMethod(setVName, out var sourceIndex);
+                                    if (sourceIndex >= 0)
+                                    {
+                                        runtimeMethod = sourceMethod;
+                                        callMethodIndex = sourceIndex;
+                                    }
+                                }
+                            }
+                            if (callMethodIndex == -1)
+                            {
+                                Log.AddIRLog(LID.ShowExtendMessage, asl.valueExpressNode?.token,
+                                    "set accessor method not found in ir class: " + asl.defineName);
+                            }
+
+                            List<IRMetaType> functionMtList = new List<IRMetaType>();
+                            var irmethodcall = new IRMethodCall(newObjectIRMT, functionMtList, runtimeMethod, 1);
+                            IRData datacall = new IRData();
+                            datacall.opCode = EIROpCode.CallVirt;
+                            datacall.index = callMethodIndex;
+                            datacall.opValue = irmethodcall;
+                            datacall.SetDebugInfoByToken(asl.valueExpressNode?.token);
+                            AddIRData(datacall);
+
+                            // set 访问器返回 void 通常无需 Pop；防御性丢弃非 void 返回值
+                            bool isNonVoidReturn = false;
+                            if (runtimeMethod != null && runtimeMethod.methodReturnVariableList != null
+                                && runtimeMethod.methodReturnVariableList.Count > 0)
+                            {
+                                var retIrMt = runtimeMethod.methodReturnVariableList[0].irMetaType;
+                                if (retIrMt != null && retIrMt.irMetaClass != null)
+                                {
+                                    isNonVoidReturn = retIrMt.irMetaClass.irName != "Core.Void";
+                                }
+                            }
+                            if (isNonVoidReturn)
+                            {
+                                IRData popData = new IRData();
+                                popData.opCode = EIROpCode.Pop;
+                                popData.SetDebugInfoByToken(asl.valueExpressNode?.token);
+                                AddIRData(popData);
+                            }
+                            continue;
+                        }
+
+                        IRDup irdup2 = new IRDup(irMethod);
+                        AddIRRangeData(irdup2.IRDataList);
+
+                        IRExpressBase irexp2 = IRExpressManager.CreateExpress(irMethod, asl.valueExpressNode);
+                        AddIRRangeData(irexp2.IRDataList);
 
                         // asl.id 捕获的是成员在声明类内的局部索引（继承场景下与扁平化索引不一致），
                         // 需按新对象类型的 IRMetaClass 重新解析扁平化字段索引（与普通赋值路径一致）。

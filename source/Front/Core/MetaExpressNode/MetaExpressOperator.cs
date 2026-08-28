@@ -408,7 +408,15 @@ namespace SimpleLanguage.Core
             }
             ParseCompute();
 
-            m_ExpressReturnMetaType = new MetaType(this.m_RealMetaType);
+            // 解析失败的错误路径可能未设置 m_RealMetaType，兜底为 object 避免空引用
+            if (this.m_RealMetaType != null)
+            {
+                m_ExpressReturnMetaType = new MetaType(this.m_RealMetaType);
+            }
+            else
+            {
+                m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            }
         }
         public void ParseCompute()
         {
@@ -775,6 +783,8 @@ namespace SimpleLanguage.Core
                         if (mmf == null)
                         {
                             Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Left:" + left.token.ToLexemeAllString() + "右边类型不能转换为左边类型进行加减运算!! Right:" + right.token.ToLexemeAllString()  );
+                            // 错误路径必须设置类型，否则 CalcReturnType 中 new MetaType(null) 会空引用崩溃
+                            m_RealMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
                             return;
                         }
                     }

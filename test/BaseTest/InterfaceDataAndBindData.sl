@@ -14,11 +14,11 @@ local
         x = 5.0f,
         y = 6.0f
     }
-    a.AddVector(c);
+    a.addVector(c);
 
     float len = a.length()
 
-    Console.println("Len=" + len)
+    global.println("Len=" + len)
 }
 
 data VecData2
@@ -42,6 +42,6 @@ class Vector2 interface IVector2 bind VecData2
 
     override float length()
     {
-        ret (this.x * this.x) + (his.y * this.y);
+        ret (this.x * this.x) + (this.y * this.y);
     }
 }

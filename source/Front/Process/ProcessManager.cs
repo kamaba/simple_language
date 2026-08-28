@@ -225,7 +225,8 @@ namespace SimpleLanguage.Compile.Process
                 catch (Exception ex)
                 {
                     ok = false;
-                    Log.AddProcessLog(LID.ProcessStepFailed, "", step.name, "异常: " + ex.Message);
+                    Log.AddProcessLog(LID.ProcessStepFailed, "", step.name,
+                        "异常: " + ex.Message + " | StackTrace: " + ex.StackTrace);
                 }
                 step.errorCount = Log.errorCount - errorBegin;
 
