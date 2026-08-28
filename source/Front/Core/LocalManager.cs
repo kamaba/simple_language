@@ -33,7 +33,7 @@ namespace SimpleLanguage.Core
             var fileName = Path.GetFileNameWithoutExtension(fm.path);
             if (string.IsNullOrEmpty(fileName))
                 fileName = "File" + fm.GetHashCode();
-            return fileName + "_Local";
+            return  "__" + fileName + "_Local__";
         }
 
         public MetaClass GetFileLocalClass(FileMeta fm)
@@ -93,20 +93,17 @@ namespace SimpleLanguage.Core
                 var instVar = CreateOrGetFileLocalInstanceVariable(fm, localMc);
 
                 // Add local-defined functions as instance member functions
-                if (localSyntax.functionList != null)
+                for (int j = 0; j < localSyntax.functionList.Count; j++)
                 {
-                    for (int j = 0; j < localSyntax.functionList.Count; j++)
+                    var fmmf = localSyntax.functionList[j];
+                    if (fmmf == null) continue;
+                    if (fmmf.staticToken != null)
                     {
-                        var fmmf = localSyntax.functionList[j];
-                        if (fmmf == null) continue;
-                        if (fmmf.staticToken != null)
-                        {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error local{} functions cannot use static keyword");
-                            continue;
-                        }
-                        var mmf = new MetaMemberFunction(localMc, fmmf);
-                        localMc.AddMetaMemberFunction(mmf);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, fmmf.token, "Error local{} functions cannot use static keyword");
+                        continue;
                     }
+                    var mmf = new MetaMemberFunction(localMc, fmmf);
+                    localMc.AddMetaMemberFunction(mmf);
                 }
 
                 // Create __local_init__ instance function (holds the local{} statements)
