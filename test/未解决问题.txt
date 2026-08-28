@@ -17,7 +17,10 @@ llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后�
 
 优化FrontEnd层
 再增加一些ErrorShow,
-linkedList(需要优化下，使用c语言的优势), set, queue stack, buffer, builder, await, async, stream, netStream, 然后写一个sqlite3的标准库  然后再把local的逻辑测试了.
+set, queue stack, buffer, builder, await, async, stream, netStream, 
+然后写一个sqlite3的标准库  然后再把local的逻辑测试了. local 后边可以跟一个数字
+对Tree这个结构，要在XML里边可以使用，也可以在Json里边使用，所以要有兼容性，当然里边可以创建各种不同的树结构用来选择。
+ Table的写，这两一定要做到最大兼容
 
 1. this的使用，还没有整合
 2. 循环引用 问题
@@ -39,20 +42,19 @@ linkedList(需要优化下，使用c语言的优势), set, queue stack, buffer, 
 8. import 导入错误的显示
 10. 全局的typealias里边需要读取后，继承
 
-现在要增加多线程编译，嗯，并且增加那个log里边儿取消编译的字段。如果当前的进程编译私有文件的时候出错了，那就取消当前进程编译。并且会影响到metal的编译方式啊，每个都这样做，如果metal中出错了，那就影响I2的输出。
-
-
-
 以后要实现的:
 
-1. 增加result关键字  
+1. 增加result关键字   如果在返回中定义了Result result 或者是Result<T>  则会在该函数中，自动增加一个Result result = new()的变量 如果有Result<T> 也一样的 Result<T> result = new() 然后 在这个函数里边，可以使用result.code = 0 result.message = "" result.value = Object(); 如果直接使用 ret Object() 也会认为是 result.value 相当于result内部帮忙用户分担一些 返回的结果处理类  
+
 2. bind的使用     iterface 接口 与bind的使用  如果使用interface的 如果bind过的话，那如果interface后，就相当于bind data了
-3. bind在class上，后，就相当于  给class 添加一个 data DataName 然后把相关的方法进行了封闭  get DataNameVariableName{ DataName.variableName } set ...这种的
-4. 增加协程  await 或者是使用go
+3. bind在class上，后，就相当于  给class 添加一个 data DataName 然后把相关的方法进行了封闭  get DataNameVariableName{ DataName.variableName } set ...这种的   也就是如果使用了bind关键字， 如果在interface上使用的，则在interface使用类中，必须也使用bind相关名称的DataStructName  如果直接在class上使用bind,则相当于给class 增加了这个 data的所有数据，比如 data BD{ id = 0; name = "book" } class Seal bind BD{ } 这时候 Seal 里边相当于   class Seal{ _BD = BD(); int get id(){ ret this._BD.id } void set id( int _id ){ this._BD.id = _id } get string name(){ ret this._BD.name; } set void name( string _name ){ this._BD.name = _name; } 这要的变化，当然bind后边可以跟多个data的结构，所以可能定义数据有冲突的话，在编译阶段要有提示 必须手动实现 get set 过程 比如 data CD{ uid = 0; name = "nick" } 这时候class Seal bind BD,CD{ } 因为BD,CD有相同的name 所以在定义set name get name的时候，需要手动处理 这两name的处理 比如 增加了 get string BName(){ ret this._BD.name; } set void BName( string _name ){ this.this._BD.name = _name; } get string CNDefineName(){ ret this._CD.name; } set void CNDefineName( string _name ){ this._CD.name = _name; } 这样才能解决冲突的问题，都在编译层把这块解析了， 还有一个需要改的就是 _init_ 的初始化方法， 需要自动建 _init_( BD _bd ){ this._BD = bd; } _init_( BD _bd, CD _cd ){ this._BD = _bd; this._CD = _cd; }  如果继承了这个类，那子类，也要实现这种的，并且按顺序  比如父类是bind BD,CD 子类bind DD 这时候子类就要进行_init_( BD _bd, CD _cd, DD _dd ){} 这样的自动添加函数，  还有一个就是要增加 get BD BDData(){ ret this_BD; } set void BDData( BD _bd ){ this._BD= _bd; }  其它的也同样要自动实现这些相关的方法  
+4. 增加协程  await 或者是使用go  我要增加一个协程的机制，但对于函数，不要使用async进行函数污染， 使用使用await 对一个spawn的协程进行 等待，然后使用yield的进行协程的返回， spawn出来的，其实就是一个task, 可以对task,进行await, cancel,等的操作，
 5. swtich的enum的支持  switch的,逗号的支持
 6. switch的 区间支持 switch的is MetaClass 的支持
 11. 写json的支持 与data的联动
 12. 快速返回 对=> 的支持
+
+13. 研究 -> <- 的符号的支持
 
 
 

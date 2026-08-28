@@ -21,7 +21,7 @@ namespace Application.T1
     }
     namespace T1_2.WW2
     {
-        Core1 :: T1_1.WW.Core1
+        Core1 extends T1_1.WW.Core1
         {
             X = 200;
         }
@@ -45,25 +45,25 @@ Application.CI2
 {
     interface int C2();
 }
-C22::Application.CI2
+C22 extends Application.CI2
 {
     virtual int getback(){ return 100; }
 
     Y = 10;
     interface int C2(){ return Y; }
 }
-C23 :: C22
+C23 extends C22
 {
     M = 100;
     interface int C2(){ return M; }
 }
 
-Applicaction.C3 :: C22 interface Application.CI2, CI3
+Applicaction.C3 extends C22 interface Application.CI2, CI3
 {
     interface int C2(){ return 100; }
     Object C3(){ return Object.New(); }
 }
-Application.C34 :: C22 interface CI3
+Application.C34 extends C22 interface CI3
 {
 }
 

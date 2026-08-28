@@ -60,14 +60,13 @@ Project
         IfelseTest.fun()
         NSClosureTest.ClosureTest.fun()
         #PtrTest.fun()
-        !#
 
         MemberFunction1Test.fun()
         MemberFunction2Test.fun()
         MemberStaticFunction.fun()
-
         TupleTest.fun()
-
+        !#
+        BindDataTest.fun()
 
         nowMs = Environment.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")

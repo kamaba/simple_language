@@ -149,6 +149,12 @@ namespace SimpleLanguage.Project
             pm.AddStep(CompileProcess.ECompilePhase.File, "File", () => RunFileStep(fp => fp.ParseFileStep()));
 
             // ============ 阶段3 MetaCore：全工程(含 RefModule)逻辑整合与编译 ============
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "ExpandBind", () =>
+            {
+                // bind 语义展开：在 File 阶段全工程 FileMeta 就绪后、CreateNamespace 前注入
+                BindExpandManager.instance.ExpandAll(fileParseList);
+                return true;
+            });
             pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "CreateNamespace", () =>
             {
                 for (int i = 0; i < fileParseList.Count; i++)

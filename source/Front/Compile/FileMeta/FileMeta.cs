@@ -19,6 +19,7 @@ namespace SimpleLanguage.Compile
     {
         public string path => m_Path;
         public List<FileMetaClass> fileMetaClassList => m_FileMetaClassList;
+        public List<FileMetaClass> fileMetaAllClassList => m_FileMetaAllClassList;
 
 
         private string m_Path;
@@ -149,6 +150,11 @@ namespace SimpleLanguage.Compile
         public void AddFileMetaClass( FileMetaClass mc )
         {
             m_FileMetaClassList.Add(mc);
+        }
+        public void RemoveFileMetaClass( FileMetaClass mc )
+        {
+            m_FileMetaClassList.Remove(mc);
+            m_FileMetaAllClassList.Remove(mc);
         }
         public MetaNode GetMetaBaseByFileMetaClassRef( FileMetaClassDefine fmcv )
         {

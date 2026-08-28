@@ -116,7 +116,7 @@ public class SeltBookData bind BookData interface CalcPrice
 {
     public int count = 20
     override float calc(){
-        ret this.price * count
+        ret this.price * this.count
     }
     #!
     这个里边，如果使用了CalePrice的接口，是bind 的类，必须在该类上，有绑定该类的关系 
