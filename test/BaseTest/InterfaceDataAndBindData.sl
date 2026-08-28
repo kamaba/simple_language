@@ -1,7 +1,8 @@
 
 local
 {
-    a = Vector2(){
+    a = Vector2()
+    {
         x = 1.0f,
         y = 2.0f
     }

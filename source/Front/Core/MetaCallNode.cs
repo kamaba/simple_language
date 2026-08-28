@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      MetaCallNode.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
@@ -132,10 +132,10 @@ namespace SimpleLanguage.Core
         private MetaBase m_OwnerMetaBase = null;
         private MetaInputParamCollection m_MetaInputParamCollection = null;
         private List<MetaType> m_MetaTemplateParamsList = new List<MetaType>();
-        private MetaExpressNodeBase m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 涓殑3+20+10.f灏辨槸琛ㄧず寮?, fun(expressNode)
-        private MetaVariable m_StoreMetaVariable = null;        // store metaVariable 像 a.val = new(){} val就是store 
-        private MetaVariable m_DefineMetaVariable = null;       // define variable 定义变量，是比如 像set方法，对解析有约束作用 比如 a.set( value ); value的函数定义就是定义变量 是要传进来的，而不用自己再创建一个变量
-        private List<MetaExpressNodeBase> m_BracketExpressList = new List<MetaExpressNodeBase>();   // a[1][1][1][]   瑙ｆ瀽鐨勬槸杩欎釜閲岃竟鐨?,鎴栬€呮槸鍦╗]閲岃竟鐨勫彉閲?
+        private MetaExpressNodeBase m_ExpressNode = null;    // a+b+([expressNode[3+20+10.0f]).ToString() 娑擃厾娈?+20+10.f鐏忚鲸妲哥悰銊с仛瀵?, fun(expressNode)
+        private MetaVariable m_StoreMetaVariable = null;        // store metaVariable 鍍?a.val = new(){} val灏辨槸store 
+        private MetaVariable m_DefineMetaVariable = null;       // define variable 瀹氫箟鍙橀噺锛屾槸姣斿 鍍弒et鏂规硶锛屽瑙ｆ瀽鏈夌害鏉熶綔鐢?姣斿 a.set( value ); value鐨勫嚱鏁板畾涔夊氨鏄畾涔夊彉閲?鏄浼犺繘鏉ョ殑锛岃€屼笉鐢ㄨ嚜宸卞啀鍒涘缓涓€涓彉閲?
+        private List<MetaExpressNodeBase> m_BracketExpressList = new List<MetaExpressNodeBase>();   // a[1][1][1][]   鐟欙絾鐎介惃鍕Ц鏉╂瑤閲滈柌宀冪珶閻?,閹存牞鈧懏妲搁崷鈺梋闁插矁绔熼惃鍕綁闁?
 
         private MetaNode m_MetaNode = null;
         private MetaType m_MetaType = null;
@@ -194,7 +194,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaCallSign.token, "Error MetaStatements Parse  token !!");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaCallSign.token, "Error MetaStatements Parse  token 顑?!");
                     return;
                 }
             }
@@ -501,8 +501,8 @@ namespace SimpleLanguage.Core
                 //            }
                 //            else
                 //            {
-                //                //Array1.0.x 涓嶅厑璁?
-                //                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鍦ˋrray.鍚庤竟濡傛灉浣跨敤鍙橀噺鎴栬€呮槸鏁板瓧甯搁噺锛屽繀椤讳娇鐢ˋrray.$鏂瑰紡!!");
+                //                //Array1.0.x 娑撳秴鍘戠拋?
+                //                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 閸λ媟ray.閸氬氦绔熸俊鍌涚亯娴ｈ法鏁ら崣姗€鍣洪幋鏍偓鍛Ц閺佹澘鐡х敮鎼佸櫤閿涘苯绻€妞よ濞囬悽藡rray.$閺傜懓绱?!");
                 //            }
                 //        }
                 //    }
@@ -630,13 +630,13 @@ namespace SimpleLanguage.Core
                 m_MetaClass = ownerMetaClass;
                 MetaMemberFunction mmf = m_OwnerMetaFunctionBlock.ownerMetaFunction as MetaMemberFunction;
                 m_CallNodeType = ECallNodeType.This;
-                // 闭包函数: this 从宿主实例方法捕获的 this 获取
+                // 闂寘鍑芥暟: this 浠庡涓诲疄渚嬫柟娉曟崟鑾风殑 this 鑾峰彇
                 if (mmf != null && mmf.isClosureFunction)
                 {
                     m_MetaVariable = mmf.capturedThis;
                     if (m_MetaVariable == null)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 闭包在静态方法中定义, 不能使用 this!");
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 闂寘鍦ㄩ潤鎬佹柟娉曚腑瀹氫箟, 涓嶈兘浣跨敤 this!");
                         return false;
                     }
                 }
@@ -697,37 +697,50 @@ namespace SimpleLanguage.Core
             }
             else if (etype == ETokenType.Local)
             {
-                if (isFirst)
+                if (!isFirst)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "local.notfound");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error local can only be used at first position." + m_Token.ToLexemeAllString());
+                    return false;
+                }
+                if (m_IsFunction)
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error local cannot be used as function call form." + m_Token.ToLexemeAllString());
                     return false;
                 }
 
-                var fm = m_FileMetaCallNode?.fileMeta?.GetFileMetaLocalSyntax();
+                // local.xxx => <FileName>_Local.instance.xxx
+                // The LocalManager creates a <FileName>_Local class with a static
+                // member variable `instance` (typed as the class itself).
+                var fm = m_FileMetaCallNode?.fileMeta;
                 if (fm == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error local 瑙ｆ瀽澶辫触: fileMeta 涓虹┖");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error local resolve failed: fileMeta is null");
                     return false;
                 }
-                var global = ClassManager.instance.TryGetProjectMetaClass();
-                if (global == null)
+                if (fm.GetFileMetaLocalSyntax() == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "global now allow function");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error current file does not define local{}, cannot use local.xxx");
                     return false;
                 }
 
-                var varName = "local_" + m_FileMetaCallNode?.fileMeta.path  + "_"+ m_FileMetaCallNode?.fileMeta.path.GetHashCode();
-                var mv = global.GetMetaMemberVariableByName(varName);
-                if (mv == null)
+                var localMc = LocalManager.instance.GetFileLocalClass(fm);
+                if (localMc == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error local 瑙ｆ瀽澶辫触: 娌℃湁鎵惧埌 local instance 鍙橀噺: " + varName);
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error local class not found for file: " + fm.path);
                     return false;
                 }
-                m_MetaVariable = mv;
+                var instanceMv = localMc.GetMetaMemberVariableByName("instance");
+                if (instanceMv == null)
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error local instance member not found on class: " + localMc.name);
+                    return false;
+                }
+                m_MetaClass = localMc;
+                m_MetaType = new MetaType(localMc);
+                m_MetaVariable = instanceMv;
                 m_CallNodeType = ECallNodeType.Local;
-                m_MetaType = mv.realMetaType;
-                m_StaticCallMetaType = new MetaType(m_MetaType);
-                return true;                
+                m_StaticCallMetaType = m_MetaType;
+                return true;
             }
             else if ( etype == ETokenType.Identifier || etype == ETokenType.Type)
             {
@@ -744,7 +757,7 @@ namespace SimpleLanguage.Core
                     //{
                     //    if (m_MetaClass != null && m_MetaClass.isAbstractClass)
                     //    {
-                    //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 涓嶈兘瀹炰緥鍖栨娊璞＄被: " + m_MetaClass.name + " " + m_Token.ToLexemeAllString());
+                    //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娑撳秷鍏樼€圭偘绶ラ崠鏍ㄥ▕鐠烇紕琚? " + m_MetaClass.name + " " + m_Token.ToLexemeAllString());
                     //        Debug.Assert(false);
                     //        return false;
                     //    }
@@ -888,7 +901,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (m_MetaVariable.isConst)
                                 {
-                                    //这块，可以写成常量模式
+                                    //杩欏潡锛屽彲浠ュ啓鎴愬父閲忔ā寮?
                                     //m_CallNodeType = ECallNodeType.ConstValue;
                                     //EType etyp = CoreMetaClassManager.GetETypeByMetaClass(m_MetaVariable.GetFinalMetaType().metaClass);
                                     //this.m_ExpressNode = new MetaConstExpressNode(etyp, m_MetaVariable.)
@@ -956,7 +969,7 @@ namespace SimpleLanguage.Core
                     }
                     else if (frontCNT == ECallNodeType.ClosureCall)
                     {
-                        // 闭包调用结果的链式访问: 按闭包返回类型解析成员 (与普通函数调用返回值链式访问一致)
+                        // 闂寘璋冪敤缁撴灉鐨勯摼寮忚闂? 鎸夐棴鍖呰繑鍥炵被鍨嬭В鏋愭垚鍛?(涓庢櫘閫氬嚱鏁拌皟鐢ㄨ繑鍥炲€奸摼寮忚闂竴鑷?
                         MetaType closureRetMT = m_FrontCallNode.m_MetaType;
                         MetaClass closureRetMC = closureRetMT?.metaClass;
                         if (closureRetMC != null)
@@ -970,7 +983,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 闭包调用没有返回类型!");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 闂寘璋冪敤娌℃湁杩斿洖绫诲瀷!");
                             return false;
                         }
                     }
@@ -1017,7 +1030,7 @@ namespace SimpleLanguage.Core
                             MetaMemberFunction mmf = m_FrontCallNode.m_MetaClass.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_init_", 0, m_FrontCallNode.m_MetaInputParamCollection);
                             if (mmf == null)
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娌℃湁鎵惧埌 鍏充簬绫讳腑" + m_FrontCallNode.m_MetaClass.allName + "鐨刜init_鏂规硶!)");
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 濞屸剝婀侀幍鎯у煂 閸忓厖绨猾璁宠厬" + m_FrontCallNode.m_MetaClass.allName + "閻ㄥ垳init_閺傝纭?)");
                                 return false;
                             }
                             m_FrontCallNode.m_MetaFunction = mmf;
@@ -1031,7 +1044,7 @@ namespace SimpleLanguage.Core
                     {
                         if (m_FrontCallNode.m_MetaType == null)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "娌℃湁鎺ㄧ畻鍑虹浉褰撶殑绫诲瀷");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error m_FrontCallNode m_MetaType is null");
                             return false;
                         }
                         if (GetFunctionOrVariableByOwnerClass(m_FrontCallNode.m_MetaType.GetTemplateMetaClass(), m_Name) == false)
@@ -1054,7 +1067,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 鍑芥暟娌℃湁杩斿洖绫诲瀷");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error visit variable type is null");
                         }
                     }
                     else if (frontCNT == ECallNodeType.TemplateName)
@@ -1084,7 +1097,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 鏆備笉鏀寔涓婅妭鐐圭殑绫诲瀷: " + frontCNT.ToString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 閺嗗倷绗夐弨顖涘瘮娑撳﹨濡悙鍦畱缁鐎? " + frontCNT.ToString());
                     }
                 }
             }
@@ -1183,7 +1196,7 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            //涓嬭竟鐨勪唬鐮佹湭閲嶆瀯鍚庯紝鏈粡杩囬獙璇侊紝闇€瑕侀獙璇?
+            //娑撳绔熼惃鍕敩閻焦婀柌宥嗙€崥搴礉閺堫亞绮℃潻鍥崣鐠囦緤绱濋棁鈧憰渚€鐛欑拠?
             if (m_IsFunction)
             {
                 if (m_CallNodeType == ECallNodeType.MemberFunctionName
@@ -1193,7 +1206,7 @@ namespace SimpleLanguage.Core
                 }
                 else if (MetaClosureVariable.ResolveClosureVariable(m_MetaVariable) != null)
                 {
-                    // 闭包变量被调用: funname( xx ) -> 生成 ClosureCall 访问节点
+                    // 闂寘鍙橀噺琚皟鐢? funname( xx ) -> 鐢熸垚 ClosureCall 璁块棶鑺傜偣
                     m_CallNodeType = ECallNodeType.ClosureCall;
                     var cv = MetaClosureVariable.ResolveClosureVariable(m_MetaVariable);
                     var funcRet = cv?.closureDefineStatements?.closureFunction?.returnMetaVariable?.defineMetaType;
@@ -1202,9 +1215,9 @@ namespace SimpleLanguage.Core
                 }
                 else if ( IsFunctionTypeVariable( m_MetaVariable ) )
                 {
-                    // Function 类型变量被调用: 间接闭包调用 (typealias 定义的函数签名类型变量等)
+                    // Function 绫诲瀷鍙橀噺琚皟鐢? 闂存帴闂寘璋冪敤 (typealias 瀹氫箟鐨勫嚱鏁扮鍚嶇被鍨嬪彉閲忕瓑)
                     m_CallNodeType = ECallNodeType.ClosureCall;
-                    // 若变量类型为 FunctionSignatureMetaClass，则从签名取返回类型
+                    // 鑻ュ彉閲忕被鍨嬩负 FunctionSignatureMetaClass锛屽垯浠庣鍚嶅彇杩斿洖绫诲瀷
                     var fmt = m_MetaVariable?.GetFinalMetaType();
                     if ( fmt?.metaClass is FunctionSignatureMetaClass fsmc )
                     {
@@ -1251,24 +1264,24 @@ namespace SimpleLanguage.Core
 
                     if (!m_AllowUseSettings.callFunction && m_IsFunction)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 褰撳墠浣嶇疆涓嶅厑璁告湁鍑芥暟璋冪敤鏂瑰紡浣跨敤!!!" + m_Token?.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 瑜版挸澧犳担宥囩枂娑撳秴鍘戠拋鍛婃箒閸戣姤鏆熺拫鍐暏閺傜懓绱℃担璺ㄦ暏!!!" + m_Token?.ToLexemeAllString());
                     }
                 }
                 else if (m_MetaData != null)
                 {
                     if (m_MetaData.isStatic)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error data static 不允许进行实例化(new/构造调用): " + m_MetaData.allName);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error data static 涓嶅厑璁歌繘琛屽疄渚嬪寲(new/鏋勯€犺皟鐢?: " + m_MetaData.allName);
                         return false;
                     }
                     m_CallNodeType = ECallNodeType.NewData;
                     /*
-                    if (m_FileMetaCallNode.fileMetaBraceTerm != null)  //鍙互浣跨敤  ArrClass(){ x = ??} 鐨勬柟寮?
+                    if (m_FileMetaCallNode.fileMetaBraceTerm != null)  //閸欘垯浜掓担璺ㄦ暏  ArrClass(){ x = ??} 閻ㄥ嫭鏌熷?
                     {
                         if (m_AllowUseSettings.parseFrom == EParseFrom.InputParamExpress)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鍦↖nputParam 閲岃竟锛屾瀯寤哄嚱鏁帮紝鍙厑璁?浣跨敤ClassName() 鐨勬柟寮? " +
-                                "涓嶅厑璁镐娇鐢?ClassName(){}鐨勬柟寮" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString());
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 閸︹問nputParam 闁插矁绔熼敍灞剧€鍝勫毐閺佸府绱濋崣顏勫帒鐠?娴ｈ法鏁lassName() 閻ㄥ嫭鏌熷? " +
+                                "娑撳秴鍘戠拋闀愬▏閻?ClassName(){}閻ㄥ嫭鏌熷" + m_FileMetaCallNode.fileMetaBraceTerm.ToTokenString());
                             return false;
                         }
                         m_MetaBraceStatementsContent = new MetaBraceOrBracketStatementsContent(m_FileMetaCallNode.fileMetaBraceTerm, m_OwnerMetaFunctionBlock, m_OwnerMetaClass);
@@ -1346,7 +1359,7 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 判断变量是否为 Function 类型 (用于间接闭包调用检测)。
+        /// 鍒ゆ柇鍙橀噺鏄惁涓?Function 绫诲瀷 (鐢ㄤ簬闂存帴闂寘璋冪敤妫€娴?銆?
         /// </summary>
         private bool IsFunctionTypeVariable( MetaVariable mv )
         {
@@ -1355,7 +1368,7 @@ namespace SimpleLanguage.Core
             var mt = mv.GetFinalMetaType();
             if ( mt == null || mt.metaClass == null )
                 return false;
-            // 兼容 FunctionMetaClass 及其子类 (如 FunctionSignatureMetaClass)
+            // 鍏煎 FunctionMetaClass 鍙婂叾瀛愮被 (濡?FunctionSignatureMetaClass)
             return mt.metaClass is FunctionMetaClass;
         }
 
@@ -1398,7 +1411,7 @@ namespace SimpleLanguage.Core
                 }
                 return true;
             }
-            // ClassName 涓€鑸娇鐢ㄥ湪 Class1.闈欐€佸彉閲忥紝鎴栬€呮槸闈欐€佹柟娉曠殑璋冪敤
+            // ClassName 娑撯偓閼割兛濞囬悽銊ユ躬 Class1.闂堟瑦鈧礁褰夐柌蹇ョ礉閹存牞鈧懏妲搁棃娆愨偓浣规煙濞夋洜娈戠拫鍐暏
             MetaNode tmb = null;
             MetaNode curMetaNode = null;
             if (frontCNT == ECallNodeType.MetaType)
@@ -1425,7 +1438,7 @@ namespace SimpleLanguage.Core
                 {
                     return false;
                 }
-                //鏌ユ壘闈欐€佸嚱鏁?
+                //閺屻儲澹橀棃娆愨偓浣稿毐閺?
                 if (m_MetaFunction is MetaMemberFunction mmf)
                 {
                     if (!mmf.isStatic)
@@ -1469,8 +1482,8 @@ namespace SimpleLanguage.Core
             {
                 if (tmb.IsMetaClass() == false)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 鍦ㄥ綋鍓嶇被: {m_FrontCallNode?.m_MetaClass.name} " +
-                        $"閲屾煡鎵惧埌浜嗗瓙椤癸紝浣嗕笉鏄被{m_Name} ");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 閸︺劌缍嬮崜宥囪: {m_FrontCallNode?.m_MetaClass.name} " +
+                        $"闁插本鐓￠幍鎯у煂娴滃棗鐡欐い鐧哥礉娴ｅ棔绗夐弰顖滆{m_Name} ");
                     return false;
                 }
                 m_MetaClass = tmb.GetMetaClassByTemplateCount(templateCount);
@@ -1487,12 +1500,12 @@ namespace SimpleLanguage.Core
                 }
                 if (m_MetaVariable != null && m_MetaVariable.permission == EPermission.Private)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鎴愬憳");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global." + m_Name + " 娑撳秴鍘戠拋姝岊問闂?private 閹存劕鎲?);
                     return false;
                 }
                 if (m_MetaFunction != null && m_MetaFunction.permission == EPermission.Private)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鍑芥暟");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global." + m_Name + " 娑撳秴鍘戠拋姝岊問闂?private 閸戣姤鏆?);
                     return false;
                 }
             }
@@ -1511,12 +1524,12 @@ namespace SimpleLanguage.Core
 
                     if (m_MetaVariable != null && m_MetaVariable.permission == EPermission.Private)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鎴愬憳");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global." + m_Name + " 娑撳秴鍘戠拋姝岊問闂?private 閹存劕鎲?);
                         return false;
                     }
                     if (m_MetaFunction != null && m_MetaFunction.permission == EPermission.Private)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global." + m_Name + " 涓嶅厑璁歌闂?private 鍑芥暟");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error global." + m_Name + " 娑撳秴鍘戠拋姝岊問闂?private 閸戣姤鏆?);
                         return false;
                     }
                 }
@@ -1543,7 +1556,7 @@ namespace SimpleLanguage.Core
                     m_OwnerMetaBase, mt);
                 return true;
             }
-            // ClassName 涓€鑸娇鐢ㄥ湪 Class1.闈欐€佸彉閲忥紝鎴栬€呮槸闈欐€佹柟娉曠殑璋冪敤
+            // ClassName 娑撯偓閼割兛濞囬悽銊ユ躬 Class1.闂堟瑦鈧礁褰夐柌蹇ョ礉閹存牞鈧懏妲搁棃娆愨偓浣规煙濞夋洜娈戠拫鍐暏
             MetaNode tmb = null;
             MetaNode curMetaNode = null;
             if (frontCNT == ECallNodeType.MetaType)
@@ -1570,12 +1583,12 @@ namespace SimpleLanguage.Core
                 {
                     return false;
                 }
-                //鏌ユ壘闈欐€佸嚱鏁?
+                //閺屻儲澹橀棃娆愨偓浣稿毐閺?
                 if (m_MetaFunction is MetaMemberFunction mmf)
                 {
                     if (!mmf.isStatic)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 璋冪敤闈為潤鎬佹垚鍛樺嚱鏁帮紝涓嶈兘浣跨敤Class.Variable鐨勬柟寮?");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 鐠嬪啰鏁ら棃鐐烘饯閹焦鍨氶崨妯哄毐閺佸府绱濇稉宥堝厴娴ｈ法鏁lass.Variable閻ㄥ嫭鏌熷?");
                         return false;
                     }
                     if (mmf.isConstructInitFunction && !m_AllowUseSettings.callConstructFunction)
@@ -1599,7 +1612,7 @@ namespace SimpleLanguage.Core
                 {
                     if (!mmv.isStatic && !mmv.isConst)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 璋冪敤闈為潤鎬佹垚鍛樺彉閲忥紝涓嶈兘浣跨敤Class.Variable鐨勬柟寮?");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 鐠嬪啰鏁ら棃鐐烘饯閹焦鍨氶崨妯哄綁闁插骏绱濇稉宥堝厴娴ｈ法鏁lass.Variable閻ㄥ嫭鏌熷?");
                         return false;
                     }
                     if (m_FrontCallNode != null)
@@ -1614,8 +1627,8 @@ namespace SimpleLanguage.Core
             {
                 if (tmb.IsMetaClass() == false)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, $"Error 鍦ㄥ綋鍓嶇被: {m_FrontCallNode?.m_MetaClass.name} " +
-                        $"閲屾煡鎵惧埌浜嗗瓙椤癸紝浣嗕笉鏄被{m_Name} ");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, $"Error 閸︺劌缍嬮崜宥囪: {m_FrontCallNode?.m_MetaClass.name} " +
+                        $"闁插本鐓￠幍鎯у煂娴滃棗鐡欐い鐧哥礉娴ｅ棔绗夐弰顖滆{m_Name} ");
                     return false;
                 }
                 m_MetaClass = tmb.GetMetaClassByTemplateCount(templateCount);
@@ -1676,7 +1689,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, $"Error 娌℃湁鎵惧埌{m_Name} 鐨凪etaData鏁版嵁!");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, $"Error 濞屸剝婀侀幍鎯у煂{m_Name} 閻ㄥ嚜etaData閺佺増宓?");
                             return false;
                         }
                     }
@@ -1801,7 +1814,7 @@ namespace SimpleLanguage.Core
 
                     // Array1.$i.x   Array1.$mmq.x;
                     var getmv2 = m_OwnerMetaFunctionBlock.GetMetaVariableByName(m_Name);
-                    if (getmv2 != null)    //鏌ユ壘鏄惁宸插畾涔夎繃鍙橀噺
+                    if (getmv2 != null)    //閺屻儲澹橀弰顖氭儊瀹告彃鐣炬稊澶庣箖閸欐﹢鍣?
                     {
                         string inputMVName = "Visit_" + m_Name;
                         m_MetaVariable = variable.GetMetaVariable(inputMVName);
@@ -1842,7 +1855,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            // 非数组类型：检查是否支持 _getItem_/_setItem_ 下标访问
+                            // 闈炴暟缁勭被鍨嬶細妫€鏌ユ槸鍚︽敮鎸?_getItem_/_setItem_ 涓嬫爣璁块棶
                             MetaClass visitMc = fmt.metaClass;
                             if (visitMc == null)
                                 visitMc = fmt.GetTemplateMetaClass();
@@ -1851,7 +1864,7 @@ namespace SimpleLanguage.Core
                                 var inputParam = new MetaInputParamCollection(ownerMetaBase, m_OwnerMetaFunctionBlock);
                                 inputParam.AddMetaInputParam(new MetaInputParam(mcen));
 
-                                // 赋值场景（setterFunction=true）查找 _setItem_，否则查找 _getItem_
+                                // 璧嬪€煎満鏅紙setterFunction=true锛夋煡鎵?_setItem_锛屽惁鍒欐煡鎵?_getItem_
                                 MetaMemberFunction visitMethod = null;
                                 if (m_AllowUseSettings?.setterFunction == true
                                     && m_RightExpress != null )
@@ -1972,7 +1985,7 @@ namespace SimpleLanguage.Core
         //    var globalData = ProjectManager.globalData;
         //    if (globalData == null)
         //    {
-        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error data 默认静态实例创建失败：globalData 为空。");
+        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error data 榛樿闈欐€佸疄渚嬪垱寤哄け璐ワ細globalData 涓虹┖銆?);
         //        return null;
         //    }
 
@@ -2039,7 +2052,7 @@ namespace SimpleLanguage.Core
             }
 
             MetaNode retMC = null;
-            // 鏌ユ壘瀹氫箟鍏抽敭瀛楃殑class => range   array
+            // 閺屻儲澹樼€规矮绠熼崗鎶芥暛鐎涙娈慶lass => range   array
             if (m_Token.extend != null)
             {
                 MetaNode findMB = CoreMetaClassManager.GetCoreMetaClass(m_Token.extend.ToString());
@@ -2048,7 +2061,7 @@ namespace SimpleLanguage.Core
                     retMC = findMB;
                 }
             }
-            //鏌ユ壘绫绘ā鍨?
+            //閺屻儲澹樼猾缁樐侀崹?
             if (retMC == null && mc != null)
             {
                 var t = mc.GetMetaTemplateByName(inputname);
@@ -2059,12 +2072,12 @@ namespace SimpleLanguage.Core
                     return true;
                 }
             }
-            //鏌ユ壘鐖剁被鎴栧瓙绫讳腑鍖呭惈鐨勮妭鐐?
+            //閺屻儲澹橀悥鍓佽閹存牕鐡欑猾璁宠厬閸栧懎鎯堥惃鍕Ν閻?
             if (retMC == null && mc != null)
             {
                 retMC = mc.metaNode.GetChildrenMetaNodeByName(inputname);
             }
-            //閫氳繃fileMeta鏌ユ壘鏄惁鏈夐瀹氫箟瀛楃
+            //闁俺绻僨ileMeta閺屻儲澹橀弰顖氭儊閺堝顩荤€规矮绠熺€涙顑?
             if (retMC == null)
             {
                 retMC = ClassManager.instance.GetMetaClassByNameAndFileMeta(m_OwnerMetaBase, m_FileMetaCallNode.fileMeta, new List<string>(1) { inputname });
@@ -2120,12 +2133,12 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 娌℃湁鍙戣RetMC鐨勭被鍒玀etaCommon");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 濞屸剝婀侀崣鎴ｎ嚉RetMC閻ㄥ嫮琚崚鐜€etaCommon");
                 }
             }
             else
             {
-                // 内置/工程/文件 typealias（含 TypeManager.m_GlobalTypeAliasDict，如 ObjectArray -> Array<Object>）
+                // 鍐呯疆/宸ョ▼/鏂囦欢 typealias锛堝惈 TypeManager.m_GlobalTypeAliasDict锛屽 ObjectArray -> Array<Object>锛?
                 var fmAlias = m_FileMetaCallNode?.fileMeta;
                 if (fmAlias != null
                     && TypeManager.instance.TryResolveTypeAlias(inputname, fmAlias, out var aliasMt)
@@ -2187,7 +2200,7 @@ namespace SimpleLanguage.Core
                 }
                 else if (md != null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error data 不支持在本体内调用 " + me.allName);
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error data 涓嶆敮鎸佸湪鏈綋鍐呰皟鐢?" + me.allName);
                     return false;
                     //var mmd = md.GetMemberDataByName(inputname);
                     //if (mmd != null)
@@ -2201,11 +2214,11 @@ namespace SimpleLanguage.Core
                 }
                 else if (me != null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error enum 不支持在本体内调用 " + me.allName);
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error enum 涓嶆敮鎸佸湪鏈綋鍐呰皟鐢?" + me.allName);
                     return false;
                     //if (m_IsFunction)
                     //{
-                    //    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error data 不支持函数调用: " + me.allName);
+                    //    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error data 涓嶆敮鎸佸嚱鏁拌皟鐢? " + me.allName);
                     //    return false;
 
                     //}
@@ -2230,13 +2243,13 @@ namespace SimpleLanguage.Core
 
             }
 
-            //鍑芥暟鍐呮垚鍛?
+            //閸戣姤鏆熼崘鍛灇閸?
             if (retMC == null)
             {
                 var ownerFun = m_OwnerMetaFunctionBlock?.ownerMetaFunction;
                 if (ownerFun != null)
                 {
-                    //鍑芥暟鐨勫弬鏁版槸鍚︽槸妯＄増锛屽鏋滄槸锛屽垯杩斿洖
+                    //閸戣姤鏆熼惃鍕棘閺佺増妲搁崥锔芥Ц濡紕澧楅敍灞筋洤閺嬫粍妲搁敍灞藉灟鏉╂柨娲?
                     var metaTemplate = ownerFun.GetMetaDefineTemplateByName(inputname);
                     if (metaTemplate != null)
                     {
@@ -2260,7 +2273,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "娌℃湁鍙戠幇瀹炰綋鐨勬ā鏉跨被!!" + m_MetaClass?.name);
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "濞屸剝婀侀崣鎴犲箛鐎圭偘缍嬮惃鍕侀弶璺ㄨ!!" + m_MetaClass?.name);
                     return false;
                 }
             }
@@ -2301,7 +2314,7 @@ namespace SimpleLanguage.Core
                         }
                         if( m_MetaInputParamCollection.metaInputParamList.Count > 0 )
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "set 的方法  不应该有参数，而是通过外部传入");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "set 鐨勬柟娉? 涓嶅簲璇ユ湁鍙傛暟锛岃€屾槸閫氳繃澶栭儴浼犲叆");
                             m_MetaInputParamCollection.Clear();
                         }
                         if(m_RightExpress != null )
@@ -2314,7 +2327,7 @@ namespace SimpleLanguage.Core
                     {
                         if (m_MetaInputParamCollection?.metaInputParamList.Count > 0)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "get 的方法  不应该有参数");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "get 鐨勬柟娉? 涓嶅簲璇ユ湁鍙傛暟");
                             m_MetaInputParamCollection.Clear();
                         }
                     }
@@ -2341,7 +2354,7 @@ namespace SimpleLanguage.Core
                     m_MetaType = mmv.GetFinalMetaType();
                     if( m_MetaType == null )
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "没有找到metatype的类型" );
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error not found metatype class type" );
                     }
                 }
                 else
@@ -2372,10 +2385,10 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
-        /// 跨模块（ref module）导入的泛型类：泛型实例不会克隆成员函数，
-        /// 成员函数返回类型中可能残留声明类的未绑定模板参数（如 List<T> 的 getRange 返回 List<T>）。
-        /// 当接收者是泛型实例（如 List<int>）时，用接收者的模板实参替换返回类型中的未绑定模板，
-        /// 使 `Std.List<int> sub = list.getRange(2,2)` 这类赋值的类型比较通过。
+        /// 璺ㄦā鍧楋紙ref module锛夊鍏ョ殑娉涘瀷绫伙細娉涘瀷瀹炰緥涓嶄細鍏嬮殕鎴愬憳鍑芥暟锛?
+        /// 鎴愬憳鍑芥暟杩斿洖绫诲瀷涓彲鑳芥畫鐣欏０鏄庣被鐨勬湭缁戝畾妯℃澘鍙傛暟锛堝 List<T> 鐨?getRange 杩斿洖 List<T>锛夈€?
+        /// 褰撴帴鏀惰€呮槸娉涘瀷瀹炰緥锛堝 List<int>锛夋椂锛岀敤鎺ユ敹鑰呯殑妯℃澘瀹炲弬鏇挎崲杩斿洖绫诲瀷涓殑鏈粦瀹氭ā鏉匡紝
+        /// 浣?`Std.List<int> sub = list.getRange(2,2)` 杩欑被璧嬪€肩殑绫诲瀷姣旇緝閫氳繃銆?
         /// </summary>
         private MetaType TryBindReceiverTemplateArgs(MetaType retMt, MetaMemberFunction mmf)
         {
@@ -2387,11 +2400,11 @@ namespace SimpleLanguage.Core
             if (recvMgtc == null)
                 return retMt;
 
-            // 只处理返回类型中残留了接收者声明类的未绑定模板的情况
+            // 鍙鐞嗚繑鍥炵被鍨嬩腑娈嬬暀浜嗘帴鏀惰€呭０鏄庣被鐨勬湭缁戝畾妯℃澘鐨勬儏鍐?
             if (!MetaTypeContainsOwnerTemplate(retMt, recvMgtc.metaTemplateClass))
                 return retMt;
 
-            // 拷贝后替换，避免污染共享的函数返回类型定义
+            // 鎷疯礉鍚庢浛鎹紝閬垮厤姹℃煋鍏变韩鐨勫嚱鏁拌繑鍥炵被鍨嬪畾涔?
             var boundMt = new MetaType(retMt);
             if (TypeManager.instance.UpdateMetaTypeByGenClassAndFunction(boundMt, recvMgtc, null))
                 return boundMt;
@@ -2511,7 +2524,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    //sb.Append("Error 瑙ｆ瀽Token閿欒" + token?.ToLexemeAllString());
+                    //sb.Append("Error 鐟欙絾鐎絋oken闁挎瑨顕? + token?.ToLexemeAllString());
                     sb.Append(m_Token?.lexeme.ToString() + "CallNodeType:" + m_CallNodeType.ToString() + 
                         "Error(CurrentMetaBase is Null!)");
                 }
@@ -2580,7 +2593,7 @@ namespace SimpleLanguage.Core
 //                    findMd = dataType.metaData.GetMemberDataByName(m_Name);
 //                    if (findMd == null)
 //                    {
-//                        Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 娌℃湁鎵惧埌{m_Name} 鐨凪etaData鏁版嵁!");
+//                        Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 濞屸剝婀侀幍鎯у煂{m_Name} 閻ㄥ嚜etaData閺佺増宓?");
 //                        return false;
 //                    }
 //                    if (findMd.memberDataType == EMemberDataType.MemberClass)
@@ -2592,7 +2605,7 @@ namespace SimpleLanguage.Core
 //                    {
 //                        if (findMd.isConst)
 //                        {
-//                            //这块，可以写成常量模式
+//                            //杩欏潡锛屽彲浠ュ啓鎴愬父閲忔ā寮?
 //                            //m_CallNodeType = ECallNodeType.ConstValue;
 //                            //EType etyp = CoreMetaClassManager.GetETypeByMetaClass(m_MetaVariable.GetFinalMetaType().metaClass);
 //                            //this.m_ExpressNode = new MetaConstExpressNode(etyp, m_MetaVariable.)

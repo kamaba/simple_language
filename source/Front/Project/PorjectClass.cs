@@ -11,6 +11,7 @@ using SimpleLanguage.Core;
 using SimpleLanguage.Logging;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -186,10 +187,14 @@ namespace SimpleLanguage.Project
             var filter = cfg.CompileFilter;
 
             Log.AddProjectLog( LID.ProjectShowCompileFiles, $"",fileList.Count );
- 
-            for (int i = 0; i < fileList.Count; i++)
+
+            // Sort by priority (lower value = earlier in compile/execution order).
+            // OrderBy is a stable sort, preserving config order for equal priorities.
+            var sortedList = fileList.OrderBy(f => f.Priority).ToList();
+
+            for (int i = 0; i < sortedList.Count; i++)
             {
-                var fld = fileList[i];
+                var fld = sortedList[i];
 
                 if (IsCanAddFile(filter, fld))
                 {

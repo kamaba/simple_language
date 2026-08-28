@@ -135,7 +135,7 @@ namespace SimpleLanguage.Logging
                 bool.TryParse(parts[2], out var ac);
                 def.EnableAssert = ac;
                 bool.TryParse(parts[3], out var al);
-                def.BlockOnErrorAssert = al;
+                def.Pass = al;
                 if (!int.TryParse(parts[4], out var pc)) pc = 0;
                 def.ParamCount = pc;
 

@@ -1,4 +1,4 @@
-id,logType,enableAssert,blockOnErrorAssert,paramCount,domestic_tips,cn_message,,cn_fixed_tips,en_message,en_fixed_tips
+id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMessage,enFixedTips
 10000,Error,TRUE,TRUE,,,"Error,上级类中的MetaClass没有绑定!!",,检查类定义关键字、继承/接口与成员声明顺序。,,
 10001,Error,TRUE,FALSE,,,已添加了空间命名节点，不允许有重复名称的类节点再次添加,,检查类定义关键字、继承/接口与成员声明顺序。,,
 10002,Error,TRUE,FALSE,,,Error 查到内部不是内部内，可能有相同成员,,根据错误位置检查语法与类型约束，必要时参考 DebugCode 输出链路定位。,,
@@ -583,3 +583,9 @@ id,logType,enableAssert,blockOnErrorAssert,paramCount,domestic_tips,cn_message,,
 12271,Error,TRUE,FALSE,1,,"没有发现[{0}]的命名空间",,Auto-generated LID mapping,,
 12272,Error,TRUE,FALSE,1,,"字符串解析需要结束符 对[{0}]字符后",,Auto-generated LID mapping,,
 12273,Error,TRUE,FALSE,2,,"[{0}]类的[{1}]函数中，需要增加override关键字，增加函数体的约束",,Auto-generated LID mapping,,
+12274,Error,TRUE,FALSE,0,,"解析函数子类不能override父类final的方法",,Auto-generated LID mapping,,
+12275,Error,TRUE,FALSE,0,,"解析Local的逻辑失败了",,Auto-generated LID mapping,,
+12276,Error,TRUE,FALSE,0,,"local被定义了两次，在一个文件中，只允许在前排放置1个local",,Auto-generated LID mapping,,
+12277,Error,TRUE,FALSE,0,,"local后边应该有{}的语法",,Auto-generated LID mapping,,
+12278,Error,TRUE,FALSE,0,,"函数体[{0}]后边应该有{}的语法",,Auto-generated LID mapping,,
+12279,Error,TRUE,TRUE,0,,"local中，如果前边已经出现定义函数，则后边不允许有逻辑语句",,Auto-generated LID mapping,,

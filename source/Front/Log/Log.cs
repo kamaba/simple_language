@@ -337,12 +337,10 @@ namespace SimpleLanguage.Logging
                 return;
             }
 
-            bool shouldBlockCurrent = def.BlockOnErrorAssert
-                || (isAssert && LogManager.Options.BlockOnAssert)
+            bool shouldBlockCurrent = (isAssert && LogManager.Options.BlockOnAssert)
                 || (isError && LogManager.Options.BlockOnError);
 
-            bool shouldAbortCompilation = def.AbortCompilation
-                || (isAssert && LogManager.Options.AbortCompilationOnAssert)
+            bool shouldAbortCompilation =  (isAssert && LogManager.Options.AbortCompilationOnAssert)
                 || (isError && LogManager.Options.AbortCompilationOnError);
 
             if (shouldBlockCurrent || shouldAbortCompilation)

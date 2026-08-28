@@ -4,7 +4,6 @@
 //  Description:  File-level global/local block syntax
 //****************************************************************************
 
-using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -18,56 +17,20 @@ namespace SimpleLanguage.Compile
 
         private readonly FileMetaBlockSyntax m_BlockSyntax;
         private readonly List<FileMetaMemberFunction> m_FunctionList = new List<FileMetaMemberFunction>();
-        private readonly FileMetaMemberFunction m_InitFileMetaMemberFunction = null;
-
-        public FileMetaLocalSyntax(FileMeta fm, Token token, Node blockNode)
+        public FileMetaLocalSyntax(FileMeta fm, Token token, Node blockNode) 
         {
             m_FileMeta = fm;
             m_Token = token;
-
-            if (blockNode == null || blockNode.nodeType != ENodeType.Brace)
-            {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error local 后必须跟 {} 块");
-                return;
-            }
-
-            var left = blockNode.token;
-            var right = blockNode.endToken;
-            if (left == null || right == null)
-            {
-                //Debug.Assert(false, "local block token missing");
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "local block token missing");
-                return;
-            }
-
-            m_BlockSyntax = new FileMetaBlockSyntax(fm, left, right);
+            m_BlockSyntax = new FileMetaBlockSyntax(fm, blockNode.token, blockNode.endToken);
         }
-
-        public FileMetaLocalSyntax(FileMeta fm, Token token, Node blockNode, bool isLocal)
-            : this(fm, token, blockNode)
-        {
-            if (!isLocal)
-            {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Info global{} 解析已禁用，当前仅保留 local{} 逻辑");
-            }
-        }
-
         public void AddInitSyntax(FileMetaSyntax syntax)
         {
             m_BlockSyntax?.AddFileMetaSyntax(syntax);
         }
-
         public void AddFunction(FileMetaMemberFunction fn)
         {
-            if (fn == null) return;
             m_FunctionList.Add(fn);
         }
-
-        public void AddLocalInitSyntax(FileMetaSyntax syntax) => AddInitSyntax(syntax);
-        public void AddLocalFunction(FileMetaMemberFunction fn) => AddFunction(fn);
-        public void AddGlobalInitSyntax(FileMetaSyntax syntax) { }
-        public void AddGlobalFunction(FileMetaMemberFunction fn) { }
-
         public override void SetDeep(int _deep)
         {
             m_Deep = _deep;

@@ -522,13 +522,13 @@ namespace SimpleLanguage.Compile
             Node localNode = pnode.GetParseNode(); // consume 'local'
             if (localNode == null || localNode.token?.type != ETokenType.Local)
             {
-                Log.AddNodeLog(LID.ShowExtendMessage, "Error local 解析失败");
+                Log.AddNodeLog(LID.NodeLocalParseFailed, "Error local 解析失败");
                 return;
             }
 
             if (m_FileMeta.GetFileMetaLocalSyntax() != null)
             {
-                Log.AddNodeLog(LID.ShowExtendMessage, "Error local{} 在同一文件中只允许定义一次");
+                Log.AddNodeLog(LID.NodeLocalParseAllowOnceLocal, localNode.token, "Error local{} allow once!");
                 return;
             }
 
@@ -564,14 +564,14 @@ namespace SimpleLanguage.Compile
 
             if (blockNode == null)
             {
-                Log.AddNodeLog(LID.ShowExtendMessage, "Error local 后必须跟 {} 块");
+                Log.AddNodeLog(LID.NodeLocalSyntaxError, localNode.token, "Error local should have sign[{}]");
                 return;
             }
 
-            var fls = new FileMetaLocalSyntax(m_FileMeta, localNode.token, blockNode, true);
+            var fls = new FileMetaLocalSyntax(m_FileMeta, localNode.token, blockNode);
             m_FileMeta.SetFileMetaLocalSyntax(fls);
 
-            ParseLocalContent(fls, blockNode, true);
+            ParseLocalContent(fls, blockNode);
         }
         /// <summary>
         /// 从 parent.childList[startIndex] 为 typealias 起解析一行，登记到 FileMeta，返回下一未消费下标；失败返回 startIndex。
@@ -710,7 +710,7 @@ namespace SimpleLanguage.Compile
             }
             return null;
         }
-        private void ParseLocalContent(FileMetaLocalSyntax syntax, Node blockNode, bool isLocal)
+        private void ParseLocalContent(FileMetaLocalSyntax syntax, Node blockNode )
         {
             if (syntax == null || blockNode == null) return;
 
@@ -721,12 +721,23 @@ namespace SimpleLanguage.Compile
             {
                 var n = blockNode.childList[i];
                 if (n == null) continue;
+                if (n.nodeType == ENodeType.Comment) continue;
 
                 if (n.nodeType == ENodeType.LineEnd || n.nodeType == ENodeType.SemiColon)
                 {
                     if (lineNodes.Count == 0) continue;
 
-                    if (TryParseGlobalOrLocalFunction(blockNode, syntax, lineNodes, ref hasFunction, ref i, isLocal))
+                    if( i + 1 < blockNode.childList.Count )
+                    {
+                        var nextC = blockNode.childList[i + 1];
+                        if( nextC.nodeType == ENodeType.Brace )
+                        {
+                            lineNodes.Add(nextC);
+                            i++;
+                        }
+                    }
+
+                    if (TryParseLocalFunction(blockNode, syntax, lineNodes, ref hasFunction, ref i ))
                     {
                         lineNodes.Clear();
                         continue;
@@ -734,9 +745,7 @@ namespace SimpleLanguage.Compile
 
                     if (hasFunction)
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, isLocal
-                            ? "Error local{} 中出现函数定义后，后边只允许继续定义函数"
-                            : "Error global{} 中出现函数定义后，后边只允许继续定义函数");
+                        Log.AddFileMetaLog(LID.NodeDefineFunctionAfterNotAllowSyntax, n.token, "Error local{} not allow other syntax" );
                         lineNodes.Clear();
                         continue;
                     }
@@ -766,13 +775,11 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, isLocal
-                        ? "Error local{} 中出现函数定义后，后边只允许继续定义函数"
-                        : "Error global{} 中出现函数定义后，后边只允许继续定义函数");
+                    Log.AddFileMetaLog(LID.NodeDefineFunctionAfterNotAllowSyntax, syntax.token, "Error local{} not allow other syntax");
                 }
             }
         }
-        private bool TryParseGlobalOrLocalFunction(Node ownerBlock, FileMetaLocalSyntax syntax, List<Node> lineNodes, ref bool hasFunction, ref int contentIndex, bool isLocal)
+        private bool TryParseLocalFunction(Node ownerBlock, FileMetaLocalSyntax syntax, List<Node> lineNodes, ref bool hasFunction, ref int contentIndex )
         {
             if (lineNodes == null || lineNodes.Count == 0) return false;
 
@@ -784,6 +791,10 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < normalizedNodes.Count; i++)
             {
                 var n = normalizedNodes[i];
+                if( n.nodeType == ENodeType.Assign )
+                {
+                    return false;
+                }
                 if (n?.nodeType == ENodeType.IdentifierLink && n.parNode != null)
                 {
                     isFunc = true;
@@ -813,35 +824,33 @@ namespace SimpleLanguage.Compile
             Node funcBlock = sigNode?.blockNode;
             if (funcBlock == null && contentIndex >= 0)
             {
-                int nextIndex = contentIndex + 1;
-                while (nextIndex < ownerBlock.childList.Count && ownerBlock.childList[nextIndex]?.nodeType == ENodeType.LineEnd)
-                    nextIndex++;
-
-                if (nextIndex < ownerBlock.childList.Count && ownerBlock.childList[nextIndex]?.nodeType == ENodeType.Brace)
+                int nextIndex = contentIndex;
+                while (nextIndex < ownerBlock.childList.Count )
                 {
-                    funcBlock = ownerBlock.childList[nextIndex];
-                    contentIndex = nextIndex;
+                    if( ownerBlock.childList[nextIndex]?.nodeType == ENodeType.Brace )
+                    {
+                        funcBlock = ownerBlock.childList[nextIndex];
+                        contentIndex = nextIndex;
+                        break;
+                    }
+                    nextIndex++;
                 }
             }
 
             if (funcBlock == null)
             {
-                Log.AddNodeLog(LID.ShowExtendMessage, isLocal
-                    ? "Error local{} 函数定义缺少函数体 {}"
-                    : "Error global{} 函数定义缺少函数体 {}");
+                Log.AddNodeLog(LID.NodeLocalFunctionNeedBlock, lineNodes[0].token,  "Error local{} 函数定义缺少函数体 {}", funcBlock.token.lexeme.ToString() );
                 return true;
             }
 
-            for (int i = 0; i < normalizedNodes.Count; i++)
-            {
-                if (normalizedNodes[i]?.nodeType == ENodeType.Key && normalizedNodes[i].token?.type == ETokenType.Static)
-                {
-                    Log.AddNodeLog(LID.ShowExtendMessage, isLocal
-                        ? "Error local{} 中定义的函数不允许使用 static"
-                        : "Error global{} 中定义的函数不允许使用 static");
-                    return true;
-                }
-            }
+            //for (int i = 0; i < normalizedNodes.Count; i++)
+            //{
+            //    if (normalizedNodes[i]?.nodeType == ENodeType.Key && normalizedNodes[i].token?.type == ETokenType.Static)
+            //    {
+            //        Log.AddNodeLog(LID.ShowExtendMessage, normalizedNodes[i].token,"Error local{} 中定义的函数不允许使用 static" );
+            //        return true;
+            //    }
+            //}
 
             hasFunction = true;
             var f = new FileMetaMemberFunction(m_FileMeta, funcBlock, new List<Node>(normalizedNodes));

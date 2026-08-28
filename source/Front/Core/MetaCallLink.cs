@@ -1,4 +1,4 @@
-//****************************************************************************
+﻿//****************************************************************************
 //  File:      MetaCallLink.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
@@ -86,43 +86,10 @@ namespace SimpleLanguage.Core
 
         private static FileMetaCallLink RewriteLocalCallLinkIfNeed(FileMetaCallLink fmcl, MetaBase ownerMc)
         {
-            if (fmcl == null || ownerMc == null) return fmcl;
-            if (fmcl.callNodeList == null || fmcl.callNodeList.Count == 0) return fmcl;
-
-            // local.xxx => local_<fileHash>.xxx (instance stored on globalData)
-            var first = fmcl.callNodeList[0];
-            if (first == null) return fmcl;
-            if (first.name != "local") return fmcl;
-
-            var fileMeta = first.fileMeta;
-            if (fileMeta == null) return fmcl;
-
-            // Only allow local usage in the file that defines local{}.
-            if (fileMeta.GetFileMetaLocalSyntax() == null)
-            {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 褰撳墠鏂囦欢鏈畾涔?local{}锛屼笉鍏佽浣跨敤 local.xxx" + (first.token != null ? (" " + first.token.ToLexemeAllString()) : ""));
-                return fmcl;
-            }
-
-            var localVarName = "local_" + fileMeta.path.GetHashCode();
-
-            // Create a new call link based on a synthetic Node chain: localVarName + original suffix
-            var baseToken = new Token(fileMeta.path, ETokenType.Identifier, localVarName, first.token?.sourceBeginLine ?? 0, first.token?.sourceBeginChar ?? 0);
-            var baseNode = new Node(baseToken) { nodeType = ENodeType.IdentifierLink };
-
-            // Copy original chain tokens except the leading 'local'
-            for (int i = 1; i < fmcl.callNodeList.Count; i++)
-            {
-                var cn = fmcl.callNodeList[i];
-                if (cn == null) continue;
-                var t = cn.token;
-                if (t == null) continue;
-                var n = new Node(t);
-                n.nodeType = t.type == ETokenType.Period ? ENodeType.Period : ENodeType.IdentifierLink;
-                baseNode.AddLinkNode(n);
-            }
-
-            return new FileMetaCallLink(fileMeta, baseNode, true);
+            // local.xxx is resolved directly by MetaCallNode's Local branch,
+            // which looks up the per-file <FileName>_Local class and its static
+            // `instance` member. No call-link rewrite is needed.
+            return fmcl;
         }
         public MetaCallLink(MetaVisitNode mvn)
         {
@@ -186,7 +153,7 @@ namespace SimpleLanguage.Core
             var m_FinalMetaCallNode = m_CallNodeList[m_CallNodeList.Count - 1];
             if (m_FinalMetaCallNode == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 杩炴帴涓叉病鏈夋壘鍒板悎閫傜殑鑺傜偣  360!!!");
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鏉╃偞甯存稉鍙夌梾閺堝澹橀崚鏉挎値闁倻娈戦懞鍌滃仯  360!!!");
             }
             m_FinalMetaCallNode.SetDefineMetaVariable(mv);
         }
@@ -229,7 +196,7 @@ namespace SimpleLanguage.Core
                         if (i < m_CallNodeList.Count - 1)
                         {
                             flag = false;
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Parse Statement Error 鍦ㄤ娇鐢∟ewClassName鐨勬柟寮忥紝鍚庤竟涓嶅厑璁告湁鍏跺畠鐨勮皟鐢?");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Parse Statement Error 閸︺劋濞囬悽鈭焑wClassName閻ㄥ嫭鏌熷蹇ョ礉閸氬氦绔熸稉宥呭帒鐠佸憡婀侀崗璺虹暊閻ㄥ嫯鐨熼悽?");
                         }
                     }
                     if( flag )
@@ -282,10 +249,10 @@ namespace SimpleLanguage.Core
             }
         }
         /// <summary>
-        /// 校验 ?. (null conditional) 的使用场景：
-        /// 1. 不能用于构造函数 _init_
-        /// 2. 不能用于 set 函数
-        /// 3. 不能用于 void 返回值的函数
+        /// 鏍￠獙 ?. (null conditional) 鐨勪娇鐢ㄥ満鏅細
+        /// 1. 涓嶈兘鐢ㄤ簬鏋勯€犲嚱鏁?_init_
+        /// 2. 涓嶈兘鐢ㄤ簬 set 鍑芥暟
+        /// 3. 涓嶈兘鐢ㄤ簬 void 杩斿洖鍊肩殑鍑芥暟
         /// </summary>
         private void ValidateNullConditionalUsage()
         {
@@ -306,18 +273,18 @@ namespace SimpleLanguage.Core
                 if (mmf.isConstructInitFunction)
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, node.token,
-                        "Error 空条件运算符 ?. 不能用于构造函数 _init_!");
+                        "Error 绌烘潯浠惰繍绠楃 ?. 涓嶈兘鐢ㄤ簬鏋勯€犲嚱鏁?_init_!");
                 }
                 else if (mmf.isSet)
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, node.token,
-                        "Error 空条件运算符 ?. 不能用于 set 函数!");
+                        "Error 绌烘潯浠惰繍绠楃 ?. 涓嶈兘鐢ㄤ簬 set 鍑芥暟!");
                 }
                 else if (mmf.defineMetaType != null &&
                          mmf.defineMetaType.metaClass == CoreMetaClassManager.voidMetaClass)
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, node.token,
-                        "Error 空条件运算符 ?. 不能用于 void 返回值的函数!");
+                        "Error 绌烘潯浠惰繍绠楃 ?. 涓嶈兘鐢ㄤ簬 void 杩斿洖鍊肩殑鍑芥暟!");
                 }
             }
         }
@@ -349,7 +316,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "瑙ｆ瀽宓屽expressList 鐨勬椂鍊欏彂鐢熶簡闂!");
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "鐟欙絾鐎藉畵灞筋殰expressList 閻ㄥ嫭妞傞崐娆忓絺閻㈢喍绨￠梻顕€顣?");
                     }
                     break;
             }
@@ -384,7 +351,7 @@ namespace SimpleLanguage.Core
             }
             else if (mcn.callNodeType == ECallNodeType.ClosureCall)
             {
-                // 闭包调用: funname( xx ) -> 生成 ClosureCall 访问节点
+                // 闂寘璋冪敤: funname( xx ) -> 鐢熸垚 ClosureCall 璁块棶鑺傜偣
                 var mcc = new MetaClosureCall(mcn.metaVariable, MetaClosureVariable.ResolveClosureVariable(mcn.metaVariable), mcn.metaInputParamCollection);
                 mcc.SetToken(mcn.token);
                 MetaVisitNode mvnClosure = MetaVisitNode.CreateByClosureCall(mcc);
@@ -429,7 +396,7 @@ namespace SimpleLanguage.Core
                     //newmv = frontNode.ownerMetaFunctionBlock.GetMetaVariable(name);
                     //if (newmv == null)
                     //{
-                    //    Debug.Assert(false, "娌℃湁鍒涘缓const鍙橀噺!");
+                    //    Debug.Assert(false, "濞屸剝婀侀崚娑樼紦const閸欐﹢鍣?");
                     //    //var mccm = CoreMetaClassManager.GetMetaClassByEType(fvn.constValueExpress.eType);
                     //    //newmv = new MetaVariable(name, MetaVariable.EVariableFrom.LocalStatement,
                     //    //frontNode.ownerMetaFunctionBlock, frontNode.metaType.metaClass, new MetaType(mccm));
@@ -493,7 +460,7 @@ namespace SimpleLanguage.Core
                     //newmv = frontNode.ownerMetaFunctionBlock.GetMetaVariable(name);
                     //if (newmv == null)
                     //{
-                    //    Debug.Assert(false, "娌℃湁鍒涘缓const鍙橀噺!");
+                    //    Debug.Assert(false, "濞屸剝婀侀崚娑樼紦const閸欐﹢鍣?");
                     //}
 
                     MetaVisitNode mvn1 = MetaVisitNode.CreateByNewConst(frontNode.ownerMetaClass, frontNode.ownerMetaFunctionBlock,
@@ -567,7 +534,7 @@ namespace SimpleLanguage.Core
                     m_VisitNodeList.Add(mvn);
                 }
             }
-            // typealias（如 ObjectArray -> Array<Object>）解析为 MetaType；须生成与 ClassName/NewClass 一致的 visit，否则嵌套 ObjectArray(n){} 无 New 语义、后续 Meta 失败
+            // typealias锛堝 ObjectArray -> Array<Object>锛夎В鏋愪负 MetaType锛涢』鐢熸垚涓?ClassName/NewClass 涓€鑷寸殑 visit锛屽惁鍒欏祵濂?ObjectArray(n){} 鏃?New 璇箟銆佸悗缁?Meta 澶辫触
             else if (mcn.callNodeType == ECallNodeType.MetaType)
             {
                 if (mcn.metaType != null && mcn.metaType.IsArray())
@@ -601,8 +568,8 @@ namespace SimpleLanguage.Core
             {
                 if (mcn.metaVariable != null)
                 {
-                    // data 类型名参与成员访问时（如 AA.a 且 a 为实例字段），
-                    // 先把 AA 的默认静态实例压栈，再由后续 MemberDataName 取字段。
+                    // data 绫诲瀷鍚嶅弬涓庢垚鍛樿闂椂锛堝 AA.a 涓?a 涓哄疄渚嬪瓧娈碉級锛?
+                    // 鍏堟妸 AA 鐨勯粯璁ら潤鎬佸疄渚嬪帇鏍堬紝鍐嶇敱鍚庣画 MemberDataName 鍙栧瓧娈点€?
                     MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable);
                     mvn.SetToken(mcn.token);
                     m_VisitNodeList.Add(mvn);
@@ -654,7 +621,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 浣跨敤NewClass鏂瑰紡锛屽悗杈逛笉鍏佽璺熷叾瀹冨彉閲忕浉鍏冲唴瀹?");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娴ｈ法鏁ewClass閺傜懓绱￠敍灞芥倵鏉堥€涚瑝閸忎浇顔忕捄鐔峰従鐎瑰啫褰夐柌蹇曟祲閸忓啿鍞寸€?");
                 }
             }
             else if (mcn.callNodeType == ECallNodeType.NewTemplate)
@@ -739,6 +706,14 @@ namespace SimpleLanguage.Core
             {
                 //MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable);
                 //m_VisitNodeList.Add(mvn);
+            }
+            else if (mcn.callNodeType == ECallNodeType.Local)
+            {
+                // local resolves to the static `instance` member on <FileName>_Local.
+                // Create a variable visit node so IR emits LoadStaticField.
+                MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable);
+                mvn.SetToken(mcn.token);
+                m_VisitNodeList.Add(mvn);
             }
             else if (mcn.callNodeType == ECallNodeType.GetType)
             {

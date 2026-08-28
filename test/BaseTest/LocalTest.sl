@@ -26,6 +26,10 @@ local
     }
 }
 
+local{
+    
+}
+
 LocalC
 {
     a = 20

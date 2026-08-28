@@ -42,6 +42,16 @@ namespace SimpleLanguage.Logging
         MetaCoreMetaMemberNotAllowInstanceInSelfMetaClass = 11032,
         MetaCoreMetaMemberShouldNameEqualExpressFormat = 11033,
 
+        // 编译过程管理（Process 阶段/步骤状态）
+        ProcessPhaseStart = 11034,
+        ProcessPhaseEnd = 11035,
+        ProcessPhaseFailed = 11036,
+        ProcessPhaseSkipped = 11037,
+        ProcessPhaseErrorNotified = 11038,
+        ProcessStepFailed = 11039,
+        ProcessCompileFileFailed = 11040,
+        ProcessSummary = 11041,
+
         NodeNotFoundNameToken = 12247,
         NodeAssetFrontListNodeIsZero = 12248,
         IRVisitNodeNotHandleType = 12249,
@@ -69,17 +79,12 @@ namespace SimpleLanguage.Logging
         FileMetaNotFoundNameSpace = 12271,
         TokenParseStringNeedEndSign = 12272,
         MetaCoreFunctionNeedOverrideFlag = 12273,
-
         MetaCoreFinalFunctionCannotOverride = 12274,
+        NodeLocalParseFailed = 12275,
+        NodeLocalParseAllowOnceLocal = 12276,
+        NodeLocalSyntaxError = 12277,
+        NodeLocalFunctionNeedBlock = 12278,
+        NodeDefineFunctionAfterNotAllowSyntax = 12279,
 
-        // 编译过程管理（Process 阶段/步骤状态）
-        ProcessPhaseStart = 11034,
-        ProcessPhaseEnd = 11035,
-        ProcessPhaseFailed = 11036,
-        ProcessPhaseSkipped = 11037,
-        ProcessPhaseErrorNotified = 11038,
-        ProcessStepFailed = 11039,
-        ProcessCompileFileFailed = 11040,
-        ProcessSummary = 11041,
     }
 }
