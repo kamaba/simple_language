@@ -492,13 +492,25 @@ namespace SimpleLanguage.Core
                 }
                 if (fmc.isEnum)
                 {
-                    MetaEnum newme = new MetaEnum(fmc.name);
-                    finalTopMetaNode.AddMetaEnum(newme);
+                    // 若该位置已存在同名 MetaEnum 壳（如工程配置 struct 树预创建的节点），
+                    // 直接绑定到该壳上；否则 AddMetaEnum 会因同名节点重复而失败，
+                    // 导致新 MetaEnum 挂不到命名空间树上（allName 缺少命名空间前缀）。
+                    var existEnumNode = finalTopMetaNode.GetChildrenMetaNodeByName(fmc.name);
+                    MetaEnum newme = null;
+                    if (existEnumNode != null && existEnumNode.isMetaEnum)
+                    {
+                        newme = existEnumNode.metaEnum;
+                    }
+                    if (newme == null)
+                    {
+                        newme = new MetaEnum(fmc.name);
+                        finalTopMetaNode.AddMetaEnum(newme);
+                    }
                     newme.UpdateAllName();
                     fmc.SetMetaEnum(newme);
                     newme.SetClassDefineType(EClassDefineType.CodeDefine);
                     newme.ParseFileMetaEnumMemeberEnum(fmc);
-                    
+
                     AddInitHandleMetaEnumList(newme);
 
                     return newme;

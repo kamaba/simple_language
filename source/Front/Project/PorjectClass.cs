@@ -133,8 +133,15 @@ namespace SimpleLanguage.Project
                     }
                     else
                     {
-                        var nodens = new MetaClass(node.Name, EClassDefineType.StructDefine);
-                        parMS = parentRoot.AddMetaClass(nodens);
+                        // enum 节点必须创建 MetaEnum 壳：
+                        // 若错误地创建 MetaClass 壳，AddClass 会把源码中的 enum 定义
+                        // 绑定到该 MetaClass 上（innderDefine && !manaualDefine 分支），
+                        // 导致 enum 永远不会成为 MetaEnum，ParseExtendsRelation 不执行，
+                        // "enum X extends Error { A = { code = 1 } }" 中的 code 成员找不到。
+                        var nodeEnum = new MetaEnum(node.Name);
+                        parMS = parentRoot.AddMetaEnum(nodeEnum);
+                        nodeEnum.SetClassDefineType(EClassDefineType.StructDefine);
+                        nodeEnum.UpdateAllName();
                     }
                 }
                 else

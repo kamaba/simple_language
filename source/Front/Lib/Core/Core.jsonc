@@ -57,7 +57,12 @@
       { "path": "Ptr.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Result.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Error.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "Tuple.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "Container/IList.sl", "group": "container", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Container/IMap.sl", "group": "container", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Container/List.sl", "group": "container", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Container/LinkedList.sl", "group": "container", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Container/Map.sl", "group": "container", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Container/Tuple.sl", "group": "container", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -217,7 +222,22 @@
     { "name": "SystemPtrObjWriteFloat64", "returnType": "Int32",  "params": ["Int64", "Int32", "Float64"], "isVariadic": false },
 
     // ---- Ptr<T> member access (Ptr.sl) ----
-    { "name": "SystemPtrObjReadObject",  "returnType": "object",  "params": ["Int64", "Int32"], "isVariadic": false }
+    { "name": "SystemPtrObjReadObject",  "returnType": "object",  "params": ["Int64", "Int32"], "isVariadic": false },
+    // ---- LinkedList native container calls (Container/LinkedList.sl) ----
+    { "name": "SystemLinkedListAddLast",        "returnType": "void",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListAddFirst",       "returnType": "void",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListInsertBefore",   "returnType": "void",   "params": ["object", "Int32", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListInsertAfter",    "returnType": "void",   "params": ["object", "Int32", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListRemoveAt",       "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemLinkedListRemoveValue",    "returnType": "void",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListRemoveFirst",    "returnType": "void",   "params": ["object"], "isVariadic": false },
+    { "name": "SystemLinkedListRemoveLast",     "returnType": "void",   "params": ["object"], "isVariadic": false },
+    { "name": "SystemLinkedListIndexOf",        "returnType": "Int32",  "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListLastIndexOf",    "returnType": "Int32",  "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListGetValueAt",     "returnType": "object", "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemLinkedListSetValueAt",     "returnType": "void",   "params": ["object", "Int32", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListToArray",        "returnType": "void",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListMoveNext",       "returnType": "bool",   "params": ["object"], "isVariadic": false }
   ],
   "struct": [
       { "namespace": "Core", "children": 

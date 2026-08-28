@@ -1,10 +1,10 @@
 
-public class Json interface IDataStruct
+public class Csv 
 {
     override _init_()
     {
         
-    }    
+    }
     void _init_( string jsonstr )
     {
         

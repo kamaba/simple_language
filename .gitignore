@@ -298,3 +298,4 @@
 /bind_test_output.txt
 /bind_test_output2.txt
 /bind_test_output3.txt
+/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
