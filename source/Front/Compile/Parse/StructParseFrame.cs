@@ -18,6 +18,7 @@ namespace SimpleLanguage.Compile
     {
         Null,
         File,
+        Local,
         Namespace,
         Class,
         Function,
@@ -30,6 +31,7 @@ namespace SimpleLanguage.Compile
         {
             public EParseNodeType parseType;
             public FileMeta codeFile = null;
+            public FileMetaLocalSyntax codeLocal = null;
             public FileMetaNamespace codeNamespace = null;
             public FileMetaClass codeClass = null;
             public FileMetaMemberData codeData = null;
@@ -40,6 +42,11 @@ namespace SimpleLanguage.Compile
             {
                 codeFile = cf;
                 parseType = EParseNodeType.File;
+            }
+            public ParseCurrentNodeInfo(FileMetaLocalSyntax fls)
+            {
+                codeLocal = fls;
+                parseType = EParseNodeType.Local;
             }
             public ParseCurrentNodeInfo(FileMetaNamespace nsn)
             {
@@ -88,6 +95,19 @@ namespace SimpleLanguage.Compile
         {
             m_FileMeta = fm;
             m_RootNode = node;
+        }
+        public void AddParseLocalNodeInfo( FileMetaLocalSyntax fmls)
+        {
+            if (currentNodeInfo.parseType == EParseNodeType.File)
+            {
+                currentNodeInfo.codeFile.SetFileMetaLocalSyntax(fmls);
+            }
+            else
+            {
+                Log.AddFileMetaLog(LID.ShowExtendMessage, fmls.token, "Error AddParseLocalNodeInfo");
+            }
+            ParseCurrentNodeInfo pcni = new ParseCurrentNodeInfo(fmls);
+            m_CurrentNodeInfoStack.Push(pcni);
         }
         public void AddParseNamespaceNodeInfo(FileMetaNamespace fmn)
         {
@@ -168,6 +188,10 @@ namespace SimpleLanguage.Compile
             if (currentNodeInfo.parseType == EParseNodeType.Class)
             {
                 currentNodeInfo.codeClass.AddFileMemberFunction(fmmf);
+            }
+            else if (currentNodeInfo.parseType == EParseNodeType.Local)
+            {
+                currentNodeInfo.codeLocal.AddFunction(fmmf);
             }
             else
             {
@@ -571,7 +595,11 @@ namespace SimpleLanguage.Compile
             var fls = new FileMetaLocalSyntax(m_FileMeta, localNode.token, blockNode);
             m_FileMeta.SetFileMetaLocalSyntax(fls);
 
+            AddParseLocalNodeInfo(fls);
+
             ParseLocalContent(fls, blockNode);
+
+            m_CurrentNodeInfoStack.Pop();
         }
         /// <summary>
         /// 从 parent.childList[startIndex] 为 typealias 起解析一行，登记到 FileMeta，返回下一未消费下标；失败返回 startIndex。
@@ -854,7 +882,12 @@ namespace SimpleLanguage.Compile
 
             hasFunction = true;
             var f = new FileMetaMemberFunction(m_FileMeta, funcBlock, new List<Node>(normalizedNodes));
-            syntax.AddFunction(f);
+            AddParseFunctionNodeInfo(f);
+            if (funcBlock != null)
+            {
+                ParseSyntax(funcBlock);
+            }
+            m_CurrentNodeInfoStack.Pop();
             return true;
         }
         public void ParseNamespace(Node pnode)

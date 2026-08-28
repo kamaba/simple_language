@@ -37,11 +37,11 @@ class Vector2 interface IVector2 bind VecData2
 {
     override float addVector(VecData2 other)
     {
-        return this.x + other.x + this.y + other.y;
+        ret this.x + other.x + this.y + other.y;
     }
 
     override float length()
     {
-        return (this.x * this.x) + (his.y * this.y);
+        ret (this.x * this.x) + (his.y * this.y);
     }
 }

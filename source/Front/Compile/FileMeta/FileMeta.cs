@@ -392,6 +392,10 @@ namespace SimpleLanguage.Compile
             {
                 m_FileImportSyntax[i].SetDeep(m_Deep);
             }
+            if (m_FileMetaLocalSyntax != null)
+            {
+                m_FileMetaLocalSyntax.SetDeep(m_Deep);
+            }
             for (int i = 0; i < m_FileDefineNamespaceList.Count; i++)
             {
                 m_FileDefineNamespaceList[i].SetDeep(m_Deep);
@@ -417,6 +421,10 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < m_FileDefineNamespaceList.Count; i++)
             {
                 sb.Append(m_FileDefineNamespaceList[i].ToFormatString() + Environment.NewLine);
+            }
+            if(m_FileMetaLocalSyntax != null )
+            {
+                sb.Append(m_FileMetaLocalSyntax.ToFormatString() + Environment.NewLine);
             }
             //for (int i = 0; i < m_FileSearchNamespaceList.Count; i++)
             //{

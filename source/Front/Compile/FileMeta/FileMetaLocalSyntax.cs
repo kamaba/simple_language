@@ -35,17 +35,34 @@ namespace SimpleLanguage.Compile
         {
             m_Deep = _deep;
             m_BlockSyntax?.SetDeep(_deep);
+            foreach( var v in m_FunctionList )
+            {
+                v.SetDeep(_deep + 1);
+            }
         }
 
         public override string ToFormatString()
         {
             var sb = new StringBuilder();
             for (int i = 0; i < deep; i++) sb.Append(Global.tabChar);
-            sb.Append("local");
+            sb.AppendLine("local");
             if (m_BlockSyntax != null)
             {
-                sb.Append(Environment.NewLine);
-                sb.Append(m_BlockSyntax.ToFormatString());
+                for (int i = 0; i < m_BlockSyntax.deep; i++)
+                    sb.Append(Global.tabChar);
+                sb.Append(m_BlockSyntax.beginBlock.lexeme.ToString() + Environment.NewLine);
+                for (int i = 0; i < m_BlockSyntax.fileMetaSyntax.Count; i++)
+                {
+                    sb.Append(m_BlockSyntax.fileMetaSyntax[i].ToFormatString());
+                    sb.Append(Environment.NewLine);
+                }
+                foreach (var v in m_FunctionList)
+                {
+                    sb.AppendLine(v.ToFormatString());
+                }
+                for (int i = 0; i < m_BlockSyntax.deep; i++)
+                    sb.Append(Global.tabChar);
+                sb.Append("}");
             }
             return sb.ToString();
         }

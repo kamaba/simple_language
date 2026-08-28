@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile
 {
@@ -387,11 +386,6 @@ namespace SimpleLanguage.Compile
         }
         void ParseTokenConvertNode(Token token)
         {
-            //if (m_CurrentNode == null)
-            //{
-            //    Log.AddTokenLog(LID.ShowExtendMessage, "", token, "Error CurrentNode is NULL!!" + token?.ToLexemeAllString());
-            //    return;
-            //}
             switch (token.type)
             {
                 case ETokenType.Identifier:  //Identifier
@@ -608,33 +602,6 @@ namespace SimpleLanguage.Compile
                         node.priority = SignComputePriority.Level5_BitMoveOp;
                     }
                     break;
-                //case ETokenType.Shr:               //  >>
-                //    {
-                //        // In nested generics like Map<List<int>,string>> the lexer produces Shr.
-                //        // If we're currently inside an unclosed generic angle sequence, treat this
-                //        // as two closing '>' tokens.
-                //        if (IsInsideGenericAngleContext())
-                //        {
-                //            var t1 = new Token(token);
-                //            t1.SetType(ETokenType.Greater);
-                //            t1.SetLexeme(">");
-                //            var n1 = new Node(t1) { nodeType = ENodeType.RightAngle };
-                //            m_CurrentNode.AddChild(n1);
-
-                //            var t2 = new Token(token);
-                //            t2.SetType(ETokenType.Greater);
-                //            t2.SetLexeme(">");
-                //            var n2 = new Node(t2) { nodeType = ENodeType.RightAngle };
-                //            m_CurrentNode.AddChild(n2);
-
-                //            m_TokenIndex++;
-                //        }
-                //        else
-                //        {
-                //            AddBitMoveOperatorSymbol(token);
-                //        }
-                //    }
-                //    break;
                 case ETokenType.GreaterOrEqual:  // >=
                 case ETokenType.LessOrEqual:     // <=
                     {
@@ -838,86 +805,8 @@ namespace SimpleLanguage.Compile
             }
             catch (Exception e)
             {
-                Log.AddTokenLog(LID.ShowExtendMessage, "" + e.Message);
-                // ignore debug dump errors
+                Console.Write( e.Message);
             }
         }
-
-        /// <summary>
-        /// Best-effort generic context detection: if there's an unclosed '<' in the current node list,
-        /// prefer treating '>>' as two generic closing tokens instead of a shift operator.
-        /// </summary>
-        //private bool IsInsideGenericAngleContext()
-        //{
-        //    // Scan current node's direct children and compute a simple depth for angle brackets.
-        //    // This intentionally ignores nested node stacks (Par/Brace/Bracket), because '>>' that
-        //    // tokenizes inside those should still typically behave as shift.
-        //    int depth = 0;
-        //    var list = m_CurrentNode?.childList;
-        //    if (list == null) return false;
-
-        //    for (int i = 0; i < list.Count; i++)
-        //    {
-        //        var n = list[i];
-        //        if (n == null) continue;
-        //        if (n.nodeType == ENodeType.LeftAngle) depth++;
-        //        else if (n.nodeType == ENodeType.RightAngle && depth > 0) depth--;
-        //    }
-        //    return depth > 0;
-        //}
-        //private void CheckUnclosedPairNodes()
-        //{
-        //    while (m_CurrentNodeStack.Count > 0)
-        //    {
-        //        var node = m_CurrentNodeStack.Pop();
-        //        if (node == null || node.nodeType == ENodeType.Root)
-        //        {
-        //            continue;
-        //        }
-
-        //        Log.AddNodeLog(LID.MetaCoreAssertShowMessage, node.token, GetUnclosedPairMessage(node));
-        //    }
-
-        //    m_CurrentNodeStack.Push(m_RootNode);
-        //    m_CurrentNode = m_RootNode;
-        //}
-
-        //private static string GetUnclosedPairMessage(Node node)
-        //{
-        //    return node.nodeType switch
-        //    {
-        //        ENodeType.Brace => "Error Node层花括号不对称，缺少右花括号 '}'",
-        //        ENodeType.Par => "Error Node层圆括号不对称，缺少右圆括号 ')'",
-        //        ENodeType.Bracket => "Error Node层中括号不对称，缺少右中括号 ']'",
-        //        _ => "Error Node层括号不对称，缺少闭合符号",
-        //    };
-        //}
-
-        //private bool TryPopPairNode(ENodeType expectedNodeType, Token endToken, string pairText)
-        //{
-        //    if (m_CurrentNodeStack.Count <= 1)
-        //    {
-        //        Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，多余的右符号 " + pairText);
-        //        m_TokenIndex++;
-        //        return false;
-        //    }
-
-        //    var cnode = m_CurrentNodeStack.Pop();
-        //    if (cnode != null && cnode.nodeType == expectedNodeType)
-        //    {
-        //        cnode.endToken = endToken;
-        //        m_TokenIndex++;
-        //        m_CurrentNode = cnode.parent ?? m_RootNode;
-        //        return true;
-        //    }
-
-        //    Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，期望闭合 " + expectedNodeType.ToString() + " 但遇到 " + pairText);
-        //    if (cnode != null)
-        //    {
-        //        m_CurrentNodeStack.Push(cnode);
-        //    }
-        //    m_TokenIndex++;
-        //    return false;
-        //}
     }
 }
