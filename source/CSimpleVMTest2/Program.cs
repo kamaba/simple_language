@@ -58,6 +58,13 @@ internal static class Program
         Console.WriteLine($"Package: {packagePath}");
 
         // Step 3: Run C VM (csimple_lang.exe) as external process
+        // C VM 测试用例使用相对路径（如 Sqlite3Test 的 Resources/ttest），
+        // VS 启动时 CWD 是 bin\Debug\net8.0，需切到测试工程目录，与命令行运行环境一致
+        string? projectDir = Path.GetDirectoryName(Path.GetFullPath(projectPath));
+        if (Directory.Exists(projectDir))
+        {
+            Environment.CurrentDirectory = projectDir;
+        }
         int cvmExit = RunCVM(packagePath, runTestEntry, repoRoot, debug);
         if (cvmExit != 0)
         {
@@ -100,7 +107,7 @@ internal static class Program
         if (!File.Exists(dllPath))
         {
             Console.WriteLine($"csimple_lang_dll.dll not found at {dllPath}, falling back to process mode.");
-            return RunProcess(cvmExe, cvmArgs, "C VM run (csimple_lang)", cvmDir);
+            return RunProcess(cvmExe, cvmArgs, "C VM run (csimple_lang)");
         }
 
         Console.WriteLine("=== C VM run (P/Invoke) ===");
@@ -122,9 +129,9 @@ internal static class Program
             Console.WriteLine($"{cvmExe} {string.Join(" ", cvmArgs)}");
             Console.WriteLine("Press Enter to start C VM...");
             Console.ReadLine();
-            return RunProcessDirect(cvmExe, cvmArgs, cvmDir);
+            return RunProcessDirect(cvmExe, cvmArgs, Environment.CurrentDirectory);
         }
-        return RunProcess(cvmExe, cvmArgs, "C VM run (csimple_lang)", cvmDir);
+        return RunProcess(cvmExe, cvmArgs, "C VM run (csimple_lang)");
 #endif
     }
 

@@ -46,7 +46,8 @@
       { "path": "Component.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Node.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Data/Table.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
-      { "path": "Data/Tree.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
+      { "path": "Data/Tree.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "DB/Sqlite.sl", "group": "std", "tag": "db", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -108,6 +109,17 @@
             { "class": "Tree" }
          ]
       },
+      { "namespace": "DB", "children":
+         [
+            { "enum": "SQLITE_OPEN" },
+            { "enum": "SqliteErrorCode" },
+            { "class": "Row" },
+            { "class": "Cursor" },
+            { "class": "Command" },
+            { "class": "Connection" },
+            { "class": "Sqlite3" }
+         ]
+      },
       { "class": "Component" },
       { "class": "Node" }
   ], 
@@ -161,7 +173,40 @@
     { "name": "SystemDateTimeTryParseMillis",  "returnType": "Int64",  "params": ["string","Int32"], "isVariadic": false },
     { "name": "SystemDateTimeMinValueMillis",  "returnType": "Int64",  "params": [], "isVariadic": false },
     { "name": "SystemDateTimeMaxValueMillis",  "returnType": "Int64",  "params": [], "isVariadic": false },
-    { "name": "SystemDateTimeIsValidMillis",   "returnType": "bool",   "params": ["Int64"], "isVariadic": false }
+    { "name": "SystemDateTimeIsValidMillis",   "returnType": "bool",   "params": ["Int64"], "isVariadic": false },
+    // ---- SQLite3 calls (DB/Sqlite.sl) ----
+    { "name": "SystemSqlite3Open",              "returnType": "Int64",  "params": ["string"], "isVariadic": false },
+    { "name": "SystemSqlite3Close",             "returnType": "Int32",  "params": ["Int64"], "isVariadic": false },
+    { "name": "SystemSqlite3Exec",              "returnType": "Int32",  "params": ["Int64", "string"], "isVariadic": false },
+    { "name": "SystemSqlite3PrepareV2",         "returnType": "Int64",  "params": ["Int64", "string"], "isVariadic": false },
+    { "name": "SystemSqlite3Step",              "returnType": "Int32",  "params": ["Int64"], "isVariadic": false },
+    { "name": "SystemSqlite3Finalize",          "returnType": "Int32",  "params": ["Int64"], "isVariadic": false },
+    { "name": "SystemSqlite3Reset",             "returnType": "Int32",  "params": ["Int64"], "isVariadic": false },
+    { "name": "SystemSqlite3ColumnCount",       "returnType": "Int32",  "params": ["Int64"], "isVariadic": false },
+    { "name": "SystemSqlite3ColumnType",        "returnType": "Int32",  "params": ["Int64", "Int32"], "isVariadic": false },
+    { "name": "SystemSqlite3ColumnInt",         "returnType": "Int32",  "params": ["Int64", "Int32"], "isVariadic": false },
+    { "name": "SystemSqlite3ColumnText",        "returnType": "string", "params": ["Int64", "Int32"], "isVariadic": false },
+    { "name": "SystemSqlite3ColumnName",        "returnType": "string", "params": ["Int64", "Int32"], "isVariadic": false },
+    { "name": "SystemSqlite3BindInt",           "returnType": "Int32",  "params": ["Int64", "Int32", "Int32"], "isVariadic": false },
+    { "name": "SystemSqlite3BindText",          "returnType": "Int32",  "params": ["Int64", "Int32", "string"], "isVariadic": false },
+    { "name": "SystemSqlite3Changes",           "returnType": "Int32",  "params": ["Int64"], "isVariadic": false },
+    { "name": "SystemSqlite3LastInsertRowid",   "returnType": "Int64",  "params": ["Int64"], "isVariadic": false },
+    { "name": "SystemSqlite3Errmsg",            "returnType": "string", "params": ["Int64"], "isVariadic": false },
+    // ---- LinkedList native container calls (Container/LinkedList.sl) ----
+    { "name": "SystemLinkedListAddLast",        "returnType": "void",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListAddFirst",       "returnType": "void",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListInsertBefore",   "returnType": "void",   "params": ["object", "Int32", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListInsertAfter",    "returnType": "void",   "params": ["object", "Int32", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListRemoveAt",       "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemLinkedListRemoveValue",    "returnType": "void",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListRemoveFirst",    "returnType": "void",   "params": ["object"], "isVariadic": false },
+    { "name": "SystemLinkedListRemoveLast",     "returnType": "void",   "params": ["object"], "isVariadic": false },
+    { "name": "SystemLinkedListIndexOf",        "returnType": "Int32",  "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListLastIndexOf",    "returnType": "Int32",  "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListGetValueAt",     "returnType": "object", "params": ["object", "Int32"], "isVariadic": false },
+    { "name": "SystemLinkedListSetValueAt",     "returnType": "void",   "params": ["object", "Int32", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListToArray",        "returnType": "void",   "params": ["object", "object"], "isVariadic": false },
+    { "name": "SystemLinkedListMoveNext",       "returnType": "bool",   "params": ["object"], "isVariadic": false }
   ],
   "export": {
     "moduleName": "Std",

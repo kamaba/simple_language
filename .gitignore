@@ -291,5 +291,7 @@
 /source/StdNativeImpl/bin
 /source/MathNativeImpl/bin
 /source/CSimpleVMTest1/build_cvm.bat
-/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+# fixed: corrupted shell fragment line blocking ripgrep (was: /criptssafe_rm_aliases.ps1 } catch{} ; ...)
+/criptssafe_rm_aliases.ps1_fixed
 /source/VM
+/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.

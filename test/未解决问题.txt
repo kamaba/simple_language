@@ -4,23 +4,20 @@
 7. 指针的增加与处理. 
 9. 是否不能 new int() 这种的，直接变成栈的方式
 
-1. cvm优化system method 动态加载
+1. cvm优化system method 动态加载  并且使用唯一id的int去搜索，而不使用名称。
+
 llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后在虚拟机中，有对应的调用
 增加FFI接口, 加载第三方库，然后可以运行起来，然后通过FFI的load,然后调用
 使用 @csharp{ } 调用相关的接口 在{}内是中转逻辑   a = 0; @csharp {     a = TestCSharp.TTC.getIndex( 10, a ) }   @js{ a = Test.calc( a, a ) }  需要在工程里边配置 C#版本
 使用MLIR的指令，调用Tile计算 批量数据
 
-最近要解决的:
-2. 使用Num的完整
-3. 使用Byte/SByte/Int16/UInt16/Int32/UInt32/
-4. Float32/Float64
-final int/uint/float 等方法 
 1. cvm 只使用三色方案  然后使用 引用计数的方案，在结尾 后把内存收集
-
 机制差的:
 函数名称和类名冲突时候的处理
 
-完善tulple, linkedList, set, queue stack, buffer, builder , 然后写一个sqlite3的标准库  然后再把local的逻辑测试了.
+优化FrontEnd层
+再增加一些ErrorShow,
+linkedList(需要优化下，使用c语言的优势), set, queue stack, buffer, builder, await, async, stream, netStream, 然后写一个sqlite3的标准库  然后再把local的逻辑测试了.
 
 1. this的使用，还没有整合
 2. 循环引用 问题

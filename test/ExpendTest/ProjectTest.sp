@@ -2,14 +2,18 @@ Project
 {
     _main_()
     {
-        # 只跑 DateTimeTest，避免 ConsoleTest 的交互式 calculator 阻塞 
+        # calculator 已从 ConsoleTest.fun() 中注释掉（交互式阻塞 stdin），可在此单独调用
+        
+        LinkedListTest.fun()
+        #!
         ListTest.fun()
         MapTest.fun()
         FileTest.fun()
         DirectoryTest.fun()
-        ConsoleTest.fun()
+       #ConsoleTest.fun()
         DateTimeTest.fun()
-        LinkedListTest.fun()
+        Sqlite3Test.fun()
+        !#
     }
     CompileBefore()
     {

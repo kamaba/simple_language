@@ -178,7 +178,8 @@ ConsoleTest
         testReadParse()
         testCalculatorLogic()
         testMixedTypes()
-        calculator() #是交互式的，需要标准输入
+        # calculator() 是交互式的，需要标准输入，会阻塞自动化测试
         # 如需使用，在 ProjectTest.sp 中单独调用 ConsoleTest.calculator()
+        # calculator()
     }
 }
