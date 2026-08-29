@@ -65,11 +65,19 @@ namespace SimpleLanguage.IR
             var mf = mfc.GetTemplateMemberFunction();
             string systemName = mf?.name ?? string.Empty;
             int systemKind = -1;
+            // Unique int id from the declaration (module "systemCalls"): the C VM
+            // registers id -> implementation at load time and dispatches by id.
+            int systemId = 0;
+            if (SystemMethodCallDeclarationRegistry.TryGetDeclaration(systemName, out var sysDecl))
+            {
+                systemId = sysDecl.GetIndex();
+            }
             var sysPkg = new SLSystemMethodCallPackage
             {
                 name = systemName,
                 paramCount = paramCount,
                 systemMethodKind = systemKind,
+                id = systemId,
             };
 
             IRData datacall2 = new IRData();

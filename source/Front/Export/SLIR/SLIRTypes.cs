@@ -46,6 +46,9 @@ namespace SimpleLanguage.Export.SLIR.Types
         public int paramCount { get; set; }
         /// <summary>Matches <see cref="SimpleLanguage.ESystemMethodCall"/>; -1 if unknown.</summary>
         public int systemMethodKind { get; set; } = -1;
+        /// <summary>Unique int id (<see cref="Project.SystemMethodCallDeclaration.GetIndex"/>);
+        /// 0 when the declaration is unknown - VM falls back to name lookup.</summary>
+        public int id { get; set; }
     }
 
     /// <summary>Optional debug snapshot (from <see cref="SimpleLanguage.IR.IRData.debugInfo"/> / token), deserialized into VM <see cref="SimpleLanguage.VM.DebugInfo"/>.</summary>
@@ -213,6 +216,9 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string returnType { get; set; } = string.Empty;
         public List<string> @params { get; set; } = new();
         public bool isVariadic { get; set; } = false;
+        /// <summary>Unique int id (<see cref="Project.SystemMethodCallDeclaration.GetIndex"/>).
+        /// The VM reads it at module load and registers id -> implementation for O(1) dispatch.</summary>
+        public int id { get; set; }
 
         public override string ToString()
         {

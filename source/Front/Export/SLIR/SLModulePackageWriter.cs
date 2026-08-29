@@ -765,6 +765,9 @@ namespace SimpleLanguage.Export.SLIR
                     name = v.name ?? string.Empty,
                     returnType = getMetaTypeString(v.returnMetaType),
                     isVariadic = v.isVariadic,
+                    // Unique int id so the VM can register id -> implementation
+                    // from this export and dispatch CallSystemMethod by id.
+                    id = v.GetIndex(),
                 };
                 foreach( var v2 in v.paramMetaTypeList )
                 {

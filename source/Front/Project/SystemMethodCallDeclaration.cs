@@ -37,9 +37,17 @@ namespace SimpleLanguage.Core
         public List<MetaType> paramMetaTypeList { get; }
         public bool isVariadic { get; }
 
-        public int Index()
+        /// <summary>Unique int id of this system method (MD5-based hash of <see cref="name"/>).
+        /// Exported with the module's "systemCalls" and CallSystemMethod payloads so the
+        /// VM can dispatch by int id instead of by name string.</summary>
+        public int GetIndex()
         {
             return CommonFunction.StringToIntHash(name);
+        }
+
+        public int Index()
+        {
+            return GetIndex();
         }
 
         public SystemMethodCallDeclaration( string name, MetaType ret, bool variadic, params MetaType[] paramTypes)
