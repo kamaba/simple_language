@@ -72,7 +72,8 @@
       { "path": "LocalTest1.sl", "group": "core", "tag": "base", "ignore": false, "priority": 2 },
       { "path": "LocalTest2.sl", "group": "core", "tag": "base", "ignore": false, "priority": 1 },
       { "path": "InterfaceDataAndBindData.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "ResultTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "ResultTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "TableTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {

@@ -73,6 +73,8 @@ Project
 
         ResultTest.fun()
 
+        TableTest.fun()
+
         nowMs = Environment.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")
     }
