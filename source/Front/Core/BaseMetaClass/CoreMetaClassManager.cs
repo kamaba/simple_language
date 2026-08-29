@@ -196,6 +196,19 @@ namespace SimpleLanguage.Core
             return false;
         }
 
+        /// <summary>
+        /// 判断一个 MetaType 是否为 Result / Result&lt;T&gt; 类型（用于 result 关键字支持）。
+        /// </summary>
+        public static bool IsResultMetaType( MetaType mt )
+        {
+            if( mt == null )
+            {
+                return false;
+            }
+            var mc = mt.GetTemplateMetaClass();
+            return mc != null && (mc == resultMetaClass || mc == resultTMetaClass);
+        }
+
         public static EType GetETypeByMetaClass(MetaClass mc)
         {
             if (mc == voidMetaClass)

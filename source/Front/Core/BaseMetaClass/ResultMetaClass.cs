@@ -26,7 +26,12 @@ namespace SimpleLanguage.Core
     }
     public class ResultTMetaClass : MetaClass
     {
-        public ResultTMetaClass() : base(DefaultObject.ResultT.ToString())
+        // 名字必须与 Result.sl 的 "class Result<T>" 一致（"Result"），注册到
+        // MetaNode "Result" 的 tc=1 槽，这样：
+        //   1) Core 自身编译时源码 class Result<T> 会复用本 inner-form（同 Ptr<T> 模式）；
+        //   2) 引用 Core 的工程做 Core replacement 时按 ("Result", tc=1) 能命中本类，
+        //      否则会 fallback 错误命中 tc=0 的 Result，导致 Result<T> 的 IRMetaClass 缺失。
+        public ResultTMetaClass() : base(DefaultObject.Result.ToString())
         {
             m_Type = EType.Class;
             m_InnderDefine = true;

@@ -71,6 +71,8 @@ Project
         LocalTest1.fun()
         LocalTest2.fun()
 
+        ResultTest.fun()
+
         nowMs = Environment.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")
     }

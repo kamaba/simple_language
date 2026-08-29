@@ -295,6 +295,66 @@ namespace SimpleLanguage.Core
             m_MetaBlockStatements?.UpdateMetaVariableDict( m_ClosureContextVariable );
             return m_ClosureContextVariable;
         }
+
+        /// <summary>
+        /// 判断本函数返回类型是否为 Result / Result&lt;T&gt;（result 关键字支持）。
+        /// ref module 导入、构造函数、未绑定模板(模板函数体内的 T)等情况返回 false。
+        /// </summary>
+        public bool IsResultReturnFunction()
+        {
+            if( refFromType == RefFromType.RefModule )
+            {
+                return false;
+            }
+            if( m_ConstructInitFunction )
+            {
+                return false;
+            }
+            if( m_IsClosureFunction )
+            {
+                return false;
+            }
+            var mt = GetFinalMetaType();
+            if( !CoreMetaClassManager.IsResultMetaType( mt ) )
+            {
+                return false;
+            }
+            // 未绑定模板(泛型 T 尚未确定)时无法构造对象, 跳过注入
+            if( mt.GenTemplateIsIncludeTemplate() )
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// result 关键字: 返回类型为 Result/Result&lt;T&gt; 的函数自动注入隐藏局部变量 result。
+        /// 加入函数顶块变量字典后, 用户函数体可直接使用 result.code/message/value;
+        /// 若用户自行声明同名 result 变量, 其 UpdateMetaVariableDict 会自然遮蔽注入变量。
+        /// IR 阶段 GetCalcMetaVariableList 自动收集为局部变量, prologue 发射 new Result() 初始化。
+        /// </summary>
+        public MetaVariable EnsureResultVariable()
+        {
+            if( m_ResultVariable != null )
+            {
+                return m_ResultVariable;
+            }
+            var mt = GetFinalMetaType();
+            if( mt == null )
+            {
+                return null;
+            }
+            m_ResultVariable = new MetaVariable( "result",
+                MetaVariable.EVariableFrom.LocalStatement, m_MetaBlockStatements, ownerMetaClass, mt );
+            m_ResultVariable.SetMetaDefineType( new MetaType( mt ) );
+            m_ResultVariable.SetIsDefineMetaType( true );
+            m_ResultVariable.SetRealMetaType( new MetaType( mt ) );
+            m_MetaBlockStatements?.UpdateMetaVariableDict( m_ResultVariable );
+            return m_ResultVariable;
+        }
+        public MetaVariable resultVariable => m_ResultVariable;
+        public bool hasResultVariable => m_ResultVariable != null;
+
         // ── 闭包共享捕获上下文 (shared capture context) ──
         // 宿主函数持有捕获注册表: 同一宿主函数内多个闭包捕获同一变量时复用同一槽位代理,
         // 宿主与所有闭包全程通过同一个共享 Object[] 数组读写 (Dart 式捕获语义)。
@@ -332,6 +392,7 @@ namespace SimpleLanguage.Core
         private List<MetaClosureContextVariable> m_ClosureCaptureList = new List<MetaClosureContextVariable>();
         private Dictionary<MetaVariable, MetaClosureContextVariable> m_ClosureCaptureDict = new Dictionary<MetaVariable, MetaClosureContextVariable>();
         private MetaVariable m_ClosureContextVariable = null; // 隐藏局部变量 __closure_ctx__ (Object 类型, 存共享数组)
+        private MetaVariable m_ResultVariable = null; // result 关键字: Result/Result<T> 返回函数自动注入的隐藏局部变量 result
         protected MetaMemberFunction m_SourceMetaMemberFunction = null; //模板里边的源函数
         protected MetaMemberFunction m_OverrideMetaMemberFunction = null;           //override member function的函数
 
@@ -830,6 +891,12 @@ namespace SimpleLanguage.Core
                     Token endToken = m_FileMetaMemberFunction.fileMetaBlockSyntax.endBlock;
                     m_MetaBlockStatements.SetFileMetaBlockSyntax(m_FileMetaMemberFunction.fileMetaBlockSyntax);
                     m_MetaBlockStatements.SetMetaMemberParamCollection(m_MetaMemberParamCollection);
+                    // result 关键字: 返回类型为 Result/Result<T> 的函数注入隐藏局部变量 result
+                    // (在语句解析前注入, 用户自定义同名变量会经 UpdateMetaVariableDict 自然遮蔽)
+                    if( IsResultReturnFunction() && m_MetaBlockStatements.GetMetaVariable("result") == null )
+                    {
+                        EnsureResultVariable();
+                    }
                     CreateMetaSyntax(m_FileMetaMemberFunction.fileMetaBlockSyntax, m_MetaBlockStatements);
                 }
                 else

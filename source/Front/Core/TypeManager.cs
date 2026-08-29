@@ -1763,6 +1763,26 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
+            // ── result 关键字: Result<T> -> Result 协变赋值规则 ──
+            // 泛型 Result<T> 的 value 为强类型 T, 可装箱兼容非泛型 Result 的 Object value,
+            // 允许 Result r = Result<T> 表达式; 反向 Result -> Result<T> 丢失 T 类型信息, 拒绝。
+            if (CoreMetaClassManager.IsResultMetaType(leftMt) && CoreMetaClassManager.IsResultMetaType(rightMt))
+            {
+                bool leftIsGenericResult = leftMt.GetGenTemplateMetaTypeList().Count > 0;
+                bool rightIsGenericResult = rightMt.GetGenTemplateMetaTypeList().Count > 0;
+                if (!leftIsGenericResult && rightIsGenericResult)
+                {
+                    return true;
+                }
+                else if (leftIsGenericResult && !rightIsGenericResult)
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                        "Result 赋值类型不匹配：不允许将非泛型 Result 赋给 Result<T>（反向协变不合法）。");
+                    return false;
+                }
+                // 同为泛型 / 同为非泛型时落入正常类型比较逻辑
+            }
+
             if( leftMt.metaClass == CoreMetaClassManager.memberMetaClass )
             {
 

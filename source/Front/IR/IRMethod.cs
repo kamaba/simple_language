@@ -8,6 +8,7 @@
 
 using SimpleLanguage.Core;
 using SimpleLanguage.Export.SLIR.Types;
+using SimpleLanguage.Logging;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -332,6 +333,16 @@ namespace SimpleLanguage.IR
                 irbs.irStatements.InsertRange(0, closurePrologue);
             }
 
+            // ── result 关键字 prologue ──
+            // 返回类型为 Result/Result<T> 的函数, 函数体最前部插入:
+            //   NewObject/NewTemplateObject -> StoreLocal result
+            // (VM 创建对象时自动执行字段默认值初始化, 无需调用 _init_)
+            List<IRBase> resultPrologue = GenerateResultPrologue();
+            if (resultPrologue != null && resultPrologue.Count > 0)
+            {
+                irbs.irStatements.InsertRange(0, resultPrologue);
+            }
+
             // Build final IRBase list (optionally wrapped in try/catch for errdefer)
             List<IRBase> finalStatements = new List<IRBase>();
 
@@ -443,6 +454,25 @@ namespace SimpleLanguage.IR
                     addIR.id = m_IRDataList.Count;
                     AddLabelDict(addIR);
                     m_IRDataList.Add(addIR);
+                }
+            }
+
+            // ── result 关键字 epilogue ──
+            // 返回类型为 Result/Result<T> 且并非所有路径都显式 ret 时,
+            // 掉落到函数末尾的控制流自动返回 result 变量:
+            //   LoadLocal result -> StoreReturn
+            List<IRBase> resultEpilogue = GenerateResultEpilogue();
+            if (resultEpilogue != null)
+            {
+                for (int j = 0; j < resultEpilogue.Count; j++)
+                {
+                    for (int k = 0; k < resultEpilogue[j].IRDataList.Count; k++)
+                    {
+                        var addIR = resultEpilogue[j].IRDataList[k];
+                        addIR.id = m_IRDataList.Count;
+                        AddLabelDict(addIR);
+                        m_IRDataList.Add(addIR);
+                    }
                 }
             }
 
@@ -573,6 +603,105 @@ namespace SimpleLanguage.IR
         public IRMetaVariable GetIRLocalVariableById( int id )
         {
             return m_MethodLocalVariableList.Find(a => a.id == id);
+        }
+
+        /// <summary>
+        /// result 关键字: 生成函数入口的 result 变量初始化 prologue:
+        ///   NewObject(classId)/NewTemplateObject(模板类型) -> StoreLocal result
+        /// VM 侧 NewObject/NewTemplateObject 创建对象时会自动执行字段默认值初始化,
+        /// 因此无需调用 _init_。仅当 bindMetaFunction 注入了 result 变量时生成。
+        /// </summary>
+        private List<IRBase> GenerateResultPrologue()
+        {
+            var mmf = m_BindMetaFunction as MetaMemberFunction;
+            if (mmf == null || !mmf.hasResultVariable)
+            {
+                return null;
+            }
+            var rmv = mmf.resultVariable;
+            var irmv = GetIRLocalVariableById(rmv.GetHashCode());
+            if (irmv == null)
+            {
+                return null;
+            }
+            var mt = rmv.GetFinalMetaType();
+            if (mt == null)
+            {
+                return null;
+            }
+
+            var prologue = new List<IRBase>();
+            var owirmc = IRManager.GetIRMetaClassByMetaOwner(mmf.ownerMetaBase);
+            if (mt.GetTemplateMetaClass() == CoreMetaClassManager.resultTMetaClass)
+            {
+                // 泛型 Result<T>: NewTemplateObject, payload 携带完整模板类型
+                var irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mt, owirmc);
+                IRNew irNew = new IRNew(this, irmt);
+                prologue.Add(irNew);
+            }
+            else
+            {
+                // 非泛型 Result: NewObject, payload 为 classId
+                var irmc = IRManager.GetIRMetaClassByMetaType(mt);
+                if (irmc == null)
+                {
+                    Log.AddIRLog(LID.MetaCoreAssertShowMessage, mmf.token, "result prologue: not found Result IRMetaClass!");
+                    return null;
+                }
+                IRNew irNew = new IRNew(this, irmc);
+                prologue.Add(irNew);
+            }
+
+            // StoreLocal result (经工厂方法: result 被闭包捕获时路由写入共享上下文数组槽)
+            var storeIrmc = IRManager.GetIRMetaClassByMetaType(mt);
+            var storeIrmt = storeIrmc != null ? new IRMetaType(storeIrmc) : null;
+            IRStoreVariable storeResult = IRStoreVariable.CreateIRStoreVariable(storeIrmt, storeIrmc, this, rmv);
+            prologue.Add(storeResult);
+            return prologue;
+        }
+
+        /// <summary>
+        /// result 关键字: 生成函数末尾的 result 兜底返回 epilogue:
+        ///   LoadLocal result -> StoreReturn
+        /// 仅当注入了 result 变量且并非所有代码路径都显式 ret 时生成
+        /// (所有路径都 ret 时发射会覆盖显式 ret 其他 Result 对象的返回值)。
+        /// </summary>
+        private List<IRBase> GenerateResultEpilogue()
+        {
+            var mmf = m_BindMetaFunction as MetaMemberFunction;
+            if (mmf == null || !mmf.hasResultVariable)
+            {
+                return null;
+            }
+            if (mmf.isBlockAlwaysReturn)
+            {
+                return null;
+            }
+            var rmv = mmf.resultVariable;
+            var irmv = GetIRLocalVariableById(rmv.GetHashCode());
+            if (irmv == null)
+            {
+                return null;
+            }
+            var mt = rmv.GetFinalMetaType();
+            var irmc = IRManager.GetIRMetaClassByMetaType(mt);
+            if (irmc == null)
+            {
+                return null;
+            }
+            var loadIrmt = new IRMetaType(irmc);
+
+            var list = new List<IRBase>();
+            // LoadLocal result (经工厂方法: result 被闭包捕获时路由读取共享上下文数组槽)
+            IRLoadVariable loadResult = IRLoadVariable.CreateLoadVariable(loadIrmt, irmc, this, rmv);
+            list.Add(loadResult);
+
+            var storeRetData = new IRData();
+            storeRetData.opCode = EIROpCode.StoreReturn;
+            storeRetData.index = 0;
+            storeRetData.SetDebugInfoByToken(mmf.token, "StoreReturn result");
+            list.Add(new IRBase(storeRetData));
+            return list;
         }
 
         /// <summary>
