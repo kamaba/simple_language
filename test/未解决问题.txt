@@ -4,7 +4,7 @@
 7. 指针的增加与处理. 
 9. 是否不能 new int() 这种的，直接变成栈的方式
 
-1. cvm优化system method 动态加载  并且使用唯一id的int去搜索，而不使用名称。  但做数据库，需要动态引入dll的vm层代码 
+但做数据库，需要动态引入dll的vm层代码 
 
 llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后在虚拟机中，有对应的调用
 增加FFI接口, 加载第三方库，然后可以运行起来，然后通过FFI的load,然后调用
@@ -19,8 +19,8 @@ llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后�
 再增加一些ErrorShow,set
  queue stack, buffer, builder, await, async, stream, netStream, 
 然后写一个sqlite3的标准库  然后再把local的逻辑测试了. local 后边可以跟一个数字
-对Tree这个结构，要在XML里边可以使用，也可以在Json里边使用，所以要有兼容性，当然里边可以创建各种不同的树结构用来选择。
- Table的写，这两一定要做到最大兼容
+Tree这个结构，要在XML里边可以使用，也可以在Json里边使用，所以要有兼容性，当然里边可以创建各种不同的树结构用来选择。
+Table的写，这两一定要做到最大兼容
 
 1. this的使用，还没有整合
 2. 循环引用 问题
@@ -46,9 +46,6 @@ llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后�
 
 1. 增加result关键字   如果在返回中定义了Result result 或者是Result<T>  则会在该函数中，自动增加一个Result result = new()的变量 如果有Result<T> 也一样的 Result<T> result = new() 然后 在这个函数里边，可以使用result.code = 0 result.message = "" result.value = Object(); 如果直接使用 ret Object() 也会认为是 result.value 相当于result内部帮忙用户分担一些 返回的结果处理类  
 
-2. bind的使用     iterface 接口 与bind的使用  如果使用interface的 如果bind过的话，那如果interface后，就相当于bind data了
-
-bind 的数据测试用例第一个就不对
 现在front层 对返回数据void 直接赋值没有报错
 
 4. 增加协程  await 或者是使用go  我要增加一个协程的机制，但对于函数，不要使用async进行函数污染， 使用使用await 对一个spawn的协程进行 等待，然后使用yield的进行协程的返回， spawn出来的，其实就是一个task, 可以对task,进行await, cancel,等的操作，

@@ -62,6 +62,7 @@
       { "path": "Container/List.sl", "group": "container", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Container/LinkedList.sl", "group": "container", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Container/Map.sl", "group": "container", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Container/Set.sl", "group": "container", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Container/Tuple.sl", "group": "container", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
@@ -237,7 +238,23 @@
     { "name": "SystemLinkedListGetValueAt",     "returnType": "object", "params": ["object", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_linkedlist_get_value_at" },
     { "name": "SystemLinkedListSetValueAt",     "returnType": "void",   "params": ["object", "Int32", "object"], "isVariadic": false, "cvmFunction": "vm_sys_linkedlist_set_value_at" },
     { "name": "SystemLinkedListToArray",        "returnType": "void",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_linkedlist_to_array" },
-    { "name": "SystemLinkedListMoveNext",       "returnType": "bool",   "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_linkedlist_move_next" }
+    { "name": "SystemLinkedListMoveNext",       "returnType": "bool",   "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_linkedlist_move_next" },
+    // ---- Set native container calls (Container/Set.sl) ----
+    { "name": "SystemSetRehash",               "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_set_rehash" },
+    { "name": "SystemSetAddEntry",             "returnType": "bool",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_set_add_entry" },
+    { "name": "SystemSetContains",             "returnType": "bool",   "params": ["object", "object", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_set_contains" },
+    { "name": "SystemSetRemoveEntry",          "returnType": "bool",   "params": ["object", "object", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_set_remove_entry" },
+    { "name": "SystemSetClear",                "returnType": "void",   "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_set_clear" },
+    { "name": "SystemSetToArray",              "returnType": "void",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_set_to_array" },
+    { "name": "SystemSetMoveNext",             "returnType": "bool",   "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_set_move_next" },
+    { "name": "SystemSetUnionWith",            "returnType": "void",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_set_union_with" },
+    { "name": "SystemSetIntersectWith",        "returnType": "void",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_set_intersect_with" },
+    { "name": "SystemSetExceptWith",           "returnType": "void",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_set_except_with" },
+    { "name": "SystemSetSymmetricExceptWith",  "returnType": "void",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_set_symmetric_except_with" },
+    { "name": "SystemSetIsSubsetOf",           "returnType": "bool",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_set_is_subset_of" },
+    { "name": "SystemSetIsSupersetOf",         "returnType": "bool",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_set_is_superset_of" },
+    { "name": "SystemSetOverlaps",             "returnType": "bool",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_set_overlaps" },
+    { "name": "SystemSetSetEquals",            "returnType": "bool",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_set_set_equals" }
   ],
   "struct": [
       { "namespace": "Core", "children": 
