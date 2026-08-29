@@ -15,28 +15,20 @@ using System.Text;
 
 namespace SimpleLanguage.Compile
 {
-    //璇嶆硶瑙ｆ瀽
     public class LexerParse
     {
         public List<Token> listTokens => m_ListTokens;
-        //public List<Token> GetListTokensWidthEnd()
-        //{
-        //    List<Token> withEndList = new List<Token>(m_ListTokens);
-        //    withEndList.Add(new Token(m_Path, ETokenType.Finished, END_CHAR, m_SourceLine, m_SourceChar));
-        //    return withEndList;
-        //}
+        const char END_CHAR = char.MaxValue;    
 
-        const char END_CHAR = char.MaxValue;    //缁撳熬瀛楃
-
-        private char m_CurChar;                              //褰撳墠瀛楃
-        private char m_TempChar;                             //涓存椂瀛楃
+        private char m_CurChar;                              
+        private char m_TempChar;                            
         private StringBuilder m_Builder = new StringBuilder();
         private List<Token> m_ListTokens = new List<Token>();
         private Token m_CurrentToken = null;
         private char[] m_Buffer;                    
         private int m_Length = 0;                      
-        private int m_SourceLine = 0;                  //瑙ｆ瀽鍒板綋鍓嶇殑琛屾暟
-        private int m_SourceChar = 0;                  //瑙ｆ瀽鍒板綋鍓嶈涓殑浣嶇疆
+        private int m_SourceLine = 0;                  
+        private int m_SourceChar = 0;            
         private int m_Index = 0;                       
         private string m_Path;
         /// <summary> true：当前缓冲为字符串插值中的表达式片段，未知符号按字面 String token 输出，不当作全文法错误 </summary>
@@ -1874,7 +1866,6 @@ namespace SimpleLanguage.Compile
             }          
             
         }
-        /// <summary> 璇诲彇鍏抽敭瀛?</summary>
         void ReadIdentifier()
         {
             m_Builder.Append(m_CurChar);
@@ -2232,14 +2223,7 @@ namespace SimpleLanguage.Compile
                     break;
             }
 
-            if (tokenType == ETokenType.Null) 
-            {
-                AddToken(tokenType, "null", m_SourceLine, m_SourceChar);
-            } 
-            else
-            {
-                AddToken(tokenType, m_Builder.ToString(), extend, m_SourceLine, m_SourceChar );
-            }
+            AddToken(tokenType, m_Builder.ToString(), extend, m_SourceLine, m_SourceChar );
         }
         /// <summary> 解析字符串插值内嵌的表达式片段为 token（` / 未在全文法中单独列出的符号等按字面 String 处理）。</summary>
         public void ParseInterpolationExpressionToTokenList()
@@ -2613,7 +2597,7 @@ namespace SimpleLanguage.Compile
             catch( Exception e )
             {
                 // swallow exceptions in debug dump
-                Log.AddTokenLog(LID.ShowExtendMessage, "DumpTokensToFile exception: " + e.Message );
+                Console.WriteLine("DumpTokensToFile exception: " + e.Message );
             }
         }
     }

@@ -1,4 +1,4 @@
-/obj
+﻿/obj
 /bin/Debug/net7.0
 /bin/Debug/net6.0
 /.vs
@@ -283,9 +283,9 @@
 /test_run.log
 /source/CompileStd/obj
 # Fixed malformed line that was blocking ripgrep (commented out: accidental shell fragment)
-# # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.}
+# # # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output [Trae CN] Safe Rm alias is not enabled, try to fix it now.
 /source/CSimpleVMTest1/build/logs/VM.txt
-# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.}
+# # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output [Trae CN] Safe Rm alias is not enabled, try to fix it now.}
 # fixed: corrupted shell fragment line blocking ripgrep
 /criptssafe_rm_aliases.ps1_invalid_line_removed
 /source/StdNativeImpl/bin
@@ -299,4 +299,6 @@
 /bind_test_output2.txt
 /bind_test_output3.txt
 # fixed: corrupted shell fragment line blocking ripgrep (was: /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output ...)
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output [Trae CN] Safe Rm alias is not enabled, try to fix it now.
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
 /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.

@@ -77,6 +77,23 @@ local
 - 同一文件只允许出现一个 `local{}`。
 - `local{}` 中定义的函数**不允许**带 `static`。
 
+### init 内裸名字访问（隐式 this）
+
+`__local_init__()` 内的裸名字（不带 `local.` 前缀）等价于隐式 `this.xxx`，即直接读写提升后的实例成员变量：
+
+```sl
+local
+{
+    a = Vector2(){ x = 1.0f, y = 2.0f }
+    a.addVector(c)          # 等价 this.a.addVector(c)：按 a 的实际类型解析链式调用
+    float len = a.length()  # 定义局部变量 len；语句末尾自动同步 this.len = len
+}
+```
+
+- `a = expr`（无类型前缀）按成员赋值 `this.a = expr` 解析，成员类型由右值类型推导。
+- `Type name = expr`（带类型前缀）按局部变量定义解析，编译器在 init 末尾注入 `this.name = name` 同步语句，成员类型取局部变量类型。
+- 后续语句中对裸名字的链式调用（如 `a.addVector(c)`）按成员的**实际类型**（而非占位 Object 类型）解析。
+
 ### 语句与函数混排规则（重要）
 
 1. 在 `local{}` 内，**前边允许放语句**。如果是定义变量，也可以直接定义（如 `a = 1` 或 `int len = a.length()`）。

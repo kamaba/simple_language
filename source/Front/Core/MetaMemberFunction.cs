@@ -1208,8 +1208,18 @@ namespace SimpleLanguage.Core
                             {
                                 if (!mv.isStatic)
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 定义变量名称与类定义名称一样 如果调用成员变量，需要在前边使用this.!!" + fmvs.token?.ToLexemeAllString());
-                                    return null;
+                                    if (LocalManager.IsFileLocalClass(currentBlockStatements.ownerMetaClass))
+                                    {
+                                        // local{} init 上下文: `float len = expr` 中的 len 已被
+                                        // LocalManager 预提升为 _Local 类占位成员，这里仍按
+                                        // 局部变量定义解析，末尾的 `this.len = len` 同步语句写回成员
+                                        isDefineVarStatements = true;
+                                    }
+                                    else
+                                    {
+                                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 定义变量名称与类定义名称一样 如果调用成员变量，需要在前边使用this.!!" + fmvs.token?.ToLexemeAllString());
+                                        return null;
+                                    }
                                 }
                             }
                         }

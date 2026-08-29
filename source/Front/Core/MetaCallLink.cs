@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaCallLink.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
@@ -361,6 +361,27 @@ namespace SimpleLanguage.Core
             }
             else if (mcn.callNodeType == ECallNodeType.MemberVariableName)
             {
+                // local{} init 上下文的隐式成员访问（裸名字 a 等价 this.a）:
+                // 链首节点解析为 _Local 类非静态成员时，前面没有 this 节点压栈，
+                // 这里补入 this 访问节点，保证 LoadField/StoreField 拥有实例指针
+                if (frontNode == null
+                    && mcn.metaVariable is MetaMemberVariable lmv
+                    && !lmv.isStatic
+                    && LocalManager.IsFileLocalClass(lmv.ownerMetaClass))
+                {
+                    var ownerMmf = mcn.ownerMetaFunctionBlock?.ownerMetaFunction as MetaMemberFunction;
+                    var thisMv = ownerMmf?.thisMetaVariable;
+                    if (thisMv != null)
+                    {
+                        var thisVn = MetaVisitNode.CreateByThis(thisMv);
+                        thisVn.SetToken(mcn.token);
+                        m_VisitNodeList.Add(thisVn);
+                    }
+                    else
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, mcn.token, "Error local implicit this: thisMetaVariable is null");
+                    }
+                }
                 MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.staticCallMetaType);
                 mvn.SetToken(mcn.token);
                 mvn.SetQuestionMarkDot(mcn.isQuestionMarkDot);

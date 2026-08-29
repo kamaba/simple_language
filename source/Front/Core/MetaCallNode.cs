@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaCallNode.cs
 // ------------------------------------------------
 //  Copyright (c) author: Like Cheng kamaba233@gmail.com
@@ -1797,7 +1797,10 @@ namespace SimpleLanguage.Core
                             {
                                 var setParams = new MetaInputParamCollection(ownerMetaBase, m_OwnerMetaFunctionBlock);
                                 setParams.AddMetaInputParam(new MetaInputParam(keyExpr));
-                                setParams.AddMetaInputParam(new MetaInputParam(m_RightExpress));
+                                // 值参数需转换 New 对象表达式（同 setter 路径）
+                                var setItemValue = ExpressManager.ConvertNewExpress(m_RightExpress, null);
+                                if (setItemValue == null) { return; }
+                                setParams.AddMetaInputParam(new MetaInputParam(setItemValue));
                                 var setMethod = visitMcSet.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_setItem_", 0, setParams);
                                 if (setMethod != null)
                                 {
@@ -1869,7 +1872,10 @@ namespace SimpleLanguage.Core
                                 if (m_AllowUseSettings?.setterFunction == true
                                     && m_RightExpress != null )
                                 {
-                                    inputParam.AddMetaInputParam(new MetaInputParam(m_RightExpress));
+                                    // 值参数需转换 New 对象表达式（同 setter 路径）
+                                    var setItemValue = ExpressManager.ConvertNewExpress(m_RightExpress, null);
+                                    if (setItemValue == null) { return; }
+                                    inputParam.AddMetaInputParam(new MetaInputParam(setItemValue));
                                     visitMethod = visitMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_setItem_", 0, inputParam );
                                 }
                                 else
@@ -2169,6 +2175,16 @@ namespace SimpleLanguage.Core
                             m_CallNodeType = ECallNodeType.MemberVariableName;
                             return true;
                         }
+                        else if (LocalManager.IsFileLocalClass(mc))
+                        {
+                            // local{} init 上下文: 裸名字 a 等价于隐式 this.a,
+                            // 解析为 _Local 类的非静态成员变量(实例成员访问)
+                            m_MetaVariable = mmv;
+                            m_MetaClass = mc;
+                            m_MetaType = mmv.GetFinalMetaType();
+                            m_CallNodeType = ECallNodeType.MemberVariableName;
+                            return true;
+                        }
                         else
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, $"find meta member variable by name{inputname}");
@@ -2319,8 +2335,16 @@ namespace SimpleLanguage.Core
                         }
                         if(m_RightExpress != null )
                         {
-                            MetaInputParam mip = new MetaInputParam(m_RightExpress);
-                            m_MetaInputParamCollection.AddMetaInputParam(mip);
+                            // setter 参数不走 MetaInputParam.Parse 的转换链路，
+                            // New 对象表达式（如 x.prop = ArrClass(){...}）必须
+                            // 在此 ConvertNewExpress，否则 IR 生成时报
+                            // IRMethodNotSupportNew 且参数指令缺失。
+                            var setterArg = ExpressManager.ConvertNewExpress(m_RightExpress, null);
+                            if (setterArg != null)
+                            {
+                                MetaInputParam mip = new MetaInputParam(setterArg);
+                                m_MetaInputParamCollection.AddMetaInputParam(mip);
+                            }
                         }
                     }
                     if( !m_AllowUseSettings.setterFunction && m_AllowUseSettings.getterFunction)

@@ -316,6 +316,14 @@ namespace SimpleLanguage.Core
                 }
             }
 
+            // local{} init 上下文: `a = expr` 按隐式 this.a 成员赋值解析时，
+            // 用右值类型回填 _Local 类占位成员（初始为 Object），
+            // 保证后续语句（a.addVector(c) 等）按实际类型解析链式调用
+            if (isAssignSign && m_MetaVariable != null && m_RightMetaExpress != null)
+            {
+                LocalManager.UpdatePendingMemberType(m_MetaVariable, m_RightMetaExpress.GetReturnMetaType());
+            }
+
 
             //if (leftCallNodeList.Count == 0)
             //{

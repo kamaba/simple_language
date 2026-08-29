@@ -87,8 +87,18 @@ namespace SimpleLanguage.Core
                 mcn.GetFirstNode(m_Name, ownerMetaBase, 0);
                 if (mcn.callNodeType != ECallNodeType.None)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, $"名称{m_Name}与{mcn.callNodeType} 有重复");
-                    return;
+                    // local{} init 上下文: `float len = expr` 的 len 已被 LocalManager
+                    // 预提升为 _Local 类占位成员，这里仍按局部变量定义解析
+                    //（末尾 this.len = len 同步语句写回成员），不算重复定义
+                    bool isLocalPlaceholder = mcn.callNodeType == ECallNodeType.MemberVariableName
+                        && mcn.metaVariable is MetaMemberVariable pmv
+                        && !pmv.isStatic
+                        && LocalManager.IsFileLocalClass(pmv.ownerMetaClass);
+                    if (!isLocalPlaceholder)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, $"名称{m_Name}与{mcn.callNodeType} 有重复");
+                        return;
+                    }
                 }
 
                 m_DefineVarMetaVariable = new MetaVariable(m_Name, MetaVariable.EVariableFrom.LocalStatement, m_OwnerMetaBlockStatements, m_OwnerMetaBlockStatements.ownerMetaClass, leftMt );

@@ -258,9 +258,7 @@ namespace SimpleLanguage.Compile
                 {
                     for (int i = 0; i < classList.Count; i++)
                     {
-                        var metaClass = classList[i]?.metaClass;
-                        if (metaClass == null) continue;
-                        sb.AppendLine(metaClass.ToFormatString());
+                        sb.AppendLine(classList[i].ToFormatString());
                     }
                 }
 

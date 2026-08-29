@@ -80,12 +80,20 @@ namespace SimpleLanguage.IR
             // 如果左侧最后一个访问节点是方法调用且返回 void（返回类型为 void），
             // 则不应该继续处理赋值（没有可存储的返回值）。
             // void 方法的 returnMetaVariable 不为 null，但其类型是 void。
-            // 例如 `nums.index = 2` 走 setter 路径（leftMethodCall），不会到这里；
-            // 但如果方法返回 void 却出现在赋值左侧，说明语义有问题，直接跳过赋值部分。
+            // setter 场景（a.prop = x）：右值已被 MetaCallLink 的 setterFunction 机制
+            // 消费进 setter 的参数列表，这里必须生成 setter 调用指令，
+            // 否则赋值完全不生效且会在栈上遗留接收者（栈失衡）。
             if (mv == null || mv.GetFinalMetaType()?.metaClass == CoreMetaClassManager.voidMetaClass)
             {
-                // void 方法调用作为赋值左侧：只执行方法调用，不生成 store。
+                // void 方法调用作为赋值左侧：执行方法调用，不生成 store。
+                if (lastCL.visitType == MetaVisitNode.EVisitType.MethodCall && lastCL.methodCall != null)
+                {
+                    IRCallFunction irCallFun = new IRCallFunction(this.irMethod);
+                    irCallFun.Parse(lastCL.methodCall);
+                    m_IRStatements.Add(irCallFun);
+                }
                 // 右侧表达式仍然需要执行（可能有副作用），但不需要存储。
+                // setter 场景右值为 null（已被消费），不会重复执行。
                 if (ms.rightMetaExpress != null)
                 {
                     m_IRExpress = IRExpressManager.CreateExpress(irMethod, ms.rightMetaExpress);

@@ -69,9 +69,9 @@
       { "path": "ClosureTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "TupleTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "BindDataTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "InterfaceDataAndBindData.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "LocalTest1.sl", "group": "core", "tag": "base", "ignore": false, "priority": 1 },
-      { "path": "LocalTest2.sl", "group": "core", "tag": "base", "ignore": false, "priority": 2 }
+      { "path": "LocalTest1.sl", "group": "core", "tag": "base", "ignore": false, "priority": 2 },
+      { "path": "LocalTest2.sl", "group": "core", "tag": "base", "ignore": false, "priority": 1 },
+      { "path": "InterfaceDataAndBindData.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {

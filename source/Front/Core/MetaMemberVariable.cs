@@ -264,6 +264,13 @@ namespace SimpleLanguage.Core
             }
             if (this.m_Express == null)
             {
+                // local{} 块生成的 _Local 类合成成员：占位成员由 __local_init__
+                // 函数体内的隐式 this.x = x 赋值初始化，没有成员初始化表达式，
+                // 跳过"必须有等号及表达式"校验
+                if (this.m_FileMetaMemeberVariable == null && LocalManager.IsFileLocalClass(this.ownerMetaClass))
+                {
+                    return;
+                }
                 Token token = null;
                 if (this.m_FileMetaMemeberVariable?.express != null)
                 {

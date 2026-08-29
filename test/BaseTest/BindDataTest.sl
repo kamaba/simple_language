@@ -32,9 +32,9 @@ BindDataTest
         bc.height = 40
 
         global.println("[base] direct mapped fields")
-        global.println(bc.name)
-        global.println(bc.width)
-        global.println(bc.height)
+        global.println("bc.name=" + bc.name.toString())
+        global.println("bc.width=" + bc.width)
+        global.println("bc.height=" + bc.height)
 
         bindNameAccessTest()
         conflictOverrideTest()
@@ -51,10 +51,11 @@ BindDataTest
         bc.BP.width = 101
         bc.BP.height = 202
 
-        global.println(bc.BookData.name)
-        global.println(bc.name)
-        global.println(bc.BP.width)
-        global.println(bc.width)
+        global.println("bc.BookData.name=" + bc.BookData.name)
+        global.println("bc.name=" + bc.name)
+        global.println("bc.BP.width=" + bc.BP.width)
+        global.println("bc.width=" + bc.width)
+        global.println("bc.height=" + bc.height )
         global.println("[bindNameAccessTest] end")
     }
 
@@ -64,9 +65,9 @@ BindDataTest
         BindConflictClass c = new()
         c.a = 77
 
-        global.println(c.a)
-        global.println(c.DA2.a)
-        global.println(c.DB2.a)
+        global.println("c.a=" + c.a.toString())
+        global.println("c.DA2.a=" + c.DA2.a.toString())
+        global.println("c.DB2.a=" + c.DB2.a.toString())
         global.println("[conflictOverrideTest] end")
     }
 
@@ -76,7 +77,7 @@ BindDataTest
         SeltBookData d = new()
         d.price = 15
         d.count = 3
-        global.println(d.calc())
+        global.println("d.calc()=" + d.calc().toString())
         global.println("[interfaceBindBehaviorTest] end")
     }
 }
@@ -94,7 +95,7 @@ data DB2
 BindConflictClass bind DA2,DB2
 {
     # 冲突重写策略: 统一优先映射到 DA2.a
-    get a()
+    get int a()
     {
         ret this.DA2.a
     }
