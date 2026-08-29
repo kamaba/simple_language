@@ -1,33 +1,22 @@
 local
 {
-    #!
-    sqlite = Std.DB.Sqlite3("d:/file.db")
-
+    sqlite = DB.Sqlite3.connect("Resources/ttest")
     if( sqlite == null )
     {
         Console.print("初始化的时间发生了错误" )
         return
     }
-    sqlite.flush()
-
     test( sqlstr )
     {
         sqlite.lock()
         arr = sqlite.exec(sqlstr)
         sqlite.unlock()
-    }
-    !#
+    }    
     loc = LocalC(){ a =100 }
-
-
     testloc()
     {
         global.println( "localc=$loc.a " )
     }
-}
-
-local{
-    
 }
 
 LocalC

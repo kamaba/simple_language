@@ -1,4 +1,5 @@
 import Std;
+import Core;
 
 LinkedListTest
 {
@@ -6,7 +7,7 @@ LinkedListTest
     static testBasicAdd()
     {
         Console.println("===== testBasicAdd =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(10)
         list.add(20)
         list.add(30)
@@ -21,7 +22,7 @@ LinkedListTest
     static testAddFirstLast()
     {
         Console.println("===== testAddFirstLast =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.addLast(2)
         list.addLast(3)
         list.addFirst(1)
@@ -36,7 +37,7 @@ LinkedListTest
     static testAddBeforeAfter()
     {
         Console.println("===== testAddBeforeAfter =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(1)
         list.add(3)
         # 在索引1(值为3)之前插入2
@@ -51,7 +52,7 @@ LinkedListTest
     static testInsert()
     {
         Console.println("===== testInsert =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(1)
         list.add(3)
         list.add(4)
@@ -71,7 +72,7 @@ LinkedListTest
     static testRemove()
     {
         Console.println("===== testRemove =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(10)
         list.add(20)
         list.add(30)
@@ -87,7 +88,7 @@ LinkedListTest
     static testRemoveFirstLast()
     {
         Console.println("===== testRemoveFirstLast =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(1)
         list.add(2)
         list.add(3)
@@ -111,7 +112,7 @@ LinkedListTest
     static testRemoveAt()
     {
         Console.println("===== testRemoveAt =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(10)
         list.add(20)
         list.add(30)
@@ -134,7 +135,7 @@ LinkedListTest
     static testClear()
     {
         Console.println("===== testClear =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(1)
         list.add(2)
         list.add(3)
@@ -151,7 +152,7 @@ LinkedListTest
     static testIndexOfContains()
     {
         Console.println("===== testIndexOfContains =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(10)
         list.add(20)
         list.add(30)
@@ -163,7 +164,7 @@ LinkedListTest
         Console.println("contains(30) = " + list.contains(30))
         Console.println("contains(99) = " + list.contains(99))
 
-        Std.LinkedList<string> slist = new()
+        Core.LinkedList<string> slist = new()
         slist.add("aa")
         slist.add("bb")
         Console.println("slist.indexOf(\"bb\") = " + slist.indexOf("bb"))
@@ -174,7 +175,7 @@ LinkedListTest
     static testIsEmpty()
     {
         Console.println("===== testIsEmpty =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         Console.println("empty: isEmpty = " + list.isEmpty + ", isNotEmpty = " + list.isNotEmpty)
         list.add(1)
         Console.println("after add: isEmpty = " + list.isEmpty + ", isNotEmpty = " + list.isNotEmpty)
@@ -186,7 +187,7 @@ LinkedListTest
     static testFirstLast()
     {
         Console.println("===== testFirstLast =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         Console.println("empty: first = " + list.first + ", last = " + list.last)
         list.add(10)
         Console.println("single: first = " + list.first + ", last = " + list.last)
@@ -201,7 +202,7 @@ LinkedListTest
     static testIndexer()
     {
         Console.println("===== testIndexer =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(100)
         list.add(200)
         list.add(300)
@@ -217,7 +218,7 @@ LinkedListTest
     static testToString()
     {
         Console.println("===== testToString =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         Console.println("empty toString: " + list.toString())
         list.add(1)
         Console.println("single toString: " + list.toString())
@@ -230,7 +231,7 @@ LinkedListTest
     static testStringList()
     {
         Console.println("===== testStringList =====")
-        Std.LinkedList<string> list = new()
+        Core.LinkedList<string> list = new()
         list.add("hello")
         list.add("world")
         list.add("!")
@@ -245,7 +246,7 @@ LinkedListTest
     static testToArray()
     {
         Console.println("===== testToArray =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(10)
         list.add(20)
         list.add(30)
@@ -256,7 +257,7 @@ LinkedListTest
             Console.println("arr[" + i + "] = " + arr[i])
         }
         # 空列表 toArray
-        Std.LinkedList<int> empty = new()
+        Core.LinkedList<int> empty = new()
         Array<int> emptyArr = empty.toArray()
         Console.println("empty arr.length = " + emptyArr.length)
     }
@@ -265,7 +266,7 @@ LinkedListTest
     static testIterator()
     {
         Console.println("===== testIterator =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(1)
         list.add(2)
         list.add(3)
@@ -289,7 +290,7 @@ LinkedListTest
     static testSingleElement()
     {
         Console.println("===== testSingleElement =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(42)
         Console.println("single: first = " + list.first + ", last = " + list.last)
         list.removeFirst()
@@ -312,7 +313,7 @@ LinkedListTest
     static testObjectList()
     {
         Console.println("===== testObjectList =====")
-        Std.LinkedList<object> list = new()
+        Core.LinkedList<object> list = new()
         list.add(10)
         list.add("hello")
         list.add(3.14)
@@ -328,7 +329,7 @@ LinkedListTest
     static testMixedOperations()
     {
         Console.println("===== testMixedOperations =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(1)
         list.add(2)
         list.add(3)
@@ -352,7 +353,7 @@ LinkedListTest
     static testEmptyListEdgeCases()
     {
         Console.println("===== testEmptyListEdgeCases =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         Console.println("isEmpty = " + list.isEmpty)
         Console.println("length = " + list.length)
         Console.println("first = " + list.first)
@@ -374,7 +375,7 @@ LinkedListTest
     static testDuplicateElements()
     {
         Console.println("===== testDuplicateElements =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(5)
         list.add(5)
         list.add(5)
@@ -392,7 +393,7 @@ LinkedListTest
     static testBulkAdd()
     {
         Console.println("===== testBulkAdd =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         for i = 0, i < 100, i++
         {
             list.add(i)
@@ -416,7 +417,7 @@ LinkedListTest
     static testAddBeforeAfterEdge()
     {
         Console.println("===== testAddBeforeAfterEdge =====")
-        Std.LinkedList<int> list = new()
+        Core.LinkedList<int> list = new()
         list.add(2)
         # 在索引0之前插入 -> 新元素变成头
         list.addBefore(0, 1)

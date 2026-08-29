@@ -219,6 +219,9 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// <summary>Unique int id (<see cref="Project.SystemMethodCallDeclaration.GetIndex"/>).
         /// The VM reads it at module load and registers id -> implementation for O(1) dispatch.</summary>
         public int id { get; set; }
+        /// <summary>C VM builtin implementation symbol name (e.g. "vm_sys_ptr_alloc").
+        /// The VM resolves it by symbol lookup at module load; empty when no C implementation exists.</summary>
+        public string cvmFunction { get; set; } = string.Empty;
 
         public override string ToString()
         {

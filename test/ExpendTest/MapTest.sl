@@ -1,4 +1,5 @@
 import Std;
+import Core;
 
 MapTest
 {
@@ -6,7 +7,7 @@ MapTest
     static testBasicAdd()
     {
         Console.println("===== testBasicAdd =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         map.add(1, "one")
         map.add(2, "two")
         map.add(3, "three")
@@ -35,7 +36,7 @@ MapTest
     static testDuplicateKey()
     {
         Console.println("===== testDuplicateKey =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         Console.println("add(1, first) ret = " + map.add(1, "first"))
         Console.println("add(1, second) ret = " + map.add(1, "second"))
         Console.println("add(1, third) ret = " + map.add(1, "third"))
@@ -49,7 +50,7 @@ MapTest
     static testSetGetValue()
     {
         Console.println("===== testSetGetValue =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         map.add(1, "one")
         map._setItem_(1, "ONE")
         Console.println("after set existing, map[1] = " + map._getItem_(1))
@@ -62,7 +63,7 @@ MapTest
     static testSubscript()
     {
         Console.println("===== testSubscript =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         map[10] = "aa"
         map.$20 = "bb"
         int k = 20
@@ -76,7 +77,7 @@ MapTest
         map[k2] = "cc"
         Console.println("after map[k2=30] = cc, length = " + map.length)
         Console.println("map[k2=30] = " + map[k2])
-        Std.Map<string,int> smap = new()
+        Core.Map<string,int> smap = new()
         smap["one"] = 1
         smap["two"] = 2
         string sk = "one"
@@ -89,7 +90,7 @@ MapTest
     static testSubscriptWrite2()
     {
         Console.println("===== testSubscriptWrite2 =====")
-        Std.Map<int,int> m = new()
+        Core.Map<int,int> m = new()
         m.add(0, 100)
         m.add(1, 200)
         m.add(2, 300)
@@ -143,7 +144,7 @@ MapTest
         t.start()
 
         var v = 200
-        Map<int,int> map = Std.Map<int,int>(8){1:1 ,2:v, 3:3, v:4, 5:5, 6:6, 7:7}
+        Map<int,int> map = Core.Map<int,int>(8){1:1 ,2:v, 3:3, v:4, 5:5, 6:6, 7:7}
         Console.println("capacity = " + map.capacity)
         map.add(1, 10)
         map.$2 = 20
@@ -181,7 +182,7 @@ MapTest
     static testRemove()
     {
         Console.println("===== testRemove =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         map.add(1, "one")
         map.add(2, "two")
         map.add(3, "three")
@@ -196,7 +197,7 @@ MapTest
     static testRemoveAt()
     {
         Console.println("===== testRemoveAt =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         map.add(1, "one")
         map.add(2, "two")
         map.add(3, "three")
@@ -211,7 +212,7 @@ MapTest
     static testClear()
     {
         Console.println("===== testClear =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         map.add(1, "one")
         map.add(2, "two")
         Console.println("before clear: isEmpty = " + map.isEmpty + ", isNotEmpty = " + map.isNotEmpty)
@@ -225,7 +226,7 @@ MapTest
     static testKeysValues()
     {
         Console.println("===== testKeysValues =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         map.add(1, "one")
         map.add(2, "two")
         map.add(3, "three")
@@ -239,7 +240,7 @@ MapTest
     static testIterator()
     {
         Console.println("===== testIterator =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         map.add(1, "one")
         map.add(2, "two")
         map.add(3, "three")
@@ -263,7 +264,7 @@ MapTest
     static testEntry()
     {
         Console.println("===== testEntry =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         map.add(10, "ten")
         map.add(20, "twenty")
         Console.println("indexOfKey(10) = " + map.indexOfKey(10))
@@ -277,7 +278,7 @@ MapTest
     static testDefaultAndAbsent()
     {
         Console.println("===== testDefaultAndAbsent =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         map.add(1, "one")
         Console.println("getOrDefault(1, xxx) = " + map.getOrDefault(1, "xxx"))
         Console.println("getOrDefault(9, xxx) = " + map.getOrDefault(9, "xxx"))
@@ -292,7 +293,7 @@ MapTest
     static testStringKeys()
     {
         Console.println("===== testStringKeys =====")
-        Std.Map<string,int> map = new()
+        Core.Map<string,int> map = new()
         map.add("apple", 1)
         map.add("banana", 2)
         map.add("cherry", 3)
@@ -325,11 +326,11 @@ MapTest
     static testToString()
     {
         Console.println("===== testToString =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         map.add(1, "one")
         map.add(2, "two")
         Console.println("map = " + map.toString())
-        Std.Map<int,string> empty = new()
+        Core.Map<int,string> empty = new()
         Console.println("empty = " + empty.toString())
     }
 
@@ -337,7 +338,7 @@ MapTest
     static testToArrayToList()
     {
         Console.println("===== testToArrayToList =====")
-        Std.Map<int,string> map = new()
+        Core.Map<int,string> map = new()
         map.add(1, "one")
         map.add(2, "two")
         Array<MapEntity<int,string>> arr = map.toArray()
@@ -359,7 +360,7 @@ MapTest
         
         OS.Timer t = new()
         t.start()
-        Std.Map<int,int> map = new()
+        Core.Map<int,int> map = new()
         for i = 0, i < 100, i++
         {
             Console.println("mapAdd[$i ]" + map.add(i, i * i) );

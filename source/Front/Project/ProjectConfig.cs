@@ -65,6 +65,9 @@ namespace SimpleLanguage.Project
             public string[] @params;
 
             public bool isVariadic;
+
+            /// <summary>C VM builtin implementation symbol name (e.g. "vm_sys_ptr_alloc"); empty when no C implementation exists.</summary>
+            public string cvmFunction;
         }
 
         public class StructTreeNode

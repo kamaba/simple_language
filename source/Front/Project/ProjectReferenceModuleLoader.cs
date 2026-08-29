@@ -189,7 +189,7 @@ namespace SimpleLanguage.Project
              * verbatim in the package at export time) into the FrontEnd registry. */
             foreach( var v in package.systemCalls )
             {
-                SystemMethodCallDeclarationRegistry.AddDeclByMt(v.name, v.returnType, v.@params, v.isVariadic, false );
+                SystemMethodCallDeclarationRegistry.AddDeclByMt(v.name, v.returnType, v.@params, v.isVariadic, false, v.cvmFunction );
             }
 
             var alias = ResolveModuleName(reference, package, modulePath);

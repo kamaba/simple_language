@@ -211,8 +211,9 @@ namespace SimpleLanguage.Project
                         }
                     }
                     var isVariadic = GetBool(r, "isVariadic", true );
+                    var cvmFunction = GetStr(r, "cvmFunction", string.Empty);
 
-                    cfg.systemCalls.Add(new ProjectConfig.SystemCallItem() { name = name, returnType = returnType, @params = mtStr.ToArray(), isVariadic = isVariadic });
+                    cfg.systemCalls.Add(new ProjectConfig.SystemCallItem() { name = name, returnType = returnType, @params = mtStr.ToArray(), isVariadic = isVariadic, cvmFunction = cvmFunction });
 
                     //SystemMethodCallDeclarationRegistry.AddDeclByMt( name, returnType, mtStr, isVariadic, true );
                 }

@@ -768,6 +768,9 @@ namespace SimpleLanguage.Export.SLIR
                     // Unique int id so the VM can register id -> implementation
                     // from this export and dispatch CallSystemMethod by id.
                     id = v.GetIndex(),
+                    // C VM implementation symbol so the VM resolves the builtin
+                    // by name instead of a hardcoded mapping table.
+                    cvmFunction = v.cvmFunction ?? string.Empty,
                 };
                 foreach( var v2 in v.paramMetaTypeList )
                 {

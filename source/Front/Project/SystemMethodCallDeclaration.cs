@@ -37,6 +37,11 @@ namespace SimpleLanguage.Core
         public List<MetaType> paramMetaTypeList { get; }
         public bool isVariadic { get; }
 
+        /// <summary>Name of the C VM builtin implementation function (e.g. "vm_sys_ptr_alloc").
+        /// Exported with the module's "systemCalls" so the C VM resolves the
+        /// implementation by symbol name instead of a hardcoded mapping table.</summary>
+        public string cvmFunction { get; }
+
         /// <summary>Unique int id of this system method (MD5-based hash of <see cref="name"/>).
         /// Exported with the module's "systemCalls" and CallSystemMethod payloads so the
         /// VM can dispatch by int id instead of by name string.</summary>
@@ -50,11 +55,12 @@ namespace SimpleLanguage.Core
             return GetIndex();
         }
 
-        public SystemMethodCallDeclaration( string name, MetaType ret, bool variadic, params MetaType[] paramTypes)
+        public SystemMethodCallDeclaration( string name, MetaType ret, bool variadic, MetaType[] paramTypes, string cvmFunction = null)
         {
             this.name = name;
             returnMetaType = ret;
             isVariadic = variadic;
+            this.cvmFunction = cvmFunction ?? string.Empty;
             paramMetaTypeList = new List<MetaType>();
             if (paramTypes != null)
             {
@@ -160,20 +166,20 @@ namespace SimpleLanguage.Core
                 default:        return null;
             }
         }
-        public static void AddDecl(string name, MetaType retType, List<MetaType> paramTypes, bool variadic)
+        public static void AddDecl(string name, MetaType retType, List<MetaType> paramTypes, bool variadic, string cvmFunction = null)
         {
             var decl = new SystemMethodCallDeclaration(
-                name, retType, variadic, paramTypes.ToArray());
+                name, retType, variadic, paramTypes.ToArray(), cvmFunction);
             s_Decl[name] = decl;
         }
         public static void LoadConfigSystemCall()
         {
             foreach( var sc in ProjectManager.config.systemCalls )
             {
-                AddDeclByMt(sc.name, sc.returnType, new List<string>(sc.@params), sc.isVariadic, true);
+                AddDeclByMt(sc.name, sc.returnType, new List<string>(sc.@params), sc.isVariadic, true, sc.cvmFunction);
             }
         }
-        public static void AddDeclByMt(string name, string rt, List<string> mtList, bool variadic, bool isProjectDefine)
+        public static void AddDeclByMt(string name, string rt, List<string> mtList, bool variadic, bool isProjectDefine, string cvmFunction = null)
         {
             var retType = ResolveTypeName(rt);
             var paramTypes = new List<MetaType>();
@@ -193,7 +199,7 @@ namespace SimpleLanguage.Core
                 paramTypes.Add(mtadc);
             }
             var decl = new SystemMethodCallDeclaration(
-                name, retType, variadic, paramTypes.ToArray());
+                name, retType, variadic, paramTypes.ToArray(), cvmFunction);
             if( s_Decl.ContainsKey(name ) )
             {
                 Log.AddProcessLog(LID.MetaCoreAssertShowMessage, "import system method call name had define!");

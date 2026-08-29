@@ -1,4 +1,5 @@
 import Std;
+import Core;
 
 ListTest
 {
@@ -6,7 +7,7 @@ ListTest
     static testBasicAdd()
     {
         Console.println("===== testBasicAdd =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         list.add(10)
         list.add(20)
         list.add(30)
@@ -30,7 +31,7 @@ ListTest
     static testCapacityConstructor()
     {
         Console.println("===== testCapacityConstructor =====")
-        Std.List<int> list = Std.List<int>(8)
+        Core.List<int> list = Core.List<int>(8)
         Console.println("capacity = " + list.capacity)
         list.add(1)
         list.add(2)
@@ -42,7 +43,7 @@ ListTest
     static testGrow()
     {
         Console.println("===== testGrow =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         Console.println("init capacity = " + list.capacity)
         for i = 0, i < 10, i++
         {
@@ -76,7 +77,7 @@ ListTest
     static testRemoveAt()
     {
         Console.println("===== testRemoveAt =====")
-        Std.List<int> list = new(6)
+        Core.List<int> list = new(6)
         list.add(10)
         list.add(20)
         list.add(30)
@@ -94,7 +95,7 @@ ListTest
     static testClear()
     {
         Console.println("===== testClear =====")
-        List<int> list = Std.List<int>()
+        List<int> list = Core.List<int>()
         list.add(1)
         list.add(2)
         list.add(3)
@@ -107,7 +108,7 @@ ListTest
     static testFill()
     {
         Console.println("===== testFill =====")
-        List<int> list = Std.List<int>(5)
+        List<int> list = Core.List<int>(5)
         Console.println("===== testFill capacity=====" + list.capacity )
         list.add(0)
         list.add(0)
@@ -139,7 +140,7 @@ ListTest
     static testEnsureCapacity()
     {
         Console.println("===== testEnsureCapacity =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         Console.println("init capacity = " + list.capacity)
         list.ensureCapacity(20)
         Console.println("after ensureCapacity(20), capacity = " + list.capacity)
@@ -149,7 +150,7 @@ ListTest
     static testSetGetValue()
     {
         Console.println("===== testSetGetValue =====")
-        List<int> list = Std.List<int>(10)
+        List<int> list = Core.List<int>(10)
         list.add(100)
         list.add(200)
         list._setItem_(0, 999)
@@ -166,7 +167,7 @@ ListTest
     static testIterator()
     {
         Console.println("===== testIterator =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         list.add(1)
         list.add(2)
         list.add(3)
@@ -183,7 +184,7 @@ ListTest
     static testToString()
     {
         Console.println("===== testToString =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         list.add(1)
         list.add(2)
         list.add(3)
@@ -194,7 +195,7 @@ ListTest
     static testStringList()
     {
         Console.println("===== testStringList =====")
-        Std.List<string> list = new()
+        Core.List<string> list = new()
         list.add("hello")
         list.add("world")
         list.add("!")
@@ -209,7 +210,7 @@ ListTest
     static testToArray()
     {
         Console.println("===== testToArray =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         list.add(10)
         list.add(20)
         list.add(30)
@@ -224,7 +225,7 @@ ListTest
     static testForObject()
     {
         Console.println("===== testToArray =====")
-        Std.List<object> list = new()
+        Core.List<object> list = new()
         list.add(10)
         list.add("aaa")
         list.add([1,2,3])
@@ -239,7 +240,7 @@ ListTest
     static testIsEmpty()
     {
         Console.println("===== testIsEmpty =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         Console.println("empty: isEmpty = " + list.isEmpty + ", isNotEmpty = " + list.isNotEmpty)
         list.add(1)
         Console.println("after add: isEmpty = " + list.isEmpty + ", isNotEmpty = " + list.isNotEmpty)
@@ -251,7 +252,7 @@ ListTest
     static testFirstLast()
     {
         Console.println("===== testFirstLast =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         Console.println("empty: first = " + list.first + ", last = " + list.last)
         list.add(10)
         list.add(20)
@@ -266,7 +267,7 @@ ListTest
     static testIndexOfContains()
     {
         Console.println("===== testIndexOfContains =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         list.add(10)
         list.add(20)
         list.add(30)
@@ -277,7 +278,7 @@ ListTest
         Console.println("contains(30) = " + list.contains(30))
         Console.println("contains(99) = " + list.contains(99))
 
-        Std.List<string> slist = new()
+        Core.List<string> slist = new()
         slist.add("aa")
         slist.add("bb")
         Console.println("slist.indexOf(\"bb\") = " + slist.indexOf("bb"))
@@ -288,17 +289,17 @@ ListTest
     static testAddRange()
     {
         Console.println("===== testAddRange =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         list.add(1)
         list.add(2)
-        Std.List<int> other = new()
+        Core.List<int> other = new()
         other.add(3)
         other.add(4)
         other.add(5)
         list.addRange(other)
         Console.println("after addRange, length = " + list.length)
         Console.println("list = " + list.toString())
-        Std.List<int> nullList = null
+        Core.List<int> nullList = null
         list.addRange(nullList)
         Console.println("after addRange(null), length = " + list.length)
     }
@@ -307,10 +308,10 @@ ListTest
     static testInsertRange()
     {
         Console.println("===== testInsertRange =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         list.add(1)
         list.add(5)
-        Std.List<int> other = new()
+        Core.List<int> other = new()
         other.add(2)
         other.add(3)
         other.add(4)
@@ -325,7 +326,7 @@ ListTest
     static testRemoveRange()
     {
         Console.println("===== testRemoveRange =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         for i = 0, i < 6, i++
         {
             list.add(i)
@@ -343,7 +344,7 @@ ListTest
     static testReverse()
     {
         Console.println("===== testReverse =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         for i = 0, i < 5, i++
         {
             list.add(i)
@@ -351,7 +352,7 @@ ListTest
         Console.println("before reverse: " + list.toString())
         list.reverse()
         Console.println("after reverse: " + list.toString())
-        Std.List<int> empty = new()
+        Core.List<int> empty = new()
         empty.reverse()
         Console.println("empty reverse ok, length = " + empty.length)
     }
@@ -360,16 +361,16 @@ ListTest
     static testGetRange()
     {
         Console.println("===== testGetRange =====")
-        Std.List<int> list = new()
+        Core.List<int> list = new()
         for i = 0, i < 6, i++
         {
             list.add(i * 10)
         }
-        Std.List<int> sub = list.getRange(2, 2)
+        Core.List<int> sub = list.getRange(2, 2)
         Console.println("getRange(2,2) = " + sub.toString())
-        Std.List<int> clamped = list.getRange(4, 100)
+        Core.List<int> clamped = list.getRange(4, 100)
         Console.println("getRange(4,100) clamp = " + clamped.toString())
-        Std.List<int> bad = list.getRange(99, 2)
+        Core.List<int> bad = list.getRange(99, 2)
         if bad == null
         {
             Console.println("getRange(99,2) = null")
@@ -389,22 +390,22 @@ ListTest
         arr._setItem_(0, 1)
         arr._setItem_(1, 2)
         arr._setItem_(2, 3)
-        Std.List<int> fromArray = Std.List<int>(arr)
+        Core.List<int> fromArray = Core.List<int>(arr)
         Console.println("fromArray: " + fromArray.toString() + ", length = " + fromArray.length)
         # 源数组后续修改不影响已拷贝的 list
         arr._setItem_(0, 99)
         Console.println("after src change: " + fromArray.toString())
         # 2. 从数组区间构造
-        Std.List<int> slice = Std.List<int>(arr, 1, 1)
+        Core.List<int> slice = Core.List<int>(arr, 1, 1)
         Console.println("slice(1,1): " + slice.toString() + ", length = " + slice.length)
-        Std.List<int> sliceClamp = Std.List<int>(arr, 2, 100)
+        Core.List<int> sliceClamp = Core.List<int>(arr, 2, 100)
         Console.println("slice(2,100) clamp: " + sliceClamp.toString() + ", length = " + sliceClamp.length)
-        Std.List<int> sliceEmpty = Std.List<int>(arr, 5, 2)
+        Core.List<int> sliceEmpty = Core.List<int>(arr, 5, 2)
         Console.println("slice(5,2) empty: length = " + sliceEmpty.length)
         # 3. 从 Range 构造
-        Std.List<int> fromRange = Std.List<int>(Range<int>(0, 5))
+        Core.List<int> fromRange = Core.List<int>(Range<int>(0, 5))
         Console.println("fromRange(0,5): " + fromRange.toString() + ", length = " + fromRange.length)
-        Std.List<int> fromRangeStep = Std.List<int>(Range<int>(10, 0, -2))
+        Core.List<int> fromRangeStep = Core.List<int>(Range<int>(10, 0, -2))
         Console.println("fromRange(10,0,-2): " + fromRangeStep.toString() + ", length = " + fromRangeStep.length)
         # 构造后可继续 add（验证容量状态正确）
         fromArray.add(4)
