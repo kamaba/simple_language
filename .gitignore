@@ -305,5 +305,7 @@
 /source/MathVMLib/x64
 /source/MathVMLib/MathVMLib.vcxproj.user
 
-# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output [Trae CN] Safe Rm alias is not enabled, try to fix it now.
+# fixed: corrupted shell fragment line blocking ripgrep
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output [Trae CN] Safe Rm alias is not enabled, try to fix it now.
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
 /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.

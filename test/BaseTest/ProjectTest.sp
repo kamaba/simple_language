@@ -14,13 +14,13 @@ Project
     _main_()
     {     
         SystemPrintln("===== ProjectTest _main_ start =====")   
-        nowMs = Environment.nowMillis()
+        nowMs = Environment.nowMillis()  
+        GlobalTest.fun()
         #!
         ObjectTest.fun()
         StringTest.fun()
         NumberTest.fun()
-        WhileTest.fun()        
-        GlobalTest.fun()
+        WhileTest.fun()      
         BoolTest.fun()
         TypeTest.fun()
         EnumTest.fun()
@@ -68,10 +68,10 @@ Project
         BindDataTest.fun()
         LocalTest1.fun()
         LocalTest2.fun()
-        !#
         ResultTest.fun()
         TableTest.fun()
         StackTest.fun()
+        !#
 
         nowMs = Environment.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")

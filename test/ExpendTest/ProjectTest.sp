@@ -3,7 +3,7 @@ Project
     _main_()
     {
         # calculator 已从 ConsoleTest.fun() 中注释掉（交互式阻塞 stdin），可在此单独调用
-        CsvTest.fun();
+        
         #LinkedListTest.fun()
         #!
         CsvTest.fun()
@@ -14,7 +14,9 @@ Project
        #ConsoleTest.fun()
         DateTimeTest.fun()
         Sqlite3Test.fun()
+        CsvTest.fun();
         !#
+        ModuleGlobalTest.fun()
     }
     CompileBefore()
     {

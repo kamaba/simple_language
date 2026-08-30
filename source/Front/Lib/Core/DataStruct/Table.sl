@@ -908,7 +908,7 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         {
             ret _result
         }
-        SystemTableCsvParse(result, csvText, true, ",")
+        SystemTableCsvParse(_result, csvText, true, ",")
         ret _result
     }
     #解析无表头 CSV（列名自动补 col{n}）
@@ -919,7 +919,7 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         {
             ret _result
         }
-        SystemTableCsvParse(result, csvText, false, ",")
+        SystemTableCsvParse(_result, csvText, false, ",")
         ret _result
     }
     #序列化为 CSV（含转义：分隔符/引号/换行触发引号包裹，"" 转义内嵌引号）
