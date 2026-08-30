@@ -65,15 +65,13 @@ Project
         MemberFunction2Test.fun()
         MemberStaticFunction.fun()
         TupleTest.fun()
-        !#
         BindDataTest.fun()
-
         LocalTest1.fun()
         LocalTest2.fun()
-
+        !#
         ResultTest.fun()
-
         TableTest.fun()
+        StackTest.fun()
 
         nowMs = Environment.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")

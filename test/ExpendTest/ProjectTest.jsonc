@@ -25,6 +25,7 @@
       { "path": "ListTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "MapTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "FileTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "CsvTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "DirectoryTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "ConsoleTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "DateTimeTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },

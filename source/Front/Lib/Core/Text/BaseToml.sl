@@ -1,5 +1,5 @@
 
-public class Json interface IDataStruct
+public class BaseToml interface IDataStruct
 {
     override _init_()
     {

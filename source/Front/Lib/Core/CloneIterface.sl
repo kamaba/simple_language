@@ -1,6 +1,10 @@
 public interface IClone
 {
-    clone()    
+    public Object clone()    
+}
+public interface IClone<T>
+{
+    public T clone()    
 }
 
 #!

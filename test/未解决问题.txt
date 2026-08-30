@@ -16,11 +16,14 @@ llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后�
 函数名称和类名冲突时候的处理
 
 优化FrontEnd层
-再增加一些ErrorShow,set
- queue stack, buffer, builder, await, async, stream, netStream, 
+编码相关的
+压缩类
+再增加一些ErrorShow,queue   Tree
+ buffer, builder, await, async, stream, netStream, 
 然后写一个sqlite3的标准库  然后再把local的逻辑测试了. local 后边可以跟一个数字
 Tree这个结构，要在XML里边可以使用，也可以在Json里边使用，所以要有兼容性，当然里边可以创建各种不同的树结构用来选择。
 Table的写，这两一定要做到最大兼容
+go/label的逻辑
 
 1. this的使用，还没有整合
 2. 循环引用 问题
@@ -44,14 +47,15 @@ Table的写，这两一定要做到最大兼容
 
 以后要实现的:
 
-1. 增加result关键字   如果在返回中定义了Result result 或者是Result<T>  则会在该函数中，自动增加一个Result result = new()的变量 如果有Result<T> 也一样的 Result<T> result = new() 然后 在这个函数里边，可以使用result.code = 0 result.message = "" result.value = Object(); 如果直接使用 ret Object() 也会认为是 result.value 相当于result内部帮忙用户分担一些 返回的结果处理类  
+1. 增加result关键字   如果在返回中定义了Result result 或者是Result<T>  则会在该函数中，自动增加一个Result result = new()的变量 如果有Result<T> 也一样的 Result<T> result = new() 然后 在这个函数里边，可以使用result.code = 0 result.message = "" result.value = Object(); 如果直接使用 ret Object() 也会认为是 result.value 相当于result内部帮忙用户分担一些 返回的结果处理类  然后写一个 ResultTest.sl 在BaseTest里边，然后进行测试 
 
 现在front层 对返回数据void 直接赋值没有报错
 
 4. 增加协程  await 或者是使用go  我要增加一个协程的机制，但对于函数，不要使用async进行函数污染， 使用使用await 对一个spawn的协程进行 等待，然后使用yield的进行协程的返回， spawn出来的，其实就是一个task, 可以对task,进行await, cancel,等的操作，
 5. swtich的enum的支持  switch的,逗号的支持
-6. switch的 区间支持 switch的is MetaClass 的支持
+6. switch的 区间支持 switch的is MetaClass 的支持  并且支持 | 的单符号语法 也就是如果这个case里边写多个，需要拿|进行分隔 如果是MetaClass形式不允许使用|
 11. 写json的支持 与data的联动
+如果使用小写的map() 则认为是一个 Map<Object,Object> 的类   小写stack则认为是一个Stack<Object> 这样的  小写 list 则认为 是一个List<Object> 依此类推
 12. 快速返回 对=> 的支持
 
 13. 研究 -> <- 的符号的支持

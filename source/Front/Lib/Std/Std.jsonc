@@ -26,6 +26,7 @@
       { "path": "IO/Directory.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/File.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Text/IDataStruct.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
+      { "path": "Text/Csv.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Json5.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Xml.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "OS/DateTime.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },

@@ -171,7 +171,7 @@ TableTest
         global.println("city(1) = " + a.getStr(1, 2))                  # bj
 
         Table u = a.union(b)
-        global.println("union rowCount = " + u.rowCount)               # 4
+        global.println("union rowCount = " + u.rowCount)               # 3（clone(a)=2行 + 追加b的1行，不去重）
 
         # join：键列内连接
         Table left = new()
@@ -360,7 +360,7 @@ TableTest
     static testCsvFacade()
     {
         global.println("===== testCsvFacade =====")
-        Csv c = Csv("name,age\nalice,30\nbob,25")
+        BaseCsv c = BaseCsv("name,age\nalice,30\nbob,25")
         global.println("rowCount = " + c.rowCount)                     # 2
         global.println("columnCount = " + c.columnCount)               # 2
         global.println("getIntByName(0,age,0) = " + c.getIntByName(0, "age", 0))   # 30
@@ -376,13 +376,13 @@ TableTest
         c.setValueByName(1, "age", 26)
         string text = c.toString()
         global.println("toCsv = " + text)
-        Csv c2 = Csv.parse(text)
+        BaseCsv c2 = BaseCsv.parse(text)
         global.println("roundtrip getIntByName(1,age) = " + c2.getIntByName(1, "age", 0))  # 26
 
         # 无表头 / 自定义分隔符
-        Csv nh = Csv.parseNoHeader("1,2\n3,4")
+        BaseCsv nh = BaseCsv.parseNoHeader("1,2\n3,4")
         global.println("parseNoHeader getColumnName(0) = " + nh.getColumnName(0))  # col0
-        Csv semi = Csv.parseDelimited("x;y\n1;2", true, ";")
+        BaseCsv semi = BaseCsv.parseDelimited("x;y\n1;2", true, ";")
         global.println("semi getStrByName(0,x) = " + semi.getStrByName(0, "x", ""))  # 1
         global.println("semi toCsvDelimited = " + semi.toCsvDelimited())  # x;y / 1;2
         global.println("semi toCsvNoHeader = " + semi.toCsvNoHeader())    # 1;2
@@ -395,20 +395,20 @@ TableTest
         r0._setItem_(0, "carl")
         r0._setItem_(1, 40)
         t.addRow(r0)
-        Csv wrap = Csv(t)
+        BaseCsv wrap = BaseCsv(t)
         global.println("wrap rowCount = " + wrap.rowCount)             # 1
         global.println("wrap getStr(0,0) = " + wrap.getStr(0, 0))       # carl
         global.println("mergeCsv = " + c.mergeCsv(wrap))               # true
         global.println("merged rowCount = " + c.rowCount)              # 3
 
-        Csv kj = Csv("id,name\n1,alice\n2,bob")
-        Csv kr = Csv("id,score\n2,88\n1,92")
+        BaseCsv kj = BaseCsv("id,name\n1,alice\n2,bob")
+        BaseCsv kr = BaseCsv("id,score\n2,88\n1,92")
         Table jt = kj.joinCsv(kr, "id")
         global.println("joinCsv rowCount = " + jt.rowCount)            # 2
         global.println("joinCsv score(0) = " + jt.getIntByName(0, "score", 0))  # 92
 
         # clone / preview
-        Csv cl = c.clone()
+        BaseCsv cl = c.clone()
         global.println("clone rowCount = " + cl.rowCount)              # 3
         global.println("--- csv preview(2) ---")
         global.println(cl.preview(2))

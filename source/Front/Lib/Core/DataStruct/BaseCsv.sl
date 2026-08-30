@@ -3,7 +3,7 @@
 #Table 承载列名表头、定宽数据行、类型化取值与查询统计能力（解析/序列化在 VM 层完成），
 #本类负责 CSV 文本的进出与配置（表头开关、分隔符），并把 Table 的行/列/单元格/查询/统计接口透传出来。
 #典型用法：Csv c = Csv("name,age\nalice,30") -> c.getInt(0, "age") / c.toString()。
-public class Csv extends Object
+public class BaseCsv extends Object
 {
     #内部二维表（列名 + 数据行的权威载体）
     Table _table = new()
@@ -49,19 +49,19 @@ public class Csv extends Object
 
     # ---- 静态工厂 ----
     #解析 CSV 文本（首行为表头）
-    public static Csv parse( string csvText )
+    public static BaseCsv parse( string csvText )
     {
-        ret Csv(csvText)
+        ret BaseCsv(csvText)
     }
     #解析无表头 CSV（列名自动补 col{n}）
-    public static Csv parseNoHeader( string csvText )
+    public static BaseCsv parseNoHeader( string csvText )
     {
-        ret Csv(csvText, false, ",")
+        ret BaseCsv(csvText, false, ",")
     }
     #解析 CSV 文本（自定义表头开关与分隔符）
-    public static Csv parseDelimited( string csvText, bool hasHeader, string delimiter )
+    public static BaseCsv parseDelimited( string csvText, bool hasHeader, string delimiter )
     {
-        ret Csv(csvText, hasHeader, delimiter)
+        ret BaseCsv(csvText, hasHeader, delimiter)
     }
 
     # ---- 基础属性 ----
@@ -252,26 +252,26 @@ public class Csv extends Object
 
     # ---- 克隆 / 合并 / 连接（透传 Table）----
     #值语义深拷贝
-    public Csv clone()
+    public BaseCsv clone()
     {
-        ret Csv(this._table.clone())
+        ret BaseCsv(this._table.clone())
     }
     #结构克隆：只保留表头，不携带数据行
-    public Csv cloneStructure()
+    public BaseCsv cloneStructure()
     {
-        ret Csv(this._table.cloneStructure())
+        ret BaseCsv(this._table.cloneStructure())
     }
     #区间克隆（越界自动截断）
-    public Csv cloneRange( int rowStart, int rowCount, int colStart, int colCount )
+    public BaseCsv cloneRange( int rowStart, int rowCount, int colStart, int colCount )
     {
-        ret Csv(this._table.cloneRange(rowStart, rowCount, colStart, colCount))
+        ret BaseCsv(this._table.cloneRange(rowStart, rowCount, colStart, colCount))
     }
     #纵向合并（other 的行按列名对齐追加，缺失列补 null）
     public bool merge( Table other )
     {
         ret this._table.merge(other)
     }
-    public bool mergeCsv( Csv other )
+    public bool mergeCsv( BaseCsv other )
     {
         if other == null
         {
@@ -284,7 +284,7 @@ public class Csv extends Object
     {
         ret this._table.join(other, keyColumn)
     }
-    public Table joinCsv( Csv other, string keyColumn )
+    public Table joinCsv( BaseCsv other, string keyColumn )
     {
         if other == null
         {

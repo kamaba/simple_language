@@ -216,6 +216,11 @@ namespace SimpleLanguage.IR
             {
                 var ic = icl[i];
                 if (ic == null) continue;
+                // 实例化的模板接口（如 Table : IIterable<Array<Object>>）不会导出到包中
+                // （导出侧跳过 MetaGenTemplateClass），改用其模板定义类（IIterable<T>）的 id；
+                // 导入侧通过 templateRelationList 的模板映射还原接口实参。
+                if (ic is MetaGenTemplateClass mgtc && mgtc.metaTemplateClass != null)
+                    ic = mgtc.metaTemplateClass;
                 int iid = ic.classId;
                 if (iid == 0) continue;
                 if (!list.Contains(iid)) list.Add(iid);
