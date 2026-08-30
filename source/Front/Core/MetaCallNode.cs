@@ -2023,6 +2023,49 @@ namespace SimpleLanguage.Core
         //    return mmv;
         //}
 
+        // lowercase container keywords => Core container class name
+        // map() => Map<Object,Object>   list()/stack()/set()/queue()/array() => <Object>
+        // range() => Range<int>          tuple() => Tuple (no template)
+        // local variable lookup takes priority, so map/list/etc. still work as variable names
+        private static readonly Dictionary<string, string> s_LowercaseContainerClassNameDict
+            = new Dictionary<string, string>(StringComparer.Ordinal)
+        {
+            { "map", "Map" },
+            { "list", "List" },
+            { "stack", "Stack" },
+            { "set", "Set" },
+            { "queue", "Queue" },
+            { "tuple", "Tuple" },
+            { "array", "Array" },
+            { "range", "Range" },
+        };
+
+        // default template args for a lowercase container keyword when no explicit template args
+        // returns null when there is no default (tuple is the plain no-template class;
+        // uppercase class names never auto-infer here)
+        private static List<MetaType> GetLowercaseContainerDefaultTemplateArgs(string inputname)
+        {
+            switch (inputname)
+            {
+                case "map":
+                    return new List<MetaType>()
+                    {
+                        new MetaType(CoreMetaClassManager.objectMetaClass),
+                        new MetaType(CoreMetaClassManager.objectMetaClass),
+                    };
+                case "range":
+                    return new List<MetaType>() { new MetaType(CoreMetaClassManager.int32MetaClass) };
+                case "list":
+                case "stack":
+                case "set":
+                case "queue":
+                case "array":
+                    return new List<MetaType>() { new MetaType(CoreMetaClassManager.objectMetaClass) };
+                default:
+                    return null;
+            }
+        }
+
         public bool GetFirstNode(string inputname, MetaBase mb , int count)
         {
             MetaVariable mv = m_OwnerMetaFunctionBlock?.GetMetaVariableByName(inputname);
@@ -2074,6 +2117,19 @@ namespace SimpleLanguage.Core
                     retMC = findMB;
                 }
             }
+            // lowercase container keywords: map()/list()/stack()/set()/queue()/tuple()/array()/range()
+            // => Core container class; falls back to normal identifier lookup when Core class not found
+            // m_IsFunction guard: only the call form name(...) resolves to the Core container,
+            // a plain identifier reference / duplicate-name probe (built from a bare name token,
+            // e.g. `Map<K,V> map = new()`) keeps the normal lookup path
+            if (retMC == null && m_IsFunction && s_LowercaseContainerClassNameDict.TryGetValue(inputname, out string containerCoreName))
+            {
+                MetaNode findMB2 = CoreMetaClassManager.GetCoreMetaClass(containerCoreName);
+                if (findMB2?.IsMetaClass() == true)
+                {
+                    retMC = findMB2;
+                }
+            }
             //閺屻儲澹樼猾缁樐侀崹?
             if (retMC == null && mc != null)
             {
@@ -2117,16 +2173,21 @@ namespace SimpleLanguage.Core
                 }
                 else if (retMC.IsMetaClass())
                 {
-                    // language keyword: lowercase `range` => default Range<int>
+                    // language keyword: lowercase container name without explicit template args
+                    // => use default template args
+                    //   range => Range<int>   map => Map<Object,Object>
+                    //   list/stack/set/queue/array => <Object>   tuple() => plain Tuple (normal path)
                     // keep case-sensitive behavior so `Range` does not auto-infer here
-                    if (count == 0
-                        && string.Equals(inputname, "range", StringComparison.Ordinal))
+                    var defaultTemplateArgs = count == 0 ? GetLowercaseContainerDefaultTemplateArgs(inputname) : null;
+                    if (defaultTemplateArgs != null)
                     {
-                        m_MetaClass = retMC.GetMetaClassByTemplateCount(1);
-                        m_MetaType = new MetaType(m_MetaClass, new List<MetaType>()
+                        m_MetaClass = retMC.GetMetaClassByTemplateCount(defaultTemplateArgs.Count);
+                        if (m_MetaClass == null)
                         {
-                            new MetaType(CoreMetaClassManager.int32MetaClass)
-                        });
+                            Log.AddMetaCoreLog(LID.MetaCoreFindMetaClassByTemplateNum, m_Token, "", retMC.allName, defaultTemplateArgs.Count.ToString());
+                            return false;
+                        }
+                        m_MetaType = new MetaType(m_MetaClass, defaultTemplateArgs);
                     }
                     else
                     {

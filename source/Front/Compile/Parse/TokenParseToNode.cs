@@ -156,6 +156,74 @@ namespace SimpleLanguage.Compile
             m_TokenIndex++;
             return node;
         }
+
+        // 判断 set 关键字是否为容器调用形式（而非属性 setter）
+        // setter 形式: set( 参数 ) { 函数体 } / set;  -- 匹配的右括号后紧跟 '{'
+        // 调用形式: set( ... ) 之后不紧跟 '{'（如 set() / set(1,2,3) / x = set() ...）
+        // 模板形式: set<...>(...)（如 set<int>()）-- setter 语法中 set 后不会紧跟 '<'
+        bool IsSetContainerCallForm()
+        {
+            int index = SkipInsignificantTokens(m_TokenIndex + 1);
+            if (index >= m_TokenCount)
+            {
+                return false;
+            }
+            if (m_TokensList[index].type == ETokenType.Less)
+            {
+                return true;
+            }
+            if (m_TokensList[index].type != ETokenType.LeftPar)
+            {
+                return false;
+            }
+            // 查找与 set 后 '(' 匹配的 ')'（仅对括号计数）
+            int depth = 1;
+            index++;
+            while (index < m_TokenCount)
+            {
+                var t = m_TokensList[index].type;
+                if (t == ETokenType.LeftPar)
+                {
+                    depth++;
+                }
+                else if (t == ETokenType.RightPar)
+                {
+                    depth--;
+                    if (depth == 0)
+                    {
+                        break;
+                    }
+                }
+                index++;
+            }
+            if (index >= m_TokenCount || depth != 0)
+            {
+                return false;
+            }
+            // ')' 之后紧跟 '{' 则为 setter 函数体
+            index = SkipInsignificantTokens(index + 1);
+            if (index < m_TokenCount && m_TokensList[index].type == ETokenType.LeftBrace)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        // 跳过空白/换行/注释 token
+        int SkipInsignificantTokens(int index)
+        {
+            while (index < m_TokenCount)
+            {
+                var t = m_TokensList[index].type;
+                if (t == ETokenType.Space || t == ETokenType.LineEnd || t == ETokenType.Sharp)
+                {
+                    index++;
+                    continue;
+                }
+                break;
+            }
+            return index;
+        }
         private Node AddAtOpSign(Token token)
         {
             Node node = new Node(token);
@@ -709,7 +777,6 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Partial:
                 case ETokenType.Void:
                 case ETokenType.Get:
-                case ETokenType.Set:
                 case ETokenType.Interface:
                 case ETokenType.Abstract:
                 case ETokenType.Extends:
@@ -750,6 +817,23 @@ namespace SimpleLanguage.Compile
                     {
                         var node = AddKeyNode(token);
                         m_CurrentNode.SetIdentifierNode(node);
+                    }
+                    break;
+                case ETokenType.Set:
+                    {
+                        // set 关键字两种用法区分：
+                        // 1. 属性 setter: set( 参数 ) { 函数体 } / set;  -> 保持 Key 节点
+                        // 2. 容器构造调用: set() 相当于 Set<Object>()   -> 转为标识符，走小写容器关键字解析
+                        if (IsSetContainerCallForm())
+                        {
+                            Token idToken = new Token(token);
+                            idToken.SetType(ETokenType.Identifier);
+                            AddIdentifier(idToken);
+                        }
+                        else
+                        {
+                            AddKeyNode(token);
+                        }
                     }
                     break;
                 case ETokenType.In:

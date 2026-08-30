@@ -15,7 +15,7 @@ Project
     {     
         SystemPrintln("===== ProjectTest _main_ start =====")   
         nowMs = Environment.nowMillis()
-        
+        #!
         GlobalTest.fun()
         ObjectTest.fun()
         StringTest.fun()
@@ -75,6 +75,8 @@ Project
         
         QueueTest.fun()
         TreeTest.fun()
+        !#
+        LowercaseContainerTest.fun()
 
 
         nowMs = Environment.nowMillis() - nowMs
