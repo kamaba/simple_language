@@ -74,6 +74,7 @@ Project
         GotoLabel.fun()
         !#
         QueueTest.fun()
+        TreeTest.fun()
 
 
         nowMs = Environment.nowMillis() - nowMs
