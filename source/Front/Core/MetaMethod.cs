@@ -25,6 +25,11 @@ namespace SimpleLanguage.Core
         public string label;
         public MetaStatements frontStatements;
         public MetaStatements nextStatements;
+        /// <summary>
+        /// 是否已由 label 语句定义。
+        /// false 表示仅是前向 goto 创建的占位引用(label 语句尚未出现)。
+        /// </summary>
+        public bool isDefined = false;
     }
     public class MetaFunction : MetaBase
     {

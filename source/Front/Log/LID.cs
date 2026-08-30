@@ -85,6 +85,8 @@ namespace SimpleLanguage.Logging
         NodeLocalSyntaxError = 12277,
         NodeLocalFunctionNeedBlock = 12278,
         NodeDefineFunctionAfterNotAllowSyntax = 12279,
+        GotoLabelNotDefined = 12280,
+        LabelRepeatDefine = 12281,
 
     }
 }

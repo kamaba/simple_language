@@ -39,19 +39,34 @@ namespace SimpleLanguage.IR
     }
     public class IRLabel : IRBase
     {
-        IRData data = new IRData();
-        public IRLabel(IRMethod _irMethod, string _label, bool isGogo ):base( _irMethod )
+        public IRData data = new IRData();
+        /// <summary>
+        /// goto/label 语句 IR。
+        /// isLabelStatement=true  -> label 语句: 直接发射目标 IRData 实例本身(OpCode.Label, VM 中为 no-op)，
+        ///                            与 goto 的 BrLabel.opValue 保持同一引用，保证回填阶段 FindIndex 命中。
+        /// isLabelStatement=false -> goto 语句: 发射 BrLabel 无条件跳转指令，opValue 指向目标 Label IRData，
+        ///                            IRMethod.Parse() 回填阶段按引用求目标指令索引并嵌入 payload。
+        /// </summary>
+        public IRLabel(IRMethod _irMethod, IRData targetIRData, bool isLabelStatement, Token token = null, string info = null) : base(_irMethod)
         {
-            data = new IRData();
-            data.opCode = isGogo ? EIROpCode.Label : EIROpCode.BrLabel;
-            data.SetOpValue(_label);
-        }
-        public IRLabel(IRMethod _irMethod, string _label, bool isGogo, Token token, string info = null) : base(_irMethod)
-        {
-            data = new IRData();
-            data.opCode = isGogo ? EIROpCode.Label : EIROpCode.BrLabel;
-            data.SetOpValue(_label);
-            data.SetDebugInfoByToken(token, info);
+            if (targetIRData == null)
+                return;
+            if (isLabelStatement)
+            {
+                data = targetIRData;
+            }
+            else
+            {
+                data = new IRData();
+                data.opCode = EIROpCode.BrLabel;
+                data.SetOpValue(targetIRData);
+            }
+            if (token != null)
+            {
+                data.SetDebugInfoByToken(token, info);
+            }
+            // 关键: 必须加入 IRDataList, 否则指令不会进入最终指令序列(此前的 bug)
+            AddIRData(data);
         }
         public void SetDebugInfoByToken(Token token, string info = null)
         {

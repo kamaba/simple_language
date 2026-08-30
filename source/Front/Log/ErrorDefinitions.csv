@@ -589,3 +589,5 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 12277,Error,TRUE,FALSE,0,,"local后边应该有{}的语法",,Auto-generated LID mapping,,
 12278,Error,TRUE,FALSE,0,,"函数体[{0}]后边应该有{}的语法",,Auto-generated LID mapping,,
 12279,Error,TRUE,TRUE,0,,"local中，如果前边已经出现定义函数，则后边不允许有逻辑语句",,Auto-generated LID mapping,,
+12280,Error,TRUE,FALSE,1,,"使用goto跳转，标签[{0}]未在本函数中定义!!",,Auto-generated LID mapping,,
+12281,Error,TRUE,FALSE,1,,"标签[{0}]在同一函数中重复定义!!",,Auto-generated LID mapping,,

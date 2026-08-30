@@ -54,6 +54,12 @@ namespace SimpleLanguage.IR
         private List<IRMetaVariable> m_MethodReturnList = new List<IRMetaVariable>();
         private List<IRData> m_LabelList = new List<IRData>();
         private List<IRData> m_IRDataList = new List<IRData>();
+        /// <summary>
+        /// goto/label 目标注册表: label 名 -> 目标 IRData。
+        /// 同一函数内同名的 label 语句与 goto 语句共享同一目标实例,
+        /// 支持前向跳转时 goto 先创建占位、label 语句处发射同一实例。
+        /// </summary>
+        private Dictionary<string, IRData> m_GotoLabelTargetDict = new Dictionary<string, IRData>();
         private Stack<IRData> m_BreakTargetStack = new Stack<IRData>();
         private Stack<IRData> m_ContinueTargetStack = new Stack<IRData>();
         private MetaFunction m_BindMetaFunction = null;
@@ -500,6 +506,14 @@ namespace SimpleLanguage.IR
                                 targetIRData.UpdateByteLength();
                                 nextLabelId++;
                             }
+                            if (findex < 0)
+                            {
+                                // goto 引用的标签未定义: 占位目标从未被 label 语句发射进指令序列
+                                // (此时 targetIRData.opValue 仍为 label 名字符串, FinalizePack 在其后才执行)
+                                string labelName = targetIRData != null ? targetIRData.opValue as string : "?";
+                                Log.AddIRLog(LID.GotoLabelNotDefined, null,
+                                    "[" + defLabel.debugInfo.path + ":" + defLabel.debugInfo.beginLine + "]", labelName);
+                            }
                         }
                         break;
                     case EIROpCode.Br:
@@ -599,6 +613,27 @@ namespace SimpleLanguage.IR
             {
                 m_LabelList.Add(irdata);
             }
+        }
+
+        /// <summary>
+        /// 取得(或创建)goto/label 目标 IRData。
+        /// label 语句处发射该实例本身(OpCode.Label), goto 语句发射 BrLabel 且
+        /// opValue 指向该实例, 供 Parse() 回填阶段按引用找到目标指令索引。
+        /// </summary>
+        public IRData GetOrAddLabelTargetData(string labelName, Token token)
+        {
+            if (string.IsNullOrEmpty(labelName))
+                return null;
+            IRData target;
+            if (!m_GotoLabelTargetDict.TryGetValue(labelName, out target))
+            {
+                target = new IRData();
+                target.opCode = EIROpCode.Label;
+                target.SetOpValue(labelName);
+                target.SetDebugInfoByToken(token, "Label:" + labelName);
+                m_GotoLabelTargetDict.Add(labelName, target);
+            }
+            return target;
         }
         public IRMetaVariable GetIRLocalVariableById( int id )
         {

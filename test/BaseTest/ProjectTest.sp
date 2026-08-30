@@ -15,8 +15,8 @@ Project
     {     
         SystemPrintln("===== ProjectTest _main_ start =====")   
         nowMs = Environment.nowMillis()  
-        GlobalTest.fun()
         #!
+        GlobalTest.fun()
         ObjectTest.fun()
         StringTest.fun()
         NumberTest.fun()
@@ -71,7 +71,10 @@ Project
         ResultTest.fun()
         TableTest.fun()
         StackTest.fun()
+        GotoLabel.fun()
         !#
+        QueueTest.fun()
+
 
         nowMs = Environment.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")

@@ -1,5 +1,4 @@
 
-3. 对别一个调用类的 Core.global.var1 Std.global.aaa  手动
 2. 数学库的集成
 7. 指针的增加与处理. 
 9. 是否不能 new int() 这种的，直接变成栈的方式
@@ -19,7 +18,6 @@ llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后�
 编码相关的
 压缩类
 再增加一些ErrorShow, 
-go/label的逻辑
 queue   
 Tree
  buffer, builder, await, async, stream, netStream, 
