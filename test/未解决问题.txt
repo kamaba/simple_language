@@ -18,12 +18,9 @@ llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后�
 编码相关的
 压缩类
 再增加一些ErrorShow, 
-queue   
-Tree
  buffer, builder, await, async, stream, netStream, 
-然后写一个sqlite3的标准库  然后再把local的逻辑测试了. local 后边可以跟一个数字
-Tree这个结构，要在XML里边可以使用，也可以在Json里边使用，所以要有兼容性，当然里边可以创建各种不同的树结构用来选择。
-Table的写，这两一定要做到最大兼容
+Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当然里边可以创建各种不同的树结构用来选择。
+
 
 1. this的使用，还没有整合
 2. 循环引用 问题
@@ -33,7 +30,7 @@ Table的写，这两一定要做到最大兼容
 6. 以cvm里边 数据类型的创建
 
 
-1. 优化vm层，类型的处理
+1. 优化vm层，类型的处理   计算   比较  
 2. 在模板array 的 iteraror 的参数 argurment 需要 声明成templateObject
 7. 调用nativeBridge的调用验证
 8. 额外的数学库 Float2 的 + - * / % == != >= <= 的重载
@@ -46,9 +43,6 @@ Table的写，这两一定要做到最大兼容
 10. 全局的typealias里边需要读取后，继承
 
 以后要实现的:
-
-1. 增加result关键字   如果在返回中定义了Result result 或者是Result<T>  则会在该函数中，自动增加一个Result result = new()的变量 如果有Result<T> 也一样的 Result<T> result = new() 然后 在这个函数里边，可以使用result.code = 0 result.message = "" result.value = Object(); 如果直接使用 ret Object() 也会认为是 result.value 相当于result内部帮忙用户分担一些 返回的结果处理类  然后写一个 ResultTest.sl 在BaseTest里边，然后进行测试 
-
 现在front层 对返回数据void 直接赋值没有报错
 
 4. 增加协程  await 或者是使用go  我要增加一个协程的机制，但对于函数，不要使用async进行函数污染， 使用使用await 对一个spawn的协程进行 等待，然后使用yield的进行协程的返回， spawn出来的，其实就是一个task, 可以对task,进行await, cancel,等的操作，

@@ -52,19 +52,9 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         this._current = null
     }
     override bool moveNext()
-    {          
-        this._index++;  
-        bool hasNext_var = this._index < this._length 
-        if hasNext_var
-        {
-            this._current = SystemArrayGetValueThis(this, this._index) as T
-        }
-        else
-        {
-            this._current = null
-        }
-        #global.println(" Array.moveNext-----" + this._index + " length: " + this._length  )
-        ret hasNext_var
+    {
+        #foreach 热路径：游标推进/取值/_current 回填全部在 VM 层完成
+        ret SystemArrayMoveNext( this )
     }
     override get T current()
     {
@@ -108,32 +98,13 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     }
     public void forEach( Function callback )
     {
-        for i = 0, i < this._length, i++
-        {
-            var item = SystemArrayGetValueThis(this, i) as T
-            callback( item )
-        }
+        #遍历分发下沉 VM 层：C 层逐元素回调闭包（ctx_arr 作为隐藏 Argument 0）
+        SystemArrayForEach( this, callback )
     }
     override string toString()
-    {            
-        string showstr = "["
-        for i = 0, i < this._length, i++
-        {
-            var cur = SystemArrayGetValueThis(this, i)
-            if cur == null
-            {
-                showstr = showstr + "null"
-            }
-            else
-            {
-                showstr = showstr + cur.toString()
-            }
-            if( i < this._length - 1 )
-            {
-                showstr += ","
-            }
-        }
-        ret showstr + "]"
+    {
+        #VM 层一次成型拼接 "[a,b,c]"，消除 SL 层循环内逐次相加的 O(n^2) 分配
+        ret SystemArrayToString( this )
     }
 }
 

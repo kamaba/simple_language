@@ -147,6 +147,9 @@
     { "name": "SystemArrayRemoveAtValue","returnType": "void",  "params": ["Array<object>", "Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_array_remove_at_value" },
     { "name": "SystemArrayRemoveValue", "returnType": "Int32",  "params": ["Array<object>", "object", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_array_remove_value" },
     { "name": "SystemArrayCopy",        "returnType": "Array<object>", "params": ["Array<object>", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_array_copy" },
+    { "name": "SystemArrayToString",    "returnType": "string",   "params": ["Array<object>"], "isVariadic": false, "cvmFunction": "vm_sys_array_to_string" },
+    { "name": "SystemArrayMoveNext",    "returnType": "bool",     "params": ["Array<object>"], "isVariadic": false, "cvmFunction": "vm_sys_array_move_next" },
+    { "name": "SystemArrayForEach",     "returnType": "void",     "params": ["Array<object>", "object"], "isVariadic": false, "cvmFunction": "vm_sys_array_for_each" },
 
     // ---- Num helpers ----
     { "name": "SystemNumAbs",   "returnType": "Num", "params": ["Num"], "isVariadic": false, "cvmFunction": "vm_sys_num_abs" },
