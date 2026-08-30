@@ -46,10 +46,10 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 现在front层 对返回数据void 直接赋值没有报错
 
 4. 增加协程  await 或者是使用go  我要增加一个协程的机制，但对于函数，不要使用async进行函数污染， 使用使用await 对一个spawn的协程进行 等待，然后使用yield的进行协程的返回， spawn出来的，其实就是一个task, 可以对task,进行await, cancel,等的操作，
-5. swtich的enum的支持 
-6. switch的 区间支持 switch的is MetaClass 的支持  并且支持 | 的单符号语法 也就是如果这个case里边写多个，需要拿|进行分隔 如果是MetaClass形式不允许使用|
+
+siwtch的改造，首先要改成逻辑在cvm里边处理，而不是分化层不同的if 需要改FrontEnd层的IR,还有cvm里边的IRCode处理 再改完这个后，需要让switch 对多个数值的处理，使用|符号进行处理 比如 switch( i ){ case 1|2|3|4{} case 5|6|7{} default{} } 这种的， 还有一个支持对 is MetaClass 可以参考c#的用法
 11. 写json的支持 与data的联动
-如果使用小写的map() 则认为是一个 Map<Object,Object> 的类   小写stack则认为是一个Stack<Object> 这样的  小写 list 则认为 是一个List<Object> 依此类推  set 如果出现在语句中  set() 这种形式，相当于Set<Object>() 这种的形式    queue() 相当于  Queue<Object>这种的形式  array(10) 相当于Array<Object>(10)  而range(1,10) 相当于Range<int>(1,10)  tuple() 会默认认为 是 Tuple() 的处理，把这些纯小写的，也认为 是关键字去处理  
+
 12. 快速返回 对=> 的支持
 
 13. 研究 -> <- 的符号的支持

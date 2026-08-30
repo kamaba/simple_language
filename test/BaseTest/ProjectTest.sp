@@ -77,6 +77,7 @@ Project
         TreeTest.fun()
         !#
         LowercaseContainerTest.fun()
+        SwitchTest.fun()
 
 
         nowMs = Environment.nowMillis() - nowMs

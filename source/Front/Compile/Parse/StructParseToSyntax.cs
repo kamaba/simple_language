@@ -1591,19 +1591,57 @@ namespace SimpleLanguage.Compile
         {
             var cnode = sns.keyNode;
             FileMetaCallLink fmcl = null;
+            FileMetaBaseTerm sourceExpress = null;
             if (cnode.parNode != null && cnode.parNode.childList?.Count > 0)
             {
                 fmcl = new FileMetaCallLink(fm, cnode.parNode.childList[0]);
             }
             if( fmcl == null )
             {
-                fmcl = new FileMetaCallLink(fm, sns.keyContent[0] );
+                // switch( i ) / switch( x + y ): switch 的 Key 节点没有 identifierNode,
+                // 括号作为普通子节点进入 keyContent[0]，需要剥开括号取内部内容
+                var srcNodes = sns.keyContent;
+                if (srcNodes.Count > 0 && srcNodes[0].nodeType == ENodeType.Par)
+                {
+                    var innerList = new List<Node>();
+                    var parChildren = srcNodes[0].childList;
+                    if (parChildren != null)
+                    {
+                        for (int i = 0; i < parChildren.Count; i++)
+                        {
+                            var pn = parChildren[i];
+                            if (pn == null
+                                || pn.nodeType == ENodeType.LineEnd
+                                || pn.nodeType == ENodeType.Comment
+                                || pn.nodeType == ENodeType.SemiColon)
+                            {
+                                continue;
+                            }
+                            innerList.Add(pn);
+                        }
+                    }
+                    srcNodes = innerList;
+                }
+                if (srcNodes.Count == 1)
+                {
+                    // switch( i ): 单标识符源，与无括号形式一致
+                    fmcl = new FileMetaCallLink(fm, srcNodes[0]);
+                }
+                else if (srcNodes.Count > 1)
+                {
+                    // switch( x + y ): 表达式源
+                    sourceExpress = FileMetatUtil.CreateFileMetaExpress(fm, srcNodes, FileMetaTermExpress.EExpressType.Common);
+                }
             }
-            if( fmcl == null )
+            if( fmcl == null && sourceExpress == null )
             {
                 Log.AddNodeLog(LID.ShowExtendMessage, "Error 创建 FileMetaCallLink 失败");
             }
             var fms = new FileMetaKeySwitchSyntax(fm, cnode.token, sns.blockNode.token, sns.blockNode.endToken, fmcl);
+            if (sourceExpress != null)
+            {
+                fms.SetSourceExpress(sourceExpress);
+            }
 
             children ??= sns.childrenKeySyntaxStructList;
             for (int i = 0; i < children.Count; i++)
@@ -1643,18 +1681,39 @@ namespace SimpleLanguage.Compile
             }
 
             var childList = new List<Node>();
-            bool isComma = false;
+            bool isMulti = false;
             for (int i = 0; i < parlist.Count; i++)
             {
-                if (parlist[i].token?.type == ETokenType.Comma)
+                var tt = parlist[i].token?.type;
+                // 逗号和 | 都作为多值分隔符: case 1|2|3{}/case 1,2,3{}
+                if (tt == ETokenType.Comma || tt == ETokenType.InclusiveOr)
                 {
-                    isComma = true;
+                    isMulti = true;
                     continue;
                 }
                 childList.Add(parlist[i]);
             }
 
-            if (isComma)
+            // `case is ClassA {}` / `case is ClassA c1 {}` 类型模式匹配（参考 C# 的 is 用法）
+            if (childList.Count >= 1 && childList[0].token?.type == ETokenType.Is)
+            {
+                if (childList.Count == 2)
+                {
+                    fcase.SetDefineClassNode(childList[1]);
+                }
+                else if (childList.Count == 3)
+                {
+                    fcase.SetDefineClassNode(childList[1]);
+                    fcase.SetVariableToken(childList[2].token);
+                }
+                else
+                {
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error case is 类型匹配的格式为: case is ClassName [变量名]!!");
+                }
+                return;
+            }
+
+            if (isMulti)
             {
                 bool isSame = true;
                 for (int i = 0; i < childList.Count - 1; i++)
@@ -1662,9 +1721,9 @@ namespace SimpleLanguage.Compile
                     var curNode = childList[i];
                     var nextNode = childList[i + 1];
                     var type = curNode.token.type;
-                    if (type != ETokenType.Number && type != ETokenType.String)
+                    if (type != ETokenType.Number && type != ETokenType.String && type != ETokenType.BoolValue)
                     {
-                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 逗号分割只允许number,string");
+                        Log.AddNodeLog(LID.ShowExtendMessage, "Error 多值分割(|/)只允许number,string,bool");
                         isSame = false;
                         break;
                     }
@@ -1676,7 +1735,7 @@ namespace SimpleLanguage.Compile
                 }
                 if (!isSame)
                 {
-                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 使用逗号切割开后，类型不相同!!");
+                    Log.AddNodeLog(LID.ShowExtendMessage, "Error 使用|或逗号切割开后，类型不相同!!");
                 }
 
                 for (int i = 0; i < childList.Count; i++)
@@ -1704,7 +1763,8 @@ namespace SimpleLanguage.Compile
                         fcase.SetDefineClassNode(parlist[0]);
                     }
                     else if (ttype == ETokenType.Number
-                        || ttype == ETokenType.String)
+                        || ttype == ETokenType.String
+                        || ttype == ETokenType.BoolValue)
                     {
                         fcase.AddConstValueTokenList(new FileMetaConstValueTerm(fm, parlist[0].token));
                     }

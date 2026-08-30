@@ -300,12 +300,17 @@
 /bind_test_output3.txt
 # fixed: corrupted shell fragment line blocking ripgrep (was: /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output ...)
 # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output [Trae CN] Safe Rm alias is not enabled, try to fix it now.
-# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+# # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
 # fixed: corrupted shell fragment line blocking ripgrep
 /source/MathVMLib/x64
 /source/MathVMLib/MathVMLib.vcxproj.user
 
 # fixed: corrupted shell fragment line blocking ripgrep (all injected copies commented out)
 # # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.
+# fixed: corrupted shell fragment line blocking ripgrep (last injected copy)
 # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/_err_decoded.txt
+/_err_switchtest.txt
+/_run_switchtest.log
 /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/test/BaseTest/build/logs/VM.txt

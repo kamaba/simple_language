@@ -38,7 +38,11 @@ namespace SimpleLanguage.Core
 
             if (m_ForStatements == null && m_WhileStatements == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, fmkos?.token, "Error break 只能出现在 for/while/dowhile 循环体内");
+                // switch case 体内的 break: 跳出 switch（IR 层由 PushBreakTarget 提供目标）
+                if (!mbs.IsInSwitchCaseBody())
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, fmkos?.token, "Error break 只能出现在 for/while/dowhile 循环体内或 switch case 体内");
+                }
             }
         }
         public override string ToFormatString()
@@ -76,7 +80,12 @@ namespace SimpleLanguage.Core
 
             if (m_ForStatements == null && m_WhileStatements == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, fmkos?.token, "Error next 只能出现在 for/while/dowhile 循环体内");
+                // switch case 体内的 next: fall-through 语义，本 case 体执行完后继续匹配后续 case
+                // (循环优先: case 体内嵌套 for/while 时，next 绑定到最近的循环)
+                if (!mbs.IsInSwitchCaseBody())
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, fmkos?.token, "Error next 只能出现在 for/while/dowhile 循环体内或 switch case 体内");
+                }
             }
         }
         public override string ToFormatString()

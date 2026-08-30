@@ -384,6 +384,8 @@ namespace SimpleLanguage.Compile
         }
 
         public FileMetaCallLink fileMetaVariableRef => m_FileMetaVariableRef;
+        /// <summary>表达式源（switch( x + y ) 形式），与 fileMetaVariableRef 二选一。</summary>
+        public FileMetaBaseTerm sourceExpress => m_SourceExpress;
         public FileMetaBlockSyntax defaultExecuteBlockSyntax => m_DefaultExecuteBlockSyntax;
         public List<FileMetaKeyCaseSyntax> fileMetaKeyCaseSyntaxList => m_FileMetaKeyCaseSyntaxList;
         public FileMetaBlockSyntax executeBlockSyntax => m_DefaultExecuteBlockSyntax;
@@ -391,6 +393,7 @@ namespace SimpleLanguage.Compile
         private Token m_LeftBraceToken = null;
         private Token m_RightBraceToken = null;
         private FileMetaCallLink m_FileMetaVariableRef = null;
+        private FileMetaBaseTerm m_SourceExpress = null;
         private FileMetaBlockSyntax m_DefaultExecuteBlockSyntax = null;
         private List<FileMetaKeyCaseSyntax> m_FileMetaKeyCaseSyntaxList = new List<FileMetaKeyCaseSyntax>();
 
@@ -404,6 +407,10 @@ namespace SimpleLanguage.Compile
             m_LeftBraceToken = _leftBraceToken;
             m_RightBraceToken = _rightBraceToken;
             m_FileMetaVariableRef = cl;
+        }
+        public void SetSourceExpress(FileMetaBaseTerm express)
+        {
+            m_SourceExpress = express;
         }
         public void AddFileMetaKeyCaseSyntaxList(FileMetaKeyCaseSyntax keyCase)
         {

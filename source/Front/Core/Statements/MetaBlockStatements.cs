@@ -193,6 +193,19 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
+        /// <summary>当前块是否处于 switch case 体内（沿块链向上查找 case 体块）。</summary>
+        public bool IsInSwitchCaseBody()
+        {
+            if (m_OwnerMetaStatements is MetaSwitchStatements.MetaCaseStatements)
+            {
+                return true;
+            }
+            if (m_OwnerMetaBlockStatements != null)
+            {
+                return m_OwnerMetaBlockStatements.IsInSwitchCaseBody();
+            }
+            return false;
+        }
         public override void SetDeep(int dp)
         {
             m_Deep = dp;

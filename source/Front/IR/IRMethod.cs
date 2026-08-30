@@ -60,6 +60,8 @@ namespace SimpleLanguage.IR
         /// 支持前向跳转时 goto 先创建占位、label 语句处发射同一实例。
         /// </summary>
         private Dictionary<string, IRData> m_GotoLabelTargetDict = new Dictionary<string, IRData>();
+        /// <summary>switch 跳转表延迟构建列表：指令编号完成后由 BuildPendingSwitchPayloads() 序列化。</summary>
+        private List<IRSwitchStatements.PendingSwitchTable> m_PendingSwitchTableList = new List<IRSwitchStatements.PendingSwitchTable>();
         private Stack<IRData> m_BreakTargetStack = new Stack<IRData>();
         private Stack<IRData> m_ContinueTargetStack = new Stack<IRData>();
         private MetaFunction m_BindMetaFunction = null;
@@ -583,6 +585,11 @@ namespace SimpleLanguage.IR
                 }
             }
 
+            // ---- Switch jump tables: serialize entry targets (IRData.id) into payload ----
+            // Must run after all instruction ids are assigned and after label backfill
+            // (targets may be label-converted IRData), but before FinalizePack/EmbedIndexInPayload.
+            BuildPendingSwitchPayloads();
+
             // ---- Finalize packaging: serialize branch opValue (IRData ref) into Payload ----
             for (int i = 0; i < m_IRDataList.Count; i++)
             {
@@ -595,6 +602,40 @@ namespace SimpleLanguage.IR
             // The C VM computes byte offsets at load time (vm_build_method_code)
             // and patches branch instructions for O(1) direct jumps.
         }
+        /// <summary>
+        /// 注册一个待构建的 switch 跳转表。
+        /// IRSwitchStatements 发射 Switch 指令时登记（此时 case 体目标 IRData 引用尚无 id），
+        /// Parse() 末尾 BuildPendingSwitchPayloads() 统一序列化。
+        /// </summary>
+        public void RegisterPendingSwitchTable(IRSwitchStatements.PendingSwitchTable table)
+        {
+            if (table != null && table.switchIRData != null)
+            {
+                m_PendingSwitchTableList.Add(table);
+            }
+        }
+
+        /// <summary>
+        /// 把所有 pending switch 表序列化进对应 Switch 指令的 Payload。
+        /// 目标索引直接取 IRData.id（主发射循环中赋值，即 m_IRDataList 中的最终索引）。
+        /// 直接赋值 Payload 以避开 SetOpValue 的重打包逻辑。
+        /// </summary>
+        private void BuildPendingSwitchPayloads()
+        {
+            for (int i = 0; i < m_PendingSwitchTableList.Count; i++)
+            {
+                var table = m_PendingSwitchTableList[i];
+                try
+                {
+                    table.switchIRData.opValue = null;
+                    table.switchIRData.Payload = IRSwitchStatements.BuildSwitchPayload(table);
+                    table.switchIRData.UpdateByteLength();
+                }
+                catch { }
+            }
+            m_PendingSwitchTableList.Clear();
+        }
+
         public void AddLabelDict( IRData irdata )
         {
             if( irdata.opCode == EIROpCode.Label )
