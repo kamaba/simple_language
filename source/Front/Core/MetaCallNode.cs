@@ -835,6 +835,13 @@ namespace SimpleLanguage.Core
                             {
                                 HandleMetaClass( m_CallNodeType, templateCount);
                             }
+                            else if( m_FrontCallNode.m_MetaNode.isMetaModule )
+                            {
+                                // ModuleName.name：模块根下的 enum/data/class/namespace 未命中时，
+                                // 继续遍历该模块 Project 类定义的静态成员（变量/函数）。
+                                // 例如引用 Std 模块后，Std.Pi 取 Std 工程 Project 定义的静态成员 Pi。
+                                HandleModuleProjectMember();
+                            }
                         }
                     }
                     //else if (frontCNT == ECallNodeType.TypeName)
@@ -2295,7 +2302,44 @@ namespace SimpleLanguage.Core
             }
             return true;
         }
-        public bool GetFunctionOrVariableByOwnerClass(MetaClass mc, string inputname)
+        /// <summary>
+        /// 取模块根下的 Project 类（.sp 工程类，ref module 加载后位于模块根下）。
+        /// 用于 ModuleName.name 限定访问时遍历模块 Project 静态成员。
+        /// </summary>
+        private MetaClass GetModuleProjectMetaClass( MetaModule metaModule )
+        {
+            if (metaModule?.metaNode == null)
+            {
+                return null;
+            }
+            var projectNode = metaModule.metaNode.GetChildrenMetaNodeByName("Project");
+            if (projectNode == null || !projectNode.IsMetaClass())
+            {
+                return null;
+            }
+            return projectNode.GetMetaClassByTemplateCount(0);
+        }
+
+        /// <summary>
+        /// ModuleName.name（模块前缀限定名）：模块根下 enum/data/class/namespace 未命中时，
+        /// 继续遍历该模块 Project 类定义的静态成员（变量/函数）。
+        /// 例如引用 Std 模块后，Std.Pi / Std.Fn() 取 Std 工程 Project 定义的静态成员。
+        /// </summary>
+        private bool HandleModuleProjectMember()
+        {
+            if (m_FrontCallNode?.m_MetaNode?.isMetaModule != true)
+            {
+                return false;
+            }
+            var projectMc = GetModuleProjectMetaClass(m_FrontCallNode.m_MetaNode.metaModule);
+            if (projectMc == null)
+            {
+                return false;
+            }
+            return GetFunctionOrVariableByOwnerClass(projectMc, m_Name, projectMc);
+        }
+
+        public bool GetFunctionOrVariableByOwnerClass(MetaClass mc, string inputname, MetaClass staticCallMetaClass = null)
         {
             MetaMemberVariable mmv = null;
             MetaMemberFunction mmf = null;
@@ -2392,7 +2436,11 @@ namespace SimpleLanguage.Core
                 m_CallNodeType = ECallNodeType.MemberVariableName;
                 if( mmv.isStatic || m_CallNodeType == ECallNodeType.Base )
                 {
-                    m_StaticCallMetaType = new MetaType(m_FrontCallNode.metaType);
+                    // 模块前缀限定访问（如 Std.Pi）时前节点是模块类型而非成员所属类，
+                    // 静态调用的 IR 定位依赖 staticCallMetaType.metaClass，需显式指定 Project 类。
+                    m_StaticCallMetaType = staticCallMetaClass != null
+                        ? new MetaType(staticCallMetaClass)
+                        : new MetaType(m_FrontCallNode.metaType);
                 }
             }
             else if (mmf != null)
@@ -2402,7 +2450,10 @@ namespace SimpleLanguage.Core
                 m_CallNodeType = ECallNodeType.MemberFunctionName;
                 if (mmf.isStatic || m_FrontCallNode.m_CallNodeType == ECallNodeType.Base)
                 {
-                    m_StaticCallMetaType = new MetaType(m_FrontCallNode.metaType);
+                    // 同上：模块前缀限定访问（如 Std.Fn()）时静态调用需显式指向 Project 类。
+                    m_StaticCallMetaType = staticCallMetaClass != null
+                        ? new MetaType(staticCallMetaClass)
+                        : new MetaType(m_FrontCallNode.metaType);
                 }
             }
             return true;

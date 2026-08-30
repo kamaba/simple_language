@@ -241,6 +241,35 @@ namespace SimpleLanguage.Project
             }
         }
 
+        /// <summary>
+        /// 统一校验 Project 类成员（变量/函数）与当前 Module 根下名称不冲突。
+        /// 定义期的前向检查（ParseFileMetaClassMemeberVarAndFunc）无法覆盖
+        /// "Project 成员先定义、Module 下类型后定义"的跨文件顺序，
+        /// 在 CombineFileMeta 全部完成后统一校验一次补齐。
+        /// jsonc 注入成员由 AddProjectGlobalDataMember 注入时检查，不在此列。
+        /// </summary>
+        public static void CheckProjectMemberNameConflict()
+        {
+            // 从本地模块根下直接取 Project 类（ref module 加载的同名 Project 类
+            // 挂在各引用模块的根下，不会出现在 selfModule 根中）。
+            var moduleRoot = ModuleManager.instance.selfModule?.metaNode;
+            var projectNode = moduleRoot?.GetChildrenMetaNodeByName("Project");
+            var projectMc = projectNode?.IsMetaClass() == true ? projectNode.GetMetaClassByTemplateCount(0) : null;
+            if (projectMc == null || moduleRoot == null)
+            {
+                return;
+            }
+
+            foreach (var kv in projectMc.metaMemberVariableDict)
+            {
+                MetaClass.IsNameConflictWithModuleRoot(kv.Key, "成员变量");
+            }
+            foreach (var fn in projectMc.metaMemberFunctionTemplateNodeDict.Keys)
+            {
+                MetaClass.IsNameConflictWithModuleRoot(fn, "成员函数");
+            }
+        }
+
         public static void InjectProjectGlobalDataFromConfig()
         {
             var cfg = ProjectManager.config;
@@ -287,6 +316,13 @@ namespace SimpleLanguage.Project
         static void AddProjectGlobalDataMember(MetaClass projectMc, string name, JsonElement element, int index)
         {
             if (projectMc.GetMetaMemberVariableByName(name) != null)
+            {
+                return;
+            }
+
+            // Project 成员（含 jsonc 注入）不允许与 Module 根下的名称相同，
+            // 理由同 .sp 定义路径（ModuleName.name 限定访问时重名产生歧义）。
+            if (MetaClass.IsNameConflictWithModuleRoot(name, "jsonc注入成员变量"))
             {
                 return;
             }

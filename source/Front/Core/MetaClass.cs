@@ -909,6 +909,30 @@ namespace SimpleLanguage.Core
 
             m_IsPartial = fmc.isPartial;
         }
+        /// <summary>
+        /// 检查名称是否与当前 Module 根下的名称（data/class/enum/namespace）冲突。
+        /// Project 成员（.sp 定义与 jsonc 注入）不允许与 Module 下的名称相同：
+        /// 引用方使用 ModuleName.name 限定访问时，模块根下的类型与 Project 成员
+        /// 共用同一个查找平面，重名会在解析时产生歧义（如 Std.Pi 无法区分是
+        /// Std 模块下的类型还是 Project 定义的静态成员）。
+        /// </summary>
+        public static bool IsNameConflictWithModuleRoot( string name, string memberKind )
+        {
+            var moduleRoot = ModuleManager.instance.selfModule?.metaNode;
+            if (moduleRoot == null || string.IsNullOrEmpty(name))
+            {
+                return false;
+            }
+            var mn = moduleRoot.GetChildrenMetaNodeByName(name);
+            if (mn == null)
+            {
+                return false;
+            }
+            Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                "Error Project类" + memberKind + "与Module下名称冲突: Project." + name
+                + " 与 Module 下的 " + mn.allName + " 重名!! Project成员不允许与Module下定义的名称相同。");
+            return true;
+        }
         public void ParseFileMetaClassMemeberVarAndFunc( FileMetaClass fmc )
         {
             bool isProjectSpecialClass = string.Equals(this.name, "Project", StringComparison.OrdinalIgnoreCase)
@@ -943,6 +967,10 @@ namespace SimpleLanguage.Core
                 }
                 else
                     isHave = false;
+                if (isProjectSpecialClass && IsNameConflictWithModuleRoot(v2.name, "成员变量"))
+                {
+                    continue;
+                }
                 MetaMemberVariable mmv = new MetaMemberVariable(this, v2);
                 if (isProjectSpecialClass)
                 {
@@ -963,9 +991,14 @@ namespace SimpleLanguage.Core
             foreach (var v2 in fmc.memberFunctionList)
             {
                 var mn = this.m_MetaNode.GetChildrenMetaNodeByName(v2.name);
-                if (mn != null)
+                if( mn != null )
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                    continue;
+                }
+
+                if (isProjectSpecialClass && IsNameConflictWithModuleRoot(v2.name, "成员函数"))
+                {
                     continue;
                 }
 

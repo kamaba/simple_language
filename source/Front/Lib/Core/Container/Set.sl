@@ -416,12 +416,12 @@ public class Set<T> extends Object interface Core.IIterable<T>, Core.IIterator<T
     {
         Array<T> arr = this.toArray()
         string showstr = "{"
-        int first = 1
+        int first_ = 1
         for i = 0, i < arr.length, i++
         {
-            if first == 1
+            if first_ == 1
             {
-                first = 0
+                first_ = 0
             }
             else
             {

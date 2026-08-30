@@ -42,7 +42,7 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         }
     }
     #按列名 + 预建空行数构造
-    void _init_( Array<string> columns, int rowCount )
+    void _init_( Array<string> columns, int _rowCount )
     {
         if columns != null
         {
@@ -57,12 +57,12 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
                 this._columns.add(name)
             }
         }
-        if rowCount < 0
+        if _rowCount < 0
         {
-            rowCount = 0
+            _rowCount = 0
         }
         int width2 = this._columns.length
-        for r = 0, r < rowCount, r++
+        for r = 0, r < _rowCount, r++
         {
             this._rows.add(Array<Object>(width2))
         }
@@ -117,12 +117,12 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
     Array<string> columnNames()
     {
         int width = this._columns.length
-        Array<string> result = Array<string>(width)
+        Array<string> _result = Array<string>(width)
         for c = 0, c < width, c++
         {
-            result._setItem_(c, this._columns._getItem_(c))
+            _result._setItem_(c, this._columns._getItem_(c))
         }
-        ret result
+        ret _result
     }
     #首行 / 末行（空表返回 null；返回的是行数组活引用）
     get Array<Object> first()
@@ -135,12 +135,12 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
     }
     get Array<Object> last()
     {
-        int rowCount = this._rows.length
-        if rowCount <= 0
+        int _rowCount = this._rows.length
+        if _rowCount <= 0
         {
             ret null
         }
-        ret this._rows._getItem_(rowCount - 1)
+        ret this._rows._getItem_(_rowCount - 1)
     }
 
     # ---- 行索引器（返回行数组活引用，越界返回 null）----
@@ -176,19 +176,19 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
             name = "col" + width.toString()
         }
         this._columns.add(name)
-        int rowCount = this._rows.length
-        for r = 0, r < rowCount, r++
+        int _rowCount = this._rows.length
+        for r = 0, r < _rowCount, r++
         {
             Array<Object> oldRow = this._rows._getItem_(r)
-            Array<Object> newRow = Array<Object>(width + 1)
+            Array<Object> _newRow = Array<Object>(width + 1)
             int srcLen = oldRow.length
             int c = 0
             while c < srcLen
             {
-                newRow._setItem_(c, oldRow._getItem_(c))
+                _newRow._setItem_(c, oldRow._getItem_(c))
                 c++
             }
-            this._rows._setItem_(r, newRow)
+            this._rows._setItem_(r, _newRow)
         }
     }
     #在 colIndex 处插入列（越界时退化为末尾追加；已有行在 colIndex 处插入 null 单元格）
@@ -205,25 +205,25 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
             ret
         }
         this._columns.insert(colIndex, name)
-        int rowCount = this._rows.length
-        for r = 0, r < rowCount, r++
+        int _rowCount = this._rows.length
+        for r = 0, r < _rowCount, r++
         {
             Array<Object> oldRow = this._rows._getItem_(r)
-            Array<Object> newRow = Array<Object>(width + 1)
+            Array<Object> _newRow = Array<Object>(width + 1)
             int srcLen = oldRow.length
             int c = 0
             while c < srcLen && c < colIndex
             {
-                newRow._setItem_(c, oldRow._getItem_(c))
+                _newRow._setItem_(c, oldRow._getItem_(c))
                 c++
             }
             c = colIndex
             while c < srcLen
             {
-                newRow._setItem_(c + 1, oldRow._getItem_(c))
+                _newRow._setItem_(c + 1, oldRow._getItem_(c))
                 c++
             }
-            this._rows._setItem_(r, newRow)
+            this._rows._setItem_(r, _newRow)
         }
     }
     #按名删除列（返回是否删除成功）
@@ -241,25 +241,25 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         }
         this._columns.removeAt(colIndex)
         int newWidth = width - 1
-        int rowCount = this._rows.length
-        for r = 0, r < rowCount, r++
+        int _rowCount = this._rows.length
+        for r = 0, r < _rowCount, r++
         {
             Array<Object> oldRow = this._rows._getItem_(r)
-            Array<Object> newRow = Array<Object>(newWidth)
+            Array<Object> _newRow = Array<Object>(newWidth)
             int srcLen = oldRow.length
             int c = 0
             while c < colIndex && c < srcLen
             {
-                newRow._setItem_(c, oldRow._getItem_(c))
+                _newRow._setItem_(c, oldRow._getItem_(c))
                 c++
             }
             c = colIndex
             while c < newWidth && c + 1 < srcLen
             {
-                newRow._setItem_(c, oldRow._getItem_(c + 1))
+                _newRow._setItem_(c, oldRow._getItem_(c + 1))
                 c++
             }
-            this._rows._setItem_(r, newRow)
+            this._rows._setItem_(r, _newRow)
         }
         ret true
     }
@@ -312,26 +312,26 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
     #取整列值（列不存在返回空列表）
     public List<Object> getColumnValues( string name )
     {
-        List<Object> result = new()
+        List<Object> _result = new()
         int colIndex = this.getColumnIndex(name)
         if colIndex < 0
         {
-            ret result
+            ret _result
         }
-        int rowCount = this._rows.length
-        for r = 0, r < rowCount, r++
+        int _rowCount = this._rows.length
+        for r = 0, r < _rowCount, r++
         {
             Array<Object> row = this._rows._getItem_(r)
             if colIndex < row.length
             {
-                result.add(row._getItem_(colIndex))
+                _result.add(row._getItem_(colIndex))
             }
             else
             {
-                result.add(null)
+                _result.add(null)
             }
         }
-        ret result
+        ret _result
     }
 
     # ---- 行维护 ----
@@ -360,8 +360,8 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
     #在 row 处插入一行（越界忽略返回 -1；行宽超过列数时自动扩列补名）
     public int insertRow( int row, Array<Object> rowData )
     {
-        int rowCount = this._rows.length
-        if row < 0 || row > rowCount
+        int _rowCount = this._rows.length
+        if row < 0 || row > _rowCount
         {
             ret -1
         }
@@ -422,7 +422,7 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
     Array<Object> normalizeRow( Array<Object> row )
     {
         int width = this._columns.length
-        Array<Object> result = Array<Object>(width)
+        Array<Object> _result = Array<Object>(width)
         int count = 0
         if row != null
         {
@@ -434,9 +434,9 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         }
         for i = 0, i < count, i++
         {
-            result._setItem_(i, row._getItem_(i))
+            _result._setItem_(i, row._getItem_(i))
         }
-        ret result
+        ret _result
     }
     #扩列到 width：新列名默认 "col{n}"，已有行重建为等宽数组（末尾补 null）
     void expandRows( int width )
@@ -452,19 +452,19 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
             this._columns.add("col" + i.toString())
             i++
         }
-        int rowCount = this._rows.length
-        for r = 0, r < rowCount, r++
+        int _rowCount = this._rows.length
+        for r = 0, r < _rowCount, r++
         {
             Array<Object> oldRow = this._rows._getItem_(r)
-            Array<Object> newRow = Array<Object>(width)
+            Array<Object> _newRow = Array<Object>(width)
             int srcLen = oldRow.length
             int c = 0
             while c < srcLen
             {
-                newRow._setItem_(c, oldRow._getItem_(c))
+                _newRow._setItem_(c, oldRow._getItem_(c))
                 c++
             }
-            this._rows._setItem_(r, newRow)
+            this._rows._setItem_(r, _newRow)
         }
     }
 
@@ -596,13 +596,13 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
     #结构克隆：只保留表头，不携带数据行
     public Table cloneStructure()
     {
-        Table result = new()
+        Table _result = new()
         int width = this._columns.length
         for c = 0, c < width, c++
         {
-            result.addColumn(this._columns._getItem_(c))
+            _result.addColumn(this._columns._getItem_(c))
         }
-        ret result
+        ret _result
     }
     #区间克隆：行 [rowStart, rowStart+rowCount) x 列 [colStart, colStart+colCount)（越界自动截断）
     public Table cloneRange( int rowStart, int rowCount, int colStart, int colCount )
@@ -641,67 +641,67 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         {
             colCount = width - colStart
         }
-        Table result = new()
+        Table _result = new()
         int c = colStart
         while c < colStart + colCount
         {
-            result.addColumn(this._columns._getItem_(c))
+            _result.addColumn(this._columns._getItem_(c))
             c++
         }
         int r = rowStart
         while r < rowStart + rowCount
         {
             Array<Object> srcRow = this._rows._getItem_(r)
-            Array<Object> newRow = Array<Object>(colCount)
+            Array<Object> _newRow = Array<Object>(colCount)
             int i = 0
             while i < colCount
             {
                 int srcCol = colStart + i
                 if srcCol < srcRow.length
                 {
-                    newRow._setItem_(i, srcRow._getItem_(srcCol))
+                    _newRow._setItem_(i, srcRow._getItem_(srcCol))
                 }
                 i++
             }
-            result.addRow(newRow)
+            _result.addRow(_newRow)
             r++
         }
-        ret result
+        ret _result
     }
     #行挑选克隆：按行号数组抽取行（非法行号跳过）
     public Table cloneRows( Array<int> rowIndices )
     {
-        Table result = this.cloneStructure()
+        Table _result = this.cloneStructure()
         if rowIndices == null
         {
-            ret result
+            ret _result
         }
         int width = this._columns.length
-        int rowCount = this._rows.length
+        int _rowCount = this._rows.length
         int n = rowIndices.length
         for i = 0, i < n, i++
         {
             int r = rowIndices._getItem_(i)
             if r >= 0
             {
-                if r < rowCount
+                if r < _rowCount
                 {
                     Array<Object> srcRow = this._rows._getItem_(r)
-                    Array<Object> newRow = Array<Object>(width)
+                    Array<Object> _newRow = Array<Object>(width)
                     int c = 0
                     while c < width
                     {
                         if c < srcRow.length
                         {
-                            newRow._setItem_(c, srcRow._getItem_(c))
+                            _newRow._setItem_(c, srcRow._getItem_(c))
                         }
                         c++
                     }
-                    result.addRow(newRow)
+                    _result.addRow(_newRow)
                 }
             }
         }
-        ret result
+        ret _result
     }
 
     # ---- 合并 ----
@@ -717,12 +717,12 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
     #纵向合并的新表版本：返回 this 与 other 合并后的新表
     public Table union( Table other )
     {
-        Table result = Table(this)
+        Table _result = Table(this)
         if other != null
         {
-            result.merge(other)
+            _result.merge(other)
         }
-        ret result
+        ret _result
     }
     #内连接：以 keyColumn 为键，右表列（键列除外）拼接到左侧行后；右表重名列加 "_2" 后缀。
     #表头构建、键倒排索引与行匹配拼接全部在 VM 层完成（table_system_method.c），键为单元格字符串形式。
@@ -740,12 +740,12 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         {
             ret null
         }
-        Table result = new()
-        if SystemTableJoin(this, other, keyColumn, result) == false
+        Table _result = new()
+        if SystemTableJoin(this, other, keyColumn, _result) == false
         {
             ret null
         }
-        ret result
+        ret _result
     }
 
     # ---- 查询 ----
@@ -757,8 +757,8 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         {
             ret Array<int>(0)
         }
-        int rowCount = this._rows.length
-        Array<int> buf = Array<int>(rowCount)
+        int _rowCount = this._rows.length
+        Array<int> buf = Array<int>(_rowCount)
         int n = SystemTableFindRows(this, colIndex, value, buf)
         if n == buf.length
         {
@@ -768,12 +768,12 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         {
             ret Array<int>(0)
         }
-        Array<int> result = Array<int>(n)
+        Array<int> _result = Array<int>(n)
         for i = 0, i < n, i++
         {
-            result._setItem_(i, buf._getItem_(i))
+            _result._setItem_(i, buf._getItem_(i))
         }
-        ret result
+        ret _result
     }
     #按列排序（升序；稳定排序在 VM 层完成）
     public void sortBy( string columnName )
@@ -807,26 +807,26 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         {
             ret 0.0d
         }
-        Float64 result = 0.0d
+        Float64 _result = 0.0d
         bool hasValue = false
-        int rowCount = this._rows.length
-        for r = 0, r < rowCount, r++
+        int _rowCount = this._rows.length
+        for r = 0, r < _rowCount, r++
         {
             if this.getValue(r, colIndex) != null
             {
                 Float64 v = this.getFloat(r, colIndex, 0.0d)
                 if hasValue == false
                 {
-                    result = v
+                    _result = v
                     hasValue = true
                 }
-                elif v < result
+                elif v < _result
                 {
-                    result = v
+                    _result = v
                 }
             }
         }
-        ret result
+        ret _result
     }
     public Float64 max( string columnName )
     {
@@ -835,26 +835,26 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         {
             ret 0.0d
         }
-        Float64 result = 0.0d
+        Float64 _result = 0.0d
         bool hasValue = false
-        int rowCount = this._rows.length
-        for r = 0, r < rowCount, r++
+        int _rowCount = this._rows.length
+        for r = 0, r < _rowCount, r++
         {
             if this.getValue(r, colIndex) != null
             {
                 Float64 v = this.getFloat(r, colIndex, 0.0d)
                 if hasValue == false
                 {
-                    result = v
+                    _result = v
                     hasValue = true
                 }
-                elif v > result
+                elif v > _result
                 {
-                    result = v
+                    _result = v
                 }
             }
         }
-        ret result
+        ret _result
     }
     public Float64 sum( string columnName )
     {
@@ -864,8 +864,8 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
             ret 0.0d
         }
         Float64 total = 0.0d
-        int rowCount = this._rows.length
-        for r = 0, r < rowCount, r++
+        int _rowCount = this._rows.length
+        for r = 0, r < _rowCount, r++
         {
             if this.getValue(r, colIndex) != null
             {
@@ -883,8 +883,8 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         }
         Float64 total = 0.0d
         int validCount = 0
-        int rowCount = this._rows.length
-        for r = 0, r < rowCount, r++
+        int _rowCount = this._rows.length
+        for r = 0, r < _rowCount, r++
         {
             if this.getValue(r, colIndex) != null
             {
@@ -903,24 +903,24 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
     #解析 CSV 文本（首行为表头）
     public static Table fromCsv( string csvText )
     {
-        Table result = new()
+        Table _result = new()
         if csvText == null
         {
-            ret result
+            ret _result
         }
         SystemTableCsvParse(result, csvText, true, ",")
-        ret result
+        ret _result
     }
     #解析无表头 CSV（列名自动补 col{n}）
     public static Table fromCsvNoHeader( string csvText )
     {
-        Table result = new()
+        Table _result = new()
         if csvText == null
         {
-            ret result
+            ret _result
         }
         SystemTableCsvParse(result, csvText, false, ",")
-        ret result
+        ret _result
     }
     #序列化为 CSV（含转义：分隔符/引号/换行触发引号包裹，"" 转义内嵌引号）
     public string toCsv()

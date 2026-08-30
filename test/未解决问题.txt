@@ -18,12 +18,14 @@ llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后�
 优化FrontEnd层
 编码相关的
 压缩类
-再增加一些ErrorShow,queue   Tree
+再增加一些ErrorShow, 
+go/label的逻辑
+queue   
+Tree
  buffer, builder, await, async, stream, netStream, 
 然后写一个sqlite3的标准库  然后再把local的逻辑测试了. local 后边可以跟一个数字
 Tree这个结构，要在XML里边可以使用，也可以在Json里边使用，所以要有兼容性，当然里边可以创建各种不同的树结构用来选择。
 Table的写，这两一定要做到最大兼容
-go/label的逻辑
 
 1. this的使用，还没有整合
 2. 循环引用 问题
