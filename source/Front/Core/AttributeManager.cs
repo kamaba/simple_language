@@ -92,6 +92,22 @@ namespace SimpleLanguage.Core
                         $"Nickname: registered alias '{nickname}' -> '{mc.allName}' under '{parentNode.allName}'");
                 }
             });
+
+            // AOT: 编译时预编译标记
+            // 仅注册到处理器，暂不关联其它逻辑（导出/LLVM 后续接入）
+            // 参数（参考其它语言）：
+            //   0: optimizeLevel          - GraalVM -O / GCC -O0~-O3
+            //   1: target                 - .NET RID / GraalVM --target / GCC target triple
+            //   2: linkMode               - GraalVM --static/--shared / GCC -static/-shared
+            //   3: isDebugInfo            - GraalVM -g / GCC -g
+            //   4: isTrimming             - .NET PublishTrimmed / TrimMode
+            //   5: isInitializeAtBuildTime- GraalVM --initialize-at-build-time
+            RegisterCompileHandler("AOT", (attr, owner) =>
+            {
+                // 预留：暂无逻辑，仅记录挂载信息
+                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                    $"AOT: attribute registered on '{owner?.allName}' (no logic yet)");
+            });
         }
 
         #region Compile-Time Processing

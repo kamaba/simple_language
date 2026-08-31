@@ -108,6 +108,7 @@ namespace SimpleLanguage.Core
             switch (name)
             {
                 case "Nickname":
+                case "AOT":
                     return 0; // Compile
                 case "Condition":
                 case "Route":

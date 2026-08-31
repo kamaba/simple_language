@@ -12,9 +12,9 @@ llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后�
 
 1. cvm 只使用三色方案  然后使用 引用计数的方案，在结尾 后把内存收集
 机制差的:
-函数名称和类名冲突时候的处理
 
 优化FrontEnd层
+函数名称和类名冲突时候的处理
 编码相关的
 压缩类
 再增加一些ErrorShow, 
@@ -47,7 +47,6 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 
 4. 增加协程  await 或者是使用go  我要增加一个协程的机制，但对于函数，不要使用async进行函数污染， 使用使用await 对一个spawn的协程进行 等待，然后使用yield的进行协程的返回， spawn出来的，其实就是一个task, 可以对task,进行await, cancel,等的操作，
 
-siwtch的改造，首先要改成逻辑在cvm里边处理，而不是分化层不同的if 需要改FrontEnd层的IR,还有cvm里边的IRCode处理 再改完这个后，需要让switch 对多个数值的处理，使用|符号进行处理 比如 switch( i ){ case 1|2|3|4{} case 5|6|7{} default{} } 这种的， 还有一个支持对 is MetaClass 可以参考c#的用法
 11. 写json的支持 与data的联动
 
 12. 快速返回 对=> 的支持
