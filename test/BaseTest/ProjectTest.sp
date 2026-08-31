@@ -75,9 +75,10 @@ Project
         
         QueueTest.fun()
         TreeTest.fun()
-        !#
         LowercaseContainerTest.fun()
         SwitchTest.fun()
+        !#
+        CoroutineTest.fun()
 
 
         nowMs = Environment.nowMillis() - nowMs

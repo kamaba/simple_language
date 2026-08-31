@@ -69,7 +69,9 @@
       { "path": "Container/Tuple.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "DataStruct/Table.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "DataStruct/Tree.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
-      { "path": "DataStruct/BaseCsv.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 }
+      { "path": "DataStruct/BaseCsv.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
+      { "path": "Coroutine.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Container/Channel.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -352,7 +354,33 @@
     { "name": "SystemBstFind",                "returnType": "object", "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_bst_find" },
     { "name": "SystemBstRemove",              "returnType": "bool",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_bst_remove" },
     { "name": "SystemBstMinNode",             "returnType": "object", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_bst_min_node" },
-    { "name": "SystemBstMaxNode",             "returnType": "object", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_bst_max_node" }
+    { "name": "SystemBstMaxNode",             "returnType": "object", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_bst_max_node" },
+    // ---- Coroutine native calls (Coroutine.sl): 协程调度与聚合 ----
+    { "name": "SystemCoroutineSpawn0",        "returnType": "Int64",  "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_spawn0" },
+    { "name": "SystemCoroutineSpawn1",        "returnType": "Int64",  "params": ["string", "object"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_spawn1" },
+    { "name": "SystemCoroutineSpawn2",        "returnType": "Int64",  "params": ["string", "object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_spawn2" },
+    { "name": "SystemCoroutineSpawn3",        "returnType": "Int64",  "params": ["string", "object", "object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_spawn3" },
+    { "name": "SystemCoroutineYield",         "returnType": "void",   "params": [], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_yield" },
+    { "name": "SystemCoroutineSleep",         "returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_sleep" },
+    { "name": "SystemCoroutineCurrent",       "returnType": "Int64",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_current" },
+    { "name": "SystemCoroutineStatus",        "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_status" },
+    { "name": "SystemCoroutineBlockedReason", "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_blocked_reason" },
+    { "name": "SystemCoroutineAwait",         "returnType": "object", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_await" },
+    { "name": "SystemCoroutineWaitAll2",      "returnType": "void",   "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_wait_all2" },
+    { "name": "SystemCoroutineWaitAll3",      "returnType": "void",   "params": ["Int64", "Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_wait_all3" },
+    { "name": "SystemCoroutineWaitAny2",      "returnType": "Int64",  "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_wait_any2" },
+    { "name": "SystemCoroutineWaitAny3",      "returnType": "Int64",  "params": ["Int64", "Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_wait_any3" },
+    { "name": "SystemCoroutineNextCompleted2", "returnType": "Int64", "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_next_completed2" },
+    { "name": "SystemCoroutineNextCompleted3", "returnType": "Int64", "params": ["Int64", "Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_next_completed3" },
+    { "name": "SystemCoroutineWaitTimeout",   "returnType": "bool",   "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_wait_timeout" },
+    { "name": "SystemCoroutineCancel",        "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_cancel" },
+    // ---- Channel native calls (Container/Channel.sl): 协程间通信 ----
+    { "name": "SystemChannelCreate",          "returnType": "Int64",  "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_channel_create" },
+    { "name": "SystemChannelSend",            "returnType": "void",   "params": ["Int64", "object"], "isVariadic": false, "cvmFunction": "vm_sys_channel_send" },
+    { "name": "SystemChannelRecv",            "returnType": "object", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_channel_recv" },
+    { "name": "SystemChannelClose",           "returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_channel_close" },
+    { "name": "SystemChannelCount",           "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_channel_count" },
+    { "name": "SystemChannelIsClosed",        "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_channel_is_closed" }
   ],
   "struct": [
       { "namespace": "Core", "children": 
@@ -400,7 +428,12 @@
         { "class": "Tuple<T1,T2,T3,T4,T5>" },
         { "class": "Tuple<T1,T2,T3,T4,T5,T6>" },
         { "class": "Tuple<T1,T2,T3,T4,T5,T6,T7>" },
-        { "class": "Tuple<T1,T2,T3,T4,T5,T6,T7,T8>" }
+        { "class": "Tuple<T1,T2,T3,T4,T5,T6,T7,T8>" },
+        { "class": "Coroutine" },
+        { "class": "CoroutineStatus" },
+        { "class": "CoroutineBlockReason" },
+        { "class": "Channel" },
+        { "class": "Channel<T>" }
       ] }
   ],
   "export": {

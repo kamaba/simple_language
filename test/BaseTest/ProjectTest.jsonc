@@ -79,7 +79,8 @@
       { "path": "StackTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "QueueTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "TreeTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "GoToLabelTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "GoToLabelTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "CoroutineTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
