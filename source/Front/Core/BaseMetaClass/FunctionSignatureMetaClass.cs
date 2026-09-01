@@ -27,6 +27,10 @@ namespace SimpleLanguage.Core
             // allName 设为 "FunctionSig_<aliasName>", 使 classId 唯一但不与内置 functionMetaClass 冲突
             m_Name = "FunctionSig_" + aliasName;
             m_AllName = m_Name;
+            // SL 类型系统层面继承内置 Function 类型(基类构造默认继承 Object),
+            // 使 Func<> 签名类型与 function/function 声明变量之间可双向类型兼容
+            // (ValidateClassTypeRelation 走 extend 链, 参数匹配/赋值检查依赖该关系)
+            SetExtendClass( CoreMetaClassManager.functionMetaClass );
             m_ReturnMetaType = returnType;
             if ( paramTypes != null )
             {

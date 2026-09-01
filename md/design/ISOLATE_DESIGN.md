@@ -739,7 +739,7 @@ Created ──────▶ Ready ──────▶ Running ──┬─�
 
 ### 5.2.1 入口：函数变量（三种等价形态）
 
-`spawnN` / `runN` 的第一个参数是**函数值**，不是方法名字符串。语言已支持函数类型（见 `doc/closure-design.md`、`test/BaseTest/CoroutineKeywordTest.sl` K3/K4 组），以下三种写法**等价且都合法**：
+`spawnN` / `runN` 的第一个参数是**函数值**，不是方法名字符串。语言已支持函数类型（见 `doc/closure-design.md`、`test/BaseTest/CoroutineTest.sl` K 组），以下三种写法**等价且都合法**：
 
 | 形态 | 声明写法 | 说明 |
 |------|---------|------|

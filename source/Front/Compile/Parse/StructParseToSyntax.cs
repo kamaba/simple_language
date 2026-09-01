@@ -597,7 +597,7 @@ namespace SimpleLanguage.Compile
                 return null;
             }
 
-            // spawn/await 关键字展开: 把 spawn f(a,b) / await expr 替换为 Coroutine.spawnClosureN(...) / Coroutine.awaitFunction(...) 调用节点
+            // spawn/await 关键字展开: 把 spawn f(a,b) / await expr 替换为 CoroutineManager.spawnClosureN(...) / CoroutineManager.awaitFunction(...) 调用节点
             TransformCoroutineKeywordNodes(pNodeList);
 
             List<Node> beforeNodeList = new List<Node>();
@@ -988,15 +988,15 @@ namespace SimpleLanguage.Compile
         }
 
         /// <summary>
-        /// 程序化合成 Coroutine.methodName( args... ) 的 IdentifierLink 调用节点,
-        /// 结构与正常解析 "Coroutine.methodName( args... )" 完全一致。
+        /// 程序化合成 CoroutineManager.methodName( args... ) 的 IdentifierLink 调用节点,
+        /// 结构与正常解析 "CoroutineManager.methodName( args... )" 完全一致。
         /// 注意: argNodes 原样作为 Par 的 childList, 多实参时由调用者负责插入 Comma 分隔节点。
         /// </summary>
         private Node CreateCoroutineCallNode( Token keyToken, string methodName, List<Node> argNodes )
         {
-            // Coroutine 根节点
+            // CoroutineManager 根节点
             Token corToken = new Token(keyToken);
-            corToken.SetLexeme("Coroutine", ETokenType.Identifier);
+            corToken.SetLexeme("CoroutineManager", ETokenType.Identifier);
             Node corNode = new Node(corToken);
             corNode.nodeType = ENodeType.IdentifierLink;
 
@@ -1036,9 +1036,9 @@ namespace SimpleLanguage.Compile
 
         /// <summary>
         /// spawn/await 关键字展开 (原地修改节点列表):
-        ///     spawn f(a,b)              ->  Coroutine.spawnClosure2( f, a, b )
-        ///     spawn function(){...}     ->  先提升为具名闭包语句, 再 Coroutine.spawnClosure0( tmpName )
-        ///     await expr                ->  Coroutine.awaitFunction( expr )
+        ///     spawn f(a,b)              ->  CoroutineManager.spawnClosure2( f, a, b )
+        ///     spawn function(){...}     ->  先提升为具名闭包语句, 再 CoroutineManager.spawnClosure0( tmpName )
+        ///     await expr                ->  CoroutineManager.awaitFunction( expr )
         /// </summary>
         private void TransformCoroutineKeywordNodes( List<Node> pNodeList )
         {
@@ -1106,7 +1106,7 @@ namespace SimpleLanguage.Compile
                         ParseSyntax(braceNode);
                         m_CurrentNodeInfoStack.Pop();
 
-                        // 2. 替换为 Coroutine.spawnClosure0( tmpName )
+                        // 2. 替换为 CoroutineManager.spawnClosure0( tmpName )
                         Token tmpToken = new Token(nameToken);
                         Node tmpRefNode = new Node(tmpToken);
                         tmpRefNode.nodeType = ENodeType.IdentifierLink;
@@ -1117,7 +1117,7 @@ namespace SimpleLanguage.Compile
                     }
                     else if (opNode.nodeType == ENodeType.IdentifierLink)
                     {
-                        // spawn 函数变量调用: spawn f(a,b) -> Coroutine.spawnClosureN( f, a, b )
+                        // spawn 函数变量调用: spawn f(a,b) -> CoroutineManager.spawnClosureN( f, a, b )
                         var linkList = opNode.GetLinkNodeList(true);
                         var lastLinkNode = linkList[linkList.Count - 1];
                         var parNode = lastLinkNode.parNode;

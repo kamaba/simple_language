@@ -50,11 +50,14 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 
 字节码序例化相互转化过程
 
-4. 增加协程  await 或者是使用go  我要增加一个协程的机制，但对于函数，不要使用async进行函数污染， 使用使用await 对一个spawn的协程进行 等待，然后使用yield的进行协程的返回， spawn出来的，其实就是一个task, 可以对task,进行await, cancel,等的操作，
+4. 增加协程  await 或者是使用go  我要增加一个协程的机制，但对于函数，不要使用async进行函数污染， 使用使用await 对一个spawn的协程进行 等待，然后使用yield的进行协程的返回， spawn出来的，其实就是一个task, 可以对task,进行await, cancel,等的操作，  
 
-等待使用Coroutine.waitAny( params object[] coroutines ) 增加一个这样的方法  不有就是使用语法糖 cor 去替换Coroutine 当然有几种方案，直接在解析层包括token->node层就解析成Coroutine 还有一种就是使用typealias的方式，你感觉那种更合适就用那种吧   Coroutine.spawn 也增加一个无限参数传入的方法，使用params object[] 的定义
+等待使用Coroutine.waitAny( params object[] coroutines ) 增加一个这样的方法  不有就是使用语法糖 cor 去替换Coroutine 当然有几种方案，直接在解析层包括token->node层就解析成Coroutine 还有一种就是使用typealias的方式，你感觉那种更合适就用那种吧   Coroutine.spawn 也增加一个无限参数传入的方法，使用params object[] 的定义 把awaitFunction 改成awaitHandle吧  再在用例里边增加一个比较 复杂的 把Unity里边协程 的等待时间 等待条件 等待其它的一些复杂用例，也写几个，加入到CoroutineTest.sl里边，然后 把CoroutineKeywordTest.sl 合并到CoroutineTest.sl 里边
+
 
 现在写完协程有几个问题，第一个是 关于协程的关键字，现在有三个一个是spawn 一个是await 一个是yield 但现在貌似看了下，没有这三个 yield 其实是语法糖，cor.Yield()函数的调用     第二个问题，就是调匿名函数的问题，我发现现在没有对匿名函数类型的定义，现在要增加下，一种是function的定义 也就是，如果定义了function则不检查函数类型， 相当于变量的var 还有一种是Func<void,int,int> 这种的定义，可以参考C# 就是 第一个是返回类型，后边是传入的参数， 就是函数的定义类型，在有这个的功能后，传入的spawn 可以通过函数变成变量的形式去调用，或者是匿名，或者是定义类型的函数，然后去实体调用，把这块的逻辑再完善下， 再有一个问题就是 关于关键字，像在Coroutine类中，尽量不使用已经有的关键字，而是定义解除冲突的。 好吧，开始执行下这些吧，然后再在测试用例里边增加用例，然后测试通过
+
+等待使用Coroutine.waitAny( params object[] coroutines ) 增加一个这样的方法  不有就是使用语法糖 cor 去替换Coroutine 当然有几种方案，直接在解析层包括token->node层就解析成Coroutine 还有一种就是使用typealias的方式，你感觉那种更合适就用那种吧   Coroutine.spawn 也增加一个无限参数传入的方法，使用params object[]   把awaitFunction 改成awaitHandle吧 
 
 11. 写json的支持 与data的联动
 
