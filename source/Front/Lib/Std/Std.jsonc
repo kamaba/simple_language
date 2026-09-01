@@ -40,7 +40,16 @@
       { "path": "Node.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Data/Table.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Data/Tree.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
-      { "path": "DB/Sqlite.sl", "group": "std", "tag": "db", "ignore": false, "priority": 0 }
+      { "path": "DB/Sqlite.sl", "group": "std", "tag": "db", "ignore": false, "priority": 0 },
+      { "path": "Isolate/IsolateStatus.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/IsolateError.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/Capability.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/SendPort.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/ReceivePort.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/RawReceivePort.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/TransferableData.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/IsolateGroup.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/Isolate.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -114,7 +123,16 @@
          ]
       },
       { "class": "Component" },
-      { "class": "Node" }
+      { "class": "Node" },
+      { "class": "IsolateStatus" },
+      { "class": "IsolateError" },
+      { "class": "Capability" },
+      { "class": "SendPort" },
+      { "class": "ReceivePort" },
+      { "class": "RawReceivePort" },
+      { "class": "TransferableData" },
+      { "class": "IsolateGroup" },
+      { "class": "Isolate" }
   ], 
   "systemCalls": 
   [
@@ -184,7 +202,42 @@
     { "name": "SystemSqlite3BindText",          "returnType": "Int32",  "params": ["Int64", "Int32", "string"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_bind_text" },
     { "name": "SystemSqlite3Changes",           "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_changes" },
     { "name": "SystemSqlite3LastInsertRowid",   "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_last_insert_rowid" },
-    { "name": "SystemSqlite3Errmsg",            "returnType": "string", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_errmsg" }
+    { "name": "SystemSqlite3Errmsg",            "returnType": "string", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_errmsg" },
+    // ---- Isolate calls (Std/Isolate/*.sl) ----
+    { "name": "SystemIsolateCurrent",              "returnType": "object", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_isolate_current" },
+    { "name": "SystemIsolateSpawn0",               "returnType": "object", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_spawn0" },
+    { "name": "SystemIsolateSpawn1",               "returnType": "object", "params": ["object","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_spawn1" },
+    { "name": "SystemIsolateSpawn2",               "returnType": "object", "params": ["object","object","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_spawn2" },
+    { "name": "SystemIsolateSpawn3",               "returnType": "object", "params": ["object","object","object","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_spawn3" },
+    { "name": "SystemIsolateRun0",                 "returnType": "object", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_run0" },
+    { "name": "SystemIsolateRun1",                 "returnType": "object", "params": ["object","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_run1" },
+    { "name": "SystemIsolateRun2",                 "returnType": "object", "params": ["object","object","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_run2" },
+    { "name": "SystemIsolateRun3",                 "returnType": "object", "params": ["object","object","object","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_run3" },
+    { "name": "SystemIsolateExit",                 "returnType": "void",   "params": ["Int64","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_exit" },
+    { "name": "SystemIsolatePause",                "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_pause" },
+    { "name": "SystemIsolateResume",               "returnType": "void",   "params": ["Int64","Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_resume" },
+    { "name": "SystemIsolateKill",                 "returnType": "void",   "params": ["Int64","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_kill" },
+    { "name": "SystemIsolatePing",                 "returnType": "void",   "params": ["Int64","Int64","object","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_ping" },
+    { "name": "SystemIsolateSetErrorsFatal",       "returnType": "void",   "params": ["Int64","bool"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_set_errors_fatal" },
+    { "name": "SystemIsolateAddOnExitListener",    "returnType": "void",   "params": ["Int64","Int64","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_add_on_exit_listener" },
+    { "name": "SystemIsolateAddErrorListener",     "returnType": "void",   "params": ["Int64","Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_add_error_listener" },
+    { "name": "SystemIsolateStatus",               "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_status" },
+    { "name": "SystemIsolateNew",                  "returnType": "object", "params": ["Int64","Int64","Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_new" },
+    { "name": "SystemIsolateGroupCurrent",         "returnType": "Int64",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_isolate_group_current" },
+    { "name": "SystemIsolateGroupExit",            "returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_group_exit" },
+    { "name": "SystemIsolateGroupCount",           "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_group_count" },
+    { "name": "SystemReceivePortCreate",           "returnType": "Int64",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_receive_port_create" },
+    { "name": "SystemPortSendPort",                "returnType": "object", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_port_send_port" },
+    { "name": "SystemPortSend",                    "returnType": "void",   "params": ["Int64","object"], "isVariadic": false, "cvmFunction": "vm_sys_port_send" },
+    { "name": "SystemPortRecv",                    "returnType": "object", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_port_recv" },
+    { "name": "SystemPortTryRecv",                 "returnType": "object", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_port_try_recv" },
+    { "name": "SystemPortClose",                   "returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_port_close" },
+    { "name": "SystemPortCount",                   "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_port_count" },
+    { "name": "SystemPortIsClosed",                "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_port_is_closed" },
+    { "name": "SystemTransferFromBytes",           "returnType": "Int64",  "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_from_bytes" },
+    { "name": "SystemTransferMaterialize",         "returnType": "object", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_materialize" },
+    { "name": "SystemTransferSize",                "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_size" },
+    { "name": "SystemTransferIsValid",             "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_is_valid" }
   ],
   "export": {
     "moduleName": "Std",

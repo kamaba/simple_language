@@ -295,7 +295,7 @@ CoroutineTest
     # W3：分三步递增 g_wcount（每步 sleep 30ms）
     static coroWCount3()
     {
-        Coroutine.sleep( 30 )
+        coro.sleep( 30 )
         CoroutineTest.g_wcount = CoroutineTest.g_wcount + 1
         Coroutine.sleep( 30 )
         CoroutineTest.g_wcount = CoroutineTest.g_wcount + 1
@@ -310,7 +310,7 @@ CoroutineTest
         {
             ret CoroutineTest.g_wdone
         }
-        Coroutine.waitUntil( w2pred )
+        coro.waitUntil( w2pred )
         CoroutineTest.g_wcount = CoroutineTest.g_wcount + 1
     }
 
