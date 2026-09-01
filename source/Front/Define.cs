@@ -341,9 +341,13 @@ namespace SimpleLanguage
         /// <summary> 标识符 </summary>
         Identifier,
         /// <summary> async </summary>
-        Async,
-        /// <summary> await </summary>
+        //Async,
+        ///// <summary> await </summary>
         Await,
+        /// <summary> spawn（协程生成关键字，一元前缀表达式）</summary>
+        Spawn,
+        /// <summary> yield（协程让出关键字，语句）</summary>
+        Yield,
         /// <summary> throws </summary>
         Throws,
 

@@ -274,7 +274,7 @@ namespace SimpleLanguage.Core
             if (fme == null) return null;
 
             var assignToken = new Token(fm.path, ETokenType.Assign, "=", line, col);
-            return new FileMetaOpAssignSyntax(varRef, assignToken, null, null, null, fme, true);
+            return new FileMetaOpAssignSyntax(varRef, assignToken, null, null, null, null, fme, true);
         }
 
         /// <summary>

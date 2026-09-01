@@ -4,7 +4,8 @@
  *
  * 说明：
  *  - 协程在 SL 层以 Int64 句柄表示（C VM 内部为 VMCoroutine* 的注册表 id）。
- *  - 本语言无 spawn/await/yield 关键字支持，全部通过本类静态方法完成。
+ *  - yield/await/spawn 为前端关键字（语法糖），分别展开为本类 yieldNow/awaitFunction
+ *    与闭包 spawn 调用；显式调用本类方法亦合法。
  *  - 所有方法直接转发到 C VM 系统调用（见 coroutine_system_method.c）。
  !#
 
@@ -48,13 +49,48 @@ public class Coroutine extends Object
         ret SystemCoroutineSpawn3(methodName, arg0, arg1, arg2)
     }
 
+    #!
+     * 以无参闭包创建并启动协程。
+     * 闭包可为匿名闭包、function 声明变量或 Func&lt;&gt; 类型变量。
+     * 返回协程句柄。spawn 关键字即本组方法的语法糖。
+    !#
+    public static Int64 spawnClosure0(object closure)
+    {
+        ret SystemCoroutineSpawnClosure0(closure)
+    }
+
+    #!
+     * 以 1 参闭包创建并启动协程（参数为 object）。
+    !#
+    public static Int64 spawnClosure1(object closure, object arg0)
+    {
+        ret SystemCoroutineSpawnClosure1(closure, arg0)
+    }
+
+    #!
+     * 以 2 参闭包创建并启动协程（参数为 object）。
+    !#
+    public static Int64 spawnClosure2(object closure, object arg0, object arg1)
+    {
+        ret SystemCoroutineSpawnClosure2(closure, arg0, arg1)
+    }
+
+    #!
+     * 以 3 参闭包创建并启动协程（参数为 object）。
+    !#
+    public static Int64 spawnClosure3(object closure, object arg0, object arg1, object arg2)
+    {
+        ret SystemCoroutineSpawnClosure3(closure, arg0, arg1, arg2)
+    }
+
     #! ---------- 调度控制 ---------- !#
 
     #!
      * 让出当前协程，允许调度器运行其它就绪协程。
      * 若当前不在协程上下文（root 直接执行），则空操作。
+     * yield 语句关键字即本方法的语法糖。
     !#
-    public static void yield()
+    public static void yieldNow()
     {
         SystemCoroutineYield()
     }

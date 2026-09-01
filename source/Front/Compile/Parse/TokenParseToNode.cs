@@ -133,7 +133,9 @@ namespace SimpleLanguage.Compile
         }
         private Node AddKeyNode(Token token)
         {
-            if (m_CurrentNode.nodeType == ENodeType.Angle)
+            // Func<void,int,int> 函数签名类型中 void 出现在 <> 内，
+            // 保持为 Angle 的普通 Key 子节点（不把 <> 退化为比较符号）
+            if (m_CurrentNode.nodeType == ENodeType.Angle && token.type != ETokenType.Void)
             {
                 RestoreAngleNode();
             }
@@ -809,6 +811,9 @@ namespace SimpleLanguage.Compile
                 case ETokenType.ErrDefer:
                 case ETokenType.Checked:
                 case ETokenType.Unchecked:
+                case ETokenType.Await:    // await 一元前缀（表达式），在 CreateFileMetaExpress 展开
+                case ETokenType.Spawn:    // spawn 一元前缀（表达式），在 CreateFileMetaExpress 展开
+                case ETokenType.Yield:    // yield 语句关键字，在 StructParseToSyntax 展开为 Coroutine.yieldNow()
                     {
                         AddKeyNode(token);
                     }

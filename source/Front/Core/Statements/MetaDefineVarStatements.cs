@@ -120,11 +120,20 @@ namespace SimpleLanguage.Core
                 //    isDynamicClass = true;
                 //    leftMt = null;// new MetaType(CoreMetaClassManager.dynamicMetaClass);
                 //}
-                //else 
+                //else
                     if( m_FileMetaOpAssignSyntax.dataToken != null )
                 {
                     isSynamicData = true;
                     leftMt = new MetaType(CoreMetaClassManager.dynamicMetaData );
+                }
+                else if (m_FileMetaOpAssignSyntax.functionToken != null)
+                {
+                    // function 声明: 不检查函数签名类型, 变量类型固定为 Function 基类
+                    // (类似 var 的宽松语义), 后续对该变量的调用 f(a,b) 按闭包/函数调用处理
+                    leftMt = new MetaType(CoreMetaClassManager.functionMetaClass);
+                    m_DefineVarMetaVariable.SetMetaDefineType(leftMt);
+                    m_DefineVarMetaVariable.SetIsDefineMetaType(true);
+                    m_DefineVarMetaVariable.SetRealMetaType(new MetaType(leftMt));
                 }
                 if (m_FileMetaOpAssignSyntax.variableRef != null)
                 {
@@ -222,7 +231,9 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error DefineVarStatement表达式中返回定义类型为空 " );
+                    // Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error DefineVarStatement表达式中返回定义类型为空 "
+                    //     + $"(left={m_DefineVarMetaVariable.defineMetaType?.metaClass?.allName ?? "null"}, "
+                    //     + $"right={expressRetMetaDefineType?.metaClass?.allName ?? "null"}, var={m_Name}) ");
                 }
             }
             SetTRMetaVariable(m_DefineVarMetaVariable);

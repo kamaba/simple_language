@@ -169,6 +169,7 @@ namespace SimpleLanguage.Compile
     {
         public FileMeta fileMeta => m_FileMeta;
         public FileMetaCallLink defineClassCallLink => m_DefineClassCallLink;
+        public Node node => m_Node;
         public List<string> nameList
         {
             get

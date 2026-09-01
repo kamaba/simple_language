@@ -1012,7 +1012,8 @@ namespace SimpleLanguage.Compile
         public Token dataToken => m_DataToken;
         public Token constToken => m_ConstToken;
         public Token staticToken => m_StaticToken;
-        public bool hasDefine => m_DynamicToken != null || m_DataToken != null || m_VarToken != null;
+        public Token functionToken => m_FunctionToken;
+        public bool hasDefine => m_DynamicToken != null || m_DataToken != null || m_VarToken != null || m_FunctionToken != null;
 
         private FileMetaCallLink m_VariableRef = null;
         private FileMetaBaseTerm m_Express = null;
@@ -1022,8 +1023,9 @@ namespace SimpleLanguage.Compile
         private Token m_VarToken = null;
         private Token m_ConstToken = null;
         private Token m_StaticToken = null;
+        private Token m_FunctionToken = null;
         public FileMetaOpAssignSyntax(FileMetaCallLink fileMetaVariableRef, Token _opAssignToken, Token _dynamicClassToken,
-            Token _dynamicDataToken, Token _varToken,
+            Token _dynamicDataToken, Token _varToken, Token _functionToken,
             FileMetaBaseTerm fme, bool flag = false  )
         {
             m_VariableRef = fileMetaVariableRef;
@@ -1031,6 +1033,7 @@ namespace SimpleLanguage.Compile
             m_DynamicToken = _dynamicClassToken;
             m_DataToken = _dynamicDataToken;
             m_VarToken = _varToken;
+            m_FunctionToken = _functionToken;
             m_Express = fme;
             m_Token = fileMetaVariableRef.callNodeList[0].token;
             isAppendSemiColon = flag;

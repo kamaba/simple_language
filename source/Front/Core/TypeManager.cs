@@ -956,6 +956,19 @@ namespace SimpleLanguage.Core
             // 若是别名且有多个元素，则从别名目标所在的模块/命名空间继续解析剩余路径。
             if (fmcd.stringList != null && fmcd.stringList.Count > 0)
             {
+                // Func<RetType, ParamType, ...> C# 风格函数类型:
+                // 第一个模板实参是返回类型, 其余为参数类型
+                // 返回指向 FunctionSignatureMetaClass 的 MetaType (携带函数签名)
+                if (fmcd.stringList.Count == 1 && fmcd.stringList[0] == "Func"
+                    && fmcd.inputTemplateNodeList != null && fmcd.inputTemplateNodeList.Count >= 1)
+                {
+                    var funcMt = TryResolveFuncTemplateType(curMc, findFun, fmcd);
+                    if (funcMt != null)
+                    {
+                        return ApplyFileMetaClassDefineDecorations(funcMt);
+                    }
+                }
+
                 if (TryResolveTypeAlias(fmcd.stringList[0], fmcd.fileMeta, out MetaType aliasTarget) && aliasTarget != null)
                 {
                     // 模块别名仅在多元素路径时有意义（如 Core.IIterable），单元素时跳过
@@ -1022,7 +1035,64 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaType AddArrayTemplate(MetaType arrayMt, List<int> list)
+        /// <summary>
+        /// 解析 Func&lt;RetType, ParamType, ...&gt; C# 风格函数类型
+        /// 第一个模板实参为返回类型, 其余为参数类型, 返回 FunctionSignatureMetaClass
+        /// </summary>
+        private MetaType TryResolveFuncTemplateType(MetaClass curMc, MetaMemberFunction findFun, FileMetaClassDefine fmcd)
+        {
+            var tplList = fmcd.inputTemplateNodeList;
+            var retMt = ResolveFuncTemplateArgType(curMc, findFun, tplList[0], true);
+            if (retMt == null)
+            {
+                // Log.AddMetaCoreLog(LID.ShowExtendMessage, fmcd.classNameToken,
+                //     "Error Func<> 的返回类型解析失败: " + fmcd.allName);
+                return null;
+            }
+            var paramMtList = new List<MetaType>();
+            for (int i = 1; i < tplList.Count; i++)
+            {
+                var pmt = ResolveFuncTemplateArgType(curMc, findFun, tplList[i], false);
+                if (pmt == null)
+                {
+                    // Log.AddMetaCoreLog(LID.ShowExtendMessage, fmcd.classNameToken,
+                    //     "Error Func<> 的第" + i + "个参数类型解析失败: " + fmcd.allName);
+                    return null;
+                }
+                paramMtList.Add(pmt);
+            }
+            var fsmc = new FunctionSignatureMetaClass(fmcd.allName, retMt, paramMtList);
+            return new MetaType(fsmc);
+        }
+        /// <summary>
+        /// 解析 Func&lt;&gt; 单个模板实参类型; void 仅允许出现在返回类型位置
+        /// </summary>
+        private MetaType ResolveFuncTemplateArgType(MetaClass curMc, MetaMemberFunction findFun, FileInputTemplateNode fitn, bool isReturnType)
+        {
+            var argNode = fitn?.node;
+            if (argNode == null)
+            {
+                return null;
+            }
+            var argNameList = FileMetatUtil.GetLinkStringMidPeriodList(argNode.GetLinkTokenList());
+            if (argNameList.Count == 1 && argNameList[0] == "void")
+            {
+                if (!isReturnType)
+                {
+                    // Log.AddMetaCoreLog(LID.ShowExtendMessage, argNode.token,
+                    //     "Error Func<> 的参数类型不允许为 void, 仅返回类型可以使用 void!");
+                    return null;
+                }
+                return new MetaType(CoreMetaClassManager.voidMetaClass);
+            }
+            var subFmcd = new FileMetaClassDefine(fitn.fileMeta, argNode);
+            if (subFmcd.stringList.Count == 0)
+            {
+                return null;
+            }
+            return GetMetaTypeByTemplateFunction(curMc, findFun, subFmcd);
+        }
+        public MetaType AddArrayTemplate(MetaType arrayMt, List<int> list )
         {
             MetaType cmt = new MetaType(arrayMt.metaClass);
             for (int i = list.Count - 1; i >= 0; i--)

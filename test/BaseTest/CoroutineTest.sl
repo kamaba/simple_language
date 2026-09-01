@@ -2,8 +2,9 @@
 # CoroutineTest.sl -- 协程（Coroutine）功能全量测试
 #
 # 参考设计档：md/design/COROUTINE_DESIGN.md 第 8 章（A-J 组验收用例）。
-# 本语言无 spawn/await/yield 关键字（前端零支持），全部用例以库 API 形式编写：
-#   Coroutine.spawn0..3 / yield / sleep / current / status / blockedReason /
+# yield/await/spawn 关键字为语法糖（yield -> Coroutine.yieldNow() 等），
+# 本文件以显式库 API 形式编写底层用例，关键字形态见 CoroutineKeywordTest.sl：
+#   Coroutine.spawn0..3 / yieldNow / sleep / current / status / blockedReason /
 #   await / waitAll2/3 / waitAny2/3 / nextCompleted2/3 / waitTimeout / cancel
 #   以及 Channel<T>（send / recv / close / count / isClosed）。
 #
@@ -15,7 +16,7 @@
 #     捕获时必须用裸 catch{}（不绑定变量）；SL 层 throw 的枚举异常
 #     才可用 catch XxxError ex 绑定。
 #  3. 前端不发射 SCHED_CHECK（回边公平性指令），调度公平性用例以
-#     显式 Coroutine.yield() 保证交替。
+#     显式 Coroutine.yieldNow() 保证交替。
 #  4. 主入口 static fun() 被包装为 root 协程（vm_scheduler_enter），
 #     因此 await/yield/sleep/current 从主入口调用全部有效。
 #  5. 设计档中的语法糖用例（spawn 函数字面量 / await 数组语法糖 /
@@ -119,7 +120,7 @@ CoroutineTest
         for Int32 i = 0, i < 10, i = i + 1
         {
             CoroutineTest.g_order = CoroutineTest.g_order + "A"
-            Coroutine.yield()
+            Coroutine.yieldNow()
         }
     }
 
@@ -129,7 +130,7 @@ CoroutineTest
         for Int32 i = 0, i < 10, i = i + 1
         {
             CoroutineTest.g_order = CoroutineTest.g_order + "B"
-            Coroutine.yield()
+            Coroutine.yieldNow()
         }
     }
 
@@ -137,7 +138,7 @@ CoroutineTest
     static coroYieldA()
     {
         CoroutineTest.g_order = CoroutineTest.g_order + "1"
-        Coroutine.yield()
+        Coroutine.yieldNow()
         CoroutineTest.g_order = CoroutineTest.g_order + "2"
     }
 
@@ -196,7 +197,7 @@ CoroutineTest
         {
             while ( true )
             {
-                Coroutine.yield()
+                Coroutine.yieldNow()
             }
         }
         finally
@@ -531,7 +532,11 @@ CoroutineTest
         }
         catch CoroTestError ex
         {
-            #caughtCode = ex.code
+            # catch 绑定变量静态类型为 object（无字段访问），与枚举成员比较
+            if ex == CoroTestError.BoomError
+            {
+                caughtCode = 201
+            }
         }
         label c6cleanup
         {
@@ -679,7 +684,11 @@ CoroutineTest
         }
         catch CoroTestError ex
         {
-            #code1 = ex.code
+            # catch 绑定变量静态类型为 object（无字段访问），与枚举成员比较
+            if ex == CoroTestError.BoomError
+            {
+                code1 = 201
+            }
         }
         check( "G1 错误跨协程传播", code1 == 201 )
 

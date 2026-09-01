@@ -368,6 +368,8 @@ namespace SimpleLanguage.Compile
                         default:
                             {
                                 Log.AddNodeLog(LID.ShowExtendMessage, node.token, "Error 不允许 在File头级目录中出现 : " + node.token.lexeme.ToString());
+                                // 无法识别的token也必须前进，否则死循环
+                                pnode.parseIndex++;
                             }
                             break;
                     }
@@ -379,6 +381,8 @@ namespace SimpleLanguage.Compile
                 else
                 {
                     Log.AddNodeLog(LID.ShowExtendMessage, node.token, "Error 不允许 在File头级目录中出现2 : " + node.token?.lexeme.ToString());
+                    // 无法识别的node也必须前进，否则死循环
+                    pnode.parseIndex++;
                 }
             }
 

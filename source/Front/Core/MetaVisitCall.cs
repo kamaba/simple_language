@@ -463,6 +463,16 @@ namespace SimpleLanguage.Core
             m_ClosureVariable = cv;
             // 闭包调用返回类型: 优先使用闭包函数推断出的返回类型, 无法确定时回退 object
             var funcRet = cv?.closureDefineStatements?.closureFunction?.returnMetaVariable?.defineMetaType;
+            if( funcRet == null )
+            {
+                // 非闭包变量的函数类型调用 (如 Func<返回类型,参数...> 声明的变量):
+                // 从变量的函数签名类型 FunctionSignatureMetaClass 取返回类型
+                var fmt = loadMv?.GetFinalMetaType();
+                if( fmt?.metaClass is FunctionSignatureMetaClass fsmc )
+                {
+                    funcRet = fsmc.returnMetaType;
+                }
+            }
             m_ReturnMetaType = funcRet ?? new MetaType( CoreMetaClassManager.objectMetaClass );
             if( paramCollection != null )
             {

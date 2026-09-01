@@ -29,8 +29,16 @@ namespace SimpleLanguage.IR.Statements
                 if (irExpress != null)
                 {
                     m_IRStatements.Add(irExpress);
-                    // Discard return value if any
-                    m_IRStatements.Add(new IRPop(irMethod));
+                    // Discard return value if any - but skip a void call: the
+                    // VM pushes nothing back for a void return (vm_frame_pop
+                    // skips void return slots), so an unconditional Pop would
+                    // underflow the eval stack (OpCode_Pop assert, e.g. the
+                    // "yield" keyword sugar expanding to Coroutine.yieldNow()).
+                    var expType = ms.expressNode.GetReturnMetaType();
+                    if (expType?.metaClass?.eType != EType.Void)
+                    {
+                        m_IRStatements.Add(new IRPop(irMethod));
+                    }
                 }
                 return;
             }

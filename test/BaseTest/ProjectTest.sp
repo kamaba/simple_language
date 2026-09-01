@@ -79,6 +79,7 @@ Project
         SwitchTest.fun()
         !#
         CoroutineTest.fun()
+        CoroutineKeywordTest.fun()
 
 
         nowMs = Environment.nowMillis() - nowMs

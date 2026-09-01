@@ -1725,7 +1725,10 @@ namespace SimpleLanguage.Compile
             {
                 if( offset >= m_Length)
                 {
-                    Log.AddTokenLog(LID.ShowExtendMessage, "offset >= length" );
+                    // 块注释 #! ... !# 未闭合：必须推进 m_Index 到文件末尾，
+                    // 否则主循环会把注释体当作代码重新词法化出 / * 等垃圾token
+                    // Log.AddTokenLog(LID.ShowExtendMessage, "Error 块注释 #! 未闭合，直接跳到文件末尾 : " + m_Path );
+                    m_Index = m_Length;
                     break;
                 }
                 
@@ -1740,6 +1743,11 @@ namespace SimpleLanguage.Compile
                     }
                     while ( true )
                     {
+                        if (offset + offset2 >= m_Length)
+                        {
+                            // 边界保护：'!' 后已无可读字符，未闭合交由外层统一处理
+                            break;
+                        }
                         schar = m_Buffer[offset + offset2++];
                         if (schar == '#')
                         {
@@ -2210,10 +2218,17 @@ namespace SimpleLanguage.Compile
                     extend = EType.Array;
                     break;
                 case "async":
-                    tokenType = ETokenType.Async;
+                    // Define.cs 中 ETokenType.Async 已被注释禁用，async 按普通标识符处理
+                    tokenType = ETokenType.Identifier;
                     break;
                 case "await":
                     tokenType = ETokenType.Await;
+                    break;
+                case "spawn":
+                    tokenType = ETokenType.Spawn;
+                    break;
+                case "yield":
+                    tokenType = ETokenType.Yield;
                     break;
                 case "throws":
                     tokenType = ETokenType.Throws;
