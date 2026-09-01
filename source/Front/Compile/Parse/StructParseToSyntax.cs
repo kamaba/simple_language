@@ -597,7 +597,7 @@ namespace SimpleLanguage.Compile
                 return null;
             }
 
-            // spawn/await 关键字展开: 把 spawn f(a,b) / await expr 替换为 CoroutineManager.spawnClosureN(...) / CoroutineManager.awaitFunction(...) 调用节点
+            // spawn/await 关键字展开: 把 spawn f(a,b) / await expr 替换为 CoroutineManager.spawnClosureN(...) / CoroutineManager.awaitHandle(...) 调用节点
             TransformCoroutineKeywordNodes(pNodeList);
 
             List<Node> beforeNodeList = new List<Node>();
@@ -1037,8 +1037,9 @@ namespace SimpleLanguage.Compile
         /// <summary>
         /// spawn/await 关键字展开 (原地修改节点列表):
         ///     spawn f(a,b)              ->  CoroutineManager.spawnClosure2( f, a, b )
+        ///     spawn c1.fun(a,b)         ->  CoroutineManager.spawnInstance2( c1, "fun", a, b )
         ///     spawn function(){...}     ->  先提升为具名闭包语句, 再 CoroutineManager.spawnClosure0( tmpName )
-        ///     await expr                ->  CoroutineManager.awaitFunction( expr )
+        ///     await expr                ->  CoroutineManager.awaitHandle( expr )
         /// </summary>
         private void TransformCoroutineKeywordNodes( List<Node> pNodeList )
         {
@@ -1115,11 +1116,23 @@ namespace SimpleLanguage.Compile
                         pNodeList.RemoveRange(i, opIndex + 3 - i);
                         pNodeList.Insert(i, callNode);
                     }
-                    else if (opNode.nodeType == ENodeType.IdentifierLink)
+                    else if (opNode.nodeType == ENodeType.IdentifierLink
+                        || (opNode.nodeType == ENodeType.Key && opNode.token?.type == ETokenType.This))
                     {
-                        // spawn 函数变量调用: spawn f(a,b) -> CoroutineManager.spawnClosureN( f, a, b )
+                        // spawn 函数变量调用: spawn f(a,b)      -> CoroutineManager.spawnClosureN( f, a, b )
+                        // spawn 实例方法调用: spawn c1.fun(a,b) -> CoroutineManager.spawnInstanceN( c1, "fun", a, b )
                         var linkList = opNode.GetLinkNodeList(true);
                         var lastLinkNode = linkList[linkList.Count - 1];
+                        // 标识符链为嵌套结构 (a.b.fun 表示为 a.extend=[.,b], b.extend=[.,fun]),
+                        // 沿 extend 尾部下钻取真正末节点; lastParentNode 为末节点的直接容器
+                        Node lastParentNode = null;
+                        while (lastLinkNode.extendLinkNodeList.Count > 0)
+                        {
+                            var tailNode = lastLinkNode.extendLinkNodeList[lastLinkNode.extendLinkNodeList.Count - 1];
+                            if (tailNode == null || tailNode.nodeType != ENodeType.IdentifierLink) break;
+                            lastParentNode = lastLinkNode;
+                            lastLinkNode = tailNode;
+                        }
                         var parNode = lastLinkNode.parNode;
                         if (parNode == null)
                         {
@@ -1144,20 +1157,65 @@ namespace SimpleLanguage.Compile
                             //     "Error spawn 目前最多支持 3 个参数!");
                             return;
                         }
-                        // 新实参 childList: [ f, Comma, 原实参节点... ] (原 childList 自带 Comma 分隔)
-                        List<Node> newArgNodes = new List<Node> { opNode };
-                        Token splitCommaToken = new Token(cnode.token);
-                        splitCommaToken.SetLexeme(",", ETokenType.Comma);
-                        Node splitCommaNode = new Node(splitCommaToken);
-                        splitCommaNode.nodeType = ENodeType.Comma;
-                        newArgNodes.Add(splitCommaNode);
-                        foreach (var pn in parNode.childList)
+                        Node callNode;
+                        if (lastLinkNode == opNode)
                         {
-                            if (pn == null) continue;
-                            if (pn.nodeType == ENodeType.Comment) continue;
-                            newArgNodes.Add(pn);
+                            // 闭包路径: 无链式后缀, 整个 opNode 即函数引用
+                            // 新实参 childList: [ f, Comma, 原实参节点... ] (原 childList 自带 Comma 分隔)
+                            List<Node> newArgNodes = new List<Node> { opNode };
+                            Token splitCommaToken = new Token(cnode.token);
+                            splitCommaToken.SetLexeme(",", ETokenType.Comma);
+                            Node splitCommaNode = new Node(splitCommaToken);
+                            splitCommaNode.nodeType = ENodeType.Comma;
+                            newArgNodes.Add(splitCommaNode);
+                            foreach (var pn in parNode.childList)
+                            {
+                                if (pn == null) continue;
+                                if (pn.nodeType == ENodeType.Comment) continue;
+                                newArgNodes.Add(pn);
+                            }
+                            callNode = CreateCoroutineCallNode(cnode.token, "spawnClosure" + argCount.ToString(), newArgNodes);
                         }
-                        Node callNode = CreateCoroutineCallNode(cnode.token, "spawnClosure" + argCount.ToString(), newArgNodes);
+                        else
+                        {
+                            // 实例路径: 末标识符为实例方法名, 前缀链为 receiver 对象
+                            // receiver = 末节点容器去掉末尾 [Period, 方法名] 二节点后的链
+                            var containerNode = lastParentNode != null ? lastParentNode : opNode;
+                            var trimmedExtend = new List<Node>(containerNode.extendLinkNodeList);
+                            if (trimmedExtend.Count >= 2)
+                                trimmedExtend.RemoveRange(trimmedExtend.Count - 2, 2);
+                            containerNode.SetLinkNode(trimmedExtend);
+                            // 方法名转为字符串常量节点
+                            string methodName = lastLinkNode.token != null && lastLinkNode.token.lexeme != null
+                                ? lastLinkNode.token.lexeme.ToString() : "";
+                            Token nameStrToken = new Token(cnode.token);
+                            nameStrToken.SetLexeme(methodName, ETokenType.String);
+                            Node nameStrNode = new Node(nameStrToken);
+                            nameStrNode.nodeType = ENodeType.ConstValue;
+                            // 新实参 childList: [ receiver, Comma, "方法名" (,Comma, 原实参节点...) ]
+                            List<Node> newArgNodes = new List<Node> { opNode };
+                            Token commaToken1 = new Token(cnode.token);
+                            commaToken1.SetLexeme(",", ETokenType.Comma);
+                            Node commaNode1 = new Node(commaToken1);
+                            commaNode1.nodeType = ENodeType.Comma;
+                            newArgNodes.Add(commaNode1);
+                            newArgNodes.Add(nameStrNode);
+                            if (argCount > 0)
+                            {
+                                Token commaToken2 = new Token(cnode.token);
+                                commaToken2.SetLexeme(",", ETokenType.Comma);
+                                Node commaNode2 = new Node(commaToken2);
+                                commaNode2.nodeType = ENodeType.Comma;
+                                newArgNodes.Add(commaNode2);
+                            }
+                            foreach (var pn in parNode.childList)
+                            {
+                                if (pn == null) continue;
+                                if (pn.nodeType == ENodeType.Comment) continue;
+                                newArgNodes.Add(pn);
+                            }
+                            callNode = CreateCoroutineCallNode(cnode.token, "spawnInstance" + argCount.ToString(), newArgNodes);
+                        }
                         pNodeList.RemoveRange(i, opIndex + 1 - i);
                         pNodeList.Insert(i, callNode);
                     }
@@ -1170,7 +1228,7 @@ namespace SimpleLanguage.Compile
                 }
                 else // await
                 {
-                    // await expr -> Coroutine.awaitFunction( expr )
+                    // await expr -> CoroutineManager.awaitHandle( expr )
                     // 收集操作数直到顶层二元符号/赋值/换行结束 (await 结合力高于二元运算符)
                     List<Node> operandNodes = new List<Node>();
                     int end = opIndex;
@@ -1185,7 +1243,7 @@ namespace SimpleLanguage.Compile
                             || n.nodeType == ENodeType.Comma)
                             break;
                         // as/is/isnot 二元关键字同样是操作数边界:
-                        // await h as int -> Coroutine.awaitFunction(h) as int
+                        // await h as int -> CoroutineManager.awaitHandle(h) as int
                         if (n.nodeType == ENodeType.Key
                             && (n.token?.type == ETokenType.As || n.token?.type == ETokenType.Is
                                 || n.token?.type == ETokenType.IsNot))
@@ -1197,7 +1255,7 @@ namespace SimpleLanguage.Compile
                         // Log.AddNodeLog(LID.ShowExtendMessage, cnode.token, "Error await 后缺少表达式!");
                         return;
                     }
-                    Node callNode = CreateCoroutineCallNode(cnode.token, "awaitFunction", operandNodes);
+                    Node callNode = CreateCoroutineCallNode(cnode.token, "awaitHandle", operandNodes);
                     pNodeList.RemoveRange(i, end - i);
                     pNodeList.Insert(i, callNode);
                 }
@@ -1506,8 +1564,8 @@ namespace SimpleLanguage.Compile
                 }
                 else if (akss.tokenType == ETokenType.Yield)
                 {
-                    // yield; 语句语法糖: 展开为 Coroutine.yieldNow()
-                    // 挂起当前协程, 让出执行权给调度器 (等价于旧写法 Coroutine.yieldNow())
+                    // yield; 语句语法糖: 展开为 CoroutineManager.yieldNow()
+                    // 挂起当前协程, 让出执行权给调度器 (等价于旧写法 CoroutineManager.yieldNow())
                     Node yieldCallNode = CreateCoroutineCallNode(akss.keyNode.token, "yieldNow", new List<Node>());
                     var yieldExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMeta,
                         new List<Node> { yieldCallNode }, FileMetaTermExpress.EExpressType.Common);
@@ -1519,7 +1577,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        // Log.AddNodeLog(LID.ShowExtendMessage, akss.keyNode.token, "Error yield 语句展开为 Coroutine.yieldNow() 失败!");
+                        // Log.AddNodeLog(LID.ShowExtendMessage, akss.keyNode.token, "Error yield 语句展开为 Coroutine.Yield() 失败!");
                     }
                 }
                 else if (akss.tokenType == ETokenType.Return

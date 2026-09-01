@@ -125,6 +125,17 @@ namespace SimpleLanguage.IR
             m_SourcePath = cls.sourcePath ?? "";
             m_MetaClassKind = (IRMetaClassKind)cls.metaClassKind;
             m_TemplateCount = cls.templateCount;
+
+            // 读回 @Nickname 别名（逗号分隔，含原名），供导入侧重建别名节点。
+            if (!string.IsNullOrEmpty(cls.exportNames))
+            {
+                foreach (var nm in cls.exportNames.Split(','))
+                {
+                    var t = nm.Trim();
+                    if (!string.IsNullOrEmpty(t) && !m_ExportNameList.Contains(t))
+                        m_ExportNameList.Add(t);
+                }
+            }
         }
 
         /// <summary>关联 MetaBase 宿主（在 Meta 层构建完成后调用）。</summary>

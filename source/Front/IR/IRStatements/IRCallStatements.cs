@@ -33,7 +33,7 @@ namespace SimpleLanguage.IR.Statements
                     // VM pushes nothing back for a void return (vm_frame_pop
                     // skips void return slots), so an unconditional Pop would
                     // underflow the eval stack (OpCode_Pop assert, e.g. the
-                    // "yield" keyword sugar expanding to Coroutine.yieldNow()).
+                    // "yield" keyword sugar expanding to Coroutine.Yield()).
                     var expType = ms.expressNode.GetReturnMetaType();
                     if (expType?.metaClass?.eType != EType.Void)
                     {

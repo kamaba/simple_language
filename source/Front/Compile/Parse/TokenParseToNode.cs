@@ -813,7 +813,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Unchecked:
                 case ETokenType.Await:    // await 一元前缀（表达式），在 CreateFileMetaExpress 展开
                 case ETokenType.Spawn:    // spawn 一元前缀（表达式），在 CreateFileMetaExpress 展开
-                case ETokenType.Yield:    // yield 语句关键字，在 StructParseToSyntax 展开为 Coroutine.yieldNow()
+                case ETokenType.Yield:    // yield 语句关键字，在 StructParseToSyntax 展开为 Coroutine.Yield()
                     {
                         AddKeyNode(token);
                     }

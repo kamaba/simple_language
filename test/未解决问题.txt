@@ -59,6 +59,13 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 
 等待使用Coroutine.waitAny( params object[] coroutines ) 增加一个这样的方法  不有就是使用语法糖 cor 去替换Coroutine 当然有几种方案，直接在解析层包括token->node层就解析成Coroutine 还有一种就是使用typealias的方式，你感觉那种更合适就用那种吧   Coroutine.spawn 也增加一个无限参数传入的方法，使用params object[]   把awaitFunction 改成awaitHandle吧 
 
+ OpCode_CoroutineCreate = 107,
+ OpCode_Await            = 108,
+ OpCode_SchedCheck       = 109, 这三个，如果没有用到的话就删除了吧，还有 我现在如果想在spawn 里边，调用 非静态函数，比如 Class1{ fun(){} }  var c1 = Class1(); spawn c1.fun()  也是允许的，这块也要处理下  还有现在我把CoroutineManager.Spawn改了下名，你跑CoroutineTest.sl 的时候，看看有没有错误没，如果有，修复下  
+
+再改下吧 把CoroutineManager改为Coroutine 然后把Coroutine改为Task 然后再增加一个机制，就是增加一个类似于CSharp里边Task的取消Task的机制，当某一个CancellationTokenSource 操作的时候，会影响 Task 这段 你先设计 下，然后再改
+
+
 11. 写json的支持 与data的联动
 
 12. 快速返回 对=> 的支持

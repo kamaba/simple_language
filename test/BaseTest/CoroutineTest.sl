@@ -39,6 +39,43 @@ enum CoroTestError extends Error
     BoomError = { code = 201, message = "coro-boom" }
 }
 
+# ---------- N 组辅助：实例方法 spawn 测试目标类 ----------
+CoroInstTarget
+{
+    int instVal = 0
+
+    int coroInstZero()
+    {
+        ret 42
+    }
+
+    int coroInstAdd2( int a, int b )
+    {
+        ret a + b
+    }
+
+    int coroInstSum3( int a, int b, int c )
+    {
+        ret a + b + c
+    }
+
+    # 写实例字段并跨 yield 保持 this 绑定（返回字段终值）
+    int coroInstDouble( int v )
+    {
+        this.instVal = this.instVal + v
+        yield;
+        this.instVal = this.instVal + v
+        ret this.instVal
+    }
+
+    # 实例方法内 spawn this.方法()（关键字 this 链形态）
+    int coroInstSpawnThis()
+    {
+        Coroutine h = spawn this.coroInstAdd2( 1, 2 )
+        ret await h as int
+    }
+}
+
 CoroutineTest
 {
     # ---------- 统一断言辅助：cond 为 true 打印 OK，否则打印 FAIL ----------
@@ -115,7 +152,7 @@ CoroutineTest
     static int coroIndirect()
     {
         Coroutine h = CoroutineManager.spawn2( "coroAdd2", 5, 6 )
-        ret CoroutineManager.awaitFunction( h ) as int
+        ret CoroutineManager.awaitHandle( h ) as int
     }
 
     # 通用：睡眠指定毫秒（void 协程）
@@ -178,7 +215,7 @@ CoroutineTest
         int caught = 0
         label innerBlock
         {
-            try CoroutineManager.awaitFunction( h )
+            try CoroutineManager.awaitHandle( h )
         }
         catch
         {
@@ -224,7 +261,7 @@ CoroutineTest
             ret 0
         }
         Coroutine h = CoroutineManager.spawn1( "coroDeep", n - 1 )
-        ret ( CoroutineManager.awaitFunction( h ) as int ) + 1
+        ret ( CoroutineManager.awaitHandle( h ) as int ) + 1
     }
 
     # H5：静态计数 100 次
@@ -240,7 +277,7 @@ CoroutineTest
     static int coroNested()
     {
         Coroutine h = CoroutineManager.spawn2( "coroAdd2", 40, 2 )
-        ret CoroutineManager.awaitFunction( h ) as int
+        ret CoroutineManager.awaitHandle( h ) as int
     }
 
     # F1：生产 0..4 后关闭
@@ -431,7 +468,7 @@ CoroutineTest
 
         # A1 基本 spawn + await 取回返回值
         Coroutine h1 = CoroutineManager.spawn2( "coroAdd2", 3, 4 )
-        int r1 = CoroutineManager.awaitFunction( h1 ) as int
+        int r1 = CoroutineManager.awaitHandle( h1 ) as int
         check( "A1 spawn+await 返回值", r1 == 7 )
 
         # A2 fire-and-forget：不 await 也要跑完（副作用可见）
@@ -449,25 +486,25 @@ CoroutineTest
 
         # A3 多参数
         Coroutine h3 = CoroutineManager.spawn3( "coroSum3", 1, 2, 3 )
-        int r3 = CoroutineManager.awaitFunction( h3 ) as int
+        int r3 = CoroutineManager.awaitHandle( h3 ) as int
         check( "A3 三参数", r3 == 6 )
 
         # A4 句柄与状态
         Coroutine h4 = CoroutineManager.spawn3( "coroSum3", 1, 2, 3 )
         Int32 st1 = CoroutineManager.status( h4 )
         bool fresh = st1 == CoroutineStatus.Created || st1 == CoroutineStatus.Ready || st1 == CoroutineStatus.Running
-        CoroutineManager.awaitFunction( h4 )
+        CoroutineManager.awaitHandle( h4 )
         check( "A4 新建状态为创建/就绪/运行", fresh )
         check( "A4 结束后状态 Dead", CoroutineManager.status( h4 ) == CoroutineStatus.Dead )
 
         # A5 void 协程：await 得 null
         Coroutine h5 = CoroutineManager.spawn0( "coroVoid" )
-        object r5 = CoroutineManager.awaitFunction( h5 )
+        object r5 = CoroutineManager.awaitHandle( h5 )
         check( "A5 void 协程 await 得 null", r5 == null )
 
         # A6 返回值是数组
         Coroutine h6 = CoroutineManager.spawn0( "coroMakeArr" )
-        Array<Int32> arr = CoroutineManager.awaitFunction( h6 ) as Array<Int32>
+        Array<Int32> arr = CoroutineManager.awaitHandle( h6 ) as Array<Int32>
         check( "A6 返回数组", arr != null && arr.length == 3 && arr._getItem_( 2 ) == 3 )
 
         # A7（设计档 spawn 函数字面量）：由 K5 匿名闭包形态等价覆盖
@@ -482,34 +519,34 @@ CoroutineTest
 
         # B1 await 已完成协程 = 同步返回不挂起
         Coroutine b1a = CoroutineManager.spawn2( "coroAdd2", 1, 2 )
-        CoroutineManager.awaitFunction( b1a )
+        CoroutineManager.awaitHandle( b1a )
         Coroutine b1b = CoroutineManager.spawn2( "coroAdd2", 2, 3 )
-        int rb1 = CoroutineManager.awaitFunction( b1b ) as int
+        int rb1 = CoroutineManager.awaitHandle( b1b ) as int
         check( "B1 已完成协程直接取值", rb1 == 5 )
 
         # B2 串行执行：第二个等第一个完成后才启动
         CoroutineTest.g_order = ""
         Coroutine b2a = CoroutineManager.spawn0( "coroTrack" )
-        CoroutineManager.awaitFunction( b2a )
+        CoroutineManager.awaitHandle( b2a )
         Coroutine b2b = CoroutineManager.spawn0( "coroTrack" )
-        CoroutineManager.awaitFunction( b2b )
+        CoroutineManager.awaitHandle( b2b )
         check( "B2 串行执行顺序", CoroutineTest.g_order == "sese" )
 
         # B3 并行执行 + 串行消费
         CoroutineTest.g_order = ""
         Coroutine b3a = CoroutineManager.spawn0( "coroTrack" )
         Coroutine b3b = CoroutineManager.spawn0( "coroTrack" )
-        CoroutineManager.awaitFunction( b3a )
-        CoroutineManager.awaitFunction( b3b )
+        CoroutineManager.awaitHandle( b3a )
+        CoroutineManager.awaitHandle( b3b )
         check( "B3 并行执行", CoroutineTest.g_order == "ssee" )
 
         # B4 await 嵌套表达式
         Coroutine b4 = CoroutineManager.spawn2( "coroAdd2", 10, 20 )
-        check( "B4 await 嵌套表达式", 1 + ( CoroutineManager.awaitFunction( b4 ) as int ) == 31 )
+        check( "B4 await 嵌套表达式", 1 + ( CoroutineManager.awaitHandle( b4 ) as int ) == 31 )
 
         # B5 协程内 return await
         Coroutine b5 = CoroutineManager.spawn0( "coroIndirect" )
-        int rb5 = CoroutineManager.awaitFunction( b5 ) as int
+        int rb5 = CoroutineManager.awaitHandle( b5 ) as int
         check( "B5 协程内 return await", rb5 == 11 )
 
         # B6 await 自己 -> 运行期错误（C 侧抛非法操作，异常值为 null，须裸 catch）
@@ -517,7 +554,7 @@ CoroutineTest
         bool threw6 = false
         label b6block
         {
-            try CoroutineManager.awaitFunction( self )
+            try CoroutineManager.awaitHandle( self )
         }
         catch
         {
@@ -537,8 +574,8 @@ CoroutineTest
         Coroutine c1a = CoroutineManager.spawn2( "coroAdd2", 1, 1 )
         Coroutine c1b = CoroutineManager.spawn2( "coroAdd2", 2, 2 )
         CoroutineManager.waitAll2( c1a, c1b )
-        int rc1a = CoroutineManager.awaitFunction( c1a ) as int
-        int rc1b = CoroutineManager.awaitFunction( c1b ) as int
+        int rc1a = CoroutineManager.awaitHandle( c1a ) as int
+        int rc1b = CoroutineManager.awaitHandle( c1b ) as int
         check( "C1 waitAll2 + await 取回", rc1a == 2 && rc1b == 4 )
 
         # C2 waitAll3 + await 逐个取回
@@ -546,9 +583,9 @@ CoroutineTest
         Coroutine c2b = CoroutineManager.spawn2( "coroAdd2", 2, 2 )
         Coroutine c2c = CoroutineManager.spawn2( "coroAdd2", 3, 3 )
         CoroutineManager.waitAll3( c2a, c2b, c2c )
-        int rc2a = CoroutineManager.awaitFunction( c2a ) as int
-        int rc2b = CoroutineManager.awaitFunction( c2b ) as int
-        int rc2c = CoroutineManager.awaitFunction( c2c ) as int
+        int rc2a = CoroutineManager.awaitHandle( c2a ) as int
+        int rc2b = CoroutineManager.awaitHandle( c2b ) as int
+        int rc2c = CoroutineManager.awaitHandle( c2c ) as int
         check( "C2 waitAll3 + await 取回", rc2a == 3 && rc2b == 4 && rc2c == 6 )
 
         # C3 waitAny2：先完成者胜出（注册表保证同一句柄同一实例，== 即引用判等）
@@ -556,7 +593,7 @@ CoroutineTest
         Coroutine c3fast = CoroutineManager.spawn1( "coroSleepMs", 10 )
         Coroutine winner = CoroutineManager.waitAny2( c3slow, c3fast )
         check( "C3 waitAny2 快者胜出", winner == c3fast )
-        CoroutineManager.awaitFunction( c3slow )    # 清理：等慢者也结束
+        CoroutineManager.awaitHandle( c3slow )    # 清理：等慢者也结束
 
         # C4 waitAny3：三个不同时长，最快者胜
         Coroutine c4a = CoroutineManager.spawn1( "coroSleepMs", 60 )
@@ -573,7 +610,7 @@ CoroutineTest
         Coroutine got1 = CoroutineManager.nextCompleted2( c5a, c5b )
         Coroutine got2 = CoroutineManager.nextCompleted2( c5a, c5b )
         check( "C5 nextCompleted 部分完成", got1 == c5b && got2 == null )
-        CoroutineManager.awaitFunction( c5a )    # c5a 完成后仍可消费
+        CoroutineManager.awaitHandle( c5a )    # c5a 完成后仍可消费
         Coroutine got3 = CoroutineManager.nextCompleted2( c5a, c5b )
         Coroutine got4 = CoroutineManager.nextCompleted2( c5a, c5b )
         check( "C5 nextCompleted 消费与耗尽", got3 == c5a && got4 == null )
@@ -596,7 +633,7 @@ CoroutineTest
         }
         label c6cleanup
         {
-            try CoroutineManager.awaitFunction( c6b )    # 等被取消者也真正结束（裸 catch）
+            try CoroutineManager.awaitHandle( c6b )    # 等被取消者也真正结束（裸 catch）
         }
         catch
         {
@@ -628,19 +665,19 @@ CoroutineTest
         # D3 1000 个协程：无栈溢出、无死锁
         int sum = 0
         List<Coroutine> tasks = List<Coroutine>()
-        for Int32 i = 0, i < 10, i = i + 1
+        for Int32 i = 0, i < 1000, i = i + 1
         {
             tasks.add( CoroutineManager.spawn2( "coroAdd2", i, 1 ) )
         }
         for v in tasks
         {
-            sum = sum + ( CoroutineManager.awaitFunction( v ) as int )
+            sum = sum + ( CoroutineManager.awaitHandle( v ) as int )
         }
         check( "D3 1000 协程全部完成", sum == 500500 )
 
         # D4 后台协程睡醒后自然结束（调度器可正常收敛退出）
         Coroutine d4 = CoroutineManager.spawn1( "coroSleepMs", 5 )
-        object rd4 = CoroutineManager.awaitFunction( d4 )
+        object rd4 = CoroutineManager.awaitHandle( d4 )
         check( "D4 无就绪协程时正常收敛", CoroutineManager.status( d4 ) == CoroutineStatus.Dead && rd4 == null )
     }
 
@@ -661,7 +698,7 @@ CoroutineTest
 
         # E2 Sleep(0) 只让出不阻塞
         Coroutine e2 = CoroutineManager.spawn1( "coroSleepMs", 0 )
-        object re2 = CoroutineManager.awaitFunction( e2 )
+        object re2 = CoroutineManager.awaitHandle( e2 )
         check( "E2 Sleep(0)", CoroutineManager.status( e2 ) == CoroutineStatus.Dead && re2 == null )
 
         # E3 定时器唤醒顺序（10 -> 20 -> 30）
@@ -707,7 +744,7 @@ CoroutineTest
         Coroutine f3p3 = CoroutineManager.spawn1( "coroF3Produce", ch3 )
         CoroutineManager.waitAll2( f3p0, f3p1 )
         CoroutineManager.waitAll2( f3p2, f3p3 )
-        CoroutineManager.awaitFunction( f3c )
+        CoroutineManager.awaitHandle( f3c )
         check( "F3 多生产者不丢不重", CoroutineTest.g_f3count == 40 )
 
         # F4 单生产者多消费者：100 个值全被消费
@@ -720,7 +757,7 @@ CoroutineTest
         Coroutine f4c3 = CoroutineManager.spawn1( "coroF4Consume", ch4 )
         CoroutineManager.waitAll2( f4c0, f4c1 )
         CoroutineManager.waitAll2( f4c2, f4c3 )
-        CoroutineManager.awaitFunction( f4p )
+        CoroutineManager.awaitHandle( f4p )
         check( "F4 单生产者多消费者", CoroutineTest.g_f4count == 100 )
     }
 
@@ -736,7 +773,7 @@ CoroutineTest
         int code1 = 0
         label g1block
         {
-            try CoroutineManager.awaitFunction( g1 )
+            try CoroutineManager.awaitHandle( g1 )
         }
         catch CoroTestError ex
         {
@@ -752,7 +789,7 @@ CoroutineTest
         Coroutine g2 = CoroutineManager.spawn0( "coroThrowErr" )
         label g2block
         {
-            try CoroutineManager.awaitFunction( g2 )
+            try CoroutineManager.awaitHandle( g2 )
         }
         catch
         {
@@ -761,13 +798,13 @@ CoroutineTest
 
         # G3 嵌套：子协程抛 -> 父协程捕获
         Coroutine g3 = CoroutineManager.spawn0( "coroCatchInner" )
-        int rg3 = CoroutineManager.awaitFunction( g3 ) as int
+        int rg3 = CoroutineManager.awaitHandle( g3 ) as int
         check( "G3 嵌套错误捕获", rg3 == 1 )
 
         # G4 协程内 finally 在挂起后正常执行
         CoroutineTest.g_done = false
         Coroutine g4 = CoroutineManager.spawn0( "coroFinallySleep" )
-        CoroutineManager.awaitFunction( g4 )
+        CoroutineManager.awaitHandle( g4 )
         check( "G4 挂起后 finally 执行", CoroutineTest.g_done )
 
         # G5 cancel：下个调度点以取消异常终止，finally 必须执行
@@ -778,7 +815,7 @@ CoroutineTest
         bool threw5 = false
         label g5block
         {
-            try CoroutineManager.awaitFunction( g5 )
+            try CoroutineManager.awaitHandle( g5 )
         }
         catch
         {
@@ -788,7 +825,7 @@ CoroutineTest
 
         # G6 cancel 对已结束协程返回 false
         Coroutine g6 = CoroutineManager.spawn2( "coroAdd2", 1, 1 )
-        int rg6 = CoroutineManager.awaitFunction( g6 ) as int
+        int rg6 = CoroutineManager.awaitHandle( g6 ) as int
         check( "G6 取消已结束协程无影响", rg6 == 2 && CoroutineManager.cancel( g6 ) == false )
     }
 
@@ -801,7 +838,7 @@ CoroutineTest
 
         # H1 深递归 200 层（协程帧链化解除旧 64 层限制）
         Coroutine h1 = CoroutineManager.spawn1( "coroDeep", 200 )
-        int rh1 = CoroutineManager.awaitFunction( h1 ) as int
+        int rh1 = CoroutineManager.awaitHandle( h1 ) as int
         check( "H1 深递归 200 层", rh1 == 200 )
 
         # H5 协程间共享静态字段（协作式单线程下无撕裂）
@@ -813,13 +850,13 @@ CoroutineTest
         }
         for v in incs
         {
-            CoroutineManager.awaitFunction( v )
+            CoroutineManager.awaitHandle( v )
         }
         check( "H5 共享静态字段无丢失", CoroutineTest.g_counter == 1000 )
 
         # H7 协程内再 spawn（树状并发）
         Coroutine h7 = CoroutineManager.spawn0( "coroNested" )
-        int rh7 = CoroutineManager.awaitFunction( h7 ) as int
+        int rh7 = CoroutineManager.awaitHandle( h7 ) as int
         check( "H7 协程内再 spawn", rh7 == 42 )
 
         # H2/H3/H4/H6 说明：
@@ -858,7 +895,7 @@ CoroutineTest
         int sum = 0
         for v in works
         {
-            sum = sum + ( CoroutineManager.awaitFunction( v ) as int )
+            sum = sum + ( CoroutineManager.awaitHandle( v ) as int )
         }
         check( "J2 扇出-扇入", sum == 1275 )
 
@@ -959,7 +996,7 @@ CoroutineTest
         {
             g_sum = g_sum + 1;
         }
-        CoroutineManager.awaitFunction( hb )
+        CoroutineManager.awaitHandle( hb )
         check( "K5 spawn 匿名闭包(语句形态)", CoroutineTest.g_sum == 56 )
 
         # K6 协程体内组合（函数变量 + spawn + await + yield 帧保持）
@@ -1033,7 +1070,7 @@ CoroutineTest
         bool suspended = l2.status == CoroutineStatus.Suspended
         bool sleeping = l2.blockedReason == CoroutineBlockReason.Sleep
         bool alive = ( l2.isDead == false ) && ( l2.handle != 0 )
-        CoroutineManager.awaitFunction( l2 )
+        CoroutineManager.awaitHandle( l2 )
         check( "L2 挂起中状态/原因", suspended && sleeping )
         check( "L2 属性 isDead/handle", alive )
         check( "L2 结束后 isDead", l2.isDead && l2.status == CoroutineStatus.Dead )
@@ -1045,13 +1082,13 @@ CoroutineTest
 
         # L4 实例方法 cancel：对已结束协程返回 false
         Coroutine l4 = CoroutineManager.spawn2( "coroAdd2", 1, 1 )
-        int rl4 = CoroutineManager.awaitFunction( l4 ) as int
+        int rl4 = CoroutineManager.awaitHandle( l4 ) as int
         check( "L4 实例 cancel 已结束返回 false", rl4 == 2 && l4.cancel() == false )
     }
 
     static testGroupM()
     {
-        var cor1 = spawn function(){
+        function fff = function(){
             global.println( "CoroutineTest: 协程测试开始" )
             yield;
             CoroutineManager.sleep( 1000 )
@@ -1060,7 +1097,43 @@ CoroutineTest
             CoroutineManager.sleep( 1000 )
             global.println( "CoroutineTest: 协程测试开始3" )
         };
+        var cor1 = spawn fff();
+        await cor1;
+        global.println( "CoroutineTest: 协程测试结束" )
+    }
 
+    static testGroupN()
+    {
+        global.println( "========== N: spawn 实例方法 ==========" )
+
+        # N1 基本形态: spawn c1.fun( a, b ) 传参 + await 取返回值
+        var c1 = CoroInstTarget()
+        Coroutine n1 = spawn c1.coroInstAdd2( 3, 4 )
+        int rn1 = await n1 as int
+        check( "N1 spawn 实例方法传参/返回", rn1 == 7 )
+
+        # N2 this 绑定: 实例字段在协程内跨 yield 读写, 两实例互不干扰
+        var cA = CoroInstTarget()
+        var cB = CoroInstTarget()
+        Coroutine hA = spawn cA.coroInstDouble( 5 )
+        Coroutine hB = spawn cB.coroInstDouble( 7 )
+        int rA = await hA as int
+        int rB = await hB as int
+        check( "N2 实例 this 绑定/多实例隔离", rA == 10 && rB == 14 )
+
+        # N3 0 参 / 3 参变体
+        var c3 = CoroInstTarget()
+        Coroutine n3a = spawn c3.coroInstZero()
+        Coroutine n3b = spawn c3.coroInstSum3( 1, 2, 3 )
+        int rn3a = await n3a as int
+        int rn3b = await n3b as int
+        check( "N3 spawn 实例方法 0/3 参", rn3a == 42 && rn3b == 6 )
+
+        # N4 实例方法内 spawn this.方法()
+        var c4 = CoroInstTarget()
+        Coroutine n4 = spawn c4.coroInstSpawnThis()
+        int rn4 = await n4 as int
+        check( "N4 实例方法内 spawn this.方法", rn4 == 3 )
     }
 
     # ======================================================================
@@ -1069,8 +1142,8 @@ CoroutineTest
     static fun()
     {
         global.println( "========== CoroutineTest (start) ==========" )
-\
-        #!
+
+
         CoroutineTest.testGroupA()
         CoroutineTest.testGroupB()
         CoroutineTest.testGroupC()
@@ -1082,8 +1155,9 @@ CoroutineTest
         CoroutineTest.testGroupJ()
         CoroutineTest.testGroupK()
         CoroutineTest.testGroupL()
-        !#
+
         CoroutineTest.testGroupM()
+        CoroutineTest.testGroupN()
 
         global.println( "========== CoroutineTest (end) ==========" )
     }

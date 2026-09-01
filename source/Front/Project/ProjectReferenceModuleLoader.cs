@@ -546,6 +546,7 @@ namespace SimpleLanguage.Project
                     if (existingMc != null)
                     {
                         existingMc.SetRefFromType(RefFromType.RefModule);
+                        RegisterExportAliases(parent, typeName, cls, existingMc);
                         return existingMc;
                     }
                 }
@@ -616,6 +617,7 @@ namespace SimpleLanguage.Project
                     parent.AddMetaClass(mi);
 
                     mi.UpdateClassAllName();
+                    RegisterExportAliases(parent, typeName, cls, mi);
                     return mi;
                 }
                 default: // Class
@@ -650,8 +652,26 @@ namespace SimpleLanguage.Project
                      * after AddMetaClass because it traverses the metaNode parent chain. */
                     parent.AddMetaClass(mc);
                     mc.UpdateClassAllName();
+                    RegisterExportAliases(parent, typeName, cls, mc);
                     return mc;
                 }
+            }
+        }
+
+        /// <summary>
+        /// 读取 SLClassPackage.exportNames（原名 + @Nickname 别名，逗号分隔），
+        /// 在 parent 节点下为每个别名（跳过原名）注册指向 mc 的别名节点。
+        /// 与导出侧 AttributeManager 的 AddMetaClassAlias 行为对称，
+        /// 使跨模块引用时 @Nickname 语法糖（如 coro.xxx()）依然可用。
+        /// </summary>
+        private static void RegisterExportAliases(MetaNode parent, string typeName, SLClassPackage cls, MetaClass mc)
+        {
+            if (parent == null || mc == null || string.IsNullOrWhiteSpace(cls?.exportNames)) return;
+            foreach (var raw in cls.exportNames.Split(','))
+            {
+                var alias = raw.Trim();
+                if (string.IsNullOrEmpty(alias) || alias == typeName) continue;
+                parent.AddMetaClassAlias(alias, mc);
             }
         }
 

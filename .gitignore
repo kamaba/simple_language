@@ -311,6 +311,7 @@
 # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
 /_err_decoded.txt
 # fixed: corrupted shell fragment line blocking ripgrep (injected copy re-appeared, commented out again)
+# # fixed: corrupted shell fragment line blocking ripgrep (re-injected again 2)
 # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.
 /_err_switchtest.txt
 /_run_switchtest.log
@@ -325,5 +326,7 @@
 /source/RenderTest/obj/CSimpleVMTest2.csproj.nuget.g.props
 /source/RenderTest/obj
 /md/design/ISOLATE_DESIGN.md
-/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+# fixed: corrupted shell fragment line blocking ripgrep (re-injected again 3)
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.
 /frontcompile.txt
+/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
