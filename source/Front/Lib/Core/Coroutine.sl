@@ -1,20 +1,24 @@
 #!
  * Core/Coroutine.sl
- * 协程对象（Coroutine）与协程管理器（CoroutineManager）。
+ * 协程管理器（Coroutine）与协程对象（Task）。
  *
  * 说明：
- *  - Coroutine：协程对象，由 CoroutineManager 的 spawn/spawnClosure 系列生成，
+ *  - Task：协程对象，由 Coroutine 的 spawn/spawnClosure 系列生成，
  *    是 VM 内部协程（Int64 句柄）的强类型包装；提供 await/cancel 实例方法与
  *    status/blockedReason/isDead/handle 查询属性。
- *  - CoroutineManager：静态管理器，负责生成、查询与等待协程；所有操作接口
- *    均收发 Coroutine 对象（取代裸 Int64 句柄，从类型层面杜绝错误传值）。
- *  - 同一句柄始终对应同一 Coroutine 实例（C VM 侧注册表保证），可用 == 判等。
- *  - yield/await/spawn 为前端关键字（语法糖），分别展开为本管理器
- *    Yield/awaitHandle 与闭包/实例 spawn 调用；显式调用本类方法亦合法。
+ *  - Coroutine：静态管理器，负责生成、查询与等待协程；所有操作接口
+ *    均收发 Task 对象（取代裸 Int64 句柄，从类型层面杜绝错误传值）。
+ *  - 同一句柄始终对应同一 Task 实例（C VM 侧注册表保证），可用 == 判等。
+ *  - yield/await/spawn 为前端关键字（语法糖）：
+ *      yield;      -> Coroutine.yieldNow()
+ *      await expr  -> Coroutine.awaitHandle( expr )
+ *    spawn 展开为闭包/实例 spawn 调用；显式调用本类方法亦合法。
+ *  - waitUntil( 谓词闭包 )：条件等待（类似 Unity 的 WaitUntil），
+ *    挂起当前协程直至谓词返回 true。
  *  - @Nickname("coro")：coro 为本类别名，可用作静态调用前缀（coro.spawn0(...)）。
  *  - 所有方法最终转发到 C VM 系统调用（见 coroutine_system_method.c），
- *    syscall 返回值即包装好的 Coroutine 对象，无需 SL 侧再注册。
- !#
+ *    syscall 返回值即包装好的 Task 对象，无需 SL 侧再注册。
+!#
 
 #!
  * 协程状态常量类。与 C VM 的 VMCoroutineState 枚举一一对应。
@@ -44,17 +48,17 @@ public class CoroutineBlockReason extends Object
 #! ==================== 协程对象 ==================== !#
 
 #!
- * 协程对象：CoroutineManager.spawn/spawnClosure 系列的返回类型。
+ * 协程对象：Coroutine.spawn/spawnClosure 系列的返回类型。
  * 包装 VM 内部协程句柄，禁止裸句柄误用。
  * 实例只能由 C VM 侧注册表创建（同一句柄同一实例），SL 侧无公开构造。
 !#
-public class Coroutine extends Object
+public class Task extends Object
 {
     #! VM 内部协程句柄（注册表 id，由 VM 单调递增分配；由 C VM 直接写入）。 !#
     Int64 _handle = 0
 
     #!
-     * 等待本协程结束并取回其返回值（等价 CoroutineManager.awaitHandle(this)）。
+     * 等待本协程结束并取回其返回值（等价 Coroutine.awaitHandle(this)）。
      * 若已结束则立即返回结果；若以异常结束，异常向等待者传播。
     !#
     public object awaitHandle()
@@ -63,7 +67,7 @@ public class Coroutine extends Object
     }
 
     #!
-     * 请求取消本协程（等价 CoroutineManager.cancel(this)）。
+     * 请求取消本协程（等价 Coroutine.cancel(this)）。
      * 取消是协作式的：本协程在下一个调度点抛出取消异常并结束。
      * 对已结束协程返回 false；返回 true 表示已成功登记取消请求。
     !#
@@ -101,36 +105,36 @@ public class Coroutine extends Object
 
 #!
  * 协程管理器：生成、查询、等待与取消协程的静态工具类。
- * 所有操作接口收发 Coroutine 对象。
+ * 所有操作接口收发 Task 对象。
  * coro 为本类别名（@Nickname），可用作静态调用前缀：coro.spawn0(...)。
 !#
 @Nickname("coro")
-public class CoroutineManager extends Object
+public class Coroutine extends Object
 {
     #! ---------- 生成 ---------- !#
 
     #! 以无参静态方法创建并启动协程，返回协程对象。 !#
-    public static Coroutine spawn0(string methodName)
+    public static Task spawn0(string methodName)
     {
-        ret SystemCoroutineSpawn0(methodName) as Coroutine
+        ret SystemCoroutineSpawn0(methodName) as Task
     }
 
     #! 以 1 参静态方法创建并启动协程（参数为 object），返回协程对象。 !#
-    public static Coroutine spawn1(string methodName, object arg0)
+    public static Task spawn1(string methodName, object arg0)
     {
-        ret SystemCoroutineSpawn1(methodName, arg0) as Coroutine
+        ret SystemCoroutineSpawn1(methodName, arg0) as Task
     }
 
     #! 以 2 参静态方法创建并启动协程（参数为 object），返回协程对象。 !#
-    public static Coroutine spawn2(string methodName, object arg0, object arg1)
+    public static Task spawn2(string methodName, object arg0, object arg1)
     {
-        ret SystemCoroutineSpawn2(methodName, arg0, arg1) as Coroutine
+        ret SystemCoroutineSpawn2(methodName, arg0, arg1) as Task
     }
 
     #! 以 3 参静态方法创建并启动协程（参数为 object），返回协程对象。 !#
-    public static Coroutine spawn3(string methodName, object arg0, object arg1, object arg2)
+    public static Task spawn3(string methodName, object arg0, object arg1, object arg2)
     {
-        ret SystemCoroutineSpawn3(methodName, arg0, arg1, arg2) as Coroutine
+        ret SystemCoroutineSpawn3(methodName, arg0, arg1, arg2) as Task
     }
 
     #!
@@ -138,33 +142,33 @@ public class CoroutineManager extends Object
      * 数组元素依次作为目标方法实参（元素为 object，个数即参数个数），
      * 是 spawn0..3 固定重载的通用形式。
     !#
-    public static Coroutine spawnByName( string methodName, params Array<object> objs )
+    public static Task spawnByName( string methodName, params Array<object> objs )
     {
-        ret SystemCoroutineSpawnN( methodName, objs ) as Coroutine
+        ret SystemCoroutineSpawnN( methodName, objs ) as Task
     }
 
     #! 以 receiver 对象的无参实例方法创建并启动协程（方法在 receiver 上执行），返回协程对象。 !#
-    public static Coroutine spawnInstance0( object receiver, string methodName )
+    public static Task spawnInstance0( object receiver, string methodName )
     {
-        ret SystemCoroutineSpawnInstance0( receiver, methodName ) as Coroutine
+        ret SystemCoroutineSpawnInstance0( receiver, methodName ) as Task
     }
 
     #! 以 receiver 对象的 1 参实例方法创建并启动协程，返回协程对象。 !#
-    public static Coroutine spawnInstance1( object receiver, string methodName, object arg0 )
+    public static Task spawnInstance1( object receiver, string methodName, object arg0 )
     {
-        ret SystemCoroutineSpawnInstance1( receiver, methodName, arg0 ) as Coroutine
+        ret SystemCoroutineSpawnInstance1( receiver, methodName, arg0 ) as Task
     }
 
     #! 以 receiver 对象的 2 参实例方法创建并启动协程，返回协程对象。 !#
-    public static Coroutine spawnInstance2( object receiver, string methodName, object arg0, object arg1 )
+    public static Task spawnInstance2( object receiver, string methodName, object arg0, object arg1 )
     {
-        ret SystemCoroutineSpawnInstance2( receiver, methodName, arg0, arg1 ) as Coroutine
+        ret SystemCoroutineSpawnInstance2( receiver, methodName, arg0, arg1 ) as Task
     }
 
     #! 以 receiver 对象的 3 参实例方法创建并启动协程，返回协程对象。 !#
-    public static Coroutine spawnInstance3( object receiver, string methodName, object arg0, object arg1, object arg2 )
+    public static Task spawnInstance3( object receiver, string methodName, object arg0, object arg1, object arg2 )
     {
-        ret SystemCoroutineSpawnInstance3( receiver, methodName, arg0, arg1, arg2 ) as Coroutine
+        ret SystemCoroutineSpawnInstance3( receiver, methodName, arg0, arg1, arg2 ) as Task
     }
 
     #!
@@ -172,27 +176,27 @@ public class CoroutineManager extends Object
      * 闭包可为匿名闭包、function 声明变量或 Func&lt;&gt; 类型变量。
      * spawn 关键字即本组方法的语法糖。
     !#
-    public static Coroutine spawnClosure0(object closure)
+    public static Task spawnClosure0(object closure)
     {
-        ret SystemCoroutineSpawnClosure0(closure) as Coroutine
+        ret SystemCoroutineSpawnClosure0(closure) as Task
     }
 
     #! 以 1 参闭包创建并启动协程（参数为 object），返回协程对象。 !#
-    public static Coroutine spawnClosure1(object closure, object arg0)
+    public static Task spawnClosure1(object closure, object arg0)
     {
-        ret SystemCoroutineSpawnClosure1(closure, arg0) as Coroutine
+        ret SystemCoroutineSpawnClosure1(closure, arg0) as Task
     }
 
     #! 以 2 参闭包创建并启动协程（参数为 object），返回协程对象。 !#
-    public static Coroutine spawnClosure2(object closure, object arg0, object arg1)
+    public static Task spawnClosure2(object closure, object arg0, object arg1)
     {
-        ret SystemCoroutineSpawnClosure2(closure, arg0, arg1) as Coroutine
+        ret SystemCoroutineSpawnClosure2(closure, arg0, arg1) as Task
     }
 
     #! 以 3 参闭包创建并启动协程（参数为 object），返回协程对象。 !#
-    public static Coroutine spawnClosure3(object closure, object arg0, object arg1, object arg2)
+    public static Task spawnClosure3(object closure, object arg0, object arg1, object arg2)
     {
-        ret SystemCoroutineSpawnClosure3(closure, arg0, arg1, arg2) as Coroutine
+        ret SystemCoroutineSpawnClosure3(closure, arg0, arg1, arg2) as Task
     }
 
     #!
@@ -200,9 +204,9 @@ public class CoroutineManager extends Object
      * 数组元素依次作为闭包实参（元素为 object，个数即参数个数），
      * 是 spawnClosure0..3 固定重载的通用形式。
     !#
-    public static Coroutine spawnClosure( object closure, Array<object> objs )
+    public static Task spawnClosure( object closure, Array<object> objs )
     {
-        ret SystemCoroutineSpawnClosureN( closure, objs ) as Coroutine
+        ret SystemCoroutineSpawnClosureN( closure, objs ) as Task
     }
 
     #! ---------- 调度控制 ---------- !#
@@ -226,21 +230,36 @@ public class CoroutineManager extends Object
         SystemCoroutineSleep(millis)
     }
 
+    #!
+     * 挂起当前协程直至谓词闭包返回 true（类似 Unity 的 WaitUntil）。
+     * 以 1ms 间隔轮询谓词；谓词应为无副作用的纯查询，不得再挂起。
+     * 若当前不在协程上下文（root 直接执行），则退化为阻塞轮询。
+    !#
+    public static void waitUntil( Function predicate )
+    {
+        bool wuDone = predicate() as bool
+        while ( wuDone == false )
+        {
+            Coroutine.sleep( 1 )
+            wuDone = predicate() as bool
+        }
+    }
+
     #! ---------- 查询 ---------- !#
 
     #!
      * 获取当前协程对象。若在 root 直接执行上下文，返回 null。
     !#
-    public static Coroutine current()
+    public static Task current()
     {
-        ret SystemCoroutineCurrent() as Coroutine
+        ret SystemCoroutineCurrent() as Task
     }
 
     #!
      * 查询协程状态。返回 CoroutineStatus 常量值：
      *  0=Created, 1=Ready, 2=Running, 3=Suspended, 4=Dead。
     !#
-    public static Int32 status( Coroutine cor )
+    public static Int32 status( Task cor )
     {
         ret SystemCoroutineStatus( cor.handle )
     }
@@ -249,7 +268,7 @@ public class CoroutineManager extends Object
      * 查询协程挂起原因（用于诊断）。返回 CoroutineBlockReason 常量值：
      *  0=None, 1=Yield, 2=Sched, 3=Await, 4=Sleep, 5=IO。
     !#
-    public static Int32 blockedReason( Coroutine cor )
+    public static Int32 blockedReason( Task cor )
     {
         ret SystemCoroutineBlockedReason( cor.handle )
     }
@@ -262,7 +281,7 @@ public class CoroutineManager extends Object
      * 若目标以异常结束，异常向等待者传播。
      * await 关键字即本方法的语法糖。
     !#
-    public static object awaitHandle( Coroutine cor )
+    public static object awaitHandle( Task cor )
     {
         ret SystemCoroutineAwait( cor.handle )
     }
@@ -271,7 +290,7 @@ public class CoroutineManager extends Object
      * 等待两个协程全部结束（无返回值；结果在返回后用 await 逐个取回）。
      * 任何一个协程以异常结束：立即取消其余协程并向调用者抛出该异常。
     !#
-    public static void waitAll2( Coroutine c0, Coroutine c1 )
+    public static void waitAll2( Task c0, Task c1 )
     {
         SystemCoroutineWaitAll2( c0.handle, c1.handle )
     }
@@ -280,7 +299,7 @@ public class CoroutineManager extends Object
      * 等待三个协程全部结束（无返回值；结果在返回后用 await 逐个取回）。
      * 任何一个协程以异常结束：立即取消其余协程并向调用者抛出该异常。
     !#
-    public static void waitAll3( Coroutine c0, Coroutine c1, Coroutine c2 )
+    public static void waitAll3( Task c0, Task c1, Task c2 )
     {
         SystemCoroutineWaitAll3( c0.handle, c1.handle, c2.handle )
     }
@@ -290,7 +309,7 @@ public class CoroutineManager extends Object
      * 任何一个协程以异常结束：立即取消其余协程并向调用者抛出该异常。
      * 是 waitAll2/3 固定重载的通用形式（数组可为 null 或空：平凡完成）。
     !#
-    public static void waitAll( params Array<Coroutine> cors )
+    public static void waitAll( params Array<Task> cors )
     {
         SystemCoroutineWaitAllN( cors )
     }
@@ -299,18 +318,18 @@ public class CoroutineManager extends Object
      * 等待两个协程中任意一个结束，返回先结束者的协程对象。
      * 某协程以异常结束：立即取消其余协程并向调用者抛出该异常。
     !#
-    public static Coroutine waitAny2( Coroutine c0, Coroutine c1 )
+    public static Task waitAny2( Task c0, Task c1 )
     {
-        ret SystemCoroutineWaitAny2( c0.handle, c1.handle ) as Coroutine
+        ret SystemCoroutineWaitAny2( c0.handle, c1.handle ) as Task
     }
 
     #!
      * 等待三个协程中任意一个结束，返回先结束者的协程对象。
      * 某协程以异常结束：立即取消其余协程并向调用者抛出该异常。
     !#
-    public static Coroutine waitAny3( Coroutine c0, Coroutine c1, Coroutine c2 )
+    public static Task waitAny3( Task c0, Task c1, Task c2 )
     {
-        ret SystemCoroutineWaitAny3( c0.handle, c1.handle, c2.handle ) as Coroutine
+        ret SystemCoroutineWaitAny3( c0.handle, c1.handle, c2.handle ) as Task
     }
 
     #!
@@ -319,26 +338,26 @@ public class CoroutineManager extends Object
      * 数组为 null 或空时立即返回 null。
      * 是 waitAny2/3 固定重载的通用形式。
     !#
-    public static Coroutine waitAny( params Coroutine[] cors )
+    public static Task waitAny( params Task[] cors )
     {
-        ret SystemCoroutineWaitAnyN( cors ) as Coroutine
+        ret SystemCoroutineWaitAnyN( cors ) as Task
     }
 
     #!
      * 非阻塞地取回一个已完成且结果未被消费的协程对象，没有则返回 null。
      * NextCompleted 会消费该协程的结果（再次查询同一协程不再返回）。
     !#
-    public static Coroutine nextCompleted2( Coroutine c0, Coroutine c1 )
+    public static Task nextCompleted2( Task c0, Task c1 )
     {
-        ret SystemCoroutineNextCompleted2( c0.handle, c1.handle ) as Coroutine
+        ret SystemCoroutineNextCompleted2( c0.handle, c1.handle ) as Task
     }
 
     #!
      * 非阻塞地取回一个已完成且结果未被消费的协程对象（三元版本），没有则返回 null。
     !#
-    public static Coroutine nextCompleted3( Coroutine c0, Coroutine c1, Coroutine c2 )
+    public static Task nextCompleted3( Task c0, Task c1, Task c2 )
     {
-        ret SystemCoroutineNextCompleted3( c0.handle, c1.handle, c2.handle ) as Coroutine
+        ret SystemCoroutineNextCompleted3( c0.handle, c1.handle, c2.handle ) as Task
     }
 
     #!
@@ -346,7 +365,7 @@ public class CoroutineManager extends Object
      * 返回 true 表示目标已结束（结果已被消费，可用 await 取回，await 对已 Dead 目标立即返回）；
      * 返回 false 表示超时（等待关系已解除，目标继续运行不受影响）。
     !#
-    public static bool waitTimeout( Coroutine cor, Int64 millis )
+    public static bool waitTimeout( Task cor, Int64 millis )
     {
         ret SystemCoroutineWaitTimeout( cor.handle, millis )
     }
@@ -358,7 +377,7 @@ public class CoroutineManager extends Object
      * 取消异常并结束。对已结束协程调用返回 false。
      * 返回 true 表示已成功登记取消请求。
     !#
-    public static bool cancel( Coroutine cor )
+    public static bool cancel( Task cor )
     {
         ret SystemCoroutineCancel( cor.handle )
     }

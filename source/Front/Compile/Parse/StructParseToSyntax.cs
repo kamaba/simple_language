@@ -597,7 +597,7 @@ namespace SimpleLanguage.Compile
                 return null;
             }
 
-            // spawn/await 关键字展开: 把 spawn f(a,b) / await expr 替换为 CoroutineManager.spawnClosureN(...) / CoroutineManager.awaitHandle(...) 调用节点
+            // spawn/await 关键字展开: 把 spawn f(a,b) / await expr 替换为 Coroutine.spawnClosureN(...) / Coroutine.awaitHandle(...) 调用节点
             TransformCoroutineKeywordNodes(pNodeList);
 
             List<Node> beforeNodeList = new List<Node>();
@@ -988,15 +988,15 @@ namespace SimpleLanguage.Compile
         }
 
         /// <summary>
-        /// 程序化合成 CoroutineManager.methodName( args... ) 的 IdentifierLink 调用节点,
-        /// 结构与正常解析 "CoroutineManager.methodName( args... )" 完全一致。
+        /// 程序化合成 Coroutine.methodName( args... ) 的 IdentifierLink 调用节点,
+        /// 结构与正常解析 "Coroutine.methodName( args... )" 完全一致。
         /// 注意: argNodes 原样作为 Par 的 childList, 多实参时由调用者负责插入 Comma 分隔节点。
         /// </summary>
         private Node CreateCoroutineCallNode( Token keyToken, string methodName, List<Node> argNodes )
         {
-            // CoroutineManager 根节点
+            // Coroutine 根节点
             Token corToken = new Token(keyToken);
-            corToken.SetLexeme("CoroutineManager", ETokenType.Identifier);
+            corToken.SetLexeme("Coroutine", ETokenType.Identifier);
             Node corNode = new Node(corToken);
             corNode.nodeType = ENodeType.IdentifierLink;
 
@@ -1564,8 +1564,17 @@ namespace SimpleLanguage.Compile
                 }
                 else if (akss.tokenType == ETokenType.Yield)
                 {
-                    // yield; 语句语法糖: 展开为 CoroutineManager.yieldNow()
-                    // 挂起当前协程, 让出执行权给调度器 (等价于旧写法 CoroutineManager.yieldNow())
+                    // yield; 语句语法糖: 展开为 Coroutine.yieldNow()
+                    // 挂起当前协程, 让出执行权给调度器 (等价于旧写法 Coroutine.yieldNow())
+                    foreach (var yn in akss.keyContent)
+                    {
+                        if (yn == null) continue;
+                        if (yn.nodeType == ENodeType.Comment || yn.nodeType == ENodeType.LineEnd
+                            || yn.nodeType == ENodeType.SemiColon) continue;
+                        Log.AddNodeLog(LID.ShowExtendMessage, yn.token,
+                            "Error yield 不支持带表达式参数, 等待条件请使用 Coroutine.waitUntil( 谓词闭包 )");
+                        break;
+                    }
                     Node yieldCallNode = CreateCoroutineCallNode(akss.keyNode.token, "yieldNow", new List<Node>());
                     var yieldExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMeta,
                         new List<Node> { yieldCallNode }, FileMetaTermExpress.EExpressType.Common);
@@ -1577,7 +1586,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        // Log.AddNodeLog(LID.ShowExtendMessage, akss.keyNode.token, "Error yield 语句展开为 Coroutine.Yield() 失败!");
+                        // Log.AddNodeLog(LID.ShowExtendMessage, akss.keyNode.token, "Error yield 语句展开为 Coroutine.yieldNow() 失败!");
                     }
                 }
                 else if (akss.tokenType == ETokenType.Return

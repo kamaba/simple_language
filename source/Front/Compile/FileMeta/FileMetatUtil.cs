@@ -262,7 +262,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error --------------------------------------!!" + fmbt.ToTokenString());
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error --------------------------------------!!" + fmbt?.ToTokenString());
                     }
                 }
                 else if (cnode.nodeType == ENodeType.Brace)
