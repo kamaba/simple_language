@@ -46,7 +46,9 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 现在front层 对返回数据void 直接赋值没有报错
 因为Set() 关键字和set 冲突，所以需要把这个类改成HashSet() 的类名称 IsSetContainerCallForm 应该就可以去掉了
 
-在global也就是当前运行的project类中增加一个 Array<object> _inputArgs的数组 这个是系统集成的，通过调用传入的参数，会自动传到inputArgs里边，然后给工程内部使用 这个是内部使用的，所以 看不到他们集成过程，但在运行的时候，会自动生相关的逻辑
+在global也就是当前运行的project类中增加一个 Array<object> _inputArgs的数组 这个是系统集成的， 在cvm层 通过调用传入的参数，会自动传到inputArgs里边，然后给工程内部使用 这个是内部使用的，所以 看不到他们集成过程，但在运行的时候，会自动生相关的逻辑
+
+增加一组对 local/args/member 的 set value 常数的irCode 然后直接把常数存储到某一位置 
 
 字节码序例化相互转化过程
 增加Jit的支持，起码实现x86的平台

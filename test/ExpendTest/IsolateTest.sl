@@ -2,7 +2,8 @@ import Std;
 import Core;
 
 # ============================================================
-# IsolateTest —— Std/Isolate 机制验收测试（ISOLATE_DESIGN.md §9 A~I 组）
+# IsolateTest —— Std/Isolate 机制验收测试（ISOLATE_DESIGN.md §9 A~I 组
+#               + T 组 pthread 真并行）
 #
 # 约定：
 #  - worker 入口全部使用闭包：捕获环境随闭包深拷贝进 worker VM，
@@ -20,8 +21,11 @@ import Core;
 #      * TransferableData.materialize 对无效句柄返回 null 而非抛异常（F2）。
 #  - isolate 状态数值（vm_isolate.h VMIsolateStatus）：
 #      Created=0 Ready=1 Running=2 Paused=3 Exiting=4 Dead=5
-#  - M:1 单线程调度：主 isolate 的协程阻塞（recv/sleep/waitAll）时
-#    调度器才推进 worker，故测试中用 sleep/recv 天然制造让出点。
+#  - P2 (1:1) 线程模型：每个 worker isolate 独占一条 OS 线程
+#    （pthread/Win32 线程）真并行执行，主 isolate 跑在 CLI 线程上；
+#    isolate 注册表/端口队列由单把递归锁保护，执行（解释器/GC）不持锁。
+#    T 组专测该线程模型（真并行加速、无让出点推进、线程级阻塞隔离、
+#    并发消息风暴、跨线程 kill 等），多数用例在旧 M:1 下 FAIL（回归哨兵）。
 #  - 被 Coroutine.spawn 按名调用的方法用 iso/coro 前缀保证全工程唯一。
 # ============================================================
 
@@ -575,6 +579,242 @@ IsolateTest
         isoCheck( "I3 spawn同组+kill后计数回落", i3spawn && cntAfter == cntBefore - 1 )
     }
 
+    # ================= T. pthread 真并行（P2 1:1 线程模型）=================
+    # 每个非主 isolate 独占一条 OS 线程真并行执行（vm_isolate.c P2），
+    # 主 isolate 在 CLI 线程。以下用例验证线程模型语义。
+    static testGroupT()
+    {
+        Console.println( "---------- T. pthread真并行 ----------" )
+
+        # 忙循环 worker：纯算术无分配、无让出点（T1/T5 复用）
+        # 3,000,000 次迭代，acc 周期归零防溢出，结果恒为 0
+        function fnT1 = function( object arg )
+        {
+            SendPort sp = arg as SendPort
+            Int32 acc = 0
+            Int32 i = 0
+            while ( i < 3000000 )
+            {
+                acc = acc + 1
+                if ( acc >= 1000 )
+                {
+                    acc = 0
+                }
+                i = i + 1
+            }
+            sp.send( acc )
+        }
+
+        # T1 真并行加速：两 worker 并行耗时 < 1.5 × 单 worker 耗时
+        #    （若串行执行约为 2×；需 ≥2 核，耗时打印供人工核对）
+        ReceivePort rpT1a = ReceivePort()
+        Int64 t1s0 = OS.Timer.clock()
+        Isolate.spawn1( fnT1, rpT1a.sendPort )
+        Int32 t1solo = rpT1a.recv() as int
+        Int64 t1soloMs = OS.Timer.clock() - t1s0
+
+        ReceivePort rpT1b = ReceivePort()
+        ReceivePort rpT1c = ReceivePort()
+        Int64 t1p0 = OS.Timer.clock()
+        Isolate.spawn1( fnT1, rpT1b.sendPort )
+        Isolate.spawn1( fnT1, rpT1c.sendPort )
+        Int32 t1x = rpT1b.recv() as int
+        Int32 t1y = rpT1c.recv() as int
+        Int64 t1parMs = OS.Timer.clock() - t1p0
+        isoCheck( "T1 真并行(2任务并行<1.5×单任务)", t1parMs * 2 < t1soloMs * 3 && t1x == t1solo && t1y == t1solo )
+        Console.println( "  T1 单任务=" + t1soloMs.toString() + "ms  两任务并行=" + t1parMs.toString() + "ms (需≥2核)" )
+
+        # T2 主 isolate 忙等（无 sleep/recv/yield 让出点）时 worker 仍完成
+        #    M:1 下 worker 永不被调度 → 自旋耗尽 FAIL；P2 下各自线程推进
+        ReceivePort rpT2 = ReceivePort()
+        function fnT2 = function( object arg )
+        {
+            SendPort sp = arg as SendPort
+            sp.send( "thread" )
+        }
+        Isolate.spawn1( fnT2, rpT2.sendPort )
+        Int32 spinsT2 = 0
+        while ( rpT2.count < 1 && spinsT2 < 200000 )
+        {
+            spinsT2 = spinsT2 + 1
+        }
+        string t2msg = ""
+        if ( rpT2.count == 1 )
+        {
+            t2msg = rpT2.recv() as string
+        }
+        isoCheck( "T2 主isolate无让出点worker仍完成", t2msg == "thread" )
+
+        # T3 多 worker 同时 Running：各占一条 OS 线程并发驻留
+        #    （M:1 下同一时刻至多 1 个 Running，其余 Ready → FAIL）
+        function fnT3 = function() { Coroutine.sleep( 5000 ) }
+        Array<Isolate> isosT3 = Array<Isolate>( 4 )
+        for Int32 i = 0, i < 4, i = i + 1
+        {
+            isosT3._setItem_( i, Isolate.spawn0( fnT3 ) )
+        }
+        Int32 spinsT3 = 0
+        Int32 runningT3 = 0
+        while ( runningT3 < 4 && spinsT3 < 100 )
+        {
+            Coroutine.sleep( 5 )
+            spinsT3 = spinsT3 + 1
+            runningT3 = 0
+            for Int32 i = 0, i < 4, i = i + 1
+            {
+                if ( isosT3._getItem_( i ).status == 2 )
+                {
+                    runningT3 = runningT3 + 1
+                }
+            }
+        }
+        isoCheck( "T3 4个worker同时Running(2)", runningT3 == 4 )
+        for Int32 i = 0, i < 4, i = i + 1
+        {
+            isosT3._getItem_( i ).kill( 0 )
+        }
+
+        # T4 worker 阻塞在 recv（线程级阻塞）不影响其它 isolate
+        function fnT4a = function()
+        {
+            ReceivePort never = ReceivePort()
+            object msg = never.recv()
+        }
+        Isolate isoT4a = Isolate.spawn0( fnT4a )
+        Coroutine.sleep( 50 )
+        function fnT4b = function() { Coroutine.sleep( 5000 ) }
+        ReceivePort pingRpT4 = ReceivePort()
+        Isolate isoT4b = Isolate.spawn0( fnT4b )
+        Coroutine.sleep( 50 )
+        isoT4b.ping( pingRpT4.sendPort, "pong", 0 )
+        string t4 = pingRpT4.recv() as string
+        isoCheck( "T4 阻塞recv的worker不影响其它isolate", t4 == "pong" && isoT4a.status != 5 )
+        isoT4a.kill( 0 )
+        isoT4b.kill( 0 )
+
+        # T5 run1 挂起主协程期间，另一 worker 在别的线程照常完成回发
+        #    （M:1 下忙 worker 无让出点独占调度，快 worker 无从推进）
+        ReceivePort rpT5busy = ReceivePort()
+        ReceivePort rpT5quick = ReceivePort()
+        function fnT5quick = function( object arg )
+        {
+            SendPort sp = arg as SendPort
+            Coroutine.sleep( 20 )
+            sp.send( "during" )
+        }
+        Isolate.spawn1( fnT5quick, rpT5quick.sendPort )
+        Isolate.run1( fnT1, rpT5busy.sendPort )
+        isoCheck( "T5 run挂起期间其它线程worker完成", rpT5quick.count == 1 && rpT5busy.count == 1 )
+
+        # T6 独立宿主方法（fnT6 捕获函数值 inner，避免污染本组共享捕获上下文）
+        testT6()
+
+        # T7 并发首触静态初始化：6 worker 同时读 g_init，
+        #    各自影子表独立重跑初始化（首触并发需线程安全）
+        g_init = 0
+        ReceivePort rpT7 = ReceivePort()
+        function fnT7 = function( object arg )
+        {
+            SendPort sp = arg as SendPort
+            sp.send( g_init )
+        }
+        for Int32 i = 0, i < 6, i = i + 1
+        {
+            Isolate.spawn1( fnT7, rpT7.sendPort )
+        }
+        Int32 okT7 = 0
+        for Int32 i = 0, i < 6, i = i + 1
+        {
+            Int32 vT7 = rpT7.recv() as int
+            if ( vT7 == 41 )
+            {
+                okT7 = okT7 + 1
+            }
+        }
+        isoCheck( "T7 并发首触静态初始化均读到41", okT7 == 6 && g_init == 0 )
+
+        # T8 并发消息风暴：8 worker × 50 条 = 400 条无丢失
+        #    （多线程并发 send 打同一端口，验证全局锁无竞争丢失）
+        ReceivePort rpT8 = ReceivePort()
+        function fnT8 = function( object arg )
+        {
+            SendPort sp = arg as SendPort
+            for Int32 k = 0, k < 50, k = k + 1
+            {
+                sp.send( 1 )
+            }
+        }
+        for Int32 i = 0, i < 8, i = i + 1
+        {
+            Isolate.spawn1( fnT8, rpT8.sendPort )
+        }
+        Int32 spinsT8 = 0
+        while ( rpT8.count < 400 && spinsT8 < 400 )
+        {
+            Coroutine.sleep( 5 )
+            spinsT8 = spinsT8 + 1
+        }
+        Int32 sumT8 = 0
+        while ( rpT8.count > 0 )
+        {
+            Int32 vT8 = rpT8.recv() as int
+            sumT8 = sumT8 + vT8
+        }
+        isoCheck( "T8 8worker并发400消息无丢失", sumT8 == 400 )
+
+        # T9 跨线程 kill 运行中的忙 worker：周期 sleep 制造退出检查点
+        #    （终止为协作式 exit_requested，线程主循环在调度间隙检查）
+        function fnT9 = function( object arg )
+        {
+            Int32 n = arg as int
+            Int32 acc = 0
+            Int32 i = 0
+            while ( i < n )
+            {
+                acc = acc + 1
+                if ( acc >= 200000 )
+                {
+                    acc = 0
+                    Coroutine.sleep( 1 )
+                }
+                i = i + 1
+            }
+            ret acc
+        }
+        Isolate isoT9 = Isolate.spawn1( fnT9, 20000000 )
+        Coroutine.sleep( 100 )
+        isoT9.kill( 0 )
+        Int32 spinsT9 = 0
+        while ( isoT9.status != 5 && spinsT9 < 200 )
+        {
+            Coroutine.sleep( 5 )
+            spinsT9 = spinsT9 + 1
+        }
+        isoCheck( "T9 kill运行中worker→Dead(5)", isoT9.status == 5 )
+    }
+
+    # T6 独立宿主方法：inner 函数值随闭包捕获上下文深拷贝进 worker，
+    # worker OS 线程内再嵌套 run0 孙 isolate（验证非主线程创建 isolate），
+    # 并验证 worker 线程上 Isolate.current() 返回自身（TLS 正确）。
+    static testT6()
+    {
+        ReceivePort rpT6 = ReceivePort()
+        function inner = function() { ret 21 }
+        function fnT6 = function( object arg )
+        {
+            SendPort sp = arg as SendPort
+            Int32 v = Isolate.run0( inner ) as int
+            Isolate cur = Isolate.current()
+            sp.send( v * 2 )
+            sp.send( cur != null && cur.status == 2 )
+        }
+        Isolate.spawn1( fnT6, rpT6.sendPort )
+        Int32 t6v = rpT6.recv() as int
+        bool t6cur = rpT6.recv() as bool
+        isoCheck( "T6 worker线程内嵌套孙isolate=42", t6v == 42 )
+        isoCheck( "T6 worker线程current()有效", t6cur )
+    }
+
     # ---- 主入口 ----
     static fun()
     {
@@ -588,6 +828,7 @@ IsolateTest
         testGroupG()
         testGroupH()
         testGroupI()
+        testGroupT()
         Console.println( "========== IsolateTest done ==========" )
     }
 }

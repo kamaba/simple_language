@@ -85,6 +85,8 @@
 | [syntax/marco.md](./syntax/marco.md) | 宏 |
 | [syntax/virtualmachine.md](./syntax/virtualmachine.md) | 虚拟机相关语法与概念 |
 | [syntax/exporter.md](./syntax/exporter.md) | 导出 / IR 侧说明 |
+| [syntax/coroutine.md](./syntax/coroutine.md) | 协程（Coroutine）与通道（Channel） |
+| [syntax/isolate.md](./syntax/isolate.md) | 隔离岛（Isolate）：跨堆并行、端口消息通信（深拷贝）、生命周期控制、TransferableData 零拷贝转移 |
 
 ### 3.6 集合与容器（`md/syntax/contraint/`）
 
