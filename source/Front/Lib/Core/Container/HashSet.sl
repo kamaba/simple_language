@@ -20,6 +20,7 @@ public class SetEntity<T>
 }
 
 #无序不重复集合：仿 C# HashSet<T>（即只存 key 的 Dictionary），API 参考 Python set / Dart Set。
+#类名使用 HashSet 以避免与属性 setter 关键字 set 冲突（小写容器语法糖为 hashset()）。
 #核心数据结构（与 Core.Map 一致）：
 #   _buckets  -- 桶数组，存储 entries 中的索引+1（0 表示空桶）
 #   _entries  -- 实际存放元素的实体数组（SetEntity，hashId 缓存哈希，-1 表示空闲槽）
@@ -31,7 +32,7 @@ public class SetEntity<T>
 #性能设计：桶链查找/插入/删除、扩容重哈希、集合运算、迭代推进等查找比较与遍历的耗时操作
 #全部通过 SystemSet* 系统调用映射到 CVM 原生实现（set_system_method.c），
 #SL 层仅负责 hashCode 虚调用（用户类可重写）、SetEntity 泛型实例化与初始数组分配。
-public class Set<T> extends Object interface Core.IIterable<T>, Core.IIterator<T>
+public class HashSet<T> extends Object interface Core.IIterable<T>, Core.IIterator<T>
 {
     # --- C# HashSet 核心字段 ---
     Array<int> _buckets = null                    # 桶数组，存Entry的索引+1（0=空桶）
@@ -242,80 +243,80 @@ public class Set<T> extends Object interface Core.IIterable<T>, Core.IIterator<T
 
     # ---- 修改型集合运算（VM 层完成）----
     #并集并入（Python |= / set.update；C# UnionWith）
-    public void unionWith( Set<T> other )
+    public void unionWith( HashSet<T> other )
     {
         SystemSetUnionWith(this, other)
     }
     #交集保留（Python &=；C# IntersectWith）：删除不在 other 中的元素
-    public void intersectWith( Set<T> other )
+    public void intersectWith( HashSet<T> other )
     {
         SystemSetIntersectWith(this, other)
     }
     #差集移除（Python -=；C# ExceptWith）：删除同时在 other 中的元素
-    public void exceptWith( Set<T> other )
+    public void exceptWith( HashSet<T> other )
     {
         SystemSetExceptWith(this, other)
     }
     #对称差（Python ^=；C# SymmetricExceptWith）：删除交集并并入双方独有元素
-    public void symmetricExceptWith( Set<T> other )
+    public void symmetricExceptWith( HashSet<T> other )
     {
         SystemSetSymmetricExceptWith(this, other)
     }
 
-    # ---- 非修改型集合运算（返回新 Set，底层为 VM 调用组合）----
+    # ---- 非修改型集合运算（返回新 HashSet，底层为 VM 调用组合）----
     #并集（Python | / set.union）
-    public Set<T> union( Set<T> other )
+    public HashSet<T> union( HashSet<T> other )
     {
-        Set<T> result = Set<T>()
+        HashSet<T> result = HashSet<T>()
         result.unionWith(this)
         result.unionWith(other)
         ret result
     }
     #交集（Python & / set.intersection）
-    public Set<T> intersection( Set<T> other )
+    public HashSet<T> intersection( HashSet<T> other )
     {
-        Set<T> result = Set<T>()
+        HashSet<T> result = HashSet<T>()
         result.unionWith(this)
         result.intersectWith(other)
         ret result
     }
     #差集（Python - / set.difference）
-    public Set<T> difference( Set<T> other )
+    public HashSet<T> difference( HashSet<T> other )
     {
-        Set<T> result = Set<T>()
+        HashSet<T> result = HashSet<T>()
         result.unionWith(this)
         result.exceptWith(other)
         ret result
     }
     #对称差（Python ^ / set.symmetric_difference）
-    public Set<T> symmetricDifference( Set<T> other )
+    public HashSet<T> symmetricDifference( HashSet<T> other )
     {
-        Set<T> result = Set<T>()
+        HashSet<T> result = HashSet<T>()
         result.unionWith(this)
         result.symmetricExceptWith(other)
         ret result
     }
     #浅拷贝（Python set.copy / Dart Set.toSet）：VM 层单次调用完成
-    public Set<T> copy()
+    public HashSet<T> copy()
     {
-        Set<T> result = Set<T>()
+        HashSet<T> result = HashSet<T>()
         result.unionWith(this)
         ret result
     }
 
     # ---- 判断型集合运算（VM 层完成）----
     #子集判断（Python issubset；C# IsSubsetOf）：空集是任何集合的子集
-    public bool isSubsetOf( Set<T> other )
+    public bool isSubsetOf( HashSet<T> other )
     {
         ret SystemSetIsSubsetOf(this, other)
     }
     #超集判断（Python issuperset；C# IsSupersetOf）：任何集合是空集的超集
-    public bool isSupersetOf( Set<T> other )
+    public bool isSupersetOf( HashSet<T> other )
     {
         ret SystemSetIsSupersetOf(this, other)
     }
     #真子集判断（Python set < set）
-    public bool isProperSubsetOf( Set<T> other )
+    public bool isProperSubsetOf( HashSet<T> other )
     {
         if this.isSubsetOf(other)
         {
@@ -327,7 +328,7 @@ public class Set<T> extends Object interface Core.IIterable<T>, Core.IIterator<T
         ret false
     }
     #真超集判断（Python set > set）
-    public bool isProperSupersetOf( Set<T> other )
+    public bool isProperSupersetOf( HashSet<T> other )
     {
         if this.isSupersetOf(other)
         {
@@ -339,12 +340,12 @@ public class Set<T> extends Object interface Core.IIterable<T>, Core.IIterator<T
         ret false
     }
     #交集非空判断（C# Overlaps）：任一公共元素即 true
-    public bool overlaps( Set<T> other )
+    public bool overlaps( HashSet<T> other )
     {
         ret SystemSetOverlaps(this, other)
     }
     #集合相等判断（C# SetEquals）：元素完全相同（与顺序无关）
-    public bool setEquals( Set<T> other )
+    public bool setEquals( HashSet<T> other )
     {
         ret SystemSetSetEquals(this, other)
     }

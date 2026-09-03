@@ -1,3 +1,5 @@
+import Std
+
 Fibonacci
 {
     static fun()
@@ -14,8 +16,8 @@ Fibonacci
         Console.println("========== Fibonacci (end) ==========")
     }
 
-    static fun fib(n)
+    static int fib( int n)
     {
-        ret n <= 1 ? n : Fibonacci.fib(n - 1) + Fibonacci.fib(n - 2)
+        ret n <= 1 ? n : Fibonacci.fib(n - 1) + fib(n - 2)
     }
 }

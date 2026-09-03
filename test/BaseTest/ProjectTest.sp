@@ -78,9 +78,9 @@ Project
         LowercaseContainerTest.fun()
         SwitchTest.fun()
         CoroutineTest.fun()
-        !#
         InputArgsTest.fun();
-
+        !#
+        HashSetTest.fun()
 
         nowMs = Environment.nowMillis() - nowMs
         SystemPrintln("===== ProjectTest _main_ end [$nowMs.toString() ms]=====")

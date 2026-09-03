@@ -1,9 +1,9 @@
 #小写容器关键字语法糖测试：
 #   map()   => Map<Object,Object>          map(8) => Map<Object,Object>(8)
-#   list()  => List<Object>                stack()/set()/queue() 同理 => <Object>
-#   set(10) => Set<Object>(10)             array(10) => Array<Object>(10)
+#   list()  => List<Object>                stack()/hashset()/queue() 同理 => <Object>
+#   hashset(10) => HashSet<Object>(10)      array(10) => Array<Object>(10)
 #   range(1,10) => Range<int>(1,10)        tuple() => Tuple（无模板动态元组）
-#同时验证：小写名作局部变量仍优先、属性 get/set 语法不受 set 容器关键字影响
+#同时验证：小写名作局部变量仍优先、属性 get/set 语法正常（set 关键字仅用于属性 setter）
 LowercaseContainerTest
 {
     # 统一断言辅助：cond 为 true 打印 OK，否则打印 FAIL
@@ -84,29 +84,29 @@ LowercaseContainerTest
         check( "stack() contains", s.contains( 1 ) == true )
     }
 
-    # ============ set() => Set<Object> ============
-    static testSet()
+    # ============ hashset() => HashSet<Object> ============
+    static testHashset()
     {
-        st = set()
+        st = hashset()
         st.add( 1 )
         st.add( "two" )
-        check( "set() add duplicate false", st.add( 1 ) == false )
-        check( "set() length", st.length == 2 )
-        check( "set() contains int", st.contains( 1 ) == true )
-        check( "set() contains string", st.contains( "two" ) == true )
-        check( "set() isEmpty", st.isEmpty == false )
+        check( "hashset() add duplicate false", st.add( 1 ) == false )
+        check( "hashset() length", st.length == 2 )
+        check( "hashset() contains int", st.contains( 1 ) == true )
+        check( "hashset() contains string", st.contains( "two" ) == true )
+        check( "hashset() isEmpty", st.isEmpty == false )
 
-        # 指定容量构造 set(10) => Set<Object>(10)
-        st10 = set( 10 )
-        check( "set(10) capacity", st10.capacity == 10 )
+        # 指定容量构造 hashset(10) => HashSet<Object>(10)
+        st10 = hashset( 10 )
+        check( "hashset(10) capacity", st10.capacity == 10 )
 
-        # 显式模板实参 set<int>() => Set<int>
-        si = set<int>()
+        # 显式模板实参 hashset<int>() => HashSet<int>
+        si = hashset<int>()
         si.add( 1 )
         si.add( 2 )
         si.add( 2 )
-        check( "set<int>() length", si.length == 2 )
-        check( "set<int>() contains", si.contains( 2 ) == true )
+        check( "hashset<int>() length", si.length == 2 )
+        check( "hashset<int>() contains", si.contains( 2 ) == true )
     }
 
     # ============ queue() => Queue<Object> ============
@@ -294,7 +294,7 @@ LowercaseContainerTest
         testMap()
         testList()
         testStack()
-        testSet()
+        testHashset()
         testQueue()
         testArray()
         testRange()
@@ -309,8 +309,8 @@ LowercaseContainerTest
 LowercaseContainerTest 测试说明：
 1. 小写容器关键字（用户需求）：
    map() => Map<Object,Object>（2 个默认模板实参 Object）
-   list()/stack()/set()/queue()/array() => <Object>（1 个默认实参）
-   set(10)/map(8)/array(10) => 指定容量构造
+   list()/stack()/hashset()/queue()/array() => <Object>（1 个默认实参）
+   hashset(10)/map(8)/array(10) => 指定容量构造
    range(1,10) => Range<int>(1,10)   tuple() => Tuple（无模板）
 2. 显式模板实参形式 map<int,string>()/list<int>()/array<int>(4) 同时可用。
 3. 兼容性：小写名（list/map/stack/queue/tuple）作局部变量名时本地变量优先。

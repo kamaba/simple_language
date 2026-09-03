@@ -1,6 +1,7 @@
+import Std
+
 Project
 {
-    println
     _main_()
     {
         Console.println("===== BenchMark _main_ start =====")

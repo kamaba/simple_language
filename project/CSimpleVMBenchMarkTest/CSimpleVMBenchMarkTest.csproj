@@ -7,10 +7,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\source\Front\SimpleLanguageFront.csproj" />
-  </ItemGroup>
-
   <!-- 用 CMake 构建 C VM DLL（唯一 DLL 来源：csimple_lang\build\Debug\bin\csimple_lang_dll.dll，
        Program.cs P/Invoke 加载的就是它；VS 内构建也走这里，保证断点行号与加载的 PDB 一致） -->
   <Target Name="BuildCVM" BeforeTargets="Build">
@@ -20,5 +16,8 @@
     <Exec Command="cmake -B &quot;$(CVMRoot)\build&quot; -S &quot;$(CVMRoot)&quot;" />
     <Exec Command="cmake --build &quot;$(CVMRoot)\build&quot; --config Debug --target csimple_lang_dll" />
   </Target>
+  <ItemGroup>
+    <ProjectReference Include="..\..\source\Front\SimpleLanguageFront.csproj" />
+  </ItemGroup>
 
 </Project>

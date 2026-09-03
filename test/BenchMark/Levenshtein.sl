@@ -1,3 +1,5 @@
+import Std
+
 Levenshtein
 {
     static fun()
@@ -34,7 +36,7 @@ Levenshtein
         Console.println("========== Levenshtein (end) ==========")
     }
 
-    static fun distance(Int32[] a, Int32[] b)
+    static int distance(Int32[] a, Int32[] b)
     {
         m = a.length
         n = b.length
@@ -62,7 +64,7 @@ Levenshtein
         ret prev[n]
     }
 
-    static fun min3(x, y, z)
+    static Int32 min3(Int32 x, Int32 y, Int32 z)  
     {
         if (x < y && x < z)
         {

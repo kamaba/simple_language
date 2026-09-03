@@ -64,7 +64,7 @@
       { "path": "Container/Queue.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "Container/LinkedList.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "Container/Map.sl", "group": "container", "tag": "icontainero", "ignore": false, "priority": 0 },
-      { "path": "Container/Set.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
+      { "path": "Container/HashSet.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "Container/Stack.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "Container/Tuple.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "DataStruct/Table.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
@@ -250,7 +250,7 @@
     { "name": "SystemLinkedListSetValueAt",     "returnType": "void",   "params": ["object", "Int32", "object"], "isVariadic": false, "cvmFunction": "vm_sys_linkedlist_set_value_at" },
     { "name": "SystemLinkedListToArray",        "returnType": "void",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_linkedlist_to_array" },
     { "name": "SystemLinkedListMoveNext",       "returnType": "bool",   "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_linkedlist_move_next" },
-    // ---- Set native container calls (Container/Set.sl) ----
+    // ---- HashSet native container calls (Container/HashSet.sl) ----
     { "name": "SystemSetRehash",               "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_set_rehash" },
     { "name": "SystemSetAddEntry",             "returnType": "bool",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_set_add_entry" },
     { "name": "SystemSetContains",             "returnType": "bool",   "params": ["object", "object", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_set_contains" },

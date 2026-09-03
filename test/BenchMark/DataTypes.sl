@@ -1,3 +1,5 @@
+import Std
+
 DataTypes
 {
     static fun()

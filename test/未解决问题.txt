@@ -5,9 +5,12 @@
 
 但做数据库，需要动态引入dll的vm层代码 
 
-llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后在虚拟机中，有对应的调用
-增加FFI接口, 加载第三方库，然后可以运行起来，然后通过FFI的load,然后调用 
-做loadLibarny的时候，记的，把方法都统一放到lib的std下边，然后在vm里边调统一的接口
+增加FFI接口, 加载第三方库，然后可以运行起来，然后通过FFI的load,然后调用  一定要记住，要把load加载封装到cvm的lib层，然后在vm里边最好是有一个管理lib的类，包括，加载，释放，引用计数等功能 
+做loadLibarny的时候，记的，把方法都统一放到lib的std下边，然后在vm里边调统一的接口 主要参考F:\project\lang\simple_language\md\design\ffi-design.md 这个的设计 文档
+要在F:\project\lang\simple_language\source\CLangdll\CLangdll.vcxproj 这个工程 多写一些特殊的用例来被调用，比如 float8的 data数据转struct 的 还有函数指针的等等，然后在F:\project\lang\simple_language\test\SpecialTest\ProjectTest.jsonc 这个工程下，增加一个FFITest.sl 的测试用例来测试相关的内容，
+
+
+
 使用 @csharp{ } 调用相关的接口 在{}内是中转逻辑   a = 0; @csharp {     a = TestCSharp.TTC.getIndex( 10, a ) }   @js{ a = Test.calc( a, a ) }  需要在工程里边配置 C#版本
 使用MLIR的指令，调用Tile计算 批量数据
 
@@ -41,14 +44,11 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 2. 去掉无用的init
 3. math库的处理  看_add_ _minus_ 等的方法是否能在虚拟机里边正常跑
 8. import 导入错误的显示
+因为Set() 关键字和set 冲突，所以需要把这个类改成HashSet() 的类名称 IsSetContainerCallForm 应该就可以去掉了
 10. 全局的typealias里边需要读取后，继承
 
 以后要实现的:
 现在front层 对返回数据void 直接赋值没有报错
-因为Set() 关键字和set 冲突，所以需要把这个类改成HashSet() 的类名称 IsSetContainerCallForm 应该就可以去掉了
-
-
-在global也就是当前运行的project类中增加一个 Array<object> _inputArgs的数组 这个是系统集成的， 在cvm层 通过调用传入的参数，会自动传到inputArgs里边，然后给工程内部使用 这个是内部使用的，所以 看不到他们集成过程，但在运行的时候，会自动生相关的逻辑
 
 
 字节码序例化相互转化过程

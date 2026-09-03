@@ -1,3 +1,5 @@
+import Std
+
 StringBench
 {
     static fun()

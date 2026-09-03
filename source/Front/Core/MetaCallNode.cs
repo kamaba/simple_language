@@ -2024,7 +2024,7 @@ namespace SimpleLanguage.Core
         //}
 
         // lowercase container keywords => Core container class name
-        // map() => Map<Object,Object>   list()/stack()/set()/queue()/array() => <Object>
+        // map() => Map<Object,Object>   list()/stack()/hashset()/queue()/array() => <Object>
         // range() => Range<int>          tuple() => Tuple (no template)
         // local variable lookup takes priority, so map/list/etc. still work as variable names
         private static readonly Dictionary<string, string> s_LowercaseContainerClassNameDict
@@ -2033,7 +2033,7 @@ namespace SimpleLanguage.Core
             { "map", "Map" },
             { "list", "List" },
             { "stack", "Stack" },
-            { "set", "Set" },
+            { "hashset", "HashSet" },
             { "queue", "Queue" },
             { "tuple", "Tuple" },
             { "array", "Array" },
@@ -2057,7 +2057,7 @@ namespace SimpleLanguage.Core
                     return new List<MetaType>() { new MetaType(CoreMetaClassManager.int32MetaClass) };
                 case "list":
                 case "stack":
-                case "set":
+                case "hashset":
                 case "queue":
                 case "array":
                     return new List<MetaType>() { new MetaType(CoreMetaClassManager.objectMetaClass) };
@@ -2117,7 +2117,7 @@ namespace SimpleLanguage.Core
                     retMC = findMB;
                 }
             }
-            // lowercase container keywords: map()/list()/stack()/set()/queue()/tuple()/array()/range()
+            // lowercase container keywords: map()/list()/stack()/hashset()/queue()/tuple()/array()/range()
             // => Core container class; falls back to normal identifier lookup when Core class not found
             // m_IsFunction guard: only the call form name(...) resolves to the Core container,
             // a plain identifier reference / duplicate-name probe (built from a bare name token,
@@ -2176,7 +2176,7 @@ namespace SimpleLanguage.Core
                     // language keyword: lowercase container name without explicit template args
                     // => use default template args
                     //   range => Range<int>   map => Map<Object,Object>
-                    //   list/stack/set/queue/array => <Object>   tuple() => plain Tuple (normal path)
+                    //   list/stack/hashset/queue/array => <Object>   tuple() => plain Tuple (normal path)
                     // keep case-sensitive behavior so `Range` does not auto-infer here
                     var defaultTemplateArgs = count == 0 ? GetLowercaseContainerDefaultTemplateArgs(inputname) : null;
                     if (defaultTemplateArgs != null)

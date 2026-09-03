@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\source\Front\SimpleLanguageFront.csproj" />
+    <ProjectReference Include="..\Front\SimpleLanguageFront.csproj" />
   </ItemGroup>
 
   <!-- 用 CMake 构建 C VM DLL（唯一 DLL 来源：csimple_lang\build\Debug\bin\csimple_lang_dll.dll，
