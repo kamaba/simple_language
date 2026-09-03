@@ -7,17 +7,14 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
-  <!-- 用 CMake 构建 C VM（唯一二进制来源：csimple_lang\build\<Config>\bin\）。
-       Debug  : 构建 Debug DLL + exe（Program.cs P/Invoke 加载 DLL；exe 供路径解析/回退）
-       Release: 构建 Release exe（/O2 + RELEASE=1 优化构建，Program.cs 以进程方式运行它） -->
+  <!-- 用 CMake 构建 C VM DLL（唯一 DLL 来源：csimple_lang\build\Debug\bin\csimple_lang_dll.dll，
+       Program.cs P/Invoke 加载的就是它；VS 内构建也走这里，保证断点行号与加载的 PDB 一致） -->
   <Target Name="BuildCVM" BeforeTargets="Build">
     <PropertyGroup>
       <CVMRoot>$(MSBuildThisFileDirectory)..\..\..\csimple_lang</CVMRoot>
-      <CVMConfig Condition="'$(Configuration)' == 'Release'">Release</CVMConfig>
-      <CVMConfig Condition="'$(CVMConfig)' == ''">Debug</CVMConfig>
     </PropertyGroup>
     <Exec Command="cmake -B &quot;$(CVMRoot)\build&quot; -S &quot;$(CVMRoot)&quot;" />
-    <Exec Command="cmake --build &quot;$(CVMRoot)\build&quot; --config $(CVMConfig) --target csimple_lang_dll --target csimple_lang" />
+    <Exec Command="cmake --build &quot;$(CVMRoot)\build&quot; --config Debug --target csimple_lang_dll" />
   </Target>
   <ItemGroup>
     <ProjectReference Include="..\..\source\Front\SimpleLanguageFront.csproj" />

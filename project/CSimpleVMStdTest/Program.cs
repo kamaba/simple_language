@@ -20,7 +20,7 @@ internal static class Program
         //   dotnet run --project source/CSimpleVMTest2/CSimpleVMTest2.csproj -- <projectPathWithoutSpOrWithSp> [-test]
         // Example:
         //   ... -- E:\project\lang\simple_language\test\ExpendTest\ProjectTest
-        string defaultProjectPath = Path.Combine(repoRoot, "test", "BenchMark", "BenchMark");
+        string defaultProjectPath = Path.Combine(repoRoot, "test", "ExpendTest", "ProjectTest");
         string projectPath = GetProjectPathArg(args) ?? defaultProjectPath;
         bool runTestEntry = args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
         bool start = TryGetBoolArg(args, "start", defaultValue: true);
@@ -85,24 +85,13 @@ internal static class Program
 
     static int RunCVM(string packagePath, bool runTestEntry, string repoRoot, bool debug = false)
     {
-        // Resolve csimple_lang exe/dll path.
-        // Match the C# build configuration to the VM build configuration:
-        // Debug  -> build\Debug\bin   (P/Invoke DLL, can attach C debugger)
-        // Release-> build\Release\bin (optimized /O2 + RELEASE=1 exe)
-#if DEBUG
+        // Resolve csimple_lang exe/dll path
         string cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "build", "Debug", "bin"));
-#else
-        string cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "build", "Release", "bin"));
-#endif
         string cvmExe = Path.Combine(cvmDir, "csimple_lang.exe");
 
         if (!File.Exists(cvmExe))
         {
-#if DEBUG
             cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "build", "Release", "bin"));
-#else
-            cvmDir = Path.GetFullPath(Path.Combine(repoRoot, "..", "csimple_lang", "build", "Debug", "bin"));
-#endif
             cvmExe = Path.Combine(cvmDir, "csimple_lang.exe");
         }
 

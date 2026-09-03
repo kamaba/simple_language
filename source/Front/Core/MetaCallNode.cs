@@ -1824,9 +1824,14 @@ namespace SimpleLanguage.Core
 
                     // Array1.$i.x   Array1.$mmq.x;
                     var getmv2 = m_OwnerMetaFunctionBlock.GetMetaVariableByName(m_Name);
-                    if (getmv2 != null)    //閺屻儲澹橀弰顖氭儊瀹告彃鐣炬稊澶庣箖閸欐﹢鍣?
+                    if (getmv2 != null)    //閺屻儲澹橀弰顖氭儊瀹告彃鐣炬稊澶庣箖閸箖閸欐﹢鍣?
                     {
-                        string inputMVName = "Visit_" + m_Name;
+                        // 索引变量必须绑定当前作用域解析到的那个变量。
+                        // 不同作用域存在同名变量时（例如嵌套 for 各自声明的循环变量 i），
+                        // 仅用 "Visit_" + m_Name 做缓存键会让后面的 arr[i] 错误复用
+                        // 前面作用域缓存的绑定，导致加载错误的槽位。
+                        // 因此键中追加索引变量对象的哈希以区分作用域。
+                        string inputMVName = "Visit_" + m_Name + "_" + getmv2.GetHashCode();
                         m_MetaVariable = variable.GetMetaVariable(inputMVName);
                         if (m_MetaVariable == null)
                         {
@@ -1907,7 +1912,9 @@ namespace SimpleLanguage.Core
                     }
                     else if (m_ExpressNode is MetaOpExpressNode moen)
                     {
-                        string inputMVName = "Visit_" + m_Name;
+                        // 同上：下标为表达式时，缓存键需要包含表达式对象身份，
+                        // 避免不同下标表达式（或不同作用域的同名下标）互相复用绑定。
+                        string inputMVName = "Visit_" + m_Name + "_" + moen.GetHashCode();
                         m_MetaVariable = variable.GetMetaVariable(inputMVName);
                         if (m_MetaVariable == null)
                         {
