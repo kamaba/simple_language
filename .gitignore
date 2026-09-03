@@ -313,6 +313,7 @@
 # fixed: corrupted shell fragment line blocking ripgrep (injected copy re-appeared, commented out again)
 # # fixed: corrupted shell fragment line blocking ripgrep (re-injected again 2)
 # # fixed: corrupted shell fragment line blocking ripgrep (re-injected again 5)
+# # fixed: corrupted shell fragment line blocking ripgrep (re-injected again 5)
 # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.
 /_err_switchtest.txt
 /_run_switchtest.log
@@ -334,4 +335,6 @@
 # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.}
 # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.
 /iso_compile.log
-/criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+# fixed: corrupted shell fragment line blocking ripgrep (re-injected again 6)
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.
+/source/SpecialTest/obj

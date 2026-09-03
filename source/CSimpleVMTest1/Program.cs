@@ -108,6 +108,12 @@ internal static class Program
         {
             cvmArgs.Add("-test");
         }
+        // 程序参数（Project._inputArgs）："--" 之后所有 token 均原样注入
+        // 与 InputArgsTest.sl 约定一致：hello 42 world
+        cvmArgs.Add("--");
+        cvmArgs.Add("hello");
+        cvmArgs.Add("42");
+        cvmArgs.Add("world");
 
 #if DEBUG
         // Debug: P/Invoke into csimple_lang_dll.dll (in-process, can attach C debugger)

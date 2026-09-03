@@ -13,7 +13,7 @@ Project
     }
     _main_()
     {     
-        SystemPrintln("===== ProjectTest _main_ start =====")   
+        SystemPrintln("===== ProjectTest _main_ start =====")
         nowMs = Environment.nowMillis()
         #!
         GlobalTest.fun()
@@ -77,8 +77,9 @@ Project
         TreeTest.fun()
         LowercaseContainerTest.fun()
         SwitchTest.fun()
-        !#
         CoroutineTest.fun()
+        !#
+        InputArgsTest.fun();
 
 
         nowMs = Environment.nowMillis() - nowMs

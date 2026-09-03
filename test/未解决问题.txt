@@ -50,14 +50,6 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 
 在global也就是当前运行的project类中增加一个 Array<object> _inputArgs的数组 这个是系统集成的， 在cvm层 通过调用传入的参数，会自动传到inputArgs里边，然后给工程内部使用 这个是内部使用的，所以 看不到他们集成过程，但在运行的时候，会自动生相关的逻辑
 
-增加一组对  OpCode_StoreLocal = 32,
- OpCode_StoreNotStaticField1 = 33,
- OpCode_StoreNotStaticField2 = 34,
- OpCode_StoreArrayIndex = 35,
- OpCode_StoreArrayIndexField = 36,
- OpCode_StoreStaticField = 37,
- OpCode_StoreGlobal = 38,
- OpCode_StoreReturn = 39, 的扩展，增加一组对常数的扩展， 或者定义为OpCode_Store...ConstValue 然后在FrontEnd对应的增加指令，并且在传入-o3 的参数的时候，进行这个逻辑的打开，然后看本地的参数是否在这几个情况下的时候，并且是一个常数，然后把这个常数也带到这个指令参数里边，当然还有类型，然后在cvm层，对应的读出来，这样就可以多数情况，少操作一次了，还有一定要记的，如果-o3没开，还是走原来的逻辑
 
 字节码序例化相互转化过程
 增加Jit的支持，起码实现x86的平台

@@ -430,6 +430,48 @@ namespace SimpleLanguage.Project
             mmv.ParseRealMetaType();
         }
 
+        // 系统集成成员：Project 类静态 Array<Object> _inputArgs。
+        // C VM 启动时（vm_scheduler_enter 之前）会把命令行传入的程序参数
+        // 自动填充进该数组（见 csimple_lang vm_fill_input_args），源码中通过
+        // global._inputArgs 访问。集成过程对用户不可见，无需在 .sp/jsonc 中声明。
+        public static void InjectInputArgsMember()
+        {
+            const string InputArgsMemberName = "_inputArgs";
+
+            var projectMc = ClassManager.instance.TryGetProjectMetaClass();
+            if (projectMc == null)
+            {
+                return;
+            }
+
+            // 用户在 .sp 或 jsonc data 中显式定义过同名成员时不注入（用户优先）。
+            if (projectMc.GetMetaMemberVariableByName(InputArgsMemberName) != null)
+            {
+                return;
+            }
+
+            var mmv = new MetaMemberVariable(projectMc, InputArgsMemberName);
+            mmv.SetIsStatic(true);
+            mmv.SetIsConst(false);
+
+            // 空数组初值 [] -> Array<Object>, length 0 (MetaArrayExpressNode.CalcReturnType 空数组分支)。
+            var arrExpress = new MetaArrayExpressNode(projectMc, null, null, null);
+            arrExpress.CalcReturnType();
+            var arrMetaType = arrExpress.GetReturnMetaType();
+            if (arrMetaType == null)
+            {
+                Log.AddProjectLog(LID.ShowExtendMessage, "Inject _inputArgs failed: cannot build Array<Object> meta type.");
+                return;
+            }
+
+            mmv.SetMetaDefineType(arrMetaType);
+            mmv.SetRealMetaType(arrMetaType);
+            mmv.SetIsDefineMetaType(true);
+            mmv.SetExpress(new MetaNewObjectExpressNode(arrMetaType, arrExpress, projectMc, null));
+
+            FinalizeInjectedProjectGlobalMember(projectMc, mmv);
+        }
+
         static MetaData CreateMetaDataByJsonObject(string dataName, JsonElement element, int seed)
         {
             var md = new MetaData(dataName, false, false, true);

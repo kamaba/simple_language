@@ -205,6 +205,8 @@ namespace SimpleLanguage.Project
             {
                 // Inject jsonc data (root "data" + legacy global.data) into Project meta members before statements parse.
                 ProjectClass.InjectProjectGlobalDataFromConfig();
+                // 系统集成成员：注入 Project 静态 Array<Object> _inputArgs（jsonc data 同名项优先）。
+                ProjectClass.InjectInputArgsMember();
                 return true;
             });
             pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "BuildLocalClass", () =>
