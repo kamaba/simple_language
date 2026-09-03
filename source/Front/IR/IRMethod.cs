@@ -29,6 +29,10 @@ namespace SimpleLanguage.IR
         public bool isAbstract => m_IsAbstract;
         public bool isOverrideFunction => m_IsOverrideFunction;
         public bool isExtendParams => m_IsExtendParams;
+        /// <summary>是否标注了 @AOT() 属性（AOT 预编译候选，阶段1先支持非模板静态成员函数）。
+        /// 本地编译从 MetaMemberFunction.attributeList 提取（name=="AOT"），
+        /// ref module 从 SLMethodPackage.flags bit 256 还原。</summary>
+        public bool isAot => m_IsAot;
         /// <summary>声明该方法的类的 classId（来自 SLMethodPackage.declaringClassId）。
         /// 对于继承到子类的方法，指向声明类（如 Object）。0 表示未设置（按当前类处理）。</summary>
         public int declaringClassId => m_DeclaringClassId;
@@ -72,6 +76,7 @@ namespace SimpleLanguage.IR
         private bool m_IsAbstract = false;
         private bool m_IsOverrideFunction = false;
         private bool m_IsExtendParams = false;
+        private bool m_IsAot = false;
         private int m_DeclaringClassId = 0;
         private bool m_IsTemplateFunction = false;
         private List<string> m_TemplateParameterNames = new List<string>();
@@ -106,7 +111,9 @@ namespace SimpleLanguage.IR
             if( func is MetaMemberFunction mmf )
             {
                 m_InterfaceMethod = mmf.isOverrideInterface;
+                m_IsStatic = mmf.isStatic;
                 m_IsTemplateFunction = mmf.isTemplateFunction;
+                m_IsAot = HasAotAttribute(mmf);
                 if (m_IsTemplateFunction && mmf.metaMemberTemplateCollection?.metaTemplateList != null)
                 {
                     foreach (var mt in mmf.metaMemberTemplateCollection.metaTemplateList)
@@ -148,6 +155,21 @@ namespace SimpleLanguage.IR
         }
 
         /// <summary>
+        /// 判断 MetaMemberFunction 是否标注了 @AOT() 属性。
+        /// </summary>
+        private static bool HasAotAttribute(MetaMemberFunction mmf)
+        {
+            var attrs = mmf?.attributeList;
+            if (attrs == null) return false;
+            foreach (var attr in attrs)
+            {
+                if (attr != null && attr.name == "AOT")
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// 从导出的 SLMethodPackage 直接构建 IRMethod，用于 ref module 导入。
         /// 只构建签名（参数、返回值），不包含函数体 IR 指令。
         /// </summary>
@@ -161,13 +183,15 @@ namespace SimpleLanguage.IR
             m_IROwnerMetaClass = ownerIRMc;
             m_InterfaceMethod = mp?.interfaceMethod ?? false;
             // SLMethodPackage flags: 1=static, 2=final, 4=abstract, 8=overrideFunction,
-            // 16=overrideInterface(==interfaceMethod), 32=canRewrite, 64=constructInit, 128=extendParams
+            // 16=overrideInterface(==interfaceMethod), 32=canRewrite, 64=constructInit, 128=extendParams,
+            // 256=aot(@AOT() 标记)
             var flags = mp?.flags ?? 0;
             m_IsStatic = (flags & 1) != 0;
             m_IsFinal = (flags & 2) != 0;
             m_IsAbstract = (flags & 4) != 0;
             m_IsOverrideFunction = (flags & 8) != 0;
             m_IsExtendParams = (flags & 128) != 0;
+            m_IsAot = (flags & 256) != 0;
             m_DeclaringClassId = mp?.declaringClassId ?? 0;
             m_IsTemplateFunction = mp?.isTemplateFunction ?? false;
             if (m_IsTemplateFunction && mp?.templateParameterNames != null)

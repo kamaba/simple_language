@@ -96,7 +96,7 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// 导入侧据此把 MetaMemberFunction 的 owner 设为声明类。</summary>
         public int declaringClassId { get; set; }
         public bool interfaceMethod { get; set; }
-        /// <summary>Method modifier flags: 1=static, 2=final, 4=abstract, 8=override, 16=interface, 32=canRewrite, 64=constructInit, 128=extendParams(params 可变参数)</summary>
+        /// <summary>Method modifier flags: 1=static, 2=final, 4=abstract, 8=override, 16=interface, 32=canRewrite, 64=constructInit, 128=extendParams(params 可变参数), 256=aot(@AOT() 标记)</summary>
         public int flags { get; set; }
         /// <summary>是否为模板函数（fun&lt;T&gt;()）。导入侧据此恢复 MetaTemplate 参数。</summary>
         public bool isTemplateFunction { get; set; }

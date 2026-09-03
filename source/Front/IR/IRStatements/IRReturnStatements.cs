@@ -38,11 +38,22 @@ namespace SimpleLanguage.IR
             }
             if (ms.express != null)
             {
-                m_ReturnValueExpress = IRExpressManager.CreateExpress(this.irMethod, ms.express);
-                m_IRStatements.Add(m_ReturnValueExpress);
+                // ── O3 常数融合：ret <常量> 时把 [LoadConst*][StoreReturn] 融合为
+                //    单条 StoreReturnConstValue（常量与类型嵌入 payload）。
+                //    融合不成功则完整回退经典 LoadConst + StoreReturn 路径。 ──
+                if (ms.express is MetaConstExpressNode retConstNode
+                    && IRStoreVariable.TryCreateReturnConstValueStore(this.irMethod, retConstNode, out IRStoreVariable fusedRetStore))
+                {
+                    m_IRStatements.Add(fusedRetStore);
+                }
+                else
+                {
+                    m_ReturnValueExpress = IRExpressManager.CreateExpress(this.irMethod, ms.express);
+                    m_IRStatements.Add(m_ReturnValueExpress);
 
-                IRStoreVariable irsv = IRStoreVariable.CreateStaticReturnIRSV(this.irMethod, ms?.token);
-                m_IRStatements.Add(irsv);
+                    IRStoreVariable irsv = IRStoreVariable.CreateStaticReturnIRSV(this.irMethod, ms?.token);
+                    m_IRStatements.Add(irsv);
+                }
             }
             // 裸 ret（void 函数）也必须生成跳转到函数结束，
             // 否则块内的提前返回会退化为顺序执行后续语句。

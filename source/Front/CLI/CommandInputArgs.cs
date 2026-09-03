@@ -24,6 +24,10 @@ public class CommandInputArgs
     public bool noBanner { get; private set; } = false;
     public bool isRelease { get; private set; } = false;
 
+    // --- optimize level ---
+    // 0 = no optimization, 1 = default, 2 = medium, 3 = aggressive (const-fused stores)
+    public int optimizeLevel { get; private set; } = 1;
+
     // --- compile options ---
     public ECommandType commandType { get; private set; } = ECommandType.None;
     public bool exportIR { get; private set; } = false;
@@ -221,6 +225,15 @@ public class CommandInputArgs
                 isPrintToken = true;
                 continue;
             }
+
+            // -O0 / -O1 / -O2 / -O3 (also accepts lowercase -o0..-o3)
+            if (a.Length == 3 && a[0] == '-'
+                && (a[1] == 'O' || a[1] == 'o')
+                && a[2] >= '0' && a[2] <= '3')
+            {
+                optimizeLevel = a[2] - '0';
+                continue;
+            }
         }
     }
 
@@ -238,6 +251,12 @@ public class CommandInputArgs
             {
                 exportIR = true;
                 i++;
+            }
+            else if (args[i].Length == 3 && args[i][0] == '-'
+                && (args[i][1] == 'O' || args[i][1] == 'o')
+                && args[i][2] >= '0' && args[i][2] <= '3')
+            {
+                optimizeLevel = args[i][2] - '0';
             }
         }
     }

@@ -6,17 +6,18 @@
 但做数据库，需要动态引入dll的vm层代码 
 
 llvm初试  使用@AOT() 的标记   即会编译成llvm的内部的lib,然后在虚拟机中，有对应的调用
-增加FFI接口, 加载第三方库，然后可以运行起来，然后通过FFI的load,然后调用
+增加FFI接口, 加载第三方库，然后可以运行起来，然后通过FFI的load,然后调用 
+做loadLibarny的时候，记的，把方法都统一放到lib的std下边，然后在vm里边调统一的接口
 使用 @csharp{ } 调用相关的接口 在{}内是中转逻辑   a = 0; @csharp {     a = TestCSharp.TTC.getIndex( 10, a ) }   @js{ a = Test.calc( a, a ) }  需要在工程里边配置 C#版本
 使用MLIR的指令，调用Tile计算 批量数据
 
-1. cvm 只使用三色方案  然后使用 引用计数的方案，在结尾 后把内存收集
+1. cvm 只使用三色方案  然后使用 引用计数的方案，在结尾 后把内存收集  增加小块内存管理功能
 机制差的:
 
 优化FrontEnd层
 函数名称和类名冲突时候的处理
 编码相关的
-压缩类
+压缩类  lz4  zlip glip
 再增加一些ErrorShow, stream, netStream,
  buffer, builder, await, async,  
 Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当然里边可以创建各种不同的树结构用来选择。
@@ -46,13 +47,23 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 现在front层 对返回数据void 直接赋值没有报错
 因为Set() 关键字和set 冲突，所以需要把这个类改成HashSet() 的类名称 IsSetContainerCallForm 应该就可以去掉了
 
+
 在global也就是当前运行的project类中增加一个 Array<object> _inputArgs的数组 这个是系统集成的， 在cvm层 通过调用传入的参数，会自动传到inputArgs里边，然后给工程内部使用 这个是内部使用的，所以 看不到他们集成过程，但在运行的时候，会自动生相关的逻辑
 
-增加一组对 local/args/member 的 set value 常数的irCode 然后直接把常数存储到某一位置 
+增加一组对  OpCode_StoreLocal = 32,
+ OpCode_StoreNotStaticField1 = 33,
+ OpCode_StoreNotStaticField2 = 34,
+ OpCode_StoreArrayIndex = 35,
+ OpCode_StoreArrayIndexField = 36,
+ OpCode_StoreStaticField = 37,
+ OpCode_StoreGlobal = 38,
+ OpCode_StoreReturn = 39, 的扩展，增加一组对常数的扩展， 或者定义为OpCode_Store...ConstValue 然后在FrontEnd对应的增加指令，并且在传入-o3 的参数的时候，进行这个逻辑的打开，然后看本地的参数是否在这几个情况下的时候，并且是一个常数，然后把这个常数也带到这个指令参数里边，当然还有类型，然后在cvm层，对应的读出来，这样就可以多数情况，少操作一次了，还有一定要记的，如果-o3没开，还是走原来的逻辑
 
 字节码序例化相互转化过程
 增加Jit的支持，起码实现x86的平台
 增加对WebAssembly的支持，然后让网页上跑起来示例
+
+我现在要在Export/MLIR 的目录 ，把关于MLIR的一些参数还有逻辑都封装在这个目录下，做对应的方法, 还有就是，需要在AOT里边增加对应的接口。
 
 
 11. 写json的支持 与data的联动

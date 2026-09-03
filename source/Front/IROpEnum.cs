@@ -148,6 +148,19 @@ namespace SimpleLanguage
         NewClosure,     // = 104 stack: [..., ctxArray] -> closure object; payload: JSON SLRuntimeCallPackage (methodId)
         CallClosure,    // = 105 stack: [..., closure, arg0, arg1, ...] -> ret; payload: JSON SLRuntimeCallPackage (paramCount, methodId)
         AllocClosureContext, // = 106 stack: [] -> Object[N] null-filled array (shared capture context); payload: count(int32)
+
+        // O3 const-fused store opcodes (only emitted when optimizeLevel >= 3).
+        // Same store targets as the classic Store* set but the value is carried in
+        // the payload as [etype:1][value:N] (StoreArrayIndexConstValue adds a
+        // leading [flag:1]) so the VM avoids one LoadConst push + store pop.
+        StoreLocalConstValue,              // = 107 [index:4][etype:1][value:N]
+        StoreArgumentConstValue,           // = 108 [index:4][etype:1][value:N]
+        StoreReturnConstValue,             // = 109 [index:4][etype:1][value:N]
+        StoreGlobalConstValue,             // = 110 [index:4][etype:1][value:N]
+        StoreNotStaticField1ConstValue,    // = 111 [index:4][etype:1][value:N], peek instance
+        StoreNotStaticField2ConstValue,    // = 112 [index:4][etype:1][value:N], pop instance
+        StoreArrayIndexConstValue,         // = 113 [index:4][flag:1][etype:1][value:N], pop array
+        StoreStaticFieldConstValue,        // = 114 [index:4][etype:1][value:N][owner runtimeDefType("self" or JSON)]
     }
 
     /// <summary>

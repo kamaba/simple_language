@@ -289,6 +289,15 @@ namespace SimpleLanguage.IR
                 case EIROpCode.StoreArrayIndex:
                 case EIROpCode.LeaveTry:
                 case EIROpCode.AllocClosureContext:
+                // O3 const-fused stores: index embedded first, then [etype][value]
+                case EIROpCode.StoreLocalConstValue:
+                case EIROpCode.StoreArgumentConstValue:
+                case EIROpCode.StoreReturnConstValue:
+                case EIROpCode.StoreGlobalConstValue:
+                case EIROpCode.StoreNotStaticField1ConstValue:
+                case EIROpCode.StoreNotStaticField2ConstValue:
+                case EIROpCode.StoreArrayIndexConstValue:
+                case EIROpCode.StoreStaticFieldConstValue:
                     return true;
                 default:
                     return false;

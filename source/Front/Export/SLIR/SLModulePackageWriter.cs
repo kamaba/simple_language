@@ -515,6 +515,7 @@ namespace SimpleLanguage.Export.SLIR
                         if (irBufLocal.Count > 0)
                         {
                             AppendClassInstanceFieldStoreIfNeeded(v, irBufLocal);
+                            TryFuseConstInstanceFieldInitializer(v, irBufLocal);
                         }
                         foreach (var d in irBufLocal)
                         {
@@ -550,6 +551,8 @@ namespace SimpleLanguage.Export.SLIR
                         {
                             AppendClassStaticFieldStoreIfNeeded(v, curirmt, irBufStatic);
                             TryRewriteArrayStaticInitializer(v, irBufStatic, curirmt);
+                            // 常数融合必须在数组展开之后（Array 类型不能按标量融合）
+                            TryFuseConstStaticInitializer(v, irBufStatic);
                         }
                         foreach (var d in irBufStatic)
                         {
@@ -598,6 +601,7 @@ namespace SimpleLanguage.Export.SLIR
                     {
                         // Match IRManager.GlobalVariable: expr IR then StoreGlobal.
                         AppendGlobalStoreIfNeeded(gv, irListForExpr);
+                        TryFuseConstGlobalInitializer(gv, irListForExpr);
                         foreach (var d in irListForExpr)
                         {
                             if (d == null) continue;
@@ -1025,6 +1029,8 @@ namespace SimpleLanguage.Export.SLIR
             // 128: 最后一个参数为 params 可变参数（params object[]），导入端需要还原该标记，
             // 否则调用侧按可变参数匹配时识别不了该方法。
             if (m.bindMetaFunction.metaMemberParamCollection?.isExtendParams == true) flags |= 128;
+            // 256: @AOT() 标记（AOT 预编译候选），导入端据此还原 IRMethod.isAot。
+            if (m.isAot) flags |= 256;
             return flags;
         }
 
@@ -1176,6 +1182,151 @@ namespace SimpleLanguage.Export.SLIR
 
             irBuf.Clear();
             irBuf.AddRange(rebuilt);
+        }
+
+        /// <summary>
+        /// O3 常数融合（导出路径）：从经典 LoadConst* 提取 [etype:1][value:N]。
+        /// 非字符串常量直接复用创建时 SetOpValue 打包出的经典布局字节；
+        /// String 的 id 在 index 字段（创建时 opValue=null、Payload=null）；
+        /// Null 无 value 字节（C VM 侧 VM_ETYPE_LANG_NULL 不读 value）。
+        /// </summary>
+        private static bool TryBuildConstValuePayload(IRData loadData, out byte[] payload)
+        {
+            payload = null;
+            if (loadData == null) return false;
+            byte etype;
+            byte[] valueBytes = null;
+            switch (loadData.opCode)
+            {
+                case EIROpCode.LoadConstNull:
+                    etype = (byte)EType.Null;
+                    valueBytes = Array.Empty<byte>();
+                    break;
+                case EIROpCode.LoadConstBoolean: etype = (byte)EType.Boolean; break;
+                case EIROpCode.LoadConstUInt8: etype = (byte)EType.UInt8; break;
+                case EIROpCode.LoadConstInt8: etype = (byte)EType.Int8; break;
+                case EIROpCode.LoadConstInt16: etype = (byte)EType.Int16; break;
+                case EIROpCode.LoadConstUInt16: etype = (byte)EType.UInt16; break;
+                case EIROpCode.LoadConstInt32: etype = (byte)EType.Int32; break;
+                case EIROpCode.LoadConstUInt32: etype = (byte)EType.UInt32; break;
+                case EIROpCode.LoadConstInt64: etype = (byte)EType.Int64; break;
+                case EIROpCode.LoadConstUInt64: etype = (byte)EType.UInt64; break;
+                case EIROpCode.LoadConstFloat8_E4M3: etype = (byte)EType.Float8; break;
+                case EIROpCode.LoadConstFloat8_E5M2: etype = (byte)EType.Float8_E5M2; break;
+                case EIROpCode.LoadConstFloat16: etype = (byte)EType.Float16; break;
+                case EIROpCode.LoadConstFloat16_Brain: etype = (byte)EType.Float16_Brain; break;
+                case EIROpCode.LoadConstFloat32: etype = (byte)EType.Float32; break;
+                case EIROpCode.LoadConstFloat64: etype = (byte)EType.Float64; break;
+                case EIROpCode.LoadConstString:
+                    etype = (byte)EType.String;
+                    valueBytes = BitConverter.GetBytes(loadData.index);
+                    break;
+                default:
+                    return false;
+            }
+            if (valueBytes == null)
+            {
+                valueBytes = loadData.Payload;
+                if (valueBytes == null || valueBytes.Length == 0) return false;
+            }
+            payload = new byte[valueBytes.Length + 1];
+            payload[0] = etype;
+            Buffer.BlockCopy(valueBytes, 0, payload, 1, valueBytes.Length);
+            return true;
+        }
+
+        /// <summary>
+        /// O3 类静态字段初始化融合：[LoadConst*][StoreStaticField] → StoreStaticFieldConstValue。
+        /// payload（EmbedIndexInPayload 后）：[field:4][etype:1][value:N][owner runtimeDefType]，
+        /// owner 后缀沿用原 StoreStaticField 的 Payload（"self" 4 字节或 runtimeDefType JSON），
+        /// 保证 C VM 静态成员解析路径与经典指令完全一致。
+        /// 必须在 <see cref="TryRewriteArrayStaticInitializer"/> 之后调用：
+        /// Array 类型字段要先展开成 NewArray 序列（展开后 count>2 天然跳过融合）。
+        /// </summary>
+        private static void TryFuseConstStaticInitializer(IRMetaVariable v, List<IRData> irBuf)
+        {
+            // -O3 未开启时必须走原逻辑
+            if (ProjectManager.optimizeLevel < 3) return;
+            if (v == null || irBuf == null || irBuf.Count != 2) return;
+            var loadData = irBuf[0];
+            var storeData = irBuf[1];
+            if (loadData == null || storeData == null) return;
+            if (storeData.opCode != EIROpCode.StoreStaticField) return;
+            // Array 类型由 TryRewriteArrayStaticInitializer 处理（先跑），此处双保险跳过
+            var typeName = StripModulePrefix(v.irMetaType?.irMetaClass?.irName ?? string.Empty);
+            if (typeName.StartsWith("Array", StringComparison.Ordinal)) return;
+            var ownerBytes = storeData.Payload; // 创建时 opValue setter 已打包（"self" 或 IRMetaType JSON）
+            if (ownerBytes == null || ownerBytes.Length == 0) return;
+            if (!TryBuildConstValuePayload(loadData, out var constPayload)) return;
+            var fused = new IRData
+            {
+                id = loadData.id,
+                opCode = EIROpCode.StoreStaticFieldConstValue,
+                index = storeData.index,
+                debugStaticOwnerIrName = storeData.debugStaticOwnerIrName,
+            };
+            fused.Payload = new byte[constPayload.Length + ownerBytes.Length];
+            Buffer.BlockCopy(constPayload, 0, fused.Payload, 0, constPayload.Length);
+            Buffer.BlockCopy(ownerBytes, 0, fused.Payload, constPayload.Length, ownerBytes.Length);
+            fused.UpdateByteLength();
+            fused.SetDebugInfoByValue(v.debugInfo);
+            irBuf.Clear();
+            irBuf.Add(fused);
+        }
+
+        /// <summary>
+        /// O3 实例字段默认值融合：[LoadConst*][StoreNotStaticField1] → StoreNotStaticField1ConstValue。
+        /// payload（EmbedIndexInPayload 后）：[field:4][etype:1][value:N]；初始化器子 VM 栈底
+        /// 已 push 新实例，C VM 侧 peek 栈顶实例写入字段，与经典指令语义一致（实例不入栈出栈）。
+        /// </summary>
+        private static void TryFuseConstInstanceFieldInitializer(IRMetaVariable v, List<IRData> irBuf)
+        {
+            // -O3 未开启时必须走原逻辑
+            if (ProjectManager.optimizeLevel < 3) return;
+            if (v == null || irBuf == null || irBuf.Count != 2) return;
+            var loadData = irBuf[0];
+            var storeData = irBuf[1];
+            if (loadData == null || storeData == null) return;
+            if (storeData.opCode != EIROpCode.StoreNotStaticField1) return;
+            if (!TryBuildConstValuePayload(loadData, out var constPayload)) return;
+            var fused = new IRData
+            {
+                id = loadData.id,
+                opCode = EIROpCode.StoreNotStaticField1ConstValue,
+                index = storeData.index,
+            };
+            fused.Payload = constPayload;
+            fused.UpdateByteLength();
+            fused.SetDebugInfoByValue(v.debugInfo);
+            irBuf.Clear();
+            irBuf.Add(fused);
+        }
+
+        /// <summary>
+        /// O3 全局变量初始化融合：[LoadConst*][StoreGlobal] → StoreGlobalConstValue。
+        /// payload（EmbedIndexInPayload 后）：[id:4][etype:1][value:N]，id 为全局变量 id。
+        /// </summary>
+        private static void TryFuseConstGlobalInitializer(IRMetaVariable gv, List<IRData> irBuf)
+        {
+            // -O3 未开启时必须走原逻辑
+            if (ProjectManager.optimizeLevel < 3) return;
+            if (gv == null || irBuf == null || irBuf.Count != 2) return;
+            var loadData = irBuf[0];
+            var storeData = irBuf[1];
+            if (loadData == null || storeData == null) return;
+            if (storeData.opCode != EIROpCode.StoreGlobal) return;
+            if (!TryBuildConstValuePayload(loadData, out var constPayload)) return;
+            var fused = new IRData
+            {
+                id = loadData.id,
+                opCode = EIROpCode.StoreGlobalConstValue,
+                index = storeData.index,
+            };
+            fused.Payload = constPayload;
+            fused.UpdateByteLength();
+            fused.SetDebugInfoByValue(gv.debugInfo);
+            irBuf.Clear();
+            irBuf.Add(fused);
         }
 
         /// <summary>

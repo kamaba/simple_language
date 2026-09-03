@@ -21,10 +21,12 @@ internal static class Program
         // Example:
         //   ... -- E:\project\lang\simple_language\test\ExpendTest\ProjectTest
         string defaultProjectPath = Path.Combine(repoRoot, "test", "ExpendTest", "ProjectTest");
-        string projectPath = args.Length == 0 ? defaultProjectPath : args[0];
+        string projectPath = GetProjectPathArg(args) ?? defaultProjectPath;
         bool runTestEntry = args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
         bool start = TryGetBoolArg(args, "start", defaultValue: true);
         bool debug = args.Any(a => string.Equals(a, "-debug", StringComparison.OrdinalIgnoreCase));
+        // -O0..-O3 / -o0..-o3 forwarded to the Front compile step (absent = compiler default level)
+        string? optLevelArg = GetOptimizeLevelArg(args);
 
         if (args.Length == 0)
         {
@@ -33,13 +35,18 @@ internal static class Program
         }
 
         // Step 1: Compile with Front (in-process or via dotnet run)
+        var dotnetFrontArgs = new List<string>
+        {
+            "run", "--project", Quote(Path.Combine(repoRoot, "source", "Front", "SimpleLanguageFront.csproj")), "--",
+            "compile", "-e", "ir", "-p", projectPath
+        };
+        if (optLevelArg != null)
+            dotnetFrontArgs.Add(optLevelArg);
+        dotnetFrontArgs.Add("--no-banner");
+
         int frontExit = start
-            ? RunFrontInProcess(projectPath)
-            : RunDotnet(new List<string>
-            {
-                "run", "--project", Quote(Path.Combine(repoRoot, "source", "Front", "SimpleLanguageFront.csproj")), "--",
-                "compile", "-e", "ir", "-p", projectPath, "--no-banner"
-            }, "Front compile", repoRoot);
+            ? RunFrontInProcess(projectPath, optLevelArg)
+            : RunDotnet(dotnetFrontArgs, "Front compile", repoRoot);
         if (frontExit != 0)
         {
             Console.WriteLine($"Front compile failed, exit code: {frontExit}");
@@ -233,13 +240,17 @@ internal static class Program
         return RunProcess("dotnet", args, stepName, workingDirectory);
     }
 
-    static int RunFrontInProcess(string projectPath)
+    static int RunFrontInProcess(string projectPath, string? optLevelArg = null)
     {
         try
         {
             Console.WriteLine("=== Front compile (in-process) ===");
-            var frontArgs = new[] { "compile", "-e", "ir", "-p", projectPath, "--no-banner" };
-            var inputArgs = new CommandInputArgs(frontArgs);
+            var frontArgs = new List<string> { "compile", "-e", "ir", "-p", projectPath };
+            if (optLevelArg != null)
+                frontArgs.Add(optLevelArg);
+            frontArgs.Add("--no-banner");
+            Console.WriteLine("Front: " + string.Join(' ', frontArgs));
+            var inputArgs = new CommandInputArgs(frontArgs.ToArray());
             bool ok = CommandExecutor.Execute(inputArgs);
             if (!ok || Log.errorCount > 0)
             {
@@ -289,6 +300,34 @@ internal static class Program
         }
 
         return Path.Combine(repoRoot, "out", "export", "Core", "Core.module.json");
+    }
+
+    static string? GetProjectPathArg(string[] args)
+    {
+        for (int i = 0; i < args.Length; i++)
+        {
+            var a = args[i];
+            if (string.IsNullOrEmpty(a) || a.StartsWith('-'))
+                continue;
+            // "-start true/false" takes the next token as its value, not a project path
+            if (i > 0 && string.Equals(args[i - 1], "-start", StringComparison.OrdinalIgnoreCase))
+                continue;
+            return a;
+        }
+        return null;
+    }
+
+    static string? GetOptimizeLevelArg(string[] args)
+    {
+        // Same -O0..-O3 / -o0..-o3 pattern as CommandInputArgs
+        foreach (var a in args)
+        {
+            if (a.Length == 3 && a[0] == '-'
+                && (a[1] == 'O' || a[1] == 'o')
+                && a[2] >= '0' && a[2] <= '3')
+                return a;
+        }
+        return null;
     }
 
     static string GetRepoRoot()

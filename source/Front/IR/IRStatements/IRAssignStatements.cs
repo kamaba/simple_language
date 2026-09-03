@@ -233,27 +233,55 @@ namespace SimpleLanguage.IR
             }
 
             //如果不是 a.setValue(xxx)这种方式，那么就执行右边的表达式
+            // ── O3 常数融合前置判定 ──
+            // 右值为纯常量、非复合赋值、无需数值 Convert、非 callMetaType(枚举成员/静态字段)场景时，
+            // 跳过 LoadConst 发射，把常量直接嵌入 Store*ConstValue 指令（少一次 push+pop）。
+            // 融合不成功则完整回退下方经典路径。
+            bool rhsNeedsConvert = false;
+            EType rhsExpEType = EType.None;
+            EType rhsVarEType = EType.None;
+            if (ms.rightMetaExpress != null)
+            {
+                var expType = ms.rightMetaExpress.GetReturnMetaType();
+                var varType = mv.GetFinalMetaType();
+                if (expType != null && varType != null)
+                {
+                    rhsExpEType = CoreMetaClassManager.GetETypeByMetaClass(expType.metaClass);
+                    rhsVarEType = CoreMetaClassManager.GetETypeByMetaClass(varType.metaClass);
+                    // If the RHS expression type differs from the target variable's
+                    // type (and both are numeric), a Convert is required before the
+                    // store -- in that case never fuse the constant.
+                    rhsNeedsConvert = rhsExpEType != rhsVarEType
+                        && NumberManager.IsNumericEType(rhsExpEType)
+                        && NumberManager.IsNumericEType(rhsVarEType);
+                }
+            }
+
+            if (ms.rightMetaExpress is MetaConstExpressNode rhsConstNode
+                && ms.autoAddExpressOpSign == ELeftRightOpSign.None
+                && !rhsNeedsConvert
+                && lastCL.callMetaType == null)
+            {
+                var owirmcFused = IRManager.GetIRMetaClassByMetaVariable(mv);
+                var irmtFused = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.GetFinalMetaType(), owirmcFused);
+                if (IRStoreVariable.TryCreateConstValueStore(irmtFused, owirmcFused, irMethod, mv, rhsConstNode, out IRStoreVariable fusedStore))
+                {
+                    m_StoreVariable = fusedStore;
+                    m_IRStatements.Add(fusedStore);
+                    return;
+                }
+            }
+
             if (ms.rightMetaExpress != null)
             {
                 m_IRExpress = IRExpressManager.CreateExpress(irMethod, ms.rightMetaExpress);
                 m_IRStatements.Add(m_IRExpress);
 
-                // If the RHS expression type differs from the target variable's
-                // type (and both are numeric), emit a Convert before the store.
                 // e.g.  b8 = someInt32Var;  -> LoadLocal + Convert_I8 + StoreLocal
-                var expType = ms.rightMetaExpress.GetReturnMetaType();
-                var varType = mv.GetFinalMetaType();
-                if (expType != null && varType != null)
+                if (rhsNeedsConvert)
                 {
-                    var expEType = CoreMetaClassManager.GetETypeByMetaClass(expType.metaClass);
-                    var varEType = CoreMetaClassManager.GetETypeByMetaClass(varType.metaClass);
-                    if (expEType != varEType
-                        && NumberManager.IsNumericEType(expEType)
-                        && NumberManager.IsNumericEType(varEType))
-                    {
-                        IRConvert irconv = new IRConvert(irMethod, expEType, varEType);
-                        m_IRStatements.Add(irconv);
-                    }
+                    IRConvert irconv = new IRConvert(irMethod, rhsExpEType, rhsVarEType);
+                    m_IRStatements.Add(irconv);
                 }
             }
 
