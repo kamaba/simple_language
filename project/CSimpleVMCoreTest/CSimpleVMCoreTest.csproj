@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Front\SimpleLanguageFront.csproj" />
+    <ProjectReference Include="..\..\source\Front\SimpleLanguageFront.csproj" />
   </ItemGroup>
 
   <!-- 用 VS 工具链构建 C VM（产物目录：csimple_lang\build\<Config>\bin）：

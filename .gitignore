@@ -338,3 +338,8 @@
 # fixed: corrupted shell fragment line blocking ripgrep (re-injected again 6)
 # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.
 /source/SpecialTest/obj
+/source/SpecialTest/bin
+/project/CSimpleVMCoreTest/obj
+/project/CSimpleVMCoreTest/bin
+/project/CSimpleVMCoreTest/build
+/project/CSimpleVMMathTest/bin
