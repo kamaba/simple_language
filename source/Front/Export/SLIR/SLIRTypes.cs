@@ -255,6 +255,34 @@ namespace SimpleLanguage.Export.SLIR.Types
     }
 
     /// <summary>
+    /// AOT 方法清单条目（module.json "aot.methods" 数组元素）。
+    /// 与独立 &lt;name&gt;_manifest.json 的条目同构：
+    /// { "id": "...", "symbol": "...", "status": "ok|failed", "reason": "..." }
+    /// </summary>
+    public sealed class SLAotMethodPackage
+    {
+        public string id { get; set; } = string.Empty;
+        /// <summary>aot.dll 中导出的符号名（sl_aot_&lt;sanitized-id&gt;）。</summary>
+        public string symbol { get; set; } = string.Empty;
+        /// <summary>ok = 可原生分发；failed = 降级失败，回退 CVM 解释执行。</summary>
+        public string status { get; set; } = string.Empty;
+        public string? reason { get; set; }
+    }
+
+    /// <summary>
+    /// module.json 的 "aot" 字段：AOT 导出清单（原独立 aot_manifest.json 的合并形态）。
+    /// VM 加载模块时读取该字段定位并加载 aot.dll，把 status=="ok" 的方法
+    /// 注册进原生调用注册表（stage-4）。
+    /// </summary>
+    public sealed class SLAotPackage
+    {
+        public string mlir { get; set; } = string.Empty;
+        /// <summary>dll 文件名（相对 module.json 同目录）；空 = 仅导出 mlir（SIMPLELANG_AOT_DLL=0）。</summary>
+        public string dll { get; set; } = string.Empty;
+        public List<SLAotMethodPackage> methods { get; set; } = new();
+    }
+
+    /// <summary>
     /// In-memory / deserialization model. Exported as flat JSON (no moduleList wrapper).
     /// <see cref="moduleList"/> and <see cref="entryModule"/> are JsonIgnored:
     /// they exist only for in-memory backward compat with old-format readers.
@@ -282,6 +310,13 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// 自动在模块文件同目录下查找并加载此 DLL（实现 ISLExternalFunctionModule）。
         /// </summary>
         public string nativeDll { get; set; } = string.Empty;
+        /// <summary>
+        /// AOT 导出清单（原独立 aot_manifest.json 的合并形态）。
+        /// MLIR AOT 管线（MLIRExportManager）的产物：dll 文件名 + 每方法
+        /// symbol/status。VM 优先从此字段加载 aot.dll（stage-4），
+        /// 旧格式（独立 manifest 文件）作为回退。null = 无 AOT 导出。
+        /// </summary>
+        public SLAotPackage? aot { get; set; }
         /// <summary>
         /// 外部 dll 导入配置（project.jsonc "dllImports" 段的别名/名称/路径）。
         /// 引用方加载本模块时合并进其配置，即可用别名免写长路径。

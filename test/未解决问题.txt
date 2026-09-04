@@ -38,13 +38,10 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 2. 去掉无用的init
 3. math库的处理  看_add_ _minus_ 等的方法是否能在虚拟机里边正常跑
 8. import 导入错误的显示
-因为Set() 关键字和set 冲突，所以需要把这个类改成HashSet() 的类名称 IsSetContainerCallForm 应该就可以去掉了
 10. 全局的typealias里边需要读取后，继承
 
 以后要实现的:
 现在front层 对返回数据void 直接赋值没有报错
-
-
 字节码序例化相互转化过程
 增加Jit的支持，起码实现x86的平台
 增加对WebAssembly的支持，然后让网页上跑起来示例

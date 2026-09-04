@@ -75,4 +75,83 @@ class AOTMath
     {
         ret a * 2
     }
+
+    # ── 数组批量计算：AOT 原生读 VMArray（length@+48 / data@+64）──
+
+    # 数组平均：数组参数经 CVM 编组为 kind 0 对象指针，原生侧读 length/data
+    @AOT()
+    static double ArrayAvg( double[] arr )
+    {
+        int n = arr.length
+        if n <= 0
+        {
+            ret 0.0
+        }
+        double s = 0.0
+        int i = 0
+        for i = 0, i < n, i += 1
+        {
+            s = s + arr[i]
+        }
+        ret s / n
+    }
+
+    # 高斯因子（标准正态密度 exp(-x*x/2)/sqrt(2*pi)）：泰勒级数纯算术实现
+    #（Math.sqrt/exp 是系统调用无法内联，30 项在 |x|<=5 内收敛）
+    @AOT()
+    static double GaussFactor( double x )
+    {
+        double t = -0.5 * x * x
+        double term = 1.0
+        double sum = 1.0
+        int k = 1
+        for k = 1, k <= 30, k += 1
+        {
+            term = term * t / k
+            sum = sum + term
+        }
+        ret 0.3989422804014327 * sum
+    }
+
+    # 高斯因子对照：同泰勒实现但不 @AOT（CVM 解释执行，验证两边结果一致）
+    static double GaussFactorVm( double x )
+    {
+        double t = -0.5 * x * x
+        double term = 1.0
+        double sum = 1.0
+        int k = 1
+        for k = 1, k <= 30, k += 1
+        {
+            term = term * t / k
+            sum = sum + term
+        }
+        ret 0.3989422804014327 * sum
+    }
+
+    # 数组高斯因子平均：泰勒级数直接内联进循环体（元素加载纯原生，不跨 AOT 调用）
+    @AOT()
+    static double ArrayGaussAvg( double[] arr )
+    {
+        int n = arr.length
+        if n <= 0
+        {
+            ret 0.0
+        }
+        double s = 0.0
+        int i = 0
+        for i = 0, i < n, i += 1
+        {
+            double t = -0.5 * arr[i] * arr[i]
+            double term = 1.0
+            double g = 1.0
+            int k = 1
+            for k = 1, k <= 30, k += 1
+            {
+                term = term * t / k
+                g = g + term
+            }
+            s = s + 0.3989422804014327 * g
+        }
+        ret s / n
+    }
 }

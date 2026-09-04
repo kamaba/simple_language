@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using System.Text.Encodings.Web;
 using SimpleLanguage.Core;
 using SimpleLanguage.IR;
+using SimpleLanguage.Export.MLIR;
 using SimpleLanguage.Export.SLIR.Types;
 using SimpleLanguage.Logging;
 using SimpleLanguage.Project;
@@ -837,6 +838,11 @@ namespace SimpleLanguage.Export.SLIR
                     }
                 }
             }
+
+            // 合并 AOT manifest（aot.mlir / aot.dll / 方法状态清单）。
+            // 数据来自 MLIRExportManager.Run 的最近一次结果（在 ExportLangManager.Export
+            // 中先于本方法运行），旧 CVM 仍可读独立的 aot_manifest.json 作为回退。
+            pkg.aot = MLIRExportManager.Instance.LastResult?.ToSlAotPackage();
 
             return pkg;
         }

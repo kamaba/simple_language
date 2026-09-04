@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -29,6 +30,16 @@ namespace SimpleLanguage.Export.MLIR
             public string? NativeOutputPath { get; set; }
         }
 
+        /// <summary>Per-method AOT manifest entry (module.json "aot.methods"
+        /// and the standalone &lt;name&gt;_manifest.json share this shape).</summary>
+        public sealed class AotMethodManifest
+        {
+            public string Id { get; set; } = "";
+            public string Symbol { get; set; } = "";
+            public string Status { get; set; } = "";
+            public string? Reason { get; set; }
+        }
+
         /// <summary>
         /// Successful per-method export info used by the caller to drive the
         /// aot.dll link step (stage 3).
@@ -42,6 +53,12 @@ namespace SimpleLanguage.Export.MLIR
             /// the CVM interpreter (stage-5 reverse bridge): the module then
             /// contains @sl_aot_bridge_init, which the host must export.</summary>
             public bool NeedsBridgeInit { get; set; }
+            /// <summary>Per-method manifest entries (merged into module.json's
+            /// "aot" field by MLIRExportManager).</summary>
+            public IReadOnlyList<AotMethodManifest> Methods { get; set; } = Array.Empty<AotMethodManifest>();
+            /// <summary>dll 文件名（由调用方在 stage-3 构建成功后回填；
+            /// 用于单方法导出接口 TryExportMethods 的结果合并）。</summary>
+            public string? DllFileName { get; set; }
         }
 
         /// <summary>
@@ -49,7 +66,10 @@ namespace SimpleLanguage.Export.MLIR
         /// 单个方法导出失败不影响其它方法：失败项记入 manifest（status=failed），
         /// 成功项照常生成 func.func。
         /// </summary>
-        public static AotExportResult ExportModuleToFile(IReadOnlyList<IRMethod> methods, string outputPath)
+        /// <param name="writeManifest">是否单独写 &lt;name&gt;_manifest.json
+        /// （合并到 module.json 的场景可置 false，默认 true 兼容旧 CVM）。</param>
+        public static AotExportResult ExportModuleToFile(IReadOnlyList<IRMethod> methods, string outputPath,
+            bool writeManifest = true)
         {
             if (methods == null) throw new ArgumentNullException(nameof(methods));
             if (string.IsNullOrWhiteSpace(outputPath)) throw new ArgumentNullException(nameof(outputPath));
@@ -68,6 +88,10 @@ namespace SimpleLanguage.Export.MLIR
             sb.AppendLine("// SimpleLanguage AOT module");
             sb.AppendLine("!slv = !llvm.struct<(i32, i64)>");
             sb.AppendLine("module {");
+            // MSVC CRT: the moment aot.obj contains real float arithmetic
+            // (truncf/extf/addf), the CRT emits a reference to _fltused;
+            // define it here so the aot.dll link never needs the CRT import.
+            sb.AppendLine("  llvm.mlir.global constant @_fltused(39029 : i32) : i32");
 
             foreach (var m in methods)
             {
@@ -102,7 +126,8 @@ namespace SimpleLanguage.Export.MLIR
             sb.AppendLine("}");
 
             File.WriteAllText(outputPath, sb.ToString());
-            WriteManifest(outputPath, manifest);
+            if (writeManifest)
+                WriteManifest(outputPath, manifest);
 
             return new AotExportResult
             {
@@ -110,6 +135,13 @@ namespace SimpleLanguage.Export.MLIR
                 OkSymbols = okSymbols,
                 FailedIds = failedIds,
                 NeedsBridgeInit = bridgeIds.Count > 0,
+                Methods = manifest.Methods.Select(e => new AotMethodManifest
+                {
+                    Id = e.Id,
+                    Symbol = e.Symbol,
+                    Status = e.Status,
+                    Reason = e.Reason,
+                }).ToList(),
             };
         }
 
@@ -267,8 +299,33 @@ namespace SimpleLanguage.Export.MLIR
             public EmitFailException(string message) : base(message) { }
         }
 
-        /// <summary>Two-value abstraction: everything is carried as i64 bits.</summary>
-        private enum SLType { I64, F64 }
+        /// <summary>
+        /// Two-value abstraction: everything is carried as i64 bits.
+        /// Array types carry the VMArray object pointer in the i64; the
+        /// element kind is part of the enum so stack-profile equality
+        /// keeps distinguishing e.g. ArrayI64 from ArrayF64.
+        /// F32 mirrors the C VM's float32 evaluation domain (runtime_value_compute):
+        /// a binary op with a Float32 left operand is computed in f64 and the
+        /// result is rounded back to f32. An F32 value's i64 bits always hold
+        /// the exact f64 widening of the f32 value, so bitcasts to f64 are
+        /// always valid - the type tag only records the rounding domain.
+        /// </summary>
+        private enum SLType { I64, F64, F32, ArrayI32, ArrayI64, ArrayF64 }
+
+        private static bool IsArrayType(SLType t)
+            => t == SLType.ArrayI32 || t == SLType.ArrayI64 || t == SLType.ArrayF64;
+
+        private static bool IsScalarType(SLType t)
+            => t == SLType.I64 || t == SLType.F64 || t == SLType.F32;
+
+        private static bool IsFloatType(SLType t)
+            => t == SLType.F64 || t == SLType.F32;
+
+        /// <summary>Element scalar type of an array slot type.</summary>
+        private static SLType ElemTypeOf(SLType t) => t == SLType.ArrayF64 ? SLType.F64 : SLType.I64;
+
+        /// <summary>C element width in bytes (VMArray.unit_length).</summary>
+        private static int ElemWidthOf(SLType t) => t == SLType.ArrayI32 ? 4 : 8;
 
         /// <summary>
         /// A stack value. Name always refers to an i64-typed SSA value;
@@ -299,6 +356,7 @@ namespace SimpleLanguage.Export.MLIR
             EIROpCode.LoadConstUInt32,
             EIROpCode.LoadConstInt64,
             EIROpCode.LoadConstUInt64,
+            EIROpCode.LoadConstFloat32,
             EIROpCode.LoadConstFloat64,
             EIROpCode.LoadConstBoolean,
             EIROpCode.LoadArgument,
@@ -343,6 +401,9 @@ namespace SimpleLanguage.Export.MLIR
             EIROpCode.Convert_UI64,
             EIROpCode.Convert_R8,
             EIROpCode.CallStatic,    /* stage 5: reverse bridge into the CVM */
+            EIROpCode.LoadArrayIndex,      /* constant index: [array] -> [element] */
+            EIROpCode.LoadArrayIndexField, /* variable index: [array, index] -> [element] */
+            EIROpCode.CallVirt,            /* inlined array getters (arr.length) */
         };
 
         /// <summary>
@@ -408,6 +469,14 @@ namespace SimpleLanguage.Export.MLIR
                     if (rv.index != 0) throw t.Fail($"return variable '{rv.name}' must use slot 0 (got {rv.index})");
                     t.HasRet = true;
                     t.RetType = ResolveSLType(t, rv);
+                    /* Array returns are rejected: the CVM side derives the
+                     * return etype from the class-name hint, and
+                     * "Array<Double>" would be misclassified as Float64
+                     * (the "Double" substring matches first), turning the
+                     * pointer bit pattern into garbage. The method stays on
+                     * the interpreter instead. */
+                    if (IsArrayType(t.RetType))
+                        throw t.Fail("array return values are not supported");
                 }
 
                 return t;
@@ -423,7 +492,40 @@ namespace SimpleLanguage.Export.MLIR
                 string leaf = dot >= 0 ? n.Substring(dot + 1) : n;
                 if (s_I64TypeNames.Contains(leaf)) return SLType.I64;
                 if (leaf == "Double" || leaf == "Float64") return SLType.F64;
+                SLType? arr = TryResolveArrayType(t, v, leaf);
+                if (arr.HasValue) return arr.Value;
                 throw t.Fail($"unsupported slot type '{n}' for variable '{v.name}'");
+            }
+
+            /// <summary>
+            /// Array&lt;T&gt; slot types: the gen-template class name is
+            /// "Array&lt;Elem&gt;"; the element IRMetaType sits in
+            /// irMetaTypeList[0]. Only 4/8-byte scalar elements are
+            /// supported (they match VMArray.unit_length).
+            /// </summary>
+            private static SLType? TryResolveArrayType(SlotTable t, IRMetaVariable v, string leaf)
+            {
+                if (leaf != "Array" && !leaf.StartsWith("Array<", StringComparison.Ordinal))
+                    return null;
+
+                string elemLeaf = null;
+                var args = v.irMetaType?.irMetaTypeList;
+                if (args != null && args.Count > 0)
+                {
+                    string en = args[0].irMetaClass?.irName;
+                    if (!string.IsNullOrEmpty(en))
+                    {
+                        int ed = en.LastIndexOf('.');
+                        elemLeaf = ed >= 0 ? en.Substring(ed + 1) : en;
+                    }
+                }
+                if (elemLeaf == null)
+                    throw t.Fail($"cannot resolve element type of array variable '{v.name}'");
+
+                if (elemLeaf == "Double" || elemLeaf == "Float64") return SLType.ArrayF64;
+                if (elemLeaf == "Int32" || elemLeaf == "UInt32") return SLType.ArrayI32;
+                if (elemLeaf == "Int64" || elemLeaf == "UInt64") return SLType.ArrayI64;
+                throw t.Fail($"unsupported array element type '{elemLeaf}' for variable '{v.name}'");
             }
 
             public SLType GetArgType(int slot)
@@ -476,6 +578,8 @@ namespace SimpleLanguage.Export.MLIR
             private readonly Dictionary<int, string> m_K32Consts = new Dictionary<int, string>();
             private bool m_F64ZeroEmitted;
             private string m_F64ZeroName = "";
+            private bool m_ArrayDummyEmitted;
+            private string m_ArrayDummyName = "";
             private int m_TmpCounter = 0;
             /* Stage-5 bridge: module-level callee-id -> string-global map
              * (shared across all methods of the module). */
@@ -686,6 +790,10 @@ namespace SimpleLanguage.Export.MLIR
                         sim.Add(SLType.I64);
                         return;
 
+                    case EIROpCode.LoadConstFloat32:
+                        sim.Add(SLType.F32);
+                        return;
+
                     case EIROpCode.LoadConstFloat64:
                         sim.Add(SLType.F64);
                         return;
@@ -712,7 +820,15 @@ namespace SimpleLanguage.Export.MLIR
                     {
                         var bt = ProfilePop(sim, pos);
                         var at = ProfilePop(sim, pos);
-                        sim.Add(at == SLType.F64 || bt == SLType.F64 ? SLType.F64 : SLType.I64);
+                        if (!IsScalarType(at) || !IsScalarType(bt))
+                            throw Fail($"[{pos}] arithmetic op on array operand");
+                        // VM float rule (runtime_value_compute): compute in f64;
+                        // result keeps f64 only when the LEFT operand is f64,
+                        // otherwise it is rounded to f32.
+                        if (IsFloatType(at) || IsFloatType(bt))
+                            sim.Add(at == SLType.F64 ? SLType.F64 : SLType.F32);
+                        else
+                            sim.Add(SLType.I64);
                         return;
                     }
 
@@ -724,8 +840,10 @@ namespace SimpleLanguage.Export.MLIR
                     {
                         var bt = ProfilePop(sim, pos);
                         var at = ProfilePop(sim, pos);
-                        if (at == SLType.F64 || bt == SLType.F64)
+                        if (IsFloatType(at) || IsFloatType(bt))
                             throw Fail($"[{pos}] bitwise/shift op on float operand");
+                        if (IsArrayType(at) || IsArrayType(bt))
+                            throw Fail($"[{pos}] bitwise/shift op on array operand");
                         sim.Add(SLType.I64);
                         return;
                     }
@@ -738,19 +856,29 @@ namespace SimpleLanguage.Export.MLIR
                     case EIROpCode.Cle:
                     case EIROpCode.And:
                     case EIROpCode.Or:
-                        ProfilePop(sim, pos);
-                        ProfilePop(sim, pos);
+                    {
+                        var bt = ProfilePop(sim, pos);
+                        var at = ProfilePop(sim, pos);
+                        if (IsArrayType(at) || IsArrayType(bt))
+                            throw Fail($"[{pos}] comparison/logical op on array operand");
                         sim.Add(SLType.I64);
                         return;
+                    }
 
                     case EIROpCode.Not:
-                        ProfilePop(sim, pos);
+                    {
+                        var t = ProfilePop(sim, pos);
+                        if (IsArrayType(t))
+                            throw Fail($"[{pos}] Not on array operand");
                         sim.Add(SLType.I64);
                         return;
+                    }
 
                     case EIROpCode.Neg:
                     {
                         var t = ProfilePop(sim, pos);
+                        if (IsArrayType(t))
+                            throw Fail($"[{pos}] Neg on array operand");
                         sim.Add(t);
                         return;
                     }
@@ -763,14 +891,22 @@ namespace SimpleLanguage.Export.MLIR
                     case EIROpCode.Convert_UI32:
                     case EIROpCode.Convert_I64:
                     case EIROpCode.Convert_UI64:
-                        ProfilePop(sim, pos);
+                    {
+                        var t = ProfilePop(sim, pos);
+                        if (IsArrayType(t))
+                            throw Fail($"[{pos}] integer convert on array operand");
                         sim.Add(SLType.I64);
                         return;
+                    }
 
                     case EIROpCode.Convert_R8:
-                        ProfilePop(sim, pos);
+                    {
+                        var t = ProfilePop(sim, pos);
+                        if (IsArrayType(t))
+                            throw Fail($"[{pos}] f64 convert on array operand");
                         sim.Add(SLType.F64);
                         return;
+                    }
 
                     case EIROpCode.Dup:
                     {
@@ -796,6 +932,43 @@ namespace SimpleLanguage.Export.MLIR
                         var ci = ResolveCallee(ir, pos);
                         for (int k = 0; k < ci.Argc; k++) ProfilePop(sim, pos);
                         if (ci.HasRet) sim.Add(ci.RetType);
+                        return;
+                    }
+
+                    case EIROpCode.LoadArrayIndex:
+                    {
+                        // constant index: [array] -> [element]
+                        var at = ProfilePop(sim, pos);
+                        if (!IsArrayType(at))
+                            throw Fail($"[{pos}] LoadArrayIndex receiver is {at}, expected an array");
+                        sim.Add(ElemTypeOf(at));
+                        return;
+                    }
+
+                    case EIROpCode.LoadArrayIndexField:
+                    {
+                        // variable index: [array, index] -> [element]
+                        var it = ProfilePop(sim, pos);
+                        var at = ProfilePop(sim, pos);
+                        if (!IsArrayType(at))
+                            throw Fail($"[{pos}] LoadArrayIndexField receiver is {at}, expected an array");
+                        if (it != SLType.I64)
+                            throw Fail($"[{pos}] LoadArrayIndexField index is {it}, expected an integer");
+                        sim.Add(ElemTypeOf(at));
+                        return;
+                    }
+
+                    case EIROpCode.CallVirt:
+                    {
+                        // Only array trivial getters (arr.length) are inlined.
+                        var vi = ResolveVirtCallee(ir, pos);
+                        for (int k = 0; k < vi.Argc; k++) ProfilePop(sim, pos);
+                        var rt = ProfilePop(sim, pos);
+                        if (!IsArrayType(rt))
+                            throw Fail($"[{pos}] CallVirt receiver is {rt}, only array getters are inlinable");
+                        if (!IsTrivialArrayLengthGetter(vi.Method))
+                            throw Fail($"[{pos}] CallVirt to '{vi.Name}' is not an inlinable array getter (id={vi.Method?.id ?? "<null>"} body=[{DumpIRShape(vi.Method)}])");
+                        sim.Add(SLType.I64);
                         return;
                     }
 
@@ -966,7 +1139,15 @@ namespace SimpleLanguage.Export.MLIR
                         m_Stack.Add(new Val(CI64(ConstI64(ir)), SLType.I64));
                         return;
 
-                    // double bit pattern carried in an i64 constant
+                    // float constants: both are carried as the exact f64 bit
+                    // pattern (LoadConstFloat32 widens exactly, matching the
+                    // VM's promote-on-use). The TYPE TAG differs: an f32
+                    // constant keeps the F32 rounding domain so downstream
+                    // arithmetic replicates the VM's left-etype rounding.
+                    case EIROpCode.LoadConstFloat32:
+                        m_Stack.Add(new Val(CI64(ConstF64Bits(ir)), SLType.F32));
+                        return;
+
                     case EIROpCode.LoadConstFloat64:
                         m_Stack.Add(new Val(CI64(ConstF64Bits(ir)), SLType.F64));
                         return;
@@ -1095,6 +1276,15 @@ namespace SimpleLanguage.Export.MLIR
                         EmitCallStatic(ir, pos);
                         return;
 
+                    case EIROpCode.LoadArrayIndex:
+                    case EIROpCode.LoadArrayIndexField:
+                        EmitArrayLoad(ir, pos);
+                        return;
+
+                    case EIROpCode.CallVirt:
+                        EmitCallVirt(ir, pos);
+                        return;
+
                     default:
                         throw Fail($"[{pos}] unsupported opcode '{ir.opCode}'");
                 }
@@ -1189,16 +1379,19 @@ namespace SimpleLanguage.Export.MLIR
                 }
 
                 // Pack each arg into !slv (kind 1 = f64 bit pattern).
+                // Args are coerced to the callee's declared slot type first
+                // (the VM converts arguments on call-in, e.g. Float32 -> f64).
                 var slvNames = new string[ci.Argc];
                 for (int i = 0; i < ci.Argc; i++)
                 {
                     int kind = ci.ArgTypes[i] == SLType.F64 ? 1 : 0;
+                    string c = CoerceStore(vals[i], ci.ArgTypes[i], $"CallStatic arg {i}");
                     string u0 = NV();
                     EmitBody("    {0} = llvm.mlir.undef : !slv", u0);
                     string u1 = NV();
                     EmitBody("    {0} = llvm.insertvalue {1}, {2}[0] : !slv", u1, CK32(kind), u0);
                     string u2 = NV();
-                    EmitBody("    {0} = llvm.insertvalue {1}, {2}[1] : !slv", u2, vals[i].Name, u1);
+                    EmitBody("    {0} = llvm.insertvalue {1}, {2}[1] : !slv", u2, c, u1);
                     slvNames[i] = u2;
                 }
 
@@ -1263,12 +1456,203 @@ namespace SimpleLanguage.Export.MLIR
                 }
             }
 
+            // ---- array access + virtual getter inlining --------------------------
+            //
+            // VMArray (x64 release) layout behind the object pointer:
+            //   +0  VMObject header (48 bytes)
+            //   +48 uint32 length          <- authoritative (arr->length)
+            //   +52 uint32 unit_length
+            //   +56 void*  element_runtime_type
+            //   +64 void*  data            <- element buffer: data + idx*unit_length
+            // Out-of-bounds or null-receiver loads yield 0, matching
+            // vm_array_try_load_value returning FALSE (the interpreter then
+            // pushes i32 0). All selects stay in the i64 domain; pointers
+            // only cross through inttoptr/ptrtoint (no-ops on x64).
+
+            private void EmitArrayLoad(IRData ir, int pos)
+            {
+                Val? idxVal = null;
+                if (ir.opCode == EIROpCode.LoadArrayIndexField)
+                {
+                    idxVal = Pop(pos);
+                    if (idxVal.Value.Type != SLType.I64)
+                        throw Fail($"[{pos}] array index is {idxVal.Value.Type}, expected an integer");
+                }
+                Val arr = Pop(pos);
+                if (!IsArrayType(arr.Type))
+                    throw Fail($"[{pos}] {ir.opCode} receiver is {arr.Type}, expected an array");
+
+                string idx = idxVal.HasValue ? idxVal.Value.Name : CI64(ir.index);
+
+                // null guard: route a null receiver through the zeroed sentinel
+                string okp = NV();
+                EmitBody("    {0} = arith.cmpi ne, {1}, {2} : i64", okp, arr.Name, CI64(0));
+                string basei = NV();
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i64", basei, okp, arr.Name, ArraySentinelI64());
+                string bas = NV();
+                EmitBody("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", bas, basei);
+
+                // bounds check: (uint64)idx < length (negative indices wrap and fail)
+                string lenp = NV();
+                EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
+                    lenp, bas, CI64(48));
+                string len32 = NV();
+                EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i32", len32, lenp);
+                string len = NV();
+                EmitBody("    {0} = arith.extui {1} : i32 to i64", len, len32);
+                string okb = NV();
+                EmitBody("    {0} = arith.cmpi ult, {1}, {2} : i64", okb, idx, len);
+
+                // element address: data + idx * unit_length; the OOB address
+                // is computed but never selected, so it is never dereferenced
+                string datap = NV();
+                EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
+                    datap, bas, CI64(64));
+                string dataptr = NV();
+                EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> !llvm.ptr", dataptr, datap);
+                string dati = NV();
+                EmitBody("    {0} = llvm.ptrtoint {1} : !llvm.ptr to i64", dati, dataptr);
+                string off = NV();
+                EmitBody("    {0} = arith.muli {1}, {2} : i64", off, idx, CI64(ElemWidthOf(arr.Type)));
+                string epi = NV();
+                EmitBody("    {0} = arith.addi {1}, {2} : i64", epi, dati, off);
+                string eps = NV();
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i64", eps, okb, epi, ArraySentinelI64());
+                string ep = NV();
+                EmitBody("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", ep, eps);
+
+                // raw load + conversion to the i64 carrying type
+                string val;
+                if (arr.Type == SLType.ArrayF64)
+                {
+                    string f = NV();
+                    EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> f64", f, ep);
+                    val = NV();
+                    EmitBody("    {0} = llvm.bitcast {1} : f64 to i64", val, f);
+                }
+                else if (arr.Type == SLType.ArrayI32)
+                {
+                    string r32 = NV();
+                    EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i32", r32, ep);
+                    val = NV();
+                    EmitBody("    {0} = arith.extsi {1} : i32 to i64", val, r32);
+                }
+                else
+                {
+                    val = NV();
+                    EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i64", val, ep);
+                }
+
+                // null/OOB -> 0 (bit pattern 0 == 0.0 for the f64 case)
+                string ok = NV();
+                EmitBody("    {0} = arith.andi {1}, {2} : i1", ok, okp, okb);
+                string sel = NV();
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i64", sel, ok, val, CI64(0));
+                m_Stack.Add(new Val(sel, ElemTypeOf(arr.Type)));
+            }
+
+            private void EmitCallVirt(IRData ir, int pos)
+            {
+                var vi = ResolveVirtCallee(ir, pos);
+                for (int i = vi.Argc - 1; i >= 0; --i) Pop(pos);
+                Val recv = Pop(pos);
+                if (!IsArrayType(recv.Type))
+                    throw Fail($"[{pos}] CallVirt receiver is {recv.Type}, only array getters are inlinable");
+                if (!IsTrivialArrayLengthGetter(vi.Method))
+                    throw Fail($"[{pos}] CallVirt to '{vi.Name}' is not an inlinable array getter");
+
+                // inline of Array<T>.get length(): (int64)*(int32*)(recv + 48),
+                // null-safe (a null array reports length 0)
+                string okp = NV();
+                EmitBody("    {0} = arith.cmpi ne, {1}, {2} : i64", okp, recv.Name, CI64(0));
+                string basei = NV();
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i64", basei, okp, recv.Name, ArraySentinelI64());
+                string bas = NV();
+                EmitBody("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", bas, basei);
+                string lenp = NV();
+                EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
+                    lenp, bas, CI64(48));
+                string len32 = NV();
+                EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i32", len32, lenp);
+                string len = NV();
+                EmitBody("    {0} = arith.extui {1} : i32 to i64", len, len32);
+                m_Stack.Add(new Val(len, SLType.I64));
+            }
+
+            private readonly struct VirtCalleeInfo
+            {
+                public readonly IRMethod Method;
+                public readonly string Name;
+                public readonly int Argc;
+                public VirtCalleeInfo(IRMethod method, string name, int argc)
+                { Method = method; Name = name; Argc = argc; }
+            }
+
+            private VirtCalleeInfo ResolveVirtCallee(IRData ir, int pos)
+            {
+                if (!(ir.opValue is IRMethodCall imc) || imc.irMethod == null)
+                    throw Fail($"[{pos}] CallVirt without resolvable method metadata");
+                int argc = imc.paramCount;
+                if (argc < 0)
+                    throw Fail($"[{pos}] CallVirt with negative paramCount {argc}");
+                return new VirtCalleeInfo(imc.irMethod, imc.methodName, argc);
+            }
+
+            /// <summary>
+            /// Trivial receiver-field getter (ignoring Nop/Label/BrLabel):
+            /// real frontend getters end with BrLabel -&gt; Label (FunEndLabel)
+            /// instead of Ret, e.g. Core.Array&lt;T&gt;.length is
+            /// [Nop, LoadArgument 0, LoadNotStaticField 0, StoreReturn 0, BrLabel, Label].
+            /// On Array&lt;T&gt; field slot 0 is _length, and the receiver-type
+            /// check in the caller guarantees the callee is Array's own
+            /// getter, so the inlined result is the authoritative
+            /// arr-&gt;length at +48.
+            /// </summary>
+            private static bool IsTrivialArrayLengthGetter(IRMethod m)
+            {
+                if (m == null) return false;
+                // Ref-module stubs carry no IR body (empty IRDataList): the
+                // real getter lives in the referenced module and is only
+                // resolved by method id at CVM runtime. The canonical
+                // Core.Array<T>.length stub is known to be a plain
+                // field-0 getter, and the caller has already type-checked
+                // the receiver as an array, so the inline stays authoritative.
+                if (m.IRDataList == null || m.IRDataList.Count == 0)
+                    return m.id == "Core.Array<T>.length";
+                var ops = new List<EIROpCode>(5);
+                var idxs = new List<int>(5);
+                foreach (var d in m.IRDataList)
+                {
+                    if (d == null) return false;
+                    if (d.opCode == EIROpCode.Nop || d.opCode == EIROpCode.Label || d.opCode == EIROpCode.BrLabel) continue;
+                    ops.Add(d.opCode);
+                    idxs.Add(d.index);
+                    if (ops.Count > 4) return false;
+                }
+                // Legacy defensive form with an explicit trailing Ret.
+                if (ops.Count == 4 && ops[3] == EIROpCode.Ret) ops.RemoveAt(3);
+                if (ops.Count != 3) return false;
+                return ops[0] == EIROpCode.LoadArgument && idxs[0] == 0
+                    && ops[1] == EIROpCode.LoadNotStaticField && idxs[1] == 0
+                    && ops[2] == EIROpCode.StoreReturn && idxs[2] == 0;
+            }
+
+            private static string DumpIRShape(IRMethod m)
+            {
+                if (m == null) return "<null method>";
+                if (m.IRDataList == null) return "<null body>";
+                var parts = new List<string>();
+                foreach (var d in m.IRDataList)
+                    parts.Add(d == null ? "<null>" : $"{d.opCode} {d.index}");
+                return string.Join(", ", parts);
+            }
+
             private void EmitArith(EIROpCode op, int pos)
             {
                 Val b = Pop(pos);
                 Val a = Pop(pos);
 
-                if (a.Type == SLType.F64 || b.Type == SLType.F64)
+                if (IsFloatType(a.Type) || IsFloatType(b.Type))
                 {
                     string fa = ToF64(a);
                     string fb = ToF64(b);
@@ -1282,9 +1666,23 @@ namespace SimpleLanguage.Export.MLIR
                     };
                     string f = NV();
                     EmitBody("    {0} = arith.{1} {2}, {3} : f64", f, fop, fa, fb);
+
+                    // VM float rule (runtime_value_compute): when the LEFT
+                    // operand is not f64 (f32 constant or int + float), the
+                    // f64 result is rounded back through f32 before being
+                    // widened again. A Float64 left operand keeps full f64.
+                    string bits = f;
+                    if (a.Type != SLType.F64)
+                    {
+                        string t32 = NV();
+                        EmitBody("    {0} = arith.truncf {1} : f64 to f32", t32, f);
+                        string w = NV();
+                        EmitBody("    {0} = arith.extf {1} : f32 to f64", w, t32);
+                        bits = w;
+                    }
                     string r = NV();
-                    EmitBody("    {0} = llvm.bitcast {1} : f64 to i64", r, f);
-                    m_Stack.Add(new Val(r, SLType.F64));
+                    EmitBody("    {0} = llvm.bitcast {1} : f64 to i64", r, bits);
+                    m_Stack.Add(new Val(r, a.Type == SLType.F64 ? SLType.F64 : SLType.F32));
                 }
                 else
                 {
@@ -1307,7 +1705,7 @@ namespace SimpleLanguage.Export.MLIR
             {
                 Val b = Pop(pos);
                 Val a = Pop(pos);
-                if (a.Type == SLType.F64 || b.Type == SLType.F64)
+                if (IsFloatType(a.Type) || IsFloatType(b.Type))
                     throw Fail($"[{pos}] bitwise/shift op on float operand");
 
                 string bop = op switch
@@ -1386,26 +1784,29 @@ namespace SimpleLanguage.Export.MLIR
                 }
                 else
                 {
+                    // sign flip is exact in both rounding domains, so the F32
+                    // payload (an exact f64 widening) flows through unchanged
                     string f = NV();
                     EmitBody("    {0} = llvm.bitcast {1} : i64 to f64", f, v.Name);
                     string g = NV();
                     EmitBody("    {0} = arith.negf {1} : f64", g, f);
                     string r = NV();
                     EmitBody("    {0} = llvm.bitcast {1} : f64 to i64", r, g);
-                    m_Stack.Add(new Val(r, SLType.F64));
+                    m_Stack.Add(new Val(r, v.Type));
                 }
             }
 
             /// <summary>
-            /// Integer convert: F64 sources go through fptosi; then truncate to the
-            /// target width and sign/zero-extend back to i64 (the carrying type).
+            /// Integer convert: float sources (F64/F32 payloads are both valid
+            /// f64 bits) go through fptosi; then truncate to the target width
+            /// and sign/zero-extend back to i64 (the carrying type).
             /// </summary>
             private void EmitConvert(int pos, int bits, bool unsigned)
             {
                 Val v = Pop(pos);
                 string w = v.Name;
 
-                if (v.Type == SLType.F64)
+                if (v.Type != SLType.I64)
                 {
                     string f = NV();
                     EmitBody("    {0} = llvm.bitcast {1} : i64 to f64", f, v.Name);
@@ -1429,9 +1830,12 @@ namespace SimpleLanguage.Export.MLIR
             private void EmitConvertR8(int pos)
             {
                 Val v = Pop(pos);
-                if (v.Type == SLType.F64)
+                if (v.Type != SLType.I64)
                 {
-                    m_Stack.Add(v);
+                    // both F64 and F32 payloads are exact f64 bit patterns;
+                    // f32 -> f64 widening is exact, so identity (typed F64,
+                    // matching the VM's slot-type coercion on convert)
+                    m_Stack.Add(new Val(v.Name, SLType.F64));
                     return;
                 }
                 string f = NV();
@@ -1473,11 +1877,16 @@ namespace SimpleLanguage.Export.MLIR
 
             /// <summary>
             /// Coerce a stack value to a slot's static type before storing.
-            /// I64 -> F64 slots convert numerically (sitofp); anything else fails.
+            /// I64 -> F64 slots convert numerically (sitofp); F32 -> F64 slots
+            /// store the bits as-is (the payload is already the exact f64
+            /// widening, matching the VM's slot-type coercion in
+            /// vm_runtime_object_try_write_value); anything else fails.
             /// </summary>
             private string CoerceStore(Val v, SLType slotTy, string what)
             {
                 if (v.Type == slotTy) return v.Name;
+                if (slotTy == SLType.F64 && v.Type == SLType.F32)
+                    return v.Name;
                 if (slotTy == SLType.F64 && v.Type == SLType.I64)
                 {
                     string f = NV();
@@ -1493,7 +1902,7 @@ namespace SimpleLanguage.Export.MLIR
             private string ToF64(Val v)
             {
                 string f = NV();
-                if (v.Type == SLType.F64)
+                if (v.Type != SLType.I64)
                     EmitBody("    {0} = llvm.bitcast {1} : i64 to f64", f, v.Name);
                 else
                     EmitBody("    {0} = arith.sitofp {1} : i64 to f64", f, v.Name);
@@ -1600,6 +2009,34 @@ namespace SimpleLanguage.Export.MLIR
                     m_F64ZeroName = "%fz_zero";
                 }
                 return m_F64ZeroName;
+            }
+
+            /// <summary>
+            /// Lazily materialize a 72-byte dummy VMArray-like buffer and return it as an
+            /// i64 pointer bit-pattern. Null/OOB array accesses are routed here so that
+            /// the subsequent bounds check (cmpi ult against length) always fails and the
+            /// result select folds to 0 - matching the VM's "push i32 0" fallback.
+            /// Layout: [0..47] VMObject header (garbage, never inspected) | [48] length
+            /// (u32, must be zeroed - otherwise a stale length would make the bounds check
+            /// pass and dereference a wild data pointer) | [52] unit_length (never read)
+            /// | [56] element_runtime_type (never read) | [64] data (never dereferenced
+            /// because ok=false keeps the select on the safe path).
+            /// Note: constants referenced here are hoisted into m_ConstSb before the
+            /// alloca/GEP lines, and the entry block dominates all uses.
+            /// </summary>
+            private string ArraySentinelI64()
+            {
+                if (!m_ArrayDummyEmitted)
+                {
+                    EmitConst("    %arrdummy = llvm.alloca {0} x i8 : (i32) -> !llvm.ptr", CK32(72));
+                    // zero the +48 length field so null arrays fail the bounds check
+                    EmitConst("    %ad_len = llvm.getelementptr %arrdummy[{0}] : (!llvm.ptr, i64) -> !llvm.ptr, i8", CI64(48));
+                    EmitConst("    llvm.store {0}, %ad_len : i32, !llvm.ptr", CK32(0));
+                    EmitConst("    %arrdummy_i = llvm.ptrtoint %arrdummy : !llvm.ptr to i64");
+                    m_ArrayDummyEmitted = true;
+                    m_ArrayDummyName = "%arrdummy_i";
+                }
+                return m_ArrayDummyName;
             }
 
             private string NV() => "%v" + (m_TmpCounter++).ToString(CultureInfo.InvariantCulture);

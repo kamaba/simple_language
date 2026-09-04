@@ -18,6 +18,17 @@ Project
         SystemPrintln( "CallVmSub(10,4)=$r5.toString()" );
         SystemPrintln( "CallVmAvg(3,5)=$r6.toString()" );
 
+        # 数组批量计算 AOT 测试（数组平均 / 高斯因子 / 数组高斯平均）
+        double[] ga = Array<double>(5){ 1.0, 2.0, 3.0, 4.0, 5.0 }
+        r7 = AOTMath.ArrayAvg( ga );
+        r8 = AOTMath.GaussFactor( 1.0 );
+        r9 = AOTMath.GaussFactorVm( 1.0 );
+        r10 = AOTMath.ArrayGaussAvg( ga );
+        SystemPrintln( "ArrayAvg([1..5])=$r7.toString()" );
+        SystemPrintln( "GaussFactor(1.0)=$r8.toString()" );
+        SystemPrintln( "GaussFactorVm(1.0)=$r9.toString()" );
+        SystemPrintln( "ArrayGaussAvg([1..5])=$r10.toString()" );
+
         # FFI 测试用例（动态库加载/调用/回调/Float8 struct 等）
         FFITest.fun();
     }
