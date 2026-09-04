@@ -799,6 +799,22 @@ namespace SimpleLanguage.Export.SLIR
                 pkg.versionPatch = config.Export.VersionPatch;
                 pkg.nativeDll = config.Export.NativeDll ?? string.Empty;
 
+                // 从项目配置的 dllImports 填充外部 dll 导入信息（别名/名称/路径），
+                // 引用方加载本模块时合并进其配置即可用别名免写长路径
+                if (config.DllImports != null)
+                {
+                    foreach (var d in config.DllImports)
+                    {
+                        if (d == null || string.IsNullOrWhiteSpace(d.Path)) continue;
+                        pkg.dllImports.Add(new SLDllImportPackage
+                        {
+                            alias = d.Alias ?? string.Empty,
+                            name = d.Name ?? string.Empty,
+                            path = d.Path,
+                        });
+                    }
+                }
+
                 // 从项目配置的 references 填充引用关系（含 uuid、name、path、版本号）
                 if (config.References != null)
                 {

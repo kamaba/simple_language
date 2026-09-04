@@ -107,6 +107,14 @@ namespace SimpleLanguage.Core
                 m_DefineVarMetaVariable.AddPingToken(m_FileMetaDefineVariableSyntax.token);
                 fileExpress = m_FileMetaDefineVariableSyntax.express;
 
+                // Func<Ret, P1, P2...> / 函数 typealias 声明 + FFI 取函数调用:
+                // 调用点只传 name 一个参数时, 从左侧函数签名类型推导 FFI sig
+                // 自动补全第二个实参 (详见 TryInjectFFIFunctionSig)
+                if ( leftMt != null && leftMt.metaClass is FunctionSignatureMetaClass fsmc )
+                {
+                    TryInjectFFIFunctionSig( fileExpress, fsmc );
+                }
+
             }
             else if (m_FileMetaOpAssignSyntax != null)
             {
@@ -174,6 +182,16 @@ namespace SimpleLanguage.Core
 
             if (fileExpress != null)
             {
+                // lib.lookupFunction<Ret, P1, ...>( name ): 调用点模板实参提供
+                // FFI 签名, 注入后内部仍走 getFunction 现有体系 (详见
+                // TryInjectLookupFunctionSig)。须在表达式解析前完成改写。
+                TryInjectLookupFunctionSig( fileExpress );
+
+                // Memory.nativeStructToData<DataName>( addr ): 调用点模板实参
+                // 提供 data 类型名, 注入为第二个实参 (详见
+                // TryInjectNativeStructToDataTypeName)。须在表达式解析前完成改写。
+                TryInjectNativeStructToDataTypeName( fileExpress );
+
                 CreateExpressParam cep = new CreateExpressParam();
                 cep.fme = fileExpress;
                 cep.equalMetaVariable = m_DefineVarMetaVariable;
@@ -237,7 +255,321 @@ namespace SimpleLanguage.Core
                 }
             }
             SetTRMetaVariable(m_DefineVarMetaVariable);
-        }        
+        }
+
+        //==================== FFI 函数签名推导 ====================
+        //
+        // 声明目标为 Func<Ret, P1, P2...> / 函数 typealias (FunctionSignatureMetaClass)
+        // 且初始化表达式是 FFI 取函数的单实参调用时, 从左侧签名类型推导 FFI sig
+        // 字符串并注入为第二个实参:
+        //     Func<int,int,int> addf = lib.getFunction( "addcalc" )
+        //         -> lib.getFunction( "addcalc", "i32,i32->i32" )
+        //     Func<int,int,int> addf = lib.getSymbol( "addcalc" )
+        //         -> lib.getFunction( "addcalc", "i32,i32->i32" )
+        // (getSymbol 只返回裸地址 Int64, 无法赋给函数类型变量, 因此同时把
+        //  调用名改写为 getFunction, 由其包装成可调用的 native 闭包)
+        // 签名中任一类型无法映射到 FFI 短名(如 Ptr)时不注入, 保持原调用,
+        // 用户仍可手写完整 sig 字符串作为第二个实参。
+        private static void TryInjectFFIFunctionSig( FileMetaBaseTerm fileExpress, FunctionSignatureMetaClass fsmc )
+        {
+            if( !(fileExpress is FileMetaCallTerm fmct) )
+                return;
+            var link = fmct.callLink;
+            if( link == null || link.callNodeList.Count == 0 )
+                return;
+            // 末节点须是函数调用 (lib.getFunction(...) / this.lib.getSymbol(...))
+            var lastNode = link.callNodeList[link.callNodeList.Count - 1];
+            if( !lastNode.isCallFunction || lastNode.fileMetaParTerm == null )
+                return;
+            var callName = lastNode.name;
+            if( callName != "getFunction" && callName != "getSymbol" )
+                return;
+            var fmpt = lastNode.fileMetaParTerm;
+            if( fmpt.SplitParamList().Count != 1 )
+                return;   // 已传 sig / 空实参 / 多段 -> 不注入
+
+            string sig = BuildFFIFunctionSig( fsmc );
+            if( string.IsNullOrEmpty( sig ) )
+                return;
+
+            // getSymbol(name) -> getFunction(name, sig): 裸地址无法直接赋给
+            // 函数类型变量, 改写调用名 (仅 lexeme; IR 使用解析后的方法元数据)
+            if( callName == "getSymbol" )
+            {
+                lastNode.token?.SetLexeme( "getFunction" );
+            }
+
+            // 追加第二个实参: Comma 符号 + String 常量
+            // (与 FileMetaParTerm 构造器的 Comma/ConstValue 分支一致,
+            //  SplitParamList 按 Comma symbol term 拆分实参)
+            var fm = lastNode.fileMeta;
+            string path = fm?.path;
+            int line = (lastNode.token?.sourceBeginLine ?? 1) - 1;
+            int pos = lastNode.token?.sourceBeginChar ?? 0;
+
+            var commaToken = new Token( path, ETokenType.Comma, ",", line, pos );
+            var commaTerm = new FileMetaSymbolTerm( fm, commaToken );
+            commaTerm.priority = SignComputePriority.Level12_Split;
+            fmpt.AddFileMetaTerm( commaTerm );
+
+            // String 常量 Token: MetaConstExpressNode.Parse 要求
+            // childrenTokensList 为 [[同内容 String Token]]
+            var strToken = new Token( path, ETokenType.String, "\"" + sig + "\"", line, pos );
+            strToken.AddChildrenToken( new Token( path, ETokenType.String, sig, line, pos ) );
+            fmpt.AddFileMetaTerm( new FileMetaConstValueTerm( fm, strToken ) );
+        }
+
+        //==================== FFI lookupFunction 模板实参签名注入 ====================
+        //
+        // lib.lookupFunction<Ret, P1, P2...>( "name" ): 调用点模板实参直接给出
+        // 函数签名, 前端把模板实参转成 FFI sig 字符串并注入为第二个实参:
+        //     var addf = lib.lookupFunction<int,int,int>( "addcalc" )
+        //         -> lib.getFunction( "addcalc", "i32,i32->i32" )
+        // (lookupFunction 是纯前端语法糖: 调用名改写为 getFunction, 内部仍走
+        //  getFunction(name, sig) 现有体系; 与 Func<Ret,P...> 左侧类型推导路径
+        //  互补——模板实参在调用点自带签名, 覆盖 var / 无类型声明场景)
+        // 模板实参须为单段标量类型名且能映射到 FFI 短名(见 FFISigNameOfTypeName);
+        // 任一不满足时不注入, 保持原调用(用户可手写 getFunction 完整形态)。
+        private static void TryInjectLookupFunctionSig( FileMetaBaseTerm fileExpress )
+        {
+            if( !(fileExpress is FileMetaCallTerm fmct) )
+                return;
+            var link = fmct.callLink;
+            if( link == null || link.callNodeList.Count == 0 )
+                return;
+            // 末节点须是函数调用 (lib.lookupFunction<...>(...))
+            var lastNode = link.callNodeList[link.callNodeList.Count - 1];
+            if( !lastNode.isCallFunction || lastNode.fileMetaParTerm == null )
+                return;
+            if( lastNode.name != "lookupFunction" )
+                return;
+            var tplList = lastNode.inputTemplateNodeList;
+            if( tplList == null || tplList.Count < 1 )
+                return;   // 无模板实参 -> 不注入
+            var fmpt = lastNode.fileMetaParTerm;
+            if( fmpt.SplitParamList().Count != 1 )
+                return;   // 已传 sig / 空实参 / 多段 -> 不注入
+
+            // 模板实参 <Ret, P1, P2...> -> sig "p1,p2,...->ret"
+            string retTn = FFISigNameOfTemplateNode( tplList[0] );
+            if( string.IsNullOrEmpty( retTn ) )
+                return;
+            var sb = new StringBuilder();
+            for( int i = 1; i < tplList.Count; i++ )
+            {
+                var tn = FFISigNameOfTemplateNode( tplList[i] );
+                if( string.IsNullOrEmpty( tn ) )
+                    return;
+                if( i > 1 )
+                    sb.Append( ',' );
+                sb.Append( tn );
+            }
+            sb.Append( "->" );
+            sb.Append( retTn );
+
+            // lookupFunction(name) -> getFunction(name, sig): 纯前端语法糖,
+            // 改写调用名 (仅 lexeme; IR 使用解析后的方法元数据), 并清空模板
+            // 实参列表——getFunction 是非模板方法, 方法查找按模板计数精确
+            // 匹配, 残留的 <Ret,P...> 会导致 getFunction 查找失败
+            lastNode.token?.SetLexeme( "getFunction" );
+            lastNode.ClearInputTemplateNodeList();
+
+            // 追加第二个实参: Comma 符号 + String 常量
+            // (与 TryInjectFFIFunctionSig 的注入方式一致)
+            var fm = lastNode.fileMeta;
+            string path = fm?.path;
+            int line = (lastNode.token?.sourceBeginLine ?? 1) - 1;
+            int pos = lastNode.token?.sourceBeginChar ?? 0;
+
+            var commaToken = new Token( path, ETokenType.Comma, ",", line, pos );
+            var commaTerm = new FileMetaSymbolTerm( fm, commaToken );
+            commaTerm.priority = SignComputePriority.Level12_Split;
+            fmpt.AddFileMetaTerm( commaTerm );
+
+            var sigToken = new Token( path, ETokenType.String, "\"" + sb.ToString() + "\"", line, pos );
+            sigToken.AddChildrenToken( new Token( path, ETokenType.String, sb.ToString(), line, pos ) );
+            fmpt.AddFileMetaTerm( new FileMetaConstValueTerm( fm, sigToken ) );
+        }
+
+        //==================== nativeStructToData 模板实参类型名注入 ====================
+        //
+        // Memory.nativeStructToData<DataName>( addr ): 调用点模板实参直接给出
+        // data 类型名, 前端把模板实参转成类型名字符串并注入为第二个实参:
+        //     var dn = Memory.nativeStructToData<FFIStructSample>( ptr )
+        //         -> Memory.nativeStructToData( ptr, "FFIStructSample" )
+        // (nativeStructToData 是纯前端语法糖: 本体是 (Int64 addr, String
+        //  typeName) 双参非模板方法, C 端按 typeName 查 RuntimeClass 构建
+        //  data 骨架后从 native 内存加载; 多段类型名(NS.DataName)按 '.'
+        //  拼接, C 端按名匹配支持全名/短名)
+        private static void TryInjectNativeStructToDataTypeName( FileMetaBaseTerm fileExpress )
+        {
+            if( !(fileExpress is FileMetaCallTerm fmct) )
+                return;
+            var link = fmct.callLink;
+            if( link == null || link.callNodeList.Count == 0 )
+                return;
+            // 末节点须是函数调用 (Memory.nativeStructToData<...>(...))
+            var lastNode = link.callNodeList[link.callNodeList.Count - 1];
+            if( !lastNode.isCallFunction || lastNode.fileMetaParTerm == null )
+                return;
+            if( lastNode.name != "nativeStructToData" )
+                return;
+            var tplList = lastNode.inputTemplateNodeList;
+            if( tplList == null || tplList.Count != 1 )
+                return;   // 无模板实参/多个模板实参 -> 不注入
+            var fmpt = lastNode.fileMetaParTerm;
+            if( fmpt.SplitParamList().Count != 1 )
+                return;   // 已传 typeName / 空实参 / 多段 -> 不注入
+
+            // 模板实参 <DataName> -> 类型名 (多段 NS.DataName 以 '.' 拼接)
+            var nl = tplList[0]?.nameList;
+            if( nl == null || nl.Count == 0 )
+                return;
+            string typeName = string.Join( ".", nl );
+
+            // 清空模板实参列表: nativeStructToData 是非模板方法, 方法查找按
+            // 模板计数精确匹配, 残留的 <DataName> 会导致查找失败
+            lastNode.ClearInputTemplateNodeList();
+
+            // 追加第二个实参: Comma 符号 + String 常量
+            // (与 TryInjectLookupFunctionSig 的注入方式一致)
+            var fm = lastNode.fileMeta;
+            string path = fm?.path;
+            int line = (lastNode.token?.sourceBeginLine ?? 1) - 1;
+            int pos = lastNode.token?.sourceBeginChar ?? 0;
+
+            var commaToken = new Token( path, ETokenType.Comma, ",", line, pos );
+            var commaTerm = new FileMetaSymbolTerm( fm, commaToken );
+            commaTerm.priority = SignComputePriority.Level12_Split;
+            fmpt.AddFileMetaTerm( commaTerm );
+
+            var nameToken = new Token( path, ETokenType.String, "\"" + typeName + "\"", line, pos );
+            nameToken.AddChildrenToken( new Token( path, ETokenType.String, typeName, line, pos ) );
+            fmpt.AddFileMetaTerm( new FileMetaConstValueTerm( fm, nameToken ) );
+        }
+
+        /// <summary>
+        /// 模板实参节点(FileInputTemplateNode) -> FFI sig 短名。
+        /// 只接受单段标量类型名(int/Int32/string...), 多段名(NS.Class1)不映射。
+        /// </summary>
+        private static string FFISigNameOfTemplateNode( FileInputTemplateNode fitn )
+        {
+            var nl = fitn?.nameList;
+            if( nl == null || nl.Count != 1 )
+                return null;
+            return FFISigNameOfTypeName( nl[0] );
+        }
+
+        /// <summary>
+        /// SL 类型名 -> FFI sig 短名 (与 cvm 侧 vm_ffi_sl_name_to_ffi 映射表
+        /// 对齐, 另含 C# 风格别名; 注入的 sig 均为标准短名, cvm 侧无需再认识
+        /// SL 名)。未知名返回 null (不注入)。
+        /// </summary>
+        private static string FFISigNameOfTypeName( string name )
+        {
+            switch( name )
+            {
+                case "void": case "Void":               return "void";
+                case "bool": case "Bool": case "boolean": return "bool";
+                case "int": case "Int32":               return "i32";
+                case "Int8": case "sbyte":              return "i8";
+                case "UInt8": case "byte":              return "u8";
+                case "Int16": case "short":             return "i16";
+                case "UInt16":                          return "u16";
+                case "UInt32": case "uint":             return "u32";
+                case "long": case "Int64":              return "i64";
+                case "UInt64": case "ulong":            return "u64";
+                case "float": case "Float32":           return "f32";
+                case "double": case "Float64":          return "f64";
+                case "Float16":                         return "f16";
+                case "Float16_Brain":                   return "bf16";
+                case "Float8":                          return "f8e4m3";
+                case "Float8_E5M2":                     return "f8e5m2";
+                case "string": case "String":           return "utf8";
+                case "ptr": case "Ptr":                 return "ptr";
+                default:                                return null;
+            }
+        }
+
+        /// <summary>
+        /// 从 FunctionSignatureMetaClass 组 FFI sig 短名字符串
+        /// ("i32,i32->i32", 与 cvm 侧 sl_ffi_sig_parse 格式一致);
+        /// 任一类型无法映射时返回 null (不注入)。
+        /// (public: 供 @DllImport 成员变量初始化注入复用)
+        /// </summary>
+        public static string BuildFFIFunctionSig( FunctionSignatureMetaClass fsmc )
+        {
+            var sb = new StringBuilder();
+            var paramList = fsmc.paramMetaTypeList;
+            if( paramList != null )
+            {
+                for( int i = 0; i < paramList.Count; i++ )
+                {
+                    var tn = FFISigNameOfMetaType( paramList[i] );
+                    if( string.IsNullOrEmpty( tn ) )
+                        return null;
+                    if( i > 0 )
+                        sb.Append( ',' );
+                    sb.Append( tn );
+                }
+            }
+            var retTn = FFISigNameOfMetaType( fsmc.returnMetaType );
+            if( string.IsNullOrEmpty( retTn ) )
+                return null;
+            sb.Append( "->" );
+            sb.Append( retTn );
+            return sb.ToString();
+        }
+
+        /// <summary>
+        /// SL 类型 -> FFI sig 短名。先按类型单例匹配, 再按类名回退
+        /// (与 cvm 侧 vm_ffi_sl_name_to_ffi 映射表对齐; Ptr 保守不映射,
+        ///  需要 Ptr 签名时用户可手写完整 sig 字符串)。
+        /// </summary>
+        private static string FFISigNameOfMetaType( MetaType mt )
+        {
+            if( mt == null )
+                return null;
+            var mc = mt.metaClass;
+            if( mc == null )
+                return null;
+            if( mc == CoreMetaClassManager.voidMetaClass )           return "void";
+            if( mc == CoreMetaClassManager.booleanMetaClass )        return "bool";
+            if( mc == CoreMetaClassManager.int8MetaClass )           return "i8";
+            if( mc == CoreMetaClassManager.uint8MetaClass )          return "u8";
+            if( mc == CoreMetaClassManager.int16MetaClass )          return "i16";
+            if( mc == CoreMetaClassManager.uint16MetaClass )         return "u16";
+            if( mc == CoreMetaClassManager.int32MetaClass )          return "i32";
+            if( mc == CoreMetaClassManager.uint32MetaClass )         return "u32";
+            if( mc == CoreMetaClassManager.int64MetaClass )          return "i64";
+            if( mc == CoreMetaClassManager.uint64MetaClass )         return "u64";
+            if( mc == CoreMetaClassManager.float32MetaClass )        return "f32";
+            if( mc == CoreMetaClassManager.float64MetaClass )        return "f64";
+            if( mc == CoreMetaClassManager.float16MetaClass )        return "f16";
+            if( mc == CoreMetaClassManager.float16_BrainMetaClass )  return "bf16";
+            if( mc == CoreMetaClassManager.float8MetaClass )         return "f8e4m3";
+            if( mc == CoreMetaClassManager.float8_E5M2MetaClass )    return "f8e5m2";
+            if( mc == CoreMetaClassManager.stringMetaClass )         return "utf8";
+            switch( mc.name )
+            {
+                case "void":  case "Void":    return "void";
+                case "bool":  case "Bool":    case "boolean": return "bool";
+                case "int":   case "Int32":   return "i32";
+                case "Int8":  case "UInt8":   return "i8";
+                case "Int16": case "UInt16":  return "i16";
+                case "UInt32":                return "u32";
+                case "long":  case "Int64":   return "i64";
+                case "UInt64":                return "u64";
+                case "float": case "Float32": return "f32";
+                case "double":case "Float64": return "f64";
+                case "Float16":               return "f16";
+                case "Float16_Brain":         return "bf16";
+                case "Float8":                return "f8e4m3";
+                case "Float8_E5M2":           return "f8e5m2";
+                case "string": case "String": return "utf8";
+                default:                      return null;
+            }
+        }
         public override void SetTRMetaVariable(MetaVariable mv)
         {
             if(m_ExpressNode != null && m_ExpressNode is MetaExecuteStatementsNode )

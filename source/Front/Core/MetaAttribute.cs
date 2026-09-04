@@ -172,6 +172,45 @@ namespace SimpleLanguage.Core
             return m_StringArgs[index];
         }
 
+        /// <summary>
+        /// 按逗号拆分后的字符串实参列表（stringArgs 未拆分逗号符号项，
+        /// 多实参时中间会混入 "," 项）。直接从 FileMetaParTerm 提取，
+        /// 不依赖 Parse() 是否已执行（@DllImport 注入早于 ParseAttributes 阶段）。
+        /// 非字符串实参被跳过。
+        /// </summary>
+        public List<string> GetSplitStringArgs()
+        {
+            var result = new List<string>();
+            var fmpt = fileMetaAttribute?.fileMetaParTerm;
+            if (fmpt == null)
+                return result;
+            var plist = fmpt.SplitParamList();
+            for (int i = 0; i < plist.Count; i++)
+            {
+                if (plist[i] is FileMetaConstValueTerm cvt && cvt.token?.type == ETokenType.String)
+                {
+                    var s = StringTokenContent(cvt.token);
+                    if (s != null)
+                        result.Add(s);
+                }
+            }
+            return result;
+        }
+
+        /// <summary>String 常量 token -> 内容。子 token 优先（与
+        /// MetaConstExpressNode 同源），兜底 lexeme 去引号。</summary>
+        internal static string StringTokenContent(Token tok)
+        {
+            if (tok == null) return null;
+            var cdlist = tok.childrenTokensList;
+            if (cdlist.Count == 1 && cdlist[0].Count == 1 && cdlist[0][0].type == ETokenType.String)
+                return cdlist[0][0].lexeme?.ToString();
+            var s = tok.lexeme?.ToString();
+            if (s != null && s.Length >= 2 && s.StartsWith("\"") && s.EndsWith("\""))
+                s = s.Substring(1, s.Length - 2);
+            return s;
+        }
+
         public override string ToString()
         {
             var sb = new System.Text.StringBuilder();

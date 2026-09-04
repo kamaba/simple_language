@@ -172,6 +172,8 @@
 /test/BaseTest/run_c4_err.txt
 /test/BaseTest/run_p4.txt
 /test/BaseTest/run_p4_err.txt
+/test/BenchMark/build
+/test/SpecialTest/build
 /scripts/safe_rm_aliases.ps1
 /source/CompileStd/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
 /source/CompileStd/obj/Debug/net8.0/SimpleLa.F8B8D231.Up2Date
@@ -353,10 +355,14 @@
 /project/CSimpleVMCoreTest/.vs
 /project/Test2/bin
 /project/Test2/obj
+/project/Test2/BaseTest
 /project/Test/bin
 /project/Test/obj
+/project/Test/BaseTest
 /project/Test2/.vs
 /project/CSimpleVMBenchMarkTest/bin
 /project/CSimpleVMBenchMarkTest/obj
+/project/CSimpleVMBenchMarkTest/build
 /project/CSimpleVMSpecialTest/bin
 /project/CSimpleVMSpecialTest/obj
+/source/CLangdll/CLangdll

@@ -23,6 +23,7 @@
   "compileFiles": {
     "files": [
       { "path": "AOTTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "FFITest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "AOT.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
       { "path": "MapTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
       { "path": "FileTest.sl", "group": "core", "tag": "base", "ignore": true, "priority": 0 },
@@ -56,6 +57,15 @@
       "b": 20.1
     }
   },
+  "dllImports": [
+    {
+      "path": "../../source/CLangdll/x64/Debug/CLangdll.dll", "name": "CLangdll", "alias": "CLangdll",
+      "functions": [
+        { "name": "libaddfunc", "symbol": "simplelanguage_addtest", "sig": "i32,i32->i32" }
+      ]
+    },
+    { "path": "../../source/CLangdll/x64/Debug/CLangdll.dll", "name": "CLangdll", "alias": "cl" }
+  ],
   "references": [
     { "path": "../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" },
     { "path": "../../out/export/Std", "uuid":"456456456456", "name": "Std.module.json" }

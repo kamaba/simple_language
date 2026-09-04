@@ -216,4 +216,394 @@ public class Memory
     {
         ret SystemMemoryClone( obj )
     }
+
+    # ---------------------------------------------------------------
+    # Native memory (moved from FFI.NativeMemory).
+    # Build C native content (arrays / scalars / structs) dynamically.
+    # cvm: memory_system_method.c (SystemMemoryNative* system calls).
+    #
+    # Conventions:
+    #   - Addresses are passed as Int64 (0 = null / invalid).
+    #   - Type names accept SL names ("Int32"/"string"...) and FFI short
+    #     names ("i32"/"utf8"...).
+    #   - Writes: i8==u8, i16==u16, i32==u32, i64==u64==ptr (bit-pattern
+    #     aliases); reads must pick the sign/zero-extending variant.
+    #   - Structs use C natural alignment (offset=round_up(cur,align),
+    #     tail padded to the largest field alignment), e.g. fields
+    #     "i32,i64,f32,f64" (max 64 fields).
+    #   - writeUtf8 stores the SL string's data pointer (the string must
+    #     stay alive; native side is read-only); copyUtf8 copies bytes
+    #     (self-owned, no lifetime constraint).
+    # ---------------------------------------------------------------
+
+    # ---------------------------------------------------------------
+    # Allocation / free / type size.
+    # ---------------------------------------------------------------
+
+    # Allocate byteCount bytes of zeroed native memory, return the
+    # address (0 = failure).
+    public static Int64 alloc( Int32 byteCount )
+    {
+        ret SystemMemoryNativeAlloc( byteCount )
+    }
+
+    # Free a block allocated by alloc (double-free is undefined).
+    # Named freeNative to avoid clashing with free(object) above.
+    public static bool freeNative( Int64 addr )
+    {
+        ret SystemMemoryNativeFree( addr )
+    }
+
+    # FFI type storage size in bytes: bool/i8/u8/f8=1, i16/u16/f16=2,
+    # i32/u32/f32=4, i64/u64/f64/ptr/utf8=8. Unknown type returns 0.
+    public static Int32 sizeOf( string typeName )
+    {
+        ret SystemMemoryNativeSizeOf( typeName )
+    }
+
+    # Allocate a C array of count elements (laid out by element type
+    # size, zeroed), return the base address.  Access elements with the
+    # read/write series + index*sizeOf offsets.
+    public static Int64 allocArray( Int32 count, string elemType )
+    {
+        Int32 sz = Memory.sizeOf( elemType )
+        if ( count <= 0 || sz <= 0 )
+        {
+            ret 0
+        }
+        ret Memory.alloc( count * sz )
+    }
+
+    # ---------------------------------------------------------------
+    # Scalar builders (allocate + write, return the address).
+    # ---------------------------------------------------------------
+
+    # Build a native Int8 (i8/u8 share the bit pattern).
+    public static Int64 newInt8( Int32 value )
+    {
+        Int64 p = Memory.alloc( 1 )
+        if ( p != 0 )
+        {
+            Memory.writeI8( p, 0, value )
+        }
+        ret p
+    }
+
+    # Build a native Int16 (i16/u16 share the bit pattern).
+    public static Int64 newInt16( Int32 value )
+    {
+        Int64 p = Memory.alloc( 2 )
+        if ( p != 0 )
+        {
+            Memory.writeI16( p, 0, value )
+        }
+        ret p
+    }
+
+    # Build a native Int32 (i32/u32 share the bit pattern).
+    public static Int64 newInt32( Int32 value )
+    {
+        Int64 p = Memory.alloc( 4 )
+        if ( p != 0 )
+        {
+            Memory.writeI32( p, 0, value )
+        }
+        ret p
+    }
+
+    # Build a native Int64 (i64/u64/ptr share the bit pattern).
+    public static Int64 newInt64( Int64 value )
+    {
+        Int64 p = Memory.alloc( 8 )
+        if ( p != 0 )
+        {
+            Memory.writeI64( p, 0, value )
+        }
+        ret p
+    }
+
+    # Build a native Float32.
+    public static Int64 newFloat32( Float32 value )
+    {
+        Int64 p = Memory.alloc( 4 )
+        if ( p != 0 )
+        {
+            Memory.writeF32( p, 0, value )
+        }
+        ret p
+    }
+
+    # Build a native Float64.
+    public static Int64 newFloat64( Float64 value )
+    {
+        Int64 p = Memory.alloc( 8 )
+        if ( p != 0 )
+        {
+            Memory.writeF64( p, 0, value )
+        }
+        ret p
+    }
+
+    # Build a native bool (1 byte).
+    public static Int64 newBool( bool value )
+    {
+        Int64 p = Memory.alloc( 1 )
+        if ( p != 0 )
+        {
+            Memory.writeBool( p, 0, value ? 1 : 0 )
+        }
+        ret p
+    }
+
+    # Build a utf8 string slot (8-byte address slot holding a pointer,
+    # not bytes).  Equivalent to newInt64 + writeUtf8.
+    public static Int64 newUtf8( string value )
+    {
+        Int64 p = Memory.alloc( 8 )
+        if ( p != 0 )
+        {
+            Memory.writeUtf8( p, 0, value )
+        }
+        ret p
+    }
+
+    # ---------------------------------------------------------------
+    # Reads (addr + byte offset).
+    # ---------------------------------------------------------------
+
+    # Read a 1-byte bool.
+    public static bool readBool( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadBool( addr, offset )
+    }
+
+    # Read 1 byte signed (sign-extended to Int32).
+    public static Int32 readInt8( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadI8( addr, offset )
+    }
+
+    # Read 1 byte unsigned (zero-extended to Int32).
+    public static Int32 readUInt8( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadU8( addr, offset )
+    }
+
+    # Read 2 bytes signed (sign-extended to Int32).
+    public static Int32 readInt16( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadI16( addr, offset )
+    }
+
+    # Read 2 bytes unsigned (zero-extended to Int32).
+    public static Int32 readUInt16( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadU16( addr, offset )
+    }
+
+    # Read 4 bytes signed.
+    public static Int32 readInt32( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadI32( addr, offset )
+    }
+
+    # Read 4 bytes unsigned (zero-extended to Int64, keeps > 2^31-1).
+    public static Int64 readUInt32( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadU32( addr, offset )
+    }
+
+    # Read 8 bytes signed (u64/ptr bit-pattern alias).
+    public static Int64 readInt64( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadI64( addr, offset )
+    }
+
+    # Read 8 bytes unsigned / a native pointer (same as readInt64).
+    public static Int64 readUInt64( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadI64( addr, offset )
+    }
+
+    # Read 8 bytes as a native pointer (same as readInt64).
+    public static Int64 readPtr( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadI64( addr, offset )
+    }
+
+    # Read a 4-byte single-precision float.
+    public static Float32 readFloat32( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadF32( addr, offset )
+    }
+
+    # Read an 8-byte double-precision float.
+    public static Float64 readFloat64( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadF64( addr, offset )
+    }
+
+    # Read the char* stored in an 8-byte address slot, copied into an
+    # SL string.
+    public static string readUtf8( Int64 addr, Int32 offset )
+    {
+        ret SystemMemoryNativeReadUtf8( addr, offset )
+    }
+
+    # ---------------------------------------------------------------
+    # Writes (addr + byte offset).
+    # ---------------------------------------------------------------
+
+    # Write a 1-byte bool.
+    public static bool writeBool( Int64 addr, Int32 offset, Int32 value )
+    {
+        ret SystemMemoryNativeWriteBool( addr, offset, value )
+    }
+
+    # Write 1 byte (i8/u8 share the bit pattern).
+    public static bool writeI8( Int64 addr, Int32 offset, Int32 value )
+    {
+        ret SystemMemoryNativeWriteI8( addr, offset, value )
+    }
+
+    # Write 2 bytes (i16/u16 share the bit pattern).
+    public static bool writeI16( Int64 addr, Int32 offset, Int32 value )
+    {
+        ret SystemMemoryNativeWriteI16( addr, offset, value )
+    }
+
+    # Write 4 bytes (i32/u32 share the bit pattern).
+    public static bool writeI32( Int64 addr, Int32 offset, Int32 value )
+    {
+        ret SystemMemoryNativeWriteI32( addr, offset, value )
+    }
+
+    # Write 8 bytes (i64/u64/ptr share the bit pattern).
+    public static bool writeI64( Int64 addr, Int32 offset, Int64 value )
+    {
+        ret SystemMemoryNativeWriteI64( addr, offset, value )
+    }
+
+    # Write a 4-byte single-precision float.
+    public static bool writeF32( Int64 addr, Int32 offset, Float32 value )
+    {
+        ret SystemMemoryNativeWriteF32( addr, offset, value )
+    }
+
+    # Write an 8-byte double-precision float.
+    public static bool writeF64( Int64 addr, Int32 offset, Float64 value )
+    {
+        ret SystemMemoryNativeWriteF64( addr, offset, value )
+    }
+
+    # Write the SL string's data pointer into an 8-byte address slot
+    # (the string must stay alive; native side is read-only; use
+    # copyUtf8 when a self-owned copy is needed).
+    public static bool writeUtf8( Int64 addr, Int32 offset, string value )
+    {
+        ret SystemMemoryNativeWriteUtf8( addr, offset, value )
+    }
+
+    # Copy string bytes to addr+offset (NUL-terminated, at most
+    # maxBytes-1 payload bytes); returns copied bytes (without NUL).
+    public static Int32 copyUtf8( Int64 addr, Int32 offset, string value, Int32 maxBytes )
+    {
+        ret SystemMemoryNativeCopyUtf8( addr, offset, value, maxBytes )
+    }
+
+    # ---------------------------------------------------------------
+    # Struct layout (C natural alignment).
+    # ---------------------------------------------------------------
+
+    # Total struct size (tail padded to the largest field alignment).
+    # fields like "i32,i64,f32,f64" (SL or FFI short names, max 64).
+    public static Int32 structSize( string fields )
+    {
+        ret SystemMemoryNativeStructSize( fields )
+    }
+
+    # Byte offset of field index (0-based); -1 on bad fields / index.
+    public static Int32 structFieldOffset( string fields, Int32 index )
+    {
+        ret SystemMemoryNativeStructFieldOffset( fields, index )
+    }
+
+    # Dynamically build a struct instance (zeroed allocation, no
+    # initialization), return the address.  Fill fields with the
+    # write/read series + structFieldOffset.
+    public static Int64 newStruct( string fields )
+    {
+        Int32 sz = Memory.structSize( fields )
+        if ( sz <= 0 )
+        {
+            ret 0
+        }
+        ret Memory.alloc( sz )
+    }
+
+    # ---------------------------------------------------------------
+    # data <-> Array<object> conversion.
+    #
+    # Purpose: structured data at the cvm layer can be converted into
+    # C struct data via dataToArray (then written to native memory /
+    # passed to special functions), and converted back via arrayToData
+    # given the per-node type layout.
+    # ---------------------------------------------------------------
+
+    # Convert a data object into a new Array<object>, one slot per
+    # member node (in declaration order).  Returns null on failure.
+    public static Array<object> dataToArray( object obj )
+    {
+        ret SystemMemoryDataToArray( obj )
+    }
+
+    # Build a data object (meta_kind = DATA) from values, laid out by
+    # the fields type string (comma-separated node types, e.g.
+    # "i32,f64,string,object"; SL or FFI short names, max 64 fields).
+    # Array elements are written to the members in order; fields past
+    # the array length stay null/zero.  Returns null on failure.
+    public static object arrayToData( Array<object> values, string fields )
+    {
+        ret SystemMemoryArrayToData( values, fields )
+    }
+
+    # ---------------------------------------------------------------
+    # Named data (data DataName{...}) <-> C struct conversion.
+    #
+    # Layout: C natural alignment, matching structSize/structFieldOffset
+    # rules.  Member slot mapping:
+    #   - scalar members (bool/i8..i64/f16..f64): inline, slot width
+    #   - string member: 8-byte char* slot (native side read-only)
+    #   - nested data member: recursively inlined (C nested struct)
+    #   - enum member: 4-byte Int32 slot (underlying constant)
+    #   - class member: 8-byte object address slot (SystemPtrFromObject
+    #     semantics; read back via SystemPtrToObject-like restore)
+    #
+    # The returned native address is NOT managed by SL memory
+    # management; the caller owns it (free it when done).
+    # ---------------------------------------------------------------
+
+    # Serialize a named data instance into a freshly allocated C
+    # struct block (zero-filled then filled).  structName is the
+    # corresponding C struct definition name, used for logging only --
+    # the layout is fully driven by the SL data definition, so both
+    # sides must agree on it.  Returns the native address, 0 on
+    # failure (non-data object / null nested data member).
+    public static Int64 dataToNativeStruct( string structName, object obj )
+    {
+        ret SystemMemoryDataToNativeStruct( structName, obj )
+    }
+
+    # Build a new named data instance from native memory, resolving
+    # the data class by typeName (full or short name).  The sugar form
+    #     var dn = Memory.nativeStructToData<DataName>( addr )
+    # injects "DataName" as typeName at the front end, i.e. it calls
+    #     Memory.nativeStructToData( addr, "DataName" )
+    # Strings are copied into SL-owned objects; class members are
+    # restored by address (object must still be alive).  Returns null
+    # on failure (unknown type / bad address / layout mismatch).
+    public static object nativeStructToData( Int64 addr, string typeName )
+    {
+        ret SystemMemoryNativeStructToData( addr, typeName )
+    }
 }

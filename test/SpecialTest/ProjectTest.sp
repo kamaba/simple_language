@@ -17,5 +17,8 @@ Project
         SystemPrintln( "Sub(10,4)=$r4.toString()" );
         SystemPrintln( "CallVmSub(10,4)=$r5.toString()" );
         SystemPrintln( "CallVmAvg(3,5)=$r6.toString()" );
+
+        # FFI 测试用例（动态库加载/调用/回调/Float8 struct 等）
+        FFITest.fun();
     }
 }

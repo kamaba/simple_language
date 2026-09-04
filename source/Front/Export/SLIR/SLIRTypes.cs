@@ -25,6 +25,18 @@ namespace SimpleLanguage.Export.SLIR.Types
     public sealed class SLTemplateRelationEntry { public int index { get; set; } public SLRuntimeDefTypePackage? type { get; set; } }
     public sealed class SLTemplateRelationPackage { public int relatedClassId { get; set; } public List<SLTemplateRelationEntry> mapping { get; set; } = new(); }
 
+    /// <summary>
+    /// 外部 dll 导入条目（project.jsonc "dllImports" 段，path/name/alias）。
+    /// 随 module.json 导出；引用方加载时合并进自身配置，
+    /// 使 @DllImport("别名",...) 与 global.dllImport.别名 免写长路径。
+    /// </summary>
+    public sealed class SLDllImportPackage
+    {
+        public string alias { get; set; } = string.Empty;
+        public string name { get; set; } = string.Empty;
+        public string path { get; set; } = string.Empty;
+    }
+
     public sealed class SLMethodMeta { public string id { get; set; } = string.Empty; public string name { get; set; } = string.Empty; public int index { get; set; } }
 
     public sealed class SLRuntimeCallPackage
@@ -270,6 +282,11 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// 自动在模块文件同目录下查找并加载此 DLL（实现 ISLExternalFunctionModule）。
         /// </summary>
         public string nativeDll { get; set; } = string.Empty;
+        /// <summary>
+        /// 外部 dll 导入配置（project.jsonc "dllImports" 段的别名/名称/路径）。
+        /// 引用方加载本模块时合并进其配置，即可用别名免写长路径。
+        /// </summary>
+        public List<SLDllImportPackage> dllImports { get; set; } = new();
         public List<SLModuleReferencePackage> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();

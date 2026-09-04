@@ -722,6 +722,20 @@ namespace SimpleLanguage.Core
         {
             if (fmcd == null) return null;
 
+            // Func<RetType, ParamType, ...> C# 风格函数类型（类成员变量定义场景）：
+            // 与函数体内局部变量路径（GetMetaTypeByTemplateFunction）对齐，返回
+            // 携带签名的 FunctionSignatureMetaClass（@DllImport 声明式绑定依赖
+            // 成员变量 Func 类型推导 FFI sig）
+            if (fmcd.stringList != null && fmcd.stringList.Count == 1 && fmcd.stringList[0] == "Func"
+                && fmcd.inputTemplateNodeList != null && fmcd.inputTemplateNodeList.Count >= 1)
+            {
+                var funcMt = TryResolveFuncTemplateType(curMc, null, fmcd);
+                if (funcMt != null)
+                {
+                    return funcMt;
+                }
+            }
+
             // typealias：无论 stringList 有几个元素，都先检查第一个元素是否是已注册的类型别名；
             // 若是别名且只有 1 个元素，直接返回别名目标（模块别名除外，模块不是类型）；
             // 若是别名且有多个元素，则从别名目标所在的模块/命名空间继续解析剩余路径。

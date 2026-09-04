@@ -49,7 +49,8 @@
       { "path": "Isolate/RawReceivePort.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Isolate/TransferableData.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Isolate/IsolateGroup.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
-      { "path": "Isolate/Isolate.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
+      { "path": "Isolate/Isolate.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "FFI/Library.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -124,6 +125,12 @@
       },
       { "class": "Component" },
       { "class": "Node" },
+      { "namespace": "FFI", "children":
+         [
+            { "class": "Library" },
+            { "class": "StaticLibrary" }
+         ]
+      },
       { "class": "IsolateStatus" },
       { "class": "IsolateError" },
       { "class": "Capability" },
@@ -237,7 +244,26 @@
     { "name": "SystemTransferFromBytes",           "returnType": "Int64",  "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_from_bytes" },
     { "name": "SystemTransferMaterialize",         "returnType": "object", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_materialize" },
     { "name": "SystemTransferSize",                "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_size" },
-    { "name": "SystemTransferIsValid",             "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_is_valid" }
+    { "name": "SystemTransferIsValid",         "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_is_valid" },
+    // ---- FFI calls (FFI/Library.sl, design: md/design/ffi-design.md) ----
+    { "name": "SystemFFILoadLibrary",     "returnType": "Int64",   "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_load_library" },
+    { "name": "SystemFFIFreeLibrary",     "returnType": "bool",    "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_free_library" },
+    { "name": "SystemFFILibraryRef",      "returnType": "Int32",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_library_ref" },
+    { "name": "SystemFFILibraryRefcount", "returnType": "Int32",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_library_refcount" },
+    { "name": "SystemFFILibraryCount",    "returnType": "Int32",   "params": [],        "isVariadic": false, "cvmFunction": "vm_sys_ffi_library_count" },
+    { "name": "SystemFFIGetSymbol",       "returnType": "Int64",   "params": ["Int64", "string"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_get_symbol" },
+    { "name": "SystemFFICallVoid",        "returnType": "void",    "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_void" },
+    { "name": "SystemFFICallBool",        "returnType": "bool",    "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_bool" },
+    { "name": "SystemFFICallI32",         "returnType": "Int32",   "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_i32" },
+    { "name": "SystemFFICallI64",         "returnType": "Int64",   "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_i64" },
+    { "name": "SystemFFICallF32",         "returnType": "Float32", "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_f32" },
+    { "name": "SystemFFICallF64",         "returnType": "Float64", "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_f64" },
+    { "name": "SystemFFICallUtf8",        "returnType": "string",  "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_utf8" },
+    { "name": "SystemFFICallF8E4M3",      "returnType": "float8",  "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_f8e4m3" },
+    { "name": "SystemFFICallF8E5M2",      "returnType": "float8",  "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_f8e5m2" },
+    { "name": "SystemFFICreateCallback",  "returnType": "Int64",   "params": ["string", "string"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_create_callback" },
+    { "name": "SystemFFIFreeCallback",    "returnType": "bool",    "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_free_callback" },
+    { "name": "SystemFFIMakeFunction",    "returnType": "Function", "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_make_function" }
   ],
   "export": {
     "moduleName": "Std",

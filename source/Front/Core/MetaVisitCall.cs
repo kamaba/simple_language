@@ -205,7 +205,7 @@ namespace SimpleLanguage.Core
             }
             int defineCount = m_VMCallMetaFunction?.metaMemberParamCollection?.maxParamCount ?? 0;
 
-            var reordered = ReorderKeywordArgs(_paramCollection, mpList, defineCount, out var _);
+            var reordered = ReorderKeywordArgs(_paramCollection, mpList, defineCount, out var leftoverPositional);
             if (reordered != null)
             {
                 for (int i = 0; i < defineCount; i++)
@@ -221,6 +221,17 @@ namespace SimpleLanguage.Core
                         {
                             m_MetaInputParamList.Add(mdp.expressNode);
                         }
+                    }
+                }
+                // Variadic system call (module "systemCalls" isVariadic): pass the extra
+                // positional args through so CallSystemMethod's payload paramCount covers
+                // them; the C VM dispatches on param_count and pops every stack slot.
+                if (leftoverPositional != null && leftoverPositional.Count > 0 &&
+                    (m_VMCallMetaFunction is MetaMemberFunction.MetaBuiltinFunction mbf && mbf.isSystemVariadic))
+                {
+                    for (int i = 0; i < leftoverPositional.Count; i++)
+                    {
+                        m_MetaInputParamList.Add(leftoverPositional[i]);
                     }
                 }
             }

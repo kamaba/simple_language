@@ -85,6 +85,13 @@ namespace SimpleLanguage.IR
             else if (mv.variableFrom == MetaVariable.EVariableFrom.ClassMember)
             {
                 int index = -1;
+                if (irmc == null)
+                {
+                    // 调用方未提供归属 IRMetaClass（如闭包调用分支
+                    // CreateLoadVariable(null, null, ...)）时按变量自身归属兜底，
+                    // 否则静态成员（如 @DllImport 绑定的 Func 变量）index 解析必失败。
+                    irmc = IRManager.GetIRMetaClassByMetaVariable(mv);
+                }
                 if (irmc != null)
                 {
                     MetaVariable gmv = mv;

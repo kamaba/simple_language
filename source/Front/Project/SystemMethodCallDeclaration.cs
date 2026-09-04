@@ -125,6 +125,7 @@ namespace SimpleLanguage.Core
         private static readonly MetaType F16 = SystemMethodCallTypes.Of(CoreMetaClassManager.float16MetaClass);
         private static readonly MetaType F32 = SystemMethodCallTypes.Of(CoreMetaClassManager.float32MetaClass);
         private static readonly MetaType F64 = SystemMethodCallTypes.Of(CoreMetaClassManager.float64MetaClass);
+        private static readonly MetaType Fn = SystemMethodCallTypes.Of(CoreMetaClassManager.functionMetaClass);
 
         // Populated dynamically by LoadFromJsonFile / LoadFromJsonContent.
         private static Dictionary<string, SystemMethodCallDeclaration> s_Decl =
@@ -161,6 +162,7 @@ namespace SimpleLanguage.Core
                 case "float32": return F32;
                 case "float64":return F64;
                 case "type":return Typ;
+                case "function": return Fn;
                 case "array<object>": return ArrayObj;
                 case "uint8array":    return UInt8Array;
                 default:        return null;

@@ -472,6 +472,380 @@ namespace SimpleLanguage.Project
             FinalizeInjectedProjectGlobalMember(projectMc, mmv);
         }
 
+        // =====================================================================
+        // dllImports（project.jsonc "dllImports"/"lib" 段）：global.dllImport 注入
+        // =====================================================================
+        // 通过别名直接访问外部 dll 库对象，免在代码里写长路径：
+        //     global.dllImport.<alias>  ->  FFI.Library 实例
+        //（.isValid / .getFunction(...) 等直接链式使用；随 Project 静态初始化
+        // 进程级常驻，符合 C# DllImport 语义）。
+        //
+        // 分两步注入：
+        //  1) File 层（CreateNamespace 前，管线步骤 InjectDllImportHolder）：
+        //     按配置源码合成持有类（机制同 BindExpandManager 源码合成先例），
+        //     同时把 FFI 命名空间注册进所在 .sp 的 FileMeta（等价 import FFI;）：
+        //         ___DllImportGlobal___ extends Object
+        //         {
+        //             public override void _init_() { }
+        //             public FFI.Library <alias> = FFI.Library( "<path>" )
+        //         }
+        //  2) Meta 层（InjectProjectData，同 global.data 注入步骤）：Project 元类
+        //     注入 static 成员 dllImport = ___DllImportGlobal___()（NewObject 初值，
+        //     机制同 global.data 对象注入），实现 global.dllImport.<alias> 链式访问。
+        public const string DllImportHolderClassName = "___DllImportGlobal___";
+        public const string DllImportMemberName = "dllImport";
+
+        /// <summary>
+        /// File 层：按 dllImports 配置合成持有类源码并注入编译管线。
+        /// 时机在 File 阶段完成后、CreateNamespace 前（与 ExpandBind 同窗口），
+        /// 使合成类与普通源码类走相同的命名空间/成员解析管线。
+        /// FFI.Library 定义于 Std 模块：项目未引用 Std 时不注入
+        /// （@DllImport("别名",...) 的路径查表解析不受影响）。
+        /// </summary>
+        public static void InjectDllImportHolderClass( List<FileParse> fileParseList )
+        {
+            var cfg = ProjectManager.config;
+            if ( cfg?.DllImports == null || cfg.DllImports.Count == 0 )
+                return;
+            if ( fileParseList == null || fileParseList.Count == 0 )
+                return;
+
+            // FFI.Library 可用性检查（引用模块在 RefModule 阶段已装载）
+            var ffiNamespaceNode = ModuleManager.instance.GetChildrenMetaNodeByName( "FFI" );
+            var ffiLibNode = ffiNamespaceNode?.GetChildrenMetaNodeByName( "Library" );
+            if ( ffiLibNode == null )
+            {
+                Log.AddProjectLog( LID.ShowExtendMessage,
+                    "dllImports: FFI.Library not found (Std not referenced?), skip global.dllImport injection." );
+                return;
+            }
+
+            var fm = ProjectCompile.projectFileMeta ?? fileParseList[0].file;
+            if ( fm == null )
+                return;
+            if ( fm.GetFileMetaClassByName( DllImportHolderClassName ) != null )
+                return;   // 已注入（防重复）
+
+            // 把 FFI 命名空间注册进本 FileMeta（等价 import FFI;）：合成类所在的
+            // .sp 文件没有 import 语句，注册后短名 FFI.Library 才可解析；查找顺序
+            // 上用户自有名称优先（import 仅作兜底），不影响 .sp 原有语义。
+            fm.AddImportMetaNode( ffiNamespaceNode );
+
+            // 合成持有类源码（成员名 = 别名；跳过非法/重复别名）
+            var sb = new StringBuilder();
+            sb.AppendLine( DllImportHolderClassName + " extends Object" );
+            sb.AppendLine( "{" );
+            sb.AppendLine( "    public override void _init_()" );
+            sb.AppendLine( "    {" );
+            sb.AppendLine( "    }" );
+            int count = 0;
+            var usedAlias = new HashSet<string>();
+            foreach ( var d in cfg.DllImports )
+            {
+                if ( d == null || string.IsNullOrWhiteSpace( d.Path ) )
+                    continue;
+                var alias = d.Alias;
+                if ( string.IsNullOrWhiteSpace( alias ) )
+                    alias = d.Name;
+                if ( string.IsNullOrWhiteSpace( alias ) || !usedAlias.Add( alias ) )
+                    continue;
+                if ( !IsValidSlIdentifier( alias ) )
+                {
+                    Log.AddProjectLog( LID.ShowExtendMessage,
+                        $"dllImports: alias '{alias}' is not a valid identifier, skipped." );
+                    continue;
+                }
+                sb.AppendLine( $"    public FFI.Library {alias} = FFI.Library( \"{EscapeSlStringLiteral( d.Path )}\" )" );
+                count++;
+            }
+            sb.AppendLine( "}" );
+            if ( count == 0 )
+                return;
+
+            // 源码文本 -> Token -> Struct -> FileMeta（照 BindExpandManager.InjectSyntheticMembers）
+            try
+            {
+                var lexer = new LexerParse( fm.path, sb.ToString().ToCharArray() );
+                lexer.ParseToTokenList();
+                var tokenParse = new TokenParse( fm, lexer.listTokens );
+                tokenParse.BuildStruct();
+                var structParse = new StructParse( fm, tokenParse.rootNode );
+                structParse.ParseRootNodeToFileMeta();
+
+                if ( fm.GetFileMetaClassByName( DllImportHolderClassName ) == null )
+                {
+                    Log.AddProjectLog( LID.ShowExtendMessage,
+                        "dllImports: synthetic holder class parse failed, global.dllImport not injected." );
+                }
+            }
+            catch ( System.Exception e )
+            {
+                Log.AddProjectLog( LID.ShowExtendMessage,
+                    $"dllImports: holder class synthesis error: {e.Message}" );
+            }
+        }
+
+        /// <summary>
+        /// Meta 层：Project 元类注入 static 成员 dllImport（NewObject 持有类初值），
+        /// 时机同 global.data 注入（InjectProjectData 步骤）。用户显式定义过
+        /// 同名成员时不注入（用户优先）。
+        /// </summary>
+        public static void InjectDllImportMember()
+        {
+            var cfg = ProjectManager.config;
+            if ( cfg?.DllImports == null || cfg.DllImports.Count == 0 )
+                return;
+
+            var projectMc = ClassManager.instance.TryGetProjectMetaClass();
+            if ( projectMc == null )
+                return;
+            if ( projectMc.GetMetaMemberVariableByName( DllImportMemberName ) != null )
+                return;   // 用户定义优先
+
+            // 持有类（File 层步骤注入；FFI 不可用/合成失败时不存在，静默跳过）
+            var holderMc = ProjectCompile.projectFileMeta
+                ?.GetFileMetaClassByName( DllImportHolderClassName )?.metaClass;
+            if ( holderMc == null )
+                return;
+
+            // Project 成员不允许与 Module 根下的名称相同（同 jsonc 注入成员约束）
+            if ( MetaClass.IsNameConflictWithModuleRoot( DllImportMemberName, "dllImport注入成员" ) )
+                return;
+
+            var mmv = new MetaMemberVariable( projectMc, DllImportMemberName );
+            mmv.SetIsStatic( true );
+            mmv.SetIsConst( false );
+            mmv.SetIsDefineMetaType( true );
+            mmv.SetMetaDefineType( new MetaType( holderMc ) );
+            mmv.SetRealMetaType( new MetaType( holderMc ) );
+            mmv.SetExpress( new MetaNewObjectExpressNode( new MetaType( holderMc ), projectMc, null ) );
+            FinalizeInjectedProjectGlobalMember( projectMc, mmv );
+        }
+
+        /// <summary>
+        /// Meta 层：dllImports 项 functions 段注入 Project 静态库函数变量
+        /// （C# DllImport 语义）：global.&lt;funcName&gt;(实参...) 直接调用。
+        /// 每项 { name, symbol, sig } 等价合成：
+        ///     static Func&lt;Ret,P...&gt; name = FFI.StaticLibrary.bindFunction( path, symbol, sig )
+        /// sig 短名（"i32,i32-&gt;i32"）映射 Func 模板实参类型；时机同
+        /// InjectDllImportMember（InjectProjectData 步骤），用户显式定义过
+        /// 同名成员时不注入（用户优先）。
+        /// </summary>
+        public static void InjectDllImportFunctionMembers()
+        {
+            var cfg = ProjectManager.config;
+            if ( cfg?.DllImports == null || cfg.DllImports.Count == 0 )
+                return;
+
+            var projectMc = ClassManager.instance.TryGetProjectMetaClass();
+            if ( projectMc == null )
+                return;
+
+            // FFI 命名空间须已由 InjectDllImportHolderClass 注册进 projectFileMeta
+            // （Std 未引用时 bindFunction 不可解析，整体跳过）
+            var fm = ProjectCompile.projectFileMeta;
+            if ( fm == null || ModuleManager.instance.GetChildrenMetaNodeByName( "FFI" ) == null )
+                return;
+
+            var usedNames = new HashSet<string>();
+            foreach ( var d in cfg.DllImports )
+            {
+                if ( d == null || string.IsNullOrWhiteSpace( d.Path ) || d.Functions == null )
+                    continue;
+                foreach ( var f in d.Functions )
+                {
+                    if ( f == null || string.IsNullOrWhiteSpace( f.Name ) || string.IsNullOrWhiteSpace( f.Symbol ) )
+                        continue;
+                    var funcName = f.Name;
+                    if ( !IsValidSlIdentifier( funcName ) )
+                    {
+                        Log.AddProjectLog( LID.ShowExtendMessage,
+                            $"dllImports: function name '{funcName}' is not a valid identifier, skipped." );
+                        continue;
+                    }
+                    if ( !usedNames.Add( funcName ) )
+                        continue;   // 同名函数变量只注入第一个
+                    // 用户定义优先
+                    if ( projectMc.GetMetaMemberVariableByName( funcName ) != null )
+                        continue;
+                    if ( MetaClass.IsNameConflictWithModuleRoot( funcName, "dllImports函数注入成员" ) )
+                        continue;
+
+                    var funcMt = BuildFuncMetaTypeByFFISig( funcName, f.Sig );
+                    if ( funcMt == null )
+                    {
+                        Log.AddProjectLog( LID.ShowExtendMessage,
+                            $"dllImports: function '{funcName}' sig '{f.Sig}' has unsupported type, skipped." );
+                        continue;
+                    }
+
+                    var mmv = new MetaMemberVariable( projectMc, funcName );
+                    mmv.SetIsStatic( true );
+                    mmv.SetIsConst( false );
+                    mmv.SetIsDefineMetaType( true );
+                    mmv.SetMetaDefineType( funcMt );
+                    mmv.SetRealMetaType( funcMt );
+
+                    // static Func<Ret,P...> name = FFI.StaticLibrary.bindFunction( path, symbol, sig )
+                    var bindTerm = BuildBindFunctionCallTerm( fm, d.Path, f.Symbol, f.Sig );
+                    CreateExpressParam cep = new CreateExpressParam();
+                    cep.ownerMetaBase = projectMc;
+                    cep.metaType = funcMt;
+                    cep.equalMetaVariable = mmv;
+                    cep.parsefrom = EParseFrom.MemberVariableExpress;
+                    cep.isConst = false;
+                    cep.isStatic = true;
+                    cep.fme = bindTerm;
+                    var express = ExpressManager.CreateExpressNode( cep );
+                    if ( express == null )
+                    {
+                        Log.AddProjectLog( LID.ShowExtendMessage,
+                            $"dllImports: function '{funcName}' bind expression build failed, skipped." );
+                        continue;
+                    }
+                    mmv.SetExpress( express );
+
+                    Log.AddProjectLog( LID.ShowExtendMessage,
+                        $"dllImports: inject global.{funcName} = FFI.StaticLibrary.bindFunction(\"{d.Path}\", \"{f.Symbol}\", \"{f.Sig}\")" );
+                    FinalizeInjectedProjectGlobalMember( projectMc, mmv );
+                }
+            }
+        }
+
+        /// <summary>
+        /// FFI sig（"i32,i32-&gt;i32"）→ Func&lt;Ret,P...&gt; 函数签名 MetaType。
+        /// 短名映射为 MetaDefineVarStatements.FFISigNameOfMetaType 的反向
+        /// （与 cvm 侧 vm_ffi_sl_name_to_ffi 对齐；ptr 按 Int64 地址传递；
+        /// void 仅允许出现在返回位）。
+        /// </summary>
+        static MetaType BuildFuncMetaTypeByFFISig( string aliasName, string sig )
+        {
+            if ( string.IsNullOrWhiteSpace( sig ) )
+                return null;
+            string paramPart = sig;
+            string retPart = null;
+            int idx = sig.LastIndexOf( "->" );
+            if ( idx >= 0 )
+            {
+                paramPart = sig.Substring( 0, idx );
+                retPart = sig.Substring( idx + 2 );
+            }
+            var paramTypes = new List<MetaType>();
+            if ( !string.IsNullOrWhiteSpace( paramPart ) )
+            {
+                foreach ( var p in paramPart.Split( ',' ) )
+                {
+                    var pt = FFIMetaTypeOfSigName( p.Trim() );
+                    if ( pt == null )
+                        return null;
+                    paramTypes.Add( pt );
+                }
+            }
+            var retType = FFIMetaTypeOfSigName( string.IsNullOrWhiteSpace( retPart ) ? "void" : retPart.Trim() );
+            if ( retType == null )
+                return null;
+            var fsmc = new FunctionSignatureMetaClass( aliasName, retType, paramTypes );
+            return new MetaType( fsmc );
+        }
+
+        /// <summary>FFI sig 短名 → SL 类型（未识别返回 null）。</summary>
+        static MetaType FFIMetaTypeOfSigName( string sigName )
+        {
+            switch ( sigName )
+            {
+                case "void":   case "Void":                                  return new MetaType( CoreMetaClassManager.voidMetaClass );
+                case "bool":   case "Bool":   case "boolean":                 return new MetaType( CoreMetaClassManager.booleanMetaClass );
+                case "i8":     case "Int8":                                   return new MetaType( CoreMetaClassManager.int8MetaClass );
+                case "u8":     case "UInt8":  case "byte":    case "Byte":    return new MetaType( CoreMetaClassManager.uint8MetaClass );
+                case "i16":    case "Int16":  case "short":                    return new MetaType( CoreMetaClassManager.int16MetaClass );
+                case "u16":    case "UInt16": case "ushort":                   return new MetaType( CoreMetaClassManager.uint16MetaClass );
+                case "i32":    case "int":    case "Int32":                    return new MetaType( CoreMetaClassManager.int32MetaClass );
+                case "u32":    case "UInt32": case "uint":                     return new MetaType( CoreMetaClassManager.uint32MetaClass );
+                case "i64":    case "long":   case "Int64":    case "Long":    return new MetaType( CoreMetaClassManager.int64MetaClass );
+                case "u64":    case "UInt64": case "ulong":                    return new MetaType( CoreMetaClassManager.uint64MetaClass );
+                case "f32":    case "float":  case "Float32":                  return new MetaType( CoreMetaClassManager.float32MetaClass );
+                case "f64":    case "double": case "Float64":                  return new MetaType( CoreMetaClassManager.float64MetaClass );
+                case "f16":    case "Float16": case "half":                    return new MetaType( CoreMetaClassManager.float16MetaClass );
+                case "bf16":   case "Float16_Brain":                          return new MetaType( CoreMetaClassManager.float16_BrainMetaClass );
+                case "f8e4m3": case "Float8":                                 return new MetaType( CoreMetaClassManager.float8MetaClass );
+                case "f8e5m2": case "Float8_E5M2":                            return new MetaType( CoreMetaClassManager.float8_E5M2MetaClass );
+                case "utf8":   case "string": case "String":                   return new MetaType( CoreMetaClassManager.stringMetaClass );
+                case "ptr":    case "Ptr":                                    return new MetaType( CoreMetaClassManager.int64MetaClass );
+                default:                                                      return null;
+            }
+        }
+
+        /// <summary>
+        /// 合成 FFI.StaticLibrary.bindFunction( libPath, symbol, sig ) 的
+        /// FileMetaCallTerm（节点构造同 MetaMemberVariable.BuildLibraryGetFunctionCallTerm
+        /// 程序化先例；SetIdentifierNode 必须先设置，否则 AddLinkNode 静默失效）。
+        /// </summary>
+        static FileMetaCallTerm BuildBindFunctionCallTerm( FileMeta fm, string libPath, string symbol, string sig )
+        {
+            string path = fm?.path ?? "";
+            int line = 0;
+            int pos = 0;
+
+            // FFI.StaticLibrary.bindFunction( libPath, symbol, sig )
+            var bindNode = MakeIdentLinkNode( path, line, pos, "bindFunction" );
+            bindNode.SetParNode( MakeStringArgsParNode( path, line, pos, libPath, symbol, sig ) );
+
+            // FFI -> . -> StaticLibrary -> . -> bindFunction(...)
+            var ffiNode = MakeIdentLinkNode( path, line, pos, "FFI" );
+            ffiNode.SetIdentifierNode( ffiNode );
+            ffiNode.AddLinkNode( MakePeriodNode( path, line, pos ) );
+            ffiNode.AddLinkNode( MakeIdentLinkNode( path, line, pos, "StaticLibrary" ) );
+            ffiNode.AddLinkNode( MakePeriodNode( path, line, pos ) );
+            ffiNode.AddLinkNode( bindNode );
+
+            return new FileMetaCallTerm( fm, ffiNode );
+        }
+
+        static Node MakeIdentLinkNode( string path, int line, int pos, string name )
+        {
+            return new Node( new Token( path, ETokenType.Identifier, name, line, pos ) ) { nodeType = ENodeType.IdentifierLink };
+        }
+
+        static Node MakePeriodNode( string path, int line, int pos )
+        {
+            return new Node( new Token( path, ETokenType.Period, ".", line, pos ) ) { nodeType = ENodeType.Period };
+        }
+
+        /// <summary>
+        /// 合成 ( "s1", "s2", ... ) Par 节点：childList 为
+        /// [ConstValue, Comma, ConstValue, ...]（FileMetaParTerm 按 Comma 拆分）。
+        /// String token 形态与 MetaMemberVariable.MakeStringArgsParNode 一致
+        /// （lexeme 带引号 + 单子 token 存内容，MetaConstExpressNode 取子 token）。
+        /// </summary>
+        static Node MakeStringArgsParNode( string path, int line, int pos, params string[] stringArgs )
+        {
+            var parNode = new Node( new Token( path, ETokenType.LeftPar, "(", line, pos ) ) { nodeType = ENodeType.Par };
+            parNode.endToken = new Token( path, ETokenType.RightPar, ")", line, pos );
+            for ( int i = 0; i < stringArgs.Length; i++ )
+            {
+                if ( i > 0 )
+                {
+                    parNode.AddChild( new Node( new Token( path, ETokenType.Comma, ",", line, pos ) ) { nodeType = ENodeType.Comma } );
+                }
+                var strToken = new Token( path, ETokenType.String, "\"" + stringArgs[i] + "\"", line, pos );
+                strToken.AddChildrenToken( new Token( path, ETokenType.String, stringArgs[i], line, pos ) );
+                parNode.AddChild( new Node( strToken ) { nodeType = ENodeType.ConstValue } );
+            }
+            return parNode;
+        }
+
+        static bool IsValidSlIdentifier( string name )
+        {
+            return !string.IsNullOrEmpty( name )
+                && ( char.IsLetter( name[0] ) || name[0] == '_' )
+                && name.All( c => char.IsLetterOrDigit( c ) || c == '_' );
+        }
+
+        static string EscapeSlStringLiteral( string s )
+        {
+            return s.Replace( "\\", "\\\\" ).Replace( "\"", "\\\"" );
+        }
+
         static MetaData CreateMetaDataByJsonObject(string dataName, JsonElement element, int seed)
         {
             var md = new MetaData(dataName, false, false, true);

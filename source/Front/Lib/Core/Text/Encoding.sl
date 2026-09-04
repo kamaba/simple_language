@@ -1,5 +1,5 @@
 
-public class Json interface IDataStruct
+public class Encdoing
 {
     override _init_()
     {

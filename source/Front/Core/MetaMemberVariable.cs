@@ -243,8 +243,13 @@ namespace SimpleLanguage.Core
                 var express = this.m_FileMetaMemeberVariable?.express;
                 if (express == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 在类没有定义的变量中，不允许 使用{}的赋值方式!!" + express.token?.ToLexemeAllString());
-
+                    express = TryCreateDllImportExpress();
+                }
+                if (express == null)
+                {
+                    // 无初始化表达式且未注入（非 @DllImport）：交由下方 m_Express
+                    // 统一校验报"必须需要有等号及后续的表达式"（原日志在
+                    // express==null 时拼接 express.token 存在 NRE）
                     return;
                 }
                 CreateExpressParam cep = new CreateExpressParam();
@@ -279,6 +284,148 @@ namespace SimpleLanguage.Core
                 Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, $"Error [{this.ownerMetaClass.allName + "." + this.m_Name} ]配置成员变量时，必须需要有等号及后续的表达式!!");
             }
         }
+
+        //==================== @DllImport 成员变量初始化注入 ====================
+        //
+        // C# P/Invoke 风格 FFI 声明（@attribute 封装，内部仍走 FFI 现有体系）:
+        //     @DllImport( "CLangdll.dll", "simplelanguage_addtest" )
+        //     static Func<int,int,int> s_add
+        // 成员变量无初始化表达式且挂有 DllImport attribute 时，按实参合成:
+        //     s_add = FFI.Library( path ).getFunction( symbol, sig )
+        // sig 优先取第 3 个实参（Ptr 等无法从类型推导时可手写）；
+        // 缺省时从 Func<Ret,P...> 定义类型推导（复用
+        // MetaDefineVarStatements.BuildFFIFunctionSig）。
+        // 约束：仅 static 成员；库按 C# DllImport 语义进程级常驻
+        //（不 release，去重缓存下同路径共享同一句柄）。
+        private FileMetaBaseTerm TryCreateDllImportExpress()
+        {
+            MetaAttribute dllAttr = null;
+            for (int i = 0; i < m_AttributeList.Count; i++)
+            {
+                if (m_AttributeList[i].name == "DllImport")
+                {
+                    dllAttr = m_AttributeList[i];
+                    break;
+                }
+            }
+            if (dllAttr == null)
+                return null;
+            if (m_FileMetaMemeberVariable?.express != null)
+                return null;   // 已有初始化表达式 -> 不接管
+
+            if (!m_IsStatic)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                    $"DllImport: '{ownerMetaClass?.allName}.{m_Name}' 必须为 static 成员变量!!");
+                return null;
+            }
+
+            var args = dllAttr.GetSplitStringArgs();
+            if (args.Count < 2)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                    "DllImport: 需要 (库路径, 符号名) 两个字符串实参!!");
+                return null;
+            }
+            string libPath = args[0];
+            string symbol = args[1];
+
+            // 首实参可为 project.jsonc dllImports 段配置的别名（或 name），
+            // 命中时替换为配置的完整路径，免在代码里写长路径；
+            // 未命中按直接路径处理（现有行为）。
+            var resolvedPath = ProjectManager.config?.ResolveDllImportPath(libPath);
+            if (!string.IsNullOrEmpty(resolvedPath) && resolvedPath != libPath)
+            {
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                    $"DllImport: alias '{libPath}' -> '{resolvedPath}'");
+                libPath = resolvedPath;
+            }
+
+            string sig = args.Count >= 3 ? args[2] : null;
+            if (string.IsNullOrEmpty(sig))
+            {
+                if (m_DefineMetaType?.metaClass is FunctionSignatureMetaClass fsmc)
+                {
+                    sig = MetaDefineVarStatements.BuildFFIFunctionSig(fsmc);
+                }
+                if (string.IsNullOrEmpty(sig))
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                        $"DllImport: '{m_Name}' 的 Func 签名无法映射为 FFI sig（含 Ptr 等类型时可用第 3 个实参手写 sig）!!");
+                    return null;
+                }
+            }
+
+            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                $"DllImport: inject '{ownerMetaClass?.allName}.{m_Name}' = FFI.StaticLibrary.bindFunction(\"{libPath}\", \"{symbol}\", \"{sig}\")");
+
+            return BuildLibraryGetFunctionCallTerm(libPath, symbol, sig);
+        }
+
+        /// <summary>
+        /// 合成 FFI.StaticLibrary.bindFunction(path, symbol, sig) 的
+        /// FileMetaCallTerm（单层静态调用；FFI.Library(path) 为构造调用，
+        /// NewClass 后链式 getFunction 受 MetaCallLink 链式限制约束，故走
+        /// Std 层 bindFunction 辅助函数）。节点结构对照
+        /// LocalManager.InjectLocalInitCalls 的程序化构造先例
+        ///（SetIdentifierNode 必须先设置，否则 AddLinkNode 静默失效）。
+        /// </summary>
+        private FileMetaBaseTerm BuildLibraryGetFunctionCallTerm(string libPath, string symbol, string sig)
+        {
+            var fm = m_FileMetaMemeberVariable?.fileMeta;
+            string path = fm?.path ?? "";
+            int line = (m_Token?.sourceBeginLine ?? 1) - 1;
+            int pos = m_Token?.sourceBeginChar ?? 0;
+
+            // FFI.StaticLibrary.bindFunction( libPath, symbol, sig )
+            var bindNode = MakeIdentLinkNode(path, line, pos, "bindFunction");
+            bindNode.SetParNode(MakeStringArgsParNode(path, line, pos, libPath, symbol, sig));
+
+            // FFI -> . -> StaticLibrary -> . -> bindFunction(...)
+            var ffiNode = MakeIdentLinkNode(path, line, pos, "FFI");
+            // CRITICAL: SetIdentifierNode so AddLinkNode doesn't silently fail
+            ffiNode.SetIdentifierNode(ffiNode);
+            ffiNode.AddLinkNode(MakePeriodNode(path, line, pos));
+            ffiNode.AddLinkNode(MakeIdentLinkNode(path, line, pos, "StaticLibrary"));
+            ffiNode.AddLinkNode(MakePeriodNode(path, line, pos));
+            ffiNode.AddLinkNode(bindNode);
+
+            return new FileMetaCallTerm(fm, ffiNode);
+        }
+
+        private static Node MakeIdentLinkNode(string path, int line, int pos, string name)
+        {
+            return new Node(new Token(path, ETokenType.Identifier, name, line, pos)) { nodeType = ENodeType.IdentifierLink };
+        }
+
+        private static Node MakePeriodNode(string path, int line, int pos)
+        {
+            return new Node(new Token(path, ETokenType.Period, ".", line, pos)) { nodeType = ENodeType.Period };
+        }
+
+        /// <summary>
+        /// 合成 ( "s1", "s2", ... ) Par 节点：childList 为
+        /// [ConstValue, Comma, ConstValue, ...]（FileMetaParTerm 按 Comma 拆分）。
+        /// String token 形态与 TryInjectFFIFunctionSig 注入一致
+        ///（lexeme 带引号 + 单子 token 存内容，MetaConstExpressNode 取子 token）。
+        /// </summary>
+        private static Node MakeStringArgsParNode(string path, int line, int pos, params string[] stringArgs)
+        {
+            var parNode = new Node(new Token(path, ETokenType.LeftPar, "(", line, pos)) { nodeType = ENodeType.Par };
+            parNode.endToken = new Token(path, ETokenType.RightPar, ")", line, pos);
+            for (int i = 0; i < stringArgs.Length; i++)
+            {
+                if (i > 0)
+                {
+                    parNode.AddChild(new Node(new Token(path, ETokenType.Comma, ",", line, pos)) { nodeType = ENodeType.Comma });
+                }
+                var strToken = new Token(path, ETokenType.String, "\"" + stringArgs[i] + "\"", line, pos);
+                strToken.AddChildrenToken(new Token(path, ETokenType.String, stringArgs[i], line, pos));
+                parNode.AddChild(new Node(strToken) { nodeType = ENodeType.ConstValue });
+            }
+            return parNode;
+        }
+
         public override bool ParseMetaExpress()
         {
             // ref module 导入的成员变量类型和表达式已在导入时设置完毕，无需解析

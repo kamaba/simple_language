@@ -1102,9 +1102,20 @@ namespace SimpleLanguage.Core
                             }
                         }
                     }
+                    else if (frontCNT == ECallNodeType.NewClass
+                        || frontCNT == ECallNodeType.NewTemplate)
+                    {
+                        // 链中构造调用结果上的成员访问（如 FFI.Library(path).getFunction(...)、
+                        // List<int>().add(...)）：按新对象所属类解析实例成员，
+                        // 与 This/Base 的处理方式一致
+                        if (GetFunctionOrVariableByOwnerClass(m_FrontCallNode.m_MetaClass, m_Name) == false)
+                        {
+                            return false;
+                        }
+                    }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 閺嗗倷绗夐弨顖涘瘮娑撳﹨濡悙鍦畱缁鐎? " + frontCNT.ToString());
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error front call node type not supported: " + frontCNT.ToString());
                     }
                 }
             }
@@ -2428,6 +2439,15 @@ namespace SimpleLanguage.Core
                 //    mcList = null;
                 //}
                 mmf = mc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(inputname, this.m_FileMetaCallNode.inputTemplateNodeList.Count, m_MetaInputParamCollection, true);
+                if (mmf == null)
+                {
+                    // 函数调用形态未命中成员函数时回退查同名成员变量：
+                    // 函数类型变量直调（如 dllImports 注入的 global.libaddfunc(1,2)，
+                    // 与局部变量 addf(20,22)、@DllImport wrapper 的 __dll_name(a1,a2)
+                    // 同一 ClosureCall 语义；非函数类型变量时后续 IsFunctionTypeVariable
+                    // 分支会继续走既有路径）
+                    mmv = mc.GetMetaMemberVariableByName(inputname);
+                }
             }
             else
             {

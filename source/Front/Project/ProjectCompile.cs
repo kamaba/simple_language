@@ -155,6 +155,13 @@ namespace SimpleLanguage.Project
                 BindExpandManager.instance.ExpandAll(fileParseList);
                 return true;
             });
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "InjectDllImportHolder", () =>
+            {
+                // dllImports: 按 jsonc 配置源码合成持有类（须在 CreateNamespace 前注入，
+                // 使其与普通源码类走相同 CreateNamespace/成员解析管线）
+                ProjectClass.InjectDllImportHolderClass(fileParseList);
+                return true;
+            });
             pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "CreateNamespace", () =>
             {
                 for (int i = 0; i < fileParseList.Count; i++)
@@ -207,6 +214,10 @@ namespace SimpleLanguage.Project
                 ProjectClass.InjectProjectGlobalDataFromConfig();
                 // 系统集成成员：注入 Project 静态 Array<Object> _inputArgs（jsonc data 同名项优先）。
                 ProjectClass.InjectInputArgsMember();
+                // dllImports: Project 元类注入 static 成员 dllImport（global.dllImport.<alias> 链式访问）。
+                ProjectClass.InjectDllImportMember();
+                // dllImports functions 段：Project 元类注入静态库函数变量（global.<funcName>(...) 直调）。
+                ProjectClass.InjectDllImportFunctionMembers();
                 return true;
             });
             pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "BuildLocalClass", () =>

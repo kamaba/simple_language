@@ -108,6 +108,25 @@ namespace SimpleLanguage.Core
                 Log.AddMetaCoreLog(LID.ShowExtendMessage,
                     $"AOT: attribute registered on '{owner?.allName}' (no logic yet)");
             });
+
+            // DllImport: C# P/Invoke 风格 FFI 函数声明标记
+            //   @DllImport( "libdemo.so", "addcalc" )
+            //   static Func<int,int,int> s_add
+            // 初始化表达式的实际注入在 MetaMemberVariable.CreateMetaExpress
+            //（ParseMetaClassLink 阶段，需要成员定义类型推导 sig，早于本阶段）；
+            // 此处仅做实参校验与登记（内部仍走 FFI.Library/getFunction 现有体系）。
+            RegisterCompileHandler("DllImport", (attr, owner) =>
+            {
+                var args = attr.GetSplitStringArgs();
+                if (args.Count < 2)
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                        $"DllImport: 需要 (库路径, 符号名) 两个字符串实参, owner='{owner?.allName}'");
+                    return;
+                }
+                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                    $"DllImport: attribute registered on '{owner?.allName}' (initializer injected at member express parse)");
+            });
         }
 
         #region Compile-Time Processing

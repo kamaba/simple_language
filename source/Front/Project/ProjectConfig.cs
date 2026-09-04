@@ -41,6 +41,13 @@ namespace SimpleLanguage.Project
         public Dictionary<string, JsonElement> JsoncProjectData { get; set; } = new Dictionary<string, JsonElement>();
         public StructTreeNode StructTree { get; set; } = new StructTreeNode();
         public List<ReferenceSection> References { get; set; } = new List<ReferenceSection>();
+        /// <summary>
+        /// 外部 dll 导入配置（jsonc "dllImports" 段，兼容旧 "lib" 段）：
+        /// path（库路径）/ name（名称）/ alias（别名）。
+        /// @DllImport("别名",...) 与 global.dllImport.别名 通过别名解析为完整路径，
+        /// 免在代码里写长路径；随 module.json 导出后引用方同样可用。
+        /// </summary>
+        public List<DllImportSection> DllImports { get; set; } = new List<DllImportSection>();
         public List<SystemCallItem> systemCalls { get; set; } = new List<SystemCallItem>();
         public ExportSection Export { get; set; } = new ExportSection();
 
@@ -242,6 +249,45 @@ namespace SimpleLanguage.Project
             public string Path { get; set; } = string.Empty;
             public string UUID { get; set; } = string.Empty;
             public string Name { get; set; } = string.Empty;
+        }
+
+        public class DllImportFunctionSection
+        {
+            public string Name { get; set; } = string.Empty;
+            public string Symbol { get; set; } = string.Empty;
+            public string Sig { get; set; } = string.Empty;
+        }
+
+        public class DllImportSection
+        {
+            public string Path { get; set; } = string.Empty;
+            public string Name { get; set; } = string.Empty;
+            public string Alias { get; set; } = string.Empty;
+            public List<DllImportFunctionSection> Functions { get; set; } = new List<DllImportFunctionSection>();
+        }
+
+        /// <summary>
+        /// 按别名（或 name / 配置的 path 本身）查找外部 dll 的完整路径。
+        /// 未命中返回 null，调用方按直接路径处理。
+        /// </summary>
+        public string ResolveDllImportPath(string aliasOrPath)
+        {
+            if (string.IsNullOrWhiteSpace(aliasOrPath) || DllImports == null)
+            {
+                return null;
+            }
+            foreach (var d in DllImports)
+            {
+                if (d == null || string.IsNullOrWhiteSpace(d.Path))
+                {
+                    continue;
+                }
+                if (d.Alias == aliasOrPath || d.Name == aliasOrPath || d.Path == aliasOrPath)
+                {
+                    return d.Path;
+                }
+            }
+            return null;
         }
     }
 }

@@ -195,8 +195,15 @@ namespace SimpleLanguage.Core
                     {
                         if (i < m_CallNodeList.Count - 1)
                         {
-                            flag = false;
+                            // 链中非末位 NewClass（如 FFI.Library( path ).getFunction(...)）
+                            // 允许作为链中 receiver：visit 层生成 New 节点（见
+                            // AddVisitNodeList），IR 层产出 NewObject + CallVirt 构造
+                            // （见 IRMetaCallLink）。NewData 仍要求置于链末位。
+                            if (m_CallNodeList[i].callNodeType != ECallNodeType.NewClass)
+                            {
+                                flag = false;
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, "Parse Statement Error 閸︺劋濞囬悽鈭焑wClassName閻ㄥ嫭鏌熷蹇ョ礉閸氬氦绔熸稉宥呭帒鐠佸憡婀侀崗璺虹暊閻ㄥ嫯鐨熼悽?");
+                            }
                         }
                     }
                     if( flag )
@@ -626,23 +633,19 @@ namespace SimpleLanguage.Core
             //}
             else if (mcn.callNodeType == ECallNodeType.NewClass)
             {
-                if (index == m_CallNodeList.Count)
-                {
-                    MetaVisitNode mvn = MetaVisitNode.CreateByNewClass(mcn.metaType);
-                    mvn.SetToken(mcn.token);
-                    m_VisitNodeList.Add(mvn);
+                // 链中任意位置的 NewClass 均生成 New visit 节点：
+                // 末位即构造表达式；非末位作为后续节点的 receiver（如 FFI.Library(path).getFunction(...)），
+                // IR 层产出 NewObject + CallVirt 构造（见 IRMetaCallLink.ParseNewInCallLink）。
+                MetaVisitNode mvn = MetaVisitNode.CreateByNewClass(mcn.metaType);
+                mvn.SetToken(mcn.token);
+                m_VisitNodeList.Add(mvn);
 
-                    if (mcn.metaFunction != null)
-                    {
-                        MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, null, mcn.metaInputParamCollection, mcn.metaType, null);
-
-                        mmc.SetToken(mcn.token);
-                        mvn.SetMethodCall(mmc);
-                    }
-                }
-                else
+                if (mcn.metaFunction != null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 娴ｈ法鏁ewClass閺傜懓绱￠敍灞芥倵鏉堥€涚瑝閸忎浇顔忕捄鐔峰従鐎瑰啫褰夐柌蹇曟祲閸忓啿鍞寸€?");
+                    MetaMethodCall mmc = new MetaMethodCall(mcn.ownerMetaClass, mcn.ownerMetaFunctionBlock, mcn.metaType, mcn.metaFunction, null, mcn.metaInputParamCollection, mcn.metaType, null);
+
+                    mmc.SetToken(mcn.token);
+                    mvn.SetMethodCall(mmc);
                 }
             }
             else if (mcn.callNodeType == ECallNodeType.NewTemplate)

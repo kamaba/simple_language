@@ -425,10 +425,16 @@ namespace SimpleLanguage.Core
         // Lightweight builtin wrapper for functions provided by the LocalRuntimeVM (native lib)
         public class MetaBuiltinFunction : MetaMemberFunction
         {
+            /// <summary>True when the module "systemCalls" declaration marks this call as
+            /// variadic: extra positional args at the call site must be passed through to
+            /// CallSystemMethod (payload paramCount covers them) instead of being dropped.</summary>
+            public bool isSystemVariadic { get; }
+
             public MetaBuiltinFunction(MetaClass mc, SystemMethodCallDeclaration decl ) : base(mc)
             {
                 this.m_Name = decl.name;
                 this.m_IsStatic = true;
+                isSystemVariadic = decl.isVariadic;
                 m_Index = (int)decl.Index();
                 m_MetaMemberParamCollection.Clear();
                 for (int i = 0; i < decl.paramMetaTypeList.Count; i++)

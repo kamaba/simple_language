@@ -317,6 +317,14 @@ namespace SimpleLanguage.Compile
             // if this call node was created from a '?.' link, keep the token in m_QuestionMarkDotToken
             // note: in FileMetaCallLink.AddChildExtendLinkList we set this when constructing the call node
         }
+        /// <summary>
+        /// 清空模板实参列表（&lt;T1,T2&gt; 语法糖消费后调用，使后续按非模板
+        /// 调用解析——如 FFI lookupFunction&lt;Ret,P...&gt; 改写为 getFunction）。
+        /// </summary>
+        public void ClearInputTemplateNodeList()
+        {
+            m_InputTemplateNodeList.Clear();
+        }
         public string ToFormatString()
         {
             StringBuilder sb = new StringBuilder();

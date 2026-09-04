@@ -93,6 +93,10 @@ namespace SimpleLanguage.Compile
                 }
                 m_FileCompileState.SetStep(FileCompileState.EFileStep.Token);
 
+                // C# 风格 @DllImport 无体函数声明先改写为两段式
+                //（隐藏 Func 字段 + 静态 wrapper），后续 Token~Meta 全管线自然处理
+                m_ContentBuffer = DllImportSourceRewriter.Rewrite( m_ContentBuffer, m_FilePath );
+
                 SaveCodeToFile();
 
                 m_LexerParse = new LexerParse( m_FilePath, m_ContentBuffer );

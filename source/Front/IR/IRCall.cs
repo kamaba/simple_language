@@ -178,7 +178,11 @@ namespace SimpleLanguage.IR
                     owirmc = IRManager.GetIRMetaClassByMetaOwner(mf.ownerMetaBase);
                 }
 
-                m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(fname);
+                // 静态成员变量初始化表达式走 CreateExpress(null, ...)（见
+                // IRMetaClass.CreateStaticMetaMetaVariableIRList），此时用全局
+                // IRManager 单例查找目标方法，其余场景用 m_IRMethod.irManager。
+                var irManagerForLookup = m_IRMethod != null ? m_IRMethod.irManager : IRManager.instance;
+                m_IRRuntimeMethod = irManagerForLookup.GetIRMethod(fname);
 
                 var list = staticMt.GetGenTemplateMetaTypeList();
                 for (int i = 0; i < list.Count; i++)

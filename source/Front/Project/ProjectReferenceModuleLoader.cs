@@ -192,6 +192,26 @@ namespace SimpleLanguage.Project
                 SystemMethodCallDeclarationRegistry.AddDeclByMt(v.name, v.returnType, v.@params, v.isVariadic, false, v.cvmFunction );
             }
 
+            /* Merge the referenced module's dll imports (alias -> path, embedded
+             * at export time from its .jsonc "dllImports" section) into the current
+             * project config, so @DllImport("alias",...) resolves here without
+             * writing the full path in the referencing project. Aliases already
+             * configured locally take precedence (no override). */
+            if (package.dllImports != null && ProjectManager.config != null)
+            {
+                foreach (var di in package.dllImports)
+                {
+                    if (di == null || string.IsNullOrWhiteSpace(di.path) || string.IsNullOrWhiteSpace(di.alias)) continue;
+                    if (ProjectManager.config.ResolveDllImportPath(di.alias) != null) continue;
+                    ProjectManager.config.DllImports.Add(new ProjectConfig.DllImportSection
+                    {
+                        Path = di.path,
+                        Name = di.name ?? string.Empty,
+                        Alias = di.alias,
+                    });
+                }
+            }
+
             var alias = ResolveModuleName(reference, package, modulePath);
 
             /* 记录已加载的包，供导出时填充 moduleReferences 使用。 */

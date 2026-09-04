@@ -1224,6 +1224,12 @@ namespace SimpleLanguage.Compile
                     {
                         break;
                     }
+                    else if (IsBareMemberVariableDecl(nodeList))
+                    {
+                        // static Func<int,int,int> s_add; 纯声明（无 = 初始化）
+                        parseType = 3;
+                        break;
+                    }
                     else
                     {
                         Log.AddNodeLog(LID.ShowExtendMessage, curNode.token, "Error StructParseFrame.ParseClassNode 解析的类后边不用使用;号结尾!! "
@@ -1247,6 +1253,14 @@ namespace SimpleLanguage.Compile
                         {
                             if (parseType == 3 || parseType == 2)
                             {
+                                break;
+                            }
+                            if (parseType == 0 && IsBareMemberVariableDecl(nodeList))
+                            {
+                                // static Func<int,int,int> s_add 纯声明（无 = 初始化）：
+                                // @DllImport 等声明式绑定依赖此形态（成员初始化表达式
+                                // 由编译期注入，源码不需要等号）
+                                parseType = 3;
                                 break;
                             }
                         }
@@ -1368,6 +1382,35 @@ namespace SimpleLanguage.Compile
                 }
             }
             ParseClassNode(pnode);
+        }
+
+        /// <summary>
+        /// 判断类体 nodeList 是否为"纯声明成员变量"形态（无 = 初始化）：
+        /// 仅含修饰词 Key（static/const/权限）与 IdentifierLink（类型名+变量名）。
+        /// 出现 Par（函数调用）/Brace/Bracket/类型声明 Key（class/enum/data/...）
+        /// 等即非此形态。用于 LineEnd/SemiColon 处把独立声明从后续成员中切分出来
+        /// （否则会被吞进下一个声明，@DllImport 声明式绑定依赖此能力）。
+        /// </summary>
+        private static bool IsBareMemberVariableDecl(List<Node> nodeList)
+        {
+            if (nodeList == null || nodeList.Count == 0) return false;
+            int identLinkCount = 0;
+            for (int i = 0; i < nodeList.Count; i++)
+            {
+                var n = nodeList[i];
+                if (n.nodeType == ENodeType.IdentifierLink) { identLinkCount++; continue; }
+                if (n.nodeType == ENodeType.Key)
+                {
+                    var tt = n.token?.type ?? default;
+                    if (tt == ETokenType.Class || tt == ETokenType.Enum || tt == ETokenType.Data
+                        || tt == ETokenType.Interface || tt == ETokenType.TypeAlias
+                        || tt == ETokenType.Namespace)
+                        return false;
+                    continue;   // static/const/public/基础类型(Type)/... 修饰词 Key
+                }
+                return false;   // Par/Brace/Bracket/Comma/QuestionMark/... 非纯声明
+            }
+            return identLinkCount >= 1;
         }
         public void ParseDataBracketNode(Node bracketNode)
         {
@@ -1612,10 +1655,14 @@ namespace SimpleLanguage.Compile
                                 if (next2Node.nodeType == ENodeType.SemiColon)
                                 {
                                     isParseEnd = true;
+                                    break;
                                 }
                                 else if (next2Node.nodeType == ENodeType.LineEnd)
                                 {
+                                    // 成员以换行结束（如 kind = EnumKind.B 后跟下一成员），
+                                    // 必须终止扫描，否则会把下一成员的标识符当作意外节点报错
                                     isParseEnd = true;
+                                    break;
                                 }
                                 else if (next2Node.nodeType == ENodeType.Comma)
                                 {

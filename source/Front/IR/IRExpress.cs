@@ -752,7 +752,18 @@ namespace SimpleLanguage.IR
                         {
                             var asl = mnoen.assignStatementsList[y];
 
-                            if( asl.id == lirmv.id )
+                            // asl.id 在 data 分支捕获的是成员声明序号，而 lirmv.id 是
+                            // MetaMemberData.GetHashCode()，两者值域不同（历史回归导致
+                            // 匹配永不命中、花括号覆盖值被静默丢弃）；这里统一按目标
+                            // 成员哈希匹配，跨模块重建对象场景回退到成员名比较。
+                            var targetMv = asl.targetMetaVariable;
+                            bool matched = targetMv != null && targetMv.GetHashCode() == lirmv.id;
+                            if (!matched && !string.IsNullOrEmpty(asl.defineName)
+                                && asl.defineName == lirmv.name)
+                            {
+                                matched = true;
+                            }
+                            if (matched)
                             {
                                 menb = asl.valueExpressNode;
                                 mnoen.assignStatementsList.Remove(asl);

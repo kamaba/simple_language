@@ -50,6 +50,10 @@ namespace SimpleLanguage.Core
         {
             m_Express = inputExpress;
         }
+        public void ReplaceExpress( MetaExpressNodeBase men )
+        {
+            m_Express = men;
+        }
         public virtual void Parse(AllowUseSettings allowUse )
         {
             if (m_Express != null)
@@ -281,7 +285,46 @@ namespace SimpleLanguage.Core
             var argMt = mip.express != null ? mip.express.GetReturnMetaType() : null;
             if (declaredMt == null || argMt == null) return false;
 
-            return TypeManager.CompareFunctionDefineMetaTypeAndInputMetaType(declaredMt, argMt, mip.token);
+            if (TypeManager.CompareFunctionDefineMetaTypeAndInputMetaType(declaredMt, argMt, mip.token))
+                return true;
+
+            // C#-style implicit constant conversion at call sites (e.g. f(60) with a
+            // byte parameter). Reuses the same range-checked narrowing as the
+            // assignment path (TryAdjustConstExpressByDefineMetaType). Guarded to
+            // numeric targets so non-numeric conversions (e.g. to string) never run.
+            var mcen = mip.express as MetaConstExpressNode;
+
+            // "-literal" is a constant expression in C#: fold the unary negation
+            // into its inner numeric constant before applying the conversion.
+            if (mcen == null
+                && mip.express is MetaUnaryOpExpressNode muoen
+                && muoen.opSign == ESingleOpSign.Neg
+                && muoen.value is MetaConstExpressNode negCen
+                && NumberManager.IsNumericEType(negCen.eType))
+            {
+                mcen = muoen.SimulateCompute() as MetaConstExpressNode;
+                if (mcen != null)
+                {
+                    mip.ReplaceExpress(mcen);
+                }
+            }
+
+            if (mcen != null)
+            {
+                var declaredEType = CoreMetaClassManager.GetETypeByMetaClass(declaredMt.metaClass);
+                if (declaredEType != EType.Object
+                    && NumberManager.IsNumericEType(declaredEType)
+                    && NumberManager.IsNumericEType(mcen.eType)
+                    && ExpressManager.TryAdjustConstExpressByDefineMetaType(declaredMt, mcen))
+                {
+                    var adjustedMt = mip.express.GetReturnMetaType();
+                    if (adjustedMt != null
+                        && TypeManager.CompareFunctionDefineMetaTypeAndInputMetaType(declaredMt, adjustedMt, mip.token))
+                        return true;
+                }
+            }
+
+            return false;
         }
         public bool EqualsName( string name )
         {
