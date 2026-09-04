@@ -594,6 +594,16 @@ public class Memory
         ret SystemMemoryDataToNativeStruct( structName, obj )
     }
 
+    # Template version: T pins the data type at the call site, so the
+    # front end instantiates a strongly typed wrapper:
+    #     Int64 addr = Memory.dataToNativeStruct<FFIStructSample>( "FFIStructSample", s )
+    # The CVM side resolves the RuntimeType directly from the instance
+    # (t), so structName stays logging-only (same as above).
+    public static Int64 dataToNativeStruct<T>( string structName, T t )
+    {
+        ret SystemMemoryDataToNativeStruct( structName, t )
+    }
+
     # Build a new named data instance from native memory, resolving
     # the data class by typeName (full or short name).  The sugar form
     #     var dn = Memory.nativeStructToData<DataName>( addr )
@@ -605,5 +615,16 @@ public class Memory
     public static object nativeStructToData( Int64 addr, string typeName )
     {
         ret SystemMemoryNativeStructToData( addr, typeName )
+    }
+
+    # Template version: returns the strongly typed data instance:
+    #     FFIStructSample back = Memory.nativeStructToData<FFIStructSample>( addr, "FFIStructSample" )
+    # The single-argument sugar nativeStructToData<DataName>( addr )
+    # also routes here (the front end injects "DataName" as typeName
+    # and keeps the template argument so it matches this overload).
+    # Returns null on failure, same as the non-template version.
+    public static T nativeStructToData<T>( Int64 addr, string typeName )
+    {
+        ret SystemMemoryNativeStructToData( addr, typeName ) as T
     }
 }

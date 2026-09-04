@@ -378,13 +378,25 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        if (gmgt.metaType.metaClass == null)
+                        if (gmgt.metaType.isData)
+                        {
+                            // data 绑定（metaClass 为 null）：通过 SetMetaData 完成 T 的类型替换
+                            mt.SetMetaData(gmgt.metaType.metaData);
+                        }
+                        else if (gmgt.metaType.isEnum)
+                        {
+                            mt.SetMetaEnum(gmgt.metaType.metaEnum);
+                        }
+                        else if (gmgt.metaType.metaClass == null)
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, "in MetaGenTemplate notfind MetaClass is Null");
                             return false;
                         }
-                        mt.SetMetaClass(gmgt.metaType.metaClass);
-                        findfn = gmgt.metaType.metaClass;
+                        else
+                        {
+                            mt.SetMetaClass(gmgt.metaType.metaClass);
+                            findfn = gmgt.metaType.metaClass;
+                        }
                     }
                 }
                 else
@@ -399,13 +411,25 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            if (gmgt.metaType.metaClass == null)
+                            if (gmgt.metaType.isData)
+                            {
+                                // data 绑定（metaClass 为 null）：通过 SetMetaData 完成 T 的类型替换
+                                mt.SetMetaData(gmgt.metaType.metaData);
+                            }
+                            else if (gmgt.metaType.isEnum)
+                            {
+                                mt.SetMetaEnum(gmgt.metaType.metaEnum);
+                            }
+                            else if (gmgt.metaType.metaClass == null)
                             {
                                 Log.AddMetaCoreLog(LID.ShowExtendMessage, "in MetaGenTemplate notfind MetaClass is Null");
                                 return false;
                             }
-                            mt.SetMetaClass(gmgt.metaType.metaClass);
-                            findfn = gmgt.metaType.metaClass;
+                            else
+                            {
+                                mt.SetMetaClass(gmgt.metaType.metaClass);
+                                findfn = gmgt.metaType.metaClass;
+                            }
                         }
                     }
                     else
@@ -1194,6 +1218,25 @@ namespace SimpleLanguage.Core
             var newmc = ClassManager.instance.GetMetaClassByNameAndFileMeta(findMc, fmtd.fileMeta, fmtd.nameList);
             if (newmc != null)
             {
+                if (newmc.isMetaData)
+                {
+                    // data 节点：GetMetaClassByTemplateCount 对 data 返回 null，需单独处理
+                    if (fmtd.inputTemplateCount > 0)
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "data 类型不支持模板实参");
+                        return null;
+                    }
+                    return newmc.metaData != null ? new MetaType(newmc.metaData) : null;
+                }
+                if (newmc.isMetaEnum)
+                {
+                    if (fmtd.inputTemplateCount > 0)
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "enum 类型不支持模板实参");
+                        return null;
+                    }
+                    return newmc.metaEnum != null ? new MetaType(newmc.metaEnum) : null;
+                }
                 var findfn = newmc.GetMetaClassByTemplateCount(fmtd.inputTemplateCount);
 
                 if (findfn == null)
@@ -1762,6 +1805,19 @@ namespace SimpleLanguage.Core
             if (declaredMt.eType == EType.Object)
             {
                 return true;
+            }
+
+            if (declaredMt.isTemplate && !argMt.isClass)
+            {
+                // 函数级模板参数 T（默认约束 object）：data/enum 等非 class 实参走不到下方 isData/isClass 分支，
+                // 无非 object 约束时直接接受；有约束则报错（约束仅支持 class 体系）
+                var constraintMC = declaredMt.GetTemplateMetaClass();
+                if (constraintMC == null || constraintMC == CoreMetaClassManager.objectMetaClass)
+                {
+                    return true;
+                }
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "模板参数[" + declaredMt.metaTemplate.name + "]的约束与实参类型不匹配");
+                return false;
             }
 
             if (declaredMt.isEnum || declaredMt.isEnumMember || argMt.isEnum || argMt.isEnumMember)

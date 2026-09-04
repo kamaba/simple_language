@@ -366,3 +366,7 @@
 /project/CSimpleVMSpecialTest/bin
 /project/CSimpleVMSpecialTest/obj
 /source/CLangdll/CLangdll
+/build_log.txt
+/run_out.txt
+/source/Front/Lib/Std/build/logs/VM.txt
+/specialtest_out.txt

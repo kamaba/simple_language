@@ -37,6 +37,18 @@ data FFIStructSample
     hold = FFIHoldClass(){ value = 222 }
 }
 
+# 端到端全链路测试用 data（对应 CLangdll.cpp 的 SLBookStruct）：
+#   C struct { int32 id; float price; int32 pages; char* title; }
+#   布局（自然对齐，24B）：id@0(4) price@4(4) pages@8(4) pad@12 title@16(8)
+#   成员顺序须与 C 定义一致；title 为 char* 指针槽
+data FFICBook
+{
+    id = 0
+    price = 0.0
+    pages = 0
+    title = ""
+}
+
 # ============================================================
 # FFICallbacks - FFI 回调目标类
 # C 侧经 trampoline 重入 VM 调用这里的静态方法（签名约束：
@@ -156,6 +168,26 @@ FFITest
     static string s_dllJsonAlias()
     {
         ret "{}"
+    }
+
+    # ── 端到端全链路（testNativeDataRoundtrip）：native malloc 分配/打印/释放 ──
+    # Ptr 形参/返回 sig 不可从签名推导，须手写
+    @DllImport( "CLangdll", "sl_book_alloc", "i32,f32,i32,utf8->ptr" )
+    static Int64 s_bookAlloc( int id, float price, int pages, string title )
+    {
+        ret 0
+    }
+
+    @DllImport( "CLangdll", "sl_book_print", "ptr->i64" )
+    static Int64 s_bookPrint( Int64 ptr )
+    {
+        ret -1
+    }
+
+    @DllImport( "CLangdll", "sl_book_free", "ptr->i64" )
+    static Int64 s_bookFree( Int64 ptr )
+    {
+        ret 0
     }
 
     # ── @DllImport C# P/Invoke 风格函数声明（与上方形态等价，均须带 fallback 体）──
@@ -726,11 +758,14 @@ FFITest
     }
 
     # ── 21. 具名 data DataName{} <-> C struct 互转 ──
-    # dataToNativeStruct("C 结构体名", data)：data 实例 -> 新分配的 C struct
-    #   内存地址（自然对齐；string/class 成员为指针槽，嵌套 data 内联展开）。
-    #   structName 仅用于日志——布局完全由 SL 侧 data 定义驱动，两侧布局须一致。
-    # nativeStructToData<类型名>( addr )：native 内存 -> 按类型名新建 data 实例
-    #   （前端语法糖，等价于 nativeStructToData( addr, "类型名" )）。
+    # Memory.dataToNativeStruct<T>( "C 结构体名", t )：data 实例 -> 新分配的
+    #   C struct 内存地址（自然对齐；string/class 成员为指针槽，嵌套 data
+    #   内联展开）。T 在调用点钉死 data 类型，CVM 直接从实例解析
+    #   RuntimeType；structName 仅用于日志——布局完全由 SL 侧 data 定义
+    #   驱动，两侧布局须一致。另有非模板版 (string, object)。
+    # Memory.nativeStructToData<T>( addr, "类型名" )：native 内存 -> 按类型名
+    #   新建 data 实例，返回强类型 T。单参语法糖
+    #   nativeStructToData<类型名>( addr ) 由前端自动注入类型名实参。
     # 两边转换出的 native 内存均不受 SL 内存管理，由调用方负责释放。
     # FFIStructSample 布局（成员顺序，C 自然对齐）：
     #   id    Int32   @ 0  (4B)      score Float32 @ 4  (4B)
@@ -749,8 +784,8 @@ FFITest
             kind = FFIKind.B,
             hold = FFIHoldClass(){ value = 222 }
         }
-        # ── data -> native struct：native 偏移逐成员读回校验 ──
-        Int64 addr = Memory.dataToNativeStruct( "FFIStructSample", s )
+        # ── data -> native struct（模板版 T 钉死类型）：native 偏移逐成员读回校验 ──
+        Int64 addr = Memory.dataToNativeStruct<FFIStructSample>( "FFIStructSample", s )
         check( "dataToNativeStruct != 0", addr != 0 )
         check( "id @0 == 77", Memory.readInt32( addr, 0 ) == 77 )
         check( "score @4 == 2.5", Memory.readFloat32( addr, 4 ) == 2.5f )
@@ -764,33 +799,71 @@ FFITest
         # C 侧改写 enum 槽：2 -> 1（FFIKind.B -> A），回读应还原为新常量
         Memory.writeI32( addr, 24, 1 )
 
-        # ── native struct -> data：<类型名> 语法糖回读，逐成员校验 ──
-        var back = Memory.nativeStructToData<FFIStructSample>( addr )
+        # ── native struct -> data：单参语法糖 + 模板版返回强类型，逐成员校验 ──
+        FFIStructSample back = Memory.nativeStructToData<FFIStructSample>( addr )
         check( "nativeStructToData != null", back != null )
-        FFIStructSample b = back as FFIStructSample
-        check( "back as FFIStructSample != null", b != null )
-        check( "back.id == 77", b.id == 77 )
-        check( "back.score == 2.5", b.score == 2.5f )
-        check( "back.name == 'sl'", b.name == "sl" )
-        check( "back.meta.level == 3", b.meta.level == 3 )
-        check( "back.meta.flag == true", b.meta.flag == true )
-        check( "back.kind == FFIKind.A (改写后)", b.kind == FFIKind.A )
-        check( "back.hold.value == 222 (引用槽还原)", b.hold.value == 222 )
-        check( "back.hold == s.hold (同对象)", b.hold == s.hold )
+        check( "back.id == 77", back.id == 77 )
+        check( "back.score == 2.5", back.score == 2.5f )
+        check( "back.name == 'sl'", back.name == "sl" )
+        check( "back.meta.level == 3", back.meta.level == 3 )
+        check( "back.meta.flag == true", back.meta.flag == true )
+        check( "back.kind == FFIKind.A (改写后)", back.kind == FFIKind.A )
+        check( "back.hold.value == 222 (引用槽还原)", back.hold.value == 222 )
+        check( "back.hold == s.hold (同对象)", back.hold == s.hold )
 
-        # ── 失败路径 ──
+        # ── 失败路径（显式双参模板版 + 非模板版）──
         FFIStructSample bad = FFIStructSample(){
             id = 1, score = 0.0, name = "y",
             meta = null, kind = FFIKind.A, hold = null
         }
         check( "dataToNativeStruct(嵌套 meta null) == 0",
-            Memory.dataToNativeStruct( "FFIStructSample", bad ) == 0 )
+            Memory.dataToNativeStruct<FFIStructSample>( "FFIStructSample", bad ) == 0 )
         check( "nativeStructToData(0) == null",
-            Memory.nativeStructToData<FFIStructSample>( 0 ) == null )
+            Memory.nativeStructToData<FFIStructSample>( 0, "FFIStructSample" ) == null )
         check( "nativeStructToData(未知类型名) == null",
             Memory.nativeStructToData( addr, "NoSuchDataName" ) == null )
 
         Memory.freeNative( addr )
+    }
+
+    # ── 22. 端到端全链路：native 分配 -> cvm 读出改值 -> 写回 -> native 打印 ──
+    # 验证 native 创建的数据传到 cvm 层、cvm 修改后再传回 native dll 的完整闭环：
+    #   1) sl_book_alloc：dll malloc 分配 SLBookStruct 并填充（native 创建）
+    #   2) nativeStructToData<FFICBook>：native 内存 -> cvm data 实例，校验初始值
+    #   3) cvm 层改 data 字段（id/price/pages/title 全部改写）
+    #   4) dataToNativeStruct<FFICBook>：cvm data -> 新的 native 内存块
+    #   5) sl_bookPrint：指针回传 dll，C 侧 printf 全部字段 + 返回校验和
+    #   6) 释放：C malloc 的块由 sl_book_free（dll 侧 free）；
+    #      VM 转换的块由 Memory.freeNative —— 两条分配链不可混用
+    static testNativeDataRoundtrip()
+    {
+        Console.println( "===== FFITest.testNativeDataRoundtrip =====" )
+        # 1) native 侧 malloc 分配并填充
+        Int64 addr = s_bookAlloc( 7, 45.5, 312, "native-created" )
+        check( "bookAlloc != 0", addr != 0 )
+        # 2) native -> cvm：读出为 data 实例并校验初始值
+        FFICBook book = Memory.nativeStructToData<FFICBook>( addr )
+        check( "nativeStructToData != null", book != null )
+        check( "book.id == 7", book.id == 7 )
+        check( "book.price == 45.5", book.price == 45.5f )
+        check( "book.pages == 312", book.pages == 312 )
+        check( "book.title == 'native-created'", book.title == "native-created" )
+        # 3) cvm 层改值（全字段改写）
+        book.id = 99
+        book.price = 12.5
+        book.pages = 666
+        book.title = "changed-in-cvm"
+        # 4) cvm -> native：写回新的 native 内存块
+        Int64 addr2 = Memory.dataToNativeStruct<FFICBook>( "SLBookStruct", book )
+        check( "dataToNativeStruct(book) != 0", addr2 != 0 )
+        # 5) 指针传回 native dll：C 侧打印全部字段（原始块 + 改后块）
+        Int64 sum0 = s_bookPrint( addr )
+        check( "bookPrint(原始块) checksum == 364", sum0 == 364 )  # 7+312+45
+        Int64 sum = s_bookPrint( addr2 )
+        check( "bookPrint(改后块) checksum == 777", sum == 777 )    # 99+666+12
+        # 6) 释放：C 块 C 释放 / VM 块 freeNative 释放
+        check( "bookFree == 1", s_bookFree( addr ) == 1 )
+        Memory.freeNative( addr2 )
     }
 
     # ── 20. dllImports functions 段：global.<funcName>(...) 全局库函数变量直调 ──
@@ -974,6 +1047,7 @@ FFITest
         testNativeMemory()
         testDataToArray()
         testDataToStruct()
+        testNativeDataRoundtrip()
         testLookupFunction()
         testDllImport()
         testDllImportConfig()

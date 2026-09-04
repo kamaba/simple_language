@@ -394,13 +394,16 @@ namespace SimpleLanguage.Core
         //==================== nativeStructToData 模板实参类型名注入 ====================
         //
         // Memory.nativeStructToData<DataName>( addr ): 调用点模板实参直接给出
-        // data 类型名, 前端把模板实参转成类型名字符串并注入为第二个实参:
+        // data 类型名, 前端把类型名转成字符串并注入为第二个实参, 但保留
+        // 模板实参本身:
         //     var dn = Memory.nativeStructToData<FFIStructSample>( ptr )
-        //         -> Memory.nativeStructToData( ptr, "FFIStructSample" )
-        // (nativeStructToData 是纯前端语法糖: 本体是 (Int64 addr, String
-        //  typeName) 双参非模板方法, C 端按 typeName 查 RuntimeClass 构建
-        //  data 骨架后从 native 内存加载; 多段类型名(NS.DataName)按 '.'
-        //  拼接, C 端按名匹配支持全名/短名)
+        //         -> Memory.nativeStructToData<FFIStructSample>( ptr, "FFIStructSample" )
+        // Memory 里同名方法按模板实参数分桶: <T>(Int64,string) 模板版在
+        // bucket[1], (Int64,string) 非模板版在 bucket[0]; 保留模板实参让
+        // 该调用匹配模板版, 实例化后返回强类型 DataName 实例 (T 由前端
+        // 替换, C 端按 typeName 查 RuntimeClass 构建 data 骨架后从 native
+        // 内存加载; 多段类型名(NS.DataName)按 '.' 拼接, C 端按名匹配支持
+        // 全名/短名)
         private static void TryInjectNativeStructToDataTypeName( FileMetaBaseTerm fileExpress )
         {
             if( !(fileExpress is FileMetaCallTerm fmct) )
@@ -427,9 +430,10 @@ namespace SimpleLanguage.Core
                 return;
             string typeName = string.Join( ".", nl );
 
-            // 清空模板实参列表: nativeStructToData 是非模板方法, 方法查找按
-            // 模板计数精确匹配, 残留的 <DataName> 会导致查找失败
-            lastNode.ClearInputTemplateNodeList();
+            // 保留模板实参列表: Memory.nativeStructToData<T>(Int64,string)
+            // 模板版与 (Int64,string) 非模板版同名共存, 方法查找按模板计数
+            // 精确匹配, 保留 <DataName> 使该调用命中模板版并实例化出强类型
+            // 返回值
 
             // 追加第二个实参: Comma 符号 + String 常量
             // (与 TryInjectLookupFunctionSig 的注入方式一致)

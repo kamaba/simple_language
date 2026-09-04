@@ -18,6 +18,7 @@
 
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 
 // ---------------------------------------------------------------------------
@@ -505,6 +506,81 @@ long long sl_strlen_utf8(const char* s)
 }
 
 // ---------------------------------------------------------------------------
+// 8. 端到端全链路：native 分配 -> cvm 读出/改值 -> 写回 -> native 打印
+//    SLBookStruct 布局（自然对齐，x64 sizeof = 24）：
+//      offset  0: int32_t  id
+//      offset  4: float    price
+//      offset  8: int32_t  pages
+//      offset 12: (padding)
+//      offset 16: char*    title   （SL 侧 string 成员 = char* 指针槽）
+//    SL 侧对应 data FFICBook{ id, price, pages, title }（成员顺序须一致）。
+// ---------------------------------------------------------------------------
+
+typedef struct SLBookStruct
+{
+    int32_t  id;
+    float    price;
+    int32_t  pages;
+    char*    title;
+} SLBookStruct;
+
+/* CRT strdup 自实现（避免 MSVC POSIX 告警），title 由 C 侧自持 */
+static char* sl_strdup(const char* s)
+{
+    size_t n = (s != NULL) ? strlen(s) : 0;
+    char*  p = (char*)malloc(n + 1);
+    if (p != NULL)
+    {
+        if (n > 0) memcpy(p, s, n);
+        p[n] = '\0';
+    }
+    return p;
+}
+
+/* FFI 签名 "i32,f32,i32,utf8->ptr"：native 侧 malloc 分配并填充，
+   返回 struct 指针（SL 侧以 Int64 接住，可用
+   Memory.nativeStructToData<FFICBook>(addr) 读回为 data 实例）。 */
+extern "C" __declspec(dllexport)
+void* sl_book_alloc(int id, float price, int pages, const char* title)
+{
+    SLBookStruct* s = (SLBookStruct*)malloc(sizeof(SLBookStruct));
+    if (s == NULL) return NULL;
+    s->id    = id;
+    s->price = price;
+    s->pages = pages;
+    s->title = sl_strdup(title);
+    return s;
+}
+
+/* FFI 签名 "ptr->i64"：打印 struct 全部字段并返回校验和
+   id + pages + (int)price（NULL 指针返回 -1）。 */
+extern "C" __declspec(dllexport)
+long long sl_book_print(const SLBookStruct* s)
+{
+    if (s == NULL)
+    {
+        printf("[CLangdll] sl_book_print(NULL)\n");
+        return -1;
+    }
+    printf("[CLangdll] SLBook id=%d price=%.2f pages=%d title='%s'\n",
+           (int)s->id, (double)s->price, (int)s->pages,
+           (s->title != NULL) ? s->title : "(null)");
+    return (long long)s->id + (long long)s->pages + (long long)(int)s->price;
+}
+
+/* FFI 签名 "ptr->i64"：释放 sl_book_alloc 分配的块（title + struct）。
+   仅用于释放 C 侧 malloc 的指针；dataToNativeStruct 产生的块由
+   Memory.freeNative 释放，不可混用。 */
+extern "C" __declspec(dllexport)
+long long sl_book_free(SLBookStruct* s)
+{
+    if (s == NULL) return 0;
+    free(s->title);
+    free(s);
+    return 1;
+}
+
+// ---------------------------------------------------------------------------
 // 7. 导出清单（ffi-design.md 0.1：优先调用原生库导出的 sl_exports_json()）
 // ---------------------------------------------------------------------------
 
@@ -535,7 +611,10 @@ const char* sl_exports_json(void)
         "{\"publicName\":\"Native.callTwoCallbacks\",\"entryPoint\":\"sl_call_two_callbacks\",\"callingConvention\":\"Cdecl\",\"returnType\":\"I64\",\"parameterTypeList\":[\"Ptr\",\"Ptr\",\"I64\",\"I64\"]},"
         "{\"publicName\":\"Native.echo\",\"entryPoint\":\"sl_echo\",\"callingConvention\":\"Cdecl\",\"returnType\":\"Utf8String\",\"parameterTypeList\":[\"Utf8String\"]},"
         "{\"publicName\":\"Native.concat\",\"entryPoint\":\"sl_concat\",\"callingConvention\":\"Cdecl\",\"returnType\":\"Utf8String\",\"parameterTypeList\":[\"Utf8String\",\"Utf8String\"]},"
-        "{\"publicName\":\"Native.strlen\",\"entryPoint\":\"sl_strlen_utf8\",\"callingConvention\":\"Cdecl\",\"returnType\":\"I64\",\"parameterTypeList\":[\"Utf8String\"]}"
+        "{\"publicName\":\"Native.strlen\",\"entryPoint\":\"sl_strlen_utf8\",\"callingConvention\":\"Cdecl\",\"returnType\":\"I64\",\"parameterTypeList\":[\"Utf8String\"]},"
+        "{\"publicName\":\"Native.bookAlloc\",\"entryPoint\":\"sl_book_alloc\",\"callingConvention\":\"Cdecl\",\"returnType\":\"Ptr\",\"parameterTypeList\":[\"I32\",\"F32\",\"I32\",\"Utf8String\"]},"
+        "{\"publicName\":\"Native.bookPrint\",\"entryPoint\":\"sl_book_print\",\"callingConvention\":\"Cdecl\",\"returnType\":\"I64\",\"parameterTypeList\":[\"Ptr\"]},"
+        "{\"publicName\":\"Native.bookFree\",\"entryPoint\":\"sl_book_free\",\"callingConvention\":\"Cdecl\",\"returnType\":\"I64\",\"parameterTypeList\":[\"Ptr\"]}"
         "]"
     "}";
 }
