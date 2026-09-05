@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace SimpleLanguage.Export.MLIR
 {
@@ -28,6 +29,13 @@ namespace SimpleLanguage.Export.MLIR
     {
         // Verified lowering pass chain (stage 0 + stage 2 validation runs).
         public const string LowerPasses =
+            "--canonicalize --convert-arith-to-llvm --convert-cf-to-llvm " +
+            "--finalize-memref-to-llvm --convert-func-to-llvm --reconcile-unrealized-casts";
+
+        // GPU lowering pass chain (verified end-to-end on the gpu_build spike:
+        // gpu.module -> NVVM -> cubin, host side -> mgpu* launch runtime).
+        public const string GpuLowerPasses =
+            "--convert-gpu-to-nvvm --gpu-module-to-binary --gpu-to-llvm " +
             "--canonicalize --convert-arith-to-llvm --convert-cf-to-llvm " +
             "--finalize-memref-to-llvm --convert-func-to-llvm --reconcile-unrealized-casts";
 
@@ -71,12 +79,16 @@ namespace SimpleLanguage.Export.MLIR
         /// Never throws: returns false with an error message so the caller can
         /// fall back to CVM execution.
         /// </summary>
+        /// <param name="gpu">true when the module contains gpu.module kernels:
+        /// use the GPU pass chain, strip llvm.global_dtors, compile
+        /// sl_gpu_runtime.c with cl.exe and link with /ENTRY:sl_gpu_entry.</param>
         public static bool TryBuildAotDll(
             string mlirFile,
             string dllPath,
             IReadOnlyList<string> exportSymbols,
             out string error,
-            ToolchainPaths? tools = null)
+            ToolchainPaths? tools = null,
+            bool gpu = false)
         {
             error = "";
             if (string.IsNullOrWhiteSpace(mlirFile)) { error = "mlir path is empty"; return false; }
@@ -95,8 +107,10 @@ namespace SimpleLanguage.Export.MLIR
 
             try
             {
-                Run(tools.MlirOpt, $"{Quote(mlirFile)} {LowerPasses} -o {Quote(optMlir)}", workDir);
+                string passes = gpu ? GpuLowerPasses : LowerPasses;
+                Run(tools.MlirOpt, $"{Quote(mlirFile)} {passes} -o {Quote(optMlir)}", workDir);
                 Run(tools.MlirTranslate, $"{Quote(optMlir)} --mlir-to-llvmir -o {Quote(llvmIr)}", workDir);
+                if (gpu) StripGlobalDtors(llvmIr);
                 Run(tools.Llc, $"{Quote(llvmIr)} -filetype=obj -o {Quote(obj)}", workDir);
 
                 string? link = ResolveLinkExe(tools);
@@ -107,6 +121,38 @@ namespace SimpleLanguage.Export.MLIR
                 }
 
                 var args = new StringBuilder();
+                if (gpu)
+                {
+                    // ---- GPU dll: link the CUDA staging runtime, use the
+                    // runtime's custom entry (lazy ctor execution, no CRT
+                    // startup: llvm.global_ctors was stripped from the .ll).
+                    string? rtC = LocateGpuRuntimeC();
+                    if (rtC == null)
+                    {
+                        error = "sl_gpu_runtime.c not found (set SIMPLELANG_GPU_RUNTIME)";
+                        return false;
+                    }
+                    string? cl = ResolveClExe(link);
+                    if (cl == null)
+                    {
+                        error = "cl.exe not found next to link.exe: " + link;
+                        return false;
+                    }
+                    string rtObj = Path.Combine(workDir, baseName + "_gpurt.obj");
+                    var env = BuildMsvcEnv(link);
+                    Run(cl, $"/nologo /c /O2 {Quote(rtC)} /Fo:{Quote(rtObj)}", workDir, env);
+
+                    args.Append("/nologo /DLL /INCREMENTAL:NO /ENTRY:sl_gpu_entry /OUT:").Append(Quote(dllPath))
+                        .Append(' ').Append(Quote(obj))
+                        .Append(' ').Append(Quote(rtObj))
+                        .Append(" kernel32.lib msvcrt.lib ucrt.lib");
+                    foreach (var s in exportSymbols)
+                        args.Append(" /EXPORT:").Append(s);
+
+                    Run(link, args.ToString(), workDir, env);
+                    return true;
+                }
+
                 args.Append("/nologo /DLL /NOENTRY /OUT:").Append(Quote(dllPath))
                     .Append(' ').Append(Quote(obj));
                 foreach (var s in exportSymbols)
@@ -227,6 +273,125 @@ namespace SimpleLanguage.Export.MLIR
             return null;
         }
 
+        // ------------------------------------------------------------------
+        // GPU build helpers
+        // ------------------------------------------------------------------
+
+        /// <summary>
+        /// Remove the llvm.global_dtors entries from the translated .ll.
+        /// The GPU dll uses /ENTRY:sl_gpu_entry and executes llvm.global_ctors
+        /// lazily on the first runtime call; the matching dtor entries (kernel
+        /// module unload) would fire through the .CRT walk and crash.
+        /// </summary>
+        private static void StripGlobalDtors(string llvmIrFile)
+        {
+            string ll = File.ReadAllText(llvmIrFile);
+            string stripped = Regex.Replace(ll,
+                @"@llvm\.global_dtors = appending global \[\d+ x \{ i32, ptr, ptr \}\] \[\{[^\n]*\n",
+                "");
+            if (!ReferenceEquals(stripped, ll) && stripped != ll)
+                File.WriteAllText(llvmIrFile, stripped);
+        }
+
+        /// <summary>
+        /// Locate sl_gpu_runtime.c (mgpu* + slgpu* CUDA staging runtime).
+        /// SIMPLELANG_GPU_RUNTIME env override, else walk up from the exe
+        /// directory looking for the repo copies.
+        /// </summary>
+        private static string? LocateGpuRuntimeC()
+        {
+            var env = Environment.GetEnvironmentVariable("SIMPLELANG_GPU_RUNTIME");
+            if (!string.IsNullOrWhiteSpace(env) && File.Exists(env)) return env;
+
+            try
+            {
+                var rels = new[]
+                {
+                    Path.Combine("simple_language", "source", "Front", "Export", "MLIR", "sl_gpu_runtime.c"),
+                    Path.Combine("simple_language", "test", "SpecialTest", "gpu_build", "sl_gpu_runtime.c"),
+                };
+                for (var d = new DirectoryInfo(AppContext.BaseDirectory); d != null; d = d.Parent)
+                {
+                    foreach (var rel in rels)
+                    {
+                        var p = Path.Combine(d.FullName, rel);
+                        if (File.Exists(p)) return p;
+                    }
+                }
+            }
+            catch
+            {
+                // ignore probing errors
+            }
+            return null;
+        }
+
+        /// <summary>cl.exe sits in the same bin\Hostx64\x64 directory as link.exe.</summary>
+        private static string? ResolveClExe(string linkExe)
+        {
+            try
+            {
+                var cl = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(linkExe)) ?? "", "cl" + ExeExt);
+                return File.Exists(cl) ? cl : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Build INCLUDE/LIB for cl.exe + link.exe (MSVC toolset include/lib +
+        /// the latest Windows 10 SDK), so the toolchain works outside a
+        /// developer prompt.
+        /// </summary>
+        private static Dictionary<string, string> BuildMsvcEnv(string linkExe)
+        {
+            var includes = new List<string>();
+            var libs = new List<string>();
+
+            // link.exe: <MSVC>\bin\Hostx64\x64\link.exe
+            string linkDir = Path.GetDirectoryName(Path.GetFullPath(linkExe)) ?? "";
+            string? msvcRoot = Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(linkDir)));
+            if (!string.IsNullOrEmpty(msvcRoot) && Directory.Exists(Path.Combine(msvcRoot, "include")))
+            {
+                includes.Add(Path.Combine(msvcRoot, "include"));
+                libs.Add(Path.Combine(msvcRoot, "lib", "x64"));
+            }
+
+            foreach (var pf in new[]
+            {
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+            })
+            {
+                if (string.IsNullOrWhiteSpace(pf)) continue;
+                string sdkInc = Path.Combine(pf, "Windows Kits", "10", "Include");
+                string sdkLib = Path.Combine(pf, "Windows Kits", "10", "Lib");
+                if (!Directory.Exists(sdkInc) || !Directory.Exists(sdkLib)) continue;
+
+                var ver = Directory.GetDirectories(sdkInc)
+                    .OrderByDescending(p => p, StringComparer.OrdinalIgnoreCase)
+                    .FirstOrDefault();
+                if (ver == null) continue;
+
+                foreach (var sub in new[] { "ucrt", "um", "shared", "winrt", "cppwinrt" })
+                {
+                    var d = Path.Combine(ver, sub);
+                    if (Directory.Exists(d)) includes.Add(d);
+                }
+                var libVer = Path.Combine(sdkLib, Path.GetFileName(ver));
+                libs.Add(Path.Combine(libVer, "ucrt", "x64"));
+                libs.Add(Path.Combine(libVer, "um", "x64"));
+                break;
+            }
+
+            var env = new Dictionary<string, string>();
+            if (includes.Count > 0) env["INCLUDE"] = string.Join(";", includes);
+            if (libs.Count > 0) env["LIB"] = string.Join(";", libs);
+            return env;
+        }
+
         private static string? TryRunCapture(string fileName, string args)
         {
             try
@@ -259,7 +424,8 @@ namespace SimpleLanguage.Export.MLIR
 
         private static string Quote(string s) => "\"" + s + "\"";
 
-        private static void Run(string fileName, string args, string workingDirectory)
+        private static void Run(string fileName, string args, string workingDirectory,
+            Dictionary<string, string>? extraEnv = null)
         {
             var psi = new ProcessStartInfo
             {
@@ -271,6 +437,11 @@ namespace SimpleLanguage.Export.MLIR
                 RedirectStandardError = true,
                 CreateNoWindow = true,
             };
+            if (extraEnv != null)
+            {
+                foreach (var kv in extraEnv)
+                    psi.EnvironmentVariables[kv.Key] = kv.Value;
+            }
             using var p = Process.Start(psi);
             if (p == null) throw new InvalidOperationException("Failed to start process: " + fileName);
 

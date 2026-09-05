@@ -33,6 +33,12 @@ namespace SimpleLanguage.IR
         /// 本地编译从 MetaMemberFunction.attributeList 提取（name=="AOT"），
         /// ref module 从 SLMethodPackage.flags bit 256 还原。</summary>
         public bool isAot => m_IsAot;
+        /// <summary>是否标注了 @GPU() 属性（GPU kernel 候选）。
+        /// 仅本地编译支持（ref module 不还原 GPU 标记，GPU kernel 走独立导出路径）。</summary>
+        public bool isGpu => m_GpuAttribute != null;
+        /// <summary>标注的 @GPU(...) 属性实例（含 tile/launch 参数），未标注为 null。</summary>
+        public MetaAttribute gpuAttribute => m_GpuAttribute;
+        private MetaAttribute m_GpuAttribute = null;
         /// <summary>声明该方法的类的 classId（来自 SLMethodPackage.declaringClassId）。
         /// 对于继承到子类的方法，指向声明类（如 Object）。0 表示未设置（按当前类处理）。</summary>
         public int declaringClassId => m_DeclaringClassId;
@@ -114,6 +120,7 @@ namespace SimpleLanguage.IR
                 m_IsStatic = mmf.isStatic;
                 m_IsTemplateFunction = mmf.isTemplateFunction;
                 m_IsAot = HasAotAttribute(mmf);
+                m_GpuAttribute = FindGpuAttribute(mmf);
                 if (m_IsTemplateFunction && mmf.metaMemberTemplateCollection?.metaTemplateList != null)
                 {
                     foreach (var mt in mmf.metaMemberTemplateCollection.metaTemplateList)
@@ -167,6 +174,22 @@ namespace SimpleLanguage.IR
                     return true;
             }
             return false;
+        }
+
+        /// <summary>
+        /// 查找 MetaMemberFunction 上标注的 @GPU(...) 属性实例（含 tile/launch 参数）。
+        /// 未标注返回 null。
+        /// </summary>
+        private static MetaAttribute FindGpuAttribute(MetaMemberFunction mmf)
+        {
+            var attrs = mmf?.attributeList;
+            if (attrs == null) return null;
+            foreach (var attr in attrs)
+            {
+                if (attr != null && attr.name == "GPU")
+                    return attr;
+            }
+            return null;
         }
 
         /// <summary>

@@ -371,3 +371,4 @@
 /source/Front/Lib/Std/build/logs/VM.txt
 /specialtest_out.txt
 /_e2e_run.txt
+/test/SpecialTest/gpu_build

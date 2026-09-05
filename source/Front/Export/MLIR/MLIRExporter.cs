@@ -18,6 +18,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using SimpleLanguage.Core;
 using SimpleLanguage.IR;
 
 namespace SimpleLanguage.Export.MLIR
@@ -59,6 +60,9 @@ namespace SimpleLanguage.Export.MLIR
             /// <summary>dll 文件名（由调用方在 stage-3 构建成功后回填；
             /// 用于单方法导出接口 TryExportMethods 的结果合并）。</summary>
             public string? DllFileName { get; set; }
+            /// <summary>模块中是否含成功发射的 @GPU 方法（stage-3 需走 GPU
+            /// 降级 pass 链并链接 sl_gpu_runtime）。</summary>
+            public bool HasGpuMethods { get; set; }
         }
 
         /// <summary>
@@ -84,10 +88,18 @@ namespace SimpleLanguage.Export.MLIR
              * methods of this module (stage-5 reverse bridge). */
             var bridgeIds = new Dictionary<string, string>();
 
+            bool anyGpu = false;
+            foreach (var m in methods)
+                if (m != null && m.isGpu) { anyGpu = true; break; }
+            bool anyGpuOk = false;
+            int gpuModuleIndex = 0;
+
             var sb = new StringBuilder();
             sb.AppendLine("// SimpleLanguage AOT module");
             sb.AppendLine("!slv = !llvm.struct<(i32, i64)>");
-            sb.AppendLine("module {");
+            sb.AppendLine(anyGpu
+                ? "module attributes {gpu.container_module} {"
+                : "module {");
             // MSVC CRT: the moment aot.obj contains real float arithmetic
             // (truncf/extf/addf), the CRT emits a reference to _fltused;
             // define it here so the aot.dll link never needs the CRT import.
@@ -100,11 +112,14 @@ namespace SimpleLanguage.Export.MLIR
                 var entry = new ManifestMethod { Id = m.id };
                 try
                 {
-                    var emitter = new MethodEmitter(m, usedSymbols, bridgeIds);
+                    MethodEmitter emitter = m.isGpu
+                        ? new GpuMethodEmitter(m, usedSymbols, bridgeIds, gpuModuleIndex++)
+                        : new MethodEmitter(m, usedSymbols, bridgeIds);
                     sb.Append(emitter.Emit());
                     entry.Symbol = emitter.Symbol;
                     entry.Status = "ok";
                     okSymbols.Add(emitter.Symbol);
+                    if (m.isGpu) anyGpuOk = true;
                 }
                 catch (EmitFailException ex)
                 {
@@ -122,6 +137,16 @@ namespace SimpleLanguage.Export.MLIR
             {
                 sb.Append(EmitBridgePlumbing(bridgeIds));
             }
+            if (anyGpu)
+            {
+                // GPU staging runtime (implemented in sl_gpu_runtime.c):
+                // host wrappers call these to malloc / copy / free device
+                // buffers around gpu.launch_func.
+                sb.Append("  llvm.func @slgpuMalloc(i64) -> !llvm.ptr\n");
+                sb.Append("  llvm.func @slgpuMemcpyHtoD(!llvm.ptr, !llvm.ptr, i64)\n");
+                sb.Append("  llvm.func @slgpuMemcpyDtoH(!llvm.ptr, !llvm.ptr, i64)\n");
+                sb.Append("  llvm.func @slgpuFree(!llvm.ptr)\n");
+            }
 
             sb.AppendLine("}");
 
@@ -135,6 +160,7 @@ namespace SimpleLanguage.Export.MLIR
                 OkSymbols = okSymbols,
                 FailedIds = failedIds,
                 NeedsBridgeInit = bridgeIds.Count > 0,
+                HasGpuMethods = anyGpuOk,
                 Methods = manifest.Methods.Select(e => new AotMethodManifest
                 {
                     Id = e.Id,
@@ -403,6 +429,8 @@ namespace SimpleLanguage.Export.MLIR
             EIROpCode.CallStatic,    /* stage 5: reverse bridge into the CVM */
             EIROpCode.LoadArrayIndex,      /* constant index: [array] -> [element] */
             EIROpCode.LoadArrayIndexField, /* variable index: [array, index] -> [element] */
+            EIROpCode.StoreArrayIndex,     /* constant index store: arr[3] = v (payload [flag:1]) */
+            EIROpCode.StoreArrayIndexField,/* variable index store: arr[i] = v */
             EIROpCode.CallVirt,            /* inlined array getters (arr.length) */
         };
 
@@ -467,6 +495,11 @@ namespace SimpleLanguage.Export.MLIR
                     var rv = m.methodReturnVariableList[0];
                     if (rv == null) throw t.Fail("null return variable");
                     if (rv.index != 0) throw t.Fail($"return variable '{rv.name}' must use slot 0 (got {rv.index})");
+                    /* void methods still carry a '.return' variable typed
+                     * Core.Void — treat it as "no return slot" (HasRet stays
+                     * false, downstream emitters are already conditional on
+                     * HasRet). */
+                    if (IsVoidType(rv)) return t;
                     t.HasRet = true;
                     t.RetType = ResolveSLType(t, rv);
                     /* Array returns are rejected: the CVM side derives the
@@ -480,6 +513,23 @@ namespace SimpleLanguage.Export.MLIR
                 }
 
                 return t;
+            }
+
+            /// <summary>
+            /// void methods carry a '.return' variable whose type resolves to
+            /// the Void class (e.g. "Core.Void", MetaClass.eType == Void).
+            /// </summary>
+            public static bool IsVoidType(IRMetaVariable v)
+            {
+                var irmc = v.irMetaType?.irMetaClass;
+                if (irmc == null) return false;
+                var mc = irmc.OwnerMetaClass;
+                if (mc != null && mc.eType == EType.Void) return true;
+                string n = irmc.irName;
+                if (string.IsNullOrEmpty(n)) return false;
+                int dot = n.LastIndexOf('.');
+                string leaf = dot >= 0 ? n.Substring(dot + 1) : n;
+                return leaf == "Void";
             }
 
             public static SLType ResolveSLType(SlotTable t, IRMetaVariable v)
@@ -556,31 +606,36 @@ namespace SimpleLanguage.Export.MLIR
 
         // ------------------------------------------------------------------
         // MethodEmitter
+        //
+        // Host (plain @AOT) emission. GpuMethodEmitter subclasses this and
+        // overrides the emission hooks (parameter mapping, array access,
+        // spill syntax, entry/exit) to translate the same IR inside a
+        // gpu.func kernel; all analysis (blocks, stack profiles) is shared.
         // ------------------------------------------------------------------
 
-        private sealed class MethodEmitter
+        private class MethodEmitter
         {
             private const int ExitId = -1;
 
-            private readonly IRMethod m_Method;
-            private readonly SlotTable m_Slots;
-            private readonly List<IRData> m_Code;
-            private readonly int m_Count;
-            private readonly List<Block> m_Blocks = new List<Block>();
-            private readonly Dictionary<int, int> m_BlockOfPos = new Dictionary<int, int>();
-            private readonly List<Val> m_Stack = new List<Val>();
-            private int m_MaxDepth = 0;
+            protected readonly IRMethod m_Method;
+            protected readonly SlotTable m_Slots;
+            protected readonly List<IRData> m_Code;
+            protected readonly int m_Count;
+            protected readonly List<Block> m_Blocks = new List<Block>();
+            protected readonly Dictionary<int, int> m_BlockOfPos = new Dictionary<int, int>();
+            protected readonly List<Val> m_Stack = new List<Val>();
+            protected int m_MaxDepth = 0;
 
-            private readonly StringBuilder m_ConstSb = new StringBuilder(); // hoisted to entry, dominates all
-            private readonly StringBuilder m_BodySb = new StringBuilder();
-            private readonly Dictionary<long, string> m_I64Consts = new Dictionary<long, string>();
+            protected readonly StringBuilder m_ConstSb = new StringBuilder(); // hoisted to entry, dominates all
+            protected readonly StringBuilder m_BodySb = new StringBuilder();
+            protected readonly Dictionary<long, string> m_I64Consts = new Dictionary<long, string>();
             private readonly Dictionary<int, string> m_IndexConsts = new Dictionary<int, string>();
-            private readonly Dictionary<int, string> m_K32Consts = new Dictionary<int, string>();
-            private bool m_F64ZeroEmitted;
-            private string m_F64ZeroName = "";
+            protected readonly Dictionary<int, string> m_K32Consts = new Dictionary<int, string>();
+            protected bool m_F64ZeroEmitted;
+            protected string m_F64ZeroName = "";
             private bool m_ArrayDummyEmitted;
             private string m_ArrayDummyName = "";
-            private int m_TmpCounter = 0;
+            protected int m_TmpCounter = 0;
             /* Stage-5 bridge: module-level callee-id -> string-global map
              * (shared across all methods of the module). */
             private readonly Dictionary<string, string> m_BridgeIds;
@@ -600,17 +655,13 @@ namespace SimpleLanguage.Export.MLIR
                 m_BridgeIds = bridgeIds ?? throw new ArgumentNullException(nameof(bridgeIds));
             }
 
-            public string Emit()
+            public virtual string Emit()
             {
                 CheckSupported();
                 AnalyzeBlocks();
                 ComputeProfiles();
                 EmitEntry();
-                for (int i = 0; i < m_Blocks.Count; i++)
-                {
-                    var b = m_Blocks[i];
-                    if (b.Reachable) EmitBlock(b);
-                }
+                EmitAllBlocks();
                 EmitExit();
 
                 var sb = new StringBuilder();
@@ -623,7 +674,16 @@ namespace SimpleLanguage.Export.MLIR
                 return sb.ToString();
             }
 
-            private static string MakeUniqueSymbol(IRMethod m, HashSet<string> used)
+            protected void EmitAllBlocks()
+            {
+                for (int i = 0; i < m_Blocks.Count; i++)
+                {
+                    var b = m_Blocks[i];
+                    if (b.Reachable) EmitBlock(b);
+                }
+            }
+
+            protected static string MakeUniqueSymbol(IRMethod m, HashSet<string> used)
             {
                 string id = string.IsNullOrEmpty(m.id) ? m.onlyFunctionName : m.id;
                 string baseName = "sl_aot_" + SanitizeSymbol(id);
@@ -637,12 +697,26 @@ namespace SimpleLanguage.Export.MLIR
                 return name;
             }
 
-            private static bool IsTerminator(EIROpCode op)
+            protected static bool IsTerminator(EIROpCode op)
                 => op == EIROpCode.Br || op == EIROpCode.BrLabel
                 || op == EIROpCode.BrFalse || op == EIROpCode.BrTrue
                 || op == EIROpCode.Ret;
 
-            private void CheckSupported()
+            /// <summary>True for the LoadConst* family (no strings).</summary>
+            protected static bool IsLoadConstOp(EIROpCode op)
+                => op == EIROpCode.LoadConstUInt8
+                || op == EIROpCode.LoadConstInt8
+                || op == EIROpCode.LoadConstInt16
+                || op == EIROpCode.LoadConstUInt16
+                || op == EIROpCode.LoadConstInt32
+                || op == EIROpCode.LoadConstUInt32
+                || op == EIROpCode.LoadConstInt64
+                || op == EIROpCode.LoadConstUInt64
+                || op == EIROpCode.LoadConstFloat32
+                || op == EIROpCode.LoadConstFloat64
+                || op == EIROpCode.LoadConstBoolean;
+
+            protected virtual void CheckSupported()
             {
                 for (int i = 0; i < m_Count; i++)
                 {
@@ -655,7 +729,7 @@ namespace SimpleLanguage.Export.MLIR
 
             // ---- CFG construction ------------------------------------------------
 
-            private void AnalyzeBlocks()
+            protected void AnalyzeBlocks()
             {
                 var leaders = new SortedSet<int> { 0 };
 
@@ -710,7 +784,7 @@ namespace SimpleLanguage.Export.MLIR
 
             // ---- stack profile analysis -------------------------------------------
 
-            private void ComputeProfiles()
+            protected void ComputeProfiles()
             {
                 var work = new Queue<Block>();
                 var first = m_Blocks[0];
@@ -762,7 +836,7 @@ namespace SimpleLanguage.Export.MLIR
                 return true;
             }
 
-            private SLType ProfilePop(List<SLType> sim, int pos)
+            protected SLType ProfilePop(List<SLType> sim, int pos)
             {
                 if (sim.Count < 1) throw Fail($"[{pos}] stack underflow");
                 var t = sim[sim.Count - 1];
@@ -770,7 +844,7 @@ namespace SimpleLanguage.Export.MLIR
                 return t;
             }
 
-            private void StepProfile(List<SLType> sim, IRData ir, int pos)
+            protected void StepProfile(List<SLType> sim, IRData ir, int pos)
             {
                 switch (ir.opCode)
                 {
@@ -958,6 +1032,33 @@ namespace SimpleLanguage.Export.MLIR
                         return;
                     }
 
+                    case EIROpCode.StoreArrayIndexField:
+                    {
+                        // variable index store: stack (top-down) value, idx, array
+                        ProfilePop(sim, pos);             // value
+                        var it = ProfilePop(sim, pos);    // idx
+                        var at = ProfilePop(sim, pos);    // array
+                        if (!IsArrayType(at))
+                            throw Fail($"[{pos}] StoreArrayIndexField receiver is {at}, expected an array");
+                        if (it != SLType.I64)
+                            throw Fail($"[{pos}] StoreArrayIndexField index is {it}, expected an integer");
+                        return;
+                    }
+
+                    case EIROpCode.StoreArrayIndex:
+                    {
+                        // constant index store; payload flag decides the pop
+                        // order (EStoreArrayIndexFlag): 0 = [.., value, array]
+                        // (array on top), else [.., array, value] (value on top)
+                        int flag = StoreIndexFlagOf(ir);
+                        var t1 = ProfilePop(sim, pos);
+                        var t2 = ProfilePop(sim, pos);
+                        var at = flag == 0 ? t1 : t2;
+                        if (!IsArrayType(at))
+                            throw Fail($"[{pos}] StoreArrayIndex receiver is {at}, expected an array");
+                        return;
+                    }
+
                     case EIROpCode.CallVirt:
                     {
                         // Only array trivial getters (arr.length) are inlined.
@@ -981,17 +1082,32 @@ namespace SimpleLanguage.Export.MLIR
             /// Dup/Pop payload is a plain little-endian int32 count (no index prefix:
             /// they are not in IRData.UsesIndex). Missing/short payload defaults to 1.
             /// </summary>
-            private static int ReadCount(IRData ir)
+            protected static int ReadCount(IRData ir)
             {
                 if (ir.Payload == null || ir.Payload.Length < 4) return 1;
                 return BitConverter.ToInt32(ir.Payload, 0);
             }
 
+            /// <summary>
+            /// StoreArrayIndex operand-order flag (EStoreArrayIndexFlag).
+            /// In-memory IRData payloads carry just the flag byte; a
+            /// serialized payload embeds the index first ([index:4][flag:1]).
+            /// 0 = stack [.., value, array] (array on top), 1 = [.., array, value].
+            /// </summary>
+            protected static int StoreIndexFlagOf(IRData ir)
+            {
+                if (ir.Payload == null || ir.Payload.Length == 0) return 0;
+                return ir.Payload.Length >= 5 ? ir.Payload[4] : ir.Payload[0];
+            }
+
             // ---- emission: entry ---------------------------------------------------
 
-            private string StackType => "memref<" + Math.Max(1, m_MaxDepth).ToString(CultureInfo.InvariantCulture) + "xi64>";
+            protected string StackType => "memref<" + Math.Max(1, m_MaxDepth).ToString(CultureInfo.InvariantCulture) + "xi64>";
 
-            private void EmitEntry()
+            /// <summary>Block label used for method exit (host ^exit / kernel ^kexit).</summary>
+            protected virtual string ExitLabel => "^exit";
+
+            protected virtual void EmitEntry()
             {
                 EmitBody("    %stack = memref.alloca() : {0}", StackType);
                 EmitBody("    %locals = memref.alloca() : memref<{0}xi64>", m_Slots.LocalSlots);
@@ -1022,24 +1138,18 @@ namespace SimpleLanguage.Export.MLIR
 
             // ---- emission: blocks -------------------------------------------------
 
-            private void EmitBlock(Block b)
+            protected void EmitBlock(Block b)
             {
                 m_Stack.Clear();
                 EmitBody("  ^b{0}:", b.Start);
 
-                // reload the entry stack profile from %stack
-                var entry = b.Entry!;
-                for (int i = 0; i < entry.Count; i++)
-                {
-                    string v = NV();
-                    EmitBody("    {0} = memref.load %stack[{1}] : {2}", v, CIDX(i), StackType);
-                    m_Stack.Add(new Val(v, entry[i]));
-                }
+                ReloadStack(b);
 
                 for (int i = b.Start; i < b.End; i++)
                 {
                     var ir = m_Code[i];
                     EmitBody("    // [{0}] {1}", i, ir.opCode);
+                    if (EmitInstructionOverride(ir, i)) continue;
                     if (IsTerminator(ir.opCode))
                     {
                         EmitTerminator(b, ir, i);
@@ -1050,11 +1160,32 @@ namespace SimpleLanguage.Export.MLIR
 
                 // fell off the end of the block: spill and continue
                 SpillAll();
-                if (b.End >= m_Count) EmitBody("    cf.br ^exit");
+                if (b.End >= m_Count) EmitBody("    cf.br {0}", ExitLabel);
                 else EmitBody("    cf.br ^b{0}", b.End);
             }
 
-            private void EmitTerminator(Block b, IRData ir, int pos)
+            /// <summary>
+            /// Reload the block's entry stack profile from the spill area
+            /// (host: memref %stack, kernel: llvm GEP into %kstk).
+            /// </summary>
+            protected virtual void ReloadStack(Block b)
+            {
+                var entry = b.Entry!;
+                for (int i = 0; i < entry.Count; i++)
+                {
+                    string v = NV();
+                    EmitBody("    {0} = memref.load %stack[{1}] : {2}", v, CIDX(i), StackType);
+                    m_Stack.Add(new Val(v, entry[i]));
+                }
+            }
+
+            /// <summary>
+            /// Kernel hook: return true when the instruction at pos is dropped
+            /// or rewritten by GPU loop parallelization (loop init / step).
+            /// </summary>
+            protected virtual bool EmitInstructionOverride(IRData ir, int pos) => false;
+
+            protected void EmitTerminator(Block b, IRData ir, int pos)
             {
                 switch (ir.opCode)
                 {
@@ -1083,7 +1214,7 @@ namespace SimpleLanguage.Export.MLIR
                     }
 
                     case EIROpCode.Ret:
-                        EmitBody("    cf.br ^exit");
+                        EmitBody("    cf.br {0}", ExitLabel);
                         return;
 
                     default:
@@ -1093,7 +1224,7 @@ namespace SimpleLanguage.Export.MLIR
 
             // ---- emission: exit ---------------------------------------------------
 
-            private void EmitExit()
+            protected virtual void EmitExit()
             {
                 EmitBody("  ^exit:");
                 string r = NV();
@@ -1110,7 +1241,7 @@ namespace SimpleLanguage.Export.MLIR
             }
 
             /// <summary>Persist the virtual stack into %stack (0 = bottom).</summary>
-            private void SpillAll()
+            protected virtual void SpillAll()
             {
                 for (int i = 0; i < m_Stack.Count; i++)
                     EmitBody("    memref.store {0}, %stack[{1}] : {2}", m_Stack[i].Name, CIDX(i), StackType);
@@ -1118,7 +1249,7 @@ namespace SimpleLanguage.Export.MLIR
 
             // ---- emission: instructions -------------------------------------------
 
-            private void EmitInstruction(IRData ir, int pos)
+            protected void EmitInstruction(IRData ir, int pos)
             {
                 switch (ir.opCode)
                 {
@@ -1153,50 +1284,24 @@ namespace SimpleLanguage.Export.MLIR
                         return;
 
                     case EIROpCode.LoadArgument:
-                    {
-                        SLType ty = m_Slots.GetArgType(ir.index);
-                        string v = NV();
-                        EmitBody("    {0} = memref.load %argmem[{1}] : memref<{2}xi64>", v, CIDX(ir.index), m_Slots.ArgSlots);
-                        m_Stack.Add(new Val(v, ty));
+                        EmitLoadArgument(ir, pos);
                         return;
-                    }
 
                     case EIROpCode.LoadLocal:
-                    {
-                        SLType ty = m_Slots.GetLocalType(ir.index);
-                        string v = NV();
-                        EmitBody("    {0} = memref.load %locals[{1}] : memref<{2}xi64>", v, CIDX(ir.index), m_Slots.LocalSlots);
-                        m_Stack.Add(new Val(v, ty));
+                        EmitLoadLocal(ir, pos);
                         return;
-                    }
 
                     case EIROpCode.StoreLocal:
-                    {
-                        Val v = Pop(pos);
-                        string c = CoerceStore(v, m_Slots.GetLocalType(ir.index), $"StoreLocal {ir.index}");
-                        EmitBody("    memref.store {0}, %locals[{1}] : memref<{2}xi64>", c, CIDX(ir.index), m_Slots.LocalSlots);
+                        EmitStoreLocal(ir, pos);
                         return;
-                    }
 
                     case EIROpCode.StoreArgument:
-                    {
-                        Val v = Pop(pos);
-                        string c = CoerceStore(v, m_Slots.GetArgType(ir.index), $"StoreArgument {ir.index}");
-                        EmitBody("    memref.store {0}, %argmem[{1}] : memref<{2}xi64>", c, CIDX(ir.index), m_Slots.ArgSlots);
+                        EmitStoreArgument(ir, pos);
                         return;
-                    }
 
                     case EIROpCode.StoreReturn:
-                    {
-                        if (ir.index != 0)
-                            throw Fail($"[{pos}] StoreReturn with index {ir.index} (only slot 0 is supported)");
-                        if (!m_Slots.HasRet)
-                            throw Fail($"[{pos}] StoreReturn in a method without a return value");
-                        Val v = Pop(pos);
-                        string c = CoerceStore(v, m_Slots.RetType, "StoreReturn");
-                        EmitBody("    memref.store {0}, %retval[{1}] : memref<1xi64>", c, CIDX(0));
+                        EmitStoreReturn(ir, pos);
                         return;
-                    }
 
                     case EIROpCode.Add:
                     case EIROpCode.Minus:
@@ -1281,6 +1386,11 @@ namespace SimpleLanguage.Export.MLIR
                         EmitArrayLoad(ir, pos);
                         return;
 
+                    case EIROpCode.StoreArrayIndex:
+                    case EIROpCode.StoreArrayIndexField:
+                        EmitArrayStore(ir, pos);
+                        return;
+
                     case EIROpCode.CallVirt:
                         EmitCallVirt(ir, pos);
                         return;
@@ -1288,6 +1398,49 @@ namespace SimpleLanguage.Export.MLIR
                     default:
                         throw Fail($"[{pos}] unsupported opcode '{ir.opCode}'");
                 }
+            }
+
+            // ---- slot access emitters (host: memref slabs; kernel: overridden) ----
+
+            protected virtual void EmitLoadArgument(IRData ir, int pos)
+            {
+                SLType ty = m_Slots.GetArgType(ir.index);
+                string v = NV();
+                EmitBody("    {0} = memref.load %argmem[{1}] : memref<{2}xi64>", v, CIDX(ir.index), m_Slots.ArgSlots);
+                m_Stack.Add(new Val(v, ty));
+            }
+
+            protected virtual void EmitLoadLocal(IRData ir, int pos)
+            {
+                SLType ty = m_Slots.GetLocalType(ir.index);
+                string v = NV();
+                EmitBody("    {0} = memref.load %locals[{1}] : memref<{2}xi64>", v, CIDX(ir.index), m_Slots.LocalSlots);
+                m_Stack.Add(new Val(v, ty));
+            }
+
+            protected virtual void EmitStoreLocal(IRData ir, int pos)
+            {
+                Val v = Pop(pos);
+                string c = CoerceStore(v, m_Slots.GetLocalType(ir.index), $"StoreLocal {ir.index}");
+                EmitBody("    memref.store {0}, %locals[{1}] : memref<{2}xi64>", c, CIDX(ir.index), m_Slots.LocalSlots);
+            }
+
+            protected virtual void EmitStoreArgument(IRData ir, int pos)
+            {
+                Val v = Pop(pos);
+                string c = CoerceStore(v, m_Slots.GetArgType(ir.index), $"StoreArgument {ir.index}");
+                EmitBody("    memref.store {0}, %argmem[{1}] : memref<{2}xi64>", c, CIDX(ir.index), m_Slots.ArgSlots);
+            }
+
+            protected virtual void EmitStoreReturn(IRData ir, int pos)
+            {
+                if (ir.index != 0)
+                    throw Fail($"[{pos}] StoreReturn with index {ir.index} (only slot 0 is supported)");
+                if (!m_Slots.HasRet)
+                    throw Fail($"[{pos}] StoreReturn in a method without a return value");
+                Val v = Pop(pos);
+                string c = CoerceStore(v, m_Slots.RetType, "StoreReturn");
+                EmitBody("    memref.store {0}, %retval[{1}] : memref<1xi64>", c, CIDX(0));
             }
 
             // ---- CallStatic: stage-5 reverse bridge --------------------------------
@@ -1336,7 +1489,8 @@ namespace SimpleLanguage.Export.MLIR
                     var rv = callee.methodReturnVariableList[0];
                     if (rv == null)
                         throw Fail($"[{pos}] callee '{calleeId}' has null return variable");
-                    retType = SlotTable.ResolveSLType(m_Slots, rv);
+                    if (SlotTable.IsVoidType(rv)) hasRet = false;   /* void callee: no return value */
+                    else retType = SlotTable.ResolveSLType(m_Slots, rv);
                 }
 
                 var argTypes = new SLType[argc];
@@ -1360,7 +1514,7 @@ namespace SimpleLanguage.Export.MLIR
                 return new CalleeInfo(calleeId, argc, hasRet, retType, argTypes);
             }
 
-            private void EmitCallStatic(IRData ir, int pos)
+            protected virtual void EmitCallStatic(IRData ir, int pos)
             {
                 var ci = ResolveCallee(ir, pos);
 
@@ -1469,7 +1623,7 @@ namespace SimpleLanguage.Export.MLIR
             // pushes i32 0). All selects stay in the i64 domain; pointers
             // only cross through inttoptr/ptrtoint (no-ops on x64).
 
-            private void EmitArrayLoad(IRData ir, int pos)
+            protected virtual void EmitArrayLoad(IRData ir, int pos)
             {
                 Val? idxVal = null;
                 if (ir.opCode == EIROpCode.LoadArrayIndexField)
@@ -1551,7 +1705,128 @@ namespace SimpleLanguage.Export.MLIR
                 m_Stack.Add(new Val(sel, ElemTypeOf(arr.Type)));
             }
 
-            private void EmitCallVirt(IRData ir, int pos)
+            /// <summary>
+            /// Host array store: mirror of EmitArrayLoad. Null/OOB stores are
+            /// silently skipped by routing the address into the sentinel's
+            /// data slot (a 72-byte dummy alloca; bytes [64..72) are written
+            /// but never read) - matching the VM's behavior of ignoring
+            /// vm_array_try_store_value failures.
+            /// </summary>
+            protected virtual void EmitArrayStore(IRData ir, int pos)
+            {
+                Val value;
+                Val? idxVal = null;
+                Val arr;
+                if (ir.opCode == EIROpCode.StoreArrayIndexField)
+                {
+                    value = Pop(pos);                 // top: value
+                    idxVal = Pop(pos);                // then: idx
+                    arr = Pop(pos);                   // then: array
+                    if (idxVal.Value.Type != SLType.I64)
+                        throw Fail($"[{pos}] array store index is {idxVal.Value.Type}, expected an integer");
+                }
+                else // StoreArrayIndex: payload flag decides pop order
+                {
+                    if (StoreIndexFlagOf(ir) == 0)
+                    {
+                        arr = Pop(pos);               // top: array
+                        value = Pop(pos);             // below: value
+                    }
+                    else
+                    {
+                        value = Pop(pos);             // top: value
+                        arr = Pop(pos);               // below: array
+                    }
+                }
+                if (!IsArrayType(arr.Type))
+                    throw Fail($"[{pos}] {ir.opCode} receiver is {arr.Type}, expected an array");
+                string idx = idxVal.HasValue ? idxVal.Value.Name : CI64(ir.index);
+
+                // coerce the value to the array's element type (the VM's
+                // vm_array_try_store_value converts numerically)
+                string ety = MlirElemTypeOf(arr.Type);
+                string val = CoerceToElem(value, arr.Type);
+
+                string okp = NV();
+                EmitBody("    {0} = arith.cmpi ne, {1}, {2} : i64", okp, arr.Name, CI64(0));
+                string basei = NV();
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i64", basei, okp, arr.Name, ArraySentinelI64());
+                string bas = NV();
+                EmitBody("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", bas, basei);
+
+                string lenp = NV();
+                EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
+                    lenp, bas, CI64(48));
+                string len32 = NV();
+                EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i32", len32, lenp);
+                string len = NV();
+                EmitBody("    {0} = arith.extui {1} : i32 to i64", len, len32);
+                string okb = NV();
+                EmitBody("    {0} = arith.cmpi ult, {1}, {2} : i64", okb, idx, len);
+                string ok = NV();
+                EmitBody("    {0} = arith.andi {1}, {2} : i1", ok, okp, okb);
+
+                string datap = NV();
+                EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
+                    datap, bas, CI64(64));
+                string dataptr = NV();
+                EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> !llvm.ptr", dataptr, datap);
+                string dati = NV();
+                EmitBody("    {0} = llvm.ptrtoint {1} : !llvm.ptr to i64", dati, dataptr);
+                string off = NV();
+                EmitBody("    {0} = arith.muli {1}, {2} : i64", off, idx, CI64(ElemWidthOf(arr.Type)));
+                string epi = NV();
+                EmitBody("    {0} = arith.addi {1}, {2} : i64", epi, dati, off);
+                // bad stores land in the sentinel's data slot (bytes 64..72)
+                string sdat = NV();
+                EmitBody("    {0} = arith.addi {1}, {2} : i64", sdat, ArraySentinelI64(), CI64(64));
+                string eps = NV();
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i64", eps, ok, epi, sdat);
+                string ep = NV();
+                EmitBody("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", ep, eps);
+
+                EmitBody("    llvm.store {0}, {1} : {2}, !llvm.ptr", val, ep, ety);
+            }
+
+            /// <summary>MLIR element type of an array slot (f64 / i32 / i64).</summary>
+            protected static string MlirElemTypeOf(SLType arrayType)
+                => arrayType == SLType.ArrayF64 ? "f64"
+                : arrayType == SLType.ArrayI32 ? "i32" : "i64";
+
+            /// <summary>
+            /// Coerce a stack value to an array's raw element type for a
+            /// direct store (numeric conversion, matching
+            /// vm_array_try_store_value). Returns an SSA value already typed
+            /// f64/i64/i32.
+            /// </summary>
+            protected string CoerceToElem(Val v, SLType arrayType)
+            {
+                if (arrayType == SLType.ArrayF64)
+                    return ToF64(v);
+                if (arrayType == SLType.ArrayI32)
+                {
+                    if (v.Type == SLType.I64)
+                    {
+                        string ri32 = NV();
+                        EmitBody("    {0} = arith.trunci {1} : i64 to i32", ri32, v.Name);
+                        return ri32;
+                    }
+                    string f32 = NV();
+                    EmitBody("    {0} = llvm.bitcast {1} : i64 to f64", f32, v.Name);
+                    string r32 = NV();
+                    EmitBody("    {0} = arith.fptosi {1} : f64 to i32", r32, f32);
+                    return r32;
+                }
+                // ArrayI64
+                if (v.Type == SLType.I64) return v.Name;
+                string f = NV();
+                EmitBody("    {0} = llvm.bitcast {1} : i64 to f64", f, v.Name);
+                string r = NV();
+                EmitBody("    {0} = arith.fptosi {1} : f64 to i64", r, f);
+                return r;
+            }
+
+            protected virtual void EmitCallVirt(IRData ir, int pos)
             {
                 var vi = ResolveVirtCallee(ir, pos);
                 for (int i = vi.Argc - 1; i >= 0; --i) Pop(pos);
@@ -1579,7 +1854,7 @@ namespace SimpleLanguage.Export.MLIR
                 m_Stack.Add(new Val(len, SLType.I64));
             }
 
-            private readonly struct VirtCalleeInfo
+            protected readonly struct VirtCalleeInfo
             {
                 public readonly IRMethod Method;
                 public readonly string Name;
@@ -1588,7 +1863,7 @@ namespace SimpleLanguage.Export.MLIR
                 { Method = method; Name = name; Argc = argc; }
             }
 
-            private VirtCalleeInfo ResolveVirtCallee(IRData ir, int pos)
+            protected VirtCalleeInfo ResolveVirtCallee(IRData ir, int pos)
             {
                 if (!(ir.opValue is IRMethodCall imc) || imc.irMethod == null)
                     throw Fail($"[{pos}] CallVirt without resolvable method metadata");
@@ -1608,7 +1883,7 @@ namespace SimpleLanguage.Export.MLIR
             /// getter, so the inlined result is the authoritative
             /// arr-&gt;length at +48.
             /// </summary>
-            private static bool IsTrivialArrayLengthGetter(IRMethod m)
+            protected static bool IsTrivialArrayLengthGetter(IRMethod m)
             {
                 if (m == null) return false;
                 // Ref-module stubs carry no IR body (empty IRDataList): the
@@ -1637,7 +1912,7 @@ namespace SimpleLanguage.Export.MLIR
                     && ops[2] == EIROpCode.StoreReturn && idxs[2] == 0;
             }
 
-            private static string DumpIRShape(IRMethod m)
+            protected static string DumpIRShape(IRMethod m)
             {
                 if (m == null) return "<null method>";
                 if (m.IRDataList == null) return "<null body>";
@@ -1647,7 +1922,7 @@ namespace SimpleLanguage.Export.MLIR
                 return string.Join(", ", parts);
             }
 
-            private void EmitArith(EIROpCode op, int pos)
+            protected void EmitArith(EIROpCode op, int pos)
             {
                 Val b = Pop(pos);
                 Val a = Pop(pos);
@@ -1701,7 +1976,7 @@ namespace SimpleLanguage.Export.MLIR
                 }
             }
 
-            private void EmitBitwise(EIROpCode op, int pos)
+            protected void EmitBitwise(EIROpCode op, int pos)
             {
                 Val b = Pop(pos);
                 Val a = Pop(pos);
@@ -1721,7 +1996,7 @@ namespace SimpleLanguage.Export.MLIR
                 m_Stack.Add(new Val(r, SLType.I64));
             }
 
-            private void EmitLogical(EIROpCode op, int pos)
+            protected void EmitLogical(EIROpCode op, int pos)
             {
                 Val b = Pop(pos);
                 Val a = Pop(pos);
@@ -1734,7 +2009,7 @@ namespace SimpleLanguage.Export.MLIR
                 m_Stack.Add(new Val(r, SLType.I64));
             }
 
-            private void EmitCompare(EIROpCode op, int pos)
+            protected void EmitCompare(EIROpCode op, int pos)
             {
                 Val b = Pop(pos);
                 Val a = Pop(pos);
@@ -1754,7 +2029,7 @@ namespace SimpleLanguage.Export.MLIR
                 m_Stack.Add(new Val(r, SLType.I64));
             }
 
-            private void EmitNot(int pos)
+            protected void EmitNot(int pos)
             {
                 Val v = Pop(pos);
                 string q = NV();
@@ -1773,7 +2048,7 @@ namespace SimpleLanguage.Export.MLIR
                 m_Stack.Add(new Val(r, SLType.I64));
             }
 
-            private void EmitNeg(int pos)
+            protected void EmitNeg(int pos)
             {
                 Val v = Pop(pos);
                 if (v.Type == SLType.I64)
@@ -1801,7 +2076,7 @@ namespace SimpleLanguage.Export.MLIR
             /// f64 bits) go through fptosi; then truncate to the target width
             /// and sign/zero-extend back to i64 (the carrying type).
             /// </summary>
-            private void EmitConvert(int pos, int bits, bool unsigned)
+            protected void EmitConvert(int pos, int bits, bool unsigned)
             {
                 Val v = Pop(pos);
                 string w = v.Name;
@@ -1827,7 +2102,7 @@ namespace SimpleLanguage.Export.MLIR
                 m_Stack.Add(new Val(r, SLType.I64));
             }
 
-            private void EmitConvertR8(int pos)
+            protected void EmitConvertR8(int pos)
             {
                 Val v = Pop(pos);
                 if (v.Type != SLType.I64)
@@ -1845,7 +2120,7 @@ namespace SimpleLanguage.Export.MLIR
                 m_Stack.Add(new Val(r, SLType.F64));
             }
 
-            private static string CmpIntPred(EIROpCode op)
+            protected static string CmpIntPred(EIROpCode op)
             {
                 switch (op)
                 {
@@ -1859,7 +2134,7 @@ namespace SimpleLanguage.Export.MLIR
                 throw new InvalidOperationException(op.ToString());
             }
 
-            private static string CmpFloatPred(EIROpCode op)
+            protected static string CmpFloatPred(EIROpCode op)
             {
                 switch (op)
                 {
@@ -1882,7 +2157,7 @@ namespace SimpleLanguage.Export.MLIR
             /// widening, matching the VM's slot-type coercion in
             /// vm_runtime_object_try_write_value); anything else fails.
             /// </summary>
-            private string CoerceStore(Val v, SLType slotTy, string what)
+            protected string CoerceStore(Val v, SLType slotTy, string what)
             {
                 if (v.Type == slotTy) return v.Name;
                 if (slotTy == SLType.F64 && v.Type == SLType.F32)
@@ -1899,7 +2174,7 @@ namespace SimpleLanguage.Export.MLIR
             }
 
             /// <summary>Materialize an f64 SSA value from a stack Val.</summary>
-            private string ToF64(Val v)
+            protected string ToF64(Val v)
             {
                 string f = NV();
                 if (v.Type != SLType.I64)
@@ -1910,7 +2185,7 @@ namespace SimpleLanguage.Export.MLIR
             }
 
             /// <summary>Reduce a stack Val to an i1 truth value (NaN counts as true).</summary>
-            private string Truthy(Val v)
+            protected string Truthy(Val v)
             {
                 string q = NV();
                 if (v.Type == SLType.I64)
@@ -1928,7 +2203,7 @@ namespace SimpleLanguage.Export.MLIR
 
             // ---- constant decoding ------------------------------------------------
 
-            private static long ConstI64(IRData ir)
+            protected static long ConstI64(IRData ir)
             {
                 object v = ir.opValue;
                 if (v is bool b) return b ? 1 : 0;
@@ -1948,7 +2223,7 @@ namespace SimpleLanguage.Export.MLIR
                 return 0;
             }
 
-            private static long ConstF64Bits(IRData ir)
+            protected static long ConstF64Bits(IRData ir)
             {
                 object v = ir.opValue;
                 if (v is double d) return BitConverter.DoubleToInt64Bits(d);
@@ -1965,12 +2240,12 @@ namespace SimpleLanguage.Export.MLIR
 
             // ---- SSA naming + constant hoisting ------------------------------------
 
-            private static string ConstSuffix(long v)
+            protected static string ConstSuffix(long v)
                 => v >= 0 ? v.ToString(CultureInfo.InvariantCulture)
                           : "m" + ((ulong)(-v)).ToString(CultureInfo.InvariantCulture);
 
             /// <summary>Hoisted i64 constant (entry block, dominates all uses).</summary>
-            private string CI64(long v)
+            protected string CI64(long v)
             {
                 if (m_I64Consts.TryGetValue(v, out string name)) return name;
                 name = "%c_" + ConstSuffix(v);
@@ -1990,7 +2265,7 @@ namespace SimpleLanguage.Export.MLIR
             }
 
             /// <summary>Hoisted i32 constant (llvm dialect, sl_value.kind).</summary>
-            private string CK32(int v)
+            protected string CK32(int v)
             {
                 if (m_K32Consts.TryGetValue(v, out string name)) return name;
                 name = "%k_" + ConstSuffix(v);
@@ -2000,7 +2275,7 @@ namespace SimpleLanguage.Export.MLIR
             }
 
             /// <summary>0.0 as f64, materialized once (used by NaN-safe comparisons).</summary>
-            private string F64Zero()
+            protected string F64Zero()
             {
                 if (!m_F64ZeroEmitted)
                 {
@@ -2039,9 +2314,9 @@ namespace SimpleLanguage.Export.MLIR
                 return m_ArrayDummyName;
             }
 
-            private string NV() => "%v" + (m_TmpCounter++).ToString(CultureInfo.InvariantCulture);
+            protected string NV() => "%v" + (m_TmpCounter++).ToString(CultureInfo.InvariantCulture);
 
-            private Val Pop(int pos)
+            protected Val Pop(int pos)
             {
                 if (m_Stack.Count < 1) throw Fail($"[{pos}] stack underflow");
                 Val v = m_Stack[m_Stack.Count - 1];
@@ -2049,17 +2324,688 @@ namespace SimpleLanguage.Export.MLIR
                 return v;
             }
 
-            private EmitFailException Fail(string message)
+            protected EmitFailException Fail(string message)
                 => new EmitFailException("[" + (m_Method.id ?? m_Method.onlyFunctionName ?? "?") + "] " + message);
 
-            private void EmitBody(string format, params object?[] args)
+            protected void EmitBody(string format, params object?[] args)
             {
                 m_BodySb.AppendFormat(CultureInfo.InvariantCulture, format, args).Append('\n');
             }
 
-            private void EmitConst(string format, params object?[] args)
+            protected void EmitConst(string format, params object?[] args)
             {
                 m_ConstSb.AppendFormat(CultureInfo.InvariantCulture, format, args).Append('\n');
+            }
+        }
+
+        // ------------------------------------------------------------------
+        // GpuMethodEmitter
+        //
+        // A @GPU()+@AOT() static void method is lowered to two artifacts:
+        //
+        //  1. gpu.module @gpu_k{N} [#nvvm.target<chip = "sm_75">] containing
+        //     gpu.func @kernel kernel — the method body translated with the
+        //     OUTERMOST for-loop parallelized as a grid-stride loop:
+        //       i starts at blockIdx.x * blockDim.x + threadIdx.x
+        //       i steps by  gridDim.x  * blockDim.x
+        //     so the same kernel is correct for any grid the host picks.
+        //
+        //  2. func.func @sym (sl_value ABI) — a host wrapper that unpacks the
+        //     sl_value args, dereferences the VMArrays (length +48 / data +64),
+        //     stages device buffers (slgpuMalloc + HtoD), computes
+        //     gx = ceil(bound / blockDimX) from the loop bound (or the @GPU
+        //     gridDimX attribute), launches the kernel, copies results back
+        //     (DtoH) and frees the buffers.
+        //
+        // Kernel parameter ABI (fixed order):
+        //   per array arg slot (ascending): %pa{slot}: !llvm.ptr (device
+        //     element buffer), %ln{slot}: i64 (element count)
+        //   then per scalar arg slot (ascending): %sa{slot}: i64
+        //     (Float64 args pass their bit pattern)
+        //
+        // v1 constraints (fail with a clear message):
+        //   - the method must be void and static
+        //   - the body needs a for loop 'for i = 0, i < bound, i += 1' whose
+        //     bound is one LoadArgument (scalar), one constant, or
+        //     LoadArgument(array) + arr.length
+        //   - arrays are only accessed through their parameters (array-typed
+        //     locals are rejected); kernel stores are unguarded (indices are
+        //     trusted in-range, like the reference compute)
+        //   - no CallStatic (VM bridge) inside kernels
+        //   - @GPU attr: blockDimX/Y/Z, gridDimX/Y/Z and kernelName are used;
+        //     tileSize*/tileNum/groupId/sharedMemorySize/deviceId are carried
+        //     by the attribute for future tiled-kernel work
+        // ------------------------------------------------------------------
+
+        private sealed class GpuMethodEmitter : MethodEmitter
+        {
+            private enum BoundKind { ScalarArg, Const, ArrayLength }
+
+            private static string GpuArch
+                => Environment.GetEnvironmentVariable("SIMPLELANG_GPU_ARCH") is string a
+                   && !string.IsNullOrWhiteSpace(a) ? a : "sm_75";
+
+            private readonly int m_ModuleIndex;
+
+            // resolved launch config (attribute defaults applied)
+            private readonly int m_Bx, m_By, m_Bz;
+            private readonly int m_Gy, m_Gz;
+            private readonly int m_GxAttr;         // <= 0 = auto (from loop bound)
+            private readonly string m_KernelName;
+
+            // argument slot groups (ascending)
+            private readonly List<int> m_ArraySlots = new List<int>();
+            private readonly List<int> m_ScalarSlots = new List<int>();
+
+            // loop-injection analysis
+            private readonly HashSet<int> m_SkipInit = new HashSet<int>(); // dropped instrs
+            private int m_StepConstPos = -1;        // step LoadConst(1) -> %kstride
+            private int m_LoopVar = -1;
+            private BoundKind m_BoundKind = BoundKind.Const;
+            private int m_BoundSlot = -1;
+            private long m_BoundConst;
+
+            // host-wrapper emission state (separate SSA namespace from kernel)
+            private readonly StringBuilder m_HostConstSb = new StringBuilder();
+            private readonly StringBuilder m_HostSb = new StringBuilder();
+            private readonly Dictionary<long, string> m_HostI64Consts = new Dictionary<long, string>();
+            private readonly Dictionary<int, string> m_HostK32Consts = new Dictionary<int, string>();
+            private bool m_HostSentinelEmitted;
+            private string m_HostSentinelName = "";
+            private int m_HostTmp = 0;
+
+            public GpuMethodEmitter(IRMethod method, HashSet<string> usedSymbols,
+                Dictionary<string, string> bridgeIds, int moduleIndex)
+                : base(method, usedSymbols, bridgeIds)
+            {
+                if (m_Slots.HasRet)
+                    throw Fail("GPU methods must be void (no return value)");
+
+                m_ModuleIndex = moduleIndex;
+                var attr = method.gpuAttribute;
+
+                int bx = attr?.GetIntArg(7) ?? 0;   // blockDimX
+                int by = attr?.GetIntArg(8) ?? 0;   // blockDimY
+                int bz = attr?.GetIntArg(9) ?? 0;   // blockDimZ
+                m_Bx = bx > 0 ? bx : 256;
+                m_By = by > 0 ? by : 1;
+                m_Bz = bz > 0 ? bz : 1;
+                int gy = attr?.GetIntArg(5) ?? 0;   // gridDimY
+                int gz = attr?.GetIntArg(6) ?? 0;   // gridDimZ
+                m_Gy = gy > 0 ? gy : 1;
+                m_Gz = gz > 0 ? gz : 1;
+                m_GxAttr = attr?.GetIntArg(4) ?? 0; // gridDimX (<=0: auto)
+
+                string kname = "";
+                var raw = attr?.GetSplitRawArgs();
+                if (raw != null && raw.Count > 12 && !string.IsNullOrEmpty(raw[12]))
+                    kname = raw[12].Trim();
+                m_KernelName = string.IsNullOrEmpty(kname)
+                    ? SanitizeSymbol(m_Method.onlyFunctionName ?? m_Method.id ?? "kernel")
+                    : SanitizeSymbol(kname);
+
+                foreach (int slot in m_Slots.ArgSlotList)
+                {
+                    if (IsArrayType(m_Slots.GetArgType(slot))) m_ArraySlots.Add(slot);
+                    else m_ScalarSlots.Add(slot);
+                }
+            }
+
+            public override string Emit()
+            {
+                CheckSupported();
+                AnalyzeLoop();
+                AnalyzeBlocks();
+                ComputeProfiles();
+                EmitEntry();            // kernel prologue
+                EmitAllBlocks();
+                EmitExit();             // ^kexit: gpu.return
+
+                var sb = new StringBuilder();
+                sb.Append("  // gpu kernel for aot method id: ").Append(m_Method.id).Append('\n');
+                sb.Append("  gpu.module @gpu_k").Append(m_ModuleIndex.ToString(CultureInfo.InvariantCulture))
+                  .Append(" [#nvvm.target<chip = \"").Append(GpuArch).Append("\">] {\n");
+                sb.Append("    gpu.func @").Append(m_KernelName).Append('(')
+                  .Append(KernelSignature()).Append(") kernel {\n");
+                sb.Append(m_ConstSb);
+                sb.Append(m_BodySb);
+                sb.Append("    }\n");
+                sb.Append("  }\n\n");
+                sb.Append(EmitHostWrapper());
+                return sb.ToString();
+            }
+
+            // ---- loop recognition --------------------------------------------------
+
+            private void AnalyzeLoop()
+            {
+                // collect back edges (Br to an earlier position); parallelize
+                // the loop with the smallest head (outermost/first loop), and
+                // for equal heads prefer the latest back edge (the natural
+                // loop bottom after 'continue' branches)
+                var backEdges = new List<(int head, int pos)>();
+                for (int i = 0; i < m_Count; i++)
+                {
+                    var ir = m_Code[i];
+                    if (ir.opCode == EIROpCode.Br && ir.index < i)
+                        backEdges.Add((ir.index, i));
+                }
+                if (backEdges.Count == 0)
+                    throw Fail("no for-loop found to parallelize (a @GPU method body needs a for loop)");
+                backEdges.Sort((a, b) => a.head != b.head ? a.head.CompareTo(b.head) : b.pos.CompareTo(a.pos));
+
+                string lastError = "";
+                foreach (var (head, brPos) in backEdges)
+                {
+                    try { TryAnalyzeLoopAt(head, brPos); return; }
+                    catch (EmitFailException ex) { lastError = ex.Message; }
+                }
+                throw Fail("cannot recognize the for-loop to parallelize; last candidate: " + lastError);
+            }
+
+            private void TryAnalyzeLoopAt(int head, int brPos)
+            {
+                // ---- step: LoadLocal(v), LoadConst(1), Add, StoreLocal(v) ----
+                int q = brPos - 1;
+                while (q >= 0 && (m_Code[q].opCode == EIROpCode.Nop || m_Code[q].opCode == EIROpCode.Label)) q--;
+                if (q < 3
+                    || m_Code[q].opCode != EIROpCode.StoreLocal
+                    || m_Code[q - 1].opCode != EIROpCode.Add
+                    || !IsLoadConstOp(m_Code[q - 2].opCode)
+                    || m_Code[q - 3].opCode != EIROpCode.LoadLocal
+                    || m_Code[q - 3].index != m_Code[q].index)
+                    throw Fail($"[{q}] for-loop step is not a plain 'i += 1'");
+                int loopVar = m_Code[q].index;
+                if (ConstI64(m_Code[q - 2]) != 1)
+                    throw Fail("for-loop step must be '+1' (grid stride is applied automatically)");
+
+                // ---- init: drop every LoadConst + StoreLocal(v) pair before the head ----
+                bool anyInit = false;
+                int p = head - 1;
+                while (p >= 1)
+                {
+                    if (m_Code[p].opCode == EIROpCode.Nop) { p--; continue; }
+                    if (m_Code[p].opCode != EIROpCode.StoreLocal || m_Code[p].index != loopVar) break;
+                    if (!IsLoadConstOp(m_Code[p - 1].opCode)) break;
+                    m_SkipInit.Add(p);
+                    m_SkipInit.Add(p - 1);
+                    anyInit = true;
+                    p -= 2;
+                }
+                if (!anyInit)
+                    throw Fail("for-loop init (i = <const>) not found before the loop head");
+
+                // ---- condition: LoadLocal(v), bound, Clt|Cle, BrFalse ----
+                int c = head + 1;
+                while (c < m_Count && (m_Code[c].opCode == EIROpCode.Nop || m_Code[c].opCode == EIROpCode.Label)) c++;
+                if (c + 2 >= m_Count
+                    || m_Code[c].opCode != EIROpCode.LoadLocal
+                    || m_Code[c].index != loopVar)
+                    throw Fail("for-loop condition must start with the loop variable (write 'i < n' / 'i <= n')");
+                int b = c + 1;
+                int cmpPos;
+                if (m_Code[b].opCode == EIROpCode.LoadArgument
+                    && (m_Code[b + 1].opCode == EIROpCode.Clt || m_Code[b + 1].opCode == EIROpCode.Cle))
+                {
+                    if (IsArrayType(m_Slots.GetArgType(m_Code[b].index)))
+                        throw Fail("for-loop bound cannot be an array value");
+                    m_BoundKind = BoundKind.ScalarArg;
+                    m_BoundSlot = m_Code[b].index;
+                    cmpPos = b + 1;
+                }
+                else if (IsLoadConstOp(m_Code[b].opCode)
+                    && (m_Code[b + 1].opCode == EIROpCode.Clt || m_Code[b + 1].opCode == EIROpCode.Cle))
+                {
+                    m_BoundKind = BoundKind.Const;
+                    m_BoundConst = ConstI64(m_Code[b]);
+                    cmpPos = b + 1;
+                }
+                else if (m_Code[b].opCode == EIROpCode.LoadArgument
+                    && m_Code[b + 1].opCode == EIROpCode.CallVirt
+                    && (m_Code[b + 2].opCode == EIROpCode.Clt || m_Code[b + 2].opCode == EIROpCode.Cle)
+                    && IsArrayType(m_Slots.GetArgType(m_Code[b].index)))
+                {
+                    // 'i < arr.length'
+                    m_BoundKind = BoundKind.ArrayLength;
+                    m_BoundSlot = m_Code[b].index;
+                    cmpPos = b + 2;
+                }
+                else
+                {
+                    throw Fail("for-loop bound must be a parameter, a constant, or 'arr.length'");
+                }
+
+                if (cmpPos + 1 >= m_Count || m_Code[cmpPos + 1].opCode != EIROpCode.BrFalse)
+                    throw Fail("for-loop exit branch not recognized");
+
+                m_LoopVar = loopVar;
+                m_StepConstPos = q - 2;
+            }
+
+            protected override bool EmitInstructionOverride(IRData ir, int pos)
+            {
+                if (m_SkipInit.Contains(pos)) return true;              // dropped: init stores
+                if (pos == m_StepConstPos)
+                {
+                    // rewrite the '+1' of the step into the grid stride
+                    m_Stack.Add(new Val("%kstride", SLType.I64));
+                    return true;
+                }
+                return false;
+            }
+
+            // ---- kernel emission ---------------------------------------------------
+
+            private string KernelSignature()
+            {
+                var parts = new List<string>();
+                foreach (int s in m_ArraySlots)
+                {
+                    parts.Add("%pa" + s.ToString(CultureInfo.InvariantCulture) + ": !llvm.ptr");
+                    parts.Add("%ln" + s.ToString(CultureInfo.InvariantCulture) + ": i64");
+                }
+                foreach (int s in m_ScalarSlots)
+                    parts.Add("%sa" + s.ToString(CultureInfo.InvariantCulture) + ": i64");
+                return string.Join(", ", parts);
+            }
+
+            protected override void CheckSupported()
+            {
+                base.CheckSupported();
+                for (int i = 0; i < m_Count; i++)
+                {
+                    if (m_Code[i].opCode == EIROpCode.CallStatic)
+                        throw Fail($"[{i}] CallStatic is not supported inside GPU kernels");
+                }
+            }
+
+            protected override string ExitLabel => "^kexit";
+
+            protected override void EmitEntry()
+            {
+                // ---- parallel dimension: global thread id + grid stride ----
+                EmitBody("    %tix = gpu.thread_id x");
+                EmitBody("    %bdx = gpu.block_dim x");
+                EmitBody("    %bix = gpu.block_id x");
+                EmitBody("    %gdx = gpu.grid_dim x");
+                EmitBody("    %koff = arith.muli %bix, %bdx : index");
+                EmitBody("    %kidx = arith.addi %koff, %tix : index");
+                EmitBody("    %ktid = arith.index_cast %kidx : index to i64");
+                EmitBody("    %kgs = arith.muli %gdx, %bdx : index");
+                EmitBody("    %kstride = arith.index_cast %kgs : index to i64");
+
+                // ---- locals slab (llvm.alloca: no memref inside gpu.func) ----
+                string lc = NV();
+                EmitBody("    {0} = llvm.mlir.constant({1} : i64) : i64", lc, m_Slots.LocalSlots);
+                EmitBody("    %kloc = llvm.alloca {0} x i64 : (i64) -> !llvm.ptr", lc);
+                string zero = CI64(0);
+                for (int i = 0; i < m_Slots.LocalSlots; i++)
+                {
+                    string p = NV();
+                    EmitBody("    {0} = llvm.getelementptr %kloc[{1}] : (!llvm.ptr, i64) -> !llvm.ptr, i64", p, CI64(i));
+                    EmitBody("    llvm.store {0}, {1} : i64, !llvm.ptr", zero, p);
+                }
+                // the loop variable starts at the global thread id
+                string pv = NV();
+                EmitBody("    {0} = llvm.getelementptr %kloc[{1}] : (!llvm.ptr, i64) -> !llvm.ptr, i64", pv, CI64(m_LoopVar));
+                EmitBody("    llvm.store %ktid, {0} : i64, !llvm.ptr", pv);
+
+                // ---- spill stack for the virtual machine stack ----
+                string dc = NV();
+                EmitBody("    {0} = llvm.mlir.constant({1} : i64) : i64", dc, Math.Max(1, m_MaxDepth));
+                EmitBody("    %kstk = llvm.alloca {0} x i64 : (i64) -> !llvm.ptr", dc);
+
+                EmitBody("    cf.br ^b{0}", m_Blocks[0].Start);
+            }
+
+            protected override void EmitExit()
+            {
+                EmitBody("  ^kexit:");
+                EmitBody("    gpu.return");
+            }
+
+            protected override void ReloadStack(Block b)
+            {
+                var entry = b.Entry!;
+                for (int i = 0; i < entry.Count; i++)
+                {
+                    string p = NV();
+                    EmitBody("    {0} = llvm.getelementptr %kstk[{1}] : (!llvm.ptr, i64) -> !llvm.ptr, i64", p, CI64(i));
+                    string v = NV();
+                    EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i64", v, p);
+                    m_Stack.Add(new Val(v, entry[i]));
+                }
+            }
+
+            protected override void SpillAll()
+            {
+                for (int i = 0; i < m_Stack.Count; i++)
+                {
+                    string p = NV();
+                    EmitBody("    {0} = llvm.getelementptr %kstk[{1}] : (!llvm.ptr, i64) -> !llvm.ptr, i64", p, CI64(i));
+                    EmitBody("    llvm.store {0}, {1} : i64, !llvm.ptr", m_Stack[i].Name, p);
+                }
+            }
+
+            // ---- kernel instruction emitters (override the host slots) -------------
+
+            protected override void EmitLoadArgument(IRData ir, int pos)
+            {
+                SLType ty = m_Slots.GetArgType(ir.index);
+                if (IsArrayType(ty))
+                    m_Stack.Add(new Val("%pa" + ir.index.ToString(CultureInfo.InvariantCulture), ty));
+                else
+                    m_Stack.Add(new Val("%sa" + ir.index.ToString(CultureInfo.InvariantCulture), ty));
+            }
+
+            protected override void EmitLoadLocal(IRData ir, int pos)
+            {
+                SLType ty = m_Slots.GetLocalType(ir.index);
+                if (IsArrayType(ty))
+                    throw Fail($"[{pos}] array-typed locals are not supported in GPU kernels; use the array parameters directly");
+                string p = NV();
+                EmitBody("    {0} = llvm.getelementptr %kloc[{1}] : (!llvm.ptr, i64) -> !llvm.ptr, i64", p, CI64(ir.index));
+                string v = NV();
+                EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i64", v, p);
+                m_Stack.Add(new Val(v, ty));
+            }
+
+            protected override void EmitStoreLocal(IRData ir, int pos)
+            {
+                SLType ty = m_Slots.GetLocalType(ir.index);
+                if (IsArrayType(ty))
+                    throw Fail($"[{pos}] array-typed locals are not supported in GPU kernels");
+                Val v = Pop(pos);
+                string c = CoerceStore(v, ty, $"StoreLocal {ir.index}");
+                string p = NV();
+                EmitBody("    {0} = llvm.getelementptr %kloc[{1}] : (!llvm.ptr, i64) -> !llvm.ptr, i64", p, CI64(ir.index));
+                EmitBody("    llvm.store {0}, {1} : i64, !llvm.ptr", c, p);
+            }
+
+            protected override void EmitStoreArgument(IRData ir, int pos)
+                => throw Fail($"[{pos}] GPU kernels cannot assign to parameters");
+
+            protected override void EmitStoreReturn(IRData ir, int pos)
+                => throw Fail($"[{pos}] GPU kernels must be void");
+
+            protected override void EmitCallStatic(IRData ir, int pos)
+                => throw Fail($"[{pos}] CallStatic is not supported inside GPU kernels");
+
+            /// <summary>Kernel array load: raw device GEP, no VMArray header.</summary>
+            protected override void EmitArrayLoad(IRData ir, int pos)
+            {
+                Val? idxVal = null;
+                if (ir.opCode == EIROpCode.LoadArrayIndexField)
+                {
+                    idxVal = Pop(pos);
+                    if (idxVal.Value.Type != SLType.I64)
+                        throw Fail($"[{pos}] array index is {idxVal.Value.Type}, expected an integer");
+                }
+                Val arr = Pop(pos);
+                if (!IsArrayType(arr.Type))
+                    throw Fail($"[{pos}] {ir.opCode} receiver is {arr.Type}, expected an array");
+                string idx = idxVal.HasValue ? idxVal.Value.Name : CI64(ir.index);
+
+                string ety = arr.Type == SLType.ArrayF64 ? "f64"
+                    : arr.Type == SLType.ArrayI32 ? "i32" : "i64";
+                string ep = NV();
+                EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, {3}",
+                    ep, arr.Name, idx, ety);
+                if (arr.Type == SLType.ArrayF64)
+                {
+                    string f = NV();
+                    EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> f64", f, ep);
+                    string v = NV();
+                    EmitBody("    {0} = llvm.bitcast {1} : f64 to i64", v, f);
+                    m_Stack.Add(new Val(v, SLType.F64));
+                }
+                else if (arr.Type == SLType.ArrayI32)
+                {
+                    string r32 = NV();
+                    EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i32", r32, ep);
+                    string v = NV();
+                    EmitBody("    {0} = arith.extsi {1} : i32 to i64", v, r32);
+                    m_Stack.Add(new Val(v, SLType.I64));
+                }
+                else
+                {
+                    string v = NV();
+                    EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i64", v, ep);
+                    m_Stack.Add(new Val(v, SLType.I64));
+                }
+            }
+
+            /// <summary>Kernel array store: raw device GEP (indices are trusted).</summary>
+            protected override void EmitArrayStore(IRData ir, int pos)
+            {
+                Val value;
+                Val? idxVal = null;
+                Val arr;
+                if (ir.opCode == EIROpCode.StoreArrayIndexField)
+                {
+                    value = Pop(pos);
+                    idxVal = Pop(pos);
+                    arr = Pop(pos);
+                    if (idxVal.Value.Type != SLType.I64)
+                        throw Fail($"[{pos}] array store index is {idxVal.Value.Type}, expected an integer");
+                }
+                else
+                {
+                    if (StoreIndexFlagOf(ir) == 0)
+                    {
+                        arr = Pop(pos);
+                        value = Pop(pos);
+                    }
+                    else
+                    {
+                        value = Pop(pos);
+                        arr = Pop(pos);
+                    }
+                }
+                if (!IsArrayType(arr.Type))
+                    throw Fail($"[{pos}] {ir.opCode} receiver is {arr.Type}, expected an array");
+                string idx = idxVal.HasValue ? idxVal.Value.Name : CI64(ir.index);
+
+                string ety = MlirElemTypeOf(arr.Type);
+                string val = CoerceToElem(value, arr.Type);
+                string ep = NV();
+                EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, {3}",
+                    ep, arr.Name, idx, ety);
+                EmitBody("    llvm.store {0}, {1} : {2}, !llvm.ptr", val, ep, ety);
+            }
+
+            /// <summary>Kernel arr.length: mapped to the %ln{slot} kernel param.</summary>
+            protected override void EmitCallVirt(IRData ir, int pos)
+            {
+                var vi = ResolveVirtCallee(ir, pos);
+                for (int i = vi.Argc - 1; i >= 0; --i) Pop(pos);
+                Val recv = Pop(pos);
+                if (!IsArrayType(recv.Type))
+                    throw Fail($"[{pos}] CallVirt receiver is {recv.Type}, only array getters are inlinable");
+                if (!IsTrivialArrayLengthGetter(vi.Method))
+                    throw Fail($"[{pos}] CallVirt to '{vi.Name}' is not an inlinable array getter");
+                if (!recv.Name.StartsWith("%pa", StringComparison.Ordinal)
+                    || !int.TryParse(recv.Name.Substring(3), out int slot))
+                    throw Fail($"[{pos}] arr.length is only supported directly on array parameters");
+                m_Stack.Add(new Val("%ln" + slot.ToString(CultureInfo.InvariantCulture), SLType.I64));
+            }
+
+            // ---- host wrapper -------------------------------------------------------
+
+            private string EmitHostWrapper()
+            {
+                BuildHostWrapperBody();
+                var sb = new StringBuilder();
+                sb.Append("  // gpu host wrapper for aot method id: ").Append(m_Method.id).Append('\n');
+                sb.Append("  func.func @").Append(Symbol)
+                  .Append("(%ctx: !llvm.ptr, %args: !llvm.ptr, %argc: i32, %ret: !llvm.ptr) -> i64 {\n");
+                sb.Append(m_HostConstSb);
+                sb.Append(m_HostSb);
+                sb.Append("  }\n\n");
+                return sb.ToString();
+            }
+
+            private void BuildHostWrapperBody()
+            {
+                // ---- 1. unpack sl_value args ----
+                var argVal = new Dictionary<int, string>();
+                foreach (int slot in m_Slots.ArgSlotList)
+                {
+                    string p = HNV();
+                    HEmit("    {0} = llvm.getelementptr %args[{1}] : (!llvm.ptr, i64) -> !llvm.ptr, !slv", p, HCI64(slot));
+                    string s = HNV();
+                    HEmit("    {0} = llvm.load {1} : !llvm.ptr -> !slv", s, p);
+                    string d = HNV();
+                    HEmit("    {0} = llvm.extractvalue {1}[1] : !slv", d, s);
+                    argVal[slot] = d;
+                }
+
+                // ---- 2. deref VMArrays: length (+48) / data (+64), null-safe ----
+                var arrLen = new Dictionary<int, string>();
+                var arrDat = new Dictionary<int, string>();
+                foreach (int slot in m_ArraySlots)
+                {
+                    string ap = argVal[slot];
+                    string okp = HNV();
+                    HEmit("    {0} = arith.cmpi ne, {1}, {2} : i64", okp, ap, HCI64(0));
+                    string basi = HNV();
+                    HEmit("    {0} = arith.select {1}, {2}, {3} : i64", basi, okp, ap, HostSentinelI64());
+                    string bas = HNV();
+                    HEmit("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", bas, basi);
+                    string lp = HNV();
+                    HEmit("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8", lp, bas, HCI64(48));
+                    string l32 = HNV();
+                    HEmit("    {0} = llvm.load {1} : !llvm.ptr -> i32", l32, lp);
+                    string ln = HNV();
+                    HEmit("    {0} = arith.extui {1} : i32 to i64", ln, l32);
+                    arrLen[slot] = ln;
+                    string dp = HNV();
+                    HEmit("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8", dp, bas, HCI64(64));
+                    string dat = HNV();
+                    HEmit("    {0} = llvm.load {1} : !llvm.ptr -> !llvm.ptr", dat, dp);
+                    arrDat[slot] = dat;
+                }
+
+                // ---- 3. grid size: gx = ceil(bound / blockDimX) ----
+                string gx;
+                if (m_GxAttr > 0)
+                {
+                    gx = HCI64(m_GxAttr);
+                }
+                else
+                {
+                    string bound;
+                    switch (m_BoundKind)
+                    {
+                        case BoundKind.ScalarArg: bound = argVal[m_BoundSlot]; break;
+                        case BoundKind.Const: bound = HCI64(m_BoundConst); break;
+                        default: bound = arrLen[m_BoundSlot]; break;
+                    }
+                    string nb = HNV();
+                    HEmit("    {0} = arith.addi {1}, {2} : i64", nb, bound, HCI64(m_Bx - 1));
+                    gx = HNV();
+                    HEmit("    {0} = arith.divsi {1}, {2} : i64", gx, nb, HCI64(m_Bx));
+                }
+
+                // ---- 4. stage device buffers (v1: copy every array in and out) ----
+                var devPtr = new Dictionary<int, string>();
+                var devBytes = new Dictionary<int, string>();
+                foreach (int slot in m_ArraySlots)
+                {
+                    SLType at = m_Slots.GetArgType(slot);
+                    string bytes = HNV();
+                    HEmit("    {0} = arith.muli {1}, {2} : i64", bytes, arrLen[slot], HCI64(ElemWidthOf(at)));
+                    string dv = HNV();
+                    HEmit("    {0} = llvm.call @slgpuMalloc({1}) : (i64) -> !llvm.ptr", dv, bytes);
+                    devPtr[slot] = dv;
+                    devBytes[slot] = bytes;
+                    HEmit("    llvm.call @slgpuMemcpyHtoD({0}, {1}, {2}) : (!llvm.ptr, !llvm.ptr, i64) -> ()",
+                        dv, arrDat[slot], bytes);
+                }
+
+                // ---- 5. launch (skip when the grid is empty) ----
+                string ok = HNV();
+                HEmit("    {0} = arith.cmpi sgt, {1}, {2} : i64", ok, gx, HCI64(0));
+                HEmit("    cf.cond_br {0}, ^gpu_launch, ^gpu_after", ok);
+                HEmit("  ^gpu_launch:");
+                var launchArgs = new List<string>();
+                foreach (int slot in m_ArraySlots)
+                {
+                    launchArgs.Add(devPtr[slot] + ": !llvm.ptr");
+                    launchArgs.Add(arrLen[slot] + ": i64");
+                }
+                foreach (int slot in m_ScalarSlots)
+                    launchArgs.Add(argVal[slot] + ": i64");
+                HEmit("    gpu.launch_func @gpu_k{0}::@{1} blocks in ({2}, {3}, {4}) threads in ({5}, {6}, {7}) : i64 args({8})",
+                    m_ModuleIndex.ToString(CultureInfo.InvariantCulture), m_KernelName,
+                    gx, HCI64(m_Gy), HCI64(m_Gz), HCI64(m_Bx), HCI64(m_By), HCI64(m_Bz),
+                    string.Join(", ", launchArgs));
+                HEmit("    cf.br ^gpu_after");
+                HEmit("  ^gpu_after:");
+
+                // ---- 6. copy results back + free ----
+                foreach (int slot in m_ArraySlots)
+                    HEmit("    llvm.call @slgpuMemcpyDtoH({0}, {1}, {2}) : (!llvm.ptr, !llvm.ptr, i64) -> ()",
+                        arrDat[slot], devPtr[slot], devBytes[slot]);
+                foreach (int slot in m_ArraySlots)
+                    HEmit("    llvm.call @slgpuFree({0}) : (!llvm.ptr) -> ()", devPtr[slot]);
+
+                // ---- 7. zeroed sl_value out + return ----
+                string u0 = HNV();
+                HEmit("    {0} = llvm.mlir.undef : !slv", u0);
+                string u1 = HNV();
+                HEmit("    {0} = llvm.insertvalue {1}, {2}[0] : !slv", u1, HK32(0), u0);
+                string u2 = HNV();
+                HEmit("    {0} = llvm.insertvalue {1}, {2}[1] : !slv", u2, HCI64(0), u1);
+                HEmit("    llvm.store {0}, %ret : !slv, !llvm.ptr", u2);
+                HEmit("    return {0} : i64", HCI64(0));
+            }
+
+            /// <summary>Null-safe host-side VMArray sentinel (length zeroed).</summary>
+            private string HostSentinelI64()
+            {
+                if (!m_HostSentinelEmitted)
+                {
+                    HEmitC("    %hdummy = llvm.alloca {0} x i8 : (i32) -> !llvm.ptr", HK32(72));
+                    HEmitC("    %hds_lp = llvm.getelementptr %hdummy[{0}] : (!llvm.ptr, i64) -> !llvm.ptr, i8", HCI64(48));
+                    HEmitC("    llvm.store {0}, %hds_lp : i32, !llvm.ptr", HK32(0));
+                    HEmitC("    %hds_i = llvm.ptrtoint %hdummy : !llvm.ptr to i64");
+                    m_HostSentinelEmitted = true;
+                    m_HostSentinelName = "%hds_i";
+                }
+                return m_HostSentinelName;
+            }
+
+            // host-wrapper SSA helpers (independent namespace from the kernel)
+
+            private string HNV() => "%hv" + (m_HostTmp++).ToString(CultureInfo.InvariantCulture);
+
+            private string HCI64(long v)
+            {
+                if (m_HostI64Consts.TryGetValue(v, out string name)) return name;
+                name = "%hc_" + ConstSuffix(v);
+                HEmitC("    {0} = arith.constant {1} : i64", name, v.ToString(CultureInfo.InvariantCulture));
+                m_HostI64Consts[v] = name;
+                return name;
+            }
+
+            private string HK32(int v)
+            {
+                if (m_HostK32Consts.TryGetValue(v, out string name)) return name;
+                name = "%hk_" + ConstSuffix(v);
+                HEmitC("    {0} = llvm.mlir.constant({1} : i32) : i32", name, v.ToString(CultureInfo.InvariantCulture));
+                m_HostK32Consts[v] = name;
+                return name;
+            }
+
+            private void HEmit(string format, params object?[] args)
+            {
+                m_HostSb.AppendFormat(CultureInfo.InvariantCulture, format, args).Append('\n');
+            }
+
+            private void HEmitC(string format, params object?[] args)
+            {
+                m_HostConstSb.AppendFormat(CultureInfo.InvariantCulture, format, args).Append('\n');
             }
         }
     }

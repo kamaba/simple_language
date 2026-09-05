@@ -109,6 +109,7 @@ namespace SimpleLanguage.Core
             {
                 case "Nickname":
                 case "AOT":
+                case "GPU":
                     return 0; // Compile
                 case "Condition":
                 case "Route":
@@ -209,6 +210,50 @@ namespace SimpleLanguage.Core
             if (s != null && s.Length >= 2 && s.StartsWith("\"") && s.EndsWith("\""))
                 s = s.Substring(1, s.Length - 2);
             return s;
+        }
+
+        /// <summary>
+        /// 按 Comma 拆分后的全部实参文本列表（数值/字符串/bool 均保留原文）。
+        /// 字符串实参返回去引号内容，其余返回 token lexeme 文本。
+        /// 用于数值型 attribute（如 GPU 的 tileSizeWidth 等）。
+        /// </summary>
+        public List<string> GetSplitRawArgs()
+        {
+            var result = new List<string>();
+            var fmpt = fileMetaAttribute?.fileMetaParTerm;
+            if (fmpt == null)
+                return result;
+            var plist = fmpt.SplitParamList();
+            for (int i = 0; i < plist.Count; i++)
+            {
+                if (plist[i] is FileMetaConstValueTerm cvt)
+                {
+                    var tok = cvt.token;
+                    if (tok == null) { result.Add(null); continue; }
+                    if (tok.type == ETokenType.String)
+                        result.Add(StringTokenContent(tok));
+                    else
+                        result.Add(tok.lexeme?.ToString());
+                }
+                else
+                {
+                    result.Add(plist[i].ToFormatString());
+                }
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 提取 int 实参（按 Comma 拆分后的位置索引）。
+        /// 越界、空值或非数值文本返回 defaultValue。
+        /// </summary>
+        public int GetIntArg(int index, int defaultValue = 0)
+        {
+            if (index < 0) return defaultValue;
+            var raw = GetSplitRawArgs();
+            if (index >= raw.Count || raw[index] == null) return defaultValue;
+            if (int.TryParse(raw[index].Trim(), out var v)) return v;
+            return defaultValue;
         }
 
         public override string ToString()

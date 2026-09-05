@@ -50,7 +50,8 @@
       { "path": "Isolate/TransferableData.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Isolate/IsolateGroup.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Isolate/Isolate.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
-      { "path": "FFI/Library.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
+      { "path": "FFI/Library.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "GPU/GPU.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -125,6 +126,11 @@
       },
       { "class": "Component" },
       { "class": "Node" },
+      { "namespace": "GPU", "children":
+         [
+             { "class": "GPU" }
+         ]
+      },
       { "namespace": "FFI", "children":
          [
             { "class": "Library" },

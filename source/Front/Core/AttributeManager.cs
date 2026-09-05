@@ -109,6 +109,26 @@ namespace SimpleLanguage.Core
                     $"AOT: attribute registered on '{owner?.allName}' (no logic yet)");
             });
 
+            // GPU: 设备计算（kernel）标记
+            // 标注在成员函数上，由 MLIRExporter 读取参数发射 gpu.module/gpu.func/gpu.launch。
+            // 位置实参（全部可选，未提供使用默认值）：
+            //   0:  tileSizeWidth     - tile 宽度（默认 16）
+            //   1:  tileSizeHeight    - tile 高度（默认 16）
+            //   2:  tileNum           - tile 总数（0 = 自动推导）
+            //   3:  groupId           - 工作组编号（默认 0）
+            //   4:  gridDimX/Y/Z      - grid 维度（默认 1/1/1）
+            //   7:  blockDimX/Y/Z     - block 维度（默认 256/1/1）
+            //   10: sharedMemorySize  - 动态共享内存字节数（默认 0）
+            //   11: deviceId          - 设备编号（默认 0）
+            //   12: kernelName        - kernel 符号名（空 = 方法名）
+            RegisterCompileHandler("GPU", (attr, owner) =>
+            {
+                var raw = attr.GetSplitRawArgs();
+                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                    $"GPU: attribute registered on '{owner?.allName}' args={raw.Count} " +
+                    $"(tile={attr.GetIntArg(0)}x{attr.GetIntArg(1)} tileNum={attr.GetIntArg(2)} groupId={attr.GetIntArg(3)})");
+            });
+
             // DllImport: C# P/Invoke 风格 FFI 函数声明标记
             //   @DllImport( "libdemo.so", "addcalc" )
             //   static Func<int,int,int> s_add

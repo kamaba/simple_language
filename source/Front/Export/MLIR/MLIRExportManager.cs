@@ -142,7 +142,8 @@ namespace SimpleLanguage.Export.MLIR
             if (result.NeedsBridgeInit)
                 symbols = result.OkSymbols.Concat(new[] { "sl_aot_bridge_init" }).ToArray();
             if (MLIRToolchain.TryBuildAotDll(mlirPath, dllPath ?? "", symbols,
-                    out var error, MLIRToolchain.ToolchainPaths.FromEnvironment()))
+                    out var error, MLIRToolchain.ToolchainPaths.FromEnvironment(),
+                    gpu: result.HasGpuMethods))
             {
                 result.DllFileName = Path.GetFileName(dllPath ?? "aot.dll");
                 if (config.WriteStandaloneManifest)
@@ -247,7 +248,8 @@ namespace SimpleLanguage.Export.MLIR
                     ? export.OkSymbols.Concat(new[] { "sl_aot_bridge_init" }).ToArray()
                     : (IReadOnlyList<string>)export.OkSymbols;
                 if (MLIRToolchain.TryBuildAotDll(mlirPath, dllPath, exportSymbols,
-                        out var dllError, MLIRToolchain.ToolchainPaths.FromEnvironment()))
+                        out var dllError, MLIRToolchain.ToolchainPaths.FromEnvironment(),
+                        gpu: export.HasGpuMethods))
                 {
                     result.DllFileName = config.DllFileName;
                     if (config.WriteStandaloneManifest)
