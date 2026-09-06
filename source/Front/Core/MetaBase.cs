@@ -46,7 +46,7 @@ namespace SimpleLanguage.Core
         /// allName 格式为 moduleName.namespaceName.className.childClassName，
         /// 确保同一类在不同模块引用场景下 classId 一致。
         /// </summary>
-        public int classId => MetaClassIdentity.GetClassId(allName);
+        public int classId => ClassManager.GetClassId(allName);
         public RefFromType refFromType => m_RefFromType;
         public MetaNode metaNode => m_MetaNode;
         public string pathName => m_MetaNode?.GetAllName();

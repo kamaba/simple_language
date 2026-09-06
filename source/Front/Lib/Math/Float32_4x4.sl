@@ -10,12 +10,7 @@ public class Float32_4x4
     public void _init_()
     {
         this._mat4x4 = Array<Float32>( 16 )
-        int i = 0
-        while i < 16
-        {
-            this._mat4x4[i] = 0.0f
-            i++
-        }
+        this._mat4x4.fill( 0.0f )
     }
 
     public void _init_( Array<Float32> values )
@@ -55,12 +50,12 @@ public class Float32_4x4
         this._mat4x4[index] = value
     }
 
-    Float32 get( int row, int col )
+    Float32 getValue( int row, int col )
     {
         ret this._mat4x4[ row * 4 + col ]
     }
 
-    void set( int row, int col, Float32 value )
+    void setValue( int row, int col, Float32 value )
     {
         this._mat4x4[ row * 4 + col ] = value
     }

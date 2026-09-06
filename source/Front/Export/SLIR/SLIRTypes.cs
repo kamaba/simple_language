@@ -255,8 +255,57 @@ namespace SimpleLanguage.Export.SLIR.Types
     }
 
     /// <summary>
-    /// AOT 方法清单条目（module.json "aot.methods" 数组元素）。
-    /// 与独立 &lt;name&gt;_manifest.json 的条目同构：
+    /// AOT 方法参数清单（module.json "aot.methods[].paramList" 数组元素）。
+    /// slot = C ABI kind：0=i64 位模式、1=f64 位模式、2=struct 原生缓冲、
+    /// 3=VMObject opaque 引用；typeId 仅 slot 2/3 有效（对应 aot.typeList
+    /// 的 classId）；typeName 为诊断用全名。
+    /// </summary>
+    public sealed class SLAotParamPackage
+    {
+        public int slot { get; set; }
+        public int typeId { get; set; }
+        public string typeName { get; set; } = string.Empty;
+    }
+
+    /// <summary>
+    /// struct 原生布局条目（aot.typeList[].layout 数组元素）。
+    /// slot 1=scalar 2=string 3=data(嵌套内联) 4=enum 5=ptr（与 C 侧 VMD_SLOT_* 对齐）。
+    /// offset/size 为原生布局（meta 头 32B 之后自然对齐）；vmOffset 为 VM member_data
+    /// packed 布局参考偏移（fastPath 校验用）。
+    /// </summary>
+    public sealed class SLAotLayoutEntryPackage
+    {
+        public int index { get; set; }
+        public int offset { get; set; }
+        public int size { get; set; }
+        public int slot { get; set; }
+        public string name { get; set; } = string.Empty;
+        public int vmOffset { get; set; }
+        /// <summary>slot==3（嵌套 data）时的成员类型 classId；其余为 0。</summary>
+        public int nestedTypeId { get; set; }
+    }
+
+    /// <summary>
+    /// AOT struct 类型表条目（module.json "aot.typeList" 数组元素）：
+    /// C 侧 marshal/unmarshal 的驱动数据（按 classId 查找）。
+    /// </summary>
+    public sealed class SLAotTypePackage
+    {
+        public int classId { get; set; }
+        public string fullName { get; set; } = string.Empty;
+        /// <summary>0=Class 1=Enum 2=Data 3=Interface（与 SLClassPackage.metaClassKind 一致）。</summary>
+        public int metaClassKind { get; set; }
+        public int baseClassId { get; set; }
+        public int templateParameterCount { get; set; }
+        /// <summary>原生布局总大小（含 32B meta 头，恒 8 对齐）。</summary>
+        public int nativeSize { get; set; }
+        /// <summary>全标量且 VM packed 偏移与原生偏移一致 → C 侧可用整块 memcpy 快路径。</summary>
+        public bool fastPath { get; set; }
+        public List<SLAotLayoutEntryPackage> layout { get; set; } = new();
+    }
+
+    /// <summary>
+    /// AOT 方法清单条目（module.json "aot.methods" 数组元素）：
     /// { "id": "...", "symbol": "...", "status": "ok|failed", "reason": "..." }
     /// </summary>
     public sealed class SLAotMethodPackage
@@ -267,19 +316,35 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// <summary>ok = 可原生分发；failed = 降级失败，回退 CVM 解释执行。</summary>
         public string status { get; set; } = string.Empty;
         public string? reason { get; set; }
+        /// <summary>参数清单（仅 status==ok 时填充；空数组 = 无参数）。</summary>
+        public List<SLAotParamPackage> paramList { get; set; } = new();
+        /// <summary>返回槽 C ABI kind：-1=void、0=i64、1=f64、2=struct（ret 预置
+        /// 协议）、3=objref。与 paramList[].slot 取值域一致。</summary>
+        public int retSlot { get; set; } = -1;
+        /// <summary>retSlot=="struct" 时的返回类型 classId；其余 0。</summary>
+        public int retTypeId { get; set; }
     }
 
     /// <summary>
-    /// module.json 的 "aot" 字段：AOT 导出清单（原独立 aot_manifest.json 的合并形态）。
+    /// module.json 的 "aot" 字段：AOT 导出清单。
     /// VM 加载模块时读取该字段定位并加载 aot.dll，把 status=="ok" 的方法
     /// 注册进原生调用注册表（stage-4）。
     /// </summary>
     public sealed class SLAotPackage
     {
-        public string mlir { get; set; } = string.Empty;
+        /// <summary>AOT 原生分发开关（默认 true）。false = VM 不加载 aot.dll，
+        /// CallStatic 全部走解释器，用于 A/B 对比（取代旧的 SIMPLELANG_CVM_AOT 环境变量）。</summary>
+        public bool enabled { get; set; } = true;
+        /// <summary>源 mlir 文件名（aot.mlir）。Debug 导出保留（溯源）；Release 导出在
+        /// dll 构建成功后中间产物已删除，字段为 null（序列化省略）。dll 未构建/构建失败
+        /// 时文件仍在，字段保留供排查。</summary>
+        public string? mlir { get; set; }
         /// <summary>dll 文件名（相对 module.json 同目录）；空 = 仅导出 mlir（SIMPLELANG_AOT_DLL=0）。</summary>
         public string dll { get; set; } = string.Empty;
         public List<SLAotMethodPackage> methods { get; set; } = new();
+        /// <summary>struct 类型表（C 侧 marshal/unmarshal 驱动数据；本模块发射
+        /// 的所有方法引用的 data 类型及其递归嵌套类型的并集）。</summary>
+        public List<SLAotTypePackage> typeList { get; set; } = new();
     }
 
     /// <summary>
@@ -311,10 +376,9 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// </summary>
         public string nativeDll { get; set; } = string.Empty;
         /// <summary>
-        /// AOT 导出清单（原独立 aot_manifest.json 的合并形态）。
-        /// MLIR AOT 管线（MLIRExportManager）的产物：dll 文件名 + 每方法
-        /// symbol/status。VM 优先从此字段加载 aot.dll（stage-4），
-        /// 旧格式（独立 manifest 文件）作为回退。null = 无 AOT 导出。
+        /// AOT 导出清单（MLIRExportManager 管线的产物）。
+        /// dll 文件名 + 每方法 symbol/status；VM 加载模块时从此字段
+        /// 加载 aot.dll 并注册原生方法（stage-4）。null = 无 AOT 导出。
         /// </summary>
         public SLAotPackage? aot { get; set; }
         /// <summary>

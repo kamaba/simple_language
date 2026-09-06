@@ -15,9 +15,8 @@
 //    stage 1: collect @AOT() candidates (isAot && isStatic && !isTemplateFunction)
 //    stage 2: MLIRExporter.ExportModuleToFile -> aot.mlir (+ method manifest)
 //    stage 3: MLIRToolchain.TryBuildAotDll    -> aot.dll (fallback to CVM on failure)
-//    stage 3.5: manifest is merged into module.json ("aot" field) and,
-//              for backward compatibility, optionally written standalone
-//              as <name>_manifest.json (SIMPLELANG_AOT_MANIFEST=0 disables).
+//    stage 3.5: the method manifest is merged into module.json ("aot" field);
+//              the VM reads it from there to load the dll (stage 4).
 //****************************************************************************
 
 using SimpleLanguage.Export.SLIR.Types;
@@ -40,19 +39,10 @@ namespace SimpleLanguage.Export.MLIR
         public bool AotEnabled { get; init; } = true;
         /// <summary>SIMPLELANG_AOT_DLL=0 跳过 stage-3 dll 构建（只导出 mlir，默认开启）。</summary>
         public bool BuildDll { get; init; } = true;
-        /// <summary>
-        /// SIMPLELANG_AOT_MANIFEST=0 不再单独写 &lt;name&gt;_manifest.json
-        /// （默认仍写，兼容旧 CVM；新 CVM 优先读 module.json 内嵌的 "aot" 字段）。
-        /// </summary>
-        public bool WriteStandaloneManifest { get; init; } = true;
         /// <summary>SIMPLELANG_MLIR_BIN：mlir-opt/mlir-translate/llc 所在目录。</summary>
         public string? MlirBin { get; init; }
         /// <summary>SIMPLELANG_MSVC_LINK：MSVC link.exe 完整路径。</summary>
         public string? MsvcLink { get; init; }
-        /// <summary>SIMPLELANG_EXPORT_OUTDIR：导出输出目录。</summary>
-        public string? OutDir { get; init; }
-        /// <summary>SIMPLELANG_PROJECT_NAME：项目名（模块文件名前缀）。</summary>
-        public string? ProjectName { get; init; }
 
         /// <summary>模块级 AOT 产物文件名（aot.mlir）。</summary>
         public string MlirFileName { get; init; } = "aot.mlir";
@@ -65,11 +55,8 @@ namespace SimpleLanguage.Export.MLIR
             {
                 AotEnabled = Environment.GetEnvironmentVariable("SIMPLELANG_AOT") != "0",
                 BuildDll = Environment.GetEnvironmentVariable("SIMPLELANG_AOT_DLL") != "0",
-                WriteStandaloneManifest = Environment.GetEnvironmentVariable("SIMPLELANG_AOT_MANIFEST") != "0",
                 MlirBin = NullIfWhiteSpace(Environment.GetEnvironmentVariable("SIMPLELANG_MLIR_BIN")),
                 MsvcLink = NullIfWhiteSpace(Environment.GetEnvironmentVariable("SIMPLELANG_MSVC_LINK")),
-                OutDir = NullIfWhiteSpace(Environment.GetEnvironmentVariable("SIMPLELANG_EXPORT_OUTDIR")),
-                ProjectName = NullIfWhiteSpace(Environment.GetEnvironmentVariable("SIMPLELANG_PROJECT_NAME")),
             };
         }
 
@@ -132,8 +119,7 @@ namespace SimpleLanguage.Export.MLIR
             string? dllPath = null, MLIRExportConfig? config = null)
         {
             config ??= MLIRExportConfig.FromEnvironment();
-            var result = MLIRExporter.ExportModuleToFile(methods, mlirPath,
-                writeManifest: config.WriteStandaloneManifest);
+            var result = MLIRExporter.ExportModuleToFile(methods, mlirPath);
             if (result.OkSymbols.Count == 0) return result;
 
             if (!buildDll) return result;
@@ -146,8 +132,6 @@ namespace SimpleLanguage.Export.MLIR
                     gpu: result.HasGpuMethods))
             {
                 result.DllFileName = Path.GetFileName(dllPath ?? "aot.dll");
-                if (config.WriteStandaloneManifest)
-                    MLIRExporter.SetManifestDll(mlirPath, result.DllFileName);
             }
             else
             {
@@ -217,19 +201,20 @@ namespace SimpleLanguage.Export.MLIR
             // ---- stage 2: emit aot.mlir -----------------------------------
             result.Ran = true;
             var mlirPath = Path.Combine(outDir, config.MlirFileName);
-            var export = MLIRExporter.ExportModuleToFile(candidates, mlirPath,
-                writeManifest: config.WriteStandaloneManifest);
+            var export = MLIRExporter.ExportModuleToFile(candidates, mlirPath);
             result.MlirPath = mlirPath;
             result.NeedsBridgeInit = export.NeedsBridgeInit;
             result.Methods.AddRange(export.Methods);
+            result.TypeTable = export.TypeTable;
 
             Log.AddIRLog(LID.ShowExtendMessage,
                 $"AOT: export {config.MlirFileName} success: {mlirPath} " +
                 $"({export.OkSymbols.Count} ok, {export.FailedIds.Count} failed)");
-            foreach (var failedId in export.FailedIds)
+            foreach (var m in export.Methods)
             {
+                if (m.Status != "failed") continue;
                 Log.AddIRLog(LID.ShowExtendMessage,
-                    $"AOT: method emit failed (see manifest): {failedId}");
+                    $"AOT: method emit failed: {m.Id} ({m.Reason})");
             }
 
             if (export.OkSymbols.Count == 0)
@@ -252,8 +237,6 @@ namespace SimpleLanguage.Export.MLIR
                         gpu: export.HasGpuMethods))
                 {
                     result.DllFileName = config.DllFileName;
-                    if (config.WriteStandaloneManifest)
-                        MLIRExporter.SetManifestDll(mlirPath, config.DllFileName);
                     Log.AddIRLog(LID.ShowExtendMessage, "AOT: build dll success: " + dllPath);
                 }
                 else
@@ -287,6 +270,9 @@ namespace SimpleLanguage.Export.MLIR
             /// <summary>模块是否包含 stage-5 反向桥（需要导出 sl_aot_bridge_init）。</summary>
             public bool NeedsBridgeInit { get; set; }
             public List<MLIRExporter.AotMethodManifest> Methods { get; } = new();
+            /// <summary>模块级 data 类型注册表（发射期收集；manifest
+            /// "aot.typeList" 的数据源）。null = 导出未运行或发射前抛出。</summary>
+            internal AotTypeTable? TypeTable { get; set; }
 
             /// <summary>是否有可原生分发的方法。</summary>
             public bool AnyOk
@@ -298,19 +284,37 @@ namespace SimpleLanguage.Export.MLIR
                 if (!Ran || Methods.Count == 0) return null;
                 var pkg = new SLAotPackage
                 {
-                    mlir = Path.GetFileName(MlirPath ?? "aot.mlir"),
+                    enabled = true,
+                    // Debug 导出带 mlir 溯源字段；Release 导出 dll 构建成功后
+                    // aot.mlir 已随中间产物删除（KeepIntermediateArtifacts=false），
+                    // 字段不写（null 序列化省略）。dll 未构建/构建失败时文件仍在，
+                    // 字段保留供排查。
+                    mlir = (MLIRToolchain.KeepIntermediateArtifacts
+                            || string.IsNullOrEmpty(DllFileName))
+                        ? Path.GetFileName(MlirPath ?? "aot.mlir")
+                        : null,
                     dll = DllFileName ?? string.Empty,
                 };
                 foreach (var m in Methods)
                 {
-                    pkg.methods.Add(new SLAotMethodPackage
+                    var mp = new SLAotMethodPackage
                     {
                         id = m.Id,
                         symbol = m.Symbol,
                         status = m.Status,
                         reason = string.IsNullOrEmpty(m.Reason) ? null : m.Reason,
-                    });
+                    };
+                    // 参数/返回 ABI 清单仅对 ok 方法有意义（C 侧 marshal 只看 ok 条目）
+                    if (m.Status == "ok")
+                    {
+                        mp.paramList.AddRange(m.ParamList);
+                        mp.retSlot = m.RetSlot;
+                        mp.retTypeId = m.RetTypeId;
+                    }
+                    pkg.methods.Add(mp);
                 }
+                if (TypeTable != null && TypeTable.Count > 0)
+                    pkg.typeList.AddRange(TypeTable.ToPackages());
                 return pkg;
             }
         }

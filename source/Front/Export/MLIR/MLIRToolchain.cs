@@ -74,6 +74,24 @@ namespace SimpleLanguage.Export.MLIR
         }
 
         /// <summary>
+        /// 导出是否保留 AOT 中间产物（aot.mlir / .opt.mlir / .ll / .obj / .exp /
+        /// _gpurt.obj）与 module.json 的 "aot.mlir" 溯源字段：Debug 构建保留
+        /// （便于事后看 IR 排查）；Release 构建在 aot.dll 构建成功后删除，
+        /// 导出目录只留 aot.dll / aot.lib。
+        /// </summary>
+        internal static bool KeepIntermediateArtifacts
+        {
+            get
+            {
+#if DEBUG
+                return true;
+#else
+                return false;
+#endif
+            }
+        }
+
+        /// <summary>
         /// Build aot.dll from aot.mlir, exporting the given symbols
         /// (sl_value ABI: (ptr ctx, ptr args, i32 argc, ptr ret) -> i64).
         /// Never throws: returns false with an error message so the caller can
@@ -145,26 +163,66 @@ namespace SimpleLanguage.Export.MLIR
                     args.Append("/nologo /DLL /INCREMENTAL:NO /ENTRY:sl_gpu_entry /OUT:").Append(Quote(dllPath))
                         .Append(' ').Append(Quote(obj))
                         .Append(' ').Append(Quote(rtObj))
-                        .Append(" kernel32.lib msvcrt.lib ucrt.lib");
+                        .Append(" kernel32.lib msvcrt.lib ucrt.lib libvcruntime.lib");
                     foreach (var s in exportSymbols)
                         args.Append(" /EXPORT:").Append(s);
 
                     Run(link, args.ToString(), workDir, env);
+                    if (!KeepIntermediateArtifacts)
+                        DeleteIntermediateArtifacts(mlirFile, dllPath);
                     return true;
                 }
 
+                // libvcruntime.lib: static memcpy (LLVM lowers
+                // llvm.intr.memcpy to a call); pure static lib, keeps the
+                // /NOENTRY no-CRT-startup design intact.
                 args.Append("/nologo /DLL /NOENTRY /OUT:").Append(Quote(dllPath))
-                    .Append(' ').Append(Quote(obj));
+                    .Append(' ').Append(Quote(obj))
+                    .Append(" libvcruntime.lib");
                 foreach (var s in exportSymbols)
                     args.Append(" /EXPORT:").Append(s);
 
                 Run(link, args.ToString(), workDir);
+                if (!KeepIntermediateArtifacts)
+                    DeleteIntermediateArtifacts(mlirFile, dllPath);
                 return true;
             }
             catch (Exception ex)
             {
                 error = ex.Message;
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Release 导出：aot.dll 构建成功后删除工具链中间产物
+        /// （.mlir / .opt.mlir / .ll / .obj / .exp / _gpurt.obj），
+        /// 导出目录只保留 aot.dll / aot.lib。单个文件删除失败不影响导出结果。
+        /// </summary>
+        private static void DeleteIntermediateArtifacts(string mlirFile, string dllPath)
+        {
+            string workDir = Path.GetDirectoryName(Path.GetFullPath(mlirFile))
+                ?? Environment.CurrentDirectory;
+            string baseName = Path.GetFileNameWithoutExtension(mlirFile);
+            string[] intermediates =
+            {
+                mlirFile,
+                Path.Combine(workDir, baseName + ".opt.mlir"),
+                Path.Combine(workDir, baseName + ".ll"),
+                Path.Combine(workDir, baseName + ".obj"),
+                Path.Combine(workDir, baseName + "_gpurt.obj"),
+                Path.ChangeExtension(dllPath, ".exp"),
+            };
+            foreach (var f in intermediates)
+            {
+                try
+                {
+                    if (File.Exists(f)) File.Delete(f);
+                }
+                catch
+                {
+                    // 清理失败不影响导出
+                }
             }
         }
 

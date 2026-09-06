@@ -30,6 +30,65 @@ Project
         SystemPrintln( "GaussFactorVm(1.0)=$r9.toString()" );
         SystemPrintln( "ArrayGaussAvg([1..5])=$r10.toString()" );
 
+        # ---- AOT struct ABI 测试（data/class 跨界编组，AOTStructTest.sl）----
+        # 1) kind=2 data 参数 + 成员写 + 调用后回写源对象（void）
+        AotVec2 sv1 = AotVec2(){ x = 3.0, y = 4.0 }
+        AOTStructMath.VecScale( sv1, 2.0 );
+        SystemPrintln( "VecScale(3,4)*2 -> x=$sv1.x.toString() y=$sv1.y.toString()" );
+        AotVec2 sv2 = AotVec2(){ x = 3.0, y = 4.0 }
+        AOTStructMath.VecScaleVm( sv2, 2.0 );
+        SystemPrintln( "VecScaleVm(3,4)*2 -> x=$sv2.x.toString() y=$sv2.y.toString()" );
+
+        # 2) struct 返回（ret 预置协议；源参数按引用回写）
+        AotVec2 sv3 = AotVec2(){ x = 1.5, y = 2.5 }
+        AotVec2 sr1 = AOTStructMath.VecScaled( sv3, 4.0 );
+        SystemPrintln( "VecScaled(1.5,2.5)*4 ret -> x=$sr1.x.toString() y=$sr1.y.toString()" );
+        SystemPrintln( "VecScaled src after call -> x=$sv3.x.toString() y=$sv3.y.toString()" );
+        AotVec2 sv4 = AotVec2(){ x = 1.5, y = 2.5 }
+        AotVec2 sr2 = AOTStructMath.VecScaledVm( sv4, 4.0 );
+        SystemPrintln( "VecScaledVm(1.5,2.5)*4 ret -> x=$sr2.x.toString() y=$sr2.y.toString()" );
+
+        # 3) 双 struct 参数纯读（GEP 直读）
+        AotVec2 da = AotVec2(){ x = 1.0, y = 2.0 }
+        AotVec2 db = AotVec2(){ x = 3.0, y = 4.0 }
+        r11 = AOTStructMath.VecDot( da, db );
+        r12 = AOTStructMath.VecDotVm( da, db );
+        r13 = AOTStructMath.VecDotViaVm( da, db );
+        SystemPrintln( "VecDot((1,2),(3,4)) AOT=$r11.toString() VM=$r12.toString() bridge=$r13.toString()" );
+
+        # 4) 桥 kind=2 双向同步：解释器突变 data，AOT 读回新值
+        AotVec2 bv = AotVec2(){ x = 10.0, y = 0.0 }
+        r14 = AOTStructMath.BumpAndRead( bv );
+        SystemPrintln( "BumpAndRead(10) -> ret=$r14.toString() src.x=$bv.x.toString()" );
+
+        # 5) 嵌套 data 成员链式读（ptr-32 trick）
+        AotParticle pp = new()
+        pp.mass = 2.0
+        pp.vel = AotVec2(){ x = 3.0, y = 4.0 }
+        r15 = AOTStructMath.ParticleEnergy( pp );
+        r16 = AOTStructMath.ParticleEnergyVm( pp );
+        SystemPrintln( "ParticleEnergy(m=2,vel=(3,4)) AOT=$r15.toString() VM=$r16.toString()" );
+
+        # 6) 嵌套 data 成员链式写
+        AotParticle pq = new()
+        pq.mass = 2.0
+        pq.pos = AotVec2(){ x = 1.0, y = 2.0 }
+        pq.vel = AotVec2(){ x = 3.0, y = 4.0 }
+        AOTStructMath.ParticleStep( pq, 0.5 );
+        SystemPrintln( "ParticleStep(pos=(1,2),vel=(3,4),dt=0.5) -> x=$pq.pos.x.toString() y=$pq.pos.y.toString()" );
+        AotParticle pq2 = new()
+        pq2.mass = 2.0
+        pq2.pos = AotVec2(){ x = 1.0, y = 2.0 }
+        pq2.vel = AotVec2(){ x = 3.0, y = 4.0 }
+        AOTStructMath.ParticleStepVm( pq2, 0.5 );
+        SystemPrintln( "ParticleStepVm same -> x=$pq2.pos.x.toString() y=$pq2.pos.y.toString()" );
+
+        # 7) kind=3 class 引用透传（AOT -> 桥 -> 解释器读成员）
+        AotBox ab = new()
+        ab.v = 7.5
+        r17 = AOTStructMath.PassBoxThrough( ab );
+        SystemPrintln( "PassBoxThrough(v=7.5) -> $r17.toString()" );
+
         # FFI 测试用例（动态库加载/调用/回调/Float8 struct 等）
         #FFITest.fun();
 

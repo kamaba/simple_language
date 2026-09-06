@@ -841,7 +841,7 @@ namespace SimpleLanguage.Export.SLIR
 
             // 合并 AOT manifest（aot.mlir / aot.dll / 方法状态清单）。
             // 数据来自 MLIRExportManager.Run 的最近一次结果（在 ExportLangManager.Export
-            // 中先于本方法运行），旧 CVM 仍可读独立的 aot_manifest.json 作为回退。
+            // 中先于本方法运行）；VM 从该 "aot" 字段加载 aot.dll（stage-4）。
             pkg.aot = MLIRExportManager.Instance.LastResult?.ToSlAotPackage();
 
             return pkg;

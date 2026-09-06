@@ -1,10 +1,22 @@
+字节码序例化相互转化过程
+F:\project\lang\csimple_lang\src\vm\runtime\runtime_object.c vm_runtime_write_scalar_to_slice 这个函数的优化，不要每次都转，而通过value取出来的etype和type进行混合，然后确实那种赋值
+像有些的读取过程，不是都必须转成VMRuntimeValue的类型的，这样会增加计算长度
+所有的读取，要优化，原来都是两步if (vm_runtime_object_try_read_value(sro, &val1))
+{
+				vm_push_vmvalue_from_runtimevalue(vm, &val1);
+现在直接都合并成一步就行，
 
+if (vm->stack_slot_depth > 0u)
+这种的语句，尽量使用汇编内联，可以获取 不走复杂的判断 相当后边的>0u >1u >2u 等可以是不同的
 2. 数学库的集成
+
+
 7. 指针的增加与处理. 
 9. 是否不能 new int() 这种的，直接变成栈的方式
+在现在的FrontEnd层，有好多的错误提示，也就是Log的输出，都是
 
-但做数据库，需要动态引入dll的vm层代码 
 
+但做数据库，需要动态引入dll的vm层代码
 使用 @csharp{ } 调用相关的接口 在{}内是中转逻辑   a = 0; @csharp {     a = TestCSharp.TTC.getIndex( 10, a ) }   @js{ a = Test.calc( a, a ) }  需要在工程里边配置 C#版本
 
 
@@ -39,19 +51,15 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 3. math库的处理  看_add_ _minus_ 等的方法是否能在虚拟机里边正常跑
 8. import 导入错误的显示
 10. 全局的typealias里边需要读取后，继承
+优化cvm里边的加法的过程
 
 以后要实现的:
 现在front层 对返回数据void 直接赋值没有报错
-字节码序例化相互转化过程
+
 增加Jit的支持，起码实现x86的平台
 增加对WebAssembly的支持，然后让网页上跑起来示例
 
-我现在要在Export/MLIR 的目录 ，把关于MLIR的一些参数还有逻辑都封装在这个目录下，做对应的方法, 还有就是，需要在AOT里边增加对应的接口。 
-看下导出MLIR的 manifest清单列表，是否可以合并到 module.json里边
-使用MLIR的指令，调用Tile计算 批量数据 写一个对数组或者是matrix 的  平均求值，然后再写一个高斯因子的算法 ，然后放到MLIR里边去计算 
-
-MLIR把结构体，也就是我设计 的class/data/enum 要转化成对应的 llvm.struct   在变的过程，最好还能在这个结构里边带上一些其它的信息，比较类的id, 名称, 如果模板类，需要把模板的成员也变成一个指针（Int64)放在里边 最好还有一个字段去描述这个指针的，这样，不可以使用llvm.struct 去对应我的class/data/enum 了
- 
+MLIR把结构体，也就是我设计 的class/data/enum 要转化成对应的 llvm.struct   在变的过程，最好还能在这个结构里边带上一些其它的信息，比较类的id, 名称, 如果模板类，需要把模板的成员也变成一个指针（Int64)放在里边 最好还有一个字段去描述这个指针的，这样，不可以使用llvm.struct 去对应我的class/data/enum 了 
 
 
 11. 写json的支持 与data的联动

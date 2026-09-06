@@ -5,21 +5,19 @@
 //  - Every @AOT() method becomes a func.func with the sl_value ABI:
 //      (ctx: !llvm.ptr, args: !llvm.ptr, argc: i32, ret: !llvm.ptr) -> i64
 //  - Stack-machine IR is linearized into SSA via per-block stack profiles.
-//  - Failed methods are skipped and recorded in <name>_manifest.json
-//    (status=failed), so aot.mlir always stays valid MLIR.
+//  - Failed methods are skipped and recorded in the per-method manifest
+//    entries (module.json "aot" field, status=failed), so aot.mlir always
+//    stays valid MLIR.
 //****************************************************************************
 
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
 using SimpleLanguage.Core;
 using SimpleLanguage.IR;
+using SimpleLanguage.Export.SLIR.Types;
 
 namespace SimpleLanguage.Export.MLIR
 {
@@ -32,13 +30,23 @@ namespace SimpleLanguage.Export.MLIR
         }
 
         /// <summary>Per-method AOT manifest entry (module.json "aot.methods"
-        /// and the standalone &lt;name&gt;_manifest.json share this shape).</summary>
+        /// array element).</summary>
         public sealed class AotMethodManifest
         {
             public string Id { get; set; } = "";
             public string Symbol { get; set; } = "";
             public string Status { get; set; } = "";
             public string? Reason { get; set; }
+            /// <summary>Per-argument ABI packages in slot order; slot is the
+            /// C ABI kind: 0=i64 bits, 1=f64 bits, 2=struct native buffer,
+            /// 3=objref VMObject*. typeId is the data classId for slot 2/3
+            /// (0 for scalars).</summary>
+            public List<SLAotParamPackage> ParamList { get; set; } = new();
+            /// <summary>Return ABI slot: -1=void, 0=i64, 1=f64, 2=struct
+            /// (ret prefill protocol §5.6), 3=objref.</summary>
+            public int RetSlot { get; set; } = -1;
+            /// <summary>Struct return type classId (0 otherwise).</summary>
+            public int RetTypeId { get; set; }
         }
 
         /// <summary>
@@ -63,24 +71,27 @@ namespace SimpleLanguage.Export.MLIR
             /// <summary>模块中是否含成功发射的 @GPU 方法（stage-3 需走 GPU
             /// 降级 pass 链并链接 sl_gpu_runtime）。</summary>
             public bool HasGpuMethods { get; set; }
+            /// <summary>Module-level data-type registry (design §4): emits
+            /// the !sl_t_* aliases and feeds the manifest "aot.typeList"
+            /// consumed by the C marshal code. Null only when the export
+            /// threw before any method was emitted.</summary>
+            internal AotTypeTable? TypeTable { get; set; }
         }
 
         /// <summary>
         /// 模块级 AOT 导出：把一批 @AOT() 候选方法写入同一个 aot.mlir（每模块一个 aot.dll）。
-        /// 单个方法导出失败不影响其它方法：失败项记入 manifest（status=failed），
+        /// 单个方法导出失败不影响其它方法：失败项记入返回的 manifest 条目
+        /// （status=failed，由 MLIRExportManager 合并进 module.json 的 "aot" 字段），
         /// 成功项照常生成 func.func。
         /// </summary>
-        /// <param name="writeManifest">是否单独写 &lt;name&gt;_manifest.json
-        /// （合并到 module.json 的场景可置 false，默认 true 兼容旧 CVM）。</param>
-        public static AotExportResult ExportModuleToFile(IReadOnlyList<IRMethod> methods, string outputPath,
-            bool writeManifest = true)
+        public static AotExportResult ExportModuleToFile(IReadOnlyList<IRMethod> methods, string outputPath)
         {
             if (methods == null) throw new ArgumentNullException(nameof(methods));
             if (string.IsNullOrWhiteSpace(outputPath)) throw new ArgumentNullException(nameof(outputPath));
 
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? ".");
 
-            var manifest = new ManifestDoc { Mlir = Path.GetFileName(outputPath) };
+            var methodEntries = new List<AotMethodManifest>();
             var usedSymbols = new HashSet<string>();
             var okSymbols = new List<string>();
             var failedIds = new List<string>();
@@ -94,30 +105,41 @@ namespace SimpleLanguage.Export.MLIR
             bool anyGpuOk = false;
             int gpuModuleIndex = 0;
 
-            var sb = new StringBuilder();
-            sb.AppendLine("// SimpleLanguage AOT module");
-            sb.AppendLine("!slv = !llvm.struct<(i32, i64)>");
-            sb.AppendLine(anyGpu
+            /* Module-level data-type registry: method emission lazily
+             * registers !sl_t_* aliases into it, so the alias block can
+             * only be emitted after all methods have run. Assembly is
+             * therefore two-phase: header + aliases, then the module
+             * body collected below. */
+            var typeTable = new AotTypeTable();
+            var header = new StringBuilder();
+            header.AppendLine("// SimpleLanguage AOT module");
+            header.AppendLine("!slv = !llvm.struct<(i32, i64)>");
+
+            var body = new StringBuilder();
+            body.AppendLine(anyGpu
                 ? "module attributes {gpu.container_module} {"
                 : "module {");
             // MSVC CRT: the moment aot.obj contains real float arithmetic
             // (truncf/extf/addf), the CRT emits a reference to _fltused;
             // define it here so the aot.dll link never needs the CRT import.
-            sb.AppendLine("  llvm.mlir.global constant @_fltused(39029 : i32) : i32");
+            body.AppendLine("  llvm.mlir.global constant @_fltused(39029 : i32) : i32");
 
             foreach (var m in methods)
             {
                 if (m == null) continue;
 
-                var entry = new ManifestMethod { Id = m.id };
+                var entry = new AotMethodManifest { Id = m.id };
                 try
                 {
                     MethodEmitter emitter = m.isGpu
-                        ? new GpuMethodEmitter(m, usedSymbols, bridgeIds, gpuModuleIndex++)
-                        : new MethodEmitter(m, usedSymbols, bridgeIds);
-                    sb.Append(emitter.Emit());
+                        ? new GpuMethodEmitter(m, usedSymbols, bridgeIds, typeTable, gpuModuleIndex++)
+                        : new MethodEmitter(m, usedSymbols, bridgeIds, typeTable);
+                    body.Append(emitter.Emit());
                     entry.Symbol = emitter.Symbol;
                     entry.Status = "ok";
+                    entry.ParamList = emitter.BuildParamPackages();
+                    entry.RetSlot = emitter.RetSlot;
+                    entry.RetTypeId = emitter.RetTypeId;
                     okSymbols.Add(emitter.Symbol);
                     if (m.isGpu) anyGpuOk = true;
                 }
@@ -126,33 +148,36 @@ namespace SimpleLanguage.Export.MLIR
                     entry.Status = "failed";
                     entry.Reason = ex.Message;
                     failedIds.Add(m.id);
-                    sb.Append("  // FAILED aot method id: ").Append(m.id)
-                      .Append(" -- ").Append(ex.Message.Replace('\n', ' '))
-                      .AppendLine();
+                    body.Append("  // FAILED aot method id: ").Append(m.id)
+                       .Append(" -- ").Append(ex.Message.Replace('\n', ' '))
+                       .AppendLine();
                 }
-                manifest.Methods.Add(entry);
+                methodEntries.Add(entry);
             }
 
             if (bridgeIds.Count > 0)
             {
-                sb.Append(EmitBridgePlumbing(bridgeIds));
+                body.Append(EmitBridgePlumbing(bridgeIds));
             }
             if (anyGpu)
             {
                 // GPU staging runtime (implemented in sl_gpu_runtime.c):
                 // host wrappers call these to malloc / copy / free device
                 // buffers around gpu.launch_func.
-                sb.Append("  llvm.func @slgpuMalloc(i64) -> !llvm.ptr\n");
-                sb.Append("  llvm.func @slgpuMemcpyHtoD(!llvm.ptr, !llvm.ptr, i64)\n");
-                sb.Append("  llvm.func @slgpuMemcpyDtoH(!llvm.ptr, !llvm.ptr, i64)\n");
-                sb.Append("  llvm.func @slgpuFree(!llvm.ptr)\n");
+                body.Append("  llvm.func @slgpuMalloc(i64) -> !llvm.ptr\n");
+                body.Append("  llvm.func @slgpuMemcpyHtoD(!llvm.ptr, !llvm.ptr, i64)\n");
+                body.Append("  llvm.func @slgpuMemcpyDtoH(!llvm.ptr, !llvm.ptr, i64)\n");
+                body.Append("  llvm.func @slgpuFree(!llvm.ptr)\n");
             }
 
-            sb.AppendLine("}");
+            body.AppendLine("}");
+
+            var sb = new StringBuilder();
+            sb.Append(header);
+            typeTable.EmitAliases(sb);
+            sb.Append(body);
 
             File.WriteAllText(outputPath, sb.ToString());
-            if (writeManifest)
-                WriteManifest(outputPath, manifest);
 
             return new AotExportResult
             {
@@ -161,13 +186,8 @@ namespace SimpleLanguage.Export.MLIR
                 FailedIds = failedIds,
                 NeedsBridgeInit = bridgeIds.Count > 0,
                 HasGpuMethods = anyGpuOk,
-                Methods = manifest.Methods.Select(e => new AotMethodManifest
-                {
-                    Id = e.Id,
-                    Symbol = e.Symbol,
-                    Status = e.Status,
-                    Reason = e.Reason,
-                }).ToList(),
+                Methods = methodEntries,
+                TypeTable = typeTable,
             };
         }
 
@@ -189,7 +209,12 @@ namespace SimpleLanguage.Export.MLIR
             sb.Append("  }\n");
             foreach (var kv in bridgeIds)
             {
-                int byteLen = Encoding.UTF8.GetByteCount(kv.Key);
+                // +1: MLIR string arrays do not auto-append a NUL, and the
+                // C side reads these with strlen-family lookups. Without it
+                // an id whose length lands on an alignment boundary bleeds
+                // into the next global (observed: find_method_by_id got a
+                // concatenation of two ids and failed).
+                int byteLen = Encoding.UTF8.GetByteCount(kv.Key) + 1;
                 sb.Append("  llvm.mlir.global constant ").Append(kv.Value)
                   .Append('(').Append(EscapeCString(kv.Key))
                   .Append(") : !llvm.array<").Append(byteLen.ToString(CultureInfo.InvariantCulture))
@@ -198,7 +223,11 @@ namespace SimpleLanguage.Export.MLIR
             return sb.ToString();
         }
 
-        /// <summary>C string literal escaping for llvm.mlir.global constants.</summary>
+        /// <summary>
+        /// C string literal escaping for llvm.mlir.global constants. Always
+        /// appends an explicit NUL byte: MLIR string arrays do not add one
+        /// implicitly, and the C side reads these with strlen-family lookups.
+        /// </summary>
         private static string EscapeCString(string s)
         {
             var sb = new StringBuilder(s.Length + 8);
@@ -220,6 +249,7 @@ namespace SimpleLanguage.Export.MLIR
                         break;
                 }
             }
+            sb.Append("\\00");
             sb.Append('"');
             return sb.ToString();
         }
@@ -244,7 +274,7 @@ namespace SimpleLanguage.Export.MLIR
             }
         }
 
-        private static string SanitizeSymbol(string name)
+        internal static string SanitizeSymbol(string name)
         {
             if (string.IsNullOrEmpty(name)) return "unknown";
             var sb = new StringBuilder(name.Length);
@@ -258,69 +288,10 @@ namespace SimpleLanguage.Export.MLIR
         }
 
         // ------------------------------------------------------------------
-        // Manifest (consumed by stage-4 CVM native registry)
-        // ------------------------------------------------------------------
-
-        private sealed class ManifestMethod
-        {
-            public string Id { get; set; } = "";
-            public string Symbol { get; set; } = "";
-            public string Status { get; set; } = "";
-            public string? Reason { get; set; }
-        }
-
-        private sealed class ManifestDoc
-        {
-            public string Mlir { get; set; } = "";
-            public List<ManifestMethod> Methods { get; set; } = new List<ManifestMethod>();
-        }
-
-        private static void WriteManifest(string mlirPath, ManifestDoc doc)
-        {
-            string manifestPath = ManifestPathOf(mlirPath);
-
-            var options = new JsonSerializerOptions
-            {
-                WriteIndented = true,
-                PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            };
-            File.WriteAllText(manifestPath, JsonSerializer.Serialize(doc, options));
-        }
-
-        /// <summary>
-        /// Record the built dll name into the manifest next to the mlir file
-        /// (consumed by the stage-4 CVM native registry).
-        /// </summary>
-        public static void SetManifestDll(string mlirPath, string dllFileName)
-        {
-            string manifestPath = ManifestPathOf(mlirPath);
-            if (!File.Exists(manifestPath)) return;
-
-            try
-            {
-                var root = JsonNode.Parse(File.ReadAllText(manifestPath));
-                if (root == null) return;
-                root["dll"] = dllFileName;
-                File.WriteAllText(manifestPath,
-                    root.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
-            }
-            catch (JsonException)
-            {
-                // leave manifest as-is on parse errors
-            }
-        }
-
-        private static string ManifestPathOf(string mlirPath)
-            => Path.Combine(
-                Path.GetDirectoryName(mlirPath) ?? ".",
-                Path.GetFileNameWithoutExtension(mlirPath) + "_manifest.json");
-
-        // ------------------------------------------------------------------
         // Internal types
         // ------------------------------------------------------------------
 
-        private sealed class EmitFailException : Exception
+        internal sealed class EmitFailException : Exception
         {
             public EmitFailException(string message) : base(message) { }
         }
@@ -336,7 +307,18 @@ namespace SimpleLanguage.Export.MLIR
         /// the exact f64 widening of the f32 value, so bitcasts to f64 are
         /// always valid - the type tag only records the rounding domain.
         /// </summary>
-        private enum SLType { I64, F64, F32, ArrayI32, ArrayI64, ArrayF64 }
+        private enum SLType
+        {
+            I64, F64, F32, ArrayI32, ArrayI64, ArrayF64,
+            /// <summary>data 值类型：i64 位模式持有完整原生缓冲指针
+            ///（含 32B !sl_meta 头）；具体 data 类型由 Val/ProfileVal.TypeId
+            ///（= IRMetaClass.id）区分。</summary>
+            Struct,
+            /// <summary>引用类型（String / 用户 class / 接口 / Core.Object /
+            /// 泛型 T）：i64 位模式持有 VMObject* 纯透传（kind=3），
+            /// AOT 体内不可解引用。</summary>
+            ObjRef,
+        }
 
         private static bool IsArrayType(SLType t)
             => t == SLType.ArrayI32 || t == SLType.ArrayI64 || t == SLType.ArrayF64;
@@ -356,12 +338,36 @@ namespace SimpleLanguage.Export.MLIR
         /// <summary>
         /// A stack value. Name always refers to an i64-typed SSA value;
         /// for F64 values the i64 holds the double bit pattern.
+        /// TypeId carries the data type classId for Struct values (0 otherwise).
         /// </summary>
         private readonly struct Val
         {
             public readonly string Name;
             public readonly SLType Type;
-            public Val(string name, SLType type) { Name = name; Type = type; }
+            public readonly int TypeId;
+            public Val(string name, SLType type, int typeId = 0)
+            {
+                Name = name; Type = type; TypeId = typeId;
+            }
+        }
+
+        /// <summary>
+        /// Profile-stack entry: SLType plus the Struct type id. Implicit
+        /// conversions keep existing push sites (plain SLType) and
+        /// comparisons (ProfileVal -> SLType) working unchanged.
+        /// </summary>
+        private readonly struct ProfileVal
+        {
+            public readonly SLType Type;
+            public readonly int TypeId;
+            public ProfileVal(SLType type, int typeId = 0)
+            {
+                Type = type; TypeId = typeId;
+            }
+            public static implicit operator ProfileVal(SLType t) => new ProfileVal(t, 0);
+            public static implicit operator SLType(ProfileVal v) => v.Type;
+            public override string ToString()
+                => TypeId != 0 ? Type.ToString() + "#" + TypeId.ToString(CultureInfo.InvariantCulture) : Type.ToString();
         }
 
         private static readonly HashSet<string> s_I64TypeNames = new HashSet<string>(StringComparer.Ordinal)
@@ -426,12 +432,16 @@ namespace SimpleLanguage.Export.MLIR
             EIROpCode.Convert_I64,
             EIROpCode.Convert_UI64,
             EIROpCode.Convert_R8,
+            EIROpCode.Convert_R4,
             EIROpCode.CallStatic,    /* stage 5: reverse bridge into the CVM */
             EIROpCode.LoadArrayIndex,      /* constant index: [array] -> [element] */
             EIROpCode.LoadArrayIndexField, /* variable index: [array, index] -> [element] */
             EIROpCode.StoreArrayIndex,     /* constant index store: arr[3] = v (payload [flag:1]) */
             EIROpCode.StoreArrayIndexField,/* variable index store: arr[i] = v */
             EIROpCode.CallVirt,            /* inlined array getters (arr.length) */
+            EIROpCode.LoadNotStaticField,     /* data struct member load (native offset GEP) */
+            EIROpCode.StoreNotStaticField1,   /* data brace init: [inst,val] -> [inst] */
+            EIROpCode.StoreNotStaticField2,   /* data member store: [inst,val] -> [] */
         };
 
         /// <summary>
@@ -442,19 +452,30 @@ namespace SimpleLanguage.Export.MLIR
         {
             public readonly Dictionary<int, SLType> ArgTypes = new Dictionary<int, SLType>();
             public readonly Dictionary<int, SLType> LocalTypes = new Dictionary<int, SLType>();
+            /// <summary>Arg slot → data classId (Struct slots; 0 otherwise).
+            /// Carried in Val/ProfileVal so member-access emission can look
+            /// the layout up in the module type table.</summary>
+            public readonly Dictionary<int, int> ArgTypeIds = new Dictionary<int, int>();
+            public readonly Dictionary<int, int> LocalTypeIds = new Dictionary<int, int>();
             public readonly List<int> ArgSlotList = new List<int>();
             public int ArgSlots = 1;
             public int LocalSlots = 1;
             public bool HasRet = false;
             public SLType RetType = SLType.I64;
+            /// <summary>Struct return type classId (0 otherwise).</summary>
+            public int RetTypeId;
+            /// <summary>Module-level registry data types are lazily
+            /// registered into (never null after Resolve).</summary>
+            internal AotTypeTable TypeTable = null!;
 
             private readonly string m_OwnerId;
 
             private SlotTable(string ownerId) { m_OwnerId = ownerId; }
 
-            public static SlotTable Resolve(IRMethod m)
+            public static SlotTable Resolve(IRMethod m, AotTypeTable typeTable)
             {
                 var t = new SlotTable(m?.id ?? "");
+                t.TypeTable = typeTable ?? throw new ArgumentNullException(nameof(typeTable));
 
                 if (m.methodArgumentList != null)
                 {
@@ -464,11 +485,17 @@ namespace SimpleLanguage.Export.MLIR
                         if (v == null) continue;
                         int slot = v.index;
                         if (slot < 0) throw t.Fail($"argument '{v.name}' has negative slot index {slot}");
-                        t.ArgTypes[slot] = ResolveSLType(t, v);
+                        var vt = ResolveVarType(t, v);
+                        t.ArgTypes[slot] = vt.Type;
+                        t.ArgTypeIds[slot] = vt.TypeId;
                         slots.Add(slot);
                     }
                     if (slots.Count > 0)
                     {
+                        /* The C marshal walks ParamList[i] for arg slot i,
+                         * so the argument slot range must be dense. */
+                        if (slots.Min != 0 || slots.Max != slots.Count - 1)
+                            throw t.Fail("argument slot indices are not dense (expected 0..n-1)");
                         t.ArgSlotList.AddRange(slots);
                         t.ArgSlots = Math.Max(1, slots.Max + 1);
                     }
@@ -482,7 +509,9 @@ namespace SimpleLanguage.Export.MLIR
                         if (v == null) continue;
                         int slot = v.index;
                         if (slot < 0) throw t.Fail($"local '{v.name}' has negative slot index {slot}");
-                        t.LocalTypes[slot] = ResolveSLType(t, v);
+                        var vt = ResolveVarType(t, v);
+                        t.LocalTypes[slot] = vt.Type;
+                        t.LocalTypeIds[slot] = vt.TypeId;
                         if (slot > max) max = slot;
                     }
                     t.LocalSlots = Math.Max(1, max + 1);
@@ -501,7 +530,9 @@ namespace SimpleLanguage.Export.MLIR
                      * HasRet). */
                     if (IsVoidType(rv)) return t;
                     t.HasRet = true;
-                    t.RetType = ResolveSLType(t, rv);
+                    var rt = ResolveVarType(t, rv);
+                    t.RetType = rt.Type;
+                    t.RetTypeId = rt.TypeId;
                     /* Array returns are rejected: the CVM side derives the
                      * return etype from the class-name hint, and
                      * "Array<Double>" would be misclassified as Float64
@@ -532,7 +563,16 @@ namespace SimpleLanguage.Export.MLIR
                 return leaf == "Void";
             }
 
-            public static SLType ResolveSLType(SlotTable t, IRMetaVariable v)
+            /// <summary>
+            /// Slot type resolution (design §4.2): scalars/arrays keep the
+            /// stage-1 mapping; data types map to Struct (kind=2, registering
+            /// the type and its nested types into the module type table);
+            /// everything else (String / user class / interface / Core.Object
+            /// / generic T) maps to ObjRef (kind=3 pass-through). Enum slots
+            /// are rejected: the VM packs them as class references, which the
+            /// AOT side cannot reconstruct.
+            /// </summary>
+            public static ProfileVal ResolveVarType(SlotTable t, IRMetaVariable v)
             {
                 var cls = v.irMetaType?.irMetaClass;
                 string n = cls?.irName;
@@ -542,9 +582,46 @@ namespace SimpleLanguage.Export.MLIR
                 string leaf = dot >= 0 ? n.Substring(dot + 1) : n;
                 if (s_I64TypeNames.Contains(leaf)) return SLType.I64;
                 if (leaf == "Double" || leaf == "Float64") return SLType.F64;
+                /* Float32 keeps its own rounding-domain tag, but its i64 bits
+                 * always hold the exact f64 widening (SLType doc above), so
+                 * it crosses the ABI with kind=1 exactly like F64. Without
+                 * this branch the leaf would fall through to ObjRef (kind=3)
+                 * and corrupt the marshaling. */
+                if (leaf == "Float32" || leaf == "Single") return SLType.F32;
                 SLType? arr = TryResolveArrayType(t, v, leaf);
                 if (arr.HasValue) return arr.Value;
-                throw t.Fail($"unsupported slot type '{n}' for variable '{v.name}'");
+
+                if (cls!.metaClassKind == IRMetaClassKind.Data)
+                {
+                    var info = t.TypeTable.Register(cls);
+                    return new ProfileVal(SLType.Struct, info.ClassId);
+                }
+                if (cls.metaClassKind == IRMetaClassKind.Enum)
+                    throw t.Fail($"enum-typed variable '{v.name}' ('{n}') is not AOT-compatible as a slot (use Int64 arithmetic instead)");
+                if (leaf == "Member")
+                    throw t.Fail($"member-typed variable '{v.name}' ('{n}') is not AOT-compatible as a slot");
+
+                /* String / user class / interface / Core.Object / generic T:
+                 * opaque VMObject reference, passed through as kind=3. */
+                return new ProfileVal(SLType.ObjRef, cls.id);
+            }
+
+            /// <summary>ABI kind of a slot type: 0=i64 bits (also arrays,
+            /// whose i64 holds the VMArray*), 1=f64 bits, 2=struct native
+            /// buffer, 3=objref VMObject*.</summary>
+            public static int AbiKindOf(SLType t)
+            {
+                switch (t)
+                {
+                    /* F32 keeps its own rounding-domain tag, but its i64
+                     * bits hold the exact f64 widening, so it crosses the
+                     * ABI with kind=1 exactly like F64 (see SLType doc). */
+                    case SLType.F64:
+                    case SLType.F32: return 1;
+                    case SLType.Struct: return 2;
+                    case SLType.ObjRef: return 3;
+                    default: return 0;
+                }
             }
 
             /// <summary>
@@ -590,6 +667,12 @@ namespace SimpleLanguage.Export.MLIR
                 throw Fail($"unknown local slot {slot}");
             }
 
+            public int GetArgTypeId(int slot)
+                => ArgTypeIds.TryGetValue(slot, out var id) ? id : 0;
+
+            public int GetLocalTypeId(int slot)
+                => LocalTypeIds.TryGetValue(slot, out var id) ? id : 0;
+
             private EmitFailException Fail(string message)
                 => new EmitFailException("[" + m_OwnerId + "] " + message);
         }
@@ -600,7 +683,7 @@ namespace SimpleLanguage.Export.MLIR
             public int Start;
             public int End;
             public List<int> Succs = new List<int>();
-            public List<SLType>? Entry;      // null = not yet reached
+            public List<ProfileVal>? Entry;      // null = not yet reached
             public bool Reachable;
         }
 
@@ -639,20 +722,52 @@ namespace SimpleLanguage.Export.MLIR
             /* Stage-5 bridge: module-level callee-id -> string-global map
              * (shared across all methods of the module). */
             private readonly Dictionary<string, string> m_BridgeIds;
+            /* Module-level data-type registry (shared by all emitters of
+             * one ExportModuleToFile call; member access resolves Struct
+             * layouts through it). */
+            protected readonly AotTypeTable m_TypeTable;
 
             public string Symbol { get; }
 
+            /// <summary>Return ABI slot for the manifest (-1 = void).</summary>
+            public int RetSlot => !m_Slots.HasRet ? -1 : SlotTable.AbiKindOf(m_Slots.RetType);
+            /// <summary>Struct return type classId for the manifest.</summary>
+            public int RetTypeId => m_Slots.RetTypeId;
+
             public MethodEmitter(IRMethod method, HashSet<string> usedSymbols,
-                Dictionary<string, string> bridgeIds)
+                Dictionary<string, string> bridgeIds, AotTypeTable typeTable)
             {
                 m_Method = method ?? throw new ArgumentNullException(nameof(method));
                 if (method.IRDataList == null) throw Fail("IRDataList is null");
                 m_Code = method.IRDataList;
                 m_Count = m_Code.Count;
                 if (m_Count == 0) throw Fail("empty method body");
-                m_Slots = SlotTable.Resolve(method);
+                m_TypeTable = typeTable ?? throw new ArgumentNullException(nameof(typeTable));
+                m_Slots = SlotTable.Resolve(method, m_TypeTable);
                 Symbol = MakeUniqueSymbol(method, usedSymbols);
                 m_BridgeIds = bridgeIds ?? throw new ArgumentNullException(nameof(bridgeIds));
+            }
+
+            /// <summary>
+            /// Manifest param packages (slot order = argument slot order,
+            /// validated dense by SlotTable.Resolve). typeName is the full
+            /// IR type name for diagnostics on the C side.
+            /// </summary>
+            public List<SLAotParamPackage> BuildParamPackages()
+            {
+                var list = new List<SLAotParamPackage>(m_Slots.ArgSlotList.Count);
+                foreach (int slot in m_Slots.ArgSlotList)
+                {
+                    SLType ty = m_Slots.GetArgType(slot);
+                    var arg = m_Method.methodArgumentList?.Find(a => a != null && a.index == slot);
+                    list.Add(new SLAotParamPackage
+                    {
+                        slot = SlotTable.AbiKindOf(ty),
+                        typeId = m_Slots.GetArgTypeId(slot),
+                        typeName = arg?.irMetaType?.irMetaClass?.irName ?? "",
+                    });
+                }
+                return list;
             }
 
             public virtual string Emit()
@@ -788,14 +903,14 @@ namespace SimpleLanguage.Export.MLIR
             {
                 var work = new Queue<Block>();
                 var first = m_Blocks[0];
-                first.Entry = new List<SLType>();
+                first.Entry = new List<ProfileVal>();
                 first.Reachable = true;
                 work.Enqueue(first);
 
                 while (work.Count > 0)
                 {
                     var b = work.Dequeue();
-                    var sim = new List<SLType>(b.Entry!);
+                    var sim = new List<ProfileVal>(b.Entry!);
 
                     for (int i = b.Start; i < b.End; i++)
                     {
@@ -817,7 +932,7 @@ namespace SimpleLanguage.Export.MLIR
                         if (!succ.Reachable)
                         {
                             succ.Reachable = true;
-                            succ.Entry = new List<SLType>(sim);
+                            succ.Entry = new List<ProfileVal>(sim);
                             work.Enqueue(succ);
                         }
                         else if (!ProfileEquals(succ.Entry!, sim))
@@ -828,15 +943,15 @@ namespace SimpleLanguage.Export.MLIR
                 }
             }
 
-            private static bool ProfileEquals(List<SLType> a, List<SLType> b)
+            private static bool ProfileEquals(List<ProfileVal> a, List<ProfileVal> b)
             {
                 if (a.Count != b.Count) return false;
                 for (int i = 0; i < a.Count; i++)
-                    if (a[i] != b[i]) return false;
+                    if (a[i].Type != b[i].Type || a[i].TypeId != b[i].TypeId) return false;
                 return true;
             }
 
-            protected SLType ProfilePop(List<SLType> sim, int pos)
+            protected ProfileVal ProfilePop(List<ProfileVal> sim, int pos)
             {
                 if (sim.Count < 1) throw Fail($"[{pos}] stack underflow");
                 var t = sim[sim.Count - 1];
@@ -844,7 +959,7 @@ namespace SimpleLanguage.Export.MLIR
                 return t;
             }
 
-            protected void StepProfile(List<SLType> sim, IRData ir, int pos)
+            protected void StepProfile(List<ProfileVal> sim, IRData ir, int pos)
             {
                 switch (ir.opCode)
                 {
@@ -873,11 +988,11 @@ namespace SimpleLanguage.Export.MLIR
                         return;
 
                     case EIROpCode.LoadArgument:
-                        sim.Add(m_Slots.GetArgType(ir.index));
+                        sim.Add(new ProfileVal(m_Slots.GetArgType(ir.index), m_Slots.GetArgTypeId(ir.index)));
                         return;
 
                     case EIROpCode.LoadLocal:
-                        sim.Add(m_Slots.GetLocalType(ir.index));
+                        sim.Add(new ProfileVal(m_Slots.GetLocalType(ir.index), m_Slots.GetLocalTypeId(ir.index)));
                         return;
 
                     case EIROpCode.StoreLocal:
@@ -982,6 +1097,15 @@ namespace SimpleLanguage.Export.MLIR
                         return;
                     }
 
+                    case EIROpCode.Convert_R4:
+                    {
+                        var t = ProfilePop(sim, pos);
+                        if (IsArrayType(t))
+                            throw Fail($"[{pos}] f32 convert on array operand");
+                        sim.Add(SLType.F32);
+                        return;
+                    }
+
                     case EIROpCode.Dup:
                     {
                         int n = ReadCount(ir);
@@ -1066,15 +1190,112 @@ namespace SimpleLanguage.Export.MLIR
                         for (int k = 0; k < vi.Argc; k++) ProfilePop(sim, pos);
                         var rt = ProfilePop(sim, pos);
                         if (!IsArrayType(rt))
-                            throw Fail($"[{pos}] CallVirt receiver is {rt}, only array getters are inlinable");
+                            throw Fail($"[{pos}] CallVirt receiver is {rt.Type}, only array getters are inlinable");
                         if (!IsTrivialArrayLengthGetter(vi.Method))
                             throw Fail($"[{pos}] CallVirt to '{vi.Name}' is not an inlinable array getter (id={vi.Method?.id ?? "<null>"} body=[{DumpIRShape(vi.Method)}])");
                         sim.Add(SLType.I64);
                         return;
                     }
 
+                    case EIROpCode.LoadNotStaticField:
+                    {
+                        // [receiver] -> [member value]. The IRData carries
+                        // only the member field index (no operand type), so
+                        // the member type is derived from the receiver's
+                        // struct layout in the module type table.
+                        var rt = ProfilePop(sim, pos);
+                        var mem = ResolveMemberAccess(rt, ir.index, pos, "LoadNotStaticField");
+                        switch (mem.Slot)
+                        {
+                            case AotMemberSlot.Scalar:
+                                sim.Add(mem.IsFloat
+                                    ? (mem.Width == 4 ? SLType.F32 : SLType.F64)
+                                    : SLType.I64);
+                                break;
+                            case AotMemberSlot.Data:
+                                sim.Add(new ProfileVal(SLType.Struct, mem.NestedTypeId));
+                                break;
+                            default:
+                                // String / opaque Ptr slots: the load would
+                                // need the refcount/view bridge (§5.10), not
+                                // supported in this version.
+                                throw Fail($"[{pos}] LoadNotStaticField of reference member '{mem.Name}' (slot kind {(int)mem.Slot}) is not supported");
+                        }
+                        return;
+                    }
+
+                    case EIROpCode.StoreNotStaticField1:
+                    {
+                        // [inst, val] -> [inst] (brace-init keeps receiver)
+                        var vt = ProfilePop(sim, pos);
+                        var rt = ProfilePop(sim, pos);
+                        CheckMemberStore(rt, vt, ir.index, pos);
+                        sim.Add(rt);
+                        return;
+                    }
+
+                    case EIROpCode.StoreNotStaticField2:
+                    {
+                        // [inst, val] -> []
+                        var vt = ProfilePop(sim, pos);
+                        var rt = ProfilePop(sim, pos);
+                        CheckMemberStore(rt, vt, ir.index, pos);
+                        return;
+                    }
+
                     default:
                         throw Fail($"[{pos}] unsupported opcode '{ir.opCode}'");
+                }
+            }
+
+            /// <summary>
+            /// Resolve the member accessed by LoadNotStaticField /
+            /// StoreNotStaticField* (ir.index = field index = position in the
+            /// owner's localIRMetaVariableList, which the layout mirrors).
+            /// The receiver must be a Struct value (kind=2); ObjRef receivers
+            /// would need the VMObject view bridge (§5.10), unsupported here.
+            /// </summary>
+            private AotMemberLayout ResolveMemberAccess(ProfileVal rt, int fieldIndex, int pos, string op)
+            {
+                if (rt.Type != SLType.Struct)
+                {
+                    if (rt.Type == SLType.ObjRef)
+                        throw Fail($"[{pos}] {op} on an objref receiver ({rt}): object member access needs the VMObject view bridge and is not supported");
+                    throw Fail($"[{pos}] {op} receiver is {rt.Type}, expected a data struct");
+                }
+                var info = m_TypeTable.Find(rt.TypeId);
+                if (info == null)
+                    throw Fail($"[{pos}] {op} receiver struct type {rt} is not registered in the type table");
+                var mem = info.FindMember(fieldIndex);
+                if (mem == null)
+                    throw Fail($"[{pos}] {op} member index {fieldIndex} out of range for '{info.FullName}' ({info.Layout.Count} members)");
+                return mem;
+            }
+
+            /// <summary>
+            /// Profile-time check of a member store: scalar members take the
+            /// matching scalar stack type, nested data members take a Struct
+            /// value of exactly the nested type id, reference members are
+            /// rejected (refcount bridge §5.10 not in this version).
+            /// </summary>
+            private void CheckMemberStore(ProfileVal rt, ProfileVal vt, int fieldIndex, int pos)
+            {
+                var mem = ResolveMemberAccess(rt, fieldIndex, pos, "member store");
+                switch (mem.Slot)
+                {
+                    case AotMemberSlot.Scalar:
+                        var want = mem.IsFloat
+                            ? (mem.Width == 4 ? SLType.F32 : SLType.F64)
+                            : SLType.I64;
+                        if (vt.Type != want)
+                            throw Fail($"[{pos}] member store '{mem.Name}' expects {want}, got {vt}");
+                        break;
+                    case AotMemberSlot.Data:
+                        if (vt.Type != SLType.Struct || vt.TypeId != mem.NestedTypeId)
+                            throw Fail($"[{pos}] member store '{mem.Name}' expects Struct#{mem.NestedTypeId}, got {vt}");
+                        break;
+                    default:
+                        throw Fail($"[{pos}] member store to reference member '{mem.Name}' (slot kind {(int)mem.Slot}) is not supported");
                 }
             }
 
@@ -1175,7 +1396,7 @@ namespace SimpleLanguage.Export.MLIR
                 {
                     string v = NV();
                     EmitBody("    {0} = memref.load %stack[{1}] : {2}", v, CIDX(i), StackType);
-                    m_Stack.Add(new Val(v, entry[i]));
+                    m_Stack.Add(new Val(v, entry[i].Type, entry[i].TypeId));
                 }
             }
 
@@ -1229,7 +1450,58 @@ namespace SimpleLanguage.Export.MLIR
                 EmitBody("  ^exit:");
                 string r = NV();
                 EmitBody("    {0} = memref.load %retval[{1}] : memref<1xi64>", r, CIDX(0));
-                int kind = m_Slots.HasRet && m_Slots.RetType == SLType.F64 ? 1 : 0;
+
+                // struct return: ret prefill protocol (design §5.6). The C
+                // caller already set ret->kind=2 and ret->data=<stack buffer>;
+                // flatten-copy NativeSize bytes from the returned buffer
+                // pointer straight into that buffer. Never rewrite %ret and
+                // never touch kind (both are owned by the caller).
+                if (m_Slots.HasRet && m_Slots.RetType == SLType.Struct)
+                {
+                    var info = m_TypeTable.Find(m_Slots.RetTypeId)
+                        ?? throw Fail("return struct type is not registered");
+                    string rv = NV();
+                    EmitBody("    {0} = llvm.load %ret : !llvm.ptr -> !slv", rv);
+                    string rd = NV();
+                    EmitBody("    {0} = llvm.extractvalue {1}[1] : !slv", rd, rv);
+                    // null guards: a null buffer or a null prefill degrades to
+                    // a zero-length copy routed through %ret itself (always a
+                    // valid address) instead of a wild memcpy.
+                    string rn = NV();
+                    EmitBody("    {0} = arith.cmpi ne, {1}, {2} : i64", rn, r, CI64(0));
+                    string dn = NV();
+                    EmitBody("    {0} = arith.cmpi ne, {1}, {2} : i64", dn, rd, CI64(0));
+                    string ok = NV();
+                    EmitBody("    {0} = arith.andi {1}, {2} : i1", ok, rn, dn);
+                    string reti = NV();
+                    EmitBody("    {0} = llvm.ptrtoint %ret : !llvm.ptr to i64", reti);
+                    string rs = NV();
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i64", rs, rn, r, reti);
+                    string ds = NV();
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i64", ds, dn, rd, reti);
+                    string sz = NV();
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i64",
+                        sz, ok, CI64(info.NativeSize), CI64(0));
+                    string sp = NV();
+                    EmitBody("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", sp, rs);
+                    string dp = NV();
+                    EmitBody("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", dp, ds);
+                    /* LLVM 21+: llvm.intr.memcpy dropped the volatile flag
+                     * operand (dst, src, len only); it became the
+                     * isVolatile bool attribute instead. */
+                    EmitBody("    \"llvm.intr.memcpy\"({0}, {1}, {2}) <{{isVolatile = false}}> : (!llvm.ptr, !llvm.ptr, i64) -> ()",
+                        dp, sp, sz);
+                    EmitBody("    return {0} : i64", CI64(0));
+                    return;
+                }
+
+                /* The emitted kind must equal the manifest RetSlot
+                 * (SlotTable.AbiKindOf): F32 returns carry the f64
+                 * widening bit pattern, so they cross as kind=1 (the C
+                 * side unpacks via memcpy, never via an integer coerce);
+                 * ObjRef returns cross as kind=3 (opaque VMObject*).
+                 * Struct (kind=2) returned via the prefill branch above. */
+                int kind = !m_Slots.HasRet ? 0 : SlotTable.AbiKindOf(m_Slots.RetType);
                 string u0 = NV();
                 EmitBody("    {0} = llvm.mlir.undef : !slv", u0);
                 string u1 = NV();
@@ -1357,6 +1629,9 @@ namespace SimpleLanguage.Export.MLIR
                     case EIROpCode.Convert_R8:
                         EmitConvertR8(pos);
                         return;
+                    case EIROpCode.Convert_R4:
+                        EmitConvertR4(pos);
+                        return;
 
                     case EIROpCode.Dup:
                     {
@@ -1395,9 +1670,152 @@ namespace SimpleLanguage.Export.MLIR
                         EmitCallVirt(ir, pos);
                         return;
 
+                    case EIROpCode.LoadNotStaticField:
+                        EmitMemberLoad(ir, pos);
+                        return;
+
+                    case EIROpCode.StoreNotStaticField1:
+                    case EIROpCode.StoreNotStaticField2:
+                        EmitMemberStore(ir, pos);
+                        return;
+
                     default:
                         throw Fail($"[{pos}] unsupported opcode '{ir.opCode}'");
                 }
+            }
+
+            // ---- data struct member access (design §5.9) -------------------------
+            //
+            // A Struct value on the stack is the i64 bit pattern of a
+            // pointer to the full native buffer ([32B !sl_meta header][naturally
+            // aligned member region]); member offsets already include the
+            // header. Receivers are never null: struct values only enter the
+            // frame as marshalled arguments (kind=2) or as inlined nested
+            // members, both backed by live buffers.
+
+            /// <summary>
+            /// LoadNotStaticField: [receiver] -> [member value]. Scalar
+            /// members are widened onto the i64/f64-bit-pattern stack;
+            /// nested data members use the "ptr-32 trick": the pushed value
+            /// is (buf + memberOffset) - 32, so a following member access
+            /// (+32 + innerOffset) lands exactly on buf + memberOffset +
+            /// innerOffset.
+            /// </summary>
+            protected virtual void EmitMemberLoad(IRData ir, int pos)
+            {
+                Val recv = Pop(pos);
+                var info = m_TypeTable.Find(recv.TypeId)
+                    ?? throw Fail($"[{pos}] LoadNotStaticField receiver struct type {recv.TypeId} is not registered");
+                var mem = info.FindMember(ir.index)
+                    ?? throw Fail($"[{pos}] LoadNotStaticField member index {ir.index} out of range for '{info.FullName}'");
+
+                string rp = NV();
+                EmitBody("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", rp, recv.Name);
+                string p = NV();
+                if (mem.Slot == AotMemberSlot.Data)
+                {
+                    EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
+                        p, rp, CI64(mem.Offset - AotTypeInfo.MetaHeaderSize));
+                    string q = NV();
+                    EmitBody("    {0} = llvm.ptrtoint {1} : !llvm.ptr to i64", q, p);
+                    m_Stack.Add(new Val(q, SLType.Struct, mem.NestedTypeId));
+                    return;
+                }
+
+                EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
+                    p, rp, CI64(mem.Offset));
+                string ty = AotTypeTable.ScalarLlvmType(mem.Width, mem.IsFloat);
+                string w = NV();
+                EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> {2}", w, p, ty);
+                if (mem.IsFloat)
+                {
+                    if (mem.Width == 4)
+                    {
+                        // promote exactly like the VM (f32 domain value
+                        // carried as the exact f64 widening)
+                        string d = NV();
+                        EmitBody("    {0} = llvm.fpext {1} : f32 to f64", d, w);
+                        string b = NV();
+                        EmitBody("    {0} = llvm.bitcast {1} : f64 to i64", b, d);
+                        m_Stack.Add(new Val(b, SLType.F32));
+                    }
+                    else
+                    {
+                        string b = NV();
+                        EmitBody("    {0} = llvm.bitcast {1} : f64 to i64", b, w);
+                        m_Stack.Add(new Val(b, SLType.F64));
+                    }
+                }
+                else
+                {
+                    string z = NV();
+                    EmitBody("    {0} = llvm.{1} {2} : {3} to i64",
+                        z, mem.Signed ? "sext" : "zext", w, ty);
+                    m_Stack.Add(new Val(z, SLType.I64));
+                }
+            }
+
+            /// <summary>
+            /// StoreNotStaticField1/2: [inst, val] -> [inst] / []. Scalar
+            /// members narrow the stack value to the member width; nested
+            /// data members copy the inner region (memberOffset, +InnerSize)
+            /// from the value buffer (+32 header) via memcpy.
+            /// </summary>
+            protected virtual void EmitMemberStore(IRData ir, int pos)
+            {
+                Val v = Pop(pos);
+                Val recv = Pop(pos);
+                var info = m_TypeTable.Find(recv.TypeId)
+                    ?? throw Fail($"[{pos}] member store receiver struct type {recv.TypeId} is not registered");
+                var mem = info.FindMember(ir.index)
+                    ?? throw Fail($"[{pos}] member store index {ir.index} out of range for '{info.FullName}'");
+
+                string rp = NV();
+                EmitBody("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", rp, recv.Name);
+
+                if (mem.Slot == AotMemberSlot.Data)
+                {
+                    string dstp = NV();
+                    EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
+                        dstp, rp, CI64(mem.Offset));
+                    string vp = NV();
+                    EmitBody("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", vp, v.Name);
+                    string srcp = NV();
+                    EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
+                        srcp, vp, CI64(AotTypeInfo.MetaHeaderSize));
+                    EmitBody("    \"llvm.intr.memcpy\"({0}, {1}, {2}) <{{isVolatile = false}}> : (!llvm.ptr, !llvm.ptr, i64) -> ()",
+                        dstp, srcp, CI64(mem.Size));
+                }
+                else
+                {
+                    string ty = AotTypeTable.ScalarLlvmType(mem.Width, mem.IsFloat);
+                    string w;
+                    if (mem.IsFloat && mem.Width == 4)
+                    {
+                        string d = NV();
+                        EmitBody("    {0} = llvm.bitcast {1} : i64 to f64", d, v.Name);
+                        w = NV();
+                        EmitBody("    {0} = llvm.fptrunc {1} : f64 to f32", w, d);
+                    }
+                    else if (mem.Width == 8)
+                    {
+                        w = v.Name; // f64: the i64 bits are the f64 pattern
+                    }
+                    else
+                    {
+                        w = NV();
+                        EmitBody("    {0} = llvm.trunc {1} : i64 to {2}", w, v.Name, ty);
+                    }
+                    string p = NV();
+                    EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
+                        p, rp, CI64(mem.Offset));
+                    EmitBody("    llvm.store {0}, {1} : {2}, !llvm.ptr", w, p, ty);
+                }
+
+                // StoreNotStaticField1 keeps the receiver on the stack
+                // (data brace-init chains several stores through it).
+                if (ir.opCode == EIROpCode.StoreNotStaticField1)
+                    m_Stack.Add(recv);
             }
 
             // ---- slot access emitters (host: memref slabs; kernel: overridden) ----
@@ -1407,7 +1825,7 @@ namespace SimpleLanguage.Export.MLIR
                 SLType ty = m_Slots.GetArgType(ir.index);
                 string v = NV();
                 EmitBody("    {0} = memref.load %argmem[{1}] : memref<{2}xi64>", v, CIDX(ir.index), m_Slots.ArgSlots);
-                m_Stack.Add(new Val(v, ty));
+                m_Stack.Add(new Val(v, ty, m_Slots.GetArgTypeId(ir.index)));
             }
 
             protected virtual void EmitLoadLocal(IRData ir, int pos)
@@ -1415,20 +1833,20 @@ namespace SimpleLanguage.Export.MLIR
                 SLType ty = m_Slots.GetLocalType(ir.index);
                 string v = NV();
                 EmitBody("    {0} = memref.load %locals[{1}] : memref<{2}xi64>", v, CIDX(ir.index), m_Slots.LocalSlots);
-                m_Stack.Add(new Val(v, ty));
+                m_Stack.Add(new Val(v, ty, m_Slots.GetLocalTypeId(ir.index)));
             }
 
             protected virtual void EmitStoreLocal(IRData ir, int pos)
             {
                 Val v = Pop(pos);
-                string c = CoerceStore(v, m_Slots.GetLocalType(ir.index), $"StoreLocal {ir.index}");
+                string c = CoerceStore(v, m_Slots.GetLocalType(ir.index), m_Slots.GetLocalTypeId(ir.index), $"StoreLocal {ir.index}");
                 EmitBody("    memref.store {0}, %locals[{1}] : memref<{2}xi64>", c, CIDX(ir.index), m_Slots.LocalSlots);
             }
 
             protected virtual void EmitStoreArgument(IRData ir, int pos)
             {
                 Val v = Pop(pos);
-                string c = CoerceStore(v, m_Slots.GetArgType(ir.index), $"StoreArgument {ir.index}");
+                string c = CoerceStore(v, m_Slots.GetArgType(ir.index), m_Slots.GetArgTypeId(ir.index), $"StoreArgument {ir.index}");
                 EmitBody("    memref.store {0}, %argmem[{1}] : memref<{2}xi64>", c, CIDX(ir.index), m_Slots.ArgSlots);
             }
 
@@ -1439,7 +1857,7 @@ namespace SimpleLanguage.Export.MLIR
                 if (!m_Slots.HasRet)
                     throw Fail($"[{pos}] StoreReturn in a method without a return value");
                 Val v = Pop(pos);
-                string c = CoerceStore(v, m_Slots.RetType, "StoreReturn");
+                string c = CoerceStore(v, m_Slots.RetType, m_Slots.RetTypeId, "StoreReturn");
                 EmitBody("    memref.store {0}, %retval[{1}] : memref<1xi64>", c, CIDX(0));
             }
 
@@ -1460,9 +1878,13 @@ namespace SimpleLanguage.Export.MLIR
                 public readonly bool HasRet;
                 public readonly SLType RetType;
                 public readonly SLType[] ArgTypes;
-                public CalleeInfo(string id, int argc, bool hasRet, SLType retType, SLType[] argTypes)
+                /// <summary>Per-arg data type id (0 for scalar kinds).</summary>
+                public readonly int[] ArgTypeIds;
+                public CalleeInfo(string id, int argc, bool hasRet, SLType retType,
+                    SLType[] argTypes, int[] argTypeIds)
                 {
-                    Id = id; Argc = argc; HasRet = hasRet; RetType = retType; ArgTypes = argTypes;
+                    Id = id; Argc = argc; HasRet = hasRet; RetType = retType;
+                    ArgTypes = argTypes; ArgTypeIds = argTypeIds;
                 }
             }
 
@@ -1490,10 +1912,19 @@ namespace SimpleLanguage.Export.MLIR
                     if (rv == null)
                         throw Fail($"[{pos}] callee '{calleeId}' has null return variable");
                     if (SlotTable.IsVoidType(rv)) hasRet = false;   /* void callee: no return value */
-                    else retType = SlotTable.ResolveSLType(m_Slots, rv);
+                    else
+                    {
+                        var rvt = SlotTable.ResolveVarType(m_Slots, rv);
+                        // bridge returns are marshalled to a fresh VMObject
+                        // only for scalars in this version (§5.7)
+                        if (rvt.Type == SLType.Struct || rvt.Type == SLType.ObjRef)
+                            throw Fail($"[{pos}] CallStatic callee '{calleeId}' returns a struct/object reference, which the reverse bridge does not support");
+                        retType = rvt.Type;
+                    }
                 }
 
                 var argTypes = new SLType[argc];
+                var argTypeIds = new int[argc];
                 if (argc > 0)
                 {
                     if (callee.methodArgumentList == null)
@@ -1507,11 +1938,13 @@ namespace SimpleLanguage.Export.MLIR
                         }
                         if (av == null)
                             throw Fail($"[{pos}] cannot resolve argument slot {slot} of callee '{calleeId}'");
-                        argTypes[slot] = SlotTable.ResolveSLType(m_Slots, av);
+                        var avt = SlotTable.ResolveVarType(m_Slots, av);
+                        argTypes[slot] = avt.Type;
+                        argTypeIds[slot] = avt.TypeId;
                     }
                 }
 
-                return new CalleeInfo(calleeId, argc, hasRet, retType, argTypes);
+                return new CalleeInfo(calleeId, argc, hasRet, retType, argTypes, argTypeIds);
             }
 
             protected virtual void EmitCallStatic(IRData ir, int pos)
@@ -1532,14 +1965,21 @@ namespace SimpleLanguage.Export.MLIR
                     m_BridgeIds[ci.Id] = globalName;
                 }
 
-                // Pack each arg into !slv (kind 1 = f64 bit pattern).
+                // Pack each arg into !slv. C ABI kinds (§5.6):
+                //   0 = i64 bits, 1 = f64 bits, 2 = struct native buffer,
+                //   3 = VMObject opaque reference.
                 // Args are coerced to the callee's declared slot type first
                 // (the VM converts arguments on call-in, e.g. Float32 -> f64).
                 var slvNames = new string[ci.Argc];
                 for (int i = 0; i < ci.Argc; i++)
                 {
-                    int kind = ci.ArgTypes[i] == SLType.F64 ? 1 : 0;
-                    string c = CoerceStore(vals[i], ci.ArgTypes[i], $"CallStatic arg {i}");
+                    SLType at = ci.ArgTypes[i];
+                    /* F32 args hold the f64 widening bits as well; kind=1 so
+                     * the host bridge pushes an f64 the callee binds to F32. */
+                    int kind = (at == SLType.F64 || at == SLType.F32) ? 1
+                        : at == SLType.Struct ? 2
+                        : at == SLType.ObjRef ? 3 : 0;
+                    string c = CoerceStore(vals[i], at, ci.ArgTypeIds[i], $"CallStatic arg {i}");
                     string u0 = NV();
                     EmitBody("    {0} = llvm.mlir.undef : !slv", u0);
                     string u1 = NV();
@@ -1561,10 +2001,11 @@ namespace SimpleLanguage.Export.MLIR
                     EmitBody("    llvm.store {0}, {1} : !slv, !llvm.ptr", slvNames[i], p);
                 }
 
-                // Callee id -> const char* (first element of the array global).
+                // Callee id -> const char* (first element of the array global;
+                // the array type must match the global, incl. the NUL byte).
                 string pg = NV();
                 EmitBody("    {0} = llvm.mlir.addressof {1} : !llvm.ptr", pg, globalName);
-                int idLen = Encoding.UTF8.GetByteCount(ci.Id);
+                int idLen = Encoding.UTF8.GetByteCount(ci.Id) + 1;
                 string pid = NV();
                 EmitBody("    {0} = llvm.getelementptr {1}[{2}, {2}] : (!llvm.ptr, i32, i32) -> !llvm.ptr, !llvm.array<{3} x i8>",
                     pid, pg, CK32(0), idLen);
@@ -2120,6 +2561,35 @@ namespace SimpleLanguage.Export.MLIR
                 m_Stack.Add(new Val(r, SLType.F64));
             }
 
+            protected void EmitConvertR4(int pos)
+            {
+                // C VM: runtime_value_convert_by_etype(EVMType_Float32) =
+                // (float32)dval, stored with etype=Float32 and the payload
+                // being the exact f64 widening of that f32. Mirror that:
+                // round via fptrunc f64->f32, re-widen via fpext, keep the
+                // f64 bit pattern but type the stack slot as F32.
+                Val v = Pop(pos);
+                if (v.Type == SLType.F32)
+                {
+                    m_Stack.Add(new Val(v.Name, SLType.F32));
+                    return;
+                }
+                string w = v.Name;
+                if (v.Type == SLType.I64)
+                {
+                    string f = NV();
+                    EmitBody("    {0} = arith.sitofp {1} : i64 to f64", f, v.Name);
+                    w = f;
+                }
+                string t = NV();
+                EmitBody("    {0} = arith.fptrunc {1} : f64 to f32", t, w);
+                string d = NV();
+                EmitBody("    {0} = arith.fpext {1} : f32 to f64", d, t);
+                string r = NV();
+                EmitBody("    {0} = llvm.bitcast {1} : f64 to i64", r, d);
+                m_Stack.Add(new Val(r, SLType.F32));
+            }
+
             protected static string CmpIntPred(EIROpCode op)
             {
                 switch (op)
@@ -2158,8 +2628,18 @@ namespace SimpleLanguage.Export.MLIR
             /// vm_runtime_object_try_write_value); anything else fails.
             /// </summary>
             protected string CoerceStore(Val v, SLType slotTy, string what)
+                => CoerceStore(v, slotTy, 0, what);
+
+            protected string CoerceStore(Val v, SLType slotTy, int slotTypeId, string what)
             {
-                if (v.Type == slotTy) return v.Name;
+                if (v.Type == slotTy)
+                {
+                    // struct identity: exact data type (no cross-type
+                    // reinterpret); objref: opaque pass-through
+                    if (slotTy == SLType.Struct && v.TypeId != slotTypeId)
+                        throw Fail($"type mismatch at {what}: value is Struct#{v.TypeId}, slot is Struct#{slotTypeId}");
+                    return v.Name;
+                }
                 if (slotTy == SLType.F64 && v.Type == SLType.F32)
                     return v.Name;
                 if (slotTy == SLType.F64 && v.Type == SLType.I64)
@@ -2415,8 +2895,8 @@ namespace SimpleLanguage.Export.MLIR
             private int m_HostTmp = 0;
 
             public GpuMethodEmitter(IRMethod method, HashSet<string> usedSymbols,
-                Dictionary<string, string> bridgeIds, int moduleIndex)
-                : base(method, usedSymbols, bridgeIds)
+                Dictionary<string, string> bridgeIds, AotTypeTable typeTable, int moduleIndex)
+                : base(method, usedSymbols, bridgeIds, typeTable)
             {
                 if (m_Slots.HasRet)
                     throw Fail("GPU methods must be void (no return value)");
@@ -2446,8 +2926,18 @@ namespace SimpleLanguage.Export.MLIR
 
                 foreach (int slot in m_Slots.ArgSlotList)
                 {
-                    if (IsArrayType(m_Slots.GetArgType(slot))) m_ArraySlots.Add(slot);
+                    SLType at = m_Slots.GetArgType(slot);
+                    // struct buffers and VMObject references cannot cross the
+                    // kernel boundary (no marshal path on the launch side)
+                    if (at == SLType.Struct || at == SLType.ObjRef)
+                        throw Fail($"GPU kernels do not support struct/object-reference parameters (slot {slot})");
+                    if (IsArrayType(at)) m_ArraySlots.Add(slot);
                     else m_ScalarSlots.Add(slot);
+                }
+                foreach (var kv in m_Slots.LocalTypes)
+                {
+                    if (kv.Value == SLType.Struct || kv.Value == SLType.ObjRef)
+                        throw Fail($"GPU kernels do not support struct/object-reference locals (slot {kv.Key})");
                 }
             }
 
@@ -2614,8 +3104,15 @@ namespace SimpleLanguage.Export.MLIR
                 base.CheckSupported();
                 for (int i = 0; i < m_Count; i++)
                 {
-                    if (m_Code[i].opCode == EIROpCode.CallStatic)
+                    var op = m_Code[i].opCode;
+                    if (op == EIROpCode.CallStatic)
                         throw Fail($"[{i}] CallStatic is not supported inside GPU kernels");
+                    // struct member access needs the native buffer view,
+                    // which does not exist inside gpu.func
+                    if (op == EIROpCode.LoadNotStaticField
+                        || op == EIROpCode.StoreNotStaticField1
+                        || op == EIROpCode.StoreNotStaticField2)
+                        throw Fail($"[{i}] {op} is not supported inside GPU kernels");
                 }
             }
 
@@ -2673,7 +3170,7 @@ namespace SimpleLanguage.Export.MLIR
                     EmitBody("    {0} = llvm.getelementptr %kstk[{1}] : (!llvm.ptr, i64) -> !llvm.ptr, i64", p, CI64(i));
                     string v = NV();
                     EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i64", v, p);
-                    m_Stack.Add(new Val(v, entry[i]));
+                    m_Stack.Add(new Val(v, entry[i].Type, entry[i].TypeId));
                 }
             }
 
