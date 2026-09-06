@@ -102,7 +102,7 @@ namespace SimpleLanguage.Core
                     if (!forward.IsAcceptableForAsIs() && !backward.IsAcceptableForAsIs())
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaKeyAsIsSyntax.asOrIsToken,
-                            $" {sourceMetaType.ToString() } as/is {m_ConvertTargetMetaType.ToString() } ");
+                            $" {sourceMetaType.ToString() } as/is {m_ConvertTargetMetaType.ToString() } data type convert error!!");
                     }
                 }
 

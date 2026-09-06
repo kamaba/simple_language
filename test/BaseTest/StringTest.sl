@@ -1,6 +1,3 @@
-import Std
-import CSharp.System
-
 StringTest
 {
     Class2

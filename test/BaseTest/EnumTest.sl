@@ -1,6 +1,3 @@
-import Std
-import CSharp.System
-
 class XC
 {
     a = 10
@@ -127,16 +124,11 @@ OK
 {
     code = 0;
 }
-Error
-{
-    code = 0;
-}
 #!
 报错
 enum Res
 {
     OK ok;
-    Error error;
 }
 !#
 

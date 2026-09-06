@@ -1,4 +1,6 @@
+using SimpleLanguage.Core;
 using System;
+using System.Collections.Generic;
 using System.Text.Json;
 
 namespace SimpleLanguage.Project
@@ -144,35 +146,7 @@ namespace SimpleLanguage.Project
             if (root.TryGetProperty( "struct", out var structObj)
                 && structObj.ValueKind == JsonValueKind.Array)
             {
-                foreach (var item in structObj.EnumerateArray())
-                {
-                    if (item.ValueKind != JsonValueKind.Object)
-                    {
-                        continue;
-                    }
-
-                    var ns = GetStr(item, "namespace", null);
-                    if (!string.IsNullOrWhiteSpace(ns))
-                    {
-                        cfg.StructTree.EnsurePath(ns, ProjectConfig.StructTreeNode.NodeType.Namespace);
-                    }
-
-                    var cls = GetStr(item, "class", null);
-                    if (!string.IsNullOrWhiteSpace(cls))
-                    {
-                        cfg.StructTree.EnsurePath(cls, ProjectConfig.StructTreeNode.NodeType.Class);
-                    }
-                    var dls = GetStr(item, "data", null);
-                    if (!string.IsNullOrWhiteSpace(dls))
-                    {
-                        cfg.StructTree.EnsurePath(dls, ProjectConfig.StructTreeNode.NodeType.Data);
-                    }
-                    var els = GetStr(item, "enum", null);
-                    if (!string.IsNullOrWhiteSpace(els))
-                    {
-                        cfg.StructTree.EnsurePath(els, ProjectConfig.StructTreeNode.NodeType.Enum);
-                    }
-                }
+                ParseStructNodes(structObj, cfg.StructTree);
             }
 
             if (TryGetObj(root, "export", out var exportObj))
@@ -186,6 +160,7 @@ namespace SimpleLanguage.Project
                 cfg.Export.VersionMain = GetInt(exportObj, "versionMain", cfg.Export.VersionMain);
                 cfg.Export.VersionSub = GetInt(exportObj, "versionSub", cfg.Export.VersionSub);
                 cfg.Export.VersionPatch = GetInt(exportObj, "versionPatch", cfg.Export.VersionPatch);
+                cfg.Export.NativeDll = GetStr(exportObj, "nativeDll", cfg.Export.NativeDll);
 
                 if (TryGetObj(exportObj, "debugText", out var debugTextObj))
                 {
@@ -217,6 +192,45 @@ namespace SimpleLanguage.Project
                 }
             }
 
+            // 外部 dll 导入：新 "dllImports" 段（path/name/alias），兼容旧 "lib" 段
+            //（path/name，alias 缺省取 name）。alias 供 @DllImport("别名",...) 与
+            // global.dllImport.别名 解析为完整路径；alias 为空时退化为 name 不可用。
+            if (root.TryGetProperty("dllImports", out var dllImports) && dllImports.ValueKind == JsonValueKind.Array)
+            {
+                ParseDllImportArray(dllImports, cfg);
+            }
+            if (root.TryGetProperty("lib", out var lib) && lib.ValueKind == JsonValueKind.Array)
+            {
+                ParseDllImportArray(lib, cfg);
+            }
+
+            if( root.TryGetProperty("systemCalls", out var systemCalls ) && systemCalls.ValueKind == JsonValueKind.Array )
+            {
+                foreach (var r in systemCalls.EnumerateArray())
+                {
+                    if (r.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+                    var name = GetStr(r, "name", string.Empty);
+                    var returnType = GetStr(r, "returnType", string.Empty);
+                    List<String> mtStr = new List<string>();
+                    if (r.TryGetProperty("params", out var @params) && @params.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var r2 in @params.EnumerateArray())
+                        {
+                            mtStr.Add(r2.GetString() ?? string.Empty);
+                        }
+                    }
+                    var isVariadic = GetBool(r, "isVariadic", true );
+                    var cvmFunction = GetStr(r, "cvmFunction", string.Empty);
+
+                    cfg.systemCalls.Add(new ProjectConfig.SystemCallItem() { name = name, returnType = returnType, @params = mtStr.ToArray(), isVariadic = isVariadic, cvmFunction = cvmFunction });
+
+                    //SystemMethodCallDeclarationRegistry.AddDeclByMt( name, returnType, mtStr, isVariadic, true );
+                }
+            }
+
             return cfg;
         }
 
@@ -228,6 +242,54 @@ namespace SimpleLanguage.Project
             }
             obj = default;
             return false;
+        }
+
+        // 解析 dllImports / lib 数组段：[{ path, name, alias, functions }]，
+        // alias 缺省取 name（旧 lib 段只有 path/name，name 即别名）。
+        // functions：[{ name, symbol, sig }] 库函数变量（注入 global.<name>）。
+        static void ParseDllImportArray(JsonElement array, ProjectConfig cfg)
+        {
+            foreach (var d in array.EnumerateArray())
+            {
+                if (d.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+                var path = GetStr(d, "path", string.Empty);
+                var name = GetStr(d, "name", string.Empty);
+                var alias = GetStr(d, "alias", string.Empty);
+                if (string.IsNullOrWhiteSpace(alias))
+                {
+                    alias = name;
+                }
+                if (!string.IsNullOrWhiteSpace(path))
+                {
+                    var sec = new ProjectConfig.DllImportSection() { Path = path, Name = name, Alias = alias };
+                    if (d.TryGetProperty("functions", out var fns) && fns.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var f in fns.EnumerateArray())
+                        {
+                            if (f.ValueKind != JsonValueKind.Object)
+                            {
+                                continue;
+                            }
+                            var fname = GetStr(f, "name", string.Empty);
+                            var fsym = GetStr(f, "symbol", string.Empty);
+                            var fsig = GetStr(f, "sig", string.Empty);
+                            if (string.IsNullOrWhiteSpace(fname) || string.IsNullOrWhiteSpace(fsym))
+                            {
+                                continue;
+                            }
+                            if (string.IsNullOrWhiteSpace(fsig))
+                            {
+                                fsig = "->void";
+                            }
+                            sec.Functions.Add(new ProjectConfig.DllImportFunctionSection() { Name = fname, Symbol = fsym, Sig = fsig });
+                        }
+                    }
+                    cfg.DllImports.Add(sec);
+                }
+            }
         }
 
         static string GetStr(JsonElement obj, string name, string @default)
@@ -258,6 +320,60 @@ namespace SimpleLanguage.Project
                 }
             }
             return @default;
+        }
+
+        // Recursively walks the "struct" tree. Each item may carry one of
+        // namespace/class/data/enum to identify a node under the current parent;
+        // an optional "children" array is parsed the same way, allowing arbitrary
+        // nesting depth.
+        static void ParseStructNodes(JsonElement array, ProjectConfig.StructTreeNode parent)
+        {
+            if (array.ValueKind != JsonValueKind.Array || parent == null)
+            {
+                return;
+            }
+
+            foreach (var item in array.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object)
+                {
+                    continue;
+                }
+
+                // Register each identifier present on the item as a child of the
+                // current parent. `node` tracks the most recently registered child
+                // and serves as the parent for any nested `children`.
+                ProjectConfig.StructTreeNode node = parent;
+
+                var ns = GetStr(item, "namespace", null);
+                if (!string.IsNullOrWhiteSpace(ns))
+                {
+                    node = parent.EnsurePath(ns, ProjectConfig.StructTreeNode.NodeType.Namespace);
+                }
+
+                var cls = GetStr(item, "class", null);
+                if (!string.IsNullOrWhiteSpace(cls))
+                {
+                    node = parent.EnsurePath(cls, ProjectConfig.StructTreeNode.NodeType.Class);
+                }
+
+                var dls = GetStr(item, "data", null);
+                if (!string.IsNullOrWhiteSpace(dls))
+                {
+                    node = parent.EnsurePath(dls, ProjectConfig.StructTreeNode.NodeType.Data);
+                }
+
+                var els = GetStr(item, "enum", null);
+                if (!string.IsNullOrWhiteSpace(els))
+                {
+                    node = parent.EnsurePath(els, ProjectConfig.StructTreeNode.NodeType.Enum);
+                }
+
+                if (item.TryGetProperty("children", out var childArr) && childArr.ValueKind == JsonValueKind.Array)
+                {
+                    ParseStructNodes(childArr, node);
+                }
+            }
         }
     }
 }

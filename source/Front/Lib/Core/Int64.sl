@@ -12,10 +12,6 @@ public class Int64 extends Num
     override get int size() { ret 64 }
     override get int byteLength() { ret 8 }
     
-    public Int64 parse( string s )
-    {
-        ret SystemConvertInt64(s)
-    }
     public override Num abs()
     {
         ret SystemConvertInt64(SystemNumAbs(this))
@@ -28,7 +24,7 @@ public class Int64 extends Num
     {
         ret this
     }
-    public override Int32 compareTo(Num other)
+    public override Int8 compareTo(Num other)
     {
         if (other == null) { ret 1 }
         Int64 ov = SystemConvertInt64(other)
@@ -39,11 +35,11 @@ public class Int64 extends Num
     {
         ret SystemConvertBool(this) 
     }
-    override Int8 toInt8( byte index = 0 )
+    override Int8 toInt8( UInt8 index = 0 )
     {
         ret SystemConvertInt8(this, index)
     }
-    override UInt8 toUInt8( byte index = 0 )
+    override UInt8 toUInt8( UInt8 index = 0 )
     {
         ret SystemConvertUInt8(this, index)
     }

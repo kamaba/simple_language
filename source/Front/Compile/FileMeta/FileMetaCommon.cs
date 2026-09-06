@@ -169,6 +169,7 @@ namespace SimpleLanguage.Compile
     {
         public FileMeta fileMeta => m_FileMeta;
         public FileMetaCallLink defineClassCallLink => m_DefineClassCallLink;
+        public Node node => m_Node;
         public List<string> nameList
         {
             get
@@ -315,6 +316,14 @@ namespace SimpleLanguage.Compile
             }
             // if this call node was created from a '?.' link, keep the token in m_QuestionMarkDotToken
             // note: in FileMetaCallLink.AddChildExtendLinkList we set this when constructing the call node
+        }
+        /// <summary>
+        /// 清空模板实参列表（&lt;T1,T2&gt; 语法糖消费后调用，使后续按非模板
+        /// 调用解析——如 FFI lookupFunction&lt;Ret,P...&gt; 改写为 getFunction）。
+        /// </summary>
+        public void ClearInputTemplateNodeList()
+        {
+            m_InputTemplateNodeList.Clear();
         }
         public string ToFormatString()
         {
@@ -624,14 +633,27 @@ namespace SimpleLanguage.Compile
             else
                 m_ClassNameToken = null;
 
-            if (node.angleNode != null)
+            // For IdentifierLink nodes, the angle node (template args like <T>) may be
+            // set on the last identifier child or extend link node rather than on the link itself.
+            Node angleNode = node.angleNode;
+            if (angleNode == null && node.identifierNode != null)
+                angleNode = node.identifierNode.angleNode;
+            if (angleNode == null && node.extendLinkNodeList != null && node.extendLinkNodeList.Count > 0)
+            {
+                // Check last extend link node and its parNode
+                var lastLink = node.extendLinkNodeList[node.extendLinkNodeList.Count - 1];
+                angleNode = lastLink?.angleNode ?? lastLink?.parNode?.angleNode;
+            }
+            if (angleNode == null && node.parNode != null)
+                angleNode = node.parNode.angleNode;
+            if (angleNode != null)
             {
                 m_IsInputTemplateData = true;
-                m_AngleTokenBegin = node.angleNode.token;
-                m_AngleTokenEnd = node.angleNode.endToken;
-                for (int i = 0; i < node.angleNode.childList.Count; i++)
+                m_AngleTokenBegin = angleNode.token;
+                m_AngleTokenEnd = angleNode.endToken;
+                for (int i = 0; i < angleNode.childList.Count; i++)
                 {
-                    var cnode = node.angleNode.childList[i];
+                    var cnode = angleNode.childList[i];
                     if (cnode.nodeType == ENodeType.Comma)
                         continue;
                     FileInputTemplateNode fmcn = new FileInputTemplateNode(fm, cnode);

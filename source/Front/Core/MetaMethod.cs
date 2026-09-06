@@ -25,6 +25,11 @@ namespace SimpleLanguage.Core
         public string label;
         public MetaStatements frontStatements;
         public MetaStatements nextStatements;
+        /// <summary>
+        /// 是否已由 label 语句定义。
+        /// false 表示仅是前向 goto 创建的占位引用(label 语句尚未出现)。
+        /// </summary>
+        public bool isDefined = false;
     }
     public class MetaFunction : MetaBase
     {
@@ -85,6 +90,10 @@ namespace SimpleLanguage.Core
         public MetaBlockStatements metaBlockStatements => m_MetaBlockStatements;
         public MetaDefineTemplateCollection metaMemberTemplateCollection => m_MetaMemberTemplateCollection;
         public int index => m_Index;
+        public List<MetaDeferStatements> deferStatementsList => m_DeferStatementsList;
+        public List<MetaErrDeferStatements> errDeferStatementsList => m_ErrDeferStatementsList;
+        /// <summary>函数体所有代码路径是否都有 ret 返回（CheckAllPathsReturn 中计算缓存，供 IR 层判断是否发射 result epilogue）。</summary>
+        public bool isBlockAlwaysReturn => m_IsBlockAlwaysReturn;
 
         protected bool m_CanParse = true;
 
@@ -102,6 +111,9 @@ namespace SimpleLanguage.Core
         protected int m_Index = -1;
         protected MetaType m_DefineMetaType = null;
         protected MetaType m_RealMetaType = null;
+        protected List<MetaDeferStatements> m_DeferStatementsList = new List<MetaDeferStatements>();
+        protected List<MetaErrDeferStatements> m_ErrDeferStatementsList = new List<MetaErrDeferStatements>();
+        protected bool m_IsBlockAlwaysReturn = false;
         #endregion
 
         #region Compile or Debug
@@ -217,6 +229,14 @@ namespace SimpleLanguage.Core
             m_LabelDataList.Add(ld);
             return ld;
         }
+        public void AddDeferStatements(MetaDeferStatements mds)
+        {
+            m_DeferStatementsList.Add(mds);
+        }
+        public void AddErrDeferStatements(MetaErrDeferStatements mds)
+        {
+            m_ErrDeferStatementsList.Add(mds);
+        }
         public bool IsExtentParams()
         {
             if(m_MetaMemberParamCollection != null )
@@ -249,6 +269,18 @@ namespace SimpleLanguage.Core
             {
                 m_ReturnMetaVariable.defineMetaType.SetMetaClass(metaClass);
             }
+        }
+        public void SetDefineMetaType( MetaType mdt )
+        {
+            m_DefineMetaType = mdt;
+        }
+        public void SetRealMetaType( MetaType realMt )
+        {
+            m_RealMetaType = realMt;
+        }
+        public void SetIsDefineMetaType( bool flag )
+        {
+            m_IsDefineMetaType = flag;
         }
         public MetaDefineParam GetMetaDefineParamByName( string name )
         {
@@ -302,6 +334,26 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
+        public bool IsEqualMetaDefineMetaTypeList( List<MetaType> metatypeList )
+        {
+
+            if (m_MetaMemberParamCollection.metaDefineParamList.Count == metatypeList.Count)
+            {
+                if (m_MetaMemberParamCollection.metaDefineParamList.Count == 0)
+                {
+                    return true;
+                }
+
+                for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
+                {
+                    var a = m_MetaMemberParamCollection.metaDefineParamList[i];
+                    var b = metatypeList[i];
+                    
+                }
+                return true;
+            }
+            return false;
+        }
         public MetaTemplate GetMetaDefineTemplateByName( string name )
         {
             return m_MetaMemberTemplateCollection.GetMetaDefineTemplateByName(name);
@@ -346,7 +398,17 @@ namespace SimpleLanguage.Core
             if (m_MetaBlockStatements == null) return;
             if (m_MetaBlockStatements.nextMetaStatements == null) return;
 
-            if (!IsBlockAlwaysReturn(m_MetaBlockStatements))
+            // 缓存计算结果, IR 层据此判断是否需要发射 result epilogue
+            m_IsBlockAlwaysReturn = IsBlockAlwaysReturn(m_MetaBlockStatements);
+
+            // Result/Result<T> 返回函数: 已注入 result 变量, IR epilogue 会自动 ret result,
+            // 无需强制所有代码路径显式 ret 返回
+            if (this is MetaMemberFunction mmf && mmf.hasResultVariable)
+            {
+                return;
+            }
+
+            if (!m_IsBlockAlwaysReturn)
             {
                 Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
                     $"Error 函数[{functionAllName}] 声明了返回类型[{returnType.ToFormatString()}]，但并非所有代码路径都有ret返回语句!");

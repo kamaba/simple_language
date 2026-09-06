@@ -4,11 +4,11 @@ DefineMacro
 {
     static fun()
     {
-        @if @version == 2001
+        static if @version == 2001
         {
 
         }
-        @elif @verssion == 2002
+        static elif @verssion == 2002
         {
             
         }

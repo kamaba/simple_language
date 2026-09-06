@@ -57,8 +57,26 @@ namespace SimpleLanguage.Compile
                 Node node2 = new Node(m_CurrentNode.linkToken);
                 node2.nodeType = ENodeType.Period;
 
-                m_CurrentNode.AddLinkNode(node2);
-                m_CurrentNode.AddLinkNode(node);
+                if( m_CurrentNode.identifierNode == null )
+                {
+                    if( m_CurrentNode.childList.Count > 0 )
+                    {
+                        var ccc = m_CurrentNode.childList[m_CurrentNode.childList.Count - 1];
+                        if( ccc.nodeType == ENodeType.Par && ccc?.endToken?.type == ETokenType.RightPar )
+                        {
+                            ccc.extendLinkNodeList.Add(node2);
+                            ccc.extendLinkNodeList.Add(node);
+                        }
+
+                    }
+                }
+                else
+                {
+
+                    m_CurrentNode.AddLinkNode(node2);
+                    m_CurrentNode.AddLinkNode(node);
+                    
+                }
                 if (m_CurrentNode.atToken != null)
                 {
                     node.atToken = m_CurrentNode.atToken;
@@ -115,7 +133,9 @@ namespace SimpleLanguage.Compile
         }
         private Node AddKeyNode(Token token)
         {
-            if (m_CurrentNode.nodeType == ENodeType.Angle)
+            // Func<void,int,int> 函数签名类型中 void 出现在 <> 内，
+            // 保持为 Angle 的普通 Key 子节点（不把 <> 退化为比较符号）
+            if (m_CurrentNode.nodeType == ENodeType.Angle && token.type != ETokenType.Void)
             {
                 RestoreAngleNode();
             }
@@ -138,19 +158,20 @@ namespace SimpleLanguage.Compile
             m_TokenIndex++;
             return node;
         }
+
         private Node AddAtOpSign(Token token)
+        {
+            Node node = new Node(token);
+            node.nodeType = ENodeType.Key;
+            m_CurrentNode.AddChild(node);
+            m_TokenIndex++;
+
+            return null;
+        }
+        private Node AddDollerOpSign(Token token)
         {
             if (m_CurrentNode.linkToken != null)
             {
-                if (token.type == ETokenType.At)
-                {
-                    // `.@` is no longer supported; reserve '@' for attribute syntax.
-                    Log.AddTokenLog(LID.ShowExtendMessage, "不再支持 a.@b 语法，请使用 a.$b / a.$0 形式");
-                    m_CurrentNode.linkToken = null;
-                    m_TokenIndex++;
-                    return null;
-                }
-
                 var ntoken = new Token(token);
                 string nvar = token.extend.ToString();
 
@@ -188,7 +209,6 @@ namespace SimpleLanguage.Compile
                 Log.AddTokenLog(LID.ShowExtendMessage, "现在$符必须使用.$方式!!");
             }
             m_TokenIndex++;
-
             return null;
         }
         private Node AddSymbol(Token token )
@@ -244,10 +264,27 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Node node = new Node(token);
-                node.priority = SignComputePriority.Level6_Compare;
-                node.nodeType = ENodeType.Symbol;
-                m_CurrentNode.AddChild(node);
+                int extend = 1;
+                if( int.TryParse( token?.extend?.ToString(), out int oint ) )
+                {
+                    extend = oint;
+                }
+                if(token.extend?.ToString() == "2" )
+                {
+                    Token token2 = new Token(token);
+                    token2.SetLexeme(">>", ETokenType.Shr);
+                    Node node = new Node(token2);
+                    node.priority = SignComputePriority.Level5_BitMoveOp;
+                    node.nodeType = ENodeType.Symbol;
+                    m_CurrentNode.AddChild(node);
+                }
+                else
+                {
+                    Node node = new Node(token);
+                    node.priority = SignComputePriority.Level6_Compare;
+                    node.nodeType = ENodeType.Symbol;
+                    m_CurrentNode.AddChild(node);
+                }
             }
             m_TokenIndex++;
         }
@@ -352,11 +389,6 @@ namespace SimpleLanguage.Compile
         }
         void ParseTokenConvertNode(Token token)
         {
-            //if (m_CurrentNode == null)
-            //{
-            //    Log.AddTokenLog(LID.ShowExtendMessage, "", token, "Error CurrentNode is NULL!!" + token?.ToLexemeAllString());
-            //    return;
-            //}
             switch (token.type)
             {
                 case ETokenType.Identifier:  //Identifier
@@ -560,6 +592,8 @@ namespace SimpleLanguage.Compile
                     break;
                 case ETokenType.Not:             // !
                 case ETokenType.Negative:        // ~
+                case ETokenType.TryQuestion:     // try?
+                case ETokenType.TryExclamation:  // try!
                     {
                         var node = AddSymbol(token);
                         node.priority = SignComputePriority.Level2_LinkOp;
@@ -571,33 +605,6 @@ namespace SimpleLanguage.Compile
                         node.priority = SignComputePriority.Level5_BitMoveOp;
                     }
                     break;
-                //case ETokenType.Shr:               //  >>
-                //    {
-                //        // In nested generics like Map<List<int>,string>> the lexer produces Shr.
-                //        // If we're currently inside an unclosed generic angle sequence, treat this
-                //        // as two closing '>' tokens.
-                //        if (IsInsideGenericAngleContext())
-                //        {
-                //            var t1 = new Token(token);
-                //            t1.SetType(ETokenType.Greater);
-                //            t1.SetLexeme(">");
-                //            var n1 = new Node(t1) { nodeType = ENodeType.RightAngle };
-                //            m_CurrentNode.AddChild(n1);
-
-                //            var t2 = new Token(token);
-                //            t2.SetType(ETokenType.Greater);
-                //            t2.SetLexeme(">");
-                //            var n2 = new Node(t2) { nodeType = ENodeType.RightAngle };
-                //            m_CurrentNode.AddChild(n2);
-
-                //            m_TokenIndex++;
-                //        }
-                //        else
-                //        {
-                //            AddBitMoveOperatorSymbol(token);
-                //        }
-                //    }
-                //    break;
                 case ETokenType.GreaterOrEqual:  // >=
                 case ETokenType.LessOrEqual:     // <=
                     {
@@ -709,6 +716,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Interface:
                 case ETokenType.Abstract:
                 case ETokenType.Extends:
+                case ETokenType.Bind:
                 case ETokenType.If:
                 case ETokenType.ElseIf:
                 case ETokenType.For:
@@ -727,6 +735,19 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Var:
                 case ETokenType.Next:
                 case ETokenType.Params:
+                case ETokenType.Function:
+                case ETokenType.Try:
+                case ETokenType.Catch:
+                case ETokenType.Finally:
+                case ETokenType.Throw:
+                case ETokenType.Throws:
+                case ETokenType.Defer:
+                case ETokenType.ErrDefer:
+                case ETokenType.Checked:
+                case ETokenType.Unchecked:
+                case ETokenType.Await:    // await 一元前缀（表达式），在 CreateFileMetaExpress 展开
+                case ETokenType.Spawn:    // spawn 一元前缀（表达式），在 CreateFileMetaExpress 展开
+                case ETokenType.Yield:    // yield 语句关键字，在 StructParseToSyntax 展开为 Coroutine.Yield()
                     {
                         AddKeyNode(token);
                     }
@@ -753,7 +774,7 @@ namespace SimpleLanguage.Compile
                     break;
                 case ETokenType.Dollar:
                     {
-                        AddAtOpSign(token);
+                        AddDollerOpSign(token);
                     }
                     break;
                 case ETokenType.Space:
@@ -790,86 +811,8 @@ namespace SimpleLanguage.Compile
             }
             catch (Exception e)
             {
-                Log.AddTokenLog(LID.ShowExtendMessage, "" + e.Message);
-                // ignore debug dump errors
+                Console.Write( e.Message);
             }
         }
-
-        /// <summary>
-        /// Best-effort generic context detection: if there's an unclosed '<' in the current node list,
-        /// prefer treating '>>' as two generic closing tokens instead of a shift operator.
-        /// </summary>
-        //private bool IsInsideGenericAngleContext()
-        //{
-        //    // Scan current node's direct children and compute a simple depth for angle brackets.
-        //    // This intentionally ignores nested node stacks (Par/Brace/Bracket), because '>>' that
-        //    // tokenizes inside those should still typically behave as shift.
-        //    int depth = 0;
-        //    var list = m_CurrentNode?.childList;
-        //    if (list == null) return false;
-
-        //    for (int i = 0; i < list.Count; i++)
-        //    {
-        //        var n = list[i];
-        //        if (n == null) continue;
-        //        if (n.nodeType == ENodeType.LeftAngle) depth++;
-        //        else if (n.nodeType == ENodeType.RightAngle && depth > 0) depth--;
-        //    }
-        //    return depth > 0;
-        //}
-        //private void CheckUnclosedPairNodes()
-        //{
-        //    while (m_CurrentNodeStack.Count > 0)
-        //    {
-        //        var node = m_CurrentNodeStack.Pop();
-        //        if (node == null || node.nodeType == ENodeType.Root)
-        //        {
-        //            continue;
-        //        }
-
-        //        Log.AddNodeLog(LID.MetaCoreAssertShowMessage, node.token, GetUnclosedPairMessage(node));
-        //    }
-
-        //    m_CurrentNodeStack.Push(m_RootNode);
-        //    m_CurrentNode = m_RootNode;
-        //}
-
-        //private static string GetUnclosedPairMessage(Node node)
-        //{
-        //    return node.nodeType switch
-        //    {
-        //        ENodeType.Brace => "Error Node层花括号不对称，缺少右花括号 '}'",
-        //        ENodeType.Par => "Error Node层圆括号不对称，缺少右圆括号 ')'",
-        //        ENodeType.Bracket => "Error Node层中括号不对称，缺少右中括号 ']'",
-        //        _ => "Error Node层括号不对称，缺少闭合符号",
-        //    };
-        //}
-
-        //private bool TryPopPairNode(ENodeType expectedNodeType, Token endToken, string pairText)
-        //{
-        //    if (m_CurrentNodeStack.Count <= 1)
-        //    {
-        //        Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，多余的右符号 " + pairText);
-        //        m_TokenIndex++;
-        //        return false;
-        //    }
-
-        //    var cnode = m_CurrentNodeStack.Pop();
-        //    if (cnode != null && cnode.nodeType == expectedNodeType)
-        //    {
-        //        cnode.endToken = endToken;
-        //        m_TokenIndex++;
-        //        m_CurrentNode = cnode.parent ?? m_RootNode;
-        //        return true;
-        //    }
-
-        //    Log.AddNodeLog(LID.ShowExtendMessage, endToken, "Error Node层括号不对称，期望闭合 " + expectedNodeType.ToString() + " 但遇到 " + pairText);
-        //    if (cnode != null)
-        //    {
-        //        m_CurrentNodeStack.Push(cnode);
-        //    }
-        //    m_TokenIndex++;
-        //    return false;
-        //}
     }
 }

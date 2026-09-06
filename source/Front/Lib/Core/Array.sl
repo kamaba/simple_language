@@ -5,7 +5,6 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     Type _type = null;
     int _index = 0;
     T _current = null
-    long _ptr = 0
        
     public static Array<T> create( int length )
     {
@@ -14,19 +13,37 @@ public class Array<T> interface IIterable<T>, IIterator<T>
     }
 
     _init_( int __len )
-    {
-        #uint allSize = __len * 4            
+    {         
         this._length = __len
-        #this._ptr = Lib.ArrayClass.CreateArray( length, 4 )
     }
     get int length(){ ret this._length }
 
-    public void fill(T value)
+    public void fill(T value, int startIndex = 0, int count = -1 )
     {
-        for i = 0, i < this._length, i++
+        if startIndex < 0 || startIndex >= this._length
         {
-            SystemArraySetValueThis(this, i, value)
+            ret
         }
+        #count==0：默认从 startIndex 填到 _length 末尾；
+        #count>0：精确填 count 个（超过 capacity 剩余槽位则截断），
+        #此前 elif 把 count 覆盖成 capacity-startIndex，导致 fill(33,2,3) 填到 capacity 末尾。
+        if( count == 0 )
+        {
+            count = this._length - startIndex
+        }
+        elif count > 0
+        {
+            if count > this._length - startIndex
+            {
+                count = this._length - startIndex
+            }
+        }
+        else
+        {
+            SystemPrint("Array.fill: index out of range")
+            ret
+        }
+        SystemArrayFillValue(this, startIndex, count, value )        
     }
     #接口层
     override void reset()
@@ -35,19 +52,9 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         this._current = null
     }
     override bool moveNext()
-    {          
-        this._index++;  
-        bool hasNext_var = this._index < this._length 
-        if hasNext_var
-        {
-            this._current = SystemArrayGetValueThis(this, this._index) as T
-        }
-        else
-        {
-            this._current = null
-        }
-        #global.println(" Array.moveNext-----" + this._index + " length: " + this._length  )
-        ret hasNext_var
+    {
+        #foreach 热路径：游标推进/取值/_current 回填全部在 VM 层完成
+        ret SystemArrayMoveNext( this )
     }
     override get T current()
     {
@@ -81,38 +88,23 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         this._index = ind;
         this._current = SystemArrayGetValueThis(this, ind) as T
     }
-    set setValue( int __index, T val )
+    _setItem_( int __index, T val )
     {
         SystemArraySetValueThis(this, __index, val)
     }
-    get T getValue( int __index )
+    T _getItem_( int __index )
     {
         ret SystemArrayGetValueThis(this, __index) as T
     }
-    setValues( Int64 valPtr, int len )
+    public void forEach( Function callback )
     {
-        #Lib.ArrayClass.SetArrayValue( this._ptr, 1,  valPtr, len )
+        #遍历分发下沉 VM 层：C 层逐元素回调闭包（ctx_arr 作为隐藏 Argument 0）
+        SystemArrayForEach( this, callback )
     }
     override string toString()
-    {            
-        string showstr = "["
-        for i = 0, i < this._length, i++
-        {
-            var cur = SystemArrayGetValueThis(this, i)
-            if cur == null
-            {
-                showstr = showstr + "null"
-            }
-            else
-            {
-                showstr = showstr + cur.toString()
-            }
-            if( i < this._length - 1 )
-            {
-                showstr += ","
-            }
-        }
-        ret showstr + "]"
+    {
+        #VM 层一次成型拼接 "[a,b,c]"，消除 SL 层循环内逐次相加的 O(n^2) 分配
+        ret SystemArrayToString( this )
     }
 }
 

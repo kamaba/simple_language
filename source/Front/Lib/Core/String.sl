@@ -1,14 +1,15 @@
 public class String extends Object
 {
     private String _value = null
-    
+    private Int32 _length = -1
+
     _init_( Int8 aa )
     {
-        this._value = aa.toString()
+        this._value = SystemConvertString( aa )
     }
     _init_( Int32 aa )
     {
-        this._value = aa.toString()
+        this._value = SystemConvertString( aa )
     }
     _init_( String aa )
     {
@@ -18,19 +19,15 @@ public class String extends Object
     {
         ret SystemStringFormat(this, _parmas)
     }
-
-    #!
-    Int32 toInt32()
+    public get int length()
     {
-        if( Int32.tryInt32( this._value, Int32 int32val ) )
+        if (this._length == -1)
         {
-            ret int32val
+            this._length = SystemStringLength(this)
         }
-        ret null
+        ret this._length
     }
-    !#    
-
-    String toString()
+    override String toString()
     {
         ret this;
     }

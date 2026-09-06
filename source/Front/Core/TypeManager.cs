@@ -220,7 +220,15 @@ namespace SimpleLanguage.Core
                         if (!decl.IsProjectScope) continue;
                         if (TryGetProjectTypeAlias(decl.AliasName, out _))
                             continue;
-                        var mt = GetMetaTypeByTemplateFunction(null, null, decl.TargetDefine);
+                        MetaType mt;
+                        if (decl.IsFunctionType)
+                        {
+                            mt = ResolveFunctionTypeAlias(decl, fm);
+                        }
+                        else
+                        {
+                            mt = GetMetaTypeByTemplateFunction(null, null, decl.TargetDefine);
+                        }
                         if (mt == null)
                             continue;
                         if (AddProjectTypeAlias(decl.AliasName, mt))
@@ -246,7 +254,15 @@ namespace SimpleLanguage.Core
                         if (decl.IsProjectScope) continue;
                         if (fm.TryGetFileTypeAlias(decl.AliasName, out _))
                             continue;
-                        var mt = GetMetaTypeByTemplateFunction(null, null, decl.TargetDefine);
+                        MetaType mt;
+                        if (decl.IsFunctionType)
+                        {
+                            mt = ResolveFunctionTypeAlias(decl, fm);
+                        }
+                        else
+                        {
+                            mt = GetMetaTypeByTemplateFunction(null, null, decl.TargetDefine);
+                        }
                         if (mt == null)
                             continue;
                         fm.InternalSetFileTypeAlias(decl.AliasName, new MetaType(mt));
@@ -256,6 +272,26 @@ namespace SimpleLanguage.Core
                         break;
                 }
             }
+        }
+
+        /// <summary>
+        /// 解析函数类型 typealias: typealias Name = RetType Function( ParamType, ... )
+        /// 返回指向 FunctionSignatureMetaClass 的 MetaType, 携带返回类型与参数类型签名。
+        /// </summary>
+        private MetaType ResolveFunctionTypeAlias(FileMetaTypeAliasDecl decl, FileMeta fm)
+        {
+            if (decl == null || !decl.IsFunctionType) return null;
+            var retMt = GetMetaTypeByTemplateFunction(null, null, decl.FunctionReturnTypeDefine);
+            if (retMt == null) return null;
+            var paramMtList = new List<MetaType>();
+            for (int i = 0; i < decl.FunctionParamTypeDefineList.Count; i++)
+            {
+                var pmt = GetMetaTypeByTemplateFunction(null, null, decl.FunctionParamTypeDefineList[i]);
+                if (pmt == null) return null;
+                paramMtList.Add(pmt);
+            }
+            var fsmc = new FunctionSignatureMetaClass(decl.AliasName, retMt, paramMtList);
+            return new MetaType(fsmc);
         }
 
         /// <summary>
@@ -323,7 +359,7 @@ namespace SimpleLanguage.Core
                 var newmc = mt.metaClass.AddInstanceMetaClass(regMCList, true);
                 if (newmc == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaClass is Null");
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "metaClass.AddInstanceMetaClass MetaClass is Null");
                     return false;
                 }
                 mt.SetGenMetaClass(newmc);
@@ -342,13 +378,25 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        if (gmgt.metaType.metaClass == null)
+                        if (gmgt.metaType.isData)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaClass is Null");
+                            // data 绑定（metaClass 为 null）：通过 SetMetaData 完成 T 的类型替换
+                            mt.SetMetaData(gmgt.metaType.metaData);
+                        }
+                        else if (gmgt.metaType.isEnum)
+                        {
+                            mt.SetMetaEnum(gmgt.metaType.metaEnum);
+                        }
+                        else if (gmgt.metaType.metaClass == null)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "in MetaGenTemplate notfind MetaClass is Null");
                             return false;
                         }
-                        mt.SetMetaClass(gmgt.metaType.metaClass);
-                        findfn = gmgt.metaType.metaClass;
+                        else
+                        {
+                            mt.SetMetaClass(gmgt.metaType.metaClass);
+                            findfn = gmgt.metaType.metaClass;
+                        }
                     }
                 }
                 else
@@ -363,18 +411,30 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            if (gmgt.metaType.metaClass == null)
+                            if (gmgt.metaType.isData)
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaClass is Null");
+                                // data 绑定（metaClass 为 null）：通过 SetMetaData 完成 T 的类型替换
+                                mt.SetMetaData(gmgt.metaType.metaData);
+                            }
+                            else if (gmgt.metaType.isEnum)
+                            {
+                                mt.SetMetaEnum(gmgt.metaType.metaEnum);
+                            }
+                            else if (gmgt.metaType.metaClass == null)
+                            {
+                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "in MetaGenTemplate notfind MetaClass is Null");
                                 return false;
                             }
-                            mt.SetMetaClass(gmgt.metaType.metaClass);
-                            findfn = gmgt.metaType.metaClass;
+                            else
+                            {
+                                mt.SetMetaClass(gmgt.metaType.metaClass);
+                                findfn = gmgt.metaType.metaClass;
+                            }
                         }
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到模板中定义的模板内容![" + mt.metaTemplate.name + "]");
                     }
                 }
             }
@@ -686,16 +746,62 @@ namespace SimpleLanguage.Core
         {
             if (fmcd == null) return null;
 
-            if (fmcd.stringList != null && fmcd.stringList.Count == 1)
+            // Func<RetType, ParamType, ...> C# 风格函数类型（类成员变量定义场景）：
+            // 与函数体内局部变量路径（GetMetaTypeByTemplateFunction）对齐，返回
+            // 携带签名的 FunctionSignatureMetaClass（@DllImport 声明式绑定依赖
+            // 成员变量 Func 类型推导 FFI sig）
+            if (fmcd.stringList != null && fmcd.stringList.Count == 1 && fmcd.stringList[0] == "Func"
+                && fmcd.inputTemplateNodeList != null && fmcd.inputTemplateNodeList.Count >= 1)
+            {
+                var funcMt = TryResolveFuncTemplateType(curMc, null, fmcd);
+                if (funcMt != null)
+                {
+                    return funcMt;
+                }
+            }
+
+            // typealias：无论 stringList 有几个元素，都先检查第一个元素是否是已注册的类型别名；
+            // 若是别名且只有 1 个元素，直接返回别名目标（模块别名除外，模块不是类型）；
+            // 若是别名且有多个元素，则从别名目标所在的模块/命名空间继续解析剩余路径。
+            if (fmcd.stringList != null && fmcd.stringList.Count > 0)
             {
                 if (TryResolveTypeAlias(fmcd.stringList[0], fmcd.fileMeta, out MetaType aliasTarget) && aliasTarget != null)
                 {
-                    var retAlias = new MetaType(aliasTarget);
-                    if (fmcd.isNullable)
-                        retAlias.SetNullable(true);
-                    if (fmcd.isArray)
-                        retAlias = AddArrayTemplate(retAlias, fmcd.arrayDimsionLengthList);
-                    return retAlias;
+                    // 模块别名仅在多元素路径时有意义（如 Core.IIterable），单元素时跳过
+                    if (aliasTarget.eMetaTypeType != EMetaTypeType.MetaModule && fmcd.stringList.Count == 1)
+                    {
+                        var retAlias = new MetaType(aliasTarget);
+                        if (fmcd.isNullable)
+                            retAlias.SetNullable(true);
+                        if (fmcd.isArray)
+                            retAlias = AddArrayTemplate(retAlias, fmcd.arrayDimsionLengthList);
+                        return retAlias;
+                    }
+
+                    // 多个元素：第一个是别名，从别名目标所在的命名空间/模块继续解析剩余路径
+                    var startNode = aliasTarget.metaBase?.metaNode;
+                    if (startNode != null)
+                    {
+                        MetaNode foundNode = startNode;
+                        for (int i = 1; i < fmcd.stringList.Count && foundNode != null; i++)
+                        {
+                            foundNode = foundNode.GetChildrenMetaNodeByName(fmcd.stringList[i]);
+                        }
+                        if (foundNode != null && (foundNode.IsMetaClass() || foundNode.isMetaData || foundNode.isMetaEnum))
+                        {
+                            var ret = GetMetaTypeByInputTemplateList(curMc, foundNode, fmcd.inputTemplateNodeList);
+                            if (fmcd.isArray)
+                            {
+                                var rarraymt = AddArrayTemplate(ret, fmcd.arrayDimsionLengthList);
+                                if (fmcd.isNullable)
+                                    rarraymt.SetNullable(true);
+                                return rarraymt;
+                            }
+                            if (fmcd.isNullable && ret != null)
+                                ret.SetNullable(true);
+                            return ret;
+                        }
+                    }
                 }
             }
 
@@ -772,6 +878,11 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < inputTemplateNodeList.Count; i++)
             {
                 MetaType mt2 = GetAndRegisterTemplateDefineMetaTemplateClass(ownerMc, findfn, inputTemplateNodeList[i]);
+                if (mt2 == null)
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"没有找到模板参数{inputTemplateNodeList[i].nameList[0]} 的相关类型!");
+                    continue;
+                }
                 mt.AddDefineTemplateMetaType(new MetaType(mt2));
                 //mt.AddGenTemplateMetaType(new MetaType(mt2));
             }
@@ -878,11 +989,47 @@ namespace SimpleLanguage.Core
             }
 
             // typealias：文件局部 / 工程 / 内置
-            if (fmcd.stringList != null && fmcd.stringList.Count == 1)
+            // 无论 stringList 有几个元素，都先检查第一个元素是否是已注册的类型别名；
+            // 若是别名且只有 1 个元素，直接返回别名目标（模块别名除外，模块不是类型）；
+            // 若是别名且有多个元素，则从别名目标所在的模块/命名空间继续解析剩余路径。
+            if (fmcd.stringList != null && fmcd.stringList.Count > 0)
             {
+                // Func<RetType, ParamType, ...> C# 风格函数类型:
+                // 第一个模板实参是返回类型, 其余为参数类型
+                // 返回指向 FunctionSignatureMetaClass 的 MetaType (携带函数签名)
+                if (fmcd.stringList.Count == 1 && fmcd.stringList[0] == "Func"
+                    && fmcd.inputTemplateNodeList != null && fmcd.inputTemplateNodeList.Count >= 1)
+                {
+                    var funcMt = TryResolveFuncTemplateType(curMc, findFun, fmcd);
+                    if (funcMt != null)
+                    {
+                        return ApplyFileMetaClassDefineDecorations(funcMt);
+                    }
+                }
+
                 if (TryResolveTypeAlias(fmcd.stringList[0], fmcd.fileMeta, out MetaType aliasTarget) && aliasTarget != null)
                 {
-                    return ApplyFileMetaClassDefineDecorations(aliasTarget);
+                    // 模块别名仅在多元素路径时有意义（如 Core.IIterable），单元素时跳过
+                    if (aliasTarget.eMetaTypeType != EMetaTypeType.MetaModule && fmcd.stringList.Count == 1)
+                    {
+                        return ApplyFileMetaClassDefineDecorations(aliasTarget);
+                    }
+
+                    // 多个元素：第一个是别名，从别名目标所在的命名空间/模块继续解析剩余路径
+                    var startNode = aliasTarget.metaBase?.metaNode;
+                    if (startNode != null)
+                    {
+                        MetaNode foundNode = startNode;
+                        for (int i = 1; i < fmcd.stringList.Count && foundNode != null; i++)
+                        {
+                            foundNode = foundNode.GetChildrenMetaNodeByName(fmcd.stringList[i]);
+                        }
+                        if (foundNode != null && (foundNode.IsMetaClass() || foundNode.isMetaData || foundNode.isMetaEnum))
+                        {
+                            var ret = GetMetaTypeByTemplateList(curMc, foundNode, findFun, fmcd.inputTemplateNodeList);
+                            return ApplyFileMetaClassDefineDecorations(ret);
+                        }
+                    }
                 }
             }
             MetaNode getmc = ClassManager.instance.GetMetaClassByRef(curMc, fmcd);
@@ -926,7 +1073,64 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-        public MetaType AddArrayTemplate(MetaType arrayMt, List<int> list)
+        /// <summary>
+        /// 解析 Func&lt;RetType, ParamType, ...&gt; C# 风格函数类型
+        /// 第一个模板实参为返回类型, 其余为参数类型, 返回 FunctionSignatureMetaClass
+        /// </summary>
+        private MetaType TryResolveFuncTemplateType(MetaClass curMc, MetaMemberFunction findFun, FileMetaClassDefine fmcd)
+        {
+            var tplList = fmcd.inputTemplateNodeList;
+            var retMt = ResolveFuncTemplateArgType(curMc, findFun, tplList[0], true);
+            if (retMt == null)
+            {
+                // Log.AddMetaCoreLog(LID.ShowExtendMessage, fmcd.classNameToken,
+                //     "Error Func<> 的返回类型解析失败: " + fmcd.allName);
+                return null;
+            }
+            var paramMtList = new List<MetaType>();
+            for (int i = 1; i < tplList.Count; i++)
+            {
+                var pmt = ResolveFuncTemplateArgType(curMc, findFun, tplList[i], false);
+                if (pmt == null)
+                {
+                    // Log.AddMetaCoreLog(LID.ShowExtendMessage, fmcd.classNameToken,
+                    //     "Error Func<> 的第" + i + "个参数类型解析失败: " + fmcd.allName);
+                    return null;
+                }
+                paramMtList.Add(pmt);
+            }
+            var fsmc = new FunctionSignatureMetaClass(fmcd.allName, retMt, paramMtList);
+            return new MetaType(fsmc);
+        }
+        /// <summary>
+        /// 解析 Func&lt;&gt; 单个模板实参类型; void 仅允许出现在返回类型位置
+        /// </summary>
+        private MetaType ResolveFuncTemplateArgType(MetaClass curMc, MetaMemberFunction findFun, FileInputTemplateNode fitn, bool isReturnType)
+        {
+            var argNode = fitn?.node;
+            if (argNode == null)
+            {
+                return null;
+            }
+            var argNameList = FileMetatUtil.GetLinkStringMidPeriodList(argNode.GetLinkTokenList());
+            if (argNameList.Count == 1 && argNameList[0] == "void")
+            {
+                if (!isReturnType)
+                {
+                    // Log.AddMetaCoreLog(LID.ShowExtendMessage, argNode.token,
+                    //     "Error Func<> 的参数类型不允许为 void, 仅返回类型可以使用 void!");
+                    return null;
+                }
+                return new MetaType(CoreMetaClassManager.voidMetaClass);
+            }
+            var subFmcd = new FileMetaClassDefine(fitn.fileMeta, argNode);
+            if (subFmcd.stringList.Count == 0)
+            {
+                return null;
+            }
+            return GetMetaTypeByTemplateFunction(curMc, findFun, subFmcd);
+        }
+        public MetaType AddArrayTemplate(MetaType arrayMt, List<int> list )
         {
             MetaType cmt = new MetaType(arrayMt.metaClass);
             for (int i = list.Count - 1; i >= 0; i--)
@@ -1014,6 +1218,25 @@ namespace SimpleLanguage.Core
             var newmc = ClassManager.instance.GetMetaClassByNameAndFileMeta(findMc, fmtd.fileMeta, fmtd.nameList);
             if (newmc != null)
             {
+                if (newmc.isMetaData)
+                {
+                    // data 节点：GetMetaClassByTemplateCount 对 data 返回 null，需单独处理
+                    if (fmtd.inputTemplateCount > 0)
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "data 类型不支持模板实参");
+                        return null;
+                    }
+                    return newmc.metaData != null ? new MetaType(newmc.metaData) : null;
+                }
+                if (newmc.isMetaEnum)
+                {
+                    if (fmtd.inputTemplateCount > 0)
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "enum 类型不支持模板实参");
+                        return null;
+                    }
+                    return newmc.metaEnum != null ? new MetaType(newmc.metaEnum) : null;
+                }
                 var findfn = newmc.GetMetaClassByTemplateCount(fmtd.inputTemplateCount);
 
                 if (findfn == null)
@@ -1584,6 +1807,19 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
+            if (declaredMt.isTemplate && !argMt.isClass)
+            {
+                // 函数级模板参数 T（默认约束 object）：data/enum 等非 class 实参走不到下方 isData/isClass 分支，
+                // 无非 object 约束时直接接受；有约束则报错（约束仅支持 class 体系）
+                var constraintMC = declaredMt.GetTemplateMetaClass();
+                if (constraintMC == null || constraintMC == CoreMetaClassManager.objectMetaClass)
+                {
+                    return true;
+                }
+                Log.AddMetaCoreLog(LID.ShowExtendMessage, "模板参数[" + declaredMt.metaTemplate.name + "]的约束与实参类型不匹配");
+                return false;
+            }
+
             if (declaredMt.isEnum || declaredMt.isEnumMember || argMt.isEnum || argMt.isEnumMember)
             {
                 return CompareEnumMetaType(declaredMt, argMt, token);
@@ -1665,6 +1901,26 @@ namespace SimpleLanguage.Core
             if (leftMt.metaClass == CoreMetaClassManager.objectMetaClass)
             {
                 return true;
+            }
+
+            // ── result 关键字: Result<T> -> Result 协变赋值规则 ──
+            // 泛型 Result<T> 的 value 为强类型 T, 可装箱兼容非泛型 Result 的 Object value,
+            // 允许 Result r = Result<T> 表达式; 反向 Result -> Result<T> 丢失 T 类型信息, 拒绝。
+            if (CoreMetaClassManager.IsResultMetaType(leftMt) && CoreMetaClassManager.IsResultMetaType(rightMt))
+            {
+                bool leftIsGenericResult = leftMt.GetGenTemplateMetaTypeList().Count > 0;
+                bool rightIsGenericResult = rightMt.GetGenTemplateMetaTypeList().Count > 0;
+                if (!leftIsGenericResult && rightIsGenericResult)
+                {
+                    return true;
+                }
+                else if (leftIsGenericResult && !rightIsGenericResult)
+                {
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                        "Result 赋值类型不匹配：不允许将非泛型 Result 赋给 Result<T>（反向协变不合法）。");
+                    return false;
+                }
+                // 同为泛型 / 同为非泛型时落入正常类型比较逻辑
             }
 
             if( leftMt.metaClass == CoreMetaClassManager.memberMetaClass )
@@ -1834,105 +2090,138 @@ namespace SimpleLanguage.Core
                             return true;
                         }
 
-                        if (leftMt.eType == EType.Int8
-                           || leftMt.eType == EType.UInt8)
+                        if (leftmc.eType == EType.Int8
+                           || leftmc.eType == EType.UInt8)
                         {
-                            if (rightMt.eType == EType.Int8
-                                || rightMt.eType == EType.UInt8
-                                || rightMt.eType == EType.Int16
-                                || rightMt.eType == EType.UInt16
-                                || rightMt.eType == EType.Int32
-                                || rightMt.eType == EType.UInt32
-                                || rightMt.eType == EType.Int64
-                                || rightMt.eType == EType.UInt64)
+                            if (rightmc.eType == EType.Int8
+                                || rightmc.eType == EType.UInt8
+                                || rightmc.eType == EType.Int16
+                                || rightmc.eType == EType.UInt16
+                                || rightmc.eType == EType.Int32
+                                || rightmc.eType == EType.UInt32
+                                || rightmc.eType == EType.Int64
+                                || rightmc.eType == EType.UInt64)
                             {
                                 convertMt = leftMt;
                                 return true;
                             }
                             return false;
                         }
-                        else if (leftMt.eType == EType.Int16
-                           || leftMt.eType == EType.UInt16 )
+                        else if (leftmc.eType == EType.Int16
+                           || leftmc.eType == EType.UInt16 )
                         {
-                            if (rightMt.eType == EType.Int8
-                                || rightMt.eType == EType.UInt8 )
+                            if (rightmc.eType == EType.Int8
+                                || rightmc.eType == EType.UInt8 )
                             {
                                 return true;
                             }
-                            else if (rightMt.eType == EType.Int16
-                                || rightMt.eType == EType.UInt16
-                                || rightMt.eType == EType.Int32
-                                || rightMt.eType == EType.UInt32
-                                || rightMt.eType == EType.Int64
-                                || rightMt.eType == EType.UInt64 )
+                            else if (rightmc.eType == EType.Int16
+                                || rightmc.eType == EType.UInt16
+                                || rightmc.eType == EType.Int32
+                                || rightmc.eType == EType.UInt32
+                                || rightmc.eType == EType.Int64
+                                || rightmc.eType == EType.UInt64 )
                             {
                                 convertMt = leftMt;
                                 return true;
                             }
                             return false;
                         }
-                        else if (leftMt.eType == EType.Int32
-                           || leftMt.eType == EType.UInt32 )
+                        else if (leftmc.eType == EType.Int32
+                           || leftmc.eType == EType.UInt32 )
                         {
-                            if (rightMt.eType == EType.Int8
-                                || rightMt.eType == EType.UInt8
-                                || rightMt.eType == EType.Int16
-                                || rightMt.eType == EType.UInt16
-                                || rightMt.eType == EType.Int32
-                                || rightMt.eType == EType.UInt32 )
+                            if (rightmc.eType == EType.Int8
+                                || rightmc.eType == EType.UInt8
+                                || rightmc.eType == EType.Int16
+                                || rightmc.eType == EType.UInt16
+                                || rightmc.eType == EType.Int32
+                                || rightmc.eType == EType.UInt32 )
                             {
                                 return true;
                             }
-                            else if ( rightMt.eType == EType.Int64
-                                || rightMt.eType == EType.UInt64)
+                            else if (rightmc.eType == EType.Int64
+                                || rightmc.eType == EType.UInt64)
                             {
                                 convertMt = leftMt;
                                 return true;
                             }
-                            else if (rightMt.eType == leftMt.eType)
+                            else if (rightmc.eType == leftmc.eType)
                             {
                                 return true;
                             }
                             return false;
                         }
-                        else if (leftMt.eType == EType.Int64
-                           || leftMt.eType == EType.UInt64)
+                        else if (leftmc.eType == EType.Int64
+                           || leftmc.eType == EType.UInt64)
                         {
-                            if (rightMt.eType == EType.Int8
-                                || rightMt.eType == EType.UInt8
-                                || rightMt.eType == EType.Int16
-                                || rightMt.eType == EType.UInt16
-                                || rightMt.eType == EType.Int32
-                                || rightMt.eType == EType.UInt32
-                                || rightMt.eType == EType.Int64
-                                || rightMt.eType == EType.UInt64 )
+                            if (rightmc.eType == EType.Int8
+                                || rightmc.eType == EType.UInt8
+                                || rightmc.eType == EType.Int16
+                                || rightmc.eType == EType.UInt16
+                                || rightmc.eType == EType.Int32
+                                || rightmc.eType == EType.UInt32
+                                || rightmc.eType == EType.Int64
+                                || rightmc.eType == EType.UInt64 )
                             {
                                 return true;
                             }
                             return false;
                         }
-                        else if (leftMt.eType == EType.Float32)
+                        else if(leftmc.eType == EType.Float8
+                           || leftmc.eType == EType.Float8_E5M2)
                         {
-                            if (rightMt.eType == EType.Float32)
+                            if (rightmc.eType == EType.Float8
+                                || rightmc.eType == EType.Float8_E5M2
+                                || rightmc.eType == EType.Float16
+                                || rightmc.eType == EType.Float16_Brain
+                                || rightmc.eType == EType.Float32
+                                || rightmc.eType == EType.Float64)
+                            {
+                                convertMt = leftMt;
+                                return true;
+                            }
+                            return false;
+                        }
+                        else if (leftmc.eType == EType.Float16
+                           || leftmc.eType == EType.Float16_Brain)
+                        {
+                            if (rightmc.eType == EType.Float8
+                                || rightmc.eType == EType.Float8_E5M2)
                             {
                                 return true;
                             }
-                            else if ( rightMt.eType == EType.Float64)
+                            else if (rightmc.eType == EType.Float16
+                                || rightmc.eType == EType.Float16_Brain
+                                || rightmc.eType == EType.Float32
+                                || rightmc.eType == EType.Float64)
+                            {
+                                convertMt = leftMt;
+                                return true;
+                            }
+                            return false;
+                        }
+                        else if (leftmc.eType == EType.Float32)
+                        {
+                            if (rightmc.eType == EType.Float32)
+                            {
+                                return true;
+                            }
+                            else if (rightmc.eType == EType.Float64)
                             {
                                 convertMt = leftMt;
                                 return true;
                             }
                             return true;
                         }
-                        else if (leftMt.eType == EType.Float64)
+                        else if (leftmc.eType == EType.Float64)
                         {
-                            if ( rightMt.eType == EType.Float32 )
+                            if (rightmc.eType == EType.Float32 )
                             {
                                 return true;
                             }
                             return true;
                         }
-                        else if (leftMt.eType == EType.Num )
+                        else if (leftmc.eType == EType.Num )
                         {
                             if (rightMt.IsNum())
                             {
@@ -2026,7 +2315,7 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < list.Count; i++)
             {
                 var item = list[i];
-                var expr = item?.expressNode;
+                var expr = item?.valueExpressNode;
                 if (expr == null) continue;
 
                 if (expr is MetaConstExpressNode c)

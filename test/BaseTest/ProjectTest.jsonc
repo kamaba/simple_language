@@ -1,0 +1,139 @@
+{
+  "project":
+  {
+    "name": "ProjectTest",
+    "desc": "Base test project - runs all BaseTest .sl test files",
+    "mainVersion": 0,
+    "subVersion": 0,
+    "buildVersion": 1,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "ObjectTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "StringTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "NumberTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "WhileDoWhileTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "GlobalTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "BoolTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "TypeTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "EnumTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "DataTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "ArrayTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "BlockTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "CallLinkTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Class1Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Class2Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "ClassAs_Is.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "CommitTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "ConstructionClass.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "ExpressTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "ExtendClass.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "AssignStatement.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "NullConditionalTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "ForTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "GenClass_Interface.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "GenClass.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "GenClass2.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "DeferTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "TryTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "CheckedCalcTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "GenClass3.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "InterfaceTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "RangeTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "MemberVariable1Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "MemberVariable2Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "MemberFunction1Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "MemberFunction2Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "MemberStaticFunction.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "GenClass4.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "EnvironmentTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "GuidTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "RandomTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "PtrTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Float8Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Float16Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "IfelseTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "SwitchTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "ClosureTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "TupleTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "LowercaseContainerTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "BindDataTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "LocalTest1.sl", "group": "core", "tag": "base", "ignore": false, "priority": 2 },
+      { "path": "LocalTest2.sl", "group": "core", "tag": "base", "ignore": false, "priority": 1 },
+      { "path": "InterfaceDataAndBindData.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "ResultTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "HashSetTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },      
+      { "path": "TableTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "StackTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "QueueTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "TreeTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "GoToLabelTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "InputArgsTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "CoroutineTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std.Console",
+      "Std.IO.File"
+    ],
+    "replace": {
+      "DEBUG": "true"
+    }
+  },
+  "data": {
+    "var1": 12,
+    "arrvar1": [1, 2, 3, 4, 5],
+    "vardata2": {
+      "a": 10,
+      "b": 20.1
+    }
+  },
+  "references": [
+    { "path": "../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" }
+  ],
+  "struct": [
+      { "namespace": "ProjectTest", "children": [] },
+      { "namespace": "Application", "children": [] },
+      { "namespace": "ConStrCC", "children": [] },
+      { "namespace": "MFT", "children": 
+        [
+          { "namespace": "Application", "children": [] }
+        ]
+     }
+  ],
+  "export": {
+    "moduleName": "ProjectTest",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "versionMain": 0,
+    "versionSub": 0,
+    "versionPatch": 1,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  }
+}

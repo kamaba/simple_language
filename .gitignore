@@ -121,3 +121,254 @@
 /test/BaseTest/Class2Test/File.txt
 /test/BaseTest/Class2Test/Node.txt
 /test/BaseTest/Class2Test/Token.txt
+/enc_temp_folder/5c44ed9e5b63fc4c426915beebac2fd/vm_runtime.c
+/test_run.txt
+/test_run2.txt
+/test_run3.txt
+/test_run4.txt
+/test_try.txt
+/test_trytest.txt
+/test_trytest2.txt
+/test_trytest3.txt
+/test_trytest4.txt
+/test_trytest5.txt
+/test/BaseTest/Export/SLVMCode/DeferTest/DebugCode/DeferTest/Code.txt
+/test/BaseTest/Export/SLVMCode/DeferTest/DebugCode/DeferTest/File.txt
+/test/BaseTest/Export/SLVMCode/DeferTest/DebugCode/DeferTest/Node.txt
+/test/BaseTest/Export/SLVMCode/DeferTest/DebugCode/DeferTest/Token.txt
+/test/BaseTest/Export/SLVMCode/DeferTest/Logs/Front.txt
+/test_bracefix.txt
+/test_defer2.txt
+/test_defer3.txt
+/test_defer4.txt
+/test_enumerror.txt
+/test_errorfix.txt
+/test_errorsl.txt
+/test_len_cache.txt
+/test_noexception.txt
+/test_strlen.txt
+/test_trynew.txt
+/test_trythrows.txt
+/run_result.txt
+/stderr.txt
+/stdout.txt
+/tee_output.txt
+/test_catchfix.txt
+/test_catchfix2.txt
+/test_catchfix3.txt
+/test_catchfix4.txt
+/test_catchfix5.txt
+/test_output.txt
+/vm_debug.log
+/scripts/safe_rm_aliases.ps1
+/vm_debug.log
+/source/CompileCore/bin
+/source/CompileCore/obj
+/source/CompileStd/bin
+/source/CompileStd/obj
+/test/BaseTest/c24.txt
+/test/BaseTest/c24_err.txt
+/test/BaseTest/run_c4.txt
+/test/BaseTest/run_c4_err.txt
+/test/BaseTest/run_p4.txt
+/test/BaseTest/run_p4_err.txt
+/test/BenchMark/build
+/test/SpecialTest/build
+/scripts/safe_rm_aliases.ps1
+/source/CompileStd/obj/Debug/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+/source/CompileStd/obj/Debug/net8.0/SimpleLa.F8B8D231.Up2Date
+/source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.AssemblyInfo.cs
+/source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.AssemblyInfoInputs.cache
+/source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.GeneratedMSBuildEditorConfig.editorconfig
+/source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.GlobalUsings.g.cs
+/source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.assets.cache
+/source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.csproj.AssemblyReference.cache
+/source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.csproj.CoreCompileInputs.cache
+/source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.csproj.FileListAbsolute.txt
+/source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.dll
+/source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.genruntimeconfig.cache
+/source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.pdb
+/source/CompileStd/obj/Debug/net8.0/SimpleLanguageCompileStd.sourcelink.json
+/source/CompileStd/obj/Debug/net8.0/apphost.exe
+/source/CompileStd/obj/Debug/net8.0/ref/SimpleLanguageCompileStd.dll
+/source/CompileStd/obj/Debug/net8.0/refint/SimpleLanguageCompileStd.dll
+/source/CompileStd/obj/Release/net8.0/.NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+/source/CompileStd/obj/Release/net8.0/SimpleLanguageCompileStd.AssemblyInfo.cs
+/source/CompileStd/obj/Release/net8.0/SimpleLanguageCompileStd.AssemblyInfoInputs.cache
+/source/CompileStd/obj/Release/net8.0/SimpleLanguageCompileStd.GeneratedMSBuildEditorConfig.editorconfig
+/source/CompileStd/obj/Release/net8.0/SimpleLanguageCompileStd.GlobalUsings.g.cs
+/source/CompileStd/obj/Release/net8.0/SimpleLanguageCompileStd.assets.cache
+/source/CompileStd/obj/Release/net8.0/SimpleLanguageCompileStd.csproj.AssemblyReference.cache
+/source/CompileStd/obj/SimpleLanguageCompileStd.csproj.nuget.dgspec.json
+/source/CompileStd/obj/SimpleLanguageCompileStd.csproj.nuget.g.props
+/source/CompileStd/obj/SimpleLanguageCompileStd.csproj.nuget.g.targets
+/source/CompileStd/obj/project.assets.json
+/source/CompileStd/obj/project.nuget.cache
+/vm_output.txt
+/source/CompileMath/bin
+/source/CompileMath/obj
+/source/StdNativeImpl/obj
+/source/CompileStd/obj/Debug/net8.0/*.BuildWithSkipAnalyzers
+/source/MathNativeImpl/bin/Debug/net8.0/Log/*.csv
+/source/MathNativeImpl/bin/Debug/net8.0/*.json
+/source/MathNativeImpl/bin/Debug/net8.0/*.dll
+/source/MathNativeImpl/bin/Debug/net8.0/*.pdb
+/source/MathNativeImpl/bin/Debug/net8.0/*.exe
+/source/MathNativeImpl/obj/Debug/net8.0/*.cs
+/source/MathNativeImpl/obj/Debug/net8.0/*.Up2Date
+/source/MathNativeImpl/obj/Debug/net8.0/*.cache
+/source/MathNativeImpl/obj/Debug/net8.0/*.editorconfig
+/source/MathNativeImpl/obj/Debug/net8.0/*.txt
+/source/MathNativeImpl/obj/Debug/net8.0/*.dll
+/source/MathNativeImpl/obj/Debug/net8.0/*.pdb
+/source/MathNativeImpl/obj/Debug/net8.0/*.json
+/source/MathNativeImpl/obj/Debug/net8.0/ref/*.dll
+/source/MathNativeImpl/obj/Debug/net8.0/refint/*.dll
+/source/MathNativeImpl/obj/*.json
+/source/MathNativeImpl/obj/*.props
+/source/MathNativeImpl/obj/*.targets
+/source/MathNativeImpl/obj/*.cache
+/source/StdNativeImpl/bin/Debug/net8.0/Log/*.csv
+/source/StdNativeImpl/bin/Debug/net8.0/*.json
+/source/StdNativeImpl/bin/Debug/net8.0/*.dll
+/source/StdNativeImpl/bin/Debug/net8.0/*.exe
+/source/StdNativeImpl/bin/Debug/net8.0/*.pdb
+/SimpleLanguage.slnLaunch.user
+/source/MathNativeImpl/MathNativeImpl.csproj.user
+/source/MathNativeImpl/obj/Debug/net8.0/MathNativeImpl.csproj.BuildWithSkipAnalyzers
+/source/Test2/.vs
+/source/Test2/bin
+/source/Test2/obj
+/source/CSimpleVMTest2/bin
+/source/CSimpleVMTest2/obj
+/source/CSimpleVMTest1/.vs
+/source/CSimpleVMTest1/bin
+/source/CSimpleVMTest1/obj
+/source/MathNativeImpl/obj
+/source/CSimpleVMTest1/CSimpleVMTest.csproj.Backup.tmp
+/build/logs/VM.txt
+/build/logs/VM.txt
+/chk10.txt
+/chk12.txt
+/chk6.txt
+/chk8.txt
+/scripts/safe_rm_aliases.ps1
+/ctor2_status.txt
+/ctor_chk10.txt
+/ctor_chk11.txt
+/ctor_chk12.txt
+/ctor_chk13.txt
+/ctor_chk14.txt
+/ctor_chk2.txt
+/ctor_chk4.txt
+/ctor_chk5.txt
+/ctor_chk6.txt
+/ctor_chk7.txt
+/ctor_chk8.txt
+/ctor_chk9.txt
+/ctor_rerun.txt
+/export_std2.txt
+/export_std2_status.txt
+/run_ctor.txt
+/run_ctor2.txt
+/run_ctor_status.txt
+/run_dbg.txt
+/run_export_core.txt
+/run_export_std.txt
+/run_listtest.txt
+/source/CSimpleVMTest1/Properties/launchSettings.json
+/source/CSimpleVMTest2/Properties/launchSettings.json
+/scripts/safe_rm_aliases.ps1
+# Fixed malformed line that was blocking ripgrep
+/source/CompileStd/obj
+/core_compile.log
+/test_run.log
+/source/CompileStd/obj
+# Fixed malformed line that was blocking ripgrep (commented out: accidental shell fragment)
+# # # # # # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output [Trae CN] Safe Rm alias is not enabled, try to fix it now.
+/source/CSimpleVMTest1/build/logs/VM.txt
+# # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output [Trae CN] Safe Rm alias is not enabled, try to fix it now.}
+# fixed: corrupted shell fragment line blocking ripgrep
+/criptssafe_rm_aliases.ps1_invalid_line_removed
+/source/StdNativeImpl/bin
+/source/MathNativeImpl/bin
+/source/CSimpleVMTest1/build_cvm.bat
+# fixed: corrupted shell fragment line blocking ripgrep (was: /criptssafe_rm_aliases.ps1 } catch{} ; ...)
+/criptssafe_rm_aliases.ps1_fixed
+/source/VM
+# # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output [Trae CN] Safe Rm alias is not enabled, try to fix it now.
+/bind_test_output.txt
+/bind_test_output2.txt
+/bind_test_output3.txt
+# fixed: corrupted shell fragment line blocking ripgrep (was: /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output ...)
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output [Trae CN] Safe Rm alias is not enabled, try to fix it now.
+# # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+# fixed: corrupted shell fragment line blocking ripgrep
+/source/MathVMLib/x64
+/source/MathVMLib/MathVMLib.vcxproj.user
+
+# fixed: corrupted shell fragment line blocking ripgrep (all injected copies commented out)
+# # # # /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+# fixed: corrupted shell fragment line blocking ripgrep (last injected copy)
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/_err_decoded.txt
+# fixed: corrupted shell fragment line blocking ripgrep (injected copy re-appeared, commented out again)
+# # fixed: corrupted shell fragment line blocking ripgrep (re-injected again 2)
+# # fixed: corrupted shell fragment line blocking ripgrep (re-injected again 5)
+# # fixed: corrupted shell fragment line blocking ripgrep (re-injected again 5)
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.
+/_err_switchtest.txt
+/_run_switchtest.log
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.
+/test/BaseTest/build/logs/VM.txt
+# fixed: corrupted shell fragment line blocking ripgrep (re-injected again)
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN\] Safe Rm alias is not enabled, try to fix it now.
+/source/MathTest/bin
+/source/MathTest/obj
+/source/MathTest/Properties
+/source/RenderTest/bin
+/source/RenderTest/obj/CSimpleVMTest2.csproj.nuget.g.props
+/source/RenderTest/obj
+/md/design/ISOLATE_DESIGN.md
+# fixed: corrupted shell fragment line blocking ripgrep (re-injected again 3)
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.
+/frontcompile.txt
+# fixed: corrupted shell fragment line blocking ripgrep (re-injected again 4)
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.}
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.
+/iso_compile.log
+# fixed: corrupted shell fragment line blocking ripgrep (re-injected again 6)
+# /criptssafe_rm_aliases.ps1 } catch{} ; Write-Output \[Trae CN] Safe Rm alias is not enabled, try to fix it now.
+/source/SpecialTest/obj
+/source/SpecialTest/bin
+/project/CSimpleVMCoreTest/obj
+/project/CSimpleVMCoreTest/bin
+/project/CSimpleVMCoreTest/build
+/project/CSimpleVMStdTest/obj
+/project/CSimpleVMStdTest/bin
+/project/CSimpleVMMathTest/bin
+/project/CSimpleVMMathTest/obj
+/project/CSimpleVMRenderTest/bin
+/project/CSimpleVMRenderTest/obj
+/project/CSimpleVMSpecialTest/bin
+/project/CSimpleVMSpecialTest/obj
+/project/CSimpleVMCoreTest/.vs
+/project/Test2/bin
+/project/Test2/obj
+/project/Test2/BaseTest
+/project/Test/bin
+/project/Test/obj
+/project/Test/BaseTest
+/project/Test2/.vs
+/project/CSimpleVMBenchMarkTest/bin
+/project/CSimpleVMBenchMarkTest/obj
+/project/CSimpleVMBenchMarkTest/build
+/project/CSimpleVMSpecialTest/bin
+/project/CSimpleVMSpecialTest/obj
+/source/CLangdll/CLangdll
+/build_log.txt
+/run_out.txt
+/source/Front/Lib/Std/build/logs/VM.txt
+/specialtest_out.txt
+/_e2e_run.txt
+/test/SpecialTest/gpu_build

@@ -28,15 +28,20 @@ namespace SimpleLanguage.IR
         public List<IRMetaVariable> globalStaticVariableList => m_GlobalStaticVariableList;
 
         private List<IRMetaVariable> m_GlobalStaticVariableList = new List<IRMetaVariable>();
-        #region debug用
-        private Dictionary<int,IRMetaVariable> m_AllVariableDict = new Dictionary<int,IRMetaVariable>();
-        #endregion
 
         private List<IRMetaClass> m_IRMetaClassList = new List<IRMetaClass>();
 
         public List<IRMetaClass> GetIRMetaClassList()
         {
             return m_IRMetaClassList;
+        }
+        public void AddIRMetaClass(IRMetaClass irmc)
+        {
+            if (irmc == null) return;
+            if (m_IRMetaClassList.Find(a => a.id == irmc.id) == null)
+            {
+                m_IRMetaClassList.Add(irmc);
+            }
         }
         private List<IRData>  m_IRDataList = new List<IRData>();
         public void TranslateIR()
@@ -359,6 +364,7 @@ namespace SimpleLanguage.IR
 
         /// <summary>
         /// 由语义 <see cref="MetaType"/> 解析已导出的 <see cref="IRMetaClass"/>（class / data / enum / 模板实例）。
+        /// classId 为按 allName 计算的确定型哈希，导出/导入跨会话一致，无需 name 兜底。
         /// </summary>
         public static IRMetaClass GetIRMetaClassByMetaType(MetaType type)
         {
@@ -372,7 +378,13 @@ namespace SimpleLanguage.IR
                 var md = type.metaData;
                 if (md != null)
                 {
-                    return instance.GetIRMetaClassById(md.GetHashCode());
+                    var irmc = instance.GetIRMetaClassById(md.classId);
+                    if (irmc == null)
+                    {
+                        irmc = new IRMetaClass(md);
+                        instance.m_IRMetaClassList.Add(irmc);
+                    }
+                    return irmc;
                 }
             }
 
@@ -381,14 +393,39 @@ namespace SimpleLanguage.IR
                 var me = type.metaEnum;
                 if (me != null)
                 {
-                    return instance.GetIRMetaClassById(me.GetHashCode());
+                    var irmc = instance.GetIRMetaClassById(me.classId);
+                    if (irmc == null)
+                    {
+                        irmc = new IRMetaClass(me);
+                        instance.m_IRMetaClassList.Add(irmc);
+                    }
+                    return irmc;
                 }
             }
 
             var tmc = type.GetTemplateMetaClass();
             if (tmc != null)
             {
-                return instance.GetIRMetaClassById(tmc.GetHashCode());
+                // FunctionSignatureMetaClass 在 IR 层映射回 functionMetaClass 的 IRMetaClass，
+                // 避免为函数签名类型创建空壳 IRMetaClass。
+                if (tmc is FunctionSignatureMetaClass)
+                {
+                    var funcMc = CoreMetaClassManager.functionMetaClass;
+                    var irmc = instance.GetIRMetaClassById(funcMc.classId);
+                    if (irmc == null)
+                    {
+                        irmc = new IRMetaClass(funcMc);
+                        instance.m_IRMetaClassList.Add(irmc);
+                    }
+                    return irmc;
+                }
+                var irmc2 = instance.GetIRMetaClassById(tmc.classId);
+                if (irmc2 == null && tmc is not MetaGenTemplateClass)
+                {
+                    irmc2 = new IRMetaClass(tmc);
+                    instance.m_IRMetaClassList.Add(irmc2);
+                }
+                return irmc2;
             }
 
             return null;
@@ -404,7 +441,7 @@ namespace SimpleLanguage.IR
                 return null;
             }
 
-            return instance.GetIRMetaClassById(owner.GetHashCode());
+            return instance.GetIRMetaClassById(owner.classId);
         }
 
         /// <summary>
@@ -420,7 +457,7 @@ namespace SimpleLanguage.IR
             var ownerClass = mv.GetOwnerClassTemplateClass();
             if (ownerClass != null)
             {
-                return instance.GetIRMetaClassById(ownerClass.GetHashCode());
+                return instance.GetIRMetaClassById(ownerClass.classId);
             }
 
             return GetIRMetaClassByMetaOwner(mv.ownerMetaBase);
@@ -431,34 +468,28 @@ namespace SimpleLanguage.IR
             var cm = ClassManager.instance;
             var exportClassList = cm.exportMetaClassList;
             var exportedOwnerNames = new HashSet<string>(System.StringComparer.Ordinal);
+            List<IRMetaClass> exportIRMetaClassList = new List<IRMetaClass>();
             foreach (var v in exportClassList)
             {
                 IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
-                if (!string.IsNullOrEmpty(v.allName))
-                {
-                    exportedOwnerNames.Add(v.allName);
-                }
+                exportIRMetaClassList.Add(irmc);
             }
             foreach (var v in cm.exportMetaDataList)
             {
                 IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
-                if (!string.IsNullOrEmpty(v.allName))
-                {
-                    exportedOwnerNames.Add(v.allName);
-                }
+                exportIRMetaClassList.Add(irmc);
             }
             foreach (var v in cm.exportMetaEnumList)
             {
                 IRMetaClass irmc = new IRMetaClass(v);
                 m_IRMetaClassList.Add(irmc);
-                if (!string.IsNullOrEmpty(v.allName))
-                {
-                    exportedOwnerNames.Add(v.allName);
-                }
+                exportIRMetaClassList.Add(irmc);
             }
-            foreach ( var v in m_IRMetaClassList )
+            /* Iterate a snapshot since GetIRMetaClassByMetaType may add new
+             * IRMetaClass instances to m_IRMetaClassList during processing. */
+            foreach ( var v in exportIRMetaClassList.ToArray() )
             {
                 v.CreateMemberData();
                 v.CreateMemberMethod();
@@ -470,62 +501,16 @@ namespace SimpleLanguage.IR
                     v.CreateGenMetaTypeTemplateList();
                 }
             }
-            
-            foreach ( var v in m_IRMetaClassList)
+            foreach (var v in exportIRMetaClassList.ToArray())
             {
-                foreach( var v2 in v.localIRMetaVariableList )
-                {
-                    m_AllVariableDict.Add(v2.GetHashCode(), v2);
-                }
-
-            }
-            foreach ( var v in exportClassList )
-            {
-                if (v.isTemplateClass)
-                {
+                /* Skip gen template classes: they're registered for lookup only,
+                 * not for full IR generation (static variable IR list would crash
+                 * on unresolved type references). */
+                if (v.OwnerMetaClass is MetaGenTemplateClass)
                     continue;
-                }
-                var irmc = m_IRMetaClassList.Find(a => a.irName == v.allName);
-                if (irmc == null)
-                    continue;
-
-                if (v != null && ClassManager.instance.FindMetaDataByName(v.allName) is MetaData md)
-                {
-                    var mmvd = md.metaMemberDataDict;
-                    foreach (var v2 in mmvd)
-                    {
-                        if (v2.Value.isStatic)
-                        {
-                            IRMetaVariable irMV = new IRMetaVariable(v2.Value);
-                            //irMV.index = m_StaticVariableList.Count;
-                            ////irMV.SetExpress(v2.Value.express);
-                            //m_StaticVariableList.Add(irMV);
-                        }
-                    }
-                }
-                else
-                {
-                    var mmvd = v.metaMemberVariableDict;
-                    foreach (var v2 in mmvd)
-                    {
-                        if (v2.Value.isStatic)
-                        {
-                            IRMetaVariable irMV = new IRMetaVariable(v2.Value);
-                            if( v2.Value.sourceMetaMemberVariable != null )
-                            {
-                                //irmc.AddMetaMemberVariableHashCode(v2.Value.sourceMetaMemberVariable.GetHashCode(), v2.Value.GetHashCode());
-                            }
-                            //irMV.index = m_StaticVariableList.Count;
-                            //irMV.SetExpress(v2.Value.express);
-                            //m_StaticVariableList.Add(irMV);
-                        }
-                    }
-                }
-            }
-            foreach (var v in m_IRMetaClassList)
-            {
                 v.CreateStaticMetaMetaVariableIRList();
             }
+
             Log.AddIRLog(LID.ShowExtendMessage, "End translating IRMetaClass...");
         }
         //public void TranslateIRAutoAdd( MetaFunction mf )

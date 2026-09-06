@@ -323,6 +323,14 @@ namespace SimpleLanguage.Compile
 
             return sb.ToString();
         }
+        public override string ToString()
+        {
+            if( m_Token != null )
+            {
+                return m_Token?.lexeme.ToString();
+            }
+            return "";
+        }
     }
     public class FileMetaAsOrIsTerm : FileMetaBaseTerm
     {
@@ -821,9 +829,14 @@ namespace SimpleLanguage.Compile
                         var tmbt = new FileMetaConstValueTerm(m_FileMeta, defineNodeList[0].token );
                         AddFileMetaTerm(tmbt);
                     }
+                    else if( defineNodeList.Count == 3 && defineNodeList[1].nodeType == ENodeType.Colon )
+                    {
+                        var valueNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, defineNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
+                        AddFileMetaTerm(valueNodeTerm);
+                    }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在解析为{}中，数组形式 解析有问题!!");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, defineNodeList[0].token, "Error 在解析为{}中，数组形式 解析有问题!!");
                         continue;
                     }
                 }
@@ -848,7 +861,7 @@ namespace SimpleLanguage.Compile
                     {
                         FileMetaCallLink fmcl = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
                         FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
-                        FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, null, null, null, fmel, true);
+                        FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, null, null, null, null, fmel, true);
                         fmoas.isAppendSemiColon = false;
                         m_FileMetaAssignSyntaxList.Add(fmoas);
                     }
@@ -1398,7 +1411,9 @@ namespace SimpleLanguage.Compile
                             return false;
                         }
                     }
-                    else if( ett == ETokenType.Minus || ett == ETokenType.Plus || ett == ETokenType.Not || ett == ETokenType.Negative )
+                    else if( ett == ETokenType.Minus || ett == ETokenType.Plus || ett == ETokenType.Not || ett == ETokenType.Negative
+                        || ett == ETokenType.TryQuestion || ett == ETokenType.TryExclamation || ett == ETokenType.Try
+                        || ett == ETokenType.Checked )
                     {
                         if (listNextTerm == null)
                         {
@@ -1450,7 +1465,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, extendMessage + "Error BuildTst 表达式解析错误!! 604");
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, currentTerm.token, "Error BuildTst 表达式解析错误!! 604 [" + extendMessage+"]" );
                         return false;
                     }
                 }
@@ -1502,7 +1517,9 @@ namespace SimpleLanguage.Compile
                                 fmst.priority = SignComputePriority.Level3_Low_Compute; // binary
                         }
                     }
-                    else if (ttoken?.type == ETokenType.Not || ttoken?.type == ETokenType.Negative)
+                    else if (ttoken?.type == ETokenType.Not || ttoken?.type == ETokenType.Negative
+                        || ttoken?.type == ETokenType.TryQuestion || ttoken?.type == ETokenType.TryExclamation
+                        || ttoken?.type == ETokenType.Checked)
                     {
                         // ! / ~ are unary-prefix operators in this grammar
                         fmst.priority = SignComputePriority.Level2_LinkOp;

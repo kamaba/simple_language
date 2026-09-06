@@ -80,7 +80,7 @@ namespace SimpleLanguage.Core
                         {
                             token = mv?.token;
                         }
-                        Log.AddMetaCoreLog(LID.MetaCoreArrayMustIsArray, token, "MetaArrayExpressNode", mv?.name);
+                        Log.AddMetaCoreLog(LID.MetaCoreArrayMustIsArray, token, "must is array MetaArrayExpressNode", mv?.name);
                         return;
                     }
                     this.m_ExpressReturnMetaType = defineMT;

@@ -35,7 +35,14 @@ namespace SimpleLanguage.Core
         public void InitSelfModuleManager( string moduleName )
         {
             m_SelfModule = new MetaModule(moduleName);
-            m_CoreModule = m_SelfModule;
+            if( moduleName == "Core" )
+            {
+                m_CoreModule = m_SelfModule;
+            }
+            else
+            {
+                m_CoreModule = new MetaModule("Core");
+            }
             m_CSharpLangRegisterModule = new MetaModule("CSharp");
             m_CLangRegisterModule = new MetaModule("CLang");
             m_JavaLangRegisterModule = new MetaModule("Java");
@@ -88,17 +95,37 @@ namespace SimpleLanguage.Core
         }
         public void AddMetaMdoule( MetaModule mm )
         {
-            if(m_ImportMetaModuleDict.ContainsKey( mm.name ) )
+            if( mm == null ) return;
+
+            // Replace existing module with the same name (e.g. default Core
+            // module created by InitSelfModuleManager gets replaced by the
+            // real one loaded from references).
+            if( m_ImportMetaModuleDict.ContainsKey( mm.name ) )
             {
-                return;
+                m_ImportMetaModuleDict[mm.name] = mm;
             }
-            m_ImportMetaModuleDict.Add(mm.name, mm);
+            else
+            {
+                m_ImportMetaModuleDict.Add(mm.name, mm);
+            }
+
             if( m_AllMetaModuleDict.ContainsKey( mm.name ) )
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 严重错误，模块有重名!!!");
-                return;
+                m_AllMetaModuleDict[mm.name] = mm;
+                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                    $"Module '{mm.name}' replaced by reference loading.");
             }
-            m_AllMetaModuleDict.Add(mm.name, mm);
+            else
+            {
+                m_AllMetaModuleDict.Add(mm.name, mm);
+            }
+
+            // If a "Core" module is loaded from references, update coreModule
+            // to point to the real one (instead of the self module stub).
+            if( mm.name == "Core" && mm != m_SelfModule )
+            {
+                m_CoreModule = mm;
+            }
         }
 
         public string ToFormatString()

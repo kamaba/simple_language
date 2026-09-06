@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\source\Front\SimpleLanguageFront.csproj" />
+  </ItemGroup>
+
+  <!-- 用 CMake 构建 C VM（csimple_lang\build\Debug\bin）：
+       csimple_lang_dll.dll —— Debug 配置 P/Invoke 加载（VS 内构建也走这里，保证断点行号与加载的 PDB 一致）；
+       csimple_lang.exe —— Release 配置进程模式调用（Program.cs 优先取 Debug\bin 下的 exe）。
+       两个目标都要构建，否则 exe 停留在旧版本时，新增/改名的系统调用会静默失效（表现为
+       系统调用返回栈上残留值，大量断言随机失败） -->
+  <Target Name="BuildCVM" BeforeTargets="Build">
+    <PropertyGroup>
+      <CVMRoot>$(MSBuildThisFileDirectory)..\..\..\csimple_lang</CVMRoot>
+    </PropertyGroup>
+    <Exec Command="cmake -B &quot;$(CVMRoot)\build&quot; -S &quot;$(CVMRoot)&quot;" />
+    <Exec Command="cmake --build &quot;$(CVMRoot)\build&quot; --config Debug --target csimple_lang_dll" />
+    <Exec Command="cmake --build &quot;$(CVMRoot)\build&quot; --config Debug --target csimple_lang" />
+  </Target>
+
+</Project>

@@ -1,0 +1,24 @@
+{
+  "profiles": {
+    "Front (Core)": {
+      "commandName": "Project",
+      "commandLineArgs": "compile -e ir -p F:\\project\\lang\\simple_language\\source\\Front\\Lib\\Core\\Core --no-banner",
+      "workingDirectory": "F:\\project\\lang\\simple_language\\source\\Front"
+    },
+    "Front (ProjectTest)": {
+      "commandName": "Project",
+      "commandLineArgs": "compile -e ir -p F:\\project\\lang\\simple_language\\test\\BaseTest\\ProjectTest --no-banner",
+      "workingDirectory": "F:\\project\\lang\\simple_language\\source\\Front"
+    },
+    "Front (help)": {
+      "commandName": "Project",
+      "commandLineArgs": "help",
+      "workingDirectory": "F:\\project\\lang\\simple_language\\source\\Front"
+    },
+    "Front (version)": {
+      "commandName": "Project",
+      "commandLineArgs": "version",
+      "workingDirectory": "F:\\project\\lang\\simple_language\\source\\Front"
+    }
+  }
+}

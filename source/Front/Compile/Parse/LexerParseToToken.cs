@@ -15,28 +15,20 @@ using System.Text;
 
 namespace SimpleLanguage.Compile
 {
-    //璇嶆硶瑙ｆ瀽
     public class LexerParse
     {
         public List<Token> listTokens => m_ListTokens;
-        //public List<Token> GetListTokensWidthEnd()
-        //{
-        //    List<Token> withEndList = new List<Token>(m_ListTokens);
-        //    withEndList.Add(new Token(m_Path, ETokenType.Finished, END_CHAR, m_SourceLine, m_SourceChar));
-        //    return withEndList;
-        //}
+        const char END_CHAR = char.MaxValue;    
 
-        const char END_CHAR = char.MaxValue;    //缁撳熬瀛楃
-
-        private char m_CurChar;                              //褰撳墠瀛楃
-        private char m_TempChar;                             //涓存椂瀛楃
+        private char m_CurChar;                              
+        private char m_TempChar;                            
         private StringBuilder m_Builder = new StringBuilder();
         private List<Token> m_ListTokens = new List<Token>();
         private Token m_CurrentToken = null;
         private char[] m_Buffer;                    
         private int m_Length = 0;                      
-        private int m_SourceLine = 0;                  //瑙ｆ瀽鍒板綋鍓嶇殑琛屾暟
-        private int m_SourceChar = 0;                  //瑙ｆ瀽鍒板綋鍓嶈涓殑浣嶇疆
+        private int m_SourceLine = 0;                  
+        private int m_SourceChar = 0;            
         private int m_Index = 0;                       
         private string m_Path;
         /// <summary> true：当前缓冲为字符串插值中的表达式片段，未知符号按字面 String token 输出，不当作全文法错误 </summary>
@@ -84,11 +76,24 @@ namespace SimpleLanguage.Compile
             return char.MinValue;
             //throw new LexerException(this, "End of source reached.");
         }
+        char PeekChar2()
+        {
+            int index = m_Index + 2;
+            if (index < m_Length)
+            {
+                return m_Buffer[index];
+            }
+            else if (index == m_Length)
+            {
+                return END_CHAR;
+            }
+            return char.MinValue;
+        }
         void UndoChar()
         {
             if (m_Index == 0)
             {
-                CompileManager.instance.AddCompileError("Error Cannot undo char beyond start of source.");
+                Log.AddTokenLog(LID.ShowExtendMessage, "Error Cannot undo char beyond start of source.");
                 return;
             }
             --m_Index;
@@ -145,6 +150,14 @@ namespace SimpleLanguage.Compile
                    (c >= 'a' && c <= 'z') ||
                    (c >= 'A' && c <= 'Z') ||
                    c == '_';
+        }
+        bool IsIdentifier3(char c)
+        {
+            return (c >= '0' && c <= '9') ||
+                   (c >= 'a' && c <= 'z') ||
+                   (c >= 'A' && c <= 'Z') ||
+                   c == '_' || c == '(' || c == ')' ||
+                   c == ',' || c == '"';
         }
         private bool IsIdentifier(char ch)
         {
@@ -578,6 +591,29 @@ namespace SimpleLanguage.Compile
                 }
                 else if( m_TempChar == 'f' )
                 {
+                    // fe4/fe5 后缀：float8(e4m3)/float8(e5m2) 字面量，token 中保存 byte 位模式
+                    if (endPoint <= 1 && PeekChar() == 'e' && (PeekChar2() == '4' || PeekChar2() == '5'))
+                    {
+                        char ebitsChar = PeekChar2();
+                        ReadChar();   // 吃掉 'e'
+                        ReadChar();   // 吃掉 '4'/'5'
+                        if (endPoint == 1 && !Char.IsNumber(tfrontChar))    // 2.fe4 -> 按 2 . fe4 解析
+                        {
+                            m_Builder.Remove(m_Builder.Length - 1, 1);
+                            AddToken(ETokenType.Number, Int32.Parse(m_Builder.ToString()), EType.Int32);
+                            UndoChar();
+                            UndoChar();
+                            UndoChar();
+                            UndoChar();
+                            break;
+                        }
+                        float fv8 = float.Parse(m_Builder.ToString());
+                        byte bits8 = ebitsChar == '4'
+                            ? Float816Convert.Float32ToFloat8E4M3Bits(fv8)
+                            : Float816Convert.Float32ToFloat8E5M2Bits(fv8);
+                        AddToken(ETokenType.Number, bits8, ebitsChar == '4' ? EType.Float8 : EType.Float8_E5M2);
+                        break;
+                    }
                     if( endPoint == 0 )     // 2f
                     {
                         var ld = Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "" );
@@ -620,6 +656,36 @@ namespace SimpleLanguage.Compile
                             UndoChar();
                             break;
                         }
+                    }
+                }
+                else if (m_TempChar == 'h')
+                {
+                    // h/hb 后缀：float16 / float16brain(bfloat16) 字面量，token 中保存 ushort 位模式
+                    if (endPoint <= 1)
+                    {
+                        bool isBrain = PeekChar() == 'b';
+                        if (isBrain)
+                        {
+                            ReadChar();   // 吃掉 'b'
+                        }
+                        if (endPoint == 1 && !Char.IsNumber(tfrontChar))    // 2.h / 2.hb -> 按 2 . h(b) 解析
+                        {
+                            m_Builder.Remove(m_Builder.Length - 1, 1);
+                            AddToken(ETokenType.Number, Int32.Parse(m_Builder.ToString()), EType.Int32);
+                            UndoChar();
+                            UndoChar();
+                            if (isBrain)
+                            {
+                                UndoChar();
+                            }
+                            break;
+                        }
+                        float fv16 = float.Parse(m_Builder.ToString());
+                        ushort bits16 = isBrain
+                            ? Float816Convert.Float32ToBFloat16Bits(fv16)
+                            : Float816Convert.Float32ToFloat16Bits(fv16);
+                        AddToken(ETokenType.Number, bits16, isBrain ? EType.Float16_Brain : EType.Float16);
+                        break;
                     }
                 }
                 else if (m_TempChar == 'L' || m_TempChar == 'l')
@@ -704,63 +770,87 @@ namespace SimpleLanguage.Compile
                     }
                     break;
                 }
-                else
+                else if ((m_TempChar == 'e' || m_TempChar == 'E') && endPoint <= 1)
                 {
-                    if( endPoint > 2 )
+                    // 科学计数法（如 1e5、1.5e+3、2E-8f）：从 token 层识别为浮点数字面量
+                    char peek1 = PeekChar();
+                    bool isExponent = char.IsDigit(peek1);
+                    bool hasExpSign = false;
+                    if (!isExponent && (peek1 == '+' || peek1 == '-'))
                     {
-                        Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "Error ReadNumber ...");                    
-                    }
-                    //else if( endPoint == 3 )
-                    //{
-                    //    AddToken(ETokenType.NumberArrayLink, m_Builder.ToString(), EType.Array);
-                    //}
-                    else if ( endPoint == 2 )
-                    {
-                        AddToken(ETokenType.NumberArrayLink, m_Builder.ToString(), EType.Array );
-                        UndoChar();
-                    }
-                    else if (endPoint == 1 )
-                    {
-                        if( char.IsLetter( m_TempChar ) )
+                        if (char.IsDigit(PeekChar2()))
                         {
-                            var frontChar = m_Builder[m_Builder.Length - 1];
-                            if( frontChar == '.' )
+                            isExponent = true;
+                            hasExpSign = true;
+                        }
+                    }
+                    if (isExponent)
+                    {
+                        m_Builder.Append('e');
+                        if (hasExpSign)
+                        {
+                            m_Builder.Append(peek1);
+                            ReadChar();   // 吃掉指数符号位
+                        }
+                        char tailChar;
+                        while (char.IsDigit(tailChar = ReadChar()))
+                        {
+                            m_Builder.Append(tailChar);
+                        }
+                        if (tailChar == 'f' || tailChar == 'F')
+                        {
+                            // fe4/fe5 后缀：科学计数法 float8 字面量
+                            if (PeekChar() == 'e' && (PeekChar2() == '4' || PeekChar2() == '5'))
                             {
-                                Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "char. logic is float format call inner functionname");
-                                //m_Buffer.Remove(m_Buffer.Length - 1, 1);
-                                // 无后缀的小数字面量（含 0.0）默认 float32，extend 须与 lexeme 一致。
-                                AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
-                                AddToken(ETokenType.Period, frontChar );
-                                UndoChar();
+                                char ebitsChar = PeekChar2();
+                                ReadChar();   // 吃掉 'e'
+                                ReadChar();   // 吃掉 '4'/'5'
+                                float fv8 = float.Parse(m_Builder.ToString());
+                                byte bits8 = ebitsChar == '4'
+                                    ? Float816Convert.Float32ToFloat8E4M3Bits(fv8)
+                                    : Float816Convert.Float32ToFloat8E5M2Bits(fv8);
+                                AddToken(ETokenType.Number, bits8, ebitsChar == '4' ? EType.Float8 : EType.Float8_E5M2);
                             }
                             else
                             {
                                 AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
-                                UndoChar();
                             }
+                        }
+                        else if (tailChar == 'h')
+                        {
+                            // h/hb 后缀：科学计数法 float16 / float16brain 字面量
+                            bool isBrain = PeekChar() == 'b';
+                            if (isBrain)
+                            {
+                                ReadChar();   // 吃掉 'b'
+                            }
+                            float fv16 = float.Parse(m_Builder.ToString());
+                            ushort bits16 = isBrain
+                                ? Float816Convert.Float32ToBFloat16Bits(fv16)
+                                : Float816Convert.Float32ToFloat16Bits(fv16);
+                            AddToken(ETokenType.Number, bits16, isBrain ? EType.Float16_Brain : EType.Float16);
+                        }
+                        else if (tailChar == 'd' || tailChar == 'D')
+                        {
+                            AddToken(ETokenType.Number, double.Parse(m_Builder.ToString()), EType.Float64);
                         }
                         else
                         {
-                            AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32 );
+                            // 科学计数法必须是浮点类型；无后缀默认 Float32（与无后缀小数字面量约定一致）
+                            AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
                             UndoChar();
                         }
                     }
                     else
                     {
-                        try
-                        {
-                            ulong parsed = Convert.ToUInt64(m_Builder.ToString());
-                            AddIntegerTokenByRange(parsed);
-                        }
-                        catch
-                        {
-                            var ld = Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
-                                , $"Decimal number overflow ({m_Builder}), fallback to UInt64.MaxValue.");
-                            ld.demo = m_Builder.ToString();
-                            AddToken(ETokenType.Number, ulong.MaxValue, EType.UInt64);
-                        }
-                        UndoChar();
+                        // e 后面不是指数（例如标识符），按普通字符结束数字
+                        EndReadNumberByOtherChar(endPoint);
                     }
+                    break;
+                }
+                else
+                {
+                    EndReadNumberByOtherChar(endPoint);
                     break;
                 }
                 tfrontChar = m_TempChar;
@@ -768,6 +858,64 @@ namespace SimpleLanguage.Compile
 
             m_Index++;
             m_SourceChar++;
+        }
+        void EndReadNumberByOtherChar(int endPoint)
+        {
+            if( endPoint > 2 )
+            {
+                Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "Error ReadNumber ...");
+            }
+            //else if( endPoint == 3 )
+            //{
+            //    AddToken(ETokenType.NumberArrayLink, m_Builder.ToString(), EType.Array);
+            //}
+            else if ( endPoint == 2 )
+            {
+                AddToken(ETokenType.NumberArrayLink, m_Builder.ToString(), EType.Array );
+                UndoChar();
+            }
+            else if (endPoint == 1 )
+            {
+                if( char.IsLetter( m_TempChar ) )
+                {
+                    var frontChar = m_Builder[m_Builder.Length - 1];
+                    if( frontChar == '.' )
+                    {
+                        Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "char. logic is float format call inner functionname");
+                        //m_Buffer.Remove(m_Buffer.Length - 1, 1);
+                        // 无后缀的小数字面量（含 0.0）默认 float32，extend 须与 lexeme 一致。
+                        AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
+                        AddToken(ETokenType.Period, frontChar );
+                        UndoChar();
+                    }
+                    else
+                    {
+                        AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
+                        UndoChar();
+                    }
+                }
+                else
+                {
+                    AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32 );
+                    UndoChar();
+                }
+            }
+            else
+            {
+                try
+                {
+                    ulong parsed = Convert.ToUInt64(m_Builder.ToString());
+                    AddIntegerTokenByRange(parsed);
+                }
+                catch
+                {
+                    var ld = Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
+                        , $"Decimal number overflow ({m_Builder}), fallback to UInt64.MaxValue.");
+                    ld.demo = m_Builder.ToString();
+                    AddToken(ETokenType.Number, ulong.MaxValue, EType.UInt64);
+                }
+                UndoChar();
+            }
         }
         void ReadNumberOrHexOrOctOrBinNumber()
         {
@@ -918,7 +1066,7 @@ namespace SimpleLanguage.Compile
                         ident.Append(n);
                         continue;
                     }
-                    UndoChar();
+                    //UndoChar();
                     break;
                 }
                 // For attribute syntax: store attribute name in extend.
@@ -1577,7 +1725,10 @@ namespace SimpleLanguage.Compile
             {
                 if( offset >= m_Length)
                 {
-                    Log.AddTokenLog(LID.ShowExtendMessage, "offset >= length" );
+                    // 块注释 #! ... !# 未闭合：必须推进 m_Index 到文件末尾，
+                    // 否则主循环会把注释体当作代码重新词法化出 / * 等垃圾token
+                    // Log.AddTokenLog(LID.ShowExtendMessage, "Error 块注释 #! 未闭合，直接跳到文件末尾 : " + m_Path );
+                    m_Index = m_Length;
                     break;
                 }
                 
@@ -1592,6 +1743,11 @@ namespace SimpleLanguage.Compile
                     }
                     while ( true )
                     {
+                        if (offset + offset2 >= m_Length)
+                        {
+                            // 边界保护：'!' 后已无可读字符，未闭合交由外层统一处理
+                            break;
+                        }
                         schar = m_Buffer[offset + offset2++];
                         if (schar == '#')
                         {
@@ -1718,7 +1874,6 @@ namespace SimpleLanguage.Compile
             }          
             
         }
-        /// <summary> 璇诲彇鍏抽敭瀛?</summary>
         void ReadIdentifier()
         {
             m_Builder.Append(m_CurChar);
@@ -1913,6 +2068,9 @@ namespace SimpleLanguage.Compile
                 case "for":
                     tokenType = ETokenType.For;
                     break;
+                case "function":
+                    tokenType = ETokenType.Function;
+                    break;
                 case "in":
                     tokenType = ETokenType.In;
                     break;
@@ -1990,13 +2148,46 @@ namespace SimpleLanguage.Compile
                     tokenType = ETokenType.Local;
                     break;
                 case "try":
-                    tokenType = ETokenType.Try;
+                    {
+                        char nextCh = PeekChar();
+                        if (nextCh == '?')
+                        {
+                            ReadChar();
+                            m_Builder.Append('?');
+                            tokenType = ETokenType.TryQuestion;
+                        }
+                        else if (nextCh == '!')
+                        {
+                            ReadChar();
+                            m_Builder.Append('!');
+                            tokenType = ETokenType.TryExclamation;
+                        }
+                        else
+                        {
+                            tokenType = ETokenType.Try;
+                        }
+                    }
                     break;
                 case "catch":
                     tokenType = ETokenType.Catch;
                     break;
+                case "finally":
+                    tokenType = ETokenType.Finally;
+                    break;
                 case "throw":
                     tokenType = ETokenType.Throw;
+                    break;
+                case "defer":
+                    tokenType = ETokenType.Defer;
+                    break;
+                case "errdefer":
+                    tokenType = ETokenType.ErrDefer;
+                    break;
+                case "checked":
+                    tokenType = ETokenType.Checked;
+                    break;
+                case "unchecked":
+                    tokenType = ETokenType.Unchecked;
                     break;
                 case "null":
                     tokenType = ETokenType.Null;
@@ -2027,24 +2218,27 @@ namespace SimpleLanguage.Compile
                     extend = EType.Array;
                     break;
                 case "async":
-                    tokenType = ETokenType.Async;
+                    // Define.cs 中 ETokenType.Async 已被注释禁用，async 按普通标识符处理
+                    tokenType = ETokenType.Identifier;
                     break;
                 case "await":
                     tokenType = ETokenType.Await;
+                    break;
+                case "spawn":
+                    tokenType = ETokenType.Spawn;
+                    break;
+                case "yield":
+                    tokenType = ETokenType.Yield;
+                    break;
+                case "throws":
+                    tokenType = ETokenType.Throws;
                     break;
                 default:
                     tokenType = ETokenType.Identifier;
                     break;
             }
 
-            if (tokenType == ETokenType.Null) 
-            {
-                AddToken(tokenType, "null", m_SourceLine, m_SourceChar);
-            } 
-            else
-            {
-                AddToken(tokenType, m_Builder.ToString(), extend, m_SourceLine, m_SourceChar );
-            }
+            AddToken(tokenType, m_Builder.ToString(), extend, m_SourceLine, m_SourceChar );
         }
         /// <summary> 解析字符串插值内嵌的表达式片段为 token（` / 未在全文法中单独列出的符号等按字面 String 处理）。</summary>
         public void ParseInterpolationExpressionToTokenList()
@@ -2418,7 +2612,7 @@ namespace SimpleLanguage.Compile
             catch( Exception e )
             {
                 // swallow exceptions in debug dump
-                Log.AddTokenLog(LID.ShowExtendMessage, "DumpTokensToFile exception: " + e.Message );
+                Console.WriteLine("DumpTokensToFile exception: " + e.Message );
             }
         }
     }

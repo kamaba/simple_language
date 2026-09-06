@@ -46,6 +46,7 @@
 | 文档 | 说明 |
 |------|------|
 | [syntax/number.md](./syntax/number.md) | 数值类型：字面量、内置类型词法、`Num` 语义 |
+| [syntax/float8_16.md](./syntax/float8_16.md) | 低精度浮点类型：`Float8`/`Float8_E5M2`/`Float16`/`Float16_Brain` 字面量后缀、存储约定、转换与运算语义 |
 | [syntax/string.md](./syntax/string.md) | 字符串 |
 | [syntax/data.md](./syntax/data.md) | 数据类型 |
 | [syntax/type.md](./syntax/type.md) | 类型 |
@@ -84,6 +85,8 @@
 | [syntax/marco.md](./syntax/marco.md) | 宏 |
 | [syntax/virtualmachine.md](./syntax/virtualmachine.md) | 虚拟机相关语法与概念 |
 | [syntax/exporter.md](./syntax/exporter.md) | 导出 / IR 侧说明 |
+| [syntax/coroutine.md](./syntax/coroutine.md) | 协程（Coroutine）与通道（Channel） |
+| [syntax/isolate.md](./syntax/isolate.md) | 隔离岛（Isolate）：跨堆并行、端口消息通信（深拷贝）、生命周期控制、TransferableData 零拷贝转移 |
 
 ### 3.6 集合与容器（`md/syntax/contraint/`）
 

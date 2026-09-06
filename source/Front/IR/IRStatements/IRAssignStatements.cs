@@ -23,7 +23,7 @@ namespace SimpleLanguage.IR
         }
         public void ParseIRStatements(MetaAssignStatements ms)
         {
-            var clist = ms.leftMetaExpress.metaCallLink.visitNodeList;
+            var clist = ms.leftMetaExpress.visitNodeList;
             if( clist.Count == 0 )
             {
                 Log.AddIRLog(LID.ShowExtendMessage, ms.leftMetaExpress.token, "AssignStatement 没有可生成的表达式");
@@ -58,24 +58,88 @@ namespace SimpleLanguage.IR
             }
 
             var mv = lastCL.GetReturnMetaVariable();
+
+
+            if( lastCL.methodCall != null && lastCL.methodCall.function.name == "_setItem_" )
+            {
+                // 赋值场景：_setItem_ 已经包含 value 参数，直接执行方法调用
+                // 读取场景：_getItem_ 需要执行方法调用并保留返回值
+                IRCallFunction irCallFun = new IRCallFunction(this.irMethod);
+                irCallFun.Parse(lastCL.methodCall);
+                m_IRStatements.Add(irCallFun);
+
+                // 读取场景：返回值已在栈上，不需要额外处理
+                // 赋值场景：m_RightMetaExpress 已被消费（在 MetaAssignStatements 中设置），直接返回
+                if (ms.rightMetaExpress == null)
+                {
+                    return;
+                }
+                return;
+            }
+
+            // 如果左侧最后一个访问节点是方法调用且返回 void（返回类型为 void），
+            // 则不应该继续处理赋值（没有可存储的返回值）。
+            // void 方法的 returnMetaVariable 不为 null，但其类型是 void。
+            // setter 场景（a.prop = x）：右值已被 MetaCallLink 的 setterFunction 机制
+            // 消费进 setter 的参数列表，这里必须生成 setter 调用指令，
+            // 否则赋值完全不生效且会在栈上遗留接收者（栈失衡）。
+            if (mv == null || mv.GetFinalMetaType()?.metaClass == CoreMetaClassManager.voidMetaClass)
+            {
+                // void 方法调用作为赋值左侧：执行方法调用，不生成 store。
+                if (lastCL.visitType == MetaVisitNode.EVisitType.MethodCall && lastCL.methodCall != null)
+                {
+                    IRCallFunction irCallFun = new IRCallFunction(this.irMethod);
+                    irCallFun.Parse(lastCL.methodCall);
+                    m_IRStatements.Add(irCallFun);
+                }
+                // 右侧表达式仍然需要执行（可能有副作用），但不需要存储。
+                // setter 场景右值为 null（已被消费），不会重复执行。
+                if (ms.rightMetaExpress != null)
+                {
+                    m_IRExpress = IRExpressManager.CreateExpress(irMethod, ms.rightMetaExpress);
+                    m_IRStatements.Add(m_IRExpress);
+                }
+                return;
+            }
             if (lastCL.visitType == MetaVisitNode.EVisitType.VisitVariable)
             {
                 MetaVisitVariable mvv = lastCL.visitVariable;
-                IRExpressBase irexpress = IRExpressManager.CreateExpress(irMethod, mvv.visitExpressNode);
-                m_IRStatements.Add(irexpress);
 
-                if (ms.autoAddExpressOpSign != ELeftRightOpSign.None)
+                // MethodCall 模式：_getItem_/_setItem_ 下标访问
+                if (mvv.visitType == MetaVisitVariable.EVisitType.MethodCall)
                 {
-                    IRDup irdup = new IRDup(this.irMethod, 2);
-                    m_IRStatements.Add(irdup);
+                    // 赋值场景：_setItem_ 已经包含 value 参数，直接执行方法调用
+                    // 读取场景：_getItem_ 需要执行方法调用并保留返回值
+                    IRCallFunction irCallFun = new IRCallFunction(this.irMethod);
+                    irCallFun.Parse(mvv.methodCall);
+                    m_IRStatements.Add(irCallFun);
 
-                    //IRMetaClass owirmc1 = IRManager.instance.GetIRMetaClassById(mvv.GetOwnerClassTemplateClass().GetHashCode());
-                    if (mvv.isStatic)
+                    // 读取场景：返回值已在栈上，不需要额外处理
+                    // 赋值场景：m_RightMetaExpress 已被消费（在 MetaAssignStatements 中设置），直接返回
+                    if (ms.rightMetaExpress == null)
                     {
-                        Log.AddIRLog(LID.ShowExtendMessage, ms.token, "visit variable is Static");
+                        return;
                     }
-                    IRLoadVariable irVar = new IRLoadVariable(null, this.irMethod, 0, IRMetaVariableFrom.Array);
-                    m_IRStatements.Add(irVar);
+                }
+                else
+                {
+                    // 原有数组访问逻辑
+                    IRExpressBase irexpress = IRExpressManager.CreateExpress(irMethod, mvv.visitExpressNode);
+                    m_IRStatements.Add(irexpress);
+
+                    if (ms.autoAddExpressOpSign != ELeftRightOpSign.None)
+                    {
+                        IRDup irdup = new IRDup(this.irMethod, 2);
+                        m_IRStatements.Add(irdup);
+
+                        //IRMetaClass owirmc1 = IRManager.instance.GetIRMetaClassById(mvv.GetOwnerClassTemplateClass().GetHashCode());
+                        if (mvv.isStatic)
+                        {
+                            Log.AddIRLog(LID.ShowExtendMessage, ms.token, "IRAssignStatement visit variable is Static");
+                        }
+                        IRLoadVariable irVar = new IRLoadVariable(null, this.irMethod, 0, IRMetaVariableFrom.Array);
+                        m_IRStatements.Add(irVar);
+                    }
                 }
             }
             else if (lastCL.visitType == MetaVisitNode.EVisitType.MethodCall)
@@ -138,10 +202,10 @@ namespace SimpleLanguage.IR
                         m_IRStatements.Add(new IRDup(this.irMethod));
                     }
 
-                    if (lastCL.variable.isStatic)
-                    {
-                        Log.AddIRLog(LID.ShowExtendMessage, lastCL.variable.token, "visit variable is Static");
-                    }
+                    //if (lastCL.variable.isStatic)
+                    //{
+                    //    Log.AddIRLog(LID.ShowExtendMessage, ms.token, "IRAssignStatement visit variable is Static2");
+                    //}
 
                     var list = IRMetaCallLink.ExecOnceCnode(this.irMethod, lastCL);
                     if (list == null)
@@ -169,10 +233,56 @@ namespace SimpleLanguage.IR
             }
 
             //如果不是 a.setValue(xxx)这种方式，那么就执行右边的表达式
+            // ── O3 常数融合前置判定 ──
+            // 右值为纯常量、非复合赋值、无需数值 Convert、非 callMetaType(枚举成员/静态字段)场景时，
+            // 跳过 LoadConst 发射，把常量直接嵌入 Store*ConstValue 指令（少一次 push+pop）。
+            // 融合不成功则完整回退下方经典路径。
+            bool rhsNeedsConvert = false;
+            EType rhsExpEType = EType.None;
+            EType rhsVarEType = EType.None;
+            if (ms.rightMetaExpress != null)
+            {
+                var expType = ms.rightMetaExpress.GetReturnMetaType();
+                var varType = mv.GetFinalMetaType();
+                if (expType != null && varType != null)
+                {
+                    rhsExpEType = CoreMetaClassManager.GetETypeByMetaClass(expType.metaClass);
+                    rhsVarEType = CoreMetaClassManager.GetETypeByMetaClass(varType.metaClass);
+                    // If the RHS expression type differs from the target variable's
+                    // type (and both are numeric), a Convert is required before the
+                    // store -- in that case never fuse the constant.
+                    rhsNeedsConvert = rhsExpEType != rhsVarEType
+                        && NumberManager.IsNumericEType(rhsExpEType)
+                        && NumberManager.IsNumericEType(rhsVarEType);
+                }
+            }
+
+            if (ms.rightMetaExpress is MetaConstExpressNode rhsConstNode
+                && ms.autoAddExpressOpSign == ELeftRightOpSign.None
+                && !rhsNeedsConvert
+                && lastCL.callMetaType == null)
+            {
+                var owirmcFused = IRManager.GetIRMetaClassByMetaVariable(mv);
+                var irmtFused = IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mv.GetFinalMetaType(), owirmcFused);
+                if (IRStoreVariable.TryCreateConstValueStore(irmtFused, owirmcFused, irMethod, mv, rhsConstNode, out IRStoreVariable fusedStore))
+                {
+                    m_StoreVariable = fusedStore;
+                    m_IRStatements.Add(fusedStore);
+                    return;
+                }
+            }
+
             if (ms.rightMetaExpress != null)
             {
                 m_IRExpress = IRExpressManager.CreateExpress(irMethod, ms.rightMetaExpress);
                 m_IRStatements.Add(m_IRExpress);
+
+                // e.g.  b8 = someInt32Var;  -> LoadLocal + Convert_I8 + StoreLocal
+                if (rhsNeedsConvert)
+                {
+                    IRConvert irconv = new IRConvert(irMethod, rhsExpEType, rhsVarEType);
+                    m_IRStatements.Add(irconv);
+                }
             }
 
             IRData irsign = IRUtil.CreateLeftAndRightIRData(ms.autoAddExpressOpSign, out bool flag );

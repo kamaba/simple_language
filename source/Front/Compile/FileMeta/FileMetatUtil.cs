@@ -191,7 +191,9 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
+                        FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
+                        fmn.priority = cnode.priority;
+                        commonTermExpressList.Add(fmn);
                     }
                 }
                 else if (cnode.nodeType == ENodeType.DoubleQuestion)
@@ -205,6 +207,16 @@ namespace SimpleLanguage.Compile
                 {
                     FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
                     fmn.priority = cnode.priority;
+                    commonTermExpressList.Add(fmn);
+                }
+                else if (cnode.nodeType == ENodeType.Assign)
+                {
+                    // 关键字参数: Fun( name = expr )
+                    // 调用实参中的 = 作为最低优先级符号保留在表达式列表中，
+                    // 由 MetaInputParamCollection.TryExtractKeywordArg 提取参数名并替换为纯值表达式。
+                    // 普通赋值语句在进入本函数前已剥离 Assign 节点，不会受此影响。
+                    FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
+                    fmn.priority = SignComputePriority.Level11_Assign;
                     commonTermExpressList.Add(fmn);
                 }
                 else if (cnode.nodeType == ENodeType.Key)
@@ -240,9 +252,17 @@ namespace SimpleLanguage.Compile
                         fmbt.priority = int.MaxValue;
                         commonTermExpressList.Add(fmbt);
                     }
+                    else if (cnode.token.type == ETokenType.Try
+                             || cnode.token.type == ETokenType.Checked)
+                    {
+                        // try/checked as expression prefix (like try? / try!)
+                        FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
+                        fmn.priority = SignComputePriority.Level2_LinkOp;
+                        commonTermExpressList.Add(fmn);
+                    }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error --------------------------------------!!" + fmbt.ToTokenString());
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error --------------------------------------!!" + fmbt?.ToTokenString());
                     }
                 }
                 else if (cnode.nodeType == ENodeType.Brace)
@@ -273,7 +293,8 @@ namespace SimpleLanguage.Compile
                         if (nodeList[index + 1].nodeType == ENodeType.Brace)
                         {
                             block = nodeList[index + 1];
-                            cnode.SetBlockNode(block);
+                            var lastNodeList = cnode.GetLinkNodeList(true);
+                            lastNodeList[lastNodeList.Count - 1].SetBlockNode(block);
                             index++;
                         }
                     }

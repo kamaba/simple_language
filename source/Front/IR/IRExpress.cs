@@ -227,6 +227,97 @@ namespace SimpleLanguage.IR
                         m_IRDataList.Add(endirdata);
                     }
                     break;
+                case MetaTryExpressNode mten:
+                    {
+                        if (mten.tryMode == ETryMode.TryQuestion)
+                        {
+                            // try? expr: if exception, result is null
+                            // IR: BeginTry(catch=catchNop) <expr> LeaveTry->endNop catchNop: Pop LoadConstNull endNop:
+                            IRData catchNop = new IRData();
+                            catchNop.opCode = EIROpCode.Nop;
+                            IRData endNop = new IRData();
+                            endNop.opCode = EIROpCode.Nop;
+
+                            // BeginTry
+                            IRData beginTryData = new IRData();
+                            beginTryData.opCode = EIROpCode.BeginTry;
+                            TryScopeData tsd = new TryScopeData();
+                            tsd.catchTarget = catchNop;
+                            tsd.finallyTarget = null;
+                            beginTryData.SetOpValue(tsd);
+                            beginTryData.SetDebugInfoByToken(mten.token, "try? BeginTry");
+                            m_IRDataList.Add(beginTryData);
+
+                            // Inner expression - set tryCatch context so calls are marked
+                            bool savedTryCatch = m_IRMethod.isInTryCatch;
+                            m_IRMethod.isInTryCatch = true;
+                            IRExpressBase innerExpress = IRExpressManager.CreateExpress(this.m_IRMethod, mten.innerExpress);
+                            m_IRMethod.isInTryCatch = savedTryCatch;
+                            m_IRDataList.AddRange(innerExpress.IRDataList);
+
+                            // LeaveTry -> end
+                            IRData leaveTryData = new IRData();
+                            leaveTryData.opCode = EIROpCode.LeaveTry;
+                            leaveTryData.SetOpValue(endNop);
+                            leaveTryData.SetDebugInfoByToken(mten.token, "try? LeaveTry");
+                            m_IRDataList.Add(leaveTryData);
+
+                            // Catch handler: pop exception, push null
+                            m_IRDataList.Add(catchNop);
+
+                            IRData popData = new IRData();
+                            popData.opCode = EIROpCode.Pop;
+                            popData.SetDebugInfoByToken(mten.token, "try? pop exception");
+                            m_IRDataList.Add(popData);
+
+                            IRData nullData = new IRData();
+                            nullData.opCode = EIROpCode.LoadConstNull;
+                            nullData.SetDebugInfoByToken(mten.token, "try? load null");
+                            m_IRDataList.Add(nullData);
+
+                            // End label
+                            m_IRDataList.Add(endNop);
+                        }
+                        else if (mten.tryMode == ETryMode.Try)
+                        {
+                            // try expr: evaluate, exception caught by surrounding label{}catch{}
+                            // Set tryCatch context so IRCallFunction marks call instructions.
+                            bool savedTryCatch = m_IRMethod.isInTryCatch;
+                            m_IRMethod.isInTryCatch = true;
+                            IRExpressBase innerExpress = IRExpressManager.CreateExpress(this.m_IRMethod, mten.innerExpress);
+                            m_IRMethod.isInTryCatch = savedTryCatch;
+                            m_IRDataList.AddRange(innerExpress.IRDataList);
+                        }
+                        else if (mten.tryMode == ETryMode.TryExclamation)
+                        {
+                            // try! expr: evaluate, exception caught by surrounding label{}catch{}
+                            // Same tryCatch marking as try - both are caught by enclosing catch
+                            bool savedTryCatch = m_IRMethod.isInTryCatch;
+                            m_IRMethod.isInTryCatch = true;
+                            IRExpressBase innerExpress = IRExpressManager.CreateExpress(this.m_IRMethod, mten.innerExpress);
+                            m_IRMethod.isInTryCatch = savedTryCatch;
+                            m_IRDataList.AddRange(innerExpress.IRDataList);
+                        }
+                    }
+                    break;
+                case MetaCheckedExpressNode mcen:
+                    {
+                        // checked(expr): emit BeginChecked, evaluate expr, EndChecked
+                        // On integer overflow, VM throws OverflowException (caught by surrounding label{}catch{})
+                        IRData beginChecked = new IRData();
+                        beginChecked.opCode = EIROpCode.BeginChecked;
+                        beginChecked.SetDebugInfoByToken(mcen.token, "checked BeginChecked");
+                        m_IRDataList.Add(beginChecked);
+
+                        IRExpressBase innerExpress = IRExpressManager.CreateExpress(this.m_IRMethod, mcen.innerExpress);
+                        m_IRDataList.AddRange(innerExpress.IRDataList);
+
+                        IRData endChecked = new IRData();
+                        endChecked.opCode = EIROpCode.EndChecked;
+                        endChecked.SetDebugInfoByToken(mcen.token, "checked EndChecked");
+                        m_IRDataList.Add(endChecked);
+                    }
+                    break;
                 case MetaAsIsExpressNode maien:
                     {
                         IRMetaCallLink irmcl = new IRMetaCallLink();
@@ -397,14 +488,14 @@ namespace SimpleLanguage.IR
                             mc2 = mnoen.metaMemberFunction.ownerMetaClass;
                         if (mc2 == null)
                             mc2 = mnoen.metaMemberFunction.sourceMetaMemberFunction?.ownerMetaClass;
-                        irmc = mc2 != null ? IRManager.instance.GetIRMetaClassById(mc2.GetHashCode()) : null;
+                        irmc = mc2 != null ? IRManager.instance.GetIRMetaClassById(mc2.classId) : null;
                     }
 
                     var runtimeMethod = irmc?.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
                     if (callMethodIndex == -1 && mnoen.metaMemberFunction.sourceMetaMemberFunction != null)
                     {
                         var sourceMc = mnoen.metaMemberFunction.sourceMetaMemberFunction.ownerMetaClass;
-                        var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.GetHashCode()) : null;
+                        var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.classId) : null;
                         if (sourceIrmc != null)
                         {
                             var sourceMethod = sourceIrmc.GetIRNonStaticMethodIndexByMethod(fname, out var sourceIndex);
@@ -438,7 +529,7 @@ namespace SimpleLanguage.IR
                         IRDup irdup = new IRDup(irMethod);
                         AddIRRangeData(irdup.IRDataList);
 
-                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
+                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.valueExpressNode);
                         AddIRRangeData(irexp.IRDataList);
 
                         IRData irdatastore = new IRData();
@@ -457,7 +548,7 @@ namespace SimpleLanguage.IR
                 {
                     if (mnoen.ownerMetaClass is MetaGenTemplateClass mgtc)
                     {
-                        owirmc = IRManager.instance.GetIRMetaClassById(mgtc.metaTemplateClass.GetHashCode());
+                        owirmc = IRManager.instance.GetIRMetaClassById(mgtc.metaTemplateClass.classId);
                     }
                     newObjectIRMT = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mnoen.expressReturnMetaType, owirmc);
                     irmc = IRManager.GetIRMetaClassByMetaType(mnoen.expressReturnMetaType);
@@ -528,14 +619,14 @@ namespace SimpleLanguage.IR
                             mc2 = mnoen.metaMemberFunction.ownerMetaClass;
                         if (mc2 == null)
                             mc2 = mnoen.metaMemberFunction.sourceMetaMemberFunction?.ownerMetaClass;
-                        irmc = mc2 != null ? IRManager.instance.GetIRMetaClassById(mc2.GetHashCode()) : null;
+                        irmc = mc2 != null ? IRManager.instance.GetIRMetaClassById(mc2.classId) : null;
                     }
 
                     var runtimeMethod = irmc?.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
                     if (callMethodIndex == -1 && mnoen.metaMemberFunction.sourceMetaMemberFunction != null)
                     {
                         var sourceMc = mnoen.metaMemberFunction.sourceMetaMemberFunction.ownerMetaClass;
-                        var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.GetHashCode()) : null;
+                        var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.classId) : null;
                         if (sourceIrmc != null)
                         {
                             var sourceMethod = sourceIrmc.GetIRNonStaticMethodIndexByMethod(fname, out var sourceIndex);
@@ -559,7 +650,97 @@ namespace SimpleLanguage.IR
                     datacall.SetDebugInfoByToken(mnoen.token);
                     AddIRData(datacall);
                 }
-                if(irmc.metaClassKind == IRMetaClassKind.Data )
+                // List/IList/IMap 初始化: { val1, val2, ... } 通过调用 add 方法
+                // 判断依据：新创建对象的类型是否有 add 方法
+                int addMethodIndex = -1;
+                IRMethod addMethod = irmc?.GetIRNonStaticMethodIndexByName("add", out addMethodIndex);
+                if (addMethodIndex == -1 && irmc != null)
+                {
+                    var ownerMc = irmc.OwnerMetaClass;
+                    if (ownerMc != null)
+                    {
+                        var baseMc = ownerMc.extendClass;
+                        while (baseMc != null && addMethodIndex == -1)
+                        {
+                            var baseIrmc = IRManager.instance.GetIRMetaClassById(baseMc.classId);
+                            if (baseIrmc != null)
+                            {
+                                addMethod = baseIrmc.GetIRNonStaticMethodIndexByName("add", out addMethodIndex);
+                                if (addMethodIndex >= 0)
+                                {
+                                    irmc = baseIrmc;
+                                    break;
+                                }
+                            }
+                            baseMc = baseMc.extendClass;
+                        }
+                    }
+                }
+                if (addMethodIndex != -1 && mnoen.assignStatementsList?.Count > 0)
+                {
+                    for (int y = 0; y < mnoen.assignStatementsList.Count; y++)
+                    {
+                        var asl = mnoen.assignStatementsList[y];
+
+                        // Dup: 复制对象引用到栈顶
+                        IRDup irdup = new IRDup(irMethod);
+                        AddIRRangeData(irdup.IRDataList);
+
+                        int count = 1;
+                        if( asl.keyExpressNode != null )
+                        {
+                            // 生成 key 表达式 IR
+                            IRExpressBase keyIrexp = IRExpressManager.CreateExpress(irMethod, asl.keyExpressNode);
+
+                            if(keyIrexp.IRDataList.Count == 0 )
+                            {
+                                Log.AddIRLog(LID.MetaCoreAssertShowMessage, asl.keyExpressNode?.token, "notfound owner mc !");
+                                return;
+                            }
+                            AddIRRangeData(keyIrexp.IRDataList);
+                            count++;
+                        }
+
+                        // 生成值表达式 IR
+                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.valueExpressNode);
+                        AddIRRangeData(irexp.IRDataList);
+                        if (irexp.IRDataList.Count == 0)
+                        {
+                            Log.AddIRLog(LID.MetaCoreAssertShowMessage, asl.valueExpressNode?.token, "notfound owner mc !");
+                            return;
+                        }
+
+                        // 调用 add 方法 (CallVirt)
+                        IRData calldata = new IRData();
+                        calldata.opCode = EIROpCode.CallVirt;
+                        calldata.index = addMethodIndex;
+                        var paramTypes = new List<IRMetaType>();
+                        var irmc_add = new IRMethodCall(newObjectIRMT, paramTypes, addMethod, count);
+                        calldata.opValue = irmc_add;
+                        calldata.SetDebugInfoByToken(asl.valueExpressNode.token);
+                        AddIRData(calldata);
+
+                        // Pop: 丢弃 add 方法的非 void 返回值（如 bool），保持栈上只有对象引用
+                        bool isNonVoidReturn = false;
+                        if (addMethod.methodReturnVariableList != null && addMethod.methodReturnVariableList.Count > 0)
+                        {
+                            var retIrMt = addMethod.methodReturnVariableList[0].irMetaType;
+                            if (retIrMt != null && retIrMt.irMetaClass != null)
+                            {
+                                var retOwnerMc = retIrMt.irMetaClass;
+                                isNonVoidReturn = retOwnerMc.irName != "Core.Void";
+                            }
+                        }
+                        if (isNonVoidReturn)
+                        {
+                            IRData popData = new IRData();
+                            popData.opCode = EIROpCode.Pop;
+                            popData.SetDebugInfoByToken(asl.valueExpressNode.token);
+                            AddIRData(popData);
+                        }
+                    }
+                }
+                else if (irmc.metaClassKind == IRMetaClassKind.Data )
                 {
                     for (int x = 0; x < irmc.localIRMetaVariableList.Count; x++)
                     {
@@ -571,9 +752,20 @@ namespace SimpleLanguage.IR
                         {
                             var asl = mnoen.assignStatementsList[y];
 
-                            if( asl.id == lirmv.id )
+                            // asl.id 在 data 分支捕获的是成员声明序号，而 lirmv.id 是
+                            // MetaMemberData.GetHashCode()，两者值域不同（历史回归导致
+                            // 匹配永不命中、花括号覆盖值被静默丢弃）；这里统一按目标
+                            // 成员哈希匹配，跨模块重建对象场景回退到成员名比较。
+                            var targetMv = asl.targetMetaVariable;
+                            bool matched = targetMv != null && targetMv.GetHashCode() == lirmv.id;
+                            if (!matched && !string.IsNullOrEmpty(asl.defineName)
+                                && asl.defineName == lirmv.name)
                             {
-                                menb = asl.expressNode;
+                                matched = true;
+                            }
+                            if (matched)
+                            {
+                                menb = asl.valueExpressNode;
                                 mnoen.assignStatementsList.Remove(asl);
                                 break;
                             }
@@ -587,8 +779,7 @@ namespace SimpleLanguage.IR
                         irdata.opCode = EIROpCode.StoreNotStaticField1;
                         irdata.SetDebugInfoByToken(lirmv.express.token);
                         m_IRDataList.Add(irdata);
-                    }                    
-
+                    }
                 }
                 else
                 {
@@ -596,13 +787,101 @@ namespace SimpleLanguage.IR
                     {
                         var asl = mnoen.assignStatementsList[y];
 
-                        IRDup irdup = new IRDup(irMethod);
-                        AddIRRangeData(irdup.IRDataList);
+                        // bind data 展开的类：brace 赋值目标是 set 访问器函数，
+                        // 生成 [Dup obj] [value] [CallVirt set_x] (+Pop) 而非 StoreField。
+                        if (asl.assignTargetType == MetaBraceAssignStatements.EAssignTargetType.SetMethodCall
+                            && asl.setMetaMemberFunction != null)
+                        {
+                            IRDup irdup = new IRDup(irMethod);
+                            AddIRRangeData(irdup.IRDataList);
 
-                        IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.expressNode);
-                        AddIRRangeData(irexp.IRDataList);
+                            IRExpressBase irexp = IRExpressManager.CreateExpress(irMethod, asl.valueExpressNode);
+                            AddIRRangeData(irexp.IRDataList);
 
-                        var storeField = new IRStoreVariable(newObjectIRMT, irMethod, asl.id, IRMetaVariableFrom.Member);
+                            var setFunc = asl.setMetaMemberFunction;
+                            string setVName = setFunc.virtualFunctionName;
+                            var callIrmc = newObjectIRMT?.irMetaClass ?? irmc;
+                            int callMethodIndex = -1;
+                            var runtimeMethod = callIrmc?.GetIRNonStaticMethodIndexByMethod(setVName, out callMethodIndex);
+                            if (callMethodIndex == -1 && setFunc.sourceMetaMemberFunction != null)
+                            {
+                                var sourceMc = setFunc.sourceMetaMemberFunction.ownerMetaClass;
+                                var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.classId) : null;
+                                if (sourceIrmc != null)
+                                {
+                                    var sourceMethod = sourceIrmc.GetIRNonStaticMethodIndexByMethod(setVName, out var sourceIndex);
+                                    if (sourceIndex >= 0)
+                                    {
+                                        runtimeMethod = sourceMethod;
+                                        callMethodIndex = sourceIndex;
+                                    }
+                                }
+                            }
+                            if (callMethodIndex == -1)
+                            {
+                                Log.AddIRLog(LID.ShowExtendMessage, asl.valueExpressNode?.token,
+                                    "set accessor method not found in ir class: " + asl.defineName);
+                            }
+
+                            List<IRMetaType> functionMtList = new List<IRMetaType>();
+                            var irmethodcall = new IRMethodCall(newObjectIRMT, functionMtList, runtimeMethod, 1);
+                            IRData datacall = new IRData();
+                            datacall.opCode = EIROpCode.CallVirt;
+                            datacall.index = callMethodIndex;
+                            datacall.opValue = irmethodcall;
+                            datacall.SetDebugInfoByToken(asl.valueExpressNode?.token);
+                            AddIRData(datacall);
+
+                            // set 访问器返回 void 通常无需 Pop；防御性丢弃非 void 返回值
+                            bool isNonVoidReturn = false;
+                            if (runtimeMethod != null && runtimeMethod.methodReturnVariableList != null
+                                && runtimeMethod.methodReturnVariableList.Count > 0)
+                            {
+                                var retIrMt = runtimeMethod.methodReturnVariableList[0].irMetaType;
+                                if (retIrMt != null && retIrMt.irMetaClass != null)
+                                {
+                                    isNonVoidReturn = retIrMt.irMetaClass.irName != "Core.Void";
+                                }
+                            }
+                            if (isNonVoidReturn)
+                            {
+                                IRData popData = new IRData();
+                                popData.opCode = EIROpCode.Pop;
+                                popData.SetDebugInfoByToken(asl.valueExpressNode?.token);
+                                AddIRData(popData);
+                            }
+                            continue;
+                        }
+
+                        IRDup irdup2 = new IRDup(irMethod);
+                        AddIRRangeData(irdup2.IRDataList);
+
+                        IRExpressBase irexp2 = IRExpressManager.CreateExpress(irMethod, asl.valueExpressNode);
+                        AddIRRangeData(irexp2.IRDataList);
+
+                        // asl.id 捕获的是成员在声明类内的局部索引（继承场景下与扁平化索引不一致），
+                        // 需按新对象类型的 IRMetaClass 重新解析扁平化字段索引（与普通赋值路径一致）。
+                        int storeIndex = asl.id;
+                        var targetMv = asl.targetMetaVariable;
+                        var targetIrmc = newObjectIRMT?.irMetaClass ?? irmc;
+                        if (targetMv != null && targetIrmc != null)
+                        {
+                            int resolved = targetIrmc.GetMetaMemberVariableIndexByHashCode(targetMv.GetHashCode());
+                            if (resolved < 0 && targetMv.sourceMetaVariable != null)
+                            {
+                                resolved = targetIrmc.GetMetaMemberVariableIndexByHashCode(targetMv.sourceMetaVariable.GetHashCode());
+                            }
+                            if (resolved < 0 && !string.IsNullOrEmpty(asl.defineName))
+                            {
+                                resolved = targetIrmc.GetMetaMemberVariableIndexByName(asl.defineName);
+                            }
+                            if (resolved >= 0)
+                            {
+                                storeIndex = resolved;
+                            }
+                        }
+
+                        var storeField = new IRStoreVariable(newObjectIRMT, irMethod, storeIndex, IRMetaVariableFrom.Member);
                         if (storeField != null)
                         {
                             AddIRRangeData(storeField.IRDataList);

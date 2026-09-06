@@ -1,5 +1,5 @@
-import Std
-import CSharp.System
+
+namespace NSMFSetGet{
 
 Level1
 {
@@ -12,7 +12,7 @@ Level1
 
     set Level1_var1(obj)
     {
-        this._Level1_var1 = obj
+        this._Level1_var1 = obj as int
     }
 }
 
@@ -55,5 +55,6 @@ MFSetGet
     }
 }
 
+}
 # 测试面向：属性语法 get/set 与同名访问器、子类 override set 写回父类逻辑字段。
 # 预期：先赋 Level1_var1=100 再 Level2_var1=200 后，两路 getter 反映最终一致或分层语义（以编译器为准）；无 _Level2_var1._a 一类笔误。

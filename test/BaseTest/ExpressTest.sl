@@ -62,7 +62,7 @@ namespace Application
             static m2 = 100
             static Class3 mc2 =new(10, 2, 10.0f - 2.0f, (20 + 12) / Class2.x1)
             static a2 = 20.0f + Class3.m / 30 * 100
-            static Class3 mc33 = { a = 300, b = 400, c = Class222() }
+            static Class3 mc33 = { a = 300, b = 400, m2 = Class222() }
             public int x22 = 0
 
             _init_( int x11)
@@ -79,7 +79,7 @@ namespace Application
                     int b1 = 21
                     Class3 mc22 = new(pppp1, b1, 10.0f - 2.0f, 20 + 12)
                     Class3 m0 = new(20)
-                    Class3 mc1 = { a = 30, b = 30, c = Class222() }
+                    Class3 mc1 = { a = 30, b = 30 }
                     Class3 mc3 = Class3(20)
                     Class222.a = 10
                     Class3.m += 10
@@ -423,6 +423,7 @@ ExpressTest
     {
         global.println("----- complexNestedExpressionTest -----")
 
+        int x1 = 10 + (1-20) * 33/20 + 10/20 - 22 * 2/1
         
         int a = 10
         int b = 20

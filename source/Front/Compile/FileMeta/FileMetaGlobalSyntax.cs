@@ -169,6 +169,13 @@ namespace SimpleLanguage.Compile
                 return;
             }
 
+            // import Std; 解析到的是模块根节点（isMetaModule），也注册它
+            if (mb.isMetaModule)
+            {
+                m_FileMeta.AddImportMetaNode(mb);
+                return;
+            }
+
             Log.AddFileMetaLog(LID.ShowExtendMessage, "解析Import语句发生错误，没有找到对应的命名空间路径: " + (m_ImportNamespaceName ?? string.Empty));
         }
 
@@ -192,8 +199,9 @@ namespace SimpleLanguage.Compile
                 }
                 mb = module.metaNode;
             }
-            else if (m_NodeList.Count > 1 && m_NodeList[1]?.token?.type != ETokenType.String)
+            else
             {
+                // Check if the first token is a module name (e.g. "import Core")
                 var firstName = m_NamespaceStatement.tokenList[0].lexeme.ToString();
                 var module = ModuleManager.instance.GetMetaModuleByName(firstName);
                 if (module != null)
@@ -205,10 +213,6 @@ namespace SimpleLanguage.Compile
                 {
                     mb = ModuleManager.instance.selfModule.metaNode;
                 }
-            }
-            else
-            {
-                mb = ModuleManager.instance.selfModule.metaNode;
             }
 
             if (mb?.name == "CSharp")

@@ -66,6 +66,10 @@ namespace SimpleLanguage.Core
                 || curClass == CoreMetaClassManager.uint32MetaClass
                 || curClass == CoreMetaClassManager.int64MetaClass
                 || curClass == CoreMetaClassManager.uint64MetaClass
+                || curClass == CoreMetaClassManager.float8MetaClass
+                || curClass == CoreMetaClassManager.float8_E5M2MetaClass
+                || curClass == CoreMetaClassManager.float16MetaClass
+                || curClass == CoreMetaClassManager.float16_BrainMetaClass
                 || curClass == CoreMetaClassManager.float32MetaClass
                 || curClass == CoreMetaClassManager.float64MetaClass)
             {
@@ -94,14 +98,18 @@ namespace SimpleLanguage.Core
             }
             if (mc == CoreMetaClassManager.uint8MetaClass) { rank = 0; return true; }
             if (mc == CoreMetaClassManager.int8MetaClass) { rank = 1; return true; }
-            if (mc == CoreMetaClassManager.int16MetaClass) { rank = 2; return true; }
-            if (mc == CoreMetaClassManager.uint16MetaClass) { rank = 3; return true; }
-            if (mc == CoreMetaClassManager.int32MetaClass) { rank = 4; return true; }
-            if (mc == CoreMetaClassManager.uint32MetaClass) { rank = 5; return true; }
-            if (mc == CoreMetaClassManager.float32MetaClass) { rank = 6; return true; }
-            if (mc == CoreMetaClassManager.int64MetaClass) { rank = 7; return true; }
-            if (mc == CoreMetaClassManager.uint64MetaClass) { rank = 8; return true; }
-            if (mc == CoreMetaClassManager.float64MetaClass) { rank = 9; return true; }
+            if (mc == CoreMetaClassManager.float8MetaClass) { rank = 2; return true; }
+            if (mc == CoreMetaClassManager.float8_E5M2MetaClass) { rank = 2; return true; }
+            if (mc == CoreMetaClassManager.int16MetaClass) { rank = 3; return true; }
+            if (mc == CoreMetaClassManager.uint16MetaClass) { rank = 4; return true; }
+            if (mc == CoreMetaClassManager.float16MetaClass) { rank = 5; return true; }
+            if (mc == CoreMetaClassManager.float16_BrainMetaClass) { rank = 5; return true; }
+            if (mc == CoreMetaClassManager.int32MetaClass) { rank = 6; return true; }
+            if (mc == CoreMetaClassManager.uint32MetaClass) { rank = 7; return true; }
+            if (mc == CoreMetaClassManager.float32MetaClass) { rank = 8; return true; }
+            if (mc == CoreMetaClassManager.int64MetaClass) { rank = 9; return true; }
+            if (mc == CoreMetaClassManager.uint64MetaClass) { rank = 10; return true; }
+            if (mc == CoreMetaClassManager.float64MetaClass) { rank = 11; return true; }
             if (IsNumberClass(mc))
             {
                 rank = -1;
@@ -117,14 +125,16 @@ namespace SimpleLanguage.Core
                 -1 => CoreMetaClassManager.numMetaClass,
                 0 => CoreMetaClassManager.uint8MetaClass,
                 1 => CoreMetaClassManager.int8MetaClass,
-                2 => CoreMetaClassManager.int16MetaClass,
-                3 => CoreMetaClassManager.uint16MetaClass,
-                4 => CoreMetaClassManager.int32MetaClass,
-                5 => CoreMetaClassManager.uint32MetaClass,
-                6 => CoreMetaClassManager.float32MetaClass,
-                7 => CoreMetaClassManager.int64MetaClass,
-                8 => CoreMetaClassManager.uint64MetaClass,
-                9 => CoreMetaClassManager.float64MetaClass,
+                2 => CoreMetaClassManager.float8MetaClass,
+                3 => CoreMetaClassManager.int16MetaClass,
+                4 => CoreMetaClassManager.uint16MetaClass,
+                5 => CoreMetaClassManager.float16MetaClass,
+                6 => CoreMetaClassManager.int32MetaClass,
+                7 => CoreMetaClassManager.uint32MetaClass,
+                8 => CoreMetaClassManager.float32MetaClass,
+                9 => CoreMetaClassManager.int64MetaClass,
+                10 => CoreMetaClassManager.uint64MetaClass,
+                11 => CoreMetaClassManager.float64MetaClass,
                 _ => null,
             };
         }
@@ -139,7 +149,10 @@ namespace SimpleLanguage.Core
                 || t == EType.UInt32
                 || t == EType.Int64
                 || t == EType.UInt64
+                || t == EType.Float8
+                || t == EType.Float8_E5M2
                 || t == EType.Float16
+                || t == EType.Float16_Brain
                 || t == EType.Float32
                 || t == EType.Float64
                 || t == EType.Num;
@@ -179,8 +192,12 @@ namespace SimpleLanguage.Core
                     case EType.UInt64:
                         converted = Convert.ToUInt64(input);
                         return true;
+                    case EType.Float8:
+                    case EType.Float8_E5M2:
                     case EType.Float16:
-                        converted = (Half)Convert.ToSingle(input);
+                    case EType.Float16_Brain:
+                        // 存储约定：float8 常量保存 byte 位模式，float16/bfloat16 保存 ushort 位模式
+                        converted = Float816Convert.ToBitsByEType(targetType, input);
                         return true;
                     case EType.Float32:
                         converted = Convert.ToSingle(input);
@@ -238,6 +255,14 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
+            // 低精度浮点常量的存储值为位模式（float8->byte, float16->ushort），数值转换前先解码为真实值
+            object srcValue = mcen.value;
+            if (expressEType == EType.Float8 || expressEType == EType.Float8_E5M2
+                || expressEType == EType.Float16 || expressEType == EType.Float16_Brain)
+            {
+                srcValue = Float816Convert.BitsToDoubleByEType(expressEType, mcen.value);
+            }
+
             bool canConvert = expressEType == EType.Num;
             if (!canConvert)
             {
@@ -245,18 +270,25 @@ namespace SimpleLanguage.Core
                 {
                     case EType.Int8:
                     case EType.UInt8:
+                    case EType.Float8:
+                    case EType.Float8_E5M2:
                         canConvert = expressEType == EType.UInt8 || expressEType == EType.Int8;
                         break;
                     case EType.Int16:
                     case EType.UInt16:
+                    case EType.Float16:
+                    case EType.Float16_Brain:
                         canConvert = expressEType == EType.UInt8 || expressEType == EType.Int8
+                            || expressEType == EType.Float8 || expressEType == EType.Float8_E5M2
                             || expressEType == EType.UInt16 || expressEType == EType.Int16;
                         break;
                     case EType.Int32:
                     case EType.UInt32:
                     case EType.Float32:
                         canConvert = expressEType == EType.UInt8 || expressEType == EType.Int8
+                            || expressEType == EType.Float8 || expressEType == EType.Float8_E5M2
                             || expressEType == EType.UInt16 || expressEType == EType.Int16
+                            || expressEType == EType.Float16 || expressEType == EType.Float16_Brain
                             || expressEType == EType.Int32 || expressEType == EType.UInt32;
                         break;
                     case EType.Int64:
@@ -270,12 +302,14 @@ namespace SimpleLanguage.Core
                 }
             }
 
-            if (canConvert && TryConvertConstValueByEType(defineEType, mcen.value, out var convertedValue))
+            // Path 1: implicit widening – try unchecked conversion ( widening never overflows )
+            if (canConvert && TryConvertConstValueByEType(defineEType, srcValue, out var convertedValue))
             {
                 mcen.SetConstValue(defineEType, convertedValue);
                 return true;
             }
 
+            // Path 2: implicit widening – try radix-number literal unsigned-to-signed fix-up
             if (canConvert && IsRadixNumberLiteral(mcen)
                 && TryConvertRadixUnsignedToSignedByEType(defineEType, mcen.value, out var radixConvertedValue))
             {
@@ -283,7 +317,19 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
-            Log.AddMetaCoreLog(LID.MetaCoreExpressTypeGEDefineType, token, (mcen.value?.ToString() ?? "null"), defineEType.ToString(), expressEType.ToString());
+            // Path 3: narrowing conversion with range check.
+            // Handles Int32 -> Int8, Int32 -> UInt8, Int64 -> Int16, Float64 -> Float32, etc.
+            // The value must fit within the target type's range; otherwise a warning is emitted.
+            if (TryForceConvertConstValueWithRangeCheck(defineEType, srcValue, out var narrowedValue))
+            {
+                mcen.SetConstValue(defineEType, narrowedValue);
+                return true;
+            }
+
+            // Value is out of range for the target type.
+            // Emit a warning so the user knows the literal was rejected.
+            Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                $"Warning: value '{mcen.value}' ({expressEType}) is out of range for target type '{defineEType}'.");
             return false;
         }
 
@@ -319,7 +365,15 @@ namespace SimpleLanguage.Core
                 return true;
             }
 
-            if (TryForceConvertConstValueWithRangeCheck(targetEt, mcen.value, out var forced))
+            // 低精度浮点常量存储值为位模式，强转前解码为真实值
+            object srcForceValue = mcen.value;
+            if (expressEt == EType.Float8 || expressEt == EType.Float8_E5M2
+                || expressEt == EType.Float16 || expressEt == EType.Float16_Brain)
+            {
+                srcForceValue = Float816Convert.BitsToDoubleByEType(expressEt, mcen.value);
+            }
+
+            if (TryForceConvertConstValueWithRangeCheck(targetEt, srcForceValue, out var forced))
             {
                 mcen.SetConstValue(targetEt, forced);
                 return true;
@@ -406,6 +460,19 @@ namespace SimpleLanguage.Core
                             converted = (ulong)v;
                             return true;
                         }
+                    case EType.Float8:
+                    case EType.Float8_E5M2:
+                    case EType.Float16:
+                    case EType.Float16_Brain:
+                        {
+                            // 强制转换允许舍入（精度损失），仅拒绝溢出，存储为位模式
+                            if (!Float816Convert.IsWithinRange(targetType, input))
+                            {
+                                return false;
+                            }
+                            converted = Float816Convert.ToBitsByEType(targetType, input);
+                            return true;
+                        }
                     case EType.Float32:
                         {
                             double d = Convert.ToDouble(input, CultureInfo.InvariantCulture);
@@ -469,12 +536,12 @@ namespace SimpleLanguage.Core
             for (int i = 0; i < list.Count; i++)
             {
                 var mas = list[i];
-                if (mas?.expressNode == null)
+                if (mas?.valueExpressNode == null)
                 {
                     continue;
                 }
 
-                var expr = mas.expressNode;
+                var expr = mas.valueExpressNode;
                 if (expr is MetaConstExpressNode c)
                 {
                     var targetEt = CoreMetaClassManager.GetETypeByMetaClass(elemType.metaClass);
@@ -552,7 +619,9 @@ namespace SimpleLanguage.Core
 
         private static bool IsFloatingNumericEType(EType t)
         {
-            return t == EType.Float16 || t == EType.Float32 || t == EType.Float64;
+            return t == EType.Float8 || t == EType.Float8_E5M2
+                || t == EType.Float16 || t == EType.Float16_Brain
+                || t == EType.Float32 || t == EType.Float64;
         }
 
         private static bool IsConstNumericWholeNumber(MetaConstExpressNode c)

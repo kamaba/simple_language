@@ -1,0 +1,291 @@
+{
+  "project":
+  {
+    "name": "Std",
+    "desc": "Standard library module",
+    "mainVersion": 0,
+    "subVersion": 1,
+    "buildVersion": 0,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "IO/Console.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/Directory.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/File.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Text/IDataStruct.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
+      { "path": "Text/Csv.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
+      { "path": "Text/Json5.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
+      { "path": "Text/Xml.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
+      { "path": "OS/DateTime.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
+      { "path": "OS/Timer.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
+      { "path": "Net/HttpClient.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
+      { "path": "Net/IpProtocal.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
+      { "path": "Net/TcpSocket.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
+      { "path": "Net/UdpSocket.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
+      { "path": "Net/Uri.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
+      { "path": "Component.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Node.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Data/Table.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Data/Tree.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "DB/Sqlite.sl", "group": "std", "tag": "db", "ignore": false, "priority": 0 },
+      { "path": "Isolate/IsolateStatus.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/IsolateError.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/Capability.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/SendPort.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/ReceivePort.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/RawReceivePort.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/TransferableData.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/IsolateGroup.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/Isolate.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "FFI/Library.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "GPU/GPU.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std.Console",
+      "Std.IO.File"
+    ],
+    "replace": {}
+  },
+  "references": [
+    { "path": "../Core", "name": "Core" }
+  ],
+  "lib":[
+    {
+      "path": "../Lib/Std.dll",
+      "name": "Std"
+    }
+  ],
+  "struct": [     
+      {
+         "namespace": "IO", "children": 
+         [
+            { "class": "Console" },
+            { "class": "Directory" },
+            { "class": "File" }
+          ]
+      },
+      { "namespace": "Text", "children": 
+         [
+             { "class": "Csv" },
+             { "class": "Json" },
+             { "class": "Json5" },
+             { "class": "StringBuffer" },
+             { "class": "Xml" }
+         ]
+      },
+      { "namespace": "OS", "children": 
+         [
+            { "class": "DateTime" },
+            { "class": "Timer" }
+        ]
+      },
+      { "namespace": "Net", "children": 
+            [
+                { "class": "HttpClient" },
+                { "class": "IpProtocal" },
+                { "class": "TcpNet" },
+                { "class": "UdpNet" },
+                { "class": "Uri" }
+            ]
+      },      
+      { "namespace": "Data", "children": 
+         [
+            { "class": "Table" },
+            { "class": "Tree" }
+         ]
+      },
+      { "namespace": "DB", "children":
+         [
+            { "enum": "SQLITE_OPEN" },
+            { "enum": "SqliteErrorCode" },
+            { "class": "Row" },
+            { "class": "Cursor" },
+            { "class": "Command" },
+            { "class": "Connection" },
+            { "class": "Sqlite3" }
+         ]
+      },
+      { "class": "Component" },
+      { "class": "Node" },
+      { "namespace": "GPU", "children":
+         [
+             { "class": "GPU" }
+         ]
+      },
+      { "namespace": "FFI", "children":
+         [
+            { "class": "Library" },
+            { "class": "StaticLibrary" }
+         ]
+      },
+      { "class": "IsolateStatus" },
+      { "class": "IsolateError" },
+      { "class": "Capability" },
+      { "class": "SendPort" },
+      { "class": "ReceivePort" },
+      { "class": "RawReceivePort" },
+      { "class": "TransferableData" },
+      { "class": "IsolateGroup" },
+      { "class": "Isolate" }
+  ], 
+  "systemCalls": 
+  [
+    // ---- Bridge calls ----   
+    { "name": "SystemListInit",              "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemListGetValueThis",      "returnType": "object", "params": ["object", "Int32"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemListSetValueThis",      "returnType": "void",   "params": ["object", "Int32", "object"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemListGetCapacity",       "returnType": "Int32",  "params": ["object"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemListSetCapacity",       "returnType": "void",   "params": ["object", "Int32"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemListRemoveValueThis",       "returnType": "void",  "params": ["object", "object"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemListRemoveIndexValueThis",       "returnType": "void",  "params": ["object", "Int32"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemListClearValueThis",       "returnType": "void",  "params": ["object"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemMapIndexOfKey",           "returnType": "Int32", "params": ["object", "object", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_map_index_of_key" },
+    { "name": "SystemSleep",                   "returnType": "void",  "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_sleep" },
+    { "name": "SystemFileExists",              "returnType": "bool",  "params": ["string"], "isVariadic": false, "cvmFunction": "libstd_file_exists" },
+    { "name": "SystemFileDelete",              "returnType": "bool",  "params": ["string"], "isVariadic": false, "cvmFunction": "libstd_file_delete" },
+    { "name": "SystemFileCopy",                "returnType": "bool",  "params": ["string", "string"], "isVariadic": false, "cvmFunction": "libstd_file_copy" },
+    { "name": "SystemFileMove",                "returnType": "bool",  "params": ["string", "string"], "isVariadic": false, "cvmFunction": "libstd_file_move" },
+    { "name": "SystemFileGetSize",             "returnType": "Int64", "params": ["string"], "isVariadic": false, "cvmFunction": "libstd_file_get_size" },
+    { "name": "SystemFileReadAllText",         "returnType": "string","params": ["string"], "isVariadic": false, "cvmFunction": "libstd_file_read_all_text" },
+    { "name": "SystemFileWriteAllText",        "returnType": "bool",  "params": ["string", "string"], "isVariadic": false, "cvmFunction": "libstd_file_write_all_text" },
+    { "name": "SystemFileAppendText",          "returnType": "bool",  "params": ["string", "string"], "isVariadic": false, "cvmFunction": "libstd_file_append_text" },
+    { "name": "SystemDirectoryExists",         "returnType": "bool",  "params": ["string"], "isVariadic": false, "cvmFunction": "libstd_dir_exists" },
+    { "name": "SystemDirectoryCreate",         "returnType": "bool",  "params": ["string"], "isVariadic": false, "cvmFunction": "libstd_dir_create" },
+    { "name": "SystemDirectoryDelete",         "returnType": "bool",  "params": ["string"], "isVariadic": false, "cvmFunction": "libstd_dir_delete" },
+    { "name": "SystemDirectoryGetFiles",       "returnType": "string","params": ["string"], "isVariadic": false, "cvmFunction": "libstd_dir_list" },
+    { "name": "SystemPathCombine",             "returnType": "string","params": ["string", "string"], "isVariadic": false, "cvmFunction": "libstd_path_combine" },
+    { "name": "SystemPathGetDirectory",        "returnType": "string","params": ["string"], "isVariadic": false, "cvmFunction": "libstd_path_get_directory" },
+    { "name": "SystemPathGetFilename",         "returnType": "string","params": ["string"], "isVariadic": false, "cvmFunction": "libstd_path_get_filename" },
+    { "name": "SystemPathGetExtension",        "returnType": "string","params": ["string"], "isVariadic": false, "cvmFunction": "libstd_path_get_extension" },
+    { "name": "SystemPathGetFull",             "returnType": "string","params": ["string"], "isVariadic": false, "cvmFunction": "libstd_path_get_full" },
+    { "name": "SystemPathIsAbsolute",          "returnType": "bool",  "params": ["string"], "isVariadic": false, "cvmFunction": "libstd_path_is_absolute" },
+    // ---- DateTime calls (OS/DateTime.sl) ----
+    { "name": "SystemDateTimeNowMillis",       "returnType": "Int64",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_datetime_now_millis" },
+    { "name": "SystemDateTimeMakeMillis",      "returnType": "Int64",  "params": ["Int32","Int32","Int32","Int32","Int32","Int32","Int32","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_make_millis" },
+    { "name": "SystemDateTimeGetYear",         "returnType": "Int32",  "params": ["Int64","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_get_year" },
+    { "name": "SystemDateTimeGetMonth",        "returnType": "Int32",  "params": ["Int64","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_get_month" },
+    { "name": "SystemDateTimeGetDay",          "returnType": "Int32",  "params": ["Int64","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_get_day" },
+    { "name": "SystemDateTimeGetHour",         "returnType": "Int32",  "params": ["Int64","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_get_hour" },
+    { "name": "SystemDateTimeGetMinute",       "returnType": "Int32",  "params": ["Int64","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_get_minute" },
+    { "name": "SystemDateTimeGetSecond",       "returnType": "Int32",  "params": ["Int64","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_get_second" },
+    { "name": "SystemDateTimeGetMillisecond",  "returnType": "Int32",  "params": ["Int64","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_get_millisecond" },
+    { "name": "SystemDateTimeGetDayOfWeek",    "returnType": "Int32",  "params": ["Int64","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_get_day_of_week" },
+    { "name": "SystemDateTimeGetDayOfYear",    "returnType": "Int32",  "params": ["Int64","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_get_day_of_year" },
+    { "name": "SystemDateTimeDaysInMonth",     "returnType": "Int32",  "params": ["Int32","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_days_in_month" },
+    { "name": "SystemDateTimeIsLeapYear",      "returnType": "bool",   "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_is_leap_year" },
+    { "name": "SystemDateTimeAddMonths",       "returnType": "Int64",  "params": ["Int64","Int32","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_add_months" },
+    { "name": "SystemDateTimeFormat",          "returnType": "string", "params": ["Int64","string","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_format" },
+    { "name": "SystemDateTimeTryParseMillis",  "returnType": "Int64",  "params": ["string","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_try_parse_millis" },
+    { "name": "SystemDateTimeMinValueMillis",  "returnType": "Int64",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_datetime_min_value_millis" },
+    { "name": "SystemDateTimeMaxValueMillis",  "returnType": "Int64",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_datetime_max_value_millis" },
+    { "name": "SystemDateTimeIsValidMillis",   "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_is_valid_millis" },
+    // ---- SQLite3 calls (DB/Sqlite.sl) ----
+    { "name": "SystemSqlite3Open",              "returnType": "Int64",  "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_open" },
+    { "name": "SystemSqlite3Close",             "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_close" },
+    { "name": "SystemSqlite3Exec",              "returnType": "Int32",  "params": ["Int64", "string"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_exec" },
+    { "name": "SystemSqlite3PrepareV2",         "returnType": "Int64",  "params": ["Int64", "string"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_prepare_v2" },
+    { "name": "SystemSqlite3Step",              "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_step" },
+    { "name": "SystemSqlite3Finalize",          "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_finalize" },
+    { "name": "SystemSqlite3Reset",             "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_reset" },
+    { "name": "SystemSqlite3ColumnCount",       "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_column_count" },
+    { "name": "SystemSqlite3ColumnType",        "returnType": "Int32",  "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_column_type" },
+    { "name": "SystemSqlite3ColumnInt",         "returnType": "Int32",  "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_column_int" },
+    { "name": "SystemSqlite3ColumnText",        "returnType": "string", "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_column_text" },
+    { "name": "SystemSqlite3ColumnName",        "returnType": "string", "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_column_name" },
+    { "name": "SystemSqlite3BindInt",           "returnType": "Int32",  "params": ["Int64", "Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_bind_int" },
+    { "name": "SystemSqlite3BindText",          "returnType": "Int32",  "params": ["Int64", "Int32", "string"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_bind_text" },
+    { "name": "SystemSqlite3Changes",           "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_changes" },
+    { "name": "SystemSqlite3LastInsertRowid",   "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_last_insert_rowid" },
+    { "name": "SystemSqlite3Errmsg",            "returnType": "string", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_errmsg" },
+    // ---- Isolate calls (Std/Isolate/*.sl) ----
+    { "name": "SystemIsolateCurrent",              "returnType": "object", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_isolate_current" },
+    { "name": "SystemIsolateSpawn0",               "returnType": "object", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_spawn0" },
+    { "name": "SystemIsolateSpawn1",               "returnType": "object", "params": ["object","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_spawn1" },
+    { "name": "SystemIsolateSpawn2",               "returnType": "object", "params": ["object","object","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_spawn2" },
+    { "name": "SystemIsolateSpawn3",               "returnType": "object", "params": ["object","object","object","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_spawn3" },
+    { "name": "SystemIsolateRun0",                 "returnType": "object", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_run0" },
+    { "name": "SystemIsolateRun1",                 "returnType": "object", "params": ["object","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_run1" },
+    { "name": "SystemIsolateRun2",                 "returnType": "object", "params": ["object","object","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_run2" },
+    { "name": "SystemIsolateRun3",                 "returnType": "object", "params": ["object","object","object","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_run3" },
+    { "name": "SystemIsolateExit",                 "returnType": "void",   "params": ["Int64","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_exit" },
+    { "name": "SystemIsolatePause",                "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_pause" },
+    { "name": "SystemIsolateResume",               "returnType": "void",   "params": ["Int64","Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_resume" },
+    { "name": "SystemIsolateKill",                 "returnType": "void",   "params": ["Int64","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_kill" },
+    { "name": "SystemIsolatePing",                 "returnType": "void",   "params": ["Int64","Int64","object","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_ping" },
+    { "name": "SystemIsolateSetErrorsFatal",       "returnType": "void",   "params": ["Int64","bool"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_set_errors_fatal" },
+    { "name": "SystemIsolateAddOnExitListener",    "returnType": "void",   "params": ["Int64","Int64","object"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_add_on_exit_listener" },
+    { "name": "SystemIsolateAddErrorListener",     "returnType": "void",   "params": ["Int64","Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_add_error_listener" },
+    { "name": "SystemIsolateStatus",               "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_status" },
+    { "name": "SystemIsolateNew",                  "returnType": "object", "params": ["Int64","Int64","Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_new" },
+    { "name": "SystemIsolateGroupCurrent",         "returnType": "Int64",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_isolate_group_current" },
+    { "name": "SystemIsolateGroupExit",            "returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_group_exit" },
+    { "name": "SystemIsolateGroupCount",           "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_isolate_group_count" },
+    { "name": "SystemReceivePortCreate",           "returnType": "Int64",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_receive_port_create" },
+    { "name": "SystemPortSendPort",                "returnType": "object", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_port_send_port" },
+    { "name": "SystemPortSend",                    "returnType": "void",   "params": ["Int64","object"], "isVariadic": false, "cvmFunction": "vm_sys_port_send" },
+    { "name": "SystemPortRecv",                    "returnType": "object", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_port_recv" },
+    { "name": "SystemPortTryRecv",                 "returnType": "object", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_port_try_recv" },
+    { "name": "SystemPortClose",                   "returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_port_close" },
+    { "name": "SystemPortCount",                   "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_port_count" },
+    { "name": "SystemPortIsClosed",                "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_port_is_closed" },
+    { "name": "SystemTransferFromBytes",           "returnType": "Int64",  "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_from_bytes" },
+    { "name": "SystemTransferMaterialize",         "returnType": "object", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_materialize" },
+    { "name": "SystemTransferSize",                "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_size" },
+    { "name": "SystemTransferIsValid",         "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_is_valid" },
+    // ---- FFI calls (FFI/Library.sl, design: md/design/ffi-design.md) ----
+    { "name": "SystemFFILoadLibrary",     "returnType": "Int64",   "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_load_library" },
+    { "name": "SystemFFIFreeLibrary",     "returnType": "bool",    "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_free_library" },
+    { "name": "SystemFFILibraryRef",      "returnType": "Int32",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_library_ref" },
+    { "name": "SystemFFILibraryRefcount", "returnType": "Int32",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_library_refcount" },
+    { "name": "SystemFFILibraryCount",    "returnType": "Int32",   "params": [],        "isVariadic": false, "cvmFunction": "vm_sys_ffi_library_count" },
+    { "name": "SystemFFIGetSymbol",       "returnType": "Int64",   "params": ["Int64", "string"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_get_symbol" },
+    { "name": "SystemFFICallVoid",        "returnType": "void",    "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_void" },
+    { "name": "SystemFFICallBool",        "returnType": "bool",    "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_bool" },
+    { "name": "SystemFFICallI32",         "returnType": "Int32",   "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_i32" },
+    { "name": "SystemFFICallI64",         "returnType": "Int64",   "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_i64" },
+    { "name": "SystemFFICallF32",         "returnType": "Float32", "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_f32" },
+    { "name": "SystemFFICallF64",         "returnType": "Float64", "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_f64" },
+    { "name": "SystemFFICallUtf8",        "returnType": "string",  "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_utf8" },
+    { "name": "SystemFFICallF8E4M3",      "returnType": "float8",  "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_f8e4m3" },
+    { "name": "SystemFFICallF8E5M2",      "returnType": "float8",  "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_f8e5m2" },
+    { "name": "SystemFFICreateCallback",  "returnType": "Int64",   "params": ["string", "string"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_create_callback" },
+    { "name": "SystemFFIFreeCallback",    "returnType": "bool",    "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_free_callback" },
+    { "name": "SystemFFIMakeFunction",    "returnType": "Function", "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_make_function" }
+  ],
+  "export": {
+    "moduleName": "Std",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "versionMain": 0,
+    "versionSub": 1,
+    "versionPatch": 0,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  }
+}

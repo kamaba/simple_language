@@ -52,7 +52,7 @@ namespace SimpleLanguage.Core
         
         public MetaMethodCall( MetaClass ownerClass, MetaBlockStatements ownerMBS, MetaType staticMt,  MetaFunction _fun, List<MetaType> mpipList,
             MetaInputParamCollection _paramCollection, MetaType returnMt,
-            MetaVariable loadMv, MetaVariable storeMv )
+            MetaVariable loadMv )
         {
             m_OwnerMetaClass = ownerClass;
             m_OwnerMetaBlockStatements = ownerMBS;
@@ -73,53 +73,97 @@ namespace SimpleLanguage.Core
             {
                 mpList = m_VMCallMetaFunction.metaMemberParamCollection.metaDefineParamList;
             }
-            int defineCount = m_VMCallMetaFunction.metaMemberParamCollection.maxParamCount;
-            int inputCount = _paramCollection != null ?_paramCollection.metaInputParamList.Count : 0;
-
-            if( _fun.IsExtentParams() )
+            int defineCount = m_VMCallMetaFunction?.metaMemberParamCollection?.maxParamCount ?? 0;
+            if( _fun != null && _fun.IsExtentParams() )
             {
-                for (int i = 0; i < defineCount - 1 ; i++)
+                var reordered = ReorderKeywordArgs(_paramCollection, mpList, defineCount - 1, out var leftoverPositional);
+                if (reordered != null)
                 {
-                    MetaInputParam dmip = _paramCollection.metaInputParamList[i];
-                    m_MetaInputParamList.Add(dmip.express);
+                    for (int i = 0; i < defineCount - 1; i++)
+                    {
+                        if (reordered[i] != null)
+                        {
+                            m_MetaInputParamList.Add(reordered[i]);
+                        }
+                        else
+                        {
+                            MetaDefineParam mdp = (i < mpList.Count) ? mpList[i] : null;
+                            if (mdp != null && mdp.expressNode != null)
+                            {
+                                m_MetaInputParamList.Add(mdp.expressNode);
+                            }
+                        }
+                    }
+
+                    var mgobj = new MetaType(CoreMetaClassManager.objectMetaClass);
+                    List<MetaClass> ilist = new List<MetaClass>();
+                    ilist.Add(CoreMetaClassManager.objectMetaClass);
+                    var newarray = CoreMetaClassManager.arrayMetaClass.AddInstanceMetaClass(ilist, true);
+                    var mt = new MetaType(newarray);
+
+                    MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode( mt, m_OwnerMetaClass, m_OwnerMetaBlockStatements );
+
+                    MetaType cmt = new MetaType(CoreMetaClassManager.objectMetaClass);
+                    for( int i = 0; i < leftoverPositional.Count; i++ )
+                    {
+                        MetaBraceAssignStatements mbas = new MetaBraceAssignStatements(null, m_OwnerMetaBlockStatements, m_OwnerMetaClass, cmt, leftoverPositional[i]);
+                        mnoe.assignStatementsList.Add(mbas);
+                    }
+                    mnoe.Parse(new AllowUseSettings());
+                    mnoe.CalcReturnType();
+
+                    m_MetaInputParamList.Add(mnoe);
                 }
-
-                var mgobj = new MetaType(CoreMetaClassManager.objectMetaClass);
-                List<MetaClass> ilist = new List<MetaClass>();
-                ilist.Add(CoreMetaClassManager.objectMetaClass);
-                var newarray = CoreMetaClassManager.arrayMetaClass.AddInstanceMetaClass(ilist, true);
-                var mt = new MetaType(newarray);
-
-                MetaNewObjectExpressNode mnoe = new MetaNewObjectExpressNode( mt, m_OwnerMetaClass, m_OwnerMetaBlockStatements );
-
-                MetaType cmt = new MetaType(CoreMetaClassManager.objectMetaClass);
-                for( int i = defineCount - 1; i < inputCount; i++ )
-                {
-                    var express = _paramCollection.metaInputParamList[i].express;
-                    MetaBraceAssignStatements mbas = new MetaBraceAssignStatements(null, m_OwnerMetaBlockStatements, m_OwnerMetaClass, cmt, express);
-                    mnoe.assignStatementsList.Add(mbas);
-
-                }
-                mnoe.Parse(new AllowUseSettings());
-                mnoe.CalcReturnType();
-
-                m_MetaInputParamList.Add(mnoe);
             }
             else
             {
-                for (int i = 0; i < defineCount; i++)
+                var reordered = ReorderKeywordArgs(_paramCollection, mpList, defineCount, out var _);
+                if (reordered != null)
                 {
-                    if (i < inputCount)
+                    for (int i = 0; i < defineCount; i++)
                     {
-                        MetaInputParam mip = _paramCollection.metaInputParamList[i];
-                        m_MetaInputParamList.Add(mip.express);
-                    }
-                    else
-                    {
-                        MetaDefineParam mdp = mpList[i];
-                        if (mdp != null)
+                        if (reordered[i] != null)
                         {
-                            m_MetaInputParamList.Add(mdp.expressNode);
+                            m_MetaInputParamList.Add(reordered[i]);
+                        }
+                        else
+                        {
+                            MetaDefineParam mdp = mpList[i];
+                            if (mdp != null)
+                            {
+                                if (mdp.expressNode != null)
+                                {
+                                    m_MetaInputParamList.Add(mdp.expressNode);
+                                }
+                                else if (mdp.isHasExpress)
+                                {
+                                    // ref module 导入的函数：默认参数只保留 hasExpress 标记（无表达式 AST），
+                                    // 省略参数时用参数声明类型的零值常量填充，保证实参数量与定义一致。
+                                    var pet = mdp.metaVariable?.defineMetaType?.eType ?? EType.None;
+                                    MetaConstExpressNode zeroNode;
+                                    if (pet == EType.Boolean)
+                                    {
+                                        zeroNode = new MetaConstExpressNode(EType.Boolean, false);
+                                    }
+                                    else if (pet == EType.String)
+                                    {
+                                        zeroNode = new MetaConstExpressNode(EType.String, string.Empty);
+                                    }
+                                    else if (pet >= EType.UInt8 && pet <= EType.UInt128)
+                                    {
+                                        zeroNode = new MetaConstExpressNode(pet, 0);
+                                    }
+                                    else
+                                    {
+                                        zeroNode = new MetaConstExpressNode(EType.Null, "null");
+                                    }
+                                    m_MetaInputParamList.Add(zeroNode);
+                                }
+                                else
+                                {
+                                    m_MetaInputParamList.Add(mdp.expressNode);
+                                }
+                            }
                         }
                     }
                 }
@@ -134,7 +178,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                m_IsRecieveReturnValue = storeMv != null;
+                m_IsRecieveReturnValue = false;
             }
         }
 
@@ -159,21 +203,35 @@ namespace SimpleLanguage.Core
             {
                 mpList = m_VMCallMetaFunction.metaMemberParamCollection.metaDefineParamList;
             }
-            int inputCount = _paramCollection != null ? _paramCollection.metaInputParamList.Count : 0;
+            int defineCount = m_VMCallMetaFunction?.metaMemberParamCollection?.maxParamCount ?? 0;
 
-            for (int i = 0; i < inputCount; i++)
+            var reordered = ReorderKeywordArgs(_paramCollection, mpList, defineCount, out var leftoverPositional);
+            if (reordered != null)
             {
-                if (i < inputCount)
+                for (int i = 0; i < defineCount; i++)
                 {
-                    MetaInputParam mip = _paramCollection.metaInputParamList[i];
-                    m_MetaInputParamList.Add(mip.express);
-                }
-                else
-                {
-                    MetaDefineParam mdp = mpList[i];
-                    if (mdp != null)
+                    if (reordered[i] != null)
                     {
-                        m_MetaInputParamList.Add(mdp.expressNode);
+                        m_MetaInputParamList.Add(reordered[i]);
+                    }
+                    else
+                    {
+                        MetaDefineParam mdp = (i < mpList.Count) ? mpList[i] : null;
+                        if (mdp != null)
+                        {
+                            m_MetaInputParamList.Add(mdp.expressNode);
+                        }
+                    }
+                }
+                // Variadic system call (module "systemCalls" isVariadic): pass the extra
+                // positional args through so CallSystemMethod's payload paramCount covers
+                // them; the C VM dispatches on param_count and pops every stack slot.
+                if (leftoverPositional != null && leftoverPositional.Count > 0 &&
+                    (m_VMCallMetaFunction is MetaMemberFunction.MetaBuiltinFunction mbf && mbf.isSystemVariadic))
+                {
+                    for (int i = 0; i < leftoverPositional.Count; i++)
+                    {
+                        m_MetaInputParamList.Add(leftoverPositional[i]);
                     }
                 }
             }
@@ -189,6 +247,84 @@ namespace SimpleLanguage.Core
         public void SetDebugInputParTermText(string? text)
         {
             m_DebugInputParTermText = text;
+        }
+
+        /// <summary>
+        /// Reorders call-site arguments to match target method parameter slots.
+        /// Handles Python-style keyword arguments (name = expr).
+        /// Returns array where index = param slot, value = expression (null for default).
+        /// Leftover positional args (beyond named slots) go to leftoverPositional.
+        /// Returns null on error.
+        /// </summary>
+        private MetaExpressNodeBase[] ReorderKeywordArgs(
+            MetaInputParamCollection _paramCollection,
+            List<MetaDefineParam> mpList,
+            int slotCount,
+            out List<MetaExpressNodeBase> leftoverPositional)
+        {
+            leftoverPositional = new List<MetaExpressNodeBase>();
+            if (_paramCollection == null || slotCount <= 0)
+            {
+                return new MetaExpressNodeBase[slotCount > 0 ? slotCount : 0];
+            }
+
+            var inputList = _paramCollection.metaInputParamList;
+            int inputCount = inputList.Count;
+            var resultArgs = new MetaExpressNodeBase[slotCount];
+            int positionalSlot = 0;
+            bool seenKeyword = false;
+
+            for (int i = 0; i < inputCount; i++)
+            {
+                var mip = inputList[i];
+                if (string.IsNullOrEmpty(mip.paramName))
+                {
+                    if (seenKeyword)
+                    {
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, mip.token,
+                            "Error: positional argument follows keyword argument");
+                        return null;
+                    }
+                    if (positionalSlot < slotCount)
+                    {
+                        resultArgs[positionalSlot] = mip.express;
+                        positionalSlot++;
+                    }
+                    else
+                    {
+                        leftoverPositional.Add(mip.express);
+                    }
+                }
+                else
+                {
+                    seenKeyword = true;
+                    string name = mip.paramName;
+                    int targetIndex = -1;
+                    for (int j = 0; j < mpList.Count; j++)
+                    {
+                        if (mpList[j].name == name)
+                        {
+                            targetIndex = j;
+                            break;
+                        }
+                    }
+                    if (targetIndex < 0 || targetIndex >= slotCount)
+                    {
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, mip.token,
+                            "Error: no parameter named '" + name + "'");
+                        continue;
+                    }
+                    if (resultArgs[targetIndex] != null)
+                    {
+                        Log.AddFileMetaLog(LID.ShowExtendMessage, mip.token,
+                            "Error: multiple values for parameter '" + name + "'");
+                        continue;
+                    }
+                    resultArgs[targetIndex] = mip.express;
+                }
+            }
+
+            return resultArgs;
         }
         public MetaType GeMetaDefineType()
         {
@@ -309,6 +445,76 @@ namespace SimpleLanguage.Core
         }
     }
 
+    /// <summary>
+    /// 闭包调用: 通过闭包变量 funname( xx ) 进行调用。
+    /// 不复用 MetaMethodCall (其按定义参数数填充实参, 闭包函数多一个隐藏 context 参数会错位)。
+    /// </summary>
+    public class MetaClosureCall
+    {
+        public MetaClosureVariable closureVariable => m_ClosureVariable;
+        public MetaVariable loadMetaVariable => m_LoadMetaVariable;
+        public MetaMemberFunction closureFunction => m_ClosureVariable?.closureDefineStatements?.closureFunction;
+        public List<MetaExpressNodeBase> inputParamExpressList => m_InputParamExpressList;
+        public MetaType returnMetaType => m_ReturnMetaType;
+        public Token token => m_Token;
+
+        private MetaVariable m_LoadMetaVariable = null;
+        private MetaClosureVariable m_ClosureVariable = null;
+        private List<MetaExpressNodeBase> m_InputParamExpressList = new List<MetaExpressNodeBase>();
+        private MetaType m_ReturnMetaType = null;
+        private Token m_Token = null;
+
+        /// <summary>
+        /// loadMv: IR 生成时实际加载的变量(闭包变量本身或其捕获代理)。
+        /// cv: 解析出的闭包变量(经 ResolveClosureVariable, 用于取闭包函数)。
+        /// </summary>
+        public MetaClosureCall( MetaVariable loadMv, MetaClosureVariable cv, MetaInputParamCollection paramCollection )
+        {
+            m_LoadMetaVariable = loadMv;
+            m_ClosureVariable = cv;
+            // 闭包调用返回类型: 优先使用闭包函数推断出的返回类型, 无法确定时回退 object
+            var funcRet = cv?.closureDefineStatements?.closureFunction?.returnMetaVariable?.defineMetaType;
+            if( funcRet == null )
+            {
+                // 非闭包变量的函数类型调用 (如 Func<返回类型,参数...> 声明的变量):
+                // 从变量的函数签名类型 FunctionSignatureMetaClass 取返回类型
+                var fmt = loadMv?.GetFinalMetaType();
+                if( fmt?.metaClass is FunctionSignatureMetaClass fsmc )
+                {
+                    funcRet = fsmc.returnMetaType;
+                }
+            }
+            m_ReturnMetaType = funcRet ?? new MetaType( CoreMetaClassManager.objectMetaClass );
+            if( paramCollection != null )
+            {
+                var mipList = paramCollection.metaInputParamList;
+                for( int i = 0; i < mipList.Count; i++ )
+                {
+                    m_InputParamExpressList.Add( mipList[i].express );
+                }
+            }
+        }
+        public void SetToken( Token token )
+        {
+            m_Token = token;
+        }
+        public string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append( m_ClosureVariable?.name ?? "closure" );
+            sb.Append( "(" );
+            for( int i = 0; i < m_InputParamExpressList.Count; i++ )
+            {
+                sb.Append( m_InputParamExpressList[i]?.ToFormatString() );
+                if( i < m_InputParamExpressList.Count - 1 )
+                    sb.Append( "," );
+            }
+            sb.Append( ")" );
+            return sb.ToString();
+        }
+        public override string ToString() { return ToFormatString(); }
+    }
+
     public class MetaVisitNode
     {
         public enum EVisitType
@@ -329,6 +535,7 @@ namespace SimpleLanguage.Core
             TemplateName,
             GetTypeValue,
             SystemCall,
+            ClosureCall,
         }
         public MetaConstExpressNode constValueExpress => m_Express as MetaConstExpressNode;
         public MetaExpressNodeBase express => m_Express;
@@ -336,6 +543,7 @@ namespace SimpleLanguage.Core
         public MetaVariable variable => m_Variable;
         public MetaVisitVariable visitVariable => m_VisitVariable;
         public MetaMethodCall methodCall => m_MethodCall;
+        public MetaClosureCall closureCall => m_ClosureCall;
         public MetaType callMetaType => m_CallMetaType;
         public bool isQuestionMarkDot => m_IsQuestionMarkDot;
         /// <summary>仅 <see cref="EVisitType.GetTypeValue"/> 等场景填充；可能为 <see cref="MetaData"/>/<see cref="MetaEnum"/>。</summary>
@@ -347,6 +555,7 @@ namespace SimpleLanguage.Core
 
         private EVisitType m_VisitType = EVisitType.None;
         private MetaMethodCall m_MethodCall = null;
+        private MetaClosureCall m_ClosureCall = null;
         private MetaVisitVariable m_VisitVariable = null;
         private MetaVariable m_Variable  = null;
         private MetaExpressNodeBase m_Express  = null;
@@ -402,7 +611,7 @@ namespace SimpleLanguage.Core
             vn.m_VisitType = EVisitType.New;
             vn.m_Variable = mv;
             vn.m_Token = mv.token;
-            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mf, null, null, null, null, mv);
+            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mf, null, null, null, null);
             return vn;
         }
         public static MetaVisitNode CreateByNewConst(MetaClass ownermc, MetaBlockStatements mbs,
@@ -418,7 +627,7 @@ namespace SimpleLanguage.Core
             {
                 vn.m_ReturnMetaType = new MetaType(mt);
             }
-            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mmf, null, mipc, null, null, null );
+            vn.m_MethodCall = new MetaMethodCall(ownermc, mbs, mt, mmf, null, mipc, null, null );
 
             return vn;
         }
@@ -560,12 +769,23 @@ namespace SimpleLanguage.Core
 
             return vn;
         }
+        public static MetaVisitNode CreateByClosureCall(MetaClosureCall _closureCall)
+        {
+            MetaVisitNode vn = new MetaVisitNode();
+
+            vn.m_VisitType = EVisitType.ClosureCall;
+            vn.m_ClosureCall = _closureCall;
+            vn.SetToken(_closureCall?.token);
+
+            return vn;
+        }
         public static MetaVisitNode CreateByVisitVariable(MetaVisitVariable _variale)
         {
             MetaVisitNode vn = new MetaVisitNode();
 
             vn.m_VisitType = EVisitType.VisitVariable;
             vn.m_VisitVariable = _variale;
+            //vn.SetMethodCall(_variale.methodCall);
 
             return vn;
         }
@@ -659,6 +879,10 @@ namespace SimpleLanguage.Core
                         //}
                         //return methodCall.function.GetFinalMetaType();
                     }
+                case EVisitType.ClosureCall:
+                    {
+                        return closureCall?.returnMetaType;
+                    }
                     case EVisitType.VisitVariable:
                     {
                         if( this.visitVariable.isDefineMetaType )
@@ -733,6 +957,10 @@ namespace SimpleLanguage.Core
                     {
                         return variable;
                     }
+                case EVisitType.ClosureCall:
+                    {
+                        return closureCall?.closureFunction?.returnMetaVariable;
+                    }
                 case EVisitType.MethodCall:
                 case EVisitType.SystemCall:
                     {
@@ -796,6 +1024,10 @@ namespace SimpleLanguage.Core
                     {
                         return variable;
                     }
+                case EVisitType.ClosureCall:
+                    {
+                        return closureCall?.closureFunction?.returnMetaVariable;
+                    }
                 case EVisitType.MethodCall:
                 case EVisitType.SystemCall:
                     {
@@ -836,6 +1068,10 @@ namespace SimpleLanguage.Core
                 case EVisitType.Variable:
                     {
                         return variable;
+                    }
+                case EVisitType.ClosureCall:
+                    {
+                        return closureCall?.closureFunction?.returnMetaVariable;
                     }
                 case EVisitType.MethodCall:
                 case EVisitType.SystemCall:
@@ -900,6 +1136,14 @@ namespace SimpleLanguage.Core
                 case EVisitType.SystemCall:
                     {
                         sb.Append(this.methodCall.ToFormatString());
+                    }
+                    break;
+                case EVisitType.ClosureCall:
+                    {
+                        if (this.closureCall != null)
+                        {
+                            sb.Append(this.closureCall.ToFormatString());
+                        }
                     }
                     break;
                 case EVisitType.MetaClass:
@@ -1021,6 +1265,12 @@ namespace SimpleLanguage.Core
                 case MetaVisitNode.EVisitType.EnumMember:
                     {
                         sb.Append(this.variable.ToFormatString());
+                    }
+                    break;
+                case EVisitType.ClosureCall:
+                    {
+                        if (this.closureCall != null)
+                            sb.Append(this.closureCall.ToFormatString());
                     }
                     break;
                 default:

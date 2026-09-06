@@ -1,27 +1,4 @@
-import System;
-
-Nickname extends Attribute
-{
-    _init_( string[] obj )
-    {
-
-    }
-}
-coda extends Attribute
-{
-
-}
-instance extens Attribute
-{
-    void construct
-    {
-
-    }
-    void _init_( metaType type )
-    {
-        
-    }
-}
+import Std;
 
 @Nickname("OKK", "Root.ClassOK")
 Class1

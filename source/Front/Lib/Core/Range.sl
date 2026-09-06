@@ -108,7 +108,7 @@ public class Range<T:Num> interface IIterable<T>, IIterator<T>
         int idx = 0
         while this.moveNext()
         {
-            arr.setValue(idx, this.current())
+            arr._setItem_(idx, this.current())
             idx++
         }
         this._toArrayCache = arr

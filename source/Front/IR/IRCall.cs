@@ -65,17 +65,19 @@ namespace SimpleLanguage.IR
             var mf = mfc.GetTemplateMemberFunction();
             string systemName = mf?.name ?? string.Empty;
             int systemKind = -1;
-            if (!string.IsNullOrEmpty(systemName)
-                && SystemMethodCallDeclarationRegistry.TryResolveName(systemName, out var sysEnum))
+            // Unique int id from the declaration (module "systemCalls"): the C VM
+            // registers id -> implementation at load time and dispatches by id.
+            int systemId = 0;
+            if (SystemMethodCallDeclarationRegistry.TryGetDeclaration(systemName, out var sysDecl))
             {
-                systemKind = (int)sysEnum;
+                systemId = sysDecl.GetIndex();
             }
-
             var sysPkg = new SLSystemMethodCallPackage
             {
                 name = systemName,
                 paramCount = paramCount,
                 systemMethodKind = systemKind,
+                id = systemId,
             };
 
             IRData datacall2 = new IRData();
@@ -144,17 +146,18 @@ namespace SimpleLanguage.IR
                     {
                         scmc = mgtc.metaTemplateClass;
                     }
-                    irmc = IRManager.instance.GetIRMetaClassById(scmc.GetHashCode());
+                    irmc = IRManager.instance.GetIRMetaClassById(scmc.classId);
                 }
                 else if(staticMt.metaData != null )
                 {
-                    irmc = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.dataMetaClass.GetHashCode());
+                    irmc = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.dataMetaClass.classId);
                 }
 
                 if (mf is MetaGenTemplateFunction mgtf)
                 {
-                    fname = mgtf.sourceMetaMemberFunction.functionAllName;
-                    owirmc = IRManager.GetIRMetaClassByMetaOwner(mgtf.sourceMetaMemberFunction.ownerMetaBase);
+                    var srcFn = mgtf.sourceMetaMemberFunction ?? mgtf.sourceTemplateFunctionMetaMemberFunction;
+                    fname = (srcFn ?? mgtf).functionAllName;
+                    owirmc = IRManager.GetIRMetaClassByMetaOwner(srcFn?.ownerMetaBase ?? mgtf.ownerMetaBase);
                 }
                 else if (mf is MetaMemberFunction mmf22)
                 {
@@ -175,7 +178,11 @@ namespace SimpleLanguage.IR
                     owirmc = IRManager.GetIRMetaClassByMetaOwner(mf.ownerMetaBase);
                 }
 
-                m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(fname);
+                // 静态成员变量初始化表达式走 CreateExpress(null, ...)（见
+                // IRMetaClass.CreateStaticMetaMetaVariableIRList），此时用全局
+                // IRManager 单例查找目标方法，其余场景用 m_IRMethod.irManager。
+                var irManagerForLookup = m_IRMethod != null ? m_IRMethod.irManager : IRManager.instance;
+                m_IRRuntimeMethod = irManagerForLookup.GetIRMethod(fname);
 
                 var list = staticMt.GetGenTemplateMetaTypeList();
                 for (int i = 0; i < list.Count; i++)
@@ -203,7 +210,8 @@ namespace SimpleLanguage.IR
                 if (mf is MetaGenTemplateFunction mgtf)
                 {
                     //fname = mgtf.sourceMetaMemberFunction.functionAllName;
-                    owirmc = IRManager.GetIRMetaClassByMetaOwner(mgtf.sourceMetaMemberFunction.ownerMetaBase);
+                    var srcFn = mgtf.sourceMetaMemberFunction ?? mgtf.sourceTemplateFunctionMetaMemberFunction;
+                    owirmc = IRManager.GetIRMetaClassByMetaOwner(srcFn?.ownerMetaBase ?? mgtf.ownerMetaBase);
                 }
                 else if (mf is MetaMemberFunction mmf22)
                 {
@@ -234,7 +242,7 @@ namespace SimpleLanguage.IR
             }
             if (m_IRRuntimeMethod == null)
             {
-                Log.AddIRLog(LID.MetaCoreAssertShowMessage, mfc.token, $"ir runtime[{fname}] method not found!!");
+                Log.AddIRLog(LID.MetaCoreAssertShowMessage, mfc.token, $"ir runtime[{fname}] method not found!! func: {mf?.functionAllName ?? "null"}");
                 return;
             }
             irmt = new IRMetaType(irmc, types);
@@ -243,7 +251,8 @@ namespace SimpleLanguage.IR
             {
                 functionMtList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.metaFunctionInputTemplateList[i], owirmc));
             }
-           var irmethodcall = new IRMethodCall(irmt, functionMtList, m_IRRuntimeMethod, paramCount );
+            bool tryCatch = m_IRMethod != null && m_IRMethod.isInTryCatch;
+            var irmethodcall = new IRMethodCall(irmt, functionMtList, m_IRRuntimeMethod, paramCount, tryCatch);
             if(callType == 0 )
             {
                 IRData datacall = new IRData();
@@ -313,8 +322,8 @@ namespace SimpleLanguage.IR
                 return;
 
             int ownerHashCode = argNode.ownerMetaBase != null
-                ? argNode.ownerMetaBase.GetHashCode()
-                : targetMetaData.GetHashCode();
+                ? argNode.ownerMetaBase.classId
+                : targetMetaData.classId;
             var ownerIrMetaClass = IRManager.instance.GetIRMetaClassById(ownerHashCode);
             if (ownerIrMetaClass == null)
                 return;

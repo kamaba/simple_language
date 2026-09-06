@@ -60,6 +60,7 @@ namespace SimpleLanguage.Core
         public List<MetaClass> genMetaClassTemplateList => m_GenMetaClassTemplateList;
         public List<MetaMemberFunction> nonStaticVirtualMetaMemberFunctionList => m_NonStaticVirtualMetaMemberFunctionList;
         public List<MetaMemberFunction> staticMetaMemberFunctionList => m_StaticMetaMemberFunctionList;
+        public List<MetaMemberFunction> interfaceDeclareMetaMemberFunctionList => m_InterfaceDeclareMetaMemberFunctionList;
         public List<MetaMemberVariable> fileCollectMetaMemberVariable => m_FileCollectMetaMemberVariable;
         public List<MetaMemberFunction> fileCollectMetaMemberFunctionList => m_FileCollectMetaMemberFunctionList;
         public Dictionary<string, MetaMemberVariable> metaMemberVariableDict => m_MetaMemberVariableDict;
@@ -85,13 +86,14 @@ namespace SimpleLanguage.Core
         protected List<MetaClass> m_InterfaceClass = new List<MetaClass>();
         protected List<MetaType> m_InterfaceMetaType = new List<MetaType>();
         protected Dictionary<string, MetaMemberVariable> m_MetaMemberVariableDict = new Dictionary<string, MetaMemberVariable>();
-        protected List<MetaMemberVariable> m_FileCollectMetaMemberVariable = new List<MetaMemberVariable>();
+        private List<MetaMemberVariable> m_FileCollectMetaMemberVariable = new List<MetaMemberVariable>();
         protected Dictionary<string, MetaMemberVariable> m_MetaExtendMemeberVariableDict = new Dictionary<string, MetaMemberVariable>();
         protected Dictionary<string, MetaMemberFunctionTemplateNode> m_MetaMemberFunctionTemplateNodeDict = new Dictionary<string, MetaMemberFunctionTemplateNode>();
-        protected List<MetaMemberFunction> m_FileCollectMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
-        protected List<MetaType> m_FileCollectMetaInterfaceList = new List<MetaType>();
+        private List<MetaMemberFunction> m_FileCollectMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
+        private List<MetaType> m_FileCollectMetaInterfaceList = new List<MetaType>();
         protected List<MetaMemberFunction> m_NonStaticVirtualMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected List<MetaMemberFunction> m_StaticMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
+        protected List<MetaMemberFunction> m_InterfaceDeclareMetaMemberFunctionList = new List<MetaMemberFunction>();// 接口类自身声明的接口函数（不含从Object继承的函数）
         protected List<MetaMemberFunction> m_TempInnerFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected MetaExpressNodeBase m_DefaultExpressNode = null;
         protected bool m_IsInterfaceClass = false;
@@ -128,6 +130,7 @@ namespace SimpleLanguage.Core
         {
             m_Name = _name;
             m_Type = _type;
+            m_IsPartial = true;
         }
         public MetaClass( MetaClass mc ) : base(mc)
         {
@@ -157,6 +160,7 @@ namespace SimpleLanguage.Core
             m_StaticMetaMemberFunctionList = mc.m_StaticMetaMemberFunctionList;
             m_DefaultExpressNode = mc.m_DefaultExpressNode;
             m_IsAbstractClass = mc.m_IsAbstractClass;
+            m_IsInterfaceClass = mc.m_IsInterfaceClass;
             m_IsPartial = mc.m_IsPartial;
         }
         public override void SetDeep( int deep )
@@ -193,11 +197,10 @@ namespace SimpleLanguage.Core
                 for( int i = 0; i < m_MetaTemplateList.Count; i++ )
                 {
                     sb.Append(m_MetaTemplateList[i].name);
-                    if(m_MetaTemplateList[i].extendsMetaClass != null )
-                    {
-                        sb.Append(":");
-                        sb.Append(m_MetaTemplateList[i].extendsMetaClass.allName );
-                    }
+                    // 不把模板参数的约束类型（extendsMetaClass）写进 allName：
+                    // 约束不是类型身份的一部分。包含它会导致 inner-form（如 ArrayMetaClass 构造时
+                    // 设了 extendsMetaClass=Object）的 allName 为 "Core.Array<T:Core.Object>"，
+                    // 而源码编译/导出的为 "Core.Array<T>"，两者 classId 不同，产生重复 IRMetaClass。
                     if( i < m_MetaTemplateList.Count - 1 )
                     {
                         sb.Append(",");
@@ -276,13 +279,19 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, this.m_Token, "没有发现继承类的类型!!! " + mc.metaClass.extendClass.name );
+                    Log.AddMetaCoreLog(LID.ShowExtendMessage, this.m_Token, "没有发现继承类的类型!!! " + mc.fileMetaExtendClass.name );
                 }
             }
 
-            if(m_ExtendClassMetaType == null && this != CoreMetaClassManager.objectMetaClass )
+            if(m_ExtendClassMetaType == null && this != CoreMetaClassManager.objectMetaClass && !m_IsInterfaceClass )
             {
                 m_ExtendClassMetaType = new MetaType( CoreMetaClassManager.objectMetaClass );
+            }
+
+            // 接口类不需要继承自 Object，m_ExtendClassMetaType 保持 null，直接返回
+            if (m_ExtendClassMetaType == null)
+            {
+                return;
             }
 
             if (!m_ExtendClassMetaType.DefineTemplateIsIncludeTemplate())
@@ -323,10 +332,10 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                foreach (var v in m_ExtendClass.m_InterfaceMetaType )
-                {
-                    this.m_InterfaceMetaType.Add(new MetaType(v) );
-                }
+                //foreach (var v in m_ExtendClass.m_InterfaceMetaType )
+                //{
+                //    this.m_InterfaceMetaType.Add(new MetaType(v) );
+                //}
                 foreach( var v in m_FileCollectMetaInterfaceList )
                 {
                     this.m_InterfaceMetaType.Add(v);
@@ -383,8 +392,13 @@ namespace SimpleLanguage.Core
                     {
                         if( !this.innderDefine )
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, c.token, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
                         }
+                        continue;
+                    }
+                    if( this.m_MetaExtendMemeberVariableDict.ContainsKey( c.name ) )
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, c.token, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
                         continue;
                     }
                     this.m_MetaMemberVariableDict.Add(c.name, c);
@@ -406,109 +420,211 @@ namespace SimpleLanguage.Core
                 }
             }
         }
+        // 检查方法是否为本类所实现接口中声明的方法 (override标记也用于接口实现)
+        // 使用名字匹配: 接口模板参数名可能不同(如 IT1 vs LT23)，且接口类可能尚未完成自身解析
+        private bool IsMatchInterfaceMemberFunction(MetaMemberFunction mmf)
+        {
+            foreach (var it in this.m_InterfaceMetaType)
+            {
+                MetaClass interfaceMc = it.GetTemplateMetaClass();
+                if (interfaceMc == null || interfaceMc == this) continue;
+
+                var visited = new HashSet<MetaClass>();
+                if (IsInterfaceContainsFunction(interfaceMc, mmf.name, visited)) return true;
+            }
+            return false;
+        }
+        // 递归遍历接口继承链 (interface IPet extends IAnimal, 方法可能在父接口中)
+        private static bool IsInterfaceContainsFunction(MetaClass interfaceMc, string name, HashSet<MetaClass> visited)
+        {
+            if (interfaceMc == null || !visited.Add(interfaceMc)) return false;
+
+            if (ContainsFunctionByName(interfaceMc.nonStaticVirtualMetaMemberFunctionList, name)) return true;
+            if (ContainsFunctionByName(interfaceMc.staticMetaMemberFunctionList, name)) return true;
+            if (ContainsFunctionByName(interfaceMc.fileCollectMetaMemberFunctionList, name)) return true;
+
+            foreach (var it in interfaceMc.interfaceMetaType)
+            {
+                var parentMc = it.GetTemplateMetaClass();
+                if (IsInterfaceContainsFunction(parentMc, name, visited)) return true;
+            }
+            if (IsInterfaceContainsFunction(interfaceMc.extendClass, name, visited)) return true;
+            return false;
+        }
+        private static bool ContainsFunctionByName(List<MetaMemberFunction> list, string name)
+        {
+            foreach (var f in list)
+            {
+                if (f.name == name) return true;
+            }
+            return false;
+        }
         public virtual void HandleExtendMemberFunction()
         {
+            List<MetaMemberFunction> addmmfList = new List<MetaMemberFunction>();
             if (this.m_ExtendClass == null)
             {
                 foreach (var v in m_FileCollectMetaMemberFunctionList)
                 {
                     if (v.isStatic)
                     {
-                        m_StaticMetaMemberFunctionList.Add(v);
+                        addmmfList.Add(v);
                     }
                     else
                     {
                         if (v.isWithInterface) continue;
                         //if (v.isConstructInitFunction) continue;
-                        if( v.isOverrideFunction )
+                        if( v.isOverrideFunction && !IsMatchInterfaceMemberFunction(v) )
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, v.token, "有override标记，但没有父类 ");                            
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, v.token,
+                                "Error 类[" + this.m_AllName + "] 的方法: " + v.name + " 有override标记，但没有父类");
                         }
-                        m_NonStaticVirtualMetaMemberFunctionList.Add(v);
+                        addmmfList.Add(v);
                     }
                 }
             }
             else
             {
-                bool canAdd = false;
-                foreach (var v in this.m_ExtendClass.m_NonStaticVirtualMetaMemberFunctionList)
-                {
-                    canAdd = true;
-                    var efun = v;
-                    //if (efun.isConstructInitFunction) { continue; }
+                List<MetaMemberFunction> mmfList = new List<MetaMemberFunction>();
+                mmfList.AddRange(this.m_ExtendClass.m_NonStaticVirtualMetaMemberFunctionList);
+                mmfList.AddRange(this.m_ExtendClass.m_StaticMetaMemberFunctionList);
 
+                foreach (var v in mmfList)
+                {
+                    // 在子类定义的方法中查找与父类方法签名相同的方法
+                    MetaMemberFunction matchedChild = null;
                     foreach (var v2 in m_FileCollectMetaMemberFunctionList)
                     {
                         //if (v2.isConstructInitFunction) continue;
-                        if (efun.IsEqualMetaFunction(v2))
+                        if (v.IsEqualMetaFunction(v2))
                         {
-                            // child provides an implementation
-                            // if parent is abstract, child must mark method with 'override'
-                            if (efun.isAbstract && !v2.isOverrideFunction)
-                            {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 子类[" + this.m_AllName + "] 方法: " + v2.name + " 实现了抽象父方法但未使用 override 标记");
-                            }
-                            v2.SetOverrideMetaMemberFunction(efun);
-                            canAdd = false;
-                            m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
-                            continue;
+                            matchedChild = v2;
+                            break;
                         }
                     }
-                    if (canAdd)
+
+                    if (matchedChild == null)
                     {
-                        // If parent function is abstract and current class is concrete, require override
-                        if (efun.isAbstract && !this.m_IsAbstractClass)
+                        // 子类没有重写该方法: 直接继承父类方法
+                        // 如果父类方法是abstract方法，且当前类不是abstract类，则必须实现
+                        if (v.isAbstract && !this.m_IsAbstractClass)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAbstractFunctionNeedInstance, this.token, "", this.m_ExtendClass.allName, efun.name, this.allName);
+                            Log.AddMetaCoreLog(LID.MetaCoreAbstractFunctionNeedInstance, this.token, "",
+                                this.m_ExtendClass.allName, v.name, this.allName);
                         }
-                        m_NonStaticVirtualMetaMemberFunctionList.Add(efun);
+                        addmmfList.Add(v);
+                        continue;
                     }
-                }
 
-                foreach (var v2 in this.m_FileCollectMetaMemberFunctionList)
-                {
-                    if (v2.isStatic)
+                    // 子类存在签名相同的方法: 用子类方法替换父类方法
+                    if (v.isStatic != matchedChild.isStatic)
                     {
-                        var find = m_StaticMetaMemberFunctionList.Find(a => a == v2);
-                        if (find != null) continue;
+                        // static声明不匹配: 不能替换，父类方法与子类方法都保留
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                            "Error 子类[" + this.m_AllName + "] 方法: " + matchedChild.name +
+                            " 与父类方法: " + this.m_ExtendClass.m_AllName + "." + v.name + " 的static声明不匹配");
+                        addmmfList.Add(v);
+                        addmmfList.Add(matchedChild);
+                        continue;
+                    }
 
-                        m_StaticMetaMemberFunctionList.Add(v2);
+                    if (!v.isStatic)
+                    {
+                        // final方法不允许被override
+                        if (v.isFinal && !v.isAbstract)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreFinalFunctionCannotOverride, matchedChild.token,
+                                "子类[" + this.m_AllName + "] 方法: " + matchedChild.name +
+                                " 不能override父类的final方法: " + this.m_ExtendClass.m_AllName + "." + v.name);
+                        }
+                        // 实现抽象父方法时必须使用override标记
+                        if (v.isAbstract && !matchedChild.isOverrideFunction)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                                "Error 子类[" + this.m_AllName + "] 方法: " + matchedChild.name +
+                                " 实现了抽象父方法但未使用 override 标记");
+                        }
+                        // 子类重写了父类的非abstract、非final方法但未使用override标记
+                        if (!v.isAbstract && !v.isFinal && !matchedChild.isOverrideFunction)
+                        {
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                                "Warning 类[" + this.m_AllName + "] 方法: " + matchedChild.name +
+                                " 重写了父类方法但未使用 override 标记: " + this.m_ExtendClass.m_AllName + "." + v.name);
+                        }
+                        // 记录override链，供 base.xxx() 调用解析使用
+                        matchedChild.SetOverrideMetaMemberFunction(v);
                     }
                     else
                     {
-                        var find = m_NonStaticVirtualMetaMemberFunctionList.Find(a => a == v2);
-                        if (find != null) continue;
-
-                        if (v2.isOverrideFunction && v2.overrideMetaMemberFunction != null)
+                        // static方法不支持override标记 (只能隐藏)
+                        if (matchedChild.isOverrideFunction)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, find.token, "有override标记，但没有父类 ");
+                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                                "Error 子类[" + this.m_AllName + "] 的static方法: " + matchedChild.name +
+                                " 不能使用override标记");
                         }
-
-                        m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
                     }
+                    addmmfList.Add(matchedChild);
+                }
+
+                // 添加子类中新增的方法 (没有与父类方法匹配的)
+                foreach (var v2 in this.m_FileCollectMetaMemberFunctionList)
+                {
+                    if (addmmfList.Contains(v2))
+                    {
+                        continue;
+                    }
+                    // 有override标记，但父类中不存在签名相同的方法 (排除接口实现)
+                    if (!v2.isStatic && v2.isOverrideFunction && v2.overrideMetaMemberFunction == null
+                        && !IsMatchInterfaceMemberFunction(v2))
+                    {
+                        Log.AddMetaCoreLog(LID.ShowExtendMessage, v2.token,
+                            "Error 类[" + this.m_AllName + "] 方法: " + v2.name +
+                            " 有override标记，但没有找到父类中相同签名的方法");
+                    }
+                    addmmfList.Add(v2);
                 }
             }
 
 
 
-
-            foreach (var v2 in m_NonStaticVirtualMetaMemberFunctionList)
+            foreach (var v2 in addmmfList)
             {
-                //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
-                //if (find != null) continue;
-
                 AddMetaMemberFunction(v2);
-                //m_AllMetaMemberFunctionList.Add(v2);
-            }
-            foreach (var v2 in m_StaticMetaMemberFunctionList)
-            {
-                //var find = m_AllMetaMemberFunctionList.Find(a => a == v2);
-                //if (find != null) continue;
+                if (v2.isStatic)
+                {
+                    m_StaticMetaMemberFunctionList.Add(v2);
 
-                AddMetaMemberFunction(v2);
-                //m_AllMetaMemberFunctionList.Add(v2);
+                }
+                else
+                {
+                    m_NonStaticVirtualMetaMemberFunctionList.Add(v2);
+                }
             }
 
+            // 接口类: 收集自身声明的接口函数，供 CheckInterface 使用
+            // 只收集接口类自身声明的方法和父接口声明的接口函数，不含从Object继承的函数
+            if (m_IsInterfaceClass)
+            {
+                m_InterfaceDeclareMetaMemberFunctionList.Clear();
+                // 父接口声明的接口函数
+                if (m_ExtendClass != null && m_ExtendClass.m_IsInterfaceClass)
+                {
+                    foreach (var v in m_ExtendClass.m_InterfaceDeclareMetaMemberFunctionList)
+                    {
+                        m_InterfaceDeclareMetaMemberFunctionList.Add(v);
+                    }
+                }
+                // 自身声明的接口函数（排除带默认实现的 isWithInterface 方法）
+                foreach (var v in m_FileCollectMetaMemberFunctionList)
+                {
+                    if (!v.isStatic && v.isWithInterface) continue;
+                    if (!m_InterfaceDeclareMetaMemberFunctionList.Contains(v))
+                    {
+                        m_InterfaceDeclareMetaMemberFunctionList.Add(v);
+                    }
+                }
+            }
 
             List<MetaMemberFunction> addList = new List<MetaMemberFunction>();
             for (int i = 0; i < this.m_TempInnerFunctionList.Count; i++)
@@ -622,7 +738,8 @@ namespace SimpleLanguage.Core
                 MetaClass interfaceMc = it.GetTemplateMetaClass();
 
                 Token token = m_Token;
-                foreach( var interfaceMMF in interfaceMc.m_FileCollectMetaMemberFunctionList )
+                List<MetaMemberFunction> forlist = new List<MetaMemberFunction>(interfaceMc.interfaceDeclareMetaMemberFunctionList);
+                foreach ( var interfaceMMF in forlist )
                 {
                     bool certified = false;
                     foreach ( var selfMMF in this.m_FileCollectMetaMemberFunctionList )
@@ -641,7 +758,7 @@ namespace SimpleLanguage.Core
                             else
                             {
                                 certified = true;
-                                Log.AddMetaCoreLog(LID.MetaCoreFunctionNeedOverrideFlag, token, "interface function need override flag", this.allName, interfaceMMF.name );
+                                Log.AddMetaCoreLog(LID.MetaCoreFunctionNeedOverrideFlag, interfaceMMF.token, "interface function need override flag", this.allName, interfaceMMF.name );
                                 break;
                             }
                         }
@@ -770,7 +887,6 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
-#if EditorMode
         public void BindFileMetaClass(FileMetaClass fmc)
         {
             if (m_FileMetaClassDict.ContainsKey(fmc.token))
@@ -792,6 +908,30 @@ namespace SimpleLanguage.Core
             }
 
             m_IsPartial = fmc.isPartial;
+        }
+        /// <summary>
+        /// 检查名称是否与当前 Module 根下的名称（data/class/enum/namespace）冲突。
+        /// Project 成员（.sp 定义与 jsonc 注入）不允许与 Module 下的名称相同：
+        /// 引用方使用 ModuleName.name 限定访问时，模块根下的类型与 Project 成员
+        /// 共用同一个查找平面，重名会在解析时产生歧义（如 Std.Pi 无法区分是
+        /// Std 模块下的类型还是 Project 定义的静态成员）。
+        /// </summary>
+        public static bool IsNameConflictWithModuleRoot( string name, string memberKind )
+        {
+            var moduleRoot = ModuleManager.instance.selfModule?.metaNode;
+            if (moduleRoot == null || string.IsNullOrEmpty(name))
+            {
+                return false;
+            }
+            var mn = moduleRoot.GetChildrenMetaNodeByName(name);
+            if (mn == null)
+            {
+                return false;
+            }
+            Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                "Error Project类" + memberKind + "与Module下名称冲突: Project." + name
+                + " 与 Module 下的 " + mn.allName + " 重名!! Project成员不允许与Module下定义的名称相同。");
+            return true;
         }
         public void ParseFileMetaClassMemeberVarAndFunc( FileMetaClass fmc )
         {
@@ -827,6 +967,10 @@ namespace SimpleLanguage.Core
                 }
                 else
                     isHave = false;
+                if (isProjectSpecialClass && IsNameConflictWithModuleRoot(v2.name, "成员变量"))
+                {
+                    continue;
+                }
                 MetaMemberVariable mmv = new MetaMemberVariable(this, v2);
                 if (isProjectSpecialClass)
                 {
@@ -847,9 +991,14 @@ namespace SimpleLanguage.Core
             foreach (var v2 in fmc.memberFunctionList)
             {
                 var mn = this.m_MetaNode.GetChildrenMetaNodeByName(v2.name);
-                if (mn != null)
+                if( mn != null )
                 {
                     Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                    continue;
+                }
+
+                if (isProjectSpecialClass && IsNameConflictWithModuleRoot(v2.name, "成员函数"))
+                {
                     continue;
                 }
 
@@ -891,10 +1040,21 @@ namespace SimpleLanguage.Core
                 m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, defaultFunction.metaBlockStatements );
             }
         }
-#endif        
         public void SetExtendClass(MetaClass sec)
         {
             this.m_ExtendClass = sec;
+        }
+        /// <summary>
+        /// 设置继承类的 MetaType（含模板参数），并从中派生 m_ExtendClass。
+        /// 用于 ref module 加载时恢复带模板的继承关系。
+        /// </summary>
+        public void SetExtendClassMetaType(MetaType mt)
+        {
+            this.m_ExtendClassMetaType = mt;
+            if (mt != null)
+            {
+                this.m_ExtendClass = mt.metaClass;
+            }
         }
         public void CalcExtendLevel()
         {
@@ -978,6 +1138,18 @@ namespace SimpleLanguage.Core
                 Log.AddMetaCoreLog(LID.ShowExtendMessage, "重复添加接口");
             }
         }
+        public void AddInterfaceMetaType(MetaType mt)
+        {
+            if (mt == null) return;
+            if (!m_InterfaceMetaType.Contains(mt))
+            {
+                m_InterfaceMetaType.Add(mt);
+            }
+            if (mt.metaClass != null && !m_InterfaceClass.Contains(mt.metaClass))
+            {
+                m_InterfaceClass.Add(mt.metaClass);
+            }
+        }
         public void AddMetaMemberVariable( MetaMemberVariable mmv, bool isAddManager = true )
         {
             if( m_MetaMemberVariableDict.ContainsKey( mmv.name ) )
@@ -994,6 +1166,19 @@ namespace SimpleLanguage.Core
         public void AddInnerMetaMemberFunction( MetaMemberFunction mmf )
         {
             m_TempInnerFunctionList.Add(mmf);
+        }
+        /// <summary>
+        /// 运行期动态添加的非静态虚函数（如 local{} 块生成的 _Local 类函数）。
+        /// HandleExtendMemberFunction 只在文件合并阶段收集函数列表，
+        /// 之后动态添加的函数必须同时进入 nonStaticVirtualMetaMemberFunctionList，
+        /// 否则 IR 翻译阶段不会为其生成 IRMethod，虚调用将找不到方法。
+        /// </summary>
+        public void AddDynamicNonStaticMemberFunction( MetaMemberFunction mmf )
+        {
+            if (mmf == null) return;
+            if (mmf.isStatic) return;
+            if (m_NonStaticVirtualMetaMemberFunctionList.Contains(mmf)) return;
+            m_NonStaticVirtualMetaMemberFunctionList.Add(mmf);
         }
         public bool AddMetaMemberFunction( MetaMemberFunction mmf )
         {
@@ -1144,20 +1329,58 @@ namespace SimpleLanguage.Core
             }            
             return null;
         }
-        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(string name, int templateParamCount, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true )
+        /// <summary>
+        /// 按名字和参数个数查找非静态 set 访问器函数（如 bind data 展开生成的 set x(T)）。
+        /// 不依赖值表达式即可完成的查找，供 brace 初始化构造期使用。
+        /// </summary>
+        public virtual MetaMemberFunction GetSetMemberFunctionByNameAndParamCount(string name, int paramCount)
         {
-            if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name) )
+            if (string.IsNullOrEmpty(name))
+            {
+                return null;
+            }
+            if (!m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
+            {
+                return null;
+            }
+            var tnode = m_MetaMemberFunctionTemplateNodeDict[name];
+            if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(0))
+            {
+                return null;
+            }
+            var tfunctionNode = tnode.metaTemplateFunctionNodeDict[0];
+
+            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(paramCount);
+            if (list == null) return null;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var fun = list[i];
+                if (fun.isSet && !fun.isStatic && !fun.isTemplateFunction)
+                {
+                    return fun;
+                }
+            }
+            return null;
+        }
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(string name, int templateParamCount, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true)
+        {
+            //if (this is MetaGenTemplateClass mgtc && name == "add")
+            //{
+            //    System.Console.WriteLine($"[DEBUG GetMethod] cls={this.allName} name={name} dictCount={m_MetaMemberFunctionTemplateNodeDict.Count} nonStaticCount={m_NonStaticVirtualMetaMemberFunctionList.Count}");
+            //}
+            if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
             {
                 return null;
             }
             var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
-            if( !tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount) )
+            if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount))
             {
                 return null;
             }
             var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
 
-            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0 );
+            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0);
             if (list == null) return null;
 
             for (int i = 0; i < list.Count; i++)
@@ -1169,54 +1392,88 @@ namespace SimpleLanguage.Core
                 //}
                 //else
                 //{
-                    if (fun.IsEqualMetaInputParamCollection(inputParam))
-                        return fun;
+                if (fun.IsEqualMetaInputParamCollection(inputParam))
+                    return fun;
                 //}
             }
             return null;
         }
-        //public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateInputParam(string name, List<MetaType> mtList, MetaInputParamCollection inputParam, bool isIncludeExtendClass = true)
-        //{
-        //    if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
-        //    {
-        //        return null;
-        //    }
-        //    int templateParamCount = 0;
-        //    if( mtList != null )
-        //    {
-        //        templateParamCount = mtList.Count;
-        //    }
-        //    var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
-        //    if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount))
-        //    {
-        //        return null;
-        //    }
-        //    var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
+        /// <summary>
+        /// 检查当前类是否支持 _getItem_/_setItem_ 下标访问。
+        /// </summary>
+        public bool HasIndexerMethod()
+        {
+            return GetMetaDefineGetSetMemberFunctionByName("_getItem_", null, true, false) != null
+                || GetMetaDefineGetSetMemberFunctionByName("_setItem_", null, false, true) != null;
+        }
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndDefineTemplateInputParamCount(string name, int templateParamCount, MetaDefineParamCollection defineParam, bool isIncludeExtendClass = true)
+        {
+            if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
+            {
+                return null;
+            }
+            var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
+            if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount))
+            {
+                return null;
+            }
+            var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
 
-        //    var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0);
-        //    if (list == null) return null;
+            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(defineParam != null ? defineParam.maxParamCount : 0);
+            if (list == null) return null;
 
-        //    for (int i = 0; i < list.Count; i++)
-        //    {
-        //        var fun = list[i];
-        //        if (fun.isTemplateFunction)
-        //        {
-        //            //var gfun = fun.GetGenTemplateFunction(mtList);
+            for (int i = 0; i < list.Count; i++)
+            {
+                var fun = list[i];
+                //if (fun.isTemplateFunction)
+                //{
+                //    return fun;
+                //}
+                //else
+                //{
+                if (fun.IsEqualMetaDefineParamCollection(defineParam))
+                    return fun;
+                //}
+            }
+            return null;
+        }
+        public virtual MetaMemberFunction GetMetaMemberFunctionByNameAndInputTemplateAndMetaType(string name, int templateParamCount, List<MetaType> mtList, bool isIncludeExtendClass = true)
+        {
+            if (!this.m_MetaMemberFunctionTemplateNodeDict.ContainsKey(name))
+            {
+                return null;
+            }
+            var tnode = this.m_MetaMemberFunctionTemplateNodeDict[name];
+            if (!tnode.metaTemplateFunctionNodeDict.ContainsKey(templateParamCount))
+            {
+                return null;
+            }
+            var tfunctionNode = tnode.metaTemplateFunctionNodeDict[templateParamCount];
 
-        //            //if( gfun != null )
-        //            //{
-        //            //    return gfun;
-        //            //}
-        //            return fun;
-        //        }
-        //        else
-        //        {
-        //            if (fun.IsEqualMetaInputParamCollection(inputParam))
-        //                return fun;
-        //        }
-        //    }
-        //    return null;
-        //}
+            var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(mtList != null ? mtList.Count : 0);
+            if (list == null) return null;
+
+            for (int i = 0; i < list.Count; i++)
+            {
+                var fun = list[i];
+                if (fun.isTemplateFunction)
+                {
+                    //var gfun = fun.GetGenTemplateFunction(mtList);
+
+                    //if( gfun != null )
+                    //{
+                    //    return gfun;
+                    //}
+                    return fun;
+                }
+                else
+                {
+                    if (fun.metaMemberParamCollection.IsEqualMetaTypeList(mtList))
+                        return fun;
+                }
+            }
+            return null;
+        }
         public MetaMemberFunction GetMetaMemberConstructDefaultFunction()
         {
             return GetMetaMemberConstructFunction(null);
@@ -1228,6 +1485,26 @@ namespace SimpleLanguage.Core
         public MetaMemberFunction GetFirstMetaMemberFunctionByName( string name )
         {
             return GetMetaMemberFunctionByNameAndInputTemplateInputParamCount( name, 0, null );
+        }
+        public MetaMemberFunction GetOperatorMetaMemberFunctionByName(string name)
+        {
+            switch( name)
+            {
+                case "_getItem_":
+                    {
+                        List<MetaType> mtlist = new List<MetaType>();
+                        mtlist.Add(new MetaType(CoreMetaClassManager.int32MetaClass));
+                        return GetMetaMemberFunctionByNameAndInputTemplateAndMetaType("_getItem_", 0, mtlist );
+                    }
+                case "_setItem_":
+                    {
+                        List<MetaType> mtlist = new List<MetaType>();
+                        mtlist.Add(new MetaType(CoreMetaClassManager.int32MetaClass));
+                        mtlist.Add(new MetaType(CoreMetaClassManager.objectMetaClass));
+                        return GetMetaMemberFunctionByNameAndInputTemplateAndMetaType("_setItem_", 0, mtlist );
+                    }
+            }
+            return null;
         }
         public List<MetaMemberFunction> GetMemberInterfaceFunction()
         {

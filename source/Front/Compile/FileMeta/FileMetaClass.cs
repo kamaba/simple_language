@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      FileMetaClass.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -29,6 +29,8 @@ namespace SimpleLanguage.Compile
         public MetaData metaData => m_MetaData;
         public FileMetaClassDefine fileMetaExtendClass => m_FileMetaExtendClass;
         public List<FileMetaClassDefine> interfaceClassList => m_InterfaceClassList;
+        public Token bindToken => m_BindToken;
+        public List<FileMetaClassDefine> bindClassList => m_BindClassList;
         public FileMetaNamespace topLevelFileMetaNamespace => m_TopLevelFileMetaNamespace;
         public FileMetaClass topLevelFileMetaClass => m_TopLevelFileMetaClass;
         public List<FileMetaTemplateDefine> templateDefineList => m_TemplateDefineList;
@@ -43,6 +45,7 @@ namespace SimpleLanguage.Compile
         protected Token m_AbstractToken = null;
         protected Token m_PreInterfaceToken = null;
         protected Token m_SufInterfaceToken = null;
+        protected Token m_BindToken = null;
         protected Token m_ClassToken = null;
         protected Token m_EnumToken = null;
         protected Token m_DataToken = null;
@@ -56,6 +59,7 @@ namespace SimpleLanguage.Compile
         private FileMetaClass m_TopLevelFileMetaClass = null;
         private FileMetaClassDefine m_FileMetaExtendClass = null;
         private List<FileMetaClassDefine> m_InterfaceClassList = new List<FileMetaClassDefine>();
+        private List<FileMetaClassDefine> m_BindClassList = new List<FileMetaClassDefine>();
         private List<FileMetaClass> m_ChildrenClassList = new List<FileMetaClass>();
         private List<FileMetaTemplateDefine> m_TemplateDefineList = new List<FileMetaTemplateDefine>();
 
@@ -81,7 +85,7 @@ namespace SimpleLanguage.Compile
         private List<Node> m_NodeList = new List<Node>();
 
         private StringBuilder stringBuilder = new StringBuilder();
-        public FileMetaClass( FileMeta fm, List<Node> listNode)
+        public FileMetaClass(FileMeta fm, List<Node> listNode)
         {
             m_FileMeta = fm;
             m_NodeList = listNode;
@@ -107,6 +111,8 @@ namespace SimpleLanguage.Compile
 
             Node angleNode = null;
             Node lastNode = null;
+            // 跟踪最近一次出现的关系关键字(extends/interface/bind)，用于判定后续 IdentifierLink 归属
+            Token lastRelationToken = null;
             int addCount = 0;
             while (addCount < m_NodeList.Count)
             {
@@ -114,18 +120,28 @@ namespace SimpleLanguage.Compile
 
                 if (cnode.nodeType == ENodeType.IdentifierLink)
                 {
-                    if ( m_SufInterfaceToken != null || m_ExtendsToken != null )
+                    if (m_SufInterfaceToken != null || m_ExtendsToken != null || m_BindToken != null)
                     {
-                        List<FileMetaClassDefine> fcdList = new List<FileMetaClassDefine>();
-                        addCount = ReadClassDefineStruct(addCount -1, m_NodeList, fcdList);
-                        if (m_ExtendsToken != null && m_SufInterfaceToken == null)
+                        if (m_BindToken != null && lastRelationToken == m_BindToken)
                         {
-                            if(m_FileMetaExtendClass != null )
+                            List<FileMetaClassDefine> fcdList = new List<FileMetaClassDefine>();
+                            addCount = ReadClassDefineStruct(addCount - 1, m_NodeList, fcdList);
+                            if (fcdList.Count == 0)
+                            {
+                                Log.AddFileMetaLog(LID.ShowExtendMessage, m_BindToken, "Error bind关键字后边没有相应的内容!");
+                            }
+                            m_BindClassList.AddRange(fcdList);
+                        }
+                        else if (m_ExtendsToken != null && m_SufInterfaceToken == null)
+                        {
+                            List<FileMetaClassDefine> fcdList = new List<FileMetaClassDefine>();
+                            addCount = ReadClassDefineStruct(addCount - 1, m_NodeList, fcdList);
+                            if (m_FileMetaExtendClass != null)
                             {
                                 Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error 已有继承类,请勿多重继承!");
 
                             }
-                            if (fcdList.Count == 0 )
+                            if (fcdList.Count == 0)
                             {
                                 Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error 继承关键字后边没有相应的内容!");
                             }
@@ -135,8 +151,10 @@ namespace SimpleLanguage.Compile
                             }
                             m_FileMetaExtendClass = fcdList[0];
                         }
-                        else if (m_SufInterfaceToken != null )
+                        else if (m_SufInterfaceToken != null)
                         {
+                            List<FileMetaClassDefine> fcdList = new List<FileMetaClassDefine>();
+                            addCount = ReadClassDefineStruct(addCount - 1, m_NodeList, fcdList);
                             if (fcdList.Count == 0)
                             {
                                 Log.AddFileMetaLog(LID.ShowExtendMessage, m_SufInterfaceToken, "接口关键字后边没有相应的内容!");
@@ -156,7 +174,7 @@ namespace SimpleLanguage.Compile
                         }
                         classNameTokenList = cnode.GetLinkTokenList();
 
-                        if(cnode?.angleNode != null)
+                        if (cnode?.angleNode != null)
                         {
                             var childlist = cnode.angleNode.childList;
                             int cAddCount = 0;
@@ -278,7 +296,7 @@ namespace SimpleLanguage.Compile
                     if (token.type == ETokenType.Public
                         || token.type == ETokenType.Private
                         || token.type == ETokenType.Projected
-                        || token.type == ETokenType.Extern )
+                        || token.type == ETokenType.Extern)
                     {
                         if (permissionToken == null)
                         {
@@ -290,7 +308,7 @@ namespace SimpleLanguage.Compile
                             Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次权限!!");
                         }
                     }
-                    else if( token.type == ETokenType.Void )
+                    else if (token.type == ETokenType.Void)
                     {
 
                     }
@@ -392,6 +410,17 @@ namespace SimpleLanguage.Compile
                             Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次Extend!!");
                         }
                         m_ExtendsToken = token;
+                        lastRelationToken = token;
+                    }
+                    else if (token.type == ETokenType.Bind)
+                    {
+                        if (m_BindToken != null)
+                        {
+                            isError = true;
+                            Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次bind!!");
+                        }
+                        m_BindToken = token;
+                        lastRelationToken = token;
                     }
                     else if (token.type == ETokenType.Interface)
                     {
@@ -405,7 +434,7 @@ namespace SimpleLanguage.Compile
                             isError = true;
                             Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析过了一次data!!");
                         }
-                        if (classNameTokenList.Count > 0 )    //后置
+                        if (classNameTokenList.Count > 0)    //后置
                         {
                             if (m_PreInterfaceToken != null)
                             {
@@ -418,6 +447,7 @@ namespace SimpleLanguage.Compile
                                 Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析类时，已发现用过interface标记，不可重复使用该标记");
                             }
                             m_SufInterfaceToken = token;
+                            lastRelationToken = token;
 
                         }
                         else
@@ -446,7 +476,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        isError = true; 
+                        isError = true;
                         Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 有其它未知类型在class中");
                         break;
                     }
@@ -454,7 +484,7 @@ namespace SimpleLanguage.Compile
                 lastNode = cnode;
             }
 
-            if(m_EnumToken != null )
+            if (m_EnumToken != null)
             {
                 if (m_PreInterfaceToken != null)
                 {
@@ -467,11 +497,16 @@ namespace SimpleLanguage.Compile
                     Log.AddFileMetaLog(LID.ShowExtendMessage, token, "");
                     return false;
                 }
-                if (permissionToken != null)
+                if (m_BindToken != null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，不支持权限的使用!!");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，不支持bind的使用!!");
                     return false;
                 }
+                //if (permissionToken != null)
+                //{
+                //    Log.AddFileMetaLog(LID.ShowExtendMessage, m_EnumToken, "Error Enum方式，不支持权限的使用!!");
+                //    return false;
+                //}
                 if (m_PartialToken != null)
                 {
                     Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，不支持partial的使用!!");
@@ -491,11 +526,16 @@ namespace SimpleLanguage.Compile
                     Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Enum方式，不支持接口方式");
                     return false;
                 }
-                if (permissionToken != null)
+                if (m_BindToken != null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Data方式，不支持权限的使用!!");
+                    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Data方式，不支持bind的使用!!");
                     return false;
                 }
+                //if (permissionToken != null)
+                //{
+                //    Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Data方式，不支持权限的使用!!");
+                //    return false;
+                //}
                 if (m_PartialToken != null)
                 {
                     Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error Data方式，不支持partial的使用!!");
@@ -509,7 +549,7 @@ namespace SimpleLanguage.Compile
                 if (classNameTokenList.Count == 0)
                 {
                     Log.AddFileMetaLog(LID.ShowExtendMessage, token, "Error 解析类型名称错误!!");
-                }                
+                }
             }
             m_Token = classNameTokenList[classNameTokenList.Count - 1];
             if (classNameTokenList.Count > 1)
@@ -520,7 +560,7 @@ namespace SimpleLanguage.Compile
 
             return true;
         }
-        public int ReadClassDefineStruct( int cAddCount, List<Node> nodeList, List<FileMetaClassDefine> fcdList )
+        public int ReadClassDefineStruct(int cAddCount, List<Node> nodeList, List<FileMetaClassDefine> fcdList)
         {
             //List<ParseStructTemp> rootPST = new List<ParseStructTemp>();
             //ParseStructTemp curPST = null;
@@ -533,12 +573,13 @@ namespace SimpleLanguage.Compile
                     continue;
                 }
                 else if (cnode2.nodeType == ENodeType.IdentifierLink
-                    || ( cnode2.token.type == ETokenType.Object ))
+                    || (cnode2.token.type == ETokenType.Object))
                 {
-                    FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, cnode2, null );
-                    fcdList.Add(fmcd);        
+                    FileMetaClassDefine fmcd = new FileMetaClassDefine(m_FileMeta, cnode2, null);
+                    fcdList.Add(fmcd);
                 }
-                else if( cnode2.nodeType == ENodeType.Key && cnode2.token.type == ETokenType.Interface )
+                else if (cnode2.nodeType == ENodeType.Key
+                    && (cnode2.token.type == ETokenType.Interface || cnode2.token.type == ETokenType.Bind))
                 {
                     break;
                 }
@@ -559,42 +600,42 @@ namespace SimpleLanguage.Compile
         {
             return m_MemberDataList.Find(a => a.name == name);
         }
-        public void AddFileMemberVariable(FileMetaMemberVariable fmv )
+        public void AddFileMemberVariable(FileMetaMemberVariable fmv)
         {
             m_MemberVariableList.Add(fmv);
             fmv.SetFileMeta(m_FileMeta);
         }
-        public void AddFileMemberFunction( FileMetaMemberFunction fmmf )
+        public void AddFileMemberFunction(FileMetaMemberFunction fmmf)
         {
             m_MemberFunctionList.Add(fmmf);
             fmmf.SetFileMeta(m_FileMeta);
         }
-        public void SetMetaNamespace( FileMetaNamespace mn )
+        public void SetMetaNamespace(FileMetaNamespace mn)
         {
             m_TopLevelFileMetaNamespace = mn;
         }
-        public void AddExtendMetaNamespace( FileMetaNamespace fmn )
+        public void AddExtendMetaNamespace(FileMetaNamespace fmn)
         {
-            if( m_TopLevelFileMetaNamespace != null )
+            if (m_TopLevelFileMetaNamespace != null)
             {
 
             }
             else
             {
                 var list = fmn.namespaceStatementBlock.namespaceList;
-                if ( list?.Count < 1 )
+                if (list?.Count < 1)
                 {
                     return;
                 }
-                if(this.m_NamespaceBlock != null )
+                if (this.m_NamespaceBlock != null)
                 {
                     string lastName = this.m_NamespaceBlock.namespaceList[this.m_NamespaceBlock.namespaceList.Count - 1];
 
-                    if(list[list.Count-1] == lastName )
-                    { 
+                    if (list[list.Count - 1] == lastName)
+                    {
                         var namespaceNameNode = new Node(fmn.namespaceNameNode.token);
                         List<Node> extendLinkNodeList = new List<Node>();
-                        for ( int i = 0; i < fmn.namespaceNameNode.extendLinkNodeList.Count -2; i++ )
+                        for (int i = 0; i < fmn.namespaceNameNode.extendLinkNodeList.Count - 2; i++)
                         {
                             extendLinkNodeList.Add(fmn.namespaceNameNode.extendLinkNodeList[i]);
                         }
@@ -605,7 +646,7 @@ namespace SimpleLanguage.Compile
                 }
             }
         }
-        public void SetPartialToken( Token partialToken )
+        public void SetPartialToken(Token partialToken)
         {
             m_PartialToken = partialToken;
         }
@@ -621,7 +662,7 @@ namespace SimpleLanguage.Compile
         //        SetExtendClass(fmcd);
         //    }
         //}
-        public void SetMetaClass( MetaClass mc )
+        public void SetMetaClass(MetaClass mc)
         {
             m_MetaClass = mc;
             if (m_AbstractToken != null && m_MetaClass != null)
@@ -641,17 +682,17 @@ namespace SimpleLanguage.Compile
         //{
         //    return  m_MetaClass.GetChildrenMetaBaseByName(name);
         //}
-        public void AddFileMetaClass( FileMetaClass fmc )
+        public void AddFileMetaClass(FileMetaClass fmc)
         {
             fmc.m_Deep = this.deep + 1;
             fmc.SetFileMetaClass(this);
             m_ChildrenClassList.Add(fmc);
         }
-        public void AddInterfaceClass(FileMetaClassDefine fmcv )
+        public void AddInterfaceClass(FileMetaClassDefine fmcv)
         {
             m_InterfaceClassList.Add(fmcv);
         }
-        private void SetFileMetaClass( FileMetaClass fmc )
+        private void SetFileMetaClass(FileMetaClass fmc)
         {
             m_TopLevelFileMetaClass = fmc;
             innerClass = true;
@@ -663,14 +704,14 @@ namespace SimpleLanguage.Compile
             {
                 v.SetDeep(m_Deep + 1);
             }
-            foreach( var v in m_MemberDataList )
+            foreach (var v in m_MemberDataList)
             {
                 v.SetDeep(m_Deep + 1);
             }
             foreach (var v in m_MemberVariableList)
             {
                 v.SetDeep(m_Deep + 1);
-            }            
+            }
             foreach (var v in m_MemberFunctionList)
             {
                 v.SetDeep(m_Deep + 1);
@@ -706,10 +747,9 @@ namespace SimpleLanguage.Compile
                     stringBuilder.Append(Global.tabChar);
                 stringBuilder.Append("}");
             }
-            else
-            if ( m_EnumToken != null )
+            else if (m_EnumToken != null)
             {
-                if( m_ConstToken != null )
+                if (m_ConstToken != null)
                 {
                     stringBuilder.Append(m_ConstToken.lexeme.ToString() + " ");
                 }
@@ -747,6 +787,12 @@ namespace SimpleLanguage.Compile
                     stringBuilder.Append(m_ClassToken.lexeme.ToString());
                     stringBuilder.Append(" ");
                 }
+                if (m_PreInterfaceToken != null)
+                {
+                    stringBuilder.Append(m_PreInterfaceToken.lexeme.ToString());
+                    stringBuilder.Append(" ");
+
+                }
 
                 if (m_NamespaceBlock != null)
                 {
@@ -769,7 +815,7 @@ namespace SimpleLanguage.Compile
                     stringBuilder.Append(">");
                 }
 
-                if ( m_FileMetaExtendClass != null)
+                if (m_FileMetaExtendClass != null)
                 {
                     stringBuilder.Append(" extends " + m_FileMetaExtendClass.ToFormatString());
                 }
@@ -781,6 +827,17 @@ namespace SimpleLanguage.Compile
                 {
                     stringBuilder.Append(" " + interfaceClassList[i].ToFormatString());
                     if (i < interfaceClassList.Count - 1)
+                        stringBuilder.Append(",");
+                }
+                if( m_BindToken != null )
+                {
+                    stringBuilder.Append("  bind");
+                }
+
+                for (int i = 0; i < m_BindClassList.Count; i++)
+                {
+                    stringBuilder.Append(" " + m_BindClassList[i].ToFormatString());
+                    if (i < m_BindClassList.Count - 1)
                         stringBuilder.Append(",");
                 }
                 stringBuilder.Append(Environment.NewLine);

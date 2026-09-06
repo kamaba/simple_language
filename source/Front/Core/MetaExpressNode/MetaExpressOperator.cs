@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      MetaExpressOperator.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -118,6 +118,16 @@ namespace SimpleLanguage.Core
                                 case EType.Int64:
                                     {
                                         mcen.value = -(long)mcen.value;
+                                        return mcen;
+                                    }
+                                case EType.Float8:
+                                case EType.Float8_E5M2:
+                                case EType.Float16:
+                                case EType.Float16_Brain:
+                                    {
+                                        // 低精度浮点存储为位模式：先解码取负再重新编码
+                                        var v = Float816Convert.BitsToDoubleByEType(eType, mcen.value);
+                                        mcen.value = Float816Convert.ToBitsByEType(eType, -v);
                                         return mcen;
                                     }
 
@@ -398,7 +408,15 @@ namespace SimpleLanguage.Core
             }
             ParseCompute();
 
-            m_ExpressReturnMetaType = new MetaType(this.m_RealMetaType);
+            // 解析失败的错误路径可能未设置 m_RealMetaType，兜底为 object 避免空引用
+            if (this.m_RealMetaType != null)
+            {
+                m_ExpressReturnMetaType = new MetaType(this.m_RealMetaType);
+            }
+            else
+            {
+                m_ExpressReturnMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+            }
         }
         public void ParseCompute()
         {
@@ -413,6 +431,12 @@ namespace SimpleLanguage.Core
             MetaExpressNodeBase right = m_Right;
             MetaType leftMt = left.GetReturnMetaType();
             MetaType rightMt = right.GetReturnMetaType();
+
+            if (leftMt == null || rightMt == null)
+            {
+                m_RealMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
+                return;
+            }
 
             if (leftMt.isEnum || rightMt.isEnum || leftMt.isEnumMember || rightMt.isEnumMember )
             {
@@ -614,7 +638,7 @@ namespace SimpleLanguage.Core
                                         }
 
                                         EType etype = MetaTypeFactory.CalcETypeByLeftAndRight(leftMc.eType, rightMc.eType, m_OpLevelSign, out int error);
-                                        if (error == 0)
+                                        if (error == 0 && etype != EType.None)
                                         {
                                             if (etype != rightMc.eType)
                                             {
@@ -759,6 +783,8 @@ namespace SimpleLanguage.Core
                         if (mmf == null)
                         {
                             Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Left:" + left.token.ToLexemeAllString() + "右边类型不能转换为左边类型进行加减运算!! Right:" + right.token.ToLexemeAllString()  );
+                            // 错误路径必须设置类型，否则 CalcReturnType 中 new MetaType(null) 会空引用崩溃
+                            m_RealMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
                             return;
                         }
                     }

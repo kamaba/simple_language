@@ -101,6 +101,40 @@ namespace SimpleLanguage.Core
                 return null;
             }
 
+            // Check for try/try?/try! prefix expression at the root
+            // The root may be a FileMetaSymbolTerm (try) or a FileMetaTermExpress whose root is a try symbol
+            FileMetaBaseTerm tryRoot = fmte.root;
+            if (tryRoot != null && tryRoot is FileMetaSymbolTerm trySym
+                && (trySym.symBolType == ETokenType.Try
+                    || trySym.symBolType == ETokenType.TryQuestion
+                    || trySym.symBolType == ETokenType.TryExclamation)
+                && tryRoot.right != null)
+            {
+                CreateExpressParam innerCep = new CreateExpressParam(cep);
+                innerCep.fme = tryRoot.right;
+                MetaExpressNodeBase innerNode = CreateExpressNodeByCEP(innerCep);
+                if (innerNode != null)
+                {
+                    var tryExpress = new MetaTryExpressNode(trySym, innerNode);
+                    return tryExpress;
+                }
+            }
+
+            // Check for checked(expr) prefix expression at the root
+            if (tryRoot != null && tryRoot is FileMetaSymbolTerm checkedSym
+                && checkedSym.symBolType == ETokenType.Checked
+                && tryRoot.right != null)
+            {
+                CreateExpressParam innerCep = new CreateExpressParam(cep);
+                innerCep.fme = tryRoot.right;
+                MetaExpressNodeBase innerNode = CreateExpressNodeByCEP(innerCep);
+                if (innerNode != null)
+                {
+                    var checkedExpress = new MetaCheckedExpressNode(checkedSym, innerNode);
+                    return checkedExpress;
+                }
+            }
+
 
             FileMetaAsOrIsTerm asOrIsTerm = fmte as FileMetaAsOrIsTerm;
             if (asOrIsTerm != null)
@@ -293,6 +327,18 @@ namespace SimpleLanguage.Core
                 {
                     if (root is FileMetaSymbolTerm fmst)
                     {
+                        // try / try? / try! prefix creates a MetaTryExpressNode
+                        if (fmst.symBolType == ETokenType.Try
+                            || fmst.symBolType == ETokenType.TryQuestion
+                            || fmst.symBolType == ETokenType.TryExclamation)
+                        {
+                            return new MetaTryExpressNode(fmst, rightNode);
+                        }
+                        // checked(expr) prefix creates a MetaCheckedExpressNode
+                        if (fmst.symBolType == ETokenType.Checked)
+                        {
+                            return new MetaCheckedExpressNode(fmst, rightNode);
+                        }
                         return new MetaOpExpressNode(fmst, cep.metaType, leftNode, rightNode);
                     }
                     else
@@ -313,9 +359,21 @@ namespace SimpleLanguage.Core
                 }
                 else if (leftNode == null && rightNode != null)
                 {
-                    if (root is FileMetaSymbolTerm)
+                    if (root is FileMetaSymbolTerm fmst2)
                     {
-                        return new MetaUnaryOpExpressNode(root as FileMetaSymbolTerm, rightNode);
+                        // try / try? / try! prefix expressions
+                        if (fmst2.symBolType == ETokenType.Try
+                            || fmst2.symBolType == ETokenType.TryQuestion
+                            || fmst2.symBolType == ETokenType.TryExclamation)
+                        {
+                            return new MetaTryExpressNode(fmst2, rightNode);
+                        }
+                        // checked(expr) prefix expression
+                        if (fmst2.symBolType == ETokenType.Checked)
+                        {
+                            return new MetaCheckedExpressNode(fmst2, rightNode);
+                        }
+                        return new MetaUnaryOpExpressNode(fmst2, rightNode);
                     }
                     else
                     {

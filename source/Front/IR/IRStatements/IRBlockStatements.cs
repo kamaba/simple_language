@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRBlockStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -42,8 +42,11 @@ namespace SimpleLanguage.IR
                 {
                     case MetaBlockStatements mbs:
                         {
+                            // 嵌套块的内容已经 splice 进外层语句链 (见 MetaMemberFunction.HandleMetaSyntax
+                            // 的 FileMetaBlockSyntax 分支: beforeStatements.SetNextStatements(block) 且
+                            // beforeStatements = 块内最后一条语句)。这里只发块起始 Nop 标记，
+                            // 内容由循环继续走链解析, 否则会把块内容重复生成两遍 (嵌套时指数级放大)。
                             IRBlockStatements ibs = new IRBlockStatements(irMethod);
-                            ibs.ParseIRStatements(mbs);
                             m_IRStatements.AddRange(ibs.m_IRStatements);
                         }
                         break;
@@ -122,6 +125,70 @@ namespace SimpleLanguage.IR
                             IRCallStatements ircs = new IRCallStatements(irMethod);
                             ircs.ParseIRStatements(mcs);
                             m_IRStatements.AddRange(ircs.irStatements);
+                        }
+                        break;
+                    case MetaClosureDefineStatements mcds:
+                        {
+                            IRClosureDefineStatements ircds = new IRClosureDefineStatements(irMethod);
+                            ircds.ParseIRStatements(mcds);
+                            m_IRStatements.AddRange(ircds.irStatements);
+                        }
+                        break;
+                    case MetaTryStatements mts:
+                        {
+                            IRTryStatements irts = new IRTryStatements(irMethod);
+                            irts.ParseIRStatements(mts);
+                            m_IRStatements.AddRange(irts.irStatements);
+                        }
+                        break;
+                    case MetaThrowStatements mthrows:
+                        {
+                            IRThrowStatements irthrows = new IRThrowStatements(irMethod);
+                            irthrows.ParseIRStatements(mthrows);
+                            m_IRStatements.AddRange(irthrows.irStatements);
+                        }
+                        break;
+                    case MetaDeferStatements _:
+                    case MetaErrDeferStatements _:
+                        // defer/errdefer blocks are emitted at function level by IRMethod,
+                        // not at their in-line position.
+                        break;
+                    case MetaCheckedStatements mcs:
+                        {
+                            // Emit BeginChecked, block body, EndChecked
+                            IRData beginChecked = new IRData();
+                            beginChecked.opCode = EIROpCode.BeginChecked;
+                            m_IRStatements.Add(new IRRawData(irMethod, beginChecked));
+
+                            if (mcs.checkedBlockStatements != null)
+                            {
+                                IRBlockStatements irChecked = new IRBlockStatements(irMethod);
+                                irChecked.ParseIRStatements(mcs.checkedBlockStatements);
+                                m_IRStatements.AddRange(irChecked.irStatements);
+                            }
+
+                            IRData endChecked = new IRData();
+                            endChecked.opCode = EIROpCode.EndChecked;
+                            m_IRStatements.Add(new IRRawData(irMethod, endChecked));
+                        }
+                        break;
+                    case MetaUncheckedStatements mus:
+                        {
+                            // Emit BeginUnchecked, block body, EndUnchecked
+                            IRData beginUnchecked = new IRData();
+                            beginUnchecked.opCode = EIROpCode.BeginUnchecked;
+                            m_IRStatements.Add(new IRRawData(irMethod, beginUnchecked));
+
+                            if (mus.uncheckedBlockStatements != null)
+                            {
+                                IRBlockStatements irUnchecked = new IRBlockStatements(irMethod);
+                                irUnchecked.ParseIRStatements(mus.uncheckedBlockStatements);
+                                m_IRStatements.AddRange(irUnchecked.irStatements);
+                            }
+
+                            IRData endUnchecked = new IRData();
+                            endUnchecked.opCode = EIROpCode.EndUnchecked;
+                            m_IRStatements.Add(new IRRawData(irMethod, endUnchecked));
                         }
                         break;
                     case MetaOtherPlatformStatements mops:
