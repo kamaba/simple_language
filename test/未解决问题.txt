@@ -1,10 +1,4 @@
 字节码序例化相互转化过程
-F:\project\lang\csimple_lang\src\vm\runtime\runtime_object.c vm_runtime_write_scalar_to_slice 这个函数的优化，不要每次都转，而通过value取出来的etype和type进行混合，然后确实那种赋值
-像有些的读取过程，不是都必须转成VMRuntimeValue的类型的，这样会增加计算长度
-所有的读取，要优化，原来都是两步if (vm_runtime_object_try_read_value(sro, &val1))
-{
-				vm_push_vmvalue_from_runtimevalue(vm, &val1);
-现在直接都合并成一步就行，
 
 if (vm->stack_slot_depth > 0u)
 这种的语句，尽量使用汇编内联，可以获取 不走复杂的判断 相当后边的>0u >1u >2u 等可以是不同的
@@ -44,6 +38,13 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 2. 在模板array 的 iteraror 的参数 argurment 需要 声明成templateObject
 7. 调用nativeBridge的调用验证
 8. 额外的数学库 Float2 的 + - * / % == != >= <= 的重载
+
+内存管理，在cvm里边，增加一个机制，就是小块内存管理， 比如  byte32 byte40 byte 48  byte56  byte64  这样的，多个数组，然后以后用来存放像 Float16_2 的 Float32_2 以下的，都要有对应的列表，然后从这上边分配内存 
+
+在aot的中，处理llvm内置的一些结构，在生成这个数据后，要有一个id的概念，也就是定义这个对象的hashCode 虽然是在llvm里边生成的，也要有这个概念，因为这个在 llvm的.struct转成VMObject一类的时候，要先检查vm里边有没有这个，如果没有，再去创建VMObject 而且这个不受内存gc管理，因为这个还属于llvm  所以Object.sl 你看下是不是要增加一个int _hashCode这样的概念呀，是不是这样更合理  你确定下，原来好像我看着是用的指针进行hash运算的，这种方式确定可以吗？
+
+sl_aot_skeleton_new_inner这个函数的话，原来的llvm生成的数据，是不是可以在转换的类中 member_data可以复用，然后 这个VMObject不进行gc拖管更合理。
+
 
 优化：
 1. 去掉int32/int64/...的一些初始化方法
