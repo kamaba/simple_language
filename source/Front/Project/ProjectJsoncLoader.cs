@@ -162,6 +162,12 @@ namespace SimpleLanguage.Project
                 cfg.Export.VersionPatch = GetInt(exportObj, "versionPatch", cfg.Export.VersionPatch);
                 cfg.Export.NativeDll = GetStr(exportObj, "nativeDll", cfg.Export.NativeDll);
 
+                if (TryGetObj(exportObj, "aot", out var aotObj))
+                {
+                    cfg.Export.Aot.Enabled = GetBool(aotObj, "enabled", cfg.Export.Aot.Enabled);
+                    cfg.Export.Aot.BuildDll = GetBool(aotObj, "buildDll", cfg.Export.Aot.BuildDll);
+                }
+
                 if (TryGetObj(exportObj, "debugText", out var debugTextObj))
                 {
                     cfg.Export.DebugText.OutputDir = GetStr(debugTextObj, "outputDir", cfg.Export.DebugText.OutputDir);

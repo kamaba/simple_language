@@ -8,16 +8,14 @@
 //      --mlir-translate --mlir-to-llvmir            --> aot.ll
 //      --llc -filetype=obj                          --> aot.obj
 //      --link.exe /DLL /NOENTRY /EXPORT:sym...      --> aot.dll
-//  Tool location:
-//    - SIMPLELANG_MLIR_BIN   env: directory of mlir-opt/mlir-translate/llc
-//      (explicit override: no auto-deploy, tools are used from this directory)
-//    - SIMPLELANG_MSVC_LINK  env: full path to MSVC link.exe
+//  Tool location (fixed probing order, no environment variables — the
+//  paths are known at tool-distribution time and never configured):
 //    - auto-deploy: on first use copy the needed tool files next to the
 //      running exe (EnsureLocalTools), then prefer that local copy
 //    - auto-probe: exe directory (auto-deployed tools)
 //    - auto-probe: <root>\simple_language\tools\llvm (relocated toolchain)
 //    - auto-probe: monorepo layout <root>\llvm-project\build\Release\bin
-//    - auto-probe: vswhere (VS with C++ workload), then PATH
+//    - auto-probe: vswhere (VS with C++ workload), then PATH (link.exe)
 //****************************************************************************
 
 using System;
@@ -52,33 +50,31 @@ namespace SimpleLanguage.Export.MLIR
             public string MlirTranslate { get; set; } = "mlir-translate";
             public string Llc { get; set; } = "llc";
             public string Clang { get; set; } = "clang";
-            /// <summary>MSVC link.exe (full path). Null/empty = auto-resolve.</summary>
+            /// <summary>MSVC link.exe (full path)。程序化覆盖点；null = ResolveLinkExe 走 vswhere/PATH 自动发现。</summary>
             public string? Link { get; set; }
 
-            public static ToolchainPaths FromEnvironment()
+            /// <summary>
+            /// 解析外部工具链。路径不通过环境变量配置，按固定顺序探测：
+            /// auto-deploy 到 exe 目录（EnsureLocalTools）→ exe 目录副本 →
+            /// simple_language\tools\llvm → 旧 monorepo 布局；
+            /// link.exe 留空由 ResolveLinkExe 走 vswhere/PATH 自动发现。
+            /// </summary>
+            public static ToolchainPaths Resolve()
             {
                 var t = new ToolchainPaths();
 
-                var bin = Environment.GetEnvironmentVariable("SIMPLELANG_MLIR_BIN");
-                if (string.IsNullOrWhiteSpace(bin))
-                {
-                    // Default flow: make the toolchain self-contained next to
-                    // the running exe — copy the tools on first use, then
-                    // prefer that local copy over the probed source directory.
-                    EnsureLocalTools();
-                    bin = ProbeLocalMlirBin() ?? ProbeMonorepoMlirBin();
-                }
-                if (!string.IsNullOrWhiteSpace(bin))
+                // Make the toolchain self-contained next to the running exe —
+                // copy the tools on first use, then prefer that local copy
+                // over the probed source directory.
+                EnsureLocalTools();
+                var bin = ProbeLocalMlirBin() ?? ProbeMonorepoMlirBin();
+                if (bin != null)
                 {
                     t.MlirOpt = Path.Combine(bin, "mlir-opt" + ExeExt);
                     t.MlirTranslate = Path.Combine(bin, "mlir-translate" + ExeExt);
                     t.Llc = Path.Combine(bin, "llc" + ExeExt);
                     t.Clang = Path.Combine(bin, "clang" + ExeExt);
                 }
-
-                var link = Environment.GetEnvironmentVariable("SIMPLELANG_MSVC_LINK");
-                if (!string.IsNullOrWhiteSpace(link))
-                    t.Link = link;
 
                 return t;
             }
@@ -125,7 +121,7 @@ namespace SimpleLanguage.Export.MLIR
             if (string.IsNullOrWhiteSpace(dllPath)) { error = "dll path is empty"; return false; }
             if (exportSymbols == null || exportSymbols.Count == 0) { error = "no export symbols"; return false; }
 
-            tools ??= ToolchainPaths.FromEnvironment();
+            tools ??= ToolchainPaths.Resolve();
 
             string workDir = Path.GetDirectoryName(Path.GetFullPath(mlirFile)) ?? Environment.CurrentDirectory;
             Directory.CreateDirectory(workDir);
@@ -145,7 +141,7 @@ namespace SimpleLanguage.Export.MLIR
                 string? link = ResolveLinkExe(tools);
                 if (link == null)
                 {
-                    error = "MSVC link.exe not found (set SIMPLELANG_MSVC_LINK or install VS C++ tools)";
+                    error = "MSVC link.exe not found (install VS C++ workload or VS Build Tools)";
                     return false;
                 }
 
@@ -244,7 +240,7 @@ namespace SimpleLanguage.Export.MLIR
             if (!File.Exists(mlirFile)) throw new FileNotFoundException(mlirFile);
             if (string.IsNullOrWhiteSpace(outputExeOrObj)) throw new ArgumentNullException(nameof(outputExeOrObj));
 
-            tools ??= ToolchainPaths.FromEnvironment();
+            tools ??= ToolchainPaths.Resolve();
 
             string workDir = Path.GetDirectoryName(Path.GetFullPath(mlirFile)) ?? Environment.CurrentDirectory;
             string baseName = Path.GetFileNameWithoutExtension(mlirFile);

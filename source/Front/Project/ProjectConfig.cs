@@ -230,7 +230,23 @@ namespace SimpleLanguage.Project
             /// </summary>
             public string NativeDll { get; set; } = string.Empty;
 
+            /// <summary>MLIR AOT 导出开关（jsonc "export"."aot" 段）。</summary>
+            public AotExportSection Aot { get; set; } = new AotExportSection();
+
             public DebugTextExportSection DebugText { get; set; } = new DebugTextExportSection();
+        }
+
+        /// <summary>
+        /// jsonc "export"."aot" 段：MLIR AOT 导出管线（stage 1-3.5）的开关。
+        /// 工具链路径（mlir-opt/llc/link）不走这里——由 MLIRToolchain 按固定
+        /// 顺序探测（exe 目录 auto-deploy 副本 → tools\llvm → vswhere）。
+        /// </summary>
+        public class AotExportSection
+        {
+            /// <summary>AOT 总开关。false = 整个导出管线跳过（全部走 CVM 解释执行）。</summary>
+            public bool Enabled { get; set; } = true;
+            /// <summary>stage-3 dll 构建。false = 只导出 aot.mlir，不构建 aot.dll。</summary>
+            public bool BuildDll { get; set; } = true;
         }
 
         public class DebugTextExportSection

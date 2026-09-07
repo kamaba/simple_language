@@ -31,37 +31,34 @@ using System.Linq;
 namespace SimpleLanguage.Export.MLIR
 {
     /// <summary>
-    /// MLIR/AOT 导出配置：统一收口所有 SIMPLELANG_* 环境变量开关。
+    /// MLIR/AOT 导出配置：来自工程 jsonc 的 "export"."aot" 段（ProjectManager.config）。
+    /// 工具链路径（mlir-opt/llc/link.exe）不在此配置——MLIRToolchain 按固定顺序
+    /// 探测（exe 目录 auto-deploy 副本 → tools\llvm → vswhere/PATH），与环境变量无关。
     /// </summary>
     public sealed class MLIRExportConfig
     {
-        /// <summary>SIMPLELANG_AOT=0 关闭整个 AOT 导出（默认开启）。</summary>
+        /// <summary>jsonc export.aot.enabled=false 关闭整个 AOT 导出（默认开启）。</summary>
         public bool AotEnabled { get; init; } = true;
-        /// <summary>SIMPLELANG_AOT_DLL=0 跳过 stage-3 dll 构建（只导出 mlir，默认开启）。</summary>
+        /// <summary>jsonc export.aot.buildDll=false 跳过 stage-3 dll 构建（只导出 mlir，默认开启）。</summary>
         public bool BuildDll { get; init; } = true;
-        /// <summary>SIMPLELANG_MLIR_BIN：mlir-opt/mlir-translate/llc 所在目录。</summary>
-        public string? MlirBin { get; init; }
-        /// <summary>SIMPLELANG_MSVC_LINK：MSVC link.exe 完整路径。</summary>
-        public string? MsvcLink { get; init; }
 
         /// <summary>模块级 AOT 产物文件名（aot.mlir）。</summary>
         public string MlirFileName { get; init; } = "aot.mlir";
         /// <summary>模块级 AOT dll 文件名（aot.dll）。</summary>
         public string DllFileName { get; init; } = "aot.dll";
 
-        public static MLIRExportConfig FromEnvironment()
+        /// <summary>
+        /// 从当前工程配置（jsonc export.aot 段）解析；无工程上下文时用默认值（全开）。
+        /// </summary>
+        public static MLIRExportConfig FromProject()
         {
+            var aot = ProjectManager.config?.Export?.Aot;
             return new MLIRExportConfig
             {
-                AotEnabled = Environment.GetEnvironmentVariable("SIMPLELANG_AOT") != "0",
-                BuildDll = Environment.GetEnvironmentVariable("SIMPLELANG_AOT_DLL") != "0",
-                MlirBin = NullIfWhiteSpace(Environment.GetEnvironmentVariable("SIMPLELANG_MLIR_BIN")),
-                MsvcLink = NullIfWhiteSpace(Environment.GetEnvironmentVariable("SIMPLELANG_MSVC_LINK")),
+                AotEnabled = aot?.Enabled ?? true,
+                BuildDll = aot?.BuildDll ?? true,
             };
         }
-
-        private static string? NullIfWhiteSpace(string? s)
-            => string.IsNullOrWhiteSpace(s) ? null : s;
     }
 
     /// <summary>
@@ -118,7 +115,7 @@ namespace SimpleLanguage.Export.MLIR
             IReadOnlyList<IRMethod> methods, string mlirPath, bool buildDll = false,
             string? dllPath = null, MLIRExportConfig? config = null)
         {
-            config ??= MLIRExportConfig.FromEnvironment();
+            config ??= MLIRExportConfig.FromProject();
             var result = MLIRExporter.ExportModuleToFile(methods, mlirPath);
             if (result.OkSymbols.Count == 0) return result;
 
@@ -128,7 +125,7 @@ namespace SimpleLanguage.Export.MLIR
             if (result.NeedsBridgeInit)
                 symbols = result.OkSymbols.Concat(new[] { "sl_aot_bridge_init" }).ToArray();
             if (MLIRToolchain.TryBuildAotDll(mlirPath, dllPath ?? "", symbols,
-                    out var error, MLIRToolchain.ToolchainPaths.FromEnvironment(),
+                    out var error, MLIRToolchain.ToolchainPaths.Resolve(),
                     gpu: result.HasGpuMethods))
             {
                 result.DllFileName = Path.GetFileName(dllPath ?? "aot.dll");
@@ -146,7 +143,7 @@ namespace SimpleLanguage.Export.MLIR
             string dllPath, MLIRExportConfig? config = null)
         {
             if (!MLIRToolchain.TryBuildAotDll(mlirPath, dllPath, exportSymbols,
-                    out var error, MLIRToolchain.ToolchainPaths.FromEnvironment()))
+                    out var error, MLIRToolchain.ToolchainPaths.Resolve()))
             {
                 Log.AddIRLog(LID.ShowExtendMessage,
                     "AOT: build dll failed, fallback to CVM: " + error);
@@ -164,7 +161,7 @@ namespace SimpleLanguage.Export.MLIR
         /// </summary>
         public AotModuleResult Run(string outDir, MLIRExportConfig? config = null)
         {
-            config ??= MLIRExportConfig.FromEnvironment();
+            config ??= MLIRExportConfig.FromProject();
 
             var result = new AotModuleResult { Ran = false };
             if (!config.AotEnabled)
@@ -233,7 +230,7 @@ namespace SimpleLanguage.Export.MLIR
                     ? export.OkSymbols.Concat(new[] { "sl_aot_bridge_init" }).ToArray()
                     : (IReadOnlyList<string>)export.OkSymbols;
                 if (MLIRToolchain.TryBuildAotDll(mlirPath, dllPath, exportSymbols,
-                        out var dllError, MLIRToolchain.ToolchainPaths.FromEnvironment(),
+                        out var dllError, MLIRToolchain.ToolchainPaths.Resolve(),
                         gpu: export.HasGpuMethods))
                 {
                     result.DllFileName = config.DllFileName;
@@ -248,7 +245,7 @@ namespace SimpleLanguage.Export.MLIR
             else
             {
                 Log.AddIRLog(LID.ShowExtendMessage,
-                    "AOT: dll build disabled (SIMPLELANG_AOT_DLL=0)");
+                    "AOT: dll build disabled (export.aot.buildDll=false)");
             }
 
             LastResult = result;

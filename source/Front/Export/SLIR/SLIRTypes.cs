@@ -339,7 +339,7 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// dll 构建成功后中间产物已删除，字段为 null（序列化省略）。dll 未构建/构建失败
         /// 时文件仍在，字段保留供排查。</summary>
         public string? mlir { get; set; }
-        /// <summary>dll 文件名（相对 module.json 同目录）；空 = 仅导出 mlir（SIMPLELANG_AOT_DLL=0）。</summary>
+        /// <summary>dll 文件名（相对 module.json 同目录）；空 = 仅导出 mlir（jsonc export.aot.buildDll=false）。</summary>
         public string dll { get; set; } = string.Empty;
         public List<SLAotMethodPackage> methods { get; set; } = new();
         /// <summary>struct 类型表（C 侧 marshal/unmarshal 驱动数据；本模块发射
