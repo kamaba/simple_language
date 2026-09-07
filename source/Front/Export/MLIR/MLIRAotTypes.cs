@@ -126,6 +126,16 @@ namespace SimpleLanguage.Export.MLIR
         /// Num / Member / Float8* / Float16*). The failure propagates up to
         /// the per-method try/catch in ExportModuleToFile: the method is
         /// marked failed and falls back to the CVM interpreter.
+        /// <para>
+        /// The table is keyed by IRMetaClass only - there is deliberately no
+        /// per-instantiation Register(IRMetaType) overload: data types cannot
+        /// carry template arguments at all (TypeManager.
+        /// GetMetaTypeByInputTemplateList rejects them), and template methods
+        /// are deduplicated back onto their definition-level IRMethod
+        /// (IRManager.TranslateIRByFunction), whose unresolved T slots are
+        /// rejected by SlotTable.ResolveVarType before any registration
+        /// happens. Every Register call therefore sees a concrete data class.
+        /// </para>
         /// </summary>
         public AotTypeInfo Register(IRMetaClass irmc)
         {

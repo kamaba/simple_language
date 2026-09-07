@@ -8,7 +8,6 @@
 
 using SimpleLanguage.Project;
 using System.IO;
-using Swigged.LLVM;
 using System.Reflection;
 using System;
 
@@ -16,14 +15,5 @@ namespace SimpleLanguage.ExportLanguage
 {
     public class LLVMManager
     {
-
-        public void CreateModule()
-        {
-            LLVM.InitializeAllTargets();
-            LLVM.InitializeAllTargetMCs();
-            LLVM.InitializeAllTargetInfos();
-            LLVM.InitializeAllAsmPrinters();
-
-        }
     }
 }

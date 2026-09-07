@@ -442,6 +442,67 @@ namespace SimpleLanguage.Export.MLIR
             EIROpCode.LoadNotStaticField,     /* data struct member load (native offset GEP) */
             EIROpCode.StoreNotStaticField1,   /* data brace init: [inst,val] -> [inst] */
             EIROpCode.StoreNotStaticField2,   /* data member store: [inst,val] -> [] */
+
+            // ---- full opcode coverage below: the remaining IR opcodes are either
+            // really translated, or accepted as documented no-ops so the whole
+            // instruction set round-trips the exporter. No-op results carry an
+            // ObjRef placeholder that Fails safely at first real use, marking
+            // the method failed so it falls back to the CVM interpreter ----
+            EIROpCode.LoadBegin,             /* function prologue marker: no-op */
+            EIROpCode.LoadConstNull,        /* Val(ObjRef 0) placeholder */
+            EIROpCode.LoadConstFloat8_E4M3,  /* narrow-float bit pattern -> f32 domain */
+            EIROpCode.LoadConstFloat8_E5M2,
+            EIROpCode.LoadConstFloat16,
+            EIROpCode.LoadConstFloat16_Brain,
+            EIROpCode.LoadConstString,      /* no AOT string pool: ObjRef placeholder */
+            EIROpCode.LoadConstType,        /* runtime type handle: ObjRef placeholder */
+            EIROpCode.LoadStaticField,      /* no static-field bridge: ObjRef placeholder */
+            EIROpCode.LoadGlobal,           /* no global bridge: ObjRef placeholder */
+            EIROpCode.NewObject,            /* CVM heap allocation: ObjRef placeholder */
+            EIROpCode.NewTemplateObject,    /* CVM heap allocation: ObjRef placeholder */
+            EIROpCode.NewArray,             /* CVM SLArray object: ObjRef placeholder */
+            EIROpCode.StoreStaticField,     /* no static-field bridge: pop + drop */
+            EIROpCode.StoreGlobal,          /* no global bridge: pop + drop */
+            EIROpCode.Beq,                  /* conditional branches: real translation */
+            EIROpCode.Bge,
+            EIROpCode.Bgt,
+            EIROpCode.Ble,
+            EIROpCode.Bne,
+            EIROpCode.Break,                /* same encoding as Br */
+            EIROpCode.Jmp,                  /* same encoding as Br */
+            EIROpCode.Switch,               /* chain of cond_br synthetic blocks */
+            EIROpCode.LeaveTry,            /* try frames are no-ops: plain jump */
+            EIROpCode.CallDynamic,         /* interpreter-only dispatch: placeholder */
+            EIROpCode.CallSystemMethod,    /* CVM runtime call: placeholder */
+            EIROpCode.CastClass,           /* checked cast: transparent passthrough */
+            EIROpCode.Convert_ToString,    /* no string bridge: ObjRef placeholder */
+            EIROpCode.BeginTry,             /* exception frames are no-ops in AOT */
+            EIROpCode.EndTry,
+            EIROpCode.Throw,                /* unwinding unsupported: pop + drop */
+            EIROpCode.EndFinally,
+            EIROpCode.BeginChecked,         /* checked contexts: no overflow trap, no-op */
+            EIROpCode.EndChecked,
+            EIROpCode.BeginUnchecked,
+            EIROpCode.EndUnchecked,
+            EIROpCode.Convert_F8E4M3,       /* narrow-float convert: integer RNE round-trip */
+            EIROpCode.Convert_F8E5M2,       /* (EmitLowpRoundTrip; bit-exact vs the C VM, */
+            EIROpCode.Convert_F16,          /*  blueprint f8int_probe.mlir) */
+            EIROpCode.Convert_F16B,
+            EIROpCode.NewClosure,           /* closures are interpreter-only */
+            EIROpCode.CallClosure,
+            EIROpCode.AllocClosureContext,
+
+            // ---- O3 const-fused stores: isAot methods never emit them
+            // (IRVariable.TryCreateConstValueStore gates on isAot), listed for
+            // defensive translation ----
+            EIROpCode.StoreLocalConstValue,
+            EIROpCode.StoreArgumentConstValue,
+            EIROpCode.StoreReturnConstValue,
+            EIROpCode.StoreGlobalConstValue,
+            EIROpCode.StoreNotStaticField1ConstValue,
+            EIROpCode.StoreNotStaticField2ConstValue,
+            EIROpCode.StoreArrayIndexConstValue,
+            EIROpCode.StoreStaticFieldConstValue,
         };
 
         /// <summary>
@@ -567,13 +628,23 @@ namespace SimpleLanguage.Export.MLIR
             /// Slot type resolution (design §4.2): scalars/arrays keep the
             /// stage-1 mapping; data types map to Struct (kind=2, registering
             /// the type and its nested types into the module type table);
-            /// everything else (String / user class / interface / Core.Object
-            /// / generic T) maps to ObjRef (kind=3 pass-through). Enum slots
-            /// are rejected: the VM packs them as class references, which the
-            /// AOT side cannot reconstruct.
+            /// everything else (String / user class / interface / Core.Object)
+            /// maps to ObjRef (kind=3 pass-through). Enum, narrow-float and
+            /// unresolved template-parameter slots are rejected: the VM packs
+            /// them in forms the AOT side cannot reconstruct.
             /// </summary>
             public static ProfileVal ResolveVarType(SlotTable t, IRMetaVariable v)
             {
+                /* Unresolved template-parameter slots (T): IRManager.
+                 * TranslateIRByFunction dedups generated template methods
+                 * back onto their definition-level IRMethod, so signatures
+                 * keep unresolved T references (templateIndex >= 0,
+                 * irMetaClass = the constraint class, usually Core.Object).
+                 * There is no per-instantiation layout on the AOT side;
+                 * fail early so the method falls back to the interpreter
+                 * instead of silently type-erasing T to ObjRef. */
+                if (v.irMetaType?.templateIndex >= 0)
+                    throw t.Fail($"template-parameter-typed variable '{v.name}' (T#{v.irMetaType.templateIndex}) is not AOT-compatible: template methods are deduplicated to definition-level IR, the slot stays unresolved");
                 var cls = v.irMetaType?.irMetaClass;
                 string n = cls?.irName;
                 if (string.IsNullOrEmpty(n))
@@ -600,8 +671,18 @@ namespace SimpleLanguage.Export.MLIR
                     throw t.Fail($"enum-typed variable '{v.name}' ('{n}') is not AOT-compatible as a slot (use Int64 arithmetic instead)");
                 if (leaf == "Member")
                     throw t.Fail($"member-typed variable '{v.name}' ('{n}') is not AOT-compatible as a slot");
+                /* Narrow-float slots: the CVM runtime value for these ETypes
+                 * is neither a VMObject (kind=3 marshal fails: "needs a
+                 * VMObject reference") nor an f32/f64 etype (kind=1 marshal
+                 * fails: "needs a float value"), and the eval stack stores
+                 * them as raw bit patterns under a distinct slot tag. There
+                 * is no ABI slot that can carry them; reject like enum/Member
+                 * so the method falls back to the interpreter. */
+                if (leaf == "Float8_E4M3" || leaf == "Float8_E5M2"
+                    || leaf == "Float16" || leaf == "Float16_Brain")
+                    throw t.Fail($"narrow-float-typed variable '{v.name}' ('{n}') is not AOT-compatible as a slot (no ABI marshal for Float8/Float16 values)");
 
-                /* String / user class / interface / Core.Object / generic T:
+                /* String / user class / interface / Core.Object:
                  * opaque VMObject reference, passed through as kind=3. */
                 return new ProfileVal(SLType.ObjRef, cls.id);
             }
@@ -714,6 +795,9 @@ namespace SimpleLanguage.Export.MLIR
             protected readonly Dictionary<long, string> m_I64Consts = new Dictionary<long, string>();
             private readonly Dictionary<int, string> m_IndexConsts = new Dictionary<int, string>();
             protected readonly Dictionary<int, string> m_K32Consts = new Dictionary<int, string>();
+            // arith-dialect constants for the narrow-float converts (EmitLowpRoundTrip)
+            protected readonly Dictionary<int, string> m_ArithI32Consts = new Dictionary<int, string>();
+            protected readonly Dictionary<string, string> m_ArithF32Consts = new Dictionary<string, string>();
             protected bool m_F64ZeroEmitted;
             protected string m_F64ZeroName = "";
             private bool m_ArrayDummyEmitted;
@@ -815,7 +899,15 @@ namespace SimpleLanguage.Export.MLIR
             protected static bool IsTerminator(EIROpCode op)
                 => op == EIROpCode.Br || op == EIROpCode.BrLabel
                 || op == EIROpCode.BrFalse || op == EIROpCode.BrTrue
-                || op == EIROpCode.Ret;
+                || op == EIROpCode.Ret
+                // unconditional jumps with the same int32-target encoding as Br
+                || op == EIROpCode.Jmp || op == EIROpCode.Break
+                // two-operand conditional branches (pop 2, compare, branch)
+                || op == EIROpCode.Beq || op == EIROpCode.Bge
+                || op == EIROpCode.Bgt || op == EIROpCode.Ble
+                || op == EIROpCode.Bne
+                // multi-way branch / try-frame leave (both end the block)
+                || op == EIROpCode.Switch || op == EIROpCode.LeaveTry;
 
             /// <summary>True for the LoadConst* family (no strings).</summary>
             protected static bool IsLoadConstOp(EIROpCode op)
@@ -842,6 +934,67 @@ namespace SimpleLanguage.Export.MLIR
                 }
             }
 
+            // ---- switch table decoding ---------------------------------------------
+
+            /// <summary>
+            /// Decoded Switch payload (IRSwitchStatements.BuildSwitchPayload):
+            /// [n:4][kinds:4n][values:8n][targets:4n][default:4].
+            /// </summary>
+            private sealed class SwitchTable
+            {
+                public int[] Kinds = Array.Empty<int>();   // 0=int64, 1=classId, 2=float64 bits, 3=string id, 4=boolean
+                public long[] Values = Array.Empty<long>(); // raw bit patterns / ids
+                public int[] Targets = Array.Empty<int>();  // case body start instruction index
+                public int DefaultTarget = -1;               // -1 = no default, fall through
+            }
+
+            private const int SwitchKindInt64 = 0;
+            private const int SwitchKindClassId = 1;
+            private const int SwitchKindFloat64 = 2;
+            private const int SwitchKindString = 3;
+            private const int SwitchKindBoolean = 4;
+
+            /// <summary>
+            /// Decode the Switch payload. The in-memory payload is pure
+            /// (8 + 16n bytes; Switch is not in IRData.UsesIndex); a serialized
+            /// payload may carry a 4-byte embedded instruction-index prefix
+            /// (12 + 16n), which is detected by total length and skipped.
+            /// </summary>
+            private SwitchTable DecodeSwitchTable(IRData ir, int pos)
+            {
+                var p = ir.Payload;
+                if (p == null || p.Length < 8)
+                    throw Fail($"[{pos}] Switch with malformed payload");
+                int off = 0;
+                int n = BitConverter.ToInt32(p, 0);
+                if (n <= 0 || p.Length != 8 + 16 * n)
+                {
+                    // embedded-index form: [index:4][n:4][...]
+                    int n2 = p.Length >= 12 ? BitConverter.ToInt32(p, 4) : 0;
+                    if (n2 > 0 && p.Length == 12 + 16 * n2)
+                    {
+                        off = 4;
+                        n = n2;
+                    }
+                    else
+                        throw Fail($"[{pos}] Switch payload length {p.Length} does not match {n} entries");
+                }
+                var t = new SwitchTable
+                {
+                    Kinds = new int[n],
+                    Values = new long[n],
+                    Targets = new int[n],
+                    DefaultTarget = BitConverter.ToInt32(p, off + 4 + 16 * n),
+                };
+                for (int k = 0; k < n; k++)
+                {
+                    t.Kinds[k] = BitConverter.ToInt32(p, off + 4 + 4 * k);
+                    t.Values[k] = BitConverter.ToInt64(p, off + 4 + 4 * n + 8 * k);
+                    t.Targets[k] = BitConverter.ToInt32(p, off + 4 + 12 * n + 4 * k);
+                }
+                return t;
+            }
+
             // ---- CFG construction ------------------------------------------------
 
             protected void AnalyzeBlocks()
@@ -853,13 +1006,48 @@ namespace SimpleLanguage.Export.MLIR
                     var ir = m_Code[i];
                     if (ir.opCode == EIROpCode.Label) leaders.Add(i);
                     if (IsTerminator(ir.opCode) && i + 1 < m_Count) leaders.Add(i + 1);
-                    if (ir.opCode == EIROpCode.Br || ir.opCode == EIROpCode.BrLabel
-                        || ir.opCode == EIROpCode.BrFalse || ir.opCode == EIROpCode.BrTrue)
+                    switch (ir.opCode)
                     {
-                        int target = ir.index;
-                        if (target < 0 || target >= m_Count)
-                            throw Fail($"[{i}] {ir.opCode} target out of range: {target}");
-                        leaders.Add(target);
+                        // single int32 target in ir.index (memory state; the VM
+                        // reads it from the embedded payload index)
+                        case EIROpCode.Br:
+                        case EIROpCode.BrLabel:
+                        case EIROpCode.Jmp:
+                        case EIROpCode.Break:
+                        case EIROpCode.LeaveTry:
+                        // conditional branches: target + fall-through
+                        case EIROpCode.BrFalse:
+                        case EIROpCode.BrTrue:
+                        case EIROpCode.Beq:
+                        case EIROpCode.Bge:
+                        case EIROpCode.Bgt:
+                        case EIROpCode.Ble:
+                        case EIROpCode.Bne:
+                        {
+                            int target = ir.index;
+                            if (target < 0 || target >= m_Count)
+                                throw Fail($"[{i}] {ir.opCode} target out of range: {target}");
+                            leaders.Add(target);
+                            break;
+                        }
+                        case EIROpCode.Switch:
+                        {
+                            var st = DecodeSwitchTable(ir, i);
+                            for (int k = 0; k < st.Targets.Length; k++)
+                            {
+                                int target = st.Targets[k];
+                                if (target < 0 || target >= m_Count)
+                                    throw Fail($"[{i}] Switch case {k} target out of range: {target}");
+                                leaders.Add(target);
+                            }
+                            if (st.DefaultTarget >= 0)
+                            {
+                                if (st.DefaultTarget >= m_Count)
+                                    throw Fail($"[{i}] Switch default target out of range: {st.DefaultTarget}");
+                                leaders.Add(st.DefaultTarget);
+                            }
+                            break;
+                        }
                     }
                 }
 
@@ -877,15 +1065,36 @@ namespace SimpleLanguage.Export.MLIR
                     {
                         case EIROpCode.Br:
                         case EIROpCode.BrLabel:
+                        case EIROpCode.Jmp:       // same int32-target encoding as Br
+                        case EIROpCode.Break:
+                        case EIROpCode.LeaveTry:  // try frames are no-ops: plain jump
                             b.Succs.Add(m_BlockOfPos[last.index]);
                             break;
                         case EIROpCode.BrTrue:
                         case EIROpCode.BrFalse:
+                        case EIROpCode.Beq:
+                        case EIROpCode.Bge:
+                        case EIROpCode.Bgt:
+                        case EIROpCode.Ble:
+                        case EIROpCode.Bne:
                             if (b.End >= m_Count)
                                 throw Fail($"[{b.End - 1}] conditional branch at end of method");
                             b.Succs.Add(m_BlockOfPos[last.index]);
                             b.Succs.Add(m_BlockOfPos[b.End]);
                             break;
+                        case EIROpCode.Switch:
+                        {
+                            var st = DecodeSwitchTable(last, b.End - 1);
+                            foreach (int t in st.Targets)
+                                b.Succs.Add(m_BlockOfPos[t]);
+                            if (st.DefaultTarget >= 0)
+                                b.Succs.Add(m_BlockOfPos[st.DefaultTarget]);
+                            else if (b.End < m_Count)
+                                b.Succs.Add(m_BlockOfPos[b.End]); // no default: fall through
+                            else
+                                throw Fail($"[{b.End - 1}] Switch without default at end of method");
+                            break;
+                        }
                         case EIROpCode.Ret:
                             b.Succs.Add(ExitId);
                             break;
@@ -913,17 +1122,29 @@ namespace SimpleLanguage.Export.MLIR
                     var sim = new List<ProfileVal>(b.Entry!);
 
                     for (int i = b.Start; i < b.End; i++)
+                {
+                    var ir = m_Code[i];
+                    if (IsTerminator(ir.opCode))
                     {
-                        var ir = m_Code[i];
-                        if (IsTerminator(ir.opCode))
+                        // terminator operand pops (the VM pops before branching)
+                        if (ir.opCode == EIROpCode.BrFalse || ir.opCode == EIROpCode.BrTrue
+                            || ir.opCode == EIROpCode.Switch)
                         {
-                            if (ir.opCode == EIROpCode.BrFalse || ir.opCode == EIROpCode.BrTrue)
-                                ProfilePop(sim, i);
-                            break;
+                            ProfilePop(sim, i); // one condition / switch source
                         }
-                        StepProfile(sim, ir, i);
-                        if (sim.Count > m_MaxDepth) m_MaxDepth = sim.Count;
+                        else if (ir.opCode == EIROpCode.Beq || ir.opCode == EIROpCode.Bge
+                            || ir.opCode == EIROpCode.Bgt || ir.opCode == EIROpCode.Ble
+                            || ir.opCode == EIROpCode.Bne)
+                        {
+                            ProfilePop(sim, i); // rhs
+                            ProfilePop(sim, i); // lhs
+                        }
+                        // Br/BrLabel/Jmp/Break/LeaveTry/Ret take no stack operands
+                        break;
                     }
+                    StepProfile(sim, ir, i);
+                    if (sim.Count > m_MaxDepth) m_MaxDepth = sim.Count;
+                }
 
                     foreach (int s in b.Succs)
                     {
@@ -1243,9 +1464,169 @@ namespace SimpleLanguage.Export.MLIR
                         return;
                     }
 
+                    // ---- full opcode coverage: no-op / placeholder families ----
+
+                    // pure control markers: no stack effect
+                    case EIROpCode.LoadBegin:
+                    case EIROpCode.BeginTry:
+                    case EIROpCode.EndTry:
+                    case EIROpCode.EndFinally:
+                    case EIROpCode.BeginChecked:
+                    case EIROpCode.EndChecked:
+                    case EIROpCode.BeginUnchecked:
+                    case EIROpCode.EndUnchecked:
+                        return;
+
+                    // reference-shaped results with no native AOT counterpart:
+                    // an ObjRef placeholder that Fails at the first native use,
+                    // safely degrading the whole method to the interpreter
+                    case EIROpCode.LoadConstNull:
+                    case EIROpCode.LoadConstString:
+                    case EIROpCode.LoadConstType:
+                    case EIROpCode.LoadStaticField:
+                    case EIROpCode.LoadGlobal:
+                    case EIROpCode.NewObject:
+                    case EIROpCode.NewTemplateObject:
+                    case EIROpCode.AllocClosureContext:
+                        sim.Add(SLType.ObjRef);
+                        return;
+
+                    // narrow-float constants: the bit pattern is decoded at
+                    // emit time and lives in the f32 domain (LoadConstFloat32)
+                    case EIROpCode.LoadConstFloat8_E4M3:
+                    case EIROpCode.LoadConstFloat8_E5M2:
+                    case EIROpCode.LoadConstFloat16:
+                    case EIROpCode.LoadConstFloat16_Brain:
+                        sim.Add(SLType.F32);
+                        return;
+
+                    case EIROpCode.NewArray:
+                        // [length] -> [array object]: CVM heap allocation, the
+                        // result is a placeholder (Fails at first array use)
+                        ProfilePop(sim, pos);
+                        sim.Add(SLType.ObjRef);
+                        return;
+
+                    // [value] -> []: no AOT bridge for the target, pop and drop
+                    case EIROpCode.StoreStaticField:
+                    case EIROpCode.StoreGlobal:
+                    case EIROpCode.Throw:
+                        ProfilePop(sim, pos);
+                        return;
+
+                    // [ctx array] -> [closure object]: interpreter-only
+                    // closure objects (C VM pops the ctx array and pushes
+                    // the closure via vm_eval_push_ptr)
+                    case EIROpCode.NewClosure:
+                        ProfilePop(sim, pos);
+                        sim.Add(SLType.ObjRef);
+                        return;
+
+                    // [v] -> [v]: transparent passthrough (checked casts keep
+                    // the raw value and its type tag; narrow-float rounding has
+                    // no native domain so the f64 bits are preserved as-is)
+                    case EIROpCode.CastClass:
+                    case EIROpCode.Convert_F8E4M3:
+                    case EIROpCode.Convert_F8E5M2:
+                    case EIROpCode.Convert_F16:
+                    case EIROpCode.Convert_F16B:
+                    {
+                        var t = ProfilePop(sim, pos);
+                        if (IsArrayType(t))
+                            throw Fail($"[{pos}] {ir.opCode} on array operand");
+                        sim.Add(t);
+                        return;
+                    }
+
+                    case EIROpCode.Convert_ToString:
+                        // [v] -> [string]: no string bridge, placeholder result
+                        ProfilePop(sim, pos);
+                        sim.Add(SLType.ObjRef);
+                        return;
+
+                    case EIROpCode.CallDynamic:
+                    {
+                        // interpreter-only dispatch: ir.index = paramCount + 1
+                        // (receiver included)
+                        if (!(ir.opValue is IRMethodCall imc) || imc.irMethod == null)
+                            throw Fail($"[{pos}] CallDynamic without resolvable callee");
+                        for (int k = 0; k < ir.index; k++) ProfilePop(sim, pos);
+                        if (CalleeHasReturnValue(imc.irMethod)) sim.Add(SLType.ObjRef);
+                        return;
+                    }
+
+                    case EIROpCode.CallClosure:
+                    {
+                        // [..., closure, args...] -> [ret?]:
+                        // ir.index = paramCount (closure object excluded)
+                        if (!(ir.opValue is IRMethodCall cmc) || cmc.irMethod == null)
+                            throw Fail($"[{pos}] CallClosure without resolvable callee");
+                        for (int k = 0; k < ir.index + 1; k++) ProfilePop(sim, pos);
+                        if (CalleeHasReturnValue(cmc.irMethod)) sim.Add(SLType.ObjRef);
+                        return;
+                    }
+
+                    case EIROpCode.CallSystemMethod:
+                    {
+                        // CVM runtime call: ir.index = paramCount; the return
+                        // shape comes from the registered declaration
+                        if (!(ir.opValue is SLSystemMethodCallPackage pkg))
+                            throw Fail($"[{pos}] CallSystemMethod without call package");
+                        for (int k = 0; k < ir.index; k++) ProfilePop(sim, pos);
+                        if (SystemMethodHasReturnValue(pkg, pos)) sim.Add(SLType.ObjRef);
+                        return;
+                    }
+
+                    // ---- fused const stores (O3; isAot methods never emit
+                    // them, translated defensively): the value rides in the
+                    // payload so the stack only carries the receiver ----
+
+                    case EIROpCode.StoreLocalConstValue:
+                    case EIROpCode.StoreArgumentConstValue:
+                    case EIROpCode.StoreReturnConstValue:
+                    case EIROpCode.StoreGlobalConstValue:
+                    case EIROpCode.StoreStaticFieldConstValue:
+                    case EIROpCode.StoreNotStaticField1ConstValue:
+                        // [inst] -> [inst]: receiver kept, value from payload
+                        return;
+
+                    case EIROpCode.StoreNotStaticField2ConstValue:
+                    case EIROpCode.StoreArrayIndexConstValue:
+                        // [inst/array] -> []: receiver popped, value from payload
+                        ProfilePop(sim, pos);
+                        return;
+
                     default:
                         throw Fail($"[{pos}] unsupported opcode '{ir.opCode}'");
                 }
+            }
+
+            /// <summary>
+            /// Return-value shape of a CallDynamic / CallClosure callee: the
+            /// single non-void return variable decides (ResolveCallee pattern).
+            /// </summary>
+            private static bool CalleeHasReturnValue(IRMethod callee)
+            {
+                if (callee.methodReturnVariableList == null
+                    || callee.methodReturnVariableList.Count != 1)
+                    return false;
+                var rv = callee.methodReturnVariableList[0];
+                return rv != null && !SlotTable.IsVoidType(rv);
+            }
+
+            /// <summary>
+            /// Return-value shape of a CallSystemMethod: the registered
+            /// declaration's returnMetaType (EType.Void = no return value).
+            /// Unregistered names Fail (unknown stack shape).
+            /// </summary>
+            private bool SystemMethodHasReturnValue(SLSystemMethodCallPackage pkg, int pos)
+            {
+                if (!SystemMethodCallDeclarationRegistry.TryGetDeclaration(pkg.name, out var decl)
+                    || decl == null)
+                    throw Fail($"[{pos}] CallSystemMethod '{pkg.name}' has no registered declaration");
+                var rt = decl.returnMetaType;
+                if (rt == null) return true; // untyped => treat as returning a value
+                return !(rt.metaClass != null && rt.metaClass.eType == EType.Void);
             }
 
             /// <summary>
@@ -1314,9 +1695,13 @@ namespace SimpleLanguage.Export.MLIR
             /// In-memory IRData payloads carry just the flag byte; a
             /// serialized payload embeds the index first ([index:4][flag:1]).
             /// 0 = stack [.., value, array] (array on top), 1 = [.., array, value].
+            /// StoreArrayIndexConstValue: the value comes from the payload
+            /// (the C VM pops only the array and ignores the flag byte); the
+            /// emitter pushes the decoded value above the array, i.e. order 1.
             /// </summary>
             protected static int StoreIndexFlagOf(IRData ir)
             {
+                if (ir.opCode == EIROpCode.StoreArrayIndexConstValue) return 1;
                 if (ir.Payload == null || ir.Payload.Length == 0) return 0;
                 return ir.Payload.Length >= 5 ? ir.Payload[4] : ir.Payload[0];
             }
@@ -1412,6 +1797,16 @@ namespace SimpleLanguage.Export.MLIR
                 {
                     case EIROpCode.Br:
                     case EIROpCode.BrLabel:
+                    case EIROpCode.Jmp:     // same int32-target encoding as Br
+                    case EIROpCode.Break:
+                        SpillAll();
+                        EmitBody("    cf.br ^b{0}", ir.index);
+                        return;
+
+                    case EIROpCode.LeaveTry:
+                        // C VM pops the innermost try frame then jumps; AOT
+                        // methods never push one (BeginTry is a no-op), so
+                        // this is a plain unconditional jump.
                         SpillAll();
                         EmitBody("    cf.br ^b{0}", ir.index);
                         return;
@@ -1434,6 +1829,41 @@ namespace SimpleLanguage.Export.MLIR
                         return;
                     }
 
+                    // two-operand conditional branches: pop rhs then lhs
+                    // (stack order), compare lhs OP rhs with the same
+                    // numeric cross-type rules as EmitCompare, then branch
+                    // to the target on true / fall through on false.
+                    case EIROpCode.Beq:
+                    case EIROpCode.Bge:
+                    case EIROpCode.Bgt:
+                    case EIROpCode.Ble:
+                    case EIROpCode.Bne:
+                    {
+                        Val rhs = Pop(pos);
+                        Val lhs = Pop(pos);
+                        EIROpCode cmp = BranchCompareOf(ir.opCode);
+                        string q = NV();
+                        if (lhs.Type == SLType.I64 && rhs.Type == SLType.I64)
+                        {
+                            EmitBody("    {0} = arith.cmpi {1}, {2}, {3} : i64",
+                                q, CmpIntPred(cmp), lhs.Name, rhs.Name);
+                        }
+                        else
+                        {
+                            string fa = ToF64(lhs);
+                            string fb = ToF64(rhs);
+                            EmitBody("    {0} = arith.cmpf {1}, {2}, {3} : f64",
+                                q, CmpFloatPred(cmp), fa, fb);
+                        }
+                        SpillAll();
+                        EmitBody("    cf.cond_br {0}, ^b{1}, ^b{2}", q, ir.index, b.End);
+                        return;
+                    }
+
+                    case EIROpCode.Switch:
+                        EmitSwitch(b, ir, pos);
+                        return;
+
                     case EIROpCode.Ret:
                         EmitBody("    cf.br {0}", ExitLabel);
                         return;
@@ -1441,6 +1871,110 @@ namespace SimpleLanguage.Export.MLIR
                     default:
                         throw Fail($"[{pos}] '{ir.opCode}' is not a terminator");
                 }
+            }
+
+            /// <summary>
+            /// Map a two-operand conditional branch opcode onto the
+            /// comparison opcode implementing its predicate (Beq == Ceq
+            /// etc.), reusing CmpIntPred/CmpFloatPred.
+            /// </summary>
+            protected static EIROpCode BranchCompareOf(EIROpCode op)
+            {
+                switch (op)
+                {
+                    case EIROpCode.Beq: return EIROpCode.Ceq;
+                    case EIROpCode.Bne: return EIROpCode.Cne;
+                    case EIROpCode.Bgt: return EIROpCode.Cgt;
+                    case EIROpCode.Bge: return EIROpCode.Cge;
+                    case EIROpCode.Ble: return EIROpCode.Cle;
+                }
+                throw new InvalidOperationException(op.ToString());
+            }
+
+            /// <summary>
+            /// Multi-way branch. The C VM pops one value and compares it
+            /// against each case constant in order (first match jumps to
+            /// the case body; no default falls through). Emitted as a chain
+            /// of synthetic single-case blocks (the EmitCallStatic tag
+            /// pattern) ending in the default / fall-through edge. ClassId
+            /// and string-id cases need runtime bridges and degrade to
+            /// comments (per the no-op policy: skipped cases can never
+            /// match, so control falls to the next case / default).
+            /// </summary>
+            private void EmitSwitch(Block b, IRData ir, int pos)
+            {
+                var table = DecodeSwitchTable(ir, pos);
+                Val v = Pop(pos);
+
+                // comparable cases only (kinds 0/2/4): each gets one
+                // synthetic block; each cond_br names the next one.
+                var cases = new List<int>();
+                for (int k = 0; k < table.Kinds.Length; k++)
+                {
+                    int kind = table.Kinds[k];
+                    if (kind == SwitchKindClassId || kind == SwitchKindString)
+                    {
+                        EmitBody("    // [{0}] Switch case {1}: {2} comparison needs the {3} bridge; skipped",
+                            pos, k,
+                            kind == SwitchKindClassId ? "classId extends" : "string id",
+                            kind == SwitchKindClassId ? "object" : "string");
+                        continue;
+                    }
+                    cases.Add(k);
+                }
+
+                // default / fall-through edge (analysis already rejects a
+                // default-less Switch at the end of the method).
+                string tail = table.DefaultTarget >= 0
+                    ? "^b" + table.DefaultTarget.ToString(CultureInfo.InvariantCulture)
+                    : (b.End >= m_Count ? ExitLabel : "^b" + b.End.ToString(CultureInfo.InvariantCulture));
+
+                SpillAll();
+                if (cases.Count == 0)
+                {
+                    // nothing comparable: the decision collapses to the
+                    // default edge
+                    EmitBody("    cf.br {0}", tail);
+                    return;
+                }
+
+                int tag = m_TmpCounter++;
+                EmitBody("    cf.br ^sw{0}_c{1}", tag, cases[0]);
+
+                for (int i = 0; i < cases.Count; i++)
+                {
+                    int k = cases[i];
+                    EmitBody("  ^sw{0}_c{1}:", tag, k);
+
+                    // case constant: int64/boolean as I64, float64 bits as F64
+                    Val rhs = table.Kinds[k] == SwitchKindFloat64
+                        ? new Val(CI64(table.Values[k]), SLType.F64)
+                        : new Val(CI64(table.Values[k]), SLType.I64);
+
+                    // EmitCompare's equality shape: the VM compares the
+                    // popped value against the constant via the numeric
+                    // cross-type equal (both-I64 cmpi, else f64 cmpf).
+                    string q = NV();
+                    if (v.Type == SLType.I64 && rhs.Type == SLType.I64)
+                    {
+                        EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i64", q, v.Name, rhs.Name);
+                    }
+                    else
+                    {
+                        string fa = ToF64(v);
+                        string fb = ToF64(rhs);
+                        EmitBody("    {0} = arith.cmpf oeq, {1}, {2} : f64", q, fa, fb);
+                    }
+
+                    string next = i + 1 < cases.Count
+                        ? "^sw" + tag.ToString(CultureInfo.InvariantCulture) + "_c"
+                          + cases[i + 1].ToString(CultureInfo.InvariantCulture)
+                        : "^sw" + tag.ToString(CultureInfo.InvariantCulture) + "_end";
+                    EmitBody("    cf.cond_br {0}, ^b{1}, {2}", q, table.Targets[k], next);
+                }
+
+                EmitBody("  ^sw{0}_end:", tag);
+                EmitBody("    cf.br {0}", tail);
             }
 
             // ---- emission: exit ---------------------------------------------------
@@ -1679,6 +2213,194 @@ namespace SimpleLanguage.Export.MLIR
                         EmitMemberStore(ir, pos);
                         return;
 
+                    // ---- VM control markers: no runtime effect, emit a trace
+                    // comment so the generated MLIR keeps the IR flow visible.
+                    // Checked-context markers degrade to no-ops (the AOT
+                    // arithmetic never traps on overflow) ----
+
+                    case EIROpCode.LoadBegin:
+                    case EIROpCode.BeginTry:
+                    case EIROpCode.EndTry:
+                    case EIROpCode.EndFinally:
+                    case EIROpCode.BeginChecked:
+                    case EIROpCode.EndChecked:
+                    case EIROpCode.BeginUnchecked:
+                    case EIROpCode.EndUnchecked:
+                        EmitBody("    // [{0}] {1}: VM control marker, no-op", pos, ir.opCode);
+                        return;
+
+                    // null constant: rides as an ObjRef(0) placeholder
+                    case EIROpCode.LoadConstNull:
+                        m_Stack.Add(new Val(CI64(0), SLType.ObjRef));
+                        return;
+
+                    // narrow-float constants: the payload bit pattern is
+                    // decoded at emit time into the F32 domain (exact f64
+                    // widening), matching the VM's promote-on-use chain
+                    case EIROpCode.LoadConstFloat8_E4M3:
+                    case EIROpCode.LoadConstFloat8_E5M2:
+                    case EIROpCode.LoadConstFloat16:
+                    case EIROpCode.LoadConstFloat16_Brain:
+                        m_Stack.Add(new Val(CI64(NarrowFloatBits(ir)), SLType.F32));
+                        return;
+
+                    // ---- interpreter-only values: emit a trace comment and
+                    // push an ObjRef(0) placeholder; it flows through the
+                    // frame and Fails at the first operator that cannot
+                    // accept it ----
+
+                    case EIROpCode.LoadConstString:
+                    case EIROpCode.LoadConstType:
+                    case EIROpCode.LoadStaticField:
+                    case EIROpCode.LoadGlobal:
+                    case EIROpCode.NewObject:
+                    case EIROpCode.NewTemplateObject:
+                    case EIROpCode.AllocClosureContext:
+                        EmitBody("    // [{0}] {1}: interpreter-only value, ObjRef placeholder", pos, ir.opCode);
+                        m_Stack.Add(new Val(CI64(0), SLType.ObjRef));
+                        return;
+
+                    // [length] -> [array]: CVM heap allocation, placeholder
+                    // Fails at the first array use
+                    case EIROpCode.NewArray:
+                        EmitBody("    // [{0}] NewArray: CVM heap allocation, ObjRef placeholder", pos);
+                        Pop(pos);
+                        m_Stack.Add(new Val(CI64(0), SLType.ObjRef));
+                        return;
+
+                    // [ctx array] -> [closure object]: interpreter-only
+                    case EIROpCode.NewClosure:
+                        EmitBody("    // [{0}] NewClosure: interpreter-only closure object, ObjRef placeholder", pos);
+                        Pop(pos);
+                        m_Stack.Add(new Val(CI64(0), SLType.ObjRef));
+                        return;
+
+                    // [value] -> []: no AOT bridge for the target, pop and drop
+                    case EIROpCode.StoreStaticField:
+                    case EIROpCode.StoreGlobal:
+                    case EIROpCode.Throw:
+                        EmitBody("    // [{0}] {1}: no AOT bridge, value dropped", pos, ir.opCode);
+                        Pop(pos);
+                        return;
+
+                    // [v] -> [v]: transparent passthrough. CastClass is an
+                    // as-style cast in the VM (keeps the raw value)
+                    case EIROpCode.CastClass:
+                    {
+                        Val v = Pop(pos);
+                        if (IsArrayType(v.Type))
+                            throw Fail($"[{pos}] {ir.opCode} on array operand");
+                        EmitBody("    // [{0}] {1}: passthrough", pos, ir.opCode);
+                        m_Stack.Add(v);
+                        return;
+                    }
+
+                    // [v] -> [v]: narrow-float convert. The VM round-trips the
+                    // value through the low-precision format (RNE encode +
+                    // decode back); emit it as integer bit manipulation
+                    case EIROpCode.Convert_F8E4M3:
+                    case EIROpCode.Convert_F8E5M2:
+                    case EIROpCode.Convert_F16:
+                    case EIROpCode.Convert_F16B:
+                        EmitLowpRoundTrip(ir.opCode, pos);
+                        return;
+
+                    // [v] -> [string]: no string bridge, placeholder result
+                    case EIROpCode.Convert_ToString:
+                        EmitBody("    // [{0}] Convert_ToString: no string bridge, ObjRef placeholder", pos);
+                        Pop(pos);
+                        m_Stack.Add(new Val(CI64(0), SLType.ObjRef));
+                        return;
+
+                    // interpreter-only dispatch: ir.index = paramCount + 1
+                    // (receiver included); placeholder return value when the
+                    // callee has one
+                    case EIROpCode.CallDynamic:
+                    {
+                        if (!(ir.opValue is IRMethodCall imc) || imc.irMethod == null)
+                            throw Fail($"[{pos}] CallDynamic without resolvable callee");
+                        EmitBody("    // [{0}] CallDynamic '{1}': interpreter-only dispatch",
+                            pos, imc.irMethod.onlyFunctionName);
+                        for (int k = 0; k < ir.index; k++) Pop(pos);
+                        if (CalleeHasReturnValue(imc.irMethod))
+                            m_Stack.Add(new Val(CI64(0), SLType.ObjRef));
+                        return;
+                    }
+
+                    // [..., closure, args...] -> [ret?]: ir.index = paramCount
+                    // (the closure object is an extra pop); interpreter-only
+                    case EIROpCode.CallClosure:
+                    {
+                        if (!(ir.opValue is IRMethodCall cmc) || cmc.irMethod == null)
+                            throw Fail($"[{pos}] CallClosure without resolvable callee");
+                        EmitBody("    // [{0}] CallClosure '{1}': interpreter-only",
+                            pos, cmc.irMethod.onlyFunctionName);
+                        for (int k = 0; k < ir.index + 1; k++) Pop(pos);
+                        if (CalleeHasReturnValue(cmc.irMethod))
+                            m_Stack.Add(new Val(CI64(0), SLType.ObjRef));
+                        return;
+                    }
+
+                    // CVM runtime call: ir.index = paramCount; the return
+                    // shape comes from the registered declaration
+                    case EIROpCode.CallSystemMethod:
+                    {
+                        if (!(ir.opValue is SLSystemMethodCallPackage pkg))
+                            throw Fail($"[{pos}] CallSystemMethod without call package");
+                        EmitBody("    // [{0}] CallSystemMethod '{1}': interpreter bridge, value dropped",
+                            pos, pkg.name);
+                        for (int k = 0; k < ir.index; k++) Pop(pos);
+                        if (SystemMethodHasReturnValue(pkg, pos))
+                            m_Stack.Add(new Val(CI64(0), SLType.ObjRef));
+                        return;
+                    }
+
+                    // ---- fused const stores (O3; isAot methods never emit
+                    // them, this is defensive translation): the value rides
+                    // in the payload ([etype:1][value:N], the array form is
+                    // prefixed by the flag byte), so decode it onto the
+                    // stack and reuse the classic emitter - the net stack
+                    // effect matches the fused semantics ----
+
+                    case EIROpCode.StoreLocalConstValue:
+                        m_Stack.Add(DecodeConstValue(ir, pos, 0));
+                        EmitStoreLocal(ir, pos);
+                        return;
+
+                    case EIROpCode.StoreArgumentConstValue:
+                        m_Stack.Add(DecodeConstValue(ir, pos, 0));
+                        EmitStoreArgument(ir, pos);
+                        return;
+
+                    case EIROpCode.StoreReturnConstValue:
+                        m_Stack.Add(DecodeConstValue(ir, pos, 0));
+                        EmitStoreReturn(ir, pos);
+                        return;
+
+                    // value pushed above the receiver: EmitMemberStore pops
+                    // (value, receiver); only the *1 form keeps the receiver
+                    case EIROpCode.StoreNotStaticField1ConstValue:
+                    case EIROpCode.StoreNotStaticField2ConstValue:
+                        m_Stack.Add(DecodeConstValue(ir, pos, 0));
+                        EmitMemberStore(ir, pos);
+                        return;
+
+                    // decoded value pushed above the array: StoreIndexFlagOf
+                    // maps the fused opcode to flag 1 (value on top) so
+                    // EmitArrayStore pops value then array; ir.index is the
+                    // constant index
+                    case EIROpCode.StoreArrayIndexConstValue:
+                        m_Stack.Add(DecodeConstValue(ir, pos, 1));
+                        EmitArrayStore(ir, pos);
+                        return;
+
+                    // [] -> []: nothing on the stack, the payload value has
+                    // no AOT bridge
+                    case EIROpCode.StoreGlobalConstValue:
+                    case EIROpCode.StoreStaticFieldConstValue:
+                        EmitBody("    // [{0}] {1}: no AOT bridge, payload value dropped", pos, ir.opCode);
+                        return;
+
                     default:
                         throw Fail($"[{pos}] unsupported opcode '{ir.opCode}'");
                 }
@@ -1812,9 +2534,11 @@ namespace SimpleLanguage.Export.MLIR
                     EmitBody("    llvm.store {0}, {1} : {2}, !llvm.ptr", w, p, ty);
                 }
 
-                // StoreNotStaticField1 keeps the receiver on the stack
-                // (data brace-init chains several stores through it).
-                if (ir.opCode == EIROpCode.StoreNotStaticField1)
+                // StoreNotStaticField1 (and its fused *ConstValue form)
+                // keeps the receiver on the stack (data brace-init chains
+                // several stores through it).
+                if (ir.opCode == EIROpCode.StoreNotStaticField1
+                    || ir.opCode == EIROpCode.StoreNotStaticField1ConstValue)
                     m_Stack.Add(recv);
             }
 
@@ -2664,6 +3388,297 @@ namespace SimpleLanguage.Export.MLIR
                 return f;
             }
 
+            // ---- narrow-float convert (integer RNE round-trip) ----------------------
+            //
+            // Blueprint: test/SpecialTest/mlir_f8_probe/f8int_probe.mlir - the op
+            // sequences below are line-by-line inlinings of its encode/decode
+            // functions, verified bit-exact against the C VM reference
+            // (runtime_value_convert.c lp_float32_to_bits / lp_bits_to_float32)
+            // over the full input space (exhaustive 2^32 f32 patterns per format
+            // plus decode-side exhaustive and boundary sweeps).
+            //
+            // Native f32<->f16/bf16 truncf/extf is NOT used: llc on generic x86-64
+            // lowers it to compiler-rt soft-float calls (__truncsfhf2 etc.) that
+            // the CPU AOT dll link (libvcruntime only) cannot resolve.
+
+            /// <summary>
+            /// Parameter table for the four low-precision formats. Derived
+            /// quantities: SignSh = Ebits+Mbits, Drop = 23-Mbits, HalfN/MaskN =
+            /// RNE split at the dropped mantissa bits, Carry = 1&lt;&lt;Mbits,
+            /// BaseN/BaseS = subnormal shift bases, LexpMask/LmantMask = decode
+            /// field masks.
+            /// </summary>
+            private readonly struct LowpFmt
+            {
+                public readonly int Ebits, Mbits;
+                public readonly int EtOff;              // 127 - bias
+                public readonly bool HasInf;            // e4m3 has no inf slot
+                public readonly int InfBase, NanBase;   // inf/nan slot magnitude bits
+                public readonly int OvfMax;             // et overflow threshold
+                public readonly string OvfPred;         // e4m3: "sgt", the rest: "sge"
+                public readonly string SubScale;        // decode subnormal scale (f32 literal); null -> bf16 shift variant
+
+                public int SignSh => Ebits + Mbits;
+                public int Drop => 23 - Mbits;
+                public int HalfN => 1 << (Drop - 1);
+                public int MaskN => (1 << Drop) - 1;
+                public int Carry => 1 << Mbits;
+                public int BaseN => Drop + 1;
+                public int BaseS => Drop;
+                public int LexpMask => (1 << Ebits) - 1;
+                public int LmantMask => (1 << Mbits) - 1;
+
+                public LowpFmt(int ebits, int mbits, int etOff, bool hasInf,
+                    int infBase, int nanBase, int ovfMax, string ovfPred, string subScale)
+                {
+                    Ebits = ebits; Mbits = mbits; EtOff = etOff; HasInf = hasInf;
+                    InfBase = infBase; NanBase = nanBase; OvfMax = ovfMax; OvfPred = ovfPred;
+                    SubScale = subScale;
+                }
+            }
+
+            private static LowpFmt LowpFmtFor(EIROpCode op) => op switch
+            {
+                EIROpCode.Convert_F8E4M3 => new LowpFmt(4, 3, 120, false, 0, 127, 15, "sgt", "0.001953125"),               // 2^-9
+                EIROpCode.Convert_F8E5M2 => new LowpFmt(5, 2, 112, true, 124, 127, 31, "sge", "0.0000152587890625"),        // 2^-16
+                EIROpCode.Convert_F16 => new LowpFmt(5, 10, 112, true, 31744, 32767, 31, "sge", "0.000000059604644775390625"), // 2^-24
+                _ => new LowpFmt(8, 7, 0, true, 32640, 32767, 255, "sge", null),                                            // F16B (bf16)
+            };
+
+            /// <summary>
+            /// Narrow-float convert (Convert_F8E4M3 / Convert_F8E5M2 /
+            /// Convert_F16 / Convert_F16B). The VM semantics is a round-trip:
+            /// dval -> (float32)dval -> lp bits (RNE encode) -> read back as
+            /// f32 -> f64. The result re-enters the stack as an F32-domain
+            /// value (i64 bit pattern).
+            /// </summary>
+            protected void EmitLowpRoundTrip(EIROpCode op, int pos)
+            {
+                Val v = Pop(pos);
+                if (IsArrayType(v.Type))
+                    throw Fail($"[{pos}] {op} on array operand");
+                LowpFmt f = LowpFmtFor(op);
+
+                string d = ToF64(v);
+                string t32 = NV();
+                EmitBody("    {0} = arith.truncf {1} : f64 to f32", t32, d);
+
+                string lp = EmitLowpEncode(t32, f);
+                string dec = EmitLowpDecode(lp, f);
+
+                string w32 = NV();
+                EmitBody("    {0} = llvm.bitcast {1} : i32 to f32", w32, dec);
+                string w = NV();
+                EmitBody("    {0} = arith.extf {1} : f32 to f64", w, w32);
+                string r = NV();
+                EmitBody("    {0} = llvm.bitcast {1} : f64 to i64", r, w);
+                m_Stack.Add(new Val(r, SLType.F32));
+            }
+
+            /// <summary>
+            /// Encode half (lp_float32_to_bits): x32 (f32) in, lp bit pattern
+            /// (i32) out. Normal path: RNE truncation of the f32 mantissa.
+            /// Subnormal path: sticky right shift with RNE on the remainder.
+            /// </summary>
+            private string EmitLowpEncode(string x32, LowpFmt f)
+            {
+                string c0 = CA32(0), c1 = CA32(1), c23 = CA32(23), c31 = CA32(31), c255 = CA32(255);
+                string mantMask = CA32(8388607), implicitBit = CA32(8388608);
+                string etOff = CA32(f.EtOff), signSh = CA32(f.SignSh), mbits = CA32(f.Mbits);
+                string drop = CA32(f.Drop), halfN = CA32(f.HalfN), maskN = CA32(f.MaskN), carryC = CA32(f.Carry);
+                string baseN = CA32(f.BaseN), baseS = CA32(f.BaseS), ovfMax = CA32(f.OvfMax);
+
+                string b = NV();
+                EmitBody("    {0} = llvm.bitcast {1} : f32 to i32", b, x32);
+                string sign = NV(), e0 = NV(), exp = NV(), mant = NV(), et = NV(), signShV = NV();
+                EmitBody("    {0} = arith.shrui {1}, {2} : i32", sign, b, c31);
+                EmitBody("    {0} = arith.shrui {1}, {2} : i32", e0, b, c23);
+                EmitBody("    {0} = arith.andi {1}, {2} : i32", exp, e0, c255);
+                EmitBody("    {0} = arith.andi {1}, {2} : i32", mant, b, mantMask);
+                EmitBody("    {0} = arith.subi {1}, {2} : i32", et, exp, etOff);
+                EmitBody("    {0} = arith.shli {1}, {2} : i32", signShV, sign, signSh);
+
+                string nanBits = NV();
+                EmitBody("    {0} = arith.ori {1}, {2} : i32", nanBits, signShV, CA32(f.NanBase));
+                string infBits = "";
+                string lpIN = "";
+                if (f.HasInf)
+                {
+                    infBits = NV();
+                    EmitBody("    {0} = arith.ori {1}, {2} : i32", infBits, signShV, CA32(f.InfBase));
+                    string mantZero = NV();
+                    EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", mantZero, mant, c0);
+                    lpIN = NV();
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", lpIN, mantZero, infBits, nanBits);
+                }
+
+                // normal path (et > 0): RNE truncation of the f32 mantissa
+                string m = NV(), rem = NV(), remGt = NV(), remEq = NV(), mLsb = NV(), mOdd = NV();
+                string tie = NV(), rndUp = NV(), mInc = NV(), m2 = NV(), carry = NV();
+                string etInc = NV(), et2 = NV(), m3 = NV(), et2Sh = NV(), nBase = NV();
+                string lpNok = NV(), ovf2 = NV(), lpN = NV();
+                EmitBody("    {0} = arith.shrui {1}, {2} : i32", m, mant, drop);
+                EmitBody("    {0} = arith.andi {1}, {2} : i32", rem, mant, maskN);
+                EmitBody("    {0} = arith.cmpi ugt, {1}, {2} : i32", remGt, rem, halfN);
+                EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", remEq, rem, halfN);
+                EmitBody("    {0} = arith.andi {1}, {2} : i32", mLsb, m, c1);
+                EmitBody("    {0} = arith.cmpi ne, {1}, {2} : i32", mOdd, mLsb, c0);
+                EmitBody("    {0} = arith.andi {1}, {2} : i1", tie, remEq, mOdd);
+                EmitBody("    {0} = arith.ori {1}, {2} : i1", rndUp, remGt, tie);
+                EmitBody("    {0} = arith.addi {1}, {2} : i32", mInc, m, c1);
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", m2, rndUp, mInc, m);
+                EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", carry, m2, carryC);
+                EmitBody("    {0} = arith.addi {1}, {2} : i32", etInc, et, c1);
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", et2, carry, etInc, et);
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", m3, carry, c0, m2);
+                EmitBody("    {0} = arith.shli {1}, {2} : i32", et2Sh, et2, mbits);
+                EmitBody("    {0} = arith.ori {1}, {2} : i32", nBase, signShV, et2Sh);
+                EmitBody("    {0} = arith.ori {1}, {2} : i32", lpNok, nBase, m3);
+                EmitBody("    {0} = arith.cmpi {1}, {2}, {3} : i32", ovf2, f.OvfPred, et2, ovfMax);
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", lpN, ovf2, f.HasInf ? infBits : nanBits, lpNok);
+
+                // subnormal path (et <= 0): sticky shift with RNE on the remainder.
+                // The clamp keeps the not-taken branch of the select data flow from
+                // producing a poison shift amount.
+                string inN = NV(), mantHi = NV(), sig = NV(), baseSel = NV(), shift = NV();
+                string lt1 = NV(), s1 = NV(), gt31 = NV(), shiftC = NV();
+                string mm = NV(), restore = NV(), remB = NV(), sc1 = NV(), halfB = NV();
+                string rbGt = NV(), rbEq = NV(), mmLsb = NV(), mmOdd = NV();
+                string tie2 = NV(), rndUp2 = NV(), mmInc = NV(), mm2 = NV(), carry2 = NV();
+                string sOk = NV(), sCar = NV(), lpS = NV();
+                EmitBody("    {0} = arith.cmpi uge, {1}, {2} : i32", inN, exp, c1);
+                EmitBody("    {0} = arith.ori {1}, {2} : i32", mantHi, mant, implicitBit);
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", sig, inN, mantHi, mant);
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", baseSel, inN, baseN, baseS);
+                EmitBody("    {0} = arith.subi {1}, {2} : i32", shift, baseSel, et);
+                EmitBody("    {0} = arith.cmpi slt, {1}, {2} : i32", lt1, shift, c1);
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", s1, lt1, c1, shift);
+                EmitBody("    {0} = arith.cmpi sgt, {1}, {2} : i32", gt31, s1, c31);
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", shiftC, gt31, c31, s1);
+                EmitBody("    {0} = llvm.lshr {1}, {2} : i32", mm, sig, shiftC);
+                EmitBody("    {0} = llvm.shl {1}, {2} : i32", restore, mm, shiftC);
+                EmitBody("    {0} = arith.subi {1}, {2} : i32", remB, sig, restore);
+                EmitBody("    {0} = arith.subi {1}, {2} : i32", sc1, shiftC, c1);
+                EmitBody("    {0} = llvm.shl {1}, {2} : i32", halfB, c1, sc1);
+                EmitBody("    {0} = arith.cmpi ugt, {1}, {2} : i32", rbGt, remB, halfB);
+                EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", rbEq, remB, halfB);
+                EmitBody("    {0} = arith.andi {1}, {2} : i32", mmLsb, mm, c1);
+                EmitBody("    {0} = arith.cmpi ne, {1}, {2} : i32", mmOdd, mmLsb, c0);
+                EmitBody("    {0} = arith.andi {1}, {2} : i1", tie2, rbEq, mmOdd);
+                EmitBody("    {0} = arith.ori {1}, {2} : i1", rndUp2, rbGt, tie2);
+                EmitBody("    {0} = arith.addi {1}, {2} : i32", mmInc, mm, c1);
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", mm2, rndUp2, mmInc, mm);
+                EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", carry2, mm2, carryC);
+                EmitBody("    {0} = arith.ori {1}, {2} : i32", sOk, signShV, mm2);
+                EmitBody("    {0} = arith.ori {1}, {2} : i32", sCar, signShV, carryC);
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", lpS, carry2, sCar, sOk);
+
+                // combine: et > 0 ? normal : subnormal, then overflow/inf handling
+                string isN = NV(), inner = NV(), lp = NV();
+                EmitBody("    {0} = arith.cmpi sgt, {1}, {2} : i32", isN, et, c0);
+                EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", inner, isN, lpN, lpS);
+                if (!f.HasInf)
+                {
+                    // e4m3: inf/nan input or exponent overflow -> NaN slot (no inf)
+                    string isInf = NV(), ovf = NV(), bad = NV();
+                    EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", isInf, exp, c255);
+                    EmitBody("    {0} = arith.cmpi {1}, {2}, {3} : i32", ovf, f.OvfPred, et, ovfMax);
+                    EmitBody("    {0} = arith.ori {1}, {2} : i1", bad, isInf, ovf);
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", lp, bad, nanBits, inner);
+                }
+                else
+                {
+                    // has-inf formats: overflow -> inf slot; inf/nan input
+                    // passthrough (mantissa zero keeps inf, else NaN)
+                    string ovf = NV(), notOvf = NV(), isInf = NV();
+                    EmitBody("    {0} = arith.cmpi {1}, {2}, {3} : i32", ovf, f.OvfPred, et, ovfMax);
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", notOvf, ovf, infBits, inner);
+                    EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", isInf, exp, c255);
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", lp, isInf, lpIN, notOvf);
+                }
+                return lp;
+            }
+
+            /// <summary>
+            /// Decode half (lp_bits_to_float32): lp bit pattern (i32) in, f32
+            /// bit pattern (i32) out. Subnormals are exact (lmant * scale or,
+            /// for bf16, a plain left shift - the value is subnormal in f32
+            /// too); NaN decodes to the canonical 0x7FC00000.
+            /// </summary>
+            private string EmitLowpDecode(string lp, LowpFmt f)
+            {
+                string c0 = CA32(0), c23 = CA32(23), c31 = CA32(31);
+                string nan32 = CA32(2143289344);   // 0x7FC00000
+                string signSh = CA32(f.SignSh), mbits = CA32(f.Mbits);
+                string lexpMask = CA32(f.LexpMask), lmantMask = CA32(f.LmantMask);
+                string etOff = CA32(f.EtOff), drop = CA32(f.Drop);
+
+                string lsign = NV(), le0 = NV(), lexp = NV(), lmant = NV(), rsign = NV(), lmZero = NV();
+                EmitBody("    {0} = arith.shrui {1}, {2} : i32", lsign, lp, signSh);
+                EmitBody("    {0} = arith.shrui {1}, {2} : i32", le0, lp, mbits);
+                EmitBody("    {0} = arith.andi {1}, {2} : i32", lexp, le0, lexpMask);
+                EmitBody("    {0} = arith.andi {1}, {2} : i32", lmant, lp, lmantMask);
+                EmitBody("    {0} = arith.shli {1}, {2} : i32", rsign, lsign, c31);
+                EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", lmZero, lmant, c0);
+
+                // subnormal (lexp == 0): exact value
+                string subOut = NV();
+                if (f.SubScale != null)
+                {
+                    string lv = NV(), lv2 = NV(), lbits = NV(), subVal = NV();
+                    EmitBody("    {0} = arith.sitofp {1} : i32 to f32", lv, lmant);
+                    EmitBody("    {0} = arith.mulf {1}, {2} : f32", lv2, lv, CAF32(f.SubScale));
+                    EmitBody("    {0} = llvm.bitcast {1} : f32 to i32", lbits, lv2);
+                    EmitBody("    {0} = arith.ori {1}, {2} : i32", subVal, rsign, lbits);
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", subOut, lmZero, rsign, subVal);
+                }
+                else
+                {
+                    // bf16: value < 2^-126 is subnormal in f32 too - the C
+                    // reference always takes the fs = e+149 = 16 branch
+                    string subBits = NV(), subVal = NV();
+                    EmitBody("    {0} = arith.shli {1}, {2} : i32", subBits, lmant, drop);
+                    EmitBody("    {0} = arith.ori {1}, {2} : i32", subVal, rsign, subBits);
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", subOut, lmZero, rsign, subVal);
+                }
+
+                // normal: re-bias the exponent into the f32 field
+                string fe = NV(), feSh = NV(), lmSh = NV(), nBase = NV(), normOut = NV();
+                EmitBody("    {0} = arith.addi {1}, {2} : i32", fe, lexp, etOff);
+                EmitBody("    {0} = arith.shli {1}, {2} : i32", feSh, fe, c23);
+                EmitBody("    {0} = arith.shli {1}, {2} : i32", lmSh, lmant, drop);
+                EmitBody("    {0} = arith.ori {1}, {2} : i32", nBase, rsign, feSh);
+                EmitBody("    {0} = arith.ori {1}, {2} : i32", normOut, nBase, lmSh);
+
+                string leZero = NV(), dec = NV();
+                if (!f.HasInf)
+                {
+                    // e4m3: lexp==15 && lmant==7 is the NaN slot (no inf)
+                    string leMax = NV(), lmMax = NV(), nanSlot = NV(), notNan = NV();
+                    EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", leMax, lexp, lexpMask);
+                    EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", lmMax, lmant, lmantMask);
+                    EmitBody("    {0} = arith.andi {1}, {2} : i1", nanSlot, leMax, lmMax);
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", notNan, nanSlot, nan32, normOut);
+                    EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", leZero, lexp, c0);
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", dec, leZero, subOut, notNan);
+                }
+                else
+                {
+                    // has-inf formats: lexp==max is the inf/NaN range
+                    // (lmant==0 -> inf, else NaN)
+                    string leMax = NV(), lmZero2 = NV(), infVal = NV(), specOut = NV(), notSub = NV();
+                    string inf32 = CA32(2139095040);   // 0x7F800000
+                    EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", leMax, lexp, lexpMask);
+                    EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", lmZero2, lmant, c0);
+                    EmitBody("    {0} = arith.ori {1}, {2} : i32", infVal, rsign, inf32);
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", specOut, lmZero2, infVal, nan32);
+                    EmitBody("    {0} = arith.cmpi eq, {1}, {2} : i32", leZero, lexp, c0);
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", notSub, leMax, specOut, normOut);
+                    EmitBody("    {0} = arith.select {1}, {2}, {3} : i32", dec, leZero, subOut, notSub);
+                }
+                return dec;
+            }
+
             /// <summary>Reduce a stack Val to an i1 truth value (NaN counts as true).</summary>
             protected string Truthy(Val v)
             {
@@ -2718,6 +3733,116 @@ namespace SimpleLanguage.Export.MLIR
                 return 0;
             }
 
+            /// <summary>
+            /// Narrow-float constant (Float8_E4M3 / Float8_E5M2 / Float16 /
+            /// Float16_Brain): opValue/Payload carry the raw bit pattern (a
+            /// byte for fp8, a LE ushort for fp16/bf16). Decode it to f32
+            /// and return the exact f64 widening bit pattern so the value
+            /// enters the F32 rounding domain, matching the C VM's
+            /// promote-on-use chain.
+            /// </summary>
+            protected static long NarrowFloatBits(IRData ir)
+            {
+                bool is8 = ir.opCode == EIROpCode.LoadConstFloat8_E4M3
+                       || ir.opCode == EIROpCode.LoadConstFloat8_E5M2;
+                int bits = 0;
+                object v = ir.opValue;
+                if (v != null)
+                {
+                    try { bits = Convert.ToInt32(v, CultureInfo.InvariantCulture); }
+                    catch { bits = 0; }
+                }
+                else if (ir.Payload != null && ir.Payload.Length >= (is8 ? 1 : 2))
+                {
+                    bits = is8 ? ir.Payload[0] : BitConverter.ToUInt16(ir.Payload, 0);
+                }
+                bits &= is8 ? 0xFF : 0xFFFF;
+
+                float f = ir.opCode == EIROpCode.LoadConstFloat8_E4M3
+                    ? Float816Convert.Float8E4M3BitsToFloat32(bits)
+                    : ir.opCode == EIROpCode.LoadConstFloat8_E5M2
+                        ? Float816Convert.Float8E5M2BitsToFloat32(bits)
+                        : ir.opCode == EIROpCode.LoadConstFloat16
+                            ? Float816Convert.Float16BitsToFloat32(bits)
+                            : Float816Convert.BFloat16BitsToFloat32(bits);
+                return BitConverter.DoubleToInt64Bits(f);
+            }
+
+            /// <summary>
+            /// Decode a fused-store constant payload into a stack Val.
+            /// In-memory layout: [etype:1][value:N] with etypeOffset
+            /// pointing at the etype byte (0 for the plain forms, 1 for
+            /// StoreArrayIndexConstValue which prefixes the flag byte). The
+            /// value bytes are packed exactly like the classic LoadConst*
+            /// opcodes (IRData.PackOpValue); String (a 4-byte string id) and
+            /// anything else without an AOT domain degrades to an ObjRef
+            /// placeholder.
+            /// </summary>
+            protected Val DecodeConstValue(IRData ir, int pos, int etypeOffset)
+            {
+                byte[] p = ir.Payload;
+                if (p == null || p.Length <= etypeOffset)
+                    throw Fail($"[{pos}] {ir.opCode} with malformed payload");
+                int etype = p[etypeOffset];
+                int off = etypeOffset + 1;
+                int avail = p.Length - off;
+
+                switch ((EType)etype)
+                {
+                    case EType.Boolean:
+                    case EType.UInt8:
+                        if (avail < 1) throw Fail($"[{pos}] {ir.opCode} truncated payload");
+                        return new Val(CI64(p[off]), SLType.I64);
+                    case EType.Int8:
+                        if (avail < 1) throw Fail($"[{pos}] {ir.opCode} truncated payload");
+                        return new Val(CI64((sbyte)p[off]), SLType.I64);
+                    case EType.Int16:
+                        if (avail < 2) throw Fail($"[{pos}] {ir.opCode} truncated payload");
+                        return new Val(CI64(BitConverter.ToInt16(p, off)), SLType.I64);
+                    case EType.UInt16:
+                        if (avail < 2) throw Fail($"[{pos}] {ir.opCode} truncated payload");
+                        return new Val(CI64(BitConverter.ToUInt16(p, off)), SLType.I64);
+                    case EType.Int32:
+                        if (avail < 4) throw Fail($"[{pos}] {ir.opCode} truncated payload");
+                        return new Val(CI64(BitConverter.ToInt32(p, off)), SLType.I64);
+                    case EType.UInt32:
+                        if (avail < 4) throw Fail($"[{pos}] {ir.opCode} truncated payload");
+                        return new Val(CI64(BitConverter.ToUInt32(p, off)), SLType.I64);
+                    case EType.Int64:
+                    case EType.UInt64:
+                        if (avail < 8) throw Fail($"[{pos}] {ir.opCode} truncated payload");
+                        return new Val(CI64(BitConverter.ToInt64(p, off)), SLType.I64);
+                    case EType.Float8:
+                    case EType.Float8_E5M2:
+                    case EType.Float16:
+                    case EType.Float16_Brain:
+                    case EType.Float32:
+                    {
+                        int need = etype == (int)EType.Float32 ? 4
+                                 : etype == (int)EType.Float16 || etype == (int)EType.Float16_Brain ? 2 : 1;
+                        if (avail < need) throw Fail($"[{pos}] {ir.opCode} truncated payload");
+                        float f = etype == (int)EType.Float8
+                            ? Float816Convert.Float8E4M3BitsToFloat32(p[off])
+                            : etype == (int)EType.Float8_E5M2
+                                ? Float816Convert.Float8E5M2BitsToFloat32(p[off])
+                                : etype == (int)EType.Float16
+                                    ? Float816Convert.Float16BitsToFloat32(BitConverter.ToUInt16(p, off))
+                                    : etype == (int)EType.Float16_Brain
+                                        ? Float816Convert.BFloat16BitsToFloat32(BitConverter.ToUInt16(p, off))
+                                        : BitConverter.ToSingle(p, off);
+                        // exact f32 -> f64 widening: enters the F32 domain
+                        return new Val(CI64(BitConverter.DoubleToInt64Bits(f)), SLType.F32);
+                    }
+                    case EType.Float64:
+                        if (avail < 8) throw Fail($"[{pos}] {ir.opCode} truncated payload");
+                        return new Val(CI64(BitConverter.ToInt64(p, off)), SLType.F64);
+                    default:
+                        // String (4-byte string id) / Null / anything else:
+                        // no AOT bridge, ObjRef placeholder
+                        return new Val(CI64(0), SLType.ObjRef);
+                }
+            }
+
             // ---- SSA naming + constant hoisting ------------------------------------
 
             protected static string ConstSuffix(long v)
@@ -2751,6 +3876,26 @@ namespace SimpleLanguage.Export.MLIR
                 name = "%k_" + ConstSuffix(v);
                 EmitConst("    {0} = llvm.mlir.constant({1} : i32) : i32", name, v.ToString(CultureInfo.InvariantCulture));
                 m_K32Consts[v] = name;
+                return name;
+            }
+
+            /// <summary>Hoisted arith-dialect i32 constant (narrow-float convert shifts/masks).</summary>
+            protected string CA32(int v)
+            {
+                if (m_ArithI32Consts.TryGetValue(v, out string name)) return name;
+                name = "%a_" + ConstSuffix(v);
+                EmitConst("    {0} = arith.constant {1} : i32", name, v.ToString(CultureInfo.InvariantCulture));
+                m_ArithI32Consts[v] = name;
+                return name;
+            }
+
+            /// <summary>Hoisted arith-dialect f32 constant (narrow-float subnormal scale).</summary>
+            protected string CAF32(string literal)
+            {
+                if (m_ArithF32Consts.TryGetValue(literal, out string name)) return name;
+                name = "%fa_" + m_ArithF32Consts.Count.ToString(CultureInfo.InvariantCulture);
+                EmitConst("    {0} = arith.constant {1} : f32", name, literal);
+                m_ArithF32Consts[literal] = name;
                 return name;
             }
 
@@ -3099,6 +4244,36 @@ namespace SimpleLanguage.Export.MLIR
                 return string.Join(", ", parts);
             }
 
+            /* Interpreter-only / placeholder opcodes (see EmitInstruction):
+             * on the CPU AOT path they degrade to comment lines and ObjRef
+             * placeholders that Fail safely at first real use. Inside a
+             * gpu.func the linearizer would materialize the placeholder as a
+             * plain i64 zero flowing into the lane math - silently wrong
+             * with no failure signal - so reject them eagerly at export time
+             * and keep the kernel on the interpreter. */
+            private static readonly HashSet<EIROpCode> s_GpuUnsupportedOps = new HashSet<EIROpCode>
+            {
+                EIROpCode.LoadConstString,            // ObjRef placeholder
+                EIROpCode.LoadConstType,              // ObjRef placeholder
+                EIROpCode.LoadStaticField,            // ObjRef placeholder
+                EIROpCode.LoadGlobal,                 // ObjRef placeholder
+                EIROpCode.NewObject,                  // ObjRef placeholder
+                EIROpCode.NewTemplateObject,          // ObjRef placeholder
+                EIROpCode.NewArray,                   // ObjRef placeholder
+                EIROpCode.NewClosure,                 // ObjRef placeholder
+                EIROpCode.AllocClosureContext,        // ObjRef placeholder
+                EIROpCode.Convert_ToString,           // ObjRef placeholder
+                EIROpCode.CastClass,                  // reference cast: no refs in kernels
+                EIROpCode.StoreStaticField,           // value dropped
+                EIROpCode.StoreGlobal,                // value dropped
+                EIROpCode.Throw,                      // unwinding dropped
+                EIROpCode.StoreStaticFieldConstValue, // fused form of the above
+                EIROpCode.StoreGlobalConstValue,
+                EIROpCode.CallDynamic,                // interpreter-only dispatch
+                EIROpCode.CallClosure,                // interpreter-only dispatch
+                EIROpCode.CallSystemMethod,           // interpreter bridge
+            };
+
             protected override void CheckSupported()
             {
                 base.CheckSupported();
@@ -3111,7 +4286,11 @@ namespace SimpleLanguage.Export.MLIR
                     // which does not exist inside gpu.func
                     if (op == EIROpCode.LoadNotStaticField
                         || op == EIROpCode.StoreNotStaticField1
-                        || op == EIROpCode.StoreNotStaticField2)
+                        || op == EIROpCode.StoreNotStaticField2
+                        || op == EIROpCode.StoreNotStaticField1ConstValue
+                        || op == EIROpCode.StoreNotStaticField2ConstValue)
+                        throw Fail($"[{i}] {op} is not supported inside GPU kernels");
+                    if (s_GpuUnsupportedOps.Contains(op))
                         throw Fail($"[{i}] {op} is not supported inside GPU kernels");
                 }
             }

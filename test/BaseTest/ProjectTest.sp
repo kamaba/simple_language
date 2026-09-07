@@ -15,7 +15,7 @@ Project
     {     
         SystemPrintln("===== ProjectTest _main_ start =====")
         nowMs = Environment.nowMillis()
-        #!
+        
         GlobalTest.fun()
         ObjectTest.fun()
         StringTest.fun()
@@ -79,7 +79,7 @@ Project
         SwitchTest.fun()
         CoroutineTest.fun()
         InputArgsTest.fun();
-        !#
+        
         HashSetTest.fun()
 
         nowMs = Environment.nowMillis() - nowMs

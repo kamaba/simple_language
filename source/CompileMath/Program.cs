@@ -19,6 +19,7 @@ internal static class Program
         {
             "compile",
             "-e", "ir",
+            "-o3",
             "-p", projectPath,
             "--no-banner"
         };

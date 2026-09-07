@@ -8,7 +8,7 @@ public class Float32_2
     public Float32 y = 0.0f
 
     # ── 构造 ─────────────────────────────────────────────
-    public void _init_()
+    override void _init_()
     {
         this.x = 0.0f
         this.y = 0.0f
@@ -27,7 +27,7 @@ public class Float32_2
     }
 
     # ── 索引访问 ─────────────────────────────────────────
-    Float32 _getItem_( int index )
+    override Float32 _getItem_( int index )
     {
         if index == 0
         {
@@ -36,7 +36,7 @@ public class Float32_2
         ret this.y
     }
 
-    void _setItem_( int index, Float32 value )
+    override void _setItem_( int index, Float32 value )
     {
         if index == 0
         {

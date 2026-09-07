@@ -1,15 +1,27 @@
-字节码序例化相互转化过程
 
-if (vm->stack_slot_depth > 0u)
-这种的语句，尽量使用汇编内联，可以获取 不走复杂的判断 相当后边的>0u >1u >2u 等可以是不同的
-2. 数学库的集成
+
+
+
+在FrontEnd层 对于语言 以后对于函数中的 {} 必须在前边 增加labgel 标签 也就是label Name{} 这种的才是正确的语法，还有，如果 不想写Name 可以是 label _{} 这样的语法 ，因为这样，可以默认增加一个文件名称+函数+行号的Name 也就是 label _{} 变在Frontend变成 比如当前文件是Path1/Path2.sl 函数名称 Func 行号103 会变成 label Path1_Path2_FN_Func_103{} 这样的形式
+
+
+需要在FrontEnd层，把像 __enter_ _exit_ _add_ _minus_ _getItem_ _setItem_ 这总的方法，都总结出来，然后在类，遇到这种文件的时候，先要进行是否是系统 内部定义类的判断，判断包括，传参是否相同，这种内部类，都有自己的规则，比如 Float32_2 _add_( object add_ ){} 在这个函数中，也有参数判断，如果参数在FrontEnd层就不符合，要直接报错，像数值操作的，都返回的是当前类的类型，  这种内部内定函数，是需要有override的标记， 但允许final, 可能写法和普通的有点冲突，但子类，也需要查看父类，是否有final的标记，如果有的话，就不允许再使用这个内置类了，在编译的时候要报错。注意的是，随然_init_也是系统内部类，但这个需要和普通的类一样处理。 因为这个是Object传下来的，只是特殊化处理了下。
+
+
+在现在的FrontEnd层，有好多的错误提示，也就是Log的输出，都是   ShowExtendMessage = 11001,MetaCoreAssertShowMessage 的很多，所以现在 你要分析下，这些是什么逻辑，然后要建一个LID的索引，建这个索引过程，要先分析是Toke/Node/File/MetaCore/IR/Export/Process 那个模块，如果确定好，然后把模块的具体 子模块，是Function/Express/Statement/Class/Data/Enum/... 这种的，然后就是处理逻辑的错误建立， 建完后，要在F:\project\lang\simple_language\source\Front\Log\ErrorDefinitions.csv 这里边增加对应的条目数据， 对了，要把这个CSV里边的标头说下 
+id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMessage,enFixedTips，其它的你直接读字段就能明白，但enableAssert这个是在编译的时候中间中断的处理，pass 是指，在编译时 该小段，比如我编译File层的时候，可能有3-5个过程，如果其实一个过程报错，是否直接中断，如果pass=True 则，不中断，  把这个改完后，跑通就行，具体的问题，我在debug的时候，遇到这个错误我再review.
+
+
+
+
+字节码序例化相互转化过程
+2. 数学库的集成  需要先把VM里边集成的system method call 的定义都封装成一个.h 然后在math自己的cvm的dll里边调用这个，然后写自己对应的system method call 的相关方法，然后在
+
+在数据库 4x4 这种类型的，暂不使用数组，本身这个类，数据元素就是连续的内存，但现在没有系统的方法，要增加一个系统方法 快速的布内存，然后设置元素 Float32_4x4 这个为例，需要把4x4的float32 都放到这个类的所有元素节点  Float32 _mat1x1 = 0.0f Float32 _mat1x2 = 0.0f  这个类要统一处理 内存，然后统一创建赋值，
+ 
 
 
 7. 指针的增加与处理. 
-9. 是否不能 new int() 这种的，直接变成栈的方式
-在现在的FrontEnd层，有好多的错误提示，也就是Log的输出，都是
-
-
 但做数据库，需要动态引入dll的vm层代码
 使用 @csharp{ } 调用相关的接口 在{}内是中转逻辑   a = 0; @csharp {     a = TestCSharp.TTC.getIndex( 10, a ) }   @js{ a = Test.calc( a, a ) }  需要在工程里边配置 C#版本
 
@@ -32,6 +44,7 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 4. 如果是普通类，则看是否有重载，如果没有重载，则对比类引用是否是一个
 5. 要优化new的时候初始化与assignMember两个有重复
 6. 以cvm里边 数据类型的创建
+优化cvm里边的静态类调用，尤其是，要把methodName 去掉，直接使用id, 
 
 
 1. 优化vm层，类型的处理   计算   比较  
@@ -44,6 +57,7 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 在aot的中，处理llvm内置的一些结构，在生成这个数据后，要有一个id的概念，也就是定义这个对象的hashCode 虽然是在llvm里边生成的，也要有这个概念，因为这个在 llvm的.struct转成VMObject一类的时候，要先检查vm里边有没有这个，如果没有，再去创建VMObject 而且这个不受内存gc管理，因为这个还属于llvm  所以Object.sl 你看下是不是要增加一个int _hashCode这样的概念呀，是不是这样更合理  你确定下，原来好像我看着是用的指针进行hash运算的，这种方式确定可以吗？
 
 sl_aot_skeleton_new_inner这个函数的话，原来的llvm生成的数据，是不是可以在转换的类中 member_data可以复用，然后 这个VMObject不进行gc拖管更合理。
+
 
 
 优化：

@@ -15,6 +15,18 @@ public class Config
     # 清屏颜色
     public Color clearColor = Color.black()
 
+    # ── URP 相关开关 ───────────────────────────────────────
+    # 是否使用 HDR 中间缓冲（后处理链）
+    public bool hdr = true
+    # 渲染缩放（0.5 ~ 1.0）
+    public Float32 renderScale = 1.0f
+    # 阴影贴图分辨率
+    public Int32 shadowMapSize = 2048
+    # 是否启用深度预通道（Z-Prepass）
+    public bool useDepthPrepass = true
+    # 是否启用后处理
+    public bool usePostProcessing = true
+
     # 相机默认参数（视场角为角度制）
     public Float32 fieldOfView = 60.0f
     public Float32 nearClip = 0.1f
@@ -30,6 +42,11 @@ public class Config
         this.msaaSamples = 0
         this.backend = "opengl"
         this.clearColor = Color.black()
+        this.hdr = true
+        this.renderScale = 1.0f
+        this.shadowMapSize = 2048
+        this.useDepthPrepass = true
+        this.usePostProcessing = true
         this.fieldOfView = 60.0f
         this.nearClip = 0.1f
         this.farClip = 1000.0f

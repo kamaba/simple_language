@@ -1,0 +1,98 @@
+{
+  "project":
+  {
+    "name": "ProjectTest",
+    "desc": "Tensora test project - tensor/autograd, ONNX-like CNN, NN training, classic ML examples, data pipeline",
+    "mainVersion": 0,
+    "subVersion": 0,
+    "buildVersion": 1,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "TensorTest.sl",    "group": "tensora", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "AutogradTest.sl",  "group": "tensora", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "CnnTest.sl",       "group": "tensora", "tag": "cnn",  "ignore": false, "priority": 0 },
+      { "path": "NnTest.sl",        "group": "tensora", "tag": "nn",   "ignore": false, "priority": 0 },
+      { "path": "ClassicMlTest.sl", "group": "tensora", "tag": "ml",   "ignore": false, "priority": 0 },
+      { "path": "DataTest.sl",      "group": "tensora", "tag": "data", "ignore": false, "priority": 0 },
+      { "path": "TtsTest.sl",       "group": "tensora", "tag": "tts",  "ignore": false, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std.Console"
+    ],
+    "replace": {
+      "DEBUG": "true"
+    }
+  },
+  "data": {
+    "defaultBatchSize": 8,
+    "defaultEpochs": 20
+  },
+  "references": [
+    { "path": "../../out/export/Core",    "uuid": "123123123213", "name": "Core.module.json" },
+    { "path": "../../out/export/Math",    "uuid": "456456456456", "name": "Math.module.json" },
+    { "path": "../../out/export/Tensora", "uuid": "789789789789", "name": "Tensora.module.json" }
+  ],
+  "struct": [
+    { "namespace": "TensoraTest", "children": [
+      { "class": "TensorTest" },
+      { "class": "AutogradTest" },
+      { "class": "CnnTest" },
+      { "class": "NnTest" },
+      { "class": "LinearRegression" },
+      { "class": "LogisticRegression" },
+      { "class": "KNN" },
+      { "class": "KMeans" },
+      { "class": "GaussianNB" },
+      { "class": "DecisionStump" },
+      { "class": "PCA" },
+      { "class": "ClassicMlTest" },
+      { "class": "DataTest" },
+      { "class": "Conv1d" },
+      { "class": "Wav2VecLikeEncoder" },
+      { "class": "TtsFrontend" },
+      { "class": "DurationPredictor" },
+      { "class": "LengthRegulator" },
+      { "class": "MelDecoder" },
+      { "class": "SimpleVocoder" },
+      { "class": "TtsModel" },
+      { "class": "TtsTest" }
+    ]}
+  ],
+  "export": {
+    "moduleName": "TensoraTest",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "versionMain": 0,
+    "versionSub": 0,
+    "versionPatch": 1,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  }
+}

@@ -10,7 +10,12 @@
 //      --link.exe /DLL /NOENTRY /EXPORT:sym...      --> aot.dll
 //  Tool location:
 //    - SIMPLELANG_MLIR_BIN   env: directory of mlir-opt/mlir-translate/llc
+//      (explicit override: no auto-deploy, tools are used from this directory)
 //    - SIMPLELANG_MSVC_LINK  env: full path to MSVC link.exe
+//    - auto-deploy: on first use copy the needed tool files next to the
+//      running exe (EnsureLocalTools), then prefer that local copy
+//    - auto-probe: exe directory (auto-deployed tools)
+//    - auto-probe: <root>\simple_language\tools\llvm (relocated toolchain)
 //    - auto-probe: monorepo layout <root>\llvm-project\build\Release\bin
 //    - auto-probe: vswhere (VS with C++ workload), then PATH
 //****************************************************************************
@@ -56,7 +61,13 @@ namespace SimpleLanguage.Export.MLIR
 
                 var bin = Environment.GetEnvironmentVariable("SIMPLELANG_MLIR_BIN");
                 if (string.IsNullOrWhiteSpace(bin))
-                    bin = ProbeMonorepoMlirBin();
+                {
+                    // Default flow: make the toolchain self-contained next to
+                    // the running exe — copy the tools on first use, then
+                    // prefer that local copy over the probed source directory.
+                    EnsureLocalTools();
+                    bin = ProbeLocalMlirBin() ?? ProbeMonorepoMlirBin();
+                }
                 if (!string.IsNullOrWhiteSpace(bin))
                 {
                     t.MlirOpt = Path.Combine(bin, "mlir-opt" + ExeExt);
@@ -261,8 +272,16 @@ namespace SimpleLanguage.Export.MLIR
         // ------------------------------------------------------------------
 
         /// <summary>
-        /// Monorepo layout probe: walk up from the exe directory looking for
-        /// &lt;root&gt;\llvm-project\build\Release\bin\mlir-opt.exe.
+        /// Tool-directory probe: walk up from the exe directory, at each
+        /// ancestor checking (in order)
+        ///   1. &lt;root&gt;\simple_language\tools\llvm\mlir-opt.exe
+        ///      (relocated toolchain: the llvm-project monorepo is no longer
+        ///      part of the checkout; only the 4 exes + the f16 utils dll
+        ///      live there)
+        ///   2. &lt;root&gt;\llvm-project\build\Release\bin\mlir-opt.exe
+        ///      (legacy monorepo layout, kept for older checkouts)
+        /// The relative form of (1) also matches when the front-end runs from
+        /// a sibling of simple_language (e.g. lang\build\...).
         /// </summary>
         private static string? ProbeMonorepoMlirBin()
         {
@@ -271,10 +290,81 @@ namespace SimpleLanguage.Export.MLIR
                 var dir = new DirectoryInfo(AppContext.BaseDirectory);
                 for (var d = dir; d != null; d = d.Parent)
                 {
+                    var tools = Path.Combine(d.FullName, "simple_language", "tools", "llvm");
+                    if (File.Exists(Path.Combine(tools, "mlir-opt" + ExeExt)))
+                        return tools;
                     var candidate = Path.Combine(d.FullName, "llvm-project", "build", "Release", "bin");
                     if (File.Exists(Path.Combine(candidate, "mlir-opt" + ExeExt)))
                         return candidate;
                 }
+            }
+            catch
+            {
+                // ignore probing errors
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// AOT 管线实际用到的 MLIR 工具文件（EnsureLocalTools 拷到 exe 目录的就是
+        /// 这几个；mlir-transform-opt.exe 当前未被管线使用，不在此列）。
+        /// </summary>
+        private static readonly string[] LocalToolFiles =
+        {
+            "mlir-opt" + ExeExt,
+            "mlir-translate" + ExeExt,
+            "llc" + ExeExt,
+            "mlir_float16_utils.dll",
+        };
+
+        /// <summary>
+        /// 确保工具随 exe 部署：把用到的 MLIR 工具从探测到的工具目录
+        /// （simple_language\tools\llvm 或旧 monorepo 布局）拷到 exe 所在目录
+        /// （AppContext.BaseDirectory），让编译器不依赖源码树即可完成 AOT 构建。
+        /// 规则：已存在的不覆盖（升级工具需手动删除 exe 目录下的旧文件）；
+        /// 源目录里没有的跳过；任何失败静默跳过（工具链回退到探测目录）。
+        /// 返回本次实际拷贝的文件数（幂等，已全部就位时为 0）。
+        /// </summary>
+        public static int EnsureLocalTools()
+        {
+            try
+            {
+                string exeDir = AppContext.BaseDirectory;
+                string? src = ProbeMonorepoMlirBin();
+                if (src == null)
+                    return 0; // no source tree to copy from (standalone deploy)
+                if (string.Equals(
+                        Path.TrimEndingDirectorySeparator(Path.GetFullPath(src)),
+                        Path.TrimEndingDirectorySeparator(Path.GetFullPath(exeDir)),
+                        StringComparison.OrdinalIgnoreCase))
+                    return 0; // already running from the tools directory itself
+
+                int copied = 0;
+                foreach (var f in LocalToolFiles)
+                {
+                    var dst = Path.Combine(exeDir, f);
+                    if (File.Exists(dst)) continue; // present -> keep (no overwrite)
+                    var from = Path.Combine(src, f);
+                    if (!File.Exists(from)) continue;
+                    File.Copy(from, dst, overwrite: false);
+                    copied++;
+                }
+                return copied;
+            }
+            catch
+            {
+                return 0; // never let the deploy step break the export pipeline
+            }
+        }
+
+        /// <summary>已随 exe 部署的工具目录（EnsureLocalTools 拷贝产物所在）。</summary>
+        private static string? ProbeLocalMlirBin()
+        {
+            try
+            {
+                var dir = AppContext.BaseDirectory;
+                if (File.Exists(Path.Combine(dir, "mlir-opt" + ExeExt)))
+                    return dir;
             }
             catch
             {
