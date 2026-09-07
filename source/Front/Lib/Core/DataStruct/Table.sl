@@ -144,7 +144,7 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
     }
 
     # ---- 行索引器（返回行数组活引用，越界返回 null）----
-    public Array<Object> _getItem_( int row )
+    public override Array<Object> _getItem_( int row )
     {
         if row < 0 || row >= this._rows.length
         {
@@ -153,7 +153,7 @@ public class Table extends Object interface Core.IIterable<Array<Object>>, Core.
         ret this._rows._getItem_(row)
     }
     #整行替换（经规整对齐当前列宽，非法索引忽略）
-    public void _setItem_( int row, Array<Object> value )
+    public override void _setItem_( int row, Array<Object> value )
     {
         if row < 0 || row >= this._rows.length
         {

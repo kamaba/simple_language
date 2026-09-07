@@ -87,6 +87,12 @@ namespace SimpleLanguage.Logging
         NodeDefineFunctionAfterNotAllowSyntax = 12279,
         GotoLabelNotDefined = 12280,
         LabelRepeatDefine = 12281,
+        BlockMustHaveLabel = 12282,
+        MetaCoreBuiltinFunctionNotAllowStatic = 12283,
+        MetaCoreBuiltinFunctionNeedOverrideFlag = 12284,
+        MetaCoreBuiltinFunctionParamError = 12285,
+        MetaCoreBuiltinFunctionReturnTypeError = 12286,
+        MetaCoreBuiltinFinalFunctionCannotOverride = 12287,
 
     }
 }

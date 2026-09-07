@@ -94,6 +94,38 @@ namespace SimpleLanguage.IR
                     break;
                 case MetaOpExpressNode moen:
                     {
+                        // 类类型内置operator方法(_add_/_eq_等): 把 left op right 编译为
+                        // receiver._op_(param) 的静态方法调用(receiver先压栈, 参数后压栈),
+                        // 调用形态与 IRCall.cs 中 operator 方法的降级调用一致
+                        if (moen.opMemberFunction != null && moen.opReceiverExpress != null && moen.opParamExpress != null)
+                        {
+                            CreateIRDataOne(moen.opReceiverExpress);
+                            CreateIRDataOne(moen.opParamExpress);
+                            var mf = moen.opMemberFunction;
+                            var irManagerForLookup = m_IRMethod != null ? m_IRMethod.irManager : IRManager.instance;
+                            var irRuntimeMethod = irManagerForLookup?.GetIRMethod(mf.functionAllName);
+                            if (irRuntimeMethod == null && IRManager.instance != irManagerForLookup)
+                            {
+                                irRuntimeMethod = IRManager.instance.GetIRMethod(mf.functionAllName);
+                            }
+                            if (irRuntimeMethod == null)
+                            {
+                                Log.AddIRLog(LID.MetaCoreAssertShowMessage, moen.token,
+                                    "operator method not found!! func: " + mf.functionAllName);
+                                return;
+                            }
+                            var irmc = IRManager.GetIRMetaClassByMetaOwner(mf.ownerMetaBase);
+                            var irmt = new IRMetaType(irmc, new List<IRMetaType>());
+                            bool tryCatch = m_IRMethod != null && m_IRMethod.isInTryCatch;
+                            var irmethodcall = new IRMethodCall(irmt, new List<IRMetaType>(), irRuntimeMethod, 1, tryCatch);
+                            IRData datacall = new IRData();
+                            datacall.opCode = EIROpCode.CallStatic;
+                            datacall.SetOpValue(irmethodcall);
+                            datacall.index = 1;
+                            datacall.SetDebugInfoByToken(moen.token);
+                            AddIRData(datacall);
+                            break;
+                        }
                         MetaExpressNodeBase leftNode = moen.left;
                         MetaExpressNodeBase rightNode = moen.right;
                         CreateIRDataOne(leftNode);

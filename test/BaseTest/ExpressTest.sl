@@ -37,6 +37,7 @@ Class1
     {
         int x2 = 20
         int a2 = this.c2.a
+        label printBlock
         {
             global.println("p1=" + x2 + " x=" + this.a)
         }
@@ -75,6 +76,7 @@ namespace Application
             {
                 mc33 = Class3(p2 + 2){ b = 100, a = 20 }
                 bool1 = Int16(pppp1 <= this.a + Class222.a) >= 0
+                label fun1Block
                 {
                     int b1 = 21
                     Class3 mc22 = new(pppp1, b1, 10.0f - 2.0f, 20 + 12)
@@ -87,6 +89,7 @@ namespace Application
                     this.x22 = 20
                     this.x22 += 10
                     x33 = 30
+                    label _
                     {
                         if (this.x == 35)
                         {
@@ -97,9 +100,8 @@ namespace Application
                     }
                 }
 
-                {
+                label empty { }
 
-                }
                 ret null
             }
 

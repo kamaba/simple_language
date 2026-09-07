@@ -102,7 +102,7 @@ public class BaseCsv extends Object
     }
 
     # ---- 行索引器（返回行数组活引用，越界返回 null）----
-    public Array<Object> _getItem_( int row )
+    public override Array<Object> _getItem_( int row )
     {
         ret this._table._getItem_(row)
     }

@@ -1,10 +1,5 @@
 
 
-
-
-在FrontEnd层 对于语言 以后对于函数中的 {} 必须在前边 增加labgel 标签 也就是label Name{} 这种的才是正确的语法，还有，如果 不想写Name 可以是 label _{} 这样的语法 ，因为这样，可以默认增加一个文件名称+函数+行号的Name 也就是 label _{} 变在Frontend变成 比如当前文件是Path1/Path2.sl 函数名称 Func 行号103 会变成 label Path1_Path2_FN_Func_103{} 这样的形式
-
-
 需要在FrontEnd层，把像 __enter_ _exit_ _add_ _minus_ _getItem_ _setItem_ 这总的方法，都总结出来，然后在类，遇到这种文件的时候，先要进行是否是系统 内部定义类的判断，判断包括，传参是否相同，这种内部类，都有自己的规则，比如 Float32_2 _add_( object add_ ){} 在这个函数中，也有参数判断，如果参数在FrontEnd层就不符合，要直接报错，像数值操作的，都返回的是当前类的类型，  这种内部内定函数，是需要有override的标记， 但允许final, 可能写法和普通的有点冲突，但子类，也需要查看父类，是否有final的标记，如果有的话，就不允许再使用这个内置类了，在编译的时候要报错。注意的是，随然_init_也是系统内部类，但这个需要和普通的类一样处理。 因为这个是Object传下来的，只是特殊化处理了下。
 
 
@@ -12,10 +7,12 @@
 id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMessage,enFixedTips，其它的你直接读字段就能明白，但enableAssert这个是在编译的时候中间中断的处理，pass 是指，在编译时 该小段，比如我编译File层的时候，可能有3-5个过程，如果其实一个过程报错，是否直接中断，如果pass=True 则，不中断，  把这个改完后，跑通就行，具体的问题，我在debug的时候，遇到这个错误我再review.
 
 
+增加 if( var1 == null ) 的快速指针，还有 if var1!= null 的快速指针 大概思路就是不进行dup 然后直接通过指令，指令里边带着跳转位置 但null是直接在cvm里边直接判断的，跳转逻辑还和普通的if一样，只是少了前边两步，把?. 还有普通的 var == null var != nul 都识别出来，然后变成这个模式，如果使用了 o1 o2 o3 都会把该指针加进去
+
+2. 数学库的集成  需要先把VM里边集成的system method call 的定义都封装成一个.h 然后在math自己的cvm的dll里边调用这个，然后写自己对应的system method call 的相关方法，然后在
 
 
 字节码序例化相互转化过程
-2. 数学库的集成  需要先把VM里边集成的system method call 的定义都封装成一个.h 然后在math自己的cvm的dll里边调用这个，然后写自己对应的system method call 的相关方法，然后在
 
 在数据库 4x4 这种类型的，暂不使用数组，本身这个类，数据元素就是连续的内存，但现在没有系统的方法，要增加一个系统方法 快速的布内存，然后设置元素 Float32_4x4 这个为例，需要把4x4的float32 都放到这个类的所有元素节点  Float32 _mat1x1 = 0.0f Float32 _mat1x2 = 0.0f  这个类要统一处理 内存，然后统一创建赋值，
  

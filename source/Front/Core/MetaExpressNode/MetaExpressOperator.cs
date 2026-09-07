@@ -255,6 +255,12 @@ namespace SimpleLanguage.Core
         public ELeftRightOpSign opSign => m_OpLevelSign;
         public ConvertType leftConvert => m_LeftConvert;
         public ConvertType rightConvert => m_RightConvert;
+        /// <summary>类类型双目运算解析出的内置operator方法(_add_/_eq_等)，IR层据此生成方法调用</summary>
+        public MetaMemberFunction opMemberFunction => m_OpMemberFunction;
+        /// <summary>operator调用的接收者表达式(先压栈)</summary>
+        public MetaExpressNodeBase opReceiverExpress => m_OpReceiverExpress;
+        /// <summary>operator调用的实参表达式(后压栈)</summary>
+        public MetaExpressNodeBase opParamExpress => m_OpParamExpress;
 
         private MetaExpressNodeBase m_Left = null;
         private MetaExpressNodeBase m_Right = null;
@@ -265,6 +271,9 @@ namespace SimpleLanguage.Core
         public override Token token => m_SignToken;
         private MetaType m_DefineMetaType = null;
         private MetaType m_RealMetaType = null;
+        private MetaMemberFunction m_OpMemberFunction = null;
+        private MetaExpressNodeBase m_OpReceiverExpress = null;
+        private MetaExpressNodeBase m_OpParamExpress = null;
 
         private FileMetaSymbolTerm m_FileMetaBaseTerm = null;
         public MetaOpExpressNode(FileMetaSymbolTerm fme, MetaType mt, MetaExpressNodeBase _left, MetaExpressNodeBase _right )
@@ -767,7 +776,13 @@ namespace SimpleLanguage.Core
                             case ELeftRightOpSign.Or:
                             case ELeftRightOpSign.And:
                                 {
-                                    m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                                    // 类类型比较/逻辑运算: 优先解析内置operator方法(_eq_/_ne_等),
+                                    // 命中则调用方法(返回bool); 未定义时保持原有引用比较语义
+                                    ResolveBuiltinOperatorFunction(left, right);
+                                    if (m_OpMemberFunction == null)
+                                    {
+                                        m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                                    }
                                 }
                                 break;
                         }
@@ -776,11 +791,10 @@ namespace SimpleLanguage.Core
 
                     if (isFindDefineFunction)
                     {
-                        var mipc = new MetaInputParamCollection(left.expressReturnMetaType.metaBase, null);
-                        MetaInputParam mip = new MetaInputParam(right);
-                        mipc.AddMetaInputParam(mip);
-                        var mmf = rightMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_op_add_", 0, mipc);
-                        if (mmf == null)
+                        // 类类型算术/位运算: 解析内置operator方法(_add_/_sub_等)
+                        // 先在(交换后的)left上找 left.op(right), 失败再在right上找 right.op(left)
+                        ResolveBuiltinOperatorFunction(left, right);
+                        if (m_OpMemberFunction == null)
                         {
                             Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Left:" + left.token.ToLexemeAllString() + "右边类型不能转换为左边类型进行加减运算!! Right:" + right.token.ToLexemeAllString()  );
                             // 错误路径必须设置类型，否则 CalcReturnType 中 new MetaType(null) 会空引用崩溃
@@ -793,11 +807,57 @@ namespace SimpleLanguage.Core
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "");
                 }
-            }          
+            }
+        }
+        /// <summary>
+        /// 把 left op right 解析为内置operator方法调用:
+        /// 先在(按opLevel交换后的)left类上查找 opMethodName(right)，
+        /// 失败再在right类上查找 opMethodName(left)。
+        /// 命中后记录方法与接收者/实参表达式，并把返回类型作为整个表达式的类型。
+        /// </summary>
+        private void ResolveBuiltinOperatorFunction(MetaExpressNodeBase left, MetaExpressNodeBase right)
+        {
+            string opMethodName = BuiltinMemberFunctionRegistry.GetBuiltinOperatorMethodName(m_OpLevelSign);
+            if (opMethodName == null)
+            {
+                return;
+            }
+            MetaClass leftMc = left.GetReturnMetaType()?.metaClass;
+            MetaClass rightMc = right.GetReturnMetaType()?.metaClass;
+            if (leftMc != null)
+            {
+                var mipc = new MetaInputParamCollection(leftMc, null);
+                mipc.AddMetaInputParam(new MetaInputParam(right));
+                var mmf = leftMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(opMethodName, 0, mipc);
+                if (mmf != null)
+                {
+                    m_OpMemberFunction = mmf;
+                    m_OpReceiverExpress = left;
+                    m_OpParamExpress = right;
+                    m_RealMetaType = mmf.GetFinalMetaType() ?? new MetaType(CoreMetaClassManager.booleanMetaClass);
+                    return;
+                }
+            }
+            if (rightMc != null)
+            {
+                var mipc = new MetaInputParamCollection(rightMc, null);
+                mipc.AddMetaInputParam(new MetaInputParam(left));
+                var mmf = rightMc.GetMetaMemberFunctionByNameAndInputTemplateInputParamCount(opMethodName, 0, mipc);
+                if (mmf != null)
+                {
+                    m_OpMemberFunction = mmf;
+                    m_OpReceiverExpress = right;
+                    m_OpParamExpress = left;
+                    m_RealMetaType = mmf.GetFinalMetaType() ?? new MetaType(CoreMetaClassManager.booleanMetaClass);
+                }
+            }
         }
         public MetaExpressNodeBase SimulateCompute(ExpressOptimizeConfig config)
         {
-            if (config.greaterOrEqualConvertGeraterAndEqual && m_OpLevelSign == ELeftRightOpSign.GreaterOrEqual)
+            // 内置operator方法(_ge_/_le_)已解析时禁止拆分为(>)||(==)，
+            // 拆分出的子节点会丢失operator方法调用语义
+            if (config.greaterOrEqualConvertGeraterAndEqual && m_OpLevelSign == ELeftRightOpSign.GreaterOrEqual
+                && m_OpMemberFunction == null)
             {
                 var constLeft = m_Left as MetaConstExpressNode;
                 var constRight = m_Right as MetaConstExpressNode;
@@ -812,7 +872,8 @@ namespace SimpleLanguage.Core
                     m_OpLevelSign = ELeftRightOpSign.Or;
                 }
             }
-            if (config.lessOrEqualConvertLessAndEqual && m_OpLevelSign == ELeftRightOpSign.LessOrEqual)
+            if (config.lessOrEqualConvertLessAndEqual && m_OpLevelSign == ELeftRightOpSign.LessOrEqual
+                && m_OpMemberFunction == null)
             {
                 var constLeft = m_Left as MetaConstExpressNode;
                 var constRight = m_Right as MetaConstExpressNode;

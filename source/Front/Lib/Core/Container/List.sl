@@ -455,11 +455,11 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
         this._index = ind;
         this._current = SystemArrayGetValueThis(this._list, ind) as T
     }
-    void _setItem_( int _index, T _value )
+    override void _setItem_( int _index, T _value )
     {
         SystemArraySetValueThis(this._list, _index, _value)
     }
-    T _getItem_( int _index )
+    override T _getItem_( int _index )
     {
         ret SystemArrayGetValueThis(this._list, _index) as T
     }

@@ -2118,6 +2118,11 @@ namespace SimpleLanguage.Compile
 
             if (node.nodeType == ENodeType.Brace)
             {
+                // 语法约束：函数内语句位置的裸块 {} 必须带 label
+                //（'label 名字 { }' / 'label _ { }' 自动命名）
+                Log.AddNodeLog(LID.BlockMustHaveLabel, node.token,
+                    "函数内裸块{}不再支持: 必须写成 'label 名字 { }' 或 'label _ { }'（自动命名）");
+
                 FileMetaBlockSyntax cps = new FileMetaBlockSyntax(m_FileMeta, node.token, node.endToken);
 
                 AddParseSyntaxNodeInfo(cps, true);
@@ -2133,6 +2138,41 @@ namespace SimpleLanguage.Compile
                 HandleCreateFileMetaSyntaxByPNode(pnode);
             }
             ParseSyntax(pnode);
+        }
+
+        /// <summary>
+        /// label _ { } 的自动命名：文件名_FN_函数名_行号（如 BlockTest_FN_Func_103）。
+        /// 文件名取源文件名去扩展名；函数名取最近一层函数上下文（闭包内兜底 Lambda）；
+        /// 行号为 label 关键字所在行。就地替换 '_' token 的名字（保留原 path/行号）。
+        /// </summary>
+        private Token MakeAutoLabelToken(Token labelKeyToken, Token underscoreToken)
+        {
+            string fileName = "Unknown";
+            try
+            {
+                var p = labelKeyToken?.path;
+                if (!string.IsNullOrEmpty(p))
+                    fileName = System.IO.Path.GetFileNameWithoutExtension(p);
+            }
+            catch { }
+            if (string.IsNullOrEmpty(fileName)) fileName = "Unknown";
+
+            string funcName = "Lambda";
+            foreach (var info in m_CurrentNodeInfoStack)
+            {
+                if (info.parseType == EParseNodeType.Function && info.codeFunction != null)
+                {
+                    var n = info.codeFunction.name;
+                    if (!string.IsNullOrEmpty(n)) funcName = n;
+                    break;
+                }
+            }
+
+            string autoName = fileName + "_FN_" + funcName + "_"
+                + (labelKeyToken != null && labelKeyToken.sourceBeginLine > 0
+                    ? labelKeyToken.sourceBeginLine : 1);
+            underscoreToken.SetLexeme(autoName);
+            return underscoreToken;
         }
 
         /*

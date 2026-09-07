@@ -462,6 +462,7 @@ namespace SimpleLanguage.Core
         public virtual void HandleExtendMemberFunction()
         {
             List<MetaMemberFunction> addmmfList = new List<MetaMemberFunction>();
+            CheckBuiltinMemberFunctionDefine();
             if (this.m_ExtendClass == null)
             {
                 foreach (var v in m_FileCollectMetaMemberFunctionList)
@@ -474,7 +475,8 @@ namespace SimpleLanguage.Core
                     {
                         if (v.isWithInterface) continue;
                         //if (v.isConstructInitFunction) continue;
-                        if( v.isOverrideFunction && !IsMatchInterfaceMemberFunction(v) )
+                        if( v.isOverrideFunction && !IsMatchInterfaceMemberFunction(v)
+                            && !BuiltinMemberFunctionRegistry.Contains(v.name) )
                         {
                             Log.AddMetaCoreLog(LID.ShowExtendMessage, v.token,
                                 "Error 类[" + this.m_AllName + "] 的方法: " + v.name + " 有override标记，但没有父类");
@@ -574,9 +576,10 @@ namespace SimpleLanguage.Core
                     {
                         continue;
                     }
-                    // 有override标记，但父类中不存在签名相同的方法 (排除接口实现)
+                    // 有override标记，但父类中不存在签名相同的方法 (排除接口实现与系统内置方法)
                     if (!v2.isStatic && v2.isOverrideFunction && v2.overrideMetaMemberFunction == null
-                        && !IsMatchInterfaceMemberFunction(v2))
+                        && !IsMatchInterfaceMemberFunction(v2)
+                        && !BuiltinMemberFunctionRegistry.Contains(v2.name))
                     {
                         Log.AddMetaCoreLog(LID.ShowExtendMessage, v2.token,
                             "Error 类[" + this.m_AllName + "] 方法: " + v2.name +
@@ -669,6 +672,134 @@ namespace SimpleLanguage.Core
                 }
             }
             m_TempInnerFunctionList.Clear();
+        }
+        /// <summary>
+        /// 系统内部方法(魔法方法)约束检查
+        /// 类中声明的函数名字命中注册表时, 视为覆写Object层传递下来的内置约定, 在FrontEnd层校验:
+        ///  1. 不允许static声明 (内置约定是实例方法约定)
+        ///  2. 必须携带override标记 (允许final)
+        ///  3. 参数个数/类型规则 (如 Float32_2 _add_( object add_ ) 恰好1个object参数)
+        ///  4. 返回类型规则 (数值操作返回当前类类型, 比较操作返回bool)
+        ///  5. 父链中存在同名final方法时, 不允许再定义该内置方法
+        /// 接口类声明(如IMap的泛型索引器)不受此约束, 整体跳过
+        /// </summary>
+        private void CheckBuiltinMemberFunctionDefine()
+        {
+            if (m_IsInterfaceClass) return;                   // 接口类不受内置方法约束
+            if (refFromType == RefFromType.RefModule) return; // 引用模块加载的类无源码定义
+            foreach (var v in m_FileCollectMetaMemberFunctionList)
+            {
+                if (v.isConstructInitFunction) continue;     // _init_按普通方法处理(Object真实声明传递)
+                var rule = BuiltinMemberFunctionRegistry.GetRule(v.name);
+                if (rule == null) continue;
+
+                // 1. 内置方法不允许static声明
+                if (v.isStatic)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreBuiltinFunctionNotAllowStatic, v.token,
+                        "类[" + this.m_AllName + "] 的系统内部方法: " + v.name +
+                        " 不允许static声明, 内置方法约定为实例方法");
+                    continue; // static形态下后续override/签名检查无意义
+                }
+
+                // 2. 必须携带override标记 (允许final)
+                if (!v.isOverrideFunction)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreBuiltinFunctionNeedOverrideFlag, v.token,
+                        "类[" + this.m_AllName + "] 的系统内部方法: " + v.name + " 需要override标记");
+                }
+
+                // 3. 参数规则
+                CheckBuiltinMemberFunctionParams(v, rule);
+
+                // 4. 返回类型规则
+                CheckBuiltinMemberFunctionReturnType(v, rule);
+
+                // 5. 父链中存在同名final方法时, 不允许再定义该内置方法
+                CheckBuiltinMemberFunctionParentFinal(v);
+            }
+        }
+        private void CheckBuiltinMemberFunctionParams(MetaMemberFunction v, BuiltinMemberFunctionRule rule)
+        {
+            var paramList = v.metaMemberParamCollection.metaDefineParamList;
+            if (paramList.Count != rule.paramCount)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreBuiltinFunctionParamError, v.token,
+                    "类[" + this.m_AllName + "] 的系统内部方法: " + v.name + " 参数个数不符, 需要" +
+                    rule.paramCount + "个参数, 实际" + paramList.Count + "个");
+                return;
+            }
+            if (rule.paramCheckMode == EBuiltinParamCheckMode.Object)
+            {
+                for (int i = 0; i < paramList.Count; i++)
+                {
+                    var pmt = paramList[i].metaVariable.GetFinalMetaType();
+                    if (pmt == null || pmt.GetTemplateMetaClass() != CoreMetaClassManager.objectMetaClass)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreBuiltinFunctionParamError, v.token,
+                            "类[" + this.m_AllName + "] 的系统内部方法: " + v.name + " 第" + (i + 1) +
+                            "个参数类型[" + (pmt == null ? "null" : pmt.ToFormatString()) + "]不符, 需要object类型");
+                    }
+                }
+            }
+        }
+        private void CheckBuiltinMemberFunctionReturnType(MetaMemberFunction v, BuiltinMemberFunctionRule rule)
+        {
+            if (rule.returnCheckMode == EBuiltinReturnCheckMode.Any) return;
+            var rmt = v.GetFinalMetaType();
+            MetaClass expectMc = null;
+            string expectName = "";
+            switch (rule.returnCheckMode)
+            {
+                case EBuiltinReturnCheckMode.CurrentClass:
+                    expectMc = this;
+                    expectName = this.m_AllName;
+                    break;
+                case EBuiltinReturnCheckMode.Boolean:
+                    expectMc = CoreMetaClassManager.booleanMetaClass;
+                    expectName = "bool";
+                    break;
+                case EBuiltinReturnCheckMode.Void:
+                    expectMc = CoreMetaClassManager.voidMetaClass;
+                    expectName = "void";
+                    break;
+            }
+            if (rmt == null || rmt.GetTemplateMetaClass() != expectMc)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreBuiltinFunctionReturnTypeError, v.token,
+                    "类[" + this.m_AllName + "] 的系统内部方法: " + v.name + " 返回类型[" +
+                    (rmt == null ? "null" : rmt.ToFormatString()) + "]不符, 需要" + expectName + "类型");
+            }
+        }
+        private void CheckBuiltinMemberFunctionParentFinal(MetaMemberFunction v)
+        {
+            // 按名字遍历父链: 祖先中存在同名final方法时, 不允许再定义该内置方法
+            var finalFun = FindParentFinalMetaMemberFunctionByName(v.name);
+            if (finalFun == null) return;
+            // 签名完全相同时由HandleExtendMemberFunction既有的final检查(12274)报错, 此处跳过避免重复报错
+            if (finalFun.IsEqualMetaFunction(v)) return;
+            Log.AddMetaCoreLog(LID.MetaCoreBuiltinFinalFunctionCannotOverride, v.token,
+                "子类[" + this.m_AllName + "] 的系统内部方法: " + v.name +
+                " 父类中存在同名final方法: " + finalFun.ownerMetaClass?.allName + "." + v.name +
+                ", 不允许再定义该内置方法");
+        }
+        private MetaMemberFunction FindParentFinalMetaMemberFunctionByName(string name)
+        {
+            var visited = new HashSet<MetaClass>();
+            var pc = this.m_ExtendClass;
+            while (pc != null && visited.Add(pc))
+            {
+                foreach (var f in pc.nonStaticVirtualMetaMemberFunctionList)
+                {
+                    if (f.name == name && f.isFinal) return f;
+                }
+                foreach (var f in pc.fileCollectMetaMemberFunctionList)
+                {
+                    if (f.name == name && f.isFinal) return f;
+                }
+                pc = pc.extendClass;
+            }
+            return null;
         }
         public virtual void HandleExtendAndInterfaceMetaTypeInstnace()
         {

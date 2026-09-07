@@ -1755,17 +1755,27 @@ namespace SimpleLanguage.Compile
 
                     if (!hasCatchFinally)
                     {
+                        // label _ { } → 自动命名：文件名_FN_函数名_行号（如 BlockTest_FN_Func_103）
+                        if (akss.tokenType == ETokenType.Label && tryBlockNode != null
+                            && labelToken != null && labelToken.lexeme?.ToString() == "_")
+                        {
+                            labelToken = MakeAutoLabelToken(akss.keyNode.token, labelToken);
+                        }
+
                         FileMetaKeyGotoLabelSyntax fmkis = new FileMetaKeyGotoLabelSyntax(m_FileMeta, akss.keyNode.token, labelToken);
                         AddParseSyntaxNodeInfo(fmkis);
                         fms = fmkis;
 
-                        ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(fms);
-                        m_CurrentNodeInfoStack.Push(pcnic);
                         if (tryBlockNode != null)
                         {
+                            // label Name { ... } = 带名字的块语句：label 注册语句 +
+                            // 块作用域（复用裸块链路 FileMetaBlockSyntax → MetaBlockStatements）
+                            FileMetaBlockSyntax labelBlock =
+                                new FileMetaBlockSyntax(m_FileMeta, tryBlockNode.token, tryBlockNode.endToken);
+                            AddParseSyntaxNodeInfo(labelBlock, true);
                             ParseSyntax(tryBlockNode);
+                            m_CurrentNodeInfoStack.Pop();
                         }
-                        m_CurrentNodeInfoStack.Pop();
                     }
                 }
                 else if(akss.tokenType == ETokenType.Break 

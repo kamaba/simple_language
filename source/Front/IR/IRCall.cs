@@ -242,6 +242,23 @@ namespace SimpleLanguage.IR
             }
             if (m_IRRuntimeMethod == null)
             {
+                // 运算符重载方法（_add_/_eq_ 等）不进虚表：IRMetaClass 构建时按方法名分流到
+                // operatorMethodList，GetIRNonStaticMethodIndexByMethod 在非静态方法表中查不到。
+                // 类内显式调用（如 this._eq_(obj1)）在此按 functionAllName 从 IRManager 全局
+                // 方法字典定位目标方法，并降级为静态调用（与 final 方法的调用方式一致）。
+                var irManagerForLookup = m_IRMethod != null ? m_IRMethod.irManager : IRManager.instance;
+                m_IRRuntimeMethod = mf != null ? irManagerForLookup?.GetIRMethod(mf.functionAllName) : null;
+                if (m_IRRuntimeMethod == null && mf != null && IRManager.instance != irManagerForLookup)
+                {
+                    m_IRRuntimeMethod = IRManager.instance.GetIRMethod(mf.functionAllName);
+                }
+                if (m_IRRuntimeMethod != null)
+                {
+                    callType = 0;
+                }
+            }
+            if (m_IRRuntimeMethod == null)
+            {
                 Log.AddIRLog(LID.MetaCoreAssertShowMessage, mfc.token, $"ir runtime[{fname}] method not found!! func: {mf?.functionAllName ?? "null"}");
                 return;
             }

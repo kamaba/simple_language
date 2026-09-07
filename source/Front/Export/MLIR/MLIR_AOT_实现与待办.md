@@ -28,9 +28,9 @@ stage 5   反向桥（reverse bridge）：AOT 代码回调 CVM 解释器
 
 要点：
 
-- **失败即回退**：任一方法在 stage 2/3 失败（发射 Fail 或工具链报错），该方法回退 CVM 解释器执行，不影响其它方法。整个导出可由 `SIMPLELANG_AOT=0` 关闭；`SIMPLELANG_AOT_DLL=0` 跳过 dll 构建只出 mlir。
+- **失败即回退**：任一方法在 stage 2/3 失败（发射 Fail 或工具链报错），该方法回退 CVM 解释器执行，不影响其它方法。整个导出可由工程 jsonc `"export": { "aot": { "enabled": false } }` 关闭；`"buildDll": false` 跳过 dll 构建只出 mlir。
 - **方法内 Fail 是"软失败"**：no-op 占位值（见 §3.2）在运行期第一次被真实使用时才触发失败并标记方法回退。而发射器 `throw Fail(...)`（§3.3）是"硬失败"，导出期直接拒绝。
-- **环境变量**：`SIMPLELANG_MLIR_BIN`（mlir-opt/mlir-translate/llc 所在目录；不设时自动探测 + auto-deploy 到 exe 目录，见 §8）、`SIMPLELANG_MSVC_LINK`（link.exe 完整路径）。
+- **无环境变量配置**：工具链路径不走环境变量（`ToolchainPaths.Resolve()` 固定探测，见 §8）；AOT 开关走工程 jsonc `export.aot` 段（`MLIRExportConfig.FromProject()`）。CVM 侧同样不读任何 SIMPLELANG_* 环境变量——前后端的唯一关联是 module.json 的 `aot` 字段（Ref Module 机制），A 机编译产物可整体拷到 B 机运行。仅剩 GPU 开发期调参用的 `SIMPLELANG_GPU_RUNTIME` / `SIMPLELANG_GPU_ARCH` 两个环境变量（均有探测默认值）。
 - **链接库**：CPU dll 仅链 `kernel32.lib msvcrt.lib ucrt.lib libvcruntime.lib`（无 clang_rt/compiler-rt）。这一点决定了某些 lowering 不可用（见 §6.1）。
 - **GPU 方法**：@GPU 方法走 gpu.func 发射 + GPU 专用 pass 链 + sl_gpu_runtime 链接；限制见 §4。
 
@@ -394,18 +394,21 @@ marshalling 改造），成员访问从"宿主 native buffer GEP"改为 memref G
   `dotnet build Front\SimpleLanguageFront.csproj --nologo -v q`（当前 exit 0，仅既有警告）
 - 工具链：mlir-opt/mlir-translate/llc/mlir-transform-opt 已迁移到
   `simple_language\tools\llvm`（4 个 exe + mlir_float16_utils.dll，静态链接自包含）。
-  发现顺序（`MLIRToolchain.ToolchainPaths.FromEnvironment`）：
-  1. `SIMPLELANG_MLIR_BIN` 环境变量（显式覆盖：**不触发 auto-deploy**，直接用该目录）
-  2. exe 目录（auto-deploy 副本，优先）——首次使用时 `EnsureLocalTools` 把
+  发现顺序（`MLIRToolchain.ToolchainPaths.Resolve`，**无环境变量**）：
+  1. exe 目录（auto-deploy 副本，优先）——首次使用时 `EnsureLocalTools` 把
      mlir-opt.exe / mlir-translate.exe / llc.exe / mlir_float16_utils.dll
      从探测到的源目录拷到 exe 所在目录（`AppContext.BaseDirectory`），已存在的不覆盖
      （升级工具需手动删 exe 目录下旧文件），源目录没有或拷贝失败则静默跳过、
      回退源目录；mlir-transform-opt.exe 管线未用、不拷
-  3. 向上遍历找 `<root>\simple_language\tools\llvm`（新位置，优先）
-  4. 向上遍历找 `<root>\llvm-project\build\Release\bin`（旧 monorepo 布局，回退兼容）
-  MSVC 在 `C:\Program Files\Microsoft Visual Studio\18\Community`（vswhere 自动发现）
+  2. 向上遍历找 `<root>\simple_language\tools\llvm`（新位置，优先）
+  3. 向上遍历找 `<root>\llvm-project\build\Release\bin`（旧 monorepo 布局，回退兼容）
+  link.exe 不设路径：`ResolveLinkExe` 走 vswhere → VS 安装目录 → PATH 自动发现
+  （MSVC 在 `C:\Program Files\Microsoft Visual Studio\18\Community`）。
   已验证：把 `tools\llvm` 临时改名（模拟删除源码树）后 AOT dll 构建仍成功，
   证明 exe 目录副本可独立完成 stage-3 全链。
+- AOT 开关（jsonc `export.aot` 段，默认全开）：
+  - `"enabled": false`——整个 AOT 导出管线跳过（全部走 CVM 解释执行）
+  - `"buildDll": false`——只导出 aot.mlir，不构建 aot.dll（module.json 的 aot.dll 为空）
 - 修改窄浮点发射逻辑的流程：**先改探针 f8int_probe.mlir → 工具链全链 → f8int_driver.c
   对拍全绿 → 再同步发射器**（发射器是探针的逐行内联复刻，L3483/L3608）
 - 新增指令发射的 checklist：

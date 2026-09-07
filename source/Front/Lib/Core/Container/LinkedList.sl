@@ -192,13 +192,13 @@ public class LinkedList<T> interface Core.IIterable<T>, Core.IIterator<T>
     # ── 索引器 / 随机访问 ──
 
     # 索引器：获取指定索引处的值（就近端遍历，越界返回 null）
-    T _getItem_( int index )
+    override T _getItem_( int index )
     {
         ret SystemLinkedListGetValueAt( this, index ) as T
     }
 
     # 索引器：设置指定索引处的值（就近端遍历，越界 no-op）
-    void _setItem_( int index, T value )
+    override void _setItem_( int index, T value )
     {
         SystemLinkedListSetValueAt( this, index, value )
     }

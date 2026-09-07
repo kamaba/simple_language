@@ -32,7 +32,7 @@ public class Tuple<T1> extends Object
     }
 
     #下标读取：index 超出 [0, length) 返回 null
-    public object _getItem_( int index )
+    public override object _getItem_( int index )
     {
         if index == 0
         {
@@ -42,7 +42,7 @@ public class Tuple<T1> extends Object
     }
 
     #下标写入：index 超出 [0, length) 静默忽略
-    public void _setItem_( int index, object value )
+    public override void _setItem_( int index, object value )
     {
         if index == 0
         {
@@ -91,7 +91,7 @@ public class Tuple<T1,T2> extends Object
         ret 2
     }
 
-    public object _getItem_( int index )
+    public override object _getItem_( int index )
     {
         if index == 0
         {
@@ -104,7 +104,7 @@ public class Tuple<T1,T2> extends Object
         ret null
     }
 
-    public void _setItem_( int index, object value )
+    public override void _setItem_( int index, object value )
     {
         if index == 0
         {
@@ -159,7 +159,7 @@ public class Tuple<T1,T2,T3> extends Object
         ret 3
     }
 
-    public object _getItem_( int index )
+    public override object _getItem_( int index )
     {
         if index == 0
         {
@@ -176,7 +176,7 @@ public class Tuple<T1,T2,T3> extends Object
         ret null
     }
 
-    public void _setItem_( int index, object value )
+    public override void _setItem_( int index, object value )
     {
         if index == 0
         {
@@ -237,7 +237,7 @@ public class Tuple<T1,T2,T3,T4> extends Object
         ret 4
     }
 
-    public object _getItem_( int index )
+    public override object _getItem_( int index )
     {
         if index == 0
         {
@@ -258,7 +258,7 @@ public class Tuple<T1,T2,T3,T4> extends Object
         ret null
     }
 
-    public void _setItem_( int index, object value )
+    public override void _setItem_( int index, object value )
     {
         if index == 0
         {
@@ -325,7 +325,7 @@ public class Tuple<T1,T2,T3,T4,T5> extends Object
         ret 5
     }
 
-    public object _getItem_( int index )
+    public override object _getItem_( int index )
     {
         if index == 0
         {
@@ -350,7 +350,7 @@ public class Tuple<T1,T2,T3,T4,T5> extends Object
         ret null
     }
 
-    public void _setItem_( int index, object value )
+    public override void _setItem_( int index, object value )
     {
         if index == 0
         {
@@ -423,7 +423,7 @@ public class Tuple<T1,T2,T3,T4,T5,T6> extends Object
         ret 6
     }
 
-    public object _getItem_( int index )
+    public override object _getItem_( int index )
     {
         if index == 0
         {
@@ -452,7 +452,7 @@ public class Tuple<T1,T2,T3,T4,T5,T6> extends Object
         ret null
     }
 
-    public void _setItem_( int index, object value )
+    public override void _setItem_( int index, object value )
     {
         if index == 0
         {
@@ -531,7 +531,7 @@ public class Tuple<T1,T2,T3,T4,T5,T6,T7> extends Object
         ret 7
     }
 
-    public object _getItem_( int index )
+    public override object _getItem_( int index )
     {
         if index == 0
         {
@@ -564,7 +564,7 @@ public class Tuple<T1,T2,T3,T4,T5,T6,T7> extends Object
         ret null
     }
 
-    public void _setItem_( int index, object value )
+    public override void _setItem_( int index, object value )
     {
         if index == 0
         {
@@ -649,7 +649,7 @@ public class Tuple<T1,T2,T3,T4,T5,T6,T7,T8> extends Object
         ret 8
     }
 
-    public object _getItem_( int index )
+    public override object _getItem_( int index )
     {
         if index == 0
         {
@@ -686,7 +686,7 @@ public class Tuple<T1,T2,T3,T4,T5,T6,T7,T8> extends Object
         ret null
     }
 
-    public void _setItem_( int index, object value )
+    public override void _setItem_( int index, object value )
     {
         if index == 0
         {
@@ -859,7 +859,7 @@ public class Tuple extends Object
     }
 
     #下标读取：index 超出 [0, length) 返回 null
-    public object _getItem_( int index )
+    public override object _getItem_( int index )
     {
         if index < 0 || index >= this._length
         {
@@ -869,7 +869,7 @@ public class Tuple extends Object
     }
 
     #下标写入：index 超出 [0, length) 静默忽略
-    public void _setItem_( int index, object value )
+    public override void _setItem_( int index, object value )
     {
         if index < 0 || index >= this._length
         {

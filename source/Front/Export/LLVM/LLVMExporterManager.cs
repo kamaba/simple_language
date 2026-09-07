@@ -13,7 +13,7 @@ using System;
 
 namespace SimpleLanguage.ExportLanguage
 {
-    public class LLVMManager
+    public class LLVMExporterManager
     {
     }
 }

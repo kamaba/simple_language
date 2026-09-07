@@ -2,7 +2,7 @@
   "project":
   {
     "name": "ProjectTest",
-    "desc": "Base test project - runs all BaseTest .sl test files",
+    "desc": "Math test project - tests builtin member functions (_add_/_eq_/_getItem_ etc.) via Math module",
     "mainVersion": 0,
     "subVersion": 0,
     "buildVersion": 1,
@@ -22,14 +22,7 @@
   },
   "compileFiles": {
     "files": [
-      { "path": "ListTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "MapTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "FileTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "DirectoryTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "ConsoleTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "DateTimeTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "LinkedListTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "Sqlite3Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "MathTest.sl", "group": "math", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -38,29 +31,21 @@
   },
   "global": {
     "imports": [
-      "Std.Console",
-      "Std.IO.File"
+      "Std.Console"
     ],
     "replace": {
       "DEBUG": "true"
     }
   },
-  "data": {
-    "var1": 12,
-    "arrvar1": [1, 2, 3, 4, 5],
-    "vardata2": {
-      "a": 10,
-      "b": 20.1
-    }
-  },
   "references": [
     { "path": "../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" },
-    { "path": "../../out/export/Std", "uuid":"456456456456", "name": "Std.module.json" }
+    { "path": "../../out/export/Std", "uuid":"456456456456", "name": "Std.module.json" },
+    { "path": "../../out/export/Math", "uuid":"789789789789", "name": "Math.module.json" }
   ],
   "struct": [
   ],
   "export": {
-    "moduleName": "ProjectTest2",
+    "moduleName": "MathTest",
     "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
     "versionMain": 0,
     "versionSub": 0,

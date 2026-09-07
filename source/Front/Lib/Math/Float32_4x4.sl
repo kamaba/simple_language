@@ -61,7 +61,7 @@ public class Float32_4x4
     }
 
     # ── 运算符重载 ───────────────────────────────────────
-    override Float32_4x4 _mul_( Float32_4x4 obj1 )
+    override Float32_4x4 _mul_( Object obj1 )
     {
         if obj1 is Float32_4x4 b
         {
@@ -70,7 +70,7 @@ public class Float32_4x4
         ret this
     }
 
-    override Float32_4x4 _add_( Float32_4x4 obj1 )
+    override Float32_4x4 _add_( Object obj1 )
     {
         if obj1 is Float32_4x4 b
         {
@@ -86,7 +86,7 @@ public class Float32_4x4
         ret this
     }
 
-    override bool _eq_( Float32_4x4 obj1 )
+    override bool _eq_( Object obj1 )
     {
         if obj1 is Float32_4x4 b
         {

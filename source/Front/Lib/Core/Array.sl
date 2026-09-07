@@ -88,11 +88,11 @@ public class Array<T> interface IIterable<T>, IIterator<T>
         this._index = ind;
         this._current = SystemArrayGetValueThis(this, ind) as T
     }
-    _setItem_( int __index, T val )
+    override void _setItem_( int __index, T val )
     {
         SystemArraySetValueThis(this, __index, val)
     }
-    T _getItem_( int __index )
+    override T _getItem_( int __index )
     {
         ret SystemArrayGetValueThis(this, __index) as T
     }
