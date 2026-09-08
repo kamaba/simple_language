@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "CSimpleVMTest2": {
+    "CSimpleVMMathTest": {
       "commandName": "Project",
       "commandLineArgs": "",
       "nativeDebugging": true

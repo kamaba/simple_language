@@ -11,11 +11,22 @@
   "source": {
     "root": "."
   },
-  "systemCalls":
+  // FFI 导入别名表（jsonc "dllImports" 段）：@DllImport("math_lib", "mathf_sin",
+  // "Float32->Float32") 首参在编译期经 ResolveDllImportPath 按别名查此表替换为 path；
+  // path 原样透传，运行时相对进程 CWD 解析（CWD = 测试工程目录时，../../ 即
+  // simple_language 根）。DLL 加载失败/符号缺失时 @DllImport 方法自动走 SL fallback
+  // 本体兜底。Mathh.sl 以 Float32 为中间精度复用 Mathf，无需单独声明。
+  "dllImports":
   [
-    // Math.sl  -> SystemCallExternalFunction("Mathd.xxx", ...)  (double，需 MathNativeImpl 注册)
-    // Mathf.sl -> SystemCallExternalFunction("Math.xxx", ...)   (float，MathNativeImpl 已注册)
-    // Mathh.sl -> 以 Float32 为中间精度，复用 Mathf
+    { "path": "../../out/export/Math/math_lib.dll", "name": "math_lib", "alias": "math_lib" }
+  ],
+  // vmDlls 构建规则：导出 Math 时，Front 用 MSBuild 编译 project 指向的 VS 工程
+  // （路径相对本 jsonc 所在目录），并把产出的 math_lib.dll 拷贝到与 Math.module.json 相同的
+  // 目录（out/export/Math/），即上方 dllImports 别名指向的位置。C 实现位于
+  // source/Front/Lib/Math/cvm_math_lib/math_lib.c（FFI 普通 C ABI：mathf_*/mathd_*），
+  // 供 Mathf.sl / Mathd.sl / 矩阵类的 @DllImport 三参形式绑定调用。
+  "vmDlls": [
+    { "project": "../../../../project/cvm_math_lib/cvm_math_lib.vcxproj", "name": "math_lib.dll", "configuration": "Debug", "platform": "x64" }
   ],
   "compile": {
     "optimize": false,
@@ -41,24 +52,24 @@
       // ── 向量 / 矩阵：Float32 ─────────────────────────
       { "path": "Int32_2.sl",     "group": "math", "tag": "vec", "ignore": true,  "priority": 0 },
       { "path": "Float32_2.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
-      { "path": "Float32_3.sl",   "group": "math", "tag": "vec", "ignore": true,  "priority": 0 },
-      { "path": "Float32_4.sl",   "group": "math", "tag": "vec", "ignore": true,  "priority": 0 },
-      { "path": "Float32_3x3.sl", "group": "math", "tag": "mat", "ignore": true,  "priority": 0 },
-      { "path": "Float32_4x4.sl", "group": "math", "tag": "mat", "ignore": true,  "priority": 0 },
+      { "path": "Float32_3.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float32_4.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float32_3x3.sl", "group": "math", "tag": "mat", "ignore": false, "priority": 0 },
+      { "path": "Float32_4x4.sl", "group": "math", "tag": "mat", "ignore": false, "priority": 0 },
 
       // ── 向量 / 矩阵：Float16 ─────────────────────────
-      { "path": "Float16_2.sl",   "group": "math", "tag": "vec", "ignore": true, "priority": 0 },
-      { "path": "Float16_3.sl",   "group": "math", "tag": "vec", "ignore": true, "priority": 0 },
-      { "path": "Float16_4.sl",   "group": "math", "tag": "vec", "ignore": true, "priority": 0 },
-      { "path": "Float16_3x3.sl", "group": "math", "tag": "mat", "ignore": true, "priority": 0 },
-      { "path": "Float16_4x4.sl", "group": "math", "tag": "mat", "ignore": true, "priority": 0 },
+      { "path": "Float16_2.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float16_3.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float16_4.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float16_3x3.sl", "group": "math", "tag": "mat", "ignore": false, "priority": 0 },
+      { "path": "Float16_4x4.sl", "group": "math", "tag": "mat", "ignore": false, "priority": 0 },
 
       // ── 向量 / 矩阵：Float64 ─────────────────────────
-      { "path": "Float64_2.sl",   "group": "math", "tag": "vec", "ignore": true, "priority": 0 },
-      { "path": "Float64_3.sl",   "group": "math", "tag": "vec", "ignore": true, "priority": 0 },
-      { "path": "Float64_4.sl",   "group": "math", "tag": "vec", "ignore": true, "priority": 0 },
-      { "path": "Float64_3x3.sl", "group": "math", "tag": "mat", "ignore": true, "priority": 0 },
-      { "path": "Float64_4x4.sl", "group": "math", "tag": "mat", "ignore": true, "priority": 0 },
+      { "path": "Float64_2.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float64_3.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float64_4.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float64_3x3.sl", "group": "math", "tag": "mat", "ignore": false, "priority": 0 },
+      { "path": "Float64_4x4.sl", "group": "math", "tag": "mat", "ignore": false, "priority": 0 },
 
       // ── 其他 ─────────────────────────────────────────
       { "path": "Quaternion.sl", "group": "math", "tag": "quat", "ignore": true, "priority": 0 },
@@ -81,7 +92,8 @@
   "data": {
   },
   "references": [
-    { "path": "../Core", "name": "Core" }
+    { "path": "../Core", "name": "Core" },
+    { "path": "../Std", "name": "Std" }
   ],
   "struct": [
     { "namespace": "Math", "children": [

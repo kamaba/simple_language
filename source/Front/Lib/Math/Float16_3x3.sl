@@ -3,68 +3,109 @@
 @Nickname("half3x3")
 public class Float16_3x3
 {
-    # 行主序存储：m[row * 3 + col]
-    public Array<Float16> _mat3x3 = null
+    # 元素直接以字段存储（m{row}{col}，行主序），避免数组寻址开销；
+    # half 无原生 FFI 实现，元素级运算经 toFloat32() 中转走 Mathf.dot3（FFI），
+    # 结果隐式收敛回 Float16（见 Mathh.sl 同款模式）
+    public Float16 m00 = 0.0h
+    public Float16 m01 = 0.0h
+    public Float16 m02 = 0.0h
+    public Float16 m10 = 0.0h
+    public Float16 m11 = 0.0h
+    public Float16 m12 = 0.0h
+    public Float16 m20 = 0.0h
+    public Float16 m21 = 0.0h
+    public Float16 m22 = 0.0h
 
     # ── 构造 ─────────────────────────────────────────────
     public void _init_()
     {
-        this._mat3x3 = Array<Float16>( 9 )
+        this.m00 = 0.0h
+        this.m01 = 0.0h
+        this.m02 = 0.0h
+        this.m10 = 0.0h
+        this.m11 = 0.0h
+        this.m12 = 0.0h
+        this.m20 = 0.0h
+        this.m21 = 0.0h
+        this.m22 = 0.0h
+    }
+
+    public void _init_( Float16 v00, Float16 v01, Float16 v02,
+                        Float16 v10, Float16 v11, Float16 v12,
+                        Float16 v20, Float16 v21, Float16 v22 )
+    {
+        this.m00 = v00
+        this.m01 = v01
+        this.m02 = v02
+        this.m10 = v10
+        this.m11 = v11
+        this.m12 = v12
+        this.m20 = v20
+        this.m21 = v21
+        this.m22 = v22
+    }
+
+    public void _init_( Array<Float16> values )
+    {
         int i = 0
         while i < 9
         {
-            this._mat3x3[i] = 0.0h
+            this._setItem_( i, values[i] )
             i++
         }
     }
 
-    public void _init_( Float16 m00, Float16 m01, Float16 m02,
-                        Float16 m10, Float16 m11, Float16 m12,
-                        Float16 m20, Float16 m21, Float16 m22 )
-    {
-        this._mat3x3 = Array<Float16>( 9 )
-        this._mat3x3[0] = m00
-        this._mat3x3[1] = m01
-        this._mat3x3[2] = m02
-        this._mat3x3[3] = m10
-        this._mat3x3[4] = m11
-        this._mat3x3[5] = m12
-        this._mat3x3[6] = m20
-        this._mat3x3[7] = m21
-        this._mat3x3[8] = m22
-    }
-
-    # 由 Float32_3x3 降精度
+    # 由 Float32_3x3 降精度（隐式收敛，见 Float16_3._init_(Float32_3) 先例）
     public void _init_( Float32_3x3 m )
     {
-        this._mat3x3 = Array<Float16>( 9 )
-        int i = 0
-        while i < 9
-        {
-            this._mat3x3[i] = m._mat3x3[i]
-            i++
-        }
+        this.m00 = m.m00
+        this.m01 = m.m01
+        this.m02 = m.m02
+        this.m10 = m.m10
+        this.m11 = m.m11
+        this.m12 = m.m12
+        this.m20 = m.m20
+        this.m21 = m.m21
+        this.m22 = m.m22
     }
 
     # ── 索引访问 ─────────────────────────────────────────
-    Float16 _getItem_( int index )
+    override Float16 _getItem_( int index )
     {
-        ret this._mat3x3[index]
+        if ( index == 0 ) { ret this.m00 }
+        if ( index == 1 ) { ret this.m01 }
+        if ( index == 2 ) { ret this.m02 }
+        if ( index == 3 ) { ret this.m10 }
+        if ( index == 4 ) { ret this.m11 }
+        if ( index == 5 ) { ret this.m12 }
+        if ( index == 6 ) { ret this.m20 }
+        if ( index == 7 ) { ret this.m21 }
+        if ( index == 8 ) { ret this.m22 }
+        ret 0.0h
     }
 
-    void _setItem_( int index, Float16 value )
+    override void _setItem_( int index, Float16 value )
     {
-        this._mat3x3[index] = value
+        if ( index == 0 ) { this.m00 = value }
+        if ( index == 1 ) { this.m01 = value }
+        if ( index == 2 ) { this.m02 = value }
+        if ( index == 3 ) { this.m10 = value }
+        if ( index == 4 ) { this.m11 = value }
+        if ( index == 5 ) { this.m12 = value }
+        if ( index == 6 ) { this.m20 = value }
+        if ( index == 7 ) { this.m21 = value }
+        if ( index == 8 ) { this.m22 = value }
     }
 
-    Float16 get( int row, int col )
+    # getValue/setValue（get/set 为语言关键字，不可作方法名）
+    Float16 getValue( int row, int col )
     {
-        ret this._mat3x3[ row * 3 + col ]
+        ret this._getItem_( row * 3 + col )
     }
 
-    void set( int row, int col, Float16 value )
+    void setValue( int row, int col, Float16 value )
     {
-        this._mat3x3[ row * 3 + col ] = value
+        this._setItem_( row * 3 + col, value )
     }
 
     # ── 运算符重载 ───────────────────────────────────────
@@ -82,12 +123,15 @@ public class Float16_3x3
         if obj1 is Float16_3x3 b
         {
             Float16_3x3 r = Float16_3x3()
-            int i = 0
-            while i < 9
-            {
-                r._mat3x3[i] = this._mat3x3[i] + b._mat3x3[i]
-                i++
-            }
+            r.m00 = this.m00 + b.m00
+            r.m01 = this.m01 + b.m01
+            r.m02 = this.m02 + b.m02
+            r.m10 = this.m10 + b.m10
+            r.m11 = this.m11 + b.m11
+            r.m12 = this.m12 + b.m12
+            r.m20 = this.m20 + b.m20
+            r.m21 = this.m21 + b.m21
+            r.m22 = this.m22 + b.m22
             ret r
         }
         ret this
@@ -97,15 +141,15 @@ public class Float16_3x3
     {
         if obj1 is Float16_3x3 b
         {
-            int i = 0
-            while i < 9
-            {
-                if this._mat3x3[i] != b._mat3x3[i]
-                {
-                    ret false
-                }
-                i++
-            }
+            if ( this.m00 != b.m00 ) { ret false }
+            if ( this.m01 != b.m01 ) { ret false }
+            if ( this.m02 != b.m02 ) { ret false }
+            if ( this.m10 != b.m10 ) { ret false }
+            if ( this.m11 != b.m11 ) { ret false }
+            if ( this.m12 != b.m12 ) { ret false }
+            if ( this.m20 != b.m20 ) { ret false }
+            if ( this.m21 != b.m21 ) { ret false }
+            if ( this.m22 != b.m22 ) { ret false }
             ret true
         }
         ret false
@@ -120,64 +164,44 @@ public class Float16_3x3
     Float16_3x3 multiply( Float16_3x3 b )
     {
         Float16_3x3 r = Float16_3x3()
-        int row = 0
-        while row < 3
-        {
-            int col = 0
-            while col < 3
-            {
-                Float16 sum = 0.0h
-                int k = 0
-                while k < 3
-                {
-                    sum = sum + this.get( row, k ) * b.get( k, col )
-                    k++
-                }
-                r.set( row, col, sum )
-                col++
-            }
-            row++
-        }
+        r.m00 = Mathf.dot3( this.m00.toFloat32(), this.m01.toFloat32(), this.m02.toFloat32(), b.m00.toFloat32(), b.m10.toFloat32(), b.m20.toFloat32() )
+        r.m01 = Mathf.dot3( this.m00.toFloat32(), this.m01.toFloat32(), this.m02.toFloat32(), b.m01.toFloat32(), b.m11.toFloat32(), b.m21.toFloat32() )
+        r.m02 = Mathf.dot3( this.m00.toFloat32(), this.m01.toFloat32(), this.m02.toFloat32(), b.m02.toFloat32(), b.m12.toFloat32(), b.m22.toFloat32() )
+        r.m10 = Mathf.dot3( this.m10.toFloat32(), this.m11.toFloat32(), this.m12.toFloat32(), b.m00.toFloat32(), b.m10.toFloat32(), b.m20.toFloat32() )
+        r.m11 = Mathf.dot3( this.m10.toFloat32(), this.m11.toFloat32(), this.m12.toFloat32(), b.m01.toFloat32(), b.m11.toFloat32(), b.m21.toFloat32() )
+        r.m12 = Mathf.dot3( this.m10.toFloat32(), this.m11.toFloat32(), this.m12.toFloat32(), b.m02.toFloat32(), b.m12.toFloat32(), b.m22.toFloat32() )
+        r.m20 = Mathf.dot3( this.m20.toFloat32(), this.m21.toFloat32(), this.m22.toFloat32(), b.m00.toFloat32(), b.m10.toFloat32(), b.m20.toFloat32() )
+        r.m21 = Mathf.dot3( this.m20.toFloat32(), this.m21.toFloat32(), this.m22.toFloat32(), b.m01.toFloat32(), b.m11.toFloat32(), b.m21.toFloat32() )
+        r.m22 = Mathf.dot3( this.m20.toFloat32(), this.m21.toFloat32(), this.m22.toFloat32(), b.m02.toFloat32(), b.m12.toFloat32(), b.m22.toFloat32() )
         ret r
     }
 
     Float16_3 transform( Float16_3 v )
     {
-        Float16 nx = this.get( 0, 0 ) * v.x + this.get( 0, 1 ) * v.y + this.get( 0, 2 ) * v.z
-        Float16 ny = this.get( 1, 0 ) * v.x + this.get( 1, 1 ) * v.y + this.get( 1, 2 ) * v.z
-        Float16 nz = this.get( 2, 0 ) * v.x + this.get( 2, 1 ) * v.y + this.get( 2, 2 ) * v.z
+        Float16 nx = Mathf.dot3( this.m00.toFloat32(), this.m01.toFloat32(), this.m02.toFloat32(), v.x.toFloat32(), v.y.toFloat32(), v.z.toFloat32() )
+        Float16 ny = Mathf.dot3( this.m10.toFloat32(), this.m11.toFloat32(), this.m12.toFloat32(), v.x.toFloat32(), v.y.toFloat32(), v.z.toFloat32() )
+        Float16 nz = Mathf.dot3( this.m20.toFloat32(), this.m21.toFloat32(), this.m22.toFloat32(), v.x.toFloat32(), v.y.toFloat32(), v.z.toFloat32() )
         ret Float16_3( nx, ny, nz )
     }
 
     Float16_3x3 transpose()
     {
         Float16_3x3 r = Float16_3x3()
-        int row = 0
-        while row < 3
-        {
-            int col = 0
-            while col < 3
-            {
-                r.set( row, col, this.get( col, row ) )
-                col++
-            }
-            row++
-        }
+        r.m00 = this.m00
+        r.m01 = this.m10
+        r.m02 = this.m20
+        r.m10 = this.m01
+        r.m11 = this.m11
+        r.m12 = this.m21
+        r.m20 = this.m02
+        r.m21 = this.m12
+        r.m22 = this.m22
         ret r
     }
 
     Float16 determinant()
     {
-        Float16 a = this.get( 0, 0 )
-        Float16 b = this.get( 0, 1 )
-        Float16 c = this.get( 0, 2 )
-        Float16 d = this.get( 1, 0 )
-        Float16 e = this.get( 1, 1 )
-        Float16 f = this.get( 1, 2 )
-        Float16 g = this.get( 2, 0 )
-        Float16 h = this.get( 2, 1 )
-        Float16 i = this.get( 2, 2 )
-        ret a * ( e * i - f * h ) - b * ( d * i - f * g ) + c * ( d * h - e * g )
+        ret this.m00 * ( this.m11 * this.m22 - this.m12 * this.m21 ) - this.m01 * ( this.m10 * this.m22 - this.m12 * this.m20 ) + this.m02 * ( this.m10 * this.m21 - this.m11 * this.m20 )
     }
 
     # 伴随矩阵 / det，不可逆时返回零矩阵
@@ -190,50 +214,57 @@ public class Float16_3x3
         }
         Float16 inv = 1.0h / det
 
-        Float16 a = this.get( 0, 0 )
-        Float16 b = this.get( 0, 1 )
-        Float16 c = this.get( 0, 2 )
-        Float16 d = this.get( 1, 0 )
-        Float16 e = this.get( 1, 1 )
-        Float16 f = this.get( 1, 2 )
-        Float16 g = this.get( 2, 0 )
-        Float16 h = this.get( 2, 1 )
-        Float16 i = this.get( 2, 2 )
+        Float16 a = this.m00
+        Float16 b = this.m01
+        Float16 c = this.m02
+        Float16 d = this.m10
+        Float16 e = this.m11
+        Float16 f = this.m12
+        Float16 g = this.m20
+        Float16 h = this.m21
+        Float16 i = this.m22
 
         Float16_3x3 r = Float16_3x3()
-        r.set( 0, 0, ( e * i - f * h ) * inv )
-        r.set( 0, 1, ( c * h - b * i ) * inv )
-        r.set( 0, 2, ( b * f - c * e ) * inv )
-        r.set( 1, 0, ( f * g - d * i ) * inv )
-        r.set( 1, 1, ( a * i - c * g ) * inv )
-        r.set( 1, 2, ( c * d - a * f ) * inv )
-        r.set( 2, 0, ( d * h - e * g ) * inv )
-        r.set( 2, 1, ( b * g - a * h ) * inv )
-        r.set( 2, 2, ( a * e - b * d ) * inv )
+        r.m00 = ( e * i - f * h ) * inv
+        r.m01 = ( c * h - b * i ) * inv
+        r.m02 = ( b * f - c * e ) * inv
+        r.m10 = ( f * g - d * i ) * inv
+        r.m11 = ( a * i - c * g ) * inv
+        r.m12 = ( c * d - a * f ) * inv
+        r.m20 = ( d * h - e * g ) * inv
+        r.m21 = ( b * g - a * h ) * inv
+        r.m22 = ( a * e - b * d ) * inv
         ret r
     }
 
     Float16_3x3 clone()
     {
         Float16_3x3 r = Float16_3x3()
-        int i = 0
-        while i < 9
-        {
-            r._mat3x3[i] = this._mat3x3[i]
-            i++
-        }
+        r.m00 = this.m00
+        r.m01 = this.m01
+        r.m02 = this.m02
+        r.m10 = this.m10
+        r.m11 = this.m11
+        r.m12 = this.m12
+        r.m20 = this.m20
+        r.m21 = this.m21
+        r.m22 = this.m22
         ret r
     }
 
+    # 提升到 Float32_3x3
     Float32_3x3 toFloat32_3x3()
     {
         Float32_3x3 r = Float32_3x3()
-        int i = 0
-        while i < 9
-        {
-            r._mat3x3[i] = this._mat3x3[i].toFloat32()
-            i++
-        }
+        r.m00 = this.m00.toFloat32()
+        r.m01 = this.m01.toFloat32()
+        r.m02 = this.m02.toFloat32()
+        r.m10 = this.m10.toFloat32()
+        r.m11 = this.m11.toFloat32()
+        r.m12 = this.m12.toFloat32()
+        r.m20 = this.m20.toFloat32()
+        r.m21 = this.m21.toFloat32()
+        r.m22 = this.m22.toFloat32()
         ret r
     }
 
@@ -250,6 +281,7 @@ public class Float16_3x3
         ret Float16_3x3()
     }
 
+    # 绕 X 轴旋转（弧度）
     public static Float16_3x3 rotationX( Float16 radians )
     {
         Float16 c = Mathh.cos( radians )
@@ -259,6 +291,7 @@ public class Float16_3x3
                          0.0h, s, c )
     }
 
+    # 绕 Y 轴旋转（弧度）
     public static Float16_3x3 rotationY( Float16 radians )
     {
         Float16 c = Mathh.cos( radians )
@@ -268,6 +301,7 @@ public class Float16_3x3
                          0.0h - s, 0.0h, c )
     }
 
+    # 绕 Z 轴旋转（弧度）
     public static Float16_3x3 rotationZ( Float16 radians )
     {
         Float16 c = Mathh.cos( radians )
@@ -294,8 +328,8 @@ public class Float16_3x3
     override string toString()
     {
         ret String.toFormat( "Float16_3x3[{0},{1},{2} | {3},{4},{5} | {6},{7},{8}]",
-            this._mat3x3[0], this._mat3x3[1], this._mat3x3[2],
-            this._mat3x3[3], this._mat3x3[4], this._mat3x3[5],
-            this._mat3x3[6], this._mat3x3[7], this._mat3x3[8] )
+            this.m00, this.m01, this.m02,
+            this.m10, this.m11, this.m12,
+            this.m20, this.m21, this.m22 )
     }
 }

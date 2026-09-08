@@ -210,6 +210,35 @@ namespace SimpleLanguage.Project
                 ParseDllImportArray(lib, cfg);
             }
 
+            // cvm 扩展 DLL 导入："vmDlls" 段 [{ project, name, configuration, platform }]。
+            // project 为 VS 工程文件（相对 jsonc 所在目录），导出时 Front 用 MSBuild
+            // 编译并把产出 DLL 拷到 module.json 同目录；name 为产出 DLL 文件名，
+            // 随 module.json 的 vmDllImports 导出，供 cvm 按 package 目录预加载。
+            if (root.TryGetProperty("vmDlls", out var vmDlls) && vmDlls.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var d in vmDlls.EnumerateArray())
+                {
+                    if (d.ValueKind != JsonValueKind.Object)
+                    {
+                        continue;
+                    }
+                    var projPath = GetStr(d, "project", string.Empty);
+                    var name = GetStr(d, "name", string.Empty);
+                    if (string.IsNullOrWhiteSpace(projPath) || string.IsNullOrWhiteSpace(name))
+                    {
+                        continue;
+                    }
+                    var sec = new ProjectConfig.VmDllSection()
+                    {
+                        Project = projPath,
+                        Name = name,
+                        Configuration = GetStr(d, "configuration", "Debug"),
+                        Platform = GetStr(d, "platform", "x64"),
+                    };
+                    cfg.VmDlls.Add(sec);
+                }
+            }
+
             if( root.TryGetProperty("systemCalls", out var systemCalls ) && systemCalls.ValueKind == JsonValueKind.Array )
             {
                 foreach (var r in systemCalls.EnumerateArray())

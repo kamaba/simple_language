@@ -3,6 +3,9 @@ Project
     _main_()
     {
         MathTest.fun()
+        Matrix3x3Test.fun()
+        Matrix4x4Test.fun()
+        FFIMathTest.fun()
     }
     CompileBefore()
     {

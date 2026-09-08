@@ -414,6 +414,10 @@ namespace SimpleLanguage.Compile
             for (int i = 0; i < parNode.childList.Count; i++)
             {
                 var pnode = parNode.childList[i];
+                if (pnode.nodeType == ENodeType.LineEnd)
+                {
+                    continue;   // 参数列表跨行时的换行符不参与参数定义
+                }
                 if (pnode.nodeType == ENodeType.Comma)
                 {
                     tparamList.Add(tempList);

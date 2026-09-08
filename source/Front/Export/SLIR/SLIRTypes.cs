@@ -37,6 +37,17 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string path { get; set; } = string.Empty;
     }
 
+    /// <summary>
+    /// cvm 扩展 DLL 导入（project.jsonc "vmDlls" 段）。
+    /// 只带 name（产出 DLL 文件名）：导出时 Front 已把 DLL 拷到 module.json
+    /// 同目录，VM 加载模块时按 package 目录预加载，供 systemCalls 的
+    /// "DllName!symbol" 解析；引用方透传声明即可复用。
+    /// </summary>
+    public sealed class SLVmDllImportPackage
+    {
+        public string name { get; set; } = string.Empty;
+    }
+
     public sealed class SLMethodMeta { public string id { get; set; } = string.Empty; public string name { get; set; } = string.Empty; public int index { get; set; } }
 
     public sealed class SLRuntimeCallPackage
@@ -386,6 +397,12 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// 引用方加载本模块时合并进其配置，即可用别名免写长路径。
         /// </summary>
         public List<SLDllImportPackage> dllImports { get; set; } = new();
+        /// <summary>
+        /// cvm 扩展 DLL 导入（project.jsonc "vmDlls" 段）。VM 加载模块时按
+        /// module.json 同目录预加载这些 DLL，供 systemCalls 的 "DllName!symbol"
+        /// 解析；引用方透传声明即可复用。
+        /// </summary>
+        public List<SLVmDllImportPackage> vmDllImports { get; set; } = new();
         public List<SLModuleReferencePackage> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();

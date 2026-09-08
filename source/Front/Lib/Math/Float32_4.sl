@@ -44,7 +44,7 @@ public class Float32_4
     }
 
     # ── 索引访问 ─────────────────────────────────────────
-    Float32 _getItem_( int index )
+    override Float32 _getItem_( int index )
     {
         if index == 0
         {
@@ -61,7 +61,7 @@ public class Float32_4
         ret this.w
     }
 
-    void _setItem_( int index, Float32 value )
+    override void _setItem_( int index, Float32 value )
     {
         if index == 0
         {

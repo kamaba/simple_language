@@ -1,4 +1,4 @@
-﻿namespace SimpleLanguage.Logging
+namespace SimpleLanguage.Logging
 {
     public enum LID
     {
@@ -93,7 +93,8 @@
         MetaCoreBuiltinFunctionParamError = 12285,
         MetaCoreBuiltinFunctionReturnTypeError = 12286,
         MetaCoreBuiltinFinalFunctionCannotOverride = 12287,
-
+
+
         // ==== 自动生成的 LID 索引（LidIndexer 生成：模块/子模块/语义） ====
         // ---- Project 模块 ----
         // ProjectClass
@@ -960,6 +961,11 @@
         ExportMLIRAOTDllBuild = 22109,
         // SLModulePackage
         ExportSLModulePackageExportModuleSuccess = 22110,
+        // VmDll（cvm 扩展 DLL 导入）
+        ExportVmDllMsBuildNotFound = 22111,
+        ExportVmDllBuildProject = 22112,
+        ExportVmDllBuildFailed = 22113,
+        ExportVmDllBuildSuccess = 22114,
 
     }
 }

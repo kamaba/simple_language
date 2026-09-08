@@ -17,13 +17,15 @@ namespace SimpleLanguage.Compile
     /// 把 C# 风格 FFI 函数声明改写为等价两段式源码（Token 解析前执行）：
     /// <code>
     ///     @DllImport( "lib", "sym"[, "sig"] )
-    ///     static Ret name( T1 a1, T2 a2, ... ) { ...fallback 本体... }
+    ///     [public|private|protected|internal] static Ret name( T1 a1, T2 a2, ... ) { ...fallback 本体... }
     /// </code>
     /// 改写为（原文切片逐字符保留，换行结构不变，行号严格不变）：
     /// <code>
     ///     @DllImport( "lib", "sym"[, "sig"] ) static Func&lt;Ret,T1,T2,...&gt; __dll_name
-    ///     static Ret name( T1 a1, T2 a2, ... ) { if ( __dll_name != null ) { ret __dll_name( a1, a2, ... ) } else { ...fallback 本体... } }
+    ///     [public|private|protected|internal] static Ret name( T1 a1, T2 a2, ... ) { if ( __dll_name != null ) { ret __dll_name( a1, a2, ... ) } else { ...fallback 本体... } }
     /// </code>
+    /// static 前的访问修饰符经 midText 原文保留到 wrapper 声明；隐藏字段
+    /// __dll_name 保持缺省可见性（仅类内 wrapper 访问，无需对外）。
     /// 运行时语义：dll 绑定可用（隐藏字段非 null）时转发 dll 导入函数；
     /// 不可用（运行平台不符 / LoadLibrary 失败 / 符号不存在 -> bindFunction
     /// 返回 null）时走 else 分支执行原函数体（fallback 本体）。
@@ -106,7 +108,7 @@ namespace SimpleLanguage.Compile
 
         /// <summary>
         /// 尝试匹配 atPos 处开始的完整 C# 风格声明：
-        /// @DllImport( "str"[, "str"]... ) static RetType FuncName( [Type name][, ...] ) { ...fallback 本体... }
+        /// @DllImport( "str"[, "str"]... ) [访问修饰符] static RetType FuncName( [Type name][, ...] ) { ...fallback 本体... }
         /// 函数体为必填（原体保留为 fallback 本体，dll 绑定不可用时执行）。
         /// 匹配失败返回 null（原样透传，不影响其余编译流程）。
         /// </summary>
@@ -152,10 +154,19 @@ namespace SimpleLanguage.Compile
             if (stringArgCount < 2)
                 return null;   // (路径, 符号) 两实参由现有 Meta 层校验，这里前置把关
 
-            // ── static RetType FuncName( params ) ──
-            string staticKw = ReadIdentifierAfterSpace(s, ref p);
-            if (staticKw != "static")
-                return null;
+            // ── [访问修饰符...] static RetType FuncName( params ) ──
+            // static 前允许 0..n 个访问修饰符（public/private/protected/internal），
+            // 原文经 midText 原样保留到 wrapper 声明；隐藏字段保持缺省可见性。
+            while (true)
+            {
+                string kw = ReadIdentifierAfterSpace(s, ref p);
+                if (kw == null)
+                    return null;
+                if (kw == "static")
+                    break;
+                if (kw != "public" && kw != "private" && kw != "protected" && kw != "internal")
+                    return null;   // 非修饰符也非 static：形态不接管
+            }
 
             string retType = ReadIdentifierAfterSpace(s, ref p);
             if (retType == null || retType == "static")

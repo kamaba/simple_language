@@ -34,7 +34,7 @@ public class Float64_2
     }
 
     # ── 索引访问 ─────────────────────────────────────────
-    Float64 _getItem_( int index )
+    override Float64 _getItem_( int index )
     {
         if index == 0
         {
@@ -43,7 +43,7 @@ public class Float64_2
         ret this.y
     }
 
-    void _setItem_( int index, Float64 value )
+    override void _setItem_( int index, Float64 value )
     {
         if index == 0
         {

@@ -6,6 +6,7 @@
 //  Description:  manager Export other lanuage or il etc.
 //****************************************************************************
 
+using SimpleLanguage.Export;
 using SimpleLanguage.Export.MLIR;
 using SimpleLanguage.Export.SLIR;
 using SimpleLanguage.IR;
@@ -42,6 +43,11 @@ namespace SimpleLanguage.ExportLanguage
             // 会被 SLModulePackageWriter.Build 合并进 module.json 的 "aot" 字段。
             // 管线细节全部封装在 Export/MLIR 目录（MLIRExportManager）。
             MLIRExportManager.Instance.Run(outDir);
+
+            // vmDlls：编译 jsonc "vmDlls" 段配置的 VS 工程并把产出 DLL 拷到 outDir
+            //（module.json 同目录），供 cvm 加载时按 package 目录预加载。
+            // 失败仅记日志不中断导出。
+            VmDllBuildManager.Run(outDir);
 
             // Unified JSON export (VM symmetric)
             string exportIRPath = Path.Combine(outDir, filePrefix + ".module.json");

@@ -1,7 +1,7 @@
 import Std;
 import Math;
 
-MathTest
+class MathTest
 {
     static fun()
     {
@@ -40,6 +40,33 @@ MathTest
         Float32 d = v21.dot(v22)
         Console.println("dot = " + d.toString())
         Console.println("length = " + v22.length().toString())
+
+        # ── cvm 扩展 DLL（MathVMLib.dll）system method call 测试 ──
+        # 底层经 Math.jsonc 的 systemCalls 声明，由 cvm 通过
+        # "MathVMLib.dll!mathvm_xxx" 解析到 MathVMLib.dll 的导出函数。
+        Console.println("===== MathVMLib system method call test =====")
+
+        Float32 fSin = Mathf.sin( 1.0f )
+        Float32 fSqrt = Mathf.sqrt( 2.0f )
+        Float32 fPow = Mathf.pow( 2.0f, 10.0f )
+        Float32 fAtan2 = Mathf.atan2( 1.0f, 1.0f )
+        Int32 fTrunc = Mathf.truncate( 3.7f )
+        Console.println("Mathf.sin(1) = " + fSin.toString())
+        Console.println("Mathf.sqrt(2) = " + fSqrt.toString())
+        Console.println("Mathf.pow(2,10) = " + fPow.toString())
+        Console.println("Mathf.atan2(1,1) = " + fAtan2.toString())
+        Console.println("Mathf.truncate(3.7) = " + fTrunc.toString())
+
+        Float64 dSin = Mathd.sin( 1.0 )
+        Float64 dSqrt = Mathd.sqrt( 2.0 )
+        Float64 dPow = Mathd.pow( 2.0, 10.0 )
+        Float64 dAtan2 = Mathd.atan2( 1.0, 1.0 )
+        Int32 dTrunc = Mathd.truncate( 0 - 3.7 )
+        Console.println("Mathd.sin(1) = " + dSin.toString())
+        Console.println("Mathd.sqrt(2) = " + dSqrt.toString())
+        Console.println("Mathd.pow(2,10) = " + dPow.toString())
+        Console.println("Mathd.atan2(1,1) = " + dAtan2.toString())
+        Console.println("Mathd.truncate(-3.7) = " + dTrunc.toString())
 
         Console.println("===== Math test end =====")
     }

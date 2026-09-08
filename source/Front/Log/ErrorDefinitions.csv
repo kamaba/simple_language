@@ -1372,3 +1372,7 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 22108,Info,FALSE,TRUE,0,,"AOT: build dll failed, fallback to CVM:",,,,
 22109,Info,FALSE,TRUE,0,,AOT: dll build disabled (export.aot.buildDll=false),,,,
 22110,Info,FALSE,TRUE,0,,export module success:,,,,
+22111,Info,FALSE,TRUE,0,,"vmDll: MSBuild.exe not found, skip vmDlls build:",,,,
+22112,Info,FALSE,TRUE,0,,"vmDll: build project:",,,,
+22113,Info,FALSE,TRUE,0,,"vmDll: build failed, skip copy:",,,,
+22114,Info,FALSE,TRUE,0,,vmDll: build success:,,,,

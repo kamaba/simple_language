@@ -20,7 +20,7 @@ internal static class Program
         //   dotnet run --project source/CSimpleVMTest2/CSimpleVMTest2.csproj -- <projectPathWithoutSpOrWithSp> [-test]
         // Example:
         //   ... -- E:\project\lang\simple_language\test\ExpendTest\ProjectTest
-        string defaultProjectPath = Path.Combine(repoRoot, "test", "ExpendTest", "ProjectTest");
+        string defaultProjectPath = Path.Combine(repoRoot, "test", "MathTest", "ProjectTest");
         string projectPath = args.Length == 0 ? defaultProjectPath : args[0];
         bool runTestEntry = args.Any(a => string.Equals(a, "-test", StringComparison.OrdinalIgnoreCase));
         bool start = TryGetBoolArg(args, "start", defaultValue: true);

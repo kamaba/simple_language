@@ -49,12 +49,16 @@ public class Float32_2
     }
 
     # ── 运算符重载（参数必须为 Object，内部做类型判断）────────
-    override Float32_2 _add_( Float32_2 obj1 )
+    override Float32_2 _add_( Object obj1 )
     {
-        ret Float32_2( this.x + v.x, this.y + v.y )
+        if obj1 is Float32_2 v
+        {
+            ret Float32_2( this.x + v.x, this.y + v.y )
+        }
+        ret this
     }
 
-    override Float32_2 _sub_( Float32_2 obj1 )
+    override Float32_2 _sub_( Object obj1 )
     {
         if obj1 is Float32_2 v
         {
@@ -63,7 +67,7 @@ public class Float32_2
         ret this
     }
 
-    override Float32_2 _mul_( Float32_2 obj1 )
+    override Float32_2 _mul_( Object obj1 )
     {
         if obj1 is Float32_2 v
         {
@@ -89,7 +93,7 @@ public class Float32_2
         ret this
     }
 
-    override bool _eq_( Float32_2 obj1 )
+    override bool _eq_( Object obj1 )
     {
         if obj1 is Float32_2 v
         {
@@ -98,7 +102,7 @@ public class Float32_2
         ret false
     }
 
-    override bool _ne_( Float32_2 obj1 )
+    override bool _ne_( Object obj1 )
     {
         ret !this._eq_( obj1 )
     }

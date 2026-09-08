@@ -1,7 +1,11 @@
+import Std;
+
 # Mathf —— Float32（single）精度数学库。
 #
-# 底层能力：由 MathNativeImpl.dll 通过 SystemCallExternalFunction("Math.xxx", ...)
-# 注册提供（单精度版本，见 MathExternalModule.cs）。
+# 底层能力：由 math_lib.dll（C ABI，见 source\Front\Lib\Math\cvm_math_lib\math_lib.c）
+# 经 FFI @DllImport 三参形式（库别名, 符号名, 参数签名）绑定调用；
+# DLL 加载失败 / 符号缺失时自动执行函数本体（fallback 委托 Mathd
+# 双精度实现后回转 Float32，链路同 Mathh 的中转模式）。
 # 纯算术能力（abs / min / max / clamp / sign ...）在 SL 层实现。
 #
 # 精度分组约定：
@@ -13,103 +17,129 @@ public class Mathf
     public const static Float32 Pi = 3.141592653589793f
     public const static Float32 E = 2.718281828459045f
 
-    # ── 三角函数 ─────────────────────────────────────────
+    # ── 三角函数（FFI mathf_* + 委托 Mathd fallback） ─────
+    @DllImport( "math_lib", "mathf_sin", "Float32->Float32" )
     public static Float32 sin( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.sin", value ) as Float32
+        ret Mathd.sin( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_cos", "Float32->Float32" )
     public static Float32 cos( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.cos", value ) as Float32
+        ret Mathd.cos( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_tan", "Float32->Float32" )
     public static Float32 tan( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.tan", value ) as Float32
+        ret Mathd.tan( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_asin", "Float32->Float32" )
     public static Float32 asin( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.asin", value ) as Float32
+        ret Mathd.asin( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_acos", "Float32->Float32" )
     public static Float32 acos( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.acos", value ) as Float32
+        ret Mathd.acos( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_atan", "Float32->Float32" )
     public static Float32 atan( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.atan", value ) as Float32
+        ret Mathd.atan( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_atan2", "Float32,Float32->Float32" )
     public static Float32 atan2( Float32 y, Float32 x )
     {
-        ret SystemCallExternalFunction( "Math.atan2", y, x ) as Float32
+        ret Mathd.atan2( y.toFloat64(), x.toFloat64() ).toFloat32()
     }
 
     # ── 双曲函数 ─────────────────────────────────────────
+    @DllImport( "math_lib", "mathf_sinh", "Float32->Float32" )
     public static Float32 sinh( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.sinh", value ) as Float32
+        ret Mathd.sinh( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_cosh", "Float32->Float32" )
     public static Float32 cosh( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.cosh", value ) as Float32
+        ret Mathd.cosh( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_tanh", "Float32->Float32" )
     public static Float32 tanh( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.tanh", value ) as Float32
+        ret Mathd.tanh( value.toFloat64() ).toFloat32()
     }
 
     # ── 幂与对数 ─────────────────────────────────────────
+    @DllImport( "math_lib", "mathf_pow", "Float32,Float32->Float32" )
     public static Float32 pow( Float32 baseValue, Float32 exponent )
     {
-        ret SystemCallExternalFunction( "Math.pow", baseValue, exponent ) as Float32
+        ret Mathd.pow( baseValue.toFloat64(), exponent.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_sqrt", "Float32->Float32" )
     public static Float32 sqrt( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.sqrt", value ) as Float32
+        ret Mathd.sqrt( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_exp", "Float32->Float32" )
     public static Float32 exp( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.exp", value ) as Float32
+        ret Mathd.exp( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_log", "Float32->Float32" )
     public static Float32 log( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.log", value ) as Float32
+        ret Mathd.log( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_log10", "Float32->Float32" )
     public static Float32 log10( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.log10", value ) as Float32
+        ret Mathd.log10( value.toFloat64() ).toFloat32()
     }
 
     # ── 取整 ─────────────────────────────────────────────
+    @DllImport( "math_lib", "mathf_ceil", "Float32->Float32" )
     public static Float32 ceil( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.ceil", value ) as Float32
+        ret Mathd.ceil( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_floor", "Float32->Float32" )
     public static Float32 floor( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.floor", value ) as Float32
+        ret Mathd.floor( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_round", "Float32->Float32" )
     public static Float32 round( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.round", value ) as Float32
+        ret Mathd.round( value.toFloat64() ).toFloat32()
     }
 
+    @DllImport( "math_lib", "mathf_truncate", "Float32->Int32" )
     public static Int32 truncate( Float32 value )
     {
-        ret SystemCallExternalFunction( "Math.truncate", value ) as Int32
+        ret value.toInt32()
+    }
+
+    # ── 三维点积（矩阵 / 向量元素运算用，恰好 6 参 FFI 上限） ──
+    @DllImport( "math_lib", "mathf_dot3", "Float32,Float32,Float32,Float32,Float32,Float32->Float32" )
+    public static Float32 dot3( Float32 a0, Float32 a1, Float32 a2, Float32 b0, Float32 b1, Float32 b2 )
+    {
+        ret a0 * b0 + a1 * b1 + a2 * b2
     }
 
     # ── 绝对值 ───────────────────────────────────────────

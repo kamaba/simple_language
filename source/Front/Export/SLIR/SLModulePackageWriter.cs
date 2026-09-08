@@ -816,6 +816,22 @@ namespace SimpleLanguage.Export.SLIR
                     }
                 }
 
+                // 从项目配置的 vmDlls 填充 cvm 扩展 DLL 导入信息（产出 DLL 文件名）。
+                // DLL 已由 VmDllBuildManager 拷到 module.json 同目录，VM 加载本模块时
+                // 按 package 目录预加载，供 systemCalls 的 "DllName!symbol" 解析；
+                // 引用方透传声明即可复用
+                if (config.VmDlls != null)
+                {
+                    foreach (var v in config.VmDlls)
+                    {
+                        if (v == null || string.IsNullOrWhiteSpace(v.Name)) continue;
+                        pkg.vmDllImports.Add(new SLVmDllImportPackage
+                        {
+                            name = v.Name,
+                        });
+                    }
+                }
+
                 // 从项目配置的 references 填充引用关系（含 uuid、name、path、版本号）
                 if (config.References != null)
                 {

@@ -48,6 +48,15 @@ namespace SimpleLanguage.Project
         /// 免在代码里写长路径；随 module.json 导出后引用方同样可用。
         /// </summary>
         public List<DllImportSection> DllImports { get; set; } = new List<DllImportSection>();
+        /// <summary>
+        /// cvm 扩展 DLL 导入配置（jsonc "vmDlls" 段）：
+        /// project（VS 工程文件，相对 jsonc 所在目录）/ name（产出 DLL 文件名）/
+        /// configuration（缺省 Debug）/ platform（缺省 x64）。
+        /// 导出时 Front 负责用 MSBuild 编译该工程并把 DLL 拷到 module.json 同目录，
+        /// 随 module.json 的 vmDllImports 字段导出；cvm 加载 module.json 时按
+        /// package 目录预加载这些 DLL，供 systemCalls 的 "DllName!symbol" 解析。
+        /// </summary>
+        public List<VmDllSection> VmDlls { get; set; } = new List<VmDllSection>();
         public List<SystemCallItem> systemCalls { get; set; } = new List<SystemCallItem>();
         public ExportSection Export { get; set; } = new ExportSection();
 
@@ -280,6 +289,19 @@ namespace SimpleLanguage.Project
             public string Name { get; set; } = string.Empty;
             public string Alias { get; set; } = string.Empty;
             public List<DllImportFunctionSection> Functions { get; set; } = new List<DllImportFunctionSection>();
+        }
+
+        /// <summary>cvm 扩展 DLL 导入条目（jsonc "vmDlls" 数组元素）。</summary>
+        public class VmDllSection
+        {
+            /// <summary>VS 工程文件路径（.vcxproj 等），相对 jsonc 所在目录。</summary>
+            public string Project { get; set; } = string.Empty;
+            /// <summary>产出 DLL 文件名（不含路径），如 "MathVMLib.dll"。</summary>
+            public string Name { get; set; } = string.Empty;
+            /// <summary>MSBuild Configuration，缺省 Debug。</summary>
+            public string Configuration { get; set; } = "Debug";
+            /// <summary>MSBuild Platform，缺省 x64。</summary>
+            public string Platform { get; set; } = "x64";
         }
 
         /// <summary>
