@@ -9,6 +9,7 @@
 using SimpleLanguage.Core;
 using SimpleLanguage.Export.SLIR.Types;
 using SimpleLanguage.Logging;
+using SimpleLanguage.Project;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -535,6 +536,12 @@ namespace SimpleLanguage.IR
             originalFunEndLabel.id = m_IRDataList.Count;
             m_IRDataList.Add(originalFunEndLabel);
 
+            // ---- null 快速判断 peephole（optimizeLevel >= 1）----
+            // 在 label 回填之前运行：把 ?. / ?? / var == null / var != null 的
+            // [Dup]LoadConstNull + Ceq/Cne + BrFalse/BrTrue 序列融合成
+            // BrIsNullPeek / BrIsNull / BrNotNull（null 直接在 CVM 内判断）。
+            ApplyNullCheckFastBranchPeephole();
+
             int nextLabelId = 1; // Label IDs start from 1 (0 reserved for "no label")
 
             for (int i = 0; i < m_LabelList.Count; i++)
@@ -585,6 +592,9 @@ namespace SimpleLanguage.IR
                         }
                         break;
                     case EIROpCode.BrFalse:
+                    case EIROpCode.BrIsNull:
+                    case EIROpCode.BrNotNull:
+                    case EIROpCode.BrIsNullPeek:
                         {
                             var findex = IRDataList.FindIndex(a => a == defLabel.opValue);
                             defLabel.index = findex;
@@ -649,6 +659,284 @@ namespace SimpleLanguage.IR
             // The C VM computes byte offsets at load time (vm_build_method_code)
             // and patches branch instructions for O(1) direct jumps.
         }
+
+        // ─────────────────────────────────────────────────────────────
+        // null 快速判断 peephole（optimizeLevel >= 1）
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>Ceq/Cne：null 比较产生 bool 的指令。</summary>
+        private static bool IsNullCompareOp(EIROpCode op)
+        {
+            return op == EIROpCode.Ceq || op == EIROpCode.Cne;
+        }
+
+        /// <summary>BrFalse/BrTrue：消费 bool 的条件跳转。</summary>
+        private static bool IsConditionBranchOp(EIROpCode op)
+        {
+            return op == EIROpCode.BrFalse || op == EIROpCode.BrTrue;
+        }
+
+        /// <summary>模式3（null 在前的反序形式）中允许出现在 LoadConstNull 之后的
+        /// "单值入栈"指令白名单（保证 Ceq/Cne 比较的正是该值与 null）。</summary>
+        private static bool IsSinglePushLoadOp(EIROpCode op)
+        {
+            switch (op)
+            {
+                case EIROpCode.LoadLocal:
+                case EIROpCode.LoadArgument:
+                case EIROpCode.LoadGlobal:
+                case EIROpCode.LoadStaticField:
+                case EIROpCode.LoadNotStaticField:
+                case EIROpCode.LoadArrayIndex:
+                case EIROpCode.LoadConstString:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// pop 变体映射：[LoadConstNull][cmp][br] 的净效果 = 弹栈顶被测值并按条件跳转。
+        /// Ceq+BrFalse → 非 null 跳（BrNotNull）；Ceq+BrTrue → 是 null 跳（BrIsNull）；
+        /// Cne+BrFalse → 是 null 跳（BrIsNull）；Cne+BrTrue → 非 null 跳（BrNotNull）。
+        /// </summary>
+        private static EIROpCode NullCheckPopVariant(EIROpCode cmp, EIROpCode br)
+        {
+            bool jumpWhenNull = (cmp == EIROpCode.Ceq)
+                ? (br == EIROpCode.BrTrue)
+                : (br == EIROpCode.BrFalse);
+            return jumpWhenNull ? EIROpCode.BrIsNull : EIROpCode.BrNotNull;
+        }
+
+        /// <summary>
+        /// peek 变体判定：[Dup][LoadConstNull][cmp][br] 仅在"跳转条件 = 是 null"时
+        /// 可融合为 BrIsNullPeek（?. / ?? 的生成形态：Cne+BrFalse / Ceq+BrTrue）；
+        /// 其余组合（跳转条件 = 非 null）没有对应 opcode，保持原序列。
+        /// </summary>
+        private static bool NullCheckPeekIsJumpWhenNull(EIROpCode cmp, EIROpCode br)
+        {
+            return (cmp == EIROpCode.Ceq && br == EIROpCode.BrTrue)
+                || (cmp == EIROpCode.Cne && br == EIROpCode.BrFalse);
+        }
+
+        /// <summary>
+        /// null 快速判断 peephole（optimizeLevel >= 1）。识别四种模式并融合：
+        ///  1. [Dup][LoadConstNull][Cne|Ceq][BrFalse|BrTrue] → BrIsNullPeek
+        ///     （?. / ??：接收者保留在栈上，等价于"去 Dup"；仅"是 null 才跳"的形态融合）
+        ///  2. [任意][LoadConstNull][Ceq|Cne][BrFalse|BrTrue] → BrIsNull / BrNotNull
+        ///     （if/while 条件中的 var == null / var != null：弹栈顶被测值）
+        ///  3. [LoadConstNull][单值入栈][Ceq|Cne][BrFalse|BrTrue] → 同 2（null 写在前面的反序）
+        ///  4. [任意][LoadConstNull][Ceq|Cne][StoreLocal t][LoadLocal t][BrFalse|BrTrue]
+        ///     → 同 2（if/while 的真实生成形态：Front 把条件结果存入临时 bool 局部
+        ///     boolConditionVariable 再加载跳转；仅当 t 在全函数中只有这一对
+        ///     store/load 引用时才可安全删除这四条中间指令）
+        /// 跳转 payload 机制与普通 if 完全一致（label 回填 + 前 4 字节目标索引），
+        /// 只是省去 LoadConstNull + Ceq/Cne（peek 形式还省去 Dup），null 判断在 CVM 内完成。
+        /// 被删除或被改写的指令若是任何跳转的目标（含 switch 表项）则跳过该窗口；
+        /// 删除后重排全部 IRData.id（BuildPendingSwitchPayloads 用 id 作跳转索引）。
+        /// </summary>
+        private void ApplyNullCheckFastBranchPeephole()
+        {
+            if (ProjectManager.optimizeLevel < 1)
+            {
+                return;
+            }
+
+            int count = m_IRDataList.Count;
+            if (count < 3)
+            {
+                return;
+            }
+
+            // 收集全部被引用的跳转目标，避免删除/改写它们。
+            HashSet<IRData> referencedTargets = new HashSet<IRData>();
+            for (int i = 0; i < count; i++)
+            {
+                var d = m_IRDataList[i];
+                if (d == null) continue;
+                if (d.opValue is IRData target)
+                {
+                    referencedTargets.Add(target);
+                }
+                else if (d.opValue is TryScopeData tsd)
+                {
+                    if (tsd.catchTarget != null) referencedTargets.Add(tsd.catchTarget);
+                    if (tsd.finallyTarget != null) referencedTargets.Add(tsd.finallyTarget);
+                }
+            }
+            for (int t = 0; t < m_PendingSwitchTableList.Count; t++)
+            {
+                var table = m_PendingSwitchTableList[t];
+                if (table == null) continue;
+                if (table.defaultTargetIRData != null) referencedTargets.Add(table.defaultTargetIRData);
+                if (table.entries != null)
+                {
+                    for (int e = 0; e < table.entries.Count; e++)
+                    {
+                        if (table.entries[e] != null && table.entries[e].targetIRData != null)
+                        {
+                            referencedTargets.Add(table.entries[e].targetIRData);
+                        }
+                    }
+                }
+            }
+
+            // 模式4 安全性预统计：每个局部槽位被 LoadLocal/StoreLocal/StoreLocalConstValue
+            // 引用的总次数。临时 bool 局部 t 必须全函数仅这一对 store/load（计数==2）
+            // 才能删除，否则后续其他读取会读到未赋值的槽位。
+            Dictionary<int, int> localRefCounts = new Dictionary<int, int>();
+            for (int i = 0; i < count; i++)
+            {
+                var d = m_IRDataList[i];
+                if (d == null) continue;
+                if (d.opCode == EIROpCode.LoadLocal
+                    || d.opCode == EIROpCode.StoreLocal
+                    || d.opCode == EIROpCode.StoreLocalConstValue)
+                {
+                    localRefCounts.TryGetValue(d.index, out int rc);
+                    localRefCounts[d.index] = rc + 1;
+                }
+            }
+
+            bool[] removed = new bool[count];
+            bool changed = false;
+
+            for (int i = 0; i < count; i++)
+            {
+                if (removed[i]) continue;
+                var d0 = m_IRDataList[i];
+                if (d0 == null) continue;
+
+                // 模式1: [Dup][LoadConstNull][cmp][br] → BrIsNullPeek
+                if (i + 3 < count
+                    && d0.opCode == EIROpCode.Dup
+                    && m_IRDataList[i + 1].opCode == EIROpCode.LoadConstNull
+                    && IsNullCompareOp(m_IRDataList[i + 2].opCode)
+                    && IsConditionBranchOp(m_IRDataList[i + 3].opCode))
+                {
+                    var cmp = m_IRDataList[i + 2];
+                    var br = m_IRDataList[i + 3];
+                    if (br.opValue is IRData
+                        && NullCheckPeekIsJumpWhenNull(cmp.opCode, br.opCode)
+                        && !referencedTargets.Contains(d0)
+                        && !referencedTargets.Contains(m_IRDataList[i + 1])
+                        && !referencedTargets.Contains(cmp)
+                        && !referencedTargets.Contains(br))
+                    {
+                        removed[i] = true;
+                        removed[i + 1] = true;
+                        removed[i + 2] = true;
+                        br.opCode = EIROpCode.BrIsNullPeek;
+                        changed = true;
+                        i += 3;
+                        continue;
+                    }
+                }
+
+                if (d0.opCode != EIROpCode.LoadConstNull)
+                {
+                    continue;
+                }
+
+                // 模式4: [任意][LoadConstNull][Ceq|Cne][StoreLocal t][LoadLocal t][BrFalse|BrTrue]
+                // （if/while 条件的真实生成形态：条件结果先存入临时 bool 局部 t 再加载跳转）
+                if (i >= 1
+                    && !removed[i - 1]
+                    && i + 4 < count
+                    && IsNullCompareOp(m_IRDataList[i + 1].opCode)
+                    && m_IRDataList[i + 2].opCode == EIROpCode.StoreLocal
+                    && m_IRDataList[i + 3].opCode == EIROpCode.LoadLocal
+                    && m_IRDataList[i + 2].index == m_IRDataList[i + 3].index
+                    && IsConditionBranchOp(m_IRDataList[i + 4].opCode))
+                {
+                    var cmp = m_IRDataList[i + 1];
+                    var storeT = m_IRDataList[i + 2];
+                    var loadT = m_IRDataList[i + 3];
+                    var br = m_IRDataList[i + 4];
+                    localRefCounts.TryGetValue(storeT.index, out int tRefCount);
+                    if (tRefCount == 2
+                        && br.opValue is IRData
+                        && !referencedTargets.Contains(d0)
+                        && !referencedTargets.Contains(cmp)
+                        && !referencedTargets.Contains(storeT)
+                        && !referencedTargets.Contains(loadT)
+                        && !referencedTargets.Contains(br))
+                    {
+                        removed[i] = true;
+                        removed[i + 1] = true;
+                        removed[i + 2] = true;
+                        removed[i + 3] = true;
+                        br.opCode = NullCheckPopVariant(cmp.opCode, br.opCode);
+                        changed = true;
+                        i += 4;
+                        continue;
+                    }
+                }
+
+                // 模式3: [LoadConstNull][单值入栈][cmp][br]（null 在前的反序形式）
+                if (i + 3 < count
+                    && IsSinglePushLoadOp(m_IRDataList[i + 1].opCode)
+                    && IsNullCompareOp(m_IRDataList[i + 2].opCode)
+                    && IsConditionBranchOp(m_IRDataList[i + 3].opCode))
+                {
+                    var br = m_IRDataList[i + 3];
+                    if (br.opValue is IRData
+                        && !referencedTargets.Contains(d0)
+                        && !referencedTargets.Contains(m_IRDataList[i + 1])
+                        && !referencedTargets.Contains(m_IRDataList[i + 2])
+                        && !referencedTargets.Contains(br))
+                    {
+                        removed[i] = true;
+                        removed[i + 2] = true;
+                        br.opCode = NullCheckPopVariant(m_IRDataList[i + 2].opCode, br.opCode);
+                        changed = true;
+                        i += 3;
+                        continue;
+                    }
+                }
+
+                // 模式2: [任意][LoadConstNull][cmp][br]（常规 var == null / var != null）
+                if (i + 2 < count
+                    && IsNullCompareOp(m_IRDataList[i + 1].opCode)
+                    && IsConditionBranchOp(m_IRDataList[i + 2].opCode))
+                {
+                    var cmp = m_IRDataList[i + 1];
+                    var br = m_IRDataList[i + 2];
+                    if (br.opValue is IRData
+                        && !referencedTargets.Contains(d0)
+                        && !referencedTargets.Contains(cmp)
+                        && !referencedTargets.Contains(br))
+                    {
+                        removed[i] = true;
+                        removed[i + 1] = true;
+                        br.opCode = NullCheckPopVariant(cmp.opCode, br.opCode);
+                        changed = true;
+                        i += 2;
+                        continue;
+                    }
+                }
+            }
+
+            if (!changed)
+            {
+                return;
+            }
+
+            // 重建指令列表并重排 id（BuildPendingSwitchPayloads 依赖 id 作为跳转索引）。
+            List<IRData> newList = new List<IRData>(count);
+            for (int i = 0; i < count; i++)
+            {
+                if (!removed[i])
+                {
+                    newList.Add(m_IRDataList[i]);
+                }
+            }
+            m_IRDataList = newList;
+            for (int i = 0; i < m_IRDataList.Count; i++)
+            {
+                m_IRDataList[i].id = i;
+            }
+        }
         /// <summary>
         /// 注册一个待构建的 switch 跳转表。
         /// IRSwitchStatements 发射 Switch 指令时登记（此时 case 体目标 IRData 引用尚无 id），
@@ -697,6 +985,9 @@ namespace SimpleLanguage.IR
                 || irdata.opCode == EIROpCode.BrLabel
                 || irdata.opCode == EIROpCode.BrFalse
                 || irdata.opCode == EIROpCode.BrTrue
+                || irdata.opCode == EIROpCode.BrIsNull
+                || irdata.opCode == EIROpCode.BrNotNull
+                || irdata.opCode == EIROpCode.BrIsNullPeek
                 || irdata.opCode == EIROpCode.LeaveTry )
             {
                 m_LabelList.Add(irdata);

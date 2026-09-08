@@ -377,3 +377,5 @@
 /tools/llvm/mlir-transform-opt.exe
 /tools/llvm/mlir-translate.exe
 /tools/llvm/llc.exe
+/project/CSimpleVMTest/bin
+/project/CSimpleVMTest/obj

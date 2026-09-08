@@ -199,6 +199,17 @@ namespace SimpleLanguage.Core
                 }
             }
 
+            // '?.' 的 Period(QuestionMarkDot) 节点在 FileMetaCallLink.AddChildExtendLinkList
+            // 中被消费，QMD 标志保存在目标节点自身（FileMetaCallNode.questionMarkDotToken）；
+            // 该目标节点经 MetaCallLink.CreateCallLinkNode 的 else 分支构造时 sign 为 null
+            // （如 obj?.val / obj?.GetVal()），必须在此检查目标节点携带的 QMD 标志，
+            // 否则 null 条件语义在此丢失、编译成无检查的普通访问。
+            if (m_FileMetaCallSign == null
+                && m_FileMetaCallNode.questionMarkDotToken != null)
+            {
+                m_CallNodeSign = ECallNodeSign.NullConditional;
+            }
+
             // Sometimes the parser keeps the argument parTerm but doesn't set isCallFunction.
             // If this node is an identifier and has parTerm, treat it as a function-call node
             // so we can build MetaInputParamCollection for argument resolution.

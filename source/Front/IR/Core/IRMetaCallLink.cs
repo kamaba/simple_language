@@ -37,9 +37,19 @@ namespace SimpleLanguage.Core.IR
 
                 if (cnode.isQuestionMarkDot && i > startIndex)
                 {
-                    var nullCheckIR = BuildNullConditionalCheck(_irMethod, cnode, cnlist, i);
-                    irList.AddRange(nullCheckIR);
-                    return irList;
+                    // 前一节点是 MetaData（类型对象）且当前节点不是方法调用时，
+                    // MetaData 按下方跳过逻辑不压栈，此时没有接收者可做 null 检查
+                    // （如 SomeClass?.staticField），退化为普通访问。
+                    bool hasReceiverOnStack = !(i > 0
+                        && cnlist[i - 1].visitType == MetaVisitNode.EVisitType.MetaData
+                        && cnode.visitType != MetaVisitNode.EVisitType.MethodCall
+                        && cnode.visitType != MetaVisitNode.EVisitType.SystemCall);
+                    if (hasReceiverOnStack)
+                    {
+                        var nullCheckIR = BuildNullConditionalCheck(_irMethod, cnode, cnlist, i);
+                        irList.AddRange(nullCheckIR);
+                        return irList;
+                    }
                 }
 
                 // MetaData visit 仅在后面紧跟 MethodCall/SystemCall 时才生成 LoadConstType（作为 this 传入）。

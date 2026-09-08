@@ -161,6 +161,17 @@ namespace SimpleLanguage
         StoreNotStaticField2ConstValue,    // = 112 [index:4][etype:1][value:N], pop instance
         StoreArrayIndexConstValue,         // = 113 [index:4][flag:1][etype:1][value:N], pop array
         StoreStaticFieldConstValue,        // = 114 [index:4][etype:1][value:N][owner runtimeDefType("self" or JSON)]
+
+        // Null-check fast branch opcodes (emitted by the O>=1 peephole in IRMethod.Parse).
+        // They replace [Dup|]<value-push>, LoadConstNull, Ceq/Cne, BrFalse/BrTrue windows:
+        //   BrIsNull     : pop top, jump if null      (Ceq+BrTrue / Cne+BrFalse / Cne+... semantics)
+        //   BrNotNull    : pop top, jump if not null  (Ceq+BrFalse / Cne+BrTrue)
+        //   BrIsNullPeek : peek top (keep on stack), jump if null  (?. / ?? 的 Dup+Cne+BrFalse)
+        // The null test itself happens inside the CVM; the jump target index is
+        // embedded as the first 4 payload bytes exactly like BrFalse/BrTrue.
+        BrIsNull,                           // = 115 payload: [target index:4]
+        BrNotNull,                          // = 116 payload: [target index:4]
+        BrIsNullPeek,                       // = 117 payload: [target index:4]
     }
 
     /// <summary>

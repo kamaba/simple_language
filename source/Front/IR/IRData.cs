@@ -298,6 +298,10 @@ namespace SimpleLanguage.IR
                 case EIROpCode.StoreNotStaticField2ConstValue:
                 case EIROpCode.StoreArrayIndexConstValue:
                 case EIROpCode.StoreStaticFieldConstValue:
+                // Null-check fast branches: target index embedded first (same as BrFalse)
+                case EIROpCode.BrIsNull:
+                case EIROpCode.BrNotNull:
+                case EIROpCode.BrIsNullPeek:
                     return true;
                 default:
                     return false;
