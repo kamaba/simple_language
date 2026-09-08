@@ -410,7 +410,7 @@ namespace SimpleLanguage.Core
 
             if (!m_IsBlockAlwaysReturn)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                Log.AddMetaCoreLog(LID.MetaCoreMethodRet, m_Token,
                     $"Error 函数[{functionAllName}] 声明了返回类型[{returnType.ToFormatString()}]，但并非所有代码路径都有ret返回语句!");
             }
         }

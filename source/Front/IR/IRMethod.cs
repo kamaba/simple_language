@@ -1059,7 +1059,7 @@ namespace SimpleLanguage.IR
                 var irmc = IRManager.GetIRMetaClassByMetaType(mt);
                 if (irmc == null)
                 {
-                    Log.AddIRLog(LID.MetaCoreAssertShowMessage, mmf.token, "result prologue: not found Result IRMetaClass!");
+                    Log.AddIRLog(LID.IRMethodNotFoundResultPrologue, mmf.token, "result prologue: not found Result IRMetaClass!");
                     return null;
                 }
                 IRNew irNew = new IRNew(this, irmc);

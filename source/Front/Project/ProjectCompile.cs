@@ -35,7 +35,7 @@ namespace SimpleLanguage.Project
         {
             if (string.IsNullOrEmpty(spFilePath))
             {
-                Log.AddProjectLog(LID.ShowExtendMessage, "", spFilePath );
+                Log.AddProjectLog(LID.ProjectCompileIssue, "", spFilePath );
                 return;
             }
 
@@ -300,7 +300,7 @@ namespace SimpleLanguage.Project
             var find = fileParseList.Find(a => a.filePath == path);
             if ( find != null )
             {
-                Log.AddProjectLog(LID.ShowExtendMessage, "已经添加过一次该文件: " + find.filePath);
+                Log.AddProjectLog(LID.ProjectCompileIssue2, "已经添加过一次该文件: " + find.filePath);
                 return;
             }
 
@@ -318,7 +318,7 @@ namespace SimpleLanguage.Project
                 if( !fileParseList[i].IsExists() )
                 {
                     isSuccess = false;
-                    Log.AddProjectLog(LID.ShowExtendMessage, "没有找到要编译的文件: " + fileParseList[i].filePath);
+                    Log.AddProjectLog(LID.ProjectCompileNotFound, "没有找到要编译的文件: " + fileParseList[i].filePath);
                     break;
                 }
             }

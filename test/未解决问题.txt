@@ -4,23 +4,7 @@
 id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMessage,enFixedTips，其它的你直接读字段就能明白，但enableAssert这个是在编译的时候中间中断的处理，pass 是指，在编译时 该小段，比如我编译File层的时候，可能有3-5个过程，如果其实一个过程报错，是否直接中断，如果pass=True 则，不中断，  把这个改完后，跑通就行，具体的问题，我在debug的时候，遇到这个错误我再review.
 
 
-增加 if( var1 == null ) 的快速指针，还有 if var1!= null 的快速指针 大概思路就是不进行dup 然后直接通过指令，指令里边带着跳转位置 但null是直接在cvm里边直接判断的，跳转逻辑还和普通的if一样，只是少了前边两步，把?. 还有普通的 var == null var != nul 都识别出来，然后变成这个模式，如果使用了 o1 o2 o3 都会把该指针加进去
-
-
 runtime_class_manager_get_runtime_class_by_id里边界的查找过程改成hash碰撞连表的模式吧，要不这样类多了，查找起来太慢了
-
-get_runtime_type_by_runtime_class_and_runtime_type_list 改成 RuntimeClass里边包含注册的RuntimeType有一个RuntimeType的列表 相当于，如果找到了RuntimeClass可以很快找到可以查到RuntimeType 查找过程，也是很查模板数量，然后再比对模板类型   RuntimeType** rt_list = (RuntimeType**)base_realloc(sc->gen_runtime_type_list, sizeof(RuntimeType*) * (size_t)sc->gen_runtime_type_count);
-if (rt_list == NULL)
-{
-	return NULL;
-}
-for (int i = 0; i < sc->gen_runtime_type_count - 1; ++i)
-{
-	rt_list[i] = &sc->gen_runtime_type_list[i];
-}
-rt_list[sc->gen_runtime_type_count - 1] = rt;
-sc->gen_runtime_type_list = rt_list;
-base_free(rt_list); 看下这块的逻辑对不
 
 vm_object_new_by_runtime_class 这个里边，要分配内存的时候，要分配连续内存，而不是先分配VMObject再分配后边的，要直接分配全了，然后通过位给各个值赋值
 

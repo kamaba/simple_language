@@ -103,7 +103,7 @@ namespace SimpleLanguage.Compile
             }
             if ( dataClass == null || !dataClass.isData )
             {
-                Log.AddFileMetaLog( LID.ShowExtendMessage, define.classNameToken ?? fm.token,
+                Log.AddFileMetaLog( LID.FileMetaBindExpandBindData, define.classNameToken ?? fm.token,
                     $"Error bind 引用的数据类型 '{simpleName}' 未找到或不是 data 类型!" );
                 return null;
             }
@@ -216,7 +216,7 @@ namespace SimpleLanguage.Compile
                 if ( ancestorNames.Contains( info.name ) ) continue;
                 if ( HasMemberVariable( fmc, info.name ) || HasMemberFunction( fmc, info.name ) )
                 {
-                    Log.AddFileMetaLog( LID.ShowExtendMessage, fmc.token,
+                    Log.AddFileMetaLog( LID.FileMetaBindExpandBind, fmc.token,
                         $"Warning 类 '{fmc.name}' 已有成员 '{info.name}'，跳过 bind 成员变量注入。" );
                     continue;
                 }
@@ -235,7 +235,7 @@ namespace SimpleLanguage.Compile
                     // 类已有同名成员变量 -> 告警跳过
                     if ( HasMemberVariable( fmc, field.name ) )
                     {
-                        Log.AddFileMetaLog( LID.ShowExtendMessage, fmc.token,
+                        Log.AddFileMetaLog( LID.FileMetaBindExpandBind2, fmc.token,
                             $"Warning 类 '{fmc.name}' 已有成员变量 '{field.name}'，跳过 bind 字段访问器。" );
                         continue;
                     }
@@ -243,7 +243,7 @@ namespace SimpleLanguage.Compile
                     // 多 bind 同名字段冲突 -> 告警跳过
                     if ( fieldToBinds[field.name].Count > 1 )
                     {
-                        Log.AddFileMetaLog( LID.ShowExtendMessage, fmc.token,
+                        Log.AddFileMetaLog( LID.FileMetaBindExpandBindGetSet, fmc.token,
                             $"Warning bind 数据中字段 '{field.name}' 存在冲突，请手动实现 get/set。" );
                         continue;
                     }
@@ -337,7 +337,7 @@ namespace SimpleLanguage.Compile
                     // 冲突 -> 告警跳过
                     if ( fieldToBinds[field.name].Count > 1 )
                     {
-                        Log.AddFileMetaLog( LID.ShowExtendMessage, fmc.token,
+                        Log.AddFileMetaLog( LID.FileMetaBindExpandBind3, fmc.token,
                             $"Warning 接口 '{fmc.name}' bind 字段 '{field.name}' 冲突，请手动声明。" );
                         continue;
                     }
@@ -447,7 +447,7 @@ namespace SimpleLanguage.Compile
                 {
                     if ( !allBindNames.Contains( define.name ) )
                     {
-                        Log.AddFileMetaLog( LID.ShowExtendMessage, fmc.token,
+                        Log.AddFileMetaLog( LID.FileMetaBindExpandBind4, fmc.token,
                             $"Error 类 '{fmc.name}' 实现接口 '{ifaceName}' bind 了数据 '{define.name}'，但类未 bind 该数据!" );
                     }
                 }
@@ -476,7 +476,7 @@ namespace SimpleLanguage.Compile
                 var syntheticClass = fm.GetFileMetaClassByName( syntheticName );
                 if ( syntheticClass == null )
                 {
-                    Log.AddFileMetaLog( LID.ShowExtendMessage, fm.token,
+                    Log.AddFileMetaLog( LID.FileMetaBindExpandBind5, fm.token,
                         $"Error bind 展开失败：无法找到合成类 '{syntheticName}'。" );
                     return;
                 }
@@ -500,7 +500,7 @@ namespace SimpleLanguage.Compile
             }
             catch ( Exception e )
             {
-                Log.AddFileMetaLog( LID.ShowExtendMessage, fm.token,
+                Log.AddFileMetaLog( LID.FileMetaBindExpandBind6, fm.token,
                     $"Error bind 展开异常 (类 '{targetClass.name}'): {e.Message}" );
             }
         }

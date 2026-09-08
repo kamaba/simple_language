@@ -97,7 +97,7 @@ namespace SimpleLanguage.Export.SLIR
             Directory.CreateDirectory(Path.GetDirectoryName(outputPath) ?? ".");
             File.WriteAllText(outputPath, JsonSerializer.Serialize(pkg, options));
 
-            Log.AddIRLog(LID.ShowExtendMessage, "export module success: " + outputPath);
+            Log.AddIRLog(LID.ExportSLModulePackageExportModuleSuccess, "export module success: " + outputPath);
         }
 
         internal static SLModulePackage Read(string inputPath)

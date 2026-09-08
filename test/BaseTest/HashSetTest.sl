@@ -1,4 +1,3 @@
-import Std;
 import Core;
 
 HashSetTest

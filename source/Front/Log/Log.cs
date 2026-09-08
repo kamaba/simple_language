@@ -40,6 +40,8 @@ namespace SimpleLanguage.Logging
         public string demo { get; set; }
         public string advan { get; set; }
         public string extendMessage { get; set; }
+        //pass=true: 该错误不参与 errorCount 统计，编译过程不因它中断
+        public bool pass { get; set; } = false;
         public DateTime time { get; set; }
         public LogData()
         {
@@ -155,7 +157,11 @@ namespace SimpleLanguage.Logging
             m_LogDataList.Enqueue(data);
             if (data.logType == LogType.Error || data.logType == LogType.Assert)
             {
-                System.Threading.Interlocked.Increment(ref s_ErrorCount);
+                //pass=true 的错误不计入失败统计（编译过程不因此中断）
+                if (!data.pass)
+                {
+                    System.Threading.Interlocked.Increment(ref s_ErrorCount);
+                }
             }
             else if (data.logType == LogType.Warning)
             {
@@ -271,6 +277,7 @@ namespace SimpleLanguage.Logging
                 error = lid,
                 errorType = errorType,
                 logType = errorDefine.LogType,
+                pass = errorDefine.Pass,
                 time = DateTime.Now
             };
             if (token != null)

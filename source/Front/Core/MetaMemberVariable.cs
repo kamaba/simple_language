@@ -126,7 +126,7 @@ namespace SimpleLanguage.Core
 
             if (string.IsNullOrEmpty(m_Name))
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到定义变量名称!");
+                Log.AddMetaCoreLog(LID.MetaCoreMemberVariableNotFoundVariableDefine, "没有找到定义变量名称!");
                 m_Name = "Error_" + GetHashCode().ToString();
             }
             if (m_FileMetaMemeberVariable.permissionToken?.type != null)
@@ -281,7 +281,7 @@ namespace SimpleLanguage.Core
                 {
                     token = this.m_FileMetaMemeberVariable?.express.token;
                 }
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, $"Error [{this.ownerMetaClass.allName + "." + this.m_Name} ]配置成员变量时，必须需要有等号及后续的表达式!!");
+                Log.AddMetaCoreLog(LID.MetaCoreMemberVariableVariableExpressMember, token, $"Error [{this.ownerMetaClass.allName + "." + this.m_Name} ]配置成员变量时，必须需要有等号及后续的表达式!!");
             }
         }
 
@@ -315,7 +315,7 @@ namespace SimpleLanguage.Core
 
             if (!m_IsStatic)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                Log.AddMetaCoreLog(LID.MetaCoreMemberVariableDllImportStatic, m_Token,
                     $"DllImport: '{ownerMetaClass?.allName}.{m_Name}' 必须为 static 成员变量!!");
                 return null;
             }
@@ -323,7 +323,7 @@ namespace SimpleLanguage.Core
             var args = dllAttr.GetSplitStringArgs();
             if (args.Count < 2)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                Log.AddMetaCoreLog(LID.MetaCoreMemberVariableDllImport, m_Token,
                     "DllImport: 需要 (库路径, 符号名) 两个字符串实参!!");
                 return null;
             }
@@ -336,7 +336,7 @@ namespace SimpleLanguage.Core
             var resolvedPath = ProjectManager.config?.ResolveDllImportPath(libPath);
             if (!string.IsNullOrEmpty(resolvedPath) && resolvedPath != libPath)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                Log.AddMetaCoreLog(LID.MetaCoreMemberVariableDllImportAlias, m_Token,
                     $"DllImport: alias '{libPath}' -> '{resolvedPath}'");
                 libPath = resolvedPath;
             }
@@ -350,13 +350,13 @@ namespace SimpleLanguage.Core
                 }
                 if (string.IsNullOrEmpty(sig))
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                    Log.AddMetaCoreLog(LID.MetaCoreMemberVariableDllImportFuncFFI, m_Token,
                         $"DllImport: '{m_Name}' 的 Func 签名无法映射为 FFI sig（含 Ptr 等类型时可用第 3 个实参手写 sig）!!");
                     return null;
                 }
             }
 
-            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+            Log.AddMetaCoreLog(LID.MetaCoreMemberVariableDllImportInjectFFI, m_Token,
                 $"DllImport: inject '{ownerMetaClass?.allName}.{m_Name}' = FFI.StaticLibrary.bindFunction(\"{libPath}\", \"{symbol}\", \"{sig}\")");
 
             return BuildLibraryGetFunctionCallTerm(libPath, symbol, sig);
@@ -507,7 +507,7 @@ namespace SimpleLanguage.Core
                 var relation = TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_RealMetaType, m_Token, out MetaType convertMt);
                 if (relation == false)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 表达式中返回定义类型为空 " + m_Express.ToString());
+                    Log.AddMetaCoreLog(LID.MetaCoreMemberVariableIsNullTypeReturn, m_Token, "Error 表达式中返回定义类型为空 " + m_Express.ToString());
                     return;
                 }
                 else

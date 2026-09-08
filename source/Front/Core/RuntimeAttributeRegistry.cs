@@ -80,7 +80,7 @@ namespace SimpleLanguage.Core
             if (string.IsNullOrEmpty(route)) return;
             var entry = new RouteEntry(route, classAllName, methodAllName, ExtractMethodName(methodAllName));
             m_RouteDict[route] = entry;
-            Log.AddMetaCoreLog(LID.ShowExtendMessage,
+            Log.AddMetaCoreLog(LID.MetaCoreAttributeRegistryRouteRegistered,
                 $"Route registered: '{route}' -> {classAllName}.{methodAllName}");
         }
 
@@ -114,7 +114,7 @@ namespace SimpleLanguage.Core
                 m_ConditionDict[key] = list;
             }
             list.Add(entry);
-            Log.AddMetaCoreLog(LID.ShowExtendMessage,
+            Log.AddMetaCoreLog(LID.MetaCoreAttributeRegistryConditionRegistered,
                 $"Condition registered: '{condition}' for {classAllName}.{methodAllName}");
         }
 

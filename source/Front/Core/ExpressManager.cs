@@ -97,7 +97,7 @@ namespace SimpleLanguage.Core
 
             if (fmte == null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, equalMetaVariable?.token, "" );
+                Log.AddMetaCoreLog(LID.MetaCoreExpressManagerIssue, equalMetaVariable?.token, "" );
                 return null;
             }
 
@@ -160,7 +160,7 @@ namespace SimpleLanguage.Core
             }
             else if( ifExpressTerm != null )
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "不允许使用If语句!!");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressManagerIf, "不允许使用If语句!!");
                 return null;
             }
 
@@ -178,7 +178,7 @@ namespace SimpleLanguage.Core
             }
             else if (switchExpressTerm != null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "不允许使用Switch语句!!");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressManagerSwitch, "不允许使用Switch语句!!");
                 return null;
             }
 
@@ -195,7 +195,7 @@ namespace SimpleLanguage.Core
             //}
             //else if (parExpressTerm != null)
             //{
-            //    Log.AddMetaCoreLog(LID.ShowExtendMessage, "不允许使用Switch语句!!");
+            //    Log.AddMetaCoreLog(LID.MetaCoreExpressManagerSwitch2, "不允许使用Switch语句!!");
             //    return null;
             //}
 
@@ -222,7 +222,7 @@ namespace SimpleLanguage.Core
 
                     case FileMetaSymbolTerm fmst:
                         {
-                            //Log.AddMetaCoreLog(LID.ShowExtendMessage, root.token, "Error CreateExpressNode 创建表达项不能为符号");
+                            //Log.AddMetaCoreLog(LID.MetaCoreExpressManagerCreateExpressNode, root.token, "Error CreateExpressNode 创建表达项不能为符号");
                         }
                         break;
                     case FileMetaAsOrIsTerm fmaoit:
@@ -293,7 +293,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, fmpt.token, "fmpt file meta express list count !");
+                                Log.AddMetaCoreLog(LID.MetaCoreExpressManagerFmptFileMeta, fmpt.token, "fmpt file meta express list count !");
                             }
                         }
                         break;
@@ -311,7 +311,7 @@ namespace SimpleLanguage.Core
                             return maen;
                         }
                     default:
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error CreateExpressNode 创建表达项不能为符号");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressManagerCreateExpressNode2, "Error CreateExpressNode 创建表达项不能为符号");
                         break;
                 }
             }
@@ -343,7 +343,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, root.token, " Error VisitFileMetaExpress fileMetaNode 不是符号!!");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressManagerVisitFileMetaExpressFileMetaNode, root.token, " Error VisitFileMetaExpress fileMetaNode 不是符号!!");
                     }
                 }
                 else if (leftNode != null && rightNode == null)
@@ -382,7 +382,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, " Error VisitFileMetaExpress left and right都为空!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressManagerVisitFileMetaExpressLeftRight, " Error VisitFileMetaExpress left and right都为空!!");
                 }
                 return null;
             }
@@ -431,7 +431,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Optimaze don't support that ExpressType");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressManagerNotSupportOptimazeDon, "Error Optimaze don't support that ExpressType");
                     }
                     break;
             }
@@ -446,7 +446,7 @@ namespace SimpleLanguage.Core
                 var mcen = oldmen as MetaCallLinkExpressNode;
                 if( mcen == null )
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "老类型不是CallLinkExpressNode");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressManagerCallLinkExpressNode, "老类型不是CallLinkExpressNode");
                     return null;
                 }
                 var menNew1 = new MetaNewObjectExpressNode(mdt, mcen);
@@ -496,7 +496,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "oldmen as MetaConstExpressNode is null");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressManagerIsNullOldmenAs, "oldmen as MetaConstExpressNode is null");
                 }
             }
             return menNew;

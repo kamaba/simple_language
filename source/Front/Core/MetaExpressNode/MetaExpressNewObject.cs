@@ -69,7 +69,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = owmt;
             if (fmos == null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "MetaBraceAssignStatements not found FileMetaOpAssignSyntax");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectNotFoundMetaBraceAssignStatementsNot, "MetaBraceAssignStatements not found FileMetaOpAssignSyntax");
                 return;
             }
 
@@ -115,7 +115,7 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBase = owmt;
             if (fmos == null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "MetaBraceAssignStatements not found FileMetaOpAssignSyntax");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectNotFoundMetaBraceAssignStatementsNot2, "MetaBraceAssignStatements not found FileMetaOpAssignSyntax");
                 return;
             }
 
@@ -123,7 +123,7 @@ namespace SimpleLanguage.Core
             m_AssignToken = fmos.assignToken;
             if (!fmos.variableRef.isOnlyName)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error ??" + mbs.ownerMetaClass?.allName + "??: " + mbs.ownerMetaFunction.name
+                Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue, m_Token, "Error ??" + mbs.ownerMetaClass?.allName + "??: " + mbs.ownerMetaFunction.name
                     + " ??: " + fmos.variableRef.ToTokenString());
                 return;
             }
@@ -144,21 +144,21 @@ namespace SimpleLanguage.Core
                         m_SetMetaMemberFunction = mc.GetSetMemberFunctionByNameAndParamCount(m_DefineName, 1);
                         if (m_SetMetaMemberFunction == null)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "member variable not found: " + m_DefineName);
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectNotFoundMemberVariable, m_Token, "member variable not found: " + m_DefineName);
                             return;
                         }
                         m_AssignTargetType = EAssignTargetType.SetMethodCall;
                         var paramList = m_SetMetaMemberFunction.metaMemberParamCollection.metaDefineParamList;
                         if (paramList == null || paramList.Count != 1 || paramList[0].metaVariable == null)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectSetAccessorParam, m_Token,
                                 "set accessor param invalid: " + m_DefineName);
                             return;
                         }
                         targetMetaType = paramList[0].metaVariable.GetFinalMetaType();
                         if (targetMetaType == null)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIsNullSetAccessor, m_Token,
                                 "set accessor param type is null: " + m_DefineName);
                             return;
                         }
@@ -176,7 +176,7 @@ namespace SimpleLanguage.Core
                         targetMetaType = m_MetaMemberVariable.GetFinalMetaType();
                         if (targetMetaType == null)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "member variable type is null");
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIsNullMemberVariable, m_Token, "member variable type is null");
                             return;
                         }
                         targetMetaVariable = m_MetaMemberVariable;
@@ -189,7 +189,7 @@ namespace SimpleLanguage.Core
                     m_AssignTargetType = EAssignTargetType.MemberData;
                     if (m_MetaMemberData == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "member data not found: " + m_DefineName);
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectNotFoundMemberData, m_Token, "member data not found: " + m_DefineName);
                         return;
                     }
                     m_Id = m_MetaMemberData.GetHashCode();
@@ -203,7 +203,7 @@ namespace SimpleLanguage.Core
                     targetMetaType = m_MetaMemberData.GetFinalMetaType();
                     if (targetMetaType == null)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "member data type is null");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIsNullMemberData, m_Token, "member data type is null");
                         return;
                     }
 
@@ -217,7 +217,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "unresolved type in brace assign: " + m_NewObjectMetaType?.ToString());
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectUnresolvedTypeBrace, m_Token, "unresolved type in brace assign: " + m_NewObjectMetaType?.ToString());
                     return;
                 }
             }
@@ -304,7 +304,7 @@ namespace SimpleLanguage.Core
             {
                 if (fmst.symBolType != ETokenType.Colon)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "?Map???????:???");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectMap, m_Token, "?Map???????:???");
                     return;
                 }
             }
@@ -312,13 +312,13 @@ namespace SimpleLanguage.Core
             {
                 if (fmst.symBolType != ETokenType.Assign)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "?class???data???????=???");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectClassData, m_Token, "?class???data???????=???");
                     return;
                 }
             }
             if (fmst.left is not FileMetaCallTerm fmct1)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "?class???data?????????filemetaCallTerm");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectClassDataFilemetaCallTerm, m_Token, "?class???data?????????filemetaCallTerm");
                 return;
             }
 
@@ -339,7 +339,7 @@ namespace SimpleLanguage.Core
                     m_MetaMemberData = m_DefineMetaType.metaData?.GetMemberDataByName(m_DefineName);
                     if (m_MetaMemberData == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error ??" + m_NewObjectMetaType.name + "??: " + mbs?.ownerMetaFunction.name
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue2, m_Token, "Error ??" + m_NewObjectMetaType.name + "??: " + mbs?.ownerMetaFunction.name
                             + " ????: ?" + m_NewObjectMetaType.name + " ??:" + m_DefineName);
                     }
                     m_Id = m_MetaMemberData.index;
@@ -347,14 +347,14 @@ namespace SimpleLanguage.Core
                 }
                 else if (m_DefineMetaType.isEnum)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "-----------------------------------Enum-------------------------");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectEnum, "-----------------------------------Enum-------------------------");
                 }
                 else
                 {
                     m_MetaMemberVariable = m_DefineMetaType.metaClass.GetMetaMemberVariableByName(m_DefineName);
                     if (m_MetaMemberVariable == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error ??" + m_DefineMetaType.metaClass?.allName + "??: " + mbs?.ownerMetaFunction.name
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue3, m_Token, "Error ??" + m_DefineMetaType.metaClass?.allName + "??: " + mbs?.ownerMetaFunction.name
                             + " ????: ?" + m_DefineMetaType.metaClass?.allName + " ??:" + m_DefineName);
                     }
                     m_Id = m_MetaMemberVariable.GetHashCode();
@@ -436,7 +436,7 @@ namespace SimpleLanguage.Core
                         {
                             m_AssignBlockedByConst = true;
                             m_ValueMetaExpress = null;
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_MetaMemberData.token,
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectConst, m_MetaMemberData.token,
                                 "const ?????????????? '=' ????: " + m_MetaMemberData.name);
                             return;
                         }
@@ -449,7 +449,7 @@ namespace SimpleLanguage.Core
                         {
                             m_AssignBlockedByConst = true;
                             m_ValueMetaExpress = null;
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_MetaMemberVariable.token,
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectConst2, m_MetaMemberVariable.token,
                                 "const ?????????????? '=' ????: " + m_MetaMemberVariable.name);
                             return;
                         }
@@ -745,7 +745,7 @@ namespace SimpleLanguage.Core
 
                 if (!(defineMt.isEnum && expressMt.isEnum))
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectDefineMtEnumExpressMt, m_AssignToken ?? m_Token,
                         scene + " defineMt is Enum and expressMt is Enum define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
                     return false;
                 }
@@ -757,7 +757,7 @@ namespace SimpleLanguage.Core
                         || string.Equals(de.allName, ee.allName, StringComparison.Ordinal));
                 if (!sameEnumHost)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectDefine, m_AssignToken ?? m_Token,
                         scene + " ????????????, define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
                     return false;
                 }
@@ -769,7 +769,7 @@ namespace SimpleLanguage.Core
                     bool sameEnumValue = string.Equals(dv.name, ev.name, StringComparison.Ordinal) || dv.index == ev.index;
                     if (!sameEnumValue)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectDefine2, m_AssignToken ?? m_Token,
                             scene + " ??????????, define=" + defineMt.ToString() + ", express=" + expressMt.ToString());
                         return false;
                     }
@@ -797,7 +797,7 @@ namespace SimpleLanguage.Core
 
                 if (!IsBraceAssignDeclaredCompatibleWithExpress(defineMt, contentMt))
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_AssignToken ?? m_Token,
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectDefine3, m_AssignToken ?? m_Token,
                         scene + " ????????, define=" + defineMt.ToString() + ", express=" + contentMt.ToString());
                     return false;
                 }
@@ -827,7 +827,7 @@ namespace SimpleLanguage.Core
                 bool isNullLiteral = contentMt != null && contentMt.isNull;
                 if (isNumLike && (isOmittedExpression || isNullLiteral) && elementMt.isNullable == false)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectNumNull, m_Token,
                         "???????????/Num ??????????????????????????? null");
                     return false;
                 }
@@ -846,7 +846,7 @@ namespace SimpleLanguage.Core
                         return true;
                     }
 
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectDefine4, m_Token,
                         scene + " ???????????????, define=" + arrayDefineMt.ToString() + ", express=" + contentMt.ToString());
                     return false;
                 }
@@ -863,7 +863,7 @@ namespace SimpleLanguage.Core
 
                 if (!IsBraceAssignDeclaredCompatibleWithExpress(elementMt, contentMt))
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectElement, m_Token,
                         scene + " ???????????????, element=" + elementMt.ToString() + ", express=" + contentMt.ToString());
                     return false;
                 }
@@ -1515,7 +1515,7 @@ namespace SimpleLanguage.Core
                 m_ArrayCalcMetaType.AddDefineTemplateMetaType(inputType);
                 m_ArrayCalcMetaType.SetArrayLength(m_AssignStatementsList.Count);
             }
-            //Log.AddMetaCoreLog( LID.MetaCoreAssertShowMessage, m_Token, "MetaNewObjectExpressNode GetMaxLevelMetaType m_NewMetaType and m_DefineMetaType are null");
+            //Log.AddMetaCoreLog( LID.MetaCoreExpressNewObjectMetaNewObjectExpressNodeGetMaxLevelMetaTypeM_NewMetaType, m_Token, "MetaNewObjectExpressNode GetMaxLevelMetaType m_NewMetaType and m_DefineMetaType are null");
         }
         public void ParseBraceStatementsContent(AllowUseSettings aws, MetaType mt)
         {
@@ -1580,7 +1580,7 @@ namespace SimpleLanguage.Core
                 if (!handledAssign && m_BraceFileMetaBaseTerm?.fileMetaExpressList?.Count > 0)
                 {
                     m_AssignStatementsList.Clear();
-                    //Log.AddMetaCoreLog(LID.ShowExtendMessage, "??????????");
+                    //Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue4, "??????????");
                     for (int i = 0; i < m_BraceFileMetaBaseTerm.fileMetaExpressList.Count; i++)
                     {
                         var fas = m_BraceFileMetaBaseTerm.fileMetaExpressList[i];
@@ -1635,7 +1635,7 @@ namespace SimpleLanguage.Core
                 var genList = mt.GetGenTemplateMetaTypeList();
                 if (genList.Count != 1)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "not define template meta type list");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectNotDefineTemplate, m_Token, "not define template meta type list");
                     return;
                 }
                 MetaType cmt = genList[0];
@@ -1685,7 +1685,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmst2.symBolType != ETokenType.Comma)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "??????,????,");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue5, "??????,????,");
                     }
                 }
                 else if (fmbt is FileMetaTermExpress termexpress)
@@ -1705,7 +1705,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, fmbt.token, "Error ????????FileMetaBracketTerm ??!");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectFileMetaBracketTerm, fmbt.token, "Error ????????FileMetaBracketTerm ??!");
                 }
             }
             // List<T>(){ val1, val2, ... } -- brace-assign initialization for List
@@ -1714,7 +1714,7 @@ namespace SimpleLanguage.Core
                 var genList = mt.GetGenTemplateMetaTypeList();
                 if (genList.Count != 1)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "List<T> requires exactly 1 template parameter");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectListTRequires, m_Token, "List<T> requires exactly 1 template parameter");
                     return;
                 }
                 MetaType cmt = genList[0];
@@ -1776,12 +1776,12 @@ namespace SimpleLanguage.Core
                 {
                     if (fmst2.symBolType != ETokenType.Comma)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "List<T> brace-assign: expected comma between elements");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectListTBrace, "List<T> brace-assign: expected comma between elements");
                     }
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, fmbt.token, "Error List<T> brace-assign: unsupported term type");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectListTBrace2, fmbt.token, "Error List<T> brace-assign: unsupported term type");
                 }
             }
             // Array<Object>(n){ ... } ??? [1,2] ????????? defineMetaType ????? object?? Array??
@@ -1833,7 +1833,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmstOb2.symBolType != ETokenType.Comma)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "??????,????,");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue6, "??????,????,");
                     }
                 }
                 else if (fmbt is FileMetaTermExpress termexpressOb)
@@ -1854,7 +1854,7 @@ namespace SimpleLanguage.Core
                 else
                 {
                     System.Diagnostics.Debug.Assert(false);
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Array<Object> ???????????!");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectArrayObject, "Error Array<Object> ???????????!");
                 }
             }
             else if (mt.IsMap())   // ??????? ??   a:10, b:20  20:"aa" ?????
@@ -2096,7 +2096,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "!!!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue7, m_Token, "!!!!");
                 }
             }
             var mipc = new MetaInputParamCollection(ownerMetaBase, m_OwnerMetaBlockStatements);
@@ -2109,7 +2109,7 @@ namespace SimpleLanguage.Core
                 {
                     if (!TypeManager.CompareLeftRightMetaType(m_DefineMetaType, m_NewMetaType, m_Token, out MetaType convertMt))
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "m_ExpressReturnMetaType is null");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIsNullM_ExpressReturnMetaTypeNull, m_Token, "m_ExpressReturnMetaType is null");
                     }
                     if (isArray && m_ExpressReturnMetaType.arrayLength == -1)
                     {
@@ -2120,7 +2120,7 @@ namespace SimpleLanguage.Core
                 {
                     if (!TypeManager.CompareLeftRightMetaType(m_NewMetaType, m_ArrayCalcMetaType, m_Token, out MetaType convertMt))
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "m_ExpressReturnMetaType is null");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIsNullM_ExpressReturnMetaTypeNull2, m_Token, "m_ExpressReturnMetaType is null");
                     }
                     if (isArray && m_ExpressReturnMetaType.arrayLength == -1)
                     {
@@ -2149,7 +2149,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "m_ExpressReturnMetaType is null");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIsNullM_ExpressReturnMetaTypeNull3, m_Token, "m_ExpressReturnMetaType is null");
                     }
                 }
                 else
@@ -2165,7 +2165,7 @@ namespace SimpleLanguage.Core
 
             if (m_ExpressReturnMetaType == null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "m_ExpressReturnMetaType is null");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIsNullM_ExpressReturnMetaTypeNull4, m_Token, "m_ExpressReturnMetaType is null");
                 return;
             }
 
@@ -2185,7 +2185,7 @@ namespace SimpleLanguage.Core
         //        bool related = MetaBraceAssignStatements.IsBraceAssignDeclaredCompatibleWithExpress(m_DefineMetaType, m_NewMetaType);
         //        if (!related)
         //        {
-        //            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "??????????new??????????");
+        //            Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectNew, m_Token, "??????????new??????????");
         //            return false;
         //        }
         //        result = new MetaType(m_NewMetaType);
@@ -2313,12 +2313,12 @@ namespace SimpleLanguage.Core
         //        {
         //            if (newDims[index] != defineDims[index])
         //            {
-        //                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????");
+        //                Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue8, m_Token, "???????????");
         //            }
         //        }
         //        else
         //        {
-        //            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????????");
+        //            Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue9, m_Token, "???????????????");
         //            return false;
         //        }
         //    }
@@ -2353,7 +2353,7 @@ namespace SimpleLanguage.Core
         //    {
         //        if (newDims[index] == -1)
         //        {
-        //            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "?????? ??????????????");
+        //            Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue10, m_Token, "?????? ??????????????");
         //            return false;
         //        }
 
@@ -2362,7 +2362,7 @@ namespace SimpleLanguage.Core
 
         //    if (defineDims[index] != newDims[index])
         //    {
-        //        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "???????????????! ??????????new?????????????!");
+        //        Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectNew2, m_Token, "???????????????! ??????????new?????????????!");
         //        return false;
         //    }
 
@@ -2395,7 +2395,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "--");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue11, m_Token, "--");
             }
 
             this.m_ArrayLengthExpress = m_MetaInputParamList[0];
@@ -2405,7 +2405,7 @@ namespace SimpleLanguage.Core
         {
             if (!NumberManager.TryUnifyNumericArrayLiteralMembersToDeclaredArrayType(this, m_ExpressReturnMetaType, m_Token))
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token,
+                Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue12, m_Token,
                     "??????????????????????????/???????????: " + m_ExpressReturnMetaType.ToString());
             }
             for (int i = 0; i < this.m_AssignStatementsList.Count; i++)
@@ -2743,7 +2743,7 @@ namespace SimpleLanguage.Core
         //        }
         //        if (flag)
         //        {
-        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, "?[]???????????");
+        //            Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue13, "?[]???????????");
         //        }
         //    }
         //    int use_n_numone = 0;
@@ -2753,7 +2753,7 @@ namespace SimpleLanguage.Core
         //        {
         //            if( use_n_numone == 2 )
         //            {
-        //                Log.AddMetaCoreLog(LID.ShowExtendMessage, "?[]??????????[3][-1][-1]??????????[3][-1][2] ????");
+        //                Log.AddMetaCoreLog(LID.MetaCoreExpressNewObjectIssue14, "?[]??????????[3][-1][-1]??????????[3][-1][2] ????");
         //                continue;
         //            }
         //        }

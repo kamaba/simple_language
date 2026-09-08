@@ -243,7 +243,7 @@ namespace SimpleLanguage.IR
         {
             if( index >= m_IRNotStaticMethodList.Count || index < 0 )
             {
-                Log.AddIRLog(LID.ShowExtendMessage, "GetIRMethodByIndex is null");
+                Log.AddIRLog(LID.IRClassIsNullGetIRMethodByIndexNull, "GetIRMethodByIndex is null");
                 return null;
             }
             return m_IRNotStaticMethodList[index];
@@ -638,7 +638,7 @@ namespace SimpleLanguage.IR
 
                 if( cv == null )
                 {
-                    Log.AddIRLog(LID.MetaCoreAssertShowMessage, token, "cv is null ");
+                    Log.AddIRLog(LID.IRClassIsNullCvNull, token, "cv is null ");
                     continue;
                 }
 

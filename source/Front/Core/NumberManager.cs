@@ -328,7 +328,7 @@ namespace SimpleLanguage.Core
 
             // Value is out of range for the target type.
             // Emit a warning so the user knows the literal was rejected.
-            Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+            Log.AddMetaCoreLog(LID.MetaCoreNumberValueOutRange, token,
                 $"Warning: value '{mcen.value}' ({expressEType}) is out of range for target type '{defineEType}'.");
             return false;
         }
@@ -548,7 +548,7 @@ namespace SimpleLanguage.Core
                     var srcEt = c.eType;
                     if (IsIntegralNumericEType(targetEt) && IsFloatingNumericEType(srcEt) && !IsConstNumericWholeNumber(c))
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, anchor ?? c.token,
+                        Log.AddMetaCoreLog(LID.MetaCoreNumberArray, anchor ?? c.token,
                             "数组元素[" + i.ToString() + "]：声明为整数元素类型 " + elemType.ToString()
                             + "，不能从非整值的浮点字面量 " + srcEt.ToString() + "（值 " + (c.value?.ToString() ?? "null") + "）转换。");
                         return false;
@@ -556,7 +556,7 @@ namespace SimpleLanguage.Core
 
                     if (!TryForceAdjustConstExpressByMetaType(c, elemType, anchor ?? c.token))
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, anchor ?? c.token,
+                        Log.AddMetaCoreLog(LID.MetaCoreNumberArray2, anchor ?? c.token,
                             "数组元素[" + i.ToString() + "]：无法将常量转为声明的元素类型 " + elemType.ToString()
                             + "（当前表达式类型 " + srcEt.ToString() + "，值 " + (c.value?.ToString() ?? "null") + "）。");
                         return false;

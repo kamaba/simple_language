@@ -293,7 +293,7 @@ namespace SimpleLanguage.Core
                 var retMt = m_SourceMetaExpress?.GetReturnMetaType();
                 if (retMt == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaKeySwitchSyntax.token,
+                    Log.AddMetaCoreLog(LID.MetaCoreSwitchStatementSwitch, m_FileMetaKeySwitchSyntax.token,
                         "Error switch 的源表达式解析失败!");
                     retMt = new MetaType(EType.Int32);
                 }

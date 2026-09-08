@@ -123,7 +123,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass A\r\n" + System.Environment.StackTrace);
+                Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaDefineTypeRetMetaClass, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass A\r\n" + System.Environment.StackTrace);
             }
             m_Type = CoreMetaClassManager.GetETypeByMetaClass(mc);
             m_MetaClass = mc;
@@ -134,7 +134,7 @@ namespace SimpleLanguage.Core
         {
             if (md == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaData is Null");
+                Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaDefineTypeRetMetaData, "Error MetaDefineType RetMetaData is Null");
             }
             m_MetaData = md;
             m_EMetaTypeType = EMetaTypeType.MetaData;
@@ -143,7 +143,7 @@ namespace SimpleLanguage.Core
         {
             if (me == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaEnum is Null");
+                Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaDefineTypeRetMetaEnum, "Error MetaDefineType RetMetaEnum is Null");
             }
             m_MetaEnum = me;
             m_EMetaTypeType = EMetaTypeType.MetaEnum;
@@ -156,7 +156,7 @@ namespace SimpleLanguage.Core
         {
             if (mm == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaModule is Null");
+                Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaDefineTypeRetMetaModule, "Error MetaDefineType RetMetaModule is Null");
             }
             m_MetaModule = mm;
             m_EMetaTypeType = EMetaTypeType.MetaModule;
@@ -171,7 +171,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass B\r\n" + System.Environment.StackTrace);
+                Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaDefineTypeRetMetaClass2, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass B\r\n" + System.Environment.StackTrace);
             }
             //m_TemplateMetaClass = templatemc;
             m_MetaClass = mc;
@@ -184,7 +184,7 @@ namespace SimpleLanguage.Core
         {
             if (mc == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass C\r\n" + System.Environment.StackTrace);
+                Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaDefineTypeRetMetaClass3, "Error MetaDefineType RetMetaClass is Null MetaMemberVariable Only MetaClass C\r\n" + System.Environment.StackTrace);
             }
             if ( mitc == null)
             {
@@ -716,7 +716,7 @@ namespace SimpleLanguage.Core
                         var mc = mgt.UpdateMetaGenTemplate(metaGenTemplateList);
                         if( mc == null )
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "注册生成类是空!");
+                            Log.AddMetaCoreLog(LID.MetaCoreTypeIsNull, "注册生成类是空!");
                             return null;
                         }
                         mcList.Add(mc);
@@ -769,7 +769,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "meta type is m_MetaData is null");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaType, "meta type is m_MetaData is null");
                 }
                 return sb.ToString();
             }
@@ -781,7 +781,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "meta type is m_MetaEnum is null");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaType2, "meta type is m_MetaEnum is null");
                 }
                 return sb.ToString();
             }
@@ -793,7 +793,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "meta type is m_MetaEnum is null");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaType3, "meta type is m_MetaEnum is null");
                 }
                 return sb.ToString();
             }
@@ -849,7 +849,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "meta type is m_MetaClass is null");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaType4, "meta type is m_MetaClass is null");
                 }
             }
             else if (eMetaTypeType == EMetaTypeType.MetaGenClass )
@@ -879,7 +879,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "eMetaTypeType is null ");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullEMetaTypeTypeNull, "eMetaTypeType is null ");
                 }
             }
             else

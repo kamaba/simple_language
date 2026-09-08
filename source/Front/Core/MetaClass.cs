@@ -256,7 +256,7 @@ namespace SimpleLanguage.Core
             }
             if (this.m_ExtendClassMetaType != null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, this.m_Token, "已绑定过了继承类 : " + extendClass.name );
+                Log.AddMetaCoreLog(LID.MetaCoreClassExtend, this.m_Token, "已绑定过了继承类 : " + extendClass.name );
                 return;
             }
             foreach( var v in m_FileMetaClassDict )
@@ -268,7 +268,7 @@ namespace SimpleLanguage.Core
                 }
                 if(this.m_ExtendClassMetaType != null )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, this.m_Token, "已绑定过了继承类 : " + mc.metaClass.extendClass.name );
+                    Log.AddMetaCoreLog(LID.MetaCoreClassExtend2, this.m_Token, "已绑定过了继承类 : " + mc.metaClass.extendClass.name );
                     continue;
                 }
 
@@ -279,7 +279,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, this.m_Token, "没有发现继承类的类型!!! " + mc.fileMetaExtendClass.name );
+                    Log.AddMetaCoreLog(LID.MetaCoreClassTypeExtend, this.m_Token, "没有发现继承类的类型!!! " + mc.fileMetaExtendClass.name );
                 }
             }
 
@@ -317,7 +317,7 @@ namespace SimpleLanguage.Core
                     MetaType getmt = TypeManager.instance.GetMetaTemplateClassAndRegisterExptendTemplateClassInstance(this, icd );
                     if (getmt == null )
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到接口相关的定义类!!");
+                        Log.AddMetaCoreLog(LID.MetaCoreClassNotFoundDefineInterface, "没有找到接口相关的定义类!!");
                         continue;
                     }
                     this.m_FileCollectMetaInterfaceList.Add(getmt);
@@ -365,7 +365,7 @@ namespace SimpleLanguage.Core
                     var c = v.Value;
                     if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                     {
-                        var ld = Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
+                        var ld = Log.AddMetaCoreLog(LID.MetaCoreClassExtend3, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
                         //ld.valDict.Add(EMetaType.MetaClass, this);
                         //ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
                         //ld.valDict.Add(EMetaType.MetaMemberVariable, c);
@@ -378,7 +378,7 @@ namespace SimpleLanguage.Core
                     var c = v.Value;
                     if (this.m_MetaMemberVariableDict.ContainsKey(c.name))
                     {
-                        var ld = Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
+                        var ld = Log.AddMetaCoreLog(LID.MetaCoreClassExtend4, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.m_AllName} 中已包含:{c.name} ");
                         //ld.valDict.Add(EMetaType.MetaClass, this);
                         //ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
                         //ld.valDict.Add(EMetaType.MetaMemberVariable, c);
@@ -392,13 +392,13 @@ namespace SimpleLanguage.Core
                     {
                         if( !this.innderDefine )
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, c.token, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
+                            Log.AddMetaCoreLog(LID.MetaCoreClassExtend5, c.token, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
                         }
                         continue;
                     }
                     if( this.m_MetaExtendMemeberVariableDict.ContainsKey( c.name ) )
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, c.token, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
+                        Log.AddMetaCoreLog(LID.MetaCoreClassExtend6, c.token, $"Error 继承的类321:{m_AllName} 在继承的父类{m_ExtendClass.m_AllName} 中已包含:{c.name} ");
                         continue;
                     }
                     this.m_MetaMemberVariableDict.Add(c.name, c);
@@ -478,7 +478,7 @@ namespace SimpleLanguage.Core
                         if( v.isOverrideFunction && !IsMatchInterfaceMemberFunction(v)
                             && !BuiltinMemberFunctionRegistry.Contains(v.name) )
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, v.token,
+                            Log.AddMetaCoreLog(LID.MetaCoreClassIssue, v.token,
                                 "Error 类[" + this.m_AllName + "] 的方法: " + v.name + " 有override标记，但没有父类");
                         }
                         addmmfList.Add(v);
@@ -522,7 +522,7 @@ namespace SimpleLanguage.Core
                     if (v.isStatic != matchedChild.isStatic)
                     {
                         // static声明不匹配: 不能替换，父类方法与子类方法都保留
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                        Log.AddMetaCoreLog(LID.MetaCoreClassIssue2, matchedChild.token,
                             "Error 子类[" + this.m_AllName + "] 方法: " + matchedChild.name +
                             " 与父类方法: " + this.m_ExtendClass.m_AllName + "." + v.name + " 的static声明不匹配");
                         addmmfList.Add(v);
@@ -542,14 +542,14 @@ namespace SimpleLanguage.Core
                         // 实现抽象父方法时必须使用override标记
                         if (v.isAbstract && !matchedChild.isOverrideFunction)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                            Log.AddMetaCoreLog(LID.MetaCoreClassIssue3, matchedChild.token,
                                 "Error 子类[" + this.m_AllName + "] 方法: " + matchedChild.name +
                                 " 实现了抽象父方法但未使用 override 标记");
                         }
                         // 子类重写了父类的非abstract、非final方法但未使用override标记
                         if (!v.isAbstract && !v.isFinal && !matchedChild.isOverrideFunction)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                            Log.AddMetaCoreLog(LID.MetaCoreClassIssue4, matchedChild.token,
                                 "Warning 类[" + this.m_AllName + "] 方法: " + matchedChild.name +
                                 " 重写了父类方法但未使用 override 标记: " + this.m_ExtendClass.m_AllName + "." + v.name);
                         }
@@ -561,7 +561,7 @@ namespace SimpleLanguage.Core
                         // static方法不支持override标记 (只能隐藏)
                         if (matchedChild.isOverrideFunction)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                            Log.AddMetaCoreLog(LID.MetaCoreClassIssue5, matchedChild.token,
                                 "Error 子类[" + this.m_AllName + "] 的static方法: " + matchedChild.name +
                                 " 不能使用override标记");
                         }
@@ -581,7 +581,7 @@ namespace SimpleLanguage.Core
                         && !IsMatchInterfaceMemberFunction(v2)
                         && !BuiltinMemberFunctionRegistry.Contains(v2.name))
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, v2.token,
+                        Log.AddMetaCoreLog(LID.MetaCoreClassIssue6, v2.token,
                             "Error 类[" + this.m_AllName + "] 方法: " + v2.name +
                             " 有override标记，但没有找到父类中相同签名的方法");
                     }
@@ -1059,7 +1059,7 @@ namespace SimpleLanguage.Core
             {
                 return false;
             }
-            Log.AddMetaCoreLog(LID.ShowExtendMessage,
+            Log.AddMetaCoreLog(LID.MetaCoreClassProject,
                 "Error Project类" + memberKind + "与Module下名称冲突: Project." + name
                 + " 与 Module 下的 " + mn.allName + " 重名!! Project成员不允许与Module下定义的名称相同。");
             return true;
@@ -1075,7 +1075,7 @@ namespace SimpleLanguage.Core
                 var mn = this.m_MetaNode.GetChildrenMetaNodeByName(v2.name);
                 if( mn != null )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreClassMetaClassMemberVarAndFunc, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
                     continue;
                 }
 
@@ -1092,7 +1092,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                        Log.AddMetaCoreLog(LID.MetaCoreClassMetaClassMemberVarAndFunc2, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
                     }
                     isHave = true;
                 }
@@ -1107,7 +1107,7 @@ namespace SimpleLanguage.Core
                 {
                     if (v2.staticToken != null || v2.constToken != null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Project类成员变量不允许显式定义 static/const，系统会按全局语义处理: " + v2.token?.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.MetaCoreClassProjectStaticConst, "Error Project类成员变量不允许显式定义 static/const，系统会按全局语义处理: " + v2.token?.ToLexemeAllString());
                     }
                     mmv.SetIsStatic(true);
                     mmv.SetIsConst(true);
@@ -1124,7 +1124,7 @@ namespace SimpleLanguage.Core
                 var mn = this.m_MetaNode.GetChildrenMetaNodeByName(v2.name);
                 if( mn != null )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreClassMetaClassMemberVarAndFunc3, "Error MetaClass MemberVarAndFunc已有定义类: " + m_AllName + "中 已有: " + v2.token?.ToLexemeAllString() + "的元素!!");
                     continue;
                 }
 
@@ -1138,7 +1138,7 @@ namespace SimpleLanguage.Core
                 {
                     if (v2.staticToken != null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Info Project类成员函数默认按 static 处理: " + v2.token?.ToLexemeAllString());
+                        Log.AddMetaCoreLog(LID.MetaCoreClassInfoProjectStatic, "Info Project类成员函数默认按 static 处理: " + v2.token?.ToLexemeAllString());
                     }
                     mmf.SetIsStatic(true);
                 }
@@ -1165,7 +1165,7 @@ namespace SimpleLanguage.Core
                 var defaultFunction = GetMetaMemberConstructDefaultFunction();
                 if (defaultFunction == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找发现默认构造函数");
+                    Log.AddMetaCoreLog(LID.MetaCoreClassFunction, "没有找发现默认构造函数");
                     return;
                 }
                 m_DefaultExpressNode = new MetaNewObjectExpressNode(mdt, this, defaultFunction.metaBlockStatements );
@@ -1266,7 +1266,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "重复添加接口");
+                Log.AddMetaCoreLog(LID.MetaCoreClassDuplicateInterface, "重复添加接口");
             }
         }
         public void AddInterfaceMetaType(MetaType mt)
@@ -1896,7 +1896,7 @@ namespace SimpleLanguage.Core
                 //var classRelation = Re(leftMetaType, rightMt, out MetaClass mc, out MetaClass cmc);
                 //if (classRelation == ETypeRelation.ExpressTypeError)
                 //{
-                //    Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                //    Log.AddMetaCoreLog(LID.MetaCoreClassIsNullTypeReturn, token,
                 //        "Error 赋值表达式返回定义类型为空");
                 //    return false;
                 //}
@@ -1925,7 +1925,7 @@ namespace SimpleLanguage.Core
                 //            //if (curClass != null) sb.Append("定义类: ").Append(curClass.allName).Append(' ');
                 //            //if (compareClass != null) sb.Append("表达式类: ").Append(compareClass.allName).Append(' ');
                 //            //sb.Append("返回值是父类型向子类型转换，存在错误转换!!");
-                //            //Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken, sb.ToString());
+                //            //Log.AddMetaCoreLog(LID.MetaCoreClassIssue7, errorAnchorToken, sb.ToString());
                 //            //isNeedCast = true;
                 //            return true;
                 //        }
@@ -1938,7 +1938,7 @@ namespace SimpleLanguage.Core
                 //            //    || (exprTemplateList != null && exprTemplateList.Count > 0);
                 //            //if (hasTemplateInEither)
                 //            //{
-                //            //    Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+                //            //    Log.AddMetaCoreLog(LID.MetaCoreClassTypeParamInterface, errorAnchorToken,
                 //            //        "模板类型不匹配（接口模板位置仅在可协变标记下允许协变），请检查模板参数或接口变型规则。");
                 //            //    return false;
                 //            //}
@@ -1947,12 +1947,12 @@ namespace SimpleLanguage.Core
                 //            //if (curClass != null) sb.Append("定义类: ").Append(curClass.allName).Append(' ');
                 //            //if (compareClass != null) sb.Append("表达式类: ").Append(compareClass.allName).Append(' ');
                 //            //sb.Append("可能会有强转，强转后可能默认值为null");
-                //            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, sb.ToString());
+                //            Log.AddMetaCoreLog(LID.MetaCoreClassIssue8, token, sb.ToString());
                 //            //isNeedCast = true;
                 //            return true;
                 //        }
                 //    default:
-                //        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "表达式错误，或者是定义类型错误");
+                //        Log.AddMetaCoreLog(LID.MetaCoreClassTypeDefineExpress, token, "表达式错误，或者是定义类型错误");
                 //        return false;
                 //}
             }

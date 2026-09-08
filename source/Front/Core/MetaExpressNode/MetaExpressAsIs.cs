@@ -58,7 +58,7 @@ namespace SimpleLanguage.Core
 
             if (m_FileMetaKeyAsIsSyntax.variableCallLink == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "????????");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressAsIsIssue, "????????");
                 return;
             }
             m_CurrentVariableLink = new MetaCallLink(m_FileMetaKeyAsIsSyntax.variableCallLink, m_OwnerMetaBase, m_OwnerMetaBlockStatements, null, null);
@@ -66,7 +66,7 @@ namespace SimpleLanguage.Core
             if ( m_FileMetaKeyAsIsSyntax.defineType == null )
             {
                 Debug.Assert(false, "?????????");
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "????????");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressAsIsIssue2, "????????");
                 return;
             }
             m_ConvertTargetMetaType = null;
@@ -79,7 +79,7 @@ namespace SimpleLanguage.Core
                 //m_CurrentVariable = m_CurrentVariableLink.ExecuteGetMetaVariable();
                 //if( m_CurrentVariable == null )
                 //{
-                //    Log.AddMetaCoreLog(LID.ShowExtendMessage, "???????????");
+                //    Log.AddMetaCoreLog(LID.MetaCoreExpressAsIsIssue3, "???????????");
                 //    return;
                 //}
             }
@@ -101,7 +101,7 @@ namespace SimpleLanguage.Core
                     var backward = TypeManager.ResolveTypeRelation(sourceMetaType, m_ConvertTargetMetaType, out _, out _);
                     if (!forward.IsAcceptableForAsIs() && !backward.IsAcceptableForAsIs())
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaKeyAsIsSyntax.asOrIsToken,
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressAsIsAsDataType, m_FileMetaKeyAsIsSyntax.asOrIsToken,
                             $" {sourceMetaType.ToString() } as/is {m_ConvertTargetMetaType.ToString() } data type convert error!!");
                     }
                 }

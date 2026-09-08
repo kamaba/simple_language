@@ -132,7 +132,7 @@ namespace SimpleLanguage.Export.MLIR
             }
             else
             {
-                Log.AddIRLog(LID.ShowExtendMessage,
+                Log.AddIRLog(LID.ExportMLIRAOTBuildDll,
                     "AOT: build dll failed, fallback to CVM: " + error);
             }
             return result;
@@ -145,7 +145,7 @@ namespace SimpleLanguage.Export.MLIR
             if (!MLIRToolchain.TryBuildAotDll(mlirPath, dllPath, exportSymbols,
                     out var error, MLIRToolchain.ToolchainPaths.Resolve()))
             {
-                Log.AddIRLog(LID.ShowExtendMessage,
+                Log.AddIRLog(LID.ExportMLIRAOTBuildDll2,
                     "AOT: build dll failed, fallback to CVM: " + error);
                 return null;
             }
@@ -179,14 +179,14 @@ namespace SimpleLanguage.Export.MLIR
 
             foreach (var s in skipped)
             {
-                Log.AddIRLog(LID.ShowExtendMessage,
+                Log.AddIRLog(LID.ExportMLIRAOTSkipStage1,
                     $"AOT: skip '{s}' (stage1 supports static non-template only)");
             }
-            Log.AddIRLog(LID.ShowExtendMessage,
+            Log.AddIRLog(LID.ExportMLIRAOTCandidateS,
                 $"AOT: {candidates.Count} candidate(s) collected from module '{ResolveModuleName()}'");
             foreach (var m in candidates)
             {
-                Log.AddIRLog(LID.ShowExtendMessage, $"AOT: candidate '{m.id}'");
+                Log.AddIRLog(LID.ExportMLIRAOTCandidate, $"AOT: candidate '{m.id}'");
             }
 
             if (candidates.Count == 0)
@@ -204,13 +204,13 @@ namespace SimpleLanguage.Export.MLIR
             result.Methods.AddRange(export.Methods);
             result.TypeTable = export.TypeTable;
 
-            Log.AddIRLog(LID.ShowExtendMessage,
+            Log.AddIRLog(LID.ExportMLIRAOTExportSuccess,
                 $"AOT: export {config.MlirFileName} success: {mlirPath} " +
                 $"({export.OkSymbols.Count} ok, {export.FailedIds.Count} failed)");
             foreach (var m in export.Methods)
             {
                 if (m.Status != "failed") continue;
-                Log.AddIRLog(LID.ShowExtendMessage,
+                Log.AddIRLog(LID.ExportMLIRAOTMethodEmit,
                     $"AOT: method emit failed: {m.Id} ({m.Reason})");
             }
 
@@ -234,17 +234,17 @@ namespace SimpleLanguage.Export.MLIR
                         gpu: export.HasGpuMethods))
                 {
                     result.DllFileName = config.DllFileName;
-                    Log.AddIRLog(LID.ShowExtendMessage, "AOT: build dll success: " + dllPath);
+                    Log.AddIRLog(LID.ExportMLIRAOTBuildDll3, "AOT: build dll success: " + dllPath);
                 }
                 else
                 {
-                    Log.AddIRLog(LID.ShowExtendMessage,
+                    Log.AddIRLog(LID.ExportMLIRAOTBuildDll4,
                         "AOT: build dll failed, fallback to CVM: " + dllError);
                 }
             }
             else
             {
-                Log.AddIRLog(LID.ShowExtendMessage,
+                Log.AddIRLog(LID.ExportMLIRAOTDllBuild,
                     "AOT: dll build disabled (export.aot.buildDll=false)");
             }
 

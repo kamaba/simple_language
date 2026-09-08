@@ -88,7 +88,7 @@ namespace SimpleLanguage.IR
                 int fieldIndex = irmc.GetMetaMemberVariableIndexByName("value");
                 if (fieldIndex < 0)
                 {
-                    Log.AddIRLog(LID.MetaCoreAssertShowMessage, ms.token, "result value return: not found value field!");
+                    Log.AddIRLog(LID.IRReturnStatementNotFoundResultValue, ms.token, "result value return: not found value field!");
                     return false;
                 }
                 // result.value = expr : [Load result][expr][StoreNotStaticField2 value]

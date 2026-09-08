@@ -63,7 +63,7 @@ namespace SimpleLanguage.Core
         {
             if( string.IsNullOrEmpty( name ) )
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 严重错误，获取模式不传名称!!");
+                Log.AddMetaCoreLog(LID.MetaCoreModuleIssue, "Error 严重错误，获取模式不传名称!!");
                 return null;
             }
             if(m_AllMetaModuleDict.ContainsKey( name ) )
@@ -112,7 +112,7 @@ namespace SimpleLanguage.Core
             if( m_AllMetaModuleDict.ContainsKey( mm.name ) )
             {
                 m_AllMetaModuleDict[mm.name] = mm;
-                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                Log.AddMetaCoreLog(LID.MetaCoreModuleModuleReplacedReference,
                     $"Module '{mm.name}' replaced by reference loading.");
             }
             else

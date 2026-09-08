@@ -205,7 +205,7 @@ namespace SimpleLanguage.Core
                     var ownerFunc = m_OwnerMetaBlockStatements?.ownerMetaFunction;
                     if (ownerFunc is MetaMemberFunction mmf && !mmf.isThrows)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
+                        Log.AddMetaCoreLog(LID.MetaCoreTryCatchStatementThrowThrows, m_Token,
                             "Error: throw 只能在声明了 throws 的函数中使用，当前函数未声明 throws: "
                             + ownerFunc.name);
                     }
@@ -229,7 +229,7 @@ namespace SimpleLanguage.Core
                         }
                         if (!isErrorEnum)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token,
+                            Log.AddMetaCoreLog(LID.MetaCoreTryCatchStatementThrowEnumExtends, m_Token,
                                 "Error: throw 只能抛出 enum extends Error 类型的值，不能使用: "
                                 + (retType.name ?? retType.ToString()));
                         }

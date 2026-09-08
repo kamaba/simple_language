@@ -346,7 +346,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 没有适合的符号!!!" + ett.ToString());
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorSign, m_Token, "Error 没有适合的符号!!!" + ett.ToString());
                     }
                     break;
             }
@@ -431,7 +431,7 @@ namespace SimpleLanguage.Core
         {
             if (m_Left == null || m_Right == null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "right or left is null");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorIsNullRightLeft, m_Token, "right or left is null");
                 return;
             }
 
@@ -452,7 +452,7 @@ namespace SimpleLanguage.Core
                 bool isEnumCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal || m_OpLevelSign == ELeftRightOpSign.NotEqual;
                 if (!isEnumCompareOp)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "enum类型只允许 == 或 != 运算!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorEnum, m_Token, "enum类型只允许 == 或 != 运算!!");
                     m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
                     return;
                 }
@@ -471,7 +471,7 @@ namespace SimpleLanguage.Core
                     {
                         if (leftMt.metaEnum != rightMt.metaEnum)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "不是同一个enum");
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorEnum2, m_FileMetaBaseTerm.token, "不是同一个enum");
                             return;
                         }
                     }
@@ -479,13 +479,13 @@ namespace SimpleLanguage.Core
                     {
                         if( rightMt.enumValue.ownerMetaBase != leftMt.metaEnum )
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "不是同一个enum");
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorEnum3, m_FileMetaBaseTerm.token, "不是同一个enum");
                             return;
                         }
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "is not enum member "); 
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorNotEnumMember, m_FileMetaBaseTerm.token, "is not enum member "); 
                         return;
                     }
                 }
@@ -500,7 +500,7 @@ namespace SimpleLanguage.Core
                     {
                         if (leftMt.metaEnum != rightMt.metaEnum)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "不是同一个enum");
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorEnum4, m_FileMetaBaseTerm.token, "不是同一个enum");
                             return;
                         }
                     }
@@ -508,13 +508,13 @@ namespace SimpleLanguage.Core
                     {
                         if (leftMt.enumValue.ownerMetaBase != rightMt.metaEnum)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "不是同一个enum");
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorEnum5, m_FileMetaBaseTerm.token, "不是同一个enum");
                             return;
                         }
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_FileMetaBaseTerm.token, "is not enum member ");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorNotEnumMember2, m_FileMetaBaseTerm.token, "is not enum member ");
                         return;
                     }
                 }
@@ -522,7 +522,7 @@ namespace SimpleLanguage.Core
                 {
                     if (leftMt.enumValue.ownerMetaBase != rightMt.enumValue.ownerMetaBase )
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_FileMetaBaseTerm.token, "不是同一个enum");
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorEnum6, m_FileMetaBaseTerm.token, "不是同一个enum");
                         return;
                     }
                 }
@@ -536,7 +536,7 @@ namespace SimpleLanguage.Core
                     bool isEnumCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal || m_OpLevelSign == ELeftRightOpSign.NotEqual;
                     if (!isEnumCompareOp)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "enum类型只允许 == 或 != 运算!!" );
+                        Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorEnum7, m_Token, "enum类型只允许 == 或 != 运算!!" );
 
                         m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
                         return;
@@ -560,11 +560,11 @@ namespace SimpleLanguage.Core
                     {
                         if( leftMt == null )
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left or right class is null" + leftMt.ToFormatString() );
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorIsNullLeftRight, m_Token, "left or right class is null" + leftMt.ToFormatString() );
                         }
                         else if( rightMc == null )
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left or right class is null" + rightMt.ToFormatString() );
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorIsNullLeftRight2, m_Token, "left or right class is null" + rightMt.ToFormatString() );
                         }
                         return;
                     }
@@ -583,7 +583,7 @@ namespace SimpleLanguage.Core
                         isCompareOp = m_OpLevelSign == ELeftRightOpSign.Equal || m_OpLevelSign == ELeftRightOpSign.NotEqual;
                         if (!isCompareOp)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error null == 或 != 运算!!");
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorNull, m_Token, "Error null == 或 != 运算!!");
                             return;
                         }
                         m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
@@ -612,12 +612,12 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "string type only support _plus_,_equal_,_noequal_");
+                                Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorStringTypeOnly, m_Token, "string type only support _plus_,_equal_,_noequal_");
                             }
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "布尔类型不能参与加减运算");
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorNotAllowType, m_Token, "布尔类型不能参与加减运算");
                         }
                     }
                     else if (NumberManager.IsNumberClass(leftMc))
@@ -641,7 +641,7 @@ namespace SimpleLanguage.Core
                                         if (ProjectManager.config?.Compile?.RequireSameNumericTypes == true
                                             && leftMc.eType != rightMc.eType)
                                         {
-                                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "已启用 compile.requireSameNumericTypes：算术/位运算两侧须为同一数字类型（如 byte+byte、Int32+Int32），禁止不同类型混合运算。");
+                                            Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorCompileRequireSameNumericTypesByte, m_Token, "已启用 compile.requireSameNumericTypes：算术/位运算两侧须为同一数字类型（如 byte+byte、Int32+Int32），禁止不同类型混合运算。");
                                             m_RealMetaType = new MetaType(leftMc);
                                             break;
                                         }
@@ -668,7 +668,7 @@ namespace SimpleLanguage.Core
                                         }
                                         else
                                         {
-                                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "加减运算类型计算错误!!");
+                                            Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorType, m_Token, "加减运算类型计算错误!!");
                                         }
                                     }
                                     break;
@@ -694,7 +694,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 字符串类型只能参与加法运算!!");
+                                Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorType2, m_Token, "Error 字符串类型只能参与加法运算!!");
                             }
                         }
                         else if (rightMc.eType == EType.Enum)
@@ -732,7 +732,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "string type only support _plus_,_equal_,_noequal_");
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorStringTypeOnly2, m_Token, "string type only support _plus_,_equal_,_noequal_");
                         }
                     }
                     else if ((leftMc.eType == EType.Boolean && rightMc.eType == EType.String) || (leftMc.eType == EType.String && rightMc.eType == EType.Boolean))
@@ -796,7 +796,7 @@ namespace SimpleLanguage.Core
                         ResolveBuiltinOperatorFunction(left, right);
                         if (m_OpMemberFunction == null)
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Left:" + left.token.ToLexemeAllString() + "右边类型不能转换为左边类型进行加减运算!! Right:" + right.token.ToLexemeAllString()  );
+                            Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorLeft, m_Token, "Left:" + left.token.ToLexemeAllString() + "右边类型不能转换为左边类型进行加减运算!! Right:" + right.token.ToLexemeAllString()  );
                             // 错误路径必须设置类型，否则 CalcReturnType 中 new MetaType(null) 会空引用崩溃
                             m_RealMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
                             return;
@@ -805,7 +805,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "");
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressOperatorIssue, m_Token, "");
                 }
             }
         }

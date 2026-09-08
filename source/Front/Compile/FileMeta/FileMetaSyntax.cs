@@ -75,7 +75,7 @@ namespace SimpleLanguage.Compile
                 else
                 {
                     //Debug.Assert(false, "");
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "FileMetaConditionExpressSyntax init");
+                    Log.AddFileMetaLog(LID.FileMetaSyntaxFileMetaConditionExpressSyntaxInit, "FileMetaConditionExpressSyntax init");
                 }
             }
             else
@@ -130,7 +130,7 @@ namespace SimpleLanguage.Compile
             {
                 if (ifSyntax.ifExpressSyntax != null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 不能有多个if语句!!");
+                    Log.AddFileMetaLog(LID.FileMetaSyntaxIf, "Error 不能有多个if语句!!");
                 }
                 ifSyntax.SetFileMetaConditionExpressSyntax(fms);
                 ifSyntax.SetToken(sns.keyNode.token);
@@ -878,14 +878,14 @@ namespace SimpleLanguage.Compile
             Token labelToken = null;
             if (akss.keyContent.Count != 1 )
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析Goto Label语法，只支持 goto id;的语法!!");
+                Log.AddFileMetaLog(LID.FileMetaSyntaxGotoLabelId, "Error 解析Goto Label语法，只支持 goto id;的语法!!");
             }
             else
             {
                 labelToken = akss.keyContent[0].token;
                 if (labelToken.type != ETokenType.Identifier)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析GotoLabel中 后边必须使用普通字符");
+                    Log.AddFileMetaLog(LID.FileMetaSyntaxGotoLabel, "Error 解析GotoLabel中 后边必须使用普通字符");
                 }
             }
             var fms = new FileMetaKeyGotoLabelSyntax( fm, cnode.token, labelToken);

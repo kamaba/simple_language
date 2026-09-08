@@ -75,7 +75,7 @@ namespace SimpleLanguage.Core
                     {
                         if( !m_InnderDefine )
                         {
-                            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, fmc.token, "Error 定义模式名称重复!!");
+                            Log.AddMetaCoreLog(LID.MetaCoreTemplateClassDuplicateDefine, fmc.token, "Error 定义模式名称重复!!");
                         }
                     }
                     else
@@ -180,12 +180,12 @@ namespace SimpleLanguage.Core
                                     }
                                     else
                                     {
-                                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到父级别自己模板生成时的数据!!");
+                                        Log.AddMetaCoreLog(LID.MetaCoreTemplateClassNotFoundData, "没有找到父级别自己模板生成时的数据!!");
                                     }
                                 }
                                 else
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到父级别自己模板生成时的数据!!");
+                                    Log.AddMetaCoreLog(LID.MetaCoreTemplateClassNotFoundData2, "没有找到父级别自己模板生成时的数据!!");
                                 }
                             }
                         }
@@ -416,7 +416,7 @@ namespace SimpleLanguage.Core
         //    }
         //    if (mtc == null)
         //    {
-        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 没有找到合适的Template");
+        //        Log.AddMetaCoreLog(LID.MetaCoreTemplateClassTemplate, "Error 没有找到合适的Template");
         //    }
         //    return mtc;
         //}

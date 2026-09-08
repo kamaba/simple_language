@@ -359,7 +359,7 @@ namespace SimpleLanguage.Core
                 var newmc = mt.metaClass.AddInstanceMetaClass(regMCList, true);
                 if (newmc == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "metaClass.AddInstanceMetaClass MetaClass is Null");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaClassAddInstanceMetaClass, "metaClass.AddInstanceMetaClass MetaClass is Null");
                     return false;
                 }
                 mt.SetGenMetaClass(newmc);
@@ -389,7 +389,7 @@ namespace SimpleLanguage.Core
                         }
                         else if (gmgt.metaType.metaClass == null)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "in MetaGenTemplate notfind MetaClass is Null");
+                            Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaGenTemplateNotfind, "in MetaGenTemplate notfind MetaClass is Null");
                             return false;
                         }
                         else
@@ -422,7 +422,7 @@ namespace SimpleLanguage.Core
                             }
                             else if (gmgt.metaType.metaClass == null)
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "in MetaGenTemplate notfind MetaClass is Null");
+                                Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaGenTemplateNotfind2, "in MetaGenTemplate notfind MetaClass is Null");
                                 return false;
                             }
                             else
@@ -434,7 +434,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到模板中定义的模板内容![" + mt.metaTemplate.name + "]");
+                        Log.AddMetaCoreLog(LID.MetaCoreTypeNotFoundDefine, "没有找到模板中定义的模板内容![" + mt.metaTemplate.name + "]");
                     }
                 }
             }
@@ -811,7 +811,7 @@ namespace SimpleLanguage.Core
                 var mt = curMc.GetMetaTemplateByName(fmcd.stringList[0]);
                 if (mt == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"没有找到模板类中，对应的模板，名称为{fmcd.stringList[0]}请仔细检查模板的命名与使用模板命名是否对应");//, fmcd.classNameToken );
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeNotFound, $"没有找到模板类中，对应的模板，名称为{fmcd.stringList[0]}请仔细检查模板的命名与使用模板命名是否对应");//, fmcd.classNameToken );
                 }
                 else
                 {
@@ -848,7 +848,7 @@ namespace SimpleLanguage.Core
             {
                 if (tplCount > 0)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "data 类型不支持模板实参");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeData, "data 类型不支持模板实参");
                     return null;
                 }
                 return getmc.metaData != null ? new MetaType(getmc.metaData) : null;
@@ -857,7 +857,7 @@ namespace SimpleLanguage.Core
             {
                 if (tplCount > 0)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "enum 类型不支持模板实参");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeEnum, "enum 类型不支持模板实参");
                     return null;
                 }
                 return getmc.metaEnum != null ? new MetaType(getmc.metaEnum) : null;
@@ -880,7 +880,7 @@ namespace SimpleLanguage.Core
                 MetaType mt2 = GetAndRegisterTemplateDefineMetaTemplateClass(ownerMc, findfn, inputTemplateNodeList[i]);
                 if (mt2 == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"没有找到模板参数{inputTemplateNodeList[i].nameList[0]} 的相关类型!");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeNotFoundTypeParam, $"没有找到模板参数{inputTemplateNodeList[i].nameList[0]} 的相关类型!");
                     continue;
                 }
                 mt.AddDefineTemplateMetaType(new MetaType(mt2));
@@ -898,7 +898,7 @@ namespace SimpleLanguage.Core
                 var findfn = newmn.GetMetaClassByTemplateCount(fmtd.inputTemplateCount);
                 if (findfn == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"没有发现{fmtd.nameList}找到的类!");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeIssue, $"没有发现{fmtd.nameList}找到的类!");
                     return null;
                 }
                 if (fmtd.inputTemplateCount == 0)
@@ -949,7 +949,7 @@ namespace SimpleLanguage.Core
                     var mt = ownerMc.GetMetaTemplateByName(fmtd.nameList[0]);
                     if (mt == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到模板类中，对应的模板，请仔细检查模板的命名与使用模板命名是否对应");//, cnode?.token );
+                        Log.AddMetaCoreLog(LID.MetaCoreTypeNotFound2, "没有找到模板类中，对应的模板，请仔细检查模板的命名与使用模板命名是否对应");//, cnode?.token );
                     }
                     else
                     {
@@ -958,7 +958,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "使用模板类中使用.连接符号，模板中不允许使用.");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeNotAllowSign, "使用模板类中使用.连接符号，模板中不允许使用.");
                 }
             }
             return null;
@@ -1054,7 +1054,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"没有找到{fmcd.stringList[0]} 的相关类!");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeNotFound3, $"没有找到{fmcd.stringList[0]} 的相关类!");
                 }
 
             }
@@ -1083,7 +1083,7 @@ namespace SimpleLanguage.Core
             var retMt = ResolveFuncTemplateArgType(curMc, findFun, tplList[0], true);
             if (retMt == null)
             {
-                // Log.AddMetaCoreLog(LID.ShowExtendMessage, fmcd.classNameToken,
+                // Log.AddMetaCoreLog(LID.MetaCoreTypeFunc, fmcd.classNameToken,
                 //     "Error Func<> 的返回类型解析失败: " + fmcd.allName);
                 return null;
             }
@@ -1093,7 +1093,7 @@ namespace SimpleLanguage.Core
                 var pmt = ResolveFuncTemplateArgType(curMc, findFun, tplList[i], false);
                 if (pmt == null)
                 {
-                    // Log.AddMetaCoreLog(LID.ShowExtendMessage, fmcd.classNameToken,
+                    // Log.AddMetaCoreLog(LID.MetaCoreTypeFunc2, fmcd.classNameToken,
                     //     "Error Func<> 的第" + i + "个参数类型解析失败: " + fmcd.allName);
                     return null;
                 }
@@ -1117,7 +1117,7 @@ namespace SimpleLanguage.Core
             {
                 if (!isReturnType)
                 {
-                    // Log.AddMetaCoreLog(LID.ShowExtendMessage, argNode.token,
+                    // Log.AddMetaCoreLog(LID.MetaCoreTypeFuncVoid, argNode.token,
                     //     "Error Func<> 的参数类型不允许为 void, 仅返回类型可以使用 void!");
                     return null;
                 }
@@ -1155,7 +1155,7 @@ namespace SimpleLanguage.Core
             {
                 if (tplCount > 0)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "data 类型不支持模板实参");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeData2, "data 类型不支持模板实参");
                     return null;
                 }
                 return getmc.metaData != null ? new MetaType(getmc.metaData) : null;
@@ -1164,7 +1164,7 @@ namespace SimpleLanguage.Core
             {
                 if (tplCount > 0)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "enum 类型不支持模板实参");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeEnum2, "enum 类型不支持模板实参");
                     return null;
                 }
                 return getmc.metaEnum != null ? new MetaType(getmc.metaEnum) : null;
@@ -1223,7 +1223,7 @@ namespace SimpleLanguage.Core
                     // data 节点：GetMetaClassByTemplateCount 对 data 返回 null，需单独处理
                     if (fmtd.inputTemplateCount > 0)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "data 类型不支持模板实参");
+                        Log.AddMetaCoreLog(LID.MetaCoreTypeData3, "data 类型不支持模板实参");
                         return null;
                     }
                     return newmc.metaData != null ? new MetaType(newmc.metaData) : null;
@@ -1232,7 +1232,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmtd.inputTemplateCount > 0)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "enum 类型不支持模板实参");
+                        Log.AddMetaCoreLog(LID.MetaCoreTypeEnum3, "enum 类型不支持模板实参");
                         return null;
                     }
                     return newmc.metaEnum != null ? new MetaType(newmc.metaEnum) : null;
@@ -1241,7 +1241,7 @@ namespace SimpleLanguage.Core
 
                 if (findfn == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到相对应的模板类!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeNotFound4, "没有找到相对应的模板类!!");
                     return null;
                 }
                 if (fmtd.inputTemplateCount > 0)
@@ -1284,7 +1284,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "----fmtd.nameList.count > 1 ");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeFmtdNameListCount, "----fmtd.nameList.count > 1 ");
                 }
             }
             return null;
@@ -1382,7 +1382,7 @@ namespace SimpleLanguage.Core
                 {
                     if (leftMt.metaEnum != rightMt.metaEnum)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                        Log.AddMetaCoreLog(LID.MetaCoreTypeEnum4, token, "不是同一个enum");
                         return false;
                     }
                 }
@@ -1390,13 +1390,13 @@ namespace SimpleLanguage.Core
                 {
                     if (rightMt.enumValue.ownerMetaBase != leftMt.metaEnum)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                        Log.AddMetaCoreLog(LID.MetaCoreTypeEnum5, token, "不是同一个enum");
                         return false;
                     }
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "is not enum member ");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeNotEnumMember, token, "is not enum member ");
                     return false;
                 }
             }
@@ -1410,7 +1410,7 @@ namespace SimpleLanguage.Core
                 {
                     if (leftMt.metaEnum != rightMt.metaEnum)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                        Log.AddMetaCoreLog(LID.MetaCoreTypeEnum6, token, "不是同一个enum");
                         return false;
                     }
                 }
@@ -1418,13 +1418,13 @@ namespace SimpleLanguage.Core
                 {
                     if (leftMt.enumValue.ownerMetaBase != rightMt.metaEnum)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                        Log.AddMetaCoreLog(LID.MetaCoreTypeEnum7, token, "不是同一个enum");
                         return false;
                     }
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, token, "is not enum member ");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeNotEnumMember2, token, "is not enum member ");
                     return false;
                 }
             }
@@ -1432,7 +1432,7 @@ namespace SimpleLanguage.Core
             {
                 if (leftMt.enumValue.ownerMetaBase != rightMt.enumValue.ownerMetaBase)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, token, "不是同一个enum");
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeEnum8, token, "不是同一个enum");
                     return false;
                 }
             }
@@ -1816,7 +1816,7 @@ namespace SimpleLanguage.Core
                 {
                     return true;
                 }
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "模板参数[" + declaredMt.metaTemplate.name + "]的约束与实参类型不匹配");
+                Log.AddMetaCoreLog(LID.MetaCoreTypeParam, "模板参数[" + declaredMt.metaTemplate.name + "]的约束与实参类型不匹配");
                 return false;
             }
 
@@ -1916,7 +1916,7 @@ namespace SimpleLanguage.Core
                 }
                 else if (leftIsGenericResult && !rightIsGenericResult)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                    Log.AddMetaCoreLog(LID.MetaCoreTypeResultT, token,
                         "Result 赋值类型不匹配：不允许将非泛型 Result 赋给 Result<T>（反向协变不合法）。");
                     return false;
                 }
@@ -1941,7 +1941,7 @@ namespace SimpleLanguage.Core
                 {
                     if (!rightMt.isData)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                        Log.AddMetaCoreLog(LID.MetaCoreTypeData4, token,
                             "data 声明类型与右侧表达式类型不匹配：右值非 data 类型。");
                         return false;
                     }
@@ -2034,7 +2034,7 @@ namespace SimpleLanguage.Core
                                 return false;
                             }
 
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                            Log.AddMetaCoreLog(LID.MetaCoreTypeData5, token,
                                 "data 声明类型与右侧表达式类型不匹配：右值非 data 类型。");
                             return false;
                         }
@@ -2234,7 +2234,7 @@ namespace SimpleLanguage.Core
                             return MetaClass.CompareMetaClass(leftmc, rightmc);
                         }
 
-                        //Log.AddMetaCoreLog(LID.ShowExtendMessage, token,
+                        //Log.AddMetaCoreLog(LID.MetaCoreTypeData6, token,
                         //    "data 声明类型与右侧表达式类型不匹配：右值非 data 类型。");
                         return false;
                     }
@@ -2322,7 +2322,7 @@ namespace SimpleLanguage.Core
                 {
                     if (!NumberManager.TryForceAdjustConstExpressByMetaType(c, targetElemType, errorAnchorToken))
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, errorAnchorToken,
+                        Log.AddMetaCoreLog(LID.MetaCoreTypeTypeArrayConvert, errorAnchorToken,
                             "数组元素强制转换失败（可能溢出或类型不匹配）: 目标类型 " + targetElemType.ToString());
                         return false;
                     }

@@ -89,7 +89,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "not found metadata");
+                Log.AddMetaCoreLog(LID.MetaCoreExpressAnonDataNotFoundNotFound, m_Token, "not found metadata");
             }
         }
 

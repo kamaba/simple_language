@@ -187,7 +187,7 @@ namespace SimpleLanguage.Core
             var paramTypes = new List<MetaType>();
             if (paramTypes == null)
             {
-                Log.AddProcessLog(LID.MetaCoreAssertShowMessage, $"import system method call param type not found! name={name}, paramType={paramTypes}");
+                Log.AddProcessLog(LID.ProcessSystemMethodCallNotFoundImportSystem, $"import system method call param type not found! name={name}, paramType={paramTypes}");
                 return;
             }
             foreach (var mt in mtList)
@@ -195,7 +195,7 @@ namespace SimpleLanguage.Core
                 var mtadc = ResolveTypeName(mt);
                 if( mtadc == null)
                 {
-                    Log.AddProcessLog(LID.MetaCoreAssertShowMessage, $"import system method call param type not found! name={name}, paramType={mt}");
+                    Log.AddProcessLog(LID.ProcessSystemMethodCallNotFoundImportSystem2, $"import system method call param type not found! name={name}, paramType={mt}");
                     return;
                 }
                 paramTypes.Add(mtadc);
@@ -204,7 +204,7 @@ namespace SimpleLanguage.Core
                 name, retType, variadic, paramTypes.ToArray(), cvmFunction);
             if( s_Decl.ContainsKey(name ) )
             {
-                Log.AddProcessLog(LID.MetaCoreAssertShowMessage, "import system method call name had define!");
+                Log.AddProcessLog(LID.ProcessSystemMethodCallImportSystemMethod, "import system method call name had define!");
                 return;
             }
             s_Decl[name] = decl;

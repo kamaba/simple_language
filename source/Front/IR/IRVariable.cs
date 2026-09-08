@@ -117,7 +117,7 @@ namespace SimpleLanguage.IR
                     //{
                     //    if (index == -1)
                     //    {
-                    //        Log.AddIRLog(LID.ShowExtendMessage, "没有找到对应成员变量的Index");
+                    //        Log.AddIRLog(LID.IRVariableIndex, "没有找到对应成员变量的Index");
                     //        return null;
                     //    }
                     //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
@@ -190,7 +190,7 @@ namespace SimpleLanguage.IR
                     //{
                     //    if (index == -1)
                     //    {
-                    //        Log.AddIRLog(LID.ShowExtendMessage, "没有找到对应成员变量的Index");
+                    //        Log.AddIRLog(LID.IRVariableIndex2, "没有找到对应成员变量的Index");
                     //        return null;
                     //    }
                     //    IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, index, IRMetaVariableFrom.Static);
@@ -641,7 +641,7 @@ namespace SimpleLanguage.IR
                 AddIRData(m_Data);
                 if( id == -1 )
                 {
-                    Log.AddIRLog(LID.MetaCoreAssertShowMessage, $"SVM Error 没有找到加载变量的来源类型！");
+                    Log.AddIRLog(LID.IRVariableSVM, $"SVM Error 没有找到加载变量的来源类型！");
                 }
             }
             else if (irmvf == IRMetaVariableFrom.Member)
@@ -673,7 +673,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Log.AddIRLog(LID.ShowExtendMessage, $"SVM Error 没有找到加载变量的来源类型！");
+                Log.AddIRLog(LID.IRVariableSVM2, $"SVM Error 没有找到加载变量的来源类型！");
             }
         }
 

@@ -97,7 +97,7 @@ namespace SimpleLanguage.Core
                 {
                     if( !TypeManager.CompareLeftRightMetaType(mdt, m_ReturnMetaDefineType, m_Token, out MetaType convertMt  ) )
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left compare right " + m_ReturnMetaDefineType?.ToString(), mdt?.ToString() ?? "null");
+                        Log.AddMetaCoreLog(LID.MetaCoreReturnStatementLeftCompareRight, m_Token, "left compare right " + m_ReturnMetaDefineType?.ToString(), mdt?.ToString() ?? "null");
                     }
                 }
             }
@@ -151,7 +151,7 @@ namespace SimpleLanguage.Core
             }
             if (!TypeManager.CompareLeftRightMetaType(m_ReturnMetaType, mdt, m_Token, out MetaType convertMt))
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left compare right " + m_ReturnMetaType.ToString(), mdt.ToString());
+                Log.AddMetaCoreLog(LID.MetaCoreReturnStatementLeftCompareRight2, m_Token, "left compare right " + m_ReturnMetaType.ToString(), mdt.ToString());
             }
         }
         public override string ToFormatString()

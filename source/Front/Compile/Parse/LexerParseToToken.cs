@@ -93,7 +93,7 @@ namespace SimpleLanguage.Compile
         {
             if (m_Index == 0)
             {
-                Log.AddTokenLog(LID.ShowExtendMessage, "Error Cannot undo char beyond start of source.");
+                Log.AddTokenLog(LID.TokenLexerCannotUndoChar, "Error Cannot undo char beyond start of source.");
                 return;
             }
             --m_Index;
@@ -513,7 +513,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "nosupport <<<? style!");
+                        Log.AddTokenByString(LID.TokenLexerNosupportStyle, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "nosupport <<<? style!");
                     }
                     //AddToken(ETokenType.Less, "<", lessCount );
                 }
@@ -616,7 +616,7 @@ namespace SimpleLanguage.Compile
                     }
                     if( endPoint == 0 )     // 2f
                     {
-                        var ld = Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "" );
+                        var ld = Log.AddTokenByString(LID.TokenLexerIssue, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "" );
                         ld.demo = "2f";
                         ld.advan = "2.0f";
                         AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
@@ -863,7 +863,7 @@ namespace SimpleLanguage.Compile
         {
             if( endPoint > 2 )
             {
-                Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "Error ReadNumber ...");
+                Log.AddTokenByString(LID.TokenLexerReadNumber, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "Error ReadNumber ...");
             }
             //else if( endPoint == 3 )
             //{
@@ -881,7 +881,7 @@ namespace SimpleLanguage.Compile
                     var frontChar = m_Builder[m_Builder.Length - 1];
                     if( frontChar == '.' )
                     {
-                        Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "char. logic is float format call inner functionname");
+                        Log.AddTokenByString(LID.TokenLexerCharLogicFloat, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "char. logic is float format call inner functionname");
                         //m_Buffer.Remove(m_Buffer.Length - 1, 1);
                         // 无后缀的小数字面量（含 0.0）默认 float32，extend 须与 lexeme 一致。
                         AddToken(ETokenType.Number, float.Parse(m_Builder.ToString()), EType.Float32);
@@ -909,7 +909,7 @@ namespace SimpleLanguage.Compile
                 }
                 catch
                 {
-                    var ld = Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
+                    var ld = Log.AddTokenByString(LID.TokenLexerDecimalNumberOverflow, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
                         , $"Decimal number overflow ({m_Builder}), fallback to UInt64.MaxValue.");
                     ld.demo = m_Builder.ToString();
                     AddToken(ETokenType.Number, ulong.MaxValue, EType.UInt64);
@@ -956,7 +956,7 @@ namespace SimpleLanguage.Compile
                 }
                 catch
                 {
-                    var ld = Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
+                    var ld = Log.AddTokenByString(LID.TokenLexerRadixNumberOverflow, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar
                         ,$"Radix number overflow (0{(radix == 16 ? 'x' : radix == 8 ? 'o' : 'b')}{raw}), fallback to UInt64.MaxValue.");
                     ld.demo = raw;
                     AddToken(ETokenType.Number, ulong.MaxValue, EType.UInt64);
@@ -1074,7 +1074,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddTokenLog(LID.ShowExtendMessage, "@ _ token ");
+                Log.AddTokenLog(LID.TokenLexerToken, "@ _ token ");
             }
         }
         void ReadOrigenString()
@@ -1092,7 +1092,7 @@ namespace SimpleLanguage.Compile
                 }
                 else if (m_TempChar == END_CHAR)
                 {
-                    Log.AddTokenLog(LID.ShowExtendMessage, "end char reached before closing quote in string literal");
+                    Log.AddTokenLog(LID.TokenLexerEndCharReached, "end char reached before closing quote in string literal");
                     AddToken(ETokenType.String, m_Builder.ToString(), EType.String);
                     break;
                 }
@@ -1175,7 +1175,7 @@ namespace SimpleLanguage.Compile
                 m_TempChar = ReadChar();
                 if (m_TempChar == END_CHAR)
                 {
-                    Log.AddTokenLog(LID.ShowExtendMessage, "end char reached before closing quote in string literal");
+                    Log.AddTokenLog(LID.TokenLexerEndCharReached2, "end char reached before closing quote in string literal");
                     break;
                 }
 
@@ -1351,7 +1351,7 @@ namespace SimpleLanguage.Compile
                 m_TempChar = ReadChar();
                 if( m_TempChar == END_CHAR)
                 {
-                    Log.AddTokenLog( LID.ShowExtendMessage, "end char reached before closing quote in string literal");
+                    Log.AddTokenLog( LID.TokenLexerEndCharReached3, "end char reached before closing quote in string literal");
                     break;
                 }
                 if (m_TempChar == '\\')
@@ -1386,7 +1386,7 @@ namespace SimpleLanguage.Compile
                                 break;
                             }
                         default:
-                            Log.AddTokenLog(LID.ShowExtendMessage, "other char need handle" + m_CurChar);
+                            Log.AddTokenLog(LID.TokenLexerOtherCharNeed, "other char need handle" + m_CurChar);
                             break;
                     }
                 }
@@ -1687,7 +1687,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddTokenLog(LID.ShowExtendMessage, "# 。。。 level" );
+                    Log.AddTokenLog(LID.TokenLexerLevel, "# 。。。 level" );
                     break;
                 }
 
@@ -1727,7 +1727,7 @@ namespace SimpleLanguage.Compile
                 {
                     // 块注释 #! ... !# 未闭合：必须推进 m_Index 到文件末尾，
                     // 否则主循环会把注释体当作代码重新词法化出 / * 等垃圾token
-                    // Log.AddTokenLog(LID.ShowExtendMessage, "Error 块注释 #! 未闭合，直接跳到文件末尾 : " + m_Path );
+                    // Log.AddTokenLog(LID.TokenLexerIssue2, "Error 块注释 #! 未闭合，直接跳到文件末尾 : " + m_Path );
                     m_Index = m_Length;
                     break;
                 }
@@ -1829,7 +1829,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "read $");
+                    Log.AddTokenByString(LID.TokenLexerRead, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, "read $");
                 }
             }
         }
@@ -2502,7 +2502,7 @@ namespace SimpleLanguage.Compile
                                 else
                                 {
                                     m_Index++;
-                                    Log.AddTokenByString(LID.ShowExtendMessage, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, m_CurChar.ToString() );                                
+                                    Log.AddTokenByString(LID.TokenLexerIssue3, m_Path, m_SourceLine, m_SourceChar, m_SourceLine, m_SourceChar, m_CurChar.ToString() );                                
                                 }
                             }
                             break;
@@ -2540,7 +2540,7 @@ namespace SimpleLanguage.Compile
                     int extend = 0;
                     if (!int.TryParse(t.extend?.ToString(), out extend))
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, t, " token not found extend in sharp!");
+                        Log.AddFileMetaLog(LID.FileMetaLexerNotFoundTokenNot, t, " token not found extend in sharp!");
                     }
                     if (extend == 0)
                     {

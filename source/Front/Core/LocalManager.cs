@@ -82,7 +82,7 @@ namespace SimpleLanguage.Core
                 var existNode = root.GetChildrenMetaNodeByName(localClassName);
                 if (existNode != null && existNode.IsMetaClass())
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error local{} generated class name conflict: " + localClassName);
+                    Log.AddMetaCoreLog(LID.MetaCoreLocalLocalGeneratedClass, "Error local{} generated class name conflict: " + localClassName);
                     continue;
                 }
 
@@ -109,7 +109,7 @@ namespace SimpleLanguage.Core
                     if (fmmf == null) continue;
                     if (fmmf.staticToken != null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, fmmf.token, "Error local{} functions cannot use static keyword");
+                        Log.AddMetaCoreLog(LID.MetaCoreLocalCannotLocalFunctions, fmmf.token, "Error local{} functions cannot use static keyword");
                         continue;
                     }
                     var mmf = new MetaMemberFunction(localMc, fmmf);

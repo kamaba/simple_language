@@ -153,7 +153,7 @@ namespace SimpleLanguage.Core
             var m_FinalMetaCallNode = m_CallNodeList[m_CallNodeList.Count - 1];
             if (m_FinalMetaCallNode == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 鏉╃偞甯存稉鍙夌梾閺堝澹橀崚鏉挎値闁倻娈戦懞鍌滃仯  360!!!");
+                Log.AddMetaCoreLog(LID.MetaCoreCallLinkIssue, "Error 鏉╃偞甯存稉鍙夌梾閺堝澹橀崚鏉挎値闁倻娈戦懞鍌滃仯  360!!!");
             }
             m_FinalMetaCallNode.SetDefineMetaVariable(mv);
         }
@@ -202,7 +202,7 @@ namespace SimpleLanguage.Core
                             if (m_CallNodeList[i].callNodeType != ECallNodeType.NewClass)
                             {
                                 flag = false;
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Parse Statement Error 閸︺劋濞囬悽鈭焑wClassName閻ㄥ嫭鏌熷蹇ョ礉閸氬氦绔熸稉宥呭帒鐠佸憡婀侀崗璺虹暊閻ㄥ嫯鐨熼悽?");
+                            Log.AddMetaCoreLog(LID.MetaCoreCallLinkStatementWClassName, "Parse Statement Error 閸︺劋濞囬悽鈭焑wClassName閻ㄥ嫭鏌熷蹇ョ礉閸氬氦绔熸稉宥呭帒鐠佸憡婀侀崗璺虹暊閻ㄥ嫯鐨熼悽?");
                             }
                         }
                     }
@@ -279,18 +279,18 @@ namespace SimpleLanguage.Core
 
                 if (mmf.isConstructInitFunction)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, node.token,
+                    Log.AddMetaCoreLog(LID.MetaCoreCallLink_init_, node.token,
                         "Error 绌烘潯浠惰繍绠楃 ?. 涓嶈兘鐢ㄤ簬鏋勯€犲嚱鏁?_init_!");
                 }
                 else if (mmf.isSet)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, node.token,
+                    Log.AddMetaCoreLog(LID.MetaCoreCallLinkSet, node.token,
                         "Error 绌烘潯浠惰繍绠楃 ?. 涓嶈兘鐢ㄤ簬 set 鍑芥暟!");
                 }
                 else if (mmf.defineMetaType != null &&
                          mmf.defineMetaType.metaClass == CoreMetaClassManager.voidMetaClass)
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, node.token,
+                    Log.AddMetaCoreLog(LID.MetaCoreCallLinkVoid, node.token,
                         "Error 绌烘潯浠惰繍绠楃 ?. 涓嶈兘鐢ㄤ簬 void 杩斿洖鍊肩殑鍑芥暟!");
                 }
             }
@@ -323,7 +323,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "鐟欙絾鐎藉畵灞筋殰expressList 閻ㄥ嫭妞傞崐娆忓絺閻㈢喍绨￠梻顕€顣?");
+                        Log.AddMetaCoreLog(LID.MetaCoreCallLinkExpressList, "鐟欙絾鐎藉畵灞筋殰expressList 閻ㄥ嫭妞傞崐娆忓絺閻㈢喍绨￠梻顕€顣?");
                     }
                     break;
             }
@@ -386,7 +386,7 @@ namespace SimpleLanguage.Core
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, mcn.token, "Error local implicit this: thisMetaVariable is null");
+                        Log.AddMetaCoreLog(LID.MetaCoreCallLinkIsNullLocalImplicit, mcn.token, "Error local implicit this: thisMetaVariable is null");
                     }
                 }
                 MetaVisitNode mvn = MetaVisitNode.CreateByVariable(mcn.metaVariable, mcn.staticCallMetaType);
@@ -693,7 +693,7 @@ namespace SimpleLanguage.Core
             }
             else if (mcn.callNodeType == ECallNodeType.IteratorVariable)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Meta Common Parse IteratorVariable----------------------------------------------------");
+                Log.AddMetaCoreLog(LID.MetaCoreCallLinkMetaCommonIteratorVariable, "Meta Common Parse IteratorVariable----------------------------------------------------");
             }
             else if (mcn.callNodeType == ECallNodeType.DataName)
             {

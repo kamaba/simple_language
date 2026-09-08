@@ -474,7 +474,7 @@ namespace SimpleLanguage.Core
             {
                 if (mvv == null && string.IsNullOrEmpty(m_AtName))
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreVariableVisitMetaVariable, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
                 m_VisitExpressNode = new MetaCallLinkExpressNode(mvv);
@@ -495,7 +495,7 @@ namespace SimpleLanguage.Core
             {
                 if(mvv == null && string.IsNullOrEmpty(m_AtName))
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreVariableVisitMetaVariable2, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
                 var ven = new MetaCallLinkExpressNode(mvv);
@@ -524,7 +524,7 @@ namespace SimpleLanguage.Core
             {
                 if (moe == null && string.IsNullOrEmpty(m_AtName))
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreVariableVisitMetaVariable3, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
                 m_VisitExpressNode = moe;
@@ -570,7 +570,7 @@ namespace SimpleLanguage.Core
 
                     if (getMt == null)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "ParseDefineMetaType not array and no _getItem_ support");
+                        Log.AddMetaCoreLog(LID.MetaCoreVariableParseDefineMetaTypeNotArray, "ParseDefineMetaType not array and no _getItem_ support");
                     }
                 }
             }
@@ -608,7 +608,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "ParseDefineRealMetaType not array ");
+                    Log.AddMetaCoreLog(LID.MetaCoreVariableParseDefineRealMetaTypeNotArray, m_Token, "ParseDefineRealMetaType not array ");
                 }
             }
             else

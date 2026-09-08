@@ -128,7 +128,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddTokenLog(LID.ShowExtendMessage, "", m_CurrentNode.token, "现在$符必须使用.$方式!!");
+                Log.AddTokenLog(LID.TokenParseNodeIssue, "", m_CurrentNode.token, "现在$符必须使用.$方式!!");
             }
         }
         private Node AddKeyNode(Token token)
@@ -206,7 +206,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddTokenLog(LID.ShowExtendMessage, "现在$符必须使用.$方式!!");
+                Log.AddTokenLog(LID.TokenParseNodeIssue2, "现在$符必须使用.$方式!!");
             }
             m_TokenIndex++;
             return null;
@@ -244,7 +244,7 @@ namespace SimpleLanguage.Compile
                 int count = (int)token.extend;
                 if( count == 0 )
                 {
-                    Log.AddNodeLog(LID.MetaCoreAssertShowMessage, token, "greater count is zero");
+                    Log.AddNodeLog(LID.NodeParseNodeGreaterCountZero, token, "greater count is zero");
                     return;
                 }
 
@@ -325,7 +325,7 @@ namespace SimpleLanguage.Compile
                 }
             }
             
-            Log.AddNodeLog(LID.MetaCoreAssertShowMessage, token, "() 符号没有对称! 原符号:" + m_CurrentNode.token.ToLexemeAllString() + " 新符号n:" + token.ToLexemeAllString());
+            Log.AddNodeLog(LID.NodeParseNodeSign, token, "() 符号没有对称! 原符号:" + m_CurrentNode.token.ToLexemeAllString() + " 新符号n:" + token.ToLexemeAllString());
             
         }
         public void AddBracketBegin(Token token)
@@ -354,7 +354,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddNodeLog(LID.MetaCoreAssertShowMessage, token, "() 符号没有对称! 原符号:" + m_CurrentNode.token.ToLexemeAllString() + " 新符号n:" + token.ToLexemeAllString());
+                Log.AddNodeLog(LID.NodeParseNodeSign2, token, "() 符号没有对称! 原符号:" + m_CurrentNode.token.ToLexemeAllString() + " 新符号n:" + token.ToLexemeAllString());
             }
             m_TokenIndex++;
         }
@@ -784,7 +784,7 @@ namespace SimpleLanguage.Compile
                     break;
                 default:
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, string.Format("Path:{0} Line:{1} Source: {2}", token.path, token.sourceBeginLine,
+                        Log.AddFileMetaLog(LID.FileMetaParseNodePathLineSource, string.Format("Path:{0} Line:{1} Source: {2}", token.path, token.sourceBeginLine,
                             token.sourceBeginChar));
                         throw new Exception("不支持的语法 ");
                     }

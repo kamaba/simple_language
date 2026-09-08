@@ -79,7 +79,7 @@ namespace SimpleLanguage.Core
                 var parentNode = mc.metaNode?.parentNode;
                 if (parentNode == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                    Log.AddMetaCoreLog(LID.MetaCoreAttributeCannotNicknameFind,
                         $"Nickname: cannot find parent MetaNode for '{mc.allName}'");
                     return;
                 }
@@ -88,7 +88,7 @@ namespace SimpleLanguage.Core
                 var aliasNode = parentNode.AddMetaClassAlias(nickname, mc);
                 if (aliasNode != null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                    Log.AddMetaCoreLog(LID.MetaCoreAttributeNicknameRegisteredAlias,
                         $"Nickname: registered alias '{nickname}' -> '{mc.allName}' under '{parentNode.allName}'");
                 }
             });
@@ -105,7 +105,7 @@ namespace SimpleLanguage.Core
             RegisterCompileHandler("AOT", (attr, owner) =>
             {
                 // 预留：暂无逻辑，仅记录挂载信息
-                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                Log.AddMetaCoreLog(LID.MetaCoreAttributeAOTAttributeRegistered,
                     $"AOT: attribute registered on '{owner?.allName}' (no logic yet)");
             });
 
@@ -124,7 +124,7 @@ namespace SimpleLanguage.Core
             RegisterCompileHandler("GPU", (attr, owner) =>
             {
                 var raw = attr.GetSplitRawArgs();
-                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                Log.AddMetaCoreLog(LID.MetaCoreAttributeGPUAttributeRegistered,
                     $"GPU: attribute registered on '{owner?.allName}' args={raw.Count} " +
                     $"(tile={attr.GetIntArg(0)}x{attr.GetIntArg(1)} tileNum={attr.GetIntArg(2)} groupId={attr.GetIntArg(3)})");
             });
@@ -140,11 +140,11 @@ namespace SimpleLanguage.Core
                 var args = attr.GetSplitStringArgs();
                 if (args.Count < 2)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                    Log.AddMetaCoreLog(LID.MetaCoreAttributeDllImportOwner,
                         $"DllImport: 需要 (库路径, 符号名) 两个字符串实参, owner='{owner?.allName}'");
                     return;
                 }
-                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                Log.AddMetaCoreLog(LID.MetaCoreAttributeDllImportAttributeRegistered,
                     $"DllImport: attribute registered on '{owner?.allName}' (initializer injected at member express parse)");
             });
         }
@@ -228,7 +228,7 @@ namespace SimpleLanguage.Core
                 runtimeCount += r;
             }
 
-            Log.AddMetaCoreLog(LID.ShowExtendMessage,
+            Log.AddMetaCoreLog(LID.MetaCoreAttributeAttributeManagerProcessCompileTimeCompile,
                 $"AttributeManager.ProcessCompileTime: compile={compileCount}, runtime={runtimeCount}");
         }
 
@@ -293,13 +293,13 @@ namespace SimpleLanguage.Core
                         }
                         catch (Exception ex)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                            Log.AddMetaCoreLog(LID.MetaCoreAttributeCompileAttributeAttr,
                                 $"Compile attribute error: attr={attr.name} owner={owner?.allName} err={ex.Message}");
                         }
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                        Log.AddMetaCoreLog(LID.MetaCoreAttributeCompileHandlerAttribute,
                             $"No compile handler for attribute '{attr.name}' on {owner?.allName}");
                     }
                 }
@@ -354,7 +354,7 @@ namespace SimpleLanguage.Core
                         {
                             if (!RuntimeAttributeRegistry.instance.CheckCondition(cond))
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                                Log.AddMetaCoreLog(LID.MetaCoreAttributeAttributeConditionNot,
                                     $"Attribute Condition '{cond}' not met for {owner}, skipping");
                                 return false;
                             }
@@ -362,7 +362,7 @@ namespace SimpleLanguage.Core
                     }
                 }
 
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, $"AttributeHook {hook} owner:{owner} attr:{a.name}");
+                Log.AddMetaCoreLog(LID.MetaCoreAttributeAttributeHookOwnerAttr, $"AttributeHook {hook} owner:{owner} attr:{a.name}");
             }
             return true;
         }

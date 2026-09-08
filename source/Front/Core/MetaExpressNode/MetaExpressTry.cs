@@ -41,7 +41,7 @@ namespace SimpleLanguage.Core
                 // try? is self-contained, try! propagates (both OK outside label)
                 if (!MetaMemberFunction.isInTryBlock)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, fme.token,
+                    Log.AddMetaCoreLog(LID.MetaCoreExpressTryTryLabelChecked, fme.token,
                         "Error: try 表达式只能在 label{} 或 checked label{} 块内使用");
                 }
             }

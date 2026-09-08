@@ -139,7 +139,7 @@ namespace SimpleLanguage.Core
             {
                 if ( host is MetaClosureBlockStatements )
                 {
-                    Log.AddMetaCoreLog( LID.ShowExtendMessage, "Error 闭包嵌套定义暂不支持!! (变量:" + name + ")" );
+                    Log.AddMetaCoreLog( LID.MetaCoreClosureDefineStatementNotSupportVariableDefine, "Error 闭包嵌套定义暂不支持!! (变量:" + name + ")" );
                     return null;
                 }
                 var mv = host.GetMetaVariableByName( name, false );
@@ -208,14 +208,14 @@ namespace SimpleLanguage.Core
 
             if ( string.IsNullOrEmpty( m_Name ) )
             {
-                Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, "Error 闭包定义缺少名称!!" );
+                Log.AddMetaCoreLog( LID.MetaCoreClosureDefineStatementDefine, m_Token, "Error 闭包定义缺少名称!!" );
                 return;
             }
 
             var ownerClass = m_OwnerMetaBlockStatements.ownerMetaClass;
             if ( ownerClass == null )
             {
-                Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, "Error 闭包只能在类的方法体内定义!!" );
+                Log.AddMetaCoreLog( LID.MetaCoreClosureDefineStatementDefine2, m_Token, "Error 闭包只能在类的方法体内定义!!" );
                 return;
             }
 
@@ -263,7 +263,7 @@ namespace SimpleLanguage.Core
             m_HostMetaMemberFunction = m_OwnerMetaBlockStatements.ownerMetaFunction as MetaMemberFunction;
             if( m_HostMetaMemberFunction == null )
             {
-                Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, "Error 闭包只能在类的方法体内定义!! (宿主函数缺失)" );
+                Log.AddMetaCoreLog( LID.MetaCoreClosureDefineStatementFunctionDefine, m_Token, "Error 闭包只能在类的方法体内定义!! (宿主函数缺失)" );
                 return;
             }
 
@@ -306,7 +306,7 @@ namespace SimpleLanguage.Core
             }
             catch( System.Exception ex )
             {
-                Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, "Error 闭包构造异常: " + ex.Message + " / " + ex.StackTrace );
+                Log.AddMetaCoreLog( LID.MetaCoreClosureDefineStatementIssue, m_Token, "Error 闭包构造异常: " + ex.Message + " / " + ex.StackTrace );
             }
         }
 

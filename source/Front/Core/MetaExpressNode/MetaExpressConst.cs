@@ -225,7 +225,7 @@ namespace SimpleLanguage.Core
                 }
             }catch( Exception e)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, e.Message);
+                Log.AddMetaCoreLog(LID.MetaCoreExpressConstIssue, m_Token, e.Message);
             }
         }
         public override void Parse(AllowUseSettings auc)

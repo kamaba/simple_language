@@ -174,12 +174,12 @@ namespace SimpleLanguage.Core
                                 }
                                 else
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到父级别自己模板生成时的数据!!");
+                                    Log.AddMetaCoreLog(LID.MetaCoreDataNotFoundData, "没有找到父级别自己模板生成时的数据!!");
                                 }
                             }
                             else
                             {
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到父级别自己模板生成时的数据!!");
+                                Log.AddMetaCoreLog(LID.MetaCoreDataNotFoundData2, "没有找到父级别自己模板生成时的数据!!");
                             }
                         }
                     }
@@ -217,7 +217,7 @@ namespace SimpleLanguage.Core
                     isHave = false;
                 if( v.isWithName == false )
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, v.token, "这里需要个名字的定义!");
+                    Log.AddMetaCoreLog(LID.MetaCoreDataDefine, v.token, "这里需要个名字的定义!");
                     continue;
                 }
                 MetaMemberData mmv = new MetaMemberData(this, v, this, i,  false );
@@ -245,7 +245,7 @@ namespace SimpleLanguage.Core
                 var c = v.Value;
                 if (this.m_MetaMemberDataDict.ContainsKey(c.name))
                 {
-                    var ld = Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.allName} 中已包含:{c.name} ");
+                    var ld = Log.AddMetaCoreLog(LID.MetaCoreDataExtend, $"Error 继承的类123:{m_AllName} 在继承的父类{m_ExtendClass?.allName} 中已包含:{c.name} ");
                     //ld.valDict.Add(EMetaType.MetaClass, this);
                     //ld.valDict.Add(EMetaType.MetaExtendsClass, m_ExtendClass);
                     //ld.valDict.Add(EMetaType.MetaMemberVariable, c);
@@ -276,7 +276,7 @@ namespace SimpleLanguage.Core
                     {
                         if (v.isFinal && !v.isAbstract)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, matchedChild.token,
+                            Log.AddMetaCoreLog(LID.MetaCoreDataData, matchedChild.token,
                                 "Error 子data[" + this.m_AllName + "] 方法: " + matchedChild.name +
                                 " 不能override父类的final方法: " + this.m_ExtendClass.allName + "." + v.name);
                         }
@@ -301,7 +301,7 @@ namespace SimpleLanguage.Core
                     // static方法不支持override标记
                     if (v2.isOverrideFunction)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, v2.token,
+                        Log.AddMetaCoreLog(LID.MetaCoreDataData2, v2.token,
                             "Error data[" + this.m_AllName + "] 的static方法: " + v2.name + " 不能使用override标记");
                     }
                     m_StaticMetaMemberFunctionList.Add(v2);
@@ -314,7 +314,7 @@ namespace SimpleLanguage.Core
                     // 有override标记，但父类中不存在签名相同的方法
                     if (v2.isOverrideFunction && v2.overrideMetaMemberFunction == null)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, v2.token,
+                        Log.AddMetaCoreLog(LID.MetaCoreDataData3, v2.token,
                             "Error data[" + this.m_AllName + "] 方法: " + v2.name +
                             " 有override标记，但没有找到父类中相同签名的方法");
                     }

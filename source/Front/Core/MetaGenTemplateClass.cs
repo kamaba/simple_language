@@ -146,7 +146,7 @@ namespace SimpleLanguage.Core
                 return;
             }
 
-            //Log.AddMetaCoreLog( LID.ShowExtendMessage, m_Token, $"meta gentemplate class cls={this.allName} template={m_MetaTemplateClass.allName} nonStatic={m_NonStaticVirtualMetaMemberFunctionList.Count} templateNonStatic={m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList.Count}");
+            //Log.AddMetaCoreLog( LID.MetaCoreGenTemplateClassMetaGentemplateClass, m_Token, $"meta gentemplate class cls={this.allName} template={m_MetaTemplateClass.allName} nonStatic={m_NonStaticVirtualMetaMemberFunctionList.Count} templateNonStatic={m_MetaTemplateClass.nonStaticVirtualMetaMemberFunctionList.Count}");
 
             //this.m_MetaMemberVariableDict.Clear();
             //this.m_MetaMemberVariableDict.Clear();
@@ -187,7 +187,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, this.m_Token, " assert 模板类的父类只能是普通类或者是带模板参数的类!");
+                    Log.AddMetaCoreLog(LID.MetaCoreGenTemplateClassAssert, this.m_Token, " assert 模板类的父类只能是普通类或者是带模板参数的类!");
                 }
             }
 
@@ -343,7 +343,7 @@ namespace SimpleLanguage.Core
         //            //}
         //            //else
         //            //{
-        //            //    Log.AddMetaCoreLog(LID.ShowExtendMessage, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
+        //            //    Log.AddMetaCoreLog(LID.MetaCoreGenTemplateClassNotFoundDefine, "没有找到模板中定义的模板内容!" + mt.metaTemplate.name);
         //            //}
         //        }
         //    }

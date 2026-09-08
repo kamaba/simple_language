@@ -79,7 +79,7 @@ namespace SimpleLanguage.Compile
 
             if (namespaceNode == null)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, m_Token, "Error 在解析namespace 中，没有找到namespace设置的名称!!");
+                Log.AddFileMetaLog(LID.FileMetaNamespaceNamespace, m_Token, "Error 在解析namespace 中，没有找到namespace设置的名称!!");
                 return;
             }
             Node blockNode = namespaceNode.blockNode;
@@ -97,7 +97,7 @@ namespace SimpleLanguage.Compile
         {
             if (ProjectManager.useDefineNamespaceType != EUseDefineType.NoUseProjectConfigNamespace)
             {
-                Log.AddFileMetaLog( LID.ShowExtendMessage, this.m_Token, "Error 暂不允许使用namespace 定义命名空间!!!" );
+                Log.AddFileMetaLog( LID.FileMetaNamespaceNamespace2, this.m_Token, "Error 暂不允许使用namespace 定义命名空间!!!" );
             }
             //metaNode = SearchTopLevelFileMetaNamespace( this, metaNode);
             m_MetaNode = CreateMetaNamespaceHandle(this, metaNode);
@@ -142,7 +142,7 @@ namespace SimpleLanguage.Compile
                         continue;
                     }
 
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, fns.token, "Namespace name conflicts with existing node: " + name);
+                    Log.AddMetaCoreLog(LID.MetaCoreNamespaceNamespaceNameConflicts, fns.token, "Namespace name conflicts with existing node: " + name);
                     return fnode;
                 }
                 else

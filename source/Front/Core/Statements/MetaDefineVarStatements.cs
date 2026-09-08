@@ -96,7 +96,7 @@ namespace SimpleLanguage.Core
                         && LocalManager.IsFileLocalClass(pmv.ownerMetaClass);
                     if (!isLocalPlaceholder)
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, $"名称{m_Name}与{mcn.callNodeType} 有重复");
+                        Log.AddMetaCoreLog(LID.MetaCoreDefineVarStatementDuplicate, m_Token, $"名称{m_Name}与{mcn.callNodeType} 有重复");
                         return;
                     }
                 }
@@ -147,7 +147,7 @@ namespace SimpleLanguage.Core
                 {
                     if( m_FileMetaOpAssignSyntax.variableRef.callNodeList.Count != 1 )
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "call node list is not count equal 1");
+                        Log.AddMetaCoreLog(LID.MetaCoreDefineVarStatementCallNodeList, m_Token, "call node list is not count equal 1");
                         return;
                     }
                     MetaCallNode mcn = new MetaCallNode( null, m_FileMetaOpAssignSyntax.variableRef.callNodeList[0],ownerMetaBase, m_OwnerMetaBlockStatements );
@@ -156,7 +156,7 @@ namespace SimpleLanguage.Core
                     mcn.GetFirstNode(m_Name, ownerMetaBase, 0);
                     if( mcn.callNodeType != ECallNodeType.None )
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, $"名称{m_Name}与{mcn.callNodeType } 有重复");
+                        Log.AddMetaCoreLog(LID.MetaCoreDefineVarStatementDuplicate2, m_Token, $"名称{m_Name}与{mcn.callNodeType } 有重复");
                         return;
                     }
                 }
@@ -202,7 +202,7 @@ namespace SimpleLanguage.Core
                 m_ExpressNode = ExpressManager.CreateExpressNodeByCEP(cep);
                 if (m_ExpressNode == null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 解析新建变量语句时，表达式解析为空!!__1");
+                    Log.AddMetaCoreLog(LID.MetaCoreDefineVarStatementIsNullVariableExpress, m_Token, "Error 解析新建变量语句时，表达式解析为空!!__1");
                     return;
                 }
                 m_ExpressNode.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
@@ -225,7 +225,7 @@ namespace SimpleLanguage.Core
 
             if (expressRetMetaDefineType == null)
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 解析新建变量语句时，表达式返回类型为空!!__2", defineName);
+                Log.AddMetaCoreLog(LID.MetaCoreDefineVarStatementIsNullTypeVariable, m_Token, "Error 解析新建变量语句时，表达式返回类型为空!!__2", defineName);
                 return;
             }
             //if(metaFunction.IsEqualMetaTemplateCollectionAndMetaParamCollection )
@@ -249,7 +249,7 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    // Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error DefineVarStatement表达式中返回定义类型为空 "
+                    // Log.AddMetaCoreLog(LID.MetaCoreDefineVarStatementDefineVarStatement, m_Token, "Error DefineVarStatement表达式中返回定义类型为空 "
                     //     + $"(left={m_DefineVarMetaVariable.defineMetaType?.metaClass?.allName ?? "null"}, "
                     //     + $"right={expressRetMetaDefineType?.metaClass?.allName ?? "null"}, var={m_Name}) ");
                 }

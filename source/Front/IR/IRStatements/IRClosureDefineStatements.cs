@@ -34,13 +34,13 @@ namespace SimpleLanguage.IR
             var hostMmf = irMethod?.bindMetaFunction as MetaMemberFunction;
             if( hostMmf == null || !hostMmf.hasClosureContext )
             {
-                Log.AddIRLog( LID.MetaCoreAssertShowMessage, ms.token, "closure host function missing __closure_ctx__" );
+                Log.AddIRLog( LID.IRClosureDefineStatementClosureHostFunction, ms.token, "closure host function missing __closure_ctx__" );
                 return;
             }
             var ctxIrmv = irMethod.GetIRLocalVariableById( hostMmf.closureContextVariable.GetHashCode() );
             if( ctxIrmv == null )
             {
-                Log.AddIRLog( LID.MetaCoreAssertShowMessage, ms.token, "closure context local variable not found: __closure_ctx__" );
+                Log.AddIRLog( LID.IRClosureDefineStatementNotFoundClosureContext, ms.token, "closure context local variable not found: __closure_ctx__" );
                 return;
             }
             IRData loadCtx = new IRData();
@@ -79,7 +79,7 @@ namespace SimpleLanguage.IR
         {
             if( closureFunction == null )
             {
-                Log.AddIRLog( LID.MetaCoreAssertShowMessage, token, "closure function is null" );
+                Log.AddIRLog( LID.IRClosureDefineStatementIsNullClosureFunction, token, "closure function is null" );
                 return null;
             }
             var irm = IRManager.instance.GetIRMethod( closureFunction.functionAllName );
@@ -93,7 +93,7 @@ namespace SimpleLanguage.IR
             }
             if( irm == null )
             {
-                Log.AddIRLog( LID.MetaCoreAssertShowMessage, token, "closure IRMethod not found: " + closureFunction.functionAllName );
+                Log.AddIRLog( LID.IRClosureDefineStatementNotFoundClosureIRMethod, token, "closure IRMethod not found: " + closureFunction.functionAllName );
             }
             return irm;
         }

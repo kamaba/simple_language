@@ -54,7 +54,7 @@ namespace SimpleLanguage.Core
 
             if (string.IsNullOrEmpty(name))
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "MetaAttribute.Parse: attribute name is null or empty");
+                Log.AddMetaCoreLog(LID.MetaCoreAttributeIsNullMetaAttributeAttribute, "MetaAttribute.Parse: attribute name is null or empty");
                 return;
             }
 
@@ -74,7 +74,7 @@ namespace SimpleLanguage.Core
 
             if (m_AttributeMetaClass == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage,
+                Log.AddMetaCoreLog(LID.MetaCoreAttributeNotFoundMetaAttributeAttribute,
                     $"MetaAttribute.Parse: attribute class '{name}' not found, args: {m_StringArgs.Count}, handleType: {m_HandleType}");
             }
         }

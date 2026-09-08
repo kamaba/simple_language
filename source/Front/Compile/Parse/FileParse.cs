@@ -211,7 +211,7 @@ namespace SimpleLanguage.Compile
         }
         public void PrintFormatString()
         {
-            Log.AddFileMetaLog(LID.ShowExtendMessage, m_File.ToFormatString());
+            Log.AddFileMetaLog(LID.FileMetaFileParseIssue, m_File.ToFormatString());
         }
         public void SaveCodeToFile()
         {
@@ -236,7 +236,7 @@ namespace SimpleLanguage.Compile
             }
             catch (Exception e)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage,  "Export FileMeta debug data failed: " + e.Message);
+                Log.AddFileMetaLog(LID.FileMetaFileParseExportFileMetaDebug,  "Export FileMeta debug data failed: " + e.Message);
             }
         }
 
@@ -271,7 +271,7 @@ namespace SimpleLanguage.Compile
             }
             catch (Exception e)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Export Meta debug data failed: " + e.Message);
+                Log.AddFileMetaLog(LID.FileMetaFileParseExportMetaDebug, "Export Meta debug data failed: " + e.Message);
             }
         }
     }

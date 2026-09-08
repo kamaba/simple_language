@@ -107,7 +107,7 @@ namespace SimpleLanguage.Project
                 return;
             }
 
-            Log.AddProjectLog(LID.ShowExtendMessage,
+            Log.AddProjectLog(LID.ProjectReferenceModuleNotFoundReferenceModule,
                 $"Reference module not found or could not be loaded: path={reference.Path}, name={reference.Name}");
             Console.WriteLine($"[Reference] Failed to load module: name={reference.Name}, path={reference.Path}");
             return;
@@ -169,7 +169,7 @@ namespace SimpleLanguage.Project
             }
             catch (Exception ex)
             {
-                Log.AddProjectLog(LID.ShowExtendMessage,
+                Log.AddProjectLog(LID.ProjectReferenceModuleReferenceModuleRead,
                     "Reference module read failed: " + modulePath + " " + ex.Message);
                 return false;
             }
@@ -180,7 +180,7 @@ namespace SimpleLanguage.Project
             //}
             if(package == null )
             {
-                Log.AddProjectLog(LID.MetaCoreAssertShowMessage,
+                Log.AddProjectLog(LID.ProjectReferenceModuleReferenceModuleRead2,
                     "Reference module read failed: " + modulePath + " ");
                 return false;
             }
@@ -236,7 +236,7 @@ namespace SimpleLanguage.Project
                 var existingModule = ModuleManager.instance.GetMetaModuleByName(package.moduleName);
                 if (existingModule != null)
                 {
-                    Log.AddProjectLog(LID.ShowExtendMessage,
+                    Log.AddProjectLog(LID.ProjectReferenceModuleReferenceModuleAlready,
                         $"Reference module '{package.moduleName}' is already loaded, skipping. path={modulePath}");
                     Console.WriteLine($"[Reference] Module already loaded, skipping: name={package.moduleName}, path={modulePath}");
                     return true;
@@ -268,7 +268,7 @@ namespace SimpleLanguage.Project
             // 再继续解析 "IIterable" 等剩余路径。
             RegisterModuleAlias(alias, metaModule);
 
-            Log.AddProjectLog(LID.ShowExtendMessage,
+            Log.AddProjectLog(LID.ProjectReferenceModuleReferenceModuleLoaded,
                 $"Reference module loaded (compiled): name={alias}, path={modulePath}");
             Console.WriteLine($"[Reference] Module loaded (compiled): name={alias}, path={modulePath}");
             return true;
@@ -293,7 +293,7 @@ namespace SimpleLanguage.Project
                 return true;
             }
 
-            Log.AddProjectLog(LID.ShowExtendMessage,
+            Log.AddProjectLog(LID.ProjectReferenceModuleReferenceModuleUuid,
                 $"Reference module uuid mismatch: {modulePath}, expected={expected}, actual={actual}");
             return false;
         }
@@ -1183,7 +1183,7 @@ namespace SimpleLanguage.Project
                 }
                 else
                 {
-                    Log.AddProjectLog(LID.MetaCoreAssertShowMessage, "not find base type");
+                    Log.AddProjectLog(LID.ProjectReferenceModuleNotFindBase, "not find base type");
                 }
             }
 
@@ -1198,7 +1198,7 @@ namespace SimpleLanguage.Project
                     }
                     else
                     {
-                        Log.AddProjectLog(LID.MetaCoreAssertShowMessage, "not find interface type");
+                        Log.AddProjectLog(LID.ProjectReferenceModuleNotFindInterface, "not find interface type");
                     }
                 }
             }
@@ -1336,7 +1336,7 @@ namespace SimpleLanguage.Project
             }
             catch (Exception ex)
             {
-                Log.AddProjectLog(LID.ShowExtendMessage,
+                Log.AddProjectLog(LID.ProjectReferenceModuleReferenceSourceModule,
                     $"Reference source module .jsonc parse failed: {jsoncPath} {ex.Message}");
                 return false;
             }
@@ -1347,7 +1347,7 @@ namespace SimpleLanguage.Project
             //int refSysCallCount = SystemMethodCallDeclarationRegistry.LoadFromJsonContent(jsoncText);
             //if (refSysCallCount > 0)
             //{
-            //    Log.AddProjectLog(LID.ShowExtendMessage,
+            //    Log.AddProjectLog(LID.ProjectReferenceModuleReferenceModuleRegistered,
             //        $"Reference module registered {refSysCallCount} system calls. path={jsoncPath}");
             //}
 
@@ -1360,7 +1360,7 @@ namespace SimpleLanguage.Project
 
             if (string.IsNullOrWhiteSpace(alias))
             {
-                Log.AddProjectLog(LID.ShowExtendMessage,
+                Log.AddProjectLog(LID.ProjectReferenceModuleReferenceModuleAlias,
                     $"Reference module alias is empty: {jsoncPath}");
                 return false;
             }
@@ -1369,7 +1369,7 @@ namespace SimpleLanguage.Project
             var existingModule = ModuleManager.instance.GetMetaModuleByName(alias);
             if (existingModule != null)
             {
-                Log.AddProjectLog(LID.ShowExtendMessage,
+                Log.AddProjectLog(LID.ProjectReferenceModuleReferenceModuleAlready2,
                     $"Reference module '{alias}' is already loaded, skipping. path={jsoncPath}");
                 Console.WriteLine($"[Reference] Module already loaded, skipping: name={alias}, path={jsoncPath}");
                 return true;
@@ -1397,7 +1397,7 @@ namespace SimpleLanguage.Project
             // 将模块名注册为工程级类型别名，指向模块根节点。
             RegisterModuleAlias(alias, metaModule);
 
-            Log.AddProjectLog(LID.ShowExtendMessage,
+            Log.AddProjectLog(LID.ProjectReferenceModuleReferenceModuleLoaded2,
                 $"Reference module loaded (source): name={alias}, path={jsoncPath}, structCount={refConfig.StructTree.Children.Count}");
             Console.WriteLine($"[Reference] Module loaded (source): name={alias}, path={jsoncPath}, structs={refConfig.StructTree.Children.Count}");
             return true;

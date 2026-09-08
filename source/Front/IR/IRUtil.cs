@@ -144,7 +144,7 @@ namespace SimpleLanguage.IR
                 default:
                     {
                         isHave = false;
-                        //Log.AddIRLog(LID.ShowExtendMessage, "Error 未支持表达式中的IR代码" + opSign.ToString());
+                        //Log.AddIRLog(LID.IRUtilIR, "Error 未支持表达式中的IR代码" + opSign.ToString());
                     }
                     break;
             }

@@ -93,7 +93,7 @@ namespace SimpleLanguage.Compile
             if (rewrites == 0)
                 return buffer;
 
-            Log.AddProcessLog(LID.ShowExtendMessage,
+            Log.AddProcessLog(LID.ProcessDllImportDllImportSourceRewriterRewrittenC,
                 "DllImportSourceRewriter: '{0}' rewritten {1} C#-style declaration(s)", filePath, rewrites);
             return sb.ToString().ToCharArray();
         }

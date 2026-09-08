@@ -344,7 +344,7 @@ namespace SimpleLanguage.Core
 
                 if( !TypeManager.CompareLeftRightMetaType( m_MetaVariable.defineMetaType, m_MetaVariable.realMetaType, m_Token, out MetaType convertMt ) )
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "define param compare error");
+                    Log.AddMetaCoreLog(LID.MetaCoreParamDefineParamCompare, m_Token, "define param compare error");
                 }
             }
             //if( !isTemplate )
@@ -463,7 +463,7 @@ namespace SimpleLanguage.Core
         {
             if( m_IsExtendParams )
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error Params ???????????????????????????????????");
+                Log.AddMetaCoreLog(LID.MetaCoreParamParams, "Error Params ???????????????????????????????????");
                 return;
             }
 
@@ -480,7 +480,7 @@ namespace SimpleLanguage.Core
                 // 只保留 isHasExpress 标志，因此必须用标志判断而不能用 expressNode。
                 if (!metaMemberParam.isHasExpress)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error AddMetaDefineParam 参数前边已定义默认值，后边必须跟进默认值表达式!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreParamAddMetaDefineParam, "Error AddMetaDefineParam 参数前边已定义默认值，后边必须跟进默认值表达式!!");
                 }
             }
             else if (metaMemberParam.isMust)
@@ -1037,7 +1037,7 @@ namespace SimpleLanguage.Core
         //    }
         //    if(isAllSame )
         //    {
-        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "??????");
+        //        Log.AddMetaCoreLog(LID.MetaCoreParamIssue, "??????");
         //    }
         //    return mc;
         //}

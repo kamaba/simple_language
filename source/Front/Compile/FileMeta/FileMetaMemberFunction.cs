@@ -39,7 +39,7 @@ namespace SimpleLanguage.Compile
 
             if (!FileMetatUtil.SplitNodeList(inputNodeList, listDefieNode, valueNodeList, ref m_AssignToken))
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, m_AssignToken, "Error 解析NodeList出现错误~~~");
+                Log.AddFileMetaLog(LID.FileMetaMemberFunctionNodeList, m_AssignToken, "Error 解析NodeList出现错误~~~");
                 return false;
             }
             if(valueNodeList.Count > 0 )
@@ -50,12 +50,12 @@ namespace SimpleLanguage.Compile
             Node typeNode = null;
             if (!GetNameAndTypeNode(listDefieNode, ref nameNode, ref typeNode, ref m_ParamsToken ))
             {
-                Log.AddFileMetaLog( LID.ShowExtendMessage, m_AssignToken, "ParseBuildMetaParamter Error 定义参数的格式为 TypeName ParamName or param object[] ParamName");
+                Log.AddFileMetaLog( LID.FileMetaMemberFunctionParseBuildMetaParamterTypeNameParamName, m_AssignToken, "ParseBuildMetaParamter Error 定义参数的格式为 TypeName ParamName or param object[] ParamName");
                 return false;
             }
             if (nameNode == null)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, m_AssignToken, "Error 没有找到该定义名称 必须使用例: X = 101; 的格式");
+                Log.AddFileMetaLog(LID.FileMetaMemberFunctionX, m_AssignToken, "Error 没有找到该定义名称 必须使用例: X = 101; 的格式");
                 return false;
             }
             m_Token = nameNode?.token;
@@ -251,7 +251,7 @@ namespace SimpleLanguage.Compile
                     {
                         if(funNameNode != null )
                         {
-                            Log.AddFileMetaLog( LID.ShowExtendMessage, token, "Error 已有函数实体，不能同时出现两个函数实体!");
+                            Log.AddFileMetaLog( LID.FileMetaMemberFunctionNotAllowFunction, token, "Error 已有函数实体，不能同时出现两个函数实体!");
                         }
                         funNameNode = cnode;
                     }
@@ -376,7 +376,7 @@ namespace SimpleLanguage.Compile
             }
             if( isError )
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, m_Token, "ParseFileMetaMemberFunction have Error");
+                Log.AddFileMetaLog(LID.FileMetaMemberFunctionParseFileMetaMemberFunction, m_Token, "ParseFileMetaMemberFunction have Error");
             }
             m_OverrideToken = overrideToken;            
             m_PermissionToken = permissionToken;
@@ -437,7 +437,7 @@ namespace SimpleLanguage.Compile
                 FileMetaParamterDefine cdp = new FileMetaParamterDefine(m_FileMeta, nodelist);
                 if (nameSet.Contains(cdp.name))
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 参数名称有重名!!!");
+                    Log.AddFileMetaLog(LID.FileMetaMemberFunctionParam, "Error 参数名称有重名!!!");
                 }
                 AddMetaParamter(cdp);
             }
@@ -459,7 +459,7 @@ namespace SimpleLanguage.Compile
                     FileMetaTemplateDefine cdp = new FileMetaTemplateDefine(m_FileMeta, cnode);
                     if (m_MetaTemplatesList.Find( a=> a.name == cdp.name ) != null )
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 参数名称有重名!!!");
+                        Log.AddFileMetaLog(LID.FileMetaMemberFunctionParam2, "Error 参数名称有重名!!!");
                         continue;
                     }
                     AddMetaTemplate(cdp);

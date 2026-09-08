@@ -45,7 +45,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog( LID.ShowExtendMessage, "Error 返回的判断语句: " + mcen.ToString() + "   并非是boolean类型!");
+                            Log.AddMetaCoreLog( LID.MetaCoreAssignStatementReturnStatement, "Error 返回的判断语句: " + mcen.ToString() + "   并非是boolean类型!");
                         }
                     }
                     break;
@@ -53,7 +53,7 @@ namespace SimpleLanguage.Core
                     {
                         if( mconen.eType != EType.Boolean )
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, mconen.token, "Error -------------------------------------------1");
+                            Log.AddMetaCoreLog(LID.MetaCoreAssignStatementIssue, mconen.token, "Error -------------------------------------------1");
                         }
                     }
                     break;
@@ -65,7 +65,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            //Log.AddMetaCoreLog( LID.ShowExtendMessage, "Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
+                            //Log.AddMetaCoreLog( LID.MetaCoreAssignStatementReturnStatement2, "Error 返回的判断语句: " + mcen.ToTokenString() + "   并非是boolean类型!");
                         }
                     }
                     break;
@@ -80,7 +80,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error -------------------------------------------2");
+                        Log.AddMetaCoreLog(LID.MetaCoreAssignStatementIssue2, "Error -------------------------------------------2");
                     }
                     break;
             }
@@ -150,7 +150,7 @@ namespace SimpleLanguage.Core
                 }
                 if (m_FileMetaOpAssignSyntax?.staticToken != null)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error 不允许在语句中，出现static字段! " + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
+                    Log.AddMetaCoreLog(LID.MetaCoreAssignStatementStatic, m_Token, "Error 不允许在语句中，出现static字段! " + m_FileMetaOpAssignSyntax?.variableRef?.ToTokenString());
                 }
                 rightExpress = m_FileMetaOpAssignSyntax.express;
             }
@@ -171,7 +171,7 @@ namespace SimpleLanguage.Core
             {
                 if( rightExpress == null  )
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "right express it null!");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssignStatementIsNullRightExpress, m_Token, "right express it null!");
                     return;
                 }
             }
@@ -271,7 +271,7 @@ namespace SimpleLanguage.Core
                     break;
                 default:
                     {
-                        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error not support operator sign " + ett.ToString());
+                        Log.AddMetaCoreLog(LID.MetaCoreAssignStatementNotSupportNotSupport, m_Token, "Error not support operator sign " + ett.ToString());
                     }
                     break;
             }
@@ -284,7 +284,7 @@ namespace SimpleLanguage.Core
             {
                 if (TryParseRightExpress(rightExpress, null ) == false)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
+                    Log.AddMetaCoreLog(LID.MetaCoreAssignStatementTryParseRightExpressExpressFailed, m_Token, "TryParseRightExpress express parse failed!");
                     return;
                 }
 
@@ -310,7 +310,7 @@ namespace SimpleLanguage.Core
                     }
                     if (TryParseRightExpress(rightExpress, leftMt) == false)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
+                        Log.AddMetaCoreLog(LID.MetaCoreAssignStatementTryParseRightExpressExpressFailed2, m_Token, "TryParseRightExpress express parse failed!");
                         return;
                     }
                 }
@@ -327,7 +327,7 @@ namespace SimpleLanguage.Core
 
             //if (leftCallNodeList.Count == 0)
             //{
-            //    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "leftCallNodeList.Count == 0");
+            //    Log.AddMetaCoreLog(LID.MetaCoreAssignStatementLeftCallNodeListCount, m_Token, "leftCallNodeList.Count == 0");
             //    return;
             //}
             //List<MetaCallNode> mcnList = new List<MetaCallNode>();
@@ -342,7 +342,7 @@ namespace SimpleLanguage.Core
             //var _auc = new AllowUseSettings();
             //if (firstNode.ParseNode(_auc) == false)
             //{
-            //    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "firstNode.ParseNode is failed" );
+            //    Log.AddMetaCoreLog(LID.MetaCoreAssignStatementFirstNodeParseNodeFailed, m_Token, "firstNode.ParseNode is failed" );
             //    return;
             //}
             //mcnList.AddRange(firstNode.metaCallNodeList);
@@ -363,14 +363,14 @@ namespace SimpleLanguage.Core
             //    //    MetaMemberFunction mmf = mtt.metaClass?.GetOperatorMetaMemberFunctionByName("_setItem_");
             //    //    if( mmf == null )
             //    //    {
-            //    //        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "GetOperatorMetaMemberFunctionByName _setItem_ is null");
+            //    //        Log.AddMetaCoreLog(LID.MetaCoreAssignStatementIsNullGetOperatorMetaMemberFunctionByName_setItem_, m_Token, "GetOperatorMetaMemberFunctionByName _setItem_ is null");
             //    //        return;
             //    //    }
             //    //    else
             //    //    { 
             //    //        if(!isAssignSign)
             //    //        {
-            //    //            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "GetOperatorMetaMemberFunctionByName _setItem_ need a=b is null");
+            //    //            Log.AddMetaCoreLog(LID.MetaCoreAssignStatementIsNullGetOperatorMetaMemberFunctionByName_setItem_2, m_Token, "GetOperatorMetaMemberFunctionByName _setItem_ need a=b is null");
             //    //            return;
             //    //        }
             //    //    }
@@ -384,7 +384,7 @@ namespace SimpleLanguage.Core
             //        //        mcn.SetFrontCallNode(frontcn);
             //        //        if( mcn.ParseNode(_auc) )
             //        //        {
-            //        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "bracket express parse failed!");
+            //        //            Log.AddMetaCoreLog(LID.MetaCoreAssignStatementBracketExpressFailed, m_Token, "bracket express parse failed!");
             //        //            return;
             //        //        }
             //        //        mcnList.Add(mcn);
@@ -395,7 +395,7 @@ namespace SimpleLanguage.Core
             //        //{
             //        //    if (frontcn.bracketExpressList.Count != 1)
             //        //    {
-            //        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "firstNode.ParseNode bracket express List need equal 1");
+            //        //        Log.AddMetaCoreLog(LID.MetaCoreAssignStatementFirstNodeParseNodeBracket, m_Token, "firstNode.ParseNode bracket express List need equal 1");
             //        //        return;
             //        //    }
             //        //    MetaCallNode mcn = new MetaCallNode(frontcn.bracketExpressList[0], frontcn.ownerMetaFunctionBlock.ownerMetaClass,
@@ -405,7 +405,7 @@ namespace SimpleLanguage.Core
             //        //    {
             //        //        if (TryParseRightExpress(rightExpress, leftMt) == false)
             //        //        {
-            //        //            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
+            //        //            Log.AddMetaCoreLog(LID.MetaCoreAssignStatementTryParseRightExpressExpressFailed3, m_Token, "TryParseRightExpress express parse failed!");
             //        //            return;
             //        //        }
             //        //    }
@@ -413,7 +413,7 @@ namespace SimpleLanguage.Core
             //        //    _auc.getterFunction = false;
             //        //    if ( mcn.ParseNode(_auc) == false )
             //        //    {
-            //        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "bracket express parse failed!");
+            //        //        Log.AddMetaCoreLog(LID.MetaCoreAssignStatementBracketExpressFailed2, m_Token, "bracket express parse failed!");
             //        //        return;
             //        //    }
             //        //    mcnList.Add(mcn);
@@ -428,7 +428,7 @@ namespace SimpleLanguage.Core
             //    {
             //        if (TryParseRightExpress(rightExpress, leftMt) == false)
             //        {
-            //            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
+            //            Log.AddMetaCoreLog(LID.MetaCoreAssignStatementTryParseRightExpressExpressFailed4, m_Token, "TryParseRightExpress express parse failed!");
             //            return;
             //        }
             //    }                
@@ -468,7 +468,7 @@ namespace SimpleLanguage.Core
             //                    {
             //                        if (TryParseRightExpress(rightExpress, null ) == false)
             //                        {
-            //                            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "TryParseRightExpress express parse failed!");
+            //                            Log.AddMetaCoreLog(LID.MetaCoreAssignStatementTryParseRightExpressExpressFailed5, m_Token, "TryParseRightExpress express parse failed!");
             //                            return;
             //                        }
             //                    }
@@ -477,7 +477,7 @@ namespace SimpleLanguage.Core
 
             //                if(fmn2.ParseNode(_auc) == false) 
             //                {
-            //                    Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "bracket express parse failed!");
+            //                    Log.AddMetaCoreLog(LID.MetaCoreAssignStatementBracketExpressFailed3, m_Token, "bracket express parse failed!");
             //                    return;
             //                }
             //                leftMt = fmn2.metaType;
@@ -489,7 +489,7 @@ namespace SimpleLanguage.Core
             //        }
             //        else
             //        {
-            //            Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "MetaAssignStatement build call node List!");
+            //            Log.AddMetaCoreLog(LID.MetaCoreAssignStatementMetaAssignStatementBuildCall, m_Token, "MetaAssignStatement build call node List!");
             //            return;
             //        }
 
@@ -514,7 +514,7 @@ namespace SimpleLanguage.Core
 
             //if (m_LeftMetaExpress.metaCallLink.hasNullConditional)
             //{
-            //    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 空条件运算符 ?. 不能用于赋值操作的左值（包括字段赋值和 setter 方法调用）!");
+            //    Log.AddMetaCoreLog(LID.MetaCoreAssignStatementSetter, m_Token, "Error 空条件运算符 ?. 不能用于赋值操作的左值（包括字段赋值和 setter 方法调用）!");
             //    return;
             //}
 
@@ -594,7 +594,7 @@ namespace SimpleLanguage.Core
             //    {
             //        if (m_MetaVariable.isConst)
             //        {
-            //            Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error 当前左值声明为 const，不允许进行赋值或修改!!");
+            //            Log.AddMetaCoreLog(LID.MetaCoreAssignStatementConst, m_Token, "Error 当前左值声明为 const，不允许进行赋值或修改!!");
             //            return;
             //        }
 
@@ -607,7 +607,7 @@ namespace SimpleLanguage.Core
             //            }
             //            else
             //            {
-            //                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "in" + ownerMetaClass.name);
+            //                Log.AddMetaCoreLog(LID.MetaCoreAssignStatementIssue3, m_Token, "in" + ownerMetaClass.name);
             //            }
             //        }
             //        expressMdt = m_MetaVariable.GetFinalMetaType();
@@ -630,7 +630,7 @@ namespace SimpleLanguage.Core
             //{
             //    if (m_RightMetaExpress == null)
             //    {
-            //        Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "Error right express is null!");
+            //        Log.AddMetaCoreLog(LID.MetaCoreAssignStatementIsNullRightExpress2, m_Token, "Error right express is null!");
             //        return;
             //    }
             //    if (m_LeftMethodCall == null)
@@ -658,7 +658,7 @@ namespace SimpleLanguage.Core
             m_RightMetaExpress = ExpressManager.CreateExpressNodeByCEP(cep);
             if (m_RightMetaExpress == null)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "MetaAssignStatements", m_FileMetaOpAssignSyntax.express.token);
+                Log.AddMetaCoreLog(LID.MetaCoreAssignStatementMetaAssignStatements, m_Token, "MetaAssignStatements", m_FileMetaOpAssignSyntax.express.token);
                 return false;
             }
             var alus = new AllowUseSettings()
@@ -715,7 +715,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "left or right compare failed");
+                Log.AddMetaCoreLog(LID.MetaCoreAssignStatementLeftRightCompare, m_Token, "left or right compare failed");
                 return;
             }
         }

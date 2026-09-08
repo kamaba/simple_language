@@ -259,7 +259,7 @@ namespace SimpleLanguage.Core.IR
                 var mcc = cnode.closureCall;
                 if (mcc == null)
                 {
-                    Log.AddIRLog(LID.MetaCoreAssertShowMessage, cnode.token, "closure call node is null");
+                    Log.AddIRLog(LID.IRCallLinkIsNullClosureCall, cnode.token, "closure call node is null");
                     return irList;
                 }
 
@@ -391,7 +391,7 @@ namespace SimpleLanguage.Core.IR
                     ?? IRManager.instance.GetIRMetaClassById(newMt.metaClass?.classId ?? 0);
                 if (irmc == null)
                 {
-                    Log.AddIRLog(LID.MetaCoreAssertShowMessage, cnode.token,
+                    Log.AddIRLog(LID.IRCallLinkNotFoundNewCall, cnode.token,
                         $"New-in-call-link: IRMetaClass not found for {newMt.metaClass?.allName}");
                     return;
                 }
@@ -455,7 +455,7 @@ namespace SimpleLanguage.Core.IR
             }
             if (callMethodIndex == -1)
             {
-                Log.AddIRLog(LID.MetaCoreAssertShowMessage, cnode.token,
+                Log.AddIRLog(LID.IRCallLinkNotFoundNewCall2, cnode.token,
                     $"New-in-call-link: constructor not found for {newMt.metaClass?.allName}");
                 return;
             }

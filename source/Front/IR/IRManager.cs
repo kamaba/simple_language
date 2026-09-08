@@ -46,7 +46,7 @@ namespace SimpleLanguage.IR
         private List<IRData>  m_IRDataList = new List<IRData>();
         public void TranslateIR()
         {
-            Log.AddIRLog(LID.ShowExtendMessage, "Start translating IR...");
+            Log.AddIRLog(LID.IRManagerStartTranslatingIR, "Start translating IR...");
 
             ParseClass();
 
@@ -84,7 +84,7 @@ namespace SimpleLanguage.IR
             ParseIRMethod();
             ExportIRDebugData();
 
-            Log.AddIRLog(LID.ShowExtendMessage, "End translating IR...");
+            Log.AddIRLog(LID.IRManagerEndTranslatingIR, "End translating IR...");
         }
 
         public void ExportIRDebugData()
@@ -96,7 +96,7 @@ namespace SimpleLanguage.IR
                     return;
                 }
 
-                Log.AddIRLog(LID.ShowExtendMessage, "Start exporting IR debug data...");
+                Log.AddIRLog(LID.IRManagerStartExportingIR, "Start exporting IR debug data...");
 
                 var fileClassMap = new Dictionary<string, List<IRMetaClass>>();
                 for (int i = 0; i < m_IRMetaClassList.Count; i++)
@@ -215,7 +215,7 @@ namespace SimpleLanguage.IR
                     string outPath = Common.GetDebugCodeFilePath(filePath, "IR.txt");
                     File.WriteAllText(outPath, sb.ToString());
                 }
-                Log.AddIRLog(LID.ShowExtendMessage, "End exporting IR debug data...");
+                Log.AddIRLog(LID.IRManagerEndExportingIR, "End exporting IR debug data...");
             }
             catch (Exception e)
             {
@@ -464,7 +464,7 @@ namespace SimpleLanguage.IR
         }
         void ParseClass()
         {
-            Log.AddIRLog(LID.ShowExtendMessage, "Start translating IRMetaClass...");
+            Log.AddIRLog(LID.IRManagerStartTranslatingIRMetaClass, "Start translating IRMetaClass...");
             var cm = ClassManager.instance;
             var exportClassList = cm.exportMetaClassList;
             var exportedOwnerNames = new HashSet<string>(System.StringComparer.Ordinal);
@@ -511,7 +511,7 @@ namespace SimpleLanguage.IR
                 v.CreateStaticMetaMetaVariableIRList();
             }
 
-            Log.AddIRLog(LID.ShowExtendMessage, "End translating IRMetaClass...");
+            Log.AddIRLog(LID.IRManagerEndTranslatingIRMetaClass, "End translating IRMetaClass...");
         }
         //public void TranslateIRAutoAdd( MetaFunction mf )
         //{

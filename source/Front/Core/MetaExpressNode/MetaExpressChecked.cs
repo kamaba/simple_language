@@ -32,7 +32,7 @@ namespace SimpleLanguage.Core
             // checked(expr) expressions can only be used inside label{} or checked label{} blocks
             if (!MetaMemberFunction.isInTryBlock)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, fme.token,
+                Log.AddMetaCoreLog(LID.MetaCoreExpressCheckedCheckedLabel, fme.token,
                     "Error: checked 表达式只能在 label{} 或 checked label{} 块内使用");
             }
         }

@@ -60,7 +60,7 @@ namespace SimpleLanguage.Project
         {
             if (parentRoot == null || node == null)
             {
-                Log.AddProjectLog(LID.ShowExtendMessage, $"Error [{node.Name}] node is null" );
+                Log.AddProjectLog(LID.ProjectProjectClassIsNullNodeNull, $"Error [{node.Name}] node is null" );
                 return;
             }
 
@@ -91,7 +91,7 @@ namespace SimpleLanguage.Project
                         }
                         else
                         {
-                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类11!!" + node.Name ); 
+                            Log.AddProjectLog(LID.ProjectProjectClassNamespace, "Error 解析namespace添加命名空间节点时，发现已有定义类11!!" + node.Name ); 
                         }
                     }
                     else
@@ -110,7 +110,7 @@ namespace SimpleLanguage.Project
                         }
                         else
                         {
-                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类22!!" + node.Name);
+                            Log.AddProjectLog(LID.ProjectProjectClassNamespace2, "Error 解析namespace添加命名空间节点时，发现已有定义类22!!" + node.Name);
                         }
                     }
                     else
@@ -129,7 +129,7 @@ namespace SimpleLanguage.Project
                         }
                         else
                         {
-                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类33!!" + node.Name);
+                            Log.AddProjectLog(LID.ProjectProjectClassNamespace3, "Error 解析namespace添加命名空间节点时，发现已有定义类33!!" + node.Name);
                         }
                     }
                     else
@@ -155,7 +155,7 @@ namespace SimpleLanguage.Project
                         }
                         else
                         {
-                            Log.AddProjectLog(LID.ShowExtendMessage, "Error 解析namespace添加命名空间节点时，发现已有定义类44!!" + node.Name);
+                            Log.AddProjectLog(LID.ProjectProjectClassNamespace4, "Error 解析namespace添加命名空间节点时，发现已有定义类44!!" + node.Name);
                         }
                     }
                     else
@@ -412,11 +412,11 @@ namespace SimpleLanguage.Project
                     return;
                 }
 
-                Log.AddProjectLog(LID.ShowExtendMessage, $"jsonc data array '{name}' contains unsupported element types (only primitive/array supported).");
+                Log.AddProjectLog(LID.ProjectProjectClassJsoncDataArray, $"jsonc data array '{name}' contains unsupported element types (only primitive/array supported).");
                 return;
             }
 
-            Log.AddProjectLog(LID.ShowExtendMessage, $"Unsupported jsonc data value kind for '{name}': {element.ValueKind}");
+            Log.AddProjectLog(LID.ProjectProjectClassUnsupportedJsoncData, $"Unsupported jsonc data value kind for '{name}': {element.ValueKind}");
         }
 
         static void FinalizeInjectedProjectGlobalMember(MetaClass projectMc, MetaMemberVariable mmv)
@@ -460,7 +460,7 @@ namespace SimpleLanguage.Project
             var arrMetaType = arrExpress.GetReturnMetaType();
             if (arrMetaType == null)
             {
-                Log.AddProjectLog(LID.ShowExtendMessage, "Inject _inputArgs failed: cannot build Array<Object> meta type.");
+                Log.AddProjectLog(LID.ProjectProjectClassCannotInject_inputArgs, "Inject _inputArgs failed: cannot build Array<Object> meta type.");
                 return;
             }
 
@@ -515,7 +515,7 @@ namespace SimpleLanguage.Project
             var ffiLibNode = ffiNamespaceNode?.GetChildrenMetaNodeByName( "Library" );
             if ( ffiLibNode == null )
             {
-                Log.AddProjectLog( LID.ShowExtendMessage,
+                Log.AddProjectLog( LID.ProjectProjectClassNotFoundDllImportsFFI,
                     "dllImports: FFI.Library not found (Std not referenced?), skip global.dllImport injection." );
                 return;
             }
@@ -551,7 +551,7 @@ namespace SimpleLanguage.Project
                     continue;
                 if ( !IsValidSlIdentifier( alias ) )
                 {
-                    Log.AddProjectLog( LID.ShowExtendMessage,
+                    Log.AddProjectLog( LID.ProjectProjectClassDllImportsAliasNot,
                         $"dllImports: alias '{alias}' is not a valid identifier, skipped." );
                     continue;
                 }
@@ -574,13 +574,13 @@ namespace SimpleLanguage.Project
 
                 if ( fm.GetFileMetaClassByName( DllImportHolderClassName ) == null )
                 {
-                    Log.AddProjectLog( LID.ShowExtendMessage,
+                    Log.AddProjectLog( LID.ProjectProjectClassDllImportsSyntheticHolder,
                         "dllImports: synthetic holder class parse failed, global.dllImport not injected." );
                 }
             }
             catch ( System.Exception e )
             {
-                Log.AddProjectLog( LID.ShowExtendMessage,
+                Log.AddProjectLog( LID.ProjectProjectClassDllImportsHolderClass,
                     $"dllImports: holder class synthesis error: {e.Message}" );
             }
         }
@@ -659,7 +659,7 @@ namespace SimpleLanguage.Project
                     var funcName = f.Name;
                     if ( !IsValidSlIdentifier( funcName ) )
                     {
-                        Log.AddProjectLog( LID.ShowExtendMessage,
+                        Log.AddProjectLog( LID.ProjectProjectClassDllImportsFunctionName,
                             $"dllImports: function name '{funcName}' is not a valid identifier, skipped." );
                         continue;
                     }
@@ -674,7 +674,7 @@ namespace SimpleLanguage.Project
                     var funcMt = BuildFuncMetaTypeByFFISig( funcName, f.Sig );
                     if ( funcMt == null )
                     {
-                        Log.AddProjectLog( LID.ShowExtendMessage,
+                        Log.AddProjectLog( LID.ProjectProjectClassDllImportsFunctionSig,
                             $"dllImports: function '{funcName}' sig '{f.Sig}' has unsupported type, skipped." );
                         continue;
                     }
@@ -699,13 +699,13 @@ namespace SimpleLanguage.Project
                     var express = ExpressManager.CreateExpressNode( cep );
                     if ( express == null )
                     {
-                        Log.AddProjectLog( LID.ShowExtendMessage,
+                        Log.AddProjectLog( LID.ProjectProjectClassDllImportsFunctionBind,
                             $"dllImports: function '{funcName}' bind expression build failed, skipped." );
                         continue;
                     }
                     mmv.SetExpress( express );
 
-                    Log.AddProjectLog( LID.ShowExtendMessage,
+                    Log.AddProjectLog( LID.ProjectProjectClassDllImportsInjectGlobal,
                         $"dllImports: inject global.{funcName} = FFI.StaticLibrary.bindFunction(\"{d.Path}\", \"{f.Symbol}\", \"{f.Sig}\")" );
                     FinalizeInjectedProjectGlobalMember( projectMc, mmv );
                 }
@@ -1101,7 +1101,7 @@ namespace SimpleLanguage.Project
             }
             catch (System.Exception ex)
             {
-                Log.AddProjectLog(LID.ShowExtendMessage, "Export project guide markdown failed: " + ex.Message);
+                Log.AddProjectLog(LID.ProjectProjectClassExportProjectGuide, "Export project guide markdown failed: " + ex.Message);
             }
         }
     }

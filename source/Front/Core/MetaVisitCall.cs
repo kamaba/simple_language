@@ -281,7 +281,7 @@ namespace SimpleLanguage.Core
                 {
                     if (seenKeyword)
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, mip.token,
+                        Log.AddFileMetaLog(LID.FileMetaVisitCallPositionalArgumentFollows, mip.token,
                             "Error: positional argument follows keyword argument");
                         return null;
                     }
@@ -310,13 +310,13 @@ namespace SimpleLanguage.Core
                     }
                     if (targetIndex < 0 || targetIndex >= slotCount)
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, mip.token,
+                        Log.AddFileMetaLog(LID.FileMetaVisitCallParameterNamed, mip.token,
                             "Error: no parameter named '" + name + "'");
                         continue;
                     }
                     if (resultArgs[targetIndex] != null)
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, mip.token,
+                        Log.AddFileMetaLog(LID.FileMetaVisitCallMultipleValuesParameter, mip.token,
                             "Error: multiple values for parameter '" + name + "'");
                         continue;
                     }
@@ -944,7 +944,7 @@ namespace SimpleLanguage.Core
             var mt = GetMetaType();
             if( mt == null )
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, m_Token, "Error");
+                Log.AddMetaCoreLog(LID.MetaCoreVisitCallIssue, m_Token, "Error");
                 return null;
             }
             return mt.metaClass;

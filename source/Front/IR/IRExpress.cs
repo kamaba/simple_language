@@ -110,7 +110,7 @@ namespace SimpleLanguage.IR
                             }
                             if (irRuntimeMethod == null)
                             {
-                                Log.AddIRLog(LID.MetaCoreAssertShowMessage, moen.token,
+                                Log.AddIRLog(LID.IRExpressNotFoundOperatorMethod, moen.token,
                                     "operator method not found!! func: " + mf.functionAllName);
                                 return;
                             }
@@ -143,7 +143,7 @@ namespace SimpleLanguage.IR
                         var signData = IRUtil.CreateLeftAndRightIRData(moen.opSign, out bool flag );
                         if( !flag )
                         {
-                            Log.AddIRLog(LID.MetaCoreAssertShowMessage, moen.token, "not have sign ");
+                            Log.AddIRLog(LID.IRExpressNotSign, moen.token, "not have sign ");
                             return;
                         }
                         signData.SetDebugInfoByToken(moen.token);
@@ -415,7 +415,7 @@ namespace SimpleLanguage.IR
                     break;
                 default:
                     {
-                        Log.AddIRLog(LID.MetaCoreAssertShowMessage, node.token, "notfound express");
+                        Log.AddIRLog(LID.IRExpressNotFoundNotfoundExpress, node.token, "notfound express");
                     }
                     break;
             }
@@ -479,7 +479,7 @@ namespace SimpleLanguage.IR
             IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaOwner(mnoen.ownerMetaBase);
             if( owirmc == null )
             {
-                Log.AddIRLog(LID.MetaCoreAssertShowMessage, mnoen.token, "notfound owner mc !");
+                Log.AddIRLog(LID.IRExpressNotFoundNotfoundOwner, mnoen.token, "notfound owner mc !");
                 return;
             }
 
@@ -726,7 +726,7 @@ namespace SimpleLanguage.IR
 
                             if(keyIrexp.IRDataList.Count == 0 )
                             {
-                                Log.AddIRLog(LID.MetaCoreAssertShowMessage, asl.keyExpressNode?.token, "notfound owner mc !");
+                                Log.AddIRLog(LID.IRExpressNotFoundNotfoundOwner2, asl.keyExpressNode?.token, "notfound owner mc !");
                                 return;
                             }
                             AddIRRangeData(keyIrexp.IRDataList);
@@ -738,7 +738,7 @@ namespace SimpleLanguage.IR
                         AddIRRangeData(irexp.IRDataList);
                         if (irexp.IRDataList.Count == 0)
                         {
-                            Log.AddIRLog(LID.MetaCoreAssertShowMessage, asl.valueExpressNode?.token, "notfound owner mc !");
+                            Log.AddIRLog(LID.IRExpressNotFoundNotfoundOwner3, asl.valueExpressNode?.token, "notfound owner mc !");
                             return;
                         }
 
@@ -851,7 +851,7 @@ namespace SimpleLanguage.IR
                             }
                             if (callMethodIndex == -1)
                             {
-                                Log.AddIRLog(LID.ShowExtendMessage, asl.valueExpressNode?.token,
+                                Log.AddIRLog(LID.IRExpressNotFoundSetAccessor, asl.valueExpressNode?.token,
                                     "set accessor method not found in ir class: " + asl.defineName);
                             }
 
