@@ -142,7 +142,12 @@
     { "name": "SystemMathMat4hTranslation",       "returnType": "void",    "params": ["Float32", "Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_translation" },
     { "name": "SystemMathMat4hPerspective",       "returnType": "void",    "params": ["Float32", "Float32", "Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_perspective" },
     { "name": "SystemMathMat4hOrtho",             "returnType": "void",    "params": ["Float32", "Float32", "Float32", "Float32", "Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_ortho" },
-    { "name": "SystemMathMat4hLookAt",            "returnType": "void",    "params": ["object", "object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_look_at" }
+    { "name": "SystemMathMat4hLookAt",            "returnType": "void",    "params": ["object", "object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_look_at" },
+
+    // ── Matrix（array_system_method.c 主工程符号，非 math_lib.dll）──
+    // Matrix.sl 的 Array<Float32> 行主序缓冲批量下沉：矩阵乘 / 转置。
+    { "name": "SystemMathMatMulFloat32",    "returnType": "void", "params": ["Array<object>", "Array<object>", "Array<object>", "Int32", "Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_math_matmul_float32" },
+    { "name": "SystemMathTransposeFloat32", "returnType": "void", "params": ["Array<object>", "Array<object>", "Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_math_transpose_float32" }
   ],
   "compile": {
     "optimize": false,
@@ -161,9 +166,9 @@
       { "path": "Mathh.sl", "group": "math", "tag": "mathh", "ignore": false, "priority": 0 },
 
       // ── 大数 ─────────────────────────────────────────
-      { "path": "BigNumber.sl",  "group": "math", "tag": "bignum", "ignore": true, "priority": 0 },
-      { "path": "BigDecimal.sl", "group": "math", "tag": "bignum", "ignore": true, "priority": 0 },
-      { "path": "Factor.sl",     "group": "math", "tag": "bignum", "ignore": true, "priority": 0 },
+      { "path": "BigNumber.sl",  "group": "math", "tag": "bignum", "ignore": false, "priority": 0 },
+      { "path": "BigDecimal.sl", "group": "math", "tag": "bignum", "ignore": false, "priority": 0 },
+      { "path": "Factor.sl",     "group": "math", "tag": "bignum", "ignore": false, "priority": 0 },
 
       // ── 向量 / 矩阵：Float32 ─────────────────────────
       { "path": "Int32_2.sl",     "group": "math", "tag": "vec", "ignore": true,  "priority": 0 },
@@ -189,7 +194,7 @@
 
       // ── 其他 ─────────────────────────────────────────
       { "path": "Quaternion.sl", "group": "math", "tag": "quat", "ignore": true, "priority": 0 },
-      { "path": "Matrix.sl",     "group": "math", "tag": "mat",  "ignore": true, "priority": 0 },
+      { "path": "Matrix.sl",     "group": "math", "tag": "mat",  "ignore": false, "priority": 0 },
       { "path": "Rect.sl",       "group": "math", "tag": "rect", "ignore": true, "priority": 0 }
     ]
   },

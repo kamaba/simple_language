@@ -135,7 +135,7 @@
 | 文档 | 说明 | 状态 |
 |------|------|------|
 | [design/MLIR_AOT_DESIGN.md](./design/MLIR_AOT_DESIGN.md) | SLIR→MLIR→LLVM→exe 全链路、指令映射、运行时 ABI | 规划（三期） |
-| [design/TENSOR_HETEROGENEOUS_DESIGN.md](./design/TENSOR_HETEROGENEOUS_DESIGN.md) | 张量/数学库异构计算（CPU/GPU/NPU）：两区模型、三层数据抽象、算子派为主、控制流三分规则、SLTIR 新 IR 层、落地路线 | 规划 |
+| [design/TENSOR_HETEROGENEOUS_DESIGN.md](./design/TENSOR_HETEROGENEOUS_DESIGN.md) | 张量/数学库异构计算（CPU/GPU/NPU）：两区模型、三层数据抽象、算子派为主、控制流三分规则、SLTIR 新 IR 层、**HAL 硬件抽象层**、落地路线、22 组 demo（含 HAL 视角）。<br>⚠️ 编译期指令函数化（`Compile.*`，不新增 `@`）；矩阵乘用 `A · B`/`matmul`（**不用 `@`**）；小向量沿用 `class` + POD 布局特化（不引入 `data`） | 规划 |
 | [design/MLIR_AOT_LLVM_STRUCT_DESIGN.md](./design/MLIR_AOT_LLVM_STRUCT_DESIGN.md) | class/data/enum → `!llvm.struct`、CVM 对象 ↔ 原生布局双向 marshal、继承前缀布局 | 规划 |
 | [design/STREAM_DESIGN.md](./design/STREAM_DESIGN.md) | `Stream<T>` 异步惰性序列（复用 `Channel` 背压 + 协程 + `SendPort`） | 规划 |
 | [design/COROUTINE_DESIGN.md](./design/COROUTINE_DESIGN.md) | 协程设计（⚠️ 与实现差异较大，**以 `syntax/coroutine.md` 为准**） | 已部分落地 |

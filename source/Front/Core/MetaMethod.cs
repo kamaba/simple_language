@@ -326,6 +326,11 @@ namespace SimpleLanguage.Core
             }
             return false;
         }
+        /// <summary>精确匹配: 所有已传实参与形参声明类型完全同型, 未传尾部形参必须有默认值</summary>
+        public virtual bool IsExactMatchMetaInputParamCollection(MetaInputParamCollection mpc)
+        {
+            return m_MetaMemberParamCollection.IsExactMatchMetaInputParamCollection(mpc);
+        }
         public virtual bool IsEqualMetaDefineParamCollection(MetaDefineParamCollection mdpc)
         {
             if (m_MetaMemberParamCollection.IsEqualMetaDefineParamCollection(mdpc))

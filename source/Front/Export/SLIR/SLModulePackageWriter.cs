@@ -663,11 +663,17 @@ namespace SimpleLanguage.Export.SLIR
 
                 if (m.methodArgumentList != null)
                 {
+                    // 从绑定的 MetaMemberFunction 取默认参数的常量表达式：
+                    // IR 层只保留 hasExpress 标志，真实默认值在 MetaDefineParam.expressNode（AST）里。
+                    // 对齐规则：非静态方法 argumentList[0] 是隐式 this，metaDefineParamList 不含 this。
+                    var bindMmf = m.bindMetaFunction as MetaMemberFunction;
+                    var defineParams = bindMmf?.metaMemberParamCollection?.metaDefineParamList;
+                    int argStartIndex = m.isStatic ? 0 : 1;
                     for (int i = 0; i < m.methodArgumentList.Count; i++)
                     {
                         var v = m.methodArgumentList[i];
                         if (v == null) continue;
-                        mp.argumentList.Add(new SLVariablePackage
+                        var argPkg = new SLVariablePackage
                         {
                             id = v.id,
                             index = v.index,
@@ -675,7 +681,24 @@ namespace SimpleLanguage.Export.SLIR
                             typeDef = CreateRuntimeDefTypePackage(v.irMetaType),
                             debugInfo = CreateVariableDebugInfo(v),
                             hasExpress = v.isHasExpress,
-                        });
+                        };
+                        if (v.isHasExpress && defineParams != null)
+                        {
+                            int dpi = i - argStartIndex;
+                            if (dpi >= 0 && dpi < defineParams.Count
+                                && defineParams[dpi].expressNode is MetaConstExpressNode dcen
+                                && dcen.value != null)
+                            {
+                                // 只导出可无损还原的常量类型；String 默认值导出原文。
+                                // Boolean 用小写 true/false（导入端 Parse1 按小写判定）；
+                                // 数值用 InvariantCulture 避免区域设置的小数分隔符差异。
+                                argPkg.defaultConstEType = (int)dcen.eType;
+                                argPkg.defaultConstValue = dcen.value is bool bv
+                                    ? (bv ? "true" : "false")
+                                    : System.Convert.ToString(dcen.value, System.Globalization.CultureInfo.InvariantCulture);
+                            }
+                        }
+                        mp.argumentList.Add(argPkg);
                     }
                 }
 

@@ -1,12 +1,19 @@
 
-在一些类里边的_add_( Object obj1 ) 的形式，如果里边的只是处理和自己相同的，那就把Object 换成自己的类吧
-我现在要把Float32_3x3.sl 里边的方法，看着是否消耗高，应该70-80%都可以放到cvm的SystemMethodCall里边去调用，还是cvm_math_lib的工程，而且我已经建好的对应的float32_3x3_vm_method_call.c 
-你需要把这些方法，都放进去，然后我在cvm里边，这一个dll,即使命他的ffi,也可以使用vmDll这两种方法  在写完这个后，先把矩阵的都按这种方法处理下吧，应该很相似，所以参考处理好的，再扩展处理其它的 然后再跑下相关对应的测试用例，如果没有，最好是建对应的测试用例，然后测试下
 
-F:\project\lang\simple_language\source\Front\Lib\Math\Matrix.sl这里边好多是对数组操作的过程，你看下数据操作有好多内置的system method call 的调用，你看着把这里边 都优化下吧，尽量的使用system_method_call的方式去调用
-BigDecimal.sl BigNumber.sl Factor.sl 貌似还没有优化和验证，你也操作下吧
 
-增加一个DllStaticImport() 的方式，如果是这种方式，则 需要在cvm里边 直接调用opCode的方式去找FFi对应的函数指针，然后直接调用
+貌似cvm里边对 _add_ _minus_ 一类的，还没有实现吧，你把这些在cvm层都实现了 我指的实现是 +号，当没有这个类型的时候，需要查找该类的_add_ 的方法，然后去调用，然后操作栈上的返回内容，  把相关符号包括 判断相等一类的，都有重写，把这块实现下，然后 在数学的测试用例，把这块也测全了
+
+增加一个DllStaticImport() 的方式，如果是这种方式，则 需要在cvm里边 直接调用opCode的方式去找FFi对应的函数指针，然后直接调用,这种方式，在cvm加载的时候，要持续的把这个lib库的handle在解析module.json的时候 就已经拿到了Function Handle了， 而且一直会持续，直到程序关闭，才会翻译这个handle, "dllImports": [
+    {
+      "alias": "mydll",
+      "name": "mydll",
+      "path": "../Lib/mydll.dll",
+	  "static":"mydll"
+    }
+  ],  增加一个static的字段，里边是名称，如果有这个名称，则需要注册到StaticLibrary的类里边  这个类里边增加一个  List<Library> 用来保存我静态的Library ，然后  通过 StaticLibrary.GetStaticLib("mydll" )  可以拿到这个Library, 而DllStaticImport 其实内部逻辑，就是在这里，对 Library 和这个函数体进行绑定，然后到cvm里的时候，已经是这个函数体变成了绑定的Library里边的某一个FunctionHandle了， 然后 和原来DllImport不同的是，DllStaticImport 需要增加一个快速调用FFI的IRCode 因为已经有了静态绑定的关系 ，所以调用IRCode里边，其实就是把拿到的FFI.FunctionHandle然后还有入栈的参数，整合后，进行直接调用，而原来的时候，还需要先进入Slang的函数体，再去检查Library.Load机制，再去传参，再去调用，链路太长了，  这样的目的就是有效的避免了，好多的无用操作，让函数体调用速度加快
+
+
+我现在代码里边要增加 @标签{} 的一种逻辑，大概意思是，如果在jsonc 定义过这种标签，我在代码里边直接使用 比如  我在 jsonc 的配置里边  增加了 "atSignLabel":[ { "name":"asm", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86" }  }, { "name":"csharp", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86", "lib":"mono-static.dll" }  } ]
 
 
 把runtime_type 把原来VMObject里边的memberObjects移动到RuntimeType下边吧，因为这里边，大部分是相同的,查找对比原素，，也可以通过RuntimeType下边MemberObjects 里边的Object的 member_data_start + member_data_length查找出member_data里边的数据  反正就是，VMObject把member_runtime_objects member_runtime_object_count runtime_type_ref 移动到了RuntimeType下边，如果有重复就去除掉就好了，然后  在_VMObject里边增加一个RuntimeType* _bindRuntimeType的指针以后操作，都通过_bindRuntimeType去操作  
@@ -14,6 +21,8 @@ BigDecimal.sl BigNumber.sl Factor.sl 貌似还没有优化和验证，你也操�
 runtime_class_manager_get_runtime_class_by_id里边界的查找过程改成hash碰撞连表的模式吧，要不这样类多了，查找起来太慢了
 
 vm_object_new_by_runtime_class 这个里边，要分配内存的时候，要分配连续内存，而不是先分配VMObject再分配后边的，要直接分配全了，然后通过位给各个值赋值
+
+优化Component.sl 好多速度较慢的，可以放到system method call层
 
 字节码序例化相互转化过程
  

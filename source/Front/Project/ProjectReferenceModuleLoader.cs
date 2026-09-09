@@ -992,6 +992,18 @@ namespace SimpleLanguage.Project
                     if (arg.isHasExpress)
                     {
                         mdp.SetHasExpress();
+                        /* 还原默认参数的常量值：导出端对常量字面量默认值导出 defaultConstEType/Value，
+                         * 这里重建 MetaConstExpressNode 设回 expressNode，
+                         * 使省略默认参数的跨模块调用填真实默认值（如 Math.BigDecimal.div 的 extraScale=8）而非零值。
+                         * 旧 module.json 无该字段时 parseVal 为 null，保持原有零值回退，向后兼容。 */
+                        if (arg.defaultConstEType > 0 && arg.defaultConstValue != null)
+                        {
+                            var parseVal = MakeImportedConstParseValue((EType)arg.defaultConstEType, arg.defaultConstValue);
+                            if (parseVal != null)
+                            {
+                                mdp.SetExpressNode(new MetaConstExpressNode((EType)arg.defaultConstEType, parseVal));
+                            }
+                        }
                     }
                     if (irm.isExtendParams && i == irm.methodArgumentList.Count - 1)
                     {
@@ -1020,6 +1032,33 @@ namespace SimpleLanguage.Project
             irm.virtualFunctionName = mmf.virtualFunctionName;
 
             return mmf;
+        }
+
+        /// <summary>
+        /// 把导出的默认参数常量字符串还原为 MetaConstExpressNode.Parse1 语义的输入值：
+        /// Boolean 传小写字符串（Parse1 按小写 "true" 判定），
+        /// 数值类型解析为对应 CLR 类型（Parse1 默认分支原样存储 value，IR 生成 SetOpValue 需要正确类型），
+        /// String 传原文。不支持的类型返回 null（调用方回退到原有零值行为）。
+        /// </summary>
+        private static object MakeImportedConstParseValue(EType etype, string s)
+        {
+            var inv = System.Globalization.CultureInfo.InvariantCulture;
+            switch (etype)
+            {
+                case EType.Boolean: return (s == "true" || s == "True") ? "true" : "false";
+                case EType.String: return s;
+                case EType.UInt8: return byte.Parse(s, inv);
+                case EType.Int8: return sbyte.Parse(s, inv);
+                case EType.Int16: return short.Parse(s, inv);
+                case EType.UInt16: return ushort.Parse(s, inv);
+                case EType.Int32: return int.Parse(s, inv);
+                case EType.UInt32: return uint.Parse(s, inv);
+                case EType.Int64: return long.Parse(s, inv);
+                case EType.UInt64: return ulong.Parse(s, inv);
+                case EType.Float32: return float.Parse(s, inv);
+                case EType.Float64: return double.Parse(s, inv);
+                default: return null;
+            }
         }
 
         /* ---- 基类 / 接口（仍来自 SLClassPackage，IRMetaClass 不独立承载） ---- */

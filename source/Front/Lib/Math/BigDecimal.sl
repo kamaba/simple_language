@@ -108,11 +108,6 @@ public class BigDecimal extends Num
         ret BigDecimal( this._unscaled.negate(), this.scale )
     }
 
-    public BigDecimal abs()
-    {
-        ret BigDecimal( this._unscaled.abs() as BigNumber, this.scale )
-    }
-
     public BigDecimal clone()
     {
         ret BigDecimal( this._unscaled.clone(), this.scale )
@@ -134,8 +129,9 @@ public class BigDecimal extends Num
         BigNumber pow = BigNumber.pow( BigNumber( 10 ), this.scale - targetScale )
         BigNumber q = this._unscaled.div( pow )
         BigNumber r = this._unscaled.mod( pow )
-        BigNumber half = pow.div( BigNumber( 2 ) )
-        if r._absCompare( half ) >= 0
+        # half 是内建类型名（Float16），不能作局部变量名
+        BigNumber halfPow = pow.div( BigNumber( 2 ) )
+        if r._absCompare( halfPow ) >= 0
         {
             q = q.add( BigNumber( 1 ) )
         }
@@ -259,7 +255,7 @@ public class BigDecimal extends Num
 
     public override Num abs()
     {
-        ret this.abs()
+        ret BigDecimal( this._unscaled.abs() as BigNumber, this.scale )
     }
 
     # 向下取整（去掉小数部分）
@@ -390,7 +386,7 @@ public class BigDecimal extends Num
 
     static int _charCodeAt( string s, int index )
     {
-        ret s.charAt( index )
+        ret SystemStringCharCodeAt( s, index )
     }
 
     public static BigDecimal maxValue( BigDecimal a, BigDecimal b )

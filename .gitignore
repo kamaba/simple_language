@@ -383,3 +383,11 @@
 /tools/LidIndexer/obj
 /project/cvm_math_lib/cvm_math_lib
 /project/cvm_math_lib/x64
+/test/MathTest/build/asis_trace.txt
+/test/MathTest/build/asis_trace2.txt
+/test/MathTest/build/asis_trace3.txt
+/test/MathTest/build/bind_trace.txt
+/test/MathTest/build/logs/VM.txt
+/test/MathTest/build/math_compile_trace.txt
+/test/MathTest/build/run_after_fix.txt
+/test/MathTest/build/run_final.txt

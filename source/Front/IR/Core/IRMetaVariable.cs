@@ -42,6 +42,10 @@ namespace SimpleLanguage.IR
         /// <summary>方法参数是否有默认表达式（影响 isMust 匹配）。</summary>
         public bool isHasExpress => m_HasExpress;
         public void SetHasExpress(bool value) { m_HasExpress = value; }
+        /// <summary>ref module 导入的默认参数常量值（字符串形式；null 表示未导出）。</summary>
+        public string defaultConstValue => m_DefaultConstValue;
+        /// <summary>ref module 导入的默认参数常量 EType（(int)EType；0=None 表示无）。</summary>
+        public int defaultConstEType => m_DefaultConstEType;
         // 解析顺序：源自 MetaMemberVariable.parseOrder，
         // 用于 IR 导出 / VM 加载阶段按依赖解析次序排序初始化表达式。
         // -1 表示该 IRMetaVariable 不参与解析顺序排序（例如局部变量、参数）。
@@ -72,6 +76,8 @@ namespace SimpleLanguage.IR
         private bool m_IsConst = false;
         private EPermission m_Permission = EPermission.Public;
         private bool m_HasExpress = false;
+        private string m_DefaultConstValue = null;
+        private int m_DefaultConstEType = 0;
         private int m_Order = -1;
         //private MetaVariable m_MetaVariable = null;
 
@@ -261,6 +267,8 @@ namespace SimpleLanguage.IR
             m_IRMetaVariableFrom = from;
             m_IRMetaType = irmt ?? new IRMetaType(IRManager.instance.GetIRMetaClassByName("Core.Object"));
             m_HasExpress = var?.hasExpress ?? false;
+            m_DefaultConstValue = var?.defaultConstValue;
+            m_DefaultConstEType = var?.defaultConstEType ?? 0;
         }
         private void FillDebugInfo(MetaBase mb, string fallbackName, string info)
         {

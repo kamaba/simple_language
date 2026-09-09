@@ -25,7 +25,8 @@
       { "path": "MathTest.sl", "group": "math", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Matrix3x3Test.sl", "group": "math", "tag": "base", "ignore": false, "priority": 1 },
       { "path": "Matrix4x4Test.sl", "group": "math", "tag": "base", "ignore": false, "priority": 2 },
-      { "path": "FFIMathTest.sl", "group": "math", "tag": "base", "ignore": false, "priority": 3 }
+      { "path": "FFIMathTest.sl", "group": "math", "tag": "base", "ignore": false, "priority": 3 },
+      { "path": "MatrixBigTest.sl", "group": "math", "tag": "base", "ignore": false, "priority": 4 }
     ]
   },
   "compileFilter": {

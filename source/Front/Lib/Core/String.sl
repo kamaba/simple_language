@@ -21,11 +21,9 @@ public class String extends Object
     }
     public get int length()
     {
-        if (this._length == -1)
-        {
-            this._length = SystemStringLength(this)
-        }
-        ret this._length
+        # 直接走系统调用：字符串值在 VM 上是 scalar wrapper（无类字段布局），
+        # 不能通过 this._length 字段访问缓存，否则字段读取失败返回空。
+        ret SystemStringLength(this)
     }
     override String toString()
     {

@@ -106,6 +106,12 @@ namespace SimpleLanguage.Export.SLIR.Types
         public SLInstructionDebugInfo? debugInfo { get; set; }
         /// <summary>方法参数是否有默认表达式（影响 isMust 匹配）。</summary>
         public bool hasExpress { get; set; }
+        /// <summary>默认参数的常量值（字符串形式）。仅当默认表达式是常量字面量时导出；
+        /// 导入端据此还原 MetaConstExpressNode，使省略默认参数的跨模块调用
+        /// 填充真实默认值而非零值（如 div 的 extraScale=8）。</summary>
+        public string? defaultConstValue { get; set; }
+        /// <summary>默认参数常量的 EType（(int)EType；0=None 表示无）。</summary>
+        public int defaultConstEType { get; set; }
     }
     public sealed class SLMethodPackage
     {

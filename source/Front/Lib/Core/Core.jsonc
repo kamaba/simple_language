@@ -154,6 +154,12 @@
     { "name": "SystemArrayMoveNext",    "returnType": "bool",     "params": ["Array<object>"], "isVariadic": false, "cvmFunction": "vm_sys_array_move_next" },
     { "name": "SystemArrayForEach",     "returnType": "void",     "params": ["Array<object>", "object"], "isVariadic": false, "cvmFunction": "vm_sys_array_for_each" },
 
+    // ---- Array Float32 批量运算（主工程 array_system_method.c 符号，紧凑缓冲直接运算）----
+    { "name": "SystemArrayAddFloat32",    "returnType": "void", "params": ["Array<object>", "Array<object>", "Array<object>", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_array_add_float32" },
+    { "name": "SystemArraySubFloat32",    "returnType": "void", "params": ["Array<object>", "Array<object>", "Array<object>", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_array_sub_float32" },
+    { "name": "SystemArrayMulFloat32",    "returnType": "void", "params": ["Array<object>", "Float32", "Array<object>", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_array_mul_float32" },
+    { "name": "SystemArrayEqualsFloat32", "returnType": "bool", "params": ["Array<object>", "Array<object>", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_array_equals_float32" },
+
     // ---- Num helpers ----
     { "name": "SystemNumAbs",   "returnType": "Num", "params": ["Num"], "isVariadic": false, "cvmFunction": "vm_sys_num_abs" },
     { "name": "SystemNumFloor", "returnType": "Num", "params": ["Num"], "isVariadic": false, "cvmFunction": "vm_sys_num_floor" },
@@ -163,6 +169,7 @@
     { "name": "SystemStringFront",       "returnType": "string",    "params": ["string", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_string_front" },
     { "name": "SystemStringEnd",         "returnType": "string",    "params": ["string", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_string_end" },
     { "name": "SystemStringRange",       "returnType": "string",    "params": ["string", "Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_string_range" },
+    { "name": "SystemStringCharCodeAt",  "returnType": "Int32",     "params": ["string", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_string_char_code" },
     { "name": "SystemStringToUInt8Array","returnType": "UInt8Array","params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_string_to_uint8_array" },
     { "name": "SystemStringLength",       "returnType": "Int32",     "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_string_length" },
 

@@ -17,12 +17,8 @@ public class BigNumber extends Num
     public void _init_()
     {
         this._digits = Array<Int32>( BigNumber.CAPACITY )
-        int i = 0
-        while i < BigNumber.CAPACITY
-        {
-            this._digits[i] = 0
-            i++
-        }
+        # 系统级批量清零（一次调用替代逐段循环）
+        SystemArrayFillValue( this._digits, 0, BigNumber.CAPACITY, 0 )
         this._length = 1
         this._sign = 0
     }
@@ -63,12 +59,9 @@ public class BigNumber extends Num
 
     void _copyFrom( BigNumber other )
     {
-        int i = 0
-        while i < BigNumber.CAPACITY
-        {
-            this._digits[i] = other._digits[i]
-            i++
-        }
+        # 系统级拷贝（保留 Int32 元素类型，生成新数组不与源共享存储；
+        # 本类 _digits 为私有定长缓冲，替换引用语义等价于逐段复制）
+        this._digits = SystemArrayCopy( other._digits, BigNumber.CAPACITY )
         this._length = other._length
         this._sign = other._sign
     }
@@ -282,13 +275,15 @@ public class BigNumber extends Num
             BigNumber cur = shifted.add( BigNumber( this._digits[i] ) )
 
             # 二分试商 [0, BASE-1]
+            # abs() 返回 Num 基类，先经 as 转型落地为 BigNumber 再调用本类方法
+            BigNumber absOther = other.abs() as BigNumber
             int low = 0
             int high = BigNumber.BASE - 1
             int best = 0
             while low <= high
             {
                 int mid = ( low + high ) / 2
-                BigNumber probe = other.abs().multiply( BigNumber( mid ) )
+                BigNumber probe = absOther.multiply( BigNumber( mid ) )
                 if probe._absCompare( cur ) <= 0
                 {
                     best = mid
@@ -300,7 +295,7 @@ public class BigNumber extends Num
                 }
             }
             quotient._digits[i] = best
-            remainder = cur.sub( other.abs().multiply( BigNumber( best ) ) )
+            remainder = cur.sub( absOther.multiply( BigNumber( best ) ) )
             i = i - 1
         }
 
@@ -341,12 +336,15 @@ public class BigNumber extends Num
 
     public BigNumber div( BigNumber other )
     {
-        ret this.divMod( other )[0]
+        # 方法调用结果不能直接索引 [n]，拆成局部变量
+        Array<BigNumber> r = this.divMod( other )
+        ret r[0]
     }
 
     public BigNumber mod( BigNumber other )
     {
-        ret this.divMod( other )[1]
+        Array<BigNumber> r = this.divMod( other )
+        ret r[1]
     }
 
     public BigNumber negate()
@@ -624,10 +622,10 @@ public class BigNumber extends Num
         ret acc
     }
 
-    # 取字符串指定位置的数字值，非数字返回 -1
+    # 取字符串指定位置的字符码（无符号字节值），越界/非字符串返回 -1
     static int _charToDigit( string s, int index )
     {
-        int code = s.charAt( index )
+        int code = SystemStringCharCodeAt( s, index )
         if code >= 48 && code <= 57
         {
             ret code - 48

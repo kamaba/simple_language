@@ -63,7 +63,7 @@ public class Component extends Object
     }
 
     # ── 组件挂载 ───────────────────────────────────────
-    public void AddComponent( Component comp )
+    public void addComponent( Component comp )
     {
         if comp == null
         {
@@ -74,7 +74,7 @@ public class Component extends Object
     }
 
     # ── 组件查询（自身直接子级）────────────────────────
-    public T GetComponent<T>()
+    public T getComponent<T>()
     {
         for c in this.components
         {
@@ -87,7 +87,7 @@ public class Component extends Object
         ret null
     }
 
-    public Component GetComponent( Type type )
+    public Component getComponent( Type type )
     {
         for c in this.components
         {
@@ -99,7 +99,7 @@ public class Component extends Object
         ret null
     }
 
-    public Component GetComponent( string typeName )
+    public Component getComponent( string typeName )
     {
         for c in this.components
         {
@@ -111,7 +111,7 @@ public class Component extends Object
         ret null
     }
 
-    public List<Component> GetComponents<T>()
+    public List<Component> getComponents<T>()
     {
         List<Component> rtlist = List<Component>(4)
         for c in this.components
@@ -126,7 +126,7 @@ public class Component extends Object
     }
 
     # ── 向下查找（含子组件树）──────────────────────────
-    public T GetComponentInChildren<T>( bool includeInactive )
+    public T getComponentInChildren<T>( bool includeInactive )
     {
         for c in this.components
         {
@@ -138,7 +138,7 @@ public class Component extends Object
                     ret t
                 }
             }
-            T rt = c.GetComponentInChildren<T>( includeInactive )
+            T rt = c.getComponentInChildren<T>( includeInactive )
             if rt != null
             {
                 ret rt
@@ -148,7 +148,7 @@ public class Component extends Object
     }
 
     # ── 向上查找（parent 链）───────────────────────────
-    public T GetComponentInParent<T>( bool includeInactive )
+    public T getComponentInParent<T>( bool includeInactive )
     {
         Component p = this
         while p != null
@@ -166,7 +166,7 @@ public class Component extends Object
         ret null
     }
 
-    public List<Component> GetComponentsInChildren<T>( bool includeInactive )
+    public List<Component> getComponentsInChildren<T>( bool includeInactive )
     {
         List<Component> result = List<Component>(4)
         this._collectInChildren<T>( result, includeInactive )
@@ -189,7 +189,7 @@ public class Component extends Object
         }
     }
 
-    public List<Component> GetComponentsInParent<T>( bool includeInactive )
+    public List<Component> getComponentsInParent<T>( bool includeInactive )
     {
         List<Component> result = List<Component>(4)
         Component p = this
@@ -209,20 +209,20 @@ public class Component extends Object
     }
 
     # 与 Unity 的 TryGetComponent<T>(out T) 对齐：直接返回组件，null 表示未找到
-    public T TryGetComponent<T>()
+    public T tryGetComponent<T>()
     {
-        ret this.GetComponent<T>()
+        ret this.getComponent<T>()
     }
 
     # ── 标签 ───────────────────────────────────────────
-    public bool CompareTag( string otherTag )
+    public bool compareTag( string otherTag )
     {
         ret this.tag == otherTag
     }
 
     # ── 消息（简化模型：组件可 override onMessage 响应）──
     # 向自身及所有子组件发送
-    public void SendMessage( string methodName )
+    public void sendMessage( string methodName )
     {
         this.onMessage( methodName )
         for c in this.components
@@ -232,7 +232,7 @@ public class Component extends Object
     }
 
     # 向自身及所有祖先发送
-    public void SendMessageUpwards( string methodName )
+    public void sendMessageUpwards( string methodName )
     {
         this.onMessage( methodName )
         if this.parent != null
@@ -242,7 +242,7 @@ public class Component extends Object
     }
 
     # 向自身及整棵子树广播
-    public void BroadcastMessage( string methodName )
+    public void broadcastMessage( string methodName )
     {
         this.SendMessage( methodName )
     }

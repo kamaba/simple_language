@@ -6,6 +6,7 @@ Project
         Matrix3x3Test.fun()
         Matrix4x4Test.fun()
         FFIMathTest.fun()
+        MatrixBigTest.fun()
     }
     CompileBefore()
     {

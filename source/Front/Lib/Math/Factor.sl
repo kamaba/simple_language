@@ -369,17 +369,12 @@ public class Factor
 
     static Array<Int32> _slice( Array<Int32> list, int count )
     {
-        if count <= 0
-        {
-            ret Array<Int32>( 0 )
-        }
-        Array<Int32> r = Array<Int32>( count )
-        int i = 0
-        while i < count
-        {
-            r[i] = list[i]
-            i = i + 1
-        }
+        # 系统级拷贝（C 侧对 count<0 钳 0、超出源长钳源长，覆盖原 count<=0 分支语义；
+        # 保留 Int32 元素类型，生成新数组不与源共享存储）
+        # SystemArrayCopy 声明返回 Array<object>，return 语句做严格类型比较，
+        # 先落地到局部变量（赋值语义透传数组引用）再返回
+        Array<Int32> r = null
+        r = SystemArrayCopy( list, count )
         ret r
     }
 

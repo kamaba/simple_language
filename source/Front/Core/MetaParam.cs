@@ -112,6 +112,12 @@ namespace SimpleLanguage.Core
         protected bool m_HasExpressImported = false;
         public void SetHasExpress() { m_HasExpressImported = true; }
 
+        /// <summary>
+        /// 直接设置默认参数表达式（ref module 导入时从导出的常量值还原 MetaConstExpressNode）。
+        /// 设置后 isMust 自动为 false，调用点省略该参数时使用该表达式而非零值。
+        /// </summary>
+        public void SetExpressNode(MetaExpressNodeBase node) { m_MetaExpressNode = node; }
+
         protected bool m_IsFunctionTemplate = false;
         protected FileMetaParamterDefine m_FileMetaParamter = null;
         protected MetaExpressNodeBase m_MetaExpressNode = null;
@@ -274,6 +280,32 @@ namespace SimpleLanguage.Core
                 }
                 */
                 return false;
+            }
+            return false;
+        }
+        /// <summary>
+        /// 精确类型匹配：实参类型与形参声明类型完全同型（类/数据/枚举各自比较元对象）。
+        /// 不考虑继承、接口、Num 装箱等隐式转换——用于重载决策的精确匹配优先轮。
+        /// </summary>
+        public bool EqualsExactInputMetaParam(MetaInputParam mip)
+        {
+            if (m_MetaVariable == null) return false;
+
+            var declaredMt = m_MetaVariable.defineMetaType;
+            var argMt = mip.express != null ? mip.express.GetReturnMetaType() : null;
+            if (declaredMt == null || argMt == null) return false;
+
+            if (declaredMt.isClass && argMt.isClass)
+            {
+                return declaredMt.metaClass == argMt.metaClass;
+            }
+            if (declaredMt.isData && argMt.isData)
+            {
+                return declaredMt.metaData == argMt.metaData;
+            }
+            if (declaredMt.isEnum && argMt.isEnum)
+            {
+                return declaredMt.metaEnum == argMt.metaEnum;
             }
             return false;
         }
@@ -493,6 +525,52 @@ namespace SimpleLanguage.Core
                 // 首个默认参数：进入默认参数段。
                 m_IsHaveDefaultParamExpress = true;
             }
+        }
+        /// <summary>
+        /// 精确匹配重载判定：每个已传实参类型与对应形参声明类型完全一致（Same）。
+        /// 用于重载决策时"精确匹配优先于隐式转换匹配"：
+        /// 如 BigDecimal(42, 0) 应选中 _init_(Int32, Int32) 而不是
+        /// 声明顺序靠前的 _init_(BigNumber, Int32)（Int32 装箱为 Num 子类的宽松匹配）。
+        /// 未传的尾部参数必须是有默认值的形参；keyword 命名参数与 params 场景不参与精确优先。
+        /// </summary>
+        public bool IsExactMatchMetaInputParamCollection(MetaInputParamCollection mpc)
+        {
+            if (m_IsExtendParams)
+            {
+                return false;
+            }
+            int inputCount = mpc != null ? mpc.metaInputParamList.Count : 0;
+            if (mpc != null && mpc.hasKeywordParam)
+            {
+                return false;
+            }
+            if (m_MetaDefineParamList.Count < inputCount)
+            {
+                return false;
+            }
+            for (int i = 0; i < inputCount; i++)
+            {
+                MetaDefineParam a = m_MetaDefineParamList[i];
+                if (a == null)
+                {
+                    return false;
+                }
+                MetaInputParam b = mpc.metaInputParamList[i];
+                if (b == null || !a.EqualsExactInputMetaParam(b))
+                {
+                    return false;
+                }
+            }
+            // 未传的尾部形参必须带默认值, 否则该重载本就不合法(与宽松版 CheckInputMetaParam 语义一致)
+            for (int i = inputCount; i < m_MetaDefineParamList.Count; i++)
+            {
+                MetaDefineParam a = m_MetaDefineParamList[i];
+                if (a == null || a.isMust)
+                {
+                    return false;
+                }
+            }
+            return true;
         }
         public bool IsEqualMetaInputParamCollection(MetaInputParamCollection mpc)
         {

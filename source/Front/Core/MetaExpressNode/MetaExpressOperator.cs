@@ -678,6 +678,17 @@ namespace SimpleLanguage.Core
                                 case ELeftRightOpSign.GreaterOrEqual:
                                 case ELeftRightOpSign.Less:
                                 case ELeftRightOpSign.LessOrEqual:
+                                    {
+                                        // Num 子类(如 BigNumber/BigDecimal)在 VM 中是对象而非标量,
+                                        // 内置数值比较会得到错误结果: 定义了 _lt_/_eq_ 等内置operator方法时
+                                        // 优先解析为方法调用; 未定义(基本数字类型)时保持内置数值比较语义
+                                        ResolveBuiltinOperatorFunction(left, right);
+                                        if (m_OpMemberFunction == null)
+                                        {
+                                            m_RealMetaType = new MetaType(CoreMetaClassManager.booleanMetaClass);
+                                        }
+                                    }
+                                    break;
                                 case ELeftRightOpSign.Or:
                                 case ELeftRightOpSign.And:
                                     {

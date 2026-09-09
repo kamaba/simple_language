@@ -37,7 +37,6 @@
       { "path": "Net/UdpSocket.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/Uri.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Component.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
-      { "path": "Node.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Data/Table.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Data/Tree.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "DB/Sqlite.sl", "group": "std", "tag": "db", "ignore": false, "priority": 0 },

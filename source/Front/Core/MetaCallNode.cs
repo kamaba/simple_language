@@ -253,6 +253,12 @@ namespace SimpleLanguage.Core
             bool flag = false;
             m_AllowUseSettings = _auc;
 
+            // ParseNode may be invoked multiple times on the same node (e.g. `obj1 is BigNumber b`
+            // chains are re-parsed). All elements of these two lists are (re)built inside this
+            // method, so clear them first to keep re-entry idempotent and avoid duplicates.
+            m_MetaCallNodeList.Clear();
+            m_BracketExpressList.Clear();
+
             TryGetRightExpress(null, null);
 
             if (m_InputExpressNode != null)

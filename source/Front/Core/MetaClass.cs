@@ -1514,6 +1514,17 @@ namespace SimpleLanguage.Core
             var list = tfunctionNode.GetMetaMemberFunctionListByParamCount(inputParam != null ? inputParam.count : 0);
             if (list == null) return null;
 
+            // 第一轮: 精确匹配优先——所有已传实参与形参声明类型完全同型。
+            // 修复重载决策仅按声明顺序取首个宽松匹配的问题:
+            // 如 BigDecimal(42, 0) 曾错绑声明在前的 _init_(BigNumber, Int32)
+            // (Int32 装箱为 Num 子类的隐式转换), 而非更精确的 _init_(Int32, Int32)
+            for (int i = 0; i < list.Count; i++)
+            {
+                var fun = list[i];
+                if (fun.IsExactMatchMetaInputParamCollection(inputParam))
+                    return fun;
+            }
+            // 第二轮: 允许隐式转换的宽松匹配(保持原有语义)
             for (int i = 0; i < list.Count; i++)
             {
                 var fun = list[i];
