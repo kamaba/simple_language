@@ -40,6 +40,10 @@ namespace SimpleLanguage.IR
         /// <summary>标注的 @GPU(...) 属性实例（含 tile/launch 参数），未标注为 null。</summary>
         public MetaAttribute gpuAttribute => m_GpuAttribute;
         private MetaAttribute m_GpuAttribute = null;
+        /// <summary>ref module 恢复的 attribute 列表（无 FileMeta，从 SLMethodPackage.attributeList
+        /// 直接构造）。供反向构建 MetaMemberFunction 时回填白名单 attribute（如 DllStaticImport）。</summary>
+        public List<MetaAttribute> refAttributeList => m_RefAttributeList;
+        private List<MetaAttribute> m_RefAttributeList = new List<MetaAttribute>();
         /// <summary>声明该方法的类的 classId（来自 SLMethodPackage.declaringClassId）。
         /// 对于继承到子类的方法，指向声明类（如 Object）。0 表示未设置（按当前类处理）。</summary>
         public int declaringClassId => m_DeclaringClassId;
@@ -259,6 +263,16 @@ namespace SimpleLanguage.IR
                     var irmt = IRMetaType.CreateFromPackage(vp.typeDef, ownerIRMc);
                     var imv = new IRMetaVariable(vp, irmt, IRMetaVariableFrom.LocalStatement);
                     m_MethodLocalVariableList.Add(imv);
+                }
+            }
+            // 恢复 attribute 列表（无 FileMeta，从导出包直接构造，
+            // 供反向构建 MetaMemberFunction 时回填白名单 attribute）
+            if (mp?.attributeList != null)
+            {
+                foreach (var ap in mp.attributeList)
+                {
+                    if (ap == null || string.IsNullOrEmpty(ap.name)) continue;
+                    m_RefAttributeList.Add(new MetaAttribute(ap.name, ap.args, ap.handleType));
                 }
             }
         }

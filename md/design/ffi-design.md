@@ -1,6 +1,13 @@
 # FFI 机制设计 —— SimpleLanguage 仿 Dart FFI
 
-> 状态:设计版(草案)。本文先整理 Dart 的 FFI 机制,再基于本语言 **现有 Native 互操作基础**
+> 状态:设计版(草案)。
+>
+> ⚠️ **本文为早期设计草案，与当前实现差异较大。已落地的 FFI 机制（普通 FFI 调用、
+> `FFI.Library` / `FFI.StaticLibrary`、`dllImports` 配置、`@DllImport`、
+> `@DllStaticImport`(opcode 118)、sig 规则、内部原理）请以
+> [project/ffi.md](../project/ffi.md) 为准**，本文仅作设计背景与未落地功能点（P1/P2）的参考。
+>
+> 本文先整理 Dart 的 FFI 机制,再基于本语言 **现有 Native 互操作基础**
 > (`source/Front/External/Native/` 下的 `DartStyleNativeFunction`、`NativeLibraryLoader`、
 > `NativeExportManifestReader`、`NativeExportModels`,以及 `CLangdll` 示例与 `MathExternalModule`
 > 自动注册机制)给出 SL 的 FFI 语法/语义/降级方案与各编译层设计,并明确列出 **要实现的

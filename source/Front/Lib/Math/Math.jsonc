@@ -11,14 +11,16 @@
   "source": {
     "root": "."
   },
-  // FFI 导入别名表（jsonc "dllImports" 段）：@DllImport("math_lib", "mathf_sin",
-  // "Float32->Float32") 首参在编译期经 ResolveDllImportPath 按别名查此表替换为 path；
-  // path 原样透传，运行时相对进程 CWD 解析（CWD = 测试工程目录时，../../ 即
-  // simple_language 根）。DLL 加载失败/符号缺失时 @DllImport 方法自动走 SL fallback
-  // 本体兜底。Mathh.sl 以 Float32 为中间精度复用 Mathf，无需单独声明。
+  // FFI 导入表（jsonc "dllImports" 段）。"static" 非空（静态注册名）时 cvm 加载
+  // 模块即预载该库并注册进 FFI.StaticLibrary，@DllStaticImport("math_lib",
+  // "mathd_sin") 静态调用点由编译期发射 opcode 118 直调绑定表（无 wrapper 委托
+  // 转发开销，sig 从函数签名自动推导为短名 f64/f32），绑定失败回退 SL fallback
+  // 本体兜底。"alias" 仍供 @DllImport 三参形式按别名解析 path（原样透传，运行时
+  // 相对进程 CWD 解析，CWD = 测试工程目录时，../../ 即 simple_language 根）。
+  // Mathh.sl 以 Float32 为中间精度复用 Mathf，无需单独声明。
   "dllImports":
   [
-    { "path": "../../out/export/Math/math_lib.dll", "name": "math_lib", "alias": "math_lib" }
+    { "path": "../../out/export/Math/math_lib.dll", "name": "math_lib", "alias": "math_lib", "static": "math_lib" }
   ],
   // vmDlls 构建规则：导出 Math 时，Front 用 MSBuild 编译 project 指向的 VS 工程
   // （路径相对本 jsonc 所在目录），并把产出的 math_lib.dll 拷贝到与 Math.module.json 相同的
@@ -213,9 +215,10 @@
   },
   "references": [
     { "path": "../Core", "name": "Core" },
-    // Std 必须引用：@DllImport(ffi 路径)的 FFI.Library / FFI.StaticLibrary
-    // 类定义于 Std 模块（source/Front/Lib/Std/FFI/Library.sl）。
-    // Math 的 mathf_*/mathd_* FFI 绑定依赖它；同 dll 的 vmDll 路径不依赖。
+    // Std 引用保留：FFI.Library / FFI.StaticLibrary（@DllImport 运行期绑定用）
+    // 定义于 Std 模块（source/Front/Lib/Std/FFI/Library.sl）。Mathd/Mathf 已迁移
+    // @DllStaticImport 静态直调（opcode 118，不经 FFI 类），不再依赖 Std；
+    // 保留引用维持既有模块依赖拓扑（moduleReferences 传递给引用方）不变。
     { "path": "../Std", "name": "Std" }
   ],
   "struct": [

@@ -710,6 +710,15 @@ namespace SimpleLanguage.Core
         {
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
         }
+        /// <summary>
+        /// 添加 attribute（跨模块 ref module 反向构建时回填白名单属性，
+        /// 如 DllStaticImport，无 FileMeta，由恢复构造的 MetaAttribute 直接加入）。
+        /// </summary>
+        public void AddAttribute( MetaAttribute attr )
+        {
+            if( attr == null ) return;
+            m_AttributeList.Add(attr);
+        }
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
         public MetaGenTemplateFunction AddGenTemplateMemberFunctionByMetaTypeList(MetaClass mc, List<MetaType> list)
         {

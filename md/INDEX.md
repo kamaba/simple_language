@@ -25,6 +25,7 @@
 | [project/project.md](./project/project.md) | 工程概念：`ProjectConfig`、编译文件列表、入口与全局变量（偏语言侧叙述） |
 | [project/project-module.md](./project/project-module.md) | 模块与类组织方式说明 |
 | [project/project-config-jsonc-guide.md](./project/project-config-jsonc-guide.md) | JSONC 字段详解与迁移注意点 |
+| [project/ffi.md](./project/ffi.md) | **FFI 外部函数接口（已落地）**：普通 FFI 调用、`FFI.Library` / `FFI.StaticLibrary`、`dllImports` 配置、`@DllImport` 与 `@DllStaticImport`(opcode 118)、sig 规则、内部原理 |
 
 ---
 
@@ -140,7 +141,7 @@
 | [design/STREAM_DESIGN.md](./design/STREAM_DESIGN.md) | `Stream<T>` 异步惰性序列（复用 `Channel` 背压 + 协程 + `SendPort`） | 规划 |
 | [design/COROUTINE_DESIGN.md](./design/COROUTINE_DESIGN.md) | 协程设计（⚠️ 与实现差异较大，**以 `syntax/coroutine.md` 为准**） | 已部分落地 |
 | [design/ISOLATE_DESIGN.md](./design/ISOLATE_DESIGN.md) | Isolate 隔离设计 | 规划 |
-| [design/ffi-design.md](./design/ffi-design.md) | FFI 设计 | 规划 |
+| [design/ffi-design.md](./design/ffi-design.md) | FFI 设计（⚠️ 草案，**已落地实现见 `project/ffi.md`**） | 部分已落地 |
 | [design/HOTSPOT_JNI_INTEGRATION_DESIGN.md](./design/HOTSPOT_JNI_INTEGRATION_DESIGN.md) | HotSpot JNI 集成 | 规划 |
 | [design/MONO_INTEGRATION_DESIGN.md](./design/MONO_INTEGRATION_DESIGN.md) | Mono 集成 | 规划 |
 | [design/QUICKJS_INTEGRATION_DESIGN.md](./design/QUICKJS_INTEGRATION_DESIGN.md) | QuickJS 集成 | 规划 |

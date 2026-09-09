@@ -1025,6 +1025,20 @@ namespace SimpleLanguage.Project
             // 否则 IR 阶段通过 virtualFunctionName 查找方法时会失败
             mmf.ParseDefineMetaType();
 
+            /* 回填白名单 attribute（DllStaticImport）：使引用方编译时 IRCall 能在静态
+             * 调用点读到该属性，发射 opcode 118 FFI 直调（跨模块快路径，不回填则退化为
+             * CallStatic 走纯 SL fallback 函数体）。只回填白名单，避免 Nickname/AOT/GPU
+             * 等属性在引用方重放编译期副作用。 */
+            if (irm.refAttributeList != null)
+            {
+                foreach (var attr in irm.refAttributeList)
+                {
+                    if (attr == null || attr.name != "DllStaticImport") continue;
+                    attr.SetOwner(mmf);
+                    mmf.AddAttribute(attr);
+                }
+            }
+
             // IRCall 虚调用按 virtualFunctionName 在 IRMetaClass 上查 IRMethod（GetIRNonStaticMethodIndexByMethod）。
             // 但 IRMethod.virtualFunctionName 由 ComputeVirtualFunctionName 从 package 的 typeDef.className 生成（去模块前缀，如 "Int32"），
             // 而 MetaMemberFunction.virtualFunctionName 由 UpdateVritualFunctionName 从 MetaType.ToString() 生成（全名，如 "Core.Int32"），

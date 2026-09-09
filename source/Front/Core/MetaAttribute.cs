@@ -38,6 +38,24 @@ namespace SimpleLanguage.Core
             name = attr?.name;
         }
 
+        /// <summary>
+        /// 跨模块恢复构造：从 module.json 导出的 attribute 包（SLAttributePackage）
+        /// 重建，无 FileMeta 解析树。splitStringArgs 即导出端的字符串实参列表
+        /// （GetSplitStringArgs 语义）。m_IsParsed 置位防止 Parse() 重跑
+        /// （fileMetaAttribute 为 null 时 ExtractStringArgs 会清空 m_StringArgs）。
+        /// </summary>
+        public MetaAttribute(string attrName, List<string> splitStringArgs, int handleTypeValue = 0)
+        {
+            name = attrName;
+            if (splitStringArgs != null)
+            {
+                foreach (var a in splitStringArgs)
+                    m_StringArgs.Add(a ?? string.Empty);
+            }
+            m_HandleType = handleTypeValue;
+            m_IsParsed = true;
+        }
+
         public void SetOwner(MetaBase owner)
         {
             m_OwnerMetaBase = owner;
@@ -184,7 +202,12 @@ namespace SimpleLanguage.Core
             var result = new List<string>();
             var fmpt = fileMetaAttribute?.fileMetaParTerm;
             if (fmpt == null)
+            {
+                /* 跨模块恢复的实例（无 FileMeta 解析树）：stringArgs 由恢复
+                 * 构造预填充，语义与导出端一致，直接透传。 */
+                result.AddRange(m_StringArgs);
                 return result;
+            }
             var plist = fmpt.SplitParamList();
             for (int i = 0; i < plist.Count; i++)
             {

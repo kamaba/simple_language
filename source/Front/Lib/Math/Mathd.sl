@@ -1,11 +1,11 @@
-import Std;
 # Math —— Float64（double）精度数学库，默认通用入口。
 #
 # 底层能力：由 math_lib.dll（C ABI，见 source\Front\Lib\Math\cvm_math_lib\math_lib.c）
-# 经 FFI @DllImport 三参形式（库别名, 符号名, 参数签名）绑定调用；
-# import Std 为 @DllImport 必需：FFI.Library / FFI.StaticLibrary 定义于 Std 模块。
-# DLL 加载失败 / 符号缺失时自动执行函数本体（SL 纯实现 fallback，
-# 见本文件后半的 xxxFallback 私有静态实现）。
+# 经 FFI @DllStaticImport 二参形式（静态注册名, 符号名）静态绑定：cvm 加载期按
+# Math.jsonc dllImports 的 "static" 字段预载注册，静态调用点由编译期发射
+# opcode 118 直调绑定表（sig 从函数签名自动推导），无 wrapper 委托转发开销；
+# 绑定失败（库未注册 / 符号缺失 / sig 非法）时回退执行函数本体（SL 纯实现
+# fallback，见本文件后半的 xxxFallback 私有静态实现）。
 # 纯算术能力（abs / min / max / clamp / sign ...）在 SL 层实现。
 #
 # 精度分组约定：
@@ -18,125 +18,125 @@ public class Mathd
     public const static Float64 E = 2.718281828459045d
 
     # ── 三角函数（FFI mathd_* + SL fallback） ────────────
-    @DllImport( "math_lib", "mathd_sin", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_sin" )
     public static Float64 sin( Float64 value )
     {
         ret Mathd.sinFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_cos", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_cos" )
     public static Float64 cos( Float64 value )
     {
         ret Mathd.cosFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_tan", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_tan" )
     public static Float64 tan( Float64 value )
     {
         ret Mathd.tanFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_asin", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_asin" )
     public static Float64 asin( Float64 value )
     {
         ret Mathd.asinFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_acos", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_acos" )
     public static Float64 acos( Float64 value )
     {
         ret Mathd.acosFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_atan", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_atan" )
     public static Float64 atan( Float64 value )
     {
         ret Mathd.atanFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_atan2", "Float64,Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_atan2" )
     public static Float64 atan2( Float64 y, Float64 x )
     {
         ret Mathd.atan2Fallback( y, x )
     }
 
     # ── 双曲函数 ─────────────────────────────────────────
-    @DllImport( "math_lib", "mathd_sinh", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_sinh" )
     public static Float64 sinh( Float64 value )
     {
         ret Mathd.sinhFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_cosh", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_cosh" )
     public static Float64 cosh( Float64 value )
     {
         ret Mathd.coshFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_tanh", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_tanh" )
     public static Float64 tanh( Float64 value )
     {
         ret Mathd.tanhFallback( value )
     }
 
     # ── 幂与对数 ─────────────────────────────────────────
-    @DllImport( "math_lib", "mathd_pow", "Float64,Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_pow" )
     public static Float64 pow( Float64 baseValue, Float64 exponent )
     {
         ret Mathd.powFallback( baseValue, exponent )
     }
 
-    @DllImport( "math_lib", "mathd_sqrt", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_sqrt" )
     public static Float64 sqrt( Float64 value )
     {
         ret Mathd.sqrtFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_exp", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_exp" )
     public static Float64 exp( Float64 value )
     {
         ret Mathd.expFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_log", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_log" )
     public static Float64 log( Float64 value )
     {
         ret Mathd.logFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_log10", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_log10" )
     public static Float64 log10( Float64 value )
     {
         ret Mathd.logFallback( value ) / 2.302585092994046d
     }
 
     # ── 取整 ─────────────────────────────────────────────
-    @DllImport( "math_lib", "mathd_ceil", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_ceil" )
     public static Float64 ceil( Float64 value )
     {
         ret 0.0d - Mathd.floorFallback( 0.0d - value )
     }
 
-    @DllImport( "math_lib", "mathd_floor", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_floor" )
     public static Float64 floor( Float64 value )
     {
         ret Mathd.floorFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_round", "Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_round" )
     public static Float64 round( Float64 value )
     {
         ret Mathd.roundFallback( value )
     }
 
-    @DllImport( "math_lib", "mathd_truncate", "Float64->Int32" )
+    @DllStaticImport( "math_lib", "mathd_truncate" )
     public static Int32 truncate( Float64 value )
     {
         ret value.toInt32()
     }
 
     # ── 三维点积（矩阵 / 向量元素运算用，恰好 6 参 FFI 上限） ──
-    @DllImport( "math_lib", "mathd_dot3", "Float64,Float64,Float64,Float64,Float64,Float64->Float64" )
+    @DllStaticImport( "math_lib", "mathd_dot3" )
     public static Float64 dot3( Float64 a0, Float64 a1, Float64 a2, Float64 b0, Float64 b1, Float64 b2 )
     {
         ret a0 * b0 + a1 * b1 + a2 * b2
