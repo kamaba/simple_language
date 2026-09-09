@@ -381,3 +381,5 @@
 /project/CSimpleVMTest/obj
 /tools/LidIndexer/bin
 /tools/LidIndexer/obj
+/project/cvm_math_lib/cvm_math_lib
+/project/cvm_math_lib/x64
