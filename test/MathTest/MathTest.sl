@@ -68,6 +68,154 @@ class MathTest
         Console.println("Mathd.atan2(1,1) = " + dAtan2.toString())
         Console.println("Mathd.truncate(-3.7) = " + dTrunc.toString())
 
+        # ── VM 层运算符魔法方法动态分发测试 ──────────────────
+        # Num 静态类型持有 BigNumber：前端按纯数值运算直接发 opcode，
+        # cvm 在 opcode 层发现操作数是类对象后，动态查找 _add_ 等魔法
+        # 方法并调用，返回值压回操作栈（区别于上面的静态类型解析路径）。
+        Console.println("===== VM operator-method dispatch test =====")
+
+        Num ba = BigNumber( 15 )
+        Num bb = BigNumber( 4 )
+
+        # 算术分发（_add_/_sub_/_mul_/_truediv_/_mod_）
+        Num bAdd2 = ba + bb
+        Num bSub2 = ba - bb
+        Num bMul2 = ba * bb
+        Num bDiv2 = ba / bb
+        Num bMod2 = ba % bb
+        Console.println("Num 15 + 4 = " + bAdd2.toString())
+        Console.println("Num 15 - 4 = " + bSub2.toString())
+        Console.println("Num 15 * 4 = " + bMul2.toString())
+        Console.println("Num 15 / 4 = " + bDiv2.toString())
+        Console.println("Num 15 % 4 = " + bMod2.toString())
+
+        # 类对象与标量混合：右侧标量作 _mul_ 参数。
+        # （左标量 + 右类对象如 2 + ba 在前端 MetaExpressOperator
+        #   阶段即报"加减运算类型计算错误"，编译不过，无法测）
+        Num bScale2 = ba * 2
+        Console.println("Num ba * 2 = " + bScale2.toString())
+
+        # 比较分发（_eq_/_ne_/_lt_/_le_/_gt_/_ge_）
+        bool dEq = ba == BigNumber( 15 )
+        bool dNe = ba != bb
+        bool dLt = ba < bb
+        bool dLe = ba <= BigNumber( 15 )
+        bool dGt = ba > bb
+        bool dGe = ba >= BigNumber( 16 )
+        Console.println("ba == 15 : " + dEq.toString())
+        Console.println("ba != bb : " + dNe.toString())
+        Console.println("ba < bb : " + dLt.toString())
+        Console.println("ba <= 15 : " + dLe.toString())
+        Console.println("ba > bb : " + dGt.toString())
+        Console.println("ba >= 16 : " + dGe.toString())
+
+        # 分支形式：关系/相等分支 opcode 上的同套分发
+        if ba > bb
+        {
+            Console.println("branch: ba > bb holds")
+        }
+        else
+        {
+            Console.println("branch: ba <= bb")
+        }
+        if ba == BigNumber( 15 )
+        {
+            Console.println("branch: ba == 15 holds")
+        }
+        else
+        {
+            Console.println("branch: ba != 15")
+        }
+        if ba < bb
+        {
+            Console.println("branch: ba < bb (unexpected)")
+        }
+        else
+        {
+            Console.println("branch: ba >= bb holds")
+        }
+
+        # Object 静态类型相等分发（左是类只查左，镜像 csharpVM TryCompareClassValue）
+        Object oa = BigNumber( 15 )
+        Object ob = BigNumber( 15 )
+        bool oEq = oa == ob
+        bool oNe = oa != ob
+        Console.println("oa == ob : " + oEq.toString())
+        Console.println("oa != ob : " + oNe.toString())
+
+        # Float32_2（Vector2）经 Object 静态类型的 _eq_/_ne_ 分发
+        Object fa = Float32_2( 1.0f, 2.0f )
+        Object fb = Float32_2( 1.0f, 2.0f )
+        Object fc = Float32_2( 3.0f, 4.0f )
+        bool vEq = fa == fb
+        bool vNe = fa != fc
+        Console.println("fa == fb : " + vEq.toString())
+        Console.println("fa != fc : " + vNe.toString())
+
+        # 逻辑分发（_and_/_or_ 注册在 non-static 方法表，仅查左操作数）：
+        # 语言约定 _and_/_or_ 返回当前类类型，VM 同步调用后对返回对象
+        # is_truthy（非 null 恒真）——结果值与退化路径同为 true，
+        # 分发生效与否靠方法内的 trace 打印证明。
+        Object f1 = OpFlag( false )
+        Object f2 = OpFlag( true )
+        bool lAndF = f1 && f2
+        bool lOrF = f1 || f2
+        bool lAndT = f2 && f1
+        bool lOrT = f2 || f1
+        Console.println("OpFlag(false) && OpFlag(true) : " + lAndF.toString())
+        Console.println("OpFlag(false) || OpFlag(true) : " + lOrF.toString())
+        Console.println("OpFlag(true) && OpFlag(false) : " + lAndT.toString())
+        Console.println("OpFlag(true) || OpFlag(false) : " + lOrT.toString())
+
+        # 相等分发 + _ne_ 缺失回退：OpFlag 只定义 _eq_（返回 value 字段，
+        # 非引用相等），!= 走 "_eq_ 结果取反" 路径（镜像 C# TryRunClassEqualityOperator）
+        Object f3 = OpFlag( true )
+        bool fSelfEq = f1 == f1
+        bool fEq = f2 == f3
+        bool fNe = f2 != f3
+        bool fNeT = f1 != f3
+        Console.println("OpFlag(false) == OpFlag(false) : " + fSelfEq.toString())
+        Console.println("OpFlag(true) == OpFlag(true) : " + fEq.toString())
+        Console.println("OpFlag(true) != OpFlag(true) : " + fNe.toString())
+        Console.println("OpFlag(false) != OpFlag(true) : " + fNeT.toString())
+
         Console.println("===== Math test end =====")
+    }
+}
+
+# 逻辑/相等魔法方法分发专用测试类：语言约定 _and_/_or_ 返回当前类
+# 类型（VM 对返回对象 is_truthy，非 null 恒真），_eq_ 返回 bool 且返回
+# value 字段而非引用相等——自比较返回 false，与退化路径（引用相等恒
+# true）结果相反，可区分"方法被调用"与"退化为内置语义"。
+class OpFlag
+{
+    bool value = false
+
+    public void _init_( bool v )
+    {
+        this.value = v
+    }
+
+    override OpFlag _and_( Object other )
+    {
+        Console.println("  [OpFlag._and_ dispatched]")
+        ret OpFlag( this.value )
+    }
+
+    override OpFlag _or_( Object other )
+    {
+        Console.println("  [OpFlag._or_ dispatched]")
+        ret OpFlag( this.value )
+    }
+
+    override bool _eq_( Object other )
+    {
+        Console.println("  [OpFlag._eq_ dispatched]")
+        ret this.value
+    }
+
+    override string toString()
+    {
+        ret "OpFlag(" + this.value.toString() + ")"
     }
 }
