@@ -75,23 +75,15 @@ public class Float64_3
         }
     }
 
-    # ── 运算符重载（参数必须为 Object，内部做类型判断）────────
-    override Float64_3 _add_( Object obj1 )
+    # ── 运算符重载（同类型运算形参收窄为自身类型；标量乘/除保持 Object 动态分派）────────
+    override Float64_3 _add_( Float64_3 v )
     {
-        if obj1 is Float64_3 v
-        {
-            ret Float64_3( this.x + v.x, this.y + v.y, this.z + v.z )
-        }
-        ret this
+        ret Float64_3( this.x + v.x, this.y + v.y, this.z + v.z )
     }
 
-    override Float64_3 _sub_( Object obj1 )
+    override Float64_3 _sub_( Float64_3 v )
     {
-        if obj1 is Float64_3 v
-        {
-            ret Float64_3( this.x - v.x, this.y - v.y, this.z - v.z )
-        }
-        ret this
+        ret Float64_3( this.x - v.x, this.y - v.y, this.z - v.z )
     }
 
     override Float64_3 _mul_( Object obj1 )
@@ -120,18 +112,14 @@ public class Float64_3
         ret this
     }
 
-    override bool _eq_( Object obj1 )
+    override bool _eq_( Float64_3 v )
     {
-        if obj1 is Float64_3 v
-        {
-            ret this.x == v.x && this.y == v.y && this.z == v.z
-        }
-        ret false
+        ret this.x == v.x && this.y == v.y && this.z == v.z
     }
 
-    override bool _ne_( Object obj1 )
+    override bool _ne_( Float64_3 v )
     {
-        ret !this._eq_( obj1 )
+        ret !this._eq_( v )
     }
 
     # ── 向量运算 ─────────────────────────────────────────

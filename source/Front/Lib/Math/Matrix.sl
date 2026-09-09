@@ -65,44 +65,36 @@ public class Matrix
     }
 
     # ── 运算符重载 ───────────────────────────────────────
-    override Matrix _add_( Object obj1 )
+    override Matrix _add_( Matrix b )
     {
-        if obj1 is Matrix b
+        if this.rows != b.rows || this.cols != b.cols
         {
-            if this.rows != b.rows || this.cols != b.cols
-            {
-                ret this
-            }
-            Matrix r = Matrix( this.rows, this.cols )
-            int i = 0
-            while i < this.count()
-            {
-                r._data[i] = this._data[i] + b._data[i]
-                i++
-            }
-            ret r
+            ret this
         }
-        ret this
+        Matrix r = Matrix( this.rows, this.cols )
+        int i = 0
+        while i < this.count()
+        {
+            r._data[i] = this._data[i] + b._data[i]
+            i++
+        }
+        ret r
     }
 
-    override Matrix _sub_( Object obj1 )
+    override Matrix _sub_( Matrix b )
     {
-        if obj1 is Matrix b
+        if this.rows != b.rows || this.cols != b.cols
         {
-            if this.rows != b.rows || this.cols != b.cols
-            {
-                ret this
-            }
-            Matrix r = Matrix( this.rows, this.cols )
-            int i = 0
-            while i < this.count()
-            {
-                r._data[i] = this._data[i] - b._data[i]
-                i++
-            }
-            ret r
+            ret this
         }
-        ret this
+        Matrix r = Matrix( this.rows, this.cols )
+        int i = 0
+        while i < this.count()
+        {
+            r._data[i] = this._data[i] - b._data[i]
+            i++
+        }
+        ret r
     }
 
     override Matrix _mul_( Object obj1 )
@@ -148,31 +140,27 @@ public class Matrix
         ret this
     }
 
-    override bool _eq_( Object obj1 )
+    override bool _eq_( Matrix b )
     {
-        if obj1 is Matrix b
+        if this.rows != b.rows || this.cols != b.cols
         {
-            if this.rows != b.rows || this.cols != b.cols
+            ret false
+        }
+        int i = 0
+        while i < this.count()
+        {
+            if this._data[i] != b._data[i]
             {
                 ret false
             }
-            int i = 0
-            while i < this.count()
-            {
-                if this._data[i] != b._data[i]
-                {
-                    ret false
-                }
-                i++
-            }
-            ret true
+            i++
         }
-        ret false
+        ret true
     }
 
-    override bool _ne_( Object obj1 )
+    override bool _ne_( Matrix b )
     {
-        ret !this._eq_( obj1 )
+        ret !this._eq_( b )
     }
 
     # ── 矩阵运算 ─────────────────────────────────────────

@@ -128,18 +128,14 @@ public class Rect
     }
 
     # ── 运算符重载 ───────────────────────────────────────
-    override bool _eq_( Object obj1 )
+    override bool _eq_( Rect r )
     {
-        if obj1 is Rect r
-        {
-            ret this.x == r.x && this.y == r.y && this.width == r.width && this.height == r.height
-        }
-        ret false
+        ret this.x == r.x && this.y == r.y && this.width == r.width && this.height == r.height
     }
 
-    override bool _ne_( Object obj1 )
+    override bool _ne_( Rect r )
     {
-        ret !this._eq_( obj1 )
+        ret !this._eq_( r )
     }
 
     # ── 几何运算 ─────────────────────────────────────────

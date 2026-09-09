@@ -128,6 +128,25 @@
 
 ---
 
+## 5.1 设计与规划（`md/design/`）
+
+> ⚠️ 该目录多为**未落地方案**，实现前请先 grep 源码确认。
+
+| 文档 | 说明 | 状态 |
+|------|------|------|
+| [design/MLIR_AOT_DESIGN.md](./design/MLIR_AOT_DESIGN.md) | SLIR→MLIR→LLVM→exe 全链路、指令映射、运行时 ABI | 规划（三期） |
+| [design/TENSOR_HETEROGENEOUS_DESIGN.md](./design/TENSOR_HETEROGENEOUS_DESIGN.md) | 张量/数学库异构计算（CPU/GPU/NPU）：两区模型、三层数据抽象、算子派为主、控制流三分规则、SLTIR 新 IR 层、落地路线 | 规划 |
+| [design/MLIR_AOT_LLVM_STRUCT_DESIGN.md](./design/MLIR_AOT_LLVM_STRUCT_DESIGN.md) | class/data/enum → `!llvm.struct`、CVM 对象 ↔ 原生布局双向 marshal、继承前缀布局 | 规划 |
+| [design/STREAM_DESIGN.md](./design/STREAM_DESIGN.md) | `Stream<T>` 异步惰性序列（复用 `Channel` 背压 + 协程 + `SendPort`） | 规划 |
+| [design/COROUTINE_DESIGN.md](./design/COROUTINE_DESIGN.md) | 协程设计（⚠️ 与实现差异较大，**以 `syntax/coroutine.md` 为准**） | 已部分落地 |
+| [design/ISOLATE_DESIGN.md](./design/ISOLATE_DESIGN.md) | Isolate 隔离设计 | 规划 |
+| [design/ffi-design.md](./design/ffi-design.md) | FFI 设计 | 规划 |
+| [design/HOTSPOT_JNI_INTEGRATION_DESIGN.md](./design/HOTSPOT_JNI_INTEGRATION_DESIGN.md) | HotSpot JNI 集成 | 规划 |
+| [design/MONO_INTEGRATION_DESIGN.md](./design/MONO_INTEGRATION_DESIGN.md) | Mono 集成 | 规划 |
+| [design/QUICKJS_INTEGRATION_DESIGN.md](./design/QUICKJS_INTEGRATION_DESIGN.md) | QuickJS 集成 | 规划 |
+
+---
+
 ## 6. AI 协作与仓库维护
 
 | 文档 | 说明 |

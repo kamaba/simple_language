@@ -678,7 +678,7 @@ namespace SimpleLanguage.Core
         /// 类中声明的函数名字命中注册表时, 视为覆写Object层传递下来的内置约定, 在FrontEnd层校验:
         ///  1. 不允许static声明 (内置约定是实例方法约定)
         ///  2. 必须携带override标记 (允许final)
-        ///  3. 参数个数/类型规则 (如 Float32_2 _add_( object add_ ) 恰好1个object参数)
+        ///  3. 参数个数/类型规则 (如 Float32_2 _add_( Float32_2 v ) 恰好1个object或当前类类型参数)
         ///  4. 返回类型规则 (数值操作返回当前类类型, 比较操作返回bool)
         ///  5. 父链中存在同名final方法时, 不允许再定义该内置方法
         /// 接口类声明(如IMap的泛型索引器)不受此约束, 整体跳过

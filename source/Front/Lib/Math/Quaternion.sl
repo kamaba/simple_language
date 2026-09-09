@@ -89,18 +89,14 @@ public class Quaternion
         ret this
     }
 
-    override bool _eq_( Object obj1 )
+    override bool _eq_( Quaternion q )
     {
-        if obj1 is Quaternion q
-        {
-            ret this.x == q.x && this.y == q.y && this.z == q.z && this.w == q.w
-        }
-        ret false
+        ret this.x == q.x && this.y == q.y && this.z == q.z && this.w == q.w
     }
 
-    override bool _ne_( Object obj1 )
+    override bool _ne_( Quaternion q )
     {
-        ret !this._eq_( obj1 )
+        ret !this._eq_( q )
     }
 
     # ── 四元数运算 ───────────────────────────────────────

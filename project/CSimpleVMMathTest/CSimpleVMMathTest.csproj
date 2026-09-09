@@ -20,11 +20,19 @@
     <PropertyGroup>
       <CVMRoot>$(MSBuildThisFileDirectory)..\..\..\csimple_lang</CVMRoot>
       <CVMBuild>$(CVMRoot)\build\Debug</CVMBuild>
+      <!-- ninja 路径：NINJA_PATH 环境变量优先（CMakePresets.json 同款约定），
+           未设置时回退到本机 winget 安装路径（CMake 探测不到 winget 装的 ninja） -->
+      <CVMNinja Condition="'$(NINJA_PATH)' != ''">$(NINJA_PATH)</CVMNinja>
+      <CVMNinja Condition="'$(NINJA_PATH)' == ''">C:/Users/dingo/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/ninja.exe</CVMNinja>
     </PropertyGroup>
-    <!-- 仅在构建树不存在时才 configure（参数与现有 build\Debug 树一致：Ninja + clang） -->
+    <!-- 仅在构建树不存在时才 configure（参数与现有 build\Debug 树一致：Ninja + clang）。
+         注：Windows-Clang 平台模块强制要求 RC 编译器（即使项目无 .rc 文件），
+         必须显式指定 llvm-rc，否则全新构建树 configure 会失败 -->
     <Exec Condition="!Exists('$(CVMBuild)\CMakeCache.txt')"
-          Command="cmake -B &quot;$(CVMBuild)&quot; -S &quot;$(CVMRoot)&quot; -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=&quot;C:/Program Files/LLVM/bin/clang.exe&quot;" />
-    <Exec Command="cmake --build &quot;$(CVMBuild)&quot; --target csimple_lang_dll" />
+          Command="cmake -B &quot;$(CVMBuild)&quot; -S &quot;$(CVMRoot)&quot; -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=&quot;C:/Program Files/LLVM/bin/clang.exe&quot; -DCMAKE_RC_COMPILER=&quot;C:/Program Files/LLVM/bin/llvm-rc.exe&quot; -DCMAKE_MAKE_PROGRAM=&quot;$(CVMNinja)&quot;" />
+    <!-- 同时构建 csimple_lang.exe（Program.cs Step3 需要它存在）与 csimple_lang_dll.dll
+         （Debug 模式 P/Invoke 进程内加载，可附加 C 调试器） -->
+    <Exec Command="cmake --build &quot;$(CVMBuild)&quot; --target csimple_lang csimple_lang_dll" />
   </Target>
 
 </Project>

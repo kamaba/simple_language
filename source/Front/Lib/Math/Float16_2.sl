@@ -55,23 +55,15 @@ public class Float16_2
         }
     }
 
-    # ── 运算符重载（参数必须为 Object，内部做类型判断）────────
-    override Float16_2 _add_( Object obj1 )
+    # ── 运算符重载（同类型运算形参收窄为自身类型；标量乘/除保持 Object 动态分派）────────
+    override Float16_2 _add_( Float16_2 v )
     {
-        if obj1 is Float16_2 v
-        {
-            ret Float16_2( this.x + v.x, this.y + v.y )
-        }
-        ret this
+        ret Float16_2( this.x + v.x, this.y + v.y )
     }
 
-    override Float16_2 _sub_( Object obj1 )
+    override Float16_2 _sub_( Float16_2 v )
     {
-        if obj1 is Float16_2 v
-        {
-            ret Float16_2( this.x - v.x, this.y - v.y )
-        }
-        ret this
+        ret Float16_2( this.x - v.x, this.y - v.y )
     }
 
     override Float16_2 _mul_( Object obj1 )
@@ -100,18 +92,14 @@ public class Float16_2
         ret this
     }
 
-    override bool _eq_( Object obj1 )
+    override bool _eq_( Float16_2 v )
     {
-        if obj1 is Float16_2 v
-        {
-            ret this.x == v.x && this.y == v.y
-        }
-        ret false
+        ret this.x == v.x && this.y == v.y
     }
 
-    override bool _ne_( Object obj1 )
+    override bool _ne_( Float16_2 v )
     {
-        ret !this._eq_( obj1 )
+        ret !this._eq_( v )
     }
 
     # ── 向量运算 ─────────────────────────────────────────

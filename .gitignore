@@ -379,3 +379,5 @@
 /tools/llvm/llc.exe
 /project/CSimpleVMTest/bin
 /project/CSimpleVMTest/obj
+/tools/LidIndexer/bin
+/tools/LidIndexer/obj

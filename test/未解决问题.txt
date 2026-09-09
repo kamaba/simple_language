@@ -1,9 +1,10 @@
 
-有几个问题 Mathd.sl 里边 powInt这个函数里边 result 我记的是结构体返回的关键字呀，怎么出现没有报错，你先检查下为什么没有报错，然后修复
-第二个问题，我Math库是独立的库，怎么还要引入Std的库，有什么功能必须引入Std的功能吗？如果有你告诉我，如果没有，你把Std的引入去掉。
 在一些类里边的_add_( Object obj1 ) 的形式，如果里边的只是处理和自己相同的，那就把Object 换成自己的类吧
 我现在要把Float32_3x3.sl 里边的方法，看着是否消耗高，应该70-80%都可以放到cvm的SystemMethodCall里边去调用，还是cvm_math_lib的工程，而且我已经建好的对应的float32_3x3_vm_method_call.c 
 你需要把这些方法，都放进去，然后我在cvm里边，这一个dll,即使命他的ffi,也可以使用vmDll这两种方法  在写完这个后，先把矩阵的都按这种方法处理下吧，应该很相似，所以参考处理好的，再扩展处理其它的 然后再跑下相关对应的测试用例，如果没有，最好是建对应的测试用例，然后测试下
+
+F:\project\lang\simple_language\source\Front\Lib\Math\Matrix.sl这里边好多是对数组操作的过程，你看下数据操作有好多内置的system method call 的调用，你看着把这里边 都优化下吧，尽量的使用system_method_call的方式去调用
+BigDecimal.sl BigNumber.sl Factor.sl 貌似还没有优化和验证，你也操作下吧
 
 增加一个DllStaticImport() 的方式，如果是这种方式，则 需要在cvm里边 直接调用opCode的方式去找FFi对应的函数指针，然后直接调用
 

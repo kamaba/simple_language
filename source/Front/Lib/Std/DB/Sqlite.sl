@@ -83,7 +83,7 @@ namespace DB
         }
 
         # 下标读取：row[0], row[1] ...
-        public object _getItem_(int index)
+        override public object _getItem_(int index)
         {
             if index < 0 || index >= this._count
             {

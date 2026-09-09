@@ -1,8 +1,13 @@
 {
   "profiles": {
-    "CSimpleVMTest": {
+    "NullIfPorject": {
       "commandName": "Project",
       "commandLineArgs": "1",
+      "nativeDebugging": true
+    },
+    "CSimpleVMTest2": {
+      "commandName": "Project",
+      "commandLineArgs": "2",
       "nativeDebugging": true
     }
   }

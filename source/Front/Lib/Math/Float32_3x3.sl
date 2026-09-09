@@ -4,7 +4,9 @@
 public class Float32_3x3
 {
     # 元素直接以字段存储（m{row}{col}，行主序），避免数组寻址开销；
-    # 元素级运算经 Mathf.dot3 走 FFI（math_lib.dll）加速
+    # 高消耗运算（乘/加/转置/行列式/求逆/变换/工厂）下沉 cvm：
+    # SystemMathMat3*（systemCalls -> math_lib.dll 的 mathvm_mat3f_*），
+    # C 侧直接按 member_data 读写字段内存；结果经 out 参数写回
     public Float32 m00 = 0.0f
     public Float32 m01 = 0.0f
     public Float32 m02 = 0.0f
@@ -94,155 +96,76 @@ public class Float32_3x3
     }
 
     # ── 运算符重载 ───────────────────────────────────────
-    override Float32_3x3 _mul_( Object obj1 )
+    override Float32_3x3 _mul_( Float32_3x3 b )
     {
-        if obj1 is Float32_3x3 b
-        {
-            ret this.multiply( b )
-        }
-        ret this
+        ret this.multiply( b )
     }
 
-    override Float32_3x3 _add_( Object obj1 )
+    override Float32_3x3 _add_( Float32_3x3 b )
     {
-        if obj1 is Float32_3x3 b
-        {
-            Float32_3x3 r = Float32_3x3()
-            r.m00 = this.m00 + b.m00
-            r.m01 = this.m01 + b.m01
-            r.m02 = this.m02 + b.m02
-            r.m10 = this.m10 + b.m10
-            r.m11 = this.m11 + b.m11
-            r.m12 = this.m12 + b.m12
-            r.m20 = this.m20 + b.m20
-            r.m21 = this.m21 + b.m21
-            r.m22 = this.m22 + b.m22
-            ret r
-        }
-        ret this
+        Float32_3x3 r = Float32_3x3()
+        SystemMathMat3Add( this, b, r )
+        ret r
     }
 
-    override bool _eq_( Object obj1 )
+    override bool _eq_( Float32_3x3 b )
     {
-        if obj1 is Float32_3x3 b
-        {
-            if ( this.m00 != b.m00 ) { ret false }
-            if ( this.m01 != b.m01 ) { ret false }
-            if ( this.m02 != b.m02 ) { ret false }
-            if ( this.m10 != b.m10 ) { ret false }
-            if ( this.m11 != b.m11 ) { ret false }
-            if ( this.m12 != b.m12 ) { ret false }
-            if ( this.m20 != b.m20 ) { ret false }
-            if ( this.m21 != b.m21 ) { ret false }
-            if ( this.m22 != b.m22 ) { ret false }
-            ret true
-        }
-        ret false
+        ret SystemMathMat3Eq( this, b )
     }
 
-    override bool _ne_( Object obj1 )
+    override bool _ne_( Float32_3x3 b )
     {
-        ret !this._eq_( obj1 )
+        ret !this._eq_( b )
     }
 
     # ── 矩阵运算 ─────────────────────────────────────────
     Float32_3x3 multiply( Float32_3x3 b )
     {
         Float32_3x3 r = Float32_3x3()
-        r.m00 = Mathf.dot3( this.m00, this.m01, this.m02, b.m00, b.m10, b.m20 )
-        r.m01 = Mathf.dot3( this.m00, this.m01, this.m02, b.m01, b.m11, b.m21 )
-        r.m02 = Mathf.dot3( this.m00, this.m01, this.m02, b.m02, b.m12, b.m22 )
-        r.m10 = Mathf.dot3( this.m10, this.m11, this.m12, b.m00, b.m10, b.m20 )
-        r.m11 = Mathf.dot3( this.m10, this.m11, this.m12, b.m01, b.m11, b.m21 )
-        r.m12 = Mathf.dot3( this.m10, this.m11, this.m12, b.m02, b.m12, b.m22 )
-        r.m20 = Mathf.dot3( this.m20, this.m21, this.m22, b.m00, b.m10, b.m20 )
-        r.m21 = Mathf.dot3( this.m20, this.m21, this.m22, b.m01, b.m11, b.m21 )
-        r.m22 = Mathf.dot3( this.m20, this.m21, this.m22, b.m02, b.m12, b.m22 )
+        SystemMathMat3Mul( this, b, r )
         ret r
     }
 
     Float32_3 transform( Float32_3 v )
     {
-        Float32 nx = Mathf.dot3( this.m00, this.m01, this.m02, v.x, v.y, v.z )
-        Float32 ny = Mathf.dot3( this.m10, this.m11, this.m12, v.x, v.y, v.z )
-        Float32 nz = Mathf.dot3( this.m20, this.m21, this.m22, v.x, v.y, v.z )
-        ret Float32_3( nx, ny, nz )
+        Float32_3 r = Float32_3()
+        SystemMathMat3MulVec( this, v, r )
+        ret r
     }
 
     Float32_3x3 transpose()
     {
         Float32_3x3 r = Float32_3x3()
-        r.m00 = this.m00
-        r.m01 = this.m10
-        r.m02 = this.m20
-        r.m10 = this.m01
-        r.m11 = this.m11
-        r.m12 = this.m21
-        r.m20 = this.m02
-        r.m21 = this.m12
-        r.m22 = this.m22
+        SystemMathMat3Transpose( this, r )
         ret r
     }
 
     Float32 determinant()
     {
-        ret this.m00 * ( this.m11 * this.m22 - this.m12 * this.m21 ) - this.m01 * ( this.m10 * this.m22 - this.m12 * this.m20 ) + this.m02 * ( this.m10 * this.m21 - this.m11 * this.m20 )
+        ret SystemMathMat3Determinant( this )
     }
 
     # 伴随矩阵 / det，不可逆时返回零矩阵
     Float32_3x3 inverse()
     {
-        Float32 det = this.determinant()
-        if det == 0.0f
-        {
-            ret Float32_3x3()
-        }
-        Float32 inv = 1.0f / det
-
-        Float32 a = this.m00
-        Float32 b = this.m01
-        Float32 c = this.m02
-        Float32 d = this.m10
-        Float32 e = this.m11
-        Float32 f = this.m12
-        Float32 g = this.m20
-        Float32 h = this.m21
-        Float32 i = this.m22
-
         Float32_3x3 r = Float32_3x3()
-        r.m00 = ( e * i - f * h ) * inv
-        r.m01 = ( c * h - b * i ) * inv
-        r.m02 = ( b * f - c * e ) * inv
-        r.m10 = ( f * g - d * i ) * inv
-        r.m11 = ( a * i - c * g ) * inv
-        r.m12 = ( c * d - a * f ) * inv
-        r.m20 = ( d * h - e * g ) * inv
-        r.m21 = ( b * g - a * h ) * inv
-        r.m22 = ( a * e - b * d ) * inv
+        SystemMathMat3Inverse( this, r )
         ret r
     }
 
     Float32_3x3 clone()
     {
         Float32_3x3 r = Float32_3x3()
-        r.m00 = this.m00
-        r.m01 = this.m01
-        r.m02 = this.m02
-        r.m10 = this.m10
-        r.m11 = this.m11
-        r.m12 = this.m12
-        r.m20 = this.m20
-        r.m21 = this.m21
-        r.m22 = this.m22
+        SystemMathMat3Copy( this, r )
         ret r
     }
 
     # ── 静态常量与工厂 ────────────────────────────────────
     public static get Float32_3x3 identity()
     {
-        ret Float32_3x3( 1.0f, 0.0f, 0.0f,
-                         0.0f, 1.0f, 0.0f,
-                         0.0f, 0.0f, 1.0f )
+        Float32_3x3 r = Float32_3x3()
+        SystemMathMat3Identity( r )
+        ret r
     }
 
     public static get Float32_3x3 zero()
@@ -253,45 +176,39 @@ public class Float32_3x3
     # 绕 X 轴旋转（弧度）
     public static Float32_3x3 rotationX( Float32 radians )
     {
-        Float32 c = Mathf.cos( radians )
-        Float32 s = Mathf.sin( radians )
-        ret Float32_3x3( 1.0f, 0.0f, 0.0f,
-                         0.0f, c, -s,
-                         0.0f, s, c )
+        Float32_3x3 r = Float32_3x3()
+        SystemMathMat3RotationX( radians, r )
+        ret r
     }
 
     # 绕 Y 轴旋转（弧度）
     public static Float32_3x3 rotationY( Float32 radians )
     {
-        Float32 c = Mathf.cos( radians )
-        Float32 s = Mathf.sin( radians )
-        ret Float32_3x3( c, 0.0f, s,
-                         0.0f, 1.0f, 0.0f,
-                         -s, 0.0f, c )
+        Float32_3x3 r = Float32_3x3()
+        SystemMathMat3RotationY( radians, r )
+        ret r
     }
 
     # 绕 Z 轴旋转（弧度）
     public static Float32_3x3 rotationZ( Float32 radians )
     {
-        Float32 c = Mathf.cos( radians )
-        Float32 s = Mathf.sin( radians )
-        ret Float32_3x3( c, -s, 0.0f,
-                         s, c, 0.0f,
-                         0.0f, 0.0f, 1.0f )
+        Float32_3x3 r = Float32_3x3()
+        SystemMathMat3RotationZ( radians, r )
+        ret r
     }
 
     public static Float32_3x3 scale( Float32 sx, Float32 sy )
     {
-        ret Float32_3x3( sx, 0.0f, 0.0f,
-                         0.0f, sy, 0.0f,
-                         0.0f, 0.0f, 1.0f )
+        Float32_3x3 r = Float32_3x3()
+        SystemMathMat3Scale( sx, sy, r )
+        ret r
     }
 
     public static Float32_3x3 translation( Float32 tx, Float32 ty )
     {
-        ret Float32_3x3( 1.0f, 0.0f, tx,
-                         0.0f, 1.0f, ty,
-                         0.0f, 0.0f, 1.0f )
+        Float32_3x3 r = Float32_3x3()
+        SystemMathMat3Translation( tx, ty, r )
+        ret r
     }
 
     override string toString()

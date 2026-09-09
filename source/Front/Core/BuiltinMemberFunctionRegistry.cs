@@ -17,6 +17,8 @@ namespace SimpleLanguage.Core
         Any,
         /// <summary>每个参数都必须是object类型(数值/比较类内置方法约定)</summary>
         Object,
+        /// <summary>参数为object或当前声明类类型(运算符重载允许把形参收窄为自身类型)</summary>
+        ObjectOrSelf,
     }
     /// <summary>内置方法返回类型检查模式</summary>
     public enum EBuiltinReturnCheckMode
@@ -74,29 +76,29 @@ namespace SimpleLanguage.Core
 
         static BuiltinMemberFunctionRegistry()
         {
-            // 算术运算: 恰好1个object参数, 返回当前类类型
-            AddRule(new BuiltinMemberFunctionRule("_add_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.CurrentClass));
-            AddRule(new BuiltinMemberFunctionRule("_sub_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.CurrentClass));
-            AddRule(new BuiltinMemberFunctionRule("_mul_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.CurrentClass));
-            AddRule(new BuiltinMemberFunctionRule("_truediv_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.CurrentClass));
-            AddRule(new BuiltinMemberFunctionRule("_mod_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.CurrentClass));
+            // 算术运算: 恰好1个object或当前类类型参数, 返回当前类类型
+            AddRule(new BuiltinMemberFunctionRule("_add_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.CurrentClass));
+            AddRule(new BuiltinMemberFunctionRule("_sub_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.CurrentClass));
+            AddRule(new BuiltinMemberFunctionRule("_mul_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.CurrentClass));
+            AddRule(new BuiltinMemberFunctionRule("_truediv_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.CurrentClass));
+            AddRule(new BuiltinMemberFunctionRule("_mod_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.CurrentClass));
 
-            // 复合赋值运算: 恰好1个object参数, 返回当前类类型
-            AddRule(new BuiltinMemberFunctionRule("_iadd_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.CurrentClass));
-            AddRule(new BuiltinMemberFunctionRule("_imul_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.CurrentClass));
-            AddRule(new BuiltinMemberFunctionRule("_itruediv_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.CurrentClass));
+            // 复合赋值运算: 恰好1个object或当前类类型参数, 返回当前类类型
+            AddRule(new BuiltinMemberFunctionRule("_iadd_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.CurrentClass));
+            AddRule(new BuiltinMemberFunctionRule("_imul_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.CurrentClass));
+            AddRule(new BuiltinMemberFunctionRule("_itruediv_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.CurrentClass));
 
-            // 比较运算: 恰好1个object参数, 返回bool
-            AddRule(new BuiltinMemberFunctionRule("_lt_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.Boolean));
-            AddRule(new BuiltinMemberFunctionRule("_le_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.Boolean));
-            AddRule(new BuiltinMemberFunctionRule("_gt_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.Boolean));
-            AddRule(new BuiltinMemberFunctionRule("_ge_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.Boolean));
-            AddRule(new BuiltinMemberFunctionRule("_eq_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.Boolean));
-            AddRule(new BuiltinMemberFunctionRule("_ne_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.Boolean));
+            // 比较运算: 恰好1个object或当前类类型参数, 返回bool
+            AddRule(new BuiltinMemberFunctionRule("_lt_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.Boolean));
+            AddRule(new BuiltinMemberFunctionRule("_le_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.Boolean));
+            AddRule(new BuiltinMemberFunctionRule("_gt_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.Boolean));
+            AddRule(new BuiltinMemberFunctionRule("_ge_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.Boolean));
+            AddRule(new BuiltinMemberFunctionRule("_eq_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.Boolean));
+            AddRule(new BuiltinMemberFunctionRule("_ne_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.Boolean));
 
-            // 逻辑运算: 恰好1个object参数, 返回当前类类型
-            AddRule(new BuiltinMemberFunctionRule("_and_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.CurrentClass));
-            AddRule(new BuiltinMemberFunctionRule("_or_", 1, EBuiltinParamCheckMode.Object, EBuiltinReturnCheckMode.CurrentClass));
+            // 逻辑运算: 恰好1个object或当前类类型参数, 返回当前类类型
+            AddRule(new BuiltinMemberFunctionRule("_and_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.CurrentClass));
+            AddRule(new BuiltinMemberFunctionRule("_or_", 1, EBuiltinParamCheckMode.ObjectOrSelf, EBuiltinReturnCheckMode.CurrentClass));
 
             // 索引器: 参数类型任意(key可以是int/string/泛型等), _getItem_返回任意, _setItem_返回void
             AddRule(new BuiltinMemberFunctionRule("_getItem_", 1, EBuiltinParamCheckMode.Any, EBuiltinReturnCheckMode.Any));

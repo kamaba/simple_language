@@ -53,6 +53,18 @@ namespace SimpleLanguage.IR
             //    AddIRRangeData(irload.IRDataList);
             //}
 
+            var mf = mfc.GetTemplateMemberFunction();
+            string systemName = mf?.name ?? string.Empty;
+            int systemKind = -1;
+            // Unique int id from the declaration (module "systemCalls"): the C VM
+            // registers id -> implementation at load time and dispatches by id.
+            int systemId = 0;
+            SystemMethodCallDeclaration sysDecl = null;
+            if (SystemMethodCallDeclarationRegistry.TryGetDeclaration(systemName, out sysDecl))
+            {
+                systemId = sysDecl.GetIndex();
+            }
+
             paramCount = mfc.metaInputParamList.Count;
             for (int j = 0; j < paramCount; j++)
             {
@@ -60,17 +72,22 @@ namespace SimpleLanguage.IR
                 IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, argNode);
                 AddIRRangeData(irexpress.IRDataList);
                 TryAddDataTypeLiteralFallback(argNode, irexpress);
-            }
 
-            var mf = mfc.GetTemplateMemberFunction();
-            string systemName = mf?.name ?? string.Empty;
-            int systemKind = -1;
-            // Unique int id from the declaration (module "systemCalls"): the C VM
-            // registers id -> implementation at load time and dispatches by id.
-            int systemId = 0;
-            if (SystemMethodCallDeclarationRegistry.TryGetDeclaration(systemName, out var sysDecl))
-            {
-                systemId = sysDecl.GetIndex();
+                // systemCall 实参没有 VM 绑定矫正：C 侧直接按声明的形参类型 pop 栈槽。
+                // 数值类型不匹配时（如 Float16 实参 -> Float32 形参）在调用前插入
+                // IRConvert，保证栈上槽位与声明一致（与赋值路径 IRAssignStatements 同策略）。
+                if (sysDecl != null && j < sysDecl.paramMetaTypeList.Count)
+                {
+                    EType argEType = CoreMetaClassManager.GetETypeByMetaClass(argNode.GetReturnMetaType()?.metaClass);
+                    EType paramEType = CoreMetaClassManager.GetETypeByMetaClass(sysDecl.paramMetaTypeList[j]?.metaClass);
+                    if (argEType != paramEType
+                        && NumberManager.IsNumericEType(argEType)
+                        && NumberManager.IsNumericEType(paramEType))
+                    {
+                        IRConvert irconv = new IRConvert(m_IRMethod, argEType, paramEType);
+                        AddIRRangeData(irconv.IRDataList);
+                    }
+                }
             }
             var sysPkg = new SLSystemMethodCallPackage
             {

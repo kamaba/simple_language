@@ -222,22 +222,22 @@ public class Factor
     }
 
     # ── 幂 / 阶乘 ────────────────────────────────────────
-    # 整数快速幂（exponent 需非负）
+    # 整数快速幂（exponent 需非负；result 是上下文名，此处改名 r）
     public static Int32 powInt( Int32 baseValue, Int32 exponent )
     {
-        Int32 result = 1
+        Int32 r = 1
         Int32 b = baseValue
         Int32 e = exponent
         while e > 0
         {
             if e % 2 == 1
             {
-                result = result * b
+                r = r * b
             }
             b = b * b
             e = e / 2
         }
-        ret result
+        ret r
     }
 
     # 阶乘（大数版本，避免 Int32 溢出）

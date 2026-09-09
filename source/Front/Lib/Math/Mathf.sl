@@ -1,9 +1,9 @@
 import Std;
-
 # Mathf —— Float32（single）精度数学库。
 #
 # 底层能力：由 math_lib.dll（C ABI，见 source\Front\Lib\Math\cvm_math_lib\math_lib.c）
 # 经 FFI @DllImport 三参形式（库别名, 符号名, 参数签名）绑定调用；
+# import Std 为 @DllImport 必需：FFI.Library / FFI.StaticLibrary 定义于 Std 模块。
 # DLL 加载失败 / 符号缺失时自动执行函数本体（fallback 委托 Mathd
 # 双精度实现后回转 Float32，链路同 Mathh 的中转模式）。
 # 纯算术能力（abs / min / max / clamp / sign ...）在 SL 层实现。
@@ -307,21 +307,21 @@ public class Mathf
         ret r
     }
 
-    # 整数快速幂
+    # 整数快速幂（result 是 Result 返回函数注入变量的上下文名，避免遮蔽歧义，此处改名 r）
     public static Int32 powInt( Int32 baseValue, Int32 exponent )
     {
-        Int32 result = 1
+        Int32 r = 1
         Int32 b = baseValue
         Int32 e = exponent
         while e > 0
         {
             if e % 2 == 1
             {
-                result = result * b
+                r = r * b
             }
             b = b * b
             e = e / 2
         }
-        ret result
+        ret r
     }
 }

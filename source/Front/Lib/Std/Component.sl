@@ -41,8 +41,14 @@ public class Component extends Object
     # 自身启用且整条 parent 链都启用时才算「激活且启用」
     public get bool isActiveAndEnabled()
     {
-        if !this.enabled ret false
-        if this.parent != null ret this.parent.isActiveAndEnabled
+        if !this.enabled
+        {
+            ret false
+        }
+        if this.parent != null
+        {
+            ret this.parent.isActiveAndEnabled
+        }
         ret true
     }
 
@@ -59,26 +65,24 @@ public class Component extends Object
     # ── 组件挂载 ───────────────────────────────────────
     public void AddComponent( Component comp )
     {
-        if comp == null ret
+        if comp == null
+        {
+            ret
+        }
         comp.parent = this
         this.components.add( comp )
-    }
-
-    # 泛型版本：需要运行时支持 `new T()`；若不支持请用上面的重载
-    public T AddComponent<T:Component>()
-    {
-        T comp = new T()
-        comp.parent = this
-        this.components.add( comp )
-        ret comp
     }
 
     # ── 组件查询（自身直接子级）────────────────────────
-    public T GetComponent<T:Component>()
+    public T GetComponent<T>()
     {
         for c in this.components
         {
-            if c.type == T.type ret c as T
+            T t = c as T
+            if t != null
+            {
+                ret t
+            }
         }
         ret null
     }
@@ -87,7 +91,10 @@ public class Component extends Object
     {
         for c in this.components
         {
-            if c.type == type ret c
+            if c.type == type
+            {
+                ret c
+            }
         }
         ret null
     }
@@ -96,71 +103,93 @@ public class Component extends Object
     {
         for c in this.components
         {
-            if c.type.toString() == typeName ret c
+            if c.type.toString() == typeName
+            {
+                ret c
+            }
         }
         ret null
     }
 
-    public List<Component> GetComponents<T:Component>()
+    public List<Component> GetComponents<T>()
     {
-        List<Component> result = List<Component>(4)
+        List<Component> rtlist = List<Component>(4)
         for c in this.components
         {
-            if c.type == T.type result.add(c)
+            T t = c as T
+            if t != null
+            {
+                rtlist.add(c)
+            }
         }
-        ret result
+        ret rtlist
     }
 
     # ── 向下查找（含子组件树）──────────────────────────
-    public T GetComponentInChildren<T:Component>( bool includeInactive )
+    public T GetComponentInChildren<T>( bool includeInactive )
     {
         for c in this.components
         {
             if includeInactive || c.enabled
             {
-                if c.type == T.type ret c as T
+                T t = c as T
+                if t != null
+                {
+                    ret t
+                }
             }
-            T t = c.GetComponentInChildren<T>( includeInactive )
-            if t != null ret t
+            T rt = c.GetComponentInChildren<T>( includeInactive )
+            if rt != null
+            {
+                ret rt
+            }
         }
         ret null
     }
 
     # ── 向上查找（parent 链）───────────────────────────
-    public T GetComponentInParent<T:Component>( bool includeInactive )
+    public T GetComponentInParent<T>( bool includeInactive )
     {
         Component p = this
         while p != null
         {
             if includeInactive || p.enabled
             {
-                if p.type == T.type ret p as T
+                T t = p as T
+                if t != null
+                {
+                    ret t
+                }
             }
             p = p.parent
         }
         ret null
     }
 
-    public List<Component> GetComponentsInChildren<T:Component>( bool includeInactive )
+    public List<Component> GetComponentsInChildren<T>( bool includeInactive )
     {
         List<Component> result = List<Component>(4)
         this._collectInChildren<T>( result, includeInactive )
         ret result
     }
 
-    void _collectInChildren<T:Component>( List<Component> result, bool includeInactive )
+    void _collectInChildren<T>( List<Component> result, bool includeInactive )
     {
         for c in this.components
         {
             if includeInactive || c.enabled
             {
-                if c.type == T.type result.add(c)
+                T t = c as T
+                if t != null
+                {
+                    result.add(c)
+                }
             }
             c._collectInChildren<T>( result, includeInactive )
         }
     }
 
-    public List<Component> GetComponentsInParent<T:Component>( bool includeInactive )
+    public List<Component> GetComponentsInParent<T>( bool includeInactive )
     {
         List<Component> result = List<Component>(4)
         Component p = this
@@ -168,7 +197,11 @@ public class Component extends Object
         {
             if includeInactive || p.enabled
             {
-                if p.type == T.type result.add(p)
+                T t = p as T
+                if t != null
+                {
+                    result.add(p)
+                }
             }
             p = p.parent
         }
@@ -176,7 +209,7 @@ public class Component extends Object
     }
 
     # 与 Unity 的 TryGetComponent<T>(out T) 对齐：直接返回组件，null 表示未找到
-    public T TryGetComponent<T:Component>()
+    public T TryGetComponent<T>()
     {
         ret this.GetComponent<T>()
     }
@@ -202,7 +235,10 @@ public class Component extends Object
     public void SendMessageUpwards( string methodName )
     {
         this.onMessage( methodName )
-        if this.parent != null this.parent.SendMessageUpwards( methodName )
+        if this.parent != null
+        {
+            this.parent.SendMessageUpwards( methodName )
+        }
     }
 
     # 向自身及整棵子树广播
@@ -218,7 +254,9 @@ public class Component extends Object
 
     override string toString()
     {
-        ret "Component(name=" + this.name + ", type=" + this.type.toString() +
-            ", enabled=" + this.enabled.toString() + ")"
+        string s = "Component(name=" + this.name
+        s = s + ", type=" + this.type.toString()
+        s = s + ", enabled=" + this.enabled.toString()
+        ret s + ")"
     }
 }

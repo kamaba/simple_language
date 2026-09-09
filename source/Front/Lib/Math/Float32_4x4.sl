@@ -150,187 +150,77 @@ public class Float32_4x4
     }
 
     # ── 运算符重载 ───────────────────────────────────────
-    override Float32_4x4 _mul_( Object obj1 )
+    override Float32_4x4 _mul_( Float32_4x4 b )
     {
-        if obj1 is Float32_4x4 b
-        {
-            ret this.multiply( b )
-        }
-        ret this
+        ret this.multiply( b )
     }
 
-    override Float32_4x4 _add_( Object obj1 )
+    override Float32_4x4 _add_( Float32_4x4 b )
     {
-        if obj1 is Float32_4x4 b
-        {
-            Float32_4x4 r = Float32_4x4()
-            r.m00 = this.m00 + b.m00
-            r.m01 = this.m01 + b.m01
-            r.m02 = this.m02 + b.m02
-            r.m03 = this.m03 + b.m03
-            r.m10 = this.m10 + b.m10
-            r.m11 = this.m11 + b.m11
-            r.m12 = this.m12 + b.m12
-            r.m13 = this.m13 + b.m13
-            r.m20 = this.m20 + b.m20
-            r.m21 = this.m21 + b.m21
-            r.m22 = this.m22 + b.m22
-            r.m23 = this.m23 + b.m23
-            r.m30 = this.m30 + b.m30
-            r.m31 = this.m31 + b.m31
-            r.m32 = this.m32 + b.m32
-            r.m33 = this.m33 + b.m33
-            ret r
-        }
-        ret this
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4Add( this, b, r )
+        ret r
     }
 
-    override bool _eq_( Object obj1 )
+    override bool _eq_( Float32_4x4 b )
     {
-        if obj1 is Float32_4x4 b
-        {
-            if ( this.m00 != b.m00 ) { ret false }
-            if ( this.m01 != b.m01 ) { ret false }
-            if ( this.m02 != b.m02 ) { ret false }
-            if ( this.m03 != b.m03 ) { ret false }
-            if ( this.m10 != b.m10 ) { ret false }
-            if ( this.m11 != b.m11 ) { ret false }
-            if ( this.m12 != b.m12 ) { ret false }
-            if ( this.m13 != b.m13 ) { ret false }
-            if ( this.m20 != b.m20 ) { ret false }
-            if ( this.m21 != b.m21 ) { ret false }
-            if ( this.m22 != b.m22 ) { ret false }
-            if ( this.m23 != b.m23 ) { ret false }
-            if ( this.m30 != b.m30 ) { ret false }
-            if ( this.m31 != b.m31 ) { ret false }
-            if ( this.m32 != b.m32 ) { ret false }
-            if ( this.m33 != b.m33 ) { ret false }
-            ret true
-        }
-        ret false
+        ret SystemMathMat4Eq( this, b )
     }
 
-    override bool _ne_( Object obj1 )
+    override bool _ne_( Float32_4x4 b )
     {
-        ret !this._eq_( obj1 )
+        ret !this._eq_( b )
     }
 
     # ── 矩阵运算 ─────────────────────────────────────────
-    # 前 3 项经 Mathf.dot3 走 FFI，第 4 项（w 列）在 SL 层补齐
     Float32_4x4 multiply( Float32_4x4 b )
     {
         Float32_4x4 r = Float32_4x4()
-        r.m00 = Mathf.dot3( this.m00, this.m01, this.m02, b.m00, b.m10, b.m20 ) + this.m03 * b.m30
-        r.m01 = Mathf.dot3( this.m00, this.m01, this.m02, b.m01, b.m11, b.m21 ) + this.m03 * b.m31
-        r.m02 = Mathf.dot3( this.m00, this.m01, this.m02, b.m02, b.m12, b.m22 ) + this.m03 * b.m32
-        r.m03 = Mathf.dot3( this.m00, this.m01, this.m02, b.m03, b.m13, b.m23 ) + this.m03 * b.m33
-        r.m10 = Mathf.dot3( this.m10, this.m11, this.m12, b.m00, b.m10, b.m20 ) + this.m13 * b.m30
-        r.m11 = Mathf.dot3( this.m10, this.m11, this.m12, b.m01, b.m11, b.m21 ) + this.m13 * b.m31
-        r.m12 = Mathf.dot3( this.m10, this.m11, this.m12, b.m02, b.m12, b.m22 ) + this.m13 * b.m32
-        r.m13 = Mathf.dot3( this.m10, this.m11, this.m12, b.m03, b.m13, b.m23 ) + this.m13 * b.m33
-        r.m20 = Mathf.dot3( this.m20, this.m21, this.m22, b.m00, b.m10, b.m20 ) + this.m23 * b.m30
-        r.m21 = Mathf.dot3( this.m20, this.m21, this.m22, b.m01, b.m11, b.m21 ) + this.m23 * b.m31
-        r.m22 = Mathf.dot3( this.m20, this.m21, this.m22, b.m02, b.m12, b.m22 ) + this.m23 * b.m32
-        r.m23 = Mathf.dot3( this.m20, this.m21, this.m22, b.m03, b.m13, b.m23 ) + this.m23 * b.m33
-        r.m30 = Mathf.dot3( this.m30, this.m31, this.m32, b.m00, b.m10, b.m20 ) + this.m33 * b.m30
-        r.m31 = Mathf.dot3( this.m30, this.m31, this.m32, b.m01, b.m11, b.m21 ) + this.m33 * b.m31
-        r.m32 = Mathf.dot3( this.m30, this.m31, this.m32, b.m02, b.m12, b.m22 ) + this.m33 * b.m32
-        r.m33 = Mathf.dot3( this.m30, this.m31, this.m32, b.m03, b.m13, b.m23 ) + this.m33 * b.m33
+        SystemMathMat4Mul( this, b, r )
         ret r
     }
 
     # 变换点（w 补 1，带平移）
     Float32_3 transformPoint( Float32_3 v )
     {
-        Float32 nx = Mathf.dot3( this.m00, this.m01, this.m02, v.x, v.y, v.z ) + this.m03
-        Float32 ny = Mathf.dot3( this.m10, this.m11, this.m12, v.x, v.y, v.z ) + this.m13
-        Float32 nz = Mathf.dot3( this.m20, this.m21, this.m22, v.x, v.y, v.z ) + this.m23
-        ret Float32_3( nx, ny, nz )
+        Float32_3 r = Float32_3()
+        SystemMathMat4TransformPoint( this, v, r )
+        ret r
     }
 
     # 变换方向（w 补 0，忽略平移）
     Float32_3 transformDirection( Float32_3 v )
     {
-        Float32 nx = Mathf.dot3( this.m00, this.m01, this.m02, v.x, v.y, v.z )
-        Float32 ny = Mathf.dot3( this.m10, this.m11, this.m12, v.x, v.y, v.z )
-        Float32 nz = Mathf.dot3( this.m20, this.m21, this.m22, v.x, v.y, v.z )
-        ret Float32_3( nx, ny, nz )
+        Float32_3 r = Float32_3()
+        SystemMathMat4TransformDirection( this, v, r )
+        ret r
     }
 
     Float32_4x4 transpose()
     {
-        ret Float32_4x4( this.m00, this.m10, this.m20, this.m30,
-                         this.m01, this.m11, this.m21, this.m31,
-                         this.m02, this.m12, this.m22, this.m32,
-                         this.m03, this.m13, this.m23, this.m33 )
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4Transpose( this, r )
+        ret r
     }
 
     Float32 determinant()
     {
-        Float32 b00 = this.m00 * this.m11 - this.m01 * this.m10
-        Float32 b01 = this.m00 * this.m12 - this.m02 * this.m10
-        Float32 b02 = this.m00 * this.m13 - this.m03 * this.m10
-        Float32 b03 = this.m01 * this.m12 - this.m02 * this.m11
-        Float32 b04 = this.m01 * this.m13 - this.m03 * this.m11
-        Float32 b05 = this.m02 * this.m13 - this.m03 * this.m12
-        Float32 b06 = this.m20 * this.m31 - this.m21 * this.m30
-        Float32 b07 = this.m20 * this.m32 - this.m22 * this.m30
-        Float32 b08 = this.m20 * this.m33 - this.m23 * this.m30
-        Float32 b09 = this.m21 * this.m32 - this.m22 * this.m31
-        Float32 b10 = this.m21 * this.m33 - this.m23 * this.m31
-        Float32 b11 = this.m22 * this.m33 - this.m23 * this.m32
-        ret b00 * b11 - b01 * b10 + b02 * b09 + b03 * b08 - b04 * b07 + b05 * b06
+        ret SystemMathMat4Determinant( this )
     }
 
     # 伴随矩阵 / det，不可逆时返回零矩阵
     Float32_4x4 inverse()
     {
-        Float32 det = this.determinant()
-        if det == 0.0f
-        {
-            ret Float32_4x4()
-        }
-        Float32 inv = 1.0f / det
-
-        Float32 b00 = this.m00 * this.m11 - this.m01 * this.m10
-        Float32 b01 = this.m00 * this.m12 - this.m02 * this.m10
-        Float32 b02 = this.m00 * this.m13 - this.m03 * this.m10
-        Float32 b03 = this.m01 * this.m12 - this.m02 * this.m11
-        Float32 b04 = this.m01 * this.m13 - this.m03 * this.m11
-        Float32 b05 = this.m02 * this.m13 - this.m03 * this.m12
-        Float32 b06 = this.m20 * this.m31 - this.m21 * this.m30
-        Float32 b07 = this.m20 * this.m32 - this.m22 * this.m30
-        Float32 b08 = this.m20 * this.m33 - this.m23 * this.m30
-        Float32 b09 = this.m21 * this.m32 - this.m22 * this.m31
-        Float32 b10 = this.m21 * this.m33 - this.m23 * this.m31
-        Float32 b11 = this.m22 * this.m33 - this.m23 * this.m32
-
         Float32_4x4 r = Float32_4x4()
-        r.m00 = ( this.m11 * b11 - this.m12 * b10 + this.m13 * b09 ) * inv
-        r.m01 = ( this.m02 * b10 - this.m01 * b11 - this.m03 * b09 ) * inv
-        r.m02 = ( this.m31 * b05 - this.m32 * b04 + this.m33 * b03 ) * inv
-        r.m03 = ( this.m22 * b04 - this.m23 * b05 - this.m21 * b03 ) * inv
-        r.m10 = ( this.m12 * b08 - this.m10 * b11 - this.m13 * b07 ) * inv
-        r.m11 = ( this.m00 * b11 - this.m02 * b08 + this.m03 * b07 ) * inv
-        r.m12 = ( this.m32 * b02 - this.m30 * b05 - this.m33 * b01 ) * inv
-        r.m13 = ( this.m20 * b05 - this.m22 * b02 + this.m23 * b01 ) * inv
-        r.m20 = ( this.m10 * b10 - this.m11 * b08 + this.m13 * b06 ) * inv
-        r.m21 = ( this.m01 * b08 - this.m00 * b10 - this.m03 * b06 ) * inv
-        r.m22 = ( this.m30 * b04 - this.m31 * b02 + this.m33 * b00 ) * inv
-        r.m23 = ( this.m21 * b02 - this.m20 * b04 - this.m23 * b00 ) * inv
-        r.m30 = ( this.m11 * b07 - this.m10 * b09 - this.m12 * b06 ) * inv
-        r.m31 = ( this.m00 * b09 - this.m01 * b07 + this.m02 * b06 ) * inv
-        r.m32 = ( this.m31 * b01 - this.m30 * b03 - this.m32 * b00 ) * inv
-        r.m33 = ( this.m20 * b03 - this.m21 * b01 + this.m22 * b00 ) * inv
+        SystemMathMat4Inverse( this, r )
         ret r
     }
 
     Float32_4x4 clone()
     {
-        ret Float32_4x4( this.m00, this.m01, this.m02, this.m03,
-                         this.m10, this.m11, this.m12, this.m13,
-                         this.m20, this.m21, this.m22, this.m23,
-                         this.m30, this.m31, this.m32, this.m33 )
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4Copy( this, r )
+        ret r
     }
 
     # 降维到 2D 仿射：x/y 基取前两列，平移分量（第四列 x/y）落入第三列，底行取 (0,0,1)
@@ -344,10 +234,9 @@ public class Float32_4x4
     # ── 静态常量与工厂 ────────────────────────────────────
     public static get Float32_4x4 identity()
     {
-        ret Float32_4x4( 1.0f, 0.0f, 0.0f, 0.0f,
-                         0.0f, 1.0f, 0.0f, 0.0f,
-                         0.0f, 0.0f, 1.0f, 0.0f,
-                         0.0f, 0.0f, 0.0f, 1.0f )
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4Identity( r )
+        ret r
     }
 
     public static get Float32_4x4 zero()
@@ -357,10 +246,9 @@ public class Float32_4x4
 
     public static Float32_4x4 translation( Float32 x, Float32 y, Float32 z )
     {
-        ret Float32_4x4( 1.0f, 0.0f, 0.0f, x,
-                         0.0f, 1.0f, 0.0f, y,
-                         0.0f, 0.0f, 1.0f, z,
-                         0.0f, 0.0f, 0.0f, 1.0f )
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4Translation( x, y, z, r )
+        ret r
     }
 
     public static Float32_4x4 translation( Float32_3 t )
@@ -370,10 +258,9 @@ public class Float32_4x4
 
     public static Float32_4x4 scale( Float32 x, Float32 y, Float32 z )
     {
-        ret Float32_4x4( x, 0.0f, 0.0f, 0.0f,
-                         0.0f, y, 0.0f, 0.0f,
-                         0.0f, 0.0f, z, 0.0f,
-                         0.0f, 0.0f, 0.0f, 1.0f )
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4Scale( x, y, z, r )
+        ret r
     }
 
     public static Float32_4x4 scale( Float32_3 s )
@@ -389,50 +276,33 @@ public class Float32_4x4
     # 绕 X 轴旋转（弧度）
     public static Float32_4x4 rotationX( Float32 radians )
     {
-        Float32 c = Mathf.cos( radians )
-        Float32 s = Mathf.sin( radians )
-        ret Float32_4x4( 1.0f, 0.0f, 0.0f, 0.0f,
-                         0.0f, c, -s, 0.0f,
-                         0.0f, s, c, 0.0f,
-                         0.0f, 0.0f, 0.0f, 1.0f )
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4RotationX( radians, r )
+        ret r
     }
 
     # 绕 Y 轴旋转（弧度）
     public static Float32_4x4 rotationY( Float32 radians )
     {
-        Float32 c = Mathf.cos( radians )
-        Float32 s = Mathf.sin( radians )
-        ret Float32_4x4( c, 0.0f, s, 0.0f,
-                         0.0f, 1.0f, 0.0f, 0.0f,
-                         -s, 0.0f, c, 0.0f,
-                         0.0f, 0.0f, 0.0f, 1.0f )
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4RotationY( radians, r )
+        ret r
     }
 
     # 绕 Z 轴旋转（弧度）
     public static Float32_4x4 rotationZ( Float32 radians )
     {
-        Float32 c = Mathf.cos( radians )
-        Float32 s = Mathf.sin( radians )
-        ret Float32_4x4( c, -s, 0.0f, 0.0f,
-                         s, c, 0.0f, 0.0f,
-                         0.0f, 0.0f, 1.0f, 0.0f,
-                         0.0f, 0.0f, 0.0f, 1.0f )
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4RotationZ( radians, r )
+        ret r
     }
 
-    # 绕任意轴旋转（弧度，axis 需为单位向量）
+    # 绕任意轴旋转（弧度，axis 内部会归一化）
     public static Float32_4x4 rotationAxis( Float32_3 axis, Float32 radians )
     {
-        Float32_3 a = axis.normalize()
-        Float32 x = a.x
-        Float32 y = a.y
-        Float32 z = a.z
-        Float32 c = Mathf.cos( radians )
-        Float32 s = Mathf.sin( radians )
-        Float32 t = 1.0f - c
-        ret Float32_4x4( t * x * x + c, t * x * y - s * z, t * x * z + s * y, 0.0f,
-                         t * x * y + s * z, t * y * y + c, t * y * z - s * x, 0.0f,
-                         t * x * z - s * y, t * y * z + s * x, t * z * z + c, 0.0f,
-                         0.0f, 0.0f, 0.0f, 1.0f )
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4RotationAxis( axis, radians, r )
+        ret r
     }
 
     # 局部 TRS 组合：translation * rotation * scale
@@ -449,32 +319,25 @@ public class Float32_4x4
     # 透视投影（右手系，depth 映射到 [-1,1]）
     public static Float32_4x4 perspective( Float32 fovYRadians, Float32 aspect, Float32 near, Float32 far )
     {
-        Float32 f = 1.0f / Mathf.tan( fovYRadians * 0.5f )
-        ret Float32_4x4( f / aspect, 0.0f, 0.0f, 0.0f,
-                         0.0f, f, 0.0f, 0.0f,
-                         0.0f, 0.0f, ( far + near ) / ( near - far ), ( 2.0f * far * near ) / ( near - far ),
-                         0.0f, 0.0f, -1.0f, 0.0f )
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4Perspective( fovYRadians, aspect, near, far, r )
+        ret r
     }
 
     # 正交投影
     public static Float32_4x4 ortho( Float32 left, Float32 right, Float32 bottom, Float32 top, Float32 near, Float32 far )
     {
-        ret Float32_4x4( 2.0f / ( right - left ), 0.0f, 0.0f, 0.0f - ( right + left ) / ( right - left ),
-                         0.0f, 2.0f / ( top - bottom ), 0.0f, 0.0f - ( top + bottom ) / ( top - bottom ),
-                         0.0f, 0.0f, 0.0f - 2.0f / ( far - near ), 0.0f - ( far + near ) / ( far - near ),
-                         0.0f, 0.0f, 0.0f, 1.0f )
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4Ortho( left, right, bottom, top, near, far, r )
+        ret r
     }
 
     # 视图矩阵（右手系 lookAt）
     public static Float32_4x4 lookAt( Float32_3 eye, Float32_3 target, Float32_3 upHint )
     {
-        Float32_3 zAxis = eye._sub_( target ).normalize()
-        Float32_3 xAxis = upHint.cross( zAxis ).normalize()
-        Float32_3 yAxis = zAxis.cross( xAxis )
-        ret Float32_4x4( xAxis.x, xAxis.y, xAxis.z, 0.0f - xAxis.dot( eye ),
-                         yAxis.x, yAxis.y, yAxis.z, 0.0f - yAxis.dot( eye ),
-                         zAxis.x, zAxis.y, zAxis.z, 0.0f - zAxis.dot( eye ),
-                         0.0f, 0.0f, 0.0f, 1.0f )
+        Float32_4x4 r = Float32_4x4()
+        SystemMathMat4LookAt( eye, target, upHint, r )
+        ret r
     }
 
     override string toString()
