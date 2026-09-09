@@ -35,6 +35,8 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string alias { get; set; } = string.Empty;
         public string name { get; set; } = string.Empty;
         public string path { get; set; } = string.Empty;
+        /// <summary>静态绑定名称（jsonc "static" 字段）：非空时 cvm 加载模块即预载该库并注册到 FFI.StaticLibrary，句柄持续到进程退出。</summary>
+        public string @static { get; set; } = string.Empty;
     }
 
     /// <summary>
@@ -72,6 +74,27 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// <summary>Unique int id (<see cref="Project.SystemMethodCallDeclaration.GetIndex"/>);
         /// 0 when the declaration is unknown - VM falls back to name lookup.</summary>
         public int id { get; set; }
+    }
+
+    /// <summary>
+    /// CallFFIStatic(118) 前端 payload：@DllStaticImport 静态绑定 FFI 快速调用。
+    /// cvm assembly build 期解析 lib + symbol + sig 得到 FunctionHandle 并把
+    /// 指令 payload 改写为 4 字节绑定表索引；lib 预载/符号解析失败时保留
+    /// JSON 原文，运行期 handler 按 methodId 回退到 SL 函数体（慢链路）。
+    /// </summary>
+    public sealed class SLFFIStaticCallPackage
+    {
+        /// <summary>静态库名或别名（project.jsonc dllImports[].alias/name/static）</summary>
+        public string lib { get; set; } = string.Empty;
+        /// <summary>库内导出符号名</summary>
+        public string symbol { get; set; } = string.Empty;
+        /// <summary>FFI 签名（"i32,i32->i32"），与 cvm sl_ffi_sig_parse 格式一致</summary>
+        public string sig { get; set; } = string.Empty;
+        /// <summary>回退目标：被 @DllStaticImport 标记的 SL 函数 id</summary>
+        public string methodId { get; set; } = string.Empty;
+        public string methodName { get; set; } = string.Empty;
+        public int paramCount { get; set; }
+        public bool tryCatch { get; set; }
     }
 
     /// <summary>Optional debug snapshot (from <see cref="SimpleLanguage.IR.IRData.debugInfo"/> / token), deserialized into VM <see cref="SimpleLanguage.VM.DebugInfo"/>.</summary>

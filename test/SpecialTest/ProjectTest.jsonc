@@ -61,7 +61,7 @@
   },
   "dllImports": [
     {
-      "path": "../../source/CLangdll/x64/Debug/CLangdll.dll", "name": "CLangdll", "alias": "CLangdll",
+      "path": "../../source/CLangdll/x64/Debug/CLangdll.dll", "name": "CLangdll", "alias": "CLangdll", "static": "CLangdll",
       "functions": [
         { "name": "libaddfunc", "symbol": "simplelanguage_addtest", "sig": "i32,i32->i32" }
       ]

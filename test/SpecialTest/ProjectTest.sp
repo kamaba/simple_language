@@ -5,6 +5,7 @@ Project
         SystemPrintln( "Hello World" );
         nowMs = Environment.nowMillis()
 
+        #!
         # AOT 测试用例（自 test/AOTTest/ProjectTest.sp 合并）
         r1 = AOTMath.Add( 1, 2 );
         r2 = AOTMath.Mul( 3, 4 );
@@ -167,6 +168,8 @@ Project
         SystemPrintln( "VM   (128^3): $gT.toString() ms" )
         vv0 = vC[0]
         SystemPrintln( "VM   c[0]=$vv0.toString()" )
+        !#
+        FFITest.fun();
 
         nowMs = Environment.nowMillis() - nowMs
         SystemPrintln("===== BenchMark _main_ end [$nowMs.toString() ms] =====")

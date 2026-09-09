@@ -252,6 +252,7 @@
     { "name": "SystemTransferIsValid",         "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_transfer_is_valid" },
     // ---- FFI calls (FFI/Library.sl, design: md/design/ffi-design.md) ----
     { "name": "SystemFFILoadLibrary",     "returnType": "Int64",   "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_load_library" },
+    { "name": "SystemFFIGetStaticLibrary", "returnType": "Int64",  "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_get_static_library" },
     { "name": "SystemFFIFreeLibrary",     "returnType": "bool",    "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_free_library" },
     { "name": "SystemFFILibraryRef",      "returnType": "Int32",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_library_ref" },
     { "name": "SystemFFILibraryRefcount", "returnType": "Int32",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_library_refcount" },

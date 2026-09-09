@@ -288,6 +288,8 @@ namespace SimpleLanguage.Project
             public string Path { get; set; } = string.Empty;
             public string Name { get; set; } = string.Empty;
             public string Alias { get; set; } = string.Empty;
+            /// <summary>静态绑定名称（jsonc "static" 字段）：非空时该库在 cvm 加载期即预载并注册到 FFI.StaticLibrary，句柄持续到进程退出。</summary>
+            public string Static { get; set; } = string.Empty;
             public List<DllImportFunctionSection> Functions { get; set; } = new List<DllImportFunctionSection>();
         }
 

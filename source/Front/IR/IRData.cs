@@ -119,6 +119,15 @@ namespace SimpleLanguage.IR
                 return;
             }
 
+            // static FFI fast-call payload: JSON SLFFIStaticCallPackage
+            // (lib/symbol/sig + fallback methodId); the CVM assembly build
+            // rewrites it into a 4-byte binding index once resolved.
+            if (opValue is SLFFIStaticCallPackage ffipkg)
+            {
+                Payload = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(ffipkg));
+                return;
+            }
+
             // runtime def type payload: write full IRMetaType tree at SetOpValue stage
             if (opValue is IRMetaType imt)
             {

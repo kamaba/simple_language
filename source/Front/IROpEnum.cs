@@ -172,6 +172,16 @@ namespace SimpleLanguage
         BrIsNull,                           // = 115 payload: [target index:4]
         BrNotNull,                          // = 116 payload: [target index:4]
         BrIsNullPeek,                       // = 117 payload: [target index:4]
+
+        // Static FFI fast-call opcode (@DllStaticImport bound function).
+        // The CVM preloads the dll (module.json "dllImports"[].static != "") at
+        // assembly build time, resolves the symbol once and rewrites this
+        // instruction's payload to [binding index:4]. At runtime the handler
+        // pops the pushed arguments, marshals them straight into the native
+        // call and pushes the return value — no SL frame, no Library.Load.
+        // If the binding failed to resolve, the handler falls back to the
+        // original SL method body (methodId embedded in the pre-rewrite JSON).
+        CallFFIStatic,                      // = 118
     }
 
     /// <summary>

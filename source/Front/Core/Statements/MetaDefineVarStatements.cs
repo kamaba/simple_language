@@ -526,6 +526,38 @@ namespace SimpleLanguage.Core
         }
 
         /// <summary>
+        /// 从 MetaFunction（@DllStaticImport 标记的函数声明）推导 FFI sig 短名
+        /// ("i32,i32->i32")：形参加取 metaMemberParamCollection 的 defineMetaType，
+        /// 返回类型取 GetFinalMetaType()。任一类型无法映射时返回 null
+        /// （可由 attribute 第 3 个实参手写 sig 兜底）。
+        /// </summary>
+        public static string BuildFFIFunctionSigFromMetaFunction( MetaFunction mf )
+        {
+            if( mf == null )
+                return null;
+            var sb = new StringBuilder();
+            var plist = mf.metaMemberParamCollection?.metaDefineParamList;
+            if( plist != null )
+            {
+                for( int i = 0; i < plist.Count; i++ )
+                {
+                    var tn = FFISigNameOfMetaType( plist[i]?.metaVariable?.defineMetaType );
+                    if( string.IsNullOrEmpty( tn ) )
+                        return null;
+                    if( i > 0 )
+                        sb.Append( ',' );
+                    sb.Append( tn );
+                }
+            }
+            var retTn = FFISigNameOfMetaType( mf.GetFinalMetaType() );
+            if( string.IsNullOrEmpty( retTn ) )
+                return null;
+            sb.Append( "->" );
+            sb.Append( retTn );
+            return sb.ToString();
+        }
+
+        /// <summary>
         /// SL 类型 -> FFI sig 短名。先按类型单例匹配, 再按类名回退
         /// (与 cvm 侧 vm_ffi_sl_name_to_ffi 映射表对齐; Ptr 保守不映射,
         ///  需要 Ptr 签名时用户可手写完整 sig 字符串)。

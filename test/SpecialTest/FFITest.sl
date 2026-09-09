@@ -265,9 +265,45 @@ FFITest
         ret da * 1.0 + db * 2.0 + dc * 3.0 + dd * 4.0 + de * 5.0 + f * 6.0
     }
 
-    # ── @DllImport fallback：库不存在（绑定失败 -> 隐藏字段 null）时走函数体 ──
+    # ── @DllImport fallback：库不存在（绑定失败 -> 隐藏字段 null）时执行 ──
     @DllImport( "no_such_library_xyz.dll", "no_such_symbol" )
     static int s_fbAdd( int a, int b )
+    {
+        ret a + b
+    }
+
+    # ── @DllStaticImport：静态绑定 FFI 快速调用（opcode 118 CallFFIStatic）──
+    # project.jsonc dllImports "static" 字段注册的静态库（cvm 解析
+    # module.json 时预载，句柄进程级常驻，程序关闭才释放）。
+    # 编译期调用点改写为 CallFFIStatic(118)：cvm assembly build 期解析
+    # lib+symbol+sig -> FunctionHandle 绑定入静态绑定表，payload 改写
+    # 为 4 字节索引；运行期直接整合栈上参数调 FFI——不进 SL 函数体、
+    # 不走 Library.Load 链路。绑定失败（库未注册/符号缺失/sig 非法）
+    # 时运行期回退执行函数体（本 SL 实现的等价逻辑）。
+    # 第 1 实参 = jsonc "static" 字段的静态名（注册进 FFI.StaticLibrary）
+    @DllStaticImport( "CLangdll", "simplelanguage_addtest" )
+    static int s_statAdd( int a, int b )
+    {
+        ret a + b
+    }
+
+    # 第 3 实参手写 sig（不可推导类型用）
+    @DllStaticImport( "CLangdll", "sl_mul2", "i64->i64" )
+    static Int64 s_statMul2( Int64 v )
+    {
+        ret v * 2
+    }
+
+    # utf8 进出：utf8->i64（sig 从签名推导）
+    @DllStaticImport( "CLangdll", "sl_strlen_utf8" )
+    static Int64 s_statStrlen( string s )
+    {
+        ret s.length
+    }
+
+    # 静态名未注册（jsonc 无对应 "static" 条目）-> 绑定失败 -> 回退函数体
+    @DllStaticImport( "no_such_static_lib", "no_such_symbol" )
+    static int s_statFbAdd( int a, int b )
     {
         ret a + b
     }
@@ -1030,6 +1066,35 @@ FFITest
         check( "fallback fbAdd(0,0)==0", s_fbAdd( 0, 0 ) == 0 )
     }
 
+    # ── 23. @DllStaticImport：静态绑定 FFI 快速调用 + StaticLibrary.GetStaticLib ──
+    static testDllStaticImport()
+    {
+        Console.println( "===== FFITest.testDllStaticImport =====" )
+        # StaticLibrary.GetStaticLib：取 jsonc "static" 注册的预载库
+        var lib = FFI.StaticLibrary.GetStaticLib( "CLangdll" )
+        check( "GetStaticLib('CLangdll') != null", lib != null )
+        check( "GetStaticLib('CLangdll').isValid", lib.isValid )
+        # 重复获取返回缓存的同一 Library（List<Library> 去重）
+        var lib2 = FFI.StaticLibrary.GetStaticLib( "CLangdll" )
+        check( "GetStaticLib cached same instance", lib2 == lib )
+        # 未注册静态名 -> null
+        check( "GetStaticLib('no_such_static_lib') == null",
+            FFI.StaticLibrary.GetStaticLib( "no_such_static_lib" ) == null )
+        # 快速调用：绑定成功 -> 直接 FFI 直调（不进 SL 函数体）
+        # sig 从签名推导 "i32,i32->i32"
+        check( "static add(20,22)==42", s_statAdd( 20, 22 ) == 42 )
+        check( "static add(-5,7)==2", s_statAdd( -5, 7 ) == 2 )
+        check( "static add(0,0)==0", s_statAdd( 0, 0 ) == 0 )
+        # 手写 sig "i64->i64"
+        check( "static mul2(21)==42", s_statMul2( 21 ) == 42 )
+        check( "static mul2(-7)==-14", s_statMul2( -7 ) == -14 )
+        # utf8->i64
+        check( "static strlen('abc123')==6", s_statStrlen( "abc123" ) == 6 )
+        # 绑定失败（静态名未注册）-> 回退 SL 函数体（a+b）
+        check( "static fallback fbAdd(20,22)==42", s_statFbAdd( 20, 22 ) == 42 )
+        check( "static fallback fbAdd(-5,7)==2", s_statFbAdd( -5, 7 ) == 2 )
+    }
+
     # ── main entry ──
     static fun()
     {
@@ -1056,6 +1121,7 @@ FFITest
         testDllImportCsAlias()
         testCallConstNarrowing()
         testDllImportFallback()
+        testDllStaticImport()
         Console.println( "===== all FFI tests done =====" )
     }
 }

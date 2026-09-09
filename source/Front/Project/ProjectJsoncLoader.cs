@@ -293,13 +293,14 @@ namespace SimpleLanguage.Project
                 var path = GetStr(d, "path", string.Empty);
                 var name = GetStr(d, "name", string.Empty);
                 var alias = GetStr(d, "alias", string.Empty);
+                var staticName = GetStr(d, "static", string.Empty);
                 if (string.IsNullOrWhiteSpace(alias))
                 {
                     alias = name;
                 }
                 if (!string.IsNullOrWhiteSpace(path))
                 {
-                    var sec = new ProjectConfig.DllImportSection() { Path = path, Name = name, Alias = alias };
+                    var sec = new ProjectConfig.DllImportSection() { Path = path, Name = name, Alias = alias, Static = staticName };
                     if (d.TryGetProperty("functions", out var fns) && fns.ValueKind == JsonValueKind.Array)
                     {
                         foreach (var f in fns.EnumerateArray())

@@ -835,6 +835,7 @@ namespace SimpleLanguage.Export.SLIR
                             alias = d.Alias ?? string.Empty,
                             name = d.Name ?? string.Empty,
                             path = d.Path,
+                            @static = d.Static ?? string.Empty,
                         });
                     }
                 }

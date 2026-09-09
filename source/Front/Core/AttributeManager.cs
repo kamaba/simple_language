@@ -147,6 +147,29 @@ namespace SimpleLanguage.Core
                 Log.AddMetaCoreLog(LID.MetaCoreAttributeDllImportAttributeRegistered,
                     $"DllImport: attribute registered on '{owner?.allName}' (initializer injected at member express parse)");
             });
+
+            // DllStaticImport: 静态绑定 FFI 快速调用声明标记
+            //   @DllStaticImport( "mydll", "simplelanguage_addtest" )
+            //   static int s_dllAdd( int a, int b ) { ret a + b }
+            // 实参: (静态库名或别名, 符号名 [, 签名 "i32,i32->i32"])。
+            // 库必须在 project.jsonc dllImports 中配置 "static" 字段，
+            // cvm 加载模块时预载并注册到 FFI.StaticLibrary；
+            // IRCall.Parse 在静态调用处发射 CallFFIStatic(118)，
+            // cvm assembly build 期解析绑定并改写 payload 为绑定表索引，
+            // 运行期直接整合栈上参数调用 FFI，绕过 SL 函数体/Library.Load 链路。
+            RegisterCompileHandler("DllStaticImport", (attr, owner) =>
+            {
+                var args = attr.GetSplitStringArgs();
+                if (args.Count < 2)
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreAttributeDllImportOwner,
+                        $"DllStaticImport: 需要 (静态库名或别名, 符号名) 两个字符串实参, owner='{owner?.allName}'");
+                    return;
+                }
+                Log.AddMetaCoreLog(LID.MetaCoreAttributeDllImportAttributeRegistered,
+                    $"DllStaticImport: attribute registered on '{owner?.allName}' lib='{args[0]}' symbol='{args[1]}'" +
+                    (args.Count >= 3 ? $" sig='{args[2]}'" : " (sig derived from function signature)"));
+            });
         }
 
         #region Compile-Time Processing

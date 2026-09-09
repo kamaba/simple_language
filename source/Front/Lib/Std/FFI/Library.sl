@@ -30,6 +30,16 @@ public class FFI.Library extends Object
         this._handle = SystemFFILoadLibrary( path )
     }
 
+    #!
+     * 以已有句柄构造（@DllStaticImport 静态绑定辅助）：句柄来自
+     * cvm 加载模块时预载的静态库（dllImports "static" 字段注册，
+     * 进程级常驻，不参与引用计数释放）。仅做包装，不重新加载。
+    !#
+    public void _init_( Int64 handle )
+    {
+        this._handle = handle
+    }
+
     #! 句柄（诊断用途）。 !#
     get Int64 handle()
     {
@@ -106,6 +116,13 @@ public class FFI.Library extends Object
 #! FFI 静态辅助：全局统计与回调注册。 !#
 public class FFI.StaticLibrary extends Object
 {
+    #!
+     * 静态绑定库缓存（project.jsonc dllImports "static" 字段注册的库，
+     * cvm 加载模块时即预载，句柄持续到进程退出才释放）。
+     * GetStaticLib 首次命中时包装为 FFI.Library 登记在此。
+    !#
+    static List<Library> s_staticLibs = List<Library>()
+
     public override void _init_()
     {
     }
@@ -114,6 +131,30 @@ public class FFI.StaticLibrary extends Object
     public static Int32 libraryCount()
     {
         ret SystemFFILibraryCount()
+    }
+
+    #!
+     * 按静态名取预载库的 Library 封装。未注册（jsonc 无对应 "static"
+     * 条目）返回 null。同一静态名重复获取返回缓存的同一 Library。
+    !#
+    public static Library GetStaticLib( string name )
+    {
+        Int64 handle = SystemFFIGetStaticLibrary( name )
+        if ( handle == 0 )
+        {
+            ret null
+        }
+        for i = 0, i < s_staticLibs.length, i++
+        {
+            Library lib = s_staticLibs[i]
+            if ( lib != null && lib.handle == handle )
+            {
+                ret lib
+            }
+        }
+        Library newLib = FFI.Library( handle )
+        s_staticLibs.add( newLib )
+        ret newLib
     }
 
     #!
