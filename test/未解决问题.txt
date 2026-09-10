@@ -1,6 +1,7 @@
 
+VMArray这个里边  RuntimeType*    array_runtime_type;     /* m_RuntimeType: the array type itself (Core.Array<T>); the 已经在  VMObject        object; 包括了吧，怎么又增加一个字段，这样不冗余吗 你确认下，如果冗余就去掉并且把相关的逻辑变正确
 
-现在已经有dllStaticImport了，尽量把已经确定 的 像Math,Std 如果使用倒的一些FFI尽量变成static的方式去做，这样，速度也会快一些 
+再整理一个Agent.md 然后每次处理的时候先读这个
 
 
 
@@ -8,13 +9,11 @@
 
 runtime_class_manager_get_runtime_class_by_id里边界的查找过程改成hash碰撞连表的模式吧，要不这样类多了，查找起来太慢了
 
-vm_object_new_by_runtime_class 这个里边，要分配内存的时候，要分配连续内存，而不是先分配VMObject再分配后边的，要直接分配全了，然后通过位给各个值赋值
-
 优化Component.sl 好多速度较慢的，可以放到system method call层
 
 
 使用 @csharp{ } 调用相关的接口 在{}内是中转逻辑   a = 0; @csharp {     a = TestCSharp.TTC.getIndex( 10, a ) }   @js{ a = Test.calc( a, a ) }  需要在工程里边配置 C#版本
-我现在代码里边要增加 @标签{} 的一种逻辑，大概意思是，如果在jsonc 定义过这种标签，我在代码里边直接使用 比如  我在 jsonc 的配置里边  增加了 "atSignLabel":[ { "name":"asm", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86" }  }, { "name":"csharp", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86", "lib":"mono-static.dll" }  } ]
+我现在代码里边要增加 @标签{} 的一种逻辑，大概意思是，如果在jsonc 定义过这种标签，我在代码里边直接使用 比如  我在 jsonc 的配置里边  增加了 "atSignLabel":[ { "name":"asm", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86" }  }, { "name":"csharp", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86", "lib":"mono-static.dll" }  } ]  还有就是一些特殊注册，比如注册了csharp 可能识别代码 
 
 
 字节码序例化相互转化过程
