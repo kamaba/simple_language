@@ -1,13 +1,9 @@
+貌似工程还没有说明，像 那些是测试用例，测试用例源码位置 没有说明，这块要说明 测试那些东西，用那个测试工程，要有一个引导  也加到.md里边吧
 
-VMArray这个里边  RuntimeType*    array_runtime_type;     /* m_RuntimeType: the array type itself (Core.Array<T>); the 已经在  VMObject        object; 包括了吧，怎么又增加一个字段，这样不冗余吗 你确认下，如果冗余就去掉并且把相关的逻辑变正确
+jsonc配置文件 先把data的结构放到global下边  然后增加一个macor 用来存放static if 静态编译的数据
+增加static if 编译功能，只能对外部定义的一个字段，进行判断，比如 static if global.macro.platform == "Win32"{} static elif global.macor.platform = "Mac" {} 在jsonc 里边，需要单门有一个定义这些字段，这些字段，和data定义是一样的， 但这个里边的如果变化的话，需要写到.sp 也就是Project里边  在CompileBefore(){}里边变化 其它的地方不让对global.macor进行变化     如果遇到static 的情况，其实是要在编译后台metaCore层的时候就要开始执行一些判断逻辑， 也就是编译期进行if 的执行，然后到IR层的时候，只保留if判断出来的那部分逻辑，你可以先看下D语言的逻辑。 我这个也和那个意思差不多，写完后，到时候把相关的 说明 也就是.md 文件放gc md/project下边    一定要记住static 不进到runtime层
 
-再整理一个Agent.md 然后每次处理的时候先读这个
-
-
-
-把runtime_type 把原来VMObject里边的memberObjects移动到RuntimeType下边吧，因为这里边，大部分是相同的,查找对比原素，，也可以通过RuntimeType下边MemberObjects 里边的Object的 member_data_start + member_data_length查找出member_data里边的数据  反正就是，VMObject把member_runtime_objects member_runtime_object_count runtime_type_ref 移动到了RuntimeType下边，如果有重复就去除掉就好了，然后  在_VMObject里边增加一个RuntimeType* _bindRuntimeType的指针以后操作，都通过_bindRuntimeType去操作  
-
-runtime_class_manager_get_runtime_class_by_id里边界的查找过程改成hash碰撞连表的模式吧，要不这样类多了，查找起来太慢了
+改二进制的大工程，
 
 优化Component.sl 好多速度较慢的，可以放到system method call层
 
@@ -15,10 +11,7 @@ runtime_class_manager_get_runtime_class_by_id里边界的查找过程改成hash�
 使用 @csharp{ } 调用相关的接口 在{}内是中转逻辑   a = 0; @csharp {     a = TestCSharp.TTC.getIndex( 10, a ) }   @js{ a = Test.calc( a, a ) }  需要在工程里边配置 C#版本
 我现在代码里边要增加 @标签{} 的一种逻辑，大概意思是，如果在jsonc 定义过这种标签，我在代码里边直接使用 比如  我在 jsonc 的配置里边  增加了 "atSignLabel":[ { "name":"asm", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86" }  }, { "name":"csharp", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86", "lib":"mono-static.dll" }  } ]  还有就是一些特殊注册，比如注册了csharp 可能识别代码 
 
-
 字节码序例化相互转化过程
- 
-
 
 但做mysql数据库，需要动态引入dll的vm层代码 独立的工程
 ffmpeg的dll 引入
@@ -53,6 +46,7 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 7. 调用nativeBridge的调用验证
 
 内存管理，在cvm里边，增加一个机制，就是小块内存管理， 比如  byte32 byte40 byte 48  byte56  byte64  这样的，多个数组，然后以后用来存放像 Float16_2 的 Float32_2 以下的，都要有对应的列表，然后从这上边分配内存 
+内存管理，增加引用计数，在函数体内检查与操作，如果在函数体几，引用的对应是本地创建的，在本函数内要释放  也就是函数结尾 要有对象的释放
 
 在aot的中，处理llvm内置的一些结构，在生成这个数据后，要有一个id的概念，也就是定义这个对象的hashCode 虽然是在llvm里边生成的，也要有这个概念，因为这个在 llvm的.struct转成VMObject一类的时候，要先检查vm里边有没有这个，如果没有，再去创建VMObject 而且这个不受内存gc管理，因为这个还属于llvm  所以Object.sl 你看下是不是要增加一个int _hashCode这样的概念呀，是不是这样更合理  你确定下，原来好像我看着是用的指针进行hash运算的，这种方式确定可以吗？
 
@@ -63,7 +57,6 @@ sl_aot_skeleton_new_inner这个函数的话，原来的llvm生成的数据，是
 优化：
 1. 去掉int32/int64/...的一些初始化方法
 2. 去掉无用的init
-3. math库的处理  看_add_ _minus_ 等的方法是否能在虚拟机里边正常跑
 8. import 导入错误的显示
 10. 全局的typealias里边需要读取后，继承
 优化cvm里边的加法的过程

@@ -14,15 +14,27 @@
   <!-- 用 CMake 构建 C VM（csimple_lang\build\Debug\bin）：
        csimple_lang_dll.dll —— Debug 配置 P/Invoke 加载（VS 内构建也走这里，保证断点行号与加载的 PDB 一致）；
        csimple_lang.exe —— Release 配置进程模式调用（Program.cs 优先取 Debug\bin 下的 exe）。
+       必须统一使用 build\Debug 这棵 Ninja/clang 树（与命令行开发同一棵树）；
+       不要在顶层 build\ 生成 VS 树：两棵树的 DLL 输出目录相同，会互相覆盖，
+       导致 P/Invoke 加载到旧版 DLL，出现字符串错乱（Phase 2 错配）等问题。
        两个目标都要构建，否则 exe 停留在旧版本时，新增/改名的系统调用会静默失效（表现为
        系统调用返回栈上残留值，大量断言随机失败） -->
   <Target Name="BuildCVM" BeforeTargets="Build">
     <PropertyGroup>
       <CVMRoot>$(MSBuildThisFileDirectory)..\..\..\csimple_lang</CVMRoot>
+      <CVMBuild>$(CVMRoot)\build\Debug</CVMBuild>
+      <!-- ninja 路径：NINJA_PATH 环境变量优先（CMakePresets.json 同款约定），
+           未设置时回退到本机 winget 安装路径（CMake 探测不到 winget 装的 ninja） -->
+      <CVMNinja Condition="'$(NINJA_PATH)' != ''">$(NINJA_PATH)</CVMNinja>
+      <CVMNinja Condition="'$(NINJA_PATH)' == ''">C:/Users/dingo/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/ninja.exe</CVMNinja>
     </PropertyGroup>
-    <Exec Command="cmake -B &quot;$(CVMRoot)\build&quot; -S &quot;$(CVMRoot)&quot;" />
-    <Exec Command="cmake --build &quot;$(CVMRoot)\build&quot; --config Debug --target csimple_lang_dll" />
-    <Exec Command="cmake --build &quot;$(CVMRoot)\build&quot; --config Debug --target csimple_lang" />
+    <!-- 仅在构建树不存在时才 configure（参数与现有 build\Debug 树一致：Ninja + clang）。
+         注：Windows-Clang 平台模块强制要求 RC 编译器（即使项目无 .rc 文件），
+         必须显式指定 llvm-rc，否则全新构建树 configure 会失败 -->
+    <Exec Condition="!Exists('$(CVMBuild)\CMakeCache.txt')"
+          Command="cmake -B &quot;$(CVMBuild)&quot; -S &quot;$(CVMRoot)&quot; -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=&quot;C:/Program Files/LLVM/bin/clang.exe&quot; -DCMAKE_RC_COMPILER=&quot;C:/Program Files/LLVM/bin/llvm-rc.exe&quot; -DCMAKE_MAKE_PROGRAM=&quot;$(CVMNinja)&quot;" />
+    <!-- 同时构建 csimple_lang.exe 与 csimple_lang_dll.dll -->
+    <Exec Command="cmake --build &quot;$(CVMBuild)&quot; --target csimple_lang csimple_lang_dll" />
   </Target>
 
 </Project>

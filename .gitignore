@@ -392,3 +392,5 @@
 /test/MathTest/build/math_compile_trace.txt
 /test/MathTest/build/run_after_fix.txt
 /test/MathTest/build/run_final.txt
+/project/cvm_sl_mysql_lib/cvm_sl_mysql_lib
+/project/cvm_sl_mysql_lib/x64
