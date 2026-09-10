@@ -26,6 +26,7 @@
 | [project/project-module.md](./project/project-module.md) | 模块与类组织方式说明 |
 | [project/project-config-jsonc-guide.md](./project/project-config-jsonc-guide.md) | JSONC 字段详解与迁移注意点 |
 | [project/ffi.md](./project/ffi.md) | **FFI 外部函数接口（已落地）**：普通 FFI 调用、`FFI.Library` / `FFI.StaticLibrary`、`dllImports` 配置、`@DllImport` 与 `@DllStaticImport`(opcode 118)、sig 规则、内部原理 |
+| [project/test-guide.md](./project/test-guide.md) | **测试引导**：`test/` 各测试用例集（测什么、代表用例）与 `project/` 各测试宿主工程（默认测试集、C VM / C# VM）对照表、运行方式（VS / dotnet / Debug vs Release） |
 
 ---
 

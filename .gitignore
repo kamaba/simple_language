@@ -394,3 +394,5 @@
 /test/MathTest/build/run_final.txt
 /project/cvm_sl_mysql_lib/cvm_sl_mysql_lib
 /project/cvm_sl_mysql_lib/x64
+/source/Front/Lib/SLMysql/cvm_sl_mysql_lib/mysqlclient/lib/vs14/mysqlclient.lib
+/test/NullFastTest/build/logs/VM.txt
