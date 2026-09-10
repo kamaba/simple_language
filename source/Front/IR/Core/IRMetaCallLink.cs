@@ -65,6 +65,25 @@ namespace SimpleLanguage.Core.IR
                     }
                 }
 
+                // 实例语法调用 static 方法：前一节点已把 receiver 压栈（VisitVariable 的
+                // LoadLocal/LoadField、New 的新对象、上一 MethodCall 的返回值等），但 static
+                // 方法参数表不含 this，CallStatic 只按实参弹栈，receiver 会残留在调用者
+                // eval 栈上（后续 Add 等二元运算弹左值时按 null 语义吞掉前缀）。
+                // 此处先发射 Pop 弹掉 receiver，再压实参，保持栈平衡。
+                // 注意：final 实例方法同样走 CallStatic 但参数表含 this（receiver 被正常
+                // 消费），故必须用 isStatic 精确限定；类名语法（前一节点 MetaClass/Enum
+                // 空分支，不压值）无 receiver，无需处理。
+                if (i > startIndex
+                    && cnode.visitType == MetaVisitNode.EVisitType.MethodCall
+                    && IsStaticMethodCall(cnode)
+                    && !IsNonValueVisitNode(cnlist[i - 1]))
+                {
+                    IRData popReceiverData = new IRData();
+                    popReceiverData.opCode = EIROpCode.Pop;
+                    popReceiverData.SetDebugInfoByToken(cnode.token, "Pop receiver of static call");
+                    irList.Add(new IRBase(popReceiverData));
+                }
+
                 irList.AddRange(ExecOnceCnode(_irMethod, cnode));
             }
 
@@ -98,6 +117,16 @@ namespace SimpleLanguage.Core.IR
 
             // Not-null path: receiver is still on the stack (Cne consumed the dup'd copy).
             // Do NOT pop — the subsequent method call / field access needs the receiver.
+            // 例外：?. 后是 static 方法调用时（参数表不含 this，CallStatic 不消费
+            // receiver），保留的 receiver 同样会残留，须先弹掉再压实参。
+            if (qmdNode.visitType == MetaVisitNode.EVisitType.MethodCall
+                && IsStaticMethodCall(qmdNode))
+            {
+                IRData popReceiverData = new IRData();
+                popReceiverData.opCode = EIROpCode.Pop;
+                popReceiverData.SetDebugInfoByToken(qmdNode.token, "?. pop receiver, static call");
+                irList.Add(new IRBase(popReceiverData));
+            }
             irList.AddRange(ProcessVisitNodeList(_irMethod, cnlist, qmdIndex));
 
             IRBranch endBranch = new IRBranch(_irMethod, EIROpCode.Br, endLabelData);
@@ -119,6 +148,28 @@ namespace SimpleLanguage.Core.IR
 
             return irList;
         }
+
+        /// <summary>
+        /// 判断 visit 节点是否为 static 方法调用（与 IRCallFunction.Parse 的
+        /// callType 判定同源：GetTemplateMemberFunction 解模板后查 isStatic）。
+        /// static 方法参数表不含 this，CallStatic 不会消费调用方压入的 receiver。
+        /// </summary>
+        private static bool IsStaticMethodCall(MetaVisitNode cnode)
+        {
+            MetaFunction mf = cnode?.methodCall?.GetTemplateMemberFunction();
+            return (mf as MetaMemberFunction)?.isStatic == true;
+        }
+
+        /// <summary>
+        /// 判断 visit 节点是否为「不产生栈值」的节点（类名/枚举名前缀，
+        /// 对应类名语法 Class.staticFn(...)，ExecOnceCnode 空分支不压 receiver）。
+        /// </summary>
+        private static bool IsNonValueVisitNode(MetaVisitNode cnode)
+        {
+            return cnode.visitType == MetaVisitNode.EVisitType.MetaClass
+                || cnode.visitType == MetaVisitNode.EVisitType.Enum;
+        }
+
         public static List<IRBase> ExecOnceCnode(IRMethod _irMethod, MetaVisitNode cnode, int dupcount = 0 )
         {
             List<IRBase> irList = new List<IRBase>();

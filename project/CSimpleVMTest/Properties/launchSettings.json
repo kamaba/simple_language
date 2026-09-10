@@ -2,12 +2,17 @@
   "profiles": {
     "NullIfPorject": {
       "commandName": "Project",
-      "commandLineArgs": "1",
+      "commandLineArgs": "NullFast",
       "nativeDebugging": true
     },
     "StaticIfTest": {
       "commandName": "Project",
-      "commandLineArgs": "2",
+      "commandLineArgs": "StaticIf",
+      "nativeDebugging": true
+    },
+    "JsonTest": {
+      "commandName": "Project",
+      "commandLineArgs": "json",
       "nativeDebugging": true
     }
   }

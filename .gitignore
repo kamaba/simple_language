@@ -396,3 +396,5 @@
 /project/cvm_sl_mysql_lib/x64
 /source/Front/Lib/SLMysql/cvm_sl_mysql_lib/mysqlclient/lib/vs14/mysqlclient.lib
 /test/NullFastTest/build/logs/VM.txt
+/test/JsonTest/build/logs/VM.txt
+/test/JsonTest/json_test_out.json

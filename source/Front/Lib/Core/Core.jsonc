@@ -70,6 +70,7 @@
       { "path": "DataStruct/Table.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "DataStruct/Tree.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "DataStruct/BaseCsv.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
+      { "path": "Text/BaseJson.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "Coroutine.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Container/Channel.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 }
     ]
@@ -367,6 +368,9 @@
     { "name": "SystemTreeContains",           "returnType": "bool",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_tree_contains" },
     { "name": "SystemTreeMoveNext",           "returnType": "bool",   "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_tree_move_next" },
     { "name": "SystemTreeClear",              "returnType": "void",   "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_tree_clear" },
+    // ---- Json native calls (Text/BaseJson.sl): yyjson text <-> TreeNode tree ----
+    { "name": "SystemJsonParse",              "returnType": "object", "params": ["object", "string"], "isVariadic": false, "cvmFunction": "vm_sys_json_parse" },
+    { "name": "SystemJsonToString",           "returnType": "string", "params": ["object", "bool"], "isVariadic": false, "cvmFunction": "vm_sys_json_to_string" },
     // ---- Tree native calls (DataStruct/Tree.sl): binary BinaryNode/BinaryTree ----
     { "name": "SystemBinarySetRoot",          "returnType": "void",   "params": ["object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_binary_set_root" },
     { "name": "SystemBinaryLink",             "returnType": "bool",   "params": ["object", "object", "bool"], "isVariadic": false, "cvmFunction": "vm_sys_binary_link" },
