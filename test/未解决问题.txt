@@ -1,8 +1,8 @@
-貌似工程还没有说明，像 那些是测试用例，测试用例源码位置 没有说明，这块要说明 测试那些东西，用那个测试工程，要有一个引导  也加到.md里边吧
-
 jsonc配置文件 先把data的结构放到global下边  然后增加一个macor 用来存放static if 静态编译的数据
 增加static if 编译功能，只能对外部定义的一个字段，进行判断，比如 static if global.macro.platform == "Win32"{} static elif global.macor.platform = "Mac" {} 在jsonc 里边，需要单门有一个定义这些字段，这些字段，和data定义是一样的， 但这个里边的如果变化的话，需要写到.sp 也就是Project里边  在CompileBefore(){}里边变化 其它的地方不让对global.macor进行变化     如果遇到static 的情况，其实是要在编译后台metaCore层的时候就要开始执行一些判断逻辑， 也就是编译期进行if 的执行，然后到IR层的时候，只保留if判断出来的那部分逻辑，你可以先看下D语言的逻辑。 我这个也和那个意思差不多，写完后，到时候把相关的 说明 也就是.md 文件放gc md/project下边    一定要记住static 不进到runtime层
 
+
+首先，要确定 所有的查找使用int型的或者是使用名称 hashMap的方式，把string hash成一个int 再查找
 改二进制的大工程，
 
 优化Component.sl 好多速度较慢的，可以放到system method call层

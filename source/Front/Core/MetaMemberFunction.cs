@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile;
+using SimpleLanguage.Project;
 
 using SimpleLanguage.Logging;
 
@@ -1094,6 +1095,51 @@ namespace SimpleLanguage.Core
                         var metaIfStatements = new MetaIfStatements(currentBlockStatements, fmkis);
                         beforeStatements.SetNextStatements( metaIfStatements );
                         beforeStatements = metaIfStatements;
+                    }
+                    break;
+                case FileMetaKeyStaticIfSyntax fmksis:
+                    {
+                        // static if 编译期条件编译 (global.macro 宏判断):
+                        // MetaCore 层对宏条件求值, 只把选中分支的子语句平铺接入当前语句链,
+                        // 未选中分支不参与语义分析与 IR——static 不进 runtime
+                        FileMetaBlockSyntax selectBlock = null;
+                        if (MacroManager.instance.EvaluateStaticCondition(fmksis.ifExpressSyntax.conditionExpress, out bool ifResult))
+                        {
+                            if (ifResult)
+                            {
+                                selectBlock = fmksis.ifExpressSyntax.executeBlockSyntax;
+                            }
+                            else
+                            {
+                                for (int i = 0; i < fmksis.elseIfExpressSyntax.Count; i++)
+                                {
+                                    var elif = fmksis.elseIfExpressSyntax[i];
+                                    if (MacroManager.instance.EvaluateStaticCondition(elif.conditionExpress, out bool elifResult) && elifResult)
+                                    {
+                                        selectBlock = elif.executeBlockSyntax;
+                                        break;
+                                    }
+                                }
+                                if (selectBlock == null)
+                                {
+                                    selectBlock = fmksis.elseExpressSyntax?.executeBlockSyntax;
+                                }
+                            }
+                        }
+                        // 求值失败 (错误已由 MacroManager 记录) 或无匹配分支: 不接入任何语句
+                        if (selectBlock != null)
+                        {
+                            // 把选中分支的子语句按原顺序平铺接入当前位置的语句链。
+                            // 注意必须以当前 beforeStatements 为起点逐条接入——
+                            // 不能用 CreateMetaSyntax(selectBlock, currentBlockStatements)，
+                            // 那会把第一条子语句挂到父块上，覆盖父块已有的语句链。
+                            // 也不包一层运行时 block：static if 不引入作用域，static 不进 runtime。
+                            while (selectBlock.IsNotEnd())
+                            {
+                                var sfChild = selectBlock.GetCurrentSyntaxAndMove();
+                                HandleMetaSyntax(currentBlockStatements, ref beforeStatements, sfChild);
+                            }
+                        }
                     }
                     break;
                 case FileMetaKeyTrySyntax fmts:

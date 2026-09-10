@@ -131,6 +131,14 @@ namespace SimpleLanguage.Project
                     }
                 }
 
+                if (TryGetObj(global, "macro", out var macroObj))
+                {
+                    foreach (var kv in macroObj.EnumerateObject())
+                    {
+                        cfg.Global.Macro[kv.Name] = kv.Value.Clone();
+                    }
+                }
+
                 if (TryGetObj(global, "replace", out var replace))
                 {
                     foreach (var kv in replace.EnumerateObject())

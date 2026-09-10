@@ -212,6 +212,9 @@ namespace SimpleLanguage.Project
             {
                 // Inject jsonc data (root "data" + legacy global.data) into Project meta members before statements parse.
                 ProjectClass.InjectProjectGlobalDataFromConfig();
+                // global.macro 宏：载入 jsonc 初始值后注入 Project 静态成员 macro（运行期可读）。
+                // static if 判断在编译期（MetaCore 层）完成，不依赖该成员。
+                ProjectClass.InjectProjectMacroMember();
                 // 系统集成成员：注入 Project 静态 Array<Object> _inputArgs（jsonc data 同名项优先）。
                 ProjectClass.InjectInputArgsMember();
                 // dllImports: Project 元类注入 static 成员 dllImport（global.dllImport.<alias> 链式访问）。

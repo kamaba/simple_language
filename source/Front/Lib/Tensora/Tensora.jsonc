@@ -56,6 +56,7 @@
       // ── Transformer ───────────────────────────────────
       { "path": "Attention.sl",   "group": "tensora", "tag": "attn", "ignore": false, "priority": 0 },
       { "path": "Transformer.sl", "group": "tensora", "tag": "attn", "ignore": false, "priority": 0 },
+      { "path": "TransformerModel.sl", "group": "tensora", "tag": "attn", "ignore": false, "priority": 0 },
 
       // ── 训练：优化器 / 调度 / 指标 / 数据 / 分词 / 训练器 ──
       { "path": "Optimizer.sl", "group": "tensora", "tag": "train", "ignore": false, "priority": 0 },
@@ -124,6 +125,8 @@
       { "class": "PositionalEncoding" },
       { "class": "TransformerBlock" },
       { "class": "Transformer" },
+      { "class": "SeqPool" },
+      { "class": "TransformerClassifier" },
       { "class": "Optimizer" },
       { "class": "SGD" },
       { "class": "Adam" },

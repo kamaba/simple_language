@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
@@ -35,6 +36,10 @@ public class CommandInputArgs
     public string compileProjectName { get; private set; } = null;
     public string compileProjectDir { get; private set; } = null;
     public string outputPath { get; private set; } = null;
+
+    // --- static if external macros (--macro name=value, repeatable) ---
+    // 编译前外部注入 global.macro 宏值：优先级高于 jsonc global.macro，低于 CompileBefore()
+    public Dictionary<string, string> macroDefines { get; } = new Dictionary<string, string>();
 
     // --- new project ---
     public string newProjectBasePath { get; private set; } = null;
@@ -182,6 +187,16 @@ public class CommandInputArgs
                 continue;
             }
 
+            // --macro <name=value>  /  -m <name=value>（可重复出现，后者覆盖前者）
+            if ((string.Equals(a, "--macro", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(a, "-m", StringComparison.OrdinalIgnoreCase))
+                && i + 1 < args.Length)
+            {
+                TryAddMacroDefine(args[i + 1]);
+                i++;
+                continue;
+            }
+
             // --test
             if (string.Equals(a, "--test", StringComparison.OrdinalIgnoreCase)
                 || string.Equals(a, "-t", StringComparison.OrdinalIgnoreCase))
@@ -252,6 +267,12 @@ public class CommandInputArgs
                 exportIR = true;
                 i++;
             }
+            else if ((string.Equals(args[i], "--macro", StringComparison.OrdinalIgnoreCase)
+                 || string.Equals(args[i], "-m", StringComparison.OrdinalIgnoreCase)) && i + 1 < args.Length)
+            {
+                TryAddMacroDefine(args[i + 1]);
+                i++;
+            }
             else if (args[i].Length == 3 && args[i][0] == '-'
                 && (args[i][1] == 'O' || args[i][1] == 'o')
                 && args[i][2] >= '0' && args[i][2] <= '3')
@@ -259,6 +280,19 @@ public class CommandInputArgs
                 optimizeLevel = args[i][2] - '0';
             }
         }
+    }
+
+    /// <summary>解析 "name=value" 形式的外部宏定义（static if global.macro）。</summary>
+    bool TryAddMacroDefine(string define)
+    {
+        if (string.IsNullOrEmpty(define))
+            return false;
+        var sep = define.IndexOf('=');
+        if (sep <= 0)
+            return false;
+        var name = define.Substring(0, sep).Trim();
+        macroDefines[name] = define.Substring(sep + 1);
+        return true;
     }
 
     void ParseNewCommand(string[] args)

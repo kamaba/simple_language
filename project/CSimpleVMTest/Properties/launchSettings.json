@@ -5,7 +5,7 @@
       "commandLineArgs": "1",
       "nativeDebugging": true
     },
-    "CSimpleVMTest2": {
+    "StaticIfTest": {
       "commandName": "Project",
       "commandLineArgs": "2",
       "nativeDebugging": true

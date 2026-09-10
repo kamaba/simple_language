@@ -32,11 +32,14 @@ internal static class Program
                 Console.WriteLine("  ... -- E:\\project\\lang\\simple_language\\test\\ExpendTest\\ProjectTest");
                 return 0;
             }
-            else if( arg == "1" )
+            else if (arg == "1")
             {
                 projectPath = Path.Combine(repoRoot, "test", "NullFastTest", "ProjectTest");
             }
-            
+            else if (arg == "2")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "StaticIfTest", "ProjectTest");
+            }
         }
         else
         {

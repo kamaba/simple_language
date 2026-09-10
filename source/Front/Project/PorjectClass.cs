@@ -430,6 +430,119 @@ namespace SimpleLanguage.Project
             mmv.ParseRealMetaType();
         }
 
+        // global.macro 宏注入（static if 编译期条件编译的数据源）：
+        //   1. LoadFromConfig 载入 jsonc global.macro 段初始值（CompileBefore 预扫描在其后修改宏值）；
+        //   2. 把最终宏值注入为 Project 静态成员 macro（global.macro.<name>，运行期可读）。
+        // 成员定义方式与 jsonc data 的 Object 段一致（匿名 MetaData + MetaNewObjectExpressNode）。
+        // 注意：static if 的条件判断在 MetaCore 层编译期完成（MacroManager.EvaluateStaticCondition），
+        // 未选中分支不参与语义分析与 IR——static 不进 runtime。
+        public static void InjectProjectMacroMember()
+        {
+            // 编译开始：重置为 jsonc global.macro 段初始值
+            MacroManager.instance.LoadFromConfig(ProjectManager.config);
+            // CompileBefore() 预扫描：编译期唯一允许修改 global.macro 的入口
+            PreScanCompileBeforeMacroAssign();
+
+            var macroValues = MacroManager.instance.GetAllMacroValues();
+            if (macroValues.Count == 0)
+            {
+                return;
+            }
+
+            var projectMc = ClassManager.instance.TryGetProjectMetaClass();
+            if (projectMc == null)
+            {
+                return;
+            }
+
+            // 用户显式定义过同名成员时不注入（用户优先）
+            if (projectMc.GetMetaMemberVariableByName("macro") != null)
+            {
+                return;
+            }
+            if (MetaClass.IsNameConflictWithModuleRoot("macro", "jsonc注入成员变量"))
+            {
+                return;
+            }
+
+            // 最终宏值 → 匿名 MetaData（成员格式与 data 定义一致）
+            var macroObj = JsonSerializer.SerializeToElement(macroValues);
+            var macroData = CreateMetaDataByJsonObject("___ProjectGlobalMacro___", macroObj, 0);
+
+            var mmv = new MetaMemberVariable(projectMc, "macro");
+            mmv.SetIsStatic(true);
+            mmv.SetIsConst(false);
+            mmv.SetIsDefineMetaType(true);
+            mmv.SetMetaDefineType(new MetaType(macroData));
+            mmv.SetRealMetaType(new MetaType(macroData));
+            mmv.SetExpress(new MetaNewObjectExpressNode(new MetaType(macroData), projectMc, null));
+            FinalizeInjectedProjectGlobalMember(projectMc, mmv);
+        }
+
+        /// <summary>
+        /// CompileBefore() 预扫描：编译期唯一允许修改 global.macro 的入口。
+        /// 在 .sp 的 Project 类 CompileBefore()（兼容 _before_ / _compile_before_）函数体中
+        /// 识别 global.macro.X = 常量/宏引用 赋值，编译期求值后通过 MacroManager.SetMacroValue
+        /// 更新宏值，并把这些赋值语句从语法列表移除——不参与后续语义分析与 IR（static 不进 runtime）。
+        /// 时序：InjectProjectData 步骤内、LoadFromConfig 之后、macro 成员注入之前。
+        /// </summary>
+        public static void PreScanCompileBeforeMacroAssign()
+        {
+            var fmc = ProjectCompile.projectFileMeta?.GetFileMetaClassByName("Project");
+            if (fmc == null)
+            {
+                return;
+            }
+
+            FileMetaMemberFunction beforeFunc = null;
+            foreach (var fmf in fmc.memberFunctionList)
+            {
+                var fname = fmf?.token?.lexeme?.ToString();
+                if (fname == "CompileBefore" || fname == "_before_" || fname == "_compile_before_")
+                {
+                    beforeFunc = fmf;
+                    break;
+                }
+            }
+            if (beforeFunc == null)
+            {
+                return;
+            }
+
+            var block = beforeFunc.fileMetaBlockSyntax;
+            if (block == null)
+            {
+                return;
+            }
+
+            List<FileMetaSyntax> removeList = null;
+            var syntaxList = block.fileMetaSyntax;
+            for (int i = 0; i < syntaxList.Count; i++)
+            {
+                // 只认普通赋值 (=)：global.macro.X = 右值
+                if (syntaxList[i] is FileMetaOpAssignSyntax fmoas
+                    && fmoas.assignToken?.type == ETokenType.Assign
+                    && MacroManager.TryGetMacroRefName(fmoas.variableRef, out string macroName))
+                {
+                    // 右值必须是常量或另一个宏引用，求值失败错误已由 MacroManager 记录
+                    if (MacroManager.instance.TryEvaluateMacroConstExpress(fmoas.express, out var value))
+                    {
+                        MacroManager.instance.SetMacroValue(macroName, value, fmoas.assignToken);
+                        (removeList ??= new List<FileMetaSyntax>()).Add(fmoas);
+                    }
+                }
+            }
+
+            // 移除已消费的赋值语句：CompileBefore 中的 macro 赋值是编译期行为，不进 runtime
+            if (removeList != null)
+            {
+                for (int i = 0; i < removeList.Count; i++)
+                {
+                    block.fileMetaSyntax.Remove(removeList[i]);
+                }
+            }
+        }
+
         // 系统集成成员：Project 类静态 Array<Object> _inputArgs。
         // C VM 启动时（vm_scheduler_enter 之前）会把命令行传入的程序参数
         // 自动填充进该数组（见 csimple_lang vm_fill_input_args），源码中通过

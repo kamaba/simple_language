@@ -35,7 +35,9 @@ namespace SimpleLanguage.Compile
             public List<Node> commonContent = new List<Node>();             //普通语句区间    Class.CalFun()
 
             public List<SyntaxNodeStruct> childrenKeySyntaxStructList = new List<SyntaxNodeStruct>();//关键字内嵌子语句, 像switch
-            public List<SyntaxNodeStruct> followKeySyntaxStructList = new List<SyntaxNodeStruct>();//关键字跟随语句if/elif/elif/else  
+            public List<SyntaxNodeStruct> followKeySyntaxStructList = new List<SyntaxNodeStruct>();//关键字跟随语句if/elif/elif/else
+
+            public bool isStaticModifier = false;  //static if/elif/else 编译期条件编译: Static 修饰符 + If/ElseIf/Else 主键组合
 
             public SyntaxNodeStruct()
             {
@@ -286,6 +288,7 @@ namespace SimpleLanguage.Compile
             Node curNode = null;
             Token curToken = null;
             ENodeType curNodeType = ENodeType.None;
+            bool pendingStaticKey = false;  //static if/elif/else: 已跳过 Static 修饰符, 等待 If/ElseIf/Else 主键
             while (pnode.parseIndex < pnode.childList.Count)
             {
                 tCurIndex = pnode.parseIndex + index++;
@@ -406,6 +409,16 @@ namespace SimpleLanguage.Compile
                         }
                         if (!condition.IsMatchTokenType(curToken.type))
                         {
+                            // static elif / static else: Static 修饰符后跟匹配关键字时视为匹配,
+                            // 跳过 Static, 由后续 ElseIf/Else 主键承载 (标记 isStaticModifier)
+                            if (curToken.type == ETokenType.Static
+                                && TryGetNextKeyNodeType(pnode, tCurIndex, out ETokenType nkt)
+                                && condition.IsMatchTokenType(nkt))
+                            {
+                                condition.isCheck = false;
+                                pendingStaticKey = true;
+                                continue;
+                            }
                             index = 0;
                             break;
                         }
@@ -507,6 +520,11 @@ namespace SimpleLanguage.Compile
                             }
                         }
                         keynodeStruct.SetMainKeyNode(curNode);
+                        if (pendingStaticKey)
+                        {
+                            keynodeStruct.isStaticModifier = true;
+                            pendingStaticKey = false;
+                        }
                     }
                     else if (ttt == ETokenType.Data)
                     {
@@ -560,6 +578,18 @@ namespace SimpleLanguage.Compile
                     //{
 
                     //}
+                    else if (ttt == ETokenType.Static)
+                    {
+                        // static if/elif/else 编译期条件编译: 跳过 Static 修饰符,
+                        // 标记 pendingStaticKey, 由后续 If/ElseIf/Else 主键承载 (isStaticModifier)
+                        if (TryGetNextKeyNodeType(pnode, tCurIndex, out ETokenType nextKeyType)
+                            && (nextKeyType == ETokenType.If || nextKeyType == ETokenType.ElseIf || nextKeyType == ETokenType.Else))
+                        {
+                            pendingStaticKey = true;
+                            continue;
+                        }
+                        // 其它 static 用法 (成员修饰符等): 保持原有忽略行为
+                    }
                     else
                     {
                         //Log.AddInHandleNode(curNode.token, 0, "Error 解析异常关键字");
@@ -580,6 +610,26 @@ namespace SimpleLanguage.Compile
             }
             keynodeStruct.moveIndex = index;
             return keynodeStruct;
+        }
+
+        // 探测 fromIndex 之后 (跳过行尾/注释) 下一个 Key 节点的 token 类型。
+        // 用于识别 static if/elif/else 的 Static 修饰符 + 关键字组合。
+        private static bool TryGetNextKeyNodeType(Node pnode, int fromIndex, out ETokenType nextKeyType)
+        {
+            nextKeyType = ETokenType.None;
+            for (int peek = fromIndex + 1; peek < pnode.childList.Count; peek++)
+            {
+                var pn = pnode.childList[peek];
+                if (pn == null) { break; }
+                if (pn.nodeType == ENodeType.LineEnd || pn.nodeType == ENodeType.Comment) { continue; }
+                if (pn.nodeType == ENodeType.Key && pn.token != null)
+                {
+                    nextKeyType = pn.token.type;
+                    return true;
+                }
+                return false;
+            }
+            return false;
         }
 
         private FileMetaSyntax CrateFileMetaSyntaxNoKey(List<Node> pNodeList)
@@ -1352,32 +1402,81 @@ namespace SimpleLanguage.Compile
                         }
                         break;
                     }
-                    FileMetaKeyIfSyntax fmkis = FileMetaKeyIfSyntax.ParseIfSyntax(m_FileMeta, akss);
-                    fms = fmkis;
-                    AddParseSyntaxNodeInfo(fmkis);
 
-                    ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(fmkis.ifExpressSyntax.executeBlockSyntax);
-                    m_CurrentNodeInfoStack.Push(pcnic);
-                    ParseSyntax(akss.blockNode);
-                    m_CurrentNodeInfoStack.Pop();
-
-
+                    // follow 一致性校验: static if 的 follow 必须同为 static (static elif/static else),
+                    // 普通 if 的 follow 不允许带 static 修饰
                     for (int i = 0; i < akss.followKeySyntaxStructList.Count; i++)
                     {
-                        FileMetaBlockSyntax fmbs = null;
-                        if (i < fmkis.elseIfExpressSyntax.Count)
+                        var fsns = akss.followKeySyntaxStructList[i];
+                        if (fsns.isStaticModifier != akss.isStaticModifier)
                         {
-                            fmbs = fmkis.elseIfExpressSyntax[i].executeBlockSyntax;
+                            Log.AddNodeLog(LID.FileMetaSyntaxStaticIfFollowKey, fsns.keyNode?.token,
+                                "Error static if 与 elif/else 的 static 修饰必须保持一致!!");
+                            break;
                         }
-                        else
-                        {
-                            fmbs = fmkis.elseExpressSyntax?.executeBlockSyntax;
-                        }
+                    }
 
-                        ParseCurrentNodeInfo pcnic2 = new ParseCurrentNodeInfo(fmbs);
-                        m_CurrentNodeInfoStack.Push(pcnic2);
-                        ParseSyntax(akss.followKeySyntaxStructList[i].blockNode);
+                    if (akss.isStaticModifier)
+                    {
+                        // static if 编译期条件编译: FileMeta 层保留完整分支结构 (全部子语法),
+                        // MetaCore 层 HandleMetaSyntax 编译期求值后只把选中分支的子语句接入语句链,
+                        // 未选中分支不参与语义分析与 IR——static 不进 runtime
+                        FileMetaKeyStaticIfSyntax fmksis = FileMetaKeyStaticIfSyntax.ParseStaticIfSyntax(m_FileMeta, akss);
+                        fms = fmksis;
+                        AddParseSyntaxNodeInfo(fmksis);
+
+                        ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(fmksis.ifExpressSyntax.executeBlockSyntax);
+                        m_CurrentNodeInfoStack.Push(pcnic);
+                        ParseSyntax(akss.blockNode);
                         m_CurrentNodeInfoStack.Pop();
+
+                        for (int i = 0; i < akss.followKeySyntaxStructList.Count; i++)
+                        {
+                            FileMetaBlockSyntax fmbs = null;
+                            if (i < fmksis.elseIfExpressSyntax.Count)
+                            {
+                                fmbs = fmksis.elseIfExpressSyntax[i].executeBlockSyntax;
+                            }
+                            else
+                            {
+                                fmbs = fmksis.elseExpressSyntax?.executeBlockSyntax;
+                            }
+
+                            ParseCurrentNodeInfo pcnic2 = new ParseCurrentNodeInfo(fmbs);
+                            m_CurrentNodeInfoStack.Push(pcnic2);
+                            ParseSyntax(akss.followKeySyntaxStructList[i].blockNode);
+                            m_CurrentNodeInfoStack.Pop();
+                        }
+                    }
+                    else
+                    {
+                        FileMetaKeyIfSyntax fmkis = FileMetaKeyIfSyntax.ParseIfSyntax(m_FileMeta, akss);
+                        fms = fmkis;
+                        AddParseSyntaxNodeInfo(fmkis);
+
+                        ParseCurrentNodeInfo pcnic = new ParseCurrentNodeInfo(fmkis.ifExpressSyntax.executeBlockSyntax);
+                        m_CurrentNodeInfoStack.Push(pcnic);
+                        ParseSyntax(akss.blockNode);
+                        m_CurrentNodeInfoStack.Pop();
+
+
+                        for (int i = 0; i < akss.followKeySyntaxStructList.Count; i++)
+                        {
+                            FileMetaBlockSyntax fmbs = null;
+                            if (i < fmkis.elseIfExpressSyntax.Count)
+                            {
+                                fmbs = fmkis.elseIfExpressSyntax[i].executeBlockSyntax;
+                            }
+                            else
+                            {
+                                fmbs = fmkis.elseExpressSyntax?.executeBlockSyntax;
+                            }
+
+                            ParseCurrentNodeInfo pcnic2 = new ParseCurrentNodeInfo(fmbs);
+                            m_CurrentNodeInfoStack.Push(pcnic2);
+                            ParseSyntax(akss.followKeySyntaxStructList[i].blockNode);
+                            m_CurrentNodeInfoStack.Pop();
+                        }
                     }
                 }
                 else if (akss.tokenType == ETokenType.Try)

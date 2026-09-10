@@ -210,6 +210,106 @@ namespace SimpleLanguage.Compile
             return sb.ToString();
         }
     }
+    // static if 编译期条件编译 (global.macro 宏判断, 仿 D 语言 static if):
+    //   static if <宏条件> {} static elif <宏条件> {} static else {}
+    // FileMeta 层保留完整分支结构 (含全部子语法);
+    // MetaCore 层 HandleMetaSyntax 编译期求值后只把选中分支的子语句接入语句链,
+    // 未选中分支不参与语义分析与 IR——static 不进 runtime。
+    public class FileMetaKeyStaticIfSyntax : FileMetaSyntax
+    {
+        public FileMetaConditionExpressSyntax ifExpressSyntax => m_IfExpressSyntax;
+        public List<FileMetaConditionExpressSyntax> elseIfExpressSyntax => m_ElseIfExpressSyntax;
+        public FileMetaKeyOnlySyntax elseExpressSyntax => m_ElseExpressSyntax;
+
+        private FileMetaConditionExpressSyntax m_IfExpressSyntax = null;
+        private List<FileMetaConditionExpressSyntax> m_ElseIfExpressSyntax = new List<FileMetaConditionExpressSyntax>();
+        private FileMetaKeyOnlySyntax m_ElseExpressSyntax = null;
+
+        public static FileMetaKeyStaticIfSyntax ParseStaticIfSyntax(FileMeta fm, StructParse.SyntaxNodeStruct sns)
+        {
+            FileMetaKeyStaticIfSyntax ifSyntax = new FileMetaKeyStaticIfSyntax(fm);
+            FileMetaBaseTerm conditionExpress = FileMetatUtil.CreateFileMetaExpress(fm, sns.keyContent, FileMetaTermExpress.EExpressType.Common);
+            FileMetaBlockSyntax executeBlock = new FileMetaBlockSyntax(fm, sns.blockNode.token, sns.blockNode.endToken);
+            var fms = new FileMetaConditionExpressSyntax(fm, sns.keyNode.token, conditionExpress, executeBlock);
+
+            ifSyntax.SetFileMetaConditionExpressSyntax(fms);
+            ifSyntax.SetToken(sns.keyNode.token);
+
+            for (int i = 0; i < sns.followKeySyntaxStructList.Count; i++)
+            {
+                var csns = sns.followKeySyntaxStructList[i];
+                var cnode = csns.keyNode;
+                Token token = cnode.token;
+                if (token.type == ETokenType.ElseIf)
+                {
+                    FileMetaBaseTerm child_conditionExpress = FileMetatUtil.CreateFileMetaExpress(fm, csns.keyContent, FileMetaTermExpress.EExpressType.Common);
+                    FileMetaBlockSyntax child_executeBlock = new FileMetaBlockSyntax(fm, csns.blockNode.token, csns.blockNode.endToken);
+                    var child_fms = new FileMetaConditionExpressSyntax(fm, token, child_conditionExpress, child_executeBlock);
+
+                    ifSyntax.AddElseIfExpressSyntax(child_fms);
+                    child_fms.SetToken(token);
+                }
+                else if (token.type == ETokenType.Else)
+                {
+                    FileMetaBlockSyntax executeBlock2 = new FileMetaBlockSyntax(fm, csns.blockNode.token, csns.blockNode.endToken);
+                    var fms3 = new FileMetaKeyOnlySyntax(fm, token, executeBlock2);
+                    fms3.SetToken(token);
+
+                    ifSyntax.SetElseExpressSyntax(fms3);
+                }
+            }
+            return ifSyntax;
+        }
+
+        public FileMetaKeyStaticIfSyntax(FileMeta fm)
+        {
+            m_FileMeta = fm;
+        }
+        public void SetFileMetaConditionExpressSyntax(FileMetaConditionExpressSyntax fmces)
+        {
+            m_IfExpressSyntax = fmces;
+        }
+        public void SetElseExpressSyntax(FileMetaKeyOnlySyntax fmces)
+        {
+            m_ElseExpressSyntax = fmces;
+        }
+        public void AddElseIfExpressSyntax(FileMetaConditionExpressSyntax fmces)
+        {
+            m_ElseIfExpressSyntax.Add(fmces);
+        }
+        public override void SetDeep(int _deep)
+        {
+            m_Deep = _deep;
+            m_IfExpressSyntax?.SetDeep(m_Deep);
+            for (int i = 0; i < m_ElseIfExpressSyntax.Count; i++)
+            {
+                m_ElseIfExpressSyntax[i].SetDeep(m_Deep);
+            }
+            m_ElseExpressSyntax?.SetDeep(m_Deep);
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("static ");
+            if (m_IfExpressSyntax != null)
+            {
+                sb.Append(m_IfExpressSyntax.ToFormatString());
+            }
+            for (int i = 0; i < m_ElseIfExpressSyntax.Count; i++)
+            {
+                sb.Append(Environment.NewLine);
+                sb.Append("static ");
+                sb.Append(m_ElseIfExpressSyntax[i].ToFormatString());
+            }
+            if (m_ElseExpressSyntax != null)
+            {
+                sb.Append(Environment.NewLine);
+                sb.Append("static ");
+                sb.Append(m_ElseExpressSyntax.ToFormatString());
+            }
+            return sb.ToString();
+        }
+    }
     public class FileMetaKeySwitchSyntax : FileMetaSyntax
     {
         public class FileMetaKeyCaseSyntax

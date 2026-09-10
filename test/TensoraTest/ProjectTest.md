@@ -17,6 +17,7 @@ Tensora 库（AI 常用类）的测试用例与示例集合。
 | `ClassicMlTest.sl` | 传统机器学习示例：线性回归、逻辑回归、KNN、KMeans、高斯朴素贝叶斯、决策树桩、PCA（算法直接写在测试里，可提升进库） |
 | `DataTest.sl` | `Dataset` / `DataLoader` / `Normalizer` / `Tokenizer` / `Metrics` / `Device` |
 | `TtsTest.sl` | 极简 TTS：Conv1d 栈 + Transformer（Wav2Vec2 风格编码器）+ 时长预测 / 长度调节 + Mel 解码 + 谐波声码器，端到端「文本 -> mel -> 波形」 |
+| `TransformerModelTest.sl` | BERT 风格 `TransformerClassifier`：形状与参数量、`SeqPool` 的 Mean/Cls 池化及梯度、小样本训练、推理（概率 / 批量预测） |
 
 ## 运行
 

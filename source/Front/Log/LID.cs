@@ -966,6 +966,17 @@ namespace SimpleLanguage.Logging
         ExportVmDllBuildProject = 22112,
         ExportVmDllBuildFailed = 22113,
         ExportVmDllBuildSuccess = 22114,
+        // ---- StaticIf 模块（static if 编译期条件编译 / global.macro 宏）----
+        ProjectMacroManagerIssue = 23000,
+        ProjectMacroManagerMacroUndefined = 23001,
+        ProjectMacroManagerNotSupportExpress = 23002,
+        ProjectMacroManagerNotSupportOperate = 23003,
+        ProjectMacroManagerTypeMismatch = 23004,
+        ProjectMacroManagerMacroValueInvalid = 23005,
+        ProjectMacroManagerMacroOnlyModifyInCompileBefore = 23006,
+        ProjectMacroManagerMacroNotConst = 23007,
+        FileMetaSyntaxStaticIfFollowKey = 23008,
+        ProjectMacroManagerExternalMacroApplied = 23009,
 
     }
 }

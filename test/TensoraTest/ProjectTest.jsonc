@@ -28,7 +28,8 @@
       { "path": "NnTest.sl",        "group": "tensora", "tag": "nn",   "ignore": false, "priority": 0 },
       { "path": "ClassicMlTest.sl", "group": "tensora", "tag": "ml",   "ignore": false, "priority": 0 },
       { "path": "DataTest.sl",      "group": "tensora", "tag": "data", "ignore": false, "priority": 0 },
-      { "path": "TtsTest.sl",       "group": "tensora", "tag": "tts",  "ignore": false, "priority": 0 }
+      { "path": "TtsTest.sl",       "group": "tensora", "tag": "tts",  "ignore": false, "priority": 0 },
+      { "path": "TransformerModelTest.sl", "group": "tensora", "tag": "attn", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -75,7 +76,8 @@
       { "class": "MelDecoder" },
       { "class": "SimpleVocoder" },
       { "class": "TtsModel" },
-      { "class": "TtsTest" }
+      { "class": "TtsTest" },
+      { "class": "TransformerModelTest" }
     ]}
   ],
   "export": {

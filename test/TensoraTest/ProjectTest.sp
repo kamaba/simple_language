@@ -19,6 +19,7 @@ Project
         ClassicMlTest.fun()
         DataTest.fun()
         TtsTest.fun()
+        TransformerModelTest.fun()
 
         SystemPrintln( "===== TensoraTest _main_ end =====" )
     }
