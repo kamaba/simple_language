@@ -56,8 +56,14 @@ namespace SimpleLanguage.Export.SLIR.Types
     {
         public SLRuntimeDefTypePackage? runtimeDefType { get; set; }
         public List<SLRuntimeDefTypePackage> templateRuntimeDefTypeList { get; set; } = new();
-        public string methodId { get; set; } = string.Empty;
+        /// <summary>方法 id（方法全名 FNV-1a 确定型哈希，见 ClassManager.GetMethodId）。
+        /// C VM 直接以 int 为哈希键查找方法，运行期不再对字符串做 hash。0 = 未知方法。</summary>
+        public int methodId { get; set; }
         public string methodName { get; set; } = string.Empty;
+        /// <summary>裸方法名 FNV-1a 哈希（见 ClassManager.GetMethodId）。
+        /// C VM CallDynamic 接口分发 int 优先匹配；非 ASCII 名/哈希碰撞落
+        /// methodName 字符串兜底；methodName 保留用于 Debug 显示。</summary>
+        public int methodNameHash { get; set; }
         public int paramCount { get; set; }
         public bool tryCatch { get; set; }
     }
@@ -90,8 +96,9 @@ namespace SimpleLanguage.Export.SLIR.Types
         public string symbol { get; set; } = string.Empty;
         /// <summary>FFI 签名（"i32,i32->i32"），与 cvm sl_ffi_sig_parse 格式一致</summary>
         public string sig { get; set; } = string.Empty;
-        /// <summary>回退目标：被 @DllStaticImport 标记的 SL 函数 id</summary>
-        public string methodId { get; set; } = string.Empty;
+        /// <summary>回退目标：被 @DllStaticImport 标记的 SL 函数 id
+        /// （方法全名 FNV-1a 确定型哈希，见 ClassManager.GetMethodId；0 = 未知）。</summary>
+        public int methodId { get; set; }
         public string methodName { get; set; } = string.Empty;
         public int paramCount { get; set; }
         public bool tryCatch { get; set; }
@@ -138,7 +145,12 @@ namespace SimpleLanguage.Export.SLIR.Types
     }
     public sealed class SLMethodPackage
     {
+        /// <summary>方法全名（IRMethod.id）。Front 导入端（reference 模块）据此恢复
+        /// IRMethod.id 并参与跨模块调用的 methodId 哈希，保持与导出端一致。</summary>
         public string id { get; set; } = string.Empty;
+        /// <summary>方法 id（id 全名的 FNV-1a 确定型哈希，见 ClassManager.GetMethodId）。
+        /// C VM 端以此为哈希键 / RuntimeMethod.id，运行期零字符串哈希。0 = 未知。</summary>
+        public int methodId { get; set; }
         public string name { get; set; } = string.Empty;
         /// <summary>多个导出名称时用逗号分隔（含 @Nickname 别名）；为 null 或空时回退到 name。</summary>
         public string? exportNames { get; set; }
@@ -247,7 +259,8 @@ namespace SimpleLanguage.Export.SLIR.Types
     {
         public string moduleName { get; set; } = string.Empty;
         public string uuid { get; set; } = string.Empty;
-        public string? entryMethodId { get; set; }
+        /// <summary>入口方法 id（全名 FNV-1a 确定型哈希；null = 无入口）。</summary>
+        public int? entryMethodId { get; set; }
         public List<SLModuleReferencePackage> moduleReferences { get; set; } = new();
         public List<IRStringItem> irStringDict { get; set; } = new();
         public List<SLNamespacePackage> namespaceList { get; set; } = new();
@@ -350,7 +363,9 @@ namespace SimpleLanguage.Export.SLIR.Types
     /// </summary>
     public sealed class SLAotMethodPackage
     {
-        public string id { get; set; } = string.Empty;
+        /// <summary>方法 id（方法全名 FNV-1a 确定型哈希，见 ClassManager.GetMethodId）。
+        /// AOT registry 以 int 查方法（vm_find_method_by_id）。0 = 未知。</summary>
+        public int id { get; set; }
         /// <summary>aot.dll 中导出的符号名（sl_aot_&lt;sanitized-id&gt;）。</summary>
         public string symbol { get; set; } = string.Empty;
         /// <summary>ok = 可原生分发；failed = 降级失败，回退 CVM 解释执行。</summary>
@@ -405,7 +420,8 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// <summary>Only used in-memory for old-format reads; not serialized.</summary>
         [JsonIgnore]
         public List<SLAssemblyPackage> moduleList { get; set; } = new();
-        public string? entryMethodId { get; set; }
+        /// <summary>入口方法 id（全名 FNV-1a 确定型哈希；null = 无入口）。</summary>
+        public int? entryMethodId { get; set; }
         /// <summary>Raw JSON array text of the module's "systemCalls" declarations
         /// (copied verbatim from the module's .jsonc), so referencing projects can
         /// register them via SystemMethodCallDeclarationRegistry.</summary>

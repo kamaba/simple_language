@@ -320,7 +320,7 @@ namespace SimpleLanguage.IR
                             lib = sargs[0],
                             symbol = sargs[1],
                             sig = staticSig,
-                            methodId = m_IRRuntimeMethod.id ?? string.Empty,
+                            methodId = ClassManager.GetMethodId(m_IRRuntimeMethod.id ?? string.Empty),
                             methodName = m_IRRuntimeMethod.onlyFunctionName ?? string.Empty,
                             paramCount = paramCount,
                             tryCatch = tryCatch,

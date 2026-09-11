@@ -200,8 +200,9 @@ namespace SimpleLanguage.IR
             if (call == null) return null;
             return new RuntimeCallExport
             {
-                methodId = call.irMethod?.id ?? string.Empty,
+                methodId = call.irMethod != null ? ClassManager.GetMethodId(call.irMethod.id) : 0,
                 methodName = call.methodName ?? string.Empty,
+                methodNameHash = ClassManager.GetMethodId(call.methodName),
                 paramCount = call.paramCount,
                 tryCatch = call.tryCatch,
                 runtimeDefType = CreateRuntimeDefTypeExport(call.metaType),
@@ -240,8 +241,13 @@ namespace SimpleLanguage.IR
         {
             public RuntimeDefTypeExport runtimeDefType { get; set; }
             public List<RuntimeDefTypeExport> templateRuntimeDefTypeList { get; set; } = new();
-            public string methodId { get; set; } = string.Empty;
+            public int methodId { get; set; }
             public string methodName { get; set; } = string.Empty;
+            /// <summary>裸方法名 FNV-1a 哈希（ClassManager.GetMethodId(methodName)）。
+            /// C VM CallDynamic 接口分发以此 int 优先匹配 receiver 类的
+            /// virtual_function_name_hash（ASCII 名两侧一致；非 ASCII 名或
+            /// 哈希碰撞落 methodName strcmp 兜底）。methodName 保留用于 Debug 显示。</summary>
+            public int methodNameHash { get; set; }
             public int paramCount { get; set; }
             public bool tryCatch { get; set; }
         }

@@ -634,6 +634,7 @@ namespace SimpleLanguage.Export.SLIR
                 var mp = new SLMethodPackage
                 {
                     id = m.id ?? string.Empty,
+                    methodId = ClassManager.GetMethodId(m.id ?? string.Empty),
                     declaringTypeFullName = declaringTypeFullName,
                     declaringClassId = declaringOwner?.classId ?? 0,
                     name = m.onlyFunctionName ?? string.Empty,
@@ -746,7 +747,8 @@ namespace SimpleLanguage.Export.SLIR
                 }
             }
 
-            module.entryMethodId = bestEntry;
+            /* entryMethodId = 入口方法全名的确定型哈希（C VM 端 int 直查） */
+            module.entryMethodId = bestEntry != null ? ClassManager.GetMethodId(bestEntry) : null;
 
             // const strings (IRManager.AddStringIRStack) - must be populated AFTER
             // all IR generation (instance field initializers at lines ~380-469,

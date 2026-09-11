@@ -1,11 +1,10 @@
-这设计 的Json 怎么没有 下边的节点呀 json不可能 只有2层吧，肯定是有多层嵌套的呀  你先整理一个对子元素处理的相关的吧，  要不怎么读取子元素，你可以增加一个 JsonNode 一类的节点 或者是叫JsonValue也可以反正是 让Json结构有了层次，然后  可以通过  JsonValue _getItem_( string name )有这样的方法，支持 通过  jv["name"] 读取元素，当然里边的元素 也可以通过  asBool  asString, asInt32 asInt64 asFloat32 asFloat64 等等方法，直接转化成对应的类型   asArray() asList  asMap 转成对应的格式，像这种我记的在写data<->json 之间的时候，已经有大部分的方法了，你看下是否可以利用 然后把这部分逻辑补全了
 
 现在在调用函数(cvm里边的IRCode)的时候，methodId 要使用一个int型，因为这个本来methodName就是hash变成int的 所以这里直接是一个int型，而不用再hash处理了   你把几个和函数有关的IRCode都检查下这块吧，都需要使用这种方式，
 
 还有一个问题，就是，你看下代码里边，cvm的函数调用，还有使用methodName 的方式吗 如果有需要列出来，我现在的想法是，在FrontEnd层已经算好了hash值，直接在 对应的列表里边 hashMap查找，而不使用methodName, 如果有非使用不可的，你需要弹出一个选择提示，然后让我选择要不要变化 methodName 先不删除， 这个在Debug状态 的时候，还要存在，并且，如果Debug的时候，还是要有显示的
 
 首先，要确定 所有的查找使用int型的或者是使用名称 hashMap的方式，把string hash成一个int 再查找
-改二进制的大工程，
+
 
 优化Component.sl 好多速度较慢的，可以放到system method call层
 
@@ -15,6 +14,8 @@
 
 提供一个Stream的abstract类，用来存放缓存数据，未来ProtoBuf,序列化，可能都要用这个到类，尤其是一些内置的 system_method_call 一定要提供成共用的，在未来写的时候，大家能共用。
 增加protobuf,字节码序例化相互转化过程，  stream 相关的类
+
+改二进制的大工程，
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------

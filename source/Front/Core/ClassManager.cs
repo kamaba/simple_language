@@ -76,6 +76,24 @@ namespace SimpleLanguage.Core
             int id = (int)hash;
             return id == 0 ? 1 : id;
         }
+        /// <summary>
+        /// 按方法全名计算确定型 methodId（与 GetClassId 同款 FNV-1a 32-bit）。
+        /// null/空串返回 0（表示“未知方法”哨兵）；哈希结果恰为 0 时回退为 1。
+        /// 导出端（SLRuntimeCallPackage.methodId / SLMethodPackage.methodId 等）与
+        /// C VM 装配层共用该值作哈希键，运行期不再对方法名字符串做 hash。
+        /// </summary>
+        public static int GetMethodId(string fullName)
+        {
+            if (string.IsNullOrEmpty(fullName)) return 0;
+            uint hash = 2166136261u;
+            for (int i = 0; i < fullName.Length; i++)
+            {
+                hash ^= fullName[i];
+                hash *= 16777619u;
+            }
+            int id = (int)hash;
+            return id == 0 ? 1 : id;
+        }
 
         /// <summary>
         /// ???? <c>Project</c> ??????????? <see cref="MetaNode.GetAllName"/> ????? <c>S.Core.Project</c> ????

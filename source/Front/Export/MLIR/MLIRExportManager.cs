@@ -296,7 +296,7 @@ namespace SimpleLanguage.Export.MLIR
                 {
                     var mp = new SLAotMethodPackage
                     {
-                        id = m.Id,
+                        id = Core.ClassManager.GetMethodId(m.Id),
                         symbol = m.Symbol,
                         status = m.Status,
                         reason = string.IsNullOrEmpty(m.Reason) ? null : m.Reason,
