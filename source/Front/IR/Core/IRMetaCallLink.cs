@@ -391,6 +391,12 @@ namespace SimpleLanguage.Core.IR
             else if (cnode.visitType == MetaVisitNode.EVisitType.MetaClass)
             {
             }
+            else if (cnode.visitType == MetaVisitNode.EVisitType.TemplateName)
+            {
+                // 模板形参名前缀（如 T.type 的 T）：自身不产生栈值，
+                // 值由后续节点发射（GetTypeValue -> LoadConstType 等），
+                // 与类名/枚举名前缀的空分支语义一致。
+            }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MetaData)
             {
                 // 为 data 类型名直接调用（如 Student.toString()）生成 LoadConstType，

@@ -21,10 +21,25 @@
       <CVMNinja Condition="'$(NINJA_PATH)' != ''">$(NINJA_PATH)</CVMNinja>
       <CVMNinja Condition="'$(NINJA_PATH)' == ''">C:/Users/dingo/AppData/Local/Microsoft/WinGet/Packages/Ninja-build.Ninja_Microsoft.Winget.Source_8wekyb3d8bbwe/ninja.exe</CVMNinja>
     </PropertyGroup>
-    <!-- 仅在构建树不存在时才 configure（参数与现有 build\Debug 树一致：Ninja + clang）。
+    <!-- 缓存健康检测：CMakeCache.txt 存在，且其中记录着本工程要用的 ninja 和 clang 路径才算可用。
+         用 ReadAllText().Contains() 判断，只把布尔结果带进 MSBuild 条件（ReadAllLines 返回
+         数组不受支持；缓存全文也不进属性，避免分号等字符被当列表分隔符）。
+         IDE 的 CMake 插件按 CMakePresets.json 重新 configure 时若 NINJA_PATH 未设置，
+         会把缓存里的 CMAKE_MAKE_PROGRAM 写成空值并中途失败，留下半损坏的缓存
+         （文件存在但 cmake 构建时报 no such file or directory / build tool execution failed） -->
+    <PropertyGroup Condition="Exists('$(CVMBuild)\CMakeCache.txt')">
+      <CVMCacheHasNinja Condition="$([System.IO.File]::ReadAllText('$(CVMBuild)\CMakeCache.txt').Contains('$(CVMNinja)'))">true</CVMCacheHasNinja>
+      <CVMCacheHasClang Condition="$([System.IO.File]::ReadAllText('$(CVMBuild)\CMakeCache.txt').Contains('C:/Program Files/LLVM/bin/clang.exe'))">true</CVMCacheHasClang>
+      <CVMCacheUsable Condition="'$(CVMCacheHasNinja)' == 'true' and '$(CVMCacheHasClang)' == 'true'">true</CVMCacheUsable>
+    </PropertyGroup>
+    <!-- 缓存被写坏或被换成别的工具链时，先删旧缓存再 configure，
+         避免 cmake 因编译器与缓存记录不一致而拒绝覆盖、直接报错 -->
+    <Delete Files="$(CVMBuild)\CMakeCache.txt"
+            Condition="'$(CVMCacheUsable)' != 'true' and Exists('$(CVMBuild)\CMakeCache.txt')" />
+    <!-- 仅在构建树不存在或缓存被写坏时才 configure（参数与现有 build\Debug 树一致：Ninja + clang）。
          注：Windows-Clang 平台模块强制要求 RC 编译器（即使项目无 .rc 文件），
          必须显式指定 llvm-rc，否则全新构建树 configure 会失败 -->
-    <Exec Condition="!Exists('$(CVMBuild)\CMakeCache.txt')"
+    <Exec Condition="'$(CVMCacheUsable)' != 'true'"
           Command="cmake -B &quot;$(CVMBuild)&quot; -S &quot;$(CVMRoot)&quot; -G Ninja -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER=&quot;C:/Program Files/LLVM/bin/clang.exe&quot; -DCMAKE_RC_COMPILER=&quot;C:/Program Files/LLVM/bin/llvm-rc.exe&quot; -DCMAKE_MAKE_PROGRAM=&quot;$(CVMNinja)&quot;" />
     <!-- 同时构建 csimple_lang.exe（Release 配置进程模式需要它，Program.cs 优先取 Debug\bin 下的 exe）
          与 csimple_lang_dll.dll（Debug 配置 P/Invoke 进程内加载，可附加 C 调试器）。

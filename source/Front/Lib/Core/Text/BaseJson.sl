@@ -15,6 +15,8 @@
 #
 #典型用法：BaseJson j = BaseJson("{\"name\":\"alice\",\"age\":30}")
 #          j.getStr("name", "") / j.getInt("age", 0) / j.toString()。
+#层次化导航（多层嵌套取值见 Text/JsonValue.sl）：
+#          j["user"]["name"].asString() / j.value["list"][0].asInt32()。
 public class BaseJson extends Object
 {
     Tree<string> _tree = new()
@@ -51,6 +53,22 @@ public class BaseJson extends Object
         ret BaseJson(tree)
     }
 
+    #由 data/class 实例构建 JSON 树（正向转换）：data 成员内置递归展开为
+    #对象，class 成员虚调其 toJson() 嫁接子树，enum 成员取底层值，
+    #array/list/set/tuple 转数组、map 转对象。参数为 null 或转换失败
+    #时返回空 BaseJson。参数名不能用 data（data 是类型定义关键字，
+    #不能作标识符在表达式中使用）。
+    public static BaseJson fromData( object obj )
+    {
+        BaseJson j = BaseJson()
+        if obj == null { ret j }
+        TreeNode<string> proto = TreeNode<string>()
+        TreeNode<string> root = SystemJsonFromData( proto, obj ) as TreeNode<string>
+        if root == null { ret j }
+        j.setRoot(root)
+        ret j
+    }
+
     # ---- 解析 ----
 
     #解析 JSON 文本并替换当前树；文本为空或非法时返回 false 且不清空原内容。
@@ -75,6 +93,27 @@ public class BaseJson extends Object
     get TreeNode<string> root()
     {
         ret this._tree.root
+    }
+
+    #根节点 JsonValue 视图（层次化导航入口，详见 Text/JsonValue.sl）：
+    #    j.value["user"]["name"].asString()
+    #    j.value["list"][0].asInt32()
+    get JsonValue value()
+    {
+        ret JsonValue.wrap( this._tree.root )
+    }
+
+    #顶层成员的 JsonValue 快捷索引：j["user"]["name"].asInt32()。
+    #未命中返回 isNull 缺失视图（链式导航安全，存在性用 has(path) 判定）。
+    public override JsonValue _getItem_( string name )
+    {
+        ret this.value._getItem_( name )
+    }
+
+    #顶层（数组文档）元素的 JsonValue 快捷索引：j[0].asFloat64()。
+    public override JsonValue _getItem_( int index )
+    {
+        ret this.value._getItem_( index )
     }
 
     get bool isEmpty()
@@ -210,6 +249,25 @@ public class BaseJson extends Object
         if node == null { ret defaultValue }
         if node._value == null { ret defaultValue }
         ret SystemConvertFloat64(node._value)
+    }
+
+    # ---- 反向转换（JSON -> data）----
+
+    #按 typeName（data 类型全名或短名）从当前树构建 data 实例；
+    #类型不存在/非 data/根节点非 object/成员
+    #布局不符时返回 null（成员缺失保持默认值，不报错）。
+    public object toData( string typeName )
+    {
+        ret SystemJsonToData( this._tree.root, typeName )
+    }
+
+    #模板版本：返回强类型 data 实例：
+    #    DataName d = j.toData<DataName>()
+    #T.type 取模板实参绑定的类型对象直传，C 端识别 Type 对象后
+    #按其 RuntimeClass 构建 data 实例（类型不再走字符串注入）。
+    public T toData<T>()
+    {
+        ret SystemJsonToData( this._tree.root, T.type ) as T
     }
 
     # ---- 序列化 ----

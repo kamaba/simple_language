@@ -1099,7 +1099,14 @@ namespace SimpleLanguage.Core
                         var mt = m_FrontCallNode.m_MetaTemplate;
                         if (mt != null)
                         {
-                            if (mt.extendsMetaClass != null)
+                            if (m_Name == "type")
+                            {
+                                // T.type: 模板形参取类型对象。IR 发射 LoadConstType(templateIndex)，
+                                // 运行时按调用帧模板绑定表解析出实例化类型（与 ClassName.type 同机制）。
+                                m_MetaType = new MetaType(mt);
+                                m_CallNodeType = ECallNodeType.GetType;
+                            }
+                            else if (mt.extendsMetaClass != null)
                             {
                                 GetFunctionOrVariableByOwnerClass(mt.extendsMetaClass, m_Name);
                             }
@@ -1718,7 +1725,14 @@ namespace SimpleLanguage.Core
                     m_MetaVariable = retmmd;
                     if (retmmd == null)
                     {
-                        if (GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.objectMetaClass, m_Name))
+                        //data 实例变量上的方法：先查内置 Data 基类（toJson/toJsonPretty/
+                        //toString override），再兜底 Core.Object（与上方 DataName 路径的
+                        //dataMetaClass 回退保持一致）
+                        if (GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.dataMetaClass, m_Name))
+                        {
+
+                        }
+                        else if (GetFunctionOrVariableByOwnerClass(CoreMetaClassManager.objectMetaClass, m_Name))
                         {
 
                         }
@@ -1851,8 +1865,12 @@ namespace SimpleLanguage.Core
                     }
 
                     // Array1.$i.x   Array1.$mmq.x;
-                    var getmv2 = m_OwnerMetaFunctionBlock.GetMetaVariableByName(m_Name);
-                    if (getmv2 != null)    //閺屻儲澹橀弰顖氭儊瀹告彃鐣炬稊澶庣箖閸箖閸欐﹢鍣?
+                    // 常量下标（obj["key"] / obj[0]）不允许撞名作用域变量：
+                    // 即使作用域中存在与常量文本同名的变量（变量声明先注册再解析
+                    // 初始化表达式，jv["user"] 会撞上刚声明的 user），也必须走
+                    // 常量键路径，否则会被误解析为对同名变量的下标访问。
+                    var getmv2 = (m_ExpressNode is MetaConstExpressNode) ? null : m_OwnerMetaFunctionBlock.GetMetaVariableByName(m_Name);
+                    if (getmv2 != null)
                     {
                         // 索引变量必须绑定当前作用域解析到的那个变量。
                         // 不同作用域存在同名变量时（例如嵌套 for 各自声明的循环变量 i），

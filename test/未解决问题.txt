@@ -1,6 +1,8 @@
-jsonc配置文件 先把data的结构放到global下边  然后增加一个macor 用来存放static if 静态编译的数据
-增加static if 编译功能，只能对外部定义的一个字段，进行判断，比如 static if global.macro.platform == "Win32"{} static elif global.macor.platform = "Mac" {} 在jsonc 里边，需要单门有一个定义这些字段，这些字段，和data定义是一样的， 但这个里边的如果变化的话，需要写到.sp 也就是Project里边  在CompileBefore(){}里边变化 其它的地方不让对global.macor进行变化     如果遇到static 的情况，其实是要在编译后台metaCore层的时候就要开始执行一些判断逻辑， 也就是编译期进行if 的执行，然后到IR层的时候，只保留if判断出来的那部分逻辑，你可以先看下D语言的逻辑。 我这个也和那个意思差不多，写完后，到时候把相关的 说明 也就是.md 文件放gc md/project下边    一定要记住static 不进到runtime层
+这设计 的Json 怎么没有 下边的节点呀 json不可能 只有2层吧，肯定是有多层嵌套的呀  你先整理一个对子元素处理的相关的吧，  要不怎么读取子元素，你可以增加一个 JsonNode 一类的节点 或者是叫JsonValue也可以反正是 让Json结构有了层次，然后  可以通过  JsonValue _getItem_( string name )有这样的方法，支持 通过  jv["name"] 读取元素，当然里边的元素 也可以通过  asBool  asString, asInt32 asInt64 asFloat32 asFloat64 等等方法，直接转化成对应的类型   asArray() asList  asMap 转成对应的格式，像这种我记的在写data<->json 之间的时候，已经有大部分的方法了，你看下是否可以利用 然后把这部分逻辑补全了
 
+现在在调用函数(cvm里边的IRCode)的时候，methodId 要使用一个int型，因为这个本来methodName就是hash变成int的 所以这里直接是一个int型，而不用再hash处理了   你把几个和函数有关的IRCode都检查下这块吧，都需要使用这种方式，
+
+还有一个问题，就是，你看下代码里边，cvm的函数调用，还有使用methodName 的方式吗 如果有需要列出来，我现在的想法是，在FrontEnd层已经算好了hash值，直接在 对应的列表里边 hashMap查找，而不使用methodName, 如果有非使用不可的，你需要弹出一个选择提示，然后让我选择要不要变化 methodName 先不删除， 这个在Debug状态 的时候，还要存在，并且，如果Debug的时候，还是要有显示的
 
 首先，要确定 所有的查找使用int型的或者是使用名称 hashMap的方式，把string hash成一个int 再查找
 改二进制的大工程，
@@ -9,14 +11,20 @@ jsonc配置文件 先把data的结构放到global下边  然后增加一个macor
 
 
 使用 @csharp{ } 调用相关的接口 在{}内是中转逻辑   a = 0; @csharp {     a = TestCSharp.TTC.getIndex( 10, a ) }   @js{ a = Test.calc( a, a ) }  需要在工程里边配置 C#版本
-我现在代码里边要增加 @标签{} 的一种逻辑，大概意思是，如果在jsonc 定义过这种标签，我在代码里边直接使用 比如  我在 jsonc 的配置里边  增加了 "atSignLabel":[ { "name":"asm", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86" }  }, { "name":"csharp", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86", "lib":"mono-static.dll" }  } ]  还有就是一些特殊注册，比如注册了csharp 可能识别代码 
+我现在代码里边要增加 @标签{} 的一种逻辑，大概意思是，如果在jsonc 定义过这种标签，我在代码里边直接使用 比如  我在 jsonc 的配置里边  增加了 "atSignLabel":[ { "name":"asm", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86" }  }, { "name":"csharp", "handle":{}, "platform":{ "os":"window","cpu":"amd-x86", "lib":"mono-static.dll" }  } ]  还有就是一些特殊注册，比如注册了csharp 可能识别代码 在@csharp(){ } 
 
-字节码序例化相互转化过程
+提供一个Stream的abstract类，用来存放缓存数据，未来ProtoBuf,序列化，可能都要用这个到类，尤其是一些内置的 system_method_call 一定要提供成共用的，在未来写的时候，大家能共用。
+增加protobuf,字节码序例化相互转化过程，  stream 相关的类
 
+
+------------------------------------------------------------------------------------------------------------------------------------------
 但做mysql数据库，需要动态引入dll的vm层代码 独立的工程
 ffmpeg的dll 引入
 找一个轻量级的 webview一类的，做成 dll
 
+当然先要建一个platform 还有硬件相关的配置的选项， 里边包括了，当前的 系统，硬件，指令集的兼容性，带的lib库的支持，等，你考滤下这块的扩展，用来确定我的代码，可以跑的平台，然后在cvm里边，去识别涉及到的这些信息，然后确定 是否可以跑增加jsonc里边配置项，导出的运行平台选择
+
+然后就是对 at sign label 的机制的判断  @gpu.amd 会在跑的平台， 在FrontEnd层要建一套 注册机制，在有这个标记的时候，会把当前使用的平台或者是机制信息，注册到刚才搭建的那个里边， 建一套，检查机制，只有遇到这个标记的才会跑，否则提示报错，不让代码跑起来，类推，如果我设计 的 带渲染的，但现在是在一套linux 不带图型的机器上，也跑不起来，只能通过运行屏蔽模块来限制这部分代码的运行，当然，也就不检查这部分的内容了。
 
 
 7. 指针的增加与处理. 
@@ -36,11 +44,9 @@ Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当�
 
 1. this的使用，还没有整合
 2. 循环引用 问题
-3. 模板类相关的处理
 4. 如果是普通类，则看是否有重载，如果没有重载，则对比类引用是否是一个
 5. 要优化new的时候初始化与assignMember两个有重复
 6. 以cvm里边 数据类型的创建
-优化cvm里边的静态类调用，尤其是，要把methodName 去掉，直接使用id, 
 
 1. 优化vm层，类型的处理   计算   比较  
 7. 调用nativeBridge的调用验证

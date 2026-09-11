@@ -503,6 +503,15 @@ namespace SimpleLanguage.Core
                 MetaInputParamCollection mipc = new MetaInputParamCollection(lmv.GetFinalTemplateMetaClass(), m_OwnerMetaBlockStatements);
                 mipc.AddMetaInputParam(new MetaInputParam(ven) );
                 MetaMemberFunction mmf = lmv.GetFinalTemplateMetaClass().GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_getItem_", 0, mipc, true);
+                if( mmf == null )
+                {
+                    // 变量下标访问非数组类型时必须能解析 _getItem_，否则会在 IR 阶段
+                    // 静默产生空调用（MetaMethodCall 的函数为 null）并引发空引用异常，
+                    // 这里必须在 MetaCore 阶段显式报错。
+                    Log.AddMetaCoreLog(LID.MetaCoreVisitTypeShouldIsArray,
+                        "[Error] variable subscript '" + _name + "' on receiver '" + lmv.name + "' cannot resolve _getItem_ for type '" + lmv.GetFinalTemplateMetaClass()?.name + "'.");
+                    return;
+                }
 
                 m_MethodCall = new MetaMethodCall(lmv.GetFinalTemplateMetaClass(), m_OwnerMetaBlockStatements, mmf, new List<MetaType>(), mipc, null);
                 m_VisitType = EVisitType.MethodCall;
