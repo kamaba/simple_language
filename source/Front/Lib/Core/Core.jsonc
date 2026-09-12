@@ -80,11 +80,11 @@
     "isAllGroup": true,
     "isAllTag": true
   },
-  "data": {
-  },
   "global": {
     "imports": [
     ],
+    "data": {
+    },
     "replace": {
       "DEBUG": "true"
     }

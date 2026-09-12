@@ -918,6 +918,61 @@ namespace SimpleLanguage.Project
             }
         }
 
+        /// <summary>
+        /// 旧导出兼容（methodList 桩 declaringClassId=0）：按 IRMethod.id 前缀还原声明类。
+        /// id 形如 ownerAllName + "." + name + 后缀（后缀 ∈ {"", "&lt;T&gt;", "_N_Types", "&lt;T&gt;_N_Types"}）；
+        /// 方法名不含 '.'（命名规范），故以 name 出现位置切分，其前缀即 ownerAllName，
+        /// 再按 IRMetaClass.irName（含模块前缀，如 "Core.Object"）查找声明类。
+        /// 找不到返回 null（调用方回退到当前类）。
+        /// </summary>
+        private static MetaClass TryResolveDeclaringClassFromMethodId(IRMethod irm)
+        {
+            var id = irm?.id;
+            var name = irm?.onlyFunctionName;
+            if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(name) || id.Length <= name.Length)
+            {
+                return null;
+            }
+
+            int searchStart = 0;
+            while (searchStart < id.Length)
+            {
+                int p = id.IndexOf(name, searchStart, StringComparison.Ordinal);
+                if (p < 0)
+                {
+                    return null;
+                }
+                if (p == 0 || id[p - 1] != '.')
+                {
+                    searchStart = p + 1;
+                    continue;
+                }
+                int after = p + name.Length;
+                if (after < id.Length)
+                {
+                    char c = id[after];
+                    /* name 段之后只可能是结尾、模板 '<' 或参数 "_N_"（方法名禁下划线） */
+                    if (c != '<' && !(c == '_' && after + 1 < id.Length && char.IsDigit(id[after + 1])))
+                    {
+                        searchStart = p + 1;
+                        continue;
+                    }
+                }
+
+                string ownerAllName = id.Substring(0, p - 1);
+                if (ownerAllName.Length > 0)
+                {
+                    var irmc = IRManager.instance.GetIRMetaClassByName(ownerAllName);
+                    if (irmc?.typeOwner is MetaClass declMc)
+                    {
+                        return declMc;
+                    }
+                }
+                searchStart = p + 1;
+            }
+            return null;
+        }
+
         private static MetaMemberFunction BuildMetaMemberFunctionFromIR(MetaClass mc, IRMethod irm)
         {
             if (mc == null || irm == null || string.IsNullOrWhiteSpace(irm.onlyFunctionName)) return null;
@@ -929,6 +984,19 @@ namespace SimpleLanguage.Project
             if (irm.declaringClassId != 0 && irm.declaringClassId != mc.classId)
             {
                 if (IRManager.instance.GetIRMetaClassById(irm.declaringClassId)?.typeOwner is MetaClass declMc)
+                {
+                    ownerClass = declMc;
+                }
+            }
+            else if (irm.declaringClassId == 0)
+            {
+                /* 旧导出兼容：methodList 桩未携带 declaringClassId（=0）时按 irm.id
+                 * 前缀还原声明类（如 "Core.Object.type" -> Core.Object）。
+                 * 不还原则 owner 落到当前类（如 Std.Component），functionAllName 被重算成
+                 * "Std.Component.type"，与引用模块 methodList 中的 id 不一致，
+                 * 运行时按 id 装配虚表时查找失败跳过该方法，虚表下标左移致 CallVirt 分派错乱。 */
+                var declMc = TryResolveDeclaringClassFromMethodId(irm);
+                if (declMc != null && declMc != mc)
                 {
                     ownerClass = declMc;
                 }

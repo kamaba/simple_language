@@ -10,6 +10,7 @@
 # Provides access to process environment variables, the current working
 # directory, platform newline, and timing counters.
 # =========================================================================
+@Nickname("env");
 public class Environment extends Object
 {
     # ---------------------------------------------------------------

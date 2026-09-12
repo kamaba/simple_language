@@ -207,11 +207,8 @@
   "global": {
     "imports": [
     ],
-    "replace": {
-      "DEBUG": "true"
+    "data": {
     }
-  },
-  "data": {
   },
   "references": [
     { "path": "../Core", "name": "Core" },

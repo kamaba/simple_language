@@ -270,7 +270,19 @@
     { "name": "SystemFFICallF8E5M2",      "returnType": "float8",  "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_call_f8e5m2" },
     { "name": "SystemFFICreateCallback",  "returnType": "Int64",   "params": ["string", "string"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_create_callback" },
     { "name": "SystemFFIFreeCallback",    "returnType": "bool",    "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_ffi_free_callback" },
-    { "name": "SystemFFIMakeFunction",    "returnType": "Function", "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_make_function" }
+    { "name": "SystemFFIMakeFunction",    "returnType": "Function", "params": ["Int64", "string"], "isVariadic": true, "cvmFunction": "vm_sys_ffi_make_function" },
+    // ---- Component calls (Std/Component.sl；探针 Array<T>(0) 携带目标类型 T) ----
+    { "name": "SystemComponentGetComponent",             "returnType": "object", "params": ["object", "object"],       "isVariadic": false, "cvmFunction": "vm_sys_component_get_component" },
+    { "name": "SystemComponentGetComponentByType",        "returnType": "object", "params": ["object", "object"],       "isVariadic": false, "cvmFunction": "vm_sys_component_get_component_by_type" },
+    { "name": "SystemComponentGetComponentByName",       "returnType": "object", "params": ["object", "string"],       "isVariadic": false, "cvmFunction": "vm_sys_component_get_component_by_name" },
+    { "name": "SystemComponentGetComponents",            "returnType": "object", "params": ["object", "object"],       "isVariadic": false, "cvmFunction": "vm_sys_component_get_components" },
+    { "name": "SystemComponentGetComponentInChildren",    "returnType": "object", "params": ["object", "object", "bool"], "isVariadic": false, "cvmFunction": "vm_sys_component_get_component_in_children" },
+    { "name": "SystemComponentGetComponentInParent",      "returnType": "object", "params": ["object", "object", "bool"], "isVariadic": false, "cvmFunction": "vm_sys_component_get_component_in_parent" },
+    { "name": "SystemComponentGetComponentsInChildren",   "returnType": "object", "params": ["object", "object", "bool"], "isVariadic": false, "cvmFunction": "vm_sys_component_get_components_in_children" },
+    { "name": "SystemComponentGetComponentsInParent",     "returnType": "object", "params": ["object", "object", "bool"], "isVariadic": false, "cvmFunction": "vm_sys_component_get_components_in_parent" },
+    { "name": "SystemComponentSendMessage",              "returnType": "void",   "params": ["object", "string"],       "isVariadic": false, "cvmFunction": "vm_sys_component_send_message" },
+    { "name": "SystemComponentSendMessageUpwards",       "returnType": "void",   "params": ["object", "string"],       "isVariadic": false, "cvmFunction": "vm_sys_component_send_message_upwards" },
+    { "name": "SystemComponentBroadcastMessage",          "returnType": "void",   "params": ["object", "string"],       "isVariadic": false, "cvmFunction": "vm_sys_component_broadcast_message" }
   ],
   "export": {
     "moduleName": "Std",

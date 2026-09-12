@@ -5,7 +5,6 @@ Project
         SystemPrintln( "Hello World" );
         nowMs = Environment.nowMillis()
 
-        #!
         # AOT 测试用例（自 test/AOTTest/ProjectTest.sp 合并）
         r1 = AOTMath.Add( 1, 2 );
         r2 = AOTMath.Mul( 3, 4 );
@@ -93,6 +92,7 @@ Project
         # FFI 测试用例（动态库加载/调用/回调/Float8 struct 等）
         #FFITest.fun();
 
+        #!
         # ---- AOT GPU 矩阵乘测试（大张量，矩阵用一维数组） ----
         gM = 512
         gN = 512

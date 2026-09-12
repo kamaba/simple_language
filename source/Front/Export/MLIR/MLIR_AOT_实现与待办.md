@@ -23,7 +23,10 @@ stage 4   VM 启动时读 module.json 加载 aot.dll，命中即直接调用本�
 stage 5   反向桥（reverse bridge）：AOT 代码回调 CVM 解释器
             —— CallStatic 走此路径：dll 内调用宿主导出的
             @sl_aot_bridge_init(fnptr) 注入的 invoke_vm 函数指针，
-            每个 callee method-id 对应一个模块级字符串 global（+1 NUL）
+            callee 的 Front 预计算 int method id（FNV-1a）以 i32 常量直传，
+            C 侧 vm_find_method_by_id 解析；桥 ABI：
+            int64 fn(void* ctx, int32 method_id, SLAotValue* args,
+                     int32 argc, SLAotValue* ret)
 ```
 
 要点：

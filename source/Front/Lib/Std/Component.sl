@@ -74,144 +74,56 @@ public class Component extends Object
     }
 
     # ── 组件查询（自身直接子级）────────────────────────
+    # 说明：查询/消息系列已下沉到 C VM 系统方法层（csimple_lang/src/vm/
+    # system_method_call/component_system_method.c）。Array<T>(0) 是探针：
+    # 其元素类型即目标类型 T，C 侧一次解析后做廉价类型检查，避免 SL 层
+    # 每次 "c as T" 触发 CastClass 的 payload 重新解析。
     public T getComponent<T>()
     {
-        for c in this.components
-        {
-            T t = c as T
-            if t != null
-            {
-                ret t
-            }
-        }
-        ret null
+        ret SystemComponentGetComponent(this, Array<T>(0)) as T
     }
 
     public Component getComponent( Type type )
     {
-        for c in this.components
-        {
-            if c.type == type
-            {
-                ret c
-            }
-        }
-        ret null
+        ret SystemComponentGetComponentByType(this, type)
     }
 
     public Component getComponent( string typeName )
     {
-        for c in this.components
-        {
-            if c.type.toString() == typeName
-            {
-                ret c
-            }
-        }
-        ret null
+        ret SystemComponentGetComponentByName(this, typeName)
     }
 
     public List<Component> getComponents<T>()
     {
-        List<Component> rtlist = List<Component>(4)
-        for c in this.components
-        {
-            T t = c as T
-            if t != null
-            {
-                rtlist.add(c)
-            }
-        }
-        ret rtlist
+        ret SystemComponentGetComponents(this, Array<T>(0)) as List<Component>
     }
 
     # ── 向下查找（含子组件树）──────────────────────────
     public T getComponentInChildren<T>( bool includeInactive )
     {
-        for c in this.components
-        {
-            if includeInactive || c.enabled
-            {
-                T t = c as T
-                if t != null
-                {
-                    ret t
-                }
-            }
-            T rt = c.getComponentInChildren<T>( includeInactive )
-            if rt != null
-            {
-                ret rt
-            }
-        }
-        ret null
+        ret SystemComponentGetComponentInChildren(this, Array<T>(0), includeInactive) as T
     }
 
     # ── 向上查找（parent 链）───────────────────────────
     public T getComponentInParent<T>( bool includeInactive )
     {
-        Component p = this
-        while p != null
-        {
-            if includeInactive || p.enabled
-            {
-                T t = p as T
-                if t != null
-                {
-                    ret t
-                }
-            }
-            p = p.parent
-        }
-        ret null
+        ret SystemComponentGetComponentInParent(this, Array<T>(0), includeInactive) as T
     }
 
     public List<Component> getComponentsInChildren<T>( bool includeInactive )
     {
-        List<Component> result = List<Component>(4)
-        this._collectInChildren<T>( result, includeInactive )
-        ret result
-    }
-
-    void _collectInChildren<T>( List<Component> result, bool includeInactive )
-    {
-        for c in this.components
-        {
-            if includeInactive || c.enabled
-            {
-                T t = c as T
-                if t != null
-                {
-                    result.add(c)
-                }
-            }
-            c._collectInChildren<T>( result, includeInactive )
-        }
+        ret SystemComponentGetComponentsInChildren(this, Array<T>(0), includeInactive) as List<Component>
     }
 
     public List<Component> getComponentsInParent<T>( bool includeInactive )
     {
-        List<Component> result = List<Component>(4)
-        Component p = this
-        while p != null
-        {
-            if includeInactive || p.enabled
-            {
-                T t = p as T
-                if t != null
-                {
-                    result.add(p)
-                }
-            }
-            p = p.parent
-        }
-        ret result
+        ret SystemComponentGetComponentsInParent(this, Array<T>(0), includeInactive) as List<Component>
     }
 
     # 与 Unity 的 TryGetComponent<T>(out T) 对齐：直接返回组件，null 表示未找到
     public T tryGetComponent<T>()
     {
-        ret this.getComponent<T>()
+        ret SystemComponentGetComponent(this, Array<T>(0)) as T
     }
 
     # ── 标签 ───────────────────────────────────────────
@@ -224,27 +136,19 @@ public class Component extends Object
     # 向自身及所有子组件发送
     public void sendMessage( string methodName )
     {
-        this.onMessage( methodName )
-        for c in this.components
-        {
-            c.SendMessage( methodName )
-        }
+        SystemComponentSendMessage(this, methodName)
     }
 
     # 向自身及所有祖先发送
     public void sendMessageUpwards( string methodName )
     {
-        this.onMessage( methodName )
-        if this.parent != null
-        {
-            this.parent.SendMessageUpwards( methodName )
-        }
+        SystemComponentSendMessageUpwards(this, methodName)
     }
 
     # 向自身及整棵子树广播
     public void broadcastMessage( string methodName )
     {
-        this.SendMessage( methodName )
+        SystemComponentBroadcastMessage(this, methodName)
     }
 
     # 子类可 override，以响应 SendMessage / BroadcastMessage / SendMessageUpwards

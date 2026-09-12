@@ -193,8 +193,10 @@ namespace SimpleLanguage.Export.MLIR
 
         /// <summary>
         /// Module-level stage-5 plumbing: the zero-initialized invoke-VM
-        /// function pointer, the exported initializer the host calls right
-        /// after LoadLibrary, and one string global per bridge callee id.
+        /// function pointer and the exported initializer the host calls
+        /// right after LoadLibrary. Bridge callees pass their
+        /// front-precomputed int method id (FNV-1a, ClassManager.GetMethodId)
+        /// as an i32 constant, so no per-callee string globals are emitted.
         /// </summary>
         private static string EmitBridgePlumbing(Dictionary<string, string> bridgeIds)
         {
@@ -207,50 +209,6 @@ namespace SimpleLanguage.Export.MLIR
             sb.Append("    %zero = llvm.mlir.constant(0 : i32) : i32\n");
             sb.Append("    return %zero : i32\n");
             sb.Append("  }\n");
-            foreach (var kv in bridgeIds)
-            {
-                // +1: MLIR string arrays do not auto-append a NUL, and the
-                // C side reads these with strlen-family lookups. Without it
-                // an id whose length lands on an alignment boundary bleeds
-                // into the next global (observed: find_method_by_id got a
-                // concatenation of two ids and failed).
-                int byteLen = Encoding.UTF8.GetByteCount(kv.Key) + 1;
-                sb.Append("  llvm.mlir.global constant ").Append(kv.Value)
-                  .Append('(').Append(EscapeCString(kv.Key))
-                  .Append(") : !llvm.array<").Append(byteLen.ToString(CultureInfo.InvariantCulture))
-                  .Append(" x i8>\n");
-            }
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// C string literal escaping for llvm.mlir.global constants. Always
-        /// appends an explicit NUL byte: MLIR string arrays do not add one
-        /// implicitly, and the C side reads these with strlen-family lookups.
-        /// </summary>
-        private static string EscapeCString(string s)
-        {
-            var sb = new StringBuilder(s.Length + 8);
-            sb.Append('"');
-            foreach (var b in Encoding.UTF8.GetBytes(s))
-            {
-                switch (b)
-                {
-                    case (byte)'\\': sb.Append("\\\\"); break;
-                    case (byte)'"': sb.Append("\\\""); break;
-                    case (byte)'\n': sb.Append("\\0A"); break;
-                    case (byte)'\r': sb.Append("\\0D"); break;
-                    case (byte)'\t': sb.Append("\\09"); break;
-                    default:
-                        if (b < 0x20 || b > 0x7E)
-                            sb.Append("\\").Append(b.ToString("X2", CultureInfo.InvariantCulture));
-                        else
-                            sb.Append((char)b);
-                        break;
-                }
-            }
-            sb.Append("\\00");
-            sb.Append('"');
             return sb.ToString();
         }
 
@@ -334,6 +292,17 @@ namespace SimpleLanguage.Export.MLIR
 
         /// <summary>C element width in bytes (VMArray.unit_length).</summary>
         private static int ElemWidthOf(SLType t) => t == SLType.ArrayI32 ? 4 : 8;
+
+        // VMArray (csimple_lang/src/vm/vm_array.h, x64) field byte offsets baked
+        // into the emitted GEPs. The embedded VMObject block is 32 bytes:
+        // header(8) + member_data(8) + member_data_size(4, pad 4) +
+        // bind_runtime_type(8); then length / unit_length / element_runtime_type /
+        // data. Keep in sync with the C struct when the layout changes.
+        private const long VMARRAY_OFF_LENGTH = 32;
+        private const long VMARRAY_OFF_DATA = 48;
+        // Sentinel size: a dummy VMArray stand-in with a zeroed length field;
+        // [data .. data+8) doubles as the write sink for dropped stores.
+        private const int VMARRAY_SENTINEL_SIZE = 56;
 
         /// <summary>
         /// A stack value. Name always refers to an i64-typed SSA value;
@@ -2589,10 +2558,12 @@ namespace SimpleLanguage.Export.MLIR
             //
             // Calls an interpreter-side (non-AOT) method through the host
             // function pointer injected via sl_aot_bridge_init:
-            //   int64 fn(void* ctx, const char* method_id,
+            //   int64 fn(void* ctx, int32 method_id,
             //            SLAotValue* args, int32 argc, SLAotValue* ret)
-            // The ctx passed at the outer boundary is the VM*, so the host
-            // bridge can push args and run the callee with
+            // method_id is the front-precomputed FNV-1a int id of the full
+            // callee name (ClassManager.GetMethodId), baked as an i32
+            // constant. The ctx passed at the outer boundary is the VM*, so
+            // the host bridge can push args and run the callee with
             // vm_execute_method_by_id.
 
             private readonly struct CalleeInfo
@@ -2682,11 +2653,12 @@ namespace SimpleLanguage.Export.MLIR
                     vals[i] = Pop(pos);
                 }
 
-                // Module-level string global for the callee id.
-                if (!m_BridgeIds.TryGetValue(ci.Id, out string globalName))
+                // Mark this callee as bridge-routed: a non-empty registry
+                // drives module-level NeedsBridgeInit (the host injects
+                // sl_aot_bridge_init only when some CallStatic uses it).
+                if (!m_BridgeIds.ContainsKey(ci.Id))
                 {
-                    globalName = "@sl_mid_" + m_BridgeIds.Count.ToString(CultureInfo.InvariantCulture);
-                    m_BridgeIds[ci.Id] = globalName;
+                    m_BridgeIds[ci.Id] = string.Empty;
                 }
 
                 // Pack each arg into !slv. C ABI kinds (§5.6):
@@ -2725,15 +2697,6 @@ namespace SimpleLanguage.Export.MLIR
                     EmitBody("    llvm.store {0}, {1} : !slv, !llvm.ptr", slvNames[i], p);
                 }
 
-                // Callee id -> const char* (first element of the array global;
-                // the array type must match the global, incl. the NUL byte).
-                string pg = NV();
-                EmitBody("    {0} = llvm.mlir.addressof {1} : !llvm.ptr", pg, globalName);
-                int idLen = Encoding.UTF8.GetByteCount(ci.Id) + 1;
-                string pid = NV();
-                EmitBody("    {0} = llvm.getelementptr {1}[{2}, {2}] : (!llvm.ptr, i32, i32) -> !llvm.ptr, !llvm.array<{3} x i8>",
-                    pid, pg, CK32(0), idLen);
-
                 // Load the injected bridge pointer (null = host never
                 // injected: return a zeroed slv instead of crashing).
                 string gp = NV();
@@ -2749,8 +2712,11 @@ namespace SimpleLanguage.Export.MLIR
                 EmitBody("    cf.cond_br {0}, ^cs{1}_call, ^cs{1}_zero", nz, tag);
                 EmitBody("  ^cs{0}_call:", tag);
                 string rc = NV();
-                EmitBody("    {0} = llvm.call {1}({2}, {3}, {4}, {5}, {6}) : !llvm.ptr, (!llvm.ptr, !llvm.ptr, !llvm.ptr, i32, !llvm.ptr) -> i64",
-                    rc, fp, "%ctx", pid, cargs, CK32(ci.Argc), cret);
+                // The callee's front-precomputed int method id (FNV-1a of
+                // the full name) crosses as an i32 constant; the C bridge
+                // resolves it via vm_find_method_by_id.
+                EmitBody("    {0} = llvm.call {1}({2}, {3}, {4}, {5}, {6}) : !llvm.ptr, (!llvm.ptr, i32, !llvm.ptr, i32, !llvm.ptr) -> i64",
+                    rc, fp, "%ctx", CK32(ClassManager.GetMethodId(ci.Id)), cargs, CK32(ci.Argc), cret);
                 EmitBody("    cf.br ^cs{0}_post", tag);
                 EmitBody("  ^cs{0}_zero:", tag);
                 string z0 = NV();
@@ -2778,11 +2744,11 @@ namespace SimpleLanguage.Export.MLIR
             // ---- array access + virtual getter inlining --------------------------
             //
             // VMArray (x64 release) layout behind the object pointer:
-            //   +0  VMObject header (48 bytes)
-            //   +48 uint32 length          <- authoritative (arr->length)
-            //   +52 uint32 unit_length
-            //   +56 void*  element_runtime_type
-            //   +64 void*  data            <- element buffer: data + idx*unit_length
+            //   +0  VMObject block (32 bytes)
+            //   +32 uint32 length          <- authoritative (arr->length)
+            //   +36 uint32 unit_length
+            //   +40 void*  element_runtime_type
+            //   +48 void*  data            <- element buffer: data + idx*unit_length
             // Out-of-bounds or null-receiver loads yield 0, matching
             // vm_array_try_load_value returning FALSE (the interpreter then
             // pushes i32 0). All selects stay in the i64 domain; pointers
@@ -2814,7 +2780,7 @@ namespace SimpleLanguage.Export.MLIR
                 // bounds check: (uint64)idx < length (negative indices wrap and fail)
                 string lenp = NV();
                 EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
-                    lenp, bas, CI64(48));
+                    lenp, bas, CI64(VMARRAY_OFF_LENGTH));
                 string len32 = NV();
                 EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i32", len32, lenp);
                 string len = NV();
@@ -2826,7 +2792,7 @@ namespace SimpleLanguage.Export.MLIR
                 // is computed but never selected, so it is never dereferenced
                 string datap = NV();
                 EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
-                    datap, bas, CI64(64));
+                    datap, bas, CI64(VMARRAY_OFF_DATA));
                 string dataptr = NV();
                 EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> !llvm.ptr", dataptr, datap);
                 string dati = NV();
@@ -2873,7 +2839,7 @@ namespace SimpleLanguage.Export.MLIR
             /// <summary>
             /// Host array store: mirror of EmitArrayLoad. Null/OOB stores are
             /// silently skipped by routing the address into the sentinel's
-            /// data slot (a 72-byte dummy alloca; bytes [64..72) are written
+            /// data slot (a 56-byte dummy alloca; bytes [48..56) are written
             /// but never read) - matching the VM's behavior of ignoring
             /// vm_array_try_store_value failures.
             /// </summary>
@@ -2921,7 +2887,7 @@ namespace SimpleLanguage.Export.MLIR
 
                 string lenp = NV();
                 EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
-                    lenp, bas, CI64(48));
+                    lenp, bas, CI64(VMARRAY_OFF_LENGTH));
                 string len32 = NV();
                 EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i32", len32, lenp);
                 string len = NV();
@@ -2933,7 +2899,7 @@ namespace SimpleLanguage.Export.MLIR
 
                 string datap = NV();
                 EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
-                    datap, bas, CI64(64));
+                    datap, bas, CI64(VMARRAY_OFF_DATA));
                 string dataptr = NV();
                 EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> !llvm.ptr", dataptr, datap);
                 string dati = NV();
@@ -2942,9 +2908,9 @@ namespace SimpleLanguage.Export.MLIR
                 EmitBody("    {0} = arith.muli {1}, {2} : i64", off, idx, CI64(ElemWidthOf(arr.Type)));
                 string epi = NV();
                 EmitBody("    {0} = arith.addi {1}, {2} : i64", epi, dati, off);
-                // bad stores land in the sentinel's data slot (bytes 64..72)
+                // bad stores land in the sentinel's data slot (bytes 48..56)
                 string sdat = NV();
-                EmitBody("    {0} = arith.addi {1}, {2} : i64", sdat, ArraySentinelI64(), CI64(64));
+                EmitBody("    {0} = arith.addi {1}, {2} : i64", sdat, ArraySentinelI64(), CI64(VMARRAY_OFF_DATA));
                 string eps = NV();
                 EmitBody("    {0} = arith.select {1}, {2}, {3} : i64", eps, ok, epi, sdat);
                 string ep = NV();
@@ -3001,7 +2967,7 @@ namespace SimpleLanguage.Export.MLIR
                 if (!IsTrivialArrayLengthGetter(vi.Method))
                     throw Fail($"[{pos}] CallVirt to '{vi.Name}' is not an inlinable array getter");
 
-                // inline of Array<T>.get length(): (int64)*(int32*)(recv + 48),
+                // inline of Array<T>.get length(): (int64)*(int32*)(recv + 32),
                 // null-safe (a null array reports length 0)
                 string okp = NV();
                 EmitBody("    {0} = arith.cmpi ne, {1}, {2} : i64", okp, recv.Name, CI64(0));
@@ -3011,7 +2977,7 @@ namespace SimpleLanguage.Export.MLIR
                 EmitBody("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", bas, basei);
                 string lenp = NV();
                 EmitBody("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8",
-                    lenp, bas, CI64(48));
+                    lenp, bas, CI64(VMARRAY_OFF_LENGTH));
                 string len32 = NV();
                 EmitBody("    {0} = llvm.load {1} : !llvm.ptr -> i32", len32, lenp);
                 string len = NV();
@@ -3912,14 +3878,14 @@ namespace SimpleLanguage.Export.MLIR
             }
 
             /// <summary>
-            /// Lazily materialize a 72-byte dummy VMArray-like buffer and return it as an
+            /// Lazily materialize a 56-byte dummy VMArray-like buffer and return it as an
             /// i64 pointer bit-pattern. Null/OOB array accesses are routed here so that
             /// the subsequent bounds check (cmpi ult against length) always fails and the
             /// result select folds to 0 - matching the VM's "push i32 0" fallback.
-            /// Layout: [0..47] VMObject header (garbage, never inspected) | [48] length
+            /// Layout: [0..31] VMObject block (garbage, never inspected) | [32] length
             /// (u32, must be zeroed - otherwise a stale length would make the bounds check
-            /// pass and dereference a wild data pointer) | [52] unit_length (never read)
-            /// | [56] element_runtime_type (never read) | [64] data (never dereferenced
+            /// pass and dereference a wild data pointer) | [36] unit_length (never read)
+            /// | [40] element_runtime_type (never read) | [48] data (never dereferenced
             /// because ok=false keeps the select on the safe path).
             /// Note: constants referenced here are hoisted into m_ConstSb before the
             /// alloca/GEP lines, and the entry block dominates all uses.
@@ -3928,9 +3894,9 @@ namespace SimpleLanguage.Export.MLIR
             {
                 if (!m_ArrayDummyEmitted)
                 {
-                    EmitConst("    %arrdummy = llvm.alloca {0} x i8 : (i32) -> !llvm.ptr", CK32(72));
-                    // zero the +48 length field so null arrays fail the bounds check
-                    EmitConst("    %ad_len = llvm.getelementptr %arrdummy[{0}] : (!llvm.ptr, i64) -> !llvm.ptr, i8", CI64(48));
+                    EmitConst("    %arrdummy = llvm.alloca {0} x i8 : (i32) -> !llvm.ptr", CK32(VMARRAY_SENTINEL_SIZE));
+                    // zero the +32 length field so null arrays fail the bounds check
+                    EmitConst("    %ad_len = llvm.getelementptr %arrdummy[{0}] : (!llvm.ptr, i64) -> !llvm.ptr, i8", CI64(VMARRAY_OFF_LENGTH));
                     EmitConst("    llvm.store {0}, %ad_len : i32, !llvm.ptr", CK32(0));
                     EmitConst("    %arrdummy_i = llvm.ptrtoint %arrdummy : !llvm.ptr to i64");
                     m_ArrayDummyEmitted = true;
@@ -3976,7 +3942,7 @@ namespace SimpleLanguage.Export.MLIR
         //     so the same kernel is correct for any grid the host picks.
         //
         //  2. func.func @sym (sl_value ABI) — a host wrapper that unpacks the
-        //     sl_value args, dereferences the VMArrays (length +48 / data +64),
+        //     sl_value args, dereferences the VMArrays (length +32 / data +48),
         //     stages device buffers (slgpuMalloc + HtoD), computes
         //     gx = ceil(bound / blockDimX) from the loop bound (or the @GPU
         //     gridDimX attribute), launches the kernel, copies results back
@@ -4536,7 +4502,7 @@ namespace SimpleLanguage.Export.MLIR
                     argVal[slot] = d;
                 }
 
-                // ---- 2. deref VMArrays: length (+48) / data (+64), null-safe ----
+                // ---- 2. deref VMArrays: length (+32) / data (+48), null-safe ----
                 var arrLen = new Dictionary<int, string>();
                 var arrDat = new Dictionary<int, string>();
                 foreach (int slot in m_ArraySlots)
@@ -4549,14 +4515,14 @@ namespace SimpleLanguage.Export.MLIR
                     string bas = HNV();
                     HEmit("    {0} = llvm.inttoptr {1} : i64 to !llvm.ptr", bas, basi);
                     string lp = HNV();
-                    HEmit("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8", lp, bas, HCI64(48));
+                    HEmit("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8", lp, bas, HCI64(VMARRAY_OFF_LENGTH));
                     string l32 = HNV();
                     HEmit("    {0} = llvm.load {1} : !llvm.ptr -> i32", l32, lp);
                     string ln = HNV();
                     HEmit("    {0} = arith.extui {1} : i32 to i64", ln, l32);
                     arrLen[slot] = ln;
                     string dp = HNV();
-                    HEmit("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8", dp, bas, HCI64(64));
+                    HEmit("    {0} = llvm.getelementptr {1}[{2}] : (!llvm.ptr, i64) -> !llvm.ptr, i8", dp, bas, HCI64(VMARRAY_OFF_DATA));
                     string dat = HNV();
                     HEmit("    {0} = llvm.load {1} : !llvm.ptr -> !llvm.ptr", dat, dp);
                     arrDat[slot] = dat;
@@ -4642,8 +4608,8 @@ namespace SimpleLanguage.Export.MLIR
             {
                 if (!m_HostSentinelEmitted)
                 {
-                    HEmitC("    %hdummy = llvm.alloca {0} x i8 : (i32) -> !llvm.ptr", HK32(72));
-                    HEmitC("    %hds_lp = llvm.getelementptr %hdummy[{0}] : (!llvm.ptr, i64) -> !llvm.ptr, i8", HCI64(48));
+                    HEmitC("    %hdummy = llvm.alloca {0} x i8 : (i32) -> !llvm.ptr", HK32(VMARRAY_SENTINEL_SIZE));
+                    HEmitC("    %hds_lp = llvm.getelementptr %hdummy[{0}] : (!llvm.ptr, i64) -> !llvm.ptr, i8", HCI64(VMARRAY_OFF_LENGTH));
                     HEmitC("    llvm.store {0}, %hds_lp : i32, !llvm.ptr", HK32(0));
                     HEmitC("    %hds_i = llvm.ptrtoint %hdummy : !llvm.ptr to i64");
                     m_HostSentinelEmitted = true;

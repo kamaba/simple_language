@@ -1324,7 +1324,7 @@ await t
 | `kind` | ✔ | `foreign` / `device` / `shader` / `asm` / `ir` / `dsl`（§3.1），决定捕获规则与 marshal 策略 |
 | `lang` | | 块体语言标识，供 codegen 与 IDE 高亮 |
 | `runtime` | foreign 必需 | 运行时定位：`lib` / `version` / `probePath` / `entry` |
-| `platform.os` / `.cpu` | | 支持的平台数组；不匹配 → 按 `fallback` 处理 |
+| `platform.os` / `.cpu` / `.lib` | | 该标签可用的平台条件；不匹配 → 按 `fallback` 处理。**求值器与模块级共用同一套 `SLRequirementAtom`**，详见 `PLATFORM_CAPABILITY_DESIGN.md` §11.3 |
 | `scope` | | 捕获可见范围：`local`（默认）/ `local,global` / `host` |
 | **`isolate`** | 可选 | 被 `Isolate.spawnFunc0` 调度时的 worker 岛池配置：`pool`（池名，同池复用常驻岛）/ `minWorkers` / `maxWorkers` / `restartOnCrash` |
 | `returnKeyword` | | 块内返回关键字，`asm` 为 `null` |
