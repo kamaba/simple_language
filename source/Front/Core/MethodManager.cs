@@ -21,7 +21,6 @@ namespace SimpleLanguage.Core
         private Dictionary<string, MetaFunction> m_MetaAllFunctionDict = new Dictionary<string, MetaFunction>();
 
         private List<MetaMemberFunction> m_MetaOriginalFunctionList = new List<MetaMemberFunction>();
-        private List<MetaMemberFunction> m_MetaExpressFunctionList = new List<MetaMemberFunction>();
         private List<MetaMemberFunction> m_MetaDynamicFunctionList = new List<MetaMemberFunction>();
 
 

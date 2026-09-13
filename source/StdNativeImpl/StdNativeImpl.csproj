@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- 引用 VM 项目以获取 ISLExternalFunctionModule 接口 -->
+    <ProjectReference Include="..\VM\SimpleLanuageVM.csproj" />
+  </ItemGroup>
+
+</Project>

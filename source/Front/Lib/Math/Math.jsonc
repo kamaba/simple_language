@@ -1,0 +1,269 @@
+{
+  "project":
+  {
+    "name": "Math",
+    "desc": "Math library module - Math(Float64) / Mathf(Float32) / Mathh(Float16) + vectors, matrices, quaternion, big numbers",
+    "mainVersion": 0,
+    "subVersion": 2,
+    "buildVersion": 0,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  // FFI 导入表（jsonc "dllImports" 段）。"static" 非空（静态注册名）时 cvm 加载
+  // 模块即预载该库并注册进 FFI.StaticLibrary，@DllStaticImport("math_lib",
+  // "mathd_sin") 静态调用点由编译期发射 opcode 118 直调绑定表（无 wrapper 委托
+  // 转发开销，sig 从函数签名自动推导为短名 f64/f32），绑定失败回退 SL fallback
+  // 本体兜底。"alias" 仍供 @DllImport 三参形式按别名解析 path（原样透传，运行时
+  // 相对进程 CWD 解析，CWD = 测试工程目录时，../../ 即 simple_language 根）。
+  // Mathh.sl 以 Float32 为中间精度复用 Mathf，无需单独声明。
+  "dllImports":
+  [
+    { "path": "../../out/export/Math/math_lib.dll", "name": "math_lib", "alias": "math_lib", "static": "math_lib" }
+  ],
+  // vmDlls 构建规则：导出 Math 时，Front 用 MSBuild 编译 project 指向的 VS 工程
+  // （路径相对本 jsonc 所在目录），并把产出的 math_lib.dll 拷贝到与 Math.module.json 相同的
+  // 目录（out/export/Math/），即上方 dllImports 别名指向的位置。C 实现位于
+  // source/Front/Lib/Math/cvm_math_lib/math_lib.c（FFI 普通 C ABI：mathf_*/mathd_*），
+  // 供 Mathf.sl / Mathd.sl / 矩阵类的 @DllImport 三参形式绑定调用。
+  "vmDlls": [
+    { "project": "../../../../project/cvm_math_lib/cvm_math_lib.vcxproj", "name": "math_lib.dll", "configuration": "Debug", "platform": "x64" }
+  ],
+  // systemCalls：矩阵运算下沉 cvm（SystemMethodCall）声明。cvmFunction 用
+  // "DllName!symbol" 形式（DllName 须与上方 vmDlls.name 一致），cvm 加载
+  // module.json 时按 vmDllImports 预载 math_lib.dll 并按符号解析派发；
+  // 实现位于 cvm_math_lib/float32_3x3_vm_method_call.c（对象参数经
+  // math_vm_object_bridge.h 直接读写 member_data；返回对象走 out 参数）。
+  "systemCalls": [
+    { "name": "SystemMathMat3Mul",          "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_mul" },
+    { "name": "SystemMathMat3MulVec",       "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_mul_vec" },
+    { "name": "SystemMathMat3Transpose",    "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_transpose" },
+    { "name": "SystemMathMat3Determinant",  "returnType": "Float32", "params": ["object"],                     "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_determinant" },
+    { "name": "SystemMathMat3Inverse",       "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_inverse" },
+    { "name": "SystemMathMat3Add",           "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_add" },
+    { "name": "SystemMathMat3Eq",           "returnType": "bool",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_eq" },
+    { "name": "SystemMathMat3Copy",         "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_copy" },
+    { "name": "SystemMathMat3Identity",     "returnType": "void",    "params": ["object"],                     "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_identity" },
+    { "name": "SystemMathMat3RotationX",     "returnType": "void",    "params": ["Float32", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_rotation_x" },
+    { "name": "SystemMathMat3RotationY",     "returnType": "void",   "params": ["Float32", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_rotation_y" },
+    { "name": "SystemMathMat3RotationZ",     "returnType": "void",   "params": ["Float32", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_rotation_z" },
+    { "name": "SystemMathMat3Scale",        "returnType": "void",    "params": ["Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_scale" },
+    { "name": "SystemMathMat3Translation",   "returnType": "void",    "params": ["Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3f_translation" },
+
+    // ── Float32_4x4（float32_4x4_vm_method_call.c）──────────────────
+    { "name": "SystemMathMat4Mul",               "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_mul" },
+    { "name": "SystemMathMat4TransformPoint",    "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_transform_point" },
+    { "name": "SystemMathMat4TransformDirection", "returnType": "void",   "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_transform_direction" },
+    { "name": "SystemMathMat4Transpose",         "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_transpose" },
+    { "name": "SystemMathMat4Determinant",       "returnType": "Float32", "params": ["object"],                     "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_determinant" },
+    { "name": "SystemMathMat4Inverse",           "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_inverse" },
+    { "name": "SystemMathMat4Add",               "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_add" },
+    { "name": "SystemMathMat4Eq",                "returnType": "bool",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_eq" },
+    { "name": "SystemMathMat4Copy",              "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_copy" },
+    { "name": "SystemMathMat4Identity",          "returnType": "void",    "params": ["object"],                     "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_identity" },
+    { "name": "SystemMathMat4RotationX",         "returnType": "void",    "params": ["Float32", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_rotation_x" },
+    { "name": "SystemMathMat4RotationY",         "returnType": "void",    "params": ["Float32", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_rotation_y" },
+    { "name": "SystemMathMat4RotationZ",         "returnType": "void",    "params": ["Float32", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_rotation_z" },
+    { "name": "SystemMathMat4RotationAxis",      "returnType": "void",    "params": ["object", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_rotation_axis" },
+    { "name": "SystemMathMat4Scale",             "returnType": "void",    "params": ["Float32", "Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_scale" },
+    { "name": "SystemMathMat4Translation",       "returnType": "void",    "params": ["Float32", "Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_translation" },
+    { "name": "SystemMathMat4Perspective",       "returnType": "void",    "params": ["Float32", "Float32", "Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_perspective" },
+    { "name": "SystemMathMat4Ortho",             "returnType": "void",    "params": ["Float32", "Float32", "Float32", "Float32", "Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_ortho" },
+    { "name": "SystemMathMat4LookAt",            "returnType": "void",    "params": ["object", "object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4f_look_at" },
+
+    // ── Float64_3x3（float64_3x3_vm_method_call.c）──────────────────
+    { "name": "SystemMathMat3dMul",          "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_mul" },
+    { "name": "SystemMathMat3dMulVec",       "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_mul_vec" },
+    { "name": "SystemMathMat3dTranspose",    "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_transpose" },
+    { "name": "SystemMathMat3dDeterminant",  "returnType": "Float64", "params": ["object"],                     "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_determinant" },
+    { "name": "SystemMathMat3dInverse",      "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_inverse" },
+    { "name": "SystemMathMat3dAdd",          "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_add" },
+    { "name": "SystemMathMat3dEq",           "returnType": "bool",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_eq" },
+    { "name": "SystemMathMat3dCopy",         "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_copy" },
+    { "name": "SystemMathMat3dIdentity",     "returnType": "void",    "params": ["object"],                     "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_identity" },
+    { "name": "SystemMathMat3dRotationX",    "returnType": "void",    "params": ["Float64", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_rotation_x" },
+    { "name": "SystemMathMat3dRotationY",    "returnType": "void",    "params": ["Float64", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_rotation_y" },
+    { "name": "SystemMathMat3dRotationZ",    "returnType": "void",    "params": ["Float64", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_rotation_z" },
+    { "name": "SystemMathMat3dScale",        "returnType": "void",    "params": ["Float64", "Float64", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_scale" },
+    { "name": "SystemMathMat3dTranslation",  "returnType": "void",    "params": ["Float64", "Float64", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3d_translation" },
+
+    // ── Float64_4x4（float64_4x4_vm_method_call.c）──────────────────
+    { "name": "SystemMathMat4dMul",               "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_mul" },
+    { "name": "SystemMathMat4dTransformPoint",    "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_transform_point" },
+    { "name": "SystemMathMat4dTransformDirection", "returnType": "void",   "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_transform_direction" },
+    { "name": "SystemMathMat4dTranspose",         "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_transpose" },
+    { "name": "SystemMathMat4dDeterminant",       "returnType": "Float64", "params": ["object"],                     "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_determinant" },
+    { "name": "SystemMathMat4dInverse",           "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_inverse" },
+    { "name": "SystemMathMat4dAdd",               "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_add" },
+    { "name": "SystemMathMat4dEq",                "returnType": "bool",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_eq" },
+    { "name": "SystemMathMat4dCopy",              "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_copy" },
+    { "name": "SystemMathMat4dIdentity",          "returnType": "void",    "params": ["object"],                     "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_identity" },
+    { "name": "SystemMathMat4dRotationX",         "returnType": "void",    "params": ["Float64", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_rotation_x" },
+    { "name": "SystemMathMat4dRotationY",         "returnType": "void",    "params": ["Float64", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_rotation_y" },
+    { "name": "SystemMathMat4dRotationZ",         "returnType": "void",    "params": ["Float64", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_rotation_z" },
+    { "name": "SystemMathMat4dRotationAxis",      "returnType": "void",    "params": ["object", "Float64", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_rotation_axis" },
+    { "name": "SystemMathMat4dScale",             "returnType": "void",    "params": ["Float64", "Float64", "Float64", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_scale" },
+    { "name": "SystemMathMat4dTranslation",       "returnType": "void",    "params": ["Float64", "Float64", "Float64", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_translation" },
+    { "name": "SystemMathMat4dPerspective",       "returnType": "void",    "params": ["Float64", "Float64", "Float64", "Float64", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_perspective" },
+    { "name": "SystemMathMat4dOrtho",             "returnType": "void",    "params": ["Float64", "Float64", "Float64", "Float64", "Float64", "Float64", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_ortho" },
+    { "name": "SystemMathMat4dLookAt",            "returnType": "void",    "params": ["object", "object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4d_look_at" },
+
+    // ── Float16_3x3（float16_3x3_vm_method_call.c，标量走 Float32 中转）──
+    { "name": "SystemMathMat3hMul",          "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_mul" },
+    { "name": "SystemMathMat3hMulVec",       "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_mul_vec" },
+    { "name": "SystemMathMat3hTranspose",    "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_transpose" },
+    { "name": "SystemMathMat3hDeterminant",  "returnType": "Float32", "params": ["object"],                     "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_determinant" },
+    { "name": "SystemMathMat3hInverse",      "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_inverse" },
+    { "name": "SystemMathMat3hAdd",          "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_add" },
+    { "name": "SystemMathMat3hEq",           "returnType": "bool",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_eq" },
+    { "name": "SystemMathMat3hCopy",         "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_copy" },
+    { "name": "SystemMathMat3hIdentity",     "returnType": "void",    "params": ["object"],                     "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_identity" },
+    { "name": "SystemMathMat3hRotationX",    "returnType": "void",    "params": ["Float32", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_rotation_x" },
+    { "name": "SystemMathMat3hRotationY",    "returnType": "void",    "params": ["Float32", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_rotation_y" },
+    { "name": "SystemMathMat3hRotationZ",    "returnType": "void",    "params": ["Float32", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_rotation_z" },
+    { "name": "SystemMathMat3hScale",        "returnType": "void",    "params": ["Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_scale" },
+    { "name": "SystemMathMat3hTranslation",  "returnType": "void",    "params": ["Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat3h_translation" },
+
+    // ── Float16_4x4（float16_4x4_vm_method_call.c，标量走 Float32 中转）──
+    { "name": "SystemMathMat4hMul",               "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_mul" },
+    { "name": "SystemMathMat4hTransformPoint",    "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_transform_point" },
+    { "name": "SystemMathMat4hTransformDirection", "returnType": "void",   "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_transform_direction" },
+    { "name": "SystemMathMat4hTranspose",         "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_transpose" },
+    { "name": "SystemMathMat4hDeterminant",       "returnType": "Float32", "params": ["object"],                     "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_determinant" },
+    { "name": "SystemMathMat4hInverse",           "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_inverse" },
+    { "name": "SystemMathMat4hAdd",               "returnType": "void",    "params": ["object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_add" },
+    { "name": "SystemMathMat4hEq",                "returnType": "bool",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_eq" },
+    { "name": "SystemMathMat4hCopy",              "returnType": "void",    "params": ["object", "object"],           "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_copy" },
+    { "name": "SystemMathMat4hIdentity",          "returnType": "void",    "params": ["object"],                     "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_identity" },
+    { "name": "SystemMathMat4hRotationX",         "returnType": "void",    "params": ["Float32", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_rotation_x" },
+    { "name": "SystemMathMat4hRotationY",         "returnType": "void",    "params": ["Float32", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_rotation_y" },
+    { "name": "SystemMathMat4hRotationZ",         "returnType": "void",    "params": ["Float32", "object"],          "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_rotation_z" },
+    { "name": "SystemMathMat4hRotationAxis",      "returnType": "void",    "params": ["object", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_rotation_axis" },
+    { "name": "SystemMathMat4hScale",             "returnType": "void",    "params": ["Float32", "Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_scale" },
+    { "name": "SystemMathMat4hTranslation",       "returnType": "void",    "params": ["Float32", "Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_translation" },
+    { "name": "SystemMathMat4hPerspective",       "returnType": "void",    "params": ["Float32", "Float32", "Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_perspective" },
+    { "name": "SystemMathMat4hOrtho",             "returnType": "void",    "params": ["Float32", "Float32", "Float32", "Float32", "Float32", "Float32", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_ortho" },
+    { "name": "SystemMathMat4hLookAt",            "returnType": "void",    "params": ["object", "object", "object", "object"], "isVariadic": false, "cvmFunction": "math_lib.dll!mathvm_mat4h_look_at" },
+
+    // ── Matrix（array_system_method.c 主工程符号，非 math_lib.dll）──
+    // Matrix.sl 的 Array<Float32> 行主序缓冲批量下沉：矩阵乘 / 转置。
+    { "name": "SystemMathMatMulFloat32",    "returnType": "void", "params": ["Array<object>", "Array<object>", "Array<object>", "Int32", "Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_math_matmul_float32" },
+    { "name": "SystemMathTransposeFloat32", "returnType": "void", "params": ["Array<object>", "Array<object>", "Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_math_transpose_float32" }
+  ],
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      // ── 数学函数库（按精度分组）──────────────────────
+      { "path": "Mathd.sl", "group": "math", "tag": "mathd", "ignore": false, "priority": 0 },
+      { "path": "Mathf.sl", "group": "math", "tag": "mathf", "ignore": false, "priority": 0 },
+      { "path": "Mathh.sl", "group": "math", "tag": "mathh", "ignore": false, "priority": 0 },
+
+      // ── 大数 ─────────────────────────────────────────
+      { "path": "BigNumber.sl",  "group": "math", "tag": "bignum", "ignore": false, "priority": 0 },
+      { "path": "BigDecimal.sl", "group": "math", "tag": "bignum", "ignore": false, "priority": 0 },
+      { "path": "Factor.sl",     "group": "math", "tag": "bignum", "ignore": false, "priority": 0 },
+
+      // ── 向量 / 矩阵：Float32 ─────────────────────────
+      { "path": "Int32_2.sl",     "group": "math", "tag": "vec", "ignore": true,  "priority": 0 },
+      { "path": "Float32_2.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float32_3.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float32_4.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float32_3x3.sl", "group": "math", "tag": "mat", "ignore": false, "priority": 0 },
+      { "path": "Float32_4x4.sl", "group": "math", "tag": "mat", "ignore": false, "priority": 0 },
+
+      // ── 向量 / 矩阵：Float16 ─────────────────────────
+      { "path": "Float16_2.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float16_3.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float16_4.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float16_3x3.sl", "group": "math", "tag": "mat", "ignore": false, "priority": 0 },
+      { "path": "Float16_4x4.sl", "group": "math", "tag": "mat", "ignore": false, "priority": 0 },
+
+      // ── 向量 / 矩阵：Float64 ─────────────────────────
+      { "path": "Float64_2.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float64_3.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float64_4.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
+      { "path": "Float64_3x3.sl", "group": "math", "tag": "mat", "ignore": false, "priority": 0 },
+      { "path": "Float64_4x4.sl", "group": "math", "tag": "mat", "ignore": false, "priority": 0 },
+
+      // ── 其他 ─────────────────────────────────────────
+      { "path": "Quaternion.sl", "group": "math", "tag": "quat", "ignore": true, "priority": 0 },
+      { "path": "Matrix.sl",     "group": "math", "tag": "mat",  "ignore": false, "priority": 0 },
+      { "path": "Rect.sl",       "group": "math", "tag": "rect", "ignore": true, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+    ],
+    "data": {
+    }
+  },
+  "references": [
+    { "path": "../Core", "name": "Core" },
+    // Std 引用保留：FFI.Library / FFI.StaticLibrary（@DllImport 运行期绑定用）
+    // 定义于 Std 模块（source/Front/Lib/Std/FFI/Library.sl）。Mathd/Mathf 已迁移
+    // @DllStaticImport 静态直调（opcode 118，不经 FFI 类），不再依赖 Std；
+    // 保留引用维持既有模块依赖拓扑（moduleReferences 传递给引用方）不变。
+    { "path": "../Std", "name": "Std" }
+  ],
+  "struct": [
+    { "namespace": "Math", "children": [
+      { "class": "Mathd" },
+      { "class": "Mathf" },
+      { "class": "Mathh" },
+      { "class": "BigNumber" },
+      { "class": "BigDecimal" },
+      { "class": "Factor" },
+      { "class": "Int32_2" },
+      { "class": "Float16_2" },
+      { "class": "Float16_3" },
+      { "class": "Float16_4" },
+      { "class": "Float16_3x3" },
+      { "class": "Float16_4x4" },
+      { "class": "Float32_2" },
+      { "class": "Float32_3" },
+      { "class": "Float32_4" },
+      { "class": "Float32_3x3" },
+      { "class": "Float32_4x4" },
+      { "class": "Float64_2" },
+      { "class": "Float64_3" },
+      { "class": "Float64_4" },
+      { "class": "Float64_3x3" },
+      { "class": "Float64_4x4" },
+      { "class": "Quaternion" },
+      { "class": "Matrix" },
+      { "class": "Rect" }
+    ]}
+  ],
+  "export": {
+    "moduleName": "Math",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "nativeDll": "MathNativeImpl.dll",
+    "versionMain": 1,
+    "versionSub": 0,
+    "versionPatch": 0,
+    "includeMetadata": true,
+    // Front 调试文本实际目录：{export.outputDir}/{export.moduleName}/DebugCode/；以下 outputDir 仅兼容旧字段，可为空。
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  }
+}

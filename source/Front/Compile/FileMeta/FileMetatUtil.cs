@@ -20,13 +20,13 @@ namespace SimpleLanguage.Compile
         {
             if (name == null)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "自定义字符错误, 参数不可以为空!!");
+                Log.AddFileMetaLog(LID.FileMetaUtilIsNullParamDefine, "自定义字符错误, 参数不可以为空!!");
                 return false;
             }
 
             if (name.Equals(string.Empty) || name.Length == 0)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "自定义字符错误, 不可以为空!!");
+                Log.AddFileMetaLog(LID.FileMetaUtilIsNullDefine, "自定义字符错误, 不可以为空!!");
                 return false;
             }
             string pattern = @"^[A-Za-z0-9_]+$";
@@ -47,14 +47,14 @@ namespace SimpleLanguage.Compile
                 var token = tokenList[i];
                 if (token.lexeme == null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "检查到Import语句中，token内容lexeme为空!!");
+                    Log.AddFileMetaLog(LID.FileMetaUtilImportTokenLexeme, "检查到Import语句中，token内容lexeme为空!!");
                     return null;
                 }
                 if (token.type != ETokenType.Period)
                 {
                     if (!IdentifierCheck(token.lexeme.ToString()))
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "检查到Import语句中，导入名称不合规!!");
+                        Log.AddFileMetaLog(LID.FileMetaUtilImport, "检查到Import语句中，导入名称不合规!!");
                         return null;
                     }
                     stringList.Add(token.lexeme.ToString());
@@ -84,7 +84,7 @@ namespace SimpleLanguage.Compile
             {
                 if (afterNodeList.Count == 0)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, assignToken, "解析NodeStructVariable时有=号，但没有值内容 " + assignToken?.ToLexemeAllString() );
+                    Log.AddFileMetaLog(LID.FileMetaUtilNodeStructVariable, assignToken, "解析NodeStructVariable时有=号，但没有值内容 " + assignToken?.ToLexemeAllString() );
                     return false;
                 }
             }
@@ -151,7 +151,7 @@ namespace SimpleLanguage.Compile
             }
             else
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error CreateFileOneTerm 单1表达式，没有找到该类型: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
+                Log.AddFileMetaLog(LID.FileMetaUtilCreateFileOneTerm, "Error CreateFileOneTerm 单1表达式，没有找到该类型: " + node.token.type.ToString() + " 位置: " + node.token.ToLexemeAllString());
             }
             return fmbt;
         }
@@ -191,7 +191,9 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error 表达式不允许多个自定义元素存在!!" + fmbt.ToTokenString());
+                        FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
+                        fmn.priority = cnode.priority;
+                        commonTermExpressList.Add(fmn);
                     }
                 }
                 else if (cnode.nodeType == ENodeType.DoubleQuestion)
@@ -205,6 +207,16 @@ namespace SimpleLanguage.Compile
                 {
                     FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
                     fmn.priority = cnode.priority;
+                    commonTermExpressList.Add(fmn);
+                }
+                else if (cnode.nodeType == ENodeType.Assign)
+                {
+                    // 关键字参数: Fun( name = expr )
+                    // 调用实参中的 = 作为最低优先级符号保留在表达式列表中，
+                    // 由 MetaInputParamCollection.TryExtractKeywordArg 提取参数名并替换为纯值表达式。
+                    // 普通赋值语句在进入本函数前已剥离 Assign 节点，不会受此影响。
+                    FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
+                    fmn.priority = SignComputePriority.Level11_Assign;
                     commonTermExpressList.Add(fmn);
                 }
                 else if (cnode.nodeType == ENodeType.Key)
@@ -240,9 +252,17 @@ namespace SimpleLanguage.Compile
                         fmbt.priority = int.MaxValue;
                         commonTermExpressList.Add(fmbt);
                     }
+                    else if (cnode.token.type == ETokenType.Try
+                             || cnode.token.type == ETokenType.Checked)
+                    {
+                        // try/checked as expression prefix (like try? / try!)
+                        FileMetaSymbolTerm fmn = new FileMetaSymbolTerm(fm, cnode.token);
+                        fmn.priority = SignComputePriority.Level2_LinkOp;
+                        commonTermExpressList.Add(fmn);
+                    }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "Error --------------------------------------!!" + fmbt.ToTokenString());
+                        Log.AddFileMetaLog(LID.FileMetaUtilIssue, cnode.token, "Error --------------------------------------!!" + fmbt?.ToTokenString());
                     }
                 }
                 else if (cnode.nodeType == ENodeType.Brace)
@@ -273,7 +293,8 @@ namespace SimpleLanguage.Compile
                         if (nodeList[index + 1].nodeType == ENodeType.Brace)
                         {
                             block = nodeList[index + 1];
-                            cnode.SetBlockNode(block);
+                            var lastNodeList = cnode.GetLinkNodeList(true);
+                            lastNodeList[lastNodeList.Count - 1].SetBlockNode(block);
                             index++;
                         }
                     }
@@ -307,7 +328,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, cnode.token, "没有找到该类型: " + cnode.token.type.ToString() + " 位置: " + cnode.token.ToLexemeAllString());
+                    Log.AddFileMetaLog(LID.FileMetaUtilNotFoundType, cnode.token, "没有找到该类型: " + cnode.token.type.ToString() + " 位置: " + cnode.token.ToLexemeAllString());
                 }
                 index++;
             }
@@ -389,7 +410,7 @@ namespace SimpleLanguage.Compile
 
             if (fmbt == null)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 生成表达式错误!!");
+                Log.AddFileMetaLog(LID.FileMetaUtilExpress, "Error 生成表达式错误!!");
                 return null;
             }
             fmbt.BuildAST();

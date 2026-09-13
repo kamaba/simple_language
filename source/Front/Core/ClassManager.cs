@@ -33,6 +33,7 @@ namespace SimpleLanguage.Core
         public List<MetaData> exportMetaDataList => m_ExportMetaDataList;
         public List<MetaEnum> exportMetaEnumList => m_ExportMetaEnumList;
         public MetaClass projectMetaClass => m_ProjectMetaClass;
+        public Dictionary<string, MetaClass> allClassDict => m_AllClassDict;
 
 
         private readonly List<MetaClass> m_ExportMetaClassList = new List<MetaClass>();
@@ -57,6 +58,41 @@ namespace SimpleLanguage.Core
             if (m_AllClassDict.ContainsKey(nname))
                 return m_AllClassDict[nname];
             return null;
+        }
+        /// <summary>
+        /// 按类全名计算确定型 classId。
+        /// null/空串返回 0（表示“无类”哨兵，用于 baseClassId=0 等）。
+        /// 非空串返回 FNV-1a 32-bit；若哈希结果恰为 0，回退为 1 以避开哨兵。
+        /// </summary>
+        public static int GetClassId(string fullName)
+        {
+            if (string.IsNullOrEmpty(fullName)) return 0;
+            uint hash = 2166136261u;
+            for (int i = 0; i < fullName.Length; i++)
+            {
+                hash ^= fullName[i];
+                hash *= 16777619u;
+            }
+            int id = (int)hash;
+            return id == 0 ? 1 : id;
+        }
+        /// <summary>
+        /// 按方法全名计算确定型 methodId（与 GetClassId 同款 FNV-1a 32-bit）。
+        /// null/空串返回 0（表示“未知方法”哨兵）；哈希结果恰为 0 时回退为 1。
+        /// 导出端（SLRuntimeCallPackage.methodId / SLMethodPackage.methodId 等）与
+        /// C VM 装配层共用该值作哈希键，运行期不再对方法名字符串做 hash。
+        /// </summary>
+        public static int GetMethodId(string fullName)
+        {
+            if (string.IsNullOrEmpty(fullName)) return 0;
+            uint hash = 2166136261u;
+            for (int i = 0; i < fullName.Length; i++)
+            {
+                hash ^= fullName[i];
+                hash *= 16777619u;
+            }
+            int id = (int)hash;
+            return id == 0 ? 1 : id;
         }
 
         /// <summary>
@@ -282,7 +318,7 @@ namespace SimpleLanguage.Core
             {                
                 if( topLevelClass?.metaClass?.metaNode == null )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, " ??????????????????????????");
+                    Log.AddMetaCoreLog(LID.MetaCoreClassManagerNotFoundNotFound, fmc.token, "not found topLevelClass!!!");
                     return null;
                 }
 
@@ -291,7 +327,7 @@ namespace SimpleLanguage.Core
                 {
                     if(findmc.isMetaNamespace || findmc.isMetaData || findmc.isMetaEnum )
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Namespace/data/enum node already exists, duplicate class node is not allowed.");
+                        Log.AddMetaCoreLog(LID.MetaCoreClassManagerNotAllowNamespaceData, "Namespace/data/enum node already exists, duplicate class node is not allowed.");
                         return null;
                     }
 
@@ -309,12 +345,12 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage,fmc.token,  "Found existing class node with incompatible define type.");
+                            Log.AddMetaCoreLog(LID.MetaCoreClassManagerFoundExistingClass,fmc.token,  "Found existing class node with incompatible define type.");
                         }
                     }
                     else
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, fmc.token, "Found existing class node with incompatible define type2.");
+                        Log.AddMetaCoreLog(LID.MetaCoreClassManagerFoundExistingClass2, fmc.token, "Found existing class node with incompatible define type2.");
                         return null;
                     }
                 }
@@ -341,17 +377,26 @@ namespace SimpleLanguage.Core
                     }
                 }
 
+                // Step 1: resolve the full dotted-name namespace block from the
+                // module root (absolute resolution, e.g. "Application" -> root.Application)
+                bool nsResolvedByDottedName = false;
                 if (finalTopMetaNode == null && fmc.namespaceBlock?.namespaceList?.Count > 0 )
                 {
                     finalTopMetaNode = NamespaceManager.instance.FindFinalMetaNamespaceByNSBlock(fmc.namespaceBlock);
-                   
+                    nsResolvedByDottedName = (finalTopMetaNode != null);
+
                     if (finalTopMetaNode == null )
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "???????????????????????????????????????!!");
+                        Log.AddMetaCoreLog(LID.MetaCoreClassManagerIssue, "???????????????????????????????????????!!");
                         return null;
                     }
                 }
-                if (finalTopMetaNode != null
+                // Step 2: when the enclosing namespace was found via topLevelFileMetaNamespace
+                // (line 332), resolve the dotted-name namespace block relative to that context.
+                // Skip this if Step 1 already resolved the full namespace from root — otherwise
+                // it would re-search for "Application" inside root.Application and return null.
+                if (!nsResolvedByDottedName
+                    && finalTopMetaNode != null
                     && (finalTopMetaNode.isMetaModule || finalTopMetaNode.isMetaNamespace)
                     && fmc.namespaceBlock?.namespaceList?.Count > 0)
                 {
@@ -388,7 +433,7 @@ namespace SimpleLanguage.Core
                             }
                             else
                             {
-                                Log.AddFileMetaLog(LID.MetaCoreAssertShowMessage, fmc.token, ffmc.token?.ToLexemeAllString() + "已经有一个重复的定义类了");
+                                Log.AddFileMetaLog(LID.FileMetaClassManagerDuplicateDefine, fmc.token, ffmc.token?.ToLexemeAllString() + "已经有一个重复的定义类了");
                                 return null;
                             }
                         }
@@ -398,7 +443,7 @@ namespace SimpleLanguage.Core
                         }
                         //if (!fmc.isPartial)
                         //{
-                        //    Log.AddMetaCoreLog(LID.ShowExtendMessage, "??" + fmc.name + "?? " + fmc.token.ToAllString() + "?????????????????????????????");
+                        //    Log.AddMetaCoreLog(LID.MetaCoreClassManagerIssue2, "??" + fmc.name + "?? " + fmc.token.ToAllString() + "?????????????????????????????");
                         //    return null;
                         //}
                         //bool isPartial = true;
@@ -407,7 +452,7 @@ namespace SimpleLanguage.Core
                         //    if (v.Value.isPartial == false)
                         //    {
                         //        isPartial = false;
-                        //        Log.AddMetaCoreLog(LID.ShowExtendMessage, "??" + findamc.name + "?? " + v.Value.token.ToAllString() + "?????????????????????????????");
+                        //        Log.AddMetaCoreLog(LID.MetaCoreClassManagerIssue3, "??" + findamc.name + "?? " + v.Value.token.ToAllString() + "?????????????????????????????");
                         //        break;
                         //    }
                         //}
@@ -445,7 +490,7 @@ namespace SimpleLanguage.Core
                         }
                         if (!fmc.isPartial)
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Class " + fmc.name + " at " + fmc.token.ToAllString() + " does not support parallel file definitions.");
+                            Log.AddMetaCoreLog(LID.MetaCoreClassManagerClass, "Class " + fmc.name + " at " + fmc.token.ToAllString() + " does not support parallel file definitions.");
                             return null;
                         }
                         bool isPartial = true;
@@ -454,7 +499,7 @@ namespace SimpleLanguage.Core
                             if (v.Value.isPartial == false)
                             {
                                 isPartial = false;
-                                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Class " + findamc.name + " at " + v.Value.token.ToAllString() + " does not support parallel file definitions.");
+                                Log.AddMetaCoreLog(LID.MetaCoreClassManagerClass2, "Class " + findamc.name + " at " + v.Value.token.ToAllString() + " does not support parallel file definitions.");
                                 break;
                             }
                         }
@@ -478,17 +523,29 @@ namespace SimpleLanguage.Core
             {
                 if (ProjectManager.useDefineNamespaceType == EUseDefineType.LimitUseProjectConfigNamespaceAndClass)
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, token, " useDefineNamespaceType not allow");
+                    Log.AddMetaCoreLog(LID.MetaCoreClassManagerNotAllowUseDefineNamespaceTypeNot, token, " useDefineNamespaceType not allow");
                 }
                 if (fmc.isEnum)
                 {
-                    MetaEnum newme = new MetaEnum(fmc.name);
-                    finalTopMetaNode.AddMetaEnum(newme);
+                    // 若该位置已存在同名 MetaEnum 壳（如工程配置 struct 树预创建的节点），
+                    // 直接绑定到该壳上；否则 AddMetaEnum 会因同名节点重复而失败，
+                    // 导致新 MetaEnum 挂不到命名空间树上（allName 缺少命名空间前缀）。
+                    var existEnumNode = finalTopMetaNode.GetChildrenMetaNodeByName(fmc.name);
+                    MetaEnum newme = null;
+                    if (existEnumNode != null && existEnumNode.isMetaEnum)
+                    {
+                        newme = existEnumNode.metaEnum;
+                    }
+                    if (newme == null)
+                    {
+                        newme = new MetaEnum(fmc.name);
+                        finalTopMetaNode.AddMetaEnum(newme);
+                    }
                     newme.UpdateAllName();
                     fmc.SetMetaEnum(newme);
                     newme.SetClassDefineType(EClassDefineType.CodeDefine);
                     newme.ParseFileMetaEnumMemeberEnum(fmc);
-                    
+
                     AddInitHandleMetaEnumList(newme);
 
                     return newme;
@@ -508,7 +565,7 @@ namespace SimpleLanguage.Core
                 {
                     if (fmc.isConst)
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, token, "Class ??????? const ????");
+                        Log.AddMetaCoreLog(LID.MetaCoreClassManagerClassConst, token, "Class ??????? const ????");
                         return null;
                     }
                     var newmc = new MetaClass(fmc.name);
@@ -563,7 +620,7 @@ namespace SimpleLanguage.Core
             {
                 if( v.Value == mc )
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"???????????:{mc.allName} ????????????????????!");
+                    Log.AddMetaCoreLog(LID.MetaCoreClassManagerIssue4, $"???????????:{mc.allName} ????????????????????!");
                     return;
                 }
             }
@@ -601,7 +658,16 @@ namespace SimpleLanguage.Core
             }
         }
 
-        /// <summary>??? typealias ??????????????????????????????????/???????????????????????????????????????????</summary>
+        /// <summary>
+        /// 解析所有 attribute：在继承关系解析完成后，遍历全部 MetaClass
+        /// 及其成员，调用 MetaAttribute.Parse() 解析属性类和提取参数。
+        /// 然后执行编译时阶段的属性处理器（如 Nickname 注册别名）。
+        /// </summary>
+        public void ParseAttributes()
+        {
+            AttributeManager.ParseAllAttributes();
+            AttributeManager.ProcessCompileTimeAttributes();
+        }
         public void ParseInitMetaListCollectMemberDefineMetaTypes()
         {
             foreach (var it in m_InitHandleMetaClassList)
@@ -718,6 +784,40 @@ namespace SimpleLanguage.Core
                 firstName = stringList[0];
             }
 
+            // If the first element matches a module name (e.g. "Core"), start
+            // resolving from that module's metaNode so qualified names like
+            // "Core.IIterable" work without explicit import statements.
+            if (stringList.Count > 1)
+            {
+                var module = ModuleManager.instance.GetMetaModuleByName(stringList[0]);
+                if (module != null)
+                {
+                    MetaNode moduleMB = module.metaNode;
+                    // Try resolving remaining elements from the module root
+                    MetaNode found = moduleMB;
+                    for (int i = 1; i < stringList.Count && found != null; i++)
+                    {
+                        found = found.GetChildrenMetaNodeByName(stringList[i]);
+                    }
+                    if (found != null && (found.IsMetaClass() || found.isMetaData || found.isMetaEnum || found.isMetaNamespace))
+                        return found;
+
+                    // If not found at root, try within a namespace matching the
+                    // module name (e.g. Core.Core.IIterable -> Core module's "Core" namespace)
+                    var nsNode = moduleMB.GetChildrenMetaNodeByName(stringList[0]);
+                    if (nsNode != null)
+                    {
+                        found = nsNode;
+                        for (int i = 1; i < stringList.Count && found != null; i++)
+                        {
+                            found = found.GetChildrenMetaNodeByName(stringList[i]);
+                        }
+                        if (found != null && (found.IsMetaClass() || found.isMetaData || found.isMetaEnum || found.isMetaNamespace))
+                            return found;
+                    }
+                }
+            }
+
             MetaNode mb = ModuleManager.instance.selfModule.metaNode;
             if( ownerBase != null && ownerBase.metaNode != null )
             {
@@ -789,7 +889,7 @@ namespace SimpleLanguage.Core
                 {
                     if (mb.isMetaNamespace )
                     {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "????????????????????????????????????????????????????????????!!");
+                        Log.AddMetaCoreLog(LID.MetaCoreClassManagerIssue5, "????????????????????????????????????????????????????????????!!");
                         return null;
                     }
                     else if (mb.IsMetaClass() || mb.isMetaData || mb.isMetaEnum)

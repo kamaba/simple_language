@@ -1,4 +1,3 @@
-import CSharp.System;
 
 public class Class1
 {

@@ -67,6 +67,10 @@ namespace SimpleLanguage.Export
                         sb.AppendLine($"            // StoreLocal idx={d.index}");
                         sb.AppendLine("            if(stack.Count>0){ locals[" + d.index + "] = stack[stack.Count-1]; stack.RemoveAt(stack.Count-1); }");
                         break;
+                    case EIROpCode.StoreArgument:
+                        sb.AppendLine($"            // StoreArgument idx={d.index}");
+                        sb.AppendLine("            if(stack.Count>0){ args[" + d.index + "] = stack[stack.Count-1]; stack.RemoveAt(stack.Count-1); }");
+                        break;
                     case EIROpCode.CallStatic:
                     case EIROpCode.CallVirt:
                     case EIROpCode.CallDynamic:

@@ -6,10 +6,8 @@
 //  Description: 
 //****************************************************************************
 
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using System.Xml.Linq;
 
 namespace SimpleLanguage.Compile
 {
@@ -73,19 +71,6 @@ namespace SimpleLanguage.Compile
                 return childList[parseIndex];
             }
         }
-        //public List<Token> linkTokenList
-        //{
-        //    get
-        //    {
-        //        List<Token> tlist = new List<Token>();
-        //        tlist.Add(this.token);
-        //        for (int i = 0; i < m_ExtendLinkNodeList.Count; i++)
-        //        {
-        //            tlist.Add(m_ExtendLinkNodeList[i].token);
-        //        }
-        //        return tlist;
-        //    }
-        //}
 
         public List<Node> childList => m_ChildList;
         public List<Node> extendLinkNodeList => m_ExtendLinkNodeList;
@@ -216,7 +201,7 @@ namespace SimpleLanguage.Compile
 
             if( nodeType == ENodeType.IdentifierLink )
             {
-                sb.Append(this.token?.lexeme.ToString());
+                sb.Append(this.token?.lexeme.ToString() );
                 for( int i = 0; i < m_ExtendLinkNodeList.Count; i++ )
                 {
                     var tnode = m_ExtendLinkNodeList[i];
@@ -225,6 +210,10 @@ namespace SimpleLanguage.Compile
                     {
                         sb.Append(tnode.parNode.ToFormatString());
                     }
+                    if( tnode.m_BlockNode != null)
+                    {
+                        sb.Append(tnode.m_BlockNode.ToFormatString());
+                    }
                 }
                 if (this.parNode != null)
                 {
@@ -232,7 +221,11 @@ namespace SimpleLanguage.Compile
                 }
                 if (this.blockNode != null)
                 {
-                    sb.Append(" " + this.blockNode.ToFormatString());
+                    sb.Append(this.blockNode.ToFormatString());
+                }
+                if( this.parNode == null && this.blockNode == null && m_ExtendLinkNodeList.Count == 0)
+                {
+                    sb.Append(" ");
                 }
             }
             else if( nodeType == ENodeType.ConstValue )
@@ -262,18 +255,18 @@ namespace SimpleLanguage.Compile
                 {
                     sb.Append(this.parNode.ToFormatString());
                 }
-                for (int i = 0; i < childList.Count; i++)
+                for (int i = 0; i < m_ChildList.Count; i++)
                 {
-                    sb.Append(childList[i].ToFormatString() + " ");
+                    sb.Append(m_ChildList[i].ToFormatString());
                 }
                 sb.Append(endToken?.lexeme.ToString());
             }
             else if( nodeType == ENodeType.Bracket )
             {
-                sb.Append(token?.lexeme.ToString() + " ");
-                for (int i = 0; i < childList.Count; i++)
+                sb.Append(token?.lexeme.ToString());
+                for (int i = 0; i < m_ChildList.Count; i++)
                 {
-                    sb.Append(childList[i].ToFormatString() + " ");
+                    sb.Append(m_ChildList[i].ToFormatString());
                 }
                 sb.Append(endToken?.lexeme.ToString());
                 for (int i = 0; i < m_ExtendLinkNodeList.Count; i++)
@@ -288,10 +281,10 @@ namespace SimpleLanguage.Compile
             }
             else if (nodeType == ENodeType.Par)
             {
-                sb.Append(token?.lexeme.ToString() + " ");
-                for (int i = 0; i < childList.Count; i++)
+                sb.Append(token?.lexeme.ToString() );
+                for (int i = 0; i < m_ChildList.Count; i++)
                 {
-                    sb.Append(childList[i].ToFormatString());
+                    sb.Append(m_ChildList[i].ToFormatString());
                 }
                 sb.Append(endToken?.lexeme.ToString());
                 for (int i = 0; i < m_ExtendLinkNodeList.Count; i++)
@@ -306,46 +299,54 @@ namespace SimpleLanguage.Compile
             }
             else if( nodeType == ENodeType.Angle)
             {
-                sb.Append(token?.lexeme.ToString() + " ");
-                for (int i = 0; i < childList.Count; i++)
+                sb.Append(token?.lexeme.ToString() );
+                for (int i = 0; i < m_ChildList.Count; i++)
                 {
-                    sb.Append(childList[i].ToFormatString());
+                    sb.Append(m_ChildList[i].ToFormatString());
                 }
                 sb.Append(endToken?.lexeme.ToString());
             }
             else if( nodeType == ENodeType.Key )
             {
                 sb.Append( this.token?.lexeme.ToString() );
-                if( this.blockNode != null )
+                if( this.m_BlockNode != null )
                 {
-                    sb.Append( " " + this.blockNode.ToFormatString());
+                    sb.Append( " " + this.m_BlockNode.ToFormatString());
                 }
-                for (int i = 0; i < childList.Count; i++)
+                for (int i = 0; i < m_ChildList.Count; i++)
                 {
-                    sb.Append(childList[i].ToFormatString());
+                    sb.Append(m_ChildList[i].ToFormatString());
                 }
-                if( this.extendLinkNodeList?.Count > 0 )
+                if( this.m_ExtendLinkNodeList?.Count > 0 )
                 {
-                    for( int i = 0; i < this.extendLinkNodeList.Count; i++ )
+                    for( int i = 0; i < this.m_ExtendLinkNodeList.Count; i++ )
                     {
-                        sb.Append(this.extendLinkNodeList[i].token?.lexeme.ToString() );
+                        sb.Append(this.m_ExtendLinkNodeList[i].ToFormatString() );
                     }
+                }
+                if( m_BlockNode == null && m_ChildList.Count == 0 && m_ExtendLinkNodeList.Count == 0 )
+                {
+                    sb.Append(" ");
                 }
             }
             else if( nodeType == ENodeType.LineEnd )
             {
                 sb.AppendLine();
             }
+            else if( nodeType == ENodeType.Comment )
+            {
+                sb.Append("#" + this.token.lexeme.ToString());
+            }
             else
             {
-                sb.Append(this.token?.lexeme.ToString() + " ");
-                for (int i = 0; i < childList.Count; i++)
+                sb.Append(this.token?.lexeme.ToString());
+                for (int i = 0; i < m_ChildList.Count; i++)
                 {
-                    sb.Append(childList[i].ToFormatString());
+                    sb.Append(m_ChildList[i].ToFormatString());
                 }
 
             }
-            sb.Append(" ");
+            sb.Append("");
 
             return sb.ToString();
         }

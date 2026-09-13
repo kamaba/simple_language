@@ -22,7 +22,11 @@ namespace SimpleLanguage
         LoadConstInt32,
         LoadConstUInt32,
         LoadConstInt64,         
-        LoadConstUInt64,  
+        LoadConstUInt64,
+        LoadConstFloat8_E4M3,
+        LoadConstFloat8_E5M2,
+        LoadConstFloat16,
+        LoadConstFloat16_Brain,
         LoadConstFloat32,
         LoadConstFloat64,
         LoadConstBoolean,
@@ -60,55 +64,34 @@ namespace SimpleLanguage
 
         //运算指令
         Add,                   // +
-        Add_Un,
         Minus,                  // -
-        Minus_Un,
         Multiply,               // *
-        Multiply_Un,
         Divide,                 // /
-        Divide_Un,              //
         Modulo,                 // %
-        Module_Un,
         InclusiveOr,            // |
-        InclusiveOr_Un,
         Combine,                // &
-        Combine_Un,
         XOR,                    // ^
-        XOR_Un,
         Shr,                    // >>
-        Shr_Un,
         Shi,                    // <<
-        Shi_Un,
         Not,                    //!
         Neg,                    //-
 
         Ceq,                    // == 
-        Ceq_Un,                 // unsign ==
         Cne,                    // !=
-        Cne_Un,                 // unsign !=
         Cgt,                    // >
-        Cgt_Un,                 // unsign >
         Cge,                    // >=
-        Cge_Un,                 // unsign >=
         Clt,                    // <
-        Clt_Un,                 // < unsign 
         Cle,                    // <=
-        Cle_Un,                 // unsign <=
 
         And,                    //&&
         Or,                     //||
 
         Label,   
         Beq,                    // if x1 == x2 then execute(code) equal move instruct index
-        Beq_Un,                 // same top but value is unsign!
         Bge,                    // if x1 >= x2 then execute(code)
-        Bge_un,                 // same top but value is unsign!
         Bgt,                    // if x1 > x2 then execute(code)
-        Bgt_Un,                 // same top but value is unsign!
         Ble,                    // if x1 <= x2 then execute(code)
-        Ble_Un,                 // same top but value is unsign!
         Bne,                    // if x1 != x2 then execute(code)
-        Bne_Un,                 // same top but value is unsign!
         Br,                     // 
         Break,                  //
         Jmp,
@@ -135,7 +118,70 @@ namespace SimpleLanguage
         Convert_R8,
         Convert_ToString,
 
-        Ret,          
+        Ret,
+
+        // Exception handling opcodes
+        BeginTry,       // Push a try frame. Payload: catchIndex(int32) + finallyIndex(int32)
+        EndTry,         // Pop try frame (normal completion). Branch to finally or end.
+        Throw,          // Throw exception (value on stack)
+        LeaveTry,       // Leave try/catch block. Pop try frame, branch to target.
+        EndFinally,     // End of finally. If exception pending, re-throw; else continue.
+
+        // Checked context opcodes (overflow checking for integer arithmetic +, -, *, /, %)
+        BeginChecked,   // Enter checked arithmetic context (increment depth)
+        EndChecked,     // Exit checked arithmetic context (decrement depth)
+        // Unchecked context opcodes (temporarily disable checked within a checked scope)
+        BeginUnchecked, // Save current checked depth, set to 0 (opt-out of overflow checking)
+        EndUnchecked,   // Restore saved checked depth
+
+        // Parameter slot store: argument/local use independent index spaces,
+        // assigning to a parameter must write the argument slot (not StoreLocal).
+        StoreArgument,  // = 99
+
+        // Low-precision float conversions (stack top value -> target float bit pattern)
+        Convert_F8E4M3, // = 100 float -> float8(e4m3) bits(byte)
+        Convert_F8E5M2, // = 101 float -> float8(e5m2) bits(byte)
+        Convert_F16,    // = 102 float -> float16 bits(ushort)
+        Convert_F16B,   // = 103 float -> float16brain(bfloat16) bits(ushort)
+
+        // Closure opcodes (FrontEnd-only emit, CVM executes)
+        NewClosure,     // = 104 stack: [..., ctxArray] -> closure object; payload: JSON SLRuntimeCallPackage (methodId)
+        CallClosure,    // = 105 stack: [..., closure, arg0, arg1, ...] -> ret; payload: JSON SLRuntimeCallPackage (paramCount, methodId)
+        AllocClosureContext, // = 106 stack: [] -> Object[N] null-filled array (shared capture context); payload: count(int32)
+
+        // O3 const-fused store opcodes (only emitted when optimizeLevel >= 3).
+        // Same store targets as the classic Store* set but the value is carried in
+        // the payload as [etype:1][value:N] (StoreArrayIndexConstValue adds a
+        // leading [flag:1]) so the VM avoids one LoadConst push + store pop.
+        StoreLocalConstValue,              // = 107 [index:4][etype:1][value:N]
+        StoreArgumentConstValue,           // = 108 [index:4][etype:1][value:N]
+        StoreReturnConstValue,             // = 109 [index:4][etype:1][value:N]
+        StoreGlobalConstValue,             // = 110 [index:4][etype:1][value:N]
+        StoreNotStaticField1ConstValue,    // = 111 [index:4][etype:1][value:N], peek instance
+        StoreNotStaticField2ConstValue,    // = 112 [index:4][etype:1][value:N], pop instance
+        StoreArrayIndexConstValue,         // = 113 [index:4][flag:1][etype:1][value:N], pop array
+        StoreStaticFieldConstValue,        // = 114 [index:4][etype:1][value:N][owner runtimeDefType("self" or JSON)]
+
+        // Null-check fast branch opcodes (emitted by the O>=1 peephole in IRMethod.Parse).
+        // They replace [Dup|]<value-push>, LoadConstNull, Ceq/Cne, BrFalse/BrTrue windows:
+        //   BrIsNull     : pop top, jump if null      (Ceq+BrTrue / Cne+BrFalse / Cne+... semantics)
+        //   BrNotNull    : pop top, jump if not null  (Ceq+BrFalse / Cne+BrTrue)
+        //   BrIsNullPeek : peek top (keep on stack), jump if null  (?. / ?? 的 Dup+Cne+BrFalse)
+        // The null test itself happens inside the CVM; the jump target index is
+        // embedded as the first 4 payload bytes exactly like BrFalse/BrTrue.
+        BrIsNull,                           // = 115 payload: [target index:4]
+        BrNotNull,                          // = 116 payload: [target index:4]
+        BrIsNullPeek,                       // = 117 payload: [target index:4]
+
+        // Static FFI fast-call opcode (@DllStaticImport bound function).
+        // The CVM preloads the dll (module.json "dllImports"[].static != "") at
+        // assembly build time, resolves the symbol once and rewrites this
+        // instruction's payload to [binding index:4]. At runtime the handler
+        // pops the pushed arguments, marshals them straight into the native
+        // call and pushes the return value — no SL frame, no Library.Load.
+        // If the binding failed to resolve, the handler falls back to the
+        // original SL method body (methodId embedded in the pre-rewrite JSON).
+        CallFFIStatic,                      // = 118
     }
 
     /// <summary>

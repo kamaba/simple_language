@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRMetaType.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -8,9 +8,9 @@
 
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Text;
 using SimpleLanguage.Core;
+using SimpleLanguage.Export.SLIR.Types;
 using SimpleLanguage.Logging;
 
 namespace SimpleLanguage.IR
@@ -30,7 +30,10 @@ namespace SimpleLanguage.IR
         public IRMetaType(){ }
         public IRMetaType( IRMetaClass _irMetaClass)
         {
-            Debug.Assert(_irMetaClass != null, "");
+            if (_irMetaClass == null)
+            {
+                _irMetaClass = IRManager.instance.GetIRMetaClassByName("Core.Object");
+            }
             m_IRMetaClass = _irMetaClass;
         }
         public IRMetaType(IRMetaClass irmc, List<IRMetaType> irlist)
@@ -41,7 +44,9 @@ namespace SimpleLanguage.IR
         public static IRMetaType CreateIRMetaTypeByGenTemplateMetaTypeList( MetaType type, IRMetaClass ownerIRMc)
         {
             IRMetaType irmt = new();
-            irmt.m_IROwnerMetaClass = IRManager.instance.GetIRMetaClassById(ownerIRMc.id);
+            irmt.m_IROwnerMetaClass = ownerIRMc != null
+                ? IRManager.instance.GetIRMetaClassById(ownerIRMc.id)
+                : IRManager.instance.GetIRMetaClassByName("Core.Object");
 
             if (type.eMetaTypeType == EMetaTypeType.MetaClass
                 || type.eMetaTypeType == EMetaTypeType.MetaData
@@ -51,7 +56,7 @@ namespace SimpleLanguage.IR
             }
             else if( type.eMetaTypeType == EMetaTypeType.MetaEnumValue )
             {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.memberMetaClass.GetHashCode());
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.memberMetaClass.classId);
             }
             else if (type.eMetaTypeType == EMetaTypeType.Template)
             {
@@ -94,7 +99,7 @@ namespace SimpleLanguage.IR
             }
             else if( type.eMetaTypeType == EMetaTypeType.MetaEnumValue )
             {
-                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.enumValue.ownerMetaBase.GetHashCode());
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassById(type.enumValue.ownerMetaBase.classId);
             }
             else if (type.eMetaTypeType == EMetaTypeType.Template)
             {
@@ -154,6 +159,102 @@ namespace SimpleLanguage.IR
             }
         }
         */
+        
+        /// <summary>
+        /// 从导出的 SLRuntimeDefTypePackage 直接构建 IRMetaType，用于 ref module 导入。
+        /// </summary>
+        public static IRMetaType CreateFromPackage(SLRuntimeDefTypePackage typeDef, IRMetaClass ownerIRMc)
+        {
+            if (typeDef == null) return new IRMetaType(IRManager.instance.GetIRMetaClassByName("Core.Object"));
+            var irmt = new IRMetaType();
+            irmt.m_IROwnerMetaClass = ownerIRMc;
+            if (typeDef.isTemplate && typeDef.templateIndex >= 0)
+            {
+                irmt.m_TemplateIndex = typeDef.templateIndex;
+                irmt.m_IRMetaClass = IRManager.instance.GetIRMetaClassByName("Core.Object");
+            }
+            else
+            {
+                var name = string.IsNullOrEmpty(typeDef.className) ? "Core.Object" : typeDef.className;
+                // classId 为确定型哈希，与 Phase A 注册的 IRMetaClass.id 一致，优先按 id 查。
+                //（className 带泛型后缀如 "List<T>" 时按名查不到，会错误回退 Core.Object，
+                //  导致 getRange 这类自引用泛型返回类型丢失）
+                var found = typeDef.classId != 0
+                    ? IRManager.instance.GetIRMetaClassById(typeDef.classId)
+                    : null;
+                // 导出端 StripModulePrefix 去掉了模块前缀，而 Core 内建类型的 IRMetaClass.irName
+                // 仍带 "Core." 前缀（如 "Core.Int32"）。因此先按去前缀名查（非 Core ref module 命中），
+                // 再按 "Core."+name 查（Core 内建类型命中），最后回退 Core.Object。
+                irmt.m_IRMetaClass = found
+                    ?? IRManager.instance.GetIRMetaClassByName(name)
+                    ?? IRManager.instance.GetIRMetaClassByName("Core." + name)
+                    ?? IRManager.instance.GetIRMetaClassByName("Core.Object");
+            }
+            if (typeDef.runtimeDefTypeList != null)
+            {
+                foreach (var child in typeDef.runtimeDefTypeList)
+                {
+                    irmt.m_IRMetaTypeList.Add(CreateFromPackage(child, ownerIRMc));
+                }
+            }
+            return irmt;
+        }
+
+        /// <summary>
+        /// 反向：IRMetaType -> MetaType（ref module 导入时从 IR 层复原 Meta 层类型）。
+        /// 需要 IRMetaClass.typeOwner 已通过 LinkMetaOwner 关联（Phase C 之后调用）。
+        /// 模板参数还原为 ownerClass 的 MetaTemplate；泛型参数递归复原。
+        /// functionTemplates 用于解析函数级模板参数（templateIndex 偏移了 class 模板数）。
+        /// </summary>
+        public static MetaType ToMetaType(IRMetaType irmt, MetaClass ownerClass, List<MetaTemplate> functionTemplates = null)
+        {
+            if (irmt == null)
+            {
+                return new MetaType(CoreMetaClassManager.objectMetaClass);
+            }
+            if (irmt.templateIndex >= 0)
+            {
+                if (ownerClass != null && irmt.templateIndex < ownerClass.metaTemplateList.Count)
+                {
+                    return new MetaType(ownerClass.metaTemplateList[irmt.templateIndex]);
+                }
+                // Check function-level templates (templateIndex is offset by class template count)
+                if (functionTemplates != null)
+                {
+                    int classCount = ownerClass?.metaTemplateList?.Count ?? 0;
+                    int funcIdx = irmt.templateIndex - classCount;
+                    if (funcIdx >= 0 && funcIdx < functionTemplates.Count)
+                    {
+                        return new MetaType(functionTemplates[funcIdx]);
+                    }
+                }
+                return new MetaType(CoreMetaClassManager.objectMetaClass);
+            }
+            var mb = irmt.irMetaClass?.typeOwner;
+            if (mb is MetaClass mc)
+            {
+                if (irmt.irMetaTypeList != null && irmt.irMetaTypeList.Count > 0)
+                {
+                    var args = new List<MetaType>();
+                    for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
+                    {
+                        args.Add(ToMetaType(irmt.irMetaTypeList[i], ownerClass));
+                    }
+                    return new MetaType(mc, args);
+                }
+                return new MetaType(mc);
+            }
+            if (mb is MetaData md)
+            {
+                return new MetaType(md);
+            }
+            if (mb is MetaEnum me)
+            {
+                return new MetaType(me);
+            }
+            return new MetaType(CoreMetaClassManager.objectMetaClass);
+        }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

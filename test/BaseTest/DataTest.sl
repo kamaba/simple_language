@@ -1,5 +1,3 @@
-import Std
-
 data ScoreRule
 {
     passLine = 60

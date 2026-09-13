@@ -37,9 +37,19 @@ namespace SimpleLanguage.Core.IR
 
                 if (cnode.isQuestionMarkDot && i > startIndex)
                 {
-                    var nullCheckIR = BuildNullConditionalCheck(_irMethod, cnode, cnlist, i);
-                    irList.AddRange(nullCheckIR);
-                    return irList;
+                    // 前一节点是 MetaData（类型对象）且当前节点不是方法调用时，
+                    // MetaData 按下方跳过逻辑不压栈，此时没有接收者可做 null 检查
+                    // （如 SomeClass?.staticField），退化为普通访问。
+                    bool hasReceiverOnStack = !(i > 0
+                        && cnlist[i - 1].visitType == MetaVisitNode.EVisitType.MetaData
+                        && cnode.visitType != MetaVisitNode.EVisitType.MethodCall
+                        && cnode.visitType != MetaVisitNode.EVisitType.SystemCall);
+                    if (hasReceiverOnStack)
+                    {
+                        var nullCheckIR = BuildNullConditionalCheck(_irMethod, cnode, cnlist, i);
+                        irList.AddRange(nullCheckIR);
+                        return irList;
+                    }
                 }
 
                 // MetaData visit 仅在后面紧跟 MethodCall/SystemCall 时才生成 LoadConstType（作为 this 传入）。
@@ -53,6 +63,25 @@ namespace SimpleLanguage.Core.IR
                     {
                         continue;
                     }
+                }
+
+                // 实例语法调用 static 方法：前一节点已把 receiver 压栈（VisitVariable 的
+                // LoadLocal/LoadField、New 的新对象、上一 MethodCall 的返回值等），但 static
+                // 方法参数表不含 this，CallStatic 只按实参弹栈，receiver 会残留在调用者
+                // eval 栈上（后续 Add 等二元运算弹左值时按 null 语义吞掉前缀）。
+                // 此处先发射 Pop 弹掉 receiver，再压实参，保持栈平衡。
+                // 注意：final 实例方法同样走 CallStatic 但参数表含 this（receiver 被正常
+                // 消费），故必须用 isStatic 精确限定；类名语法（前一节点 MetaClass/Enum
+                // 空分支，不压值）无 receiver，无需处理。
+                if (i > startIndex
+                    && cnode.visitType == MetaVisitNode.EVisitType.MethodCall
+                    && IsStaticMethodCall(cnode)
+                    && !IsNonValueVisitNode(cnlist[i - 1]))
+                {
+                    IRData popReceiverData = new IRData();
+                    popReceiverData.opCode = EIROpCode.Pop;
+                    popReceiverData.SetDebugInfoByToken(cnode.token, "Pop receiver of static call");
+                    irList.Add(new IRBase(popReceiverData));
                 }
 
                 irList.AddRange(ExecOnceCnode(_irMethod, cnode));
@@ -88,6 +117,16 @@ namespace SimpleLanguage.Core.IR
 
             // Not-null path: receiver is still on the stack (Cne consumed the dup'd copy).
             // Do NOT pop — the subsequent method call / field access needs the receiver.
+            // 例外：?. 后是 static 方法调用时（参数表不含 this，CallStatic 不消费
+            // receiver），保留的 receiver 同样会残留，须先弹掉再压实参。
+            if (qmdNode.visitType == MetaVisitNode.EVisitType.MethodCall
+                && IsStaticMethodCall(qmdNode))
+            {
+                IRData popReceiverData = new IRData();
+                popReceiverData.opCode = EIROpCode.Pop;
+                popReceiverData.SetDebugInfoByToken(qmdNode.token, "?. pop receiver, static call");
+                irList.Add(new IRBase(popReceiverData));
+            }
             irList.AddRange(ProcessVisitNodeList(_irMethod, cnlist, qmdIndex));
 
             IRBranch endBranch = new IRBranch(_irMethod, EIROpCode.Br, endLabelData);
@@ -109,6 +148,28 @@ namespace SimpleLanguage.Core.IR
 
             return irList;
         }
+
+        /// <summary>
+        /// 判断 visit 节点是否为 static 方法调用（与 IRCallFunction.Parse 的
+        /// callType 判定同源：GetTemplateMemberFunction 解模板后查 isStatic）。
+        /// static 方法参数表不含 this，CallStatic 不会消费调用方压入的 receiver。
+        /// </summary>
+        private static bool IsStaticMethodCall(MetaVisitNode cnode)
+        {
+            MetaFunction mf = cnode?.methodCall?.GetTemplateMemberFunction();
+            return (mf as MetaMemberFunction)?.isStatic == true;
+        }
+
+        /// <summary>
+        /// 判断 visit 节点是否为「不产生栈值」的节点（类名/枚举名前缀，
+        /// 对应类名语法 Class.staticFn(...)，ExecOnceCnode 空分支不压 receiver）。
+        /// </summary>
+        private static bool IsNonValueVisitNode(MetaVisitNode cnode)
+        {
+            return cnode.visitType == MetaVisitNode.EVisitType.MetaClass
+                || cnode.visitType == MetaVisitNode.EVisitType.Enum;
+        }
+
         public static List<IRBase> ExecOnceCnode(IRMethod _irMethod, MetaVisitNode cnode, int dupcount = 0 )
         {
             List<IRBase> irList = new List<IRBase>();
@@ -243,6 +304,60 @@ namespace SimpleLanguage.Core.IR
                 irCallFun.Parse(mfc);
                 irList.Add(irCallFun);
             }
+            else if (cnode.visitType == MetaVisitNode.EVisitType.ClosureCall)
+            {
+                // 闭包调用: 压闭包变量 -> 依序压实参 -> CallClosure
+                var mcc = cnode.closureCall;
+                if (mcc == null)
+                {
+                    Log.AddIRLog(LID.IRCallLinkIsNullClosureCall, cnode.token, "closure call node is null");
+                    return irList;
+                }
+
+                // 1. 压闭包变量 (宿主上下文: 局部加载; 闭包嵌套上下文: 经捕获代理 LoadArgument0+LoadArrayIndex)
+                var loadMv = mcc.loadMetaVariable ?? (MetaVariable)mcc.closureVariable;
+                if (loadMv != null)
+                {
+                    var irVar = IRLoadVariable.CreateLoadVariable(null, null, _irMethod, loadMv);
+                    if (irVar == null)
+                    {
+                        Log.AddIRLog(LID.IRMethodNotFoundVariable, cnode.token, "load closure variable failed (null IR)", loadMv?.name);
+                        return irList;
+                    }
+                    irList.Add(irVar);
+                    for (int i = 0; i < irVar.IRDataList.Count; i++)
+                    {
+                        irVar.IRDataList[i].SetDebugInfoByToken(cnode.token);
+                    }
+                }
+
+                // 2. 依序压实参表达式
+                var plist = mcc.inputParamExpressList;
+                for (int i = 0; i < plist.Count; i++)
+                {
+                    if (plist[i] == null) continue;
+                    IRExpressBase irexpress = IRExpressManager.CreateExpress(_irMethod, plist[i]);
+                    irList.Add(irexpress);
+                }
+
+                // 3. CallClosure: 弹 [closure, arg...] -> 压返回值
+                IRMethod closureIRM = null;
+                if ( mcc.closureFunction != null )
+                {
+                    closureIRM = IRClosureDefineStatements.ResolveClosureIRMethod( mcc.closureFunction, cnode.token );
+                    if ( closureIRM == null )
+                    {
+                        return irList;
+                    }
+                }
+                var imc = new IRMethodCall( null, null, closureIRM, plist.Count );
+                IRData dataCall = new IRData();
+                dataCall.opCode = EIROpCode.CallClosure;
+                dataCall.SetOpValue( imc );
+                dataCall.index = plist.Count;
+                dataCall.SetDebugInfoByToken( cnode.token, "CallClosure " + ( mcc.closureFunction?.name ?? "indirect" ) + " params:" + plist.Count );
+                irList.Add( new IRBase( dataCall ) );
+            }
             else if (cnode.visitType == MetaVisitNode.EVisitType.SystemCall)
             {
                 var mfc = cnode.methodCall;
@@ -271,11 +386,16 @@ namespace SimpleLanguage.Core.IR
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.New)
             {
-                //ParseNew(cnode, _irMethod, irList );
-                Log.AddIRLog(LID.IRMethodNotSupportNew, cnode.token, $"New expression is not supported in MetaCallLink anymore");
+                ParseNewInCallLink(_irMethod, cnode, irList);
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MetaClass)
             {
+            }
+            else if (cnode.visitType == MetaVisitNode.EVisitType.TemplateName)
+            {
+                // 模板形参名前缀（如 T.type 的 T）：自身不产生栈值，
+                // 值由后续节点发射（GetTypeValue -> LoadConstType 等），
+                // 与类名/枚举名前缀的空分支语义一致。
             }
             else if (cnode.visitType == MetaVisitNode.EVisitType.MetaData)
             {
@@ -302,6 +422,109 @@ namespace SimpleLanguage.Core.IR
                 Log.AddIRLog(LID.IRNotSupportVisitType, cnode.token, $"Visit type is not supported in MetaCallLink: {cnode.visitType}", cnode.visitType.ToString() );
             }
             return irList;
+        }
+        /// <summary>
+        /// 链中 New 节点（如 FFI.Library(path).getFunction(...) 的 receiver，或 List<int>().add(...)）：
+        /// 参照 IRNewExpress —— NewObject/NewTemplateObject 压新对象，Dup 复制引用，
+        /// 压实参后 CallVirt 构造函数；栈上保留的新对象供链中后续节点作为 receiver 使用。
+        /// </summary>
+        private static void ParseNewInCallLink(IRMethod _irMethod, MetaVisitNode cnode, List<IRBase> irList)
+        {
+            MetaType newMt = cnode.callMetaType;
+            if (newMt == null || newMt.IsArray())
+            {
+                Log.AddIRLog(LID.IRMethodNotSupportNew, cnode.token,
+                    $"New expression in MetaCallLink is not supported for {(newMt == null ? "null type" : "array type")}");
+                return;
+            }
+
+            IRMetaClass irmc = null;
+            IRMetaType newObjectIRMT = null;
+            if (newMt.eMetaTypeType == EMetaTypeType.MetaClass
+                || newMt.eMetaTypeType == EMetaTypeType.MetaData
+                || newMt.eMetaTypeType == EMetaTypeType.MetaEnum)
+            {
+                irmc = IRManager.GetIRMetaClassByMetaType(newMt)
+                    ?? IRManager.instance.GetIRMetaClassById(newMt.metaClass?.classId ?? 0);
+                if (irmc == null)
+                {
+                    Log.AddIRLog(LID.IRCallLinkNotFoundNewCall, cnode.token,
+                        $"New-in-call-link: IRMetaClass not found for {newMt.metaClass?.allName}");
+                    return;
+                }
+                newObjectIRMT = new IRMetaType(irmc);
+                irList.Add(new IRNew(_irMethod, irmc));
+            }
+            else
+            {
+                // 泛型模板类（MetaGenClass，如 List<int>()）走 NewTemplateObject
+                IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaType(newMt)
+                    ?? IRManager.instance.GetIRMetaClassById(newMt.GetTemplateMetaClass()?.classId ?? 0)
+                    ?? IRManager.instance.GetIRMetaClassById(newMt.metaClass?.classId ?? 0);
+                newObjectIRMT = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(newMt, owirmc);
+                irList.Add(new IRNew(_irMethod, newObjectIRMT));
+            }
+
+            var mmf = cnode.methodCall?.metaMemberFunction;
+            if (mmf == null)
+            {
+                // 无构造调用：新对象已在栈上
+                return;
+            }
+
+            // Dup 复制引用：CallVirt 构造消费一份，栈上保留一份作为链中后续 receiver
+            irList.Add(new IRDup(_irMethod));
+
+            var paramList = cnode.methodCall.metaInputParamList;
+            var paramCount = paramList.Count;
+            for (int j = 0; j < paramCount; j++)
+            {
+                IRExpressBase irexpress = IRExpressManager.CreateExpress(_irMethod, paramList[j]);
+                irList.Add(irexpress);
+            }
+
+            int callMethodIndex = -1;
+            string fname = mmf.virtualFunctionName;
+            irmc = IRManager.GetIRMetaClassByMetaType(newMt);
+            if (irmc == null)
+            {
+                MetaClass mc2 = newMt.GetTemplateMetaClass();
+                if (mc2 == null)
+                    mc2 = mmf.ownerMetaClass;
+                if (mc2 == null)
+                    mc2 = mmf.sourceMetaMemberFunction?.ownerMetaClass;
+                irmc = mc2 != null ? IRManager.instance.GetIRMetaClassById(mc2.classId) : null;
+            }
+            var runtimeMethod = irmc?.GetIRNonStaticMethodIndexByMethod(fname, out callMethodIndex);
+            if (callMethodIndex == -1 && mmf.sourceMetaMemberFunction != null)
+            {
+                var sourceMc = mmf.sourceMetaMemberFunction.ownerMetaClass;
+                var sourceIrmc = sourceMc != null ? IRManager.instance.GetIRMetaClassById(sourceMc.classId) : null;
+                if (sourceIrmc != null)
+                {
+                    var sourceMethod = sourceIrmc.GetIRNonStaticMethodIndexByMethod(fname, out var sourceIndex);
+                    if (sourceIndex >= 0)
+                    {
+                        runtimeMethod = sourceMethod;
+                        callMethodIndex = sourceIndex;
+                    }
+                }
+            }
+            if (callMethodIndex == -1)
+            {
+                Log.AddIRLog(LID.IRCallLinkNotFoundNewCall2, cnode.token,
+                    $"New-in-call-link: constructor not found for {newMt.metaClass?.allName}");
+                return;
+            }
+
+            List<IRMetaType> functionMtList = new List<IRMetaType>();
+            var irmethodcall = new IRMethodCall(newObjectIRMT, functionMtList, runtimeMethod, paramCount);
+            IRData datacall = new IRData();
+            datacall.opCode = EIROpCode.CallVirt;
+            datacall.index = callMethodIndex;
+            datacall.opValue = irmethodcall;
+            datacall.SetDebugInfoByToken(cnode.token, "CallVirt ctor (new-in-call-link)");
+            irList.Add(new IRBase(datacall));
         }
         public string ToIRString()
         {

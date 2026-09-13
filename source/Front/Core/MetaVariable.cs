@@ -29,6 +29,8 @@ namespace SimpleLanguage.Core
             ClassMember,
             EnumMember,
             DataMember,
+            ClosureContext,     // 闭包捕获的宿主作用域变量(存放在 context 数组中)
+            ClosureVariable,    // 闭包变量本身(函数对象)
         }
 
         public const int s_ConstLevel = 100000;
@@ -80,7 +82,7 @@ namespace SimpleLanguage.Core
         public MetaVariable(MetaVariable mv) : base(mv)
         {
             m_OwnerMetaBase = mv.m_OwnerMetaBase;
-            m_DefineMetaType = new MetaType( mv.m_DefineMetaType );
+            m_DefineMetaType = mv.m_DefineMetaType != null ? new MetaType( mv.m_DefineMetaType ) : null;
             if(mv.m_RealMetaType != null )
                 m_RealMetaType = new MetaType(mv.m_RealMetaType);
             m_VariableFrom = mv.m_VariableFrom;
@@ -155,6 +157,38 @@ namespace SimpleLanguage.Core
                 }
             }
             return null;
+        }
+        public bool IsSupportItemByIndex( bool isGet )
+        {
+            if( this.m_IsDefineMetaType )
+            {
+                if( m_DefineMetaType.metaClass != null )
+                {
+                    if(isGet )
+                    {
+                        return m_DefineMetaType.metaClass.GetOperatorMetaMemberFunctionByName("_getItem_") != null;
+                    }
+                    else
+                    {
+                        return m_DefineMetaType.metaClass.GetOperatorMetaMemberFunctionByName("_setItem_") != null;
+                    }
+                }
+            }
+            else
+            {
+                if (m_RealMetaType.metaClass != null)
+                {
+                    if (isGet)
+                    {
+                        return m_RealMetaType.metaClass.GetFirstMetaMemberFunctionByName("_getItem_") != null;
+                    }
+                    else
+                    {
+                        return m_RealMetaType.metaClass.GetFirstMetaMemberFunctionByName("_setItem_") != null;
+                    }
+                }
+            }
+            return false;
         }
         public MetaClass GetFinalTemplateMetaClass()
         {
@@ -343,7 +377,7 @@ namespace SimpleLanguage.Core
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("[" + m_DefineMetaType.ToFormatString() + "]");
+            sb.Append("[" + m_DefineMetaType?.ToFormatString() + "]");
             sb.Append(m_Name);
             return sb.ToString();
         }
@@ -365,7 +399,7 @@ namespace SimpleLanguage.Core
     {
         /*
          * 访问变量 一般使用 $x $x 必须先定义
-         * int a = 20; Array arr = Array<int>( 1,2,3); 
+         * int a = 20; Array arr = Array<int>( 1,2,3);
          * int b = arr.$a; 这里的$a就是访问变量，使用arr为localMV, 使用m_VisitMetaVariable 是a 如果是常量，则保存
          * 常量的  arr.$0  m_VisitMV = null; m_AtName = "0";  返回值本身就是一个变量，相当于已经访问过了，在defineType
          * 中，返回模版类中的名称
@@ -373,18 +407,20 @@ namespace SimpleLanguage.Core
         public enum EVisitType
         {
             Link,
-            AT
+            AT,
+            MethodCall      // _getItem_/_setItem_ 方法调用模式
         }
         public bool fastVisit => m_FastVisit;
         public MetaExpressNodeBase visitExpressNode => m_VisitExpressNode;
         public MetaConstExpressNode fastVisitConstExpressNode => m_VisitExpressNode as MetaConstExpressNode;
+        public MetaMethodCall methodCall => m_MethodCall;
+        public EVisitType visitType => m_VisitType;
 
-        private MetaVariable m_SourceMetaVariable = null;
         private EVisitType m_VisitType = EVisitType.AT;
-        //private MetaCallLink m_TargetMetaVisitCallLink = null;
         string m_AtName = "";
         private bool m_FastVisit = false;
         private MetaExpressNodeBase m_VisitExpressNode = null;
+        private MetaMethodCall m_MethodCall = null;     // _getItem_/_setItem_ 方法调用
         private int? m_Index = null;
 
         public MetaVisitVariable(MetaVariable source, MetaVariable target)
@@ -394,20 +430,38 @@ namespace SimpleLanguage.Core
            // m_TargetMetaVariable = target;
             m_DefineMetaType = target.defineMetaType;
         }
-        public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaConstExpressNode mvv)
+        /// <summary>
+        /// 通过 _getItem_/_setItem_ 方法调用创建访问变量（用于非数组类型的下标访问）
+        /// </summary>
+        public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaMethodCall methodCall)
         {
+            m_VisitType = EVisitType.MethodCall;
             m_VariableFrom = EVariableFrom.ArrayValue;
             m_Name = _name;
             m_AtName = _name;
             m_OwnerMetaBase = mc;
             m_OwnerMetaBlockStatements = mbs;
             m_SourceMetaVariable = lmv;
-            m_IsDefineMetaType = lmv.isDefineMetaType;   
+            m_MethodCall = methodCall;
+            m_IsDefineMetaType = lmv.isDefineMetaType;
+            m_FastVisit = false;
+        }
+        public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaConstExpressNode mvv)
+        {
+            m_VisitType = EVisitType.AT;
+            m_VariableFrom = EVariableFrom.ArrayValue;
+            m_Name = _name;
+            m_AtName = _name;
+            m_OwnerMetaBase = mc;
+            m_OwnerMetaBlockStatements = mbs;
+            m_SourceMetaVariable = lmv;
+            m_IsDefineMetaType = lmv.isDefineMetaType;
             m_VisitExpressNode = mvv;
             m_FastVisit = true;
         }
         public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaCallLink mvv)
         {
+            m_VisitType = EVisitType.AT;
             m_VariableFrom = EVariableFrom.ArrayValue;
             m_Name = _name;
             m_AtName = _name;
@@ -415,11 +469,12 @@ namespace SimpleLanguage.Core
             m_OwnerMetaBlockStatements = mbs;
             m_SourceMetaVariable = lmv;
             m_FastVisit = false;
+            m_IsDefineMetaType = lmv.isDefineMetaType;
             if (lmv.isArray)
             {
                 if (mvv == null && string.IsNullOrEmpty(m_AtName))
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreVariableVisitMetaVariable, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
                 m_VisitExpressNode = new MetaCallLinkExpressNode(mvv);
@@ -436,10 +491,37 @@ namespace SimpleLanguage.Core
                     }
                 }
             }
-            m_IsDefineMetaType = lmv.isDefineMetaType;
+            else
+            {
+                if(mvv == null && string.IsNullOrEmpty(m_AtName))
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreVariableVisitMetaVariable2, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    return;
+                }
+                var ven = new MetaCallLinkExpressNode(mvv);
+
+                MetaInputParamCollection mipc = new MetaInputParamCollection(lmv.GetFinalTemplateMetaClass(), m_OwnerMetaBlockStatements);
+                mipc.AddMetaInputParam(new MetaInputParam(ven) );
+                MetaMemberFunction mmf = lmv.GetFinalTemplateMetaClass().GetMetaMemberFunctionByNameAndInputTemplateInputParamCount("_getItem_", 0, mipc, true);
+                if( mmf == null )
+                {
+                    // 变量下标访问非数组类型时必须能解析 _getItem_，否则会在 IR 阶段
+                    // 静默产生空调用（MetaMethodCall 的函数为 null）并引发空引用异常，
+                    // 这里必须在 MetaCore 阶段显式报错。
+                    Log.AddMetaCoreLog(LID.MetaCoreVisitTypeShouldIsArray,
+                        "[Error] variable subscript '" + _name + "' on receiver '" + lmv.name + "' cannot resolve _getItem_ for type '" + lmv.GetFinalTemplateMetaClass()?.name + "'.");
+                    return;
+                }
+
+                m_MethodCall = new MetaMethodCall(lmv.GetFinalTemplateMetaClass(), m_OwnerMetaBlockStatements, mmf, new List<MetaType>(), mipc, null);
+                m_VisitType = EVisitType.MethodCall;
+                m_FastVisit = false;
+
+            }
         }
         public MetaVisitVariable(string _name, MetaClass mc, MetaBlockStatements mbs, MetaVariable lmv, MetaOpExpressNode moe )
         {
+            m_VisitType = EVisitType.AT;
             m_VariableFrom = EVariableFrom.ArrayValue;
             m_Name = _name;
             m_AtName = _name;
@@ -451,7 +533,7 @@ namespace SimpleLanguage.Core
             {
                 if (moe == null && string.IsNullOrEmpty(m_AtName))
                 {
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
+                    Log.AddMetaCoreLog(LID.MetaCoreVariableVisitMetaVariable3, "Error VisitMetaVariable访问变量访问位置不能同时为空!!");
                     return;
                 }
                 m_VisitExpressNode = moe;
@@ -461,7 +543,15 @@ namespace SimpleLanguage.Core
         public override void ParseDefineMetaType()
         {
             MetaType getMt = null;
-            if ( this.m_SourceMetaVariable.isDefineMetaType)
+            if (m_VisitType == EVisitType.MethodCall && m_MethodCall != null)
+            {
+                // MethodCall 模式：从 _getItem_ 方法获取返回类型
+                if (m_MethodCall.metaMemberFunction?.returnMetaVariable != null)
+                {
+                    getMt = m_MethodCall.metaMemberFunction.returnMetaVariable.GetFinalMetaType();
+                }
+            }
+            else if ( this.m_SourceMetaVariable.isDefineMetaType)
             {
                 if (m_SourceMetaVariable.defineMetaType.IsArray() )
                 {
@@ -473,10 +563,27 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, "ParseDefineMetaType not array ");
+                    // 非数组类型：检查是否支持 _getItem_ 下标访问
+                    var fmt = m_SourceMetaVariable.defineMetaType;
+                    MetaClass visitMc = fmt.metaClass;
+                    if (visitMc == null)
+                        visitMc = fmt.GetTemplateMetaClass();
+                    if (visitMc != null)
+                    {
+                        var getItemMethod = visitMc.GetFirstMetaMemberFunctionByName("_getItem_");
+                        if (getItemMethod != null && getItemMethod.returnMetaVariable != null)
+                        {
+                            getMt = getItemMethod.returnMetaVariable.GetFinalMetaType();
+                        }
+                    }
+
+                    if (getMt == null)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreVariableParseDefineMetaTypeNotArray, "ParseDefineMetaType not array and no _getItem_ support");
+                    }
                 }
             }
-            
+
             if(getMt == null )
             {
                 m_DefineMetaType = new MetaType(CoreMetaClassManager.objectMetaClass);
@@ -488,6 +595,15 @@ namespace SimpleLanguage.Core
         }
         public override void  ParseRealMetaType()
         {
+            if (m_VisitType == EVisitType.MethodCall && m_MethodCall != null)
+            {
+                // MethodCall 模式：从 _getItem_ 方法获取返回类型
+                if (m_MethodCall.metaMemberFunction?.returnMetaVariable != null)
+                {
+                    m_RealMetaType = m_MethodCall.metaMemberFunction.returnMetaVariable.GetFinalMetaType();
+                    return;
+                }
+            }
             if(this.m_SourceMetaVariable.isDefineMetaType )
             {
                 return;
@@ -501,11 +617,26 @@ namespace SimpleLanguage.Core
                 }
                 else
                 {
-                    Log.AddMetaCoreLog(LID.MetaCoreAssertShowMessage, m_Token, "ParseDefineRealMetaType not array ");
+                    Log.AddMetaCoreLog(LID.MetaCoreVariableParseDefineRealMetaTypeNotArray, m_Token, "ParseDefineRealMetaType not array ");
                 }
             }
             else
             {
+                // 非数组类型：检查是否支持 _getItem_ 下标访问
+                var fmt = m_SourceMetaVariable.realMetaType;
+                MetaClass visitMc = fmt.metaClass;
+                if (visitMc == null)
+                    visitMc = fmt.GetTemplateMetaClass();
+                if (visitMc != null)
+                {
+                    var getItemMethod = visitMc.GetFirstMetaMemberFunctionByName("_getItem_");
+                    if (getItemMethod != null && getItemMethod.returnMetaVariable != null)
+                    {
+                        m_RealMetaType = getItemMethod.returnMetaVariable.GetFinalMetaType();
+                        return;
+                    }
+                }
+
                 m_RealMetaType = new MetaType(m_SourceMetaVariable.realMetaType);
             }
         }

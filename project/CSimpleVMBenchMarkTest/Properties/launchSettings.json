@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "BenchPark": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

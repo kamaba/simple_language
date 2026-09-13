@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using SimpleLanguage.Compile;
+using SimpleLanguage.Project;
 
 using SimpleLanguage.Logging;
 
@@ -103,7 +104,7 @@ namespace SimpleLanguage.Core
             }
             else
             {
-                //Log.AddMetaCoreLog(LID.ShowExtendMessage, "发现已经定义过某某类1" + mmf.functionAllName);
+                //Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionDefine, "发现已经定义过某某类1" + mmf.functionAllName);
                 return find2;
             }
         }
@@ -238,8 +239,131 @@ namespace SimpleLanguage.Core
         public bool isGet => m_IsGet;
         public bool isSet => m_IsSet;
         public bool isFinal => m_IsFinal;
+        public bool isThrows => m_IsThrows;
         public virtual bool isStatic => m_IsStatic;
         public bool isCanRewrite => m_IsCanRewrite;
+        public bool isClosureFunction => m_IsClosureFunction;
+        public MetaVariable capturedThis => m_CapturedThis;
+        public void SetCapturedThis( MetaVariable mv ) { m_CapturedThis = mv; }
+
+        /// <summary>
+        /// 获取或登记宿主变量的捕获代理。同一宿主变量在多个闭包中被捕获时复用同一代理/槽位,
+        /// 这是共享捕获语义的关键 (闭包A与闭包B共享同一槽位, 宿主也读写同一槽位)。
+        /// </summary>
+        public MetaClosureContextVariable GetOrAddClosureCapture( MetaVariable hostMv )
+        {
+            if( hostMv == null )
+            {
+                return null;
+            }
+            if( m_ClosureCaptureDict.TryGetValue( hostMv, out var proxy ) )
+            {
+                return proxy;
+            }
+            var p = new MetaClosureContextVariable( hostMv, m_ClosureCaptureList.Count );
+            m_ClosureCaptureList.Add( p );
+            m_ClosureCaptureDict[hostMv] = p;
+            return p;
+        }
+
+        public MetaClosureContextVariable GetClosureCapture( MetaVariable hostMv )
+        {
+            if( hostMv == null )
+            {
+                return null;
+            }
+            m_ClosureCaptureDict.TryGetValue( hostMv, out var proxy );
+            return proxy;
+        }
+
+        /// <summary>
+        /// 确保宿主函数持有共享捕获数组隐藏局部变量 __closure_ctx__。
+        /// 只要函数体内定义了闭包(即使 0 捕获)就创建, 统一 NewClosure 的传参协议。
+        /// 加入宿主函数顶块变量字典后, IR 阶段 GetCalcMetaVariableList 会自动收集为局部变量。
+        /// </summary>
+        public MetaVariable EnsureClosureContext()
+        {
+            if( m_ClosureContextVariable != null )
+            {
+                return m_ClosureContextVariable;
+            }
+            var mt = new MetaType( CoreMetaClassManager.objectMetaClass );
+            m_ClosureContextVariable = new MetaVariable( functionAllName + ".__closure_ctx__",
+                MetaVariable.EVariableFrom.LocalStatement, null, ownerMetaClass, mt );
+            m_ClosureContextVariable.SetMetaDefineType( new MetaType( mt ) );
+            m_ClosureContextVariable.SetIsDefineMetaType( true );
+            m_ClosureContextVariable.SetRealMetaType( new MetaType( mt ) );
+            m_MetaBlockStatements?.UpdateMetaVariableDict( m_ClosureContextVariable );
+            return m_ClosureContextVariable;
+        }
+
+        /// <summary>
+        /// 判断本函数返回类型是否为 Result / Result&lt;T&gt;（result 关键字支持）。
+        /// ref module 导入、构造函数、未绑定模板(模板函数体内的 T)等情况返回 false。
+        /// </summary>
+        public bool IsResultReturnFunction()
+        {
+            if( refFromType == RefFromType.RefModule )
+            {
+                return false;
+            }
+            if( m_ConstructInitFunction )
+            {
+                return false;
+            }
+            if( m_IsClosureFunction )
+            {
+                return false;
+            }
+            var mt = GetFinalMetaType();
+            if( !CoreMetaClassManager.IsResultMetaType( mt ) )
+            {
+                return false;
+            }
+            // 未绑定模板(泛型 T 尚未确定)时无法构造对象, 跳过注入
+            if( mt.GenTemplateIsIncludeTemplate() )
+            {
+                return false;
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// result 关键字: 返回类型为 Result/Result&lt;T&gt; 的函数自动注入隐藏局部变量 result。
+        /// 加入函数顶块变量字典后, 用户函数体可直接使用 result.code/message/value;
+        /// 若用户自行声明同名 result 变量, 其 UpdateMetaVariableDict 会自然遮蔽注入变量。
+        /// IR 阶段 GetCalcMetaVariableList 自动收集为局部变量, prologue 发射 new Result() 初始化。
+        /// </summary>
+        public MetaVariable EnsureResultVariable()
+        {
+            if( m_ResultVariable != null )
+            {
+                return m_ResultVariable;
+            }
+            var mt = GetFinalMetaType();
+            if( mt == null )
+            {
+                return null;
+            }
+            m_ResultVariable = new MetaVariable( "result",
+                MetaVariable.EVariableFrom.LocalStatement, m_MetaBlockStatements, ownerMetaClass, mt );
+            m_ResultVariable.SetMetaDefineType( new MetaType( mt ) );
+            m_ResultVariable.SetIsDefineMetaType( true );
+            m_ResultVariable.SetRealMetaType( new MetaType( mt ) );
+            m_MetaBlockStatements?.UpdateMetaVariableDict( m_ResultVariable );
+            return m_ResultVariable;
+        }
+        public MetaVariable resultVariable => m_ResultVariable;
+        public bool hasResultVariable => m_ResultVariable != null;
+
+        // ── 闭包共享捕获上下文 (shared capture context) ──
+        // 宿主函数持有捕获注册表: 同一宿主函数内多个闭包捕获同一变量时复用同一槽位代理,
+        // 宿主与所有闭包全程通过同一个共享 Object[] 数组读写 (Dart 式捕获语义)。
+        // IR 层: 宿主函数 prologue 用 AllocClosureContext 分配数组存入隐藏局部变量 __closure_ctx__,
+        //        宿主体内对被捕获变量的读写被拦截路由到数组槽; NewClosure 只传数组引用。
+        public List<MetaClosureContextVariable> closureCaptureList => m_ClosureCaptureList;
+        public MetaVariable closureContextVariable => m_ClosureContextVariable;
+        public bool hasClosureContext => m_ClosureContextVariable != null;
         public bool isTemplateInParam => m_IsTemplateInParam;
         public FileMetaMemberFunction fileMetaMemberFunction => m_FileMetaMemberFunction;
         public MetaMemberFunction sourceMetaMemberFunction => m_SourceMetaMemberFunction;
@@ -258,16 +382,34 @@ namespace SimpleLanguage.Core
         protected bool m_IsSet = false;
         protected bool m_IsStatic = false;
         protected bool m_IsFinal = false;
+        protected bool m_IsThrows = false;
         protected bool m_IsCanRewrite = false;
+        protected bool m_IsClosureFunction = false;
         protected bool m_IsTemplateInParam = false;
         protected bool m_ConstructInitFunction = false;
         protected bool m_IsWithInterface = false;
+        protected MetaVariable m_CapturedThis = null; // 闭包函数: 从宿主实例方法捕获的 this
+        // ── 闭包共享捕获上下文注册表 ──
+        private List<MetaClosureContextVariable> m_ClosureCaptureList = new List<MetaClosureContextVariable>();
+        private Dictionary<MetaVariable, MetaClosureContextVariable> m_ClosureCaptureDict = new Dictionary<MetaVariable, MetaClosureContextVariable>();
+        private MetaVariable m_ClosureContextVariable = null; // 隐藏局部变量 __closure_ctx__ (Object 类型, 存共享数组)
+        private MetaVariable m_ResultVariable = null; // result 关键字: Result/Result<T> 返回函数自动注入的隐藏局部变量 result
         protected MetaMemberFunction m_SourceMetaMemberFunction = null; //模板里边的源函数
         protected MetaMemberFunction m_OverrideMetaMemberFunction = null;           //override member function的函数
 
         protected FileMetaMemberFunction m_FileMetaMemberFunction = null;
 
         private readonly List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
+
+        // ── Scope validation context ──
+        // Tracks whether we're currently processing statements inside a label{} block
+        // (try-catch scope) or a checked scope. Used to enforce:
+        //   - try/checked expressions only inside label{} or checked label{}
+        //   - unchecked{} only inside checked{} or checked label{}
+        public static bool isInTryBlock => s_IsInTryBlock;
+        public static bool isInCheckedContext => s_IsInCheckedContext;
+        private static bool s_IsInTryBlock = false;
+        private static bool s_IsInCheckedContext = false;
         //绑定构建 元类型  
         protected List<MetaType> m_BindStructTemplateFunctionMtList = new List<MetaType>();
         protected List<MetaType> m_BindStructTemplateFunctionAndClassMtList = new List<MetaType>();
@@ -284,34 +426,35 @@ namespace SimpleLanguage.Core
         // Lightweight builtin wrapper for functions provided by the LocalRuntimeVM (native lib)
         public class MetaBuiltinFunction : MetaMemberFunction
         {
-            public MetaBuiltinFunction(MetaClass mc, string name) : base(mc)
+            /// <summary>True when the module "systemCalls" declaration marks this call as
+            /// variadic: extra positional args at the call site must be passed through to
+            /// CallSystemMethod (payload paramCount covers them) instead of being dropped.</summary>
+            public bool isSystemVariadic { get; }
+
+            public MetaBuiltinFunction(MetaClass mc, SystemMethodCallDeclaration decl ) : base(mc)
             {
-                this.m_Name = name;
+                this.m_Name = decl.name;
                 this.m_IsStatic = true;
-
-                if (SystemMethodCallDeclarationRegistry.TryResolveName(name, out var call)
-                    && SystemMethodCallDeclarationRegistry.TryGet(call, out var decl)
-                    && decl != null)
+                isSystemVariadic = decl.isVariadic;
+                m_Index = (int)decl.Index();
+                m_MetaMemberParamCollection.Clear();
+                for (int i = 0; i < decl.paramMetaTypeList.Count; i++)
                 {
-                    m_MetaMemberParamCollection.Clear();
-                    for (int i = 0; i < decl.paramMetaTypeList.Count; i++)
-                    {
-                        var p = new MetaDefineParam("p" + i.ToString(), this);
-                        p.SetDefineMetaType(new MetaType(decl.paramMetaTypeList[i]));
-                        m_MetaMemberParamCollection.AddMetaDefineParam(p);
-                    }
+                    var p = new MetaDefineParam("p" + i.ToString(), this);
+                    p.SetDefineMetaType(new MetaType(decl.paramMetaTypeList[i]));
+                    m_MetaMemberParamCollection.AddMetaDefineParam(p);
+                }
 
-                    var ret = new MetaType(decl.returnMetaType);
-                    m_IsDefineMetaType = true;
-                    m_DefineMetaType = ret;
-                    m_RealMetaType = new MetaType(ret);
+                var ret = new MetaType(decl.returnMetaType);
+                m_IsDefineMetaType = true;
+                m_DefineMetaType = ret;
+                m_RealMetaType = new MetaType(ret);
 
-                    if (m_ReturnMetaVariable != null)
-                    {
-                        m_ReturnMetaVariable.SetMetaDefineType(new MetaType(ret));
-                        m_ReturnMetaVariable.SetRealMetaType(new MetaType(ret));
-                        m_ReturnMetaVariable.SetIsDefineMetaType(true);
-                    }
+                if (m_ReturnMetaVariable != null)
+                {
+                    m_ReturnMetaVariable.SetMetaDefineType(new MetaType(ret));
+                    m_ReturnMetaVariable.SetRealMetaType(new MetaType(ret));
+                    m_ReturnMetaVariable.SetIsDefineMetaType(true);
                 }
             }
         }
@@ -333,6 +476,7 @@ namespace SimpleLanguage.Core
             m_IsGet = fmmf.getToken != null;
             m_IsSet = fmmf.setToken != null;
             m_IsFinal = fmmf.finalToken != null;
+            m_IsThrows = fmmf.throwsToken != null;
             m_IsAbstract = fmmf.abstractToken != null;
             if ( fmmf.overrideToken != null )
             {
@@ -374,7 +518,7 @@ namespace SimpleLanguage.Core
                     MetaClass gmc = mn.GetMetaClassByTemplateCount(0);
                     if( gmc == null )
                     {
-                        Log.AddMetaCoreLog( LID.ShowExtendMessage, "Error 没有查找到inClass的类名, " + inClassToken.ToFormatString());
+                        Log.AddMetaCoreLog( LID.MetaCoreMemberFunctionInClass, "Error 没有查找到inClass的类名, " + inClassToken.ToFormatString());
                         continue;
                     }
                     mdt.SetInConstraintMetaClass(gmc);
@@ -412,6 +556,23 @@ namespace SimpleLanguage.Core
 
             Init();
         }
+        /// <summary>
+        /// 合成函数构造器(闭包等): isStatic 必须在 Init() 之前设置,
+        /// 否则 Init 会为非静态函数创建 thisMetaVariable 占据 Argument 0。
+        /// </summary>
+        public MetaMemberFunction( MetaClass mc, string _name, bool isStatic ) : base( mc )
+        {
+            m_Name = _name;
+            m_IsCanRewrite = true;
+            m_IsStatic = isStatic;
+            m_IsClosureFunction = true;
+            m_MetaMemberParamCollection.Clear();
+
+            m_MetaBlockStatements = new MetaBlockStatements(this, null);
+            m_MetaBlockStatements.isOnFunction = true;
+
+            Init();
+        }
         public MetaMemberFunction( MetaMemberFunction mmf ) : base( mmf )
         {
             m_IsTemplateFunction = mmf.m_IsTemplateFunction;
@@ -427,6 +588,15 @@ namespace SimpleLanguage.Core
             m_IsAbstract = mmf.isAbstract;
             m_IsFinal = mmf.isFinal;
             m_IsStatic = mmf.isStatic;
+        }
+        /// <summary>
+        /// Clears the FileMetaMemberFunction binding so that ParseRealMetaType/ParseStatements
+        /// skip re-parsing from source file data. Used by gen template copies and reference-loaded methods.
+        /// </summary>
+        public void ClearFileMetaMemberFunction()
+        {
+            m_FileMetaMemberFunction = null;
+            m_CanParse = false;
         }
         protected void Init()
         {
@@ -502,6 +672,14 @@ namespace SimpleLanguage.Core
         {
             m_IsSet = isSet;
         }
+        public void SetIsFinal(bool flag)
+        {
+            m_IsFinal = flag;
+        }
+        public void SetIsAbstract(bool flag)
+        {
+            m_IsAbstract = flag;
+        }
         public void SetIsOverrideFunction(bool flag )
         {
             m_IsOverrideFunction = flag;
@@ -509,6 +687,10 @@ namespace SimpleLanguage.Core
         public void SetIsOverrideInterface(bool flag )
         {
             this.m_IsOverrideInterface = flag;
+        }
+        public void SetIsTemplateFunction(bool flag)
+        {
+            this.m_IsTemplateFunction = flag;
         }
         public bool IsEqualWithMMFByNameAndParam( MetaMemberFunction mmf )
         {
@@ -528,6 +710,15 @@ namespace SimpleLanguage.Core
         public void AddMetaDefineTemplate ( MetaTemplate mt )
         {
             m_MetaMemberTemplateCollection.AddMetaDefineTemplate(mt);
+        }
+        /// <summary>
+        /// 添加 attribute（跨模块 ref module 反向构建时回填白名单属性，
+        /// 如 DllStaticImport，无 FileMeta，由恢复构造的 MetaAttribute 直接加入）。
+        /// </summary>
+        public void AddAttribute( MetaAttribute attr )
+        {
+            if( attr == null ) return;
+            m_AttributeList.Add(attr);
         }
         //如果是模板函数，需要在实例化类后，进行新的实体函数的解析
         public MetaGenTemplateFunction AddGenTemplateMemberFunctionByMetaTypeList(MetaClass mc, List<MetaType> list)
@@ -600,45 +791,55 @@ namespace SimpleLanguage.Core
         }
         public virtual void ParseDefineMetaType()
         {
-            if (this.m_FileMetaMemberFunction != null)
+            // ref module 导入的函数类型已在导入时设置完毕，无需从 FileMeta 解析，
+            // 但仍需走到 UpdateVritualFunctionName 设置虚函数名
+            if (refFromType != RefFromType.RefModule)
             {
-                if (m_FileMetaMemberFunction.defineMetaClass != null)
+                if (this.m_FileMetaMemberFunction != null)
                 {
-                    FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
-                    m_DefineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, this, cmr);
-                    m_IsDefineMetaType = true;
+                    if (m_FileMetaMemberFunction.defineMetaClass != null)
+                    {
+                        FileMetaClassDefine cmr = m_FileMetaMemberFunction.defineMetaClass;
+                        m_DefineMetaType = TypeManager.instance.GetMetaTypeByTemplateFunction(ownerMetaClass, this, cmr);
+                        m_IsDefineMetaType = true;
 
-                    if (m_ConstructInitFunction && defineMetaType.metaClass != CoreMetaClassManager.voidMetaClass )
-                    {
-                        Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 当前类:" + m_AllName + " 是构建Init类，不允许有返回类型 ");
+                        if (m_DefineMetaType == null)
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionNotFoundTypeReturn, this.m_FileMetaMemberFunction.token, $"没有找到{cmr.stringList[0]} 的相关返回类型!");
+                            return;
+                        }
+                        if (m_ConstructInitFunction && defineMetaType.metaClass != CoreMetaClassManager.voidMetaClass )
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionIssue, "Error 当前类:" + m_AllName + " 是构建Init类，不允许有返回类型 ");
+                        }
+                        else
+                        {
+                            m_ReturnMetaVariable.SetMetaDefineType(defineMetaType);
+                            m_ReturnMetaVariable.SetRealMetaType(defineMetaType);
+                        }
+                        m_ReturnMetaVariable.SetMetaDefineType(m_DefineMetaType);
+                        m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
                     }
                     else
                     {
-                        m_ReturnMetaVariable.SetMetaDefineType(defineMetaType);
-                        m_ReturnMetaVariable.SetRealMetaType(defineMetaType);
+                        if( m_IsSet )
+                        {
+                            m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
+                        }
+                        else
+                        {
+                            // 没有显式声明返回类型的函数，默认返回 void
+                            m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
+                        }
+                        m_IsDefineMetaType = true;
+                        m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
                     }
-                    m_ReturnMetaVariable.SetMetaDefineType(m_DefineMetaType);
-                    m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
                 }
-                else
+                for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
                 {
-                    if( m_IsSet )
-                    {
-                        m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
-                    }
-                    else
-                    {
-                        // 没有显式声明返回类型的函数，默认返回 void
-                        m_DefineMetaType = new MetaType(CoreMetaClassManager.voidMetaClass);
-                    }
-                    m_IsDefineMetaType = true;
-                    m_ReturnMetaVariable.SetRealMetaType(new MetaType(m_DefineMetaType));
+                    MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
+                    mpl.ParseMetaDefineType();
                 }
-            }
-            for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
-            {
-                MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
-                mpl.ParseMetaDefineType();
             }
             UpdateVritualFunctionName();
         }
@@ -648,6 +849,30 @@ namespace SimpleLanguage.Core
         }
         public void ParseRealMetaType()
         {
+            // ref module 导入的函数参数类型已在导入时设置完毕，无需再解析
+            if (refFromType == RefFromType.RefModule)
+                return;
+
+            /* Skip reference-loaded methods: they have no FileMetaParamter/express,
+              * defineMetaType and realMetaType are already set during module loading. */
+            if (m_FileMetaMemberFunction == null)
+            {
+                if (m_MetaMemberParamCollection != null)
+                {
+                    bool allHaveTypes = true;
+                    for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
+                    {
+                        var mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
+                        if (mpl.metaVariable?.defineMetaType == null)
+                        {
+                            allHaveTypes = false;
+                            break;
+                        }
+                    }
+                    if (allHaveTypes) return;
+                }
+            }
+
             for (int i = 0; i < m_MetaMemberParamCollection.metaDefineParamList.Count; i++)
             {
                 MetaDefineParam mpl = m_MetaMemberParamCollection.metaDefineParamList[i];
@@ -659,6 +884,9 @@ namespace SimpleLanguage.Core
         }
         public void ParseStatements()
         {
+            // ref module 导入的函数没有源码语法树，无需解析语句
+            if (refFromType == RefFromType.RefModule)
+                return;
             if (!m_CanParse) return;
 
             // If this function is declared abstract, skip parsing its body/content.
@@ -679,6 +907,12 @@ namespace SimpleLanguage.Core
                     Token endToken = m_FileMetaMemberFunction.fileMetaBlockSyntax.endBlock;
                     m_MetaBlockStatements.SetFileMetaBlockSyntax(m_FileMetaMemberFunction.fileMetaBlockSyntax);
                     m_MetaBlockStatements.SetMetaMemberParamCollection(m_MetaMemberParamCollection);
+                    // result 关键字: 返回类型为 Result/Result<T> 的函数注入隐藏局部变量 result
+                    // (在语句解析前注入, 用户自定义同名变量会经 UpdateMetaVariableDict 自然遮蔽)
+                    if( IsResultReturnFunction() && m_MetaBlockStatements.GetMetaVariable("result") == null )
+                    {
+                        EnsureResultVariable();
+                    }
                     CreateMetaSyntax(m_FileMetaMemberFunction.fileMetaBlockSyntax, m_MetaBlockStatements);
                 }
                 else
@@ -697,7 +931,7 @@ namespace SimpleLanguage.Core
                         : m_OwnerMetaClass is MetaData d ? d.allName
                         : m_OwnerMetaClass is MetaEnum e ? e.allName
                         : m_OwnerMetaClass?.name;
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, $"Error 类[{ownerLabel}] 该函数[{this.functionAllName}] 没有定义函数内容！！");
+                    Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionFunctionDefine, $"Error 类[{ownerLabel}] 该函数[{this.functionAllName}] 没有定义函数内容！！");
                 }
             }
 
@@ -863,6 +1097,72 @@ namespace SimpleLanguage.Core
                         beforeStatements = metaIfStatements;
                     }
                     break;
+                case FileMetaKeyStaticIfSyntax fmksis:
+                    {
+                        // static if 编译期条件编译 (global.macro 宏判断):
+                        // MetaCore 层对宏条件求值, 只把选中分支的子语句平铺接入当前语句链,
+                        // 未选中分支不参与语义分析与 IR——static 不进 runtime
+                        FileMetaBlockSyntax selectBlock = null;
+                        if (MacroManager.instance.EvaluateStaticCondition(fmksis.ifExpressSyntax.conditionExpress, out bool ifResult))
+                        {
+                            if (ifResult)
+                            {
+                                selectBlock = fmksis.ifExpressSyntax.executeBlockSyntax;
+                            }
+                            else
+                            {
+                                for (int i = 0; i < fmksis.elseIfExpressSyntax.Count; i++)
+                                {
+                                    var elif = fmksis.elseIfExpressSyntax[i];
+                                    if (MacroManager.instance.EvaluateStaticCondition(elif.conditionExpress, out bool elifResult) && elifResult)
+                                    {
+                                        selectBlock = elif.executeBlockSyntax;
+                                        break;
+                                    }
+                                }
+                                if (selectBlock == null)
+                                {
+                                    selectBlock = fmksis.elseExpressSyntax?.executeBlockSyntax;
+                                }
+                            }
+                        }
+                        // 求值失败 (错误已由 MacroManager 记录) 或无匹配分支: 不接入任何语句
+                        if (selectBlock != null)
+                        {
+                            // 把选中分支的子语句按原顺序平铺接入当前位置的语句链。
+                            // 注意必须以当前 beforeStatements 为起点逐条接入——
+                            // 不能用 CreateMetaSyntax(selectBlock, currentBlockStatements)，
+                            // 那会把第一条子语句挂到父块上，覆盖父块已有的语句链。
+                            // 也不包一层运行时 block：static if 不引入作用域，static 不进 runtime。
+                            while (selectBlock.IsNotEnd())
+                            {
+                                var sfChild = selectBlock.GetCurrentSyntaxAndMove();
+                                HandleMetaSyntax(currentBlockStatements, ref beforeStatements, sfChild);
+                            }
+                        }
+                    }
+                    break;
+                case FileMetaKeyTrySyntax fmts:
+                    {
+                        // Set scope context: inside label{} block, and optionally checked
+                        bool savedTry = s_IsInTryBlock;
+                        bool savedChecked = s_IsInCheckedContext;
+                        s_IsInTryBlock = true;
+                        if (fmts.isChecked) s_IsInCheckedContext = true;
+                        var metaTryStatements = new MetaTryStatements(currentBlockStatements, fmts);
+                        s_IsInTryBlock = savedTry;
+                        s_IsInCheckedContext = savedChecked;
+                        beforeStatements.SetNextStatements(metaTryStatements);
+                        beforeStatements = metaTryStatements;
+                    }
+                    break;
+                case FileMetaKeyThrowSyntax fmtks:
+                    {
+                        var metaThrowStatements = new MetaThrowStatements(currentBlockStatements, fmtks);
+                        beforeStatements.SetNextStatements(metaThrowStatements);
+                        beforeStatements = metaThrowStatements;
+                    }
+                    break;
                 case FileMetaKeySwitchSyntax fmkss:
                     {
                         var metaSwitchStatements = new MetaSwitchStatements(currentBlockStatements, fmkss);
@@ -888,13 +1188,49 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error FileMetaConditionExpressSyntax: 暂不支持该类型的解析!!");
+                            Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionFileMetaConditionExpressSyntax, "Error FileMetaConditionExpressSyntax: 暂不支持该类型的解析!!");
                         }
                     }
                     break;
                 case FileMetaKeyOnlySyntax fmoks:
                     {
-                        if (fmoks.token.type == ETokenType.Break)
+                        if (fmoks.token.type == ETokenType.Defer)
+                        {
+                            var metaDeferStatements = new MetaDeferStatements(currentBlockStatements, fmoks);
+                            currentBlockStatements.ownerMetaFunction?.AddDeferStatements(metaDeferStatements);
+                            beforeStatements.SetNextStatements(metaDeferStatements);
+                            beforeStatements = metaDeferStatements;
+                        }
+                        else if (fmoks.token.type == ETokenType.ErrDefer)
+                        {
+                            var metaErrDeferStatements = new MetaErrDeferStatements(currentBlockStatements, fmoks);
+                            currentBlockStatements.ownerMetaFunction?.AddErrDeferStatements(metaErrDeferStatements);
+                            beforeStatements.SetNextStatements(metaErrDeferStatements);
+                            beforeStatements = metaErrDeferStatements;
+                        }
+                        else if (fmoks.token.type == ETokenType.Checked)
+                        {
+                            // Set checked context for the block body
+                            bool savedChecked = s_IsInCheckedContext;
+                            s_IsInCheckedContext = true;
+                            var metaCheckedStatements = new MetaCheckedStatements(currentBlockStatements, fmoks);
+                            s_IsInCheckedContext = savedChecked;
+                            beforeStatements.SetNextStatements(metaCheckedStatements);
+                            beforeStatements = metaCheckedStatements;
+                        }
+                        else if (fmoks.token.type == ETokenType.Unchecked)
+                        {
+                            // unchecked{} can only be used inside a checked context
+                            if (!s_IsInCheckedContext)
+                            {
+                                Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionUncheckedCheckedLabel, fmoks.token,
+                                    "Error: unchecked{} 只能在 checked 上下文中使用 (checked label{} 或 checked{})");
+                            }
+                            var metaUncheckedStatements = new MetaUncheckedStatements(currentBlockStatements, fmoks);
+                            beforeStatements.SetNextStatements(metaUncheckedStatements);
+                            beforeStatements = metaUncheckedStatements;
+                        }
+                        else if (fmoks.token.type == ETokenType.Break)
                         {
                             var metaBreakStatements = new MetaBreakStatements(currentBlockStatements, fmoks);
                             beforeStatements.SetNextStatements(metaBreakStatements);
@@ -924,7 +1260,7 @@ namespace SimpleLanguage.Core
                             {
                                 if (currentBlockStatements.GetIsMetaVariable(name1))
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 如果使用了var/data/dynamic/int 等前缀，有重复定义的行为" + fmos.variableRef.ToTokenString());
+                                    Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionVarDataDynamic, "Error 如果使用了var/data/dynamic/int 等前缀，有重复定义的行为" + fmos.variableRef.ToTokenString());
                                     isDefineVarStatements = false;
                                 }
                                 else
@@ -941,6 +1277,22 @@ namespace SimpleLanguage.Core
                                     if (mb == null)
                                     {
                                         isDefineVarStatements = true;
+                                        // 闭包体内: 名字也可能来自宿主函数作用域(需捕获)
+                                        // 闭包块的块链不含宿主块, GetIsMetaVariable 查不到,
+                                        // 沿块链向上找到闭包块后再从宿主作用域解析一次(触发捕获注册)
+                                        var walkBlock = currentBlockStatements;
+                                        while (walkBlock != null)
+                                        {
+                                            if (walkBlock is MetaClosureBlockStatements mcbs)
+                                            {
+                                                if (mcbs.GetMetaVariableByName(name1) != null)
+                                                {
+                                                    isDefineVarStatements = false;
+                                                }
+                                                break;
+                                            }
+                                            walkBlock = walkBlock.parentBlockStatements;
+                                        }
                                     }
                                 }
                             }
@@ -949,7 +1301,7 @@ namespace SimpleLanguage.Core
                         {
                             //if (currentBlockStatements.ownerMetaFunction?.isConstructFunction)
                             //{
-                            //    Log.AddMetaCoreLog( LID.ShowExtendMessage, "Error 构造函数中，不允许使用定义字段，必须使用this.非静态或者是类名.静态字段赋值!" + fmos.variableRef.ToTokenString());
+                            //    Log.AddMetaCoreLog( LID.MetaCoreMemberFunctionNotAllowFunctionDefine, "Error 构造函数中，不允许使用定义字段，必须使用this.非静态或者是类名.静态字段赋值!" + fmos.variableRef.ToTokenString());
                             //}
                             MetaDefineVarStatements mnvs11 = new MetaDefineVarStatements( currentBlockStatements, fmos );
                             beforeStatements.SetNextStatements(mnvs11);
@@ -970,7 +1322,7 @@ namespace SimpleLanguage.Core
                         if (currentBlockStatements.GetIsMetaVariable(name1))
                         {
                             isDefineVarStatements = true;
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, fmvs.token, "Error 定义变量名称与类函数临时名称一样!!" + fmvs.token?.ToLexemeAllString());
+                            Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionVariableFunctionDefine, fmvs.token, "Error 定义变量名称与类函数临时名称一样!!" + fmvs.token?.ToLexemeAllString());
                             return null;
                         }
                         else
@@ -984,8 +1336,18 @@ namespace SimpleLanguage.Core
                             {
                                 if (!mv.isStatic)
                                 {
-                                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 定义变量名称与类定义名称一样 如果调用成员变量，需要在前边使用this.!!" + fmvs.token?.ToLexemeAllString());
-                                    return null;
+                                    if (LocalManager.IsFileLocalClass(currentBlockStatements.ownerMetaClass))
+                                    {
+                                        // local{} init 上下文: `float len = expr` 中的 len 已被
+                                        // LocalManager 预提升为 _Local 类占位成员，这里仍按
+                                        // 局部变量定义解析，末尾的 `this.len = len` 同步语句写回成员
+                                        isDefineVarStatements = true;
+                                    }
+                                    else
+                                    {
+                                        Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionVariableDefineCall, "Error 定义变量名称与类定义名称一样 如果调用成员变量，需要在前边使用this.!!" + fmvs.token?.ToLexemeAllString());
+                                        return null;
+                                    }
                                 }
                             }
                         }
@@ -1028,7 +1390,7 @@ namespace SimpleLanguage.Core
                         }
                         else
                         {
-                            Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 生成MetaStatements出错KeyReturnSyntax类型错误!!");
+                            Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionMetaStatementsKeyReturnSyntax, "Error 生成MetaStatements出错KeyReturnSyntax类型错误!!");
                         }
                     }
                     break;
@@ -1039,8 +1401,15 @@ namespace SimpleLanguage.Core
                         beforeStatements = metaGotoStatements;
                         return metaGotoStatements;
                     }
+                case FileMetaDefineClosureSyntax fmdcs: //闭包定义: function name(){...} / var name = (...){...}
+                    {
+                        var metaClosureStatements = new MetaClosureDefineStatements(currentBlockStatements, fmdcs);
+                        beforeStatements.SetNextStatements(metaClosureStatements);
+                        beforeStatements = metaClosureStatements;
+                    }
+                    break;
                 default:
-                    Log.AddMetaCoreLog(LID.ShowExtendMessage, "Waning 还有没有解析的语句!! MetaMemberFunction 314");
+                    Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionWaningMetaMemberFunction, "Waning 还有没有解析的语句!! MetaMemberFunction 314");
                     break;
             }
             return null;
@@ -1137,6 +1506,10 @@ namespace SimpleLanguage.Core
             if (isWithInterface)
             {
                 sb.Append(" interface");
+            }
+            if (isThrows)
+            {
+                sb.Append(" throws");
             }
             sb.Append(" ");
             sb.Append( m_ReturnMetaVariable?.GetFinalMetaType().ToFormatString() );

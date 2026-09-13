@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      IRCallStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -22,6 +22,26 @@ namespace SimpleLanguage.IR.Statements
         }
         public void ParseIRStatements(MetaCallStatements ms)
         {
+            if (ms.expressNode != null)
+            {
+                // Expression statement (e.g. "try riskyFunc()")
+                var irExpress = IRExpressManager.CreateExpress(irMethod, ms.expressNode);
+                if (irExpress != null)
+                {
+                    m_IRStatements.Add(irExpress);
+                    // Discard return value if any - but skip a void call: the
+                    // VM pushes nothing back for a void return (vm_frame_pop
+                    // skips void return slots), so an unconditional Pop would
+                    // underflow the eval stack (OpCode_Pop assert, e.g. the
+                    // "yield" keyword sugar expanding to Coroutine.Yield()).
+                    var expType = ms.expressNode.GetReturnMetaType();
+                    if (expType?.metaClass?.eType != EType.Void)
+                    {
+                        m_IRStatements.Add(new IRPop(irMethod));
+                    }
+                }
+                return;
+            }
             m_IRMc = new IRMetaCallLink();
             m_IRMc.ParseToIRDataList(irMethod, ms.metaCallLink.visitNodeList);
             m_IRStatements.AddRange(m_IRMc.irList);

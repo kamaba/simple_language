@@ -73,12 +73,12 @@ namespace SimpleLanguage.Compile
                 {
                     if (isComma)
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 多重逗号，导致解析无法解析!!");
+                        Log.AddFileMetaLog(LID.FileMetaExpressCannot, "Error 多重逗号，导致解析无法解析!!");
                         break;
                     }
                     if (fmbtList.Count == 0)
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 首符号不能为逗号");
+                        Log.AddFileMetaLog(LID.FileMetaExpressNotAllowSign, "Error 首符号不能为逗号");
                         break;
                     }
                     isComma = true;
@@ -323,6 +323,14 @@ namespace SimpleLanguage.Compile
 
             return sb.ToString();
         }
+        public override string ToString()
+        {
+            if( m_Token != null )
+            {
+                return m_Token?.lexeme.ToString();
+            }
+            return "";
+        }
     }
     public class FileMetaAsOrIsTerm : FileMetaBaseTerm
     {
@@ -346,7 +354,7 @@ namespace SimpleLanguage.Compile
 
             if (typeNodes == null || typeNodes.Count == 0 || asOrisToken == null)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error FileMetaAsOrIsTerm 参数不合法，无法构造 as/is 表达式");
+                Log.AddFileMetaLog(LID.FileMetaExpressFileMetaAsOrIsTermAs, "Error FileMetaAsOrIsTerm 参数不合法，无法构造 as/is 表达式");
                 return;
             }
             m_AsOrIsToken = asOrisToken;
@@ -577,7 +585,7 @@ namespace SimpleLanguage.Compile
                 var nodeList = nodeListList[i];
                 if( nodeList.Count == 0 )
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error nodeList.Count == 0 ");
+                    Log.AddFileMetaLog(LID.FileMetaExpressNodeListCount, "Error nodeList.Count == 0 ");
                     continue;
                 }
                 else if( nodeList.Count == 1 )
@@ -718,7 +726,7 @@ namespace SimpleLanguage.Compile
 
             if (m_BraceEndToken == null )
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error FileMetaBraceTerm--");
+                Log.AddFileMetaLog(LID.FileMetaExpressFileMetaBraceTerm, "Error FileMetaBraceTerm--");
             }
         }
         private void HandleBraceTerm()
@@ -771,7 +779,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, " Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a = ?} 时，多个=号 Token: " + assignToken.ToLexemeAllString() );
+                            Log.AddFileMetaLog(LID.FileMetaExpressErrorrFileMetaBraceTermHandleBraceTerm, " Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a = ?} 时，多个=号 Token: " + assignToken.ToLexemeAllString() );
                         }
                     }
                     else if( nl2.nodeType == ENodeType.Key && nl2.token.type == ETokenType.Colon ) // Map<int,string>(){ 100:"aaa", 200:"bbb" }
@@ -783,7 +791,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, " Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a:'aaa'} 时，多个:号 Token: " + assignToken.ToLexemeAllString());
+                            Log.AddFileMetaLog(LID.FileMetaExpressErrorrFileMetaBraceTermHandleBraceTerm2, " Errorr FileMetaBraceTerm.HandleBraceTerm 解析{ a:'aaa'} 时，多个:号 Token: " + assignToken.ToLexemeAllString());
                         }
                     }
                     else
@@ -821,9 +829,14 @@ namespace SimpleLanguage.Compile
                         var tmbt = new FileMetaConstValueTerm(m_FileMeta, defineNodeList[0].token );
                         AddFileMetaTerm(tmbt);
                     }
+                    else if( defineNodeList.Count == 3 && defineNodeList[1].nodeType == ENodeType.Colon )
+                    {
+                        var valueNodeTerm = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, defineNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
+                        AddFileMetaTerm(valueNodeTerm);
+                    }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在解析为{}中，数组形式 解析有问题!!");
+                        Log.AddFileMetaLog(LID.FileMetaExpressArray, defineNodeList[0].token, "Error 在解析为{}中，数组形式 解析有问题!!");
                         continue;
                     }
                 }
@@ -832,7 +845,7 @@ namespace SimpleLanguage.Compile
                     if ( (defineNodeList.Count != 1 && defineNodeList.Count != 2 ) || valueNodeList.Count < 1)
                     {
                         //Debug.Assert(false, "");
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在解析为{}中，赋值= 解析有问题!!");
+                        Log.AddFileMetaLog(LID.FileMetaExpressIssue, "Error 在解析为{}中，赋值= 解析有问题!!");
                         continue;
                     }
                     if( defineNodeList.Count == 2 )
@@ -848,7 +861,7 @@ namespace SimpleLanguage.Compile
                     {
                         FileMetaCallLink fmcl = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
                         FileMetaBaseTerm fmel = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, valueNodeList, FileMetaTermExpress.EExpressType.Common);  //这种方式只允许在
-                        FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, null, null, null, fmel, true);
+                        FileMetaOpAssignSyntax fmoas = new FileMetaOpAssignSyntax(fmcl, assignToken, null, null, null, null, fmel, true);
                         fmoas.isAppendSemiColon = false;
                         m_FileMetaAssignSyntaxList.Add(fmoas);
                     }
@@ -859,7 +872,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 在解析为{}中，出现了不该出现的格式");
+                    Log.AddFileMetaLog(LID.FileMetaExpressIssue2, "Error 在解析为{}中，出现了不该出现的格式");
                 }
             }
         }
@@ -959,7 +972,7 @@ namespace SimpleLanguage.Compile
                 //    AddFileMetaTerm(fileMetaSymbolTerm);
                 //    if (i == node.childList.Count - 1)
                 //    {
-                //        Log.AddFileMetaLog(LID.ShowExtendMessage, "Warning [1,2,3,]有多余逗号出现??");
+                //        Log.AddFileMetaLog(LID.FileMetaExpressIssue3, "Warning [1,2,3,]有多余逗号出现??");
                 //        Debug.Assert(false);
                 //    }
                     nodeListList.Add(tnodeList);
@@ -1000,13 +1013,13 @@ namespace SimpleLanguage.Compile
                 AddFileMetaTerm(fileMetaSymbolTerm);
                 if (i == node.childList.Count - 1)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Warning [1,2,3,]有多余逗号出现??");
+                    Log.AddFileMetaLog(LID.FileMetaExpressIssue4, "Warning [1,2,3,]有多余逗号出现??");
                 }
                 continue;
             }
             else if (cnode.nodeType == ENodeType.Par)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 不支持在[]中解析()的逻辑!!");
+                Log.AddFileMetaLog(LID.FileMetaExpressNotSupport, "Error 不支持在[]中解析()的逻辑!!");
                 continue;
             }
             else if (cnode.nodeType == ENodeType.Key)
@@ -1019,7 +1032,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 不支持在[]中解析Key的逻辑!!");
+                    Log.AddFileMetaLog(LID.FileMetaExpressKey, "Error 不支持在[]中解析Key的逻辑!!");
                     continue;
                 }
             }
@@ -1035,7 +1048,7 @@ namespace SimpleLanguage.Compile
                 AddFileMetaTerm(fileMetaSymbolTerm);
                 if (i == node.childList.Count - 1)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Warning [1,2,3,]有多余逗号出现??");
+                    Log.AddFileMetaLog(LID.FileMetaExpressIssue5, "Warning [1,2,3,]有多余逗号出现??");
                     Debug.Assert(false);
                 }
                 continue;
@@ -1078,7 +1091,7 @@ namespace SimpleLanguage.Compile
                 {
                     if (type == 2 || type == 3)
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Log.AddFileMetaLog(LID.FileMetaExpressData, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -1092,7 +1105,7 @@ namespace SimpleLanguage.Compile
                 {
                     if (type == 1 || type == 2)
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Log.AddFileMetaLog(LID.FileMetaExpressData2, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -1394,15 +1407,17 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, list[0].token, "Error not allow " + currentTerm.token.lexeme.ToString() + " !");
+                            Log.AddFileMetaLog(LID.FileMetaExpressNotAllowNotAllow, list[0].token, "Error not allow " + currentTerm.token.lexeme.ToString() + " !");
                             return false;
                         }
                     }
-                    else if( ett == ETokenType.Minus || ett == ETokenType.Plus || ett == ETokenType.Not || ett == ETokenType.Negative )
+                    else if( ett == ETokenType.Minus || ett == ETokenType.Plus || ett == ETokenType.Not || ett == ETokenType.Negative
+                        || ett == ETokenType.TryQuestion || ett == ETokenType.TryExclamation || ett == ETokenType.Try
+                        || ett == ETokenType.Checked )
                     {
                         if (listNextTerm == null)
                         {
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, list[0].token, "Error 表达式解析错误!! FileMetaExpress 575" + extendMessage );
+                            Log.AddFileMetaLog(LID.FileMetaExpressFileMetaExpress, list[0].token, "Error 表达式解析错误!! FileMetaExpress 575" + extendMessage );
                             return false;
                         }
 
@@ -1422,14 +1437,14 @@ namespace SimpleLanguage.Compile
                         }
                         if (!m_CanUseDoublePlusOrMinus && (ett == ETokenType.DoubleMinus || ett == ETokenType.DoublePlus))
                         {
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, extendMessage + "Error 只有在语句中，可以使用i++ 等语法，变量与传参是禁止使用i++" +
+                            Log.AddFileMetaLog(LID.FileMetaExpressI, extendMessage + "Error 只有在语句中，可以使用i++ 等语法，变量与传参是禁止使用i++" +
                                 "Token 位置:" + currentTerm.token.ToAllString());
                             return false;
                         }
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, extendMessage + "Error 不能使用错误符号 !! FileMetaExpress 698" + currentTerm.token.ToLexemeAllString());
+                        Log.AddFileMetaLog(LID.FileMetaExpressFileMetaExpress2, extendMessage + "Error 不能使用错误符号 !! FileMetaExpress 698" + currentTerm.token.ToLexemeAllString());
                         return false;
                     }
                 }
@@ -1450,7 +1465,7 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, extendMessage + "Error BuildTst 表达式解析错误!! 604");
+                        Log.AddFileMetaLog(LID.FileMetaExpressBuildTst, currentTerm.token, "Error BuildTst 表达式解析错误!! 604 [" + extendMessage+"]" );
                         return false;
                     }
                 }
@@ -1502,7 +1517,9 @@ namespace SimpleLanguage.Compile
                                 fmst.priority = SignComputePriority.Level3_Low_Compute; // binary
                         }
                     }
-                    else if (ttoken?.type == ETokenType.Not || ttoken?.type == ETokenType.Negative)
+                    else if (ttoken?.type == ETokenType.Not || ttoken?.type == ETokenType.Negative
+                        || ttoken?.type == ETokenType.TryQuestion || ttoken?.type == ETokenType.TryExclamation
+                        || ttoken?.type == ETokenType.Checked)
                     {
                         // ! / ~ are unary-prefix operators in this grammar
                         fmst.priority = SignComputePriority.Level2_LinkOp;

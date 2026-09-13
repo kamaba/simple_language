@@ -40,7 +40,7 @@ data ConstructionCounter
 
 ConStrCC.ClassLeaf
 {
-    _init_()
+    override _init_()
     {
         this.value = 0
     }
@@ -60,7 +60,7 @@ ConStrCC.ClassLeaf
 
 ConStrCC.ClassBase
 {
-    _init_()
+    override _init_()
     {
         this.x = 10
         this.y = 20

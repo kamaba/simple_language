@@ -11,6 +11,7 @@
 | `代码解析流程.md` | 已并入 `故障排查流程.md`（保留跳转说明） |
 | `AI_GUIDE.md` | AI 协作与仓库约定 |
 | `AI_PROMPTS.md` | 提示词/场景模板 |
+| `MLIR_AOT_DESIGN.md` | **MLIR AOT 设计文档**：SLIR→MLIR→LLVM→exe 全链路设计、指令映射表、运行时 ABI、工具链与落地路线图 |
 | `CONTRIBUTING_GUIDE.md` | 贡献说明 |
 | `语法规则.md` | 已并入 `故障排查流程.md`（保留跳转说明） |
 

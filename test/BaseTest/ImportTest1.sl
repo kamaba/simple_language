@@ -1,4 +1,3 @@
-import Std;
 
 Std.Class1
 {

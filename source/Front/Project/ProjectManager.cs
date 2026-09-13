@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:      ProjectManager.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -45,6 +45,9 @@ namespace SimpleLanguage.Project
         public static MetaData globalData = new MetaData( "global", false, true, false );
         internal static string currentProject;
 
+        // IR optimization level (set from CLI -O0..-O3; >= 3 enables const-fused stores)
+        public static int optimizeLevel { get; set; } = 1;
+
         public static void SetConfig(ProjectConfig cfg)
         {
             m_Config = cfg ?? new ProjectConfig();
@@ -52,6 +55,21 @@ namespace SimpleLanguage.Project
 
         public static void Run( string path, CommandInputArgs cinputArgs )
          {
+            // apply CLI optimize level before any IR generation happens
+            if (cinputArgs != null)
+            {
+                optimizeLevel = cinputArgs.optimizeLevel;
+                // 外部宏：CLI --macro name=value 在编译前注入 global.macro
+                // 优先级高于 jsonc global.macro 初值，低于 CompileBefore()（编译期仍可再修改）
+                MacroManager.ClearExternalMacros();
+                if (cinputArgs.macroDefines != null)
+                {
+                    foreach (var kv in cinputArgs.macroDefines)
+                    {
+                        MacroManager.SetExternalMacro(kv.Key, kv.Value);
+                    }
+                }
+            }
             int index = path.LastIndexOf("\\");
             if (index != -1)
             {

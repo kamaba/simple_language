@@ -1,14 +1,15 @@
 public class String extends Object
 {
     private String _value = null
-    
+    private Int32 _length = -1
+
     _init_( Int8 aa )
     {
-        this._value = aa.toString()
+        this._value = SystemConvertString( aa )
     }
     _init_( Int32 aa )
     {
-        this._value = aa.toString()
+        this._value = SystemConvertString( aa )
     }
     _init_( String aa )
     {
@@ -18,19 +19,13 @@ public class String extends Object
     {
         ret SystemStringFormat(this, _parmas)
     }
-
-    #!
-    Int32 toInt32()
+    public get int length()
     {
-        if( Int32.tryInt32( this._value, Int32 int32val ) )
-        {
-            ret int32val
-        }
-        ret null
+        # 直接走系统调用：字符串值在 VM 上是 scalar wrapper（无类字段布局），
+        # 不能通过 this._length 字段访问缓存，否则字段读取失败返回空。
+        ret SystemStringLength(this)
     }
-    !#    
-
-    String toString()
+    override String toString()
     {
         ret this;
     }

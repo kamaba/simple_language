@@ -122,24 +122,24 @@ namespace SimpleLanguage.Compile
 
             if (!FileMetatUtil.SplitNodeList(list, bedoreNodeList, afterNodeList, ref m_AssignToken))
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, list[0].token, "Error 解析NodeList出现错误~~~");
+                Log.AddFileMetaLog(LID.FileMetaMemberVariableNodeList, list[0].token, "Error 解析NodeList出现错误~~~");
                 return false;
             }
             if (bedoreNodeList.Count < 1)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, m_AssignToken, "Error listDefieNode 不能为空~");
+                Log.AddFileMetaLog(LID.FileMetaMemberVariableListDefieNode, m_AssignToken, "Error listDefieNode 不能为空~");
                 return false;
             }
             Node typeNode = null;
             if (!GetNameAndTypeToken(bedoreNodeList, out typeNode ))
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 没有找到该定义名称 必须使用例: X = 103; 的格式");
+                Log.AddFileMetaLog(LID.FileMetaMemberVariableX, "Error 没有找到该定义名称 必须使用例: X = 103; 的格式");
                 return false;
             }
 
             if( m_Token == null )
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, list[0].token, "token is null");
+                Log.AddFileMetaLog(LID.FileMetaMemberVariableIsNullTokenNull, list[0].token, "token is null");
                 return false;
             }
 
@@ -187,7 +187,7 @@ namespace SimpleLanguage.Compile
                 {
                     if( type == 2 || type == 3 )
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Log.AddFileMetaLog(LID.FileMetaMemberVariableData, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -201,7 +201,7 @@ namespace SimpleLanguage.Compile
                 {
                     if (type == 1 || type == 3)
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Log.AddFileMetaLog(LID.FileMetaMemberVariableData2, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -215,7 +215,7 @@ namespace SimpleLanguage.Compile
                 {
                     if (type == 1 || type == 2 )
                     {
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                        Log.AddFileMetaLog(LID.FileMetaMemberVariableData3, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                         continue;
                     }
 
@@ -227,7 +227,7 @@ namespace SimpleLanguage.Compile
                 }
                 else
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
+                    Log.AddFileMetaLog(LID.FileMetaMemberVariableData4, "Error Data数据中 []中，不支持该类型的数据" + curNode?.token?.ToLexemeAllString());
                     continue;
                 }
             }
@@ -412,7 +412,7 @@ namespace SimpleLanguage.Compile
                         if (m_PermissionToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 多重定义名称的权限定义!!");
+                            Log.AddFileMetaLog(LID.FileMetaMemberVariableDefine, "Error 多重定义名称的权限定义!!");
                         }
                         m_PermissionToken = token;
                     }
@@ -421,7 +421,7 @@ namespace SimpleLanguage.Compile
                         if (m_StaticToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 多重定义名称的静态定义!!");
+                            Log.AddFileMetaLog(LID.FileMetaMemberVariableDefineStatic, "Error 多重定义名称的静态定义!!");
                         }
                         m_StaticToken = token;
                     }
@@ -430,7 +430,7 @@ namespace SimpleLanguage.Compile
                         if (m_ConstToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 多重定义const定义!!");
+                            Log.AddFileMetaLog(LID.FileMetaMemberVariableConst, "Error 多重定义const定义!!");
                         }
                         m_ConstToken = token;
                     }
@@ -443,14 +443,14 @@ namespace SimpleLanguage.Compile
                         if (m_MutToken != null)
                         {
                             isError = true;
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 多重定义名称的Mut定义!!");
+                            Log.AddFileMetaLog(LID.FileMetaMemberVariableMut, "Error 多重定义名称的Mut定义!!");
                         }
                         m_MutToken = token;
                     }
                     else
                     {
                         //Debug.Assert(false);
-                        Log.AddFileMetaLog(LID.ShowExtendMessage, "Error 解析变量中，不允许的类型存在!!" + token.ToLexemeAllString() );
+                        Log.AddFileMetaLog(LID.FileMetaMemberVariableNotAllowTypeVariable, "Error 解析变量中，不允许的类型存在!!" + token.ToLexemeAllString() );
                     }
                 }
             }
@@ -467,7 +467,7 @@ namespace SimpleLanguage.Compile
             else
             {
                 //Debug.Assert(false);
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "node List count > 2  ");
+                Log.AddFileMetaLog(LID.FileMetaMemberVariableNodeListCount, "node List count > 2  ");
             }
 
             return !isError;

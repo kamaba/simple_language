@@ -5,16 +5,36 @@ RangeTest
     {
         int i = 0;
     }
-    static Fun()
+    static fun()
     {
-        r1 = 1..100;    #快速int range  以后再支持 1..n   n..200的方式    相当于   range( 1, 100, 1 )的调用        
-        r2 = Range<float>( 1.0f, 200.0f, 1.0f );
-        Range<double> r3 = new(3.2d, 54.3d, 0.22d );
-        r4 = Range<short>( 1s, 100s, 2s );
+        r1 = 1..10;    #快速int range  以后再支持 1..n   n..200的方式    相当于   range( 1, 100, 1 )的调用        
+        r2 = Range<float>( 1.0f, 20.0f, 1.0f );
+        Range<double> r3 = new(3.2d, 24.3d, 0.22d );
+        r4 = Range<short>( 1s, 30s, 2s );
 
+
+        global.println("=======R1 0-100 step 1 ================");
         for v in r1
         {
-            CSharp.System.Debug.Write("value=$v ");
+            global.println("value=$v ");
+        }
+        
+        global.println("=======R2 1.0f-200.0f step 1.0f ================");
+        for v in r2
+        {
+            global.println("value=$v ");
+        }
+        
+        global.println("=======R3 3.2 - 54.3 step 0.22 ================");
+        for v in r3
+        {
+            global.println("value=$v ");
+        }
+        
+        global.println("=======R4  1s-100s step 2 ================");
+        for v in r4
+        {
+            global.println("value=$v ");
         }
     }
 }

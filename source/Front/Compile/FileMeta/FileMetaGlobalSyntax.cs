@@ -47,7 +47,7 @@ namespace SimpleLanguage.Compile
         {
             if (m_NodeList.Count < 2)
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, "Error import必须有2个节点!!");
+                Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxImport, "Error import必须有2个节点!!");
                 return false;
             }
             var namespaceNode = m_NodeList[0];
@@ -105,7 +105,7 @@ namespace SimpleLanguage.Compile
 
             if (string.IsNullOrWhiteSpace(m_ImportNamespaceName))
             {
-                Log.AddFileMetaLog(LID.ShowExtendMessage, targetToken, "Error import 字符串中没有命名空间名称");
+                Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxImport2, targetToken, "Error import 字符串中没有命名空间名称");
                 return;
             }
 
@@ -169,7 +169,14 @@ namespace SimpleLanguage.Compile
                 return;
             }
 
-            Log.AddFileMetaLog(LID.ShowExtendMessage, "解析Import语句发生错误，没有找到对应的命名空间路径: " + (m_ImportNamespaceName ?? string.Empty));
+            // import Std; 解析到的是模块根节点（isMetaModule），也注册它
+            if (mb.isMetaModule)
+            {
+                m_FileMeta.AddImportMetaNode(mb);
+                return;
+            }
+
+            Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxImport3, "解析Import语句发生错误，没有找到对应的命名空间路径: " + (m_ImportNamespaceName ?? string.Empty));
         }
 
         private MetaNode ResolveImportMetaNode()
@@ -187,13 +194,14 @@ namespace SimpleLanguage.Compile
                 var module = ModuleManager.instance.GetMetaModuleByName(m_ModuleName);
                 if (module == null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, m_Token, "没有找到 import 模块: " + m_ModuleName);
+                    Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxImport4, m_Token, "没有找到 import 模块: " + m_ModuleName);
                     return null;
                 }
                 mb = module.metaNode;
             }
-            else if (m_NodeList.Count > 1 && m_NodeList[1]?.token?.type != ETokenType.String)
+            else
             {
+                // Check if the first token is a module name (e.g. "import Core")
                 var firstName = m_NamespaceStatement.tokenList[0].lexeme.ToString();
                 var module = ModuleManager.instance.GetMetaModuleByName(firstName);
                 if (module != null)
@@ -205,10 +213,6 @@ namespace SimpleLanguage.Compile
                 {
                     mb = ModuleManager.instance.selfModule.metaNode;
                 }
-            }
-            else
-            {
-                mb = ModuleManager.instance.selfModule.metaNode;
             }
 
             if (mb?.name == "CSharp")
@@ -222,7 +226,7 @@ namespace SimpleLanguage.Compile
                 var findmb = mb.GetChildrenMetaNodeByName(name);
                 if (findmb == null)
                 {
-                    Log.AddFileMetaLog(LID.ShowExtendMessage, m_NamespaceStatement.tokenList[i], $"文件:{m_NamespaceStatement.tokenList[i].path} 没有找到:{mb.allName} 下的:{name}");
+                    Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxNotFound, m_NamespaceStatement.tokenList[i], $"文件:{m_NamespaceStatement.tokenList[i].path} 没有找到:{mb.allName} 下的:{name}");
                     return null;
                 }
                 mb = findmb;
@@ -260,7 +264,7 @@ namespace SimpleLanguage.Compile
                         }
                         else
                         {
-                            Log.AddFileMetaLog(LID.ShowExtendMessage, "解析Import语句发生错误，没有找到对应的命名空间路径: " + allname
+                            Log.AddFileMetaLog(LID.FileMetaGlobalSyntaxImport5, "解析Import语句发生错误，没有找到对应的命名空间路径: " + allname
                                 + "Token: " + m_NamespaceStatement.tokenList[i].sourceBeginLine.ToString());
                             return null;
                         }

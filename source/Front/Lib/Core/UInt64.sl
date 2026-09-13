@@ -9,10 +9,6 @@ public class UInt64 extends Num
     override get int size() { ret 64 }
     override get int byteLength() { ret 8 }
 
-    public static UInt64 parse( string s )
-    {
-        ret SystemConvertUInt64(s)
-    }
     _init_( UInt64 _val )
     {
         this._value = _val
@@ -38,7 +34,7 @@ public class UInt64 extends Num
     {
         ret this
     }
-    public override Int32 compareTo(Num other)
+    public override Int8 compareTo(Num other)
     {
         if (other == null) { ret 1 }
         UInt64 ov = SystemConvertUInt64(other)

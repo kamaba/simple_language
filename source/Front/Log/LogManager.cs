@@ -135,17 +135,18 @@ namespace SimpleLanguage.Logging
                 bool.TryParse(parts[2], out var ac);
                 def.EnableAssert = ac;
                 bool.TryParse(parts[3], out var al);
-                def.BlockOnErrorAssert = al;
+                def.Pass = al;
                 if (!int.TryParse(parts[4], out var pc)) pc = 0;
                 def.ParamCount = pc;
 
                 def.Demo = parts[5];
 
-                def.MessageTemplateArray[0] = parts[6];
-                def.FixedTipArray[0] = parts[7];
-
-                def.MessageTemplateArray[1] = parts[8];
-                def.FixedTipArray[1] = parts[9];
+                // 标头: id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMessage,enFixedTips
+                // index 7 为空列，zhFixedTips 位于 index 8
+                def.MessageTemplateArray[0] = parts[6];                       // zhMessage
+                def.FixedTipArray[0] = parts.Length > 8 ? parts[8] : "";       // zhFixedTips
+                def.MessageTemplateArray[1] = parts.Length > 9 ? parts[9] : ""; // enMessage
+                def.FixedTipArray[1] = parts.Length > 10 ? parts[10] : "";      // enFixedTips
 
 
                 _dict[def.Id] = def;

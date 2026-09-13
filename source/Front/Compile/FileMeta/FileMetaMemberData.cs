@@ -75,12 +75,23 @@ namespace SimpleLanguage.Compile
             {
                 if (frontList.Count > 0)
                 {
-                    int identifierIndex = 0;
-                    if (frontList[0]?.nodeType == ENodeType.Key
-                        && frontList[0].token?.type == ETokenType.Const)
+                    int identifierIndex = frontList.Count-1;
+                    if( frontList.Count > 2 )
                     {
-                        m_ConstToken = frontList[0].token;
-                        identifierIndex = 1;
+                        Log.AddFileMetaLog(LID.NodeNotFoundNameToken, assignNode?.token ?? frontList[0].token, "不对应对于data的设计");
+                    }
+                    else if( frontList.Count == 2 )
+                    {
+                        if (frontList[0]?.nodeType == ENodeType.Key
+                            && frontList[0].token?.type == ETokenType.Const)
+                        {
+                            m_ConstToken = frontList[0].token;
+                            identifierIndex = 1;
+                        }
+                        else
+                        {
+                            Log.AddFileMetaLog(LID.NodeNotFoundNameToken, assignNode?.token ?? frontList[0].token, "不对应对于data的设计 ");
+                        }
                     }
 
                     if (identifierIndex < frontList.Count)

@@ -7,6 +7,7 @@
 //****************************************************************************
 
 using SimpleLanguage.Compile;
+using System.Text;
 
 namespace SimpleLanguage.Compile
 {
@@ -23,6 +24,18 @@ namespace SimpleLanguage.Compile
             token = atToken;
             name = attrName;
             fileMetaParTerm = parTerm;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+
+            sb.Append("@");
+            sb.Append(name);
+            if (fileMetaParTerm != null)
+                    sb.Append(fileMetaParTerm.ToString());
+
+            return sb.ToString();
         }
     }
 }

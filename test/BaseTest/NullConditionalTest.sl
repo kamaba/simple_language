@@ -1,4 +1,3 @@
-import Std;
 
 NCTestClass
 {
@@ -11,7 +10,7 @@ NCTestClass
     
     int GetVal()
     {
-        return this.val
+        ret this.val
     }
 }
 

@@ -1,0 +1,68 @@
+{
+  "project":
+  {
+    "name": "ProjectTest",
+    "desc": "Math test project - tests builtin member functions (_add_/_eq_/_getItem_ etc.) via Math module",
+    "mainVersion": 0,
+    "subVersion": 0,
+    "buildVersion": 1,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "MathTest.sl", "group": "math", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Matrix3x3Test.sl", "group": "math", "tag": "base", "ignore": false, "priority": 1 },
+      { "path": "Matrix4x4Test.sl", "group": "math", "tag": "base", "ignore": false, "priority": 2 },
+      { "path": "FFIMathTest.sl", "group": "math", "tag": "base", "ignore": false, "priority": 3 },
+      { "path": "MatrixBigTest.sl", "group": "math", "tag": "base", "ignore": false, "priority": 4 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std.Console"
+    ],
+    "replace": {
+      "DEBUG": "true"
+    }
+  },
+  "references": [
+    { "path": "../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" },
+    { "path": "../../out/export/Std", "uuid":"456456456456", "name": "Std.module.json" },
+    { "path": "../../out/export/Math", "uuid":"789789789789", "name": "Math.module.json" }
+  ],
+  "struct": [
+  ],
+  "export": {
+    "moduleName": "MathTest",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "versionMain": 0,
+    "versionSub": 0,
+    "versionPatch": 1,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  }
+}

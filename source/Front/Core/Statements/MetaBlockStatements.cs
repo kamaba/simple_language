@@ -103,7 +103,7 @@ namespace SimpleLanguage.Core
 
             if (count > 1)
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error 终结语句 next/break/continue/return 互斥" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.MetaCoreBlockStatementNextBreakContinue, "Error 终结语句 next/break/continue/return 互斥" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
                 m_TerminatorType = ETerminatorType.None;
                 m_TerminatorStatement = null;
                 return;
@@ -112,28 +112,28 @@ namespace SimpleLanguage.Core
             // if exists, must be the last statement
             if (hasBreak && !IsLastStatement<MetaBreakStatements>(out _))
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error break 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.MetaCoreBlockStatementBreak, "Error break 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
                 m_TerminatorType = ETerminatorType.None;
                 m_TerminatorStatement = null;
                 return;
             }
             if (hasContinue && !IsLastStatement<MetaContinueStatements>(out _))
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error continue 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.MetaCoreBlockStatementContinue, "Error continue 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
                 m_TerminatorType = ETerminatorType.None;
                 m_TerminatorStatement = null;
                 return;
             }
             if (hasReturn && !IsLastStatement<MetaReturnStatements>(out _))
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error return 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.MetaCoreBlockStatementReturn, "Error return 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
                 m_TerminatorType = ETerminatorType.None;
                 m_TerminatorStatement = null;
                 return;
             }
             if (hasNext && !IsLastStatement<SimpleLanguage.Core.MetaNextStatements>(out _))
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, "Error next 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.MetaCoreBlockStatementNext, "Error next 必须放到语句块的结尾" + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
                 m_TerminatorType = ETerminatorType.None;
                 m_TerminatorStatement = null;
                 return;
@@ -193,6 +193,19 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
+        /// <summary>当前块是否处于 switch case 体内（沿块链向上查找 case 体块）。</summary>
+        public bool IsInSwitchCaseBody()
+        {
+            if (m_OwnerMetaStatements is MetaSwitchStatements.MetaCaseStatements)
+            {
+                return true;
+            }
+            if (m_OwnerMetaBlockStatements != null)
+            {
+                return m_OwnerMetaBlockStatements.IsInSwitchCaseBody();
+            }
+            return false;
+        }
         public override void SetDeep(int dp)
         {
             m_Deep = dp;
@@ -235,7 +248,7 @@ namespace SimpleLanguage.Core
 
             if (!IsLastStatement<TStatement>(out _))
             {
-                Log.AddMetaCoreLog(LID.ShowExtendMessage, errorMessage + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
+                Log.AddMetaCoreLog(LID.MetaCoreBlockStatementIssue, errorMessage + (errorToken != null ? (" " + errorToken.ToLexemeAllString()) : ""));
                 return false;
             }
             return true;
@@ -327,7 +340,7 @@ namespace SimpleLanguage.Core
             m_MetaVariableDict.Add(name, null);
             return true;
         }
-        public MetaVariable GetMetaVariableByName(string name, bool isFromParent = true )
+        public virtual MetaVariable GetMetaVariableByName(string name, bool isFromParent = true )
         {
             if (m_MetaVariableDict.ContainsKey(name))
                 return m_MetaVariableDict[name];

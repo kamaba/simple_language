@@ -1,0 +1,76 @@
+{
+  "project":
+  {
+    "name": "BenchMark",
+    "desc": "BenchMark project - internal performance test cases (HelloWorld / Fibonacci / Loop / Levenshtein / DataTypes / StringBench)",
+    "mainVersion": 0,
+    "subVersion": 0,
+    "buildVersion": 1,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "HelloWorld.sl", "group": "core", "tag": "bench", "ignore": false, "priority": 0 },
+      { "path": "Fibonacci.sl", "group": "core", "tag": "bench", "ignore": false, "priority": 0 },
+      { "path": "Loop.sl", "group": "core", "tag": "bench", "ignore": false, "priority": 0 },
+      { "path": "Levenshtein.sl", "group": "core", "tag": "bench", "ignore": false, "priority": 0 },
+      { "path": "DataTypes.sl", "group": "core", "tag": "bench", "ignore": false, "priority": 0 },
+      { "path": "StringBench.sl", "group": "core", "tag": "bench", "ignore": false, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "global": {
+    "imports": [
+      "Std"
+    ],
+    "replace": {
+      "DEBUG": "true"
+    }
+  },
+  "data": {
+    "var1": 12,
+    "arrvar1": [1, 2, 3, 4, 5],
+    "vardata2": {
+      "a": 10,
+      "b": 20.1
+    }
+  },
+  "references": [
+    { "path": "../../out/export/Core", "uuid":"123123123213", "name": "Core.module.json" },
+    { "path": "../../out/export/Std", "uuid":"456456456456", "name": "Std.module.json" }
+  ],
+  "struct": [
+  ],
+  "export": {
+    "moduleName": "BenchMark",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "versionMain": 0,
+    "versionSub": 0,
+    "versionPatch": 1,
+    "includeMetadata": true,
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  }
+}

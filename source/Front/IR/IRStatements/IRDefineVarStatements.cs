@@ -1,4 +1,4 @@
-﻿//****************************************************************************
+//****************************************************************************
 //  File:     IRDefineVarStatements.cs
 // ------------------------------------------------
 //  Copyright (c) kamaba233@gmail.com
@@ -28,6 +28,28 @@ namespace SimpleLanguage.IR
             {
                 m_IRExpress = IRExpressManager.CreateExpress(irMethod, ms.expressNode);
                 m_IRStatements.Add(m_IRExpress);
+
+                // If the expression's return type differs from the variable's
+                // declared type (and both are numeric), emit a Convert instruction
+                // before the store.  This handles cases like:
+                //   Byte b8 = someInt32Var;   -> LoadLocal + Convert_I8 + StoreLocal
+                // Const literals are already folded at parse time (see
+                // MetaDefineVarStatements), so this path is mainly for non-const
+                // right-hand expressions.
+                var expType = ms.expressNode.GetReturnMetaType();
+                var varType = ms.defineVarMetaVariable.GetFinalMetaType();
+                if (expType != null && varType != null)
+                {
+                    var expEType = CoreMetaClassManager.GetETypeByMetaClass(expType.metaClass);
+                    var varEType = CoreMetaClassManager.GetETypeByMetaClass(varType.metaClass);
+                    if (expEType != varEType
+                        && NumberManager.IsNumericEType(expEType)
+                        && NumberManager.IsNumericEType(varEType))
+                    {
+                        IRConvert irconv = new IRConvert(irMethod, expEType, varEType);
+                        m_IRStatements.Add(irconv);
+                    }
+                }
             }
             IRStoreVariable irStoreVar = IRStoreVariable.CreateIRStoreVariable(irmt, irmc, irMethod, ms.defineVarMetaVariable);
             //if(m_FileMetaOpAssignSyntax != null )

@@ -53,6 +53,18 @@ namespace SimpleLanguage.IR
             //    AddIRRangeData(irload.IRDataList);
             //}
 
+            var mf = mfc.GetTemplateMemberFunction();
+            string systemName = mf?.name ?? string.Empty;
+            int systemKind = -1;
+            // Unique int id from the declaration (module "systemCalls"): the C VM
+            // registers id -> implementation at load time and dispatches by id.
+            int systemId = 0;
+            SystemMethodCallDeclaration sysDecl = null;
+            if (SystemMethodCallDeclarationRegistry.TryGetDeclaration(systemName, out sysDecl))
+            {
+                systemId = sysDecl.GetIndex();
+            }
+
             paramCount = mfc.metaInputParamList.Count;
             for (int j = 0; j < paramCount; j++)
             {
@@ -60,22 +72,29 @@ namespace SimpleLanguage.IR
                 IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, argNode);
                 AddIRRangeData(irexpress.IRDataList);
                 TryAddDataTypeLiteralFallback(argNode, irexpress);
-            }
 
-            var mf = mfc.GetTemplateMemberFunction();
-            string systemName = mf?.name ?? string.Empty;
-            int systemKind = -1;
-            if (!string.IsNullOrEmpty(systemName)
-                && SystemMethodCallDeclarationRegistry.TryResolveName(systemName, out var sysEnum))
-            {
-                systemKind = (int)sysEnum;
+                // systemCall 实参没有 VM 绑定矫正：C 侧直接按声明的形参类型 pop 栈槽。
+                // 数值类型不匹配时（如 Float16 实参 -> Float32 形参）在调用前插入
+                // IRConvert，保证栈上槽位与声明一致（与赋值路径 IRAssignStatements 同策略）。
+                if (sysDecl != null && j < sysDecl.paramMetaTypeList.Count)
+                {
+                    EType argEType = CoreMetaClassManager.GetETypeByMetaClass(argNode.GetReturnMetaType()?.metaClass);
+                    EType paramEType = CoreMetaClassManager.GetETypeByMetaClass(sysDecl.paramMetaTypeList[j]?.metaClass);
+                    if (argEType != paramEType
+                        && NumberManager.IsNumericEType(argEType)
+                        && NumberManager.IsNumericEType(paramEType))
+                    {
+                        IRConvert irconv = new IRConvert(m_IRMethod, argEType, paramEType);
+                        AddIRRangeData(irconv.IRDataList);
+                    }
+                }
             }
-
             var sysPkg = new SLSystemMethodCallPackage
             {
                 name = systemName,
                 paramCount = paramCount,
                 systemMethodKind = systemKind,
+                id = systemId,
             };
 
             IRData datacall2 = new IRData();
@@ -144,17 +163,18 @@ namespace SimpleLanguage.IR
                     {
                         scmc = mgtc.metaTemplateClass;
                     }
-                    irmc = IRManager.instance.GetIRMetaClassById(scmc.GetHashCode());
+                    irmc = IRManager.instance.GetIRMetaClassById(scmc.classId);
                 }
                 else if(staticMt.metaData != null )
                 {
-                    irmc = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.dataMetaClass.GetHashCode());
+                    irmc = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.dataMetaClass.classId);
                 }
 
                 if (mf is MetaGenTemplateFunction mgtf)
                 {
-                    fname = mgtf.sourceMetaMemberFunction.functionAllName;
-                    owirmc = IRManager.GetIRMetaClassByMetaOwner(mgtf.sourceMetaMemberFunction.ownerMetaBase);
+                    var srcFn = mgtf.sourceMetaMemberFunction ?? mgtf.sourceTemplateFunctionMetaMemberFunction;
+                    fname = (srcFn ?? mgtf).functionAllName;
+                    owirmc = IRManager.GetIRMetaClassByMetaOwner(srcFn?.ownerMetaBase ?? mgtf.ownerMetaBase);
                 }
                 else if (mf is MetaMemberFunction mmf22)
                 {
@@ -175,7 +195,11 @@ namespace SimpleLanguage.IR
                     owirmc = IRManager.GetIRMetaClassByMetaOwner(mf.ownerMetaBase);
                 }
 
-                m_IRRuntimeMethod = m_IRMethod.irManager.GetIRMethod(fname);
+                // 静态成员变量初始化表达式走 CreateExpress(null, ...)（见
+                // IRMetaClass.CreateStaticMetaMetaVariableIRList），此时用全局
+                // IRManager 单例查找目标方法，其余场景用 m_IRMethod.irManager。
+                var irManagerForLookup = m_IRMethod != null ? m_IRMethod.irManager : IRManager.instance;
+                m_IRRuntimeMethod = irManagerForLookup.GetIRMethod(fname);
 
                 var list = staticMt.GetGenTemplateMetaTypeList();
                 for (int i = 0; i < list.Count; i++)
@@ -203,7 +227,8 @@ namespace SimpleLanguage.IR
                 if (mf is MetaGenTemplateFunction mgtf)
                 {
                     //fname = mgtf.sourceMetaMemberFunction.functionAllName;
-                    owirmc = IRManager.GetIRMetaClassByMetaOwner(mgtf.sourceMetaMemberFunction.ownerMetaBase);
+                    var srcFn = mgtf.sourceMetaMemberFunction ?? mgtf.sourceTemplateFunctionMetaMemberFunction;
+                    owirmc = IRManager.GetIRMetaClassByMetaOwner(srcFn?.ownerMetaBase ?? mgtf.ownerMetaBase);
                 }
                 else if (mf is MetaMemberFunction mmf22)
                 {
@@ -234,7 +259,24 @@ namespace SimpleLanguage.IR
             }
             if (m_IRRuntimeMethod == null)
             {
-                Log.AddIRLog(LID.MetaCoreAssertShowMessage, mfc.token, $"ir runtime[{fname}] method not found!!");
+                // 运算符重载方法（_add_/_eq_ 等）不进虚表：IRMetaClass 构建时按方法名分流到
+                // operatorMethodList，GetIRNonStaticMethodIndexByMethod 在非静态方法表中查不到。
+                // 类内显式调用（如 this._eq_(obj1)）在此按 functionAllName 从 IRManager 全局
+                // 方法字典定位目标方法，并降级为静态调用（与 final 方法的调用方式一致）。
+                var irManagerForLookup = m_IRMethod != null ? m_IRMethod.irManager : IRManager.instance;
+                m_IRRuntimeMethod = mf != null ? irManagerForLookup?.GetIRMethod(mf.functionAllName) : null;
+                if (m_IRRuntimeMethod == null && mf != null && IRManager.instance != irManagerForLookup)
+                {
+                    m_IRRuntimeMethod = IRManager.instance.GetIRMethod(mf.functionAllName);
+                }
+                if (m_IRRuntimeMethod != null)
+                {
+                    callType = 0;
+                }
+            }
+            if (m_IRRuntimeMethod == null)
+            {
+                Log.AddIRLog(LID.IRCallNotFoundIrRuntime, mfc.token, $"ir runtime[{fname}] method not found!! func: {mf?.functionAllName ?? "null"}");
                 return;
             }
             irmt = new IRMetaType(irmc, types);
@@ -243,9 +285,57 @@ namespace SimpleLanguage.IR
             {
                 functionMtList.Add(IRMetaType.CreateIRMetaTypeByDefineTemplateMetaTypeList(mfc.metaFunctionInputTemplateList[i], owirmc));
             }
-           var irmethodcall = new IRMethodCall(irmt, functionMtList, m_IRRuntimeMethod, paramCount );
+            bool tryCatch = m_IRMethod != null && m_IRMethod.isInTryCatch;
+            var irmethodcall = new IRMethodCall(irmt, functionMtList, m_IRRuntimeMethod, paramCount, tryCatch);
             if(callType == 0 )
             {
+                // @DllStaticImport 静态绑定 FFI 快速调用：目标函数声明带
+                // DllStaticImport attribute 且本次为静态调用时，发射
+                // CallFFIStatic(118)。payload 为 SLFFIStaticCallPackage（JSON），
+                // cvm assembly build 期解析静态库绑定（lib+symbol+sig ->
+                // FunctionHandle）并把 payload 改写为 4 字节绑定表索引，
+                // 运行期直接整合栈上参数调用 FFI；绑定失败时运行期按
+                // methodId 回退到原 SL 函数体（旧慢链路）。
+                MetaAttribute staticAttr = null;
+                if( mmf != null && mmf.attributeList != null )
+                {
+                    foreach( var attr in mmf.attributeList )
+                    {
+                        if( attr != null && attr.name == "DllStaticImport" )
+                        {
+                            staticAttr = attr;
+                            break;
+                        }
+                    }
+                }
+                if( staticAttr != null )
+                {
+                    var sargs = staticAttr.GetSplitStringArgs();
+                    string staticSig = sargs.Count >= 3 ? sargs[2]
+                        : Core.MetaDefineVarStatements.BuildFFIFunctionSigFromMetaFunction( mmf );
+                    if( sargs.Count >= 2 && !string.IsNullOrEmpty( staticSig ) )
+                    {
+                        var ffipkg = new SLFFIStaticCallPackage
+                        {
+                            lib = sargs[0],
+                            symbol = sargs[1],
+                            sig = staticSig,
+                            methodId = ClassManager.GetMethodId(m_IRRuntimeMethod.id ?? string.Empty),
+                            methodName = m_IRRuntimeMethod.onlyFunctionName ?? string.Empty,
+                            paramCount = paramCount,
+                            tryCatch = tryCatch,
+                        };
+                        IRData datacallffi = new IRData();
+                        datacallffi.opCode = EIROpCode.CallFFIStatic;
+                        datacallffi.SetOpValue(ffipkg);
+                        datacallffi.index = paramCount;
+                        ApplyCallInstructionDebug(datacallffi, mf, mfc);
+                        AddIRData(datacallffi);
+                        return;
+                    }
+                    Log.AddIRLog(LID.IRCallIssue, mfc.token,
+                        $"DllStaticImport: 函数[{mmf.functionAllName}] 需要 (静态库名, 符号名 [, sig]) 实参且 sig 可推导, 回退 CallStatic!!");
+                }
                 IRData datacall = new IRData();
                 datacall.opCode = EIROpCode.CallStatic;
                 datacall.SetOpValue(irmethodcall);
@@ -273,7 +363,7 @@ namespace SimpleLanguage.IR
             }
             else
             {
-                Log.AddIRLog(LID.MetaCoreAssertShowMessage, mfc.token, "aaaa");
+                Log.AddIRLog(LID.IRCallIssue, mfc.token, "aaaa");
             }
         }
         public override string ToIRString()
@@ -313,8 +403,8 @@ namespace SimpleLanguage.IR
                 return;
 
             int ownerHashCode = argNode.ownerMetaBase != null
-                ? argNode.ownerMetaBase.GetHashCode()
-                : targetMetaData.GetHashCode();
+                ? argNode.ownerMetaBase.classId
+                : targetMetaData.classId;
             var ownerIrMetaClass = IRManager.instance.GetIRMetaClassById(ownerHashCode);
             if (ownerIrMetaClass == null)
                 return;

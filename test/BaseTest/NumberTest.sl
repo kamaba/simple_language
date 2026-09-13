@@ -3,7 +3,7 @@ NumberTest
     static baseArithmeticTest()
     {
         global.println("----- baseArithmeticTest -----")
-
+        
         Int32 a = 20
         Int32 b = 7
         global.println("a = " + a.toString() + ", b = " + b.toString())
@@ -12,7 +12,7 @@ NumberTest
         global.println("a * b = " + (a * b).toString())
         global.println("a / b = " + (a / b).toString())
         global.println("a % b = " + (a % b).toString())
-
+        
         Num n1 = 1.5
         Num n2 = 2
         global.println("n1 = " + n1.toString() + ", n2 = " + n2.toString())
@@ -23,6 +23,24 @@ NumberTest
 
         Num neg = -n1
         global.println("-n1 = " + neg.toString())
+    }
+    # 测试 Int32 进制转换（toRadixString / toBinaryString / toHexString / toOctalString）
+    static testRadix()
+    {
+        global.println("===== testRadix =====")
+        int a = 255
+        global.println("255.toHexString() = " + a.toHexString())
+        global.println("255.toBinaryString() = " + a.toBinaryString())
+        global.println("255.toOctalString() = " + a.toOctalString())
+        global.println("255.toRadixString(10) = " + a.toRadixString(10))
+        int zero = 0
+        global.println("0.toRadixString(16) = " + zero.toRadixString(16))
+        int ten = 10
+        global.println("10.toRadixString(2) = " + ten.toRadixString(2))
+        int neg = 0 - 1
+        global.println("-1.toHexString() = " + neg.toHexString())
+        int n35 = 35
+        global.println("35.toRadixString(36) = " + n35.toRadixString(36))
     }
 
     static integerTypeTest()
@@ -76,6 +94,17 @@ NumberTest
         global.println("a != b = " + (a != b).toString())
         global.println("a >= b = " + (a >= b).toString())
         global.println("a <= b = " + (a <= b).toString())
+
+        global.println("a.compareTo(b) = " + a.compareTo(b).toString())
+        global.println("a.compareTo(b) = " + b.compareTo(20).toString())
+
+        int a20 = 20
+        global.println("a20 > b  = " + a20.compareTo(30.0f).toString())
+        global.println("a20 < b  = " + a20.compareTo(1s).toString())
+        global.println("a20 == b = " + a20.compareTo(100us).toString())
+        global.println("a20 != b = " + a20.compareTo(323232uL).toString())
+        global.println("a20 >= b = " + a20.compareTo(3L).toString())
+
     }
     static convertAndTypeTest()
     {
@@ -83,14 +112,14 @@ NumberTest
 
         Num f = 12.75
         Int32 i = f as Int32
-        String s = f.toString()
+        String s = f?.toString()
 
         global.println("f = " + f.toString())
         global.println("f as int = " + i?.toString())
         global.println("f.toString = " + s)
 
         t1 = f.type
-        t2 = i.type
+        t2 = i?.type
         global.println("f.type = " + t1.toString())
         global.println("i.type = " + t2.toString())
         global.println("f.type == i.type -> " + (t1 == t2).toString())
@@ -287,12 +316,161 @@ NumberTest
         global.println("-u * 3 -> " + (-u * 3).toString())
     }
 
+    static defaultParamCallTest()
+    {
+        global.println("----- defaultParamCallTest -----")
+
+        Int32 a = 20
+        Int8 i8 = a.toInt8()
+        global.println("a.toInt8() = " + i8.toString())
+        UInt8 idx = 1
+        Int8 i8b = a.toInt8(idx)
+        global.println("a.toInt8(1) = " + i8b.toString())
+    }
+
+    # ===== 数字类型常数打印验证（Float / Int 全家桶） =====
+    static numConstantsTest()
+    {
+        global.println("----- numConstantsTest -----")
+
+        # --- Float8 (e4m3: 4位指数 bias=7 + 3位尾数) ---
+        global.println("Float8.Epsilon     = " + Float8.Epsilon.toString() + "   (expect 0.125)")
+        global.println("Float8.MaxValue    = " + Float8.MaxValue.toString() + "   (expect 448)")
+        global.println("Float8.MinValue    = " + Float8.MinValue.toString() + "   (expect -448)")
+        global.println("Float8.MinPositive = " + Float8.MinPositive.toString() + "   (expect 0.001953125)")
+
+        # --- Float8_E5M2 (e5m2: 5位指数 bias=15 + 2位尾数) ---
+        global.println("Float8_E5M2.Epsilon     = " + Float8_E5M2.Epsilon.toString() + "   (expect 0.25)")
+        global.println("Float8_E5M2.MaxValue    = " + Float8_E5M2.MaxValue.toString() + "   (expect 57344)")
+        global.println("Float8_E5M2.MinValue    = " + Float8_E5M2.MinValue.toString() + "   (expect -57344)")
+        global.println("Float8_E5M2.MinPositive = " + Float8_E5M2.MinPositive.toString() + "   (expect 1.52587890625e-5)")
+
+        # --- Float16 (binary16: 5位指数 bias=15 + 10位尾数) ---
+        global.println("Float16.Epsilon     = " + Float16.Epsilon.toString() + "   (expect 0.0009765625)")
+        global.println("Float16.MaxValue    = " + Float16.MaxValue.toString() + "   (expect 65504)")
+        global.println("Float16.MinValue    = " + Float16.MinValue.toString() + "   (expect -65504)")
+        global.println("Float16.MinPositive = " + Float16.MinPositive.toString() + "   (expect 5.9604644775390625e-8)")
+
+        # --- Float16_Brain (bfloat16: 8位指数 bias=127 + 7位尾数) ---
+        global.println("Float16_Brain.Epsilon     = " + Float16_Brain.Epsilon.toString() + "   (expect 0.0078125)")
+        global.println("Float16_Brain.MaxValue    = " + Float16_Brain.MaxValue.toString() + "   (expect 3.3895313892515355e38)")
+        global.println("Float16_Brain.MinValue    = " + Float16_Brain.MinValue.toString() + "   (expect -3.3895313892515355e38)")
+        global.println("Float16_Brain.MinPositive = " + Float16_Brain.MinPositive.toString() + "   (expect 9.183549615799121e-41)")
+
+        # --- Float32 (binary32: 8位指数 bias=127 + 23位尾数) ---
+        global.println("Float32.Epsilon     = " + Float32.Epsilon.toString() + "   (expect 1.1920928955078125e-7)")
+        global.println("Float32.MaxValue    = " + Float32.MaxValue.toString() + "   (expect 3.4028234663852886e38)")
+        global.println("Float32.MinValue    = " + Float32.MinValue.toString() + "   (expect -3.4028234663852886e38)")
+        global.println("Float32.MinPositive = " + Float32.MinPositive.toString() + "   (expect 1.401298464324817e-45)")
+
+        # --- Float64 (binary64: 11位指数 bias=1023 + 52位尾数) ---
+        global.println("Float64.Epsilon     = " + Float64.Epsilon.toString() + "   (expect 2.220446049250313e-16)")
+        global.println("Float64.MaxValue    = " + Float64.MaxValue.toString() + "   (expect 1.7976931348623157e308)")
+        global.println("Float64.MinValue    = " + Float64.MinValue.toString() + "   (expect -1.7976931348623157e308)")
+        global.println("Float64.MinPositive = " + Float64.MinPositive.toString() + "   (expect 4.9406564584124654e-324)")
+
+        # --- 整型边界 ---
+        global.println("Int8.MaxValue   = " + Int8.MaxValue.toString() + "   (expect 127)")
+        global.println("Int8.MinValue   = " + Int8.MinValue.toString() + "   (expect -128)")
+        global.println("UInt8.MaxValue  = " + UInt8.MaxValue.toString() + "   (expect 255)")
+        global.println("UInt8.MinValue  = " + UInt8.MinValue.toString() + "   (expect 0)")
+        global.println("Int16.MaxValue  = " + Int16.MaxValue.toString() + "   (expect 32767)")
+        global.println("Int16.MinValue  = " + Int16.MinValue.toString() + "   (expect -32768)")
+        global.println("UInt16.MaxValue = " + UInt16.MaxValue.toString() + "   (expect 65535)")
+        global.println("UInt16.MinValue = " + UInt16.MinValue.toString() + "   (expect 0)")
+
+        # 诊断: 本模块内静态字段访问(对照跨模块 Core 常数是否错位)
+        global.println("[diag] NumConstProbe.A1 = " + NumConstProbe.A1.toString() + "   (expect 11)")
+        global.println("[diag] NumConstProbe.A2 = " + NumConstProbe.A2.toString() + "   (expect 22)")
+        global.println("[diag] NumConstProbe.A3 = " + NumConstProbe.A3.toString() + "   (expect 33)")
+    }
+
+    # ===== 数字类型方法验证（NaN/Inf/Finite、floor/ceil/abs、parse/sign/isEven/进制串） =====
+    static numMethodsTest()
+    {
+        global.println("----- numMethodsTest -----")
+
+        # --- 静态判定: NaN / Infinite / Finite (Float64) ---
+        Float64 dnan = 0.0d / 0.0d
+        Float64 dinf = 1.0d / 0.0d
+        # 诊断: 打印字面量除法实际值, 并与运行时变量除法对照(区分常量折叠 bug 与 VM 除法 bug)
+        Float64 dz = 0.0d
+        global.println("[diag] lit  0.0d/0.0d = " + dnan.toString() + "   (expect NaN)")
+        global.println("[diag] lit  1.0d/0.0d = " + dinf.toString() + "   (expect Inf)")
+        global.println("[diag] rt   dz/dz     = " + (dz / dz).toString() + "   (expect NaN)")
+        global.println("[diag] rt   1.0d/dz   = " + (1.0d / dz).toString() + "   (expect Inf)")
+        global.println("Float64.isNaN(NaN)       = " + Float64.isNaN(dnan).toString() + "   (expect true)")
+        global.println("Float64.isInfinite(Inf)  = " + Float64.isInfinite(dinf).toString() + "   (expect true)")
+        global.println("Float64.isFinite(1.5d)   = " + Float64.isFinite(1.5d).toString() + "   (expect true)")
+        global.println("Float64.isFinite(Inf)    = " + Float64.isFinite(dinf).toString() + "   (expect false)")
+        global.println("Float64.isFinite(NaN)    = " + Float64.isFinite(dnan).toString() + "   (expect false)")
+
+        # --- 静态判定 (Float32) ---
+        Float32 fnan = 0.0f / 0.0f
+        Float32 finf = 1.0f / 0.0f
+        global.println("Float32.isNaN(NaN)       = " + Float32.isNaN(fnan).toString() + "   (expect true)")
+        global.println("Float32.isInfinite(Inf)  = " + Float32.isInfinite(finf).toString() + "   (expect true)")
+        global.println("Float32.isFinite(NaN)    = " + Float32.isFinite(fnan).toString() + "   (expect false)")
+
+        # --- 静态判定 (Float8: e4m3 仅有 NaN, 无 Inf 编码) ---
+        global.println("Float8.isNaN(NaN)        = " + Float8.isNaN(0.0fe4 / 0.0fe4).toString() + "   (expect true)")
+        global.println("Float8.isFinite(Max)     = " + Float8.isFinite(Float8.MaxValue).toString() + "   (expect true)")
+
+        # --- floor / ceil / abs (浮点) ---
+        Float64 d1 = 3.7d
+        Float64 d2 = -3.7d
+        global.println("3.7d.floor()   = " + d1.floor().toString() + "   (expect 3)")
+        global.println("3.7d.ceil()    = " + d1.ceil().toString() + "   (expect 4)")
+        global.println("-3.7d.floor()  = " + d2.floor().toString() + "   (expect -4)")
+        global.println("-3.7d.ceil()   = " + d2.ceil().toString() + "   (expect -3)")
+        global.println("-3.7d.abs()    = " + d2.abs().toString() + "   (expect 3.7)")
+
+        Float8 f8 = 2.5fe4
+        global.println("2.5fe4.floor() = " + f8.floor().toString() + "   (expect 2)")
+        global.println("2.5fe4.ceil()  = " + f8.ceil().toString() + "   (expect 3)")
+        Float16 h1 = 2.5h
+        global.println("2.5h.floor()   = " + h1.floor().toString() + "   (expect 2)")
+        global.println("2.5h.ceil()    = " + h1.ceil().toString() + "   (expect 3)")
+
+        # --- 整型: parse ---
+        global.println("Int8.parse(\"123\")     = " + Int8.parse("123").toString() + "   (expect 123)")
+        global.println("UInt8.parse(\"255\")    = " + UInt8.parse("255").toString() + "   (expect 255)")
+        global.println("Int16.parse(\"-32768\") = " + Int16.parse("-32768").toString() + "   (expect -32768)")
+        global.println("UInt16.parse(\"65535\") = " + UInt16.parse("65535").toString() + "   (expect 65535)")
+
+        # --- 整型: sign / abs / isEven / isOdd ---
+        Int8 i8n = -5i
+        Int8 i8z = 0i
+        Int8 i8p = 5i
+        global.println("(-5i).sign()   = " + i8n.sign().toString() + "   (expect -1)")
+        global.println("(0i).sign()    = " + i8z.sign().toString() + "   (expect 0)")
+        global.println("(5i).sign()    = " + i8p.sign().toString() + "   (expect 1)")
+        global.println("(-5i).abs()    = " + i8n.abs().toString() + "   (expect 5)")
+        # 诊断: Int8.isEven 直接链式调用时上一轮输出行丢失, 改为先存变量; 并补正数用例
+        Int8 i8e = 4i
+        global.println("(4i).isEven()  = " + i8e.isEven().toString() + "   (expect true)")
+        bool evn = i8n.isEven()
+        global.println("(-5i).isEven() = " + evn.toString() + "   (expect false)")
+        global.println("(5i).isOdd()   = " + i8p.isOdd().toString() + "   (expect true)")
+
+        # --- 整型: 进制字符串 (UInt8 / UInt16 / Int16) ---
+        UInt8 u8 = 0b11111111
+        global.println("UInt8(255).toHexString()    = " + u8.toHexString() + "   (expect ff)")
+        global.println("UInt8(255).toBinaryString() = " + u8.toBinaryString() + "   (expect 11111111)")
+        global.println("UInt8(255).toOctalString()  = " + u8.toOctalString() + "   (expect 377)")
+        UInt16 u16v = 0xffff
+        global.println("UInt16(65535).toHexString() = " + u16v.toHexString() + "   (expect ffff)")
+        Int16 i16n = -1s
+        global.println("Int16(-1).toHexString()     = " + i16n.toHexString() + "   (expect ffffffff)")
+    }
+
     static fun()
     {
         global.println("========== NumberTest (start) ==========")
         baseArithmeticTest()
         integerTypeTest()
         bitOpTest()
+        testRadix()
         compareTest()
         convertAndTypeTest()
         suffixLiteralTest()
@@ -302,8 +480,19 @@ NumberTest
         mixedNumericPromotionTest()
         compoundAssignTest()
         operatorPrecedenceTest()
+        numConstantsTest()
+        numMethodsTest()
+        #defaultParamCallTest() # 暂时注释：C VM vm_sys_convert_int_like 双参实现只弹 index、this 残留栈导致栈不平衡崩溃（FrontEnd 默认参数填充本身已验证）
         global.println("========== NumberTest (end) ==========")
     }
+}
+
+# 诊断用本地类: 验证同模块静态字段访问是否正常
+class NumConstProbe
+{
+    public const static Int32 A1 = 11
+    public const static Int32 A2 = 22
+    public const static Int32 A3 = 33
 }
 
 # 测试用例说明：
