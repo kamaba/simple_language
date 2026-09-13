@@ -121,9 +121,22 @@ public class Component extends Object
     }
 
     # 与 Unity 的 TryGetComponent<T>(out T) 对齐：直接返回组件，null 表示未找到
-    public T tryGetComponent<T>()
+    public Result<T> tryGetComponent<T>()
     {
-        ret SystemComponentGetComponent(this, Array<T>(0)) as T
+        var val = SystemComponentGetComponent(this, Array<T>(0));
+        if(     val == null )
+        {
+            result.code = 0;
+            result.message = "Not Found";
+            result.value = null;
+        }
+        else
+        {
+            result.code = 1;
+            result.message = "Found";
+            result.value = val as T;
+        }
+        ret result;
     }
 
     # ── 标签 ───────────────────────────────────────────
@@ -152,7 +165,7 @@ public class Component extends Object
     }
 
     # 子类可 override，以响应 SendMessage / BroadcastMessage / SendMessageUpwards
-    public virtual void onMessage( string methodName )
+    public void onMessage( string methodName )
     {
     }
 
