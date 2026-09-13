@@ -101,9 +101,14 @@ namespace SimpleLanguage.Core
                 m_ValuesMetaVariable.SetIndex(m_MetaMemberVariableDict.Count);
 
                 MetaArrayExpressNode maen = new MetaArrayExpressNode( this, null, mt, m_ValuesMetaVariable );
-                // values 数组只应包含真正的枚举成员（MetaMemberEnum），不包含 mut 字段
-                var enumMembers = m_MetaMemberVariableDict.Values
-                    .Where(v => v.name != "values" && v is MetaMemberEnum)
+                // values 数组只应包含真正的枚举成员（不含 mut 字段与 values 自身）。
+                // 注意：m_MetaMemberVariableDict 里存的是 WrapAsEnumMemberObjectExpress
+                // 包装出的普通 MetaMemberVariable，并非 MetaMemberEnum 实例，
+                // 直接按 "is MetaMemberEnum" 过滤会得到空列表（values 恒为空数组的回归根因）。
+                // 正确来源是 m_MetaMemberEnumDict，mut 成员（isConst == false）排除。
+                var enumMembers = m_MetaMemberEnumDict.Values
+                    .Where(v => v.isConst && v.relationMemberVariable != null)
+                    .Select(v => v.relationMemberVariable)
                     .ToList();
 
                 foreach (var mme in enumMembers)

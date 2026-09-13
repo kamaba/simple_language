@@ -2,6 +2,7 @@
 using SimpleLanguage.Core;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace SimpleLanguage.Export.SLIR.Types
@@ -403,6 +404,66 @@ namespace SimpleLanguage.Export.SLIR.Types
     }
 
     /// <summary>
+    /// module.json 顶层 "platform" 段（PLATFORM_CAPABILITY_DESIGN.md §7.1）：
+    /// v（格式版本，CVM 侧 v!=1 整段忽略不校验）+ targets（元数据）+
+    /// root（条件 AST；null=无运行条件）+ fallbackHint（诊断建议）+
+    /// override（§8.5.2 jsonc 通道：对象成员 true→ENABLE / false→DISABLE /
+    /// 字符串数字→SET，CVM 装载进全局覆盖表，source=JSONC 最低优先级）+
+    /// networkProbe（§6.1 require.network.probe：加载期 L3 在线探测开关，
+    /// 行为指令不进 AST；null=未声明，序列化省略，CVM 缺省关）。
+    /// 未声明平台（jsonc 无 platform 键）时整个字段为 null。
+    /// </summary>
+    public sealed class SLPlatformPackage
+    {
+        public int v { get; set; } = 1;
+        public List<string> targets { get; set; } = new List<string>();
+        public SLPlatformNodePackage? root { get; set; }
+        public string? fallbackHint { get; set; }
+        /// <summary>require.network.probe（§6.1）：true=CVM 装载期显式触发一次
+        /// 外网在线探测；null/未声明 = 默认关（加载期不做网络 IO）。</summary>
+        public bool? networkProbe { get; set; }
+        /// <summary>jsonc platform.override 的原样透传（key 已在编译期归一；
+        /// null=无 override 段，序列化省略）。override 是 C# 保留字，用 @ 转义。</summary>
+        public JsonObject? @override { get; set; }
+        /// <summary>多目标变体（§14）：数组顺序即优先级，CVM 装载期取第一个
+        /// sl_require_check 通过的变体；全不匹配 → 诊断 + 拒绝。
+        /// 空/未声明 = v1 单 require 语义，序列化省略。</summary>
+        public List<SLPlatformVariantPackage>? variants { get; set; }
+    }
+
+    /// <summary>
+    /// 多目标变体单项（§14）：target（目标标签，仅诊断展示）+
+    /// aot（该变体的 AOT 产物文件名；null/空 = 解释器兜底变体）+
+    /// root（变体条件 AST；null = 无条件恒真）。
+    /// 可空字段 null 时序列化省略（WhenWritingNull），与 C 侧缺省语义一致。
+    /// </summary>
+    public sealed class SLPlatformVariantPackage
+    {
+        public string? target { get; set; }
+        public string? aot { get; set; }
+        public SLPlatformNodePackage? root { get; set; }
+    }
+
+    /// <summary>
+    /// 条件 AST 节点（§7.1）。atom 节点：op=="atom" 且 kind/cmp/key/value/set/optional
+    /// 直接打平在本层（与 C 侧 sl_requirement.c parse_atom 的读取方式对称）；
+    /// 组合节点：op=="and"/"or"/"not" 且 children 非空（not 取 children[0]）。
+    /// kind/cmp/op 取值见 Project 的 PlatformReqNames（19/9/4 个小写稳定名）。
+    /// 可空字段 null 时序列化省略（WhenWritingNull），与 C 侧缺省语义一致。
+    /// </summary>
+    public sealed class SLPlatformNodePackage
+    {
+        public string op { get; set; } = string.Empty;
+        public string? kind { get; set; }
+        public string? cmp { get; set; }
+        public string? key { get; set; }
+        public string? value { get; set; }
+        public List<string>? set { get; set; }
+        public bool? optional { get; set; }
+        public List<SLPlatformNodePackage>? children { get; set; }
+    }
+
+    /// <summary>
     /// In-memory / deserialization model. Exported as flat JSON (no moduleList wrapper).
     /// <see cref="moduleList"/> and <see cref="entryModule"/> are JsonIgnored:
     /// they exist only for in-memory backward compat with old-format readers.
@@ -437,6 +498,12 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// 加载 aot.dll 并注册原生方法（stage-4）。null = 无 AOT 导出。
         /// </summary>
         public SLAotPackage? aot { get; set; }
+        /// <summary>平台能力声明（jsonc "platform" 段，条件 AST 形式）。
+        /// null=未声明（CVM 视为无要求恒通过）；v!=1 时 CVM 整段忽略（§7.2）。</summary>
+        public SLPlatformPackage? platform { get; set; }
+        /// <summary>构建模式（jsonc compile.optimize → "debug"/"release"；空=未声明按 debug）。
+        /// 仅入口模块的值被 CVM 用于 Environment.current.build（设计 §12.9）。</summary>
+        public string buildMode { get; set; } = string.Empty;
         /// <summary>
         /// 外部 dll 导入配置（project.jsonc "dllImports" 段的别名/名称/路径）。
         /// 引用方加载本模块时合并进其配置，即可用别名免写长路径。

@@ -81,6 +81,46 @@ namespace SimpleLanguage.Export.MLIR
         }
 
         /// <summary>
+        /// AOT 目标三元组（jsonc export.aot 的 triple/cpu/features，§11.4）。
+        /// 全部字段为空 = llc 宿主默认目标；任一非空即追加对应 llc 参数
+        /// （-mtriple / -mcpu / -mattr，值内不得含空格）。
+        /// </summary>
+        public sealed class AotTarget
+        {
+            /// <summary>llc -mtriple 目标三元组（如 "x86_64-pc-windows-msvc"）。</summary>
+            public string Triple { get; init; } = string.Empty;
+            /// <summary>llc -mcpu 目标 CPU（如 "x86-64-v3"）。</summary>
+            public string Cpu { get; init; } = string.Empty;
+            /// <summary>llc -mattr 特性列表（如 "+avx2,+fma"；-name 为禁用）。</summary>
+            public string Features { get; init; } = string.Empty;
+
+            /// <summary>三个字段是否全空（全空则无需追加 llc 目标参数）。</summary>
+            public bool IsEmpty =>
+                string.IsNullOrWhiteSpace(Triple) &&
+                string.IsNullOrWhiteSpace(Cpu) &&
+                string.IsNullOrWhiteSpace(Features);
+
+            /// <summary>渲染为 llc 目标参数（前导空格分隔；全空返回空串）。</summary>
+            public string ToLlcArgs()
+            {
+                var sb = new StringBuilder();
+                if (!string.IsNullOrWhiteSpace(Triple))
+                {
+                    sb.Append(" -mtriple=").Append(Triple);
+                }
+                if (!string.IsNullOrWhiteSpace(Cpu))
+                {
+                    sb.Append(" -mcpu=").Append(Cpu);
+                }
+                if (!string.IsNullOrWhiteSpace(Features))
+                {
+                    sb.Append(" -mattr=").Append(Features);
+                }
+                return sb.ToString();
+            }
+        }
+
+        /// <summary>
         /// 导出是否保留 AOT 中间产物（aot.mlir / .opt.mlir / .ll / .obj / .exp /
         /// _gpurt.obj）与 module.json 的 "aot.mlir" 溯源字段：Debug 构建保留
         /// （便于事后看 IR 排查）；Release 构建在 aot.dll 构建成功后删除，
@@ -107,13 +147,16 @@ namespace SimpleLanguage.Export.MLIR
         /// <param name="gpu">true when the module contains gpu.module kernels:
         /// use the GPU pass chain, strip llvm.global_dtors, compile
         /// sl_gpu_runtime.c with cl.exe and link with /ENTRY:sl_gpu_entry.</param>
+        /// <param name="target">AOT 目标三元组（§11.4 export.aot.triple/cpu/features）；
+        /// null/全空 = llc 宿主默认目标（不加 -mtriple/-mcpu/-mattr）。</param>
         public static bool TryBuildAotDll(
             string mlirFile,
             string dllPath,
             IReadOnlyList<string> exportSymbols,
             out string error,
             ToolchainPaths? tools = null,
-            bool gpu = false)
+            bool gpu = false,
+            AotTarget? target = null)
         {
             error = "";
             if (string.IsNullOrWhiteSpace(mlirFile)) { error = "mlir path is empty"; return false; }
@@ -136,7 +179,10 @@ namespace SimpleLanguage.Export.MLIR
                 Run(tools.MlirOpt, $"{Quote(mlirFile)} {passes} -o {Quote(optMlir)}", workDir);
                 Run(tools.MlirTranslate, $"{Quote(optMlir)} --mlir-to-llvmir -o {Quote(llvmIr)}", workDir);
                 if (gpu) StripGlobalDtors(llvmIr);
-                Run(tools.Llc, $"{Quote(llvmIr)} -filetype=obj -o {Quote(obj)}", workDir);
+                // §11.4：按 export.aot.triple/cpu/features 追加 llc 目标参数
+                // （-mtriple/-mcpu/-mattr；target 为 null/全空时维持宿主默认）。
+                string targetArgs = (target == null || target.IsEmpty) ? "" : target.ToLlcArgs();
+                Run(tools.Llc, $"{Quote(llvmIr)} -filetype=obj{targetArgs} -o {Quote(obj)}", workDir);
 
                 string? link = ResolveLinkExe(tools);
                 if (link == null)

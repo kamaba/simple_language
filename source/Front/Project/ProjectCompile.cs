@@ -223,6 +223,20 @@ namespace SimpleLanguage.Project
                 ProjectClass.InjectDllImportFunctionMembers();
                 return true;
             });
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "ValidatePlatformConfig", () =>
+            {
+                // §13.8/§13.10：platform.require 值域校验 + 别名归一（InjectProjectData 之后、
+                // ParseStatements 之前）。非法值报 Error 20036 → 计入本阶段 errorCount，
+                // AbortPhase 中止编译（ParseStatements/IR/Export 均跳过，不导出 module.json）。
+                // §8.5.3：platform.override 的 key 校验 + 归一同一步骤（jsonc 通道编译前期校验）。
+                // §11.4（P2.5）：export.aot.features 与 platform.require.cpu 一致性校验
+                // （矛盾 → Error 20037，同样计入 errorCount 中止编译）。
+                int errorBegin = Log.errorCount;
+                ProjectJsoncLoader.ValidatePlatformRequireValues(ProjectManager.config);
+                ProjectJsoncLoader.ValidatePlatformOverrideKeys(ProjectManager.config);
+                ProjectJsoncLoader.ValidateAotTargetConsistency(ProjectManager.config);
+                return Log.errorCount == errorBegin;
+            });
             pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "BuildLocalClass", () =>
             {
                 // Build per-file local{} classes after member express parsed but before statements parsing.

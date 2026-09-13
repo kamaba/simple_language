@@ -34,15 +34,35 @@ internal static class Program
             }
             else if (arg == "NullFast")
             {
-                projectPath = Path.Combine(repoRoot, "test", "NullFastTest", "ProjectTest");
+                projectPath = Path.Combine(repoRoot, "test", "Other", "NullFastTest", "ProjectTest");
             }
             else if (arg == "StaticIf")
             {
-                projectPath = Path.Combine(repoRoot, "test", "StaticIfTest", "ProjectTest");
+                projectPath = Path.Combine(repoRoot, "test", "Other", "StaticIfTest", "ProjectTest");
             }
-            else if (arg == "json")
+            else if (arg == "JsonTest")
             {
-                projectPath = Path.Combine(repoRoot, "test", "JsonTest", "JsonTest");
+                projectPath = Path.Combine(repoRoot, "test", "Other", "JsonTest", "JsonTest");
+            }
+            else if (arg == "PlatformAotNegTest")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "PlatformAotNegTest", "PlatformAotNegTest");
+            }
+            else if (arg == "PlatformNegTest")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "PlatformNegTest", "PlatformNegTest");
+            }
+            else if (arg == "PlatformOverrideNegTest")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "PlatformOverrideNegTest", "PlatformOverrideNegTest");
+            }
+            else if (arg == "PlatformVariantNegTest")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "PlatformVariantNegTest", "PlatformVariantNegTest");
+            }
+            else if (arg == "PlatformVariantTest")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "PlatformVariantTest", "PlatformVariantTest");
             }
         }
         else

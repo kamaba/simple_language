@@ -3,7 +3,7 @@ Project
     _main_()
     {
         SystemPrintln( "Hello World" );
-        nowMs = Environment.nowMillis()
+        nowMs = Environment.sys.nowMillis()
 
         # AOT 测试用例（自 test/AOTTest/ProjectTest.sp 合并）
         r1 = AOTMath.Add( 1, 2 );
@@ -113,23 +113,23 @@ Project
         SystemPrintln( "===== AOT GPU MatMul $gM.toString() x $gN.toString() x $gK.toString() =====" )
 
         # GPU 版两轮（首轮含 CUDA 上下文/PTX JIT 初始化）
-        gT = Environment.nowMillis()
+        gT = Environment.sys.nowMillis()
         AOTGPUTest.GpuMatMul( gA, gB, gCG, gM, gN, gK )
-        gT = Environment.nowMillis() - gT
+        gT = Environment.sys.nowMillis() - gT
         SystemPrintln( "GPU  run1: $gT.toString() ms" )
-        gT = Environment.nowMillis()
+        gT = Environment.sys.nowMillis()
         AOTGPUTest.GpuMatMul( gA, gB, gCG, gM, gN, gK )
-        gT = Environment.nowMillis() - gT
+        gT = Environment.sys.nowMillis() - gT
         SystemPrintln( "GPU  run2: $gT.toString() ms" )
 
         # CPU AOT 版两轮
-        gT = Environment.nowMillis()
+        gT = Environment.sys.nowMillis()
         AOTGPUTest.CpuMatMul( gA, gB, gCC, gM, gN, gK )
-        gT = Environment.nowMillis() - gT
+        gT = Environment.sys.nowMillis() - gT
         SystemPrintln( "CPU  run1: $gT.toString() ms" )
-        gT = Environment.nowMillis()
+        gT = Environment.sys.nowMillis()
         AOTGPUTest.CpuMatMul( gA, gB, gCC, gM, gN, gK )
-        gT = Environment.nowMillis() - gT
+        gT = Environment.sys.nowMillis() - gT
         SystemPrintln( "CPU  run2: $gT.toString() ms" )
 
         # 结果一致性：逐元素差值累加
@@ -162,16 +162,16 @@ Project
         for vi = 0, vi < vM * vK, vi += 1 { vA[vi] = 0.001 * ( vi % 7 ) }
         vi = 0
         for vi = 0, vi < vK * vN, vi += 1 { vB[vi] = 0.001 * ( vi % 5 ) }
-        gT = Environment.nowMillis()
+        gT = Environment.sys.nowMillis()
         AOTGPUTest.VmMatMul( vA, vB, vC, vM, vN, vK )
-        gT = Environment.nowMillis() - gT
+        gT = Environment.sys.nowMillis() - gT
         SystemPrintln( "VM   (128^3): $gT.toString() ms" )
         vv0 = vC[0]
         SystemPrintln( "VM   c[0]=$vv0.toString()" )
         !#
         FFITest.fun();
 
-        nowMs = Environment.nowMillis() - nowMs
+        nowMs = Environment.sys.nowMillis() - nowMs
         SystemPrintln("===== BenchMark _main_ end [$nowMs.toString() ms] =====")
     }
 }

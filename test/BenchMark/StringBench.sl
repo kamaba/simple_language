@@ -7,37 +7,37 @@ StringBench
         Console.println("========== StringBench (start) ==========")
 
         # 1. 字符串拼接
-        nowMs = Environment.nowMillis()
+        nowMs = Environment.sys.nowMillis()
         s = ""
         for i = 0, i < 10000, i++
         {
             s = s + "ab"
         }
-        nowMs = Environment.nowMillis() - nowMs
+        nowMs = Environment.sys.nowMillis() - nowMs
         Console.println("concat 1e4  [$nowMs.toString() ms]")
 
         # 2. 插值构建
-        nowMs = Environment.nowMillis()
+        nowMs = Environment.sys.nowMillis()
         t = ""
         for i = 0, i < 10000, i++
         {
             t = "v=$i s=${(i * 2).toString()}"
         }
-        nowMs = Environment.nowMillis() - nowMs
+        nowMs = Environment.sys.nowMillis() - nowMs
         Console.println("interp 1e4  [$nowMs.toString() ms]")
 
         # 3. format
-        nowMs = Environment.nowMillis()
+        nowMs = Environment.sys.nowMillis()
         u = ""
         for i = 0, i < 10000, i++
         {
             u = "{0}-{1}".format(i, i + 1)
         }
-        nowMs = Environment.nowMillis() - nowMs
+        nowMs = Environment.sys.nowMillis() - nowMs
         Console.println("format 1e4  [$nowMs.toString() ms]")
 
         # 4. 字符串比较
-        nowMs = Environment.nowMillis()
+        nowMs = Environment.sys.nowMillis()
         c = 0
         for i = 0, i < 100000, i++
         {
@@ -46,7 +46,7 @@ StringBench
                 c++
             }
         }
-        nowMs = Environment.nowMillis() - nowMs
+        nowMs = Environment.sys.nowMillis() - nowMs
         Console.println("compare 1e5  count=" + c.toString() + "  [$nowMs.toString() ms]")
 
         # 5. 最终内容校验

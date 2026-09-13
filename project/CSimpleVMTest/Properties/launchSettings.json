@@ -12,7 +12,32 @@
     },
     "JsonTest": {
       "commandName": "Project",
-      "commandLineArgs": "json",
+      "commandLineArgs": "JsonTest",
+      "nativeDebugging": true
+    },
+    "PlatformAotNegTest": {
+      "commandName": "Project",
+      "commandLineArgs": "PlatformAotNegTest",
+      "nativeDebugging": true
+    },
+    "PlatformNegTest": {
+      "commandName": "Project",
+      "commandLineArgs": "PlatformNegTest",
+      "nativeDebugging": true
+    },
+    "PlatformOverrideNegTest": {
+      "commandName": "Project",
+      "commandLineArgs": "PlatformOverrideNegTest",
+      "nativeDebugging": true
+    },
+    "PlatformVariantNegTest": {
+      "commandName": "Project",
+      "commandLineArgs": "PlatformVariantNegTest",
+      "nativeDebugging": true
+    },
+    "PlatformVariantTest": {
+      "commandName": "Project",
+      "commandLineArgs": "PlatformVariantTest",
       "nativeDebugging": true
     }
   }

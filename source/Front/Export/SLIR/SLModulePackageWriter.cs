@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using System.Text.Encodings.Web;
 using SimpleLanguage.Core;
@@ -881,12 +882,143 @@ namespace SimpleLanguage.Export.SLIR
                 }
             }
 
+            // 平台能力声明（jsonc "platform" 段，§7.1）：编译期把 require 编译为
+            // 条件 AST 随 module.json 导出；CVM 加载期用同一 AST 校验运行环境。
+            // 未声明（Declared=false）导出 null=无平台要求。
+            pkg.platform = BuildPlatformPackage(config);
+
+            // 构建模式（§12.9）：compile.optimize → "release"/"debug"。
+            // CVM 取入口模块的值注入 Environment.current.build。
+            pkg.buildMode = config?.Compile?.Optimize == true ? "release" : "debug";
+
             // 合并 AOT manifest（aot.mlir / aot.dll / 方法状态清单）。
             // 数据来自 MLIRExportManager.Run 的最近一次结果（在 ExportLangManager.Export
             // 中先于本方法运行）；VM 从该 "aot" 字段加载 aot.dll（stage-4）。
             pkg.aot = MLIRExportManager.Instance.LastResult?.ToSlAotPackage();
 
             return pkg;
+        }
+
+        /// <summary>
+        /// ProjectConfig.Platform（内存模型）→ module.json 的 "platform" 段（§7.1）。
+        /// 只有 jsonc 显式声明过 platform（Declared）才导出；targets 为元数据、
+        /// root 为 require 的条件 AST（atom 字段打平到节点本层，与 C 侧解析对称）。
+        /// override（§8.5.2 jsonc 通道）：key 已归一，值按 Kind 复原
+        /// （true/false 布尔、数字原文 Parse 回数字、字符串原样）；空列表导出 null。
+        /// </summary>
+        private static SLPlatformPackage? BuildPlatformPackage(ProjectConfig? config)
+        {
+            if (config?.Platform == null || !config.Platform.Declared)
+            {
+                return null;
+            }
+            var platform = new SLPlatformPackage
+            {
+                v = 1,
+                targets = new List<string>(config.Platform.Targets),
+                root = ToPlatformNode(config.Platform.Root),
+                fallbackHint = string.IsNullOrWhiteSpace(config.Platform.FallbackHint) ? null : config.Platform.FallbackHint,
+                // §6.1 require.network.probe：仅 true 导出（null 序列化省略），
+                // CVM 装载期显式触发一次 L3 在线探测（默认关）
+                networkProbe = config.Platform.NetworkProbe ? true : null,
+            };
+            if (config.Platform.Override.Count > 0)
+            {
+                var ov = new JsonObject();
+                foreach (var e in config.Platform.Override)
+                {
+                    switch (e.Kind)
+                    {
+                        case ProjectConfig.PlatformOverrideEntry.ValueKindEnum.True:
+                            ov[e.Key] = true;
+                            break;
+                        case ProjectConfig.PlatformOverrideEntry.ValueKindEnum.False:
+                            ov[e.Key] = false;
+                            break;
+                        case ProjectConfig.PlatformOverrideEntry.ValueKindEnum.Number:
+                            ov[e.Key] = JsonNode.Parse(e.Value);
+                            break;
+                        default:
+                            ov[e.Key] = e.Value;
+                            break;
+                    }
+                }
+                platform.@override = ov;
+            }
+            // 多目标变体（§14）：按 jsonc 数组顺序导出（CVM 取第一个通过者）；
+            // target/aot 空串导出 null（序列化省略，与 C 侧缺省语义一致）
+            if (config.Platform.Variants.Count > 0)
+            {
+                platform.variants = new List<SLPlatformVariantPackage>();
+                foreach (var vi in config.Platform.Variants)
+                {
+                    platform.variants.Add(new SLPlatformVariantPackage
+                    {
+                        target = string.IsNullOrWhiteSpace(vi.Target) ? null : vi.Target,
+                        aot = string.IsNullOrWhiteSpace(vi.Aot) ? null : vi.Aot,
+                        root = ToPlatformNode(vi.Root),
+                    });
+                }
+            }
+            return platform;
+        }
+
+        /// <summary>内存条件树 → wire 节点（atom 打平；组合节点递归 children）。</summary>
+        private static SLPlatformNodePackage? ToPlatformNode(PlatformReqExpr expr)
+        {
+            if (expr == null)
+            {
+                return null;
+            }
+            if (expr.Op == PlatformReqNames.OpAtom)
+            {
+                var a = expr.Atom;
+                if (a == null)
+                {
+                    return null;
+                }
+                var node = new SLPlatformNodePackage
+                {
+                    op = PlatformReqNames.OpAtom,
+                    kind = a.Kind,
+                    cmp = a.Cmp,
+                };
+                if (!string.IsNullOrEmpty(a.Key))
+                {
+                    node.key = a.Key;
+                }
+                if (!string.IsNullOrEmpty(a.Value))
+                {
+                    node.value = a.Value;
+                }
+                if (a.Set != null && a.Set.Count > 0)
+                {
+                    node.set = new List<string>(a.Set);
+                }
+                if (a.Optional)
+                {
+                    node.optional = true;
+                }
+                return node;
+            }
+            var combine = new SLPlatformNodePackage
+            {
+                op = expr.Op,
+                children = new List<SLPlatformNodePackage>(),
+            };
+            foreach (var child in expr.Children)
+            {
+                var node = ToPlatformNode(child);
+                if (node != null)
+                {
+                    combine.children.Add(node);
+                }
+            }
+            if (combine.children.Count == 0)
+            {
+                return null;
+            }
+            return combine;
         }
 
         /// <summary>

@@ -25,13 +25,13 @@ Levenshtein
         dist = Levenshtein.distance(a, b)
        Console.println("levenshtein(a,b) = " + dist.toString())
 
-        nowMs = Environment.nowMillis()
+        nowMs = Environment.sys.nowMillis()
         total = 0L
         for r = 0, r < 5000, r++
         {
             total += Levenshtein.distance(a, b)
         }
-        nowMs = Environment.nowMillis() - nowMs
+        nowMs = Environment.sys.nowMillis() - nowMs
         Console.println("levenshtein x5000 = " + total.toString() + "  [$nowMs.toString() ms]")
         Console.println("========== Levenshtein (end) ==========")
     }

@@ -711,8 +711,6 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Override:
                 case ETokenType.Partial:
                 case ETokenType.Void:
-                case ETokenType.Get:
-                case ETokenType.Set:
                 case ETokenType.Interface:
                 case ETokenType.Abstract:
                 case ETokenType.Extends:
@@ -748,6 +746,8 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Await:    // await 一元前缀（表达式），在 CreateFileMetaExpress 展开
                 case ETokenType.Spawn:    // spawn 一元前缀（表达式），在 CreateFileMetaExpress 展开
                 case ETokenType.Yield:    // yield 语句关键字，在 StructParseToSyntax 展开为 Coroutine.Yield()
+                case ETokenType.Get:      // get/set 是关键字（属性访问器），禁止用作成员名/方法名，
+                case ETokenType.Set:      // 库代码应使用 getValue/setValue 之类命名
                     {
                         AddKeyNode(token);
                     }

@@ -1,0 +1,61 @@
+{
+  "project":
+  {
+    "name": "PlatformAotNegTest",
+    "desc": "Negative case: export.aot.features conflicts with platform.require.cpu -> Error 20037 + compile aborted (J group)",
+    "mainVersion": 0,
+    "subVersion": 0,
+    "buildVersion": 1,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "PlatformAotNegTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "struct": [
+      { "namespace": "PlatformAotNegTest", "children": [] }
+  ],
+  "export": {
+    "moduleName": "PlatformAotNegTest",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "versionMain": 0,
+    "versionSub": 0,
+    "versionPatch": 1,
+    "includeMetadata": true,
+    "aot": {
+      "enabled": true,
+      "features": "+sse42"
+    },
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  },
+  "platform": {
+    "require": {
+      "cpu": { "all": ["avx2"] }
+    }
+  }
+}

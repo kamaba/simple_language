@@ -1,0 +1,61 @@
+{
+  "project":
+  {
+    "name": "PlatformAotPosTest",
+    "desc": "Positive case: export.aot.features matches platform.require.cpu (normalization alias sse4.2 <-> +sse4.2) -> compile OK, llc gets -mattr (S11.4 / S16 J group)",
+    "mainVersion": 0,
+    "subVersion": 0,
+    "buildVersion": 1,
+    "buildSubVersion": 0
+  },
+  "source": {
+    "root": "."
+  },
+  "compile": {
+    "optimize": false,
+    "target": "x64",
+    "debug": true,
+    "isUseForceSemiColonInLineEnd": true,
+    "isForceUseClassKey": false,
+    "isSupportDoublePlus": false,
+    "requireSameNumericTypes": false
+  },
+  "compileFiles": {
+    "files": [
+      { "path": "PlatformAotPosTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+    ]
+  },
+  "compileFilter": {
+    "isAllGroup": true,
+    "isAllTag": true
+  },
+  "struct": [
+  ],
+  "export": {
+    "moduleName": "PlatformAotPosTest",
+    "outputDir": "F:\\project\\lang\\simple_language\\out\\export",
+    "versionMain": 0,
+    "versionSub": 0,
+    "versionPatch": 1,
+    "includeMetadata": true,
+    "aot": {
+      "enabled": true,
+      "buildDll": true,
+      "features": "+sse4.2,+avx2"
+    },
+    "debugText": {
+      "outputDir": "",
+      "code": true,
+      "token": true,
+      "node": true,
+      "file": true,
+      "meta": true,
+      "ir": true
+    }
+  },
+  "platform": {
+    "require": {
+      "cpu": { "all": ["sse4.2"] }
+    }
+  }
+}

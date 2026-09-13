@@ -133,6 +133,12 @@ namespace SimpleLanguage.Logging
         ProjectReferenceModuleReferenceModuleAlias = 20030,
         ProjectReferenceModuleReferenceModuleAlready2 = 20031,
         ProjectReferenceModuleReferenceModuleLoaded2 = 20032,
+        // Platform（平台能力声明，PLATFORM_CAPABILITY_DESIGN.md §11.1）
+        ProjectPlatformTargetInvalid = 20033,
+        ProjectPlatformTargetArchConflict = 20034,
+        ProjectPlatformRequireUnknownField = 20035,
+        ProjectPlatformRequireValueInvalid = 20036,
+        ProjectPlatformAotFeatureConflict = 20037,
         // ---- Process 模块 ----
         // DllImport
         ProcessDllImportDllImportSourceRewriterRewrittenC = 20050,
@@ -966,6 +972,8 @@ namespace SimpleLanguage.Logging
         ExportVmDllBuildProject = 22112,
         ExportVmDllBuildFailed = 22113,
         ExportVmDllBuildSuccess = 22114,
+        // MLIR AOT 目标三元组（P2.5 §11.4：export.aot.triple/cpu/features）
+        ExportMLIRAOTTarget = 22115,
         // ---- StaticIf 模块（static if 编译期条件编译 / global.macro 宏）----
         ProjectMacroManagerIssue = 23000,
         ProjectMacroManagerMacroUndefined = 23001,

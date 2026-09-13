@@ -1,0 +1,354 @@
+[11:38:54] [Info] [Project] [LID=10002] Resolved input path: F:\project\lang\simple_language\out\export\NullFastTest\ProjectTest.module.json
+[11:38:55] [Info] [Project] [LID=10002] Warning: could not load module reference '../../../source/Front/Lib/Core' (resolved: F:\project\lang\simple_language\out\export\NullFastTest/../Std/../../../source/Front/Lib/Core), skipping
+[11:38:55] [Info] [Project] [LID=10002] Runtime load success. root=F:\project\lang\simple_language\out\export\NullFastTest\ProjectTest.module.json packageCount=3
+[11:38:55] [Info] [Project] [LID=10002] SLIR loaded. root=F:\project\lang\simple_language\out\export\NullFastTest\ProjectTest.module.json, format=json, packageCount=3
+[11:38:55] [Info] [Project] [LID=10002] Selected entry method: ProjectTest.Project._main_ instructionCount=3 codeLength=300
+[11:38:55] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemCallExternalFunction id=-171135730
+[11:38:55] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListInit id=2076290368
+[11:38:55] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListGetValueThis id=-189438755
+[11:38:55] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListSetValueThis id=-1777067416
+[11:38:55] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListGetCapacity id=-867337391
+[11:38:55] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListSetCapacity id=-1945706885
+[11:38:55] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListRemoveValueThis id=88900750
+[11:38:55] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListRemoveIndexValueThis id=230419442
+[11:38:55] [Warning] [Process] [LID=10003] system call not registered in cvm. name=SystemListClearValueThis id=212565473
+[11:38:55] [Info] [Runtime] [LID=10002] Runtime assembly ready. classCount=129 methodCount=4071
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Project] begin. code_length=336
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Project] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.UInt8] begin. code_length=30
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.UInt8] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Int8] begin. code_length=42
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Int8] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Int16] begin. code_length=43
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Int16] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.UInt16] begin. code_length=32
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.UInt16] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Int32] begin. code_length=49
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Int32] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.UInt32] begin. code_length=36
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.UInt32] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Int64] begin. code_length=44
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Int64] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.UInt64] begin. code_length=44
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.UInt64] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Float8] begin. code_length=69
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Float8] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Float8_E5M2] begin. code_length=69
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Float8_E5M2] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Float16] begin. code_length=73
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Float16] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Float16_Brain] begin. code_length=73
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Float16_Brain] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Float32] begin. code_length=81
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Float32] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.Float64] begin. code_length=97
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.Float64] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.NativeBridge] begin. code_length=154
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.BridgeKind] begin. code_length=782
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.BridgeKind] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.BridgeKind id=-246628973 ptr=0000023D57A39D30} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.NativeBridge] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.CoroutineStatus] begin. code_length=90
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.CoroutineStatus] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.CoroutineBlockReason] begin. code_length=108
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.CoroutineBlockReason] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.EAttributeHandleType] begin. code_length=584
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.EAttributeHandleType] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.CoreError] begin. code_length=456
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.CoreError] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Core.MathOpError] begin. code_length=916
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Core.MathOpError] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.Project] begin. code_length=438
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Std.___DllImportGlobal___] begin. code_length=496
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Std.FFI.Library] begin. code_length=18
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Std.FFI.Library] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Std.FFI.Library id=-1909515886 ptr=0000023D57A38440} source={name=Std.FFI.Library id=-1909515886 ptr=0000023D57A38440} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Warning] [Runtime] [LID=10003] FFI: failed to load library 'F:\project\lang\simple_language\test\Lib\Std.dll'
+[11:38:55] [Warning] [Runtime] [LID=10003] FFI LoadLibrary: failed to load '../Lib/Std.dll'
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Std.FFI.Library id=-1909515886 ptr=0000023D57A38440} source={name=Std.FFI.Library id=-1909515886 ptr=0000023D57A38440} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Std.___DllImportGlobal___] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Std.___DllImportGlobal___ id=1300945302 ptr=0000023D57A37600} source={name=Std.___DllImportGlobal___ id=1300945302 ptr=0000023D57A37600} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.Project] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.IsolateStatus] begin. code_length=108
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.IsolateStatus] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.IsolateError] begin. code_length=162
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.IsolateError] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.FFI.StaticLibrary] begin. code_length=840
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.List<T>] begin. code_length=62
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.List<T>] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.List<T> id=1380134082 ptr=0000023D5958D270} source={name=Core.List<T> id=1380134082 ptr=0000023D5958D270} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.List<T> id=1380134082 ptr=0000023D5958D270} source={name=Core.List<T> id=1380134082 ptr=0000023D5958D270} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.FFI.StaticLibrary] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.IO.SearchOption] begin. code_length=441
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.IO.SearchOption] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.FileError] begin. code_length=456
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.FileError] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.Http.EMethod] begin. code_length=575
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.Http.EMethod] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.Data.Tree.ETreeEtype] begin. code_length=657
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.Data.Tree.ETreeEtype] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.DB.SQLITE_OPEN] begin. code_length=1171
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.DB.SQLITE_OPEN] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__Std.DB.SqliteErrorCode] begin. code_length=1842
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Member] begin. code_length=195
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Member] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.Error] begin. code_length=28
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.Error] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Object id=1205356647 ptr=0000023D5C117A30} source={name=Core.Error id=1177863350 ptr=0000023D5958CDB0} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Member id=2029953218 ptr=0000023D5958F740} source={name=Core.Member id=2029953218 ptr=0000023D5958F740} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__Std.DB.SqliteErrorCode] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__static_field_init__ProjectTest.Project] begin. code_length=376
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} source={name=Core.Array<T> id=-1552845935 ptr=0000023D5958F870} target_tpl_cnt=1 source_tpl_cnt=1
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__ProjectTest.___DllImportGlobal___] begin. code_length=503
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__Std.FFI.Library] begin. code_length=18
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Std.FFI.Library] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Std.FFI.Library id=-1909515886 ptr=0000023D57A38440} source={name=Std.FFI.Library id=-1909515886 ptr=0000023D57A38440} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Warning] [Runtime] [LID=10003] FFI: failed to load library 'F:\project\lang\simple_language\test\Lib\Std.dll'
+[11:38:55] [Warning] [Runtime] [LID=10003] FFI LoadLibrary: failed to load '../Lib/Std.dll'
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=Std.FFI.Library id=-1909515886 ptr=0000023D57A38440} source={name=Std.FFI.Library id=-1909515886 ptr=0000023D57A38440} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__ProjectTest.___DllImportGlobal___] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=ProjectTest.___DllImportGlobal___ id=649413602 ptr=0000023D57894810} source={name=ProjectTest.___DllImportGlobal___ id=649413602 ptr=0000023D57894810} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__static_field_init__ProjectTest.Project] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [(null)] begin. code_length=300
+[11:38:55] [Info] [Runtime] [LID=10002] ===== Null fast branch test =====
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run [__new_object__ProjectTest.NullFastClass] begin. code_length=180
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[__new_object__ProjectTest.NullFastClass] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=ProjectTest.NullFastClass id=-722489631 ptr=0000023D57895780} source={name=ProjectTest.NullFastClass id=-722489631 ptr=0000023D57895780} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=ProjectTest.NullFastClass id=-722489631 ptr=0000023D57895780} source={name=ProjectTest.NullFastClass id=-722489631 ptr=0000023D57895780} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] obj != null -> true
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] obj == null -> false
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] nullobj == null -> true
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] nullobj != null -> false
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] obj?.val = 42
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] nullobj?.val = 
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] [DEBUG] validate_generic_ref target={name=ProjectTest.NullFastClass id=-722489631 ptr=0000023D57895780} source={name=ProjectTest.NullFastClass id=-722489631 ptr=0000023D57895780} target_tpl_cnt=0 source_tpl_cnt=0
+[11:38:55] [Info] [Runtime] [LID=10002] obj?.GetVal() = 42
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] nullobj?.GetVal() = 
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] s1 ?? default = default
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] s2 ?? default = hello
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] nullobj is null, guard works
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] ===== Null fast branch test end =====
+[11:38:55] [Info] [Runtime] [LID=10002] 
+
+[11:38:55] [Info] [Runtime] [LID=10002] vm_run=[(null)] end. error_code=0
+[11:38:55] [Info] [Runtime] [LID=10002] VM finished successfully.

@@ -42,6 +42,13 @@ namespace SimpleLanguage.Export.MLIR
         /// <summary>jsonc export.aot.buildDll=false 跳过 stage-3 dll 构建（只导出 mlir，默认开启）。</summary>
         public bool BuildDll { get; init; } = true;
 
+        /// <summary>jsonc export.aot.triple：llc -mtriple 目标三元组（空 = llc 宿主默认，§11.4）。</summary>
+        public string Triple { get; init; } = string.Empty;
+        /// <summary>jsonc export.aot.cpu：llc -mcpu 目标 CPU（空 = llc 宿主默认，§11.4）。</summary>
+        public string Cpu { get; init; } = string.Empty;
+        /// <summary>jsonc export.aot.features：llc -mattr 特性列表（空 = llc 宿主默认，§11.4）。</summary>
+        public string Features { get; init; } = string.Empty;
+
         /// <summary>模块级 AOT 产物文件名（aot.mlir）。</summary>
         public string MlirFileName { get; init; } = "aot.mlir";
         /// <summary>模块级 AOT dll 文件名（aot.dll）。</summary>
@@ -57,6 +64,29 @@ namespace SimpleLanguage.Export.MLIR
             {
                 AotEnabled = aot?.Enabled ?? true,
                 BuildDll = aot?.BuildDll ?? true,
+                Triple = aot?.Triple ?? string.Empty,
+                Cpu = aot?.Cpu ?? string.Empty,
+                Features = aot?.Features ?? string.Empty,
+            };
+        }
+
+        /// <summary>
+        /// 解析为 stage-3 工具链目标（§11.4）：三字段全空返回 null（llc 宿主默认，
+        /// 不追加 -mtriple/-mcpu/-mattr）。
+        /// </summary>
+        public MLIRToolchain.AotTarget? ResolveAotTarget()
+        {
+            if (string.IsNullOrWhiteSpace(Triple)
+                && string.IsNullOrWhiteSpace(Cpu)
+                && string.IsNullOrWhiteSpace(Features))
+            {
+                return null;
+            }
+            return new MLIRToolchain.AotTarget
+            {
+                Triple = Triple,
+                Cpu = Cpu,
+                Features = Features,
             };
         }
     }
@@ -126,7 +156,8 @@ namespace SimpleLanguage.Export.MLIR
                 symbols = result.OkSymbols.Concat(new[] { "sl_aot_bridge_init" }).ToArray();
             if (MLIRToolchain.TryBuildAotDll(mlirPath, dllPath ?? "", symbols,
                     out var error, MLIRToolchain.ToolchainPaths.Resolve(),
-                    gpu: result.HasGpuMethods))
+                    gpu: result.HasGpuMethods,
+                    target: config.ResolveAotTarget()))
             {
                 result.DllFileName = Path.GetFileName(dllPath ?? "aot.dll");
             }
@@ -143,7 +174,8 @@ namespace SimpleLanguage.Export.MLIR
             string dllPath, MLIRExportConfig? config = null)
         {
             if (!MLIRToolchain.TryBuildAotDll(mlirPath, dllPath, exportSymbols,
-                    out var error, MLIRToolchain.ToolchainPaths.Resolve()))
+                    out var error, MLIRToolchain.ToolchainPaths.Resolve(),
+                    target: config.ResolveAotTarget()))
             {
                 Log.AddIRLog(LID.ExportMLIRAOTBuildDll2,
                     "AOT: build dll failed, fallback to CVM: " + error);
@@ -223,6 +255,14 @@ namespace SimpleLanguage.Export.MLIR
             // ---- stage 3: lower to aot.dll (fallback to CVM on failure) ---
             if (config.BuildDll)
             {
+                var aotTarget = config.ResolveAotTarget();
+                // §11.4（P2.5）：export.aot.triple/cpu/features 已配置时，
+                // llc 按其追加 -mtriple/-mcpu/-mattr（Info 22115 可溯源实际参数）。
+                if (aotTarget != null)
+                {
+                    Log.AddIRLog(LID.ExportMLIRAOTTarget,
+                        "AOT: llc target options:" + aotTarget.ToLlcArgs());
+                }
                 var dllPath = Path.Combine(outDir, config.DllFileName);
                 // Stage-5 reverse bridge: the module references @sl_aot_bridge_init,
                 // so it must be exported from the dll (only when actually emitted).
@@ -231,7 +271,8 @@ namespace SimpleLanguage.Export.MLIR
                     : (IReadOnlyList<string>)export.OkSymbols;
                 if (MLIRToolchain.TryBuildAotDll(mlirPath, dllPath, exportSymbols,
                         out var dllError, MLIRToolchain.ToolchainPaths.Resolve(),
-                        gpu: export.HasGpuMethods))
+                        gpu: export.HasGpuMethods,
+                        target: aotTarget))
                 {
                     result.DllFileName = config.DllFileName;
                     Log.AddIRLog(LID.ExportMLIRAOTBuildDll3, "AOT: build dll success: " + dllPath);

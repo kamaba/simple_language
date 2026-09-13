@@ -723,11 +723,11 @@ CoroutineTest
         global.println( "========== E: 定时器与 Sleep ==========" )
 
         # E1 并行 Sleep：总耗时 ≈ max，不是 sum
-        Int64 t0 = Environment.nowMillis()
+        Int64 t0 = Environment.sys.nowMillis()
         Task e1a = Coroutine.spawn1( "coroSleepMs", 100 )
         Task e1b = Coroutine.spawn1( "coroSleepMs", 100 )
         Coroutine.waitAll2( e1a, e1b )
-        Int64 dt = Environment.nowMillis() - t0
+        Int64 dt = Environment.sys.nowMillis() - t0
         check( "E1 Sleep 并行总时长≈max", dt >= 100 && dt < 190 )
 
         # E2 Sleep(0) 只让出不阻塞
