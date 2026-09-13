@@ -78,7 +78,10 @@
       { "path": "Text/BaseJson.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "Text/JsonValue.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "Coroutine.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "Container/Channel.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 }
+      { "path": "Container/Channel.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
+      { "path": "IO/ByteBuf.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Text/Lz4.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Text/ProtocalBuffers.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -133,6 +136,7 @@
     { "name": "SystemConvertUInt32",  "returnType": "UInt32", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_convert_int_like" },
     { "name": "SystemConvertInt64",   "returnType": "Int64",  "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_convert_int64" },
     { "name": "SystemConvertUInt64",  "returnType": "UInt64", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_convert_int64" },
+    { "name": "SystemConvertInt64FromUInt64", "returnType": "Int64", "params": ["UInt64"], "isVariadic": false, "cvmFunction": "vm_sys_convert_int64_from_uint64" },
     { "name": "SystemConvertFloat32", "returnType": "Float32","params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_convert_float32" },
     { "name": "SystemConvertFloat64", "returnType": "Float64","params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_convert_float64" },
     { "name": "SystemConvertString",  "returnType": "string", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_convert_string" },
@@ -497,7 +501,102 @@
     { "name": "SystemChannelRecv",            "returnType": "object", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_channel_recv" },
     { "name": "SystemChannelClose",           "returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_channel_close" },
     { "name": "SystemChannelCount",           "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_channel_count" },
-    { "name": "SystemChannelIsClosed",        "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_channel_is_closed" }
+    { "name": "SystemChannelIsClosed",        "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_channel_is_closed" },
+
+    // ---- ByteBuf native calls (IO/ByteBuf.sl): 双索引字节缓冲（STREAM_DESIGN.md §4.1 / §15.2）----
+    // 句柄约定：Int64 id，0 = null；SL 包装层负责用户可见异常，C 层失败只告警并压类型默认值。
+    // 生命周期
+    { "name": "SystemByteBufCreate",          "returnType": "Int64",  "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_create" },
+    { "name": "SystemByteBufDestroy",         "returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_destroy" },
+    { "name": "SystemByteBufFromArray",       "returnType": "Int64",  "params": ["UInt8Array"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_from_array" },
+    { "name": "SystemByteBufWrapArray",       "returnType": "Int64",  "params": ["UInt8Array"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_wrap_array" },
+    { "name": "SystemByteBufFromString",      "returnType": "Int64",  "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_from_string" },
+    { "name": "SystemByteBufFromHex",         "returnType": "Int64",  "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_from_hex" },
+    { "name": "SystemByteBufToArray",         "returnType": "UInt8Array", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_to_array" },
+    // 索引与容量
+    { "name": "SystemByteBufGetReaderIndex",  "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_get_reader_index" },
+    { "name": "SystemByteBufSetReaderIndex",  "returnType": "void",   "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_set_reader_index" },
+    { "name": "SystemByteBufGetWriterIndex",  "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_get_writer_index" },
+    { "name": "SystemByteBufSetWriterIndex",  "returnType": "void",   "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_set_writer_index" },
+    { "name": "SystemByteBufCapacity",        "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_capacity" },
+    { "name": "SystemByteBufMaxCapacity",     "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_max_capacity" },
+    { "name": "SystemByteBufReadableBytes",   "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_readable_bytes" },
+    { "name": "SystemByteBufWritableBytes",   "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_writable_bytes" },
+    { "name": "SystemByteBufEnsureWritable",  "returnType": "void",   "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_ensure_writable" },
+    { "name": "SystemByteBufDiscardReadBytes","returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_discard_read_bytes" },
+    { "name": "SystemByteBufClear",           "returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_clear" },
+    { "name": "SystemByteBufShrink",          "returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_shrink" },
+    // 定宽读（推进 readerIndex；2/4/8 字节带 Be 孪生）
+    { "name": "SystemByteBufReadU8",          "returnType": "UInt8",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_u8" },
+    { "name": "SystemByteBufReadBool",        "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_bool" },
+    { "name": "SystemByteBufReadI16Le",       "returnType": "Int16",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_i16_le" },
+    { "name": "SystemByteBufReadI16Be",       "returnType": "Int16",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_i16_be" },
+    { "name": "SystemByteBufReadU16Le",       "returnType": "UInt16", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_u16_le" },
+    { "name": "SystemByteBufReadU16Be",       "returnType": "UInt16", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_u16_be" },
+    { "name": "SystemByteBufReadI32Le",       "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_i32_le" },
+    { "name": "SystemByteBufReadI32Be",       "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_i32_be" },
+    { "name": "SystemByteBufReadU32Le",       "returnType": "UInt32", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_u32_le" },
+    { "name": "SystemByteBufReadU32Be",       "returnType": "UInt32", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_u32_be" },
+    { "name": "SystemByteBufReadI64Le",       "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_i64_le" },
+    { "name": "SystemByteBufReadI64Be",       "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_i64_be" },
+    { "name": "SystemByteBufReadU64Le",       "returnType": "UInt64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_u64_le" },
+    { "name": "SystemByteBufReadU64Be",       "returnType": "UInt64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_u64_be" },
+    { "name": "SystemByteBufReadF32Le",       "returnType": "Float32","params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_f32_le" },
+    { "name": "SystemByteBufReadF32Be",       "returnType": "Float32","params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_f32_be" },
+    { "name": "SystemByteBufReadF64Le",       "returnType": "Float64","params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_f64_le" },
+    { "name": "SystemByteBufReadF64Be",       "returnType": "Float64","params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_f64_be" },
+    // 定宽写（推进 writerIndex，自动扩容）
+    { "name": "SystemByteBufWriteU8",         "returnType": "void",   "params": ["Int64", "UInt8"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_u8" },
+    { "name": "SystemByteBufWriteBool",       "returnType": "void",   "params": ["Int64", "bool"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_bool" },
+    { "name": "SystemByteBufWriteI16Le",      "returnType": "void",   "params": ["Int64", "Int16"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_i16_le" },
+    { "name": "SystemByteBufWriteI16Be",      "returnType": "void",   "params": ["Int64", "Int16"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_i16_be" },
+    { "name": "SystemByteBufWriteU16Le",      "returnType": "void",   "params": ["Int64", "UInt16"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_u16_le" },
+    { "name": "SystemByteBufWriteU16Be",      "returnType": "void",   "params": ["Int64", "UInt16"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_u16_be" },
+    { "name": "SystemByteBufWriteI32Le",      "returnType": "void",   "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_i32_le" },
+    { "name": "SystemByteBufWriteI32Be",      "returnType": "void",   "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_i32_be" },
+    { "name": "SystemByteBufWriteU32Le",      "returnType": "void",   "params": ["Int64", "UInt32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_u32_le" },
+    { "name": "SystemByteBufWriteU32Be",      "returnType": "void",   "params": ["Int64", "UInt32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_u32_be" },
+    { "name": "SystemByteBufWriteI64Le",      "returnType": "void",   "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_i64_le" },
+    { "name": "SystemByteBufWriteI64Be",      "returnType": "void",   "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_i64_be" },
+    { "name": "SystemByteBufWriteU64Le",      "returnType": "void",   "params": ["Int64", "UInt64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_u64_le" },
+    { "name": "SystemByteBufWriteU64Be",      "returnType": "void",   "params": ["Int64", "UInt64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_u64_be" },
+    { "name": "SystemByteBufWriteF32Le",      "returnType": "void",   "params": ["Int64", "Float32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_f32_le" },
+    { "name": "SystemByteBufWriteF32Be",      "returnType": "void",   "params": ["Int64", "Float32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_f32_be" },
+    { "name": "SystemByteBufWriteF64Le",      "returnType": "void",   "params": ["Int64", "Float64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_f64_le" },
+    { "name": "SystemByteBufWriteF64Be",      "returnType": "void",   "params": ["Int64", "Float64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_f64_be" },
+    // 批量搬运
+    { "name": "SystemByteBufReadBytes",       "returnType": "void",   "params": ["Int64", "Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_bytes" },
+    { "name": "SystemByteBufWriteBytes",      "returnType": "void",   "params": ["Int64", "Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_bytes" },
+    { "name": "SystemByteBufReadByteArray",   "returnType": "UInt8Array", "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_byte_array" },
+    { "name": "SystemByteBufWriteByteArray",  "returnType": "void",   "params": ["Int64", "UInt8Array"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_byte_array" },
+    { "name": "SystemByteBufSkip",            "returnType": "void",   "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_skip" },
+    { "name": "SystemByteBufReadString",      "returnType": "string", "params": ["Int64", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_string" },
+    { "name": "SystemByteBufReadLine",        "returnType": "string", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_read_line" },
+    { "name": "SystemByteBufWriteString",     "returnType": "void",   "params": ["Int64", "string"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_write_string" },
+    // 视图 / 查找 / 比较 / 状态
+    { "name": "SystemByteBufSlice",           "returnType": "Int64",  "params": ["Int64", "Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_slice" },
+    { "name": "SystemByteBufDuplicate",       "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_duplicate" },
+    { "name": "SystemByteBufCopy",            "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_copy" },
+    { "name": "SystemByteBufIndexOfByte",     "returnType": "Int32",  "params": ["Int64", "UInt8"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_index_of_byte" },
+    { "name": "SystemByteBufIndexOf",         "returnType": "Int32",  "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_index_of" },
+    { "name": "SystemByteBufStartsWith",      "returnType": "bool",   "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_starts_with" },
+    { "name": "SystemByteBufEquals",          "returnType": "bool",   "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_equals" },
+    { "name": "SystemByteBufIsReleased",      "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_is_released" },
+    { "name": "SystemByteBufHashCode",        "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_hash_code" },
+    { "name": "SystemByteBufToHex",           "returnType": "string", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_to_hex" },
+    { "name": "SystemByteBufToString",        "returnType": "string", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_bytebuf_to_string" },
+    // ---- Codec native calls (IO/Codec.sl): varint / zigzag 原语（STREAM_DESIGN.md §15.3）----
+    { "name": "SystemVarUintEncode",          "returnType": "Int32",  "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_codec_varuint_encode" },
+    { "name": "SystemVarUintDecode",          "returnType": "UInt64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_codec_varuint_decode" },
+    { "name": "SystemVarIntEncode",           "returnType": "Int32",  "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_codec_varint_encode" },
+    { "name": "SystemVarIntDecode",           "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_codec_varint_decode" },
+    { "name": "SystemZigZagEncode",           "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_codec_zigzag_encode" },
+    { "name": "SystemZigZagDecode",           "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_codec_zigzag_decode" },
+    { "name": "SystemVarUintEncodedSize",     "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_codec_varuint_size" },
+    // ---- LZ4 native calls (Text/Lz4.sl): 块压缩（STREAM_DESIGN.md §15.6）----
+    { "name": "SystemLz4CompressBound",       "returnType": "Int32",  "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_lz4_compress_bound" },
+    { "name": "SystemLz4Compress",            "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_lz4_compress" },
+    { "name": "SystemLz4Decompress",          "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_lz4_decompress" }
   ],
   "struct": [
       { "namespace": "Core", "children": 
@@ -549,7 +648,8 @@
         { "class": "CoroutineStatus" },
         { "class": "CoroutineBlockReason" },
         { "class": "Channel" },
-        { "class": "Channel<T>" }
+        { "class": "Channel<T>" },
+        { "class": "ByteBuf" }
       ] },
       // ---- Environment namespace tree (P1.7, PLATFORM_CAPABILITY §13.2) ----
       { "namespace": "Environment", "children":

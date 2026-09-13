@@ -56,6 +56,8 @@ Project
         PlatformLibTest.fun()
         PlatformSixTest.fun()
         PlatformSevenTest.fun()
+        ByteBufTest.fun()
+        ProtocalBuffersTest.fun()
         #!
         GuidTest.fun()
         RandomTest.fun()        

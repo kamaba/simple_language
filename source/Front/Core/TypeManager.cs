@@ -1859,8 +1859,9 @@ namespace SimpleLanguage.Core
                 {
                     if (argMt.IsArray())
                         return TypeManager.CompareMetaType(declaredMt, argMt);
-                    else
-                        return false;
+                    if (argMt.isNull)
+                        return true;
+                    return false;
                 }
                 var declaredMC = declaredMt.GetTemplateMetaClass();
                 var retMC = argMt.metaClass;
