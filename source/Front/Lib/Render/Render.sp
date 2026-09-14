@@ -1,0 +1,12 @@
+Project
+{
+    _main_()
+    {
+    }
+    CompileBefore()
+    {
+    }
+    CompileAfter()
+    {
+    }
+}

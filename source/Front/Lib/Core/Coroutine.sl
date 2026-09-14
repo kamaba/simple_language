@@ -66,6 +66,7 @@ public class Task extends Object
     !#
     public object awaitHandle()
     {
+        SystemPrintln("awaithandle");
         ret SystemCoroutineAwait( this._handle )
     }
 

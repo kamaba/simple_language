@@ -72,6 +72,8 @@
       { "path": "Container/HashSet.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "Container/Stack.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "Container/Tuple.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
+      { "path": "Container/StringBuilder.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
+      { "path": "Container/StringBuffer.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "DataStruct/Table.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "DataStruct/Tree.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "DataStruct/BaseCsv.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
@@ -650,6 +652,8 @@
         { "class": "Channel" },
         { "class": "Channel<T>" },
         { "class": "ByteBuf" },
+        { "class": "StringBuilder" },
+        { "class": "StringBuffer" },
         // ---- Stream P1 公开类型目录（STREAM_DESIGN.md §17；供 references 源码模式加载，私有 _ 类不登记）----
         { "class": "ByteStream" },
         { "class": "MemoryStream" },

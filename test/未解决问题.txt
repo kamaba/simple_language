@@ -1,3 +1,5 @@
+vm_sys_coroutine_aggregate_impl 这个函数，改成只技N个的处理办法，同在 只支持三个Coroutine的处理，现在要扩展成N个
+
 
 然后就是对 at sign label 的机制的判断  @gpu.amd 会在跑的平台， 在FrontEnd层要建一套 注册机制，在有这个标记的时候，会把当前使用的平台或者是机制信息，注册到刚才搭建的那个里边， 建一套，检查机制，只有遇到这个标记的才会跑，否则提示报错，不让代码跑起来，类推，如果我设计 的 带渲染的，但现在是在一套linux 不带图型的机器上，也跑不起来，只能通过运行屏蔽模块来限制这部分代码的运行，当然，也就不检查这部分的内容了。
 
@@ -30,7 +32,7 @@ ffmpeg的dll 引入
 编码相关的
 压缩类  lz4  zlip glip
 再增加一些ErrorShow, stream, netStream,
- buffer, builder, await, async,  
+ buffer, builder 
 Tree这个结构，也可以在Json里边使用， 所以要有兼容性，当然里边可以创建各种不同的树结构用来选择。
 
 把静态绑定dll 参数尽量扩展下， 如果定义的export c的函数 是 比如char/char*/short/ushort/ptr* 等数型，都没有处理需要扩展，但貌似匹配机制你先看下还有没有更合理的机制 感觉现在要写的匹配太多了

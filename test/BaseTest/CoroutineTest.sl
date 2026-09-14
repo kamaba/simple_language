@@ -548,6 +548,7 @@ CoroutineTest
 
         # A1 基本 spawn + await 取回返回值
         Task h1 = spawn add2Fn( 3, 4 )
+        global.println( "A1 spawn+await 启动" )
         int r1 = Coroutine.awaitHandle( h1 ) as int
         check( "A1 spawn+await 返回值", r1 == 7 )
 
@@ -556,11 +557,12 @@ CoroutineTest
         spawn setFlagFn()
         for Int32 i = 0, i < 1000, i = i + 1
         {
+            SystemPrintln( "A2 fire-and-forget" + i.toString() )
             if CoroutineTest.g_done
             {
                 break
             }
-            Coroutine.sleep( 1 )
+            Coroutine.sleep( 1000 )
         }
         check( "A2 不 await 也执行完", CoroutineTest.g_done )
 
