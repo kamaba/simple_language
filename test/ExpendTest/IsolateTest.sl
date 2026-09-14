@@ -26,7 +26,8 @@ import Core;
 #    isolate 注册表/端口队列由单把递归锁保护，执行（解释器/GC）不持锁。
 #    T 组专测该线程模型（真并行加速、无让出点推进、线程级阻塞隔离、
 #    并发消息风暴、跨线程 kill 等），多数用例在旧 M:1 下 FAIL（回归哨兵）。
-#  - 被 Coroutine.spawn 按名调用的方法用 iso/coro 前缀保证全工程唯一。
+#  - 被 spawn 包装闭包转发的目标方法保留 iso/coro 前缀（可读性约定；
+#    原按名 spawn 时代要求全工程唯一，现为普通静态调用无此约束）。
 # ============================================================
 
 enum IsoTestError extends Error
@@ -67,7 +68,7 @@ IsolateTest
         }
     }
 
-    # ---- worker / 协程辅助（按名 spawn 要求全工程唯一）----
+    # ---- worker / 协程辅助（spawn 改函数值形式，iso/coro 前缀保留为可读性约定）----
 
     # E 组 trampoline：闭包体内直接 throw 不可靠，经静态 throws 方法中转
     static isoThrowErr() throws
@@ -75,10 +76,20 @@ IsolateTest
         throw IsoTestError.BoomError
     }
 
-    # H1：worker 内按名 spawn 的目标方法
+    # H1：worker 内 spawn 的目标方法
     static Int32 isoH1Add2( Int32 a, Int32 b )
     {
         ret a + b
+    }
+
+    # H1：包装闭包工厂（闭包体内不能嵌套定义 function，经工厂取函数值）
+    static Func<int,int,int> isoH1Add2Fn()
+    {
+        Func<int,int,int> fn = function( Int32 a, Int32 b )
+        {
+            ret isoH1Add2( a, b )
+        }
+        ret fn
     }
 
     # H2：延迟发送协程
@@ -517,11 +528,13 @@ IsolateTest
     {
         Console.println( "---------- H. 协程互操作 ----------" )
 
-        # H1 worker 内起协程：按名 spawn ×2 + waitAll2 + await 求和
+        # H1 worker 内起协程：经工厂方法取包装闭包（闭包体内不能嵌套定义
+        # function）+ spawn 函数值 ×2 + waitAll2 + await 求和
         function fnH1 = function()
         {
-            Task t1 = Coroutine.spawn2( "isoH1Add2", 1, 1 )
-            Task t2 = Coroutine.spawn2( "isoH1Add2", 4, 2 )
+            Func<int,int,int> add2 = IsolateTest.isoH1Add2Fn()
+            Task t1 = spawn add2( 1, 1 )
+            Task t2 = spawn add2( 4, 2 )
             Coroutine.waitAll2( t1, t2 )
             Int32 v1 = Coroutine.awaitHandle( t1 ) as int
             Int32 v2 = Coroutine.awaitHandle( t2 ) as int
@@ -530,11 +543,19 @@ IsolateTest
         Int32 h1 = Isolate.run0( fnH1 ) as int
         isoCheck( "H1 worker内协程并发求和=8", h1 == 8 )
 
-        # H2 主协程阻塞期间协程间端口通信不受影响
+        # H2 主协程阻塞期间协程间端口通信不受影响（包装闭包函数值形式）
         g_h2Flag = false
         ReceivePort rpH2 = ReceivePort()
-        Task tSend = Coroutine.spawn1( "coroH2Send", rpH2.sendPort )
-        Task tRecv = Coroutine.spawn1( "coroH2Recv", rpH2 )
+        function h2SendFn = function( object arg )
+        {
+            coroH2Send( arg )
+        }
+        function h2RecvFn = function( object arg )
+        {
+            coroH2Recv( arg )
+        }
+        Task tSend = spawn h2SendFn( rpH2.sendPort )
+        Task tRecv = spawn h2RecvFn( rpH2 )
         Coroutine.waitAll2( tSend, tRecv )
         isoCheck( "H2 协程间端口通信", g_h2Flag )
 

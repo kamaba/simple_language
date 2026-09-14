@@ -357,11 +357,17 @@ StreamTest
     {
         global.println( "========== E: 拉取模式 ==========" )
 
+        # 本组包装闭包（函数值形式，见 CoroutineTest 约定）
+        function e1PullFn = function( StreamController<Int32> c )
+        {
+            coroStreamE1Pull( c )
+        }
+
         # E1 拉取协程挂起：spawn 后通道无数据 → 挂起；add 后恢复；close 后结束
         StreamTest.g_count = 0
         StreamTest.g_sum = 0
         StreamController<Int32> ctrl = StreamController<Int32>()
-        Task pull = Coroutine.spawn1( "coroStreamE1Pull", ctrl )
+        Task pull = spawn e1PullFn( ctrl )
         Coroutine.sleep( 30 )
         bool suspendedOk = ( StreamTest.g_count == 0 && pull.isDead == false )
         ctrl.add( 1 )
@@ -395,10 +401,20 @@ StreamTest
     {
         global.println( "========== F: 背压 ==========" )
 
+        # 本组包装闭包（函数值形式，见 CoroutineTest 约定）
+        function f1ProduceFn = function( StreamController<Int32> c )
+        {
+            coroStreamF1Produce( c )
+        }
+        function f2BurstFn = function( StreamController<Int32> c )
+        {
+            coroStreamF2Burst( c )
+        }
+
         # F1 容量 1：第一个 add 后第二个挂起（生产协程活着但不再推进）
         StreamTest.g_f1sent = 0
         StreamController<Int32> ctrl = StreamController<Int32>( 1 )
-        Task p = Coroutine.spawn1( "coroStreamF1Produce", ctrl )
+        Task p = spawn f1ProduceFn( ctrl )
         Coroutine.sleep( 30 )
         bool blockedOk = ( StreamTest.g_f1sent == 1 && p.isDead == false )
         # 消费驱动生产：iterator 拉取（触发 listen + 分发协程 recv）
@@ -418,7 +434,7 @@ StreamTest
         # F2 默认无上限：连发 3 个不挂起（无消费者时也全部入队）
         StreamTest.g_f2sent = 0
         StreamController<Int32> ctrl2 = StreamController<Int32>()
-        Task p2 = Coroutine.spawn1( "coroStreamF2Burst", ctrl2 )
+        Task p2 = spawn f2BurstFn( ctrl2 )
         Coroutine.sleep( 30 )
         bool burstOk = ( StreamTest.g_f2sent == 3 )
         # 清理：消费全量

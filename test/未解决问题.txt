@@ -1,8 +1,4 @@
 
-提供一个Stream的abstract类，用来存放缓存数据，未来ProtoBuf,序列化，可能都要用这个到类，尤其是一些内置的 system_method_call 一定要提供成共用的，在未来写的时候，大家能共用。
-增加protobuf,字节码序例化相互转化过程，  stream 相关的类
-
-
 然后就是对 at sign label 的机制的判断  @gpu.amd 会在跑的平台， 在FrontEnd层要建一套 注册机制，在有这个标记的时候，会把当前使用的平台或者是机制信息，注册到刚才搭建的那个里边， 建一套，检查机制，只有遇到这个标记的才会跑，否则提示报错，不让代码跑起来，类推，如果我设计 的 带渲染的，但现在是在一套linux 不带图型的机器上，也跑不起来，只能通过运行屏蔽模块来限制这部分代码的运行，当然，也就不检查这部分的内容了。
 
 
@@ -11,12 +7,11 @@
 
 改二进制的大工程
 
-spawn1 使用 string 调用的，方法，暂使用变成私有的，可能后期会移除，因为这种使用 在编译器里不好定义，还有就是 不是很直观，要使用 函数(参数1,参数2,.... ) 这样的方式调用 
+[已完成 2026-09-14] spawn1 使用 string 调用的，方法，暂使用变成私有的，可能后期会移除，因为这种使用 在编译器里不好定义，还有就是 不是很直观，要使用 函数(参数1,参数2,.... ) 这样的方式调用
+（落地：Coroutine.sl 的 spawn0..3 / spawnByName / spawnInstance0..3 共 9 个按名方法已改 private；CoroutineTest.sl 78 处、StreamTest.sl 3 处、IsolateTest.sl 4 处调用点全部改写为包装闭包 + spawn 关键字函数值形式；coroutine.md、isolate.md 文档已同步）
 
 
 sl_str_copy  win_str_copy 这个定义方法，你查找下base/下边是不是已经有这个方法定义实现，如果有你从这里边取，如果没有，你把这个相关的方式放到chars.h .c 的里边
-
-增加libuv的库，放到third_party里边，然后Stream相关的看看是否有可整合的空间，文档说明下
 
 你需要把所有的关键字整理出来，然后放到 写代码的规则里边，还包括语法糖 在Core下边的，因为我在Core下边的是可以直接使用的，包括命名空间。
 
@@ -25,7 +20,7 @@ F:\project\lang\simple_language\source\Front\Lib\Core\IO\Stream.sl 230行的toLi
 
 优化协程，要尽量的使用function(a,b) 这种形式 因为这种形式，可以直接传methodId,
 协程创建的参数，允许大于3个  参数要变成灵活的，而不是写死的  vm_sys_coroutine_spawn_impl 里边的，要根据参数长度，创建大上，而不是写死
-创建协程的时候，stack_data stack_kind 都是一份独立的，是否会占用内存太多，有没有好的优化办法
+
 
 Coroutine 需要支持  Coroutine.spawn( fun( a , b ) ) 的形式 也就是 函数的执行体形式的传入 其实就是 Coroutine.spawn( func, param1, param2, ... ) 的变化形式
 
@@ -34,7 +29,7 @@ Coroutine 需要支持  Coroutine.spawn( fun( a , b ) ) 的形式 也就是 函�
 ffmpeg的dll 引入
 找一个轻量级的 webview一类的，做成 dll
 
-增加Std.Cmd执行的功能，你比较下各家是怎么写的
+增加Std.Process执行的功能，你比较下各家是怎么写的
 
 
 7. 指针的增加与处理. 

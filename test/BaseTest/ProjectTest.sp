@@ -51,6 +51,8 @@ Project
         MVTest1.fun()
         MVTest2.fun()    
         !#
+        CoroutineTest.fun();
+        #!
         EnvironmentTest.fun()
         PlatformOverrideTest.fun()
         PlatformLibTest.fun()
@@ -60,6 +62,7 @@ Project
         ProtocalBuffersTest.fun()
         StreamTest.fun()
         CodecFrameTest.fun()
+        !#
         #!
         GuidTest.fun()
         RandomTest.fun()        
@@ -88,7 +91,6 @@ Project
         TreeTest.fun()
         LowercaseContainerTest.fun()
         SwitchTest.fun()
-        CoroutineTest.fun()
         InputArgsTest.fun();        
         HashSetTest.fun()
         !#

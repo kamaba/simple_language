@@ -85,7 +85,7 @@ import CSharp.System;
 
 Worker
 {
-    # 被 spawn 的方法：必须是静态方法，且名字全工程唯一
+    # 被 spawn 转发的目标：普通静态方法即可（函数值形式下无命名约束）
     static int coroAdd2( int a, int b )
     {
         ret a + b
@@ -93,8 +93,15 @@ Worker
 
     static fun()
     {
-        # 1) 创建并启动
-        Task h = Coroutine.spawn2( "coroAdd2", 3, 4 )
+        # 0) 包装闭包（函数值形式）：裸静态方法名不能直接作函数值，
+        #    需经闭包转发（见 §5.1）
+        function add2Fn = function( int a, int b )
+        {
+            ret coroAdd2( a, b )
+        }
+
+        # 1) 创建并启动（spawn 关键字 + 函数值调用）
+        Task h = spawn add2Fn( 3, 4 )
 
         # 2) 等待并取回返回值（await 关键字）
         int r = await h as int          # 7
@@ -182,12 +189,18 @@ yield_stmt := 'yield' ';'
 `spawn` 后必须跟**调用表达式**或**函数字面量**：
 
 ```sl
-Task h1 = spawn coroAdd2( 1, 2 )                 # 具名静态方法
-Task h2 = spawn adder( 1, 2 )                    # function 变量
-Task h3 = spawn function() { ... }               # 匿名闭包
-Task h4 = spawn c1.coroInstAdd2( 3, 4 )          # 实例方法
-Task h5 = spawn this.coroInstAdd2( 1, 2 )        # 实例方法内 this 链
-Task h6 = spawn mk()                             # 无参
+Task h1 = spawn adder( 1, 2 )                    # function 变量
+Task h2 = spawn function() { ... }               # 匿名闭包（无参）
+Task h3 = spawn c1.coroInstAdd2( 3, 4 )          # 实例方法
+Task h4 = spawn this.coroInstAdd2( 1, 2 )        # 实例方法内 this 链
+Task h5 = spawn mk()                             # 无参函数变量
+```
+
+⚠️ `spawn` 后**不能直接跟裸静态方法名**——值位置的裸名会按方法调用解析而非函数值，须先经包装闭包转发（见 §5.1）：
+
+```sl
+function add2Fn = function( int a, int b ) { ret coroAdd2( a, b ) }
+Task h = spawn add2Fn( 1, 2 )
 ```
 
 ⚠️ **`spawn x + 1` 这类任意表达式非法。**
@@ -224,28 +237,33 @@ Error yield 不支持带表达式参数, 等待条件请使用 Coroutine.waitUnt
 
 ## 5. 生成协程（spawn 全家族）
 
-### 5.1 具名静态方法
+### 5.1 按名 spawn（已转私有）
 
-按**简单名 + 参数个数**在整个汇编内全局解析（C 侧 `vm_find_method_entry_by_name`），**不区分类名**。
+按**方法名字符串**解析目标（C 侧 `vm_find_method_entry_by_name`，简单名 + 参数个数全局匹配，**不区分类名**）。
 
 | 方法 | 说明 |
 |---|---|
-| `spawn0( string methodName )` | 无参 |
-| `spawn1( string methodName, object arg0 )` | 1 参 |
-| `spawn2( string methodName, object arg0, object arg1 )` | 2 参 |
-| `spawn3( string methodName, object arg0, object arg1, object arg2 )` | 3 参 |
-| `spawnByName( string methodName, params Array<object> objs )` | 数组形参通用形式 |
+| `spawn0( string methodName )` | 无参（**private**） |
+| `spawn1( string methodName, object arg0 )` | 1 参（**private**） |
+| `spawn2( string methodName, object arg0, object arg1 )` | 2 参（**private**） |
+| `spawn3( string methodName, object arg0, object arg1, object arg2 )` | 3 参（**private**） |
+| `spawnByName( string methodName, params Array<object> objs )` | 数组形参通用形式（**private**） |
+
+⚠️ 这组按字符串方法名调用的 API **已全部转为 `private`（可能在未来移除）**：按名形式在编译器里不好定义、调用也不直观。用户代码请改用 §5.2 的**包装闭包（函数值形式）**：
 
 ```sl
 static int coroAdd2( int a, int b ) { ret a + b }
 static int coroSum3( int a, int b, int c ) { ret a + b + c }
 
-Task h1 = Coroutine.spawn2( "coroAdd2", 3, 4 )        # 7
-Task h2 = Coroutine.spawn3( "coroSum3", 1, 2, 3 )     # 6
-Task h3 = Coroutine.spawn0( "coroSetFlag" )           # void 协程
+# 包装闭包：显式类型参数，转发到目标静态方法
+function add2Fn = function( int a, int b ) { ret coroAdd2( a, b ) }
+function sum3Fn = function( int a, int b, int c ) { ret coroSum3( a, b, c ) }
+
+Task h1 = spawn add2Fn( 3, 4 )                     # 7
+Task h2 = spawn sum3Fn( 1, 2, 3 )                  # 6
 ```
 
-⚠️ **被 spawn 的方法名必须全工程唯一**。测试工程把几十个 `.sl` 编译在一起，同名同参数个数的方法会相互冲突——`CoroutineTest.sl` 因此统一用 `coro` / `coroKw` 前缀命名。
+> 历史说明：按名时代要求被 spawn 的方法名**全工程唯一**（同名同参数个数的方法全局冲突），`CoroutineTest.sl` 因此统一用 `coro` / `coroKw` 前缀命名；改为函数值形式后，前缀仅为可读性约定，普通静态方法即可，无命名约束。
 
 ### 5.2 闭包 / 函数变量
 
@@ -291,16 +309,16 @@ Func<void>          fv0    # () -> void
 Function            loose  # 宽松类型，返回 object
 ```
 
-### 5.3 实例方法
+### 5.3 实例方法（`spawn` 关键字实例链的内部依赖）
 
 | 方法 | 说明 |
 |---|---|
-| `spawnInstance0( object receiver, string methodName )` | 无参 |
-| `spawnInstance1( object receiver, string methodName, object arg0 )` | 1 参 |
-| `spawnInstance2( object receiver, string methodName, object arg0, object arg1 )` | 2 参 |
-| `spawnInstance3( object receiver, string methodName, object arg0, object arg1, object arg2 )` | 3 参 |
+| `spawnInstance0( object receiver, string methodName )` | 无参（**private**） |
+| `spawnInstance1( object receiver, string methodName, object arg0 )` | 1 参（**private**） |
+| `spawnInstance2( object receiver, string methodName, object arg0, object arg1 )` | 2 参（**private**） |
+| `spawnInstance3( object receiver, string methodName, object arg0, object arg1, object arg2 )` | 3 参（**private**） |
 
-`receiver` 绑定到被调方法的隐式 `this`，其实例字段在协程内**跨 yield 保持**，多实例互不干扰。
+这组按字符串方法名调用的 API **已转为 `private`**——它们是 `spawn receiver.方法( ... )` 关键字脱糖的内部依赖，请勿直接按名调用，用关键字形式即可。`receiver` 绑定到被调方法的隐式 `this`，其实例字段在协程内**跨 yield 保持**，多实例互不干扰。
 
 ```sl
 CoroInstTarget
@@ -365,11 +383,12 @@ public static void sleep( Int64 millis )
 
 ```sl
 # 并行：总耗时 ≈ max(100,100)，不是 200
-Task e1a = Coroutine.spawn1( "coroSleepMs", 100 )
-Task e1b = Coroutine.spawn1( "coroSleepMs", 100 )
+function sleepFn = function( int ms ) { Coroutine.sleep( ms ) }
+Task e1a = spawn sleepFn( 100 )
+Task e1b = spawn sleepFn( 100 )
 Coroutine.waitAll2( e1a, e1b )          # 约 100ms
 
-Task e2 = Coroutine.spawn1( "coroSleepMs", 0 )   # Sleep(0)：只让出，不阻塞
+Task e2 = spawn sleepFn( 0 )            # Sleep(0)：只让出，不阻塞
 ```
 
 ### 6.3 `waitUntil()` — 条件等待（类似 Unity 的 WaitUntil）
@@ -382,7 +401,12 @@ public static void waitUntil( Function predicate )
 
 ```sl
 CoroutineTest.g_wdone = false
-Task setter = Coroutine.spawn0( "coroWSetFlag" )    # 50ms 后置位 g_wdone
+function wSetFlagFn = function()          # 50ms 后置位 g_wdone
+{
+    Coroutine.sleep( 50 )
+    CoroutineTest.g_wdone = true
+}
+Task setter = spawn wSetFlagFn()
 
 function pred = function()
 {
@@ -447,7 +471,8 @@ Coroutine.waitFor( WaitHpLess(player) )
 | `blockedReason( Task )` | `Int32` | 挂起原因，诊断用 |
 
 ```sl
-Task l2 = Coroutine.spawn1( "coroSleepMs", 50 )
+function sleepFn = function( int ms ) { Coroutine.sleep( ms ) }
+Task l2 = spawn sleepFn( 50 )
 Coroutine.sleep( 10 )
 
 bool suspended = l2.status == CoroutineStatus.Suspended
@@ -486,7 +511,8 @@ Task.awaitHandle()                               # 实例方法等价形式
 | `await` 自己 | 运行期错误（C 侧非法操作 `-64`） |
 
 ```sl
-Task h1 = Coroutine.spawn2( "coroAdd2", 7, 8 )
+function add2Fn = function( int a, int b ) { ret a + b }
+Task h1 = spawn add2Fn( 7, 8 )
 int r  = Coroutine.awaitHandle( h1 ) as int      # 15
 int r2 = h1.awaitHandle() as int                 # 实例方法，等价
 ```
@@ -504,8 +530,9 @@ public static void waitAll( params Array<Task> cors )
 **错误语义**：任一协程以异常结束 → **立即取消其余协程**并向调用者抛出该异常。
 
 ```sl
-Task a = Coroutine.spawn2( "coroAdd2", 1, 1 )
-Task b = Coroutine.spawn2( "coroAdd2", 2, 2 )
+function add2Fn = function( int a, int b ) { ret a + b }
+Task a = spawn add2Fn( 1, 1 )
+Task b = spawn add2Fn( 2, 2 )
 Coroutine.waitAll2( a, b )
 int ra = Coroutine.awaitHandle( a ) as int       # 2
 int rb = Coroutine.awaitHandle( b ) as int       # 4
@@ -524,8 +551,9 @@ public static Task waitAny( params Task[] cors )
 返回**先结束者**的协程对象；数组为 `null` 或空时立即返回 `null`。
 
 ```sl
-Task slow = Coroutine.spawn1( "coroSleepMs", 100 )
-Task fast = Coroutine.spawn1( "coroSleepMs", 10 )
+function sleepFn = function( int ms ) { Coroutine.sleep( ms ) }
+Task slow = spawn sleepFn( 100 )
+Task fast = spawn sleepFn( 10 )
 Task winner = Coroutine.waitAny2( slow, fast )
 check( winner == fast )                  # == 引用判等成立
 Coroutine.awaitHandle( slow )            # 清理：等慢者也结束
@@ -544,8 +572,9 @@ public static Task nextCompleted3( Task c0, Task c1, Task c2 )
 命中后标记 `consumed`，**再次查询同一协程不再返回**（但 `await` 仍然可用）。
 
 ```sl
-Task a = Coroutine.spawn1( "coroSleepMs", 50 )
-Task b = Coroutine.spawn1( "coroSleepMs", 10 )
+function sleepFn = function( int ms ) { Coroutine.sleep( ms ) }
+Task a = spawn sleepFn( 50 )
+Task b = spawn sleepFn( 10 )
 Coroutine.sleep( 20 )                    # 此刻 b 已完成、a 未完成
 
 Task got1 = Coroutine.nextCompleted2( a, b )     # == b
@@ -568,7 +597,8 @@ public static bool waitTimeout( Task cor, Int64 millis )
 | `false` | **超时**：等待关系已解除，**目标继续运行不受影响** |
 
 ```sl
-Task j3 = Coroutine.spawn1( "coroSleepMs", 500 )
+function sleepFn = function( int ms ) { Coroutine.sleep( ms ) }
+Task j3 = spawn sleepFn( 500 )
 
 bool ok1 = Coroutine.waitTimeout( j3, 100 )      # false（超时）
 Int32 st = Coroutine.status( j3 )                # Suspended（仍在跑）
@@ -608,7 +638,8 @@ static coroCancelTarget()
     }
 }
 
-Task g5 = Coroutine.spawn0( "coroCancelTarget" )
+function cancelTargetFn = function() { coroCancelTarget() }
+Task g5 = spawn cancelTargetFn()
 Coroutine.sleep( 10 )                    # 让目标先跑起来
 bool cancelled = Coroutine.cancel( g5 )  # true
 label g5block { try Coroutine.awaitHandle( g5 ) }
@@ -639,7 +670,8 @@ static coroThrowErr() throws
 
 static fun()
 {
-    Task g1 = Coroutine.spawn0( "coroThrowErr" )
+    function throwErrFn = function() { coroThrowErr() }
+    Task g1 = spawn throwErrFn()
     int code1 = 0
     label g1block
     {
@@ -663,7 +695,8 @@ static fun()
 ```sl
 static int coroCatchInner() throws
 {
-    Task h = Coroutine.spawn0( "coroThrowErr" )
+    function throwErrFn = function() { coroThrowErr() }
+    Task h = spawn throwErrFn()
     int caught = 0
     label innerBlock
     {
@@ -680,8 +713,10 @@ static int coroCatchInner() throws
 ### 10.2 `waitAll` 的失败传播
 
 ```sl
-Task c6a = Coroutine.spawn0( "coroThrowErr" )
-Task c6b = Coroutine.spawn1( "coroSleepMs", 1000 )
+function throwErrFn = function() { coroThrowErr() }
+function sleepFn = function( int ms ) { Coroutine.sleep( ms ) }
+Task c6a = spawn throwErrFn()
+Task c6b = spawn sleepFn( 1000 )
 
 label c6block
 {
@@ -755,8 +790,10 @@ static coroF1Consume( Channel<object> ch )
 
 ```sl
 Channel<object> ch2 = Channel<object>.create( 2 )
-Task p = Coroutine.spawn1( "coroF2Produce", ch2 )   # 连发 1,2,3
-Task c = Coroutine.spawn1( "coroF2Consume", ch2 )   # sleep(10) 后消费 3 个
+function f2ProduceFn = function( Channel<object> ch ) { coroF2Produce( ch ) }
+function f2ConsumeFn = function( Channel<object> ch ) { coroF2Consume( ch ) }
+Task p = spawn f2ProduceFn( ch2 )                   # 连发 1,2,3
+Task c = spawn f2ConsumeFn( ch2 )                   # sleep(10) 后消费 3 个
 Coroutine.waitAll2( p, c )                          # 第 3 个 send 挂起让出
 ```
 
@@ -765,11 +802,13 @@ Coroutine.waitAll2( p, c )                          # 第 3 个 send 挂起让�
 ```sl
 # 4 个生产者各发 10 个 -> 单消费者收 40 个，不丢不重
 Channel<object> ch3 = Channel<object>.create( 8 )
-Task f3c  = Coroutine.spawn1( "coroF3Consume", ch3 )
-Task f3p0 = Coroutine.spawn1( "coroF3Produce", ch3 )
-Task f3p1 = Coroutine.spawn1( "coroF3Produce", ch3 )
-Task f3p2 = Coroutine.spawn1( "coroF3Produce", ch3 )
-Task f3p3 = Coroutine.spawn1( "coroF3Produce", ch3 )
+function f3ConsumeFn = function( Channel<object> ch ) { coroF3Consume( ch ) }
+function f3ProduceFn = function( Channel<object> ch ) { coroF3Produce( ch ) }
+Task f3c  = spawn f3ConsumeFn( ch3 )
+Task f3p0 = spawn f3ProduceFn( ch3 )
+Task f3p1 = spawn f3ProduceFn( ch3 )
+Task f3p2 = spawn f3ProduceFn( ch3 )
+Task f3p3 = spawn f3ProduceFn( ch3 )
 Coroutine.waitAll2( f3p0, f3p1 )
 Coroutine.waitAll2( f3p2, f3p3 )
 Coroutine.awaitHandle( f3c )
@@ -786,8 +825,8 @@ check( g_f3count == 40 )
 
 | 分类 | 方法 |
 |---|---|
-| **生成·静态方法** | `spawn0` `spawn1` `spawn2` `spawn3` `spawnByName` |
-| **生成·实例方法** | `spawnInstance0` `spawnInstance1` `spawnInstance2` `spawnInstance3` |
+| **生成·按名（private）** | `spawn0` `spawn1` `spawn2` `spawn3` `spawnByName` —— 已转私有，仅 `spawn` 关键字脱糖内部使用 |
+| **生成·实例（private）** | `spawnInstance0` `spawnInstance1` `spawnInstance2` `spawnInstance3` —— 已转私有（`spawn receiver.方法` 的内部依赖） |
 | **生成·闭包** | `spawnClosure0` `spawnClosure1` `spawnClosure2` `spawnClosure3` `spawnClosure` |
 | **调度控制** | `yieldNow` `sleep` `waitUntil` |
 | **查询** | `current` `status` `blockedReason` |
@@ -834,7 +873,7 @@ check( g_f3count == 40 )
 | **循环回边自动插入 `OpCode_SchedCheck`** | ❌ **前端不发射 `SCHED_CHECK`**，需显式 `Coroutine.yieldNow()` |
 | 错误统一用 `Error` 枚举 int32 码承载 | SL 层用 `enum extends Error` 异常；C VM 侧抛出的取消/非法操作异常**值为 `null`**（`error_code = -63` / `-64`） |
 | `Error.Cancelled` / `Error.StackOverflow` 等常量 | ❌ 无对应常量；用裸 `catch{}` 捕获 |
-| 设计档未列出的**新增能力** | ✅ `spawnClosure*` / `spawnInstance*` / `spawnByName` / `waitUntil` |
+| 设计档未列出的**新增能力** | ✅ `spawnClosure*` / `waitUntil`（按名 `spawnByName` 与 `spawnInstance*` 已转私有，仅内部使用） |
 
 ---
 
@@ -842,8 +881,8 @@ check( g_f3count == 40 )
 
 | # | 限制 | 说明 |
 |:-:|---|---|
-| 1 | **被 spawn 的方法必须全工程唯一** | 按"简单名 + 参数个数"全局解析（`vm_find_method_entry_by_name`），**不区分类名**。测试工程编译几十个 `.sl`，务必加前缀 |
-| 2 | **参数按 `object` 装箱传递** | `int` / `string` 等值可直接传入并自动装箱，round-trip 无损；**最多 3 个参数**（`spawn0..3`） |
+| 1 | **按名 spawn 已全部转私有** | `spawn0..3` / `spawnByName` / `spawnInstance0..3` 按字符串方法名全局解析（简单名 + 参数个数，不区分类名、要求全工程唯一），已转 `private` 仅供 `spawn` 关键字脱糖内部使用、可能移除。用户代码统一用**包装闭包函数值形式**（§5.1/§5.2），无命名约束 |
+| 2 | **参数按 `object` 装箱传递** | `int` / `string` 等值可直接传入并自动装箱，round-trip 无损；**最多 3 个参数**（`spawnClosure0..3`） |
 | 3 | **无自动公平性** | 前端不发射 `SCHED_CHECK`；纯计算循环必须显式 `Coroutine.yieldNow()`，否则独占调度器、饿死其它协程 |
 | 4 | **`native` 函数体内禁止挂起** | 挂起只发生在解释循环的指令边界（安全点） |
 | 5 | **子 VM（静态初始化器）内禁止用协程 API** | 编译期拦截 `spawn` / `await` / `yield` 三关键字 |
@@ -859,7 +898,7 @@ check( g_f3count == 40 )
 - 长计算循环内周期性 `Coroutine.yieldNow()`，避免饿死其它协程。
 - fire-and-forget 协程也建议最终 `await`（或 `waitTimeout`）一次，确保异常被观测、资源被回收。
 - 用 `Channel` + `close` 表达"生产结束"，用 `waitTimeout` 表达"限时等待"，**避免手写轮询**。
-- 被 spawn 的方法统一加前缀（如 `coro`），规避全工程唯一约束。
+- 包装闭包转发的目标方法统一加前缀（如 `coro`）——按名 spawn 时代的全工程唯一约束已随私有化退出用户面，前缀现为可读性约定。
 
 ---
 
@@ -870,8 +909,10 @@ check( g_f3count == 40 )
 ```sl
 static coroSetFlag() { CoroutineTest.g_done = true }
 
+function setFlagFn = function() { coroSetFlag() }
+
 CoroutineTest.g_done = false
-Coroutine.spawn0( "coroSetFlag" )
+spawn setFlagFn()
 for Int32 i = 0, i < 1000, i = i + 1
 {
     if CoroutineTest.g_done { break }
@@ -891,15 +932,19 @@ static int coroTrack()
     ret 1
 }
 
+function trackFn = function() { ret coroTrack() }
+
 # 串行：第二个等第一个完成才启动 -> "sese"
 g_order = ""
-Coroutine.awaitHandle( Coroutine.spawn0( "coroTrack" ) )
-Coroutine.awaitHandle( Coroutine.spawn0( "coroTrack" ) )
+Task s1 = spawn trackFn()
+Coroutine.awaitHandle( s1 )
+Task s2 = spawn trackFn()
+Coroutine.awaitHandle( s2 )
 
 # 并行：同时启动后串行消费 -> "ssee"
 g_order = ""
-Task a = Coroutine.spawn0( "coroTrack" )
-Task b = Coroutine.spawn0( "coroTrack" )
+Task a = spawn trackFn()
+Task b = spawn trackFn()
 Coroutine.awaitHandle( a )
 Coroutine.awaitHandle( b )
 ```
@@ -913,10 +958,12 @@ static coroTimerMark( int ms, string mark )
     g_order = g_order + mark
 }
 
+function timerMarkFn = function( int ms, string mark ) { coroTimerMark( ms, mark ) }
+
 g_order = ""
-Task a = Coroutine.spawn2( "coroTimerMark", 30, "30" )
-Task b = Coroutine.spawn2( "coroTimerMark", 10, "10" )
-Task c = Coroutine.spawn2( "coroTimerMark", 20, "20" )
+Task a = spawn timerMarkFn( 30, "30" )
+Task b = spawn timerMarkFn( 10, "10" )
+Task c = spawn timerMarkFn( 20, "20" )
 Coroutine.waitAll3( a, b, c )
 check( g_order == "102030" )             # 按到期时间唤醒
 ```
@@ -927,22 +974,27 @@ check( g_order == "102030" )             # 按到期时间唤醒
 static int coroDeep( int n )
 {
     if ( n <= 0 ) { ret 0 }
-    Task h = Coroutine.spawn1( "coroDeep", n - 1 )
+    function deepFn = function( int k ) { ret coroDeep( k ) }
+    Task h = spawn deepFn( n - 1 )
     ret ( Coroutine.awaitHandle( h ) as int ) + 1
 }
 
-Task h = Coroutine.spawn1( "coroDeep", 200 )
+function deepFn = function( int k ) { ret coroDeep( k ) }
+Task h = spawn deepFn( 200 )
 check( Coroutine.awaitHandle( h ) as int == 200 )
 ```
 
 ### 15.5 1000 个协程批量并发
 
 ```sl
+function add2Fn = function( int a, int b ) { ret coroAdd2( a, b ) }
+
 int sum = 0
 List<Task> tasks = List<Task>()
 for Int32 i = 0, i < 1000, i = i + 1
 {
-    tasks.add( Coroutine.spawn2( "coroAdd2", i, 1 ) )
+    Task t = spawn add2Fn( i, 1 )
+    tasks.add( t )
 }
 for v in tasks
 {
@@ -964,9 +1016,15 @@ static coroInc100()
     }
 }
 
+function inc100Fn = function() { coroInc100() }
+
 g_counter = 0
 List<Task> incs = List<Task>()
-for Int32 i = 0, i < 10, i = i + 1 { incs.add( Coroutine.spawn0( "coroInc100" ) ) }
+for Int32 i = 0, i < 10, i = i + 1
+{
+    Task t = spawn inc100Fn()
+    incs.add( t )
+}
 for v in incs { Coroutine.awaitHandle( v ) }
 check( g_counter == 1000 )
 ```
@@ -1001,11 +1059,15 @@ static coroJ1Aggregate( Channel<object> proc )
     }
 }
 
+function j1ProduceFn = function( Channel<object> ch ) { coroJ1Produce( ch ) }
+function j1ProcessFn = function( Channel<object> rawCh, Channel<object> procCh ) { coroJ1Process( rawCh, procCh ) }
+function j1AggregateFn = function( Channel<object> ch ) { coroJ1Aggregate( ch ) }
+
 Channel<object> raw  = Channel<object>.create( 4 )
 Channel<object> proc = Channel<object>.create( 4 )
-Task jp  = Coroutine.spawn1( "coroJ1Produce", raw )
-Task jpr = Coroutine.spawn2( "coroJ1Process", raw, proc )
-Task ja  = Coroutine.spawn1( "coroJ1Aggregate", proc )
+Task jp  = spawn j1ProduceFn( raw )
+Task jpr = spawn j1ProcessFn( raw, proc )
+Task ja  = spawn j1AggregateFn( proc )
 Coroutine.waitAll3( jp, jpr, ja )
 check( g_j1sum == 9900 )                 # sum(0..99) * 2
 ```
@@ -1019,10 +1081,13 @@ static int coroJ2Work( int i )
     ret i + 1
 }
 
+function j2WorkFn = function( int idx ) { ret coroJ2Work( idx ) }
+
 List<Task> works = List<Task>()
 for Int32 i = 0, i < 50, i = i + 1
 {
-    works.add( Coroutine.spawn1( "coroJ2Work", i ) )
+    Task t = spawn j2WorkFn( i )
+    works.add( t )
 }
 int sum = 0
 for v in works { sum = sum + ( Coroutine.awaitHandle( v ) as int ) }
@@ -1032,7 +1097,8 @@ check( sum == 1275 )                     # sum(1..50)
 ### 15.9 超时降级
 
 ```sl
-Task rpc = Coroutine.spawn0( "coroSlowRpc" )
+function slowRpcFn = function() { coroSlowRpc() }
+Task rpc = spawn slowRpcFn()
 
 if ( Coroutine.waitTimeout( rpc, 200 ) )
 {
@@ -1049,8 +1115,11 @@ else
 ### 15.10 竞速：谁先完成用谁
 
 ```sl
-Task fast = Coroutine.spawn0( "coroFastPath" )
-Task slow = Coroutine.spawn0( "coroSlowPath" )
+function fastPathFn = function() { coroFastPath() }
+function slowPathFn = function() { coroSlowPath() }
+
+Task fast = spawn fastPathFn()
+Task slow = spawn slowPathFn()
 
 Task winner = Coroutine.waitAny2( fast, slow )
 object res  = winner.awaitHandle()
@@ -1063,8 +1132,11 @@ catch { }
 ### 15.11 渐进式结果消费（`nextCompleted` 轮询）
 
 ```sl
-Task jobA = Coroutine.spawn0( "coroJobA" )
-Task jobB = Coroutine.spawn0( "coroJobB" )
+function jobAFn = function() { coroJobA() }
+function jobBFn = function() { coroJobB() }
+
+Task jobA = spawn jobAFn()
+Task jobB = spawn jobBFn()
 
 while ( true )
 {
@@ -1132,7 +1204,8 @@ static coroSkillSequence( object ctx )
     }
 }
 
-Task skill = Coroutine.spawnClosure1( coroSkillSequence, target )
+function skillSeqFn = function( object ctx ) { coroSkillSequence( ctx ) }
+Task skill = spawn skillSeqFn( target )
 if ( player.isStunned )
 {
     skill.cancel()                       # 协作式取消 -> finally 保证清理
@@ -1152,11 +1225,14 @@ static coroWorker( Channel<object> jobs, int id )
     }
 }
 
+function workerFn = function( Channel<object> jobs, int id ) { coroWorker( jobs, id ) }
+
 Channel<object> jobs = Channel<object>.create( 16 )
 List<Task> workers = List<Task>()
 for Int32 i = 0, i < 4, i = i + 1
 {
-    workers.add( Coroutine.spawn2( "coroWorker", jobs, i ) )
+    Task t = spawn workerFn( jobs, i )
+    workers.add( t )
 }
 
 for j in jobList { jobs.send( j ) }
@@ -1219,7 +1295,8 @@ static int coroKwPipeline()
     ret r
 }
 
-Task hp = Coroutine.spawn0( "coroKwPipeline" )
+function kwPipelineFn = function() { ret coroKwPipeline() }
+Task hp = spawn kwPipelineFn()
 check( await hp as int == 30 )
 ```
 

@@ -775,20 +775,31 @@ Int32 w = Isolate.run0( bumpGlobal ) as int
 
 isolate（跨堆并行）与协程（单 isolate 内并发）可自由组合：worker 内可再起任意多协程。
 
-### 12.1 worker 内起协程（按名 spawn + waitAll + await）
+### 12.1 worker 内起协程（spawn 函数值 + waitAll + await）
 
 ```sl
-# 按 Coroutine.spawn 名字调用的方法须全工程唯一（沿用协程惯例）
 static Int32 isoAdd2( Int32 a, Int32 b )
 {
     ret a + b
 }
 
+# 包装闭包工厂：闭包体内不能嵌套定义 function，经工厂取函数值
+# （被转发的目标方法保留 iso/coro 前缀仅为可读性约定，无命名约束）
+static Func<int,int,int> isoAdd2Fn()
+{
+    Func<int,int,int> fn = function( Int32 a, Int32 b )
+    {
+        ret isoAdd2( a, b )
+    }
+    ret fn
+}
+
 # H1 worker 内协程并发求和
 function entry = function()
 {
-    Task t1 = Coroutine.spawn2( "isoAdd2", 1, 1 )
-    Task t2 = Coroutine.spawn2( "isoAdd2", 4, 2 )
+    Func<int,int,int> add2Fn = isoAdd2Fn()
+    Task t1 = spawn add2Fn( 1, 1 )
+    Task t2 = spawn add2Fn( 4, 2 )
     Coroutine.waitAll2( t1, t2 )
     Int32 v1 = Coroutine.awaitHandle( t1 ) as int
     Int32 v2 = Coroutine.awaitHandle( t2 ) as int
@@ -819,9 +830,19 @@ static coroRecvAndFlag( object arg )
     }
 }
 
+# 包装闭包：裸静态方法名不能作函数值，经闭包转发（协程文档 §5.1）
+function sendLaterFn = function( object arg )
+{
+    coroSendLater( arg )
+}
+function recvAndFlagFn = function( object arg )
+{
+    coroRecvAndFlag( arg )
+}
+
 ReceivePort rp = ReceivePort()
-Task tSend = Coroutine.spawn1( "coroSendLater", rp.sendPort )
-Task tRecv = Coroutine.spawn1( "coroRecvAndFlag", rp )
+Task tSend = spawn sendLaterFn( rp.sendPort )
+Task tRecv = spawn recvAndFlagFn( rp )
 Coroutine.waitAll2( tSend, tRecv )
 # g_recvFlag == true
 ```
@@ -910,7 +931,7 @@ string b = rp.recv() as string      # "b"
 1. **匿名闭包字面量不能直接作为调用实参**——一律先赋给 `function` 变量再传参（`spawn*` / `run*` / `listen` 同此）。
 2. **闭包捕获上下文按「宿主方法」粒度共享**：同一方法内任一闭包捕获了不可发送值（如 `Channel`），整个共享上下文即不可发送，同方法后续闭包全部发不出去——捕获不可发送值的闭包必须放在**独立宿主方法**里。
 3. `spawn*` / `run*` 入口参数上限 **3 个**；更多参数打包成 `List` 等可发送容器传入。
-4. worker 内按名 `Coroutine.spawn*("name", ...)` 的目标方法须**全工程唯一**（沿用协程惯例，建议加 `iso` / `coro` 前缀）。
+4. worker 内起协程用 `spawn 函数值(实参)` 形式；闭包体内不能嵌套定义 `function`，须在入口外先定义包装闭包、或经静态工厂方法取函数值（按名 `Coroutine.spawn*("name", ...)` 已转私有，勿再使用）。
 5. 消息图**不支持环**（一期）：检测到循环引用报 `IsolateError.CyclicMessage`。
 6. `throw` 只能抛 `enum extends Error`；**Error 枚举值不可序列化**（见 14.2 第 1 条的根源）。
 
