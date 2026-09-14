@@ -58,6 +58,8 @@ Project
         PlatformSevenTest.fun()
         ByteBufTest.fun()
         ProtocalBuffersTest.fun()
+        StreamTest.fun()
+        CodecFrameTest.fun()
         #!
         GuidTest.fun()
         RandomTest.fun()        

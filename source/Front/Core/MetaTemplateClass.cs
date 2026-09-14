@@ -386,6 +386,54 @@ namespace SimpleLanguage.Core
             }
             return null;
         }
+        /// <summary>
+        /// 以 MetaType 列表物化模板类（支持 data/enum 等无 MetaClass 的实参形态）。
+        /// 旧 AddInstanceMetaClass(List&lt;MetaClass&gt;) 只能表达类形态实参，
+        /// data 实参（如 Serialize.toText&lt;T&gt;(obj, Codec&lt;T,string&gt;) 中 T 绑定 data）
+        /// 在旧入口下 metaClass 为 null 会 NRE。
+        /// </summary>
+        public MetaGenTemplateClass AddInstanceMetaTypeClass(List<MetaType> list, bool isParse = false)
+        {
+            if (list == null || list.Count == 0)
+            {
+                return null;
+            }
+            if (this.m_MetaTemplateList.Count != list.Count)
+            {
+                return null;
+            }
+            List<MetaGenTemplate> list2 = new List<MetaGenTemplate>();
+            for (int i = 0; i < this.metaTemplateList.Count; i++)
+            {
+                var argMt = list[i];
+                if (argMt == null)
+                {
+                    return null;
+                }
+                if (argMt.eMetaTypeType == EMetaTypeType.MetaClass && argMt.metaClass.isTemplateClass)
+                {
+                    if (argMt.metaClass is not MetaGenTemplateClass)
+                    {
+                        return null;
+                    }
+                }
+                var classTemplate = this.metaTemplateList[i];
+                MetaGenTemplate mgt = new MetaGenTemplate(classTemplate, argMt);
+                list2.Add(mgt);
+            }
+            MetaGenTemplateClass mgtc = GetGenTemplateMetaClassByTemplateList(list2);
+            if (mgtc == null)
+            {
+                mgtc = new MetaGenTemplateClass(this, list2);
+                this.AddGenTemplateMetaClass(mgtc);
+                if (isParse)
+                {
+                    mgtc.ParseGenTemplateClass(mgtc);
+                    mgtc.ParseGenMemberVarible();
+                }
+            }
+            return mgtc;
+        }
         //public virtual void ParseGenTemplateClassMetaType()
         //{
         //    //生成已有模板里边的内容

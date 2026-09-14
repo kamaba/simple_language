@@ -340,7 +340,7 @@ namespace SimpleLanguage.Core
         {
             bool isNeedReg = false;
             MetaClass findfn = null;
-            List<MetaClass> regMCList = new List<MetaClass>();
+            List<MetaType> regMtList = new List<MetaType>();
             if (mt.defineTemplateMetaTypeList.Count > 0)
             {
                 //Debug.Assert(false, "");
@@ -351,12 +351,14 @@ namespace SimpleLanguage.Core
                     {
                         isNeedReg = true;
                     }
-                    regMCList.Add(regMt.metaClass);
+                    regMtList.Add(regMt);
                 }
             }
             if (isNeedReg)
             {
-                var newmc = mt.metaClass.AddInstanceMetaClass(regMCList, true);
+                /* 用 MetaType 版物化入口：data/enum 实参（metaClass 为 null）
+                 * 在旧的 List<MetaClass> 入口下会传入 null 元素导致 NRE */
+                var newmc = mt.metaClass.AddInstanceMetaTypeClass(regMtList, true);
                 if (newmc == null)
                 {
                     Log.AddMetaCoreLog(LID.MetaCoreTypeIsNullMetaClassAddInstanceMetaClass, "metaClass.AddInstanceMetaClass MetaClass is Null");

@@ -838,7 +838,17 @@ namespace SimpleLanguage.Core
 
                         for (int i = 0; i < m_MetaClass.genMetaClassTemplateList.Count; i++)
                         {
-                            sb.Append(m_MetaClass.genMetaClassTemplateList[i].ToString());
+                            /* data/enum 实参无 MetaClass（null），退到完整 MetaType 形态输出 */
+                            var gcc = m_MetaClass.genMetaClassTemplateList[i];
+                            if (gcc != null)
+                            {
+                                sb.Append(gcc.ToString());
+                            }
+                            else
+                            {
+                                var tmt = i < m_MetaClass.genMetaTypeTemplateList.Count ? m_MetaClass.genMetaTypeTemplateList[i] : null;
+                                sb.Append(tmt != null ? tmt.ToString() : "null");
+                            }
                             if (i < m_MetaClass.genMetaClassTemplateList.Count - 1)
                             {
                                 sb.Append(",");
@@ -864,7 +874,17 @@ namespace SimpleLanguage.Core
 
                         for (int i = 0; i < mgtc.genMetaClassTemplateList.Count; i++)
                         {
-                            sb.Append(mgtc.genMetaClassTemplateList[i].ToString());
+                            /* data/enum 实参无 MetaClass（null），退到完整 MetaType 形态输出 */
+                            var gcc = mgtc.genMetaClassTemplateList[i];
+                            if (gcc != null)
+                            {
+                                sb.Append(gcc.ToString());
+                            }
+                            else
+                            {
+                                var tmt = i < mgtc.genMetaTypeTemplateList.Count ? mgtc.genMetaTypeTemplateList[i] : null;
+                                sb.Append(tmt != null ? tmt.ToString() : "null");
+                            }
                             if (i < mgtc.genMetaClassTemplateList.Count - 1)
                             {
                                 sb.Append(",");

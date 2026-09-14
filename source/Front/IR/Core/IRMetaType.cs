@@ -238,7 +238,11 @@ namespace SimpleLanguage.IR
                     var args = new List<MetaType>();
                     for (int i = 0; i < irmt.irMetaTypeList.Count; i++)
                     {
-                        args.Add(ToMetaType(irmt.irMetaTypeList[i], ownerClass));
+                        /* 递归复原泛型实参时必须继续传递 functionTemplates：
+                         * 方法级模板引用（如 encodeSink<T> 的参数 Codec<T,ByteBuf> 里的 T）
+                         * 位于嵌套位置，丢弃 functionTemplates 会退化成 Core.Object，
+                         * 导致 functionAllName 与导出端 methodList 的 id 不匹配（IRCallNotFoundIrRuntime）。 */
+                        args.Add(ToMetaType(irmt.irMetaTypeList[i], ownerClass, functionTemplates));
                     }
                     return new MetaType(mc, args);
                 }

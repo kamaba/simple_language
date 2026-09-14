@@ -149,6 +149,12 @@ public class ByteBuf extends Object
         ret SystemByteBufWritableBytes( this._bid )
     }
 
+    # 原生句柄（FileStream 等原生流直读写；仅供标准库内部使用）
+    public get Int64 handle()
+    {
+        ret this._bid
+    }
+
     # ── 容量管理 ──
 
     # 超出 maxCapacity 时抛 CapacityExceeded

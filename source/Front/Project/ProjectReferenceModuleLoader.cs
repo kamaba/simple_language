@@ -728,6 +728,7 @@ namespace SimpleLanguage.Project
                     if (me != null)
                     {
                         AddEnumMembersFromIR(me, irmc);
+                        SetEnumExtendClassFromPackage(me, cls, metaModule);
                     }
                     break;
                 }
@@ -1033,7 +1034,10 @@ namespace SimpleLanguage.Project
                 if (retVar != null && retVar.irMetaType != null)
                 {
                     var funcTemplates = mmf.isTemplateFunction ? mmf.metaMemberTemplateCollection.metaTemplateList : null;
-                    var retType = IRMetaType.ToMetaType(retVar.irMetaType, mc, funcTemplates);
+                    /* 用 ownerClass（声明类）而非 mc 解析类型：继承到子类虚表的方法
+                     * （如 Utf8Codec 虚表里 Codec<S,T>.encode）参数/返回值引用的是声明类的
+                     * 类级模板（S/T），传 mc（子类，无模板）会退化成 Core.Object。 */
+                    var retType = IRMetaType.ToMetaType(retVar.irMetaType, ownerClass, funcTemplates);
                     mmf.SetDefineMetaType(retType);
                     mmf.SetRealMetaType(new MetaType(retType));
                     mmf.SetIsDefineMetaType(true);
@@ -1080,7 +1084,7 @@ namespace SimpleLanguage.Project
                     if (arg.irMetaType != null)
                     {
                         var funcTemplates2 = mmf.isTemplateFunction ? mmf.metaMemberTemplateCollection.metaTemplateList : null;
-                        var paramType = IRMetaType.ToMetaType(arg.irMetaType, mc, funcTemplates2);
+                        var paramType = IRMetaType.ToMetaType(arg.irMetaType, ownerClass, funcTemplates2);
                         mdp.metaVariable.SetMetaDefineType(paramType);
                         mdp.metaVariable.SetRealMetaType(new MetaType(paramType));
                         mdp.metaVariable.SetIsDefineMetaType(true);
@@ -1288,6 +1292,29 @@ namespace SimpleLanguage.Project
             }
             var nestedMt = new MetaType(resolvedMc, nestedArgs);
             return resolvedMc.AddMetaPreTemplateClass(nestedMt, false, out _);
+        }
+
+        /// <summary>
+        /// 恢复跨模块导入 enum 的 extends 关系（enum extends Error / 整数类型）。
+        /// MetaEnum.isErrorEnum 是引用相等（m_ExtendClass == errorMetaClass），
+        /// 不恢复会导致主工程 throw enum extends Error 校验失败。
+        /// 与 SetBaseAndInterfacesFromPackage 同源：baseClassId -> s_ClassLookup -> 名字解析。
+        /// </summary>
+        private static void SetEnumExtendClassFromPackage(MetaEnum me, SLClassPackage cls,
+            MetaModule metaModule )
+        {
+            if (me == null || cls == null) return;
+            if (cls.baseClassId == 0) return;
+            if (me.extendClass != null) return;
+            if (!s_ClassLookup.TryGetValue(cls.baseClassId, out var basePkg)) return;
+
+            var baseFullName = !string.IsNullOrWhiteSpace(basePkg.fullName)
+                ? basePkg.fullName : basePkg.name;
+            var baseMc = ResolveTypeByName(metaModule, baseFullName);
+            if (baseMc != null)
+            {
+                me.SetExtendClass(baseMc);
+            }
         }
 
         private static void SetBaseAndInterfacesFromPackage(MetaClass mc, SLClassPackage cls,

@@ -33,7 +33,8 @@
       { "path": "Sqlite3Test.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "ModuleGlobalTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "IsolateTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
-      { "path": "ComponentTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
+      { "path": "ComponentTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "StreamFileTest.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {

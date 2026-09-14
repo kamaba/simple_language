@@ -329,7 +329,11 @@ namespace SimpleLanguage.Export.SLIR
                     sourcePath = c.sourcePath ?? string.Empty,
                     metaClassKind = (int)c.metaClassKind,
                     isDynamic = c.OwnerMetaData?.isDynamic ?? false,
-                    baseClassId = c.OwnerMetaClass?.extendClass?.classId ?? 0,
+                    // enum（MetaEnum : MetaBase，非 MetaClass 子类）的 extends 走 OwnerMetaEnum；
+                    // IRMetaClass.OwnerMetaClass 对 enum 恒为 null，漏掉会导致 baseClassId 导出 0，
+                    // 跨模块导入后 isErrorEnum 丢失（throw enum extends Error 校验失败）。
+                    baseClassId = c.OwnerMetaClass?.extendClass?.classId
+                        ?? c.OwnerMetaEnum?.extendClass?.classId ?? 0,
                 };
                 // export class-level attributes
                 ExportAttributes(cm.attributeList, c.OwnerMetaClass?.attributeList);

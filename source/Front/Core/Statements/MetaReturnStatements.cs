@@ -77,6 +77,7 @@ namespace SimpleLanguage.Core
             }
 
             // 闭包函数返回类型推断: 首次遇到带返回值的 ret 语句时, 将返回类型从 Void 更新为实际类型
+            // ret null 先出现时不定型 (null 是 bottom type, 可赋给任意类型), 后续真实类型的 ret 可覆盖 Null
             var ownerFunc = mbs.ownerMetaFunction as MetaMemberFunction;
             if( ownerFunc != null && ownerFunc.isClosureFunction )
             {
@@ -84,7 +85,10 @@ namespace SimpleLanguage.Core
                     && m_ReturnMetaDefineType.metaClass != CoreMetaClassManager.voidMetaClass )
                 {
                     var curType = ownerFunc.returnMetaVariable.defineMetaType;
-                    if( curType != null && curType.metaClass == CoreMetaClassManager.voidMetaClass )
+                    if( curType != null
+                        && ( curType.metaClass == CoreMetaClassManager.voidMetaClass
+                            || ( curType.metaClass == CoreMetaClassManager.nullMetaClass
+                                && m_ReturnMetaDefineType.metaClass != CoreMetaClassManager.nullMetaClass ) ) )
                     {
                         ownerFunc.returnMetaVariable.SetMetaDefineType( m_ReturnMetaDefineType );
                     }

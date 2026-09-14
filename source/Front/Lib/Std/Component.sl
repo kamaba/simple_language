@@ -123,6 +123,9 @@ public class Component extends Object
     # 与 Unity 的 TryGetComponent<T>(out T) 对齐：直接返回组件，null 表示未找到
     public Result<T> tryGetComponent<T>()
     {
+        # result 关键字注入不支持方法级泛型（模板 T 未绑定时 IsResultReturnFunction 跳过注入），
+        # 泛型方法内需显式声明 result 局部变量
+        var result = Result<T>();
         var val = SystemComponentGetComponent(this, Array<T>(0));
         if(     val == null )
         {

@@ -18,6 +18,7 @@ Project
         IsolateTest.fun()
         !#
         ComponentTest.fun()
+        StreamFileTest.fun()
     }
     CompileBefore()
     {

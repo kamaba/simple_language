@@ -25,6 +25,8 @@
       { "path": "IO/Console.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/Directory.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/File.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/FileStream.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/StdStream.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Text/IDataStruct.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Csv.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Json.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
@@ -50,6 +52,7 @@
       { "path": "Isolate/TransferableData.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Isolate/IsolateGroup.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Isolate/Isolate.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Isolate/StreamBridge.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "FFI/Library.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "GPU/GPU.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
     ]
@@ -80,7 +83,13 @@
          [
             { "class": "Console" },
             { "class": "Directory" },
-            { "class": "File" }
+            { "class": "File" },
+            { "enum": "FileMode" },
+            { "enum": "FileAccess" },
+            { "class": "FileStream" },
+            { "class": "StdInStream" },
+            { "class": "StdOutStream" },
+            { "class": "StdErrStream" }
           ]
       },
       { "namespace": "Text", "children": 
@@ -145,8 +154,9 @@
       { "class": "RawReceivePort" },
       { "class": "TransferableData" },
       { "class": "IsolateGroup" },
-      { "class": "Isolate" }
-  ], 
+      { "class": "Isolate" },
+      { "class": "StreamBridge" }
+  ],
   "systemCalls": 
   [
     // ---- Bridge calls ----   
@@ -168,6 +178,16 @@
     { "name": "SystemFileReadAllText",         "returnType": "string","params": ["string"], "isVariadic": false, "cvmFunction": "libstd_file_read_all_text" },
     { "name": "SystemFileWriteAllText",        "returnType": "bool",  "params": ["string", "string"], "isVariadic": false, "cvmFunction": "libstd_file_write_all_text" },
     { "name": "SystemFileAppendText",          "returnType": "bool",  "params": ["string", "string"], "isVariadic": false, "cvmFunction": "libstd_file_append_text" },
+    // ---- FileStream stream calls (IO/FileStream.sl, design: STREAM_DESIGN.md §4.4) ----
+    { "name": "SystemFileOpen",                "returnType": "Int64", "params": ["string", "Int32"], "isVariadic": false, "cvmFunction": "libstd_file_open" },
+    { "name": "SystemFileClose",               "returnType": "bool",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_file_close" },
+    { "name": "SystemFileRead",                "returnType": "Int32", "params": ["Int64", "Int64", "Int32"], "isVariadic": false, "cvmFunction": "libstd_file_read" },
+    { "name": "SystemFileWrite",               "returnType": "Int32", "params": ["Int64", "Int64"], "isVariadic": false, "cvmFunction": "libstd_file_write" },
+    { "name": "SystemFileSeek",                "returnType": "Int64", "params": ["Int64", "Int64", "Int32"], "isVariadic": false, "cvmFunction": "libstd_file_seek" },
+    { "name": "SystemFileTell",                "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_file_tell" },
+    { "name": "SystemFileLength",              "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_file_length" },
+    { "name": "SystemFileFlush",               "returnType": "bool",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_file_flush" },
+    { "name": "SystemFileSyncDisk",            "returnType": "bool",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "libstd_file_sync" },
     { "name": "SystemDirectoryExists",         "returnType": "bool",  "params": ["string"], "isVariadic": false, "cvmFunction": "libstd_dir_exists" },
     { "name": "SystemDirectoryCreate",         "returnType": "bool",  "params": ["string"], "isVariadic": false, "cvmFunction": "libstd_dir_create" },
     { "name": "SystemDirectoryDelete",         "returnType": "bool",  "params": ["string"], "isVariadic": false, "cvmFunction": "libstd_dir_delete" },

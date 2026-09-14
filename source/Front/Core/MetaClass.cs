@@ -213,10 +213,18 @@ namespace SimpleLanguage.Core
         }
         public void UpdateGenMetaClassTemplateList()
         {
-            m_GenMetaTypeTemplateList.Clear();  
+            m_GenMetaTypeTemplateList.Clear();
             for( int i = 0; i < m_GenMetaClassTemplateList.Count; i++ )
             {
-                m_GenMetaTypeTemplateList.Add( new MetaType( m_GenMetaClassTemplateList[i] ) );
+                if( m_GenMetaClassTemplateList[i] != null )
+                {
+                    m_GenMetaTypeTemplateList.Add( new MetaType( m_GenMetaClassTemplateList[i] ) );
+                }
+                else
+                {
+                    /* data/enum 实参位置无 MetaClass：占位保持与 MetaClass 列表的索引对齐 */
+                    m_GenMetaTypeTemplateList.Add( null );
+                }
             }
         }
         public void SetDefaultExpressNode( MetaExpressNodeBase defaultExpressNode )

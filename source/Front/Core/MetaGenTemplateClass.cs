@@ -39,8 +39,10 @@ namespace SimpleLanguage.Core
             foreach( var v in list )
             {
                 m_GenMetaClassTemplateList.Add(v.metaType.metaClass);
+                /* data/enum 实参（metaClass=null）必须以完整 MetaType 形态记录，
+                 * 不能事后从 MetaClass 列表转换（UpdateGenMetaClassTemplateList） */
+                m_GenMetaTypeTemplateList.Add( new MetaType( v.metaType ) );
             }
-            this.UpdateGenMetaClassTemplateList();
 
 
             StringBuilder sb = new StringBuilder();
@@ -99,6 +101,40 @@ namespace SimpleLanguage.Core
                 {
                     flag = false;
                     break;
+                }
+                /* data/enum/template 等 metaClass 为 null 的形态不能只依赖 metaClass 比较
+                 * （null==null 会把不同 data/enum 误判为同一实参，导致物化类撞车） */
+                if( c1.metaType.metaClass == null )
+                {
+                    if( c1.metaType.isData && c2.metaType.isData )
+                    {
+                        if( c1.metaType.metaData != c2.metaType.metaData )
+                        {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    else if( c1.metaType.isEnum && c2.metaType.isEnum )
+                    {
+                        if( c1.metaType.metaEnum != c2.metaType.metaEnum )
+                        {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    else if( c1.metaType.isTemplate && c2.metaType.isTemplate )
+                    {
+                        if( c1.metaType.metaTemplate != c2.metaType.metaTemplate )
+                        {
+                            flag = false;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        flag = false;
+                        break;
+                    }
                 }
             }
             return flag;
@@ -414,20 +450,34 @@ namespace SimpleLanguage.Core
             }
 
             /* Inherit methods from the parent entity (gen entity or concrete class).
-              * They are already resolved/substituted. */
+              * They are already resolved/substituted.
+              * Slot order mirrors MetaClass.HandleExtendMemberFunction: parent
+              * methods keep their slot order at the head of the list; an
+              * overridden method moves the child copy into the parent's slot;
+              * child-only methods stay appended at the tail. CallVirt operands
+              * encode method indices against the declaring class's list, so a
+              * gen entity whose order differs from the template class breaks
+              * index alignment for concrete classes extending it (e.g.
+              * Utf8Codec extends Codec<string,Array<UInt8>>). */
             if (this.m_ExtendClass != null && this.m_ExtendClass != this)
             {
+                int parentSlot = 0;
                 foreach (var it in this.m_ExtendClass.nonStaticVirtualMetaMemberFunctionList)
                 {
                     var find = this.m_NonStaticVirtualMetaMemberFunctionList.Find(a => a.IsEqualMetaFunction(it));
                     if (find != null)
                     {
-                        // 子类override了父类方法: 建立 override 链，供 base.xxx() 调用解析
+                        // 子类override了父类方法: 子方法移入父类槽位(保持索引对齐), 建立 override 链供 base.xxx() 调用解析
+                        this.m_NonStaticVirtualMetaMemberFunctionList.Remove(find);
+                        this.m_NonStaticVirtualMetaMemberFunctionList.Insert(parentSlot, find);
                         find.SetOverrideMetaMemberFunction(it);
-                        continue;
                     }
-                    this.m_NonStaticVirtualMetaMemberFunctionList.Add(it);
-                    AddMetaMemberFunction(it);
+                    else
+                    {
+                        this.m_NonStaticVirtualMetaMemberFunctionList.Insert(parentSlot, it);
+                        AddMetaMemberFunction(it);
+                    }
+                    parentSlot++;
                 }
                 foreach (var it in this.m_ExtendClass.staticMetaMemberFunctionList)
                 {

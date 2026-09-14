@@ -80,6 +80,15 @@
       { "path": "Coroutine.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
       { "path": "Container/Channel.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "IO/ByteBuf.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/ByteStream.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/Codec.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/LengthPrefix.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/ProtoCodec.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/Encoding.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/Stream.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/BinaryCodec.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/JsonCodec.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/Serialize.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Text/Lz4.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Text/ProtocalBuffers.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 }
     ]
@@ -649,7 +658,33 @@
         { "class": "CoroutineBlockReason" },
         { "class": "Channel" },
         { "class": "Channel<T>" },
-        { "class": "ByteBuf" }
+        { "class": "ByteBuf" },
+        // ---- Stream P1 公开类型目录（STREAM_DESIGN.md §17；供 references 源码模式加载，私有 _ 类不登记）----
+        { "class": "ByteStream" },
+        { "class": "MemoryStream" },
+        { "enum": "StreamIOError" },
+        { "enum": "SeekOrigin" },
+        { "class": "ChunkedConversionSink" },
+        { "class": "ChunkedConversionSink<T>" },
+        { "class": "Converter" },
+        { "class": "Converter<S,T>" },
+        { "class": "Codec" },
+        { "class": "Codec<S,T>" },
+        { "class": "Stream" },
+        { "class": "Stream<T>" },
+        { "class": "StreamIterator" },
+        { "class": "StreamIterator<T>" },
+        { "class": "StreamSubscription" },
+        { "class": "StreamController" },
+        { "class": "StreamController<T>" },
+        { "class": "StreamSink" },
+        { "class": "StreamSink<T>" },
+        { "class": "StreamTransformer" },
+        { "class": "StreamTransformer<S,T>" },
+        // ---- LengthPrefix / ProtoCodec（STREAM_DESIGN.md §8.1 / §8.4，P2）----
+        { "class": "LengthPrefix" },
+        { "class": "ProtoCodec" },
+        { "class": "ProtoCodec<T>" }
       ] },
       // ---- Environment namespace tree (P1.7, PLATFORM_CAPABILITY §13.2) ----
       { "namespace": "Environment", "children":

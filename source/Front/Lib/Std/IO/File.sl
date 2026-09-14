@@ -61,4 +61,43 @@ public class File
     {
         ret SystemFileAppendText(path, content)
     }
+
+    # ── 流式接口（STREAM_DESIGN.md §4.4）──
+
+    # 打开只读文件流
+    # 类似 C# File.OpenRead(string path)
+    static FileStream openRead( string path ) throws
+    {
+        var fs = FileStream( path, FileMode.Read, FileAccess.Read )
+        ret fs
+    }
+
+    # 打开写文件流（存在则截断）
+    # 类似 C# File.OpenWrite(string path)
+    static FileStream openWrite( string path ) throws
+    {
+        var fs = FileStream( path, FileMode.Write )
+        ret fs
+    }
+
+    # 读取文件全部字节
+    # 类似 C# File.ReadAllBytes(string path)
+    static UInt8Array readAllBytes( string path ) throws
+    {
+        var fs = FileStream( path, FileMode.Read, FileAccess.Read )
+        var buf = fs.readAll( 0 )
+        fs.close()
+        ret buf.toArray()
+    }
+
+    # 写入字节到文件（覆盖）
+    # 类似 C# File.WriteAllBytes(string path, byte[] bytes)
+    static bool writeAllBytes( string path, UInt8Array bytes ) throws
+    {
+        var src = ByteBuf.fromBytes( bytes )
+        var fs = FileStream( path, FileMode.Write )
+        fs.write( src )
+        fs.close()
+        ret true
+    }
 }
