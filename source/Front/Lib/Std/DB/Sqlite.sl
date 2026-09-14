@@ -394,7 +394,8 @@ namespace DB
         }
 
         # 获取最近一条错误信息
-        public string errmsg()
+        # 方法名 errorMessage：errmsg 为 Result 语义保留名，类成员名须避让
+        public string errorMessage()
         {
             ret SystemSqlite3Errmsg(this._dbHandle)
         }

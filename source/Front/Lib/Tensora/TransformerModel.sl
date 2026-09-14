@@ -188,7 +188,7 @@ public class TransformerClassifier extends Module
         {
             outs[i] = this.forward( seqs[i] )
         }
-        Tensor stacked = Ops.stack( outs )
+        Tensor stacked = Ops.stackTensors( outs )
         ret stacked
     }
 

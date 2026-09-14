@@ -384,12 +384,12 @@ public class ScriptableRenderContext
         {
             ret
         }
-        Array<VisibleRenderer> list = results.filterByQueue( minQueue, maxQueue )
+        Array<VisibleRenderer> renderers = results.filterByQueue( minQueue, maxQueue )
         Float32_4x4 vp = this.camera.viewProjectionMatrix()
         int i = 0
-        while i < list.length
+        while i < renderers.length
         {
-            VisibleRenderer r = list[i]
+            VisibleRenderer r = renderers[i]
             Material mat = r.material
             if overrideMaterial != null
             {

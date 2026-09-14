@@ -128,10 +128,11 @@ public class Fence
     }
 
     # 队列执行到此处时把围栏值推进
-    public void signal( CommandQueue queue )
+    # 参数名 targetQueue：queue 是小写容器构造糖（queue() => Queue），避免使用
+    public void signal( CommandQueue targetQueue )
     {
         this.value = this.value + 1
-        SystemCallExternalFunction( "Render.signalFence", queue.handle, this.handle, this.value )
+        SystemCallExternalFunction( "Render.signalFence", targetQueue.handle, this.handle, this.value )
     }
 
     public Int64 completedValue()

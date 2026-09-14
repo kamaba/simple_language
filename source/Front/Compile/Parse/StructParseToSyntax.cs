@@ -1087,9 +1087,9 @@ namespace SimpleLanguage.Compile
         /// <summary>
         /// spawn/await 关键字展开 (原地修改节点列表):
         ///     spawn f(a,b)              ->  CoroutineManager.spawnClosure2( f, a, b )
-        ///     spawn c1.fun(a,b)         ->  CoroutineManager.spawnInstance2( c1, "fun", a, b )
         ///     spawn function(){...}     ->  先提升为具名闭包语句, 再 CoroutineManager.spawnClosure0( tmpName )
         ///     await expr                ->  CoroutineManager.awaitHandle( expr )
+        /// 实例链形态 spawn c1.fun(a,b) 已移除: 需经捕获 receiver 的包装闭包转发。
         /// </summary>
         private void TransformCoroutineKeywordNodes( List<Node> pNodeList )
         {
@@ -1169,18 +1169,16 @@ namespace SimpleLanguage.Compile
                     else if (opNode.nodeType == ENodeType.IdentifierLink
                         || (opNode.nodeType == ENodeType.Key && opNode.token?.type == ETokenType.This))
                     {
-                        // spawn 函数变量调用: spawn f(a,b)      -> CoroutineManager.spawnClosureN( f, a, b )
-                        // spawn 实例方法调用: spawn c1.fun(a,b) -> CoroutineManager.spawnInstanceN( c1, "fun", a, b )
+                        // spawn 函数变量调用: spawn f(a,b) -> CoroutineManager.spawnClosureN( f, a, b )
+                        // 实例链形态 spawn c1.fun(a,b) 已移除: 统一改用捕获 receiver 的包装闭包
                         var linkList = opNode.GetLinkNodeList(true);
                         var lastLinkNode = linkList[linkList.Count - 1];
                         // 标识符链为嵌套结构 (a.b.fun 表示为 a.extend=[.,b], b.extend=[.,fun]),
-                        // 沿 extend 尾部下钻取真正末节点; lastParentNode 为末节点的直接容器
-                        Node lastParentNode = null;
+                        // 沿 extend 尾部下钻取真正末节点; 存在链式后缀即实例链形态 (已移除, 下方报错)
                         while (lastLinkNode.extendLinkNodeList.Count > 0)
                         {
                             var tailNode = lastLinkNode.extendLinkNodeList[lastLinkNode.extendLinkNodeList.Count - 1];
                             if (tailNode == null || tailNode.nodeType != ENodeType.IdentifierLink) break;
-                            lastParentNode = lastLinkNode;
                             lastLinkNode = tailNode;
                         }
                         var parNode = lastLinkNode.parNode;
@@ -1207,65 +1205,28 @@ namespace SimpleLanguage.Compile
                             //     "Error spawn 目前最多支持 3 个参数!");
                             return;
                         }
-                        Node callNode;
-                        if (lastLinkNode == opNode)
+                        if (lastLinkNode != opNode)
                         {
-                            // 闭包路径: 无链式后缀, 整个 opNode 即函数引用
-                            // 新实参 childList: [ f, Comma, 原实参节点... ] (原 childList 自带 Comma 分隔)
-                            List<Node> newArgNodes = new List<Node> { opNode };
-                            Token splitCommaToken = new Token(cnode.token);
-                            splitCommaToken.SetLexeme(",", ETokenType.Comma);
-                            Node splitCommaNode = new Node(splitCommaToken);
-                            splitCommaNode.nodeType = ENodeType.Comma;
-                            newArgNodes.Add(splitCommaNode);
-                            foreach (var pn in parNode.childList)
-                            {
-                                if (pn == null) continue;
-                                if (pn.nodeType == ENodeType.Comment) continue;
-                                newArgNodes.Add(pn);
-                            }
-                            callNode = CreateCoroutineCallNode(cnode.token, "spawnClosure" + argCount.ToString(), newArgNodes);
+                            // 实例链形态已移除: spawn receiver.方法() 不再支持
+                            Log.AddNodeLog(LID.NodeStructParseSpawnF, cnode.token,
+                                "Error spawn 实例链形态已移除, 请改用包装闭包转发, 例如: spawn c1.fun(a,b) 改为 function f(a,b){ ret c1.fun(a,b) } 后 spawn f(a,b)");
+                            return;
                         }
-                        else
+                        // 闭包路径: 无链式后缀, 整个 opNode 即函数引用
+                        // 新实参 childList: [ f, Comma, 原实参节点... ] (原 childList 自带 Comma 分隔)
+                        List<Node> newArgNodes = new List<Node> { opNode };
+                        Token splitCommaToken = new Token(cnode.token);
+                        splitCommaToken.SetLexeme(",", ETokenType.Comma);
+                        Node splitCommaNode = new Node(splitCommaToken);
+                        splitCommaNode.nodeType = ENodeType.Comma;
+                        newArgNodes.Add(splitCommaNode);
+                        foreach (var pn in parNode.childList)
                         {
-                            // 实例路径: 末标识符为实例方法名, 前缀链为 receiver 对象
-                            // receiver = 末节点容器去掉末尾 [Period, 方法名] 二节点后的链
-                            var containerNode = lastParentNode != null ? lastParentNode : opNode;
-                            var trimmedExtend = new List<Node>(containerNode.extendLinkNodeList);
-                            if (trimmedExtend.Count >= 2)
-                                trimmedExtend.RemoveRange(trimmedExtend.Count - 2, 2);
-                            containerNode.SetLinkNode(trimmedExtend);
-                            // 方法名转为字符串常量节点
-                            string methodName = lastLinkNode.token != null && lastLinkNode.token.lexeme != null
-                                ? lastLinkNode.token.lexeme.ToString() : "";
-                            Token nameStrToken = new Token(cnode.token);
-                            nameStrToken.SetLexeme(methodName, ETokenType.String);
-                            Node nameStrNode = new Node(nameStrToken);
-                            nameStrNode.nodeType = ENodeType.ConstValue;
-                            // 新实参 childList: [ receiver, Comma, "方法名" (,Comma, 原实参节点...) ]
-                            List<Node> newArgNodes = new List<Node> { opNode };
-                            Token commaToken1 = new Token(cnode.token);
-                            commaToken1.SetLexeme(",", ETokenType.Comma);
-                            Node commaNode1 = new Node(commaToken1);
-                            commaNode1.nodeType = ENodeType.Comma;
-                            newArgNodes.Add(commaNode1);
-                            newArgNodes.Add(nameStrNode);
-                            if (argCount > 0)
-                            {
-                                Token commaToken2 = new Token(cnode.token);
-                                commaToken2.SetLexeme(",", ETokenType.Comma);
-                                Node commaNode2 = new Node(commaToken2);
-                                commaNode2.nodeType = ENodeType.Comma;
-                                newArgNodes.Add(commaNode2);
-                            }
-                            foreach (var pn in parNode.childList)
-                            {
-                                if (pn == null) continue;
-                                if (pn.nodeType == ENodeType.Comment) continue;
-                                newArgNodes.Add(pn);
-                            }
-                            callNode = CreateCoroutineCallNode(cnode.token, "spawnInstance" + argCount.ToString(), newArgNodes);
+                            if (pn == null) continue;
+                            if (pn.nodeType == ENodeType.Comment) continue;
+                            newArgNodes.Add(pn);
                         }
+                        Node callNode = CreateCoroutineCallNode(cnode.token, "spawnClosure" + argCount.ToString(), newArgNodes);
                         pNodeList.RemoveRange(i, opIndex + 1 - i);
                         pNodeList.Insert(i, callNode);
                     }

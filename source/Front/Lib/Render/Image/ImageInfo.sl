@@ -225,7 +225,7 @@ namespace Image
         }
 
         # ── 扩展名判定 ───────────────────────────────────────
-        # 说明：String 目前只提供 length / front / end / range，
+        # 说明：String 目前只提供 length / front / end / slice，
         # 没有 toLowerCase / endsWith，因此这里用
         # SystemStringCharCodeAt 逐字符做「忽略大小写」比较。
         public static bool endsWithFold( string path, string suffix )

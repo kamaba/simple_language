@@ -23,7 +23,8 @@ namespace NSDebug
         {
 
         }
-        public static void error( string msg )
+        # 方法名 logError：error 为 Result 语义保留名，类成员名须避让
+        public static void logError( string msg )
         {
 
         }

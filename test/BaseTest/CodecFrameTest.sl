@@ -230,7 +230,7 @@ CodecFrameTest
         k1.add( CodecFrameMsg( 3, "three" ) )
         k1.close()
         Stream<CodecFrameMsg> s1 = LengthPrefix.decodeStream<CodecFrameMsg>( ms1, cfMakeCodec() )
-        Task t1 = s1.toList()
+        Task t1 = s1.toListThenTask()
         object r1 = Coroutine.awaitHandle( t1 )
         List<CodecFrameMsg> lst1 = r1 as List<CodecFrameMsg>
         int b1cnt = 0
@@ -367,7 +367,7 @@ CodecFrameTest
         k2.add( CodecFrameMsg( 2, "e2" ) )
         k2.close()
         Stream<CodecFrameMsg> s2 = Serialize.toElementStream<CodecFrameMsg>( ms2, codec )
-        Task t3 = s2.toList()
+        Task t3 = s2.toListThenTask()
         object r3 = Coroutine.awaitHandle( t3 )
         List<CodecFrameMsg> lst2 = r3 as List<CodecFrameMsg>
         int g2cnt = 0

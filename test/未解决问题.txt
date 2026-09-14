@@ -7,18 +7,7 @@
 
 改二进制的大工程
 
-[已完成 2026-09-14] spawn1 使用 string 调用的，方法，暂使用变成私有的，可能后期会移除，因为这种使用 在编译器里不好定义，还有就是 不是很直观，要使用 函数(参数1,参数2,.... ) 这样的方式调用
-（落地：Coroutine.sl 的 spawn0..3 / spawnByName / spawnInstance0..3 共 9 个按名方法已改 private；CoroutineTest.sl 78 处、StreamTest.sl 3 处、IsolateTest.sl 4 处调用点全部改写为包装闭包 + spawn 关键字函数值形式；coroutine.md、isolate.md 文档已同步）
 
-
-sl_str_copy  win_str_copy 这个定义方法，你查找下base/下边是不是已经有这个方法定义实现，如果有你从这里边取，如果没有，你把这个相关的方式放到chars.h .c 的里边
-
-你需要把所有的关键字整理出来，然后放到 写代码的规则里边，还包括语法糖 在Core下边的，因为我在Core下边的是可以直接使用的，包括命名空间。
-
-F:\project\lang\simple_language\source\Front\Lib\Core\IO\Stream.sl 这94行 有error 我  181行的map 是关键字
-F:\project\lang\simple_language\source\Front\Lib\Core\IO\Stream.sl 230行的toList 要变成toListThenTask 235也是list 是 关键字糖，所以要避免在这里使用，而且要在FrontEnd层，像这样的错误，要编译不通过。
-
-优化协程，要尽量的使用function(a,b) 这种形式 因为这种形式，可以直接传methodId,
 协程创建的参数，允许大于3个  参数要变成灵活的，而不是写死的  vm_sys_coroutine_spawn_impl 里边的，要根据参数长度，创建大上，而不是写死
 
 

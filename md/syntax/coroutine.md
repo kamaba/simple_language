@@ -173,7 +173,7 @@ public class CoroutineBlockReason extends Object
 
 | 关键字 | 语法身份 | 展开为 |
 |---|---|---|
-| `spawn E` | 一元前缀**表达式** | `Coroutine.spawnClosure0..3(...)` / `Coroutine.spawnInstance0..3(...)` |
+| `spawn E` | 一元前缀**表达式** | `Coroutine.spawnClosure0..3(...)`（闭包路径，唯一形态） |
 | `await e` | 一元前缀**表达式** | `Coroutine.awaitHandle( e )` |
 | `yield` | **语句**（无参） | `Coroutine.yieldNow()` |
 
@@ -186,21 +186,23 @@ yield_stmt := 'yield' ';'
 
 ### 4.1 `spawn`
 
-`spawn` 后必须跟**调用表达式**或**函数字面量**：
+`spawn` 后必须跟**调用表达式**或**函数字面量**（统一函数值形式）：
 
 ```sl
 Task h1 = spawn adder( 1, 2 )                    # function 变量
 Task h2 = spawn function() { ... }               # 匿名闭包（无参）
-Task h3 = spawn c1.coroInstAdd2( 3, 4 )          # 实例方法
-Task h4 = spawn this.coroInstAdd2( 1, 2 )        # 实例方法内 this 链
 Task h5 = spawn mk()                             # 无参函数变量
 ```
 
-⚠️ `spawn` 后**不能直接跟裸静态方法名**——值位置的裸名会按方法调用解析而非函数值，须先经包装闭包转发（见 §5.1）：
+⚠️ `spawn` 后**不能直接跟裸方法名或实例链**——值位置的裸名会按方法调用解析而非函数值，实例链（`spawn c1.方法(...)` / `spawn this.方法(...)`）已移除，须先经包装闭包转发（见 §5.1 / §5.3）：
 
 ```sl
 function add2Fn = function( int a, int b ) { ret coroAdd2( a, b ) }
 Task h = spawn add2Fn( 1, 2 )
+
+# 实例方法：捕获 receiver（或 this）的包装闭包转发
+function instFn = function( int a, int b ) { ret c1.coroInstAdd2( a, b ) }
+Task h3 = spawn instFn( 3, 4 )
 ```
 
 ⚠️ **`spawn x + 1` 这类任意表达式非法。**
@@ -237,19 +239,9 @@ Error yield 不支持带表达式参数, 等待条件请使用 Coroutine.waitUnt
 
 ## 5. 生成协程（spawn 全家族）
 
-### 5.1 按名 spawn（已转私有）
+### 5.1 包装闭包（函数值形式，唯一推荐写法）
 
-按**方法名字符串**解析目标（C 侧 `vm_find_method_entry_by_name`，简单名 + 参数个数全局匹配，**不区分类名**）。
-
-| 方法 | 说明 |
-|---|---|
-| `spawn0( string methodName )` | 无参（**private**） |
-| `spawn1( string methodName, object arg0 )` | 1 参（**private**） |
-| `spawn2( string methodName, object arg0, object arg1 )` | 2 参（**private**） |
-| `spawn3( string methodName, object arg0, object arg1, object arg2 )` | 3 参（**private**） |
-| `spawnByName( string methodName, params Array<object> objs )` | 数组形参通用形式（**private**） |
-
-⚠️ 这组按字符串方法名调用的 API **已全部转为 `private`（可能在未来移除）**：按名形式在编译器里不好定义、调用也不直观。用户代码请改用 §5.2 的**包装闭包（函数值形式）**：
+按**方法名字符串**解析目标的历史 API（`spawn0..3` / `spawnByName`）**已全部移除**：按名形式在编译器里不好定义、调用也不直观。用户代码统一使用**包装闭包（函数值形式）**——静态方法、实例方法、闭包全部经 `spawn 函数( 实参... )` 一种形态处理：
 
 ```sl
 static int coroAdd2( int a, int b ) { ret a + b }
@@ -309,16 +301,9 @@ Func<void>          fv0    # () -> void
 Function            loose  # 宽松类型，返回 object
 ```
 
-### 5.3 实例方法（`spawn` 关键字实例链的内部依赖）
+### 5.3 实例方法（经捕获 receiver 的包装闭包转发）
 
-| 方法 | 说明 |
-|---|---|
-| `spawnInstance0( object receiver, string methodName )` | 无参（**private**） |
-| `spawnInstance1( object receiver, string methodName, object arg0 )` | 1 参（**private**） |
-| `spawnInstance2( object receiver, string methodName, object arg0, object arg1 )` | 2 参（**private**） |
-| `spawnInstance3( object receiver, string methodName, object arg0, object arg1, object arg2 )` | 3 参（**private**） |
-
-这组按字符串方法名调用的 API **已转为 `private`**——它们是 `spawn receiver.方法( ... )` 关键字脱糖的内部依赖，请勿直接按名调用，用关键字形式即可。`receiver` 绑定到被调方法的隐式 `this`，其实例字段在协程内**跨 yield 保持**，多实例互不干扰。
+按字符串方法名 + receiver 的历史 API（`spawnInstance0..3`）**已全部移除**，`spawn receiver.方法( ... )` / `spawn this.方法( ... )` 实例链形态也已在编译期**移除并报错**。实例方法统一经**捕获 receiver 的包装闭包**转发——闭包捕获局部变量（含 `this`），实例字段在协程内**跨 yield 保持**，多实例互不干扰。注意：宿主为实例方法时闭包会自动捕获 `this`，但闭包体内调用宿主实例方法必须写**显式 `this.` 前缀**（裸方法名不做隐式 this 解析，会编译报错）：
 
 ```sl
 CoroInstTarget
@@ -336,15 +321,26 @@ CoroInstTarget
 
     int coroInstSpawnThis()
     {
-        Task h = spawn this.coroInstAdd2( 1, 2 )     # 实例方法内 spawn this.方法
+        # 实例方法内 spawn this.方法（闭包捕获 this 后转发）
+        # 注意：闭包体内调用宿主实例方法必须写显式 this. 前缀，
+        # 裸方法名不做隐式 this 解析（编译报 not found function）
+        function thisAdd2Fn = function( int a, int b )
+        {
+            ret this.coroInstAdd2( a, b )
+        }
+        Task h = spawn thisAdd2Fn( 1, 2 )
         ret await h as int
     }
 }
 
 var cA = CoroInstTarget()
 var cB = CoroInstTarget()
-Task hA = spawn cA.coroInstDouble( 5 )    # 10
-Task hB = spawn cB.coroInstDouble( 7 )    # 14
+
+# 捕获 receiver 的包装闭包：一个 receiver 一个闭包（多实例各转发各的）
+function dblAFn = function( int v ) { ret cA.coroInstDouble( v ) }
+function dblBFn = function( int v ) { ret cB.coroInstDouble( v ) }
+Task hA = spawn dblAFn( 5 )                # 10
+Task hB = spawn dblBFn( 7 )                # 14
 ```
 
 ---
@@ -825,9 +821,7 @@ check( g_f3count == 40 )
 
 | 分类 | 方法 |
 |---|---|
-| **生成·按名（private）** | `spawn0` `spawn1` `spawn2` `spawn3` `spawnByName` —— 已转私有，仅 `spawn` 关键字脱糖内部使用 |
-| **生成·实例（private）** | `spawnInstance0` `spawnInstance1` `spawnInstance2` `spawnInstance3` —— 已转私有（`spawn receiver.方法` 的内部依赖） |
-| **生成·闭包** | `spawnClosure0` `spawnClosure1` `spawnClosure2` `spawnClosure3` `spawnClosure` |
+| **生成·闭包（唯一形态）** | `spawnClosure0` `spawnClosure1` `spawnClosure2` `spawnClosure3` `spawnClosure`（按名 `spawn0..3` / `spawnByName` / `spawnInstance0..3` 已移除） |
 | **调度控制** | `yieldNow` `sleep` `waitUntil` |
 | **查询** | `current` `status` `blockedReason` |
 | **等待聚合** | `awaitHandle` `waitAll2` `waitAll3` `waitAll` `waitAny2` `waitAny3` `waitAny` `nextCompleted2` `nextCompleted3` `waitTimeout` |
@@ -873,7 +867,7 @@ check( g_f3count == 40 )
 | **循环回边自动插入 `OpCode_SchedCheck`** | ❌ **前端不发射 `SCHED_CHECK`**，需显式 `Coroutine.yieldNow()` |
 | 错误统一用 `Error` 枚举 int32 码承载 | SL 层用 `enum extends Error` 异常；C VM 侧抛出的取消/非法操作异常**值为 `null`**（`error_code = -63` / `-64`） |
 | `Error.Cancelled` / `Error.StackOverflow` 等常量 | ❌ 无对应常量；用裸 `catch{}` 捕获 |
-| 设计档未列出的**新增能力** | ✅ `spawnClosure*` / `waitUntil`（按名 `spawnByName` 与 `spawnInstance*` 已转私有，仅内部使用） |
+| 设计档未列出的**新增能力** | ✅ `spawnClosure*` / `waitUntil`（按名 `spawnByName` 与 `spawnInstance*` 已移除） |
 
 ---
 
@@ -881,7 +875,7 @@ check( g_f3count == 40 )
 
 | # | 限制 | 说明 |
 |:-:|---|---|
-| 1 | **按名 spawn 已全部转私有** | `spawn0..3` / `spawnByName` / `spawnInstance0..3` 按字符串方法名全局解析（简单名 + 参数个数，不区分类名、要求全工程唯一），已转 `private` 仅供 `spawn` 关键字脱糖内部使用、可能移除。用户代码统一用**包装闭包函数值形式**（§5.1/§5.2），无命名约束 |
+| 1 | **spawn 只支持函数值形式** | 按名 `spawn0..3` / `spawnByName` / `spawnInstance0..3` 及实例链 `spawn receiver.方法( ... )` / `spawn this.方法( ... )` **已全部移除**（按名解析不区分类名、要求全工程唯一，编译器不好定义且不直观）。静态方法 / 实例方法 / 闭包统一经 `spawn 函数( 实参... )` 处理（§5.1-§5.3），无命名约束 |
 | 2 | **参数按 `object` 装箱传递** | `int` / `string` 等值可直接传入并自动装箱，round-trip 无损；**最多 3 个参数**（`spawnClosure0..3`） |
 | 3 | **无自动公平性** | 前端不发射 `SCHED_CHECK`；纯计算循环必须显式 `Coroutine.yieldNow()`，否则独占调度器、饿死其它协程 |
 | 4 | **`native` 函数体内禁止挂起** | 挂起只发生在解释循环的指令边界（安全点） |
@@ -898,7 +892,7 @@ check( g_f3count == 40 )
 - 长计算循环内周期性 `Coroutine.yieldNow()`，避免饿死其它协程。
 - fire-and-forget 协程也建议最终 `await`（或 `waitTimeout`）一次，确保异常被观测、资源被回收。
 - 用 `Channel` + `close` 表达"生产结束"，用 `waitTimeout` 表达"限时等待"，**避免手写轮询**。
-- 包装闭包转发的目标方法统一加前缀（如 `coro`）——按名 spawn 时代的全工程唯一约束已随私有化退出用户面，前缀现为可读性约定。
+- 包装闭包转发的目标方法统一加前缀（如 `coro`）——按名 spawn 时代的全工程唯一约束已随按名 API 移除而退出用户面，前缀现为可读性约定。
 
 ---
 

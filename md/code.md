@@ -125,3 +125,40 @@ public void UpdateHost
     ...
 }
 ```
+
+关键字使用规范
+
+关键字的完整清单与语法糖总表见 [syntax/keywords.md](./syntax/keywords.md)，此处只列编码时的硬性约束。
+
+[规则4-1] 禁止使用关键字作标识符（变量名、方法名、类名、参数名等）。
+关键字包括：`typealias` `import` `as` `is` `isnot` `namespace` `class` `extends` `enum` `data` `dynamic` `void` `abstract` `interface` `extern` `bind` `label` `public` `protected` `private` `const` `mut` `final` `static` `partial` `override` `operator` `params` `tr` `if` `elif` `else` `while` `dowhile` `for` `in` `out` `switch` `case` `default` `next` `continue` `break` `goto` `ret` `try` `catch` `finally` `throw` `throws` `defer` `errdefer` `checked` `unchecked` `new` `var` `this` `base` `null` `true` `false` `get` `set` `function` `await` `spawn` `yield`，以及类型词 `object` `byte` `sbyte` `short` `ushort` `int` `uint` `long` `ulong` `bool` `half` `float` `double` `string`。
+
+[规则4-2] `get` / `set` 是属性访问器关键字，禁止用作成员名和方法名（词法阶段即报错）。
+
+[规则4-3] 小写容器构造糖名（`map` `list` `stack` `hashset` `queue` `tuple` `array` `range`）与 Result 保留名（`error` `errmsg`）不是词法关键字，可作局部变量名/参数名；但**禁止用作类成员声明名**（字段/方法/getter/setter，MetaCore 层编译报错 LID 11042）。`async` 不是保留字，按普通标识符处理。
+
+[规则4-4] 循环跳出统一用 `continue` / `break`；`next` 只在 switch case 体内表示显式贯穿（fall-through），不要在循环内用 `next` 代替 `continue`。
+
+[规则4-5] 优先使用语法糖保持简洁：`ret` 代替 `return`、`a ?? b` 代替判空取值、`a?.member` 代替判空访问、`$var` / `${expr}` 插值代替字符串拼接。同一文件内风格保持一致。
+
+[规则4-6] 协程中使用 `await` / `spawn` / `yield` 语法糖，不要手写等价的 `Coroutine.awaitHandle(...)` / `Coroutine.spawnClosureN(...)` / `Coroutine.yieldNow()` 调用。
+
+Core 库使用规范
+
+工程引用 Core（jsonc `references` 指向 `out/export/Core`）后，Core 模块根下的类型**裸短名直接使用，无需 import**。完整类型清单见 [syntax/keywords.md](./syntax/keywords.md) §4。
+
+[规则5-1] Core 类型直接使用短名，不要写 `Core.` 前缀，也不要重复 import。
+```sl
+List<Int32> list = new List<Int32>();    // 正确：直接使用
+Core.List<Int32> list = new Core.List<Int32>();  // 不推荐：冗余前缀
+```
+
+[规则5-2] 类型声明优先使用语言类型词（`int`、`float`、`string`…），与 Core 类型类等价；数值精度有明确要求时使用类名（`Int32`、`Float64`…）。
+
+[规则5-3] `Core.Environment` 与 `Core.Environment.Platform` 下的类型需用限定名 `Environment.env`（配 `import Core;`）或全限定 `Core.Environment.env`，不能裸用 `env`。
+
+[规则5-4] 引用非 Core 模块（Std / Math / Tensora 等）的类型时，短名必须先 `import`，否则使用限定名（如 `Std.Console.X`）。
+
+[规则5-5] 禁止使用 Core 内部私有类（`_` 下划线开头的实现类，如 `_MapStream<T>`）；业务代码只使用公开类型。
+
+[规则5-6] 使用 Core 内注册的别名时保持原样：`coro`（= `Coroutine`）、`Float8_E4M3`（= `Float8`），不要自行再造别名。

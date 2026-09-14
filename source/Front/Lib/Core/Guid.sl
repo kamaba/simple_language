@@ -91,7 +91,7 @@ public class Guid extends Object
             int i = 0
             while (i < this._value.length)
             {
-                string ch = this._value.range(i, i + 1)
+                string ch = this._value.slice(i, i + 1)
                 if (ch != "-")
                 {
                     s = s + ch

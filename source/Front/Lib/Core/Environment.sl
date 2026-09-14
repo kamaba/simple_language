@@ -265,15 +265,16 @@ namespace Environment
     {
         # Whether the AI stack member is available (effective view: honours
         # --disable / --enable ai.<name> overrides).
-        public bool has( Int32 stack )
+        # 参数名 stackId：stack 是小写容器构造糖（stack() => Stack），避免使用
+        public bool has( Int32 stackId )
         {
-            ret SystemPlatformEnvAiHas( stack )
+            ret SystemPlatformEnvAiHas( stackId )
         }
 
         # Detected version of the AI stack ("" when unknown or absent).
-        public string version( Int32 stack )
+        public string version( Int32 stackId )
         {
-            ret SystemPlatformAiVersion( stack )
+            ret SystemPlatformAiVersion( stackId )
         }
 
         # Whether any AI stack is available.
@@ -293,14 +294,15 @@ namespace Environment
 
     public class ProbeAi extends Object
     {
-        public bool has( Int32 stack )
+        # 参数名 stackId：stack 是小写容器构造糖（stack() => Stack），避免使用
+        public bool has( Int32 stackId )
         {
-            ret SystemPlatformEnvProbeAiHas( stack )
+            ret SystemPlatformEnvProbeAiHas( stackId )
         }
 
-        public string version( Int32 stack )
+        public string version( Int32 stackId )
         {
-            ret SystemPlatformAiVersion( stack )
+            ret SystemPlatformAiVersion( stackId )
         }
 
         public bool any()

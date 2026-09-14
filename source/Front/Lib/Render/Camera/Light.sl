@@ -10,8 +10,8 @@ public class Light extends Component
     # 强度（通常 [0, 8+]）
     public Float32 intensity = 1.0f
 
-    # 点光 / 聚光有效：0 表示无限远
-    public Float32 range = 0.0f
+    # 字段名 lightRange：range 是小写容器构造糖（range() => Range），类成员名须避让
+    public Float32 lightRange = 0.0f
 
     # 聚光有效：圆锥半角（角度制，光轴两侧）
     public Float32 spotAngle = 30.0f
@@ -26,7 +26,7 @@ public class Light extends Component
         this.type = 0
         this.color = Color.white()
         this.intensity = 1.0f
-        this.range = 0.0f
+        this.lightRange = 0.0f
         this.spotAngle = 30.0f
         this.castShadow = false
         this.shadowStrength = 1.0f
@@ -89,15 +89,15 @@ public class Light extends Component
         {
             ret 1.0f
         }
-        if this.range > 0.0f && distance >= this.range
+        if this.lightRange > 0.0f && distance >= this.lightRange
         {
             ret 0.0f
         }
         Float32 d = Mathf.max( distance, 0.0001f )
         Float32 atten = 1.0f / ( 1.0f + d * d )
-        if this.range > 0.0f
+        if this.lightRange > 0.0f
         {
-            Float32 k = 1.0f - Mathf.clamp( distance / this.range, 0.0f, 1.0f )
+            Float32 k = 1.0f - Mathf.clamp( distance / this.lightRange, 0.0f, 1.0f )
             atten = atten * k * k
         }
         ret atten
@@ -137,23 +137,23 @@ public class Light extends Component
         ret l
     }
 
-    public static Light point( Color c, Float32 intensity, Float32 range )
+    public static Light point( Color c, Float32 intensity, Float32 lightRange )
     {
         Light l = Light()
         l.type = 1
         l.color = c.clone()
         l.intensity = intensity
-        l.range = range
+        l.lightRange = lightRange
         ret l
     }
 
-    public static Light spot( Color c, Float32 intensity, Float32 range, Float32 spotAngleDegrees )
+    public static Light spot( Color c, Float32 intensity, Float32 lightRange, Float32 spotAngleDegrees )
     {
         Light l = Light()
         l.type = 2
         l.color = c.clone()
         l.intensity = intensity
-        l.range = range
+        l.lightRange = lightRange
         l.spotAngle = spotAngleDegrees
         ret l
     }

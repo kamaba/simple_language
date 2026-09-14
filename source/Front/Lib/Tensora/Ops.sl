@@ -225,17 +225,17 @@ public class Ops
         ret r
     }
 
-    # 沿第 0 维堆成一批：每个元素必须为 1 行
-    public static Tensor stack( Array<Tensor> list )
+    # 方法名 stackTensors：stack 是小写容器构造糖（stack() => Stack），类成员名须避让
+    public static Tensor stackTensors( Array<Tensor> tensors )
     {
-        int rows = list.length
-        int cols = list[0].size()
+        int rows = tensors.length
+        int cols = tensors[0].size()
         Tensor r = Tensor( Shape.matrix( rows, cols ) )
         for i = 0, i < rows, i++
         {
             for j = 0, j < cols, j++
             {
-                r.set( i, j, list[i].at( j ) )
+                r.set( i, j, tensors[i].at( j ) )
             }
         }
         ret r

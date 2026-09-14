@@ -47,7 +47,8 @@ public class String extends Object
     }
 
     # 半开区间 [start, end)，等价 Substring(start, end - start)
-    string range( int start, int end )
+    # 方法名 slice：range 是小写容器构造糖（range() => Range），类成员名须避让
+    string slice( int start, int end )
     {
         ret SystemStringRange( this, start, end )
     }

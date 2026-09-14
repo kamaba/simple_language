@@ -35,18 +35,18 @@ public class Factor
     # 返回升序质因数数组（含重复），如 12 -> [2, 2, 3]；n < 2 返回空数组
     public static Array<Int32> primeFactors( Int32 n )
     {
-        Array<Int32> list = Array<Int32>( 32 )
+        Array<Int32> factors = Array<Int32>( 32 )
         int count = 0
         Int32 v = n
 
         if v < 2
         {
-            ret Factor._slice( list, 0 )
+            ret Factor._slice( factors, 0 )
         }
 
         while v % 2 == 0
         {
-            Factor._push( list, count, 2 )
+            Factor._push( factors, count, 2 )
             count = count + 1
             v = v / 2
         }
@@ -56,7 +56,7 @@ public class Factor
         {
             while v % i == 0
             {
-                Factor._push( list, count, i )
+                Factor._push( factors, count, i )
                 count = count + 1
                 v = v / i
             }
@@ -65,17 +65,17 @@ public class Factor
 
         if v > 1
         {
-            Factor._push( list, count, v )
+            Factor._push( factors, count, v )
             count = count + 1
         }
-        ret Factor._slice( list, count )
+        ret Factor._slice( factors, count )
     }
 
     # 去重后的质因数集合
     public static Array<Int32> distinctPrimeFactors( Int32 n )
     {
         Array<Int32> all = Factor.primeFactors( n )
-        Array<Int32> list = Array<Int32>( 32 )
+        Array<Int32> factors = Array<Int32>( 32 )
         int count = 0
         int i = 0
         while i < all.length
@@ -84,7 +84,7 @@ public class Factor
             int j = 0
             while j < count
             {
-                if list[j] == all[i]
+                if factors[j] == all[i]
                 {
                     exists = true
                 }
@@ -92,12 +92,12 @@ public class Factor
             }
             if !exists
             {
-                Factor._push( list, count, all[i] )
+                Factor._push( factors, count, all[i] )
                 count = count + 1
             }
             i = i + 1
         }
-        ret Factor._slice( list, count )
+        ret Factor._slice( factors, count )
     }
 
     # ── 约数 ─────────────────────────────────────────────

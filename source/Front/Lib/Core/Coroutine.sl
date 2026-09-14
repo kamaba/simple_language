@@ -12,13 +12,13 @@
  *  - yield/await/spawn 为前端关键字（语法糖）：
  *      yield;      -> Coroutine.yieldNow()
  *      await expr  -> Coroutine.awaitHandle( expr )
- *    spawn 展开为闭包/实例 spawn 调用（实例形态经 spawnInstance 系列实现，
- *    属内部细节）。按字符串方法名生成的 spawn0..3 / spawnByName /
- *    spawnInstance0..3 已转为私有：编译期无检查且不直观，后期可能移除；
- *    用户代码统一使用 spawnClosure 系列或 spawn 关键字（函数值形式）。
+ *      spawn 函数( 实参... ) 统一展开为闭包 spawn 调用（spawnClosureN），
+ *    静态方法/实例方法/闭包均经函数值形式传入（实例方法由捕获
+ *    receiver 的包装闭包转发）。按字符串方法名生成的 spawn0..3 /
+ *    spawnByName / spawnInstance0..3 已移除：编译期无检查且不直观。
  *  - waitUntil( 谓词闭包 )：条件等待（类似 Unity 的 WaitUntil），
  *    挂起当前协程直至谓词返回 true。
- *  - @Nickname("coro")：coro 为本类别名，可用作静态调用前缀（coro.spawn0(...)）。
+ *  - @Nickname("coro")：coro 为本类别名，可用作静态调用前缀（coro.spawnClosure0(...)）。
  *  - 所有方法最终转发到 C VM 系统调用（见 coroutine_system_method.c），
  *    syscall 返回值即包装好的 Task 对象，无需 SL 侧再注册。
 !#
@@ -109,69 +109,12 @@ public class Task extends Object
 #!
  * 协程管理器：生成、查询、等待与取消协程的静态工具类。
  * 所有操作接口收发 Task 对象。
- * coro 为本类别名（@Nickname），可用作静态调用前缀：coro.spawn0(...)。
+ * coro 为本类别名（@Nickname），可用作静态调用前缀：coro.spawnClosure0(...)。
 !#
 @Nickname("coro")
 public class Coroutine extends Object
 {
     #! ---------- 生成 ---------- !#
-
-    #! 内部保留（私有）：按名无参生成，编译期无检查且不直观，后期可能移除；请改用 spawnClosure0 或 spawn 关键字。 !#
-    private static Task spawn0(string methodName)
-    {
-        ret SystemCoroutineSpawn0(methodName) as Task
-    }
-
-    #! 内部保留（私有）：按名 1 参生成，后期可能移除；请改用 spawnClosure1 或 spawn 关键字。 !#
-    private static Task spawn1(string methodName, object arg0)
-    {
-        ret SystemCoroutineSpawn1(methodName, arg0) as Task
-    }
-
-    #! 内部保留（私有）：按名 2 参生成，后期可能移除；请改用 spawnClosure2 或 spawn 关键字。 !#
-    private static Task spawn2(string methodName, object arg0, object arg1)
-    {
-        ret SystemCoroutineSpawn2(methodName, arg0, arg1) as Task
-    }
-
-    #! 内部保留（私有）：按名 3 参生成，后期可能移除；请改用 spawnClosure3 或 spawn 关键字。 !#
-    private static Task spawn3(string methodName, object arg0, object arg1, object arg2)
-    {
-        ret SystemCoroutineSpawn3(methodName, arg0, arg1, arg2) as Task
-    }
-
-    #!
-     * 内部保留（私有）：按名数组形参生成，后期可能移除；
-     * 请改用 spawnClosure( closure, objs ) 或 spawn 关键字。
-    !#
-    private static Task spawnByName( string methodName, params Array<object> objs )
-    {
-        ret SystemCoroutineSpawnN( methodName, objs ) as Task
-    }
-
-    #! 内部保留（私有）：spawn 关键字实例链（receiver.方法）脱糖依赖，后期可能移除。 !#
-    private static Task spawnInstance0( object receiver, string methodName )
-    {
-        ret SystemCoroutineSpawnInstance0( receiver, methodName ) as Task
-    }
-
-    #! 内部保留（私有）：spawn 关键字实例链（receiver.方法）脱糖依赖，后期可能移除。 !#
-    private static Task spawnInstance1( object receiver, string methodName, object arg0 )
-    {
-        ret SystemCoroutineSpawnInstance1( receiver, methodName, arg0 ) as Task
-    }
-
-    #! 内部保留（私有）：spawn 关键字实例链（receiver.方法）脱糖依赖，后期可能移除。 !#
-    private static Task spawnInstance2( object receiver, string methodName, object arg0, object arg1 )
-    {
-        ret SystemCoroutineSpawnInstance2( receiver, methodName, arg0, arg1 ) as Task
-    }
-
-    #! 内部保留（私有）：spawn 关键字实例链（receiver.方法）脱糖依赖，后期可能移除。 !#
-    private static Task spawnInstance3( object receiver, string methodName, object arg0, object arg1, object arg2 )
-    {
-        ret SystemCoroutineSpawnInstance3( receiver, methodName, arg0, arg1, arg2 ) as Task
-    }
 
     #!
      * 以无参闭包创建并启动协程，返回协程对象。

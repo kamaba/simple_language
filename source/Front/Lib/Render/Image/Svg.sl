@@ -301,7 +301,7 @@ namespace Image
             {
                 ret 0.0f
             }
-            string token = c.text.range( start, c.pos )
+            string token = c.text.slice( start, c.pos )
             ret SystemConvertFloat32( token )
         }
 
@@ -314,7 +314,7 @@ namespace Image
                 ret path
             }
             SvgPathCursor c = SvgPathCursor( d )
-            List<SvgPathCommand> list = List<SvgPathCommand>( 16 )
+            List<SvgPathCommand> commands = List<SvgPathCommand>( 16 )
             Int32 lastCmd = 0
 
             while !c.atEnd()
@@ -364,16 +364,16 @@ namespace Image
                         args[ i ] = SvgPath.readNumber( c )
                         i = i + 1
                     }
-                    list.add( SvgPathCommand( lastCmd, args ) )
+                    commands.add( SvgPathCommand( lastCmd, args ) )
                 }
             }
 
-            Int32 n = list.length()
+            Int32 n = commands.length()
             path.commands = Array<SvgPathCommand>( n )
             Int32 k = 0
             while k < n
             {
-                path.commands[ k ] = list.at( k )
+                path.commands[ k ] = commands.at( k )
                 k = k + 1
             }
             ret path
@@ -648,7 +648,7 @@ namespace Image
             {
                 ret false
             }
-            ret text.range( 0, 5 ) == "<?xml" || text.range( 0, 4 ) == "<svg"
+            ret text.slice( 0, 5 ) == "<?xml" || text.slice( 0, 4 ) == "<svg"
         }
 
         # XML -> 文档树（后端）

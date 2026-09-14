@@ -318,7 +318,7 @@ namespace SL
             int n = sql.length
             for i = 0, i < n, i++
             {
-                string ch = sql.range( i, i + 1 )
+                string ch = sql.slice( i, i + 1 )
                 if ch == "?" && argIndex < count
                 {
                     result = result + Mysql.literal( conn, args._getItem_( argIndex ) )

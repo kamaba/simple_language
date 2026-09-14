@@ -367,11 +367,11 @@ public class GfxBackend
 
     public static bool isBackendAvailable( EGraphicsBackend b )
     {
-        Array<Int32> list = GfxBackend.availableBackends()
+        Array<Int32> backends = GfxBackend.availableBackends()
         int i = 0
-        while i < list.length
+        while i < backends.length
         {
-            if list[i] == b
+            if backends[i] == b
             {
                 ret true
             }

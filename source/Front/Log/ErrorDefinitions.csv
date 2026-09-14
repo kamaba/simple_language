@@ -554,6 +554,7 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 11039,Error,FALSE,FALSE,2,,编译步骤[{0}]执行失败: {1},,,
 11040,Error,FALSE,FALSE,2,,编译文件[{0}]失败: {1},,,
 11041,Info,FALSE,FALSE,1,,编译过程汇总: {0},,,
+11042,Error,FALSE,FALSE,1,,类成员名[{0}]使用了保留名: 小写容器构造糖(map/list/stack/hashset/queue/tuple/array/range)与Result保留名(error/errmsg)不允许作为类成员声明名!!,,,
 12157,Error,FALSE,FALSE,0,,global的值，只允许在Project.sp文件中，进行赋值，而不允许在其它函数中进行调用,,Auto-generated LID mapping,,
 12158,Error,TRUE,FALSE,0,,处理右置表达式[{0}]失败,,Auto-generated LID mapping,,
 12247,Error,TRUE,FALSE,0,," 定义变量NameToken没有发现",,Auto-generated LID mapping,,

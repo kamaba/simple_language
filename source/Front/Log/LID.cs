@@ -51,6 +51,7 @@ namespace SimpleLanguage.Logging
         ProcessStepFailed = 11039,
         ProcessCompileFileFailed = 11040,
         ProcessSummary = 11041,
+        MetaCoreMemberNameReserved = 11042,
 
         NodeNotFoundNameToken = 12247,
         NodeAssetFrontListNodeIsZero = 12248,

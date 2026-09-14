@@ -91,7 +91,8 @@ public class _StreamEvent extends Object
         ret this._data
     }
 
-    get object error()
+    # getter 名 errorValue：error 为 Result 语义保留名（见 md/syntax/result.md），避让
+    get object errorValue()
     {
         ret this._error
     }
@@ -178,7 +179,8 @@ public abstract class Stream<T> extends Object interface Core.IIterable<T>
 
     # ── 惰性变换（单订阅链：包装流把回调转发给上游）──
 
-    public Stream<U> map<U>( Function mapper )
+    # 方法名 mapEach：map 是小写容器构造糖（map() => Map），类成员名须避让
+    public Stream<U> mapEach<U>( Function mapper )
     {
         var s = _MapStream<T,U>( this, mapper )
         ret s
@@ -227,18 +229,18 @@ public abstract class Stream<T> extends Object interface Core.IIterable<T>
     }
 
     # 结果经 Task.awaitHandle() 取回（object as List<T>）。
-    public Task toList()
+    public Task toListThenTask()
     {
         Stream<T> src = this
         function f = function()
         {
-            var list = List<T>()
+            var collected = List<T>()
             var it = src.iterator
             while it.moveNext()
             {
-                list.add( it.current )
+                collected.add( it.current )
             }
-            ret list
+            ret collected
         }
         Task task = Coroutine.spawnClosure0( f )
         ret task
@@ -281,9 +283,10 @@ public abstract class Stream<T> extends Object interface Core.IIterable<T>
         ret s
     }
 
-    public static Stream<T> error( object error )
+    # 工厂名 failed：error 为 Result 语义保留名，类成员名须避让
+    public static Stream<T> failed( object errInfo )
     {
-        var s = _ErrorStream<T>( error )
+        var s = _ErrorStream<T>( errInfo )
         ret s
     }
 }
@@ -392,7 +395,7 @@ public class _ControllerStream<T> extends Stream<T>
                 {
                     if e != null
                     {
-                        e( ev.error )
+                        e( ev.errorValue )
                     }
                     if co
                     {
@@ -478,14 +481,15 @@ public class StreamController<T> extends Object
     }
 
     # 投递一个错误事件；通道满时挂起。
-    public void addError( object error )
+    # 参数名 errInfo：error 为 Result 语义保留名，避免使用
+    public void addError( object errInfo )
     {
         if this._closed
         {
             ret
         }
         var ev = _StreamEvent()
-        ev.markError( error )
+        ev.markError( errInfo )
         this._channel.send( ev )
     }
 
@@ -834,9 +838,9 @@ public class _ErrorStream<T> extends Stream<T>
 {
     object _error = null
 
-    _init_( object error )
+    _init_( object errInfo )
     {
-        this._error = error
+        this._error = errInfo
     }
 
     override public StreamSubscription listen( Function onData, Function onError, Function onDone, bool cancelOnError )

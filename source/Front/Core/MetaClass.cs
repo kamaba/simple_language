@@ -1072,6 +1072,22 @@ namespace SimpleLanguage.Core
                 + " 与 Module 下的 " + mn.allName + " 重名!! Project成员不允许与Module下定义的名称相同。");
             return true;
         }
+        // 类成员声明保留名: 小写容器构造糖(map/list/stack/hashset/queue/tuple/array/range)
+        // 与 Result 语义保留名(error/errmsg)；局部变量/参数仍可使用这些名字(仅链首裸调用被糖劫持)
+        private static readonly HashSet<string> s_ReservedMemberNameSet = CreateReservedMemberNameSet();
+
+        private static HashSet<string> CreateReservedMemberNameSet()
+        {
+            var set = new HashSet<string>(StringComparer.Ordinal);
+            foreach( var containerName in MetaCallNode.LowercaseContainerClassNameDict.Keys )
+            {
+                set.Add(containerName);
+            }
+            set.Add("error");
+            set.Add("errmsg");
+            return set;
+        }
+
         public void ParseFileMetaClassMemeberVarAndFunc( FileMetaClass fmc )
         {
             bool isProjectSpecialClass = string.Equals(this.name, "Project", StringComparison.OrdinalIgnoreCase)
@@ -1080,6 +1096,12 @@ namespace SimpleLanguage.Core
             bool isHave = false;
             foreach (var v2 in fmc.memberVariableList)
             {
+                if (s_ReservedMemberNameSet.Contains(v2.name))
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreMemberNameReserved, v2.token,
+                        "类成员名[{0}]使用了保留名: 小写容器构造糖(map/list/stack/hashset/queue/tuple/array/range)与Result保留名(error/errmsg)不允许作为类成员声明名!!", v2.name);
+                    continue;
+                }
                 var mn = this.m_MetaNode.GetChildrenMetaNodeByName(v2.name);
                 if( mn != null )
                 {
@@ -1129,6 +1151,12 @@ namespace SimpleLanguage.Core
             }
             foreach (var v2 in fmc.memberFunctionList)
             {
+                if (s_ReservedMemberNameSet.Contains(v2.name))
+                {
+                    Log.AddMetaCoreLog(LID.MetaCoreMemberNameReserved, v2.token,
+                        "类成员名[{0}]使用了保留名: 小写容器构造糖(map/list/stack/hashset/queue/tuple/array/range)与Result保留名(error/errmsg)不允许作为类成员声明名!!", v2.name);
+                    continue;
+                }
                 var mn = this.m_MetaNode.GetChildrenMetaNodeByName(v2.name);
                 if( mn != null )
                 {

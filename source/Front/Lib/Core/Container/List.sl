@@ -9,8 +9,8 @@ public class List<T> interface Core.IIterable<T>, Core.IIterator<T>, IList<T>
 
     public static List<T> create( int capacity )
     {
-        var list = List<T>(capacity)
-        ret list
+        var result = List<T>(capacity)
+        ret result
     }
 
     #默认构造，容量为0，首次添加时扩容为4（与 C# List<T> 一致）

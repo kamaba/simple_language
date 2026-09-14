@@ -2093,6 +2093,9 @@ namespace SimpleLanguage.Core
             { "range", "Range" },
         };
 
+        // public accessor for reserved-name checks (member declaration validation in MetaClass)
+        public static IReadOnlyDictionary<string, string> LowercaseContainerClassNameDict => s_LowercaseContainerClassNameDict;
+
         // default template args for a lowercase container keyword when no explicit template args
         // returns null when there is no default (tuple is the plain no-template class;
         // uppercase class names never auto-infer here)

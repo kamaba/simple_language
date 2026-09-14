@@ -148,7 +148,7 @@ public class Tokenizer
             string s = texts[i]
             for k = 0, k < s.length(), k++
             {
-                this.vocab.add( s.range( k, k + 1 ) )
+                this.vocab.add( s.slice( k, k + 1 ) )
             }
         }
         this.vocab.add( " " )
@@ -161,7 +161,7 @@ public class Tokenizer
         string cur = ""
         for i = 0, i < text.length(), i++
         {
-            string ch = text.range( i, i + 1 )
+            string ch = text.slice( i, i + 1 )
             if ch == " "
             {
                 if cur != ""
@@ -195,7 +195,7 @@ public class Tokenizer
         {
             for i = 0, i < text.length(), i++
             {
-                tokens.add( text.range( i, i + 1 ) )
+                tokens.add( text.slice( i, i + 1 ) )
             }
         }
         else

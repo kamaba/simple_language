@@ -423,7 +423,7 @@ public class JsonValue extends Object interface Core.IIterable<JsonValue>, Core.
     #转为列表（直接孩子逐个包装，动态扩容）
     public List<JsonValue> asList()
     {
-        List<JsonValue> list = new()
+        List<JsonValue> result = new()
         if this._node != null
         {
             TreeNode<string> c = this._node._firstChild
@@ -431,17 +431,17 @@ public class JsonValue extends Object interface Core.IIterable<JsonValue>, Core.
             {
                 JsonValue jv = new()
                 jv._node = c
-                list.add( jv )
+                result.add( jv )
                 c = c._nextSibling
             }
         }
-        ret list
+        ret result
     }
 
     #转为键值映射（object 成员的键名 -> JsonValue；跳过无键名的孩子）
     public Map<string, JsonValue> asMap()
     {
-        Map<string, JsonValue> map = new()
+        Map<string, JsonValue> result = new()
         if this._node != null
         {
             TreeNode<string> c = this._node._firstChild
@@ -451,12 +451,12 @@ public class JsonValue extends Object interface Core.IIterable<JsonValue>, Core.
                 {
                     JsonValue jv = new()
                     jv._node = c
-                    map.add( c._name, jv )
+                    result.add( c._name, jv )
                 }
                 c = c._nextSibling
             }
         }
-        ret map
+        ret result
     }
 
     # ---- data 转换（复用 BaseJson.toData 的 C 层后端）----

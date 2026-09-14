@@ -38,6 +38,7 @@
 | 文档 | 说明 |
 |------|------|
 | [syntax/introduction.md](./syntax/introduction.md) | 简介与文档约定 |
+| [syntax/keywords.md](./syntax/keywords.md) | **关键字与语法糖总表**：全量关键字分类表（词法器实测）、运算符与特殊符号、语法糖对照（ret/next/yield/await/spawn/static if/$插值/小写容器构造糖）、类成员保留名规则、Core 引用后直接可用类型清单、Core / Environment / Platform 命名空间 |
 | [syntax/base.md](./syntax/base.md) | 基本语法 |
 | [syntax/namespace.md](./syntax/namespace.md) | 命名空间 |
 | [syntax/variable.md](./syntax/variable.md) | 变量 |
@@ -66,7 +67,7 @@
 | [syntax/switch.md](./syntax/switch.md) | `switch` |
 | [syntax/forwhiledowhile.md](./syntax/forwhiledowhile.md) | 循环 |
 | [syntax/labelgoto.md](./syntax/labelgoto.md) | 标签与 goto |
-| [syntax/trycatch.md](./syntax/trycatch.md) | 异常处理 |
+| [syntax/try.md](./syntax/try.md) | 异常处理（throw / throws / try / catch / defer / checked） |
 
 ### 3.4 面向对象与复用
 

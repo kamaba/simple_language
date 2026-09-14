@@ -16,10 +16,10 @@
 #
 # 编写约定（重要）：
 #  1. 按字符串方法名生成协程的 API（Coroutine.spawn0..3 / spawnByName /
-#     spawnInstance0..3）已转私有（编译期无检查且不直观，后期可能移除）。
-#     本文件统一改用函数值形式：各 testGroup 顶部定义包装闭包，调用点用
-#     spawn 闭包变量( 实参... ) 关键字形态；包装闭包转发调用下方以
-#     coro / coroKw 前缀命名的静态方法（前缀保留为可读性约定）。
+#     spawnInstance0..3）已移除（编译期无检查且不直观）。spawn 关键字只
+#     支持函数值形式：spawn 函数( 实参... )，各 testGroup 顶部定义包装闭包；
+#     实例方法同样经捕获 receiver 的包装闭包转发（静态方法转发调用点以
+#     coro / coroKw 前缀命名，前缀保留为可读性约定）。
 #  2. C VM 侧抛出的异常（取消 -63 / 非法操作 -64）其异常值为 null，
 #     捕获时必须用裸 catch{}（不绑定变量）；SL 层 throw 的枚举异常
 #     才可用 catch XxxError ex 绑定。
@@ -73,10 +73,16 @@ CoroInstTarget
         ret this.instVal
     }
 
-    # 实例方法内 spawn this.方法()（关键字 this 链形态）
+    # 实例方法内 spawn this.方法()（闭包捕获 this 后转发）
+    # 注意: 闭包体内调用宿主实例方法必须写显式 this. 前缀（闭包内裸方法名
+    # 不做隐式 this 解析，会编译报错 not found function）
     int coroInstSpawnThis()
     {
-        Task h = spawn this.coroInstAdd2( 1, 2 )
+        function thisAdd2Fn = function( int a, int b )
+        {
+            ret this.coroInstAdd2( a, b )
+        }
+        Task h = spawn thisAdd2Fn( 1, 2 )
         ret await h as int
     }
 }
@@ -1358,32 +1364,56 @@ CoroutineTest
     {
         global.println( "========== N: spawn 实例方法 ==========" )
 
-        # N1 基本形态: spawn c1.fun( a, b ) 传参 + await 取返回值
+        # N1 基本形态: 闭包捕获实例, 传参 + await 取返回值
         var c1 = CoroInstTarget()
-        Task n1 = spawn c1.coroInstAdd2( 3, 4 )
+        function n1Add2Fn = function( int a, int b )
+        {
+            ret c1.coroInstAdd2( a, b )
+        }
+        Task n1 = spawn n1Add2Fn( 3, 4 )
         int rn1 = await n1 as int
         check( "N1 spawn 实例方法传参/返回", rn1 == 7 )
 
         # N2 this 绑定: 实例字段在协程内跨 yield 读写, 两实例互不干扰
         var cA = CoroInstTarget()
         var cB = CoroInstTarget()
-        Task hA = spawn cA.coroInstDouble( 5 )
-        Task hB = spawn cB.coroInstDouble( 7 )
+        function n2AFn = function( int v )
+        {
+            ret cA.coroInstDouble( v )
+        }
+        function n2BFn = function( int v )
+        {
+            ret cB.coroInstDouble( v )
+        }
+        Task hA = spawn n2AFn( 5 )
+        Task hB = spawn n2BFn( 7 )
         int rA = await hA as int
         int rB = await hB as int
         check( "N2 实例 this 绑定/多实例隔离", rA == 10 && rB == 14 )
 
         # N3 0 参 / 3 参变体
         var c3 = CoroInstTarget()
-        Task n3a = spawn c3.coroInstZero()
-        Task n3b = spawn c3.coroInstSum3( 1, 2, 3 )
+        function n3ZeroFn = function()
+        {
+            ret c3.coroInstZero()
+        }
+        function n3Sum3Fn = function( int a, int b, int c )
+        {
+            ret c3.coroInstSum3( a, b, c )
+        }
+        Task n3a = spawn n3ZeroFn()
+        Task n3b = spawn n3Sum3Fn( 1, 2, 3 )
         int rn3a = await n3a as int
         int rn3b = await n3b as int
         check( "N3 spawn 实例方法 0/3 参", rn3a == 42 && rn3b == 6 )
 
         # N4 实例方法内 spawn this.方法()
         var c4 = CoroInstTarget()
-        Task n4 = spawn c4.coroInstSpawnThis()
+        function n4ThisFn = function()
+        {
+            ret c4.coroInstSpawnThis()
+        }
+        Task n4 = spawn n4ThisFn()
         int rn4 = await n4 as int
         check( "N4 实例方法内 spawn this.方法", rn4 == 3 )
     }

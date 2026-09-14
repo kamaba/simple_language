@@ -98,7 +98,7 @@ StreamTest
         arr1._setItem_( 3, 4 )
         arr1._setItem_( 4, 5 )
         Stream<Int32> s1 = Stream<Int32>.fromIterable( arr1 )
-        Task t1 = s1.toList()
+        Task t1 = s1.toListThenTask()
         object r1 = Coroutine.awaitHandle( t1 )
         List<Int32> lst1 = r1 as List<Int32>
         int c1cnt = 0
@@ -200,12 +200,12 @@ StreamTest
         }
         Stream<Int32> s = Stream<Int32>.generate( 10, gen )
         Stream<Int32> w = s.where( pred )
-        Stream<Int32> m = w.map<Int32>( mapper )
+        Stream<Int32> m = w.mapEach<Int32>( mapper )
         Stream<Int32> tk = m.take( 3 )
         check( "C2-1 链构建期间零求值", StreamTest.g_genCount == 0 && StreamTest.g_mapCount == 0 )
 
         # C2-2 where+map+take 消费结果：0..9 偶数 ×10 取 3 → 0, 20, 40
-        Task t = tk.toList()
+        Task t = tk.toListThenTask()
         object r = Coroutine.awaitHandle( t )
         List<Int32> lst = r as List<Int32>
         int cnt = 0
@@ -237,7 +237,7 @@ StreamTest
             StreamTest.g_mapCount = StreamTest.g_mapCount + 1
             ret v;
         }
-        Stream<Int32> mm = src.map<Int32>( mapper2 )
+        Stream<Int32> mm = src.mapEach<Int32>( mapper2 )
         function onData = function( object v )
         {
         }
@@ -316,7 +316,7 @@ StreamTest
         StreamTest.g_err = ""
         StreamTest.g_count = 0
         StreamTest.g_done = false
-        Stream<Int32> s3 = Stream<Int32>.error( "errFactory" )
+        Stream<Int32> s3 = Stream<Int32>.failed( "errFactory" )
         function onData3 = function( object v )
         {
             StreamTest.g_count = StreamTest.g_count + 1

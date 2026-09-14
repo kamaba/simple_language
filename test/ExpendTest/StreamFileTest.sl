@@ -261,7 +261,7 @@ StreamFileTest
         # File 读回 decodeStream
         FileStream fr = FileStream( path, FileMode.Read )
         Stream<StreamFileMsg> sr = LengthPrefix.decodeStream<StreamFileMsg>( fr, codec )
-        Task t = sr.toList()
+        Task t = sr.toListThenTask()
         object r = Coroutine.awaitHandle( t )
         List<StreamFileMsg> lst = r as List<StreamFileMsg>
         int ecnt = 0
