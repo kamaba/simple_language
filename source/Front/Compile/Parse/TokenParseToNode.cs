@@ -744,12 +744,28 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Checked:
                 case ETokenType.Unchecked:
                 case ETokenType.Await:    // await 一元前缀（表达式），在 CreateFileMetaExpress 展开
-                case ETokenType.Spawn:    // spawn 一元前缀（表达式），在 CreateFileMetaExpress 展开
                 case ETokenType.Yield:    // yield 语句关键字，在 StructParseToSyntax 展开为 Coroutine.Yield()
                 case ETokenType.Get:      // get/set 是关键字（属性访问器），禁止用作成员名/方法名，
                 case ETokenType.Set:      // 库代码应使用 getValue/setValue 之类命名
                     {
                         AddKeyNode(token);
+                    }
+                    break;
+                case ETokenType.Spawn:    // spawn 一元前缀（表达式），在 CreateFileMetaExpress 展开
+                    {
+                        // spawn 出现在 pending '.' / '?.' 之后 (如 Isolate.spawn( f(a,b) )) 时,
+                        // 按标识符成员名进链 (否则无法命中 StructParse 的脱糖匹配且 linkToken 泄漏
+                        // 会吞掉下一语句首标识符); 其余情况仍是协程一元前缀关键字
+                        if (m_CurrentNode.linkToken != null)
+                        {
+                            Token identToken = new Token(token);
+                            identToken.SetType(ETokenType.Identifier);
+                            AddIdentifier(identToken);
+                        }
+                        else
+                        {
+                            AddKeyNode(token);
+                        }
                     }
                     break;
                 case ETokenType.New:

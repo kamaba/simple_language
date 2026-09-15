@@ -56,19 +56,19 @@ public class FileStream extends ByteStream
         {
             flags = 1
         }
-        else if mode == FileMode.Write
+        elif mode == FileMode.Write
         {
             flags = 2
         }
-        else if mode == FileMode.ReadWrite
+        elif mode == FileMode.ReadWrite
         {
             flags = 3
         }
-        else if mode == FileMode.Append
+        elif mode == FileMode.Append
         {
             flags = 4
         }
-        else if mode == FileMode.Create || mode == FileMode.Truncate
+        elif mode == FileMode.Create || mode == FileMode.Truncate
         {
             flags = 8
             if access == FileAccess.Read || access == FileAccess.ReadWrite
@@ -139,7 +139,7 @@ public class FileStream extends ByteStream
         {
             o = 0
         }
-        else if origin == SeekOrigin.Current
+        elif origin == SeekOrigin.Current
         {
             o = 1
         }

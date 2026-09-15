@@ -419,7 +419,7 @@ public class MemoryStream extends ByteStream
         {
             target = offset
         }
-        else if origin == SeekOrigin.Current
+        elif origin == SeekOrigin.Current
         {
             target = this.position + offset
         }

@@ -57,9 +57,19 @@ public class RawReceivePort extends Object
     }
 
     #! 非阻塞取一条消息；无消息返回 null。 !#
-    public object tryRecv()
+    public Result tryRecv()
     {
-        ret SystemPortTryRecv( this._portId )
+        var recv = SystemPortTryRecv( this._portId );
+        if ( recv == null )
+        {
+            result.code = 1;
+            result.value = null
+        }
+        else
+        {
+            result.code = 0;
+            result.value = recv
+        }
     }
 
     #! 关闭端口。 !#

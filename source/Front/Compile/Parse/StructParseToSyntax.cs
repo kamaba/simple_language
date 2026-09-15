@@ -634,6 +634,15 @@ namespace SimpleLanguage.Compile
 
         private FileMetaSyntax CrateFileMetaSyntaxNoKey(List<Node> pNodeList)
         {
+            // spawn/await 关键字展开: 把 spawn f(a,b) / await expr 替换为 Coroutine.spawnClosureN(...) / Coroutine.awaitTask(...) 调用节点
+            // (须在 try/checked 早退分支之前, 否则 try spawn f(a,b) 等前缀形态无法展开)
+            TransformCoroutineKeywordNodes(pNodeList);
+
+            // Isolate.run/spawn/spawnInstance( ... ) 脱糖为变长系统调用 SystemIsolateRun/Spawn( 入口, 转发实参... )
+            // (须在 try/checked 早退分支之前, 否则 try Isolate.run( fn, ... ) 等前缀形态无法脱糖)
+            // 语句级入口: 独立语句丢弃返回值时不追加 as Isolate 后缀, 赋值右侧仍追加
+            TransformIsolateCallNodes(pNodeList, true);
+
             // Check if first node is 'try' or 'checked' keyword (expression prefix like "try riskyFunc()" / "checked(a + b)")
             if (pNodeList.Count > 0
                 && (pNodeList[0].token?.type == ETokenType.Try
@@ -646,9 +655,6 @@ namespace SimpleLanguage.Compile
                 }
                 return null;
             }
-
-            // spawn/await 关键字展开: 把 spawn f(a,b) / await expr 替换为 Coroutine.spawnClosureN(...) / Coroutine.awaitTask(...) 调用节点
-            TransformCoroutineKeywordNodes(pNodeList);
 
             List<Node> beforeNodeList = new List<Node>();
             Node assignNode = null;
@@ -895,7 +901,9 @@ namespace SimpleLanguage.Compile
                         afterNodeList[0].token, nameToken, true, paramList, closureBlock);
                     ParseCurrentNodeInfo pcnicClosure = new ParseCurrentNodeInfo(closureBlock);
                     m_CurrentNodeInfoStack.Push(pcnicClosure);
+                    m_ClosureBodyDepth++;
                     ParseSyntax(braceNode);
+                    m_ClosureBodyDepth--;
                     m_CurrentNodeInfoStack.Pop();
                     return fmdcs;
                 }
@@ -1038,17 +1046,17 @@ namespace SimpleLanguage.Compile
         }
 
         /// <summary>
-        /// 程序化合成 Coroutine.methodName( args... ) 的 IdentifierLink 调用节点,
-        /// 结构与正常解析 "Coroutine.methodName( args... )" 完全一致。
+        /// 程序化合成 类名.methodName( args... ) 的 IdentifierLink 调用节点 (Coroutine/Isolate 通用),
+        /// 结构与正常解析 "类名.methodName( args... )" 完全一致。
         /// 注意: argNodes 原样作为 Par 的 childList, 多实参时由调用者负责插入 Comma 分隔节点。
         /// </summary>
-        private Node CreateCoroutineCallNode( Token keyToken, string methodName, List<Node> argNodes )
+        private Node CreateStaticClassCallNode( Token keyToken, string className, string methodName, List<Node> argNodes )
         {
-            // Coroutine 根节点
-            Token corToken = new Token(keyToken);
-            corToken.SetLexeme("Coroutine", ETokenType.Identifier);
-            Node corNode = new Node(corToken);
-            corNode.nodeType = ENodeType.IdentifierLink;
+            // 类名根节点
+            Token classToken = new Token(keyToken);
+            classToken.SetLexeme(className, ETokenType.Identifier);
+            Node classNode = new Node(classToken);
+            classNode.nodeType = ENodeType.IdentifierLink;
 
             // '.' 链接节点
             Token periodToken = new Token(keyToken);
@@ -1062,7 +1070,7 @@ namespace SimpleLanguage.Compile
             Node methodNode = new Node(methodToken);
             methodNode.nodeType = ENodeType.IdentifierLink;
 
-            corNode.SetLinkNode(new List<Node> { periodNode, methodNode });
+            classNode.SetLinkNode(new List<Node> { periodNode, methodNode });
 
             // 实参 Par 节点
             Token parToken = new Token(keyToken);
@@ -1081,7 +1089,7 @@ namespace SimpleLanguage.Compile
             rightParToken.SetLexeme(")", ETokenType.RightPar);
             parNode.endToken = rightParToken;
             methodNode.SetParNode(parNode);
-            return corNode;
+            return classNode;
         }
 
         /// <summary>
@@ -1156,14 +1164,16 @@ namespace SimpleLanguage.Compile
                         AddParseSyntaxNodeInfo(fmdcs);
                         ParseCurrentNodeInfo pcnicClosure = new ParseCurrentNodeInfo(closureBlock);
                         m_CurrentNodeInfoStack.Push(pcnicClosure);
+                        m_ClosureBodyDepth++;
                         ParseSyntax(braceNode);
+                        m_ClosureBodyDepth--;
                         m_CurrentNodeInfoStack.Pop();
 
                         // 2. 替换为 CoroutineManager.spawnClosure0( tmpName )
                         Token tmpToken = new Token(nameToken);
                         Node tmpRefNode = new Node(tmpToken);
                         tmpRefNode.nodeType = ENodeType.IdentifierLink;
-                        Node callNode = CreateCoroutineCallNode(cnode.token, "spawnClosure0",
+                        Node callNode = CreateStaticClassCallNode(cnode.token, "Coroutine", "spawnClosure0",
                             new List<Node> { tmpRefNode });
                         pNodeList.RemoveRange(i, opIndex + 3 - i);
                         pNodeList.Insert(i, callNode);
@@ -1256,14 +1266,16 @@ namespace SimpleLanguage.Compile
                             AddParseSyntaxNodeInfo(fmdcs);
                             ParseCurrentNodeInfo pcnicClosure = new ParseCurrentNodeInfo(closureBlock);
                             m_CurrentNodeInfoStack.Push(pcnicClosure);
+                            m_ClosureBodyDepth++;
                             ParseSyntax(braceNode);
+                            m_ClosureBodyDepth--;
                             m_CurrentNodeInfoStack.Pop();
 
                             // 4. 替换为 Coroutine.spawnClosure0( tmpName )
                             Token tmpToken = new Token(nameToken);
                             Node tmpRefNode = new Node(tmpToken);
                             tmpRefNode.nodeType = ENodeType.IdentifierLink;
-                            Node spawnCallNode = CreateCoroutineCallNode(cnode.token, "spawnClosure0",
+                            Node spawnCallNode = CreateStaticClassCallNode(cnode.token, "Coroutine", "spawnClosure0",
                                 new List<Node> { tmpRefNode });
                             pNodeList.RemoveRange(i, opIndex + 1 - i);
                             pNodeList.Insert(i, spawnCallNode);
@@ -1285,7 +1297,7 @@ namespace SimpleLanguage.Compile
                             if (pn.nodeType == ENodeType.Comment) continue;
                             newArgNodes.Add(pn);
                         }
-                        Node callNode = CreateCoroutineCallNode(cnode.token, "spawnClosure" + argCount.ToString(), newArgNodes);
+                        Node callNode = CreateStaticClassCallNode(cnode.token, "Coroutine", "spawnClosure" + argCount.ToString(), newArgNodes);
                         pNodeList.RemoveRange(i, opIndex + 1 - i);
                         pNodeList.Insert(i, callNode);
                     }
@@ -1325,11 +1337,471 @@ namespace SimpleLanguage.Compile
                         // Log.AddNodeLog(LID.NodeStructParseAwait, cnode.token, "Error await 后缺少表达式!");
                         return;
                     }
-                    Node callNode = CreateCoroutineCallNode(cnode.token, "awaitTask", operandNodes);
+                    Node callNode = CreateStaticClassCallNode(cnode.token, "Coroutine", "awaitTask", operandNodes);
                     pNodeList.RemoveRange(i, end - i);
                     pNodeList.Insert(i, callNode);
                 }
             }
+        }
+        //======================================================================================
+        // Isolate.run / Isolate.spawn / Isolate.spawnInstance 脱糖 (Dart Isolate.run 语义)
+        // 统一为变长系统调用 SystemIsolateRun / SystemIsolateSpawn( 入口, 转发实参... ):
+        //   直通形态:      Isolate.run( fn, a, b )           ->  SystemIsolateRun( fn, a, b )
+        //   调用糖单标识符: Isolate.run( f(a, b) )            ->  SystemIsolateRun( f, a, b )
+        //   匿名闭包:      Isolate.run( function(a){...}, x ) ->  提升具名闭包 tmp 后 SystemIsolateRun( tmp, x )
+        //   调用糖成员链:   Isolate.run( X.Y(a, b) )           ->  function tmp() { ret X.Y(a, b) }
+        //                                                        SystemIsolateRun( tmp )
+        //   实参原样转发到变长系统调用 (isVariadic 直通, 零装箱, isolate 内深拷贝快照)。
+        //   入口函数只允许闭包/静态函数值, this 非静态成员函数报错;
+        //   spawn/spawnInstance 返回 Isolate 实例, 表达式上下文 (赋值右侧/嵌套实参) 追加 as Isolate 转换后缀 (静态类型恢复),
+        //   独立语句丢弃返回值时不追加 (平铺 as 节点会破坏独立语句解析)。
+        //   run/spawn/spawnInstance 不作为真实方法存在: 不支持的形态落入普通解析按 "方法不存在" 报错。
+        //======================================================================================
+        private int m_IsolateClosureCounter = 0;
+
+        private void TransformIsolateCallNodes( List<Node> pNodeList, bool isStatementLevel = false )
+        {
+            if (pNodeList == null) return;
+            for (int i = 0; i < pNodeList.Count; i++)
+            {
+                var cnode = pNodeList[i];
+                if (cnode == null) continue;
+                // Brace 块由 ParseSyntax 递归处理, 此处跳过防双重处理
+                if (cnode.nodeType == ENodeType.Brace) continue;
+                if (TryMatchIsolateRunSpawnCall(cnode, out Node runNode))
+                {
+                    // as Isolate 后缀仅在表达式上下文合法 (赋值右侧 / 嵌套实参 / 下标);
+                    // 独立语句丢弃返回值时不追加, 否则平铺 as 节点会让语句落入
+                    // 定义语句解析 (ParseDefineStatements) 而误报 "没有该节点"
+                    bool appendAs = !isStatementLevel || HasAssignBeforeNode(pNodeList, i);
+                    List<Node> newNodeList = BuildIsolateClosureCall(cnode, runNode, appendAs);
+                    if (newNodeList != null && newNodeList.Count > 0)
+                    {
+                        // 替换为 [系统调用节点, as Key, Isolate IdentifierLink?] 节点序列
+                        // (spawn/spawnInstance 返回值追加 as Isolate 转换后缀, 平铺于语句内容列表)
+                        pNodeList.RemoveAt(i);
+                        pNodeList.InsertRange(i, newNodeList);
+                        // 后缀 as/Isolate 节点会被本循环继续扫描, 但均不构成 Isolate.run 调用形态, 无害
+                        cnode = newNodeList[0];
+                    }
+                }
+                // 下钻: 参数列表 / 子内容 / 下标 (链节点本身不进语句列表, 防 x.Isolate.run(...) 误匹配)
+                if (cnode.parNode != null)
+                {
+                    TransformIsolateCallNodes(cnode.parNode.childList);
+                }
+                // 链上嵌套节点的实参列表: f( a, Isolate.run( g() ) ) 的 Isolate 挂在 f 实参 Par 的
+                // childList 中, 该 Par 又挂在 f 链尾节点 parNode 上, 只下钻链头会漏掉
+                // (如 isosT3._setItem_( i, Isolate.spawn( fnT3() ) ))
+                if (cnode.nodeType == ENodeType.IdentifierLink)
+                {
+                    DigLinkExtendParNodes(cnode);
+                }
+                TransformIsolateCallNodes(cnode.childList);
+                for (int b = 0; b < cnode.bracketNodeList.Count; b++)
+                {
+                    var bn = cnode.bracketNodeList[b];
+                    if (bn == null) continue;
+                    TransformIsolateCallNodes(bn.childList);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 沿标识符链嵌套结构 (a.b.c: b/c 挂在前节点 extendLinkNodeList) 下钻各链节点的实参列表;
+        /// 链节点本身不作为语句列表成员处理 (防 x.Isolate.run(...) 误匹配)
+        /// </summary>
+        private void DigLinkExtendParNodes( Node linkNode )
+        {
+            foreach (var en in linkNode.extendLinkNodeList)
+            {
+                if (en == null || en.nodeType == ENodeType.Period) continue;
+                if (en.parNode != null)
+                {
+                    TransformIsolateCallNodes(en.parNode.childList);
+                }
+                DigLinkExtendParNodes(en);
+            }
+        }
+
+        /// <summary>
+        /// 匹配 Isolate.run/spawn/spawnInstance( ... ) 调用形态:
+        /// node 为链头 IdentifierLink("Isolate") 且恰有两级扩展 [. run|spawn|spawnInstance (带参数列表)]
+        /// </summary>
+        private bool TryMatchIsolateRunSpawnCall( Node node, out Node runNode )
+        {
+            runNode = null;
+            if (node == null || node.nodeType != ENodeType.IdentifierLink) return false;
+            if (node.token == null || node.token.lexeme?.ToString() != "Isolate") return false;
+            if (node.parNode != null || node.angleNode != null) return false;
+            if (node.extendLinkNodeList.Count != 2) return false;
+            var periodNode = node.extendLinkNodeList[0];
+            if (periodNode == null || periodNode.nodeType != ENodeType.Period) return false;
+            var methodNode = node.extendLinkNodeList[1];
+            if (methodNode == null || methodNode.nodeType != ENodeType.IdentifierLink) return false;
+            if (methodNode.token == null) return false;
+            string methodName = methodNode.token.lexeme?.ToString();
+            if (methodName != "run" && methodName != "spawn" && methodName != "spawnInstance") return false;
+            if (methodNode.extendLinkNodeList.Count > 0 || methodNode.angleNode != null) return false;
+            if (methodNode.parNode == null) return false;
+            runNode = methodNode;
+            return true;
+        }
+
+        /// <summary>
+        /// 语句级判定: index 之前是否存在赋值节点 (= 或复合赋值/自增自减), 存在则当前节点位于赋值右侧表达式区,
+        /// 此时 as Isolate 后缀合法 (同 "expr as SendPort" 平铺形态); 独立语句丢弃返回值时不合法。
+        /// </summary>
+        private static bool HasAssignBeforeNode( List<Node> pNodeList, int index )
+        {
+            for (int k = 0; k < index; k++)
+            {
+                var n = pNodeList[k];
+                if (n == null) continue;
+                if (n.nodeType == ENodeType.Assign) return true;
+                var tt = n.token?.type;
+                if (tt == ETokenType.PlusAssign
+                    || tt == ETokenType.MinusAssign
+                    || tt == ETokenType.MultiplyAssign
+                    || tt == ETokenType.DivideAssign
+                    || tt == ETokenType.ModuloAssign
+                    || tt == ETokenType.InclusiveOrAssign
+                    || tt == ETokenType.CombineAssign
+                    || tt == ETokenType.XORAssign
+                    || tt == ETokenType.ShiAssign
+                    || tt == ETokenType.ShrAssign
+                    || tt == ETokenType.DoublePlus
+                    || tt == ETokenType.DoubleMinus)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 把 Isolate.run/spawn/spawnInstance( ... ) 脱糖为变长系统调用 SystemIsolateRun/SystemIsolateSpawn:
+        ///   直通形态 (函数值 + 转发实参): Isolate.run( fn, a, b )  ->  SystemIsolateRun( fn, a, b )
+        ///   调用糖单标识符:              Isolate.run( f(a, b) )   ->  SystemIsolateRun( f, a, b )
+        ///   匿名闭包字面量:               Isolate.run( function(a){...}, x )
+        ///                                    -> 提升具名闭包 tmp 后 SystemIsolateRun( tmp, x )
+        ///   调用糖成员链:                  Isolate.run( X.Y(a, b) ) -> 提升无参包装闭包
+        ///                                    function tmp() { ret X.Y( a, b ) } + SystemIsolateRun( tmp )
+        /// 入口函数只允许闭包/静态函数值, this 非静态成员函数报错; 实参原样转发 (isolate 内深拷贝快照)。
+        /// spawn/spawnInstance 返回 Isolate 实例, 表达式上下文 (赋值右侧/嵌套实参) 追加 as Isolate 转换后缀节点。
+        /// 不支持的形态返回 null, 落入普通解析按 "方法不存在" 报错。
+        /// </summary>
+        private List<Node> BuildIsolateClosureCall( Node isolateNode, Node runNode, bool appendAs )
+        {
+            Token keyToken = isolateNode.token;
+            string methodName = runNode.token.lexeme?.ToString();
+            bool isRun = methodName == "run";
+
+            // 1. 实参分段: 参数列表按逗号切分, 段内保留原始节点序列 (过滤 LineEnd/Comment)
+            List<List<Node>> argSegList = SplitIsolateArgSegments(runNode.parNode);
+            if (argSegList.Count == 0 || argSegList[0].Count == 0)
+            {
+                Log.AddNodeLog(LID.NodeStructParseDefine2, runNode.token,
+                    "Error Isolate." + methodName + " 至少需要一个入口函数实参!!");
+                return null;
+            }
+            List<Node> firstSeg = argSegList[0];
+
+            // 2. 匿名闭包形态: 首段为 [function 关键字, Par, Brace], 后续段为转发实参
+            if (firstSeg.Count == 3
+                && firstSeg[0].nodeType == ENodeType.Key && firstSeg[0].token?.type == ETokenType.Function
+                && firstSeg[1].nodeType == ENodeType.Par
+                && firstSeg[2].nodeType == ENodeType.Brace)
+            {
+                return BuildIsolateAnonymousClosureCall(keyToken, runNode, isRun, firstSeg, argSegList, appendAs);
+            }
+
+            // 3. 首实参必须是单节点函数值/调用表达式
+            if (firstSeg.Count != 1)
+            {
+                Log.AddNodeLog(LID.NodeStructParseDefine2, runNode.token,
+                    "Error Isolate." + methodName + " 首个实参必须是函数值(闭包/静态方法)或调用表达式!!");
+                return null;
+            }
+            Node firstArg = firstSeg[0];
+
+            // 4. this 链入口: 非静态成员函数, 不允许
+            if (firstArg.nodeType == ENodeType.Key && firstArg.token?.type == ETokenType.This)
+            {
+                Log.AddNodeLog(LID.NodeStructParseDefine2, runNode.token,
+                    "Error Isolate." + methodName + " 入口不允许 this 非静态成员函数!!");
+                return null;
+            }
+            if (firstArg.nodeType != ENodeType.IdentifierLink)
+            {
+                Log.AddNodeLog(LID.NodeStructParseDefine2, runNode.token,
+                    "Error Isolate." + methodName + " 首个实参必须是函数值(闭包/静态方法)或调用表达式!!");
+                return null;
+            }
+
+            // 标识符链为嵌套结构 (a.b.fun 表示为 a.extend=[.,b], b.extend=[.,fun]),
+            // 沿 extend 尾部下钻取真正末节点
+            var linkList = firstArg.GetLinkNodeList(true);
+            var lastLinkNode = linkList[linkList.Count - 1];
+            while (lastLinkNode.extendLinkNodeList.Count > 0)
+            {
+                var tailNode = lastLinkNode.extendLinkNodeList[lastLinkNode.extendLinkNodeList.Count - 1];
+                if (tailNode == null || tailNode.nodeType != ENodeType.IdentifierLink) break;
+                lastLinkNode = tailNode;
+            }
+
+            if (lastLinkNode.parNode == null)
+            {
+                // 5. 直通形态: 首实参为函数值 (闭包变量/静态方法引用), 后续段为转发实参
+                //    Isolate.run( fn, a, b ) -> SystemIsolateRun( fn, a, b )
+                List<Node> argNodes = new List<Node>();
+                for (int s = 0; s < argSegList.Count; s++)
+                {
+                    if (argSegList[s].Count == 0) continue;
+                    if (argNodes.Count > 0) argNodes.Add(CreateIsolateCommaNode(keyToken));
+                    argNodes.AddRange(argSegList[s]);
+                }
+                return BuildIsolateCallNodeList(keyToken, isRun, argNodes, appendAs);
+            }
+
+            // 6. 首实参为调用表达式: 不允许附加转发实参 (应传函数值 + 转发实参)
+            if (argSegList.Count > 1)
+            {
+                Log.AddNodeLog(LID.NodeStructParseDefine2, runNode.token,
+                    "Error Isolate." + methodName + " 入口为调用表达式时不能附加转发实参, 应传函数值: Isolate." + methodName + "( 函数值, 转发实参... )!!");
+                return null;
+            }
+
+            if (lastLinkNode == firstArg)
+            {
+                // 7. 调用糖单标识符: Isolate.run( f(a, b) ) -> SystemIsolateRun( f, a, b )
+                //    剥离链尾参数列表, 原实参节点作为转发实参跟在函数引用之后 (同 spawn f(a,b) 拆参直传)
+                var parNode = lastLinkNode.parNode;
+                lastLinkNode.SetParNode(null);
+                List<Node> argNodes = new List<Node> { firstArg, CreateIsolateCommaNode(keyToken) };
+                foreach (var pn in parNode.childList)
+                {
+                    if (pn == null) continue;
+                    if (pn.nodeType == ENodeType.Comment || pn.nodeType == ENodeType.LineEnd) continue;
+                    argNodes.Add(pn);
+                }
+                return BuildIsolateCallNodeList(keyToken, isRun, argNodes, appendAs);
+            }
+
+            // 8. 调用糖成员链: Isolate.run( X.Y(a, b) ) -> 提升无参包装闭包 (实参在 isolate 内求值)
+            //    function isolateClosureTmpN() { ret X.Y( a, b ) } + SystemIsolateRun( isolateClosureTmpN )
+            // 只在方法体内支持 (包装闭包提升需要语句发射环境)
+            var curInfo = currentNodeInfo;
+            if (curInfo == null ||
+                (curInfo.parseType != EParseNodeType.Statements && curInfo.parseType != EParseNodeType.Function))
+            {
+                Log.AddNodeLog(LID.NodeStructParseDefine2, runNode.token,
+                    "Error Isolate." + methodName + " 调用表达式形式只能出现在方法体内!!");
+                return null;
+            }
+            // 闭包体内不支持: 包装闭包提升等于闭包嵌套定义 (框架暂不支持), 提示改用直通形态
+            if (m_ClosureBodyDepth > 0)
+            {
+                Log.AddNodeLog(LID.NodeStructParseDefine2, runNode.token,
+                    "Error Isolate." + methodName + " 调用表达式形式不支持在闭包体内使用(闭包不能嵌套定义)!! 应改用直通形态: Isolate." + methodName + "( 函数值, 转发实参... )");
+                return null;
+            }
+
+            // 8.1 合成闭包体 Brace: { ret 实参表达式; }
+            Token braceToken = new Token(keyToken);
+            braceToken.SetLexeme("{", ETokenType.LeftBrace);
+            Node braceNode = new Node(braceToken);
+            braceNode.nodeType = ENodeType.Brace;
+            Token rightBraceToken = new Token(keyToken);
+            rightBraceToken.SetLexeme("}", ETokenType.RightBrace);
+            braceNode.endToken = rightBraceToken;
+            Token retToken = new Token(keyToken);
+            retToken.SetLexeme("ret", ETokenType.Return);
+            Node retNode = new Node(retToken);
+            retNode.nodeType = ENodeType.Key;
+            braceNode.AddChild(retNode, false);
+            braceNode.AddChild(firstArg, false);
+            Token semiToken = new Token(keyToken);
+            semiToken.SetLexeme(";", ETokenType.SemiColon);
+            Node semiNode = new Node(semiToken);
+            semiNode.nodeType = ENodeType.SemiColon;
+            braceNode.AddChild(semiNode, false);
+
+            // 8.2 提升为具名无参闭包定义语句 (先于调用语句发射), 生成调用节点列表
+            Node tmpRefNode = LiftIsolateClosure(keyToken, braceNode, new List<FileMetaParamterDefine>());
+            return BuildIsolateCallNodeList(keyToken, isRun, new List<Node> { tmpRefNode }, appendAs);
+        }
+
+        /// <summary>
+        /// 匿名闭包形态: Isolate.run( function(a, b){...}, x ) -> 提升具名闭包 isolateClosureTmpN
+        /// (参数列表保留, 同 spawn 匿名闭包分支), 后续实参作为转发参数:
+        /// SystemIsolateRun( isolateClosureTmpN, x )。
+        /// </summary>
+        private List<Node> BuildIsolateAnonymousClosureCall( Token keyToken, Node runNode, bool isRun,
+            List<Node> firstSeg, List<List<Node>> argSegList, bool appendAs )
+        {
+            string methodName = runNode.token.lexeme?.ToString();
+            // 只在方法体内支持 (闭包提升需要语句发射环境)
+            var curInfo = currentNodeInfo;
+            if (curInfo == null ||
+                (curInfo.parseType != EParseNodeType.Statements && curInfo.parseType != EParseNodeType.Function))
+            {
+                Log.AddNodeLog(LID.NodeStructParseDefine2, runNode.token,
+                    "Error Isolate." + methodName + " 匿名闭包形式只能出现在方法体内!!");
+                return null;
+            }
+            // 闭包体内不支持: 闭包嵌套定义 (框架暂不支持), 提示改用直通形态
+            if (m_ClosureBodyDepth > 0)
+            {
+                Log.AddNodeLog(LID.NodeStructParseDefine2, runNode.token,
+                    "Error Isolate." + methodName + " 匿名闭包形式不支持在闭包体内使用(闭包不能嵌套定义)!! 应改用直通形态: Isolate." + methodName + "( 函数值, 转发实参... )");
+                return null;
+            }
+            // 1. 提升为具名闭包定义语句 (参数列表保留, 闭包体为 firstSeg[2] 的 Brace)
+            List<FileMetaParamterDefine> paramList = ParseClosureParamList(firstSeg[1]);
+            Node tmpRefNode = LiftIsolateClosure(keyToken, firstSeg[2], paramList);
+            // 2. 首实参为提升闭包引用, 后续段作为转发实参
+            List<Node> argNodes = new List<Node> { tmpRefNode };
+            for (int s = 1; s < argSegList.Count; s++)
+            {
+                if (argSegList[s].Count == 0) continue;
+                argNodes.Add(CreateIsolateCommaNode(keyToken));
+                argNodes.AddRange(argSegList[s]);
+            }
+            return BuildIsolateCallNodeList(keyToken, isRun, argNodes, appendAs);
+        }
+
+        /// <summary>
+        /// 把 Isolate.run/spawn 参数列表 (Par 节点 childList) 按逗号切分为实参段,
+        /// 段内保留原始节点序列 (过滤 LineEnd/Comment)。
+        /// </summary>
+        private List<List<Node>> SplitIsolateArgSegments( Node parNode )
+        {
+            List<List<Node>> segList = new List<List<Node>>();
+            List<Node> tempList = new List<Node>();
+            if (parNode == null) return segList;
+            for (int i = 0; i < parNode.childList.Count; i++)
+            {
+                var pnode = parNode.childList[i];
+                if (pnode == null) continue;
+                if (pnode.nodeType == ENodeType.Comma)
+                {
+                    segList.Add(tempList);
+                    tempList = new List<Node>();
+                }
+                else if (pnode.nodeType == ENodeType.Comment || pnode.nodeType == ENodeType.LineEnd)
+                {
+                    continue;
+                }
+                else
+                {
+                    tempList.Add(pnode);
+                }
+            }
+            segList.Add(tempList);
+            return segList;
+        }
+
+        /// <summary>
+        /// 把闭包体 Brace 提升为具名闭包定义语句 isolateClosureTmpN, 返回其引用节点。
+        /// 同 spawn 匿名闭包提升机制: AddParseSyntaxNodeInfo 先于调用语句发射。
+        /// </summary>
+        private Node LiftIsolateClosure( Token keyToken, Node braceNode, List<FileMetaParamterDefine> paramList )
+        {
+            string tmpName = "isolateClosureTmp" + (m_IsolateClosureCounter++);
+            Token nameToken = new Token(keyToken);
+            nameToken.SetLexeme(tmpName, ETokenType.Identifier);
+            FileMetaBlockSyntax closureBlock = new FileMetaBlockSyntax(m_FileMeta, braceNode.token, braceNode.endToken);
+            FileMetaDefineClosureSyntax fmdcs = new FileMetaDefineClosureSyntax(m_FileMeta,
+                keyToken, nameToken, false, paramList, closureBlock);
+            AddParseSyntaxNodeInfo(fmdcs);
+            ParseCurrentNodeInfo pcnicClosure = new ParseCurrentNodeInfo(closureBlock);
+            m_CurrentNodeInfoStack.Push(pcnicClosure);
+            m_ClosureBodyDepth++;
+            ParseSyntax(braceNode);
+            m_ClosureBodyDepth--;
+            m_CurrentNodeInfoStack.Pop();
+            Token tmpToken = new Token(nameToken);
+            Node tmpRefNode = new Node(tmpToken);
+            tmpRefNode.nodeType = ENodeType.IdentifierLink;
+            return tmpRefNode;
+        }
+
+        /// <summary>
+        /// 程序化合成 系统方法名( args... ) 的单标识符调用节点, 结构与正常解析一致
+        /// (系统方法按标识符名全局注册, 无类前缀)。
+        /// 注意: argNodes 原样作为 Par 的 childList, 多实参时由调用者负责插入 Comma 分隔节点。
+        /// </summary>
+        private Node CreateSystemCallNode( Token keyToken, string funcName, List<Node> argNodes )
+        {
+            // 系统方法名根节点
+            Token funcToken = new Token(keyToken);
+            funcToken.SetLexeme(funcName, ETokenType.Identifier);
+            Node funcNode = new Node(funcToken);
+            funcNode.nodeType = ENodeType.IdentifierLink;
+
+            // 实参 Par 节点
+            Token parToken = new Token(keyToken);
+            parToken.SetLexeme("(", ETokenType.LeftPar);
+            Node parNode = new Node(parToken);
+            parNode.nodeType = ENodeType.Par;
+            if (argNodes != null)
+            {
+                for (int i = 0; i < argNodes.Count; i++)
+                {
+                    if (argNodes[i] == null) continue;
+                    parNode.AddChild(argNodes[i], false);
+                }
+            }
+            Token rightParToken = new Token(keyToken);
+            rightParToken.SetLexeme(")", ETokenType.RightPar);
+            parNode.endToken = rightParToken;
+            funcNode.SetParNode(parNode);
+            return funcNode;
+        }
+
+        /// <summary>
+        /// 生成变长系统调用节点序列: [SystemIsolateRun/Spawn( args... )];
+        /// spawn/spawnInstance 返回 Isolate 实例, 表达式上下文 (appendAs) 追加 as Isolate 转换后缀节点 (静态类型恢复)。
+        /// </summary>
+        private List<Node> BuildIsolateCallNodeList( Token keyToken, bool isRun, List<Node> argNodes, bool appendAs )
+        {
+            Node callNode = CreateSystemCallNode(keyToken, isRun ? "SystemIsolateRun" : "SystemIsolateSpawn", argNodes);
+            List<Node> resultList = new List<Node> { callNode };
+            if (!isRun && appendAs)
+            {
+                resultList.AddRange(CreateAsIsolateNodes(keyToken));
+            }
+            return resultList;
+        }
+
+        /// <summary>
+        /// 合成 as Isolate 转换后缀节点对 [as Key 节点, Isolate IdentifierLink 节点],
+        /// 形态与正常解析 "expr as Isolate" 的平铺后缀一致 (Key + Level9_AsOsIs 优先级)。
+        /// </summary>
+        private List<Node> CreateAsIsolateNodes( Token keyToken )
+        {
+            Token asToken = new Token(keyToken);
+            asToken.SetLexeme("as", ETokenType.As);
+            Node asNode = new Node(asToken);
+            asNode.nodeType = ENodeType.Key;
+            asNode.priority = SignComputePriority.Level9_AsOsIs;
+
+            Token typeToken = new Token(keyToken);
+            typeToken.SetLexeme("Isolate", ETokenType.Identifier);
+            Node typeNode = new Node(typeToken);
+            typeNode.nodeType = ENodeType.IdentifierLink;
+            return new List<Node> { asNode, typeNode };
+        }
+
+        /// <summary> 合成逗号分隔节点 (Isolate 实参段间补 Comma) </summary>
+        private Node CreateIsolateCommaNode( Token keyToken )
+        {
+            Token commaToken = new Token(keyToken);
+            commaToken.SetLexeme(",", ETokenType.Comma);
+            Node commaNode = new Node(commaToken);
+            commaNode.nodeType = ENodeType.Comma;
+            return commaNode;
         }
         // 闭包参数解析: 把 Par 节点 childList 按逗号切分, 每段生成 FileMetaParamterDefine
         private List<FileMetaParamterDefine> ParseClosureParamList( Node parNode )
@@ -1677,7 +2149,9 @@ namespace SimpleLanguage.Compile
 
                         ParseCurrentNodeInfo pcnicClosure = new ParseCurrentNodeInfo(closureBlock);
                         m_CurrentNodeInfoStack.Push(pcnicClosure);
+                        m_ClosureBodyDepth++;
                         ParseSyntax(akss.blockNode);
+                        m_ClosureBodyDepth--;
                         m_CurrentNodeInfoStack.Pop();
                     }
                 }
@@ -1694,7 +2168,7 @@ namespace SimpleLanguage.Compile
                             "Error yield 不支持带表达式参数, 等待条件请使用 Coroutine.waitUntil( 谓词闭包 )");
                         break;
                     }
-                    Node yieldCallNode = CreateCoroutineCallNode(akss.keyNode.token, "yieldNow", new List<Node>());
+                    Node yieldCallNode = CreateStaticClassCallNode(akss.keyNode.token, "Coroutine", "yieldNow", new List<Node>());
                     var yieldExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMeta,
                         new List<Node> { yieldCallNode }, FileMetaTermExpress.EExpressType.Common);
                     if (yieldExpress != null)
@@ -1717,6 +2191,8 @@ namespace SimpleLanguage.Compile
                     {
                         // ret spawn f(a,b) / ret await h -> 展开协程关键字后再生成表达式
                         TransformCoroutineKeywordNodes(akss.keyContent);
+                        // ret Isolate.run( fn, a, b ) / ret Isolate.spawn( ... ) -> 脱糖为变长系统调用
+                        TransformIsolateCallNodes(akss.keyContent);
                         conditionExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, akss.keyContent, FileMetaTermExpress.EExpressType.Common);
                     }
 

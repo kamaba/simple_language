@@ -8,8 +8,14 @@
  * 说明：
  *  - Isolate 本身不可跨 isolate 发送；请拆成 controlPort +
  *    pauseCapability + terminateCapability 传递，对端用构造函数重建。
- *  - spawn0..3 / run0..3 的入口是函数值（宽松 function / Func<签名> /
- *    匿名闭包三形态等价），捕获环境随闭包深拷贝，worker 内修改不影响源。
+ *  - 生成入口（编译器脱糖为变长系统调用，Dart Isolate.run 语义）：
+ *      Isolate.spawn( entry, arg1, ..., argN )  // 函数值直通，返回 Isolate
+ *      Isolate.spawnInstance( entry, arg... )    // spawn 的别名形态
+ *      Isolate.run( entry, arg1, ..., argN )    // 一次性计算，返回 object
+ *    也支持调用糖与匿名闭包：Isolate.run( work( 1, 2 ) )、
+ *    Isolate.run( function( x ){ ... }, 42 )（实参/闭包体在 worker 内
+ *    以消息深拷贝快照求值，零装箱转发）；入口只允许闭包函数或静态函数
+ *    值，this 非静态成员函数编译报错。
  *  - 同一 isolate id 始终对应同一 wrapper 实例（C VM 侧注册表保证），
  *    可用 == 判等。
 !#
@@ -51,57 +57,6 @@ public class Isolate extends Object
     public static Isolate current()
     {
         ret SystemIsolateCurrent() as Isolate
-    }
-
-    #! 以无参函数值为入口创建并启动一个新 isolate（同组），返回其句柄。 !#
-    public static Isolate spawn0( object entry )
-    {
-        ret SystemIsolateSpawn0( entry ) as Isolate
-    }
-
-    #! 以 1 参函数值为入口创建并启动一个新 isolate（同组），返回其句柄。 !#
-    public static Isolate spawn1( object entry, object arg0 )
-    {
-        ret SystemIsolateSpawn1( entry, arg0 ) as Isolate
-    }
-
-    #! 以 2 参函数值为入口创建并启动一个新 isolate（同组），返回其句柄。 !#
-    public static Isolate spawn2( object entry, object arg0, object arg1 )
-    {
-        ret SystemIsolateSpawn2( entry, arg0, arg1 ) as Isolate
-    }
-
-    #! 以 3 参函数值为入口创建并启动一个新 isolate（同组），返回其句柄。 !#
-    public static Isolate spawn3( object entry, object arg0, object arg1, object arg2 )
-    {
-        ret SystemIsolateSpawn3( entry, arg0, arg1, arg2 ) as Isolate
-    }
-
-    #!
-     * 以无参函数值为入口运行一次性 isolate：spawn -> 执行 -> 取回返回值
-     * -> 销毁。会挂起当前协程直至 worker 结束；worker 的异常向调用者传播。
-    !#
-    public static object run0( object entry )
-    {
-        ret SystemIsolateRun0( entry )
-    }
-
-    #! 一次性计算（1 参），语义同 run0。 !#
-    public static object run1( object entry, object arg0 )
-    {
-        ret SystemIsolateRun1( entry, arg0 )
-    }
-
-    #! 一次性计算（2 参），语义同 run0。 !#
-    public static object run2( object entry, object arg0, object arg1 )
-    {
-        ret SystemIsolateRun2( entry, arg0, arg1 )
-    }
-
-    #! 一次性计算（3 参），语义同 run0。 !#
-    public static object run3( object entry, object arg0, object arg1, object arg2 )
-    {
-        ret SystemIsolateRun3( entry, arg0, arg1, arg2 )
     }
 
     #!

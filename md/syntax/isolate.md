@@ -1,9 +1,9 @@
 # 隔离岛（Isolate）与端口（Port）
 
 > **本文档以「当前实现」为准**，对应 `source/Front/Lib/Std/Isolate/*.sl`
-> 与 `test/ExpendTest/IsolateTest.sl`（A–I 共 9 组验收用例）。
-> 设计规格见 `md/design/ISOLATE_DESIGN.md`——**该设计档部分内容尚未实现**，差异清单见 §14。
-> 相关文档：`md/syntax/coroutine.md`（协程）、`md/design/COROUTINE_DESIGN.md`。
+> 与 `test/ExpendTest/IsolateTest.sl`（A–I + T 共 10 组验收用例）。
+> 设计规格见 `csimple_lang/md/design/ISOLATE_DESIGN.md`——**该设计档部分内容尚未实现**，差异清单见 §14。
+> 相关文档：`md/syntax/coroutine.md`（协程）、`csimple_lang/md/design/COROUTINE_DESIGN.md`。
 
 ---
 
@@ -37,7 +37,7 @@ isolate 相互之间**只能通过消息传递（深拷贝）或 TransferableDat
 |---|---|
 | **内存隔离** | 一个 isolate 的 GC、崩溃、无限循环不影响另一个；不共享任何可变内存 |
 | **消息即克隆** | 跨 isolate 传值一律深拷贝；接收方拿到的是自己堆里的副本 |
-| **M:1 单线程调度（当前 P1）** | 所有 isolate 挂在同一个协作式调度循环上，**主 isolate 协程阻塞（recv/delay/waitAll）时调度器才推进 worker**——语义与真并行一致，但无实际并行 |
+| **1:1 线程模型（当前 P2）** | 每个 worker isolate 独占一条 OS 线程（pthread / Win32）**真并行执行**；主 isolate 跑在 CLI 线程上。isolate 注册表 / 端口队列由单把递归锁保护，执行（解释器 / GC）不持锁。**单个 isolate 内部协程仍是协作式调度**（让出点推进） |
 | **与协程正交** | 协程是单 isolate 内的并发（共享堆）；isolate 是跨堆的并行（不共享）。一个 isolate 内可跑任意多协程 |
 | **句柄稳定** | 同一 isolate id 恒对应同一 wrapper 实例，`==` 判等可靠 |
 | **组共享代码** | 同组 isolate 共享类表 / 方法表 / 字节码 → spawn 近乎免费、闭包可按 `method_id` 跨 isolate 解析、类型身份一致 |
@@ -87,20 +87,21 @@ IsolateDemo
 {
     static fun()
     {
-        # 入口是函数值：匿名闭包字面量不能直接作实参，
-        # 一律先赋给 function 变量再传（见 §14 语言限制 1）
+        # 入口支持函数值直传 / 调用糖 / 匿名闭包字面量（四种写法见 §5.1）
         function add2 = function( int a, int b ) { ret a + b }
 
-        # run2：spawn -> 执行 -> 取回返回值 -> 销毁（一次性计算）
-        Int32 r = Isolate.run2( add2, 3, 4 ) as int       # 7
+        # run：spawn -> 执行 -> 取回返回值 -> 销毁（一次性计算）
+        Int32 r = Isolate.run( add2( 3, 4 ) ) as int                          # 7（调用糖）
+        Int32 s = Isolate.run( add2, 3, 4 ) as int                            # 7（直传，等价）
+        Int32 t = Isolate.run( function( int a, int b ) { ret a + b }, 3, 4 ) as int   # 7（匿名闭包）
 
         Console.println( "result = " + r.toString() )
     }
 }
 ```
 
-> `run*` 会**挂起当前协程**直至 worker 结束并取回返回值；`void` 入口返回 `null`。
-> 传参按 `object` 装箱，返回值需 `as` 转回。
+> `run` 会**挂起当前协程**直至 worker 结束并取回返回值；`void` 入口返回 `null`。
+> 实参分离直传、原样转发（无需装箱打包），跨 isolate 仍按消息深拷贝；返回值需 `as` 转回。
 
 ---
 
@@ -122,13 +123,14 @@ IsolateError          错误码常量类
 
 ### 3.1 `Isolate`（句柄）
 
-由 `spawn*` 创建或由 port + capability 重建。**同一 isolate id 恒对应同一 wrapper 实例，`==` 判等可靠**。`Isolate` 本身**不可跨 isolate 发送**——请拆成 `controlPort` + `pauseCapability` + `terminateCapability` 传递。
+由 `spawn` 创建或由 port + capability 重建。**同一 isolate id 恒对应同一 wrapper 实例，`==` 判等可靠**。`Isolate` 本身**不可跨 isolate 发送**——请拆成 `controlPort` + `pauseCapability` + `terminateCapability` 传递。
 
 | 成员 | 签名 | 说明 |
 |---|---|---|
 | `Isolate.current()` | `static Isolate` | 当前 isolate 句柄 |
-| `Isolate.spawn0..3(entry[, a0..a2])` | `static Isolate` | 以函数值为入口创建并启动（同组），返回句柄 |
-| `Isolate.run0..3(entry[, a0..a2])` | `static object` | 一次性计算：spawn → 执行 → 取回返回值 → 销毁，**挂起当前协程**直至结束 |
+| `Isolate.run( entry[, a0..aN] )` | `static object` | **推荐**：一次性计算——spawn → 执行 → 取回返回值 → 销毁，**挂起当前协程**直至结束；四种写法见 §5.1，实参上限 255 |
+| `Isolate.spawn( entry[, a0..aN] )` | `static Isolate` | **推荐**：同组创建并启动 worker，返回句柄；写法与实参规则同 `run` |
+| `Isolate.spawnInstance( entry[, a0..aN] )` | `static Isolate` | `spawn` 的别名形态（同参同返回） |
 | `Isolate.exit(port, msg)` | `static void` | **同步终止当前 isolate**，并向 `port` 发送一条终止消息 |
 | `iso.pause()` | `Capability` | 请求暂停本 isolate，返回 resumeCapability；capId 为 0 表示不可暂停（已退出等） |
 | `iso.resume(cap)` | `void` | 恢复被暂停的 isolate；capability 不匹配**静默无效** |
@@ -219,7 +221,7 @@ IsolateError          错误码常量类
 | `SendPort` | 编码为 `port_id`，目标端重建同一 wrapper（**保持 `==`**） |
 | `Capability` | 编码为 `cap_id`（**保持 `==`**） |
 | `TransferableData` | 零拷贝所有权转移（见 §8） |
-| **闭包（函数值）** | **捕获环境全部可发送时**可发送：编码为 `method_id` + 深拷贝的 context。**组内有效**（共享代码）——这也是 `spawn*` / `run*` 能直接以闭包为入口的原理 |
+| **闭包（函数值）** | **捕获环境全部可发送时**可发送：编码为 `method_id` + 深拷贝的 context。**组内有效**（共享代码）——这也是 `run` / `spawn` / `spawnInstance` 能以闭包为入口的原理 |
 
 ### 4.2 禁止（发送方抛出 `IsolateError.NotSendable`）
 
@@ -238,10 +240,10 @@ IsolateError          错误码常量类
 ```sl
 # B2 标量回显：int / string / float / null 都可发送
 function echo = function( object v ) { ret v }
-Int32  i = Isolate.run1( echo, 42 ) as int        # 42
-string s = Isolate.run1( echo, "hi" ) as string   # "hi"
-double f = Isolate.run1( echo, 3.14 ) as double   # 3.14
-object n = Isolate.run1( echo, null )             # null
+Int32  i = Isolate.run( echo( 42 ) ) as int       # 42
+string s = Isolate.run( echo( "hi" ) ) as string  # "hi"
+double f = Isolate.run( echo( 3.14 ) ) as double  # 3.14
+object n = Isolate.run( echo( null ) )            # null
 
 # B5 普通类实例不可发送 → 在发送方抛出
 PlainBox { int v }
@@ -271,25 +273,65 @@ catch
 
 ## 5. 创建与运行（spawn / run / exit）
 
-### 5.1 入口：函数值的三种等价形态
+### 5.1 入口：三方法与四种写法
 
-`spawn0..3` / `run0..3` 的第一个参数是**函数值**（不是方法名字符串）。三种形态等价：
+`Isolate.run` / `Isolate.spawn` / `Isolate.spawnInstance`（`spawn` 别名）是统一入口，编译期统一脱糖为**变长系统调用** `SystemIsolateRun` / `SystemIsolateSpawn`（Dart `Isolate.run` 语义）：
+
+| 方法 | 返回 | 语义 |
+|---|---|---|
+| `Isolate.run( entry[, a0..aN] )` | `object` | 一次性计算：spawn → 执行 → 取回返回值 → 销毁，**挂起当前协程**直至结束 |
+| `Isolate.spawn( entry[, a0..aN] )` | `Isolate` | 同组创建并启动 worker，返回句柄 |
+| `Isolate.spawnInstance( entry[, a0..aN] )` | `Isolate` | `spawn` 的别名形态（同参同返回） |
+
+`entry` 只允许**函数值**（闭包 / 静态函数经包装的函数值）——`this` 非静态成员函数编译报错；裸静态方法名不是函数值（语言无方法组转换），静态入口走写法④或包装闭包工厂（§12.1）。
+实参**分离直传、原样转发**，上限 255 个（C VM `VM_ISO_LAUNCH_MAX_ARGS`）；返回值需 `as` 转回。
+
+同一入口支持**四种写法**（①②③ 编译为同一条变长调用；④ 生成无参包装闭包转发）：
 
 ```sl
-# 形态一：宽松 function 变量（不做签名检查）
+# ① 直通：函数值 + 分离实参（脱糖底层形态）
 function add = function( int a, int b ) { ret a + b }
-Int32 r1 = Isolate.run2( add, 3, 4 ) as int        # 7
+Int32 r1 = Isolate.run( add, 3, 4 ) as int               # 7
 
-# 形态二：Func<签名> 类型（第 1 个模板实参是返回类型，其后为参数类型）
-Func<int, int, int> typed = function( int a, int b ) { ret a - b }
-Int32 r2 = Isolate.run2( typed, 10, 3 ) as int     # 7
+# ② 调用糖·单标识符：Isolate.run( f( a, b ) ) —— 拆参直传 f, a, b（与①等价）
+Int32 r2 = Isolate.run( add( 3, 4 ) ) as int             # 7
 
-# 形态三：匿名闭包（当前语言限制：须先赋给变量再传参，不能内联写实参）
-function fn = function() { ret 42 }
-object r3 = Isolate.run0( fn )                     # 42
+# ③ 匿名闭包字面量直接作 entry（方法体内支持）
+Int32 r3 = Isolate.run( function( int a, int b ) { ret a + b }, 3, 4 ) as int   # 7
+
+# ④ 调用糖·成员链：静态方法入口 —— 编译期包装为无参闭包转发，实参在 worker 内求值
+Int32 r4 = Isolate.run( Heavy.compute( 3, 4 ) ) as int   # 求值位置差异见 §5.1.1
 ```
 
-**数字后缀 = 参数个数**（`spawn0..3` / `run0..3`），上限 3 个；更多参数请打包成一个可发送容器（如 `List<object>`）传入。
+`Func<签名>` 类型的函数值同样适用（①②③ 均可；第 1 个模板实参是返回类型）：
+
+```sl
+Func<int, int, int> typed = function( int a, int b ) { ret a - b }
+Int32 r5 = Isolate.run( typed, 10, 3 ) as int       # 7
+Int32 r6 = Isolate.run( typed( 10, 3 ) ) as int     # 7
+```
+
+### 5.1.1 实参求值位置与可发送性（必读）
+
+四种写法的**实参求值位置不同**，决定可发送性检查走哪条路径：
+
+| 写法 | 实参求值位置 | 传递路径 |
+|---|---|---|
+| ① 直通 / ② 单标识符糖 / ③ 匿名闭包 | **调用点**（主 isolate） | 实参作为**消息**深拷贝进 worker（§4 白名单） |
+| ④ 成员链糖 | **worker 内** | 实参表达式被无参包装闭包**词法捕获**，随闭包 context 深拷贝 |
+
+- ①②③ 的实参即消息：`SendPort` 可发送，`rp.sendPort` **内联写法合法**（调用点求值，先提取出 SendPort 再作消息发送）；
+- ④ 的实参表达式被闭包捕获：写 `Isolate.run( X.y( rp.sendPort ) )` 时包装闭包捕获的是 **`rp` 本身**（`ReceivePort` 不可发送）→ 发送方抛 `NotSendable`，须先提取：
+
+```sl
+ReceivePort rp = ReceivePort()
+SendPort sp = rp.sendPort                 # 先提取可发送的 SendPort
+Isolate.spawn( worker, sp )               # ✅ ①：sp 作消息直传
+Isolate.spawn( worker( sp ) )             # ✅ ②：拆参直传，同为消息路径
+# Isolate.run( X.y( rp.sendPort ) )      # ❌ ④：包装闭包词法捕获 rp 本身 → NotSendable
+```
+
+- 捕获不可发送值会在**发送方**抛 `IsolateError.NotSendable`，且因宿主方法粒度共享捕获上下文（见下方坑），同方法后续闭包全部发不出去。
 
 **闭包可发送 ⟺ 其捕获环境中的每一个值都可发送**：
 
@@ -308,7 +350,7 @@ spawn → 执行 → 取回返回值 → 销毁。会**挂起当前协程**直�
 ```sl
 # A4 void 入口：run 返回 null
 function noop = function() { Int32 x = 0 }
-object r = Isolate.run0( noop )     # null
+object r = Isolate.run( noop() )     # null
 ```
 
 ### 5.3 spawn：长生命周期 worker
@@ -324,7 +366,8 @@ function echoWorker = function( object arg )
     object msg = wrp.recv()                # 阻塞当前协程等消息
     sp.send( msg )                         # 原样回显
 }
-Isolate.spawn1( echoWorker, rp.sendPort )
+SendPort sp = rp.sendPort            # 先提取 SendPort（实参走消息路径，见 §5.1.1）
+Isolate.spawn( echoWorker( sp ) )
 
 SendPort wport = rp.recv() as SendPort     # 第一条消息：worker 回传的 SendPort
 wport.send( "ping" )
@@ -340,7 +383,8 @@ g_badEntry = 42                            # 非函数值
 bool threw = false
 label guard
 {
-    try Isolate.spawn0( g_badEntry )
+    # 非函数值入口只能经直通形态传入（糖形式要求实参是调用表达式）
+    try Isolate.spawn( g_badEntry )
 }
 catch
 {
@@ -356,7 +400,7 @@ g_badEntry = null
 ReceivePort rp = ReceivePort()
 SendPort sp = rp.sendPort                  # 捕获可发送的 SendPort（不是 ReceivePort）
 function exitWithMsg = function() { Isolate.exit( sp, 12345 ) }
-Isolate.spawn0( exitWithMsg )
+Isolate.spawn( exitWithMsg() )
 
 Int32 v = rp.recv() as int                 # 12345
 ```
@@ -366,7 +410,7 @@ Int32 v = rp.recv() as int                 # 12345
 ### 5.6 重建句柄（跨 isolate 传递控制权）
 
 ```sl
-Isolate iso = Isolate.spawn0( someEntry )
+Isolate iso = Isolate.spawn( someEntry() )
 
 # 三者均可发送；发往其它 isolate 后，对端可重建等价句柄
 SendPort ctrl = iso.controlPort
@@ -436,7 +480,7 @@ function handler = function( object msg )
 rp.listen( handler )            # 内部起分发协程阻塞收消息并回调
 
 rp.sendPort.send( "hello" )
-Coroutine.delay( 20 )           # M:1 调度：主协程让出后分发协程才跑
+Coroutine.delay( 20 )           # 协程协作调度：主协程让出后分发协程才跑
 ```
 
 > `listen` 后端口关闭且消息耗尽时，分发协程自动退出。
@@ -452,7 +496,8 @@ function check = function( object arg )
     SendPort p = arg as SendPort
     p.send( p == p )            # 恒 true
 }
-Isolate.spawn1( check, rp.sendPort )
+SendPort sp = rp.sendPort
+Isolate.spawn( check( sp ) )
 bool ok = rp.recv() as bool      # true
 ```
 
@@ -470,8 +515,9 @@ function entry = function( object arg )
     sp.send( "ready" )
     Coroutine.delay( 5000 )      # 长延时 worker
 }
-Isolate iso = Isolate.spawn1( entry, rp.sendPort )
-Coroutine.delay( 50 )            # M:1 调度：等 worker 起来（制造让出点）
+SendPort mainPort = rp.sendPort
+Isolate iso = Isolate.spawn( entry( mainPort ) )
+Coroutine.delay( 50 )            # 等 worker 起来（P2 真并行，仅等就绪）
 
 Capability cap = iso.pause()
 # iso.status == IsolateStatus.Paused (3)
@@ -484,7 +530,7 @@ iso.kill( 0 )
 ### 7.2 伪造 capability → 静默无效（对齐 Dart 能力安全模型）
 
 ```sl
-Isolate iso = Isolate.spawn0( delayEntry )
+Isolate iso = Isolate.spawn( delayEntry() )
 Coroutine.delay( 30 )
 Capability cap = iso.pause()            # 真正的 resumeCapability
 
@@ -500,7 +546,7 @@ iso.kill( 0 )
 
 ```sl
 # kill(0) = immediate：立即终止（当前实现注册表不摘除，status 仍可查 Dead(5)）
-Isolate iso = Isolate.spawn0( delayEntry )
+Isolate iso = Isolate.spawn( delayEntry() )
 Coroutine.delay( 30 )
 iso.kill( 0 )
 Coroutine.delay( 30 )
@@ -513,7 +559,7 @@ Coroutine.delay( 30 )
 
 ```sl
 ReceivePort rp = ReceivePort()
-Isolate iso = Isolate.spawn0( delayEntry )
+Isolate iso = Isolate.spawn( delayEntry() )
 Coroutine.delay( 30 )
 
 iso.ping( rp.sendPort, "pong", 0 )
@@ -527,14 +573,14 @@ iso.kill( 0 )
 ReceivePort exitRp = ReceivePort()
 ReceivePort errRp = ReceivePort()
 
-Isolate iso = Isolate.spawn0( delayEntry )
+Isolate iso = Isolate.spawn( delayEntry() )
 iso.addOnExitListener( exitRp.sendPort, null )   # 退出时向该端口发 response（此处 null）
 iso.addErrorListener( errRp.sendPort )          # 未捕获异常时发错误描述
 iso.setErrorsFatal( true )                      # 未捕获异常终止 isolate
 
 iso.kill( 0 )
 
-# 轮询等待通知到达（M:1 调度：需让出点）
+# 轮询等待通知到达
 Int32 spins = 0
 while ( exitRp.count < 1 && spins < 200 )
 {
@@ -549,6 +595,8 @@ object done = exitRp.recv()          # null（当前实现 onExit 载荷为 null
 ## 8. TransferableData 零拷贝转移
 
 大块字节数据跨 isolate 时避免两次深拷贝：创建时拷贝一次进 C 侧 blob，发送时**只转移所有权**，接收方 `materialize` 一次性取出。
+
+> 传 `TransferableData` 入 worker 建议走**直通 / 单标识符糖形态** `Isolate.run( consume, td )` / `Isolate.run( consume( td ) )`（实参在调用点求值、走消息转移路径，F1 验收即此形态）；成员链糖（写法④）的包装闭包会把实参捕获进闭包 context、走闭包序列化路径。
 
 ```sl
 # F1 1000 字节转移往返
@@ -567,7 +615,7 @@ function consume = function( object arg )
     Array<UInt8> b = t.materialize()    # 在 worker 堆中物化（一次性）
     ret b.length
 }
-Int32 n = Isolate.run1( consume, td ) as int     # 1000
+Int32 n = Isolate.run( consume, td ) as int        # 1000（TransferableData 建议走直通形态）
 
 # F3 转移后源句柄失效
 # td.isValid == false
@@ -590,7 +638,7 @@ IsolateGroup grp = IsolateGroup.current()
 
 # I3 spawn 进入同组，kill 后组计数回落
 function delayEntry = function() { Coroutine.delay( 5000 ) }
-Isolate iso = Isolate.spawn0( delayEntry )
+Isolate iso = Isolate.spawn( delayEntry() )
 Int32 before = IsolateGroup.current().isolateCount    # >= 2（含新 worker）
 iso.kill( 0 )
 Coroutine.delay( 30 )
@@ -600,7 +648,7 @@ Int32 after = IsolateGroup.current().isolateCount      # before - 1
 function noop = function() { Int32 x = 0 }
 for Int32 i = 0, i < 20, i = i + 1
 {
-    Isolate.run0( noop )
+    Isolate.run( noop() )
 }
 Memory.collect()
 # IsolateGroup.current().isolateCount == 1
@@ -620,7 +668,7 @@ function first = function( object arg )
     List<int> v = arg as List<int>
     ret v._getItem_( 0 )
 }
-Int32 v = Isolate.run1( first, list ) as int    # 42
+Int32 v = Isolate.run( first( list ) ) as int    # 42
 ```
 
 3. **闭包跨 isolate 的前提**：闭包编码为 `method_id` + context，目标 isolate 靠组内共享代码用同一个 `method_id` 解析到同一方法。
@@ -690,7 +738,7 @@ function mutate = function( object arg )
     s.add( 999 )                 # 只改 worker 里的副本
     ret s.length
 }
-Int32 n = Isolate.run1( mutate, src ) as int    # 3
+Int32 n = Isolate.run( mutate( src ) ) as int   # 3
 # src.length == 2（源不受影响）
 
 # A6 闭包捕获环境同样深拷贝：worker 改副本，源不变
@@ -703,7 +751,7 @@ function bump = function()
     lst.add( 100 )
     ret lst.length
 }
-Int32 r = Isolate.run0( bump ) as int    # 2
+Int32 r = Isolate.run( bump() ) as int    # 2
 # v == 10 && lst.length == 1（源不变）
 ```
 
@@ -724,7 +772,7 @@ Counter
             g_value = g_value + 100     # 只影响 worker 自己的副本
             ret g_value
         }
-        Int32 w = Isolate.run0( bump ) as int    # 100：worker 从初始值 0 起步
+        Int32 w = Isolate.run( bump() ) as int    # 100：worker 从初始值 0 起步
         Console.println( w.toString() )          # 100
         Console.println( g_value.toString() )    # 7：主 isolate 不受影响
     }
@@ -742,7 +790,7 @@ InitProbe
     {
         g_init = 0                                    # 主 isolate 手动清零
         function readInit = function() { ret g_init }
-        Int32 w = Isolate.run0( readInit ) as int    # 41：worker 重跑初始化器
+        Int32 w = Isolate.run( readInit() ) as int    # 41：worker 重跑初始化器
         Console.println( w.toString() )              # 41
         Console.println( g_init.toString() )         # 0：主 isolate 保持
     }
@@ -758,7 +806,7 @@ function bumpGlobal = function()
     global.var1 = global.var1 + 1    # 只改 worker 的 shadow 副本
     ret global.var1
 }
-Int32 w = Isolate.run0( bumpGlobal ) as int
+Int32 w = Isolate.run( bumpGlobal() ) as int
 # w != 99（worker 读到 shadow 初始值）；global.var1 == 99（主端不受影响）
 ```
 
@@ -767,7 +815,7 @@ Int32 w = Isolate.run0( bumpGlobal ) as int
 - 各 isolate **独立 GC**，只扫自己的堆（`Memory.collect()` 只作用于当前 isolate）。
 - **静态字段是 GC 根**：静态字段引用的对象在强制 GC 后仍可达。
 - `Channel<T>` 缓冲同样是 GC 根（缓冲直存引用、不做深拷贝——Channel 只在**同一** isolate 内使用）。
-- 一次性 `run*` 的 worker 结束后即销毁，堆随之回收（组计数回落）。
+- 一次性 `run` 的 worker 结束后即销毁，堆随之回收（组计数回落）。
 
 ---
 
@@ -805,7 +853,7 @@ function entry = function()
     Int32 v2 = Coroutine.awaitTask( t2 ) as int
     ret v1 + v2
 }
-Int32 r = Isolate.run0( entry ) as int    # 8
+Int32 r = Isolate.run( entry() ) as int    # 8
 ```
 
 ### 12.2 主 isolate 协程间端口通信
@@ -869,14 +917,9 @@ string b = rp.recv() as string      # "b"
 | 调用 | 返回 | 说明 |
 |---|---|---|
 | `Isolate.current()` | `Isolate` | 当前 isolate 句柄 |
-| `Isolate.spawn0( entry )` | `Isolate` | 无参入口，同组创建并启动 |
-| `Isolate.spawn1( entry, a0 )` | `Isolate` | 1 参入口 |
-| `Isolate.spawn2( entry, a0, a1 )` | `Isolate` | 2 参入口 |
-| `Isolate.spawn3( entry, a0, a1, a2 )` | `Isolate` | 3 参入口 |
-| `Isolate.run0( entry )` | `object` | 一次性计算（0 参），挂起当前协程 |
-| `Isolate.run1( entry, a0 )` | `object` | 一次性计算（1 参） |
-| `Isolate.run2( entry, a0, a1 )` | `object` | 一次性计算（2 参） |
-| `Isolate.run3( entry, a0, a1, a2 )` | `object` | 一次性计算（3 参） |
+| `Isolate.spawn( entry[, a0..aN] )` | `Isolate` | **推荐**：同组创建并启动 worker，返回句柄；四种写法见 §5.1，实参上限 255 |
+| `Isolate.run( entry[, a0..aN] )` | `object` | **推荐**：一次性计算——spawn → 执行 → 取回返回值 → 销毁，挂起当前协程；写法与实参规则同 `spawn` |
+| `Isolate.spawnInstance( entry[, a0..aN] )` | `Isolate` | `spawn` 的别名形态（同参同返回） |
 | `Isolate.exit( port, message )` | `void` | 同步终止当前 isolate 并发终止消息 |
 | `iso.pause()` | `Capability` | 请求暂停，返回 resumeCapability |
 | `iso.resume( cap )` | `void` | 恢复；cap 不匹配静默无效 |
@@ -928,23 +971,23 @@ string b = rp.recv() as string      # "b"
 
 ### 14.1 语言限制
 
-1. **匿名闭包字面量不能直接作为调用实参**——一律先赋给 `function` 变量再传参（`spawn*` / `run*` / `listen` 同此）。
+1. **匿名闭包字面量可直接作三方法入口**（写法③，仅方法体内支持；闭包体内不能嵌套定义 `function`）；其它调用位置（如 `ReceivePort.listen`）仍须先赋 `function` 变量再传。
 2. **闭包捕获上下文按「宿主方法」粒度共享**：同一方法内任一闭包捕获了不可发送值（如 `Channel`），整个共享上下文即不可发送，同方法后续闭包全部发不出去——捕获不可发送值的闭包必须放在**独立宿主方法**里。
-3. `spawn*` / `run*` 入口参数上限 **3 个**；更多参数打包成 `List` 等可发送容器传入。
+3. 三方法实参上限 **255 个**（C VM `VM_ISO_LAUNCH_MAX_ARGS`，entry 之外）；更多参数可打包成 `List` 等可发送容器作单实参传入。
 4. worker 内起协程用 `spawn 函数值(实参)` 形式；闭包体内不能嵌套定义 `function`，须在入口外先定义包装闭包、或经静态工厂方法取函数值（按名 `Coroutine.spawn*("name", ...)` 已移除，勿再使用）。
 5. 消息图**不支持环**（一期）：检测到循环引用报 `IsolateError.CyclicMessage`。
 6. `throw` 只能抛 `enum extends Error`；**Error 枚举值不可序列化**（见 14.2 第 1 条的根源）。
+7. **仅成员链糖（写法④）的实参表达式在 worker 内求值**：实参引用的局部变量被无参包装闭包捕获、随闭包深拷贝——捕获值须可发送（§5.1.1）；直通 / 单标识符糖 / 匿名闭包（①②③）的实参在**调用点**求值、走消息路径，`rp.sendPort` 内联写法合法。
 
 ### 14.2 实现偏差（相对 ISOLATE_DESIGN.md）
 
 1. **异常 worker 的错误传播不完整**：Error 枚举不可序列化 → 异常 worker 的 exit_blob 为 NULL →
    - `addErrorListener` 注册的端口**收不到**消息；
    - `addOnExitListener` 端口收到 `null`；
-   - `Isolate.run*` 对异常 worker **返回 `null` 且不向调用者重抛**（设计文档称会传播）。
+   - `Isolate.run` 对异常 worker **返回 `null` 且不向调用者重抛**（设计文档称会传播）。
 2. **`kill(0)` 立即终止后 isolate 注册表不摘除**，`status` 仍可查 `Dead(5)`。
 3. **`TransferableData.materialize` 对无效句柄返回 `null` 而非抛 `IsolateError.TransferInvalid`**。
-4. **当前为 P1（M:1 单线程协程式隔离）**：所有 isolate 跑在同一调度循环上，主 isolate 的协程阻塞（`recv` / `delay` / `waitAll`）时调度器才推进 worker——因此测试/业务代码中用 `delay` / `recv` 天然制造让出点；**无真并行**（P2 每 isolate 一 OS 线程，语义一致）。
-5. `SendPort` 的 `closed` 状态**不可跨 isolate 实时同步**：关闭后已入队的消息仍会被投递，发送方可能拿到 `PortClosed` 也可能在关闭前成功入队——固有竞态。
+4. `SendPort` 的 `closed` 状态**不可跨 isolate 实时同步**：关闭后已入队的消息仍会被投递，发送方可能拿到 `PortClosed` 也可能在关闭前成功入队——固有竞态。
 
 ---
 
@@ -973,7 +1016,7 @@ Heavy
             ret acc + a + b
         }
 
-        Int32 r = Isolate.run2( heavy, 3, 4 ) as int
+        Int32 r = Isolate.run( heavy( 3, 4 ) ) as int
         Console.println( "r = " + r.toString() )
         # base 仍是 100：源不受影响
     }
@@ -1018,7 +1061,8 @@ WorkerSvc
 
         # 主 isolate 侧
         ReceivePort rp = ReceivePort()
-        Isolate iso = Isolate.spawn1( workerMain, rp.sendPort )
+        SendPort sp = rp.sendPort            # 先提取 SendPort（实参走消息路径，见 §5.1.1）
+        Isolate iso = Isolate.spawn( workerMain( sp ) )
 
         SendPort worker = rp.recv() as SendPort     # 握手完成
 
@@ -1026,7 +1070,7 @@ WorkerSvc
         Console.println( rp.recv() as string )      # "hello!"
 
         worker.send( "shutdown" )                   # 优雅关停
-        Coroutine.delay( 50 )                        # 让出点：等 worker 退出
+        Coroutine.delay( 50 )                        # 等 worker 退出
         Console.println( "worker status = " + iso.status.toString() )
     }
 }
@@ -1057,7 +1101,7 @@ Counter
             ret g_hits
         }
 
-        Int32 w = Isolate.run0( worker ) as int      # 3
+        Int32 w = Isolate.run( worker() ) as int      # 3
         Console.println( "worker sees " + w.toString() )        # 3
         Console.println( "main sees " + g_hits.toString() )     # 5：不受影响
     }
@@ -1090,7 +1134,8 @@ BigData
             ret sum
         }
 
-        Int32 s = Isolate.run1( digest, td ) as int
+        # TransferableData 走直通形态（见 §8）：分离实参走消息转移路径
+        Int32 s = Isolate.run( digest, td ) as int
         Console.println( "sum = " + s.toString() )
         # td.isValid == false：源句柄已失效，不可再用
     }
@@ -1115,8 +1160,9 @@ Lifecycle
             Coroutine.delay( 60000 )                 # 长期驻留
         }
 
-        Isolate iso = Isolate.spawn1( delayer, rp.sendPort )
-        Coroutine.delay( 50 )                        # M:1 调度：让 worker 起来
+        SendPort sp = rp.sendPort            # 先提取 SendPort（实参走消息路径，见 §5.1.1）
+        Isolate iso = Isolate.spawn( delayer( sp ) )
+        Coroutine.delay( 50 )                        # 等 worker 起来
 
         # 暂停 / 恢复
         Capability cap = iso.pause()
@@ -1143,4 +1189,4 @@ Lifecycle
 
 ---
 
-**相关文档**：[coroutine.md](./coroutine.md)（协程）、[system_method.md](./system_method.md)（系统方法）、`md/design/ISOLATE_DESIGN.md`（设计规格）
+**相关文档**：[coroutine.md](./coroutine.md)（协程）、[system_method.md](./system_method.md)（系统方法）、`csimple_lang/md/design/ISOLATE_DESIGN.md`（设计规格）

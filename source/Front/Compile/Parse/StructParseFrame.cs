@@ -87,6 +87,9 @@ namespace SimpleLanguage.Compile
         protected FileMeta m_FileMeta;
         protected Node m_RootNode = null;
         protected Stack<ParseCurrentNodeInfo> m_CurrentNodeInfoStack = new Stack<ParseCurrentNodeInfo>();
+        // 闭包体解析深度 (>0 表示当前正在解析闭包体内语句; 闭包嵌套定义框架暂不支持,
+        // 各闭包体 Push/Pop 处维护, Isolate 糖形式脱糖等提升闭包的语法据此前置拒绝)
+        protected int m_ClosureBodyDepth = 0;
         // When 'checked' precedes 'label', this flag is set so the label handler
         // knows to enable checked context for the try body.
         protected bool m_PendingCheckedLabel = false;

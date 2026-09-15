@@ -150,7 +150,7 @@ public class Float32_2
         ret Float32_2( -this.x, -this.y )
     }
 
-    Float32_2 set( Float32 _x, Float32 _y )
+    Float32_2 setValue( Float32 _x, Float32 _y )
     {
         this.x = _x
         this.y = _y

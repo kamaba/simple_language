@@ -15,8 +15,8 @@ Project
         Sqlite3Test.fun()
         CsvTest.fun();
         ModuleGlobalTest.fun()
-        IsolateTest.fun()
         !#
+        IsolateTest.fun()
         ComponentTest.fun()
         StreamFileTest.fun()
     }
