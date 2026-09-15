@@ -52,6 +52,7 @@ Project
         MVTest2.fun()    
         !#
         CoroutineTest.fun();
+        StringBuilderTest.fun()
         #!
         EnvironmentTest.fun()
         PlatformOverrideTest.fun()

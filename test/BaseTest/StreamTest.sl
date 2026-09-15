@@ -99,7 +99,7 @@ StreamTest
         arr1._setItem_( 4, 5 )
         Stream<Int32> s1 = Stream<Int32>.fromIterable( arr1 )
         Task t1 = s1.toListThenTask()
-        object r1 = Coroutine.awaitHandle( t1 )
+        object r1 = Coroutine.awaitTask( t1 )
         List<Int32> lst1 = r1 as List<Int32>
         int c1cnt = 0
         int c1sum = 0
@@ -151,7 +151,7 @@ StreamTest
         }
         Stream<Int32> s2 = Stream<Int32>.generate( 5, gen )
         Task t2 = s2.forEach( act )
-        Coroutine.awaitHandle( t2 )
+        Coroutine.awaitTask( t2 )
         check( "C2 generate+forEach 顺序", StreamTest.g_count == 5 && StreamTest.g_sum == 15 && StreamTest.g_first == 1 && StreamTest.g_last == 5 && StreamTest.g_stepOK == 1 )
 
         # C3 empty 流：订阅即 done，无数据
@@ -167,7 +167,7 @@ StreamTest
             StreamTest.g_done = true
         }
         s3.listen( onData3, null, onDone3, false )
-        Coroutine.sleep( 10 )
+        Coroutine.delay( 10 )
         check( "C3 empty 流订阅即 done", StreamTest.g_done && StreamTest.g_count == 0 )
     }
 
@@ -206,7 +206,7 @@ StreamTest
 
         # C2-2 where+map+take 消费结果：0..9 偶数 ×10 取 3 → 0, 20, 40
         Task t = tk.toListThenTask()
-        object r = Coroutine.awaitHandle( t )
+        object r = Coroutine.awaitTask( t )
         List<Int32> lst = r as List<Int32>
         int cnt = 0
         int sum = 0
@@ -242,13 +242,13 @@ StreamTest
         {
         }
         mm.listen( onData )
-        Coroutine.sleep( 10 )
+        Coroutine.delay( 10 )
         bool beforeOk = ( StreamTest.g_mapCount == 0 )
         ctrl.add( 1 )
-        Coroutine.sleep( 10 )
+        Coroutine.delay( 10 )
         bool afterOneOk = ( StreamTest.g_mapCount == 1 )
         ctrl.close()
-        Coroutine.sleep( 10 )
+        Coroutine.delay( 10 )
         bool afterCloseOk = ( StreamTest.g_mapCount == 1 )
         check( "C2-3 周期性流未提前求值", beforeOk && afterOneOk && afterCloseOk )
     }
@@ -283,7 +283,7 @@ StreamTest
         ctrl1.addError( "boom1" )
         ctrl1.add( 2 )
         ctrl1.close()
-        Coroutine.sleep( 30 )
+        Coroutine.delay( 30 )
         check( "D1 addError 传播且不中断", StreamTest.g_err == "boom1" && StreamTest.g_count == 2 && StreamTest.g_done )
 
         # D2 cancelOnError=true：错误后自动取消，后续事件不再分发
@@ -309,7 +309,7 @@ StreamTest
         ctrl2.addError( "boom2" )
         ctrl2.add( 2 )
         ctrl2.close()
-        Coroutine.sleep( 30 )
+        Coroutine.delay( 30 )
         check( "D2 cancelOnError 停止分发", StreamTest.g_err == "boom2" && StreamTest.g_count == 1 && StreamTest.g_done == false )
 
         # D3 Stream.error 工厂：订阅即 error + done
@@ -330,7 +330,7 @@ StreamTest
             StreamTest.g_done = true
         }
         s3.listen( onData3, onError3, onDone3, false )
-        Coroutine.sleep( 20 )
+        Coroutine.delay( 20 )
         check( "D3 Stream.error 订阅即错误", StreamTest.g_err == "errFactory" && StreamTest.g_count == 0 && StreamTest.g_done )
 
         # D4 sub.cancel：取消后无分发（生产协程级联终止）
@@ -346,7 +346,7 @@ StreamTest
         }
         StreamSubscription sub4 = s4.listen( onData4 )
         sub4.cancel()
-        Coroutine.sleep( 30 )
+        Coroutine.delay( 30 )
         check( "D4 cancel 后无分发", StreamTest.g_count == 0 && sub4.isCanceled )
     }
 
@@ -368,12 +368,12 @@ StreamTest
         StreamTest.g_sum = 0
         StreamController<Int32> ctrl = StreamController<Int32>()
         Task pull = spawn e1PullFn( ctrl )
-        Coroutine.sleep( 30 )
+        Coroutine.delay( 30 )
         bool suspendedOk = ( StreamTest.g_count == 0 && pull.isDead == false )
         ctrl.add( 1 )
         ctrl.add( 2 )
         ctrl.close()
-        Coroutine.awaitHandle( pull )
+        Coroutine.awaitTask( pull )
         check( "E1 拉取协程挂起与恢复", suspendedOk && StreamTest.g_count == 2 && StreamTest.g_sum == 3 )
 
         # E2 root 协程直接拉取生产流（fromIterable）
@@ -415,7 +415,7 @@ StreamTest
         StreamTest.g_f1sent = 0
         StreamController<Int32> ctrl = StreamController<Int32>( 1 )
         Task p = spawn f1ProduceFn( ctrl )
-        Coroutine.sleep( 30 )
+        Coroutine.delay( 30 )
         bool blockedOk = ( StreamTest.g_f1sent == 1 && p.isDead == false )
         # 消费驱动生产：iterator 拉取（触发 listen + 分发协程 recv）
         Stream<Int32> s = ctrl.stream
@@ -427,7 +427,7 @@ StreamTest
             f1sum = f1sum + ( it.current as int )
             f1cnt = f1cnt + 1
         }
-        Coroutine.awaitHandle( p )
+        Coroutine.awaitTask( p )
         check( "F1 容量满 add 挂起", blockedOk )
         check( "F1 消费驱动生产完成", f1sum == 60 && f1cnt == 3 && StreamTest.g_f1sent == 3 )
 
@@ -435,7 +435,7 @@ StreamTest
         StreamTest.g_f2sent = 0
         StreamController<Int32> ctrl2 = StreamController<Int32>()
         Task p2 = spawn f2BurstFn( ctrl2 )
-        Coroutine.sleep( 30 )
+        Coroutine.delay( 30 )
         bool burstOk = ( StreamTest.g_f2sent == 3 )
         # 清理：消费全量
         Stream<Int32> s2 = ctrl2.stream
@@ -445,7 +445,7 @@ StreamTest
         {
             f2sum = f2sum + ( it2.current as int )
         }
-        Coroutine.awaitHandle( p2 )
+        Coroutine.awaitTask( p2 )
         check( "F2 无上限 add 不挂起", burstOk && f2sum == 6 )
     }
 

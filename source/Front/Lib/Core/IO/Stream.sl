@@ -228,7 +228,7 @@ public abstract class Stream<T> extends Object interface Core.IIterable<T>
         ret task
     }
 
-    # 结果经 Task.awaitHandle() 取回（object as List<T>）。
+    # 结果经 Task.awaitTask() 取回（object as List<T>）。
     public Task toListThenTask()
     {
         Stream<T> src = this
@@ -515,7 +515,7 @@ public class StreamController<T> extends Object
         {
             while ctrl.isClosed == false
             {
-                Coroutine.sleep( 1 )
+                Coroutine.delay( 1 )
             }
         }
         Task task = Coroutine.spawnClosure0( f )
@@ -800,7 +800,7 @@ public class _PeriodicStream<T> extends Stream<T>
         {
             while sub.isCanceled == false
             {
-                Coroutine.sleep( ms )
+                Coroutine.delay( ms )
                 if sub.isCanceled
                 {
                     break

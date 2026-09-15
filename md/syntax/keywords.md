@@ -139,7 +139,7 @@
 | 糖 | 展开为 |
 |----|--------|
 | `yield;` | `Coroutine.yieldNow()` |
-| `await expr` | `Coroutine.awaitHandle(expr)` |
+| `await expr` | `Coroutine.awaitTask(expr)` |
 | `spawn f(实参...)` | `Coroutine.spawnClosureN(...)`（挂起当前协程，异步执行 f） |
 
 展开发生在 `StructParseToSyntax.cs` 的 `TransformCoroutineKeywordNodes`。详见 [coroutine.md](./coroutine.md)。
@@ -233,7 +233,7 @@ d = f"""x=${ a + 1 }""";    # 三引号 f 形式仅支持 ${expr}
 
 | 分类 | 类型 |
 |------|------|
-| 容器 | `Array<T>`、`List<T>`、`Map<T1,T2>`、`HashSet<T>`、`Queue<T>`、`Stack<T>`、`LinkedList<T>`、`StringBuffer`、`StringBuilder` |
+| 容器 | `Array<T>`、`List<T>`、`Map<T1,T2>`、`HashSet<T>`、`Queue<T>`、`Stack<T>`、`LinkedList<T>`、`StringBuilder` |
 | 树/表 | `Tree<T>`、`TreeNode<T>`、`BinaryTree<T>`、`BinarySearchTree<T>`、`BinaryNode<T>`、`Table` |
 | 文本/序列化 | `BaseJson`、`JsonValue`、`Json`、`BaseCsv`、`BaseToml`、`BaseYaml`、`Serialize`、`Utf8Codec`、`JsonCodec<T>`、`BinaryCodec`、`ProtocalBuffers`（Pb 系）、`Lz4` |
 | 接口 | `IClone`、`IClone<T>`、`IIterator`、`IIterable`、`IIterator<out T>`、`IIterable<T>`、`IList<T>`、`IMap<T1,T2>`、`Iterater`、`Iterater<T>` |
@@ -243,7 +243,7 @@ d = f"""x=${ a + 1 }""";    # 三引号 f 形式仅支持 ${expr}
 | 类型 | 说明 |
 |------|------|
 | `Coroutine`（别名 `coro`） | 协程管理器（spawn/waitAll/waitAny…） |
-| `Task` | 协程对象（handle/awaitHandle/cancel/status/isDead） |
+| `Task` | 协程对象（handle/awaitTask/cancel/status/isDead） |
 | `CoroutineStatus` | 状态枚举（0=Created…4=Dead） |
 | `CoroutineBlockReason` | 阻塞原因枚举（0=None…5=IO） |
 | `Channel` / `Channel<T>` | 通道 |

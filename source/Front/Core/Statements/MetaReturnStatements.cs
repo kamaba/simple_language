@@ -99,6 +99,25 @@ namespace SimpleLanguage.Core
                 // result 值返回改写: ret expr 等价 result.value = expr (Object/T 字段语义), 跳过函数返回类型比对
                 if( !m_IsResultValueReturn )
                 {
+                    // void 互斥检查: void 函数的 ret 不允许携带返回值表达式; 非 void 函数不允许裸 ret。
+                    // (CompareLeftRightMetaType 对非数值类型走 CompareMetaClass 的宽松兜底, void 与任意类型的比对会被放行, 故此处专项拦截)
+                    if( mdt != null && mdt.metaClass == CoreMetaClassManager.voidMetaClass )
+                    {
+                        if( m_Express != null )
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreReturnStatementVoidWithExpress, m_Token,
+                                "ret 带返回值表达式，但函数返回类型为 void: " + m_ReturnMetaDefineType?.ToString());
+                        }
+                    }
+                    else if( mdt != null )
+                    {
+                        if( m_Express == null )
+                        {
+                            Log.AddMetaCoreLog(LID.MetaCoreReturnStatementVoidFuncBareRet, m_Token,
+                                "函数声明了返回类型 " + mdt.ToString() + "，ret 必须携带返回值表达式");
+                        }
+                    }
+
                     if( !TypeManager.CompareLeftRightMetaType(mdt, m_ReturnMetaDefineType, m_Token, out MetaType convertMt  ) )
                     {
                         Log.AddMetaCoreLog(LID.MetaCoreReturnStatementLeftCompareRight, m_Token, "left compare right " + m_ReturnMetaDefineType?.ToString(), mdt?.ToString() ?? "null");

@@ -231,7 +231,7 @@ CodecFrameTest
         k1.close()
         Stream<CodecFrameMsg> s1 = LengthPrefix.decodeStream<CodecFrameMsg>( ms1, cfMakeCodec() )
         Task t1 = s1.toListThenTask()
-        object r1 = Coroutine.awaitHandle( t1 )
+        object r1 = Coroutine.awaitTask( t1 )
         List<CodecFrameMsg> lst1 = r1 as List<CodecFrameMsg>
         int b1cnt = 0
         int b1sum = 0
@@ -354,9 +354,9 @@ CodecFrameTest
         # G1 toStream + fromStream（无帧头整存整取）
         var ms1 = MemoryStream()
         Task t1 = Serialize.toStream<CodecFrameMsg>( msg, ms1, codec )
-        object r1 = Coroutine.awaitHandle( t1 )
+        object r1 = Coroutine.awaitTask( t1 )
         Task t2 = Serialize.fromStream<CodecFrameMsg>( ms1, codec )
-        object r2 = Coroutine.awaitHandle( t2 )
+        object r2 = Coroutine.awaitTask( t2 )
         CodecFrameMsg g1back = r2 as CodecFrameMsg
         check( "G1 toStream/fromStream", g1back != null && g1back.id == 42 && g1back.name == "rt" )
 
@@ -368,7 +368,7 @@ CodecFrameTest
         k2.close()
         Stream<CodecFrameMsg> s2 = Serialize.toElementStream<CodecFrameMsg>( ms2, codec )
         Task t3 = s2.toListThenTask()
-        object r3 = Coroutine.awaitHandle( t3 )
+        object r3 = Coroutine.awaitTask( t3 )
         List<CodecFrameMsg> lst2 = r3 as List<CodecFrameMsg>
         int g2cnt = 0
         string g2names = ""
@@ -426,7 +426,7 @@ CodecFrameTest
         ctrl1.add( ByteBuf.fromHex( "01610508" ) )
         ctrl1.add( ByteBuf.fromHex( "01120162" ) )
         ctrl1.close()
-        Coroutine.sleep( 50 )
+        Coroutine.delay( 50 )
         check( "H1 chunked decode", g_hCount == 2 && g_hNames == "ab" && g_hDone && !g_hErr )
 
         # H2 截断流：只喂半帧后上游 close → UnexpectedEof 走 onError
@@ -446,7 +446,7 @@ CodecFrameTest
         s2.listen( onData2, onError2, null, false )
         ctrl2.add( ByteBuf.fromHex( "05080112" ) )
         ctrl2.close()
-        Coroutine.sleep( 50 )
+        Coroutine.delay( 50 )
         check( "H2 truncated eof", g_hErr2 && g_hCount2 == 0 )
     }
 
@@ -474,12 +474,12 @@ CodecFrameTest
         int spin = 0
         while CodecFrameTest.g_tickCount < 3 && spin < 200
         {
-            Coroutine.sleep( 5 )
+            Coroutine.delay( 5 )
             spin = spin + 1
         }
         int snap = CodecFrameTest.g_tickCount
         sub.cancel()
-        Coroutine.sleep( 60 )
+        Coroutine.delay( 60 )
         check( "I periodic cancel", snap >= 3 && g_tickCount == snap && g_tickLast >= 3 )
     }
 

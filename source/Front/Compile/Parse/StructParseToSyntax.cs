@@ -647,7 +647,7 @@ namespace SimpleLanguage.Compile
                 return null;
             }
 
-            // spawn/await 关键字展开: 把 spawn f(a,b) / await expr 替换为 Coroutine.spawnClosureN(...) / Coroutine.awaitHandle(...) 调用节点
+            // spawn/await 关键字展开: 把 spawn f(a,b) / await expr 替换为 Coroutine.spawnClosureN(...) / Coroutine.awaitTask(...) 调用节点
             TransformCoroutineKeywordNodes(pNodeList);
 
             List<Node> beforeNodeList = new List<Node>();
@@ -1088,8 +1088,10 @@ namespace SimpleLanguage.Compile
         /// spawn/await 关键字展开 (原地修改节点列表):
         ///     spawn f(a,b)              ->  CoroutineManager.spawnClosure2( f, a, b )
         ///     spawn function(){...}     ->  先提升为具名闭包语句, 再 CoroutineManager.spawnClosure0( tmpName )
-        ///     await expr                ->  CoroutineManager.awaitHandle( expr )
-        /// 实例链形态 spawn c1.fun(a,b) 已移除: 需经捕获 receiver 的包装闭包转发。
+        ///     spawn cn.func(a,b)        ->  脱糖为捕获 receiver 的无参包装闭包
+        ///                                    function spawnClosureTmpN() { ret cn.func( a, b ) }
+        ///                                    再 CoroutineManager.spawnClosure0( tmpName )
+        ///     await expr                ->  CoroutineManager.awaitTask( expr )
         /// </summary>
         private void TransformCoroutineKeywordNodes( List<Node> pNodeList )
         {
@@ -1170,11 +1172,11 @@ namespace SimpleLanguage.Compile
                         || (opNode.nodeType == ENodeType.Key && opNode.token?.type == ETokenType.This))
                     {
                         // spawn 函数变量调用: spawn f(a,b) -> CoroutineManager.spawnClosureN( f, a, b )
-                        // 实例链形态 spawn c1.fun(a,b) 已移除: 统一改用捕获 receiver 的包装闭包
+                        // 实例链形态 spawn cn.fun(a,b): 下方脱糖为捕获 receiver 的无参包装闭包
                         var linkList = opNode.GetLinkNodeList(true);
                         var lastLinkNode = linkList[linkList.Count - 1];
                         // 标识符链为嵌套结构 (a.b.fun 表示为 a.extend=[.,b], b.extend=[.,fun]),
-                        // 沿 extend 尾部下钻取真正末节点; 存在链式后缀即实例链形态 (已移除, 下方报错)
+                        // 沿 extend 尾部下钻取真正末节点; 存在链式后缀即实例链形态 (下方脱糖)
                         while (lastLinkNode.extendLinkNodeList.Count > 0)
                         {
                             var tailNode = lastLinkNode.extendLinkNodeList[lastLinkNode.extendLinkNodeList.Count - 1];
@@ -1207,10 +1209,67 @@ namespace SimpleLanguage.Compile
                         }
                         if (lastLinkNode != opNode)
                         {
-                            // 实例链形态已移除: spawn receiver.方法() 不再支持
-                            Log.AddNodeLog(LID.NodeStructParseSpawnF, cnode.token,
-                                "Error spawn 实例链形态已移除, 请改用包装闭包转发, 例如: spawn c1.fun(a,b) 改为 function f(a,b){ ret c1.fun(a,b) } 后 spawn f(a,b)");
-                            return;
+                            // 实例链形态: spawn receiver.方法( 实参... ) 脱糖为捕获外层变量的无参包装闭包:
+                            //   spawn cn.func( a, b )
+                            //     -> function spawnClosureTmpN() { ret cn.func( a, b ) }
+                            //        Coroutine.spawnClosure0( spawnClosureTmpN )
+                            // 实参表达式原样嵌入闭包体 (receiver 与实参变量由闭包捕获);
+                            // 闭包返回类型由 ret 语句推断 (void 方法 await 得 null, 与 void 闭包语义一致)。
+                            var curInfo = currentNodeInfo;
+                            if (curInfo == null ||
+                                (curInfo.parseType != EParseNodeType.Statements && curInfo.parseType != EParseNodeType.Function))
+                            {
+                                Log.AddNodeLog(LID.NodeStructParseSpawn, cnode.token,
+                                    "Error spawn 实例链形态只能出现在方法体内!");
+                                return;
+                            }
+                            // 1. 恢复链尾参数列表 (上方已剥离), opNode 还原为完整调用表达式 receiver.方法( 实参... )
+                            lastLinkNode.SetParNode(parNode);
+                            // 2. 合成闭包体 Brace 节点: { ret receiver.方法( 实参... ) }
+                            Token braceToken = new Token(cnode.token);
+                            braceToken.SetLexeme("{", ETokenType.LeftBrace);
+                            Node braceNode = new Node(braceToken);
+                            braceNode.nodeType = ENodeType.Brace;
+                            Token rightBraceToken = new Token(cnode.token);
+                            rightBraceToken.SetLexeme("}", ETokenType.RightBrace);
+                            braceNode.endToken = rightBraceToken;
+
+                            Token retToken = new Token(cnode.token);
+                            retToken.SetLexeme("ret", ETokenType.Return);
+                            Node retNode = new Node(retToken);
+                            retNode.nodeType = ENodeType.Key;
+                            braceNode.AddChild(retNode, false);
+                            braceNode.AddChild(opNode, false);
+                            Token semiToken = new Token(cnode.token);
+                            semiToken.SetLexeme(";", ETokenType.SemiColon);
+                            Node semiNode = new Node(semiToken);
+                            semiNode.nodeType = ENodeType.SemiColon;
+                            braceNode.AddChild(semiNode, false);
+
+                            // 3. 提升为具名闭包定义语句 (先于 spawn 调用语句发射), 同匿名闭包分支
+                            string tmpName = "spawnClosureTmp" + (m_SpawnClosureCounter++);
+                            Token nameToken = new Token(cnode.token);
+                            nameToken.SetLexeme(tmpName, ETokenType.Identifier);
+                            FileMetaBlockSyntax closureBlock = new FileMetaBlockSyntax(m_FileMeta, braceNode.token, braceNode.endToken);
+                            FileMetaDefineClosureSyntax fmdcs = new FileMetaDefineClosureSyntax(m_FileMeta,
+                                cnode.token, nameToken, false, new List<FileMetaParamterDefine>(), closureBlock);
+                            AddParseSyntaxNodeInfo(fmdcs);
+                            ParseCurrentNodeInfo pcnicClosure = new ParseCurrentNodeInfo(closureBlock);
+                            m_CurrentNodeInfoStack.Push(pcnicClosure);
+                            ParseSyntax(braceNode);
+                            m_CurrentNodeInfoStack.Pop();
+
+                            // 4. 替换为 Coroutine.spawnClosure0( tmpName )
+                            Token tmpToken = new Token(nameToken);
+                            Node tmpRefNode = new Node(tmpToken);
+                            tmpRefNode.nodeType = ENodeType.IdentifierLink;
+                            Node spawnCallNode = CreateCoroutineCallNode(cnode.token, "spawnClosure0",
+                                new List<Node> { tmpRefNode });
+                            pNodeList.RemoveRange(i, opIndex + 1 - i);
+                            pNodeList.Insert(i, spawnCallNode);
+                            // 实例链分支已完成替换, 跳过下方函数值路径 (continue 与闭包路径
+                            // 替换后落入 for 递增的行为一致, 仍可处理列表中后续 spawn)
+                            continue;
                         }
                         // 闭包路径: 无链式后缀, 整个 opNode 即函数引用
                         // 新实参 childList: [ f, Comma, 原实参节点... ] (原 childList 自带 Comma 分隔)
@@ -1239,7 +1298,7 @@ namespace SimpleLanguage.Compile
                 }
                 else // await
                 {
-                    // await expr -> CoroutineManager.awaitHandle( expr )
+                    // await expr -> CoroutineManager.awaitTask( expr )
                     // 收集操作数直到顶层二元符号/赋值/换行结束 (await 结合力高于二元运算符)
                     List<Node> operandNodes = new List<Node>();
                     int end = opIndex;
@@ -1254,7 +1313,7 @@ namespace SimpleLanguage.Compile
                             || n.nodeType == ENodeType.Comma)
                             break;
                         // as/is/isnot 二元关键字同样是操作数边界:
-                        // await h as int -> CoroutineManager.awaitHandle(h) as int
+                        // await h as int -> CoroutineManager.awaitTask(h) as int
                         if (n.nodeType == ENodeType.Key
                             && (n.token?.type == ETokenType.As || n.token?.type == ETokenType.Is
                                 || n.token?.type == ETokenType.IsNot))
@@ -1266,7 +1325,7 @@ namespace SimpleLanguage.Compile
                         // Log.AddNodeLog(LID.NodeStructParseAwait, cnode.token, "Error await 后缺少表达式!");
                         return;
                     }
-                    Node callNode = CreateCoroutineCallNode(cnode.token, "awaitHandle", operandNodes);
+                    Node callNode = CreateCoroutineCallNode(cnode.token, "awaitTask", operandNodes);
                     pNodeList.RemoveRange(i, end - i);
                     pNodeList.Insert(i, callNode);
                 }

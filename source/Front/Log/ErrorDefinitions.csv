@@ -1333,6 +1333,8 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 21440,Info,FALSE,TRUE,0,,data 声明类型与右侧表达式类型不匹配：右值非 data 类型。,,,,
 21441,Info,FALSE,TRUE,0,,data 声明类型与右侧表达式类型不匹配：右值非 data 类型。,,,,
 21442,Info,FALSE,TRUE,0,,数组元素强制转换失败（可能溢出或类型不匹配）: 目标类型,,,,
+21443,Error,TRUE,FALSE,0,,Error ret 语句携带了返回值表达式，但函数返回类型为 void，void 函数只能使用裸 ret（不带表达式）,,,,
+21444,Error,TRUE,FALSE,0,,Error 函数声明了非 void 返回类型，ret 语句必须携带返回值表达式（裸 ret 仅允许 void 函数）,,,,
 22000,Error,TRUE,FALSE,0,,closure call node is null,,,,
 22001,Error,TRUE,FALSE,0,,New-in-call-link: IRMetaClass not found for {},,,,
 22002,Error,TRUE,FALSE,0,,New-in-call-link: constructor not found for {},,,,

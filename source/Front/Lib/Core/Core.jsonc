@@ -72,8 +72,6 @@
       { "path": "Container/HashSet.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "Container/Stack.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "Container/Tuple.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
-      { "path": "Container/StringBuilder.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
-      { "path": "Container/StringBuffer.sl", "group": "container", "tag": "container", "ignore": false, "priority": 0 },
       { "path": "DataStruct/Table.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "DataStruct/Tree.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
       { "path": "DataStruct/BaseCsv.sl", "group": "container", "tag": "datastruct", "ignore": false, "priority": 0 },
@@ -90,7 +88,8 @@
       { "path": "IO/Stream.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/BinaryCodec.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/JsonCodec.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
-      { "path": "IO/Serialize.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/Serialize.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },   
+      { "path": "Text/StringBuilder.sl", "group": "text", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Lz4.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Text/ProtocalBuffers.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 }
     ]
@@ -482,7 +481,7 @@
     { "name": "SystemCoroutineSpawnClosure3", "returnType": "object", "params": ["object", "object", "object", "object"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_spawn_closure3" },
     { "name": "SystemCoroutineSpawnClosureN", "returnType": "object", "params": ["object", "Array<object>"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_spawn_closure_n" },
     { "name": "SystemCoroutineYield",         "returnType": "void",   "params": [], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_yield" },
-    { "name": "SystemCoroutineSleep",         "returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_sleep" },
+    { "name": "SystemCoroutineDelay",         "returnType": "void",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_delay" },
     { "name": "SystemCoroutineCurrent",       "returnType": "object", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_current" },
     { "name": "SystemCoroutineStatus",        "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_status" },
     { "name": "SystemCoroutineBlockedReason", "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_coroutine_blocked_reason" },
@@ -653,7 +652,6 @@
         { "class": "Channel<T>" },
         { "class": "ByteBuf" },
         { "class": "StringBuilder" },
-        { "class": "StringBuffer" },
         // ---- Stream P1 公开类型目录（STREAM_DESIGN.md §17；供 references 源码模式加载，私有 _ 类不登记）----
         { "class": "ByteStream" },
         { "class": "MemoryStream" },

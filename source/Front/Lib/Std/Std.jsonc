@@ -97,7 +97,6 @@
              { "class": "Csv" },
              { "class": "Json" },
              { "class": "Json5" },
-             { "class": "StringBuffer" },
              { "class": "Xml" }
          ]
       },

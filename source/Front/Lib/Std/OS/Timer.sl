@@ -8,7 +8,7 @@ namespace OS
     #   Int64 elapsed = t.elapsed
     #   Console.println("耗时: " + elapsed.toString() + "ms")
     #
-    #   OS.Timer.sleep(500)  # 延时 500ms
+    #   OS.Timer.sleep(500)  # 阻塞当前线程 500ms；协程内非阻塞等待请用 Coroutine.delay
     #   Int64 now = OS.Timer.now()  # Unix 毫秒时间戳
     #   Int64 clock = OS.Timer.clock()  # 高精度单调时钟
     public class Timer
@@ -34,8 +34,9 @@ namespace OS
             ret SystemTimerNowMillis()
         }
 
-        # 睡眠指定毫秒数
-        # 类似 C# Thread.Sleep(ms) / Dart Future.delayed / Swift Thread.sleep(for:)
+        # 真阻塞睡眠指定毫秒数：冻结调用线程（单线程 VM 下会连带暂停协程调度器）
+        # 类似 C# Thread.Sleep(ms) / Swift Thread.sleep(for:)
+        # 协程内非阻塞等待请用 Coroutine.delay(ms)
         static void sleep(int milliseconds)
         {
             SystemSleep(milliseconds)

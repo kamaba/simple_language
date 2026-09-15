@@ -262,7 +262,7 @@ StreamFileTest
         FileStream fr = FileStream( path, FileMode.Read )
         Stream<StreamFileMsg> sr = LengthPrefix.decodeStream<StreamFileMsg>( fr, codec )
         Task t = sr.toListThenTask()
-        object r = Coroutine.awaitHandle( t )
+        object r = Coroutine.awaitTask( t )
         List<StreamFileMsg> lst = r as List<StreamFileMsg>
         int ecnt = 0
         int eid = 0
@@ -341,8 +341,8 @@ StreamFileTest
             StreamFileTest.g_bridgeDone = true
         }
         bs.listen( onB, null, onBd, false )
-        object pr = Coroutine.awaitHandle( pump )
-        Coroutine.sleep( 50 )
+        object pr = Coroutine.awaitTask( pump )
+        Coroutine.delay( 50 )
         check( "G bridge roundtrip", g_bridgeSum == 100 && g_bridgeDone )
     }
 

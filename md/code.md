@@ -141,7 +141,7 @@ public void UpdateHost
 
 [规则4-5] 优先使用语法糖保持简洁：`ret` 代替 `return`、`a ?? b` 代替判空取值、`a?.member` 代替判空访问、`$var` / `${expr}` 插值代替字符串拼接。同一文件内风格保持一致。
 
-[规则4-6] 协程中使用 `await` / `spawn` / `yield` 语法糖，不要手写等价的 `Coroutine.awaitHandle(...)` / `Coroutine.spawnClosureN(...)` / `Coroutine.yieldNow()` 调用。
+[规则4-6] 协程中使用 `await` / `spawn` / `yield` 语法糖，不要手写等价的 `Coroutine.awaitTask(...)` / `Coroutine.spawnClosureN(...)` / `Coroutine.yieldNow()` 调用。
 
 Core 库使用规范
 

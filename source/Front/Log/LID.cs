@@ -895,6 +895,8 @@ namespace SimpleLanguage.Logging
         // ReturnStatement
         MetaCoreReturnStatementLeftCompareRight = 21397,
         MetaCoreReturnStatementLeftCompareRight2 = 21398,
+        MetaCoreReturnStatementVoidWithExpress = 21443,
+        MetaCoreReturnStatementVoidFuncBareRet = 21444,
         // SwitchStatement
         MetaCoreSwitchStatementSwitch = 21399,
         // TryCatchStatement

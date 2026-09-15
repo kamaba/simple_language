@@ -96,7 +96,7 @@ IsolateTest
     static coroH2Send( object arg )
     {
         SendPort sp = arg as SendPort
-        Coroutine.sleep( 20 )
+        Coroutine.delay( 20 )
         sp.send( "late" )
     }
 
@@ -346,7 +346,7 @@ IsolateTest
         Console.println( "---------- D. 生命周期控制 ----------" )
 
         # 长睡眠 worker 入口（D2/D3/D4/D5/I3 复用形态）
-        function fnSlp = function() { Coroutine.sleep( 5000 ) }
+        function fnSlp = function() { Coroutine.delay( 5000 ) }
 
         # D1 pause → Paused(3) → resume → 收到 ready
         ReceivePort rpD1 = ReceivePort()
@@ -354,10 +354,10 @@ IsolateTest
         {
             SendPort sp = arg as SendPort
             sp.send( "ready" )
-            Coroutine.sleep( 5000 )
+            Coroutine.delay( 5000 )
         }
         Isolate isoD1 = Isolate.spawn1( fnD1, rpD1.sendPort )
-        Coroutine.sleep( 50 )
+        Coroutine.delay( 50 )
         Capability capD1 = isoD1.pause()
         isoCheck( "D1 pause后状态为Paused(3)", isoD1.status == 3 )
         isoD1.resume( capD1 )
@@ -367,7 +367,7 @@ IsolateTest
 
         # D2 伪造 capability resume 静默无效
         Isolate isoD2 = Isolate.spawn0( fnSlp )
-        Coroutine.sleep( 30 )
+        Coroutine.delay( 30 )
         Capability capD2 = isoD2.pause()
         Capability fakeD2 = Capability( 0 )
         isoD2.resume( fakeD2 )
@@ -378,15 +378,15 @@ IsolateTest
 
         # D3 kill(0) 立即终止 → Dead(5)
         Isolate isoD3 = Isolate.spawn0( fnSlp )
-        Coroutine.sleep( 30 )
+        Coroutine.delay( 30 )
         isoD3.kill( 0 )
-        Coroutine.sleep( 30 )
+        Coroutine.delay( 30 )
         isoCheck( "D3 kill(0)立即死", isoD3.status == 5 )
 
         # D4 ping 存活探测
         ReceivePort rpD4 = ReceivePort()
         Isolate isoD4 = Isolate.spawn0( fnSlp )
-        Coroutine.sleep( 30 )
+        Coroutine.delay( 30 )
         isoD4.ping( rpD4.sendPort, "pong", 0 )
         string d4 = rpD4.recv() as string
         isoCheck( "D4 ping存活探测", d4 == "pong" )
@@ -395,13 +395,13 @@ IsolateTest
         # D5 onExit 监听：退出时收到通知（载荷为 null，Dart 语义）
         ReceivePort exitRpD5 = ReceivePort()
         Isolate isoD5 = Isolate.spawn0( fnSlp )
-        Coroutine.sleep( 30 )
+        Coroutine.delay( 30 )
         isoD5.addOnExitListener( exitRpD5.sendPort, null )
         isoD5.kill( 0 )
         Int32 spinsD5 = 0
         while ( exitRpD5.count < 1 && spinsD5 < 200 )
         {
-            Coroutine.sleep( 5 )
+            Coroutine.delay( 5 )
             spinsD5 = spinsD5 + 1
         }
         bool d5arrived = exitRpD5.count == 1
@@ -425,7 +425,7 @@ IsolateTest
         Int32 spinsE1 = 0
         while ( exitRpE1.count < 1 && spinsE1 < 200 )
         {
-            Coroutine.sleep( 5 )
+            Coroutine.delay( 5 )
             spinsE1 = spinsE1 + 1
         }
         bool e1exit = exitRpE1.count == 1
@@ -536,8 +536,8 @@ IsolateTest
             Task t1 = spawn add2( 1, 1 )
             Task t2 = spawn add2( 4, 2 )
             Coroutine.waitAll2( t1, t2 )
-            Int32 v1 = Coroutine.awaitHandle( t1 ) as int
-            Int32 v2 = Coroutine.awaitHandle( t2 ) as int
+            Int32 v1 = Coroutine.awaitTask( t1 ) as int
+            Int32 v2 = Coroutine.awaitTask( t2 ) as int
             ret v1 + v2
         }
         Int32 h1 = Isolate.run0( fnH1 ) as int
@@ -590,12 +590,12 @@ IsolateTest
         isoCheck( "I2 当前组非空且含自己", grpI2 != null && grpI2.isolateCount >= 1 )
 
         # I3 spawn 进入同组，kill 后组计数回落
-        function fnI3 = function() { Coroutine.sleep( 5000 ) }
+        function fnI3 = function() { Coroutine.delay( 5000 ) }
         Isolate isoI3 = Isolate.spawn0( fnI3 )
         Int32 cntBefore = IsolateGroup.current().isolateCount
         bool i3spawn = cntBefore >= 2
         isoI3.kill( 0 )
-        Coroutine.sleep( 30 )
+        Coroutine.delay( 30 )
         Int32 cntAfter = IsolateGroup.current().isolateCount
         isoCheck( "I3 spawn同组+kill后计数回落", i3spawn && cntAfter == cntBefore - 1 )
     }
@@ -645,7 +645,7 @@ IsolateTest
         isoCheck( "T1 真并行(2任务并行<1.5×单任务)", t1parMs * 2 < t1soloMs * 3 && t1x == t1solo && t1y == t1solo )
         Console.println( "  T1 单任务=" + t1soloMs.toString() + "ms  两任务并行=" + t1parMs.toString() + "ms (需≥2核)" )
 
-        # T2 主 isolate 忙等（无 sleep/recv/yield 让出点）时 worker 仍完成
+        # T2 主 isolate 忙等（无 delay/recv/yield 让出点）时 worker 仍完成
         #    M:1 下 worker 永不被调度 → 自旋耗尽 FAIL；P2 下各自线程推进
         ReceivePort rpT2 = ReceivePort()
         function fnT2 = function( object arg )
@@ -668,7 +668,7 @@ IsolateTest
 
         # T3 多 worker 同时 Running：各占一条 OS 线程并发驻留
         #    （M:1 下同一时刻至多 1 个 Running，其余 Ready → FAIL）
-        function fnT3 = function() { Coroutine.sleep( 5000 ) }
+        function fnT3 = function() { Coroutine.delay( 5000 ) }
         Array<Isolate> isosT3 = Array<Isolate>( 4 )
         for Int32 i = 0, i < 4, i = i + 1
         {
@@ -678,7 +678,7 @@ IsolateTest
         Int32 runningT3 = 0
         while ( runningT3 < 4 && spinsT3 < 100 )
         {
-            Coroutine.sleep( 5 )
+            Coroutine.delay( 5 )
             spinsT3 = spinsT3 + 1
             runningT3 = 0
             for Int32 i = 0, i < 4, i = i + 1
@@ -702,11 +702,11 @@ IsolateTest
             object msg = never.recv()
         }
         Isolate isoT4a = Isolate.spawn0( fnT4a )
-        Coroutine.sleep( 50 )
-        function fnT4b = function() { Coroutine.sleep( 5000 ) }
+        Coroutine.delay( 50 )
+        function fnT4b = function() { Coroutine.delay( 5000 ) }
         ReceivePort pingRpT4 = ReceivePort()
         Isolate isoT4b = Isolate.spawn0( fnT4b )
-        Coroutine.sleep( 50 )
+        Coroutine.delay( 50 )
         isoT4b.ping( pingRpT4.sendPort, "pong", 0 )
         string t4 = pingRpT4.recv() as string
         isoCheck( "T4 阻塞recv的worker不影响其它isolate", t4 == "pong" && isoT4a.status != 5 )
@@ -720,7 +720,7 @@ IsolateTest
         function fnT5quick = function( object arg )
         {
             SendPort sp = arg as SendPort
-            Coroutine.sleep( 20 )
+            Coroutine.delay( 20 )
             sp.send( "during" )
         }
         Isolate.spawn1( fnT5quick, rpT5quick.sendPort )
@@ -772,7 +772,7 @@ IsolateTest
         Int32 spinsT8 = 0
         while ( rpT8.count < 400 && spinsT8 < 400 )
         {
-            Coroutine.sleep( 5 )
+            Coroutine.delay( 5 )
             spinsT8 = spinsT8 + 1
         }
         Int32 sumT8 = 0
@@ -783,7 +783,7 @@ IsolateTest
         }
         isoCheck( "T8 8worker并发400消息无丢失", sumT8 == 400 )
 
-        # T9 跨线程 kill 运行中的忙 worker：周期 sleep 制造退出检查点
+        # T9 跨线程 kill 运行中的忙 worker：周期 delay 制造退出检查点
         #    （终止为协作式 exit_requested，线程主循环在调度间隙检查）
         function fnT9 = function( object arg )
         {
@@ -796,19 +796,19 @@ IsolateTest
                 if ( acc >= 200000 )
                 {
                     acc = 0
-                    Coroutine.sleep( 1 )
+                    Coroutine.delay( 1 )
                 }
                 i = i + 1
             }
             ret acc
         }
         Isolate isoT9 = Isolate.spawn1( fnT9, 20000000 )
-        Coroutine.sleep( 100 )
+        Coroutine.delay( 100 )
         isoT9.kill( 0 )
         Int32 spinsT9 = 0
         while ( isoT9.status != 5 && spinsT9 < 200 )
         {
-            Coroutine.sleep( 5 )
+            Coroutine.delay( 5 )
             spinsT9 = spinsT9 + 1
         }
         isoCheck( "T9 kill运行中worker→Dead(5)", isoT9.status == 5 )

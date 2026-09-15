@@ -41,7 +41,7 @@ Stream<T> / StreamController<T>       （SL，Lib/Core/IO/Stream.sl）
 | `Stream<T> skip( int count )` | 惰性跳过前 N 个后透传 |
 | `Stream<U> transform<U>( StreamTransformer<T,U> transformer )` | 变换器桥接（内部调 `transformer.apply( this )`） |
 | `Task forEach( Function action )` | 终端：逐元素执行 action，完成时 Task 结束 |
-| `Task toList()` | 终端：收集为 `List<T>`；结果经 `Coroutine.awaitHandle( task )` 取回后 `as List<T>` |
+| `Task toList()` | 终端：收集为 `List<T>`；结果经 `Coroutine.awaitTask( task )` 取回后 `as List<T>` |
 
 静态工厂：
 
@@ -111,7 +111,7 @@ Stream<Int32> w = src.where( pred )            # 过滤偶数
 Stream<Int32> m = w.map<Int32>( mapper )       # ×10
 Stream<Int32> tk = m.take( 3 )                 # 取 3 个
 Task t = tk.toList()
-object r = Coroutine.awaitHandle( t )
+object r = Coroutine.awaitTask( t )
 List<Int32> lst = r as List<Int32>             # 0, 20, 40
 
 # 拉模式：iterator 挂起与恢复（协程内空通道 recv 挂起，add 后恢复）

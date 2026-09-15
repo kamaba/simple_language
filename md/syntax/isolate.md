@@ -37,7 +37,7 @@ isolate 相互之间**只能通过消息传递（深拷贝）或 TransferableDat
 |---|---|
 | **内存隔离** | 一个 isolate 的 GC、崩溃、无限循环不影响另一个；不共享任何可变内存 |
 | **消息即克隆** | 跨 isolate 传值一律深拷贝；接收方拿到的是自己堆里的副本 |
-| **M:1 单线程调度（当前 P1）** | 所有 isolate 挂在同一个协作式调度循环上，**主 isolate 协程阻塞（recv/sleep/waitAll）时调度器才推进 worker**——语义与真并行一致，但无实际并行 |
+| **M:1 单线程调度（当前 P1）** | 所有 isolate 挂在同一个协作式调度循环上，**主 isolate 协程阻塞（recv/delay/waitAll）时调度器才推进 worker**——语义与真并行一致，但无实际并行 |
 | **与协程正交** | 协程是单 isolate 内的并发（共享堆）；isolate 是跨堆的并行（不共享）。一个 isolate 内可跑任意多协程 |
 | **句柄稳定** | 同一 isolate id 恒对应同一 wrapper 实例，`==` 判等可靠 |
 | **组共享代码** | 同组 isolate 共享类表 / 方法表 / 字节码 → spawn 近乎免费、闭包可按 `method_id` 跨 isolate 解析、类型身份一致 |
@@ -436,7 +436,7 @@ function handler = function( object msg )
 rp.listen( handler )            # 内部起分发协程阻塞收消息并回调
 
 rp.sendPort.send( "hello" )
-Coroutine.sleep( 20 )           # M:1 调度：主协程让出后分发协程才跑
+Coroutine.delay( 20 )           # M:1 调度：主协程让出后分发协程才跑
 ```
 
 > `listen` 后端口关闭且消息耗尽时，分发协程自动退出。
@@ -468,10 +468,10 @@ function entry = function( object arg )
 {
     SendPort sp = arg as SendPort
     sp.send( "ready" )
-    Coroutine.sleep( 5000 )      # 长睡眠 worker
+    Coroutine.delay( 5000 )      # 长延时 worker
 }
 Isolate iso = Isolate.spawn1( entry, rp.sendPort )
-Coroutine.sleep( 50 )            # M:1 调度：等 worker 起来（制造让出点）
+Coroutine.delay( 50 )            # M:1 调度：等 worker 起来（制造让出点）
 
 Capability cap = iso.pause()
 # iso.status == IsolateStatus.Paused (3)
@@ -484,8 +484,8 @@ iso.kill( 0 )
 ### 7.2 伪造 capability → 静默无效（对齐 Dart 能力安全模型）
 
 ```sl
-Isolate iso = Isolate.spawn0( sleepEntry )
-Coroutine.sleep( 30 )
+Isolate iso = Isolate.spawn0( delayEntry )
+Coroutine.delay( 30 )
 Capability cap = iso.pause()            # 真正的 resumeCapability
 
 Capability fake = Capability( 0 )       # 未授权的 capability
@@ -500,10 +500,10 @@ iso.kill( 0 )
 
 ```sl
 # kill(0) = immediate：立即终止（当前实现注册表不摘除，status 仍可查 Dead(5)）
-Isolate iso = Isolate.spawn0( sleepEntry )
-Coroutine.sleep( 30 )
+Isolate iso = Isolate.spawn0( delayEntry )
+Coroutine.delay( 30 )
 iso.kill( 0 )
-Coroutine.sleep( 30 )
+Coroutine.delay( 30 )
 # iso.status == IsolateStatus.Dead (5)
 
 # kill(1) = beforeNextEvent：下一个事件边界终止
@@ -513,8 +513,8 @@ Coroutine.sleep( 30 )
 
 ```sl
 ReceivePort rp = ReceivePort()
-Isolate iso = Isolate.spawn0( sleepEntry )
-Coroutine.sleep( 30 )
+Isolate iso = Isolate.spawn0( delayEntry )
+Coroutine.delay( 30 )
 
 iso.ping( rp.sendPort, "pong", 0 )
 string pong = rp.recv() as string    # "pong"
@@ -527,7 +527,7 @@ iso.kill( 0 )
 ReceivePort exitRp = ReceivePort()
 ReceivePort errRp = ReceivePort()
 
-Isolate iso = Isolate.spawn0( sleepEntry )
+Isolate iso = Isolate.spawn0( delayEntry )
 iso.addOnExitListener( exitRp.sendPort, null )   # 退出时向该端口发 response（此处 null）
 iso.addErrorListener( errRp.sendPort )          # 未捕获异常时发错误描述
 iso.setErrorsFatal( true )                      # 未捕获异常终止 isolate
@@ -538,7 +538,7 @@ iso.kill( 0 )
 Int32 spins = 0
 while ( exitRp.count < 1 && spins < 200 )
 {
-    Coroutine.sleep( 5 )
+    Coroutine.delay( 5 )
     spins = spins + 1
 }
 object done = exitRp.recv()          # null（当前实现 onExit 载荷为 null，见 §14）
@@ -589,11 +589,11 @@ IsolateGroup grp = IsolateGroup.current()
 # grp.id 为组 id（诊断用）
 
 # I3 spawn 进入同组，kill 后组计数回落
-function sleepEntry = function() { Coroutine.sleep( 5000 ) }
-Isolate iso = Isolate.spawn0( sleepEntry )
+function delayEntry = function() { Coroutine.delay( 5000 ) }
+Isolate iso = Isolate.spawn0( delayEntry )
 Int32 before = IsolateGroup.current().isolateCount    # >= 2（含新 worker）
 iso.kill( 0 )
-Coroutine.sleep( 30 )
+Coroutine.delay( 30 )
 Int32 after = IsolateGroup.current().isolateCount      # before - 1
 
 # 批量一次性 run 后全部回收，组计数回落到 1（仅主 isolate）
@@ -801,8 +801,8 @@ function entry = function()
     Task t1 = spawn add2Fn( 1, 1 )
     Task t2 = spawn add2Fn( 4, 2 )
     Coroutine.waitAll2( t1, t2 )
-    Int32 v1 = Coroutine.awaitHandle( t1 ) as int
-    Int32 v2 = Coroutine.awaitHandle( t2 ) as int
+    Int32 v1 = Coroutine.awaitTask( t1 ) as int
+    Int32 v2 = Coroutine.awaitTask( t2 ) as int
     ret v1 + v2
 }
 Int32 r = Isolate.run0( entry ) as int    # 8
@@ -817,7 +817,7 @@ static bool g_recvFlag = false
 static coroSendLater( object arg )
 {
     SendPort sp = arg as SendPort
-    Coroutine.sleep( 20 )
+    Coroutine.delay( 20 )
     sp.send( "late" )
 }
 static coroRecvAndFlag( object arg )
@@ -943,7 +943,7 @@ string b = rp.recv() as string      # "b"
    - `Isolate.run*` 对异常 worker **返回 `null` 且不向调用者重抛**（设计文档称会传播）。
 2. **`kill(0)` 立即终止后 isolate 注册表不摘除**，`status` 仍可查 `Dead(5)`。
 3. **`TransferableData.materialize` 对无效句柄返回 `null` 而非抛 `IsolateError.TransferInvalid`**。
-4. **当前为 P1（M:1 单线程协程式隔离）**：所有 isolate 跑在同一调度循环上，主 isolate 的协程阻塞（`recv` / `sleep` / `waitAll`）时调度器才推进 worker——因此测试/业务代码中用 `sleep` / `recv` 天然制造让出点；**无真并行**（P2 每 isolate 一 OS 线程，语义一致）。
+4. **当前为 P1（M:1 单线程协程式隔离）**：所有 isolate 跑在同一调度循环上，主 isolate 的协程阻塞（`recv` / `delay` / `waitAll`）时调度器才推进 worker——因此测试/业务代码中用 `delay` / `recv` 天然制造让出点；**无真并行**（P2 每 isolate 一 OS 线程，语义一致）。
 5. `SendPort` 的 `closed` 状态**不可跨 isolate 实时同步**：关闭后已入队的消息仍会被投递，发送方可能拿到 `PortClosed` 也可能在关闭前成功入队——固有竞态。
 
 ---
@@ -1026,7 +1026,7 @@ WorkerSvc
         Console.println( rp.recv() as string )      # "hello!"
 
         worker.send( "shutdown" )                   # 优雅关停
-        Coroutine.sleep( 50 )                        # 让出点：等 worker 退出
+        Coroutine.delay( 50 )                        # 让出点：等 worker 退出
         Console.println( "worker status = " + iso.status.toString() )
     }
 }
@@ -1108,15 +1108,15 @@ Lifecycle
     static fun()
     {
         ReceivePort rp = ReceivePort()
-        function sleeper = function( object arg )
+        function delayer = function( object arg )
         {
             SendPort sp = arg as SendPort
             sp.send( "ready" )
-            Coroutine.sleep( 60000 )                 # 长期驻留
+            Coroutine.delay( 60000 )                 # 长期驻留
         }
 
-        Isolate iso = Isolate.spawn1( sleeper, rp.sendPort )
-        Coroutine.sleep( 50 )                        # M:1 调度：让 worker 起来
+        Isolate iso = Isolate.spawn1( delayer, rp.sendPort )
+        Coroutine.delay( 50 )                        # M:1 调度：让 worker 起来
 
         # 暂停 / 恢复
         Capability cap = iso.pause()
@@ -1133,7 +1133,7 @@ Lifecycle
         iso.kill( 0 )
         while ( exitRp.count < 1 )
         {
-            Coroutine.sleep( 5 )
+            Coroutine.delay( 5 )
         }
         Console.println( "dead = " + ( iso.status == IsolateStatus.Dead ).toString() )
         Console.println( "onExit payload = " + ( exitRp.recv() == null ).toString() )   # true

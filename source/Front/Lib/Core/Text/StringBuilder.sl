@@ -83,8 +83,10 @@ public class StringBuilder extends Object
         ret this
     }
 
-    # 兜底重载：其余类型（Int8/UInt*/Float32/Float16/Float8/自定义对象）
-    # 装箱为 object 后经 SystemConvertString 转换
+    # 兜底重载：其余数值类型（Int8/UInt*/Float32/Float16/Float8 等）
+    # 经 SystemConvertString 转换；类实例不会自动分派 toString
+    # （C 层 SystemConvertString 无对象文本化协议），追加自定义
+    # 对象请先显式 .toString()
     public StringBuilder append( object value )
     {
         this._buf.writeString( SystemConvertString( value ) )

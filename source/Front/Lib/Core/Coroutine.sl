@@ -11,11 +11,12 @@
  *  - 同一句柄始终对应同一 Task 实例（C VM 侧注册表保证），可用 == 判等。
  *  - yield/await/spawn 为前端关键字（语法糖）：
  *      yield;      -> Coroutine.yieldNow()
- *      await expr  -> Coroutine.awaitHandle( expr )
+ *      await expr  -> Coroutine.awaitTask( expr )
  *      spawn 函数( 实参... ) 统一展开为闭包 spawn 调用（spawnClosureN），
- *    静态方法/实例方法/闭包均经函数值形式传入（实例方法由捕获
- *    receiver 的包装闭包转发）。按字符串方法名生成的 spawn0..3 /
- *    spawnByName / spawnInstance0..3 已移除：编译期无检查且不直观。
+ *    静态方法/闭包经函数值形式传入；实例链形态 spawn 实例.方法( 实参... )
+ *    / spawn this.方法( 实参... ) 由前端 Node 层自动脱糖为捕获 receiver
+ *    的无参包装闭包再经 spawnClosure0 传入。按字符串方法名生成的
+ *    spawn0..3 / spawnByName / spawnInstance0..3 已移除：编译期无检查且不直观。
  *  - waitUntil( 谓词闭包 )：条件等待（类似 Unity 的 WaitUntil），
  *    挂起当前协程直至谓词返回 true。
  *  - @Nickname("coro")：coro 为本类别名，可用作静态调用前缀（coro.spawnClosure0(...)）。
@@ -44,7 +45,7 @@ public class CoroutineBlockReason extends Object
     public static const Int32 Yield = 1
     public static const Int32 Sched = 2
     public static const Int32 Await = 3
-    public static const Int32 Sleep = 4
+    public static const Int32 Delay = 4
     public static const Int32 IO    = 5
 }
 
@@ -61,12 +62,11 @@ public class Task extends Object
     Int64 _handle = 0
 
     #!
-     * 等待本协程结束并取回其返回值（等价 Coroutine.awaitHandle(this)）。
+     * 等待本协程结束并取回其返回值（等价 Coroutine.awaitTask(this)）。
      * 若已结束则立即返回结果；若以异常结束，异常向等待者传播。
     !#
-    public object awaitHandle()
+    public object awaitTask()
     {
-        SystemPrintln("awaithandle");
         ret SystemCoroutineAwait( this._handle )
     }
 
@@ -168,12 +168,14 @@ public class Coroutine extends Object
     }
 
     #!
-     * 休眠当前协程指定毫秒数。休眠期间调度器可运行其它协程。
-     * 若当前不在协程上下文，则退化为阻塞 sleep。
+     * 延时当前协程指定毫秒数，期间不阻塞线程：协程挂起由调度器定时唤醒，
+     * 调度器可继续运行其它协程。
+     * 若当前不在协程上下文（root 直接执行），则退化为阻塞 sleep
+     * （真阻塞线程，等价 OS.Timer.sleep）。
     !#
-    public static void sleep(Int64 millis)
+    public static void delay(Int64 millis)
     {
-        SystemCoroutineSleep(millis)
+        SystemCoroutineDelay(millis)
     }
 
     #!
@@ -186,7 +188,7 @@ public class Coroutine extends Object
         bool wuDone = predicate() as bool
         while ( wuDone == false )
         {
-            Coroutine.sleep( 1 )
+            Coroutine.delay( 1 )
             wuDone = predicate() as bool
         }
     }
@@ -212,7 +214,7 @@ public class Coroutine extends Object
 
     #!
      * 查询协程挂起原因（用于诊断）。返回 CoroutineBlockReason 常量值：
-     *  0=None, 1=Yield, 2=Sched, 3=Await, 4=Sleep, 5=IO。
+     *  0=None, 1=Yield, 2=Sched, 3=Await, 4=Delay, 5=IO。
     !#
     public static Int32 blockedReason( Task cor )
     {
@@ -227,7 +229,7 @@ public class Coroutine extends Object
      * 若目标以异常结束，异常向等待者传播。
      * await 关键字即本方法的语法糖。
     !#
-    public static object awaitHandle( Task cor )
+    public static object awaitTask( Task cor )
     {
         ret SystemCoroutineAwait( cor.handle )
     }
@@ -319,7 +321,7 @@ public class Coroutine extends Object
     #! ---------- 取消 ---------- !#
 
     #!
-     * 请求取消目标协程。取消是协作式的：目标在下一个调度点（Yield/Await/Sleep 等）抛出
+     * 请求取消目标协程。取消是协作式的：目标在下一个调度点（Yield/Await/Delay 等）抛出
      * 取消异常并结束。对已结束协程调用返回 false。
      * 返回 true 表示已成功登记取消请求。
     !#
