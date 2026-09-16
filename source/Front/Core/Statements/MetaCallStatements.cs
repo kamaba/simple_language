@@ -48,6 +48,11 @@ namespace SimpleLanguage.Core
                 if (men != null)
                 {
                     men.Parse(new AllowUseSettings() { parseFrom = EParseFrom.StatementRightExpress });
+                    // Solidify the expression's return type (e.g. "try voidFunc()"):
+                    // IRCallStatements reads GetReturnMetaType() to decide whether
+                    // to emit a Pop. Without this, the type is null and a void call
+                    // would wrongly get a Pop -> OpCode_Pop stack underflow assert.
+                    men.CalcReturnType();
                     m_ExpressNode = men;
                 }
             }

@@ -401,3 +401,9 @@
 /md/design/PLATFORM_CAPABILITY_DESIGN.md
 /md/design
 /stream_file_test_a.txt
+/sf_repro_a.txt
+/test/SFRepro/dbg_run.txt
+/test/SFRepro/err.txt
+/test/SFRepro/err2.txt
+/test/SFRepro/out.txt
+/test/SFRepro/out2.txt
