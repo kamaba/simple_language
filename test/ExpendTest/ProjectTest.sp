@@ -21,6 +21,8 @@ Project
         #ComponentTest.fun()
         #StreamFileTest.fun()
         SerializeTest.fun()
+        ZlibTest.fun()
+        GZipTest.fun()
         #IsolateTest.fun()
     }
     CompileBefore()

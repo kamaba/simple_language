@@ -132,6 +132,18 @@
     { "name": "SystemReadKey", "returnType": "string", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_readkey" },
     { "name": "SystemInput",   "returnType": "string", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_input" },
 
+    // ---- Console control (screen / cursor / color / non-blocking input) ----
+    { "name": "SystemConsoleClear",              "returnType": "void",   "params": [], "isVariadic": false, "cvmFunction": "vm_sys_console_clear" },
+    { "name": "SystemConsoleSetCursorPosition",  "returnType": "void",   "params": ["Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_console_set_cursor_position" },
+    { "name": "SystemConsoleSetCursorVisible",   "returnType": "void",   "params": ["bool"], "isVariadic": false, "cvmFunction": "vm_sys_console_set_cursor_visible" },
+    { "name": "SystemConsoleSetForegroundColor", "returnType": "void",   "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_console_set_foreground_color" },
+    { "name": "SystemConsoleSetBackgroundColor", "returnType": "void",   "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_console_set_background_color" },
+    { "name": "SystemConsoleResetColor",         "returnType": "void",   "params": [], "isVariadic": false, "cvmFunction": "vm_sys_console_reset_color" },
+    { "name": "SystemConsoleKeyAvailable",       "returnType": "bool",   "params": [], "isVariadic": false, "cvmFunction": "vm_sys_console_key_available" },
+    { "name": "SystemConsoleReadKey",            "returnType": "string", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_console_read_key" },
+    { "name": "SystemConsoleWindowWidth",        "returnType": "Int32",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_console_get_window_width" },
+    { "name": "SystemConsoleWindowHeight",       "returnType": "Int32",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_console_get_window_height" },
+
     // ---- Parse helpers ----
     { "name": "SystemInt32Parse", "returnType": "Int32", "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_int32_parse" },
     { "name": "SystemConvertInt32ToRadixString", "returnType": "string", "params": ["Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_int32_to_radix_string" },

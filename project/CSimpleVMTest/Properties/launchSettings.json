@@ -59,6 +59,11 @@
       "commandName": "Project",
       "commandLineArgs": "InlineMethodTest",
       "nativeDebugging": true
+    },
+    "GameTank": {
+      "commandName": "Project",
+      "commandLineArgs": "GameTank",
+      "nativeDebugging": true
     }
   }
 }

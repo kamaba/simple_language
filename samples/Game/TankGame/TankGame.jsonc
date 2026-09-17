@@ -28,11 +28,14 @@
     "isAllTag": true
   },
   "global": {
-    "imports": [],
+    "imports": [
+      "Std.Console"
+    ],
     "replace": {}
   },
   "references": [
-    { "path": "../../../source/Front/Lib/Core", "name": "Core" }
+    { "path": "F:\\project\\lang\\simple_language\\out\\export\\Core", "uuid": "123123123213", "name": "Core.module.json" },
+    { "path": "F:\\project\\lang\\simple_language\\out\\export\\Std", "uuid": "456456456456", "name": "Std.module.json" }
   ],
   "export": {
     "moduleName": "TankGame",

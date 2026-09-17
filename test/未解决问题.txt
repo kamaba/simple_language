@@ -1,8 +1,6 @@
 
 
-序列化与反序列化，需要对class/data都支持
-Path.sl
-压缩类  zlip glip Base64
+压缩类  zlip glip Base64 Utf8/gb2312/Unicode相关的class及enum编码
 函数名称和类名冲突时候的处理
 Debug.sl  这要要增加 DataFrame的类，可以用来记录 在Debug区间的数据变量，  每一帧都要记录进去  还有增加DataFrame 前帧，后帧的对比相关功能 只能对Data 类的数据这样操作
 Log.sl

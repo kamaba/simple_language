@@ -26,6 +26,7 @@
       { "path": "IO/Directory.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/File.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/FileStream.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "IO/Path.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "IO/StdStream.sl", "group": "std", "tag": "io", "ignore": false, "priority": 0 },
       { "path": "Text/IDataStruct.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Csv.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
@@ -55,7 +56,9 @@
       { "path": "Isolate/Isolate.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Isolate/StreamBridge.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "FFI/Library.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
-      { "path": "GPU/GPU.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
+      { "path": "GPU/GPU.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Zip/Zip.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Zip/GZip.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -88,6 +91,7 @@
             { "enum": "FileMode" },
             { "enum": "FileAccess" },
             { "class": "FileStream" },
+            { "class": "Path" },
             { "class": "StdInStream" },
             { "class": "StdOutStream" },
             { "class": "StdErrStream" }
@@ -149,6 +153,14 @@
          [
             { "class": "Library" },
             { "class": "StaticLibrary" }
+         ]
+      },
+      { "namespace": "Zip", "children":
+         [
+            { "enum": "ZlibError" },
+            { "class": "Zlib" },
+            { "enum": "GZipError" },
+            { "class": "GZip" }
          ]
       },
       { "class": "IsolateStatus" },
@@ -317,7 +329,15 @@
     { "name": "SystemComponentGetComponentsInParent",     "returnType": "object", "params": ["object", "object", "bool"], "isVariadic": false, "cvmFunction": "vm_sys_component_get_components_in_parent" },
     { "name": "SystemComponentSendMessage",              "returnType": "void",   "params": ["object", "string"],       "isVariadic": false, "cvmFunction": "vm_sys_component_send_message" },
     { "name": "SystemComponentSendMessageUpwards",       "returnType": "void",   "params": ["object", "string"],       "isVariadic": false, "cvmFunction": "vm_sys_component_send_message_upwards" },
-    { "name": "SystemComponentBroadcastMessage",          "returnType": "void",   "params": ["object", "string"],       "isVariadic": false, "cvmFunction": "vm_sys_component_broadcast_message" }
+    { "name": "SystemComponentBroadcastMessage",          "returnType": "void",   "params": ["object", "string"],       "isVariadic": false, "cvmFunction": "vm_sys_component_broadcast_message" },
+    // ---- zlib DEFLATE calls (Std/Zip/Zip.sl, core: sl_core_zlib.c) ----
+    { "name": "SystemZlibCompressBound",       "returnType": "Int32", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_zlib_compress_bound" },
+    { "name": "SystemZlibCompress",            "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_zlib_compress" },
+    { "name": "SystemZlibDecompress",          "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_zlib_decompress" },
+    // ---- gzip RFC 1952 calls (Std/Zip/GZip.sl, core: sl_core_gzip.c) ----
+    { "name": "SystemGzipCompressBound",       "returnType": "Int32", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_gzip_compress_bound" },
+    { "name": "SystemGzipCompress",            "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_gzip_compress" },
+    { "name": "SystemGzipDecompress",          "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_gzip_decompress" }
   ],
   "export": {
     "moduleName": "Std",

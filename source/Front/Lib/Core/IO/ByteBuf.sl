@@ -78,6 +78,16 @@ public class ByteBuf extends Object
         ret b
     }
 
+    # 供 Std 等跨模块将系统调用返回的注册表 id 包装成 ByteBuf 对象
+    #（Lz4/Zlib 压缩等返回新缓冲的场景；接管 id，禁止与现有句柄重复持有）
+    public static ByteBuf fromHandle( Int64 handle )
+    {
+        var b = ByteBuf()
+        SystemByteBufDestroy( b._bid )
+        b._bid = handle
+        ret b
+    }
+
     # ── 私有守卫 ──
 
     _ensureLive() throws
