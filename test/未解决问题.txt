@@ -1,11 +1,6 @@
 
 
-增加Std.Process执行的功能，这是参考文档F:\project\lang\csimple_lang\md\design\PROCESS_DESIGN.md
-
-push_i64,vm_proc_throw 这样，应该都是vm_runtime里边共用的方法，你看下有没有共用这方法的定义的地方，如果没有，就增加一个vm_runtime_common.h .c 的地方然后供其它函数调用，每次都写这个，太冗余了，  一般system_method里边，只写，关于自己逻辑的代码。
-vm_proc_read_member_value 这个我记忆已经提出去了呀，怎么还有类似的方法去重写呢，  你看下其它读成员值的，是不是好多地方都写了这个，如果都写了，那就放到一个共用类里边 你看下runtime_object.h .c 合理不
-
-Process.run 怎么可以try呢，我的run函数没有throws的 这个违反了try/catch的机制了吧
+我在Process.run这里边 貌似没有看到 普通应用的拉起，你一会写个拉起这个路径的示例吧 "C:\Users\dingo\AppData\Local\Programs\Microsoft VS Code\Code.exe"  如果没有相关的功能，请补充下
 
 序列化与反序列化，需要对class/data都支持
 Path.sl

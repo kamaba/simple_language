@@ -156,7 +156,7 @@ namespace OS
         # ------------------------------------------------------------------
 
         # 变长 argv 便捷入口
-        public static ProcessResult run( string program, params string[] args )
+        public static ProcessResult run( string program, params string[] args ) throws
         {
             ProcessStartInfo info = new()
             info.program = program
@@ -173,7 +173,7 @@ namespace OS
         }
 
         # 完整配置入口
-        public static ProcessResult run( ProcessStartInfo info )
+        public static ProcessResult run( ProcessStartInfo info ) throws
         {
             ret SystemProcessRun( info )
         }
@@ -181,7 +181,7 @@ namespace OS
         # ------------------------------------------------------------------
         # 显式 shell 路径：经 cmd /c 或 /bin/sh -c（stdout/stderr 均捕获）
         # ------------------------------------------------------------------
-        public static ProcessResult shell( string command )
+        public static ProcessResult shell( string command ) throws
         {
             ret SystemProcessShell( command )
         }
@@ -189,7 +189,7 @@ namespace OS
         # ------------------------------------------------------------------
         # 控制路径：启动后返回句柄对象（stdio 按配置原样生效）
         # ------------------------------------------------------------------
-        public static Process start( ProcessStartInfo info )
+        public static Process start( ProcessStartInfo info ) throws
         {
             ret SystemProcessStart( info )
         }
@@ -199,49 +199,49 @@ namespace OS
         # ------------------------------------------------------------------
 
         # 平台进程 id（Windows 为 dwProcessId）
-        public get Int64 id()
+        public get Int64 id() throws
         {
             ret SystemProcessGetId( this )
         }
 
         # 是否已退出（非阻塞查询）
-        public get bool hasExited()
+        public get bool hasExited() throws
         {
             ret SystemProcessHasExited( this )
         }
 
         # 退出码（尚未退出时 C VM 抛 ProcessError.NotExited，先用 hasExited 判断）
-        public get int exitCode()
+        public get int exitCode() throws
         {
             ret SystemProcessExitCode( this )
         }
 
         # 阻塞等待直到结束，返回 exitCode
-        public int wait()
+        public int wait() throws
         {
             ret SystemProcessWait( this )
         }
 
         # 强制终止（Windows TerminateProcess / Unix SIGKILL）
-        public void kill()
+        public void kill() throws
         {
             SystemProcessKill( this )
         }
 
         # 友好终止（Unix SIGTERM；Windows 等同 kill）
-        public void terminate()
+        public void terminate() throws
         {
             SystemProcessTerminate( this )
         }
 
         # 读取捕获的标准输出（等待结束后整体读取；非 Pipe 模式返回空串）
-        public string readStdOut()
+        public string readStdOut() throws
         {
             ret SystemProcessReadStdOut( this )
         }
 
         # 读取捕获的标准错误（同上）
-        public string readStdErr()
+        public string readStdErr() throws
         {
             ret SystemProcessReadStdErr( this )
         }

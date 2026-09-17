@@ -90,7 +90,7 @@ Project
         SystemPrintln( "PassBoxThrough(v=7.5) -> $r17.toString()" );
 
         # FFI 测试用例（动态库加载/调用/回调/Float8 struct 等）
-        #FFITest.fun();
+        FFITest.fun();
 
         #!
         # ---- AOT GPU 矩阵乘测试（大张量，矩阵用一维数组） ----
