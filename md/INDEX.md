@@ -25,6 +25,7 @@
 | [project/project.md](./project/project.md) | 工程概念：`ProjectConfig`、编译文件列表、入口与全局变量（偏语言侧叙述） |
 | [project/project-module.md](./project/project-module.md) | 模块与类组织方式说明 |
 | [project/project-config-jsonc-guide.md](./project/project-config-jsonc-guide.md) | JSONC 字段详解与迁移注意点 |
+| [project/optimization.md](./project/optimization.md) | **编译优化等级（CLI `-O0..-O3`）**：各等级优化内容（null peephole / 常数融合 store / 小函数自动 inline——O1≤2 / O2≤4 / O3≤7 条）、排除集、与 jsonc `compile.optimize` 的关系 |
 | [project/environment-guide.md](./project/environment-guide.md) | **Environment 平台环境**：`Environment.*` API（current/probe/Override/env/custom/sys）、`Platform` 定义枚举全表、jsonc `platform` 段全量关键字（require 18 字段 / override / variants）、运行期覆盖四通道 |
 | [project/ffi.md](./project/ffi.md) | **FFI 外部函数接口（已落地）**：普通 FFI 调用、`FFI.Library` / `FFI.StaticLibrary`、`dllImports` 配置、`@DllImport` 与 `@DllStaticImport`(opcode 118)、sig 规则、内部原理 |
 | [project/test-guide.md](./project/test-guide.md) | **测试引导**：`test/` 各测试用例集（测什么、代表用例）与 `project/` 各测试宿主工程（默认测试集、C VM / C# VM）对照表、运行方式（VS / dotnet / Debug vs Release） |
@@ -91,6 +92,7 @@
 | [syntax/exporter.md](./syntax/exporter.md) | 导出 / IR 侧说明 |
 | [syntax/coroutine.md](./syntax/coroutine.md) | 协程（Coroutine）与通道（Channel） |
 | [syntax/isolate.md](./syntax/isolate.md) | 隔离岛（Isolate）：跨堆并行、端口消息通信（深拷贝）、生命周期控制、TransferableData 零拷贝转移 |
+| [syntax/inline_lambda.md](./syntax/inline_lambda.md) | 内联体：`=>` 内联表达式（调用点编译期就地展开、参数可选类型标注 + 调用点类型校验）+ `inline` 方法修饰符（语义层普通函数规则、IR 层体替换无 Call、实例隐含 final、Result 兜底）、禁止项与错误码（spawn/isolate/await/try/递归/跨边界/类型不匹配 21456/体超限 21453/throws 互斥 21457/初始化器禁调 21458）、与 function 闭包边界 |
 
 ### 3.6 集合与容器（`md/syntax/contraint/`）
 
@@ -161,6 +163,7 @@
 | 文档 | 说明 |
 |------|------|
 | [code.md](./code.md) | 代码相关说明 |
+| [SL语法与编码规范总表.md](./SL语法与编码规范总表.md) | **语法与编码规范单点引用总表**（由 syntax/ 48 篇 + code.md 提炼去重）：编码规范（命名/对齐/注释/提交/Core 库）、关键字总表（词法保留 + 非词法保留 + 类型词）、语法糖总表、语法速查 21 节（声明与语句格式）、Core 类型清单、16 条已知坑 |
 | [../README_CN.md](../README_CN.md) / [../README.md](../README.md) | 项目主自述（中/英） |
 | [../PRD.md](../PRD.md) | 产品说明 |
 | [../Release_CN.md](../Release_CN.md) / [../Release.md](../Release.md) | 发布说明 |

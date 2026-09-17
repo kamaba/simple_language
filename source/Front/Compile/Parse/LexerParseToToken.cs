@@ -2062,6 +2062,9 @@ namespace SimpleLanguage.Compile
                 case "static":
                     tokenType = ETokenType.Static;
                     break;
+                case "inline":
+                    tokenType = ETokenType.Inline;
+                    break;
                 case "partial":
                     tokenType = ETokenType.Partial;
                     break;

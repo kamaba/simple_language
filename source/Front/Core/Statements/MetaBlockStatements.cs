@@ -310,6 +310,10 @@ namespace SimpleLanguage.Core
         {
             foreach (var v in this.m_MetaVariableDict)
             {
+                // 内联 lambda 变量仅编译期使用 (调用点已就地展开为普通表达式),
+                // 不进入 IR 局部变量表 (零变量槽 / 零赋值, 对应设计文档 §5.6)
+                if( v.Value.variableFrom == MetaVariable.EVariableFrom.InlineLambda )
+                    continue;
                 if( !v.Value.isArgument )
                     list.Add(v.Value);
             }           

@@ -48,6 +48,7 @@ namespace SimpleLanguage.Core
         Result,
         ResultT,
         Function,
+        InlineLambda,
     }
     class CoreMetaClassManager
     {
@@ -102,6 +103,7 @@ namespace SimpleLanguage.Core
         public static MetaClass resultMetaClass { get; private set; } = null;
         public static MetaClass resultTMetaClass { get; private set; } = null;
         public static MetaClass functionMetaClass { get; private set; } = null;
+        public static MetaClass inlineLambdaMetaClass { get; private set; } = null;
 
         public static List<MetaClass> s_InnerDefineMetaClassList = new List<MetaClass>();
 
@@ -142,6 +144,7 @@ namespace SimpleLanguage.Core
             resultMetaClass = ResultMetaClass.CreateMetaClass();
             resultTMetaClass = ResultTMetaClass.CreateMetaClass();
             functionMetaClass = FunctionMetaClass.CreateMetaClass();
+            inlineLambdaMetaClass = InlineLambdaMetaClass.CreateMetaClass();
 
             s_InnerDefineMetaClassList.Add(objectMetaClass);
             s_InnerDefineMetaClassList.Add(voidMetaClass);
@@ -177,6 +180,7 @@ namespace SimpleLanguage.Core
             s_InnerDefineMetaClassList.Add(resultMetaClass);
             s_InnerDefineMetaClassList.Add(resultTMetaClass);
             s_InnerDefineMetaClassList.Add(functionMetaClass);
+            s_InnerDefineMetaClassList.Add(inlineLambdaMetaClass);
         }
         public void Init()
         {
@@ -319,6 +323,10 @@ namespace SimpleLanguage.Core
             {
                 return EType.Function;
             }
+            else if (mc == inlineLambdaMetaClass)
+            {
+                return EType.InlineLambda;
+            }
             else
             {
                 return EType.Class;
@@ -376,6 +384,8 @@ namespace SimpleLanguage.Core
                     return ptrMetaClass;
                 case EType.Function:
                     return functionMetaClass;
+                case EType.InlineLambda:
+                    return inlineLambdaMetaClass;
                 default:
                     {
                         Debug.WriteLine("Warning ClassManager GetMetaClassByEType 1111");

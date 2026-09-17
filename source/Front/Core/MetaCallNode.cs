@@ -87,6 +87,10 @@ namespace SimpleLanguage.Core
             getterFunction = clone.getterFunction;
             isTryRightExpress = clone.isTryRightExpress;
             ifNotVariableThenAddVariable = clone.ifNotVariableThenAddVariable;
+            // 解析来源标记必须随克隆透传 (MetaCallLink.Parse 克隆后传给各 MetaCallNode):
+            // MemberVariableExpress 标记字段/enum/data 初始化器上下文, this/base 关键字
+            // 与 inline 方法调用限制 (LID 21458) 均依赖此标记判定"不在函数体内"
+            parseFrom = clone.parseFrom;
         }
     }
     public sealed class MetaCallNode
@@ -1241,14 +1245,36 @@ namespace SimpleLanguage.Core
             //娑撳绔熼惃鍕敩閻焦婀柌宥嗙€崥搴礉閺堫亞绮℃潻鍥崣鐠囦緤绱濋棁鈧憰渚€鐛欑拠?
             if (m_IsFunction)
             {
+                // inline 方法语义层不做任何特殊处理 (M1b §2.4): 按普通函数规则解析
+                // (形参可传 object、遵守函数体检查), 体替换延迟到 IRCallFunction.Parse
                 if (m_CallNodeType == ECallNodeType.MemberFunctionName
                     || m_CallNodeType == ECallNodeType.SystemFunctionCall)
                 {
+                    // inline 方法调用点限制 (M2+ §2.4): 变量初始化器 (字段/enum 成员/
+                    // data/Project global data, EParseFrom.MemberVariableExpress) 不在
+                    // 函数体内, IR 层体展开依赖宿主函数语句流, 不允许在此直接调用,
+                    // 只允许在其它函数体内调用 (与 this 关键字的同判据检查)
+                    // M4: 仅拦显式 inline (报 21458); -O 自动 inline 该场景在 IRCall
+                    // 静默回退正常 Call (自动 inline 不产生用户可见错误)
+                    if (m_AllowUseSettings?.parseFrom == EParseFrom.MemberVariableExpress
+                        && m_MetaFunction is MetaMemberFunction varInitMmf && varInitMmf.isInlineExplicit)
+                    {
+                        Log.AddMetaCoreLog(LID.MetaCoreInlineMethodCallVarInitForbidden, m_Token,
+                            "Error inline 方法 [" + varInitMmf.functionAllName
+                            + "] 不允许在变量初始化处调用, 只允许在其它函数体内调用 : "
+                            + m_Token.ToLexemeAllString());
+                    }
                     return true;
+                }
+                else if (MetaInlineLambdaVariable.ResolveInlineLambdaVariable(m_MetaVariable) != null)
+                {
+                    // 内联 lambda 变量被调用: funname( 实参 ) -> 就地展开为 形参->实参 替换后的表达式
+                    // 不建闭包/不走调用链/无调用帧, 走 Express 模板 (IR 层零 Call/NewClosure 指令)
+                    return TryParseInlineLambdaCall();
                 }
                 else if (MetaClosureVariable.ResolveClosureVariable(m_MetaVariable) != null)
                 {
-                    // 闂寘鍙橀噺琚皟鐢? funname( xx ) -> 鐢熸垚 ClosureCall 璁块棶鑺傜偣
+                    // 闂寘鍙橀噺琚皟鐢? funname( xx ) -> 鐢熸垚 ClosureCall 璁块棶鑺傜偣
                     m_CallNodeType = ECallNodeType.ClosureCall;
                     var cv = MetaClosureVariable.ResolveClosureVariable(m_MetaVariable);
                     var funcRet = cv?.closureDefineStatements?.closureFunction?.returnMetaVariable?.defineMetaType;
@@ -2119,6 +2145,363 @@ namespace SimpleLanguage.Core
                     return new List<MetaType>() { new MetaType(CoreMetaClassManager.objectMetaClass) };
                 default:
                     return null;
+            }
+        }
+
+        // ==================== 内联 lambda 调用点就地展开 (M1 基础内联) ====================
+        // var f = ( a, b ) => a + b;   f( 1, 2 ) 在 MetaCore 层展开为 1 + 2
+        // 展开四步: 实参校验 -> 体重建 -> 形参->实参替换 -> 走 Express 模板
+
+        /// <summary>内联 lambda 调用点展开入口 (CreateCallNode 分派链调用, 此时 m_MetaVariable 必为 MetaInlineLambdaVariable)</summary>
+        private bool TryParseInlineLambdaCall()
+        {
+            var ilv = MetaInlineLambdaVariable.ResolveInlineLambdaVariable( m_MetaVariable );
+            if( ilv == null )
+                return false;
+
+            // 0. 互递归拦截 (M2): 该内联 lambda 已在展开栈中 —— f 体引用 g、g 体又引用 f,
+            //    继续展开将无限递归。定义点扫描只能查直接自引用, 互递归在此处检出。
+            //    精化: 栈命中且当前调用点 term 来自外层实参子树 (如 inc(inc(41)) 的内层) 是
+            //    有限嵌套展开, 合法放行; 只有体重建来源的栈命中才是真互递归
+            if( MetaInlineLambdaVariable.IsExpanding( ilv )
+                && !MetaInlineLambdaVariable.IsArgSourceCallNode( m_FileMetaCallNode ) )
+            {
+                Log.AddMetaCoreLog( LID.MetaCoreInlineLambdaBodyForbiddenSelfReference, m_Token,
+                    "Error 内联lambda '" + ilv.name + "' 展开链出现递归引用 (互递归无限展开), 请改用 function 闭包 : "
+                    + m_Token?.ToLexemeAllString() );
+                return false;
+            }
+
+            // 1. 实参源: fileMetaParTerm.fileMetaExpressList 每项即一个完整实参 (priority=Level1, root 已就绪)
+            var parTerm = m_FileMetaCallNode.fileMetaParTerm;
+            var argTerms = parTerm?.fileMetaExpressList;
+            if( parTerm == null || argTerms == null || argTerms.Count != ilv.paramNameList.Count )
+            {
+                Log.AddMetaCoreLog( LID.MetaCoreInlineLambdaCallStatementParamCount, m_Token,
+                    "Error 内联lambda调用实参个数不匹配: 需要 " + ilv.paramNameList.Count
+                    + " 实际 " + ( argTerms?.Count ?? 0 ) + " : " + m_Token?.ToLexemeAllString() );
+                return false;
+            }
+
+            // 1.5 实参来源标记: 最外层进入 (展开栈空) 时清空上次残留; 每次展开 (含被放行的
+            //     内层嵌套) 都收集本调用点实参子树的全部 FileMetaCallNode 身份, 供嵌套展开
+            //     区分「实参来源」(合法嵌套) 与「体重建来源」(互递归)。重复收集幂等无害
+            if( !MetaInlineLambdaVariable.IsAnyExpanding() )
+            {
+                MetaInlineLambdaVariable.ClearArgSourceCallNodes();
+            }
+            for( int i = 0; i < argTerms.Count; i++ )
+            {
+                CollectInlineLambdaArgSourceCallNodes( argTerms[i] );
+            }
+
+            // 1.7 M3 调用点类型校验: 形参带类型标注时, 单独解析实参取其返回类型比对
+            //     (实参类型须是标注类型的子类或相等, 与赋值兼容规则一致 CompareMetaType 默认 Out;
+            //      未标注 / 解析失败的类型槽跳过; 校验解析是独立表达式节点, 实参 term 随体
+            //      展开后还会再 Parse 一次, CreateExpressNode 幂等无副作用)
+            var paramMtList = ilv.paramMetaTypeList;
+            if( paramMtList != null )
+            {
+                for( int i = 0; i < argTerms.Count && i < paramMtList.Count; i++ )
+                {
+                    var paramMt = paramMtList[i];
+                    if( paramMt == null )
+                    {
+                        continue;
+                    }
+                    CreateExpressParam checkCep = new CreateExpressParam()
+                    {
+                        ownerMetaBase = m_OwnerMetaBase,
+                        ownerMBS = m_OwnerMetaFunctionBlock,
+                        metaType = null,
+                        fme = argTerms[i],
+                    };
+                    var argCheckNode = ExpressManager.CreateExpressNode( checkCep );
+                    argCheckNode?.Parse( m_AllowUseSettings );
+                    argCheckNode?.CalcReturnType();
+                    var argMt = argCheckNode?.GetReturnMetaType();
+                    if( argMt == null || !TypeManager.CompareMetaType( paramMt, argMt ) )
+                    {
+                        Log.AddMetaCoreLog( LID.MetaCoreInlineLambdaCallStatementParamType, m_Token,
+                            "Error 内联lambda '" + ilv.name + "' 第 " + ( i + 1 ) + " 个实参类型不匹配: 标注 "
+                            + paramMt.ToFormatString() + " 实际 " + ( argMt != null ? argMt.ToFormatString() : "未知" )
+                            + " : " + m_Token?.ToLexemeAllString() );
+                        return false;
+                    }
+                }
+            }
+
+            // 展开期间入栈 (互递归拦截): 步骤 5 的 Parse 会递归解析体内嵌套调用,
+            // 若嵌套目标又是内联 lambda 将再次进入本函数; 来自实参子树的嵌套已在
+            // 步骤 1.5 标记 (放行, 允许重复入栈), 体重建来源的重复入栈才报互递归
+            MetaInlineLambdaVariable.PushExpanding( ilv );
+            try
+            {
+                // 2. 体重建: 由定义点保存的原始 Node 列表重建全新的 FileMetaBaseTerm 树
+                var bodyTerm = FileMetatUtil.CreateFileMetaExpress( m_FileMetaCallNode.fileMeta,
+                    ilv.bodyNodeList, FileMetaTermExpress.EExpressType.Common );
+                if( bodyTerm == null )
+                {
+                    Log.AddMetaCoreLog( LID.MetaCoreInlineLambdaCallStatementNotSupport, m_Token,
+                        "Error 内联lambda体表达式重建失败: " + m_Token?.ToLexemeAllString() );
+                    return false;
+                }
+
+                // 3. 形参 -> 实参替换 (替换发生在扁平列表层; 发生替换的层就地重跑 BuildAST,
+                //    自底向上重建, 保证嵌套子表达式 (含括号分组) 的旧 root 不残留)
+                var newBodyTerm = ReplaceInlineLambdaParamInTerm( bodyTerm, ilv.paramNameList, argTerms, out _ );
+                if( newBodyTerm == null )
+                {
+                    newBodyTerm = bodyTerm;
+                }
+
+                // 4. 重跑 BuildAST 取替换后的新根 (BuildAST 可重入: 非 dirty 且有 root 直接复用)
+                if( !newBodyTerm.BuildAST() )
+                {
+                    Log.AddMetaCoreLog( LID.MetaCoreInlineLambdaCallStatementNotSupport, m_Token,
+                        "Error 内联lambda展开表达式解析失败: " + m_Token?.ToLexemeAllString() );
+                    return false;
+                }
+
+                // 5. 走 Express 模板 (与括号表达式先例一致, 不产生 Call/NewClosure/ClosureCall)
+                CreateExpressParam cep = new CreateExpressParam()
+                {
+                    ownerMetaBase = m_OwnerMetaBase,
+                    ownerMBS = m_OwnerMetaFunctionBlock,
+                    metaType = null,
+                    fme = newBodyTerm,
+                };
+                m_ExpressNode = ExpressManager.CreateExpressNode( cep );
+                m_ExpressNode.Parse( m_AllowUseSettings );
+                m_ExpressNode.CalcReturnType();
+                m_MetaType = m_ExpressNode.GetReturnMetaType();
+                m_CallNodeType = ECallNodeType.Express;
+                // 注意: 此处不 Add m_MetaCallNodeList —— ParseNode 在 CreateCallNode 返回 true 后
+                // 会统一 Add(L304); 此处再 Add 会造成链表重复 -> visitNodeList 两个 Express 节点
+                // -> IR 重复翻译展开体 (组合表达式栈错乱)。括号表达式先例(L295)自行 Add 是因其提前 return。
+                return true;
+            }
+            finally
+            {
+                MetaInlineLambdaVariable.PopExpanding( ilv );
+            }
+        }
+
+        /// <summary>
+        /// 递归替换体表达式树中的「形参裸引用叶」为实参 term。
+        /// 返回值: term 本身是形参裸引用叶时返回对应实参 term (调用方写回);
+        ///         否则原地递归处理子结构并返回 null (term 自身保留)。
+        /// changed: term 子树内是否发生过替换。发生替换的列表层在返回前就地重跑 BuildAST
+        ///          (自底向上重建: 构造期已急切构树, 子项替换后旧 root 残留,
+        ///           而 ParTerm.BuildAST 借 root 不检查子项 dirty、外层只递归直接子项一层,
+        ///           不就地重建会导致体内括号子表达式 (a+b) 中的形参替换丢失)。
+        /// 注意: 只识别纯裸名引用 (无下标/花括号/模板/@/?. 修饰, 否则替换会丢失修饰信息);
+        ///       实参 term 的 root 已就绪, 植入后可多处安全引用 (BuildAST 幂等)。
+        /// </summary>
+        private static FileMetaBaseTerm ReplaceInlineLambdaParamInTerm( FileMetaBaseTerm term,
+            List<string> paramNames, List<FileMetaBaseTerm> argTerms, out bool changed )
+        {
+            changed = false;
+            if( term == null )
+                return null;
+
+            // 形参裸引用叶判定: 单级名字引用, 无实参括号, 且无任何修饰 (下标/花括号/模板/@/?.)
+            if( term is FileMetaCallTerm fct && fct.callLink != null && fct.callLink.isOnlyName )
+            {
+                var fcn = fct.callLink.callNodeList[0];
+                bool isPureName = !fcn.isArray && !fcn.isBrace && !fcn.isTemplate
+                    && fcn.atToken == null && fcn.questionMarkDotToken == null;
+                if( isPureName )
+                {
+                    int idx = paramNames.IndexOf( fct.callLink.name );
+                    if( idx >= 0 && idx < argTerms.Count )
+                    {
+                        // 实参 term 原带的 Par 上下文 priority(Level1) 比一切运算符都低,
+                        // 植入普通表达式列表后会被 BuildTst 误选为根 (位于首/尾无操作数 -> 604);
+                        // 重置为操作数默认值 int.MaxValue (Par 上下文不消费该项 priority, 重置安全)
+                        argTerms[idx].priority = int.MaxValue;
+                        changed = true;
+                        return argTerms[idx];
+                    }
+                }
+                return null;    // 其他变量引用 (或带修饰的引用) 原样保留, 走正常变量解析
+            }
+
+            // 扁平列表层替换 (TermExpress / BracketTerm / ParTerm 等)
+            // 已构树的 left/right 无需处理: 重跑 BuildAST 时由 BuildTst 从列表重新挂接
+            var fmeList = term.fileMetaExpressList;
+            if( fmeList != null )
+            {
+                for( int i = 0; i < fmeList.Count; i++ )
+                {
+                    var taken = ReplaceInlineLambdaParamInTerm( fmeList[i], paramNames, argTerms, out bool subChanged );
+                    if( taken != null )
+                    {
+                        fmeList[i] = taken;
+                        term.isDirty = true;
+                    }
+                    if( subChanged )
+                        changed = true;
+                }
+                // 本层子树内发生过替换 -> 返回前就地重建 (子项已在各自递归帧内重建完毕,
+                // 此处重挂本层 left/right; 置 dirty 强制 BuildAST 走重建路径, 不复用旧 root)
+                if( changed )
+                {
+                    term.isDirty = true;
+                    term.BuildAST();
+                }
+            }
+
+            if( term is FileMetaThreeItemSyntaxTerm tis )
+            {
+                // 三元运算符三个子树 (子树恒为 TermExpress, 其内部列表替换后自置 dirty)
+                var t = ReplaceInlineLambdaParamInTerm( tis.conditionTerm, paramNames, argTerms, out bool subChanged1 );
+                if( t != null ) tis.SetConditionTerm( t );
+                t = ReplaceInlineLambdaParamInTerm( tis.return1Term, paramNames, argTerms, out bool subChanged2 );
+                if( t != null ) tis.SetReturn1Term( t );
+                t = ReplaceInlineLambdaParamInTerm( tis.return2Term, paramNames, argTerms, out bool subChanged3 );
+                if( t != null ) tis.SetReturn2Term( t );
+                if( subChanged1 || subChanged2 || subChanged3 )
+                    changed = true;
+            }
+            else if( term is FileMetaEmptyRetSyntaxTerm ert )
+            {
+                // 空合并运算符两个子树
+                var t = ReplaceInlineLambdaParamInTerm( ert.return1Term, paramNames, argTerms, out bool subChanged1 );
+                if( t != null ) ert.SetReturn1Term( t );
+                t = ReplaceInlineLambdaParamInTerm( ert.return2Term, paramNames, argTerms, out bool subChanged2 );
+                if( t != null ) ert.SetReturn2Term( t );
+                if( subChanged1 || subChanged2 )
+                    changed = true;
+            }
+            else if( term is FileMetaCallTerm fct2 && fct2.callLink != null )
+            {
+                // 嵌套调用的实参列表: 体 max(a,b) 中形参出现在内层实参里
+                var cnl = fct2.callLink.callNodeList;
+                for( int j = 0; j < cnl.Count; j++ )
+                {
+                    var pt = cnl[j].fileMetaParTerm;
+                    if( pt != null )
+                    {
+                        // pt 是括号节点, 不可能是形参裸引用叶, 只需递归其列表
+                        ReplaceInlineLambdaParamInTerm( pt, paramNames, argTerms, out bool subChanged );
+                        if( subChanged )
+                            changed = true;
+                    }
+                }
+            }
+
+            // 说明: 体含 as/is 时形参出现在 AsOrIsTerm.variableCallLink 内, M1 无替换通道,
+            //       该形参引用走正常变量解析 (设计文档 §4 已列为 M1 限制)
+
+            return null;
+        }
+
+        /// <summary>
+        /// 收集实参子树中的全部 FileMetaCallNode 身份, 登记为内联 lambda 展开的「实参来源」
+        /// (TryParseInlineLambdaCall 步骤 1.5 调用, 供互递归拦截区分嵌套来源)。
+        /// 与 ReplaceInlineLambdaParamInTerm 的遍历形态对齐, 并额外覆盖 Parse 能到达、
+        /// 替换无需到达的结构 (下标/花括号初始化器/as-is 左值), 保证嵌套调用点身份不漏收。
+        /// </summary>
+        private static void CollectInlineLambdaArgSourceCallNodes( FileMetaBaseTerm term )
+        {
+            if( term == null )
+                return;
+
+            // 扁平列表层 (TermExpress / BracketTerm / ParTerm / BraceTerm 直接值项 等)
+            var fmeList = term.fileMetaExpressList;
+            if( fmeList != null )
+            {
+                for( int i = 0; i < fmeList.Count; i++ )
+                {
+                    CollectInlineLambdaArgSourceCallNodes( fmeList[i] );
+                }
+            }
+
+            if( term is FileMetaThreeItemSyntaxTerm tis )
+            {
+                // 三元运算符三个子树
+                CollectInlineLambdaArgSourceCallNodes( tis.conditionTerm );
+                CollectInlineLambdaArgSourceCallNodes( tis.return1Term );
+                CollectInlineLambdaArgSourceCallNodes( tis.return2Term );
+            }
+            else if( term is FileMetaEmptyRetSyntaxTerm ert )
+            {
+                // 空合并运算符两个子树
+                CollectInlineLambdaArgSourceCallNodes( ert.return1Term );
+                CollectInlineLambdaArgSourceCallNodes( ert.return2Term );
+            }
+            else if( term is FileMetaAsOrIsTerm ait )
+            {
+                // as/is 左值 (调用链, 无实参括号层)
+                CollectInlineLambdaArgSourceCallNodes( ait.variableCallLink );
+            }
+            else if( term is FileMetaBraceTerm bt )
+            {
+                // 花括号初始化器: 裸引用项 + 赋值项 (左值链 + 右值)
+                var cll = bt.fileMetaCallLinkList;
+                if( cll != null )
+                {
+                    for( int i = 0; i < cll.Count; i++ )
+                    {
+                        CollectInlineLambdaArgSourceCallNodes( cll[i] );
+                    }
+                }
+                var asl = bt.fileMetaAssignSyntaxList;
+                if( asl != null )
+                {
+                    for( int i = 0; i < asl.Count; i++ )
+                    {
+                        if( asl[i] is FileMetaDefineVariableSyntax fdvs )
+                        {
+                            CollectInlineLambdaArgSourceCallNodes( fdvs.express );
+                        }
+                        else if( asl[i] is FileMetaOpAssignSyntax foas )
+                        {
+                            CollectInlineLambdaArgSourceCallNodes( foas.variableRef );
+                            CollectInlineLambdaArgSourceCallNodes( foas.express );
+                        }
+                    }
+                }
+            }
+            else if( term is FileMetaCallTerm fct && fct.callLink != null )
+            {
+                // 调用链 term: 递归链中每一级的实参与修饰
+                CollectInlineLambdaArgSourceCallNodes( fct.callLink );
+            }
+        }
+
+        private static void CollectInlineLambdaArgSourceCallNodes( FileMetaCallLink link )
+        {
+            if( link == null )
+                return;
+            var cnl = link.callNodeList;
+            if( cnl == null )
+                return;
+            for( int j = 0; j < cnl.Count; j++ )
+            {
+                var fcn = cnl[j];
+                MetaInlineLambdaVariable.AddArgSourceCallNode( fcn );
+
+                // 实参 (ParTerm 是 term, 递归其列表)
+                if( fcn.fileMetaParTerm != null )
+                {
+                    CollectInlineLambdaArgSourceCallNodes( fcn.fileMetaParTerm );
+                }
+                // 下标修饰 (BracketTerm 是 term, 下标表达式在其列表)
+                var brl = fcn.fileMetaBracketTermList;
+                if( brl != null )
+                {
+                    for( int k = 0; k < brl.Count; k++ )
+                    {
+                        CollectInlineLambdaArgSourceCallNodes( brl[k] );
+                    }
+                }
+                // 花括号初始化器修饰
+                if( fcn.fileMetaBraceTerm != null )
+                {
+                    CollectInlineLambdaArgSourceCallNodes( fcn.fileMetaBraceTerm );
+                }
             }
         }
 

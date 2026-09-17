@@ -58,6 +58,7 @@ namespace SimpleLanguage
         Result,
         ResultT,
         Function,
+        InlineLambda,
     }
     //token类型
     public enum ETokenType : byte
@@ -238,6 +239,8 @@ namespace SimpleLanguage
         Final,
         /// <summary> static </summary>
         Static,
+        /// <summary> inline（方法修饰符：调用点内联展开） </summary>
+        Inline,
         /// <summary> get </summary>
         Get,
         /// <summary> set </summary>

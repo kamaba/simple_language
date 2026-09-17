@@ -278,6 +278,14 @@ namespace SimpleLanguage.Project
                 ProjectClass.ProjectCompileAfter();
                 return true;
             });
+            pm.AddStep(CompileProcess.ECompilePhase.MetaCore, "AutoInlineMark", () =>
+            {
+                // M4 (-O 自动 inline): MetaCore 末尾 (override 链已建立)、TranslateIR 之前,
+                // 按优化等级给小函数自动标记 inline (O1 ≤2 / O2 ≤4 / O3 ≤7)。
+                // 规范见 md/project/optimization.md: 预检不过静默跳过 (不标记, 不报错)
+                AutoInlineMarkFunctions();
+                return true;
+            });
 
             // ============ 阶段4 IR：编译成 IR 逻辑，供导出使用 ============
             pm.AddStep(CompileProcess.ECompilePhase.IR, "TranslateIR", () =>
@@ -292,6 +300,72 @@ namespace SimpleLanguage.Project
                 ExportLangManager.Export(ExportKind.SLIR);
                 return true;
             });
+        }
+
+        /// <summary>operator 方法名集合 (与 IRMetaClass 运算符分流名单一致)。
+        /// 自动 inline 不标记 operator: 其调用点由运算符语法触发, 展开语义不属于普通调用</summary>
+        private static readonly HashSet<string> s_AutoInlineOperatorNames = new HashSet<string>
+        {
+            "_add_", "_sub_", "_mul_", "_truediv_", "_mod_",
+            "_iadd_", "_imul_", "_itruediv_",
+            "_lt_", "_le_", "_gt_", "_ge_", "_eq_", "_ne_",
+            "_getItem_", "_setItem_",
+        };
+
+        /// <summary>M4 (-O 自动 inline): 遍历源函数清单, 按优化等级阈值给小函数自动标记 inline。
+        /// 排除集与阈值见 md/project/optimization.md; 预检不过 (条数超阈值 / 违禁构造 / 无源码体)
+        /// 静默跳过 —— 自动 inline 的回退语义是 "不标记", 不产生用户可见错误</summary>
+        private static void AutoInlineMarkFunctions()
+        {
+            int maxStatementCount;
+            if (ProjectManager.optimizeLevel >= 3)
+                maxStatementCount = 7;
+            else if (ProjectManager.optimizeLevel == 2)
+                maxStatementCount = 4;
+            else if (ProjectManager.optimizeLevel == 1)
+                maxStatementCount = 2;
+            else
+                return; // -O0: 不做自动 inline
+
+            // 预收集被 override 的函数 (子方法 overrideMetaMemberFunction 指向的父函数):
+            // 被任何子类 override 的方法不允许 inline —— 展开按静态绑定, 会破坏多态。
+            // 普通类/data 的 override 链在 ParseDefineComplete 建立, 模板实例化链在类型解析
+            // 期间建立, 均早于本步骤 (ProjectCompileAfter 之后), 预收集完整
+            HashSet<MetaMemberFunction> overriddenSet = new HashSet<MetaMemberFunction>();
+            CollectOverriddenParents(MethodManager.instance.metaOriginalFunctionList, overriddenSet);
+            CollectOverriddenParents(MethodManager.instance.metaDynamicFunctionList, overriddenSet);
+
+            var originList = MethodManager.instance.metaOriginalFunctionList;
+            for (int i = 0; i < originList.Count; i++)
+            {
+                var mmf = originList[i];
+                if (mmf == null || mmf.isInline) continue;                     // 已 (显式/自动) inline
+                if (mmf.isThrows) continue;                                   // throws: 与 inline 异常帧语义冲突
+                if (mmf.name == "_init_") continue;                           // 构造函数: 调用点语义特殊
+                if (mmf.isAbstract) continue;                                 // 抽象函数无体
+                if (mmf.isClosureFunction) continue;                          // 闭包合成函数
+                if (mmf.isTemplateFunction) continue;                         // 模板函数须实例化后调用
+                if (mmf.isGet || mmf.isSet) continue;                         // 属性访问器: 语法糖入口
+                if (mmf.isWithInterface) continue;                            // interface 声明函数
+                if (mmf.ownerMetaClass is MetaClass omc && omc.isInterfaceClass) continue; // 接口类成员
+                if (mmf.name != null && s_AutoInlineOperatorNames.Contains(mmf.name)) continue; // operator
+                if (overriddenSet.Contains(mmf)) continue;                    // 被子类 override
+                if (!mmf.CanAutoInlineBody(maxStatementCount)) continue;      // 条数/违禁/无源码体
+
+                mmf.SetAutoInline();
+            }
+        }
+
+        private static void CollectOverriddenParents(List<MetaMemberFunction> list, HashSet<MetaMemberFunction> set)
+        {
+            if (list == null)
+                return;
+            for (int i = 0; i < list.Count; i++)
+            {
+                var parent = list[i] != null ? list[i].overrideMetaMemberFunction : null;
+                if (parent != null && !set.Contains(parent))
+                    set.Add(parent);
+            }
         }
 
         /// <summary>

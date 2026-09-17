@@ -939,21 +939,27 @@ namespace SimpleLanguage.Compile
     public class FileMetaKeyReturnSyntax : FileMetaSyntax
     {
         public FileMetaBaseTerm returnExpress =>m_ReturnExpress;
+        public List<Node> returnNodeList => m_ReturnNodeList;
 
         private FileMetaBaseTerm m_ReturnExpress = null;
+        private List<Node> m_ReturnNodeList = new List<Node>();
 
         //public static FileMetaKeyReturnSyntax ParseIfSyntax(FileMeta fm, StructParse.SyntaxNodeStruct akss)
-        //{           
+        //{
         //    var cnode = akss.keyNode;
         //    FileMetaBaseTerm conditionExpress = FileMetatUtil.CreateFileMetaExpress(fm, akss.keyContent, FileMetaTermExpress.EExpressType.Common);
         //    var fms = new FileMetaKeyReturnSyntax(fm, cnode.token, conditionExpress);
         //    return fms;
         //}
-        public FileMetaKeyReturnSyntax(FileMeta fm, Token _token, FileMetaBaseTerm _express )
+        public FileMetaKeyReturnSyntax(FileMeta fm, Token _token, FileMetaBaseTerm _express, List<Node> _returnNodeList )
         {
             m_FileMeta = fm;
             m_Token = _token;
             m_ReturnExpress = _express;
+            if( _returnNodeList != null )
+            {
+                m_ReturnNodeList = _returnNodeList;
+            }
         }
         public override string ToFormatString()
         {
@@ -1231,6 +1237,60 @@ namespace SimpleLanguage.Compile
             }
             sb.Append(" )" + Environment.NewLine);
             sb.Append(m_BlockSyntax?.ToFormatString());
+            return sb.ToString();
+        }
+    }
+
+    /// <summary>
+    /// 内联lambda定义 (新语法): var name = ( 参数列表 ) => 表达式
+    /// 仅记录参数与表达式体节点, 不建块不建函数; 调用点由 MetaCore 层就地内联展开
+    /// (体保存原始 Node 列表, 每个调用点用 CreateFileMetaExpress 重建全新表达式树)
+    /// </summary>
+    public class FileMetaInlineLambdaSyntax : FileMetaSyntax
+    {
+        public Token nameToken => m_Token;
+        public Token lambdaToken => m_LambdaToken;
+        public List<FileMetaParamterDefine> paramList => m_ParamList;
+        public List<Node> bodyNodeList => m_BodyNodeList;
+
+        private Token m_LambdaToken = null;
+        private List<FileMetaParamterDefine> m_ParamList = new List<FileMetaParamterDefine>();
+        private List<Node> m_BodyNodeList = new List<Node>();
+
+        public FileMetaInlineLambdaSyntax( FileMeta fm, Token nameToken, Token lambdaToken,
+            List<FileMetaParamterDefine> paramList, List<Node> bodyNodeList )
+        {
+            m_FileMeta = fm;
+            m_Token = nameToken;
+            m_LambdaToken = lambdaToken;
+            if( paramList != null )
+            {
+                m_ParamList = paramList;
+            }
+            if( bodyNodeList != null )
+            {
+                m_BodyNodeList = bodyNodeList;
+            }
+        }
+        public override string ToFormatString()
+        {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < deep; i++)
+                sb.Append(Global.tabChar);
+            sb.Append("var " + m_Token?.lexeme.ToString() + " = ( ");
+            for (int i = 0; i < m_ParamList.Count; i++)
+            {
+                sb.Append(m_ParamList[i].name);
+                if (i < m_ParamList.Count - 1)
+                    sb.Append(", ");
+            }
+            sb.Append(" ) => ");
+            for (int i = 0; i < m_BodyNodeList.Count; i++)
+            {
+                sb.Append(m_BodyNodeList[i]?.token?.lexeme.ToString());
+                if (i < m_BodyNodeList.Count - 1)
+                    sb.Append(" ");
+            }
             return sb.ToString();
         }
     }

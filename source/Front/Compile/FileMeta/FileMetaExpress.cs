@@ -1208,6 +1208,10 @@ namespace SimpleLanguage.Compile
             m_Return2Term = return2Term;
         }
 
+        // 子树替换入口 (内联lambda形参->实参替换时写回新子树)
+        public void SetConditionTerm( FileMetaBaseTerm t ) { m_ConditionTerm = t; }
+        public void SetReturn1Term( FileMetaBaseTerm t ) { m_Return1Term = t; }
+        public void SetReturn2Term( FileMetaBaseTerm t ) { m_Return2Term = t; }
         public override bool BuildAST()
         {
             m_ConditionTerm.BuildAST();
@@ -1265,6 +1269,9 @@ namespace SimpleLanguage.Compile
             m_Return1Term = return1fmbt;
             m_Return2Term = return2fmbt;
         }
+        // 子树替换入口 (内联lambda形参->实参替换时写回新子树)
+        public void SetReturn1Term( FileMetaBaseTerm t ) { m_Return1Term = t; }
+        public void SetReturn2Term( FileMetaBaseTerm t ) { m_Return2Term = t; }
         public override bool BuildAST()
         {
             m_Return1Term.BuildAST();

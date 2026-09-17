@@ -3,7 +3,8 @@ import Core;
 
 # ============================================================
 # IsolateTest —— Std/Isolate 机制验收测试（ISOLATE_DESIGN.md §9 A~I 组
-#               + T 组 pthread 真并行）
+#               + T 组 pthread 真并行 + P 组多线程并发打印
+#               + IO 组隔离岛非阻塞文件 IO）
 #
 # 约定：
 #  - 三方法统一入口（编译期脱糖为变长系统调用 SystemIsolateRun/Spawn，
@@ -902,6 +903,301 @@ IsolateTest
         isoCheck( "T6 worker线程current()有效", t6cur )
     }
 
+    # ================= P. 多线程并发打印（worker OS 线程 Console 输出）=================
+    # P2 下每个 worker 独占一条 OS 线程,Console.println 经单次 _write
+    # 输出,行内不交错;跨线程输出行序不确定,故不断言顺序,只断言
+    # 全部完成、打印内容无丢失无重复、与主线程打印互不阻塞。
+    static testGroupP()
+    {
+        Console.println( "---------- P. 多线程并发打印 ----------" )
+
+        # P1 4 worker 各打印 3 行后回发 done:并发打印全部完成
+        ReceivePort rpP1 = ReceivePort()
+        function fnP1 = function( object a, object b )
+        {
+            SendPort sp = a as SendPort
+            Int32 id = b as int
+            for Int32 k = 0, k < 3, k = k + 1
+            {
+                Console.println( "[P1] worker-" + id.toString() + " line-" + k.toString() )
+            }
+            sp.send( "done" )
+        }
+        SendPort spP1 = rpP1.sendPort
+        for Int32 i = 0, i < 4, i = i + 1
+        {
+            Isolate.spawn( fnP1( spP1, i ) )
+        }
+        Int32 spinsP1 = 0
+        while ( rpP1.count < 4 && spinsP1 < 400 )
+        {
+            Coroutine.delay( 5 )
+            spinsP1 = spinsP1 + 1
+        }
+        Int32 doneP1 = 0
+        while ( rpP1.count > 0 )
+        {
+            rpP1.recv()
+            doneP1 = doneP1 + 1
+        }
+        isoCheck( "P1 4worker并发打印均完成", doneP1 == 4 )
+
+        # P2 worker 打印字符串并回传同一字符串:12 条乱序到达,
+        #    逐条比对期望集合（顺序无关）,验证打印内容无丢失无重复
+        ReceivePort rpP2 = ReceivePort()
+        function fnP2 = function( object a, object b )
+        {
+            SendPort sp = a as SendPort
+            Int32 id = b as int
+            for Int32 k = 0, k < 3, k = k + 1
+            {
+                string line = "P2-w" + id.toString() + "-l" + k.toString()
+                Console.println( line )
+                sp.send( line )
+            }
+        }
+        SendPort spP2 = rpP2.sendPort
+        for Int32 i = 0, i < 4, i = i + 1
+        {
+            Isolate.spawn( fnP2( spP2, i ) )
+        }
+        Int32 spinsP2 = 0
+        while ( rpP2.count < 12 && spinsP2 < 400 )
+        {
+            Coroutine.delay( 5 )
+            spinsP2 = spinsP2 + 1
+        }
+        List<string> gotP2 = new()
+        while ( rpP2.count > 0 )
+        {
+            gotP2.add( rpP2.recv() as string )
+        }
+        Int32 hitsP2 = 0
+        for Int32 w = 0, w < 4, w = w + 1
+        {
+            for Int32 k = 0, k < 3, k = k + 1
+            {
+                string wantP2 = "P2-w" + w.toString() + "-l" + k.toString()
+                Int32 foundP2 = 0
+                for Int32 j = 0, j < gotP2.length, j = j + 1
+                {
+                    if ( gotP2._getItem_( j ) == wantP2 )
+                    {
+                        foundP2 = foundP2 + 1
+                    }
+                }
+                if ( foundP2 == 1 )
+                {
+                    hitsP2 = hitsP2 + 1
+                }
+            }
+        }
+        isoCheck( "P2 并发打印内容无丢失无重复", hitsP2 == 12 )
+
+        # P3 主线程打印期间 4 worker 并发打印:互不阻塞,各自完成
+        ReceivePort rpP3 = ReceivePort()
+        function fnP3 = function( object a, object b )
+        {
+            SendPort sp = a as SendPort
+            Int32 id = b as int
+            for Int32 k = 0, k < 3, k = k + 1
+            {
+                Console.println( "[P3] worker-" + id.toString() + " line-" + k.toString() )
+            }
+            sp.send( "done" )
+        }
+        SendPort spP3 = rpP3.sendPort
+        for Int32 i = 0, i < 4, i = i + 1
+        {
+            Isolate.spawn( fnP3( spP3, i ) )
+        }
+        Int32 mainPrintsP3 = 0
+        for Int32 i = 0, i < 6, i = i + 1
+        {
+            Console.println( "[P3] main line-" + i.toString() )
+            mainPrintsP3 = mainPrintsP3 + 1
+        }
+        Int32 spinsP3 = 0
+        while ( rpP3.count < 4 && spinsP3 < 400 )
+        {
+            Coroutine.delay( 5 )
+            spinsP3 = spinsP3 + 1
+        }
+        isoCheck( "P3 主线程与worker打印互不阻塞", mainPrintsP3 == 6 && rpP3.count == 4 )
+    }
+
+    # ================= IO. 隔离岛非阻塞文件 IO =================
+    # 文件 IO 放进 worker isolate（独立 OS 线程）执行:主线程 spawn 后
+    # 即刻返回继续自己的代码,经端口收结果——非阻塞 IO 模式。
+    # 文件按相对路径创建于进程 CWD,用例结束即删（同 FileTest 约定）。
+    # worker 闭包仅捕获 string 路径（可发送）,端口一律走实参消息路径,
+    # 不捕获 ReceivePort/Channel（污染宿主方法级共享捕获上下文）。
+    static testGroupIO()
+    {
+        Console.println( "---------- IO. 隔离岛非阻塞文件IO ----------" )
+
+        # IO1 异步读文本:spawn 后主线程继续本地计算,收内容回传
+        string pathIO1 = "iso_io_basic.txt"
+        File.writeAllText( pathIO1, "iso-io-basic-content" )
+        ReceivePort rpIO1 = ReceivePort()
+        function fnIO1 = function( object arg )
+        {
+            SendPort sp = arg as SendPort
+            Console.println( "[IO1w] path=[" + pathIO1 + "]" )
+            string text = File.readAllText( pathIO1 )
+            if ( text == null )
+            {
+                Console.println( "[IO1w] read=NULL" )
+            }
+            else
+            {
+                Console.println( "[IO1w] read=[" + text + "]" )
+            }
+            sp.send( text )
+        }
+        SendPort spIO1 = rpIO1.sendPort
+        Isolate.spawn( fnIO1( spIO1 ) )
+        Int32 io1Sum = 0
+        for Int32 i = 0, i < 1000, i = i + 1
+        {
+            io1Sum = io1Sum + i + 1
+        }
+        string io1Text = rpIO1.recv() as string
+        isoCheck( "IO1 异步读文件内容回传", io1Text == "iso-io-basic-content" && io1Sum == 500500 )
+        File.delete( pathIO1 )
+
+        # IO2 读文件不阻塞主线程:worker 读+延迟(模拟慢IO)后回发,
+        #    主线程立即投入无让出点忙算,IO 由另一条 OS 线程完成
+        #    （M:1 下主线程忙算饿死 worker → FAIL,回归哨兵,同 T2）
+        string pathIO2 = "iso_io_slow.txt"
+        File.writeAllText( pathIO2, "iso-io-slow-data" )
+        ReceivePort rpIO2 = ReceivePort()
+        function fnIO2 = function( object arg )
+        {
+            SendPort sp = arg as SendPort
+            string text = File.readAllText( pathIO2 )
+            Coroutine.delay( 50 )
+            sp.send( text )
+        }
+        SendPort spIO2 = rpIO2.sendPort
+        Isolate.spawn( fnIO2( spIO2 ) )
+        Int32 io2Work = 0
+        Int32 spinsIO2 = 0
+        while ( rpIO2.count < 1 && spinsIO2 < 200000 )
+        {
+            io2Work = io2Work + 1
+            spinsIO2 = spinsIO2 + 1
+        }
+        string io2Text = ""
+        if ( rpIO2.count == 1 )
+        {
+            io2Text = rpIO2.recv() as string
+        }
+        isoCheck( "IO2 IO期间主线程忙算不被阻塞", io2Text == "iso-io-slow-data" && io2Work > 0 )
+        Console.println( "  IO2 主线程忙算迭代=" + io2Work.toString() + " 次(期间worker完成读文件)" )
+        File.delete( pathIO2 )
+
+        # IO3 4 文件并发读:每 worker 独立端口回传,并行耗时 < 串行/2
+        #    （delay 模拟 IO 延迟;单核下并行 sleep 依然重叠,较 T1 温和）
+        for Int32 i = 0, i < 4, i = i + 1
+        {
+            File.writeAllText( "iso_io_par_" + i.toString() + ".txt", "par-" + i.toString() + "-data" )
+        }
+        Int64 io3Ser0 = OS.Timer.clock()
+        for Int32 i = 0, i < 4, i = i + 1
+        {
+            Coroutine.delay( 40 )
+            string tIO3 = File.readAllText( "iso_io_par_" + i.toString() + ".txt" )
+        }
+        Int64 io3SerMs = OS.Timer.clock() - io3Ser0
+
+        Array<ReceivePort> rpsIO3 = Array<ReceivePort>( 4 )
+        for Int32 i = 0, i < 4, i = i + 1
+        {
+            rpsIO3._setItem_( i, ReceivePort() )
+        }
+        function fnIO3 = function( object a, object b )
+        {
+            SendPort sp = a as SendPort
+            Int32 id = b as int
+            string text = File.readAllText( "iso_io_par_" + id.toString() + ".txt" )
+            Coroutine.delay( 40 )
+            sp.send( text )
+        }
+        Int64 io3Par0 = OS.Timer.clock()
+        for Int32 i = 0, i < 4, i = i + 1
+        {
+            Isolate.spawn( fnIO3( rpsIO3._getItem_( i ).sendPort, i ) )
+        }
+        Int32 spinsIO3 = 0
+        Int32 arrivedIO3 = 0
+        while ( arrivedIO3 < 4 && spinsIO3 < 400 )
+        {
+            arrivedIO3 = 0
+            for Int32 i = 0, i < 4, i = i + 1
+            {
+                arrivedIO3 = arrivedIO3 + rpsIO3._getItem_( i ).count
+            }
+            Coroutine.delay( 5 )
+            spinsIO3 = spinsIO3 + 1
+        }
+        Int64 io3ParMs = OS.Timer.clock() - io3Par0
+        Int32 okIO3 = 0
+        for Int32 i = 0, i < 4, i = i + 1
+        {
+            if ( rpsIO3._getItem_( i ).count == 1 )
+            {
+                string tIO3 = rpsIO3._getItem_( i ).recv() as string
+                if ( tIO3 == "par-" + i.toString() + "-data" )
+                {
+                    okIO3 = okIO3 + 1
+                }
+            }
+        }
+        isoCheck( "IO3 4文件并发读内容全对", okIO3 == 4 )
+        isoCheck( "IO3 并行读快于串行一半", io3ParMs * 2 < io3SerMs )
+        Console.println( "  IO3 串行=" + io3SerMs.toString() + "ms  4文件并行=" + io3ParMs.toString() + "ms" )
+        for Int32 i = 0, i < 4, i = i + 1
+        {
+            File.delete( "iso_io_par_" + i.toString() + ".txt" )
+        }
+
+        # IO4 worker 内读字节文件:字节数组不可直接发送,worker 内
+        #    取长度回传,与主线程 File.getSize 交叉验证（内容 23 字节）
+        string pathIO4 = "iso_io_bytes.txt"
+        File.writeAllText( pathIO4, "ISO-IO-BYTES-0123456789" )
+        ReceivePort rpIO4 = ReceivePort()
+        function fnIO4 = function( object arg )
+        {
+            SendPort sp = arg as SendPort
+            Console.println( "[IO4w] path=[" + pathIO4 + "]" )
+            UInt8Array bytes = File.readAllBytes( pathIO4 )
+            sp.send( bytes.length )
+        }
+        SendPort spIO4 = rpIO4.sendPort
+        Isolate.spawn( fnIO4( spIO4 ) )
+        Int32 io4Len = rpIO4.recv() as int
+        Int64 io4Size = File.getSize( pathIO4 )
+        isoCheck( "IO4 worker内读字节文件(23字节)", io4Len == 23 && io4Size == 23 )
+        File.delete( pathIO4 )
+
+        # IO5 worker 写文件回执,主线程读回验证（写路径在 worker 线程）
+        string pathIO5 = "iso_io_write.txt"
+        ReceivePort rpIO5 = ReceivePort()
+        function fnIO5 = function( object arg )
+        {
+            SendPort sp = arg as SendPort
+            bool ok = File.writeAllText( pathIO5, "iso-io-worker-written" )
+            sp.send( ok )
+        }
+        SendPort spIO5 = rpIO5.sendPort
+        Isolate.spawn( fnIO5( spIO5 ) )
+        bool io5Ok = rpIO5.recv() as bool
+        string io5Text = File.readAllText( pathIO5 )
+        isoCheck( "IO5 worker写文件主线程读回", io5Ok && io5Text == "iso-io-worker-written" )
+        File.delete( pathIO5 )
+    }
+
     # ---- 主入口 ----
     static fun()
     {
@@ -916,6 +1212,8 @@ IsolateTest
         testGroupH()
         testGroupI()
         testGroupT()
+        testGroupP()
+        testGroupIO()
         Console.println( "========== IsolateTest done ==========" )
     }
 }

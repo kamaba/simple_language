@@ -39,6 +39,26 @@
       "commandName": "Project",
       "commandLineArgs": "PlatformVariantTest",
       "nativeDebugging": true
+    },
+    "InlineLambdaForbiddenTest": {
+      "commandName": "Project",
+      "commandLineArgs": "InlineLambdaForbiddenTest",
+      "nativeDebugging": true
+    },
+    "InlineLambdaTest": {
+      "commandName": "Project",
+      "commandLineArgs": "InlineLambdaTest",
+      "nativeDebugging": true
+    },
+    "AutoInlineTest": {
+      "commandName": "Project",
+      "commandLineArgs": "AutoInlineTest",
+      "nativeDebugging": true
+    },
+    "InlineMethodTest": {
+      "commandName": "Project",
+      "commandLineArgs": "InlineMethodTest",
+      "nativeDebugging": true
     }
   }
 }

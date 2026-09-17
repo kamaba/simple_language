@@ -897,6 +897,26 @@ namespace SimpleLanguage.Logging
         MetaCoreReturnStatementLeftCompareRight2 = 21398,
         MetaCoreReturnStatementVoidWithExpress = 21443,
         MetaCoreReturnStatementVoidFuncBareRet = 21444,
+        // InlineLambdaDefineStatement
+        MetaCoreInlineLambdaDefineStatementDefine = 21445,
+        MetaCoreInlineLambdaDefineStatementIssue = 21446,
+        MetaCoreInlineLambdaCallStatementNotSupport = 21447,
+        MetaCoreInlineLambdaCallStatementParamCount = 21448,
+        // InlineLambda 限制拦截 (M2 §4.1 禁止总表)
+        MetaCoreInlineLambdaBodyForbiddenCoroutine = 21449,
+        MetaCoreInlineLambdaBodyForbiddenControlFlow = 21450,
+        MetaCoreInlineLambdaBodyForbiddenExceptionFrame = 21451,
+        MetaCoreInlineLambdaBodyForbiddenSelfReference = 21452,
+        // InlineMethod 限制拦截 (M1b §2.5 规模上限; 四类违禁复用 21449-21452)
+        MetaCoreInlineMethodBodyForbiddenScale = 21453,
+        // InlineMethod 调用点内联展开 (M1b §5.5(b))
+        MetaCoreInlineMethodCallStatementNotSupport = 21454,
+        MetaCoreInlineMethodCallStatementParamCount = 21455,
+        // InlineLambda 参数类型标注 (M3: 调用点实参类型校验)
+        MetaCoreInlineLambdaCallStatementParamType = 21456,
+        // InlineMethod 声明/调用点限制 (M2+ §2.4: throws 互斥 + 变量初始化器禁调)
+        MetaCoreInlineMethodThrowsConflict = 21457,
+        MetaCoreInlineMethodCallVarInitForbidden = 21458,
         // SwitchStatement
         MetaCoreSwitchStatementSwitch = 21399,
         // TryCatchStatement

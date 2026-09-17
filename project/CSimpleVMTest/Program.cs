@@ -64,6 +64,23 @@ internal static class Program
             {
                 projectPath = Path.Combine(repoRoot, "test", "Other", "PlatformVariantTest", "PlatformVariantTest");
             }
+            else if (arg == "InlineLambdaTest")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "InlineLambdaTest", "ProjectTest");
+            }
+            else if (arg == "InlineLambdaForbiddenTest")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "InlineLambdaForbiddenTest", "ProjectTest");
+            }
+            else if (arg == "AutoInlineTest")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "AutoInlineTest", "ProjectTest");
+            }
+            else if (arg == "InlineMethodTest")
+            {
+                projectPath = Path.Combine(repoRoot, "test", "Other", "InlineMethodTest", "ProjectTest");
+            }
+
         }
         else
         {
@@ -97,6 +114,10 @@ internal static class Program
         if (frontExit != 0)
         {
             Console.WriteLine($"Front compile failed, exit code: {frontExit}");
+            // 负例工程: 前端编译失败是预期结果, 校验预期拦截 LID 全部命中则视为通过 (exit 0)
+            var neg = TryGetNegativeFrontCase(args);
+            if (neg != null)
+                return VerifyNegativeFrontCase(neg, repoRoot, frontExit);
             return frontExit;
         }
 
@@ -311,6 +332,74 @@ internal static class Program
             Console.WriteLine(ex);
             return 1;
         }
+    }
+
+    // ==== 负例工程支持: 前端编译「预期失败 = 成功」====
+    // 负例工程的拦截命中会让 Front 以非零码退出, 这里读 Front.txt 校验
+    // 预期拦截 LID 是否全部命中: 全命中 = 负例通过 (exit 0, 跳过 C VM 运行),
+    // 有缺命中 = 真失败。只看预期 LID 命中数, 不计连锁产生的其他日志。
+
+    private sealed class NegativeFrontCase
+    {
+        public string ArgName = "";          // 命令行启动项名 (args[0])
+        public string ExportModuleName = ""; // 导出模块名: out/export/<名>/Logs/Front.txt
+        public (string Lid, int Count)[] ExpectedLids = Array.Empty<(string, int)>();
+    }
+
+    private static readonly NegativeFrontCase[] s_negativeFrontCases = new[]
+    {
+        new NegativeFrontCase
+        {
+            ArgName = "InlineLambdaForbiddenTest",
+            ExportModuleName = "InlineLambdaForbiddenTest",
+            // 6 个负例: 协程拦截 3 (spawn/await/isolate) + 自引用/互递归 2 + try? 1
+            ExpectedLids = new[]
+            {
+                ("MetaCoreInlineLambdaBodyForbiddenCoroutine", 3),
+                ("MetaCoreInlineLambdaBodyForbiddenSelfReference", 2),
+                ("MetaCoreInlineLambdaBodyForbiddenExceptionFrame", 1),
+            }
+        },
+    };
+
+    static NegativeFrontCase? TryGetNegativeFrontCase(string[] args)
+    {
+        if (args.Length == 0)
+            return null;
+        return s_negativeFrontCases.FirstOrDefault(c => c.ArgName == args[0]);
+    }
+
+    // 校验负例: 按行统计 Front.txt 中 "[LID]" 出现次数, 预期全部达标 = 通过
+    static int VerifyNegativeFrontCase(NegativeFrontCase neg, string repoRoot, int frontExit)
+    {
+        // 优先用 Front 写入的日志路径 (in-process 模式下最准确), 回退到按模块名推导
+        string? logPath = Log.FrontLogFilePath;
+        if (string.IsNullOrWhiteSpace(logPath) || !File.Exists(logPath))
+            logPath = Path.Combine(repoRoot, "out", "export", neg.ExportModuleName, "Logs", "Front.txt");
+        if (!File.Exists(logPath))
+        {
+            Console.WriteLine($"Negative case '{neg.ArgName}': Front log not found: {logPath}");
+            return frontExit;
+        }
+
+        var lines = File.ReadAllLines(logPath);
+        bool allHit = true;
+        Console.WriteLine($"=== Negative front case '{neg.ArgName}': verify expected LID hits ===");
+        foreach (var (lid, expected) in neg.ExpectedLids)
+        {
+            int actual = lines.Count(l => l.Contains("[" + lid + "]"));
+            bool hit = actual >= expected;
+            Console.WriteLine($"  [{(hit ? "OK" : "MISS")}] {lid}: expect >= {expected}, actual {actual}");
+            if (!hit)
+                allHit = false;
+        }
+        if (allHit)
+        {
+            Console.WriteLine($"Negative test passed: all expected LID interceptions hit, skip C VM run.");
+            return 0;
+        }
+        Console.WriteLine("Negative test FAILED: some expected LID interceptions missing.");
+        return frontExit;
     }
 
     static string ResolveModulePackagePath(string repoRoot, string projectPath)

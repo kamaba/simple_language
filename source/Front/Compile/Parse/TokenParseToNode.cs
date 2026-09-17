@@ -708,6 +708,7 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Mut:
                 case ETokenType.Final:
                 case ETokenType.Static:
+                case ETokenType.Inline:
                 case ETokenType.Override:
                 case ETokenType.Partial:
                 case ETokenType.Void:
@@ -791,6 +792,21 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Dollar:
                     {
                         AddDollerOpSign(token);
+                    }
+                    break;
+                case ETokenType.Lambda:       //=>
+                    {
+                        /* 内联lambda => 作为中缀连接符处理 形如 (a,b) => a+b
+                         * 节点类型复用 Symbol 由 StructParse 层识别 [Par, Lambda, Expr] 模式 */
+                        if (m_CurrentNode.nodeType == ENodeType.Angle)
+                        {
+                            RestoreAngleNode();
+                        }
+                        m_CurrentNode.SetIdentifierNode(null);
+                        Node lambdaNode = new Node(token);
+                        lambdaNode.nodeType = ENodeType.Symbol;
+                        m_CurrentNode.AddChild(lambdaNode);
+                        m_TokenIndex++;
                     }
                     break;
                 case ETokenType.Space:

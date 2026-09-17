@@ -168,6 +168,7 @@ namespace SimpleLanguage.Compile
 
         public Token interfaceToken => m_InterfaceToken;
         public Token staticToken => m_StaticToken;
+        public Token inlineToken => m_InlineToken;
         public Token overrideToken => m_OverrideToken;
         public Token abstractToken => m_AbstractToken;
         public Token permissionToken => m_PermissionToken;
@@ -179,6 +180,7 @@ namespace SimpleLanguage.Compile
 
         private Token m_InterfaceToken = null;
         private Token m_StaticToken = null;
+        private Token m_InlineToken = null;
         private Token m_AbstractToken = null;
         private Token m_FinalToken = null;
         private Token m_ThrowsToken = null;
@@ -231,6 +233,7 @@ namespace SimpleLanguage.Compile
             Node returnClassNameNode = null;
             Token interfaceToken = null;
             Token staticToken = null;
+            Token inlineToken = null;
             Token getToken = null;
             Token setToken = null;
             Token finalToken = null;
@@ -300,6 +303,15 @@ namespace SimpleLanguage.Compile
                     else if (token.type == ETokenType.Static)
                     {
                         staticToken = token;
+                    }
+                    else if (token.type == ETokenType.Inline)
+                    {
+                        if (inlineToken != null)
+                        {
+                            isError = true;
+                            Log.AddFileMetaLog(LID.FileFunctionDefineConflict, token, $"inline:[{inlineToken.lexeme.ToString()}]");
+                        }
+                        inlineToken = token;
                     }
                     else if (token.type == ETokenType.Get)
                     {
@@ -381,6 +393,7 @@ namespace SimpleLanguage.Compile
             m_OverrideToken = overrideToken;            
             m_PermissionToken = permissionToken;
             m_StaticToken = staticToken;
+            m_InlineToken = inlineToken;
             m_GetToken = getToken;
             m_SetToken = setToken;
             m_FinalToken = finalToken;

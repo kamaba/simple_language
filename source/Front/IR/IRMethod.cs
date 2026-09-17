@@ -101,6 +101,14 @@ namespace SimpleLanguage.IR
         public bool isInTryCatch { get; set; } = false;
 
         /// <summary>
+        /// inline 方法体展开上下文栈 (M1b §5.5(b))。
+        /// 非空表示当前正在展开 inline 方法体: IRReturnStatements 感知后把
+        /// ret 改写为 [求值][StoreLocal 结果槽][BrLabel 段尾锚], 不再写宿主
+        /// 返回槽/跳宿主函数末尾。栈结构支持嵌套 inline 展开。
+        /// </summary>
+        private Stack<InlineExpansionContext> m_InlineExpansionStack = new Stack<InlineExpansionContext>();
+
+        /// <summary>
         /// 导出名称列表（含原名 + Nickname 别名）。
         /// 从 MetaMemberFunction 的 attribute 中收集 @Nickname 得到。
         /// </summary>
@@ -1030,7 +1038,9 @@ namespace SimpleLanguage.IR
         }
         public IRMetaVariable GetIRLocalVariableById( int id )
         {
-            return m_MethodLocalVariableList.Find(a => a.id == id);
+            // FindLast: inline 展开段对同一体内变量可多次注册 (每次展开独立槽位,
+            // id 相同 index 不同), 取最近注册的一份; 正常路径单次注册, 语义不变。
+            return m_MethodLocalVariableList.FindLast(a => a.id == id);
         }
 
         /// <summary>
@@ -1259,6 +1269,41 @@ namespace SimpleLanguage.IR
             if (m_ContinueTargetStack.Count == 0) return null;
             return m_ContinueTargetStack.Peek();
         }
+
+        /// <summary>inline 展开中: 返回栈顶展开上下文, 空栈返回 null。</summary>
+        public InlineExpansionContext PeekInlineExpansion()
+        {
+            if (m_InlineExpansionStack.Count == 0) return null;
+            return m_InlineExpansionStack.Peek();
+        }
+
+        public void PushInlineExpansion(InlineExpansionContext ctx)
+        {
+            if (ctx != null)
+            {
+                m_InlineExpansionStack.Push(ctx);
+            }
+        }
+
+        public void PopInlineExpansion()
+        {
+            if (m_InlineExpansionStack.Count > 0)
+            {
+                m_InlineExpansionStack.Pop();
+            }
+        }
+
+        /// <summary>inline 展开环守卫: 指定 inline 方法是否已在展开栈中 (间接递归 A->B->A 无限展开)。</summary>
+        public bool IsInInlineExpansion(MetaMemberFunction mmf)
+        {
+            if (mmf == null) return false;
+            foreach (var ctx in m_InlineExpansionStack)
+            {
+                if (ctx.inlineMmf == mmf) return true;
+            }
+            return false;
+        }
+
         public string ToIRString()
         {
             StringBuilder sb = new StringBuilder();
@@ -1300,6 +1345,21 @@ namespace SimpleLanguage.IR
         public override string ToString()
         {
             return this.id;
+        }
+
+        /// <summary>
+        /// inline 展开段上下文 (M1b §5.5(b)): IRCallFunction.Parse 命中 inline
+        /// 方法时构造并压入 IRMethod 的展开栈, 体内 ret 拦截改写与形参绑定
+        /// (Argument 回退局部表) 都以栈顶上下文为准。
+        /// </summary>
+        public class InlineExpansionContext
+        {
+            /// <summary>段尾跳转锚 (IRNop.data): 所有改写后的 ret BrLabel 到这里。</summary>
+            public IRData endAnchorData;
+            /// <summary>结果槽 (宿主局部表)。非 void 方法接收 ret 表达式值, void 为 null。</summary>
+            public IRMetaVariable resultSlot;
+            /// <summary>当前展开的 inline 方法。</summary>
+            public MetaMemberFunction inlineMmf;
         }
     }
 }

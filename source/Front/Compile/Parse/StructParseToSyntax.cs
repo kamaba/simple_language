@@ -873,6 +873,100 @@ namespace SimpleLanguage.Compile
                     return null;
                 }
 
+                // 内联lambda拦截 (新语法): var name = ( 参数列表 ) => 表达式
+                // 与 function 闭包分流: Par 后紧跟 Lambda 符号 => 内联lambda; Par 后 { } 或 function 关键字 => 闭包
+                if (varToken != null
+                    && afterNodeList.Count >= 2
+                    && afterNodeList[0].nodeType == ENodeType.Par
+                    && afterNodeList[1].nodeType == ENodeType.Symbol
+                    && afterNodeList[1].token?.type == ETokenType.Lambda)
+                {
+                    // 内联lambda只能出现在方法体内 (与闭包一致)
+                    var curInfoIL = currentNodeInfo;
+                    if (curInfoIL == null ||
+                        (curInfoIL.parseType != EParseNodeType.Statements && curInfoIL.parseType != EParseNodeType.Function))
+                    {
+                        Log.AddNodeLog(LID.NodeStructParseDefine2, nameToken, "Error 内联lambda只能定义在方法体内!");
+                        return null;
+                    }
+                    // 体表达式节点: Lambda 符号之后, 过滤行尾/分号/注释节点
+                    List<Node> bodyNodeList = new List<Node>();
+                    for (int i = 2; i < afterNodeList.Count; i++)
+                    {
+                        var bn = afterNodeList[i];
+                        if (bn == null) continue;
+                        if (bn.nodeType == ENodeType.LineEnd || bn.nodeType == ENodeType.SemiColon
+                            || bn.nodeType == ENodeType.Comment)
+                        {
+                            continue;
+                        }
+                        bodyNodeList.Add(bn);
+                    }
+                    if (bodyNodeList.Count == 0)
+                    {
+                        Log.AddNodeLog(LID.NodeStructParseNotFoundExpress, afterNodeList[1].token,
+                            "Error 内联lambda '=>' 后缺少表达式体!");
+                        return null;
+                    }
+                    // 语句块体属于 function 闭包, 内联lambda只允许单表达式
+                    if (bodyNodeList[0].nodeType == ENodeType.Brace)
+                    {
+                        Log.AddNodeLog(LID.NodeStructParseNotFoundExpress, afterNodeList[1].token,
+                            "Error 内联lambda体必须是单个表达式, 语句块请使用 function 闭包!");
+                        return null;
+                    }
+                    List<FileMetaParamterDefine> paramList = ParseClosureParamList(afterNodeList[0]);
+                    if (paramList == null || paramList.Count == 0)
+                    {
+                        Log.AddNodeLog(LID.NodeStructParseFunctionVarName, nameToken,
+                            "Error 内联lambda至少需要一个参数, 形式: var name = ( a, b ) => 表达式!");
+                        return null;
+                    }
+                    // M3 参数支持可选类型标注: (裸名...) 或 (Type 名...) 可混用;
+                    // 不支持默认值表达式 (展开时实参必须全部提供) 与 params 可变参数
+                    for (int i = 0; i < paramList.Count; i++)
+                    {
+                        var ilParam = paramList[i];
+                        if (ilParam == null || ilParam.token == null)
+                        {
+                            Log.AddNodeLog(LID.NodeStructParseFunctionVarName, nameToken,
+                                "Error 内联lambda参数格式错误, 应为裸名或'类型 参数名'形式: var name = ( a, int b ) => 表达式!");
+                            return null;
+                        }
+                        if (ilParam.express != null)
+                        {
+                            Log.AddNodeLog(LID.NodeStructParseFunctionVarName, ilParam.token,
+                                "Error 内联lambda参数不支持默认值表达式, 调用时必须提供全部实参!");
+                            return null;
+                        }
+                        if (ilParam.paramsToken != null)
+                        {
+                            Log.AddNodeLog(LID.NodeStructParseFunctionVarName, ilParam.token,
+                                "Error 内联lambda参数不支持 params 可变参数!");
+                            return null;
+                        }
+                    }
+                    FileMetaInlineLambdaSyntax fmils = new FileMetaInlineLambdaSyntax(m_FileMeta,
+                        nameToken, afterNodeList[1].token, paramList, bodyNodeList);
+                    return fmils;
+                }
+                // 内联lambda格式纠错: '=>' 出现但未紧跟参数列表 (换行/裸参数无括号/赋给类型声明)
+                // ('=>' 此前全仓未被消费, 出现在赋值右侧必为内联lambda书写错误)
+                if (varToken != null || functionToken != null || classRef != null)
+                {
+                    for (int i = 0; i < afterNodeList.Count; i++)
+                    {
+                        var cn = afterNodeList[i];
+                        if (cn == null) continue;
+                        if (cn.nodeType == ENodeType.Symbol && cn.token?.type == ETokenType.Lambda)
+                        {
+                            Log.AddNodeLog(LID.NodeStructParseNotFoundExpress, cn.token,
+                                "Error 内联lambda格式应为: var name = ( 参数 ) => 表达式 (同一行, '=>' 紧跟参数列表)!");
+                            return null;
+                        }
+                    }
+                }
+
                 // 匿名闭包拦截 (新语法): var name = function( 参数列表 ) { 闭包体 }
                 // function 声明也支持: function name = function( 参数列表 ) { 闭包体 }
                 // Func<...> 类型声明也支持: Func<void,int,int> name = function( 参数列表 ) { 闭包体 }
@@ -2196,7 +2290,7 @@ namespace SimpleLanguage.Compile
                         conditionExpress = FileMetatUtil.CreateFileMetaExpress(m_FileMeta, akss.keyContent, FileMetaTermExpress.EExpressType.Common);
                     }
 
-                    FileMetaKeyReturnSyntax fmkis = new FileMetaKeyReturnSyntax(m_FileMeta, akss.keyNode.token, conditionExpress);
+                    FileMetaKeyReturnSyntax fmkis = new FileMetaKeyReturnSyntax(m_FileMeta, akss.keyNode.token, conditionExpress, new List<Node>(akss.keyContent));
                     AddParseSyntaxNodeInfo(fmkis);
                     fms = fmkis;
 

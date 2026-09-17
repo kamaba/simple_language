@@ -68,8 +68,18 @@ namespace SimpleLanguage.IR
             {
                 int id = mv.GetHashCode();
                 irmv = _irMethod.GetIRArgumentById(id);
-                if(irmv == null )
+                if (irmv == null)
                 {
+                    // ── inline 展开段形参回退 ──
+                    // 展开期 inline 形参注册在宿主局部表 (调用点绑定实参副本),
+                    // 宿主参数表查不到时回退局部表, 槽位按局部空间发射。
+                    var inlineFallback = _irMethod.PeekInlineExpansion() != null
+                        ? _irMethod.GetIRLocalVariableById(id) : null;
+                    if (inlineFallback != null)
+                    {
+                        IRLoadVariable irVarInline = new IRLoadVariable(irmt, _irMethod, inlineFallback.index, IRMetaVariableFrom.LocalStatement);
+                        return irVarInline;
+                    }
                     Log.AddIRLog(LID.IRMethodNotFoundVariable, "in argument", _irMethod.id, mv.name);
                 }
                 IRLoadVariable irVar = new IRLoadVariable(irmt, _irMethod, irmv.index, IRMetaVariableFrom.Argument);
@@ -446,6 +456,18 @@ namespace SimpleLanguage.IR
             if (mv.variableFrom == MetaVariable.EVariableFrom.Argument )
             {
                 irmv = _irMethod.GetIRArgumentById(mv.GetHashCode());
+                if (irmv == null)
+                {
+                    // ── inline 展开段形参回退 ── (与 Load 侧对称)
+                    // 展开期 inline 形参注册在宿主局部表, 参数表查不到时回退局部表发射 StoreLocal。
+                    var inlineFallback = _irMethod.PeekInlineExpansion() != null
+                        ? _irMethod.GetIRLocalVariableById(mv.GetHashCode()) : null;
+                    if (inlineFallback != null)
+                    {
+                        IRStoreVariable irsvInline = new IRStoreVariable(irmt, _irMethod, inlineFallback.index, IRMetaVariableFrom.LocalStatement);
+                        return irsvInline;
+                    }
+                }
                 IRStoreVariable irsv = new IRStoreVariable(irmt,_irMethod, irmv.index, IRMetaVariableFrom.Argument);
                 return irsv;
             }

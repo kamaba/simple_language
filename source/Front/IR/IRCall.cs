@@ -128,6 +128,20 @@ namespace SimpleLanguage.IR
             }
             MetaFunction mf = mfc.GetTemplateMemberFunction();
             MetaMemberFunction mmf = mf as MetaMemberFunction;
+
+            // ── inline 方法调用展开 (M1b §5.5(b)) ──
+            // 语义层按普通函数规则 (上方实参 IR 已照常发射), IR 层把 Call 替换为
+            // 被调函数体原位展开段, 栈效果与 Call 指令严格等价:
+            // 弹 (isStatic?0:1)+paramCount 槽, 非 void 压回结果值。
+            // M4 (-O 自动 inline): 无宿主函数 (字段初始化器等 CreateExpress(null,...) 场景)
+            // 无法展开 (槽注册/ret 改写依赖宿主 IRMethod) —— 显式 inline 已被语义层 21458
+            // 前置拦截, 自动 inline 该场景静默回退正常 Call (不产生用户可见错误)
+            if (mmf != null && mmf.isInline && m_IRMethod != null)
+            {
+                if (ParseInlineMethodBodyReplacement(mfc, mmf))
+                    return;
+                // 自动 inline 环守卫命中 (间接递归 A->B->A): 静默回退正常 Call
+            }
             
             //MetaMemberFunctionCSharp mmfcsharp = mf as MetaMemberFunctionCSharp;
             //if (mmfcsharp != null)
@@ -366,6 +380,190 @@ namespace SimpleLanguage.IR
                 Log.AddIRLog(LID.IRCallIssue, mfc.token, "aaaa");
             }
         }
+
+        /// <summary>
+        /// inline 方法调用展开 (M1b §5.5(b)): 实参 IR 已由 Parse 循环照常发射,
+        /// 此处把 Call 替换为被调函数体的原位展开段。发射序列:
+        ///   [实参逆序 StoreLocal 形参槽][this StoreLocal][result 初始化]
+        ///   [函数体重放][段尾锚][非 void: LoadLocal 结果槽]
+        /// 栈效果: 弹 (isStatic?0:1)+paramCount 槽, 非 void 压回结果值 — 与 CallStatic 严格等价。
+        /// 形参/this/result/体内变量全部注册进宿主局部表 (每次展开独立槽位);
+        /// 体内 ret 改写 (IRReturnStatements) 与形参 Argument 回退 (IRVariable)
+        /// 都以 IRMethod 展开栈顶上下文为准。
+        /// 返回 false = 调用方应回退正常 Call (M4 自动 inline 静默回退路径)。
+        /// </summary>
+        private bool ParseInlineMethodBodyReplacement(MetaMethodCall mfc, MetaMemberFunction mmf)
+        {
+            // 环守卫: 间接递归 A->B->A 会无限展开 (与自引用同一违禁, LID 21452)
+            // M4: 显式 inline 报错 (保持原行为); 自动 inline 静默回退正常 Call
+            if (m_IRMethod.IsInInlineExpansion(mmf))
+            {
+                if (mmf.isInlineExplicit)
+                {
+                    Log.AddIRLog(LID.MetaCoreInlineLambdaBodyForbiddenSelfReference, mmf.token,
+                        "inline 方法循环展开: " + mmf.functionAllName);
+                    return true;
+                }
+                return false;
+            }
+
+            // 1. 形参槽注册 (宿主局部表): 体内读形参经 Argument 回退查到这里的槽
+            var paramSlots = new List<IRMetaVariable>();
+            var plist = mmf.metaMemberParamCollection.metaDefineParamList;
+            for (int j = 0; j < plist.Count; j++)
+            {
+                var tmv = plist[j]?.metaVariable;
+                if (tmv == null) continue;
+                var slot = new IRMetaVariable(tmv, m_IRMethod.methodLocalVariableList.Count);
+                m_IRMethod.methodLocalVariableList.Add(slot);
+                paramSlots.Add(slot);
+            }
+            // this 槽 (实例方法): thisMetaVariable 是 EVariableFrom.Argument, 同样走回退
+            IRMetaVariable thisSlot = null;
+            if (!mmf.isStatic && mmf.thisMetaVariable != null)
+            {
+                thisSlot = new IRMetaVariable(mmf.thisMetaVariable, m_IRMethod.methodLocalVariableList.Count);
+                m_IRMethod.methodLocalVariableList.Add(thisSlot);
+            }
+
+            // 2. 实参绑定 (逆序 StoreLocal): eval 栈顶是最后实参先出栈;
+            //    实例方法 receiver 在栈底, 最后绑定。形参个数以实参为准 (语义层保证一致)
+            int bindCount = Math.Min(paramCount, paramSlots.Count);
+            for (int j = bindCount - 1; j >= 0; j--)
+            {
+                IRStoreVariable storeArg = new IRStoreVariable(null, m_IRMethod,
+                    paramSlots[j].index, IRMetaVariableFrom.LocalStatement);
+                AddIRRangeData(storeArg.IRDataList);
+            }
+            if (thisSlot != null)
+            {
+                IRStoreVariable storeThis = new IRStoreVariable(null, m_IRMethod,
+                    thisSlot.index, IRMetaVariableFrom.LocalStatement);
+                AddIRRangeData(storeThis.IRDataList);
+            }
+
+            // 3. 体预注册 (幂等: GetCalcMetaVariableList 每次新建列表纯收集, 含 result 变量)
+            var calcVars = mmf.GetCalcMetaVariableList();
+            for (int i = 0; i < calcVars.Count; i++)
+            {
+                if (calcVars[i] == null) continue;
+                m_IRMethod.methodLocalVariableList.Add(
+                    new IRMetaVariable(calcVars[i], m_IRMethod.methodLocalVariableList.Count));
+            }
+
+            // 4. result 初始化: 函数含 result 变量时先 NewObject, 体内才可读写
+            //    (蓝本 IRMethod.GenerateResultPrologue)
+            if (mmf.hasResultVariable)
+            {
+                ParseInlineResultPrologue(mmf);
+            }
+
+            // 5. 结果槽合成 (非 void): 不能复用 returnMetaVariable (EVariableFrom.None, 不进任何表)
+            IRMetaVariable resultSlot = null;
+            var retMt = mmf.returnMetaVariable?.GetFinalMetaType();
+            bool isVoidReturn = retMt == null || retMt.metaClass == CoreMetaClassManager.voidMetaClass;
+            if (!isVoidReturn)
+            {
+                var slotMv = new MetaVariable(
+                    m_IRMethod.id + ".inline." + (mmf.name ?? "func") + ".result",
+                    MetaVariable.EVariableFrom.LocalStatement, null, mmf.ownerMetaClass, retMt);
+                resultSlot = new IRMetaVariable(slotMv, m_IRMethod.methodLocalVariableList.Count);
+                m_IRMethod.methodLocalVariableList.Add(resultSlot);
+            }
+
+            // 6. 压入展开上下文并重放函数体: 体内 ret 改写/形参回退以栈顶上下文为准
+            IRNop endAnchor = new IRNop(m_IRMethod, mmf.token, "inline end: " + mmf.name);
+            var ctx = new IRMethod.InlineExpansionContext
+            {
+                endAnchorData = endAnchor.data,
+                resultSlot = resultSlot,
+                inlineMmf = mmf,
+            };
+            m_IRMethod.PushInlineExpansion(ctx);
+            try
+            {
+                IRBlockStatements irbs = new IRBlockStatements(m_IRMethod);
+                irbs.ParseAllIRStatements(mmf.metaBlockStatements);
+                foreach (var irst in irbs.irStatements)
+                {
+                    if (irst == null) continue;
+                    AddIRRangeData(irst.IRDataList);
+                }
+            }
+            finally
+            {
+                m_IRMethod.PopInlineExpansion();
+            }
+
+            // 6.5 result 兜底 epilogue (蓝本 IRMethod.GenerateResultEpilogue):
+            //     函数非所有路径显式 ret 时, 自然结束路径需 [Load result][StoreLocal 结果槽]
+            //     (StoreReturn 改写为写展开结果槽); 显式 ret 路径已 BrLabel 跳过此段直达锚,
+            //     两条路径在锚点汇合时结果槽均持有 result 对象。
+            if (resultSlot != null && mmf.hasResultVariable && !mmf.isBlockAlwaysReturn)
+            {
+                var rmv = mmf.resultVariable;
+                var mt = rmv.GetFinalMetaType();
+                var irmc = IRManager.GetIRMetaClassByMetaType(mt);
+                if (irmc != null)
+                {
+                    IRLoadVariable loadResult = IRLoadVariable.CreateLoadVariable(new IRMetaType(irmc), irmc, m_IRMethod, rmv);
+                    AddIRRangeData(loadResult.IRDataList);
+
+                    IRStoreVariable storeResult = new IRStoreVariable(null, m_IRMethod,
+                        resultSlot.index, IRMetaVariableFrom.LocalStatement);
+                    AddIRRangeData(storeResult.IRDataList);
+                }
+            }
+
+            // 7. 段尾锚: 改写后的 ret BrLabel 全部跳到这里;
+            //    IRMethod.Parse 末尾回填循环会把锚改写为 Label 指令
+            AddIRData(endAnchor.data);
+
+            // 8. 非 void: 压回结果值, 供调用方消费 (与 Call 后栈顶为返回值一致)
+            if (resultSlot != null)
+            {
+                IRLoadVariable loadResult = new IRLoadVariable(null, m_IRMethod,
+                    resultSlot.index, IRMetaVariableFrom.LocalStatement);
+                AddIRRangeData(loadResult.IRDataList);
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// inline 展开段的 result 变量初始化 (蓝本 IRMethod.GenerateResultPrologue):
+        ///   [NewObject/NewTemplateObject][StoreLocal result]
+        /// result 变量经体预注册进入宿主局部表, Store 走工厂方法按 LocalStatement 路由。
+        /// </summary>
+        private void ParseInlineResultPrologue(MetaMemberFunction mmf)
+        {
+            var rmv = mmf.resultVariable;
+            var mt = rmv.GetFinalMetaType();
+            if (mt == null) return;
+
+            var owirmc = IRManager.GetIRMetaClassByMetaOwner(mmf.ownerMetaBase);
+            IRNew irNew;
+            if (mt.GetTemplateMetaClass() == CoreMetaClassManager.resultTMetaClass)
+            {
+                var irmt = IRMetaType.CreateIRMetaTypeByGenTemplateMetaTypeList(mt, owirmc);
+                irNew = new IRNew(m_IRMethod, irmt);
+            }
+            else
+            {
+                var irmc = IRManager.GetIRMetaClassByMetaType(mt);
+                if (irmc == null) return;
+                irNew = new IRNew(m_IRMethod, irmc);
+            }
+            AddIRRangeData(irNew.IRDataList);
+
+            var storeIrmc = IRManager.GetIRMetaClassByMetaType(mt);
+            var storeIrmt = storeIrmc != null ? new IRMetaType(storeIrmc) : null;
+            IRStoreVariable storeResult = IRStoreVariable.CreateIRStoreVariable(storeIrmt, storeIrmc, m_IRMethod, rmv);
+            if (storeResult != null)
+            {
+                AddIRRangeData(storeResult.IRDataList);
+            }
+        }
+
         public override string ToIRString()
         {
             return base.ToIRString();

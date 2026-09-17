@@ -239,6 +239,11 @@ namespace SimpleLanguage.Core
         public bool isGet => m_IsGet;
         public bool isSet => m_IsSet;
         public bool isFinal => m_IsFinal;
+        // M4 (-O 自动 inline): isInline 覆盖两个来源 (显式 inline 修饰符 + 优化等级自动标记),
+        // 消费点 (IRCall 展开 / MetaCallNode 21458 判定) 不区分来源
+        public bool isInline => m_IsInline || m_IsAutoInline;
+        // 仅显式 inline (带修饰符), IRCall 循环展开守卫用它区分报错与静默回退
+        public bool isInlineExplicit => m_IsInline;
         public bool isThrows => m_IsThrows;
         public virtual bool isStatic => m_IsStatic;
         public bool isCanRewrite => m_IsCanRewrite;
@@ -382,6 +387,10 @@ namespace SimpleLanguage.Core
         protected bool m_IsSet = false;
         protected bool m_IsStatic = false;
         protected bool m_IsFinal = false;
+        protected bool m_IsInline = false;
+        // M4 (-O 自动 inline): 优化等级自动标记的 inline (与显式 m_IsInline 分开记录,
+        // 供 isInlineExplicit 区分 "显式 inline 报错" 与 "自动 inline 静默回退" 两种消费行为)
+        protected bool m_IsAutoInline = false;
         protected bool m_IsThrows = false;
         protected bool m_IsCanRewrite = false;
         protected bool m_IsClosureFunction = false;
@@ -476,6 +485,10 @@ namespace SimpleLanguage.Core
             m_IsGet = fmmf.getToken != null;
             m_IsSet = fmmf.setToken != null;
             m_IsFinal = fmmf.finalToken != null;
+            m_IsInline = fmmf.inlineToken != null;
+            // 实例 inline 隐含 final: inline 调用在 IR 层按静态绑定展开, 若允许被
+            // override 会破坏多态 (复用 MetaClass 现有 final 不允许被 override 检查)
+            if (m_IsInline && !m_IsStatic) m_IsFinal = true;
             m_IsThrows = fmmf.throwsToken != null;
             m_IsAbstract = fmmf.abstractToken != null;
             if ( fmmf.overrideToken != null )
@@ -893,6 +906,12 @@ namespace SimpleLanguage.Core
             if (m_IsAbstract)
             {
                 return;
+            }
+            // M1b (INLINE_LAMBDA_DESIGN §2.5/§4.1): inline 方法定义点检查
+            // (规模上限 + 违禁构造; 放在语句解析前, 只依赖 FileMetaSyntax 树)
+            if (m_IsInline)
+            {
+                ScanInlineMethodBody();
             }
             bool nohasContent = false;
             if( this.m_FileMetaMemberFunction != null )
@@ -1408,6 +1427,13 @@ namespace SimpleLanguage.Core
                         beforeStatements = metaClosureStatements;
                     }
                     break;
+                case FileMetaInlineLambdaSyntax fmils: //内联lambda定义: var name = (参数) => 表达式
+                    {
+                        var metaInlineLambdaStatements = new MetaInlineLambdaDefineStatements(currentBlockStatements, fmils);
+                        beforeStatements.SetNextStatements(metaInlineLambdaStatements);
+                        beforeStatements = metaInlineLambdaStatements;
+                    }
+                    break;
                 default:
                     Log.AddMetaCoreLog(LID.MetaCoreMemberFunctionWaningMetaMemberFunction, "Waning 还有没有解析的语句!! MetaMemberFunction 314");
                     break;
@@ -1536,5 +1562,518 @@ namespace SimpleLanguage.Core
         {
             return base.GetHashCode();
         }
+
+        #region M1b: inline 方法定义点检查 (§2.5 规模上限 + §4.1 违禁构造)
+
+        // inline 方法在调用点就地展开, 定义点静态检查两类问题 (设计文档 INLINE_LAMBDA_DESIGN.md):
+        //   (1) §2.5 规模上限: 方法体顶层语句 ≤ 10 条 (LID 21453)
+        //   (2) §4.1 禁止构造四类: Coroutine / ControlFlow / ExceptionFrame / SelfReference
+        //       (LID 21449-21452 与 M1 内联lambda 共用; 差异: 方法自身 ret 为合法语义, 见 §2.4)
+        // 扫描层级为 FileMetaSyntax 语句层 (M1 蓝本在 Node 层), 表达式下探到 Term/CallLink 层;
+        // 与 M1 蓝本的形态差异: ret 合法、循环体内 break/continue 合法 (loopDepth 深度计数,
+        // switch 与循环共用计数: case 内 break 跳出 switch 自身, 同样合法)。
+        // 模板拷贝防重复: MetaGenTemplateClass 拷贝前 ClearFileMetaMemberFunction, 扫描只跑源函数一次。
+
+        /// <summary>inline 方法违禁构造类别 (对应 LID 21449-21452)</summary>
+        private enum EInlineMethodForbiddenKind
+        {
+            None = 0,
+            Coroutine,          // spawn / isolate / await / yield (帧依赖)
+            ControlFlow,        // break / continue / goto 逃逸方法体内自身循环
+            ExceptionFrame,     // try / try? / try! / catch / finally / defer / errdefer / checked / unchecked / 闭包与内联lambda 定义 (帧依赖)
+            SelfReference,      // 自引用递归 (内联无限展开)
+        }
+
+        /// <summary>M4 (-O 自动 inline): 优化等级自动标记 (由自动标记步骤在 MetaCore 末尾调用)。
+        /// 实例 inline 隐含 final, 与显式 inline 构造语义一致: inline 调用按静态绑定展开,
+        /// 允许 override 会破坏多态</summary>
+        public void SetAutoInline()
+        {
+            m_IsAutoInline = true;
+            if (!m_IsStatic) m_IsFinal = true;
+        }
+
+        /// <summary>M4 (-O 自动 inline): 静默预检 —— 方法体是否满足自动 inline 条件。
+        /// (顶层语句条数 ≤ maxStatementCount 且不命中违禁扫描; 复用 ScanInlineMethodBody
+        /// 的违禁链但旁路报错, 首个命中即返回 false, 调用方回退为 "不标记")</summary>
+        public bool CanAutoInlineBody(int maxStatementCount)
+        {
+            var fmmf = m_FileMetaMemberFunction;
+            if (fmmf == null)
+                return false;
+            if (fmmf.fileMetaBlockSyntax == null)
+                return false;
+            var topList = fmmf.fileMetaBlockSyntax.fileMetaSyntax;
+            if (topList == null)
+                return false;
+            if (topList.Count > maxStatementCount)
+                return false;
+
+            // 形参名集合: 与 ScanInlineMethodBody 相同的自引用遮蔽判定
+            List<string> paramNameList = new List<string>();
+            var plist = fmmf.metaParamtersList;
+            if (plist != null)
+            {
+                for (int i = 0; i < plist.Count; i++)
+                {
+                    string pname = plist[i]?.name;
+                    if (!string.IsNullOrEmpty(pname))
+                        paramNameList.Add(pname);
+                }
+            }
+
+            bool oldSilent = s_SilentScanMode;
+            s_SilentScanMode = true;
+            try
+            {
+                for (int i = 0; i < topList.Count; i++)
+                {
+                    if (ScanInlineMethodStatement(topList[i], 0, paramNameList))
+                        return false;
+                }
+                return true;
+            }
+            finally
+            {
+                s_SilentScanMode = oldSilent;
+            }
+        }
+
+        /// <summary>inline 方法定义点检查入口 (ParseStatements 中调用)</summary>
+        private void ScanInlineMethodBody()
+        {
+            var fmmf = m_FileMetaMemberFunction;
+            if (fmmf == null)
+                return;
+
+            // (0) inline 与 throws 标签互斥 (M2+ §2.4): inline 在调用点就地展开体, 无独立
+            // 方法帧; throws 声明的异常传播依赖被调方法的调用帧边界, 体替换后异常帧
+            // 语义无法等价发射, 两者语义冲突, 组合禁止
+            if (fmmf.throwsToken != null)
+            {
+                Log.AddMetaCoreLog(LID.MetaCoreInlineMethodThrowsConflict, fmmf.throwsToken,
+                    "Error inline 方法 [" + this.functionAllName + "] 不允许 throws 标签 : "
+                    + "inline 是调用点体替换, 与 throws 异常帧语义冲突");
+            }
+
+            if (fmmf.fileMetaBlockSyntax == null)
+                return;
+            var topList = fmmf.fileMetaBlockSyntax.fileMetaSyntax;
+            if (topList == null)
+                return;
+
+            // (1) §2.5: 顶层语句 ≤ 10 条 (嵌套子语句不计数)
+            if (topList.Count > 10)
+            {
+                Token posToken = fmmf.inlineToken != null ? fmmf.inlineToken : fmmf.token;
+                Log.AddMetaCoreLog(LID.MetaCoreInlineMethodBodyForbiddenScale, posToken,
+                    "Error inline 方法 [" + this.functionAllName + "] 体不得超过 10 条语句, 当前 " + topList.Count
+                    + " 条 : inline 方法在调用点就地展开, 方法体过大会使调用点代码膨胀");
+            }
+
+            // 形参名集合: 自引用遮蔽判定 (形参名与方法名同名时, 裸名调用是形参而非递归)
+            List<string> paramNameList = new List<string>();
+            var plist = fmmf.metaParamtersList;
+            if (plist != null)
+            {
+                for (int i = 0; i < plist.Count; i++)
+                {
+                    string pname = plist[i]?.name;
+                    if (!string.IsNullOrEmpty(pname))
+                        paramNameList.Add(pname);
+                }
+            }
+
+            // (2) §4.1 违禁扫描 (语句级, 首个命中即停)
+            for (int i = 0; i < topList.Count; i++)
+            {
+                if (ScanInlineMethodStatement(topList[i], 0, paramNameList))
+                    return;
+            }
+        }
+
+        /// <summary>递归扫描语句 (loopDepth = 可 break 上下文深度; 返回 true = 已命中并报错)</summary>
+        private bool ScanInlineMethodStatement(FileMetaSyntax st, int loopDepth, List<string> paramNameList)
+        {
+            if (st == null)
+                return false;
+
+            // 嵌套闭包/内联lambda 定义: 捕获帧依赖定义点函数帧 (AllocClosureContext +
+            // 参数型捕获初始化在展开段无法等价发射, 且捕获语义绑定定义点形参而非调用点实参), 禁止
+            if (st is FileMetaDefineClosureSyntax || st is FileMetaInlineLambdaSyntax)
+            {
+                return HitInlineMethodForbidden(EInlineMethodForbiddenKind.ExceptionFrame, st.token, "闭包/内联lambda 定义");
+            }
+
+            // 异常/资源帧: try/catch/finally 与 checked/unchecked 均落此类, 整树禁止
+            if (st is FileMetaKeyTrySyntax)
+            {
+                return HitInlineMethodForbidden(EInlineMethodForbiddenKind.ExceptionFrame, st.token, "try/checked 语句");
+            }
+            // goto/label: 控制流逃逸
+            if (st is FileMetaKeyGotoLabelSyntax)
+            {
+                return HitInlineMethodForbidden(EInlineMethodForbiddenKind.ControlFlow, st.token, "goto 语句");
+            }
+            // 单关键字语句: break/continue/next 看循环深度; defer/errdefer/checked/unchecked 报异常帧; else 递归块
+            if (st is FileMetaKeyOnlySyntax kos)
+            {
+                var ttype = kos.token?.type;
+                if (ttype == ETokenType.Break || ttype == ETokenType.Continue || ttype == ETokenType.Next)
+                {
+                    if (loopDepth > 0)
+                        return false;
+                    return HitInlineMethodForbidden(EInlineMethodForbiddenKind.ControlFlow, kos.token,
+                        "关键字 " + kos.token.lexeme?.ToString());
+                }
+                if (ttype == ETokenType.Defer || ttype == ETokenType.ErrDefer
+                    || ttype == ETokenType.Checked || ttype == ETokenType.Unchecked)
+                {
+                    return HitInlineMethodForbidden(EInlineMethodForbiddenKind.ExceptionFrame, kos.token,
+                        "关键字 " + kos.token.lexeme?.ToString());
+                }
+                if (ttype == ETokenType.Else)
+                {
+                    return ScanInlineMethodStatement(kos.executeBlockSyntax, loopDepth, paramNameList);
+                }
+                return false;
+            }
+            // if / elif / while / dowhile 条件块 (token 区分: 循环上下文 +1)
+            if (st is FileMetaConditionExpressSyntax ces)
+            {
+                int d = loopDepth;
+                if (ces.token?.type == ETokenType.While || ces.token?.type == ETokenType.DoWhile)
+                    d++;
+                if (ScanInlineMethodTerm(ces.conditionExpress, paramNameList))
+                    return true;
+                return ScanInlineMethodStatement(ces.executeBlockSyntax, d, paramNameList);
+            }
+            // for / for-in: 循环上下文 +1 (声明/条件/步进/体都要扫)
+            if (st is FileMetaKeyForSyntax kfs)
+            {
+                if (ScanInlineMethodStatement(kfs.fileMetaClassDefine, loopDepth + 1, paramNameList))
+                    return true;
+                if (ScanInlineMethodTerm(kfs.conditionExpress, paramNameList))
+                    return true;
+                var soa = kfs.stepFileMetaOpAssignSyntax;
+                if (soa != null)
+                {
+                    if (ScanInlineMethodCallLink(soa.variableRef, paramNameList))
+                        return true;
+                    if (ScanInlineMethodTerm(soa.express, paramNameList))
+                        return true;
+                }
+                return ScanInlineMethodStatement(kfs.executeBlockSyntax, loopDepth + 1, paramNameList);
+            }
+            // if 分支链 (if/elif 走 ConditionExpressSyntax 递归, else 走 KeyOnlySyntax 递归)
+            if (st is FileMetaKeyIfSyntax kis)
+            {
+                return ScanInlineMethodIfBranches(kis.ifExpressSyntax, kis.elseIfExpressSyntax,
+                    kis.elseExpressSyntax, loopDepth, paramNameList);
+            }
+            if (st is FileMetaKeyStaticIfSyntax ksis)
+            {
+                return ScanInlineMethodIfBranches(ksis.ifExpressSyntax, ksis.elseIfExpressSyntax,
+                    ksis.elseExpressSyntax, loopDepth, paramNameList);
+            }
+            // switch: 纳入可 break 上下文 (case 内 break 跳出 switch 自身, 合法)
+            if (st is FileMetaKeySwitchSyntax kss)
+            {
+                if (ScanInlineMethodCallLink(kss.fileMetaVariableRef, paramNameList))
+                    return true;
+                if (ScanInlineMethodTerm(kss.sourceExpress, paramNameList))
+                    return true;
+                var caseList = kss.fileMetaKeyCaseSyntaxList;
+                if (caseList != null)
+                {
+                    for (int i = 0; i < caseList.Count; i++)
+                    {
+                        var kcs = caseList[i];
+                        if (kcs == null)
+                            continue;
+                        if (ScanInlineMethodCallLink(kcs.defineClassCallLink, paramNameList))
+                            return true;
+                        if (ScanInlineMethodStatement(kcs.executeBlockSyntax, loopDepth + 1, paramNameList))
+                            return true;
+                    }
+                }
+                return ScanInlineMethodStatement(kss.defaultExecuteBlockSyntax, loopDepth + 1, paramNameList);
+            }
+            // 方法自身 ret 与 throw 为合法语义 (§2.4: ret → 调用点结果表达式), 只递归其表达式
+            if (st is FileMetaKeyReturnSyntax krs)
+            {
+                return ScanInlineMethodTerm(krs.returnExpress, paramNameList);
+            }
+            if (st is FileMetaKeyThrowSyntax kts)
+            {
+                return ScanInlineMethodTerm(kts.throwExpress, paramNameList);
+            }
+            // 调用语句: 两种形态 (变量引用链 / 表达式)
+            if (st is FileMetaCallSyntax cs)
+            {
+                if (ScanInlineMethodCallLink(cs.variableRef, paramNameList))
+                    return true;
+                return ScanInlineMethodTerm(cs.expressTerm, paramNameList);
+            }
+            // 变量定义: 只递归右值表达式
+            if (st is FileMetaDefineVariableSyntax dvs)
+            {
+                return ScanInlineMethodTerm(dvs.express, paramNameList);
+            }
+            // 赋值/复合赋值: 左值链 + 右值
+            if (st is FileMetaOpAssignSyntax oas)
+            {
+                if (ScanInlineMethodCallLink(oas.variableRef, paramNameList))
+                    return true;
+                return ScanInlineMethodTerm(oas.express, paramNameList);
+            }
+            // 默认: 递归基类子语句列表 (FileMetaBlockSyntax 与未来新增复合语句的安全网)
+            return ScanInlineMethodStatementList(st.fileMetaSyntax, loopDepth, paramNameList);
+        }
+
+        /// <summary>if/elif/else 分支链统一递归 (KeyIfSyntax 与 KeyStaticIfSyntax 结构同名)</summary>
+        private bool ScanInlineMethodIfBranches(FileMetaConditionExpressSyntax ifExpress,
+            List<FileMetaConditionExpressSyntax> elseIfList, FileMetaKeyOnlySyntax elseExpress,
+            int loopDepth, List<string> paramNameList)
+        {
+            if (ScanInlineMethodStatement(ifExpress, loopDepth, paramNameList))
+                return true;
+            if (elseIfList != null)
+            {
+                for (int i = 0; i < elseIfList.Count; i++)
+                {
+                    if (ScanInlineMethodStatement(elseIfList[i], loopDepth, paramNameList))
+                        return true;
+                }
+            }
+            return ScanInlineMethodStatement(elseExpress, loopDepth, paramNameList);
+        }
+
+        private bool ScanInlineMethodStatementList(List<FileMetaSyntax> stList, int loopDepth, List<string> paramNameList)
+        {
+            if (stList == null)
+                return false;
+            for (int i = 0; i < stList.Count; i++)
+            {
+                if (ScanInlineMethodStatement(stList[i], loopDepth, paramNameList))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 递归扫描表达式 Term 子树 (遍历形态对齐 MetaCallNode.CollectInlineLambdaArgSourceCallNodes,
+        /// 并补上其未覆盖的表达式级 if/match 形态: FileMetaIfSyntaxTerm / FileMetaMatchSyntaxTerm)
+        /// </summary>
+        private bool ScanInlineMethodTerm(FileMetaBaseTerm term, List<string> paramNameList)
+        {
+            if (term == null)
+                return false;
+
+            // 扁平列表层 (TermExpress / ParTerm / BracketTerm 直接值项等)
+            var fmeList = term.fileMetaExpressList;
+            if (fmeList != null)
+            {
+                for (int i = 0; i < fmeList.Count; i++)
+                {
+                    if (ScanInlineMethodTerm(fmeList[i], paramNameList))
+                        return true;
+                }
+            }
+
+            if (term is FileMetaSymbolTerm symt)
+            {
+                // try?/try! 是表达式前缀符号 (异常帧依赖)
+                var stype = symt.symBolType;
+                if (stype == ETokenType.TryQuestion || stype == ETokenType.TryExclamation)
+                {
+                    return HitInlineMethodForbidden(EInlineMethodForbiddenKind.ExceptionFrame,
+                        symt.token, "表达式前缀 " + symt.token.lexeme?.ToString());
+                }
+            }
+            else if (term is FileMetaIfSyntaxTerm ift)
+            {
+                // 表达式级 if: 内嵌完整 KeyIfSyntax (loopDepth 从 0 起, 内部循环自行 +1)
+                if (ScanInlineMethodStatement(ift.ifSyntax, 0, paramNameList))
+                    return true;
+            }
+            else if (term is FileMetaMatchSyntaxTerm mst)
+            {
+                // 表达式级 match/switch: 内嵌完整 KeySwitchSyntax
+                if (ScanInlineMethodStatement(mst.switchSyntax, 0, paramNameList))
+                    return true;
+            }
+            else if (term is FileMetaThreeItemSyntaxTerm tis)
+            {
+                // 三元运算符三个子树
+                if (ScanInlineMethodTerm(tis.conditionTerm, paramNameList))
+                    return true;
+                if (ScanInlineMethodTerm(tis.return1Term, paramNameList))
+                    return true;
+                if (ScanInlineMethodTerm(tis.return2Term, paramNameList))
+                    return true;
+            }
+            else if (term is FileMetaEmptyRetSyntaxTerm ert)
+            {
+                // 空合并运算符两个子树
+                if (ScanInlineMethodTerm(ert.return1Term, paramNameList))
+                    return true;
+                if (ScanInlineMethodTerm(ert.return2Term, paramNameList))
+                    return true;
+            }
+            else if (term is FileMetaAsOrIsTerm ait)
+            {
+                // as/is 左值 (调用链, 无实参括号层)
+                if (ScanInlineMethodCallLink(ait.variableCallLink, paramNameList))
+                    return true;
+            }
+            else if (term is FileMetaBraceTerm bt)
+            {
+                // 花括号初始化器: 裸引用项 + 赋值项 (左值链 + 右值)
+                var cll = bt.fileMetaCallLinkList;
+                if (cll != null)
+                {
+                    for (int i = 0; i < cll.Count; i++)
+                    {
+                        if (ScanInlineMethodCallLink(cll[i], paramNameList))
+                            return true;
+                    }
+                }
+                var asl = bt.fileMetaAssignSyntaxList;
+                if (asl != null)
+                {
+                    for (int i = 0; i < asl.Count; i++)
+                    {
+                        if (asl[i] is FileMetaDefineVariableSyntax fdvs)
+                        {
+                            if (ScanInlineMethodTerm(fdvs.express, paramNameList))
+                                return true;
+                        }
+                        else if (asl[i] is FileMetaOpAssignSyntax foas)
+                        {
+                            if (ScanInlineMethodCallLink(foas.variableRef, paramNameList))
+                                return true;
+                            if (ScanInlineMethodTerm(foas.express, paramNameList))
+                                return true;
+                        }
+                    }
+                }
+            }
+            else if (term is FileMetaCallTerm fct)
+            {
+                // 调用链 term: 递归链中每一级的实参与修饰
+                if (ScanInlineMethodCallLink(fct.callLink, paramNameList))
+                    return true;
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// 扫描调用链: 每级 CallNode 的实参/下标/初始化器子表达式 + 标识符形态检查。
+        /// 形态检查覆盖双形态 (M1 蓝本同源): 原始链 (Isolate.run) 与脱糖产物
+        /// (Coroutine.spawnClosureN/awaitTask/yieldNow, SystemIsolateRun/Spawn)。
+        /// </summary>
+        private bool ScanInlineMethodCallLink(FileMetaCallLink link, List<string> paramNameList)
+        {
+            if (link == null)
+                return false;
+            var cnl = link.callNodeList;
+            if (cnl == null)
+                return false;
+
+            for (int j = 0; j < cnl.Count; j++)
+            {
+                var fcn = cnl[j];
+                if (fcn == null)
+                    continue;
+
+                string cname = fcn.name;
+                if (!string.IsNullOrEmpty(cname))
+                {
+                    string ownerName = j > 0 ? cnl[j - 1].name : null;
+                    if (ownerName == "Isolate"
+                        && (cname == "run" || cname == "spawn" || cname == "spawnInstance"))
+                    {
+                        return HitInlineMethodForbidden(EInlineMethodForbiddenKind.Coroutine, fcn.token,
+                            "Isolate." + cname);
+                    }
+                    if (ownerName == "Coroutine"
+                        && MetaInlineLambdaDefineStatements.IsCoroutineDesugarMethod(cname))
+                    {
+                        return HitInlineMethodForbidden(EInlineMethodForbiddenKind.Coroutine, fcn.token,
+                            "Coroutine." + cname + " (spawn/await/yield 脱糖产物)");
+                    }
+                    if (cname == "SystemIsolateRun" || cname == "SystemIsolateSpawn")
+                    {
+                        return HitInlineMethodForbidden(EInlineMethodForbiddenKind.Coroutine, fcn.token,
+                            cname + " (Isolate 脱糖产物)");
+                    }
+                    // 自引用: 链中任意位置的自身名调用 (覆盖 foo() / this.foo() / MyClass.foo() 形态;
+                    // 语义上调用同名 inline 方法即无限展开, 保守全查)
+                    if (cname == m_Name && fcn.isCallFunction && !paramNameList.Contains(m_Name))
+                    {
+                        return HitInlineMethodForbidden(EInlineMethodForbiddenKind.SelfReference, fcn.token,
+                            "自引用 '" + m_Name + "'");
+                    }
+                }
+
+                // 实参 (ParTerm 是 term, 递归其列表)
+                if (ScanInlineMethodTerm(fcn.fileMetaParTerm, paramNameList))
+                    return true;
+                // 下标修饰 (BracketTerm 是 term, 下标表达式在其列表)
+                var brl = fcn.fileMetaBracketTermList;
+                if (brl != null)
+                {
+                    for (int k = 0; k < brl.Count; k++)
+                    {
+                        if (ScanInlineMethodTerm(brl[k], paramNameList))
+                            return true;
+                    }
+                }
+                // 花括号初始化器修饰
+                if (ScanInlineMethodTerm(fcn.fileMetaBraceTerm, paramNameList))
+                    return true;
+            }
+            return false;
+        }
+
+        // M4 (-O 自动 inline): 静默预检模式开关。CanAutoInlineBody 复用违禁扫描链时置位,
+        // 命中违禁只返回 true 不报错 —— 自动 inline 的回退语义是 "不标记", 不产生用户可见错误
+        private static bool s_SilentScanMode = false;
+
+        /// <summary>命中违禁构造: 报错并返回 true (LID 21449-21452, 文案模板见设计文档 §4.1 末)</summary>
+        private bool HitInlineMethodForbidden(EInlineMethodForbiddenKind kind, Token token, string hitDesc)
+        {
+            if (s_SilentScanMode)
+                return true;
+            Token posToken = token != null ? token : m_FileMetaMemberFunction?.token;
+            string fname = this.functionAllName;
+            switch (kind)
+            {
+                case EInlineMethodForbiddenKind.Coroutine:
+                    Log.AddMetaCoreLog(LID.MetaCoreInlineLambdaBodyForbiddenCoroutine, posToken,
+                        "Error inline 方法 [" + fname + "] 体不允许 spawn/isolate/await/yield (帧依赖), 命中: "
+                        + hitDesc + " : 请去掉 inline 修饰符");
+                    break;
+                case EInlineMethodForbiddenKind.ControlFlow:
+                    Log.AddMetaCoreLog(LID.MetaCoreInlineLambdaBodyForbiddenControlFlow, posToken,
+                        "Error inline 方法 [" + fname + "] 体不允许控制流逃逸 (break/continue/goto 超出方法体内自身循环), 命中: "
+                        + hitDesc + " : 内联后无方法边界");
+                    break;
+                case EInlineMethodForbiddenKind.ExceptionFrame:
+                    Log.AddMetaCoreLog(LID.MetaCoreInlineLambdaBodyForbiddenExceptionFrame, posToken,
+                        "Error inline 方法 [" + fname + "] 体不允许异常/资源帧构造 (try/try?/try!/catch/finally/defer/checked), 命中: "
+                        + hitDesc + " : 请去掉 inline 修饰符");
+                    break;
+                case EInlineMethodForbiddenKind.SelfReference:
+                    Log.AddMetaCoreLog(LID.MetaCoreInlineLambdaBodyForbiddenSelfReference, posToken,
+                        "Error inline 方法 [" + fname + "] 体不允许自引用或递归 (无限展开), 命中: "
+                        + hitDesc + " : 请去掉 inline 修饰符");
+                    break;
+            }
+            return true;
+        }
+
+        #endregion
     }
 }

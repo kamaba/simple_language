@@ -31,6 +31,7 @@ namespace SimpleLanguage.Core
             DataMember,
             ClosureContext,     // 闭包捕获的宿主作用域变量(存放在 context 数组中)
             ClosureVariable,    // 闭包变量本身(函数对象)
+            InlineLambda,       // 内联 lambda 变量(仅记录参数名+表达式体, 调用点就地展开, 无函数对象)
         }
 
         public const int s_ConstLevel = 100000;
