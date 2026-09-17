@@ -1,196 +1,240 @@
-import Std
+# 最简单的坦克游戏（cmd 回合式）
+#
+# 玩法：
+#   w / s / a / d   上 / 下 / 左 / 右   移动坦克并转向
+#   f               朝当前方向开火（打掉正前方第一个敌人）
+#   q               退出游戏
+# 目标：消灭全部 3 个敌人（E）即获胜。
+# 说明：每回合在命令行重新打印整张地图，输入指令后按回车生效。
 
-
-Buttle extends Behaviour
+TankGame
 {
-    private _init_(){}
+    # ---- 地图尺寸 ----
+    Int32 width = 16
+    Int32 height = 12
 
-    _init_( int __attack, int __speed )
-    {
-        this._attack = __attack
-        this._speed = __speed
-    }
-    _attack = 10
-    _speed = 10
-}
+    # ---- 玩家坦克 ----
+    Int32 px = 8          # 玩家所在列
+    Int32 py = 10         # 玩家所在行
+    Int32 dir = 0         # 朝向：0=上 1=下 2=左 3=右
 
-Tank extends Behaviour
-{
-    level = 0
-    List<Buttle> _buttleList = new()
-    void loadButtle()
-    {
-        int speed = 10
-        int buttleCount = switch(this.level)
-        {
-            case 1..3{
-                speed = 3
-                tr 10
-            }
-            case 3..6{
-                speed = 6
-                tr 20
-            }
-            case 7..10{                
-                speed = 9
-                tr 30
-            }
-            default{
-                tr 0
-            }
-        }
-        Buttle btl = new(100,speed)
-        _buttleList.allFull(btl)
-    }
-}
+    # ---- 敌人（固定 3 个），eAlive 用 1 表示存活、0 表示被消灭 ----
+    Int32[] ex = Array<Int32>.create(3)
+    Int32[] ey = Array<Int32>.create(3)
+    Int32[] eAlive = Array<Int32>.create(3)
 
-public class Map extends Behaviour
-{
-    enum EBlock
-    {
-        None
-        Block,
-        Mask
-    }
-    Color
-    {
-        _init_( float _r, float _g, float _b )
-        {
-            this.r = _r
-            this.g = _g
-            this.b = _b            
-        }
-        r = 0.0f
-        g = 0.0f
-        b = 0.0f
-    }
-    Cell
-    {
-        key = ""
-        x = 0
-        y = 0
-        EBlock eBlock = EBlock.None
-        Color color = new(){ r = 1.0f, g = 1.0f, b = 1.0f }
-    }
-    public List<Cell> _cellList = new()
+    # ---- 障碍物（内部墙，固定 4 个）----
+    Int32[] wx = Array<Int32>.create(4)
+    Int32[] wy = Array<Int32>.create(4)
 
-    string _data = ""
+    # ---- 游戏状态 ----
+    Int32 score = 0
+    bool running = true
 
-    _init_( string _d )
-    {
-        this._data = _d;
-    }
-    parse()
-    {
-        j = Json(this_data)
-        for c1 in j
-        {
-            var k = c1.key
-            var val in c1.value
-            {
-                
-                Color _color = new(val."c".0,val."c".1,val."c".2)
-                Cell cell = new(){ key = k, x = val."x".toInt32(), y = val."y".toInt32(), eBlock = val."b".cast<EBlock>(), color = _color }
-                this._cellList.add(cell)
-            }
-        }
-
-    }
-}
-
-enum ELayout
-{
-    Center = 1
-    Left = 2
-    Right = 3
-    Up = 4
-    Down = 5
-}
-
-UIStart extends UIBehaviour
-{
+    # 构造函数：摆放敌人与障碍
     _init_()
     {
+        ex[0] = 3;  ey[0] = 2;  eAlive[0] = 1
+        ex[1] = 8;  ey[1] = 3;  eAlive[1] = 1
+        ex[2] = 12; ey[2] = 2;  eAlive[2] = 1
 
+        wx[0] = 5;  wy[0] = 5
+        wx[1] = 6;  wy[1] = 5
+        wx[2] = 10; wy[2] = 7
+        wx[3] = 11; wy[3] = 7
     }
 
-    loadUI()
+    # 根据朝向返回坦克的显示字符
+    string tankDirChar(Int32 d)
     {
-        Button okBtn = new("Start" )
-        okBtn.setLayout( ELayout.Center )
-        okBtn.onClick.AddListener( okCallBack )
-        this.addChild( okBtn )
-
-        
-        Button resetBtn = new("Reset" )
-        resetBtn.setLayout( ELayout.Center )
-        resetBtn.onClick.AddListener( resetCallBack )
-        this.addChild( resetBtn )
-
+        if d == 0 { ret "^" }
+        elif d == 1 { ret "v" }
+        elif d == 2 { ret "<" }
+        else { ret ">" }
     }
-    okCallBack()
-    {
-        Log.Info("okCallBack");
 
-        GameLogic.instance.loadLevel(1)
-    }
-    resetCallBack()
+    # 判断 (x,y) 是否是墙（边界或障碍）
+    bool isWall(Int32 x, Int32 y)
     {
-        Log.Info("resetCallBack");
-    }
-    showUI()
-    {
-        setActive( true )
-    }
-}
-UIMain extends UIBehaviour{
-
-    update()
-    {
-        if Input.key( EKey.Up ) 
-        || Input.key( EKey.Down )
-        || Input.key( EKey.Left )
-        || Input.key( EKey.Right )
+        if x <= 0 || x >= width - 1 || y <= 0 || y >= height - 1
         {
-
+            ret true
         }
+        for i = 0, i < 4, i++
+        {
+            if wx[i] == x && wy[i] == y
+            {
+                ret true
+            }
+        }
+        ret false
     }
-}
 
-@instance()
-GameLogic
-{
-    UIStart _uiStart = new();
-    Map _map = null;
-    Tank _tank = null
-    init()
+    # 判断 (x,y) 是否有存活的敌人
+    bool isEnemyAt(Int32 x, Int32 y)
     {
-        showStartUI()
+        for i = 0, i < 3, i++
+        {
+            if eAlive[i] == 1 && ex[i] == x && ey[i] == y
+            {
+                ret true
+            }
+        }
+        ret false
     }
-    showStartUI()
-    {
-        this._uiStart.loadUI()
-        this._uiStart.ShowUI()
-    }
-    loadLevel( short level )
-    {
-        File f = new('level/level_{level}.level')
 
-        string all = f.readAllText()
-
-        this._map = Map(all)
-        this._map.parse()
-
-    }
-    loadTank()
+    # 用空行把旧画面推到屏幕上方（最简单的“清屏”）
+    void clearScreen()
     {
-        this._tank = new("tank")
-        this._tank.level = 12
-        this._hp = 100
-        this.loadButtle();
+        for i = 0, i < 30, i++
+        {
+            SystemPrintln("")
+        }
+        ret
     }
-    static mainLoigc()
+
+    # 绘制整张地图 + 状态栏
+    void draw()
     {
-        instance.init();
+        this.clearScreen()
+        SystemPrintln("===== 最简单的坦克游戏 =====   分数:" + SystemConvertString(score))
+        for y = 0, y < height, y++
+        {
+            string line = ""
+            for x = 0, x < width, x++
+            {
+                if x == px && y == py
+                {
+                    line = line + this.tankDirChar(dir)
+                }
+                elif this.isEnemyAt(x, y)
+                {
+                    line = line + "E"
+                }
+                elif this.isWall(x, y)
+                {
+                    line = line + "#"
+                }
+                else
+                {
+                    line = line + "."
+                }
+            }
+            SystemPrintln(line)
+        }
+        SystemPrintln("")
+        SystemPrintln("w/a/s/d 移动    f 开火    q 退出")
+        ret
+    }
+
+    # 尝试移动到 (nx,ny)，并设定新朝向
+    void tryMove(Int32 nx, Int32 ny, Int32 newDir)
+    {
+        dir = newDir
+        if this.isWall(nx, ny)
+        {
+            ret
+        }
+        if this.isEnemyAt(nx, ny)
+        {
+            # 直接碾过敌人并将其消灭
+            for i = 0, i < 3, i++
+            {
+                if eAlive[i] == 1 && ex[i] == nx && ey[i] == ny
+                {
+                    eAlive[i] = 0
+                    score = score + 1
+                }
+            }
+            px = nx; py = ny
+            ret
+        }
+        px = nx; py = ny
+        ret
+    }
+
+    # 朝当前方向发射：沿直线寻找第一个墙或敌人
+    void fire()
+    {
+        Int32 cx = px
+        Int32 cy = py
+        if dir == 0 { cy = cy - 1 }
+        elif dir == 1 { cy = cy + 1 }
+        elif dir == 2 { cx = cx - 1 }
+        else { cx = cx + 1 }
+
+        while cx > 0 && cx < width - 1 && cy > 0 && cy < height - 1
+        {
+            if this.isWall(cx, cy)
+            {
+                ret
+            }
+            if this.isEnemyAt(cx, cy)
+            {
+                for i = 0, i < 3, i++
+                {
+                    if eAlive[i] == 1 && ex[i] == cx && ey[i] == cy
+                    {
+                        eAlive[i] = 0
+                        score = score + 1
+                        SystemPrintln("命中敌人！分数:" + SystemConvertString(score))
+                    }
+                }
+                ret
+            }
+            if dir == 0 { cy = cy - 1 }
+            elif dir == 1 { cy = cy + 1 }
+            elif dir == 2 { cx = cx - 1 }
+            else { cx = cx + 1 }
+        }
+        ret
+    }
+
+    # 检查是否所有敌人都被消灭
+    void checkWin()
+    {
+        bool allDead = true
+        for i = 0, i < 3, i++
+        {
+            if eAlive[i] == 1
+            {
+                allDead = false
+            }
+        }
+        if allDead == true
+        {
+            running = false
+            SystemPrintln("胜利！全部敌人被消灭。最终分数:" + SystemConvertString(score))
+        }
+        ret
+    }
+
+    # 根据输入指令执行动作
+    void handle(string cmd)
+    {
+        if cmd == "w" { this.tryMove(px, py - 1, 0) }
+        elif cmd == "s" { this.tryMove(px, py + 1, 1) }
+        elif cmd == "a" { this.tryMove(px - 1, py, 2) }
+        elif cmd == "d" { this.tryMove(px + 1, py, 3) }
+        elif cmd == "f" { this.fire() }
+        elif cmd == "q" { running = false }
+        else { SystemPrintln("未知指令:" + cmd) }
+        ret
+    }
+
+    # 主循环
+    void run()
+    {
+        SystemPrintln("欢迎来到最简单的坦克游戏！")
+        SystemPrintln("w/a/s/d 移动，f 开火，q 退出。每次输入后按回车。")
+        while running == true
+        {
+            this.draw()
+            string cmd = SystemReadLine()
+            this.handle(cmd)
+            this.checkWin()
+        }
+        SystemPrintln("游戏结束，谢谢游玩！")
+        ret
     }
 }

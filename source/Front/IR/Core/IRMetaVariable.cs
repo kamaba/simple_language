@@ -58,6 +58,13 @@ namespace SimpleLanguage.IR
         public List<string> exportNameList => m_ExportNameList;
         private List<string> m_ExportNameList = new List<string>();
 
+        /// <summary>
+        /// 成员级 attribute 列表（@SerializeField / @NonSerialized 等），
+        /// 从 MetaMemberVariable.attributeList 拷贝，SLIR 导出与 VM 侧序列化过滤用。
+        /// </summary>
+        public List<MetaAttribute> attributeList => m_AttributeList;
+        private List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
+
         /// <summary>导出用的合并名称（逗号分隔），供 SLIR 序列化使用。</summary>
         public string exportNames => m_ExportNameList.Count <= 1 ? null : string.Join(",", m_ExportNameList);
 
@@ -196,6 +203,9 @@ namespace SimpleLanguage.IR
 
             // 收集成员变量的 @Nickname 别名
             CollectExportNames(mmv);
+            // 拷贝成员级 attribute（@SerializeField / @NonSerialized 等）供 SLIR 导出
+            if (mmv.attributeList != null)
+                m_AttributeList.AddRange(mmv.attributeList);
         }
         public void SetIsStatic( bool iss )
         {
@@ -256,6 +266,15 @@ namespace SimpleLanguage.IR
             m_Order = field?.order ?? -1;
             m_IRMetaVariableFrom = m_IsStatic ? IRMetaVariableFrom.Static : IRMetaVariableFrom.Member;
             m_IRMetaType = irmt ?? new IRMetaType(IRManager.instance.GetIRMetaClassByName("Core.Object"));
+            // 恢复成员级 attribute（ref module 导入，@SerializeField / @NonSerialized 等）
+            if (field?.attributeList != null)
+            {
+                foreach (var attr in field.attributeList)
+                {
+                    if (attr == null || string.IsNullOrEmpty(attr.name)) continue;
+                    m_AttributeList.Add(new MetaAttribute(attr.name, attr.args, attr.handleType));
+                }
+            }
         }
 
         /// <summary>

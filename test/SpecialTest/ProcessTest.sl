@@ -248,6 +248,35 @@ class ProcessTest
         check( "toString: contains exitCode", strContains( s, "exitCode" ) )
     }
 
+    # ---------------- 拉起普通 GUI 应用（完整路径含空格） ----------------
+    # 以 VS Code 为例：run/shell 会阻塞到进程结束（GUI 应用不关闭就不返回），
+    # 拉起普通应用请用 start：立即返回句柄，之后可 hasExited 查询 / kill 关闭。
+    # program 支持含空格的完整路径（C 层按 CreateProcess 规则自动加引号转义）。
+    # --user-data-dir 指向临时目录：绕开 VS Code 单实例转发（否则新 Code.exe
+    # 会把参数转给已开实例后立即退出，且 kill 管不到弹出的窗口）。
+    static testStartGuiApp()
+    {
+        Console.println( "===== ProcessTest.testStartGuiApp =====" )
+        string codePath = "C:\\Users\\dingo\\AppData\\Local\\Programs\\Microsoft VS Code\\Code.exe"
+        if File.exists( codePath ) == false
+        {
+            Console.println( "  [SKIP] Code.exe not found on this machine" )
+            ret
+        }
+        var info = OS.ProcessStartInfo.create(
+            codePath,
+            "--user-data-dir", "C:\\Users\\dingo\\AppData\\Local\\Temp\\sl-proc-vscode-tmp"
+        )
+        info.stdout = OS.ProcessStdio.Null
+        info.stderr = OS.ProcessStdio.Null
+        var p = OS.Process.start( info )
+        check( "start gui app: id > 0", p.id > 0 )
+        OS.Timer.sleep( 10500 )
+        check( "gui app: still running after 1.5s (start does not wait)", p.hasExited == false )
+        p.kill()
+        check( "gui app: kill cleanup", p.hasExited )
+    }
+
     # ---------------- 测试入口（由 ProjectTest.sp 调用） ----------------
     static fun()
     {
@@ -265,6 +294,7 @@ class ProcessTest
         testNullRedirect()
         testSpawnFail()
         testToString()
+        testStartGuiApp()
         Console.println( "========== ProcessTest end: passed=" + passed.toString() + " failed=" + failed.toString() + " ==========" )
     }
 }

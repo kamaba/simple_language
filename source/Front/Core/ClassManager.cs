@@ -106,9 +106,14 @@ namespace SimpleLanguage.Core
                 return m_ProjectMetaClass;
             }
 
-            m_ProjectMetaClass = GetClassByName("S.Project", 0)
-                ?? GetClassByName("Core.Project", 0)
-                ?? GetClassByName("Project", 0);
+            /* Project 宿主类必须是本工程 .sp 里 Project{} 块生成的源码类。
+             * 引用模块（Core/Std 等）也会导出自己的 Project 类（如 Core.Project），
+             * 其引用 shell 不含本工程 data 成员，若被命中，global.xxx 的成员
+             * 查找会得到 staticId=-1（IR 阶段报"没有找到加载变量的来源类型"）。
+             * 故全部候选按 refFromType 过滤掉 RefModule 来源。 */
+            m_ProjectMetaClass = GetSelfProjectClassOrNull(GetClassByName("S.Project", 0))
+                ?? GetSelfProjectClassOrNull(GetClassByName("Core.Project", 0))
+                ?? GetSelfProjectClassOrNull(GetClassByName("Project", 0));
             if (m_ProjectMetaClass != null)
             {
                 return m_ProjectMetaClass;
@@ -116,6 +121,13 @@ namespace SimpleLanguage.Core
             m_ProjectMetaClass = FindFirstMetaClassByShortName("Project", 0);
 
             return m_ProjectMetaClass;
+        }
+
+        MetaClass GetSelfProjectClassOrNull(MetaClass mc)
+        {
+            if (mc == null) return null;
+            if (mc.refFromType == RefFromType.RefModule) return null;
+            return mc;
         }
 
         MetaClass FindFirstMetaClassByShortName(string shortName, int templateCount)
@@ -128,6 +140,7 @@ namespace SimpleLanguage.Core
             {
                 var c = kv.Value;
                 if (c == null) continue;
+                if (c.refFromType == RefFromType.RefModule) continue; // 引用模块 shell 不能作为本工程 Project 宿主
                 if (c.metaTemplateList.Count != templateCount) continue;
                 if (string.Equals(c.name, shortName, StringComparison.Ordinal))
                 {
@@ -596,6 +609,25 @@ namespace SimpleLanguage.Core
                 AddDictMetaClass(mc);
             }
         }
+        /// <summary>
+        /// 注册引用模块的类型 shell 到全局类字典（m_AllClassDict），
+        /// 供 GetClassByName / MetaAttribute.Parse 等按 allName 查找命中
+        /// （如跨模块引用的 Core.Serializable 属性标签类）。
+        /// 不加入 m_ExportMetaClassList——引用 shell 不属于当前模块导出，
+        /// 避免 AttributeManager / IRManager 把它当作本模块产物处理。
+        /// key 已被占用（当前模块源码同名类优先）时静默跳过。
+        /// </summary>
+        public void AddReferenceMetaClass( MetaClass mc )
+        {
+            if( mc == null ) return;
+            string acn = mc.allName + "_" + mc.metaTemplateList.Count;
+            if( m_AllClassDict.ContainsKey(acn) )
+            {
+                return;
+            }
+            m_AllClassDict.Add(acn, mc);
+        }
+
         public void AddExportMetaData(MetaData md)
         {
             if (md == null || m_ExportMetaDataList.Contains(md))

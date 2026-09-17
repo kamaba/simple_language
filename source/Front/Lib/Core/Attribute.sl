@@ -34,3 +34,46 @@ public class Attribute extends Object
     {
     }
 }
+
+# 序列化标签：标注在 class/data 上，声明该类型支持通用序列化
+# 成员序列化规则：
+#   public 成员默认参与序列化
+#   protected/private 成员默认不参与，可用 @SerializeField() 强制参与
+#   public 成员可用 @NonSerialized() 排除
+public class Serializable extends Attribute
+{
+    _init_()
+    {
+        this._attributeHandleType = 0
+    }
+
+    override void OnCompile()
+    {
+    }
+}
+
+# 序列化标签：强制 protected/private 成员参与序列化
+public class SerializeField extends Attribute
+{
+    _init_()
+    {
+        this._attributeHandleType = 0
+    }
+
+    override void OnCompile()
+    {
+    }
+}
+
+# 序列化标签：排除该 public 成员不参与序列化
+public class NonSerialized extends Attribute
+{
+    _init_()
+    {
+        this._attributeHandleType = 0
+    }
+
+    override void OnCompile()
+    {
+    }
+}

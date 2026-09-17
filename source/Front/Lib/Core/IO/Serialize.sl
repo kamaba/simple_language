@@ -106,4 +106,38 @@ public class Serialize extends Object
     {
         ret LengthPrefix.decodeStream<T>( src, codec )
     }
+
+    # ── JSON 直连三件（@Serializable class / data，免 Codec）──
+    # 正向 toJson / toJsonPretty：
+    #   - class 标 @Serializable() 才走成员展开；未标注 class 维持原嫁接链
+    #     toJson() 子树 -> toString() 字符串叶 -> null 叶；
+    #   - data 默认可序列化（@Serializable() 为可选显式标注）；
+    #   - 嵌套 @Serializable class / data 成员递归展开子树。
+    # 成员过滤（正反向对称，C 层 vm_json_ser_member_serializable，
+    # 优先级 @NonSerialized > @SerializeField > 可见性默认）：
+    #   - class 成员 public 默认参与，protected/private 须 @SerializeField()
+    #     补票；任意成员可被 @NonSerialized() 淘汰；
+    #   - static 成员一律排除（不属于实例状态）；data 成员默认全量
+    #     （data 无可见性修饰）。
+    # 反向 fromJson：按类型 new 实例（不跑构造器）后按 JSON key 对名填充
+    # （同一过滤规则）；未命中成员保持默认零值/null；嵌套 @Serializable
+    # class 成员同样可还原，未标注 class 引用成员不还原（保持 null）。
+
+    public static string toJson<T>( T obj )
+    {
+        TreeNode<string> proto = TreeNode<string>()
+        ret SystemDataToJson( obj, proto, false )
+    }
+
+    public static string toJsonPretty<T>( T obj )
+    {
+        TreeNode<string> proto = TreeNode<string>()
+        ret SystemDataToJson( obj, proto, true )
+    }
+
+    public static T fromJson<T>( string json )
+    {
+        BaseJson bj = BaseJson.parse( json )
+        ret bj.toData<T>()
+    }
 }

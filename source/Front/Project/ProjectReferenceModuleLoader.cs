@@ -637,6 +637,7 @@ namespace SimpleLanguage.Project
                     parent.AddMetaClass(mi);
 
                     mi.UpdateClassAllName();
+                    ClassManager.instance.AddReferenceMetaClass(mi);
                     RegisterExportAliases(parent, typeName, cls, mi);
                     return mi;
                 }
@@ -672,6 +673,7 @@ namespace SimpleLanguage.Project
                      * after AddMetaClass because it traverses the metaNode parent chain. */
                     parent.AddMetaClass(mc);
                     mc.UpdateClassAllName();
+                    ClassManager.instance.AddReferenceMetaClass(mc);
                     RegisterExportAliases(parent, typeName, cls, mc);
                     return mc;
                 }

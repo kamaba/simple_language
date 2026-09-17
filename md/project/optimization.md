@@ -68,7 +68,7 @@ sl compile -p <工程> -O3     # 最高优化
 | 带 `throws` 标签 | 与 inline 语义冲突（同 21457） |
 | 构造函数（`_init_`） | 构造语义特殊，不参与体替换 |
 | abstract / 接口方法 / override 接口方法 | 无体或接口分派 |
-| override 链上的实例方法（自身 `override` 父类，或被任何子类 override） | 实例 inline 按静态绑定且隐含 `final`，与多态冲突 |
+| 全部实例方法（非 `static`） | 实例 inline 按静态绑定且隐含 `final`，与多态冲突；且库模块编译时消费者模块的 override 链不可见（排除收集只覆盖本模块），「被任何子类 override」无法可靠判定，保守整体排除 |
 | operator 运算符重载方法 | 运算符调用解析链特殊，保守排除 |
 | get / set 属性访问器 | 属性访问不走普通调用点展开路径 |
 | 闭包合成函数、模板函数、ref 模块导入（`ref` 声明）的函数 | 无源体 / 实例化拷贝无 FileMeta / 无体 |

@@ -443,12 +443,15 @@ json1 = sr.toJson()  #输出一个json格式
 | string | 字符串 | |
 | enum | 底层整数值 | `kind = JtKind.Advanced` -> `"kind":2` |
 | data（嵌套） | `{}` 对象 | 递归展开（内置方式，不调方法） |
-| class（有 `toJson()`） | 嫁接子树 | 虚调 `toJson()`，返回文本解析后接为该名字的子节点 |
-| class（无 `toJson()`） | 字符串叶子 | 回退虚调 `toString()` |
+| class（标 `@Serializable()`） | `{}` 对象 | 与 data 同款成员展开（成员过滤规则生效，见下） |
+| class（未标注，有 `toJson()`） | 嫁接子树 | 虚调 `toJson()`，返回文本解析后接为该名字的子节点 |
+| class（未标注，无 `toJson()`） | 字符串叶子 | 回退虚调 `toString()` |
 | 数组（含嵌套数组） | `[]` 数组 | |
 | List / HashSet / Tuple 等 | `[]` 数组 | 顶层容器也适用（`BaseJson.fromData(list)`） |
 | Map | `{}` 对象 | key 作成员名（string/enum/标量可作 key，复杂对象 key 跳过） |
 | null / null 引用成员 | `null` | |
+
+data 自身默认全量成员参与（`@Serializable()` 为可选显式标注）。成员级可叠加序列化标签，优先级 `@NonSerialized()` > `@SerializeField()` > 默认：`@NonSerialized()` 淘汰任意成员；`static` 成员一律排除；data 成员无可见性修饰，默认全量。标签语义详见 [attribute.md](attribute.md)。
 
 ```sl
 data JtMeta { level = 1, passed = false }
@@ -483,7 +486,8 @@ var nil = j.toData("NoSuchType")       # 未知类型名 -> null
 反向还原规则：
 
 - data 成员：对象节点按成员名匹配写入（标量 / string / enum 按底层值 / 嵌套 data / 数组均可还原）。
-- class 引用成员：**不还原**，保持 null（正向可转出，反向丢失引用）。
+- `@Serializable()` class 引用成员：**可还原**（按成员名递归填充，过滤规则与正向对称）。
+- 未标注 class 引用成员：**不还原**，保持 null（正向可转出，反向丢失引用）。
 - JSON 中多余成员忽略；缺失成员保持 data 默认值。
 
 已知限制：

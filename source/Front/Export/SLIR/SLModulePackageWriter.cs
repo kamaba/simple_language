@@ -335,8 +335,9 @@ namespace SimpleLanguage.Export.SLIR
                     baseClassId = c.OwnerMetaClass?.extendClass?.classId
                         ?? c.OwnerMetaEnum?.extendClass?.classId ?? 0,
                 };
-                // export class-level attributes
+                // export class-level attributes（class 与 data 类型级：@Serializable 等）
                 ExportAttributes(cm.attributeList, c.OwnerMetaClass?.attributeList);
+                ExportAttributes(cm.attributeList, c.OwnerMetaData?.attributeList);
                 // export field-level attributes
                 var implIds = c.GetImplementsInterfaceClassIds();
                 if (implIds != null && implIds.Count > 0)
@@ -437,6 +438,8 @@ namespace SimpleLanguage.Export.SLIR
                             index = v.index,
                             order = v.order,
                         };
+                        // export field-level attributes（@SerializeField / @NonSerialized 等）
+                        ExportAttributes(fieldPkgLocal.attributeList, v.attributeList);
                         var irBufLocal = new List<IRData>();
                         // fill express from IRMetaVariable.irDataList if present
                         if (v.irDataList != null && v.irDataList.Count > 0)
@@ -543,6 +546,8 @@ namespace SimpleLanguage.Export.SLIR
                             index = v.index,
                             order = v.order,
                         };
+                        // export field-level attributes（@SerializeField / @NonSerialized 等）
+                        ExportAttributes(fieldPkgStatic.attributeList, v.attributeList);
                         var irBufStatic = new List<IRData>();
                         if (v.irDataList != null && v.irDataList.Count > 0)
                         {

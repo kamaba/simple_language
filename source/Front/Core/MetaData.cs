@@ -21,6 +21,8 @@ namespace SimpleLanguage.Core
         public List<MetaMemberFunction> nonStaticVirtualMetaMemberFunctionList => m_NonStaticVirtualMetaMemberFunctionList;
         public List<MetaMemberFunction> fileCollectMetaMemberFunctionList => m_FileCollectMetaMemberFunctionList;
         public Dictionary<MetaClass, ClassLevelRelationData> metaTemplateMapDict => m_MetaTemplateMapDict;
+        /// <summary>data 类型级 attribute（@Serializable 等），SLIR 导出与序列化判定用。</summary>
+        public List<MetaAttribute> attributeList => m_AttributeList;
 
 
 
@@ -37,6 +39,7 @@ namespace SimpleLanguage.Core
         private List<MetaMemberFunction> m_NonStaticVirtualMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         private List<MetaMemberFunction> m_StaticMetaMemberFunctionList = new List<MetaMemberFunction>();// inner temp add , after combine to m_MetaMemberFunctionListDict 
         protected Dictionary<string, MetaMemberFunctionTemplateNode> m_MetaMemberFunctionTemplateNodeDict = new Dictionary<string, MetaMemberFunctionTemplateNode>();
+        private List<MetaAttribute> m_AttributeList = new List<MetaAttribute>();
 
         public MetaData( FileMetaClass md )
         {
@@ -47,6 +50,15 @@ namespace SimpleLanguage.Core
             m_IsDynamic = false;
             m_Token = md.token;
             AddPingToken(md?.token);
+            /* 拷贝 data 类型级 attribute（@Serializable 等），供 SLIR 导出 */
+            if (md.attributeList != null && md.attributeList.Count > 0)
+            {
+                foreach (var attr in md.attributeList)
+                {
+                    if (attr == null) continue;
+                    m_AttributeList.Add(new MetaAttribute(attr));
+                }
+            }
         }
         public MetaData(string _name, bool constToken, bool staticToken, bool dynamic ) : base()
         {

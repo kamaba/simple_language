@@ -347,6 +347,7 @@ namespace SimpleLanguage.Project
                 if (mmf.isTemplateFunction) continue;                         // 模板函数须实例化后调用
                 if (mmf.isGet || mmf.isSet) continue;                         // 属性访问器: 语法糖入口
                 if (mmf.isWithInterface) continue;                            // interface 声明函数
+                if (!mmf.isStatic) continue;                                 // 实例方法: 库模块编译时消费者模块的 override 不可见 (CollectOverriddenParents 只收本模块), inline 隐含 final 会破坏跨模块多态
                 if (mmf.ownerMetaClass is MetaClass omc && omc.isInterfaceClass) continue; // 接口类成员
                 if (mmf.name != null && s_AutoInlineOperatorNames.Contains(mmf.name)) continue; // operator
                 if (overriddenSet.Contains(mmf)) continue;                    // 被子类 override

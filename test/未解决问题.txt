@@ -1,12 +1,10 @@
 
 
-我在Process.run这里边 貌似没有看到 普通应用的拉起，你一会写个拉起这个路径的示例吧 "C:\Users\dingo\AppData\Local\Programs\Microsoft VS Code\Code.exe"  如果没有相关的功能，请补充下
-
 序列化与反序列化，需要对class/data都支持
 Path.sl
 压缩类  zlip glip Base64
 函数名称和类名冲突时候的处理
-Debug.sl
+Debug.sl  这要要增加 DataFrame的类，可以用来记录 在Debug区间的数据变量，  每一帧都要记录进去  还有增加DataFrame 前帧，后帧的对比相关功能 只能对Data 类的数据这样操作
 Log.sl
 
 编码相关的
