@@ -34,6 +34,7 @@
       { "path": "Text/Xml.sl", "group": "std", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "OS/DateTime.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
       { "path": "OS/Timer.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
+      { "path": "OS/Process.sl", "group": "std", "tag": "os", "ignore": false, "priority": 0 },
       { "path": "Net/HttpClient.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/IpProtocal.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/TcpSocket.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
@@ -100,10 +101,15 @@
              { "class": "Xml" }
          ]
       },
-      { "namespace": "OS", "children": 
+      { "namespace": "OS", "children":
          [
             { "class": "DateTime" },
-            { "class": "Timer" }
+            { "class": "Timer" },
+            { "enum": "ProcessStdio" },
+            { "enum": "ProcessError" },
+            { "class": "ProcessStartInfo" },
+            { "class": "ProcessResult" },
+            { "class": "Process" }
         ]
       },
       { "namespace": "Net", "children": 
@@ -217,6 +223,19 @@
     { "name": "SystemDateTimeMinValueMillis",  "returnType": "Int64",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_datetime_min_value_millis" },
     { "name": "SystemDateTimeMaxValueMillis",  "returnType": "Int64",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_datetime_max_value_millis" },
     { "name": "SystemDateTimeIsValidMillis",   "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_is_valid_millis" },
+    // ---- Process calls (OS/Process.sl, design: csimple_lang/md/design/PROCESS_DESIGN.md §5) ----
+    // 错误码：C VM 负数段 -81..-85（设计稿原定 -71..-79 与 isolate -70..-77 冲突，整体后移）
+    { "name": "SystemProcessRun",         "returnType": "object", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_process_run" },
+    { "name": "SystemProcessShell",       "returnType": "object", "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_process_shell" },
+    { "name": "SystemProcessStart",       "returnType": "object", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_process_start" },
+    { "name": "SystemProcessGetId",       "returnType": "Int64",  "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_process_get_id" },
+    { "name": "SystemProcessHasExited",   "returnType": "bool",   "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_process_has_exited" },
+    { "name": "SystemProcessExitCode",    "returnType": "Int32",  "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_process_exit_code" },
+    { "name": "SystemProcessWait",        "returnType": "Int32",  "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_process_wait" },
+    { "name": "SystemProcessKill",        "returnType": "void",   "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_process_kill" },
+    { "name": "SystemProcessTerminate",   "returnType": "void",   "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_process_terminate" },
+    { "name": "SystemProcessReadStdOut",  "returnType": "string", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_process_read_stdout" },
+    { "name": "SystemProcessReadStdErr", "returnType": "string", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_process_read_stderr" },
     // ---- SQLite3 calls (DB/Sqlite.sl) ----
     { "name": "SystemSqlite3Open",              "returnType": "Int64",  "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_open" },
     { "name": "SystemSqlite3Close",             "returnType": "Int32",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_sqlite3_close" },

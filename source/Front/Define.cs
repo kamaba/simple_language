@@ -275,8 +275,6 @@ namespace SimpleLanguage
         Transience,
         /// <summary> return </summary>
         Return,
-        /// <summary> operator </summary>
-        Operator,
         /// <summary> local </summary>
         Local,
         /// <summary> global </summary>

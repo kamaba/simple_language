@@ -113,6 +113,7 @@
 | [syntax/std/env.md](./syntax/std/env.md) | 环境相关 |
 | [syntax/std/Component.md](./syntax/std/Component.md) | Component 组件基类（组件即节点组合树：查询 / 门控 / 消息） |
 | [syntax/std/Sqlite.md](./syntax/std/Sqlite.md) | Sqlite 数据库（DB.Sqlite3） |
+| [../../../csimple_lang/md/design/PROCESS_DESIGN.md](../../../csimple_lang/md/design/PROCESS_DESIGN.md) | Std.OS.Process 外部进程执行（run/start/wait、stdio 三态管道、kill/terminate、环境变量；SL API + C 层设计） |
 | [syntax/core/Lz4.md](./syntax/core/Lz4.md) | Lz4 块压缩（Core 库：自包含容器格式 + ByteBuf 底座） |
 | [syntax/core/ProtocalBuffers.md](./syntax/core/ProtocalBuffers.md) | ProtocalBuffers / protobuf 线格式编解码（Core 库：PbWriter / PbReader，proto3 兼容子集） |
 | [syntax/core/Stream.md](./syntax/core/Stream.md) | Stream 元素流（Core 库：Stream\<T\>/Controller/Transformer，推/拉双模 + 背压） |

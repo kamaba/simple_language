@@ -19,7 +19,7 @@
 | `NullFastTest/` | Null 相关快速回归（单文件） | `NullFastTest.sl` | `CSimpleVMTest`（传参 `1`） |
 | `ExpendTest/` | 标准库与扩展库：IO（Console/File/Directory/DateTime）、数据格式（Json/Xml/Yaml/Toml/Csv）、嵌入式数据库（Sqlite3）、容器（List/Map/LinkedList/Sort）、Isolate、宏、Attribute、模块与跨语言调用 | `JsonTest.sl`、`FileTest.sl`、`Sqlite3Test.sl`、`ListTest.sl`、`IsolateTest.sl`、`AttributeTest.sl` | `CSimpleVMStdTest`（C VM）/ `Test2`（C# VM） |
 | `MathTest/` | 数学库：内置 Math 成员函数、MathVMLib 系统方法、运算符分派、矩阵（3x3/4x4/任意尺寸）、FFI 数学、大数（BigNumber/BigDecimal）、因数分解 | `MathTest.sl`、`FFIMathTest.sl`、`Matrix4x4Test.sl`、`MatrixBigTest.sl` | `CSimpleVMMathTest` |
-| `SpecialTest/` | FFI 与跨语言互操作、MLIR AOT 实验 | `FFITest.sl`、`CSharpCall.sl`、`CPythonCall.sl`、`JavascriptCall.sl`、`LuaCall.sl`、`AOTTest.sl` | `CSimpleVMSpecialTest` |
+| `SpecialTest/` | FFI 与跨语言互操作、MLIR AOT 实验、外部进程执行（Std.OS.Process） | `FFITest.sl`、`CSharpCall.sl`、`CPythonCall.sl`、`JavascriptCall.sl`、`LuaCall.sl`、`AOTTest.sl`、`ProcessTest.sl` | `CSimpleVMSpecialTest` |
 | `BenchMark/` | 性能基准 | `Fibonacci.sl`、`Loop.sl`、`Levenshtein.sl`、`StringBench.sl` | `CSimpleVMBenchMarkTest` |
 | `MysqlTest/` | MySQL 库（需本机数据库环境） | `MysqlTest.sl`、`MysqlApiTest.sl` | 无专属宿主，向任一宿主传参运行 |
 | `RenderTest/` | 渲染相关（进行中） | `MathTest.sl` | `CSimpleVMRenderTest`（需传参，见下） |

@@ -1,6 +1,12 @@
 
 
-增加Std.Process执行的功能，你比较下各家是怎么写的F:\project\lang\csimple_lang\md\design\PROCESS_DESIGN.md
+增加Std.Process执行的功能，这是参考文档F:\project\lang\csimple_lang\md\design\PROCESS_DESIGN.md
+
+push_i64,vm_proc_throw 这样，应该都是vm_runtime里边共用的方法，你看下有没有共用这方法的定义的地方，如果没有，就增加一个vm_runtime_common.h .c 的地方然后供其它函数调用，每次都写这个，太冗余了，  一般system_method里边，只写，关于自己逻辑的代码。
+vm_proc_read_member_value 这个我记忆已经提出去了呀，怎么还有类似的方法去重写呢，  你看下其它读成员值的，是不是好多地方都写了这个，如果都写了，那就放到一个共用类里边 你看下runtime_object.h .c 合理不
+
+Process.run 怎么可以try呢，我的run函数没有throws的 这个违反了try/catch的机制了吧
+
 序列化与反序列化，需要对class/data都支持
 Path.sl
 压缩类  zlip glip Base64
@@ -43,6 +49,18 @@ ffmpeg的dll 引入
 找一个轻量级的 webview一类的，做成 dll
 
 
+制定规则，在配置的jsonc里边，如果配置了，是否是public就可以为导出类  有三个选项 不导出，public,extern导出  
+Defer,
+/// <summary> errdefer </summary>
+ErrDefer, 这两关键字， 要在制定完 函数退出规则后，再确定使用不使用。
+
+MacroManager 这个类改成 CompileBeforeManager
+把global.data 确定了 下边的关联元素确定下，还有调用方式
+把Core.module.json还有错误.csv 打包到.exe 然后 加载std需要另再加载
+
+建一个统合工程，里边包括FrontEnd/Backend两部分，然后重整理cli然后把这两个都可以调用起来，并且做 编译即输出的调用。
+
+
 1. cvm 只使用三色方案  然后使用 引用计数的方案，在结尾 后把内存收集  增加小块内存管理功能
 机制差的:
 优化FrontEnd层
@@ -55,6 +73,23 @@ ffmpeg的dll 引入
 6. 以cvm里边 数据类型的创建
 
 1. 优化vm层，类型的处理   计算   比较  
+混合类型运算
+6.0x
+while 循环迭代
+6.3x
+整数加法
+6.4x
+for 循环迭代
+8.1x
+bool 运算
+8.2x
+字符串比较
+11.7x
+函数调用
+20.6x
+字符串插值
+37.5x
+字符串拼接
 7. 调用nativeBridge的调用验证
 
 内存管理，在cvm里边，增加一个机制，就是小块内存管理， 比如  byte32 byte40 byte 48  byte56  byte64  这样的，多个数组，然后以后用来存放像 Float16_2 的 Float32_2 以下的，都要有对应的列表，然后从这上边分配内存 

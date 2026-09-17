@@ -698,7 +698,6 @@ namespace SimpleLanguage.Compile
                 case ETokenType.Public:
                 case ETokenType.Projected:
                 case ETokenType.Private:
-                //case ETokenType.Operator:
                 case ETokenType.Base:         //base
                 case ETokenType.This:           //this
                 case ETokenType.Local:

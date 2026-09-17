@@ -2116,9 +2116,6 @@ namespace SimpleLanguage.Compile
                 case "private":
                     tokenType = ETokenType.Private;
                     break;
-                case "operator":
-                    tokenType = ETokenType.Operator;
-                    break;
                 case "interface":
                     tokenType = ETokenType.Interface;
                     break;

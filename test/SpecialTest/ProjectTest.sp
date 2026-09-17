@@ -168,8 +168,11 @@ Project
         SystemPrintln( "VM   (128^3): $gT.toString() ms" )
         vv0 = vC[0]
         SystemPrintln( "VM   c[0]=$vv0.toString()" )
-        !#
         FFITest.fun();
+        !#
+
+        # Std.OS.Process 外部进程执行测试（设计：csimple_lang/md/design/PROCESS_DESIGN.md）
+        ProcessTest.fun();
 
         nowMs = Environment.sys.nowMillis() - nowMs
         SystemPrintln("===== BenchMark _main_ end [$nowMs.toString() ms] =====")

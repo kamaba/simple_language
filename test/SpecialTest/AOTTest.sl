@@ -66,7 +66,7 @@ class AOTMath
     @AOT()
     static fun<T>( T a )
     {
-        ret a
+        ret
     }
 
     # 非静态函数：阶段1应被跳过（日志 skip）
