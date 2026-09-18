@@ -716,6 +716,7 @@ namespace SimpleLanguage.Compile
             Token dataToken = null;
             Token functionToken = null;
             Token nameToken = null;
+            Node nameDefineNode = null;
             FileMetaClassDefine classRef = null;
             FileMetaCallLink varRef = null;
 
@@ -800,6 +801,14 @@ namespace SimpleLanguage.Compile
                     }
                     else
                     {
+                        if (cnode.nodeType == ENodeType.Key)
+                        {
+                            // 定义语句中出现无法归类的关键字(如 var if / var new / var in):
+                            // 关键字不允许出现在变量定义的名称/类型位置
+                            Log.AddNodeLog(LID.NodeStructParseNameIsKeyword, token,
+                                "Error 变量定义的名称不允许使用关键字!! " + token?.ToLexemeAllString());
+                            return null;
+                        }
                         Log.AddNodeLog(LID.NodeStructParseIssue, "Error 解析发现没有该节点!!" + token?.ToLexemeAllString());
                         //new Exception("Error 解析发现没有该节点");
                     }
@@ -813,6 +822,7 @@ namespace SimpleLanguage.Compile
             else if (defineNodeList.Count == 1  )
             {
                 nameToken = defineNodeList[0].token;
+                nameDefineNode = defineNodeList[0];
                 varRef = new FileMetaCallLink(m_FileMeta, defineNodeList[0]);
             }
             else if (defineNodeList.Count == 2)
@@ -820,6 +830,7 @@ namespace SimpleLanguage.Compile
                 if(varToken != null || dynamicToken != null || dataToken != null )
                 {
                     nameToken = defineNodeList[1].token;
+                    nameDefineNode = defineNodeList[1];
                     varRef = new FileMetaCallLink(m_FileMeta, defineNodeList[1]);
                 }
                 else
@@ -833,6 +844,36 @@ namespace SimpleLanguage.Compile
                         return null;
                     }
                     nameToken = node2.token;
+                    nameDefineNode = node2;
+                }
+            }
+
+            if (nameDefineNode != null
+                && (nameDefineNode.nodeType == ENodeType.Key
+                    || nameDefineNode.token?.type == ETokenType.Type))
+            {
+                // 变量名位置是关键字(如 var var / string string / int global / var int):
+                // Key 节点 = 普通关键字(new/if/in...); Type token = 基本类型关键字(int/string/object...)
+                // 二者在 Node 层都是合法标识符节点, 但不允许作为变量定义的名称
+                // 例外: this/base/local/global 是限定前缀关键字(this._value = b / global.x = 5),
+                // 前缀用法后跟成员访问链(链长>1); 单独出现(链长==1)则是关键字作变量名, 仍报错
+                bool isPrefixKeyword = false;
+                if (nameDefineNode.nodeType == ENodeType.Key)
+                {
+                    Token kwToken = nameDefineNode.token;
+                    if (kwToken?.type == ETokenType.This
+                        || kwToken?.type == ETokenType.Base
+                        || kwToken?.type == ETokenType.Local
+                        || kwToken?.type == ETokenType.Global)
+                    {
+                        isPrefixKeyword = nameDefineNode.GetLinkTokenList().Count > 1;
+                    }
+                }
+                if (!isPrefixKeyword)
+                {
+                    Log.AddNodeLog(LID.NodeStructParseNameIsKeyword, nameDefineNode.token,
+                        "Error 变量定义的名称不允许使用关键字!! " + nameDefineNode.token?.ToLexemeAllString());
+                    return null;
                 }
             }
 

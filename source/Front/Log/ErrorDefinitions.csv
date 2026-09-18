@@ -746,6 +746,7 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 20284,Error,TRUE,FALSE,0,,greater count is zero,,,,
 20285,Error,TRUE,FALSE,0,,() 符号没有对称! 原符号:,,,,
 20286,Error,TRUE,FALSE,0,,() 符号没有对称! 原符号:,,,,
+20287,Error,TRUE,FALSE,0,,Error 变量定义的名称不允许使用关键字!!!,,,,
 20300,Info,FALSE,TRUE,0,,Error 暂不允许使用namespace 定义命名空间!!!,,,,
 20301,Info,FALSE,TRUE,0,,Error m_NodeList.Count == 0,,,,
 20302,Info,FALSE,TRUE,0,,Error bind关键字后边没有相应的内容!,,,,

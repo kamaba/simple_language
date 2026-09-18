@@ -58,6 +58,15 @@ namespace SimpleLanguage.Compile
                 Log.AddFileMetaLog(LID.FileMetaMemberFunctionX, m_AssignToken, "Error 没有找到该定义名称 必须使用例: X = 101; 的格式");
                 return false;
             }
+            if (nameNode.nodeType == ENodeType.Key
+                || nameNode.token?.type == ETokenType.Type)
+            {
+                // 参数名位置是关键字(如 f( int if ) / f( string string )):
+                // Key 节点 = 普通关键字; Type token = 基本类型关键字(int/string/object...)
+                Log.AddFileMetaLog(LID.NodeStructParseNameIsKeyword, nameNode.token,
+                    "Error 参数定义的名称不允许使用关键字!! " + nameNode.token?.ToLexemeAllString());
+                return false;
+            }
             m_Token = nameNode?.token;
 
             if (typeNode != null)

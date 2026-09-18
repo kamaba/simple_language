@@ -255,6 +255,7 @@ namespace SimpleLanguage.Logging
         NodeStructParseCaseClassName = 20281,
         NodeStructParseNumberStringBool = 20282,
         NodeStructParseType = 20283,
+        NodeStructParseNameIsKeyword = 20287,
         // ParseNode
         NodeParseNodeGreaterCountZero = 20284,
         NodeParseNodeSign = 20285,

@@ -1,11 +1,8 @@
 函数名称和类名冲突时候的处理  
-定义的变量名称 ，不允许是关键字 在FrontEnd解析的时候，一定要注意这个规则，要提示错误
 
 Log.sl 这个类我简单写了下，有好多错误，你先修复下，然后优化下里边的功能点，比如assert, 其它的也能放到systme_method_call就放进去，让速度更快
 
 Debug.sl  这要要增加 DataFrame的类，可以用来记录 在Debug区间的数据变量，  每一帧都要记录进去  还有增加DataFrame 前帧，后帧的对比相关功能 只能对Data 类的数据这样操作, 还有就是要增加trace功能，可以把一些日志，还有压栈信息，收集下，当然可以写各自的类， 主要目的是用来调试区间的一些信息收集， 如果有必要也可以在vm里边增加一个irCode 你可以先设计一个.md的文件，把Debug系统设计下  总体概念就是可以监视某个数据，可以跟踪某些数据，还有控制流增加一些额外选择等等
-
-MacroManager 这个类改成 CompileBeforeManager
 
 编码相关的
 Tcp/Udp/HttpClient/Websocket/NetStream相关接口
