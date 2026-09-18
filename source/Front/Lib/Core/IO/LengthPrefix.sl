@@ -39,7 +39,7 @@ public class LengthPrefix extends Object
     # ── 写侧：帧 = varuint(payload 可读长度) + payload 可读区 ──
 
     # 把 payload 的可读区打包成帧写入 dst（不检查上限，写入方自决）
-    public static void writeFrame( ByteBuf dst, ByteBuf payload )
+    public static void writeFrame( ByteBuffer dst, ByteBuffer payload )
     {
         Int32 len = payload.readableBytes
         dst.writeVarUint( SystemConvertInt64( len ) )
@@ -47,7 +47,7 @@ public class LengthPrefix extends Object
     }
 
     # 数组形式（payload 整体为一帧）
-    public static void writeFrameBytes( ByteBuf dst, UInt8Array payload )
+    public static void writeFrameBytes( ByteBuffer dst, UInt8Array payload )
     {
         Int32 len = payload.length
         dst.writeVarUint( SystemConvertInt64( len ) )
@@ -60,7 +60,7 @@ public class LengthPrefix extends Object
     #   >= 0  完整帧的 payload 长度（varint 已被消费，payload 未动）
     #   -1    半包（varint 或 payload 不完整；readerIndex 已回退）
     #   -2    超限（payload 长度 > maxFrame；readerIndex 已回退）
-    public static Int32 readFrameLength( ByteBuf src, Int32 maxFrame ) throws
+    public static Int32 readFrameLength( ByteBuffer src, Int32 maxFrame ) throws
     {
         Int32 before = src.readerIndex
         var u = src.readVarUint()
@@ -84,10 +84,10 @@ public class LengthPrefix extends Object
     }
 
     # 尝试从 src 读出一帧（半包续接语义）。
-    #   成功 → 独立 ByteBuf（消费 src 对应区间）
+    #   成功 → 独立 ByteBuffer（消费 src 对应区间）
     #   半包 → null（不消费 readerIndex）
     #   超限 → throw StreamIOError.FrameTooLarge
-    public static ByteBuf tryReadFrame( ByteBuf src, Int32 maxFrame ) throws
+    public static ByteBuffer tryReadFrame( ByteBuffer src, Int32 maxFrame ) throws
     {
         Int32 len = LengthPrefix.readFrameLength( src, maxFrame )
         if len == -2
@@ -98,7 +98,7 @@ public class LengthPrefix extends Object
         {
             ret null
         }
-        var frame = ByteBuf( len )
+        var frame = ByteBuffer( len )
         if len > 0
         {
             src.readBytes( frame, len )
@@ -111,10 +111,10 @@ public class LengthPrefix extends Object
     # 传播（由调用方统一转投 onError，见 §8.4）。返回无意义，仅保持
     # void 契约。
 
-    static void drainFrames<T>( StreamController<T> ctrl, Codec<T, ByteBuf> codec, ByteBuf acc, Int32 maxFrame ) throws
+    static void drainFrames<T>( StreamController<T> ctrl, Codec<T, ByteBuffer> codec, ByteBuffer acc, Int32 maxFrame ) throws
     {
         StreamController<T> c = ctrl
-        Codec<T, ByteBuf> cd = codec
+        Codec<T, ByteBuffer> cd = codec
         while true
         {
             Int32 len = LengthPrefix.readFrameLength( acc, maxFrame )
@@ -126,7 +126,7 @@ public class LengthPrefix extends Object
             {
                 break
             }
-            var frame = ByteBuf( len )
+            var frame = ByteBuffer( len )
             if len > 0
             {
                 acc.readBytes( frame, len )
@@ -140,12 +140,12 @@ public class LengthPrefix extends Object
 
     # 字节流 → 分帧解码消息流：read 循环 + 半包续接；EOF 时残留
     # 半包帧抛 UnexpectedEof，read/超限/解码异常统一转投 onError。
-    public static Stream<T> decodeStream<T>( ByteStream src, Codec<T, ByteBuf> codec )
+    public static Stream<T> decodeStream<T>( ByteStream src, Codec<T, ByteBuffer> codec )
     {
         ret LengthPrefix.decodeStream<T>( src, codec, LengthPrefix.defaultMaxFrame() )
     }
 
-    public static Stream<T> decodeStream<T>( ByteStream src, Codec<T, ByteBuf> codec, Int32 maxFrame )
+    public static Stream<T> decodeStream<T>( ByteStream src, Codec<T, ByteBuffer> codec, Int32 maxFrame )
     {
         var s = _FramedDecodeStream<T>( src, codec, maxFrame )
         ret s
@@ -153,25 +153,25 @@ public class LengthPrefix extends Object
 
     # 消息写入端：add(msg) → encode → 帧直写 dst（varint 头 + payload
     # 两步写出）；close 时 flush。payload 超 maxFrame 抛 FrameTooLarge。
-    public static StreamSink<T> encodeSink<T>( ByteStream dst, Codec<T, ByteBuf> codec )
+    public static StreamSink<T> encodeSink<T>( ByteStream dst, Codec<T, ByteBuffer> codec )
     {
         ret LengthPrefix.encodeSink<T>( dst, codec, LengthPrefix.defaultMaxFrame() )
     }
 
-    public static StreamSink<T> encodeSink<T>( ByteStream dst, Codec<T, ByteBuf> codec, Int32 maxFrame )
+    public static StreamSink<T> encodeSink<T>( ByteStream dst, Codec<T, ByteBuffer> codec, Int32 maxFrame )
     {
         var k = _FrameEncodeSink<T>( dst, codec, maxFrame )
         ret k
     }
 
-    # chunk 流（Stream<ByteBuf>）→ 分帧解码消息流：上游每 chunk 累积
+    # chunk 流（Stream<ByteBuffer>）→ 分帧解码消息流：上游每 chunk 累积
     # 后抽帧（chunked decoder，处理半包，§8.4 bind 语义）。
-    public static Stream<T> bindStream<T>( Stream<ByteBuf> chunks, Codec<T, ByteBuf> codec )
+    public static Stream<T> bindStream<T>( Stream<ByteBuffer> chunks, Codec<T, ByteBuffer> codec )
     {
         ret LengthPrefix.bindStream<T>( chunks, codec, LengthPrefix.defaultMaxFrame() )
     }
 
-    public static Stream<T> bindStream<T>( Stream<ByteBuf> chunks, Codec<T, ByteBuf> codec, Int32 maxFrame )
+    public static Stream<T> bindStream<T>( Stream<ByteBuffer> chunks, Codec<T, ByteBuffer> codec, Int32 maxFrame )
     {
         var s = _FramedBindStream<T>( chunks, codec, maxFrame )
         ret s
@@ -187,10 +187,10 @@ public class LengthPrefix extends Object
 public class _FramedDecodeStream<T> extends Stream<T>
 {
     ByteStream _src = null
-    Codec<T, ByteBuf> _codec = null
+    Codec<T, ByteBuffer> _codec = null
     Int32 _maxFrame = 0
 
-    _init_( ByteStream src, Codec<T, ByteBuf> codec, Int32 maxFrame )
+    _init_( ByteStream src, Codec<T, ByteBuffer> codec, Int32 maxFrame )
     {
         this._src = src
         this._codec = codec
@@ -203,11 +203,11 @@ public class _FramedDecodeStream<T> extends Stream<T>
         Stream<T> s = ctrl.stream
         StreamSubscription sub = s.listen( onData, onError, onDone, cancelOnError )
         ByteStream src = this._src
-        Codec<T, ByteBuf> codec = this._codec
+        Codec<T, ByteBuffer> codec = this._codec
         Int32 maxFrame = this._maxFrame
         function f = function()
         {
-            ByteBuf acc = ByteBuf( 4096 )
+            ByteBuffer acc = ByteBuffer( 4096 )
             bool truncated = false
             label pumpBlock
             {
@@ -257,10 +257,10 @@ public class _FramedDecodeStream<T> extends Stream<T>
 public class _FrameEncodeSink<T> extends StreamSink<T>
 {
     ByteStream _dst = null
-    Codec<T, ByteBuf> _codec = null
+    Codec<T, ByteBuffer> _codec = null
     Int32 _maxFrame = 0
 
-    _init_( ByteStream dst, Codec<T, ByteBuf> codec, Int32 maxFrame )
+    _init_( ByteStream dst, Codec<T, ByteBuffer> codec, Int32 maxFrame )
     {
         this._dst = dst
         this._codec = codec
@@ -271,17 +271,17 @@ public class _FrameEncodeSink<T> extends StreamSink<T>
     # 超限/底层写失败以异常上抛，由调用方决定降级策略。
     override public void add( T chunk ) throws
     {
-        Codec<T, ByteBuf> codec = this._codec
+        Codec<T, ByteBuffer> codec = this._codec
         ByteStream dst = this._dst
-        ByteBuf payload = codec.encode( chunk )
+        ByteBuffer payload = codec.encode( chunk )
         Int32 len = payload.readableBytes
         if len > this._maxFrame
         {
             throw StreamIOError.FrameTooLarge
         }
-        # 帧头 + payload 打包为独立 ByteBuf 后整体写出：varint/字节级
-        # 写入是 ByteBuf 的方法，ByteStream 只有 write(ByteBuf)。
-        var frame = ByteBuf( ByteBuf.varUintEncodedSize( SystemConvertInt64( len ) ) + len )
+        # 帧头 + payload 打包为独立 ByteBuffer 后整体写出：varint/字节级
+        # 写入是 ByteBuffer 的方法，ByteStream 只有 write(ByteBuffer)。
+        var frame = ByteBuffer( ByteBuffer.varUintEncodedSize( SystemConvertInt64( len ) ) + len )
         frame.writeVarUint( SystemConvertInt64( len ) )
         frame.writeBytes( payload )
         dst.write( frame )
@@ -295,18 +295,18 @@ public class _FrameEncodeSink<T> extends StreamSink<T>
 
 # ============================================================================
 # _FramedBindStream<T> — 推模式分帧解码流（chunked decoder）
-# 订阅上游 ByteBuf chunk 流：onData 累积 + 抽帧转发；上游错误透传；
+# 订阅上游 ByteBuffer chunk 流：onData 累积 + 抽帧转发；上游错误透传；
 # 上游 done 时残留半包转 UnexpectedEof。中转 controller 无缓冲上限
 # （转发不丢事件）。
 # ============================================================================
 
 public class _FramedBindStream<T> extends Stream<T>
 {
-    Stream<ByteBuf> _source = null
-    Codec<T, ByteBuf> _codec = null
+    Stream<ByteBuffer> _source = null
+    Codec<T, ByteBuffer> _codec = null
     Int32 _maxFrame = 0
 
-    _init_( Stream<ByteBuf> source, Codec<T, ByteBuf> codec, Int32 maxFrame )
+    _init_( Stream<ByteBuffer> source, Codec<T, ByteBuffer> codec, Int32 maxFrame )
     {
         this._source = source
         this._codec = codec
@@ -315,16 +315,16 @@ public class _FramedBindStream<T> extends Stream<T>
 
     override public StreamSubscription listen( Function onData, Function onError, Function onDone, bool cancelOnError )
     {
-        Stream<ByteBuf> src = this._source
-        Codec<T, ByteBuf> codec = this._codec
+        Stream<ByteBuffer> src = this._source
+        Codec<T, ByteBuffer> codec = this._codec
         Int32 maxFrame = this._maxFrame
         StreamController<T> ctrl = StreamController<T>()
         Stream<T> s = ctrl.stream
         StreamSubscription sub = s.listen( onData, onError, onDone, cancelOnError )
-        ByteBuf acc = ByteBuf( 4096 )
+        ByteBuffer acc = ByteBuffer( 4096 )
         function fwd = function( object v )
         {
-            ByteBuf chunk = v as ByteBuf
+            ByteBuffer chunk = v as ByteBuffer
             label chunkBlock
             {
                 acc.writeBytes( chunk )

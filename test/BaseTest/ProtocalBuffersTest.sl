@@ -32,10 +32,10 @@ ProtocalBuffersTest
         }
     }
 
-    # 黄金向量比对用：writer 导出 → ByteBuf → 小写十六进制
+    # 黄金向量比对用：writer 导出 → ByteBuffer → 小写十六进制
     static string hexOf( PbWriter w )
     {
-        var b = ByteBuf.fromBytes( w.toBytes() )
+        var b = ByteBuffer.fromBytes( w.toBytes() )
         string h = b.toHex()
         b.release()
         ret h
@@ -230,7 +230,7 @@ ProtocalBuffersTest
     static testOfficialVectors() throws
     {
         # 官方示例 1：field 1 varint 150
-        var b1 = ByteBuf.fromHex( "089601" )
+        var b1 = ByteBuffer.fromHex( "089601" )
         var r1 = ProtocalBuffers.newReader( b1.toArray() )
         b1.release()
         PbTag t1 = r1.readTag()
@@ -239,7 +239,7 @@ ProtocalBuffersTest
         check( "official vec1 atEnd", r1.atEnd )
 
         # 官方示例 2：field 2 length-delimited "testing"
-        var b2 = ByteBuf.fromHex( "120774657374696e67" )
+        var b2 = ByteBuffer.fromHex( "120774657374696e67" )
         var r2 = ProtocalBuffers.newReader( b2.toArray() )
         b2.release()
         PbTag t2 = r2.readTag()
@@ -248,7 +248,7 @@ ProtocalBuffersTest
         check( "official vec2 atEnd", r2.atEnd )
 
         # 官方示例 3：嵌套子消息 1a 03 08 96 01
-        var b3 = ByteBuf.fromHex( "1a03089601" )
+        var b3 = ByteBuffer.fromHex( "1a03089601" )
         var r3 = ProtocalBuffers.newReader( b3.toArray() )
         b3.release()
         PbTag t3 = r3.readTag()
@@ -331,7 +331,7 @@ ProtocalBuffersTest
         check( "skip drains input", r.atEnd )
 
         # groups 兼容（已废弃的 wire 3/4）：13 08 2a 14
-        var gb = ByteBuf.fromHex( "13082a14" )
+        var gb = ByteBuffer.fromHex( "13082a14" )
         var gr = ProtocalBuffers.newReader( gb.toArray() )
         gb.release()
         PbTag gt = gr.readTag()
@@ -393,7 +393,7 @@ ProtocalBuffersTest
         check( "empty input throws", caught == 1 )
 
         # 撒谎长度：声明 5 字节只有 2 字节
-        var lb = ByteBuf.fromHex( "0a050102" )
+        var lb = ByteBuffer.fromHex( "0a050102" )
         var larr = lb.toArray()
         lb.release()
         caught = 0
@@ -408,7 +408,7 @@ ProtocalBuffersTest
         check( "lying length throws", caught == 1 )
 
         # skipField 撒谎长度
-        var sb = ByteBuf.fromHex( "0a05" )
+        var sb = ByteBuffer.fromHex( "0a05" )
         var sarr = sb.toArray()
         sb.release()
         caught = 0

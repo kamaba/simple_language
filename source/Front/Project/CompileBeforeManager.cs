@@ -26,18 +26,18 @@ using System.Text.Json;
 
 namespace SimpleLanguage.Project
 {
-    public class MacroManager
+    public class CompileBeforeManager
     {
-        public static MacroManager instance
+        public static CompileBeforeManager instance
         {
             get
             {
                 if (s_Instance == null)
-                    s_Instance = new MacroManager();
+                    s_Instance = new CompileBeforeManager();
                 return s_Instance;
             }
         }
-        private static MacroManager s_Instance = null;
+        private static CompileBeforeManager s_Instance = null;
 
         /// <summary>操作数类别（编译期求值只支持这三类基础值）。</summary>
         private enum EOperandKind
@@ -62,7 +62,7 @@ namespace SimpleLanguage.Project
 
         private readonly Dictionary<string, JsonElement> m_MacroValues = new Dictionary<string, JsonElement>();
 
-        private MacroManager() { }
+        private CompileBeforeManager() { }
 
         // ============ 宏值存取 ============
 

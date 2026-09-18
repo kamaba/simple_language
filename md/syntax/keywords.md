@@ -252,7 +252,7 @@ d = f"""x=${ a + 1 }""";    # 三引号 f 形式仅支持 ${expr}
 
 | 分类 | 类型 |
 |------|------|
-| 字节 | `ByteBuf`、`ByteStream`(abstract)、`MemoryStream`、`LengthPrefix` |
+| 字节 | `ByteBuffer`、`ByteStream`(abstract)、`MemoryStream`、`LengthPrefix` |
 | Stream | `Stream`(abstract)、`Stream<T>`(abstract)、`StreamIterator<T>`、`StreamSubscription`、`StreamController<T>`、`StreamSink<T>`、`StreamTransformer<S,T>` |
 | Codec | `ChunkedConversionSink`、`Converter<S,T>`、`Codec<S,T>`、`ProtoCodec` / `ProtoCodec<T>` |
 
@@ -291,5 +291,5 @@ jsonc `platform` 段关键字全表见 [../project/environment-guide.md](../proj
 
 ## 6) 系统方法
 
-`println` / `print` 等系统方法由 `Core.jsonc` 的 `systemCalls[]` 注册（`SystemPrint`、`SystemConvert*`、`SystemCoroutine*`、`SystemByteBuf*`、`SystemChannel*`、`SystemMemory*`、`SystemJson*`、`SystemLz4*` 等数百个），实现下沉在 C VM 的 `system_method_call/` 适配器。
+`println` / `print` 等系统方法由 `Core.jsonc` 的 `systemCalls[]` 注册（`SystemPrint`、`SystemConvert*`、`SystemCoroutine*`、`SystemByteBuffer*`、`SystemChannel*`、`SystemMemory*`、`SystemJson*`、`SystemLz4*` 等数百个），实现下沉在 C VM 的 `system_method_call/` 适配器。
 语言侧使用说明见 [system_method.md](./system_method.md)。

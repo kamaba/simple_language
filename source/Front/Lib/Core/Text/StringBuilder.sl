@@ -1,18 +1,18 @@
 # ============================================================================
 # Core/Container/StringBuilder.sl — 可变字符串构建器（快速变体）
 #
-# 存储后端复用 IO/ByteBuf（本体在 C VM 端注册表，SL 侧仅持句柄），
+# 存储后端复用 IO/ByteBuffer（本体在 C VM 端注册表，SL 侧仅持句柄），
 # 追加按 UTF-8 编码写入，均摊扩容，避免 string + string 的 O(n^2) 拷贝。
 # 数值/对象经 SystemConvertString 转换，格式化复用 SystemStringFormat
 # （占位符 {0}/{1} 索引式或 {} 自增式，与 String.format 同一语义）。
 #
-# 生命周期：ByteBuf 注册表无 GC 自动回收（csimple_lang/src/base/vm_bytebuf.c
+# 生命周期：ByteBuffer 注册表无 GC 自动回收（csimple_lang/src/base/vm_byte_buffer.c
 # 手动 destroy 模式），长生命周期程序建议用毕显式 release()；
 # 释放后再追加仅触发 C 层告警不抛异常，建议弃用实例。
 #
 # 已知偏差（Java StringBuilder 对照）：
 #   - 仅支持尾部追加：insert/replace/delete/reverse 未实现
-#     （ByteBuf 后端无对应系统调用，待后续版本）
+#     （ByteBuffer 后端无对应系统调用，待后续版本）
 #   - length 为 UTF-8 字节数而非字符数（与 SL String.length 语义一致；
 #     多字节字符计数请转出后自行处理）
 #   - 内嵌 NUL 的字节序列会破坏 SL 字符串 C 风格 \0 语义，
@@ -21,27 +21,27 @@
 
 public class StringBuilder extends Object
 {
-    # 存储后端：C VM 端 ByteBuf 注册表对象（句柄 0 = 未持有/已释放）
-    ByteBuf _buf = null
+    # 存储后端：C VM 端 ByteBuffer 注册表对象（句柄 0 = 未持有/已释放）
+    ByteBuffer _buf = null
 
     # ── 构造 ──
 
-    # 空构建器（容量由 ByteBuf 按需扩容）
+    # 空构建器（容量由 ByteBuffer 按需扩容）
     override _init_()
     {
-        this._buf = ByteBuf()
+        this._buf = ByteBuffer()
     }
 
     # 以 text 起始内容构建（null 视为空串，C 层已兜底）
     _init_( string text )
     {
-        this._buf = ByteBuf.fromString( text )
+        this._buf = ByteBuffer.fromString( text )
     }
 
     # 预留 initialCapacity 字节（提示性参数，超出仍自动扩容）
     _init_( Int32 initialCapacity )
     {
-        this._buf = ByteBuf( initialCapacity )
+        this._buf = ByteBuffer( initialCapacity )
     }
 
     # ── 静态工厂 ──
@@ -115,7 +115,7 @@ public class StringBuilder extends Object
         ret this
     }
 
-    # ByteBuf 风格别名（void 返回）：追加文本，不参与链式
+    # ByteBuffer 风格别名（void 返回）：追加文本，不参与链式
     public void write( string text )
     {
         this._buf.writeString( text )

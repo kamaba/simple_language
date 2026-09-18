@@ -17,7 +17,7 @@
 # 抛 DecodeFailed。
 # 尺寸预查：maxByteCount/maxCharCount 入参均为字节数（前者 UTF-8 输入
 # 字节，后者目标编码输入字节），上界超出 Int32 范围时返回 0。
-# 跨模块访问：经 Core.ByteBuf 的 handle / fromHandle 桥接注册表 id。
+# 跨模块访问：经 Core.ByteBuffer 的 handle / fromHandle 桥接注册表 id。
 # 便捷类：Utf8 / Unicode(UTF-16LE) / BigEndianUnicode / Gb2312 / Ascii，
 # 常用编码零枚举样板；其余变体（含 *_BOM 与 UTF-32 系）经本类枚举访问。
 # ============================================================================
@@ -259,9 +259,9 @@ public class Encoding extends Object
 
     # 把 UTF-8 文本编码为目标编码字节流，返回新缓冲（中间缓冲即时释放）；
     # 目标字符集无法表示的码点抛 EncodeFailed
-    public static ByteBuf encode( EncodingCode code, string text ) throws
+    public static ByteBuffer encode( EncodingCode code, string text ) throws
     {
-        var b = ByteBuf.fromString( text )
+        var b = ByteBuffer.fromString( text )
         var encoded = Encoding.encode( code, b )
         b.release()
         ret encoded
@@ -269,9 +269,9 @@ public class Encoding extends Object
 
     # 把 src 可读区的 UTF-8 字节编码为目标编码字节流，返回新缓冲；
     # src 索引不变。输入非法 UTF-8 或含不可表示码点抛 EncodeFailed
-    public static ByteBuf encode( EncodingCode code, ByteBuf src ) throws
+    public static ByteBuffer encode( EncodingCode code, ByteBuffer src ) throws
     {
-        if SystemByteBufIsReleased( src.handle )
+        if SystemByteBufferIsReleased( src.handle )
         {
             throw BufferError.Released
         }
@@ -280,13 +280,13 @@ public class Encoding extends Object
         {
             throw EncodingError.EncodeFailed
         }
-        ret ByteBuf.fromHandle( id )
+        ret ByteBuffer.fromHandle( id )
     }
 
     # 把 src 可读区的目标编码字节解码为 UTF-8 文本；src 索引不变。
     # 开头 BOM 自动识别并剥离；非法字节序列抛 DecodeFailed；
-    # 内嵌 NUL 截断语义同 ByteBuf.toString
-    public static string decode( EncodingCode code, ByteBuf src ) throws
+    # 内嵌 NUL 截断语义同 ByteBuffer.toString
+    public static string decode( EncodingCode code, ByteBuffer src ) throws
     {
         var b = Encoding.decodeBytes( code, src )
         var text = b.toString()
@@ -296,9 +296,9 @@ public class Encoding extends Object
 
     # 解码为 UTF-8 字节缓冲（不经 string，保留全部字节含 NUL），
     # decode 的字节级本体；中间无缓冲，直接返回注册表缓冲
-    public static ByteBuf decodeBytes( EncodingCode code, ByteBuf src ) throws
+    public static ByteBuffer decodeBytes( EncodingCode code, ByteBuffer src ) throws
     {
-        if SystemByteBufIsReleased( src.handle )
+        if SystemByteBufferIsReleased( src.handle )
         {
             throw BufferError.Released
         }
@@ -307,12 +307,12 @@ public class Encoding extends Object
         {
             throw EncodingError.DecodeFailed
         }
-        ret ByteBuf.fromHandle( id )
+        ret ByteBuffer.fromHandle( id )
     }
 
     # 跨编码转换（C# Encoding.Convert 对位）：fromCode 字节 -> UTF-8 ->
     # toCode 字节，返回新缓冲；src 索引不变，中间 UTF-8 缓冲即时释放
-    public static ByteBuf convert( EncodingCode fromCode, EncodingCode toCode, ByteBuf src ) throws
+    public static ByteBuffer convert( EncodingCode fromCode, EncodingCode toCode, ByteBuffer src ) throws
     {
         var utf8 = Encoding.decodeBytes( fromCode, src )
         var encoded = Encoding.encode( toCode, utf8 )
@@ -324,14 +324,14 @@ public class Encoding extends Object
 
     # 返回该编码的 BOM 字节（新缓冲；无 BOM 编码为空缓冲，
     # 如 GB2312 / ASCII 与非 *_BOM 变体）
-    public static ByteBuf preamble( EncodingCode code ) throws
+    public static ByteBuffer preamble( EncodingCode code ) throws
     {
         var id = SystemEncodingPreamble( Encoding.codeValue( code ) )
         if id == 0
         {
             throw EncodingError.UnknownEncoding
         }
-        ret ByteBuf.fromHandle( id )
+        ret ByteBuffer.fromHandle( id )
     }
 }
 
@@ -342,18 +342,18 @@ public class Encoding extends Object
 # UTF-8（无 BOM；解码自动识别并剥离 BOM）
 public class Utf8 extends Object
 {
-    public static ByteBuf encode( string text ) throws
+    public static ByteBuffer encode( string text ) throws
     {
         ret Encoding.encode( EncodingCode.Utf8, text )
     }
 
     # 显式带 BOM 变体（EF BB BF 头，Windows 记事本互通）
-    public static ByteBuf encodeBom( string text ) throws
+    public static ByteBuffer encodeBom( string text ) throws
     {
         ret Encoding.encode( EncodingCode.Utf8Bom, text )
     }
 
-    public static string decode( ByteBuf src ) throws
+    public static string decode( ByteBuffer src ) throws
     {
         ret Encoding.decode( EncodingCode.Utf8, src )
     }
@@ -372,18 +372,18 @@ public class Utf8 extends Object
 # UTF-16 小端（C# Encoding.Unicode 对位；解码自动识别 BE BOM 翻转端序）
 public class Unicode extends Object
 {
-    public static ByteBuf encode( string text ) throws
+    public static ByteBuffer encode( string text ) throws
     {
         ret Encoding.encode( EncodingCode.Utf16LE, text )
     }
 
     # 显式带 BOM 变体（FF FE 头）
-    public static ByteBuf encodeBom( string text ) throws
+    public static ByteBuffer encodeBom( string text ) throws
     {
         ret Encoding.encode( EncodingCode.Utf16LEBom, text )
     }
 
-    public static string decode( ByteBuf src ) throws
+    public static string decode( ByteBuffer src ) throws
     {
         ret Encoding.decode( EncodingCode.Utf16LE, src )
     }
@@ -402,18 +402,18 @@ public class Unicode extends Object
 # UTF-16 大端（C# Encoding.BigEndianUnicode 对位；解码自动识别 LE BOM）
 public class BigEndianUnicode extends Object
 {
-    public static ByteBuf encode( string text ) throws
+    public static ByteBuffer encode( string text ) throws
     {
         ret Encoding.encode( EncodingCode.Utf16BE, text )
     }
 
     # 显式带 BOM 变体（FE FF 头）
-    public static ByteBuf encodeBom( string text ) throws
+    public static ByteBuffer encodeBom( string text ) throws
     {
         ret Encoding.encode( EncodingCode.Utf16BEBom, text )
     }
 
-    public static string decode( ByteBuf src ) throws
+    public static string decode( ByteBuffer src ) throws
     {
         ret Encoding.decode( EncodingCode.Utf16BE, src )
     }
@@ -433,12 +433,12 @@ public class BigEndianUnicode extends Object
 # 表外字符抛 EncodeFailed，未赋值位抛 DecodeFailed）
 public class Gb2312 extends Object
 {
-    public static ByteBuf encode( string text ) throws
+    public static ByteBuffer encode( string text ) throws
     {
         ret Encoding.encode( EncodingCode.Gb2312, text )
     }
 
-    public static string decode( ByteBuf src ) throws
+    public static string decode( ByteBuffer src ) throws
     {
         ret Encoding.decode( EncodingCode.Gb2312, src )
     }
@@ -458,12 +458,12 @@ public class Gb2312 extends Object
 # DecodeFailed——不做 1:1 字节映射的宽松 latin-1 语义）
 public class Ascii extends Object
 {
-    public static ByteBuf encode( string text ) throws
+    public static ByteBuffer encode( string text ) throws
     {
         ret Encoding.encode( EncodingCode.Ascii, text )
     }
 
-    public static string decode( ByteBuf src ) throws
+    public static string decode( ByteBuffer src ) throws
     {
         ret Encoding.decode( EncodingCode.Ascii, src )
     }

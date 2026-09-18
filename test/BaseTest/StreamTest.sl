@@ -5,7 +5,7 @@
 # 测试对象：Core/IO/Stream.sl（推/拉双模事件流）。
 # 落位说明：设计文档 §18 建议 ExpendTest/CSimpleVMStdTest，但 Stream 属
 #   Core 库，按测试路由（md/project/test-guide.md §1）落 BaseTest/
-#   CSimpleVMCoreTest，与 CoroutineTest.sl / ByteBufTest.sl 同列。
+#   CSimpleVMCoreTest，与 CoroutineTest.sl / ByteBufferTest.sl 同列。
 #
 # 编写约定（沿用 CoroutineTest.sl）：
 #  1. 被 spawn 的方法按"简单名+参数个数"在整个汇编内全局解析，故本文件

@@ -27,13 +27,13 @@ ZlibTest
 
     # ── 异常注入辅助（throws 单动作，供 label/catch 捕获） ──
 
-    static zlibCompress( ByteBuf src ) throws
+    static zlibCompress( ByteBuffer src ) throws
     {
         var packed = Zlib.compress( src )
         packed.release()
     }
 
-    static zlibDecompress( ByteBuf src ) throws
+    static zlibDecompress( ByteBuffer src ) throws
     {
         var back = Zlib.decompress( src )
         back.release()
@@ -60,7 +60,7 @@ ZlibTest
         {
             text = text + "abcdefgh"
         }
-        var src = ByteBuf.fromString( text )
+        var src = ByteBuffer.fromString( text )
         var packed = Zlib.compress( src )
         check( "zlib compressible shrinks", packed.readableBytes < 512 )
         var back = Zlib.decompress( packed )
@@ -72,7 +72,7 @@ ZlibTest
 
         # 不可压缩往返：22 字节高熵数据（只保证往返，不保证变小）
         var noiseHex = "0ff1ceab2d9e37415566788a9bbccddeef0a12345678"
-        var noise = ByteBuf.fromHex( noiseHex )
+        var noise = ByteBuffer.fromHex( noiseHex )
         var npacked = Zlib.compress( noise )
         check( "zlib incompressible no shrink", npacked.readableBytes >= 26 )
         var nback = Zlib.decompress( npacked )
@@ -82,7 +82,7 @@ ZlibTest
         nback.release()
 
         # 空容器：4 字节零长度头 + zlib 空流（8 字节）
-        var empty = ByteBuf()
+        var empty = ByteBuffer()
         var epacked = Zlib.compress( empty )
         check( "zlib empty container size", epacked.readableBytes == 12 )
         var eback = Zlib.decompress( epacked )
@@ -97,7 +97,7 @@ ZlibTest
     static testCorruptAndReleased() throws
     {
         # 损坏数据：短于 4 字节头
-        var shortBuf = ByteBuf.fromHex( "0102" )
+        var shortBuf = ByteBuffer.fromHex( "0102" )
         var caught = 0
         label zlibShortBlock
         {
@@ -111,7 +111,7 @@ ZlibTest
         shortBuf.release()
 
         # 损坏数据：头声明 100 字节但流是坏的
-        var lieBuf = ByteBuf.fromHex( "6400000000" )
+        var lieBuf = ByteBuffer.fromHex( "6400000000" )
         caught = 0
         label zlibLieBlock
         {
@@ -125,7 +125,7 @@ ZlibTest
         lieBuf.release()
 
         # 释放后的源 → 异常
-        var gone = ByteBuf( 4 )
+        var gone = ByteBuffer( 4 )
         gone.writeU8( 1 )
         gone.release()
         caught = 0

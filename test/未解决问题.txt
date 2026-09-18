@@ -1,19 +1,19 @@
+函数名称和类名冲突时候的处理  
+定义的变量名称 ，不允许是关键字 在FrontEnd解析的时候，一定要注意这个规则，要提示错误
 
+Log.sl 这个类我简单写了下，有好多错误，你先修复下，然后优化下里边的功能点，比如assert, 其它的也能放到systme_method_call就放进去，让速度更快
 
+Debug.sl  这要要增加 DataFrame的类，可以用来记录 在Debug区间的数据变量，  每一帧都要记录进去  还有增加DataFrame 前帧，后帧的对比相关功能 只能对Data 类的数据这样操作, 还有就是要增加trace功能，可以把一些日志，还有压栈信息，收集下，当然可以写各自的类， 主要目的是用来调试区间的一些信息收集， 如果有必要也可以在vm里边增加一个irCode 你可以先设计一个.md的文件，把Debug系统设计下  总体概念就是可以监视某个数据，可以跟踪某些数据，还有控制流增加一些额外选择等等
 
-函数名称和类名冲突时候的处理
-Debug.sl  这要要增加 DataFrame的类，可以用来记录 在Debug区间的数据变量，  每一帧都要记录进去  还有增加DataFrame 前帧，后帧的对比相关功能 只能对Data 类的数据这样操作
-Log.sl
+MacroManager 这个类改成 CompileBeforeManager
 
 编码相关的
 Tcp/Udp/HttpClient/Websocket/NetStream相关接口
 Yaml/Xml/RegExp
 
-把 ByteBuf 这个改成 ByteBuffer吧
+
 
 TankGame.sl 引入Math类。把一些 二维的都使用Int32_2 Int32_3
-
-定义的变量，不允许是关键字
 
 
 
@@ -51,7 +51,6 @@ Defer,
 /// <summary> errdefer </summary>
 ErrDefer, 这两关键字， 要在制定完 函数退出规则后，再确定使用不使用。
 
-MacroManager 这个类改成 CompileBeforeManager
 把global.data 确定了 下边的关联元素确定下，还有调用方式
 把Core.module.json还有错误.csv 打包到.exe 然后 加载std需要另再加载
 
@@ -87,12 +86,13 @@ bool 运算
 字符串插值
 37.5x
 字符串拼接
-7. 调用nativeBridge的调用验证
 
 内存管理，在cvm里边，增加一个机制，就是小块内存管理， 比如  byte32 byte40 byte 48  byte56  byte64  这样的，多个数组，然后以后用来存放像 Float16_2 的 Float32_2 以下的，都要有对应的列表，然后从这上边分配内存 
 内存管理，增加引用计数，在函数体内检查与操作，如果在函数体几，引用的对应是本地创建的，在本函数内要释放  也就是函数结尾 要有对象的释放
 
 在aot的中，处理llvm内置的一些结构，在生成这个数据后，要有一个id的概念，也就是定义这个对象的hashCode 虽然是在llvm里边生成的，也要有这个概念，因为这个在 llvm的.struct转成VMObject一类的时候，要先检查vm里边有没有这个，如果没有，再去创建VMObject 而且这个不受内存gc管理，因为这个还属于llvm  所以Object.sl 你看下是不是要增加一个int _hashCode这样的概念呀，是不是这样更合理  你确定下，原来好像我看着是用的指针进行hash运算的，这种方式确定可以吗？
+
+在加载完CSharpModule后，先使用 调用nativeBridge的调用验证
 
 sl_aot_skeleton_new_inner这个函数的话，原来的llvm生成的数据，是不是可以在转换的类中 member_data可以复用，然后 这个VMObject不进行gc拖管更合理。
 

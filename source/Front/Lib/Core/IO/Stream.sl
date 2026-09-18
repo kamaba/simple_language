@@ -270,8 +270,8 @@ public abstract class Stream<T> extends Object interface Core.IIterable<T>
     }
 
     # 字节流 → 元素流：L0×L2×L1 三层桥接。
-    # codec: Codec<T, ByteBuf>（decode 方向 ByteBuf -> T）。
-    public static Stream<T> fromByteStream( ByteStream src, Codec<T, ByteBuf> codec )
+    # codec: Codec<T, ByteBuffer>（decode 方向 ByteBuffer -> T）。
+    public static Stream<T> fromByteStream( ByteStream src, Codec<T, ByteBuffer> codec )
     {
         var s = _FromByteStreamStream<T>( src, codec )
         ret s
@@ -863,9 +863,9 @@ public class _ErrorStream<T> extends Stream<T>
 public class _FromByteStreamStream<T> extends Stream<T>
 {
     ByteStream _src = null
-    Codec<T, ByteBuf> _codec = null
+    Codec<T, ByteBuffer> _codec = null
 
-    _init_( ByteStream src, Codec<T, ByteBuf> codec )
+    _init_( ByteStream src, Codec<T, ByteBuffer> codec )
     {
         this._src = src
         this._codec = codec
@@ -877,13 +877,13 @@ public class _FromByteStreamStream<T> extends Stream<T>
         Stream<T> s = ctrl.stream
         StreamSubscription sub = s.listen( onData, onError, onDone, cancelOnError )
         ByteStream src = this._src
-        Codec<T, ByteBuf> codec = this._codec
+        Codec<T, ByteBuffer> codec = this._codec
         function f = function()
         {
-            Converter<ByteBuf, T> decoder = codec.decoder
+            Converter<ByteBuffer, T> decoder = codec.decoder
             StreamSink<T> sk = ctrl.sink
             var dec = decoder.startChunkedConversion( sk )
-            ByteBuf buf = ByteBuf( 4096 )
+            ByteBuffer buf = ByteBuffer( 4096 )
             bool failed = false
             while true
             {

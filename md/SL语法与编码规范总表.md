@@ -677,7 +677,7 @@ dynamic d = ...                                 # 动态类型
 | 文本/序列化 | `BaseJson` `JsonValue` `Json` `BaseCsv` `BaseToml` `BaseYaml` `Serialize` `Utf8Codec` `JsonCodec<T>` `BinaryCodec` `ProtocalBuffers`(Pb 系) `Lz4` |
 | 接口 | `IClone` `IClone<T>` `IIterator` `IIterable` `IIterator<out T>` `IIterable<T>` `IList<T>` `IMap<T1,T2>` `Iterater` `Iterater<T>` |
 | 协程并发 | `Coroutine`(别名 `coro`) `Task` `CoroutineStatus` `CoroutineBlockReason` `Channel` `Channel<T>` |
-| 字节 | `ByteBuf` `ByteStream`(abstract) `MemoryStream` `LengthPrefix` |
+| 字节 | `ByteBuffer` `ByteStream`(abstract) `MemoryStream` `LengthPrefix` |
 | Stream | `Stream`(abstract) `Stream<T>`(abstract) `StreamIterator<T>` `StreamSubscription` `StreamController<T>` `StreamSink<T>` `StreamTransformer<S,T>` |
 | Codec | `ChunkedConversionSink` `Converter<S,T>` `Codec<S,T>` `ProtoCodec` `ProtoCodec<T>` |
 | 其他 | `Attribute` `Nickname` `AOT` `NativeBridge` `Error` 及 `CoreError` `MathOpError` `BufferError` `StreamIOError` `SeekOrigin` `Lz4Error` 等错误枚举 |

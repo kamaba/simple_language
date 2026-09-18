@@ -1,15 +1,15 @@
 # ProtocalBuffers（Protocol Buffers 线格式编解码）
 
-`ProtocalBuffers` 是 Protocol Buffers（protobuf）**线格式（wire format）**编解码器，位于 `Core` 标准库的 `Text` 命名空间下（`Core/Text/ProtocalBuffers.sl`），proto3 兼容子集，底座是 `ByteBuf`（L0 字节层）。
+`ProtocalBuffers` 是 Protocol Buffers（protobuf）**线格式（wire format）**编解码器，位于 `Core` 标准库的 `Text` 命名空间下（`Core/Text/ProtocalBuffers.sl`），proto3 兼容子集，底座是 `ByteBuffer`（L0 字节层）。
 
 定位：**只做二进制层的编解码**——`.proto` schema 与 message 类由业务侧自己定义，本项目不引入代码生成。复杂计算（varint / zigzag / IEEE754 位打包 / UTF-8）全部走 C 层共用原语：
 
 | 原语 | 承载 |
 |------|------|
-| varint（无符号 LEB128） | `ByteBuf.writeVarUint` / `readVarUint` |
-| zigzag varint | `ByteBuf.writeVarInt` / `readVarInt` |
-| 定长小端整数 | `ByteBuf.writeI32Le` / `writeI64Le` / `readI32Le` / `readI64Le` |
-| 浮点位打包 | `ByteBuf.writeF32Le` / `writeF64Le` / `readF32Le` / `readF64Le` |
+| varint（无符号 LEB128） | `ByteBuffer.writeVarUint` / `readVarUint` |
+| zigzag varint | `ByteBuffer.writeVarInt` / `readVarInt` |
+| 定长小端整数 | `ByteBuffer.writeI32Le` / `writeI64Le` / `readI32Le` / `readI64Le` |
+| 浮点位打包 | `ByteBuffer.writeF32Le` / `writeF64Le` / `readF32Le` / `readF64Le` |
 | UInt64→Int64 位重释 | `SystemConvertInt64FromUInt64`（`readVarUint` 返回 UInt64，原始 varint 值需按位重释；`SystemConvertInt64` 会截断到低 32 位，不可用） |
 
 设计契约：`md/design/STREAM_DESIGN.md` §8。
@@ -173,14 +173,14 @@ PbReader sub = r.readMessage()  # 独立读取器，读子消息体
 # int32 field1 = 150  →  hex "089601"
 PbWriter w1 = ProtocalBuffers.newWriter()
 w1.writeInt32( 1, 150 )
-var h1 = ByteBuf.fromBytes( w1.toBytes() )
+var h1 = ByteBuffer.fromBytes( w1.toBytes() )
 global.println( h1.toHex() )     # 089601
 h1.release()
 
 # string field2 = "testing"  →  hex "120774657374696e67"
 PbWriter w2 = ProtocalBuffers.newWriter()
 w2.writeString( 2, "testing" )
-var h2 = ByteBuf.fromBytes( w2.toBytes() )
+var h2 = ByteBuffer.fromBytes( w2.toBytes() )
 global.println( h2.toHex() )    # 120774657374696e67
 h2.release()
 ```

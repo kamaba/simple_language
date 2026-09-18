@@ -1122,7 +1122,7 @@ namespace SimpleLanguage.Core
                         // MetaCore 层对宏条件求值, 只把选中分支的子语句平铺接入当前语句链,
                         // 未选中分支不参与语义分析与 IR——static 不进 runtime
                         FileMetaBlockSyntax selectBlock = null;
-                        if (MacroManager.instance.EvaluateStaticCondition(fmksis.ifExpressSyntax.conditionExpress, out bool ifResult))
+                        if (CompileBeforeManager.instance.EvaluateStaticCondition(fmksis.ifExpressSyntax.conditionExpress, out bool ifResult))
                         {
                             if (ifResult)
                             {
@@ -1133,7 +1133,7 @@ namespace SimpleLanguage.Core
                                 for (int i = 0; i < fmksis.elseIfExpressSyntax.Count; i++)
                                 {
                                     var elif = fmksis.elseIfExpressSyntax[i];
-                                    if (MacroManager.instance.EvaluateStaticCondition(elif.conditionExpress, out bool elifResult) && elifResult)
+                                    if (CompileBeforeManager.instance.EvaluateStaticCondition(elif.conditionExpress, out bool elifResult) && elifResult)
                                     {
                                         selectBlock = elif.executeBlockSyntax;
                                         break;

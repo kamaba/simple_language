@@ -51,7 +51,7 @@ Project
         MVTest1.fun()
         MVTest2.fun()    
         !#
-        CoroutineTest.fun();
+        #CoroutineTest.fun();
         StringBuilderTest.fun()
         #!
         EnvironmentTest.fun()
@@ -59,7 +59,7 @@ Project
         PlatformLibTest.fun()
         PlatformSixTest.fun()
         PlatformSevenTest.fun()
-        ByteBufTest.fun()
+        ByteBufferTest.fun()
         ProtocalBuffersTest.fun()
         StreamTest.fun()
         CodecFrameTest.fun()

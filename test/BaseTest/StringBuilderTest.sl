@@ -73,7 +73,7 @@ StringBuilderTest
         check( "append Float64", b.toString() == "3.14" )
 
         # UInt8 无专属重载 → 数值兜底路径（SystemConvertString）
-        var src = ByteBuf.fromHex( "c8" )
+        var src = ByteBuffer.fromHex( "c8" )
         var u = src.readU8()
         src.release()
         b.clear()

@@ -49,7 +49,7 @@ Stream<T> / StreamController<T>       （SL，Lib/Core/IO/Stream.sl）
 |------|------|
 | `static Stream<T> fromIterable( Array<T> items )` | 数组生产流：生产协程逐个 add 后 close |
 | `static Stream<T> generate( int count, Function gen )` | 生成生产流：`gen(i)` 产出 i ∈ [0, count) |
-| `static Stream<T> fromByteStream( ByteStream src, Codec<T, ByteBuf> codec )` | 字节流解码生产流（三层桥接） |
+| `static Stream<T> fromByteStream( ByteStream src, Codec<T, ByteBuffer> codec )` | 字节流解码生产流（三层桥接） |
 | `static Stream<T> empty()` | 空流：订阅即 done |
 | `static Stream<T> error( object error )` | 错误流：订阅即 error + done |
 | `static Stream<T> periodic( Int64 millis, Function tick )` | 周期生产流：每 millis 毫秒以 `tick()` 返回值投递一个元素 |
@@ -78,7 +78,7 @@ Stream<T> / StreamController<T>       （SL，Lib/Core/IO/Stream.sl）
 
 ### 2.4 同批交付的 L0 / L2
 
-`Core/IO/ByteStream.sl`：`abstract ByteStream`（`read(ByteBuf)`/`write(ByteBuf)`/`flush`/`seek`/能力位与水位 setter，`static memory()` 工厂）+ `MemoryStream`（`toByteBuf`/`toArray`/`reset` 往返）。`TransformStream`/`HashingStream` 装饰器未落地（P3）。
+`Core/IO/ByteStream.sl`：`abstract ByteStream`（`read(ByteBuffer)`/`write(ByteBuffer)`/`flush`/`seek`/能力位与水位 setter，`static memory()` 工厂）+ `MemoryStream`（`toByteBuffer`/`toArray`/`reset` 往返）。`TransformStream`/`HashingStream` 装饰器未落地（P3）。
 
 `Core/IO/Codec.sl`：`abstract Converter<S,T>`（`convert` + `startChunkedConversion` + `fuse<M>` 组合）+ `abstract Codec<S,T>`（`encoder`/`decoder` + `encode`/`decode` + `fuseCodec<M>`）+ `abstract ChunkedConversionSink<T>`（`add`/`close`）+ `_FusedConverter`/`_FusedCodec` 组合实现。
 
@@ -88,8 +88,8 @@ P2 交付的具体 codec 与配套工具（同目录，见 §5 CodecFrameTest）
 |------|-----|------|
 | `Core/IO/Encoding.sl` | `Utf8Codec extends Codec<string, Array<UInt8>>` | string ↔ UTF-8 字节 |
 | `Core/IO/JsonCodec.sl` | `JsonCodec<T> extends _JsonCodecBase<T, string>` | T ↔ JSON 文本 |
-| `Core/IO/BinaryCodec.sl` | `BinaryCodec extends Codec<object, ByteBuf>` | object ↔ 二进制帧 |
-| `Core/IO/ProtoCodec.sl` | `ProtoCodec<T> extends _ProtoCodecBase<T, ByteBuf>` | T ↔ protobuf 线格式（复用 LengthPrefix 分帧） |
+| `Core/IO/BinaryCodec.sl` | `BinaryCodec extends Codec<object, ByteBuffer>` | object ↔ 二进制帧 |
+| `Core/IO/ProtoCodec.sl` | `ProtoCodec<T> extends _ProtoCodecBase<T, ByteBuffer>` | T ↔ protobuf 线格式（复用 LengthPrefix 分帧） |
 | `Core/IO/Serialize.sl` | `Serialize extends Object` | 序列化门面：toBytes/fromBytes/toText/fromText 同步；toStream/fromStream 返回 Task；toElementStream 返回 Stream\<T\>（varint 分帧多元素流） |
 | `Core/IO/LengthPrefix.sl` | `LengthPrefix extends Object` | 长度前缀分帧静态工具：帧 = `varuint(len)+payload`；半包时 tryReadFrame 返 null 且不消费 readerIndex（续接重试）；超限抛 `StreamIOError.FrameTooLarge` |
 
@@ -135,11 +135,11 @@ var bounded = StreamController<Int32>( 1 )
 - **take 语义**：取满 N 后 cancel 上游 + 调 onDone；`sub` 经闭包捕获延迟绑定（listen 返回后再赋值）。
 - **拉模式短路**：`StreamIterator` 不透传错误事件，以 `moveNext()` 返回 false（current 为 null）短路。
 - **语言设施适配**（契约偏差，见文件头注记）：回调类型统一用 `Function`；`StreamSubscription` 非泛型；事件信封 payload 收敛为 `object`（嵌套泛型无先例，且 `data` 是 SL 关键字不可作标识符，getter 名用 `payload`）；`done` 为轮询哨兵实现；闭包内访问 `this._x` 一律先拷局部变量再进闭包。
-- **fromByteStream 桥接**：生产协程循环 `read(4096)` → `decoder.startChunkedConversion(sink)` 分块转换 → 写入 controller；`read` 异常（`try?` 返 null）转投 `StreamIOError.Timeout` 错误事件；`ByteBuf` 复用要求 decoder 实现在 `add` 内拷贝（分块所有权约定）。
+- **fromByteStream 桥接**：生产协程循环 `read(4096)` → `decoder.startChunkedConversion(sink)` 分块转换 → 写入 controller；`read` 异常（`try?` 返 null）转投 `StreamIOError.Timeout` 错误事件；`ByteBuffer` 复用要求 decoder 实现在 `add` 内拷贝（分块所有权约定）。
 
 ## 5. 测试
 
-`test/BaseTest/StreamTest.sl`（Core 宿主 `CSimpleVMCoreTest`，与 `CoroutineTest.sl`/`ByteBufTest.sl` 同列），15 项断言全绿：
+`test/BaseTest/StreamTest.sl`（Core 宿主 `CSimpleVMCoreTest`，与 `CoroutineTest.sl`/`ByteBufferTest.sl` 同列），15 项断言全绿：
 
 | 组 | 覆盖 |
 |----|------|
@@ -149,7 +149,7 @@ var bounded = StreamController<Int32>( 1 )
 | E（2） | 拉取协程空通道挂起与恢复、root 协程拉取生产流全量 |
 | F（2） | 容量 1 背压（第二个 add 挂起、消费驱动生产完成）、无上限连发不挂起 |
 
-`test/BaseTest/CodecFrameTest.sl`（同宿主），325 项断言全绿，A~I 九组（载荷 `data CodecUserData{uid,name,score}`，作 `Codec<T, String/ByteBuf>` 泛型实参）：
+`test/BaseTest/CodecFrameTest.sl`（同宿主），325 项断言全绿，A~I 九组（载荷 `data CodecUserData{uid,name,score}`，作 `Codec<T, String/ByteBuffer>` 泛型实参）：
 
 | 组 | 覆盖 |
 |----|------|

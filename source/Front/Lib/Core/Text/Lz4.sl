@@ -34,7 +34,7 @@ public class Lz4 extends Object
     # ── 压缩 / 解压 ──
 
     # 压缩 src 的可读区，返回新缓冲；src 索引不变
-    public static ByteBuf compress( ByteBuf src ) throws
+    public static ByteBuffer compress( ByteBuffer src ) throws
     {
         src._ensureLive()
         var id = SystemLz4Compress( src._bid )
@@ -42,15 +42,15 @@ public class Lz4 extends Object
         {
             throw Lz4Error.CompressFailed
         }
-        var b = ByteBuf()
-        SystemByteBufDestroy( b._bid )
+        var b = ByteBuffer()
+        SystemByteBufferDestroy( b._bid )
         b._bid = id
         ret b
     }
 
     # 解压 SystemLz4Compress 产物，返回新缓冲；src 索引不变。
     # 数据损坏 / 截断 / 头部非法时抛 DecompressFailed
-    public static ByteBuf decompress( ByteBuf src ) throws
+    public static ByteBuffer decompress( ByteBuffer src ) throws
     {
         src._ensureLive()
         var id = SystemLz4Decompress( src._bid )
@@ -58,8 +58,8 @@ public class Lz4 extends Object
         {
             throw Lz4Error.DecompressFailed
         }
-        var b = ByteBuf()
-        SystemByteBufDestroy( b._bid )
+        var b = ByteBuffer()
+        SystemByteBufferDestroy( b._bid )
         b._bid = id
         ret b
     }

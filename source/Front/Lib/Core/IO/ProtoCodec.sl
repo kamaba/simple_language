@@ -4,7 +4,7 @@
 # P2 范围：ProtoCodec<T> 闭包注入版 + 分帧流式三件套（decodeStream /
 # encodeSink / bindStream，机制本体在 LengthPrefix.sl）。底层 wire
 # format 读写用 Core.Text.ProtocalBuffers（PbWriter / PbReader / varint
-# 全家走 ByteBuf system method）。
+# 全家走 ByteBuffer system method）。
 #
 # 已知偏差（详见设计文档 §17 实现注记）：
 #   - 设计稿 of(ProtoSchema) / of()（schema 或 @Serializable 注解驱动）
@@ -14,7 +14,7 @@
 #     format 层已交付）。schema 驱动的生成器仍为 P3（codegen）。
 #   - 设计稿 bind() 因 `bind` 为 SL 保留 token（类头语法位）改名
 #     bindStream，语义不变。
-#   - 设计稿直接 `extends Codec<T, ByteBuf>`；Front 泛型 extends 混合实参
+#   - 设计稿直接 `extends Codec<T, ByteBuffer>`；Front 泛型 extends 混合实参
 #     （模板 + 具体类）不物化 gen 实体（AddMetaTemplateClassByMetaClassAndMetaTemplateMetaTypeList
 #     要求全部实参为具体类形态），父类落回原始模板类后覆写签名无法匹配
 #     具体类型参数。故经参数到参数的中间基类 _ProtoCodecBase<S,T> 继承
@@ -41,15 +41,15 @@ public abstract class _ProtoCodecBase<S,T> extends Codec<S,T>
 }
 
 # ============================================================================
-# ProtoCodec<T> — T ↔ ByteBuf（消息对象 ↔ ProtoBuf wire format）
-# S = T（消息对象），T = ByteBuf（字节，分帧单位）
+# ProtoCodec<T> — T ↔ ByteBuffer（消息对象 ↔ ProtoBuf wire format）
+# S = T（消息对象），T = ByteBuffer（字节，分帧单位）
 # ============================================================================
 
-public class ProtoCodec<T> extends _ProtoCodecBase<T, ByteBuf>
+public class ProtoCodec<T> extends _ProtoCodecBase<T, ByteBuffer>
 {
-    # encode 闭包：T → ByteBuf（内部用 PbWriter 编码）
+    # encode 闭包：T → ByteBuffer（内部用 PbWriter 编码）
     Function _encoderFn = null
-    # decode 闭包：ByteBuf → T（内部用 PbReader 解码）
+    # decode 闭包：ByteBuffer → T（内部用 PbReader 解码）
     Function _decoderFn = null
 
     _init_( Function encoderFn, Function decoderFn )
@@ -68,17 +68,17 @@ public class ProtoCodec<T> extends _ProtoCodecBase<T, ByteBuf>
 
     # ── Codec 契约：encoder / decoder 为闭包适配的 Converter ──
 
-    override get Converter<T, ByteBuf> encoder()
+    override get Converter<T, ByteBuffer> encoder()
     {
         Function fn = this._encoderFn
-        var c = _FnConverter<T, ByteBuf>( fn )
+        var c = _FnConverter<T, ByteBuffer>( fn )
         ret c
     }
 
-    override get Converter<ByteBuf, T> decoder()
+    override get Converter<ByteBuffer, T> decoder()
     {
         Function fn = this._decoderFn
-        var c = _FnConverter<ByteBuf, T>( fn )
+        var c = _FnConverter<ByteBuffer, T>( fn )
         ret c
     }
 
@@ -110,13 +110,13 @@ public class ProtoCodec<T> extends _ProtoCodecBase<T, ByteBuf>
         ret LengthPrefix.encodeSink<T>( dst, this, maxFrame )
     }
 
-    # chunked decoder：Stream<ByteBuf> → Stream<T>（处理半包）
-    public Stream<T> bindStream( Stream<ByteBuf> chunks )
+    # chunked decoder：Stream<ByteBuffer> → Stream<T>（处理半包）
+    public Stream<T> bindStream( Stream<ByteBuffer> chunks )
     {
         ret LengthPrefix.bindStream<T>( chunks, this )
     }
 
-    public Stream<T> bindStream( Stream<ByteBuf> chunks, Int32 maxFrame )
+    public Stream<T> bindStream( Stream<ByteBuffer> chunks, Int32 maxFrame )
     {
         ret LengthPrefix.bindStream<T>( chunks, this, maxFrame )
     }

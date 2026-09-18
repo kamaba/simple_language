@@ -8,7 +8,7 @@
 # 语义要点：
 #   - SL 字符串即 UTF-8 C 字符串：C VM vm_sys_string_to_uint8_array 按
 #     strlen 原样拷贝字节，encode 直接 SystemStringToUInt8Array；无
-#     反向 syscall（UInt8Array → string），decode 经 ByteBuf 中转：
+#     反向 syscall（UInt8Array → string），decode 经 ByteBuffer 中转：
 #     fromBytes(bytes).toString()（可读区 UTF-8 解码）。
 #   - extends Codec<string, Array<UInt8>>：全部实参为具体类形态
 #     （string 具体类；Array<UInt8> 中 UInt8 为具体基类，gen 实体
@@ -17,7 +17,7 @@
 #
 # 已知偏差（详见设计文档 §17 实现注记）：
 #   - 设计稿 Encoding 定位为通用字符集编码抽象（多字符集），P2 仅
-#     落地 UTF-8 单 codec；ByteBuf.readString(Encoding) /
+#     落地 UTF-8 单 codec；ByteBuffer.readString(Encoding) /
 #     writeString(Encoding) 重载待后续多字符集需求再扩展。
 # ============================================================================
 
@@ -43,13 +43,13 @@ public class Utf8Codec extends Codec<string, Array<UInt8>>
         ret c
     }
 
-    # 解码器：UTF-8 字节数组 → string（经 ByteBuf 可读区解码中转）
+    # 解码器：UTF-8 字节数组 → string（经 ByteBuffer 可读区解码中转）
     override get Converter<Array<UInt8>, string> decoder()
     {
         function fn = function( object v )
         {
             var arr = v as Array<UInt8>
-            var buf = ByteBuf.fromBytes( arr )
+            var buf = ByteBuffer.fromBytes( arr )
             ret buf.toString()
         }
         var c = _FnConverter<Array<UInt8>, string>( fn )

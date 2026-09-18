@@ -2,7 +2,7 @@
 # Core/IO/Serialize.sl — 序列化门面（STREAM_DESIGN.md §8.7）
 #
 # T 按 Codec 分两个方向编排：
-#   - 字节向：Codec<T, ByteBuf>（BinaryCodec / ProtoCodec / Utf8Codec）
+#   - 字节向：Codec<T, ByteBuffer>（BinaryCodec / ProtoCodec / Utf8Codec）
 #   - 文本向：Codec<T, string>（JsonCodec 等）
 # 七方法：toBytes / fromBytes / toText / fromText 同步；
 #         toStream / fromStream 返回 Task（协程异步）；
@@ -30,13 +30,13 @@ public class Serialize extends Object
 {
     # ── 同步四件 ──
 
-    public static ByteBuf toBytes<T>( T obj, Codec<T, ByteBuf> codec )
+    public static ByteBuffer toBytes<T>( T obj, Codec<T, ByteBuffer> codec )
     {
-        ByteBuf b = codec.encode( obj )
+        ByteBuffer b = codec.encode( obj )
         ret b
     }
 
-    public static T fromBytes<T>( ByteBuf b, Codec<T, ByteBuf> codec )
+    public static T fromBytes<T>( ByteBuffer b, Codec<T, ByteBuffer> codec )
     {
         T obj = codec.decode( b )
         ret obj
@@ -57,9 +57,9 @@ public class Serialize extends Object
     # ── 异步两件（协程 Task；错误吞 null，见文件头偏差注记）──
 
     # 对象编码后整体写出（编码同步、写盘异步）
-    public static Task toStream<T>( T obj, ByteStream dst, Codec<T, ByteBuf> codec )
+    public static Task toStream<T>( T obj, ByteStream dst, Codec<T, ByteBuffer> codec )
     {
-        ByteBuf payload = codec.encode( obj )
+        ByteBuffer payload = codec.encode( obj )
         function f = function()
         {
             label io
@@ -76,11 +76,11 @@ public class Serialize extends Object
     }
 
     # 整流读入后解码（读尽 EOF 收尾；读/解码异常吞 null）
-    public static Task fromStream<T>( ByteStream src, Codec<T, ByteBuf> codec )
+    public static Task fromStream<T>( ByteStream src, Codec<T, ByteBuffer> codec )
     {
         function f = function()
         {
-            ByteBuf acc = ByteBuf( 4096 )
+            ByteBuffer acc = ByteBuffer( 4096 )
             while true
             {
                 Int32 got = try? src.read( acc )
@@ -102,7 +102,7 @@ public class Serialize extends Object
     # ── 流式一件：字节流 → 分帧多元素流（varint 长度前缀，机制在
     #    LengthPrefix，见 §8.1；RPC / 文件批量存储的标准做法）──
 
-    public static Stream<T> toElementStream<T>( ByteStream src, Codec<T, ByteBuf> codec )
+    public static Stream<T> toElementStream<T>( ByteStream src, Codec<T, ByteBuffer> codec )
     {
         ret LengthPrefix.decodeStream<T>( src, codec )
     }

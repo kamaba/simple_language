@@ -30,13 +30,13 @@ Base64Test
 
     # ── 异常注入辅助（throws 单动作，供 label/catch 捕获） ──
 
-    static base64Encode( ByteBuf src ) throws
+    static base64Encode( ByteBuffer src ) throws
     {
         var encoded = Base64.encode( src )
         encoded.release()
     }
 
-    static base64Decode( ByteBuf src ) throws
+    static base64Decode( ByteBuffer src ) throws
     {
         var back = Base64.decode( src )
         back.release()
@@ -77,7 +77,7 @@ Base64Test
 
         # 二进制往返：22 字节高熵数据（不依赖文本编码语义）
         var noiseHex = "0ff1ceab2d9e37415566788a9bbccddeef0a12345678"
-        var noise = ByteBuf.fromHex( noiseHex )
+        var noise = ByteBuffer.fromHex( noiseHex )
         var encoded = Base64.encode( noise )
         check( "b64 binary encoded length", encoded.readableBytes == 32 )
         var back = Base64.decode( encoded )
@@ -88,7 +88,7 @@ Base64Test
         back.release()
 
         # 空输入：encode 产物为空缓冲（合法），decode 还原为空
-        var empty = ByteBuf()
+        var empty = ByteBuffer()
         var eencoded = Base64.encode( empty )
         check( "b64 empty encoded size", eencoded.readableBytes == 0 )
         var eback = Base64.decode( eencoded )
@@ -103,7 +103,7 @@ Base64Test
     static testCorruptAndReleased() throws
     {
         # 损坏文本：长度非 4 倍数
-        var odd = ByteBuf.fromString( "Zg=" )
+        var odd = ByteBuffer.fromString( "Zg=" )
         var caught = 0
         label b64OddBlock
         {
@@ -117,7 +117,7 @@ Base64Test
         odd.release()
 
         # 损坏文本：字符集外字符（'*' 不在标准字母表）
-        var bad = ByteBuf.fromString( "Zm*v" )
+        var bad = ByteBuffer.fromString( "Zm*v" )
         caught = 0
         label b64BadCharBlock
         {
@@ -131,7 +131,7 @@ Base64Test
         bad.release()
 
         # 损坏文本：'=' 填充后又出现数据字符（非规范文本）
-        var padMid = ByteBuf.fromString( "Zg==Zg==" )
+        var padMid = ByteBuffer.fromString( "Zg==Zg==" )
         caught = 0
         label b64PadMidBlock
         {
@@ -145,7 +145,7 @@ Base64Test
         padMid.release()
 
         # 损坏文本：整 quad 全是 '='（填充多于 2 个）
-        var fourPads = ByteBuf.fromString( "====" )
+        var fourPads = ByteBuffer.fromString( "====" )
         caught = 0
         label b64FourPadsBlock
         {
@@ -159,7 +159,7 @@ Base64Test
         fourPads.release()
 
         # 释放后的源 → 异常（编码侧）
-        var gone = ByteBuf( 4 )
+        var gone = ByteBuffer( 4 )
         gone.writeU8( 1 )
         gone.release()
         caught = 0
@@ -178,7 +178,7 @@ Base64Test
 
     static testOverloads() throws
     {
-        # string 入口 + decodeString(ByteBuf) 出口（25 字节文本 → 36 字符）
+        # string 入口 + decodeString(ByteBuffer) 出口（25 字节文本 → 36 字符）
         var text = "hello base64, Hello world"
         var packed = Base64.encode( text )
         check( "b64 string encode length", packed.readableBytes == 36 )
@@ -195,8 +195,8 @@ Base64Test
         check( "b64 bytes roundtrip last", abytes[6] == 252 )
         apacked.release()
 
-        # encodeToString(ByteBuf) 与 decodeString(string) 快捷入口
-        var b = ByteBuf.fromString( "Man" )
+        # encodeToString(ByteBuffer) 与 decodeString(string) 快捷入口
+        var b = ByteBuffer.fromString( "Man" )
         check( "b64 buf encodeToString", Base64.encodeToString( b ) == "TWFu" )
         b.release()
         check( "b64 string decodeString", Base64.decodeString( "TWFu" ) == "Man" )
@@ -209,7 +209,7 @@ Base64Test
         var text = "base64 stream bridge sample 0123456789"
 
         # encode(ByteStream)：源流读到 EOF 再编码
-        var srcBuf = ByteBuf.fromString( text )
+        var srcBuf = ByteBuffer.fromString( text )
         var mem = ByteStream.wrapReadOnly( srcBuf )
         var encoded = Base64.encode( mem )
         var back = Base64.decodeString( encoded )
@@ -219,7 +219,7 @@ Base64Test
         mem.close()
 
         # encodeTo / decodeTo：结果写入目标流（数据归属目标流）
-        var src = ByteBuf.fromString( text )
+        var src = ByteBuffer.fromString( text )
         var dst = ByteStream.memory()
         Base64.encodeTo( dst, src )
         var b64 = dst.readAll()

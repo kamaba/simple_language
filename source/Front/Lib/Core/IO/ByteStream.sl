@@ -103,17 +103,17 @@ public abstract class ByteStream extends Object
     # ── 核心抽象（子类实现）──
 
     # 尽量读满 dst 可写区；返回实际读入字节数，0 = EOF。
-    public abstract Int32 read( ByteBuf dst ) throws;
+    public abstract Int32 read( ByteBuffer dst ) throws;
 
     # 挂起直到 src 可读区全部写出（写背压）。
-    public abstract void write( ByteBuf src ) throws;
+    public abstract void write( ByteBuffer src ) throws;
 
     # 冲刷用户态缓冲（不保证落盘）。
     public abstract void flush() throws;
 
     # ── 读组合方法（基类实现）──
 
-    public Int32 readAtLeast( ByteBuf dst, Int32 n ) throws
+    public Int32 readAtLeast( ByteBuffer dst, Int32 n ) throws
     {
         this._ensureReadable()
         if n <= 0
@@ -132,14 +132,14 @@ public abstract class ByteStream extends Object
         ret dst.writerIndex - before
     }
 
-    public ByteBuf readExactly( Int32 n ) throws
+    public ByteBuffer readExactly( Int32 n ) throws
     {
         this._ensureReadable()
         if n < 0
         {
             throw StreamIOError.NotSupported
         }
-        var dst = ByteBuf( n )
+        var dst = ByteBuffer( n )
         if n > 0
         {
             Int32 got = this.readAtLeast( dst, n )
@@ -158,7 +158,7 @@ public abstract class ByteStream extends Object
         {
             ret 0
         }
-        var scratch = ByteBuf( 4096 )
+        var scratch = ByteBuffer( 4096 )
         Int32 remaining = n
         Int32 total = 0
         while remaining > 0
@@ -179,10 +179,10 @@ public abstract class ByteStream extends Object
     }
 
     # 读到 EOF；maxBytes = 0 表示不限。慎用于无限流。
-    public ByteBuf readAll( Int32 maxBytes = 0 ) throws
+    public ByteBuffer readAll( Int32 maxBytes = 0 ) throws
     {
         this._ensureReadable()
-        var buf = ByteBuf()
+        var buf = ByteBuffer()
         while true
         {
             Int32 got = this.read( buf )
@@ -203,7 +203,7 @@ public abstract class ByteStream extends Object
     public void writeByte( UInt8 b ) throws
     {
         this._ensureWritable()
-        var one = ByteBuf( 1 )
+        var one = ByteBuffer( 1 )
         one.writeU8( b )
         this.write( one )
     }
@@ -311,14 +311,14 @@ public abstract class ByteStream extends Object
         ret s
     }
 
-    public static ByteStream memory( ByteBuf initial )
+    public static ByteStream memory( ByteBuffer initial )
     {
         var s = MemoryStream( initial )
         ret s
     }
 
-    # 只读包装（序列化读取场景）：复用外部 ByteBuf，禁止写入。
-    public static ByteStream wrapReadOnly( ByteBuf buf )
+    # 只读包装（序列化读取场景）：复用外部 ByteBuffer，禁止写入。
+    public static ByteStream wrapReadOnly( ByteBuffer buf )
     {
         var s = MemoryStream( buf )
         s._canWrite = false
@@ -362,13 +362,13 @@ public abstract class ByteStream extends Object
 
 # ============================================================================
 # MemoryStream — 内存流（P1 唯一 L0 具体子类）
-# 读写共用一个 ByteBuf：readerIndex 即 position，writerIndex 即数据尾。
+# 读写共用一个 ByteBuffer：readerIndex 即 position，writerIndex 即数据尾。
 # 序列化最常用的目标（ProtoBuf encode → MemoryStream → toArray）。
 # ============================================================================
 
 public class MemoryStream extends ByteStream
 {
-    ByteBuf _buf = null
+    ByteBuffer _buf = null
 
     # ── 构造 ──
 
@@ -379,12 +379,12 @@ public class MemoryStream extends ByteStream
 
     _init_( Int32 initialCapacity )
     {
-        this._buf = ByteBuf( initialCapacity )
+        this._buf = ByteBuffer( initialCapacity )
         this._canSeek = true
     }
 
-    # 复用外部 ByteBuf（避免二次拷贝）
-    _init_( ByteBuf backing )
+    # 复用外部 ByteBuffer（避免二次拷贝）
+    _init_( ByteBuffer backing )
     {
         this._buf = backing
         this._canSeek = true
@@ -433,7 +433,7 @@ public class MemoryStream extends ByteStream
 
     # ── 核心读写 ──
 
-    override public Int32 read( ByteBuf dst ) throws
+    override public Int32 read( ByteBuffer dst ) throws
     {
         this._ensureReadable()
         Int32 avail = this._buf.readableBytes
@@ -452,7 +452,7 @@ public class MemoryStream extends ByteStream
         ret n
     }
 
-    override public void write( ByteBuf src ) throws
+    override public void write( ByteBuffer src ) throws
     {
         this._ensureWritable()
         Int32 n = src.readableBytes
@@ -470,7 +470,7 @@ public class MemoryStream extends ByteStream
     # ── 访问内部缓冲 ──
 
     # 返回内部缓冲（不拷贝）；调用方继续读即从当前 readerIndex 开始
-    public ByteBuf toByteBuf()
+    public ByteBuffer toByteBuffer()
     {
         ret this._buf
     }

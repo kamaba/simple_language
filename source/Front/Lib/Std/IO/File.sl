@@ -94,7 +94,7 @@ public class File
     # 类似 C# File.WriteAllBytes(string path, byte[] bytes)
     static bool writeAllBytes( string path, UInt8Array bytes ) throws
     {
-        var src = ByteBuf.fromBytes( bytes )
+        var src = ByteBuffer.fromBytes( bytes )
         var fs = FileStream( path, FileMode.Write )
         fs.write( src )
         fs.close()

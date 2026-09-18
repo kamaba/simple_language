@@ -40,13 +40,13 @@ EncodingTest
         out.release()
     }
 
-    static encEncodeBuf( EncodingCode code, ByteBuf src ) throws
+    static encEncodeBuf( EncodingCode code, ByteBuffer src ) throws
     {
         var out = Encoding.encode( code, src )
         out.release()
     }
 
-    static encDecode( EncodingCode code, ByteBuf src ) throws
+    static encDecode( EncodingCode code, ByteBuffer src ) throws
     {
         var text = Encoding.decode( code, src )
     }
@@ -59,7 +59,7 @@ EncodingTest
     # 通用断言辅助：hex 输入 decode 应抛异常
     static expectDecodeFail( string name, EncodingCode code, string hex ) throws
     {
-        var src = ByteBuf.fromHex( hex )
+        var src = ByteBuffer.fromHex( hex )
         var caught = 0
         label encDecodeFailBlock
         {
@@ -91,7 +91,7 @@ EncodingTest
     # 通用断言辅助：hex 输入 encode 应抛异常（源字节非法 UTF-8）
     static expectEncodeBufFail( string name, EncodingCode code, string hex ) throws
     {
-        var src = ByteBuf.fromHex( hex )
+        var src = ByteBuffer.fromHex( hex )
         var caught = 0
         label encEncodeBufFailBlock
         {
@@ -215,7 +215,7 @@ EncodingTest
         gb.release()
 
         # 补充平面往返：U+1F600 的 UTF-16 代理对 D83D DE00（LE: 3d d8 00 de）
-        var sur = ByteBuf.fromHex( "3dd800de" )
+        var sur = ByteBuffer.fromHex( "3dd800de" )
         var surText = Encoding.decode( EncodingCode.Utf16LE, sur )
         sur.release()
         var surBack = Encoding.encode( EncodingCode.Utf16LE, surText )
@@ -223,24 +223,24 @@ EncodingTest
         surBack.release()
 
         # 反向解码：各编码字节 → 文本（源索引不变）
-        var src8 = ByteBuf.fromHex( "e4b8ad" )
+        var src8 = ByteBuffer.fromHex( "e4b8ad" )
         check( "enc dec utf8", Encoding.decode( EncodingCode.Utf8, src8 ) == "中" )
         check( "enc dec src untouched", src8.readerIndex == 0 )
         src8.release()
 
-        var src16be = ByteBuf.fromHex( "4e2d" )
+        var src16be = ByteBuffer.fromHex( "4e2d" )
         check( "enc dec utf16be", Encoding.decode( EncodingCode.Utf16BE, src16be ) == "中" )
         src16be.release()
 
-        var src32le = ByteBuf.fromHex( "2d4e0000" )
+        var src32le = ByteBuffer.fromHex( "2d4e0000" )
         check( "enc dec utf32le", Encoding.decode( EncodingCode.Utf32LE, src32le ) == "中" )
         src32le.release()
 
-        var srcGb = ByteBuf.fromHex( "c4e3bac3" )
+        var srcGb = ByteBuffer.fromHex( "c4e3bac3" )
         check( "enc dec gb2312", Encoding.decode( EncodingCode.Gb2312, srcGb ) == "你好" )
         srcGb.release()
 
-        var srcAsc = ByteBuf.fromHex( "416239" )
+        var srcAsc = ByteBuffer.fromHex( "416239" )
         check( "enc dec ascii", Encoding.decode( EncodingCode.Ascii, srcAsc ) == "Ab9" )
         srcAsc.release()
 
@@ -277,15 +277,15 @@ EncodingTest
         b32be.release()
 
         # decode 自动剥离开头 BOM（非 BOM 代码声明 + 带 BOM 输入）
-        var bom8 = ByteBuf.fromHex( "efbbbf" + "e4b8ad" )
+        var bom8 = ByteBuffer.fromHex( "efbbbf" + "e4b8ad" )
         check( "enc bom stripped utf8", Encoding.decode( EncodingCode.Utf8, bom8 ) == "中" )
         bom8.release()
 
-        var bom16 = ByteBuf.fromHex( "fffe" + "2d4e" )
+        var bom16 = ByteBuffer.fromHex( "fffe" + "2d4e" )
         check( "enc bom stripped utf16le", Encoding.decode( EncodingCode.Utf16LE, bom16 ) == "中" )
         bom16.release()
 
-        var bom32 = ByteBuf.fromHex( "0000feff" + "00004e2d" )
+        var bom32 = ByteBuffer.fromHex( "0000feff" + "00004e2d" )
         check( "enc bom stripped utf32be", Encoding.decode( EncodingCode.Utf32BE, bom32 ) == "中" )
         bom32.release()
 
@@ -359,7 +359,7 @@ EncodingTest
         expectEncodeStrFail( "enc bad ascii unmappable", EncodingCode.Ascii, "é" )
         expectEncodeStrFail( "enc bad gb2312 unmappable", EncodingCode.Gb2312, "€" )
 
-        # 编码方向：ByteBuf 源本身非法 UTF-8
+        # 编码方向：ByteBuffer 源本身非法 UTF-8
         expectEncodeBufFail( "enc bad encode not utf8", EncodingCode.Utf16LE, "80" )
     }
 
@@ -367,7 +367,7 @@ EncodingTest
 
     static testReleased() throws
     {
-        var gone = ByteBuf( 4 )
+        var gone = ByteBuffer( 4 )
         gone.writeU8( 1 )
         gone.release()
 
@@ -460,7 +460,7 @@ EncodingTest
         back.release()
 
         # ASCII -> UTF-32BE（无 BOM）
-        var asc = ByteBuf.fromHex( "4142" )
+        var asc = ByteBuffer.fromHex( "4142" )
         var wide32 = Encoding.convert( EncodingCode.Ascii, EncodingCode.Utf32BE, asc )
         check( "enc convert ascii to u32be", wide32.toHex() == "0000004100000042" )
         asc.release()

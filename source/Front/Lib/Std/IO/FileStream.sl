@@ -2,8 +2,8 @@
 # Std/IO/FileStream.sl — L0 文件流（STREAM_DESIGN.md §4.4）
 #
 # 语义要点：
-#   - 原生句柄经 ByteBuf 承载：SystemFileOpen 返回 Int64 句柄（0 = 失败），
-#     读写通过 dst.handle / src.handle 传 ByteBuf 注册表 id 零拷贝桥接。
+#   - 原生句柄经 ByteBuffer 承载：SystemFileOpen 返回 Int64 句柄（0 = 失败），
+#     读写通过 dst.handle / src.handle 传 ByteBuffer 注册表 id 零拷贝桥接。
 #   - 同步阻塞 IO：P2 无 CORO_BLOCK_IO，大文件读写会阻塞整条协程
 #     （已知偏差，见设计文档 §4.4 注记）。
 #   - flush 只对可写句柄生效（fflush 输入流是 C 未定义行为）；
@@ -157,7 +157,7 @@ public class FileStream extends ByteStream
 
     # ── 核心读写 ──
 
-    override public Int32 read( ByteBuf dst ) throws
+    override public Int32 read( ByteBuffer dst ) throws
     {
         this._ensureReadable()
         if this._handle == 0 || dst.writableBytes <= 0
@@ -176,7 +176,7 @@ public class FileStream extends ByteStream
         ret n
     }
 
-    override public void write( ByteBuf src ) throws
+    override public void write( ByteBuffer src ) throws
     {
         this._ensureWritable()
         Int32 want = src.readableBytes

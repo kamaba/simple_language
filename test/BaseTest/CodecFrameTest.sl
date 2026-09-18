@@ -63,17 +63,17 @@ CodecFrameTest
     # ---------- cf 前缀 throws 辅助（闭包经 try? 中转调用） ----------
 
     # ProtoBuf 编码：field 1 = varint(id)，field 2 = 字符串(name)
-    static ByteBuf cfEncodeMsg( object v ) throws
+    static ByteBuffer cfEncodeMsg( object v ) throws
     {
         CodecFrameMsg m = v as CodecFrameMsg
         var w = ProtocalBuffers.newWriter()
         w.writeInt32( 1, m.id )
         w.writeString( 2, m.name )
-        ret ByteBuf.fromBytes( w.toBytes() )
+        ret ByteBuffer.fromBytes( w.toBytes() )
     }
 
     # ProtoBuf 解码：按 tag 循环读 1/2 号字段
-    static CodecFrameMsg cfDecodeMsg( ByteBuf b ) throws
+    static CodecFrameMsg cfDecodeMsg( ByteBuffer b ) throws
     {
         var r = ProtocalBuffers.newReader( b.toArray() )
         Int32 id = 0
@@ -97,16 +97,16 @@ CodecFrameTest
     }
 
     # varuint 自定义编码：varuint(id) + name 裸字节（无 field 标签）
-    static ByteBuf cfBinEncode( object v ) throws
+    static ByteBuffer cfBinEncode( object v ) throws
     {
         CodecFrameMsg m = v as CodecFrameMsg
-        var b = ByteBuf( 64 )
+        var b = ByteBuffer( 64 )
         b.writeVarUint( SystemConvertInt64( m.id ) )
         b.writeString( m.name )
         ret b
     }
 
-    static CodecFrameMsg cfBinDecode( ByteBuf b ) throws
+    static CodecFrameMsg cfBinDecode( ByteBuffer b ) throws
     {
         var u = b.readVarUint()
         Int64 id64 = SystemConvertInt64FromUInt64( u )
@@ -125,7 +125,7 @@ CodecFrameTest
         }
         function dec = function( object v )
         {
-            ByteBuf b = v as ByteBuf
+            ByteBuffer b = v as ByteBuffer
             object m = try? CodecFrameTest.cfDecodeMsg( b )
             ret m
         }
@@ -151,8 +151,8 @@ CodecFrameTest
         global.println( "========== A: LengthPrefix 帧原语 ==========" )
 
         # A1 writeFrame + tryReadFrame 往返
-        var payload1 = ByteBuf.fromString( "ABCD" )
-        var dst1 = ByteBuf()
+        var payload1 = ByteBuffer.fromString( "ABCD" )
+        var dst1 = ByteBuffer()
         LengthPrefix.writeFrame( dst1, payload1 )
         check( "A1 writeFrame bytes", dst1.readableBytes == 5 && dst1.toHex() == "0441424344" )
         var frame1 = LengthPrefix.tryReadFrame( dst1, LengthPrefix.defaultMaxFrame() )
@@ -164,45 +164,45 @@ CodecFrameTest
         four[1] = 173
         four[2] = 190
         four[3] = 239
-        var dst2 = ByteBuf()
+        var dst2 = ByteBuffer()
         LengthPrefix.writeFrameBytes( dst2, four )
         check( "A2 writeFrameBytes", dst2.readableBytes == 5 && dst2.toHex() == "04deadbeef" )
 
         # A3 readFrameLength：半包 / 超限 / 截断 varint / 空
-        var src3a = ByteBuf.fromHex( "05" )
+        var src3a = ByteBuffer.fromHex( "05" )
         Int32 r3a = LengthPrefix.readFrameLength( src3a, 65536 )
         check( "A3 half frame", r3a == -1 && src3a.readerIndex == 0 )
 
-        var src3b = ByteBuf.fromHex( "2a" )
+        var src3b = ByteBuffer.fromHex( "2a" )
         Int32 r3b = LengthPrefix.readFrameLength( src3b, 8 )
         check( "A3 over max", r3b == -2 && src3b.readerIndex == 0 )
 
-        var src3c = ByteBuf.fromHex( "80" )
+        var src3c = ByteBuffer.fromHex( "80" )
         Int32 r3c = LengthPrefix.readFrameLength( src3c, 65536 )
         check( "A3 truncated varint", r3c == -1 && src3c.readerIndex == 0 )
 
-        var src3d = ByteBuf()
+        var src3d = ByteBuffer()
         Int32 r3d = LengthPrefix.readFrameLength( src3d, 65536 )
         var f3d = LengthPrefix.tryReadFrame( src3d, 65536 )
         check( "A3 empty", r3d == -1 && f3d == null )
 
         # A4 粘包：两帧连写，逐帧读出后第三帧 null
-        var src4 = ByteBuf.fromHex( "024142024344" )
+        var src4 = ByteBuffer.fromHex( "024142024344" )
         var f4a = LengthPrefix.tryReadFrame( src4, 65536 )
         var f4b = LengthPrefix.tryReadFrame( src4, 65536 )
         var f4c = LengthPrefix.tryReadFrame( src4, 65536 )
         check( "A4 sticky frames", f4a != null && f4a.toString() == "AB" && f4b != null && f4b.toString() == "CD" && f4c == null )
 
         # A5 半包续接：先到 1/3 字节读不出，补齐后整帧读出
-        var acc5 = ByteBuf( 64 )
-        acc5.writeBytes( ByteBuf.fromHex( "0361" ) )
+        var acc5 = ByteBuffer( 64 )
+        acc5.writeBytes( ByteBuffer.fromHex( "0361" ) )
         var f5a = LengthPrefix.tryReadFrame( acc5, 65536 )
-        acc5.writeBytes( ByteBuf.fromHex( "6263" ) )
+        acc5.writeBytes( ByteBuffer.fromHex( "6263" ) )
         var f5b = LengthPrefix.tryReadFrame( acc5, 65536 )
         check( "A5 partial resume", f5a == null && f5b != null && f5b.toString() == "abc" )
 
         # A6 超限抛 FrameTooLarge（payload 10 > maxFrame 8）
-        var src6 = ByteBuf.fromHex( "0a41414141414141414141" )
+        var src6 = ByteBuffer.fromHex( "0a41414141414141414141" )
         bool a6 = false
         label labA6
         {
@@ -266,7 +266,7 @@ CodecFrameTest
         {
             b2over = true
         }
-        string b2hex = ms2.toByteBuf().toHex()
+        string b2hex = ms2.toByteBuffer().toHex()
         check( "B2 over limit", b2over && b2hex == "07080112036f6e65" )
     }
 
@@ -279,7 +279,7 @@ CodecFrameTest
 
         ProtoCodec<CodecFrameMsg> codec = cfMakeCodec()
         CodecFrameMsg msg = CodecFrameMsg( 42, "rt" )
-        ByteBuf b = Serialize.toBytes<CodecFrameMsg>( msg, codec )
+        ByteBuffer b = Serialize.toBytes<CodecFrameMsg>( msg, codec )
         check( "C1 proto encode hex", b.toHex() == "082a12027274" )
         CodecFrameMsg back = Serialize.fromBytes<CodecFrameMsg>( b, codec )
         check( "C2 proto decode", back != null && back.id == 42 && back.name == "rt" )
@@ -313,13 +313,13 @@ CodecFrameTest
         }
         function bdec = function( object v )
         {
-            ByteBuf b = v as ByteBuf
+            ByteBuffer b = v as ByteBuffer
             object m = try? CodecFrameTest.cfBinDecode( b )
             ret m
         }
         BinaryCodec bc = BinaryCodec.of( benc, bdec )
         CodecFrameMsg em = CodecFrameMsg( 7, "bc" )
-        ByteBuf eb = bc.encode( em )
+        ByteBuffer eb = bc.encode( em )
         check( "E1 binary encode hex", eb.toHex() == "076263" )
         object edo = bc.decode( eb )
         CodecFrameMsg ed = edo as CodecFrameMsg
@@ -400,8 +400,8 @@ CodecFrameTest
         CodecFrameTest.g_hNames = ""
         CodecFrameTest.g_hDone = false
         CodecFrameTest.g_hErr = false
-        StreamController<ByteBuf> ctrl1 = StreamController<ByteBuf>()
-        Stream<ByteBuf> cs1 = ctrl1.stream
+        StreamController<ByteBuffer> ctrl1 = StreamController<ByteBuffer>()
+        Stream<ByteBuffer> cs1 = ctrl1.stream
         Stream<CodecFrameMsg> s1 = LengthPrefix.bindStream<CodecFrameMsg>( cs1, cfMakeCodec() )
         function onData1 = function( object v )
         {
@@ -421,10 +421,10 @@ CodecFrameTest
             CodecFrameTest.g_hDone = true
         }
         s1.listen( onData1, onError1, onDone1, false )
-        ctrl1.add( ByteBuf.fromHex( "05" ) )
-        ctrl1.add( ByteBuf.fromHex( "080112" ) )
-        ctrl1.add( ByteBuf.fromHex( "01610508" ) )
-        ctrl1.add( ByteBuf.fromHex( "01120162" ) )
+        ctrl1.add( ByteBuffer.fromHex( "05" ) )
+        ctrl1.add( ByteBuffer.fromHex( "080112" ) )
+        ctrl1.add( ByteBuffer.fromHex( "01610508" ) )
+        ctrl1.add( ByteBuffer.fromHex( "01120162" ) )
         ctrl1.close()
         Coroutine.delay( 50 )
         check( "H1 chunked decode", g_hCount == 2 && g_hNames == "ab" && g_hDone && !g_hErr )
@@ -432,8 +432,8 @@ CodecFrameTest
         # H2 截断流：只喂半帧后上游 close → UnexpectedEof 走 onError
         CodecFrameTest.g_hCount2 = 0
         CodecFrameTest.g_hErr2 = false
-        StreamController<ByteBuf> ctrl2 = StreamController<ByteBuf>()
-        Stream<ByteBuf> cs2 = ctrl2.stream
+        StreamController<ByteBuffer> ctrl2 = StreamController<ByteBuffer>()
+        Stream<ByteBuffer> cs2 = ctrl2.stream
         Stream<CodecFrameMsg> s2 = LengthPrefix.bindStream<CodecFrameMsg>( cs2, cfMakeCodec() )
         function onData2 = function( object v )
         {
@@ -444,7 +444,7 @@ CodecFrameTest
             CodecFrameTest.g_hErr2 = true
         }
         s2.listen( onData2, onError2, null, false )
-        ctrl2.add( ByteBuf.fromHex( "05080112" ) )
+        ctrl2.add( ByteBuffer.fromHex( "05080112" ) )
         ctrl2.close()
         Coroutine.delay( 50 )
         check( "H2 truncated eof", g_hErr2 && g_hCount2 == 0 )

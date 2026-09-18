@@ -29,13 +29,13 @@ GZipTest
 
     # ── 异常注入辅助（throws 单动作，供 label/catch 捕获） ──
 
-    static gzipCompress( ByteBuf src ) throws
+    static gzipCompress( ByteBuffer src ) throws
     {
         var packed = GZip.compress( src )
         packed.release()
     }
 
-    static gzipDecompress( ByteBuf src ) throws
+    static gzipDecompress( ByteBuffer src ) throws
     {
         var back = GZip.decompress( src )
         back.release()
@@ -62,7 +62,7 @@ GZipTest
         {
             text = text + "abcdefgh"
         }
-        var src = ByteBuf.fromString( text )
+        var src = ByteBuffer.fromString( text )
         var packed = GZip.compress( src )
         check( "gzip compressible shrinks", packed.readableBytes < 512 )
         var back = GZip.decompress( packed )
@@ -78,7 +78,7 @@ GZipTest
 
         # 不可压缩往返：22 字节高熵数据（只保证往返，不保证变小）
         var noiseHex = "0ff1ceab2d9e37415566788a9bbccddeef0a12345678"
-        var noise = ByteBuf.fromHex( noiseHex )
+        var noise = ByteBuffer.fromHex( noiseHex )
         var npacked = GZip.compress( noise )
         check( "gzip incompressible no shrink", npacked.readableBytes >= 22 )
         var nback = GZip.decompress( npacked )
@@ -88,7 +88,7 @@ GZipTest
         nback.release()
 
         # 空输入：仍是完整 gzip 流（10 字节头 + 8 字节尾 ≥ 18）
-        var empty = ByteBuf()
+        var empty = ByteBuffer()
         var epacked = GZip.compress( empty )
         check( "gzip empty stream size", epacked.readableBytes >= 18 )
         var eback = GZip.decompress( epacked )
@@ -103,7 +103,7 @@ GZipTest
     static testCorruptAndReleased() throws
     {
         # 损坏数据：短于最小 gzip 流（18 字节头尾）
-        var shortBuf = ByteBuf.fromHex( "1f8b08000000000000" )
+        var shortBuf = ByteBuffer.fromHex( "1f8b08000000000000" )
         var caught = 0
         label gzipShortBlock
         {
@@ -117,7 +117,7 @@ GZipTest
         shortBuf.release()
 
         # 损坏数据：坏头部（magic 不是 1f 8b）
-        var junk = ByteBuf.fromHex( "0000000000000000000000000000000000000000" )
+        var junk = ByteBuffer.fromHex( "0000000000000000000000000000000000000000" )
         caught = 0
         label gzipJunkBlock
         {
@@ -131,7 +131,7 @@ GZipTest
         junk.release()
 
         # 损坏数据：尾部 ISIZE 篡改（解压长度与 trailer 声明不符）
-        var src = ByteBuf.fromString( "gzip isize mismatch probe" )
+        var src = ByteBuffer.fromString( "gzip isize mismatch probe" )
         var packed = GZip.compress( src )
         var raw = packed.toArray()
         var last = raw.length - 1
@@ -143,7 +143,7 @@ GZipTest
         {
             raw[last] = 7
         }
-        var lie = ByteBuf.fromBytes( raw )
+        var lie = ByteBuffer.fromBytes( raw )
         caught = 0
         label gzipLieBlock
         {
@@ -159,7 +159,7 @@ GZipTest
         lie.release()
 
         # 释放后的源 → 异常
-        var gone = ByteBuf( 4 )
+        var gone = ByteBuffer( 4 )
         gone.writeU8( 1 )
         gone.release()
         caught = 0
@@ -204,7 +204,7 @@ GZipTest
         var text = "gzip stream bridge sample data 0123456789"
 
         # compress(ByteStream)：源流读到 EOF 再压缩
-        var srcBuf = ByteBuf.fromString( text )
+        var srcBuf = ByteBuffer.fromString( text )
         var mem = ByteStream.wrapReadOnly( srcBuf )
         var packed = GZip.compress( mem )
         var back = GZip.decompressString( packed )
@@ -214,7 +214,7 @@ GZipTest
         mem.close()
 
         # compressTo / decompressTo：结果写入目标流（数据归属目标流）
-        var src = ByteBuf.fromString( text )
+        var src = ByteBuffer.fromString( text )
         var dst = ByteStream.memory()
         GZip.compressTo( dst, src )
         var gz = dst.readAll()

@@ -61,12 +61,12 @@ namespace SimpleLanguage.Project
                 optimizeLevel = cinputArgs.optimizeLevel;
                 // 外部宏：CLI --macro name=value 在编译前注入 global.macro
                 // 优先级高于 jsonc global.macro 初值，低于 CompileBefore()（编译期仍可再修改）
-                MacroManager.ClearExternalMacros();
+                CompileBeforeManager.ClearExternalMacros();
                 if (cinputArgs.macroDefines != null)
                 {
                     foreach (var kv in cinputArgs.macroDefines)
                     {
-                        MacroManager.SetExternalMacro(kv.Key, kv.Value);
+                        CompileBeforeManager.SetExternalMacro(kv.Key, kv.Value);
                     }
                 }
             }

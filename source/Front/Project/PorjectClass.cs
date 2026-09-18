@@ -439,11 +439,11 @@ namespace SimpleLanguage.Project
         public static void InjectProjectMacroMember()
         {
             // 编译开始：重置为 jsonc global.macro 段初始值
-            MacroManager.instance.LoadFromConfig(ProjectManager.config);
+            CompileBeforeManager.instance.LoadFromConfig(ProjectManager.config);
             // CompileBefore() 预扫描：编译期唯一允许修改 global.macro 的入口
             PreScanCompileBeforeMacroAssign();
 
-            var macroValues = MacroManager.instance.GetAllMacroValues();
+            var macroValues = CompileBeforeManager.instance.GetAllMacroValues();
             if (macroValues.Count == 0)
             {
                 return;
@@ -522,12 +522,12 @@ namespace SimpleLanguage.Project
                 // 只认普通赋值 (=)：global.macro.X = 右值
                 if (syntaxList[i] is FileMetaOpAssignSyntax fmoas
                     && fmoas.assignToken?.type == ETokenType.Assign
-                    && MacroManager.TryGetMacroRefName(fmoas.variableRef, out string macroName))
+                    && CompileBeforeManager.TryGetMacroRefName(fmoas.variableRef, out string macroName))
                 {
                     // 右值必须是常量或另一个宏引用，求值失败错误已由 MacroManager 记录
-                    if (MacroManager.instance.TryEvaluateMacroConstExpress(fmoas.express, out var value))
+                    if (CompileBeforeManager.instance.TryEvaluateMacroConstExpress(fmoas.express, out var value))
                     {
-                        MacroManager.instance.SetMacroValue(macroName, value, fmoas.assignToken);
+                        CompileBeforeManager.instance.SetMacroValue(macroName, value, fmoas.assignToken);
                         (removeList ??= new List<FileMetaSyntax>()).Add(fmoas);
                     }
                 }

@@ -33,7 +33,7 @@ public class StdInStream extends ByteStream
     }
 
     # 行缓冲读取：一次 read 返回一行（含 '\n'）；0 = EOF
-    override public Int32 read( ByteBuf dst ) throws
+    override public Int32 read( ByteBuffer dst ) throws
     {
         this._ensureReadable()
         if this._eof
@@ -51,7 +51,7 @@ public class StdInStream extends ByteStream
         ret dst.writerIndex - before
     }
 
-    override public void write( ByteBuf src ) throws
+    override public void write( ByteBuffer src ) throws
     {
         this._ensureWritable()
     }
@@ -81,14 +81,14 @@ public class StdOutStream extends ByteStream
         this._canRead = false
     }
 
-    override public Int32 read( ByteBuf dst ) throws
+    override public Int32 read( ByteBuffer dst ) throws
     {
         this._ensureReadable()
         ret 0
     }
 
     # 整段写出：按 UTF-8 解码 src 可读区后打印（不追加换行）
-    override public void write( ByteBuf src ) throws
+    override public void write( ByteBuffer src ) throws
     {
         this._ensureWritable()
         Int32 n = src.readableBytes
@@ -125,14 +125,14 @@ public class StdErrStream extends ByteStream
         this._canRead = false
     }
 
-    override public Int32 read( ByteBuf dst ) throws
+    override public Int32 read( ByteBuffer dst ) throws
     {
         this._ensureReadable()
         ret 0
     }
 
     # 偏差：当前无 stderr syscall，复用 stdout（见文件头注记）
-    override public void write( ByteBuf src ) throws
+    override public void write( ByteBuffer src ) throws
     {
         this._ensureWritable()
         Int32 n = src.readableBytes

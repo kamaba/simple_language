@@ -4,13 +4,13 @@
 # 设计定位：
 #   - 这是「线格式（wire format）」编解码器，对应 protobuf 的二进制层；
 #     .proto schema 与 message 类由业务侧自己定义（本项目不引入代码生成）。
-#   - 底座是 IO/ByteBuf（L0 字节层），复杂计算全部走 C 层 system method：
-#       * varint        → ByteBuf.writeVarUint / readVarUint（无符号 LEB128）
-#       * zigzag varint → ByteBuf.writeVarInt  / readVarInt（zigzag + LEB128 一体）
-#       * 定长小端      → ByteBuf.writeI32Le / writeI64Le / readI32Le / readI64Le
-#       * 浮点位打包    → ByteBuf.writeF32Le / writeF64Le / readF32Le / readF64Le
+#   - 底座是 IO/ByteBuffer（L0 字节层），复杂计算全部走 C 层 system method：
+#       * varint        → ByteBuffer.writeVarUint / readVarUint（无符号 LEB128）
+#       * zigzag varint → ByteBuffer.writeVarInt  / readVarInt（zigzag + LEB128 一体）
+#       * 定长小端      → ByteBuffer.writeI32Le / writeI64Le / readI32Le / readI64Le
+#       * 浮点位打包    → ByteBuffer.writeF32Le / writeF64Le / readF32Le / readF64Le
 #                         （IEEE754 位重释在 C 层完成，不再需要逃逸口）
-#       * UTF-8 编解码  → ByteBuf.writeString（无长度前缀）/ readString(len)
+#       * UTF-8 编解码  → ByteBuffer.writeString（无长度前缀）/ readString(len)
 #       * UInt64→Int64 位重释 → SystemConvertInt64FromUInt64（readVarUint
 #                         返回 UInt64，protobuf 原始 varint 值需按位重释为
 #                         Int64；SystemConvertInt64 会截断到低 32 位，不可用）
@@ -132,11 +132,11 @@ public class PbCoding extends Object
 # ── 写入器 ─────────────────────────────────────────────────
 public class PbWriter extends Object
 {
-    ByteBuf _buf = null
+    ByteBuffer _buf = null
 
     override _init_()
     {
-        this._buf = ByteBuf()
+        this._buf = ByteBuffer()
     }
 
     get Int32 length()
@@ -266,7 +266,7 @@ public class PbWriter extends Object
             ret
         }
         # 临时缓冲做 UTF-8 编码（writeString 不带长度前缀），量完长度再搬运
-        ByteBuf tmp = ByteBuf()
+        ByteBuffer tmp = ByteBuffer()
         tmp.writeString( s )
         this._buf.writeVarUint( SystemConvertInt64( tmp.readableBytes ) )
         this._buf.writeBytes( tmp )
@@ -297,7 +297,7 @@ public class PbWriter extends Object
         this.writeTag( field, EPbWireType.LengthDelimited )
         # slice 视图只读消费：writeBytes 会推进视图自己的 readerIndex，
         # 不动 sub 的索引；用完释放视图句柄
-        ByteBuf view = sub._buf.slice()
+        ByteBuffer view = sub._buf.slice()
         this._buf.writeVarUint( SystemConvertInt64( view.readableBytes ) )
         this._buf.writeBytes( view )
         view.release()
@@ -318,11 +318,11 @@ public class PbWriter extends Object
 # ── 读取器 ─────────────────────────────────────────────────
 public class PbReader extends Object
 {
-    ByteBuf _buf = null
+    ByteBuffer _buf = null
 
     override _init_()
     {
-        this._buf = ByteBuf()
+        this._buf = ByteBuffer()
     }
 
     # fromBytes 为深拷贝语义（P0 约定），读取器独立持有数据
@@ -330,11 +330,11 @@ public class PbReader extends Object
     {
         if bytes == null
         {
-            this._buf = ByteBuf()
+            this._buf = ByteBuffer()
         }
         else
         {
-            this._buf = ByteBuf.fromBytes( bytes )
+            this._buf = ByteBuffer.fromBytes( bytes )
         }
     }
 

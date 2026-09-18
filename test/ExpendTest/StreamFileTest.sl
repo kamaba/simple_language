@@ -51,16 +51,16 @@ StreamFileTest
 
     # ---------- sf 前缀 throws 辅助 ----------
 
-    static ByteBuf sfEncodeMsg( object v ) throws
+    static ByteBuffer sfEncodeMsg( object v ) throws
     {
         StreamFileMsg m = v as StreamFileMsg
         var w = ProtocalBuffers.newWriter()
         w.writeInt32( 1, m.id )
         w.writeString( 2, m.name )
-        ret ByteBuf.fromBytes( w.toBytes() )
+        ret ByteBuffer.fromBytes( w.toBytes() )
     }
 
-    static StreamFileMsg sfDecodeMsg( ByteBuf b ) throws
+    static StreamFileMsg sfDecodeMsg( ByteBuffer b ) throws
     {
         var r = ProtocalBuffers.newReader( b.toArray() )
         Int32 id = 0
@@ -92,7 +92,7 @@ StreamFileTest
         }
         function dec = function( object v )
         {
-            ByteBuf b = v as ByteBuf
+            ByteBuffer b = v as ByteBuffer
             object m = try? StreamFileTest.sfDecodeMsg( b )
             ret m
         }
@@ -113,7 +113,7 @@ StreamFileTest
 
         string path = "stream_file_test_a.txt"
         var fw = FileStream( path, FileMode.Create )
-        fw.write( ByteBuf.fromString( "hello file stream" ) )
+        fw.write( ByteBuffer.fromString( "hello file stream" ) )
         fw.flush()
         fw.flushToDisk()
         fw.close()
@@ -121,10 +121,10 @@ StreamFileTest
         FileStream fr = FileStream( path, FileMode.Read )
         check( "A1 length", fr.length == 17 )
         check( "A2 position", fr.position == 0 )
-        var got = ByteBuf( 32 )
+        var got = ByteBuffer( 32 )
         Int32 n = fr.read( got )
         check( "A3 read", n == 17 && got.readString( got.readableBytes ) == "hello file stream" )
-        var got2 = ByteBuf( 32 )
+        var got2 = ByteBuffer( 32 )
         Int32 n2 = fr.read( got2 )
         check( "A4 eof", n2 == 0 )
         fr.close()
@@ -174,19 +174,19 @@ StreamFileTest
 
         # Write 截断
         var f1 = FileStream( path, FileMode.Write )
-        f1.write( ByteBuf.fromString( "ab" ) )
+        f1.write( ByteBuffer.fromString( "ab" ) )
         f1.close()
         check( "C1 write truncate", File.readAllText( path ) == "ab" )
 
         # Append 追加
         var f2 = FileStream( path, FileMode.Append )
-        f2.write( ByteBuf.fromString( "cd" ) )
+        f2.write( ByteBuffer.fromString( "cd" ) )
         f2.close()
         check( "C2 append", File.readAllText( path ) == "abcd" )
 
         # Create 截断重建
         var f3 = FileStream( path, FileMode.Create )
-        f3.write( ByteBuf.fromString( "XY" ) )
+        f3.write( ByteBuffer.fromString( "XY" ) )
         f3.close()
         check( "C3 create recreate", File.readAllText( path ) == "XY" )
 
@@ -247,7 +247,7 @@ StreamFileTest
         StreamSink<StreamFileMsg> km = LengthPrefix.encodeSink<StreamFileMsg>( ms, codec )
         km.add( StreamFileMsg( 9, "file-codec" ) )
         km.close()
-        string memHex = ms.toByteBuf().toHex()
+        string memHex = ms.toByteBuffer().toHex()
 
         # File 载体
         var fw = FileStream( path, FileMode.Create )
@@ -255,7 +255,7 @@ StreamFileTest
         kf.add( StreamFileMsg( 9, "file-codec" ) )
         kf.close()
         fw.close()
-        string fileHex = ByteBuf.fromBytes( File.readAllBytes( path ) ).toHex()
+        string fileHex = ByteBuffer.fromBytes( File.readAllBytes( path ) ).toHex()
         check( "E1 dual hex", memHex == fileHex )
 
         # File 读回 decodeStream
@@ -294,13 +294,13 @@ StreamFileTest
         Console.println( "========== F: StdOutStream ==========" )
 
         StdOutStream so = StdOutStream.shared()
-        so.write( ByteBuf.fromString( "[StreamFileTest] F1 stdout write" ) )
-        so.write( ByteBuf.fromString( "\n" ) )
+        so.write( ByteBuffer.fromString( "[StreamFileTest] F1 stdout write" ) )
+        so.write( ByteBuffer.fromString( "\n" ) )
 
         bool f2 = false
         label labF2
         {
-            try so.read( ByteBuf( 16 ) )
+            try so.read( ByteBuffer( 16 ) )
         }
         catch
         {

@@ -48,17 +48,17 @@ SFReproTest
         Console.println( "=== F repro ===" )
         StdOutStream so = StdOutStream.shared()
         Console.println( "shared() ok canWrite=" + so.canWrite + " canRead=" + so.canRead )
-        var b1 = ByteBuf.fromString( "[F1] stdout write" )
+        var b1 = ByteBuffer.fromString( "[F1] stdout write" )
         Console.println( "fromString ok readable=" + b1.readableBytes )
         so.write( b1 )
         Console.println( "F1 write ok" )
-        var b2 = ByteBuf.fromString( "\n" )
+        var b2 = ByteBuffer.fromString( "\n" )
         so.write( b2 )
         Console.println( "newline write ok" )
         bool f2 = false
         label labF2
         {
-            try so.read( ByteBuf( 16 ) )
+            try so.read( ByteBuffer( 16 ) )
         }
         catch
         {

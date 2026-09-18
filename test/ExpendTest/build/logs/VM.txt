@@ -880,16 +880,16 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib bound negative : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib compressible shrinks : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib compressible roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -898,36 +898,36 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib src index untouched : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib incompressible no shrink : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib incompressible roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib empty container size : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib empty roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemZlibDecompress: payload is not valid codec container data (code -3).
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decompress] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testCorruptAndReleased] begin. code_length=7792
@@ -935,8 +935,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib short header fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemZlibDecompress: codec returned error -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decompress] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testCorruptAndReleased] begin. code_length=7792
@@ -944,34 +944,34 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib lying length fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[compress] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testCorruptAndReleased] begin. code_length=7792
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib released source fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib string compress shrinks : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib string roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [ZlibTest] zlib bytes roundtrip length : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -1008,16 +1008,16 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip bound negative : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip compressible shrinks : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip compressible roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -1030,36 +1030,36 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip rfc1952 magic : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip incompressible no shrink : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip incompressible roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip empty stream size : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip empty roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemGzipDecompress: payload is not valid codec container data (code -3).
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decompress] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testCorruptAndReleased] begin. code_length=12316
@@ -1067,8 +1067,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip short stream fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemGzipDecompress: payload is not valid codec container data (code -3).
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decompress] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testCorruptAndReleased] begin. code_length=12316
@@ -1076,12 +1076,12 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip junk header fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemGzipDecompress: codec returned error -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decompress] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testCorruptAndReleased] begin. code_length=12316
@@ -1089,34 +1089,34 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip isize mismatch fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[compress] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testCorruptAndReleased] begin. code_length=12316
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip released source fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip string compress shrinks : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip string roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip bytes roundtrip length : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -1129,44 +1129,44 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip bytes roundtrip last : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteStream] begin. code_length=141
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteStream] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.MemoryStream] begin. code_length=151
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.MemoryStream] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip stream compress roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteStream] begin. code_length=141
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteStream] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.MemoryStream] begin. code_length=151
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.MemoryStream] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteStream] begin. code_length=141
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteStream] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.MemoryStream] begin. code_length=151
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.MemoryStream] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [GZipTest] gzip stream pipe roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -1207,104 +1207,104 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 bound negative : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 vector empty : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 vector f : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 vector fo : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 vector foo : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 vector foob : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 vector fooba : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 vector foobar : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 decode vector : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 decode vector padded : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 decode vector double pad : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 decode vector empty : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 binary encoded length : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 binary roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -1313,22 +1313,22 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 src index untouched : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 empty encoded size : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 empty roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemBase64Decode: payload is not valid codec container data (code -3).
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decode] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testCorruptAndReleased] begin. code_length=12839
@@ -1336,8 +1336,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 odd length fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemBase64Decode: payload is not valid codec container data (code -3).
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decode] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testCorruptAndReleased] begin. code_length=12839
@@ -1345,8 +1345,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 bad char fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemBase64Decode: payload is not valid codec container data (code -3).
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decode] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testCorruptAndReleased] begin. code_length=12839
@@ -1354,8 +1354,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 pad mid data fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemBase64Decode: payload is not valid codec container data (code -3).
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decode] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testCorruptAndReleased] begin. code_length=12839
@@ -1363,34 +1363,34 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 four pads fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[encode] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testCorruptAndReleased] begin. code_length=12839
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 released source fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 string encode length : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 string roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 bytes roundtrip length : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -1403,60 +1403,60 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 bytes roundtrip last : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 buf encodeToString : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 string decodeString : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteStream] begin. code_length=141
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteStream] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.MemoryStream] begin. code_length=151
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.MemoryStream] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 stream encode roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteStream] begin. code_length=141
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteStream] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.MemoryStream] begin. code_length=151
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.MemoryStream] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteStream] begin. code_length=141
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteStream] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.MemoryStream] begin. code_length=151
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.MemoryStream] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [Base64Test] b64 stream pipe roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -1633,10 +1633,10 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc name alias fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc vec utf8 : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -1645,62 +1645,62 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc vec utf8 size : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc vec utf16le : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc vec utf16be : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc vec utf32le : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc vec utf32be : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc vec gb2312 : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc vec surrogate roundtrip : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc dec utf8 : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -1709,178 +1709,178 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc dec src untouched : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc dec utf16be : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc dec utf32le : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc dec gb2312 : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc dec ascii : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc empty encode : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc empty decode : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bom utf8 : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bom utf16le : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bom utf16be : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bom utf32le : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bom utf32be : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bom stripped utf8 : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bom stripped utf16le : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bom stripped utf32be : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bom flip to be : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bom flip to le : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bom flip utf32 : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc preamble utf8bom : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc preamble utf16lebom : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc preamble utf32bebom : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc preamble gb2312 empty : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc preamble utf8 empty : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingDecode: conversion failed with code -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decodeBytes] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectDecodeFail] begin. code_length=2525
@@ -1888,8 +1888,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad utf8 continuation : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingDecode: conversion failed with code -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decodeBytes] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectDecodeFail] begin. code_length=2525
@@ -1897,8 +1897,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad utf8 overlong : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingDecode: conversion failed with code -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decodeBytes] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectDecodeFail] begin. code_length=2525
@@ -1906,8 +1906,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad utf8 truncated : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingDecode: conversion failed with code -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decodeBytes] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectDecodeFail] begin. code_length=2525
@@ -1915,8 +1915,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad utf16 lone surrogate : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingDecode: conversion failed with code -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decodeBytes] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectDecodeFail] begin. code_length=2525
@@ -1924,8 +1924,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad utf16 odd length : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingDecode: conversion failed with code -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decodeBytes] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectDecodeFail] begin. code_length=2525
@@ -1933,8 +1933,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad utf32 out of range : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingDecode: conversion failed with code -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decodeBytes] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectDecodeFail] begin. code_length=2525
@@ -1942,8 +1942,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad utf32 bad length : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingDecode: conversion failed with code -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decodeBytes] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectDecodeFail] begin. code_length=2525
@@ -1951,8 +1951,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad gb2312 trail range : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingDecode: conversion failed with code -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decodeBytes] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectDecodeFail] begin. code_length=2525
@@ -1960,8 +1960,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad gb2312 unassigned : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingDecode: conversion failed with code -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decodeBytes] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectDecodeFail] begin. code_length=2525
@@ -1969,8 +1969,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad gb2312 truncated : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingDecode: conversion failed with code -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[decodeBytes] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectDecodeFail] begin. code_length=2525
@@ -1978,8 +1978,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad ascii high byte : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingEncode: conversion failed with code -4.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[encode] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectEncodeStrFail] begin. code_length=1920
@@ -1987,8 +1987,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad ascii unmappable : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingEncode: conversion failed with code -4.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[encode] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectEncodeStrFail] begin. code_length=1920
@@ -1996,8 +1996,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad gb2312 unmappable : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Warning] [Runtime] [LID=10003] SystemEncodingEncode: conversion failed with code -3.
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[encode] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [expectEncodeBufFail] begin. code_length=2527
@@ -2005,8 +2005,8 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc bad encode not utf8 : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run=[encode] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] vm_run [testReleased] begin. code_length=5028
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -2019,24 +2019,24 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc released decode fails : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] utf8 encode : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] utf8 decode : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] utf8 encodeBom : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -2049,24 +2049,24 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] utf8 maxCharCount : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] unicode encode : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] unicode decode : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] unicode encodeBom : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -2075,24 +2075,24 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] unicode maxByteCount : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] beunicode encode : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] beunicode decode : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] beunicode encodeBom : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -2101,16 +2101,16 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] beunicode maxByteCount : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] gb2312 encode : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] gb2312 decode : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -2119,16 +2119,16 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] gb2312 maxCharCount : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] ascii encode : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] ascii decode : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -2137,22 +2137,22 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] ascii maxByteCount : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc convert gb to u16le : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc convert u16le to gb : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
@@ -2161,12 +2161,12 @@
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc convert src untouched : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
 
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuf] begin. code_length=18
-[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuf] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run [__new_object__Core.ByteBuffer] begin. code_length=18
+[18:52:37] [Info] [Runtime] [LID=10002] vm_run=[__new_object__Core.ByteBuffer] end. error_code=0
 [18:52:37] [Info] [Runtime] [LID=10002] 
 [18:52:37] [Info] [Runtime] [LID=10002] [EncodingTest] enc convert ascii to u32be : OK
 [18:52:37] [Info] [Runtime] [LID=10002] 
