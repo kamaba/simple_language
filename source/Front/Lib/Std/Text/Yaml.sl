@@ -1,5 +1,5 @@
 
-public class Xml
+public class Yaml
 {
     
 }

@@ -189,7 +189,7 @@ public class Float16_3
                        this.z - 2.0h * d * normal.z )
     }
 
-    Float16_3 set( Float16 _x, Float16 _y, Float16 _z )
+    Float16_3 setValue( Float16 _x, Float16 _y, Float16 _z )
     {
         this.x = _x
         this.y = _y

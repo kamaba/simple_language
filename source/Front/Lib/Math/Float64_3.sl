@@ -189,7 +189,7 @@ public class Float64_3
                        this.z - 2.0d * d * normal.z )
     }
 
-    Float64_3 set( Float64 _x, Float64 _y, Float64 _z )
+    Float64_3 setValue( Float64 _x, Float64 _y, Float64 _z )
     {
         this.x = _x
         this.y = _y

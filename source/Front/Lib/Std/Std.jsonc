@@ -42,8 +42,9 @@
       { "path": "Net/UdpSocket.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/Uri.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Component.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
-      { "path": "Data/Table.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
-      { "path": "Data/Tree.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      // Data/Table.sl、Data/Tree.sl 已删除（源文件为空壳 stub，待 FrameData 重构），登记暂时注释
+      // { "path": "Data/Table.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      // { "path": "Data/Tree.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "DB/Sqlite.sl", "group": "std", "tag": "db", "ignore": false, "priority": 0 },
       { "path": "Isolate/IsolateStatus.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Isolate/IsolateError.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
@@ -58,7 +59,9 @@
       { "path": "FFI/Library.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "GPU/GPU.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       { "path": "Zip/Zip.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
-      { "path": "Zip/GZip.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
+      { "path": "Zip/GZip.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Encoding/Base64.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Encoding/Encoding.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -125,12 +128,12 @@
                 { "class": "Uri" }
             ]
       },      
-      { "namespace": "Data", "children": 
-         [
-            { "class": "Table" },
-            { "class": "Tree" }
-         ]
-      },
+      // { "namespace": "Data", "children":
+      //    [
+      //       { "class": "Table" },
+      //       { "class": "Tree" }
+      //    ]
+      // },
       { "namespace": "DB", "children":
          [
             { "enum": "SQLITE_OPEN" },
@@ -163,6 +166,20 @@
             { "class": "GZip" }
          ]
       },
+      // ---- Std/Encoding：根级注册（同 Isolate 系列）。不可用命名空间 "Encoding"——
+      // Encoding.sl 无 namespace 声明、类型注册到模块根，类名 Encoding 会与
+      // 预建命名空间节点同名，MetaNode.AddMetaClass 无条件复用该节点，
+      // 类作用域被空壳枚举污染，EncodingCode.XXX 成员解析全部失败 ----
+      { "enum": "Base64Error" },
+      { "class": "Base64" },
+      { "enum": "EncodingCode" },
+      { "enum": "EncodingError" },
+      { "class": "Encoding" },
+      { "class": "Utf8" },
+      { "class": "Unicode" },
+      { "class": "BigEndianUnicode" },
+      { "class": "Gb2312" },
+      { "class": "Ascii" },
       { "class": "IsolateStatus" },
       { "class": "IsolateError" },
       { "class": "Capability" },
@@ -337,7 +354,17 @@
     // ---- gzip RFC 1952 calls (Std/Zip/GZip.sl, core: sl_core_gzip.c) ----
     { "name": "SystemGzipCompressBound",       "returnType": "Int32", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_gzip_compress_bound" },
     { "name": "SystemGzipCompress",            "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_gzip_compress" },
-    { "name": "SystemGzipDecompress",          "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_gzip_decompress" }
+    { "name": "SystemGzipDecompress",          "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_gzip_decompress" },
+    // ---- Base64 RFC 4648 calls (Std/Encoding/Base64.sl, core: sl_core_base64.c) ----
+    { "name": "SystemBase64EncodeBound",       "returnType": "Int32", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_base64_encode_bound" },
+    { "name": "SystemBase64Encode",            "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_base64_encode" },
+    { "name": "SystemBase64Decode",            "returnType": "Int64", "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_base64_decode" },
+    // ---- text encoding calls (Std/Encoding/Encoding.sl, core: sl_core_encoding.c) ----
+    { "name": "SystemEncodingMaxByteCount",    "returnType": "Int32", "params": ["Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_encoding_max_byte_count" },
+    { "name": "SystemEncodingMaxCharCount",    "returnType": "Int32", "params": ["Int32", "Int32"], "isVariadic": false, "cvmFunction": "vm_sys_encoding_max_char_count" },
+    { "name": "SystemEncodingEncode",          "returnType": "Int64", "params": ["Int32", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_encoding_encode" },
+    { "name": "SystemEncodingDecode",          "returnType": "Int64", "params": ["Int32", "Int64"], "isVariadic": false, "cvmFunction": "vm_sys_encoding_decode" },
+    { "name": "SystemEncodingPreamble",        "returnType": "Int64", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_encoding_preamble" }
   ],
   "export": {
     "moduleName": "Std",

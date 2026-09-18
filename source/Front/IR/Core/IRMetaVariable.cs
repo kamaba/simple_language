@@ -140,11 +140,17 @@ namespace SimpleLanguage.IR
             IRMetaClass owirmc = IRManager.GetIRMetaClassByMetaVariable(mv);
             // 与 MetaMemberVariable 一致：显式左值类型用 define，var / 首赋局部推断用 real（define 常见为 object 占位）
             MetaType exportMt = mv.GetFinalMetaType();
-            if( exportMt.isEnum && mv.variableFrom != MetaVariable.EVariableFrom.Argument )
+            if( exportMt.isEnum
+                && mv.variableFrom != MetaVariable.EVariableFrom.Argument
+                && mv.variableFrom != MetaVariable.EVariableFrom.None )
             {
                 // 枚举类型变量运行时存 Core.Member（局部槽位/静态字段统一 Member 包装）。
                 // 方法形参例外：形参声明类型是方法签名（functionAllName/跨模块重载决议）的
                 // 组成部分，必须保留枚举类型本身，否则跨模块引用时方法名错位找不到。
+                // 方法返回变量（EVariableFrom.None）同理：returnList 的 typeDef 是导入侧
+                // BuildMetaMemberFunctionFromIR 复原方法返回类型的唯一来源，导出为 Member
+                // 会使跨模块链式调用（f(g())）的实参类型错位、重载决议失败；
+                // VM 侧返回槽位与参数槽位走同一初始化路径（非标量 hint），不受影响。
                 IRMetaClass irmcmm = IRManager.instance.GetIRMetaClassById(CoreMetaClassManager.memberMetaClass.classId);
                 m_IRMetaType = new IRMetaType(irmcmm);
             }

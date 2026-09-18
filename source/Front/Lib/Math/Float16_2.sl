@@ -157,7 +157,7 @@ public class Float16_2
         ret Float16_2( 0.0h - this.x, 0.0h - this.y )
     }
 
-    Float16_2 set( Float16 _x, Float16 _y )
+    Float16_2 setValue( Float16 _x, Float16 _y )
     {
         this.x = _x
         this.y = _y

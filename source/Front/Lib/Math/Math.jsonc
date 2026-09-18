@@ -174,6 +174,7 @@
 
       // ── 向量 / 矩阵：Float32 ─────────────────────────
       { "path": "Int32_2.sl",     "group": "math", "tag": "vec", "ignore": true,  "priority": 0 },
+      { "path": "Int32_3.sl",     "group": "math", "tag": "vec", "ignore": true,  "priority": 0 },
       { "path": "Float32_2.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
       { "path": "Float32_3.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },
       { "path": "Float32_4.sl",   "group": "math", "tag": "vec", "ignore": false, "priority": 0 },

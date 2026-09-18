@@ -182,7 +182,7 @@ public class Float32_3
                        this.z - 2.0f * d * normal.z )
     }
 
-    Float32_3 set( Float32 _x, Float32 _y, Float32 _z )
+    Float32_3 setValue( Float32 _x, Float32 _y, Float32 _z )
     {
         this.x = _x
         this.y = _y

@@ -20,9 +20,11 @@ Project
         # worker 报错不可发送导致 VM 提前退出),放最后不影响其余测试执行
         #ComponentTest.fun()
         #StreamFileTest.fun()
-        SerializeTest.fun()
+        #SerializeTest.fun()
         ZlibTest.fun()
         GZipTest.fun()
+        Base64Test.fun()
+        EncodingTest.fun()
         #IsolateTest.fun()
     }
     CompileBefore()

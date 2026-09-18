@@ -157,7 +157,7 @@ public class Float64_2
         ret Float64_2( 0.0d - this.x, 0.0d - this.y )
     }
 
-    Float64_2 set( Float64 _x, Float64 _y )
+    Float64_2 setValue( Float64 _x, Float64 _y )
     {
         this.x = _x
         this.y = _y
