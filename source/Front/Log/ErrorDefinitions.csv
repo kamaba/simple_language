@@ -1384,6 +1384,7 @@ id,logType,enableAssert,pass,paramCount,domesticTips,zhMessage,,zhFixedTips,enMe
 22031,Info,FALSE,TRUE,0,,没有找到对应成员变量的Index,,,,
 22032,Error,TRUE,FALSE,0,,SVM Error 没有找到加载变量的来源类型！,,,,
 22033,Info,FALSE,TRUE,0,,SVM Error 没有找到加载变量的来源类型！,,,,
+22034,Warning,TRUE,FALSE,1,,Debug begin({}) 无配对 end: 区间将在方法退出/异常回卷时自动关闭,,检查方法内 begin/end 配对（异常路径由 VM 帧回卷兜底，DEBUG_SYSTEM_DESIGN §8.2）。,,
 22100,Info,FALSE,TRUE,0,,"AOT: build dll failed, fallback to CVM:",,,,
 22101,Info,FALSE,TRUE,0,,"AOT: build dll failed, fallback to CVM:",,,,
 22102,Info,FALSE,TRUE,0,,AOT: skip '{}' (stage1 supports static non-template only),,,,

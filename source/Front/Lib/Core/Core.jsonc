@@ -91,7 +91,9 @@
       { "path": "IO/Serialize.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },   
       { "path": "Text/StringBuilder.sl", "group": "text", "tag": "text", "ignore": false, "priority": 0 },
       { "path": "Text/Lz4.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
-      { "path": "Text/ProtocalBuffers.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 }
+      { "path": "Text/ProtocalBuffers.sl", "group": "io", "tag": "io", "ignore": false, "priority": 0 },
+      { "path": "Debug.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 },
+      { "path": "Watcher.sl", "group": "core", "tag": "base", "ignore": false, "priority": 0 }
     ]
   },
   "compileFilter": {
@@ -609,7 +611,48 @@
     // ---- LZ4 native calls (Text/Lz4.sl): 块压缩（STREAM_DESIGN.md §15.6）----
     { "name": "SystemLz4CompressBound",       "returnType": "Int32",  "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_lz4_compress_bound" },
     { "name": "SystemLz4Compress",            "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_lz4_compress" },
-    { "name": "SystemLz4Decompress",          "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_lz4_decompress" }
+    { "name": "SystemLz4Decompress",          "returnType": "Int64",  "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_lz4_decompress" },
+    // ---- Debug sampling (DEBUG_SYSTEM_DESIGN §9.1): special-translated by the
+    // Front into opcodes 119/120/121 (never dispatched as system calls, so
+    // cvmFunction is empty). Registered here for type checking only. ----
+    { "name": "SystemDebugWatch",       "returnType": "void",   "params": ["object", "string"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemDebugWatchMember", "returnType": "void",   "params": ["object", "string", "string"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemDebugWatchAssert", "returnType": "void",   "params": ["object", "string", "bool"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemDebugWatchIn",     "returnType": "void",   "params": ["object", "string", "string"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemDebugBegin",       "returnType": "void",   "params": ["string"], "isVariadic": false, "cvmFunction": "" },
+    { "name": "SystemDebugEnd",         "returnType": "void",   "params": ["string"], "isVariadic": false, "cvmFunction": "" },
+    // ---- Debug queries (DEBUG_SYSTEM_DESIGN §9.2, P1) ----
+    { "name": "SystemDebugGetFrameCount",     "returnType": "Int32",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_frame_count" },
+    { "name": "SystemDebugGetFrame",          "returnType": "string", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_frame" },
+    { "name": "SystemDebugLastFrame",         "returnType": "string", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_debug_last_frame" },
+    { "name": "SystemDebugSetMaxTextLength",  "returnType": "void",   "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_debug_set_max_text_length" },
+    // ---- Debug queries & controls (DEBUG_SYSTEM_DESIGN §9.2, P2) ----
+    { "name": "SystemDebugMark",             "returnType": "void",   "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_debug_mark" },
+    { "name": "SystemDebugDiffFrame",        "returnType": "string", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_debug_diff_frame" },
+    { "name": "SystemDebugFindFrame",       "returnType": "Array<object>", "params": ["string", "string"], "isVariadic": false, "cvmFunction": "vm_sys_debug_find_frame" },
+    { "name": "SystemDebugSeries",           "returnType": "Array<object>", "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_debug_series" },
+    { "name": "SystemDebugGetIntervalStats", "returnType": "string", "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_interval_stats" },
+    { "name": "SystemDebugGetScopeChain",    "returnType": "string", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_scope_chain" },
+    { "name": "SystemDebugSetSkip",          "returnType": "void",   "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_debug_set_skip" },
+    { "name": "SystemDebugPause",            "returnType": "void",   "params": [], "isVariadic": false, "cvmFunction": "vm_sys_debug_pause" },
+    { "name": "SystemDebugResume",           "returnType": "void",   "params": [], "isVariadic": false, "cvmFunction": "vm_sys_debug_resume" },
+    { "name": "SystemDebugEnableWatch",      "returnType": "void",   "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_debug_enable_watch" },
+    { "name": "SystemDebugDisableWatch",     "returnType": "void",   "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_debug_disable_watch" },
+    // ---- Debug queries (DEBUG_SYSTEM_DESIGN §9.2, P3) ----
+    { "name": "SystemDebugGetAssertViolations", "returnType": "Int32", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_assert_violations" },
+    // ---- Debug listen (DEBUG_SYSTEM_DESIGN §9.2/§10, P4) ----
+    { "name": "SystemDebugListen",      "returnType": "Int32", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_debug_listen" },
+    { "name": "SystemDebugListenLabel", "returnType": "Int32", "params": ["string", "object"], "isVariadic": false, "cvmFunction": "vm_sys_debug_listen" },
+    { "name": "SystemDebugUnlisten",    "returnType": "bool",  "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_debug_unlisten" },
+    // ---- Debug StackView (DEBUG_SYSTEM_DESIGN §9.3, P5) ----
+    { "name": "SystemDebugGetOperandStack", "returnType": "string", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_operand_stack" },
+    { "name": "SystemDebugGetFrameInfo",    "returnType": "string", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_frame_info" },
+    { "name": "SystemDebugGetFrameLocals",  "returnType": "string", "params": ["Int32"], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_frame_locals" },
+    { "name": "SystemDebugGetFrameVar",     "returnType": "string", "params": ["Int32", "string"], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_frame_var" },
+    // ---- Debug Trace & frameTable (DEBUG_SYSTEM_DESIGN §9.2, P6) ----
+    { "name": "SystemDebugLog",           "returnType": "void",   "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_debug_log" },
+    { "name": "SystemDebugGetTraceLog",   "returnType": "string", "params": [], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_trace_log" },
+    { "name": "SystemDebugGetFrameTable", "returnType": "string", "params": ["Array<object>"], "isVariadic": false, "cvmFunction": "vm_sys_debug_get_frame_table" }
   ],
   "struct": [
       { "namespace": "Core", "children": 
@@ -689,7 +732,10 @@
         // ---- LengthPrefix / ProtoCodec（STREAM_DESIGN.md §8.1 / §8.4，P2）----
         { "class": "LengthPrefix" },
         { "class": "ProtoCodec" },
-        { "class": "ProtoCodec<T>" }
+        { "class": "ProtoCodec<T>" },
+        { "class": "Debug" },
+        { "class": "Watcher" },
+        { "class": "Watcher<T>" }
       ] },
       // ---- Environment namespace tree (P1.7, PLATFORM_CAPABILITY §13.2) ----
       { "namespace": "Environment", "children":

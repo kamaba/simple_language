@@ -11,6 +11,7 @@ using SimpleLanguage;
 using SimpleLanguage.Core;
 using SimpleLanguage.Export.SLIR.Types;
 using SimpleLanguage.Logging;
+using SimpleLanguage.Project;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -117,6 +118,11 @@ namespace SimpleLanguage.IR
             //    IRLoadVariable irload = IRLoadVariable.CreateLoadVariable(irmt, owirmc, m_IRMethod, mfc.loadMetaVariable);
             //    AddIRRangeData(irload.IRDataList);
             //}
+
+            // ── Debug 采样门面特译 (DEBUG_SYSTEM_DESIGN v4 §7.2) ──
+            // 必须先于实参发射循环: compile.debug 关闭时整句消除, 连实参 IR 都不发射。
+            if (ParseDebugWatchCall(mfc))
+                return;
 
             paramCount = mfc.metaInputParamList.Count;
             for (int j = 0; j < paramCount; j++)
@@ -379,6 +385,189 @@ namespace SimpleLanguage.IR
             {
                 Log.AddIRLog(LID.IRCallIssue, mfc.token, "aaaa");
             }
+        }
+
+        // ────────────────────────────────────────────────────────────────
+        // Debug 采样门面特译 (DEBUG_SYSTEM_DESIGN v4 §7.2)
+        // ────────────────────────────────────────────────────────────────
+
+        /// <summary>Debug 门面类 allName (Debug.sl 顶层类挂 module "Core" 直下, 单层 allName)。</summary>
+        private const string DebugFacadeClassAllName = "Core.Debug";
+
+        /// <summary>
+        /// 拦截 Debug 门面调用点并特译为采样指令 (v4 §7.2)。
+        /// 特译发生在用户调用点而非门面体内的 SystemDebug* 系统调用处:
+        /// label/member 定位参数只有在这里才是编译期字符串字面量, 可提取为
+        /// strIdx 进 payload; 门面体内系统调用因此永远编译为死代码
+        /// (Core.jsonc 的 SystemDebug* 注册仅供类型检查, VM 不实现)。
+        /// P1 范围: watch 双重载 — 2 参 watch(value,label) → mode 0 (值监视),
+        /// 3 参 watch(data,member,label) → mode 1 (成员监视)。
+        /// P2 范围: begin(label) → DebugBegin(119) 8B payload / end(label) →
+        /// DebugEnd(120) 4B payload — 区间 API 无被监视值, 实参不发射 IR。
+        /// P3 范围: watchAssert(value,label,cond) → mode 2 (断言监视, 先发射
+        /// cond 再发射 value, VM 弹栈先得 value 后得 cond §7.2-4) /
+        /// watchIn(value,label,caller) → mode 3 (调用链过滤, caller 字面量
+        /// → callerStrIdx 写 payload[14..18))。
+        /// compile.debug 关闭 → 整句消除: 不发射任何 IR, 连实参求值一起消失 (§4.3)。
+        /// label/member 非字符串字面量 → 打点告警并回退正常 Call
+        /// (门面体系统调用在 VM 侧无 cvmFunction, 运行期报错兜底)。
+        /// 返回 true = 已特译/已消除, 调用方不再走正常 Call 路径; false = 回退。
+        /// </summary>
+        private bool ParseDebugWatchCall(MetaMethodCall mfc)
+        {
+            var mf = mfc.GetTemplateMemberFunction();
+            if (mf == null)
+                return false;
+            var mmf = mf as MetaMemberFunction;
+            // 门面方法全部为静态形态
+            if (mmf == null || !mmf.isStatic)
+                return false;
+            if (mf.ownerMetaClass?.allName != DebugFacadeClassAllName)
+                return false;
+            string methodName = mf.name ?? string.Empty;
+            if (methodName != "watch" && methodName != "watchAssert" && methodName != "watchIn"
+                && methodName != "begin" && methodName != "end")
+                return false;
+
+            paramCount = mfc.metaInputParamList.Count;
+            // §4.3: compile.debug 关闭 → 采样调用点整体消除
+            if (ProjectManager.config?.Compile?.Debug == false)
+                return true;
+
+            // P2 区间 API (§7.2): begin/end 单参 label, 无被监视值实参
+            if (methodName == "begin" || methodName == "end")
+            {
+                if (paramCount != 1)
+                {
+                    Log.AddIRLog(LID.IRCallIssue, mfc.token,
+                        $"Debug.{methodName}: 区间 API 需恰好 1 个 label 字面量参数, 回退正常调用! 函数[{mf.functionAllName}]");
+                    return false;
+                }
+                int intervalLabelStrIdx = GetDebugLiteralStringIndex(mfc, 0);
+                if (intervalLabelStrIdx < 0)
+                {
+                    Log.AddIRLog(LID.IRCallIssue, mfc.token,
+                        $"Debug.{methodName}: label 必须是字符串字面量, 回退正常调用! 函数[{mf.functionAllName}]");
+                    return false;
+                }
+
+                IRData dataInterval = new IRData();
+                if (methodName == "begin")
+                {
+                    // payload 布局见 IROpEnum.cs 注释 (注释为权威):
+                    // [labelStrIdx:4][line:4] — line 为前端留档, VM 不用
+                    byte[] intervalPayload = new byte[8];
+                    Buffer.BlockCopy(BitConverter.GetBytes(intervalLabelStrIdx), 0, intervalPayload, 0, 4);
+                    Buffer.BlockCopy(BitConverter.GetBytes(mfc.token?.sourceBeginLine ?? 0), 0, intervalPayload, 4, 4);
+                    dataInterval.opCode = EIROpCode.DebugBegin;
+                    dataInterval.Payload = intervalPayload;
+                }
+                else
+                {
+                    // payload: [labelStrIdx:4]
+                    byte[] intervalPayload = new byte[4];
+                    Buffer.BlockCopy(BitConverter.GetBytes(intervalLabelStrIdx), 0, intervalPayload, 0, 4);
+                    dataInterval.opCode = EIROpCode.DebugEnd;
+                    dataInterval.Payload = intervalPayload;
+                }
+                // 手拼 payload: 不走 SetOpValue (会经 PackOpValue 重置 Payload)
+                dataInterval.UpdateByteLength();
+                dataInterval.SetDebugInfoByToken(mf.token ?? mfc.token,
+                    methodName == "begin" ? $"DebugBegin label#{intervalLabelStrIdx}" : $"DebugEnd label#{intervalLabelStrIdx}");
+                AddIRData(dataInterval);
+                return true;
+            }
+
+            // 重载分流 (§7.1): watch 2 参 → mode 0; 3 参 → mode 1;
+            // watchAssert 3 参 → mode 2; watchIn 3 参 → mode 3
+            byte mode;
+            if (methodName == "watchAssert")
+            {
+                if (paramCount != 3)
+                {
+                    Log.AddIRLog(LID.IRCallIssue, mfc.token,
+                        $"Debug.watchAssert: 需恰好 3 个参数 (value,label,cond), 回退正常调用! 函数[{mf.functionAllName}]");
+                    return false;
+                }
+                mode = 2;
+            }
+            else if (methodName == "watchIn")
+            {
+                if (paramCount != 3)
+                {
+                    Log.AddIRLog(LID.IRCallIssue, mfc.token,
+                        $"Debug.watchIn: 需恰好 3 个参数 (value,label,caller), 回退正常调用! 函数[{mf.functionAllName}]");
+                    return false;
+                }
+                mode = 3;
+            }
+            else
+            {
+                mode = (byte)(paramCount == 3 ? 1 : 0);
+            }
+
+            // 定位参数提取 (字面量 → strIdx): mode 0/2/3 → label = arg[1];
+            // mode 1 → member = arg[1], label = arg[2]; mode 3 → caller = arg[2]
+            int memberStrIdx = mode == 1
+                ? GetDebugLiteralStringIndex(mfc, 1)
+                : 0;
+            int callerStrIdx = mode == 3
+                ? GetDebugLiteralStringIndex(mfc, 2)
+                : 0;
+            int labelStrIdx = GetDebugLiteralStringIndex(mfc, mode == 1 ? 2 : 1);
+            if (labelStrIdx < 0 || (mode == 1 && memberStrIdx < 0) || (mode == 3 && callerStrIdx < 0))
+            {
+                Log.AddIRLog(LID.IRCallIssue, mfc.token,
+                    $"Debug.{methodName}: 定位参数 (label/member/caller) 必须是字符串字面量, 回退正常调用! 函数[{mf.functionAllName}]");
+                return false;
+            }
+
+            // 被监视值实参照常发射 (arg[0], 与正常 Call 同管线); label/member/caller 不发射 IR。
+            // mode 2 求值顺序 (§7.2-4): 先发射 cond (arg[2]) 再发射 value (arg[0]) —
+            // VM 弹栈先得 value 后得 cond, value 后压居栈顶。
+            if (mode == 2)
+            {
+                var condNode = mfc.metaInputParamList[2];
+                IRExpressBase condExpress = IRExpressManager.CreateExpress(m_IRMethod, condNode);
+                AddIRRangeData(condExpress.IRDataList);
+                TryAddDataTypeLiteralFallback(condNode, condExpress);
+            }
+            var valueNode = mfc.metaInputParamList[0];
+            IRExpressBase irexpress = IRExpressManager.CreateExpress(m_IRMethod, valueNode);
+            AddIRRangeData(irexpress.IRDataList);
+            TryAddDataTypeLiteralFallback(valueNode, irexpress);
+
+            // payload 布局见 IROpEnum.cs 注释 (注释为权威):
+            // [targetKind:1][mode:1][line:4][labelStrIdx:4][memberStrIdx:4][callerStrIdx:4]
+            // targetKind 固定 0; callerStrIdx 仅 mode 3 (watchIn) 使用。
+            byte[] payload = new byte[18];
+            payload[0] = 0; // targetKind
+            payload[1] = mode;
+            Buffer.BlockCopy(BitConverter.GetBytes(mfc.token?.sourceBeginLine ?? 0), 0, payload, 2, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(labelStrIdx), 0, payload, 6, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(memberStrIdx), 0, payload, 10, 4);
+            Buffer.BlockCopy(BitConverter.GetBytes(callerStrIdx), 0, payload, 14, 4);
+
+            IRData datawatch = new IRData();
+            datawatch.opCode = EIROpCode.DebugWatch;
+            // 手拼 payload: 不走 SetOpValue (会经 PackOpValue 重置 Payload);
+            // UsesIndex 白名单不含 DebugWatch, index 不嵌入 payload。
+            datawatch.Payload = payload;
+            datawatch.UpdateByteLength();
+            datawatch.SetDebugInfoByToken(mf.token ?? mfc.token, $"DebugWatch mode={mode}");
+            AddIRData(datawatch);
+            return true;
+        }
+
+        /// <summary>提取 <paramref name="argIndex"/> 实参的字符串字面量并注册进字符串表; 非字面量返回 -1。</summary>
+        private int GetDebugLiteralStringIndex(MetaMethodCall mfc, int argIndex)
+        {
+            if (argIndex >= mfc.metaInputParamList.Count)
+                return -1;
+            var constNode = mfc.metaInputParamList[argIndex] as MetaConstExpressNode;
+            if (constNode == null || constNode.eType != EType.String)
+                return -1;
+            return IRManager.instance.AddStringIRStack(constNode.value?.ToString() ?? string.Empty);
         }
 
         /// <summary>

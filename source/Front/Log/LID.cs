@@ -977,6 +977,8 @@ namespace SimpleLanguage.Logging
         IRVariableIndex2 = 22031,
         IRVariableSVM = 22032,
         IRVariableSVM2 = 22033,
+        // Debug 采样特译 (DEBUG_SYSTEM_DESIGN §8.2)
+        IRCallDebugScopeNotClosed = 22034,
         // ---- Export 模块 ----
         // MLIR
         ExportMLIRAOTBuildDll = 22100,

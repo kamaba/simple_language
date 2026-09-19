@@ -670,6 +670,19 @@ namespace SimpleLanguage.Compile
                         Node node = new Node(token);
                         node.nodeType = ENodeType.Comment;
                         m_CurrentNode.AddChild(node);
+                        // 行注释(extend=0)必止于行尾，但词法层 ReadSharp 会连 '\n' 一起消费，
+                        // 该行因此缺失 LineEnd token —— 语句隔离(SetIdentifierNode(null))不会执行，
+                        // identifierNode 残留到下一行：下一行若以 '(' 或 '[' 开头，会被误接为
+                        // 残留标识符的实参/索引（SetParNode 覆盖，原实参整棵子树丢失）。
+                        // 此处镜像 LineEnd 分支的清理动作恢复隔离；块注释(#!...!#)可在行中，保持原行为。
+                        if (token.extend?.ToString() == "0")
+                        {
+                            if (m_CurrentNode.nodeType == ENodeType.Angle)
+                            {
+                                RestoreAngleNode();
+                            }
+                            m_CurrentNode.SetIdentifierNode(null);
+                        }
                     }
                     break;
 

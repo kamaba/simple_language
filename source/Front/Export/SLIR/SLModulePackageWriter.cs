@@ -900,6 +900,11 @@ namespace SimpleLanguage.Export.SLIR
             // CVM 取入口模块的值注入 Environment.current.build。
             pkg.buildMode = config?.Compile?.Optimize == true ? "release" : "debug";
 
+            // 优化级别（debug 系统设计 §4.2）：CLI -O<n> → ProjectManager.optimizeLevel。
+            // CVM 取入口模块的值注入 Environment.current.optimize；level >= 2 时
+            // Debug 采样 opcode 走快速路径（只弹栈不落帧，栈平衡不受影响）。
+            pkg.optimizeLevel = ProjectManager.optimizeLevel;
+
             // 合并 AOT manifest（aot.mlir / aot.dll / 方法状态清单）。
             // 数据来自 MLIRExportManager.Run 的最近一次结果（在 ExportLangManager.Export
             // 中先于本方法运行）；VM 从该 "aot" 字段加载 aot.dll（stage-4）。

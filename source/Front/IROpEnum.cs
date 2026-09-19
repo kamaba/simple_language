@@ -182,6 +182,20 @@ namespace SimpleLanguage
         // If the binding failed to resolve, the handler falls back to the
         // original SL method body (methodId embedded in the pre-rewrite JSON).
         CallFFIStatic,                      // = 118
+
+        // Debug sampling opcodes (v4 DEBUG_SYSTEM_DESIGN §7.1). Lowered by the
+        // ParseSystemCall special-translation when the call target is Core.Debug.
+        //   DebugBegin : payload [labelStrIdx:4][line:4]              pops 0
+        //   DebugEnd   : payload [labelStrIdx:4]                      pops 0
+        //   DebugWatch : payload [targetKind:1][mode:1][line:4][labelStrIdx:4]
+        //                [memberStrIdx:4][callerStrIdx:4] — watch modes:
+        //                m0 watch(value) pops 1 / m1 watchMember(obj,member)
+        //                pops 1 / m2 watchAssert(cond,value) pops 2 / m3 watchIn
+        //                (obj) pops 1. When the CVM runs with optimizeLevel >= 2
+        //                these handlers take the fast path (pop only, no sampling).
+        DebugBegin,                         // = 119
+        DebugEnd,                           // = 120
+        DebugWatch,                         // = 121
     }
 
     /// <summary>

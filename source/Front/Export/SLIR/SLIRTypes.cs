@@ -504,6 +504,10 @@ namespace SimpleLanguage.Export.SLIR.Types
         /// <summary>构建模式（jsonc compile.optimize → "debug"/"release"；空=未声明按 debug）。
         /// 仅入口模块的值被 CVM 用于 Environment.current.build（设计 §12.9）。</summary>
         public string buildMode { get; set; } = string.Empty;
+        /// <summary>优化级别（CLI -O&lt;n&gt; → ProjectManager.optimizeLevel；0=不优化）。
+        /// 仅入口模块的值被 CVM 用于 Environment.current.optimize（debug 系统设计 §4.2）：
+        /// level &gt;= 2 时 CVM 无视 Debug 采样走快速路径。</summary>
+        public int optimizeLevel { get; set; }
         /// <summary>
         /// 外部 dll 导入配置（project.jsonc "dllImports" 段的别名/名称/路径）。
         /// 引用方加载本模块时合并进其配置，即可用别名免写长路径。

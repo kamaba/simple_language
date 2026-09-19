@@ -664,6 +664,11 @@ namespace SimpleLanguage.IR
                 }
             }
 
+            // ---- Debug 区间配对检查 (DEBUG_SYSTEM_DESIGN §8.2) ----
+            // 方法内存在无配对 end 的 begin → 编译 warning, 不阻断:
+            // 提前 return / 异常路径是合法场景, VM 帧回卷 (vm_debug_scope_unwind) 兜底。
+            CheckDebugScopeBalance();
+
             // ---- Switch jump tables: serialize entry targets (IRData.id) into payload ----
             // Must run after all instruction ids are assigned and after label backfill
             // (targets may be label-converted IRData), but before FinalizePack/EmbedIndexInPayload.
@@ -680,6 +685,53 @@ namespace SimpleLanguage.IR
             // The C# VM uses m_ExecuteIndex = iri.index for jumps.
             // The C VM computes byte offsets at load time (vm_build_method_code)
             // and patches branch instructions for O(1) direct jumps.
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // Debug 区间配对检查 (DEBUG_SYSTEM_DESIGN §8.2, P2)
+        // ─────────────────────────────────────────────────────────────
+
+        /// <summary>
+        /// 栈式扫描本方法的 DebugBegin/DebugEnd: 终了仍开着的 begin →
+        /// <see cref="LID.IRCallDebugScopeNotClosed"/> warning。异常/提前 return
+        /// 是合法场景 (VM 帧回卷兜底), 故只提示不阻断; end 数多于 begin 不告警
+        /// (VM 侧 vm_debug_end 对空栈静默忽略)。compile.debug 关闭时特译
+        /// 整句消除, 本函数自然扫不到任何 Debug 指令。
+        /// </summary>
+        private void CheckDebugScopeBalance()
+        {
+            List<IRData> openScopes = null;
+            for (int i = 0; i < m_IRDataList.Count; i++)
+            {
+                var d = m_IRDataList[i];
+                if (d.opCode == EIROpCode.DebugBegin)
+                {
+                    openScopes ??= new List<IRData>();
+                    openScopes.Add(d);
+                }
+                else if (d.opCode == EIROpCode.DebugEnd && openScopes != null && openScopes.Count > 0)
+                {
+                    openScopes.RemoveAt(openScopes.Count - 1);
+                }
+            }
+            if (openScopes == null)
+                return;
+
+            for (int i = 0; i < openScopes.Count; i++)
+            {
+                var d = openScopes[i];
+                // begin payload: [labelStrIdx:4][line:4] — 反查 label 文本
+                string label = "?";
+                if (d.Payload != null && d.Payload.Length >= 4)
+                {
+                    int strIdx = BitConverter.ToInt32(d.Payload, 0);
+                    string s = IRManager.instance?.GetStringIRStack(strIdx);
+                    if (!string.IsNullOrEmpty(s))
+                        label = s;
+                }
+                Log.AddIRLog(LID.IRCallDebugScopeNotClosed, null,
+                    "[" + (d.debugInfo.path ?? "?") + ":" + d.debugInfo.beginLine + "] " + label);
+            }
         }
 
         // ─────────────────────────────────────────────────────────────

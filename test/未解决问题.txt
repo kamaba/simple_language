@@ -4,6 +4,10 @@ Debug.sl  这要要增加 DataFrame的类，可以用来记录 在Debug区间的
 F:\project\lang\csimple_lang\md\design\DEBUG_SYSTEM_DESIGN.md 我设计了下Debug类，但感觉还不是很完善，你再帮我完善下，我主要目的是，可以监视 class/data/enum里边的数据变量，当然也可以监视某一个变量的数据变量，我要在vm层，也加入一些规则，比如IRCode增加一个开始监视的IRCode 然后还有就是，我监视的条件是什么，这样都要在Debug里边体现，你很帮我补全这个文档，Debug类，还有Debug的使用条件，要在>=o2不允许使用等
 
 还需要改动 Log.FATAL() 需要在vm中有一次中断   以后，你如果调试的时候，可以把Log类和Debug类的使用方式 加入到代码验证的过程中，这样可以加速调试一些功能点。
+、
+内存管理机制使用arc 
+内存管理机制使用小分块
+内存管理优化 三色管理
 
 编码相关的
 Tcp/Udp/HttpClient/Websocket/NetStream相关接口

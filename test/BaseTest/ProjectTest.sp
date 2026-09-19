@@ -52,7 +52,9 @@ Project
         MVTest2.fun()    
         !#
         #CoroutineTest.fun();
-        StringBuilderTest.fun()
+        #StringBuilderTest.fun()
+        DebugTest.fun()
+        WatcherTest.fun()
         #!
         EnvironmentTest.fun()
         PlatformOverrideTest.fun()
@@ -65,8 +67,6 @@ Project
         CodecFrameTest.fun()
         !#
         #!
-        GuidTest.fun()
-        RandomTest.fun()        
         GuidTest.fun()
         RandomTest.fun()
         Float8Test.fun()
