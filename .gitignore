@@ -407,3 +407,5 @@
 /test/SFRepro/err2.txt
 /test/SFRepro/out.txt
 /test/SFRepro/out2.txt
+/test/ExpendTest/LogTest_flush.log
+/test/ExpendTest/LogTest_flush2.log

@@ -73,7 +73,7 @@ namespace SLang
         # ---- 基础日志（复用全局 Log，保持单一输出格式）----
         public static void log( string msg )      { SLang.Log.info(msg) }
         public static void warn( string msg )     { SLang.Log.warning(msg) }
-        public static void error( string msg )    { SLang.Log.logError(msg) }
+        public static void err( string msg )      { SLang.Log.logError(msg) }
         public static void logError( string msg ) { SLang.Log.logError(msg) }
 
         # ---- 追踪 ----
@@ -138,7 +138,7 @@ namespace SLang
             if !enabled { ret }
             if !condition
             {
-                SLang.Log.asset(false, "Debug.Assert failed: " + msg)
+                SLang.Log.assert(false, "Debug.Assert failed: " + msg)
                 DumpStack()
             }
         }
@@ -173,7 +173,8 @@ namespace SLang
             int idx = _findTimer(key)
             if idx >= 0
             {
-                Int64 dt = SystemDateTimeNowMillis() - _timerVals[idx]
+                Int64 t0 = _timerVals[idx]
+                Int64 dt = SystemDateTimeNowMillis() - t0
                 SLang.Log.print("[TIME] " + key + ": " + dt + " ms")
                 _timerKeys.removeAt(idx)
                 _timerVals.removeAt(idx)

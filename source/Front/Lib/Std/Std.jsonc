@@ -42,6 +42,8 @@
       { "path": "Net/UdpSocket.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Net/Uri.sl", "group": "std", "tag": "net", "ignore": false, "priority": 0 },
       { "path": "Component.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
+      { "path": "Debug/Log.sl", "group": "std", "tag": "debug", "ignore": false, "priority": 0 },
+      { "path": "Debug/Debug.sl", "group": "std", "tag": "debug", "ignore": false, "priority": 0 },
       // Data/Table.sl、Data/Tree.sl 已删除（源文件为空壳 stub，待 FrameData 重构），登记暂时注释
       // { "path": "Data/Table.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
       // { "path": "Data/Tree.sl", "group": "std", "tag": "core", "ignore": false, "priority": 0 },
@@ -147,6 +149,14 @@
       },
       { "class": "Component" },
       { "class": "Node" },
+      // ---- Std/Debug：SLang 命名空间（Log.sl / Debug.sl 均有 namespace SLang 声明）----
+      { "namespace": "SLang", "children":
+         [
+            { "class": "Log" },
+            { "class": "Logger" },
+            { "class": "Debug" }
+         ]
+      },
       { "namespace": "GPU", "children":
          [
              { "class": "GPU" }
@@ -252,6 +262,10 @@
     { "name": "SystemDateTimeMinValueMillis",  "returnType": "Int64",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_datetime_min_value_millis" },
     { "name": "SystemDateTimeMaxValueMillis",  "returnType": "Int64",  "params": [], "isVariadic": false, "cvmFunction": "vm_sys_datetime_max_value_millis" },
     { "name": "SystemDateTimeIsValidMillis",   "returnType": "bool",   "params": ["Int64"], "isVariadic": false, "cvmFunction": "vm_sys_datetime_is_valid_millis" },
+    // ---- Log calls (Std/Debug/Log.sl, core: log_system_method.c) ----
+    { "name": "SystemLogEmit",    "returnType": "void", "params": ["string","string","bool","bool","bool","string","bool","bool","string","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_log_emit" },
+    { "name": "SystemLogAssert",  "returnType": "void", "params": ["bool","string","bool","bool","string","bool","bool","string","Int32"], "isVariadic": false, "cvmFunction": "vm_sys_log_assert" },
+    { "name": "SystemLogSave",     "returnType": "void", "params": ["string"], "isVariadic": false, "cvmFunction": "vm_sys_log_save" },
     // ---- Process calls (OS/Process.sl, design: csimple_lang/md/design/PROCESS_DESIGN.md §5) ----
     // 错误码：C VM 负数段 -81..-85（设计稿原定 -71..-79 与 isolate -70..-77 冲突，整体后移）
     { "name": "SystemProcessRun",         "returnType": "object", "params": ["object"], "isVariadic": false, "cvmFunction": "vm_sys_process_run" },

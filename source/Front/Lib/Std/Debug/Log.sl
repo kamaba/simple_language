@@ -13,7 +13,11 @@
 #   SLang.Log.setConsoleOutput(false)       # 关闭实时控制台输出（仅落盘）
 #   SLang.Log.print("raw message")          # 实时原始打印（无级别前缀）
 #
-# 每条日志格式：[yyyy-MM-dd HH:mm:ss][LEVEL] message
+# 每条日志格式：[yyyy:MM:dd hh:mm:ss ffff] [LEVEL] message
+#   - [时间] 块受 setShowTime 控制，[LEVEL] 块受 setShowLevel 控制，均可独立关闭
+#   - 时间串格式受 setTimeFormat 控制，占位符：yyyy/MM/dd/hh/mm/ss/ffff(毫秒)
+# 文件落盘同步：setFlushInterval(n) 开启缓冲模式，每 n 秒最多写盘一次；
+#   Log.save() 可随时手动立即落盘（程序退出前建议调用，避免丢最后一批）。
 # 实时输出：默认每条日志都会 SystemPrintln 实时打印到控制台（受 setConsoleOutput 控制）。
 # 级别开关：Verbose/Debug 跟随 info；Warning、Error 各自独立；Fatal/断言 始终输出。
 # ============================================================================
@@ -33,6 +37,15 @@ namespace SLang
 
         # ---- 实时控制台输出 ----
         static bool _enableConsole = true
+
+        # ---- 显示配置 ----
+        static bool   _showTime   = true                          # 日志行是否带 [时间] 块
+        static bool   _showLevel  = true                          # 日志行是否带 [LEVEL] 块
+        static string _timeFormat = "yyyy:MM:dd hh:mm:ss ffff"    # 时间占位符串
+
+        # ---- 文件落盘同步 ----
+        # 0 = 每条日志立即写入文件（默认）；>0 = 攒缓冲，每 N 秒最多落盘一次（或缓冲满）
+        static int _flushIntervalSec = 0
 
         # 设置各级别开关
         #   f  : 启用 Info 级（含 Verbose / Debug）
@@ -66,6 +79,47 @@ namespace SLang
             _enableConsole = enabled
         }
 
+        # ---- 显示配置 ----
+
+        # 日志行是否带 [时间] 前缀块（默认 true）
+        public static void setShowTime( bool show )
+        {
+            _showTime = show
+        }
+
+        # 日志行是否带 [LEVEL] 前缀块（默认 true）
+        public static void setShowLevel( bool show )
+        {
+            _showLevel = show
+        }
+
+        # 时间串格式（默认 "yyyy:MM:dd hh:mm:ss ffff"）
+        # 占位符：yyyy 年 / MM 月 / dd 日 / hh 时 / mm 分 / ss 秒 / ffff 毫秒；其余字符原样
+        public static void setTimeFormat( string fmt )
+        {
+            _timeFormat = fmt
+        }
+
+        # ---- 文件落盘同步 ----
+
+        # 同步间隔（秒）：<=0 每条立即写盘（默认）；>0 攒缓冲，每 N 秒最多落盘一次
+        public static void setFlushInterval( int seconds )
+        {
+            _flushIntervalSec = seconds
+        }
+
+        # 手动立即把文件缓冲落盘（缓冲模式下退出前建议调用，避免丢最后一批）
+        public static void save()
+        {
+            SystemLogSave("")
+        }
+
+        # 立即落盘并切换输出文件：缓冲内容写入 path，后续日志继续写该文件
+        public static void save( string path )
+        {
+            SystemLogSave(path)
+        }
+
         # 关闭文件输出（不再落盘，控制台仍照常输出）
         public static void closeFile()
         {
@@ -81,7 +135,8 @@ namespace SLang
             }
         }
 
-        # 恢复默认：全部级别开启、停止文件输出、恢复实时控制台输出
+        # 恢复默认：全部级别开启、停止文件输出、恢复实时控制台输出、
+        # 恢复时间/级别显示与默认时间格式、恢复每条立即落盘
         public static void reset()
         {
             _enableInfo = true
@@ -90,6 +145,10 @@ namespace SLang
             _writeToFile = false
             _logFilePath = ""
             _enableConsole = true
+            _showTime = true
+            _showLevel = true
+            _timeFormat = "yyyy:MM:dd hh:mm:ss ffff"
+            _flushIntervalSec = 0
         }
 
         # 按最小级别一次性开关：level <= 阈值才输出
@@ -204,34 +263,23 @@ namespace SLang
         }
 
         # 断言：flag 为 false 时输出断言失败（始终输出，无视级别开关）
-        public static void asset( bool flag, string msg )
+        # 整链下沉 C 原生 SystemLogAssert：通过时热路径零字符串分配
+        public static void assert( bool flag, string msg )
         {
-            if !flag
-            {
-                _emit("ASSERT", "Assertion failed: " + msg, true)
-            }
+            SystemLogAssert(flag, msg, _enableConsole, _writeToFile, _logFilePath,
+                            _showTime, _showLevel, _timeFormat, _flushIntervalSec)
         }
 
         # ---- 内部 ----
 
-        # 输出一条带时间戳与级别前缀的日志；enabled=false 时静默
+        # 输出一条 [时间][LEVEL] msg 日志；enabled=false 时静默
         #   实时控制台输出受 _enableConsole 控制；文件输出受 _writeToFile 控制
+        #   整链下沉 C 原生 SystemLogEmit：时间格式化 + 拼接 + 双路输出一次完成，
+        #   消除 SL 层多次字符串堆分配
         static void _emit( string level, string msg, bool enabled )
         {
-            if !enabled
-            {
-                ret
-            }
-            string ts = SystemDateTimeFormat(SystemDateTimeNowMillis(), "yyyy-MM-dd HH:mm:ss", 0)
-            string line = "[" + ts + "][" + level + "] " + msg
-            if _enableConsole
-            {
-                SystemPrintln(line, null)
-            }
-            if _writeToFile && _logFilePath != ""
-            {
-                SystemFileAppendText(_logFilePath, line + "\n")
-            }
+            SystemLogEmit(level, msg, enabled, _enableConsole, _writeToFile, _logFilePath,
+                          _showTime, _showLevel, _timeFormat, _flushIntervalSec)
         }
     }
 
@@ -248,41 +296,54 @@ namespace SLang
     public class Logger
     {
         # ---- 级别开关 ----
-        bool _enableInfo    = true
-        bool _enableWarning = true
-        bool _enableError   = true
+        private bool _enableInfo    = true
+        private bool _enableWarning = true
+        private bool _enableError   = true
 
         # ---- 文件输出 ----
-        string _logFilePath = ""
-        bool   _writeToFile = false
+        private string _logFilePath = ""
+        private bool   _writeToFile = false
 
         # ---- 实时控制台输出 ----
-        bool _enableConsole = true
+        private bool _enableConsole = true
+
+        # ---- 显示配置 ----
+        private bool   _showTime   = true
+        private bool   _showLevel  = true
+        private string _timeFormat = "yyyy:MM:dd hh:mm:ss ffff"
+
+        # ---- 文件落盘同步 ----
+        # 0 = 每条日志立即写入文件（默认）；>0 = 攒缓冲，每 N 秒最多落盘一次（或缓冲满）
+        private int _flushIntervalSec = 0
 
         # 显式初始化（new 之后调用，确保状态干净）；consoleOutput 控制实时控制台输出
         public void _init_( bool consoleOutput = true )
         {
-            _enableInfo = true
-            _enableWarning = true
-            _enableError = true
-            _writeToFile = false
-            _logFilePath = ""
-            _enableConsole = consoleOutput
+            this._enableInfo = true
+            this._enableWarning = true
+            this._enableError = true
+            this._writeToFile = false
+            this._logFilePath = ""
+            this._enableConsole = consoleOutput
+            this._showTime = true
+            this._showLevel = true
+            this._timeFormat = "yyyy:MM:dd hh:mm:ss ffff"
+            this._flushIntervalSec = 0
         }
 
         public void setLogType( bool f, bool f2, bool f3 )
         {
-            _enableInfo = f
-            _enableWarning = f2
-            _enableError = f3
+            this._enableInfo = f
+            this._enableWarning = f2
+            this._enableError = f3
         }
 
         public void setFilePath( string path, bool start = true )
         {
-            _logFilePath = path
+            this._logFilePath = path
             if start
             {
-                _writeToFile = true
+                this._writeToFile = true
                 if !SystemFileExists(path)
                 {
                     SystemFileWriteAllText(path, "")
@@ -292,57 +353,102 @@ namespace SLang
 
         public void setConsoleOutput( bool enabled )
         {
-            _enableConsole = enabled
+            this._enableConsole = enabled
+        }
+
+        # ---- 显示配置 ----
+
+        # 日志行是否带 [时间] 前缀块（默认 true）
+        public void setShowTime( bool show )
+        {
+            this._showTime = show
+        }
+
+        # 日志行是否带 [LEVEL] 前缀块（默认 true）
+        public void setShowLevel( bool show )
+        {
+            this._showLevel = show
+        }
+
+        # 时间串格式（默认 "yyyy:MM:dd hh:mm:ss ffff"）
+        # 占位符：yyyy 年 / MM 月 / dd 日 / hh 时 / mm 分 / ss 秒 / ffff 毫秒；其余字符原样
+        public void setTimeFormat( string fmt )
+        {
+            this._timeFormat = fmt
+        }
+
+        # ---- 文件落盘同步 ----
+
+        # 同步间隔（秒）：<=0 每条立即写盘（默认）；>0 攒缓冲，每 N 秒最多落盘一次
+        public void setFlushInterval( int seconds )
+        {
+            this._flushIntervalSec = seconds
+        }
+
+        # 手动立即把文件缓冲落盘（缓冲模式下退出前建议调用，避免丢最后一批）
+        public void save()
+        {
+            SystemLogSave("")
+        }
+
+        # 立即落盘并切换输出文件：缓冲内容写入 path，后续日志继续写该文件
+        public void save( string path )
+        {
+            SystemLogSave(path)
         }
 
         public void closeFile()
         {
-            _writeToFile = false
+            this._writeToFile = false
         }
 
         public void clearFile()
         {
-            if _logFilePath != ""
+            if this._logFilePath != ""
             {
-                SystemFileWriteAllText(_logFilePath, "")
+                SystemFileWriteAllText(this._logFilePath, "")
             }
         }
 
         public void reset()
         {
-            _enableInfo = true
-            _enableWarning = true
-            _enableError = true
-            _writeToFile = false
-            _logFilePath = ""
-            _enableConsole = true
+            this._enableInfo = true
+            this._enableWarning = true
+            this._enableError = true
+            this._writeToFile = false
+            this._logFilePath = ""
+            this._enableConsole = true
+            this._showTime = true
+            this._showLevel = true
+            this._timeFormat = "yyyy:MM:dd hh:mm:ss ffff"
+            this._flushIntervalSec = 0
         }
 
         public void setMinLevel( int level )
         {
-            _enableInfo    = level <= 1
-            _enableWarning = level <= 2
-            _enableError   = level <= 3
+            this._enableInfo    = level <= 1
+            this._enableWarning = level <= 2
+            this._enableError   = level <= 3
         }
 
         public bool isEnabled( int level )
         {
             if level <= 1
             {
-                ret _enableInfo
+                ret this._enableInfo
             }
             if level == 2
             {
-                ret _enableWarning
+                ret this._enableWarning
             }
-            ret _enableError
+            ret this._enableError
         }
 
         # ---- 输出方法 ----
 
         public void print( string msg )
         {
-            if _enableConsole
+            if this._enableConsole
             {
                 SystemPrintln(msg, null)
             }
@@ -350,41 +456,41 @@ namespace SLang
 
         public void verbose( string msg )
         {
-            _emit("VERBOSE", msg, _enableInfo)
+            this._emit("VERBOSE", msg, this._enableInfo)
         }
 
         public void debug( string msg )
         {
-            _emit("DEBUG", msg, _enableInfo)
+            this._emit("DEBUG", msg, this._enableInfo)
         }
 
         public void info( string msg )
         {
-            _emit("INFO", msg, _enableInfo)
+            this._emit("INFO", msg, this._enableInfo)
         }
 
         public void warning( string msg )
         {
-            _emit("WARN", msg, _enableWarning)
+            this._emit("WARN", msg, this._enableWarning)
         }
 
         public void logError( string msg )
         {
-            _emit("ERROR", msg, _enableError)
+            this._emit("ERROR", msg, this._enableError)
         }
 
         public void fatal( string msg )
         {
-            _emit("FATAL", msg, true)
+            this._emit("FATAL", msg, true)
         }
 
         public void exception( string msg )
         {
-            _emit("EXCEPTION", msg, _enableError)
+            this._emit("EXCEPTION", msg, this._enableError)
         }
         public void exception( string msg, string detail )
         {
-            _emit("EXCEPTION", msg + "\n    " + detail, _enableError)
+            this._emit("EXCEPTION", msg + "\n    " + detail, this._enableError)
         }
 
         public void log( int level, string msg )
@@ -406,42 +512,29 @@ namespace SLang
             {
                 tag = "FATAL"
             }
-            bool on = _enableInfo
+            bool on = this._enableInfo
             if level == 2
             {
-                on = _enableWarning
+                on = this._enableWarning
             }
             if level >= 3
             {
-                on = _enableError
+                on = this._enableError
             }
-            _emit(tag, msg, on)
+            this._emit(tag, msg, on)
         }
 
-        public void asset( bool flag, string msg )
+        public inline void assert( bool flag, string msg )
         {
-            if !flag
-            {
-                _emit("ASSERT", "Assertion failed: " + msg, true)
-            }
+            SystemLogAssert(flag, msg, this._enableConsole, this._writeToFile, this._logFilePath,
+                            this._showTime, this._showLevel, this._timeFormat, this._flushIntervalSec)
         }
 
-        void _emit( string level, string msg, bool enabled )
+        # 整链下沉 C 原生 SystemLogEmit（同静态 Log._emit）
+        void inline _emit( string level, string msg, bool enabled )
         {
-            if !enabled
-            {
-                ret
-            }
-            string ts = SystemDateTimeFormat(SystemDateTimeNowMillis(), "yyyy-MM-dd HH:mm:ss", 0)
-            string line = "[" + ts + "][" + level + "] " + msg
-            if _enableConsole
-            {
-                SystemPrintln(line, null)
-            }
-            if _writeToFile && _logFilePath != ""
-            {
-                SystemFileAppendText(_logFilePath, line + "\n")
-            }
+            SystemLogEmit(level, msg, enabled, this._enableConsole, this._writeToFile, this._logFilePath,
+                          this._showTime, this._showLevel, this._timeFormat, this._flushIntervalSec)
         }
     }
 }
